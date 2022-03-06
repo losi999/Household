@@ -1,0 +1,166 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: "AWS::Serverless-2016-10-31"
+Description: "Foci 2020 Functions"
+Parameters:
+  LambdaRoleArn:
+    Type: String
+  # Database:
+  #   Type: String
+  # DatabaseArchive:
+  #   Type: String
+  # DatabaseStreamArn:
+  #   Type: String
+  # UserPoolId:
+  #   Type: String
+  # ClientId:
+  #   Type: String
+  Env:
+    Type: String           
+  # TestUserPassword:
+  #   Type: String
+  #   Default: ""
+  # EventDeadLetterQueueArn:
+  #   Type: String
+
+# Conditions:
+#   ShouldCreateTestUsers: !Not [!Equals [!Ref TestUserPassword, ""]]
+
+Globals:
+  Function:
+    Handler: index.default
+    Runtime: nodejs12.x
+    Timeout: 10
+    MemorySize: 512
+    Tracing: Active
+    # Environment:
+    #   Variables:
+    #     DYNAMO_TABLE: !Ref Database
+
+Resources:
+  # PostDeploy:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     FunctionName: !Sub Household-${Env}-PostDeploy
+  #     CodeUri: dist/api/post-deploy
+  #     Role: !Ref LambdaRoleArn
+  #     Environment:
+  #       Variables:
+  #         INFRASTRUCTURE_STACK: !Ref AWS::StackName
+
+  # CreateTestUsers:
+  #   Type: AWS::Serverless::Function
+  #   Condition: ShouldCreateTestUsers
+  #   Properties:
+  #     FunctionName: !Sub Household-${Env}-CreateTestUsers
+  #     CodeUri: dist/api/create-test-users
+  #     Role: !Ref LambdaRoleArn
+  #     Environment:
+  #       Variables:
+  #         USER_POOL_ID: !Ref UserPoolId
+  #         CLIENT_ID: !Ref ClientId
+  #         ADMIN_COUNT: "1"
+  #         PLAYER_COUNT: "3"
+  #         TEST_USER_PASSWORD: !Ref TestUserPassword               
+
+  # ArchiveDocument:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     FunctionName: !Sub Household-${Env}-ArchiveDocument
+  #     CodeUri: dist/api/archive-document
+  #     Role: !Ref LambdaRoleArn
+  #     Environment:
+  #       Variables:
+  #         ARCHIVE_TABLE: !Ref DatabaseArchive
+  #     DeadLetterQueue:
+  #       Type: SQS
+  #       TargetArn: !Ref EventDeadLetterQueueArn
+  #     EventInvokeConfig:
+  #       MaximumRetryAttempts: 2
+
+  # BetResultCalculated:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     FunctionName: !Sub Household-${Env}-BetResultCalculated
+  #     CodeUri: dist/api/bet-result-calculated
+  #     Role: !Ref LambdaRoleArn
+  #     DeadLetterQueue:
+  #       Type: SQS
+  #       TargetArn: !Ref EventDeadLetterQueueArn
+  #     EventInvokeConfig:
+  #       MaximumRetryAttempts: 2
+
+  # MatchDeleted:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     FunctionName: !Sub Household-${Env}-MatchDeleted
+  #     CodeUri: dist/api/match-deleted
+  #     Role: !Ref LambdaRoleArn
+  #     DeadLetterQueue:
+  #       Type: SQS
+  #       TargetArn: !Ref EventDeadLetterQueueArn
+  #     EventInvokeConfig:
+  #       MaximumRetryAttempts: 2
+
+  # MatchFinalScoreUpdated:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     FunctionName: !Sub Household-${Env}-MatchFinalScoreUpdated
+  #     CodeUri: dist/api/match-final-score-updated
+  #     Role: !Ref LambdaRoleArn
+  #     DeadLetterQueue:
+  #       Type: SQS
+  #       TargetArn: !Ref EventDeadLetterQueueArn
+  #     EventInvokeConfig:
+  #       MaximumRetryAttempts: 2
+
+  # TeamDeleted:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     FunctionName: !Sub Household-${Env}-TeamDeleted
+  #     CodeUri: dist/api/team-deleted
+  #     Role: !Ref LambdaRoleArn
+  #     DeadLetterQueue:
+  #       Type: SQS
+  #       TargetArn: !Ref EventDeadLetterQueueArn
+  #     EventInvokeConfig:
+  #       MaximumRetryAttempts: 2
+
+  # TeamUpdated:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     FunctionName: !Sub Household-${Env}-TeamUpdated
+  #     CodeUri: dist/api/team-updated
+  #     Role: !Ref LambdaRoleArn
+  #     DeadLetterQueue:
+  #       Type: SQS
+  #       TargetArn: !Ref EventDeadLetterQueueArn
+  #     EventInvokeConfig:
+  #       MaximumRetryAttempts: 2
+
+  # TournamentDeleted:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     FunctionName: !Sub Household-${Env}-TournamentDeleted
+  #     CodeUri: dist/api/tournament-deleted
+  #     Role: !Ref LambdaRoleArn
+  #     DeadLetterQueue:
+  #       Type: SQS
+  #       TargetArn: !Ref EventDeadLetterQueueArn
+  #     EventInvokeConfig:
+  #       MaximumRetryAttempts: 2
+
+  # TournamentUpdated:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     FunctionName: !Sub Household-${Env}-TournamentUpdated
+  #     CodeUri: dist/api/tournament-updated
+  #     Role: !Ref LambdaRoleArn
+  #     DeadLetterQueue:
+  #       Type: SQS
+  #       TargetArn: !Ref EventDeadLetterQueueArn
+  #     EventInvokeConfig:
+  #       MaximumRetryAttempts: 2
+
+# Outputs:
+#   PostDeployCreateTestUsers:
+#     Value: !If [ShouldCreateTestUsers, !GetAtt CreateTestUsers.Arn, ""]
