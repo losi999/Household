@@ -2,16 +2,6 @@ AWSTemplateFormatVersion: "2010-09-09"
 Parameters:
   Env:
     Type: String
-  AccountsEventBus:
-    Type: String
-  ProjectsEventBus:
-    Type: String    
-  CategoriesEventBus:
-    Type: String    
-  RecipientsEventBus:
-    Type: String    
-  TransactionsEventBus:
-    Type: String        
   # TestUserPassword:
   #   Type: String
   #   Default: ""
@@ -32,25 +22,20 @@ Mappings:
       ApiDomain: householdapi.losi999.hu            
 
 Resources:
-  Functions:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: sam.functions.yaml
-      Parameters:
-        LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
-        # Database: !GetAtt Data.Outputs.Database
-        # DatabaseStreamArn: !GetAtt Data.Outputs.DatabaseStreamArn
-        # UserPoolId: !GetAtt Data.Outputs.UserPoolId
-        # ClientId: !GetAtt Data.Outputs.ClientId
-        Env: !Ref Env
-        AccountsEventBus: !Ref AccountsEventBus
-        ProjectsEventBus: !Ref ProjectsEventBus
-        CategoriesEventBus: !Ref CategoriesEventBus
-        RecipientsEventBus: !Ref RecipientsEventBus
-        TransactionsEventBus: !Ref TransactionsEventBus
-        # TestUserPassword: !Ref TestUserPassword
-        # DatabaseArchive: !GetAtt Data.Outputs.DatabaseArchive
-        # EventDeadLetterQueueArn: !GetAtt Infrastructure.Outputs.EventDeadLetterQueueArn
+  # Functions:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL: sam.functions.yaml
+  #     Parameters:
+  #       LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
+  #       # Database: !GetAtt Data.Outputs.Database
+  #       # DatabaseStreamArn: !GetAtt Data.Outputs.DatabaseStreamArn
+  #       # UserPoolId: !GetAtt Data.Outputs.UserPoolId
+  #       # ClientId: !GetAtt Data.Outputs.ClientId
+  #       Env: !Ref Env
+  #       # TestUserPassword: !Ref TestUserPassword
+  #       # DatabaseArchive: !GetAtt Data.Outputs.DatabaseArchive
+  #       # EventDeadLetterQueueArn: !GetAtt Infrastructure.Outputs.EventDeadLetterQueueArn
 
   # Data:
   #   Type: AWS::CloudFormation::Stack
