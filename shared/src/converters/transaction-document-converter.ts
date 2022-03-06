@@ -1,0 +1,190 @@
+import { addSeconds } from '@household/shared/common/utils';
+import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
+import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
+import { IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
+import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
+import { Account, Category, Project, Recipient, Transaction } from '@household/shared/types/types';
+
+export interface ITransactionDocumentConverter {
+  createPaymentDocument(data: {
+    body: Transaction.PaymentRequest;
+    account: Account.Document;
+    category: Category.Document;
+    recipient: Recipient.Document;
+    project: Project.Document;
+  }, expiresIn: number,): Transaction.PaymentDocument;
+  createSplitDocument(data: {
+    body: Transaction.SplitRequest;
+    account: Account.Document;
+    categories: Category.Document[];
+    recipient: Recipient.Document;
+    projects: Project.Document[];
+  }, expiresIn: number): Transaction.SplitDocument;
+  createTransferDocument(data: {
+    body: Transaction.TransferRequest;
+    account: Account.Document;
+    transferAccount: Account.Document;
+  }, expiresIn: number): Transaction.TransferDocument;
+  updatePaymentDocument(data: {
+    document: Transaction.Document;
+    body: Transaction.PaymentRequest;
+    account: Account.Document;
+    category: Category.Document;
+    recipient: Recipient.Document;
+    project: Project.Document;
+  }, expiresIn: number,): Transaction.PaymentDocument;
+  updateSplitDocument(data: {
+    document: Transaction.Document;
+    body: Transaction.SplitRequest;
+    account: Account.Document;
+    categories: Category.Document[];
+    recipient: Recipient.Document;
+    projects: Project.Document[];
+  }, expiresIn: number): Transaction.SplitDocument;
+  updateTransferDocument(data: {
+    document: Transaction.Document;
+    body: Transaction.TransferRequest;
+    account: Account.Document;
+    transferAccount: Account.Document;
+  }, expiresIn: number): Transaction.TransferDocument;
+  toResponse(document: Transaction.Document): Transaction.Response;
+  toResponseList(documents: Transaction.Document[]): Transaction.Response[];
+}
+
+export const transactionDocumentConverterFactory = (
+  accountDocumentConverter: IAccountDocumentConverter,
+  projectDocumentConverter: IProjectDocumentConverter,
+  categoryDocumentConverter: ICategoryDocumentConverter,
+  recipientDocumentConverter: IRecipientDocumentConverter,
+): ITransactionDocumentConverter => {
+  const toResponsePayment = (doc: Transaction.PaymentDocument): Transaction.PaymentResponse => {
+    return {
+      ...doc,
+      transactionId: doc._id.toString() as Transaction.IdType,
+      issuedAt: doc.issuedAt.toISOString(),
+      _id: undefined,
+      expiresAt: undefined,
+      account: accountDocumentConverter.toResponse(doc.account),
+      category: doc.category ? categoryDocumentConverter.toResponse(doc.category) : undefined,
+      recipient: doc.recipient ? recipientDocumentConverter.toResponse(doc.recipient) : undefined,
+      project: doc.project ? projectDocumentConverter.toResponse(doc.project) : undefined,
+    };
+  };
+
+  const toResponseSplit = (doc: Transaction.SplitDocument): Transaction.SplitResponse => {
+    return {
+      ...doc,
+      transactionId: doc._id.toString() as Transaction.IdType,
+      issuedAt: doc.issuedAt.toISOString(),
+      _id: undefined,
+      expiresAt: undefined,
+      account: accountDocumentConverter.toResponse(doc.account),
+      recipient: doc.recipient ? recipientDocumentConverter.toResponse(doc.recipient) : undefined,
+      splits: doc.splits.map((s) => {
+        return {
+          amount: s.amount,
+          description: s.description,
+          category: s.category ? categoryDocumentConverter.toResponse(s.category) : undefined,
+          project: s.project ? projectDocumentConverter.toResponse(s.project) : undefined,
+        }
+      })
+    };
+  };
+
+  const toResponseTransfer = (doc: Transaction.TransferDocument): Transaction.TransferResponse => {
+    return {
+      ...doc,
+      transactionId: doc._id.toString() as Transaction.IdType,
+      issuedAt: doc.issuedAt.toISOString(),
+      _id: undefined,
+      expiresAt: undefined,
+      account: accountDocumentConverter.toResponse(doc.account),
+      transferAccount: accountDocumentConverter.toResponse(doc.transferAccount),
+    };
+  };
+
+  const instance: ITransactionDocumentConverter = {
+    createPaymentDocument: ({ body, account, project, category, recipient }, expiresIn): Transaction.PaymentDocument => {
+      return {
+        ...body,
+        account,
+        category,
+        project,
+        recipient,
+        issuedAt: new Date(body.issuedAt),
+        transactionType: 'payment',
+        accountId: undefined,
+        categoryId: undefined,
+        projectId: undefined,
+        recipientId: undefined,
+        _id: undefined,
+        expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
+      };
+    },
+    createSplitDocument: ({ body, account, projects, categories, recipient }, expiresIn): Transaction.SplitDocument => {
+      return {
+        ...body,
+        account,
+        recipient,
+        transactionType: 'split',
+        issuedAt: new Date(body.issuedAt),
+        splits: body.splits.map((s) => {
+          return {
+            amount: s.amount,
+            description: s.description,
+            category: categories.find(x => x._id.toString() === s.categoryId),
+            project: projects.find(x => x._id.toString() === s.projectId),
+          };
+        }),
+        accountId: undefined,
+        recipientId: undefined,
+        _id: undefined,
+        expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
+      }
+    },
+    createTransferDocument: ({ body, account, transferAccount }, expiresIn): Transaction.TransferDocument => {
+      return {
+        ...body,
+        account,
+        transferAccount,
+        issuedAt: new Date(body.issuedAt),
+        transactionType: 'transfer',
+        accountId: undefined,
+        transferAccountId: undefined,
+        expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
+      };
+    },
+    updatePaymentDocument: ({ document, ...restOfData }, expiresIn): Transaction.PaymentDocument => {
+      return {
+        ...instance.createPaymentDocument(restOfData, expiresIn),
+        _id: document._id,
+        createdAt: document.createdAt,
+      };
+    },
+    updateSplitDocument: ({ document, ...restOfData }, expiresIn): Transaction.SplitDocument => {
+      return {
+        ...instance.createSplitDocument(restOfData, expiresIn),
+        _id: document._id,
+        createdAt: document.createdAt,
+      };
+    },
+    updateTransferDocument: ({ document, ...restOfData }, expiresIn): Transaction.TransferDocument => {
+      return {
+        ...instance.createTransferDocument(restOfData, expiresIn),
+        _id: document._id,
+        createdAt: document.createdAt,
+      };
+    },
+    toResponse: (doc): Transaction.Response => {
+      switch (doc.transactionType) {
+        case 'payment': return toResponsePayment(doc);
+        case 'split': return toResponseSplit(doc);
+        case 'transfer': return toResponseTransfer(doc);
+        default: return undefined;
+      }
+    },
+    toResponseList: docs => docs.map(d => instance.toResponse(d)),
+  };
+
+  return instance;
+};

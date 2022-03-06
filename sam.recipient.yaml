@@ -1,0 +1,141 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: "AWS::Serverless-2016-10-31"
+Description: "Household Recipient Api"
+Parameters:
+  LambdaRoleArn:
+    Type: String
+  # UserPoolArn:
+  #   Type: String
+  Env:
+    Type: String
+
+Globals:
+  Function:
+    Handler: index.default
+    Runtime: nodejs14.x
+    Timeout: 60
+    MemorySize: 512
+    Tracing: Active
+    # Environment:
+    #   Variables:
+    #     DYNAMO_TABLE: !Ref Database
+
+Resources:
+  RecipientApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub Household-${Env}-Recipient
+      StageName: recipient
+      TracingEnabled: true
+      Cors:
+        AllowMethods: "'*'"
+        AllowHeaders: "'*'"
+        AllowOrigin: "'*'"
+      # Auth:
+      #   Authorizers:
+      #     CognitoAuthorizer:
+      #       UserPoolArn: !Ref UserPoolArn
+      GatewayResponses:
+        UNAUTHORIZED:
+          StatusCode: 401
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"  
+              Access-Control-Allow-Headers: "'*'"
+              Access-Control-Allow-Methods: "'*'"
+          ResponseTemplates:
+            application/json: '{ "message": $context.error.messageString }'            
+        MISSING_AUTHENTICATION_TOKEN:
+          StatusCode: 404
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"  
+              Access-Control-Allow-Headers: "'*'"
+              Access-Control-Allow-Methods: "'*'"
+          ResponseTemplates:
+            application/json: '{ "message": $context.error.messageString }'
+
+  CreateRecipient:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-Recipient-CreateRecipient
+      CodeUri: dist/api/create-recipient
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RecipientApi
+            Path: /v1/recipients
+            Method: POST
+            # Auth:
+            #   Authorizer: CognitoAuthorizer
+
+  UpdateRecipient:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-Recipient-UpdateRecipient
+      CodeUri: dist/api/update-recipient
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RecipientApi
+            Path: /v1/recipients/{recipientId}
+            Method: PUT
+  #           Auth:
+  #             Authorizer: CognitoAuthorizer
+
+  ListRecipients:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-Recipient-ListRecipients
+      CodeUri: dist/api/list-recipients
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RecipientApi
+            Path: /v1/recipients
+            Method: GET
+  #           Auth:
+  #             Authorizer: CognitoAuthorizer
+
+  GetRecipient:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-Recipient-GetRecipient
+      CodeUri: dist/api/get-recipient
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RecipientApi
+            Path: /v1/recipients/{recipientId}
+            Method: GET
+            # Auth:
+            #   Authorizer: CognitoAuthorizer
+
+  DeleteRecipient:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-Recipient-DeleteRecipient
+      CodeUri: dist/api/delete-recipient
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RecipientApi
+            Path: /v1/recipients/{recipientId}
+            Method: DELETE
+  #           Auth:
+  #             Authorizer: CognitoAuthorizer
+
+Outputs:
+  RecipientApi:
+    Description: "Household Recipient API"
+    Value: !Sub "${RecipientApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}"

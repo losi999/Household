@@ -1,0 +1,141 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: "AWS::Serverless-2016-10-31"
+Description: "Household Project Api"
+Parameters:
+  LambdaRoleArn:
+    Type: String
+  # UserPoolArn:
+  #   Type: String
+  Env:
+    Type: String
+
+Globals:
+  Function:
+    Handler: index.default
+    Runtime: nodejs14.x
+    Timeout: 60
+    MemorySize: 512
+    Tracing: Active
+    # Environment:
+    #   Variables:
+    #     DYNAMO_TABLE: !Ref Database
+
+Resources:
+  ProjectApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub Household-${Env}-Project
+      StageName: project
+      TracingEnabled: true
+      Cors:
+        AllowMethods: "'*'"
+        AllowHeaders: "'*'"
+        AllowOrigin: "'*'"
+      # Auth:
+      #   Authorizers:
+      #     CognitoAuthorizer:
+      #       UserPoolArn: !Ref UserPoolArn
+      GatewayResponses:
+        UNAUTHORIZED:
+          StatusCode: 401
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"  
+              Access-Control-Allow-Headers: "'*'"
+              Access-Control-Allow-Methods: "'*'"
+          ResponseTemplates:
+            application/json: '{ "message": $context.error.messageString }'            
+        MISSING_AUTHENTICATION_TOKEN:
+          StatusCode: 404
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"  
+              Access-Control-Allow-Headers: "'*'"
+              Access-Control-Allow-Methods: "'*'"
+          ResponseTemplates:
+            application/json: '{ "message": $context.error.messageString }'
+
+  CreateProject:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-Project-CreateProject
+      CodeUri: dist/api/create-project
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ProjectApi
+            Path: /v1/projects
+            Method: POST
+            # Auth:
+            #   Authorizer: CognitoAuthorizer
+
+  UpdateProject:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-Project-UpdateProject
+      CodeUri: dist/api/update-project
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ProjectApi
+            Path: /v1/projects/{projectId}
+            Method: PUT
+  #           Auth:
+  #             Authorizer: CognitoAuthorizer
+
+  ListProjects:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-Project-ListProjects
+      CodeUri: dist/api/list-projects
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ProjectApi
+            Path: /v1/projects
+            Method: GET
+  #           Auth:
+  #             Authorizer: CognitoAuthorizer
+
+  GetProject:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-Project-GetProject
+      CodeUri: dist/api/get-project
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ProjectApi
+            Path: /v1/projects/{projectId}
+            Method: GET
+            # Auth:
+            #   Authorizer: CognitoAuthorizer
+
+  DeleteProject:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-Project-DeleteProject
+      CodeUri: dist/api/delete-project
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ProjectApi
+            Path: /v1/projects/{projectId}
+            Method: DELETE
+  #           Auth:
+  #             Authorizer: CognitoAuthorizer
+
+Outputs:
+  ProjectApi:
+    Description: "Household Project API"
+    Value: !Sub "${ProjectApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}"
