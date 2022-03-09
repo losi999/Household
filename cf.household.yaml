@@ -5,6 +5,12 @@ Parameters:
   # TestUserPassword:
   #   Type: String
   #   Default: ""
+  MongodbUsername:
+    Type: String
+  MongodbPassword:
+    Type: String
+  MongodbClusterDomain:
+    Type: String
 
 Mappings: 
   EnvMapping: 
@@ -60,6 +66,7 @@ Resources:
         # Database: !GetAtt Data.Outputs.Database
         # UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
+        MongodbConnectionString: !Sub "mongodb+srv://${MongodbUsername}:${MongodbPassword}@${MongodbClusterDomain}/household-${Env}?retryWrites=true&w=majority"
 
   Recipient:
     Type: AWS::CloudFormation::Stack
@@ -70,6 +77,7 @@ Resources:
         # Database: !GetAtt Data.Outputs.Database
         # UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
+        MongodbConnectionString: !Sub "mongodb+srv://${MongodbUsername}:${MongodbPassword}@${MongodbClusterDomain}/household-${Env}?retryWrites=true&w=majority"
 
   Account:
     Type: AWS::CloudFormation::Stack
@@ -80,6 +88,7 @@ Resources:
         # Database: !GetAtt Data.Outputs.Database
         # UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
+        MongodbConnectionString: !Sub "mongodb+srv://${MongodbUsername}:${MongodbPassword}@${MongodbClusterDomain}/household-${Env}?retryWrites=true&w=majority"
 
   Category:
     Type: AWS::CloudFormation::Stack
@@ -90,6 +99,7 @@ Resources:
         # Database: !GetAtt Data.Outputs.Database
         # UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
+        MongodbConnectionString: !Sub "mongodb+srv://${MongodbUsername}:${MongodbPassword}@${MongodbClusterDomain}/household-${Env}?retryWrites=true&w=majority"
         
   Transaction:
     Type: AWS::CloudFormation::Stack
@@ -99,7 +109,8 @@ Resources:
         LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
         # Database: !GetAtt Data.Outputs.Database
         # UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
-        Env: !Ref Env           
+        Env: !Ref Env
+        MongodbConnectionString: !Sub "mongodb+srv://${MongodbUsername}:${MongodbPassword}@${MongodbClusterDomain}/household-${Env}?retryWrites=true&w=majority"
 
   Api:
     Type: AWS::CloudFront::Distribution
@@ -253,60 +264,60 @@ Resources:
       Name: !FindInMap [EnvMapping, !Ref Env, ApiDomain]
       Type: A
 
-  # Website:
-  #   Type: AWS::CloudFront::Distribution
-  #   DependsOn:
-  #     - Api
-  #   Properties:
-  #     DistributionConfig:
-  #       Comment: !Sub "${Env}-Web"
-  #       Aliases: 
-  #         - !FindInMap [EnvMapping, !Ref Env, WebsiteDomain]
-  #       ViewerCertificate:
-  #         AcmCertificateArn: "{{resolve:ssm:DomainCertificateArn:1}}"
-  #         SslSupportMethod: sni-only
-  #         MinimumProtocolVersion: TLSv1.2_2019  
-  #       Enabled: true
-  #       PriceClass: PriceClass_100
-  #       DefaultCacheBehavior:
-  #         ViewerProtocolPolicy: redirect-to-https
-  #         AllowedMethods:
-  #           - GET
-  #           - HEAD
-  #         MinTTL: 0
-  #         MaxTTL: 0
-  #         DefaultTTL: 0
-  #         TargetOriginId: Web
-  #         ForwardedValues:
-  #           QueryString: true
-  #       Origins:
-  #         - DomainName: !Sub ${Infrastructure.Outputs.WebsiteBucket}.s3-website-${AWS::Region}.${AWS::URLSuffix}
-  #           Id: Web
-  #           CustomOriginConfig:
-  #             OriginProtocolPolicy: http-only
+  Website:
+    Type: AWS::CloudFront::Distribution
+    DependsOn:
+      - Api
+    Properties:
+      DistributionConfig:
+        Comment: !Sub "Household ${Env}-Web"
+        Aliases: 
+          - !FindInMap [EnvMapping, !Ref Env, WebsiteDomain]
+        ViewerCertificate:
+          AcmCertificateArn: "{{resolve:ssm:DomainCertificateArn:1}}"
+          SslSupportMethod: sni-only
+          MinimumProtocolVersion: TLSv1.2_2019  
+        Enabled: true
+        PriceClass: PriceClass_100
+        DefaultCacheBehavior:
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods:
+            - GET
+            - HEAD
+          MinTTL: 0
+          MaxTTL: 0
+          DefaultTTL: 0
+          TargetOriginId: Web
+          ForwardedValues:
+            QueryString: true
+        Origins:
+          - DomainName: !Sub ${Infrastructure.Outputs.WebsiteBucket}.s3-website-${AWS::Region}.${AWS::URLSuffix}
+            Id: Web
+            CustomOriginConfig:
+              OriginProtocolPolicy: http-only
 
-  # WebsiteDNSRecord:
-  #   Type: AWS::Route53::RecordSet
-  #   Properties:
-  #     HostedZoneName: "losi999.hu."
-  #     AliasTarget:
-  #       DNSName: !GetAtt Website.DomainName
-  #       HostedZoneId: Z2FDTNDATAQYW2
-  #     Name: !FindInMap [EnvMapping, !Ref Env, WebsiteDomain]
-  #     Type: A
+  WebsiteDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneName: "losi999.hu."
+      AliasTarget:
+        DNSName: !GetAtt Website.DomainName
+        HostedZoneId: Z2FDTNDATAQYW2
+      Name: !FindInMap [EnvMapping, !Ref Env, WebsiteDomain]
+      Type: A
 
 Outputs:
-  FociApi:
-    Description: "Foci 2020 API"
+  HouseholdApi:
+    Description: "Household API"
     Value: !Sub
              - "https://${Domain}"
              - Domain: !FindInMap [EnvMapping, !Ref Env, ApiDomain]
-  # FociWeb:
-  #   Description: "Foci 2020 Web"
-  #   Value: !Sub
-  #            - "https://${Domain}"
-  #            - Domain: !FindInMap [EnvMapping, !Ref Env, WebsiteDomain]
-  # WebsiteBucket:
-  #   Value: !GetAtt Infrastructure.Outputs.WebsiteBucket
+  HouseholdWeb:
+    Description: "Household Web"
+    Value: !Sub
+             - "https://${Domain}"
+             - Domain: !FindInMap [EnvMapping, !Ref Env, WebsiteDomain]
+  WebsiteBucket:
+    Value: !GetAtt Infrastructure.Outputs.WebsiteBucket
   # Database:
   #   Value: !GetAtt Data.Outputs.Database

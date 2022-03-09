@@ -1,0 +1,86 @@
+.account-transaction-list-item {
+  margin: 5px 0;
+  display: grid;
+  grid-template-columns: 15px 55px 1fr 80px;
+  grid-template-rows: 80px;
+  column-gap: 15px;
+  grid-template-areas: "icon datetime details amount";
+
+  &__icon {
+    grid-area: icon;
+    align-self: center;
+    justify-self: center;
+    width: 35px;
+    height: 35px;
+    font-size: 35px;
+  }
+
+  &__datetime {
+    grid-area: datetime;
+  }
+
+  &__details {
+    grid-area: details;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  &__year {
+    font-size: 12px;
+  }
+
+  &__date {
+    font-size: 18px;
+  }
+
+  &__time {
+    font-size: 14px;
+  }
+
+  &__category,
+  &__recipient,
+  &__description,
+  &__project {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+
+  &__account,
+  &__recipient {
+    font-weight: bold;
+  }
+
+  &__description {
+    font-style: italic;
+  }
+
+  &__amount {
+    grid-area: amount;
+    align-self: center;
+    justify-self: center;
+    font-size: 20px;
+    font-weight: bold;
+  }
+
+  @media all and (max-width: 639px) {
+    & {
+      column-gap: 5px;
+    }
+
+    &__icon {
+      width: 15px;
+      height: 15px;
+      font-size: 15px;
+    }
+
+    &__title {
+      font-size: 14px;
+    }
+
+    &__amount {
+      font-size: 14px;
+    }
+  }
+}

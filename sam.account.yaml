@@ -8,6 +8,8 @@ Parameters:
   #   Type: String
   Env:
     Type: String
+  MongodbConnectionString:
+    Type: String
 
 Globals:
   Function:
@@ -16,9 +18,9 @@ Globals:
     Timeout: 60
     MemorySize: 512
     Tracing: Active
-    # Environment:
-    #   Variables:
-    #     DYNAMO_TABLE: !Ref Database
+    Environment:
+      Variables:
+        MONGODB_CONNECTION_STRING: !Ref MongodbConnectionString
 
 Resources:
   AccountApi:

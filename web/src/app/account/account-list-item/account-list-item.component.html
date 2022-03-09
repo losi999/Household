@@ -1,0 +1,27 @@
+<div class="account-list-item">
+  <a [routerLink]="['/accounts', account.accountId]">
+    <mat-card mat-button [matBadge]="notificationCount" matBadgePosition="after" matBadgeColor="warn"
+      matBadgeSize="large">
+      <mat-card-header>
+        <div mat-card-avatar class="account-list-item__image"></div>
+        <mat-card-title>{{account.name}}</mat-card-title>
+        <mat-card-subtitle>{{balanceTitle}}: {{account.balance}} {{account.currency}}</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-actions align="end">
+        <!-- <button mat-button class="account-list-item__list-transactions" color="primary"><mat-icon>format_list_bulleted</mat-icon>Tranzakciók</button> -->
+        <button mat-icon-button color="primary">
+          <mat-icon>settings</mat-icon>
+        </button>
+        <button mat-icon-button color="primary" *ngIf="account.isOpen">
+          <mat-icon>lock_outline</mat-icon>
+        </button>
+        <button mat-icon-button color="primary" *ngIf="!account.isOpen">
+          <mat-icon>lock_open</mat-icon>
+        </button>
+        <button mat-icon-button color="warn">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </a>
+</div>

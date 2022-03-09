@@ -40,6 +40,8 @@ export const categoryDocumentConverterFactory = (): ICategoryDocumentConverter =
     toResponse: (doc): Category.Response => {
       return {
         ...doc,
+        createdAt: doc.createdAt.toISOString(),
+        updatedAt: doc.updatedAt.toISOString(),
         _id: undefined,
         expiresAt: undefined,
         categoryId: doc._id.toString() as Category.IdType,

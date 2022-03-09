@@ -1,0 +1,11 @@
+<div>
+  <mat-icon>arrow_upward</mat-icon>
+  <mat-icon>arrow_downward</mat-icon>
+  <p>{{date | date:'yyyy'}}</p>
+  <p>{{date | date:'dd. MM.'}}</p>
+  <p>{{date | date:'HH:mm'}}</p>
+  <p>{{transaction.recipient.name}}</p>
+  <p>{{transaction.description}}</p>
+  <p>{{transaction.amount}} {{transaction.account.currency}}</p>
+</div>
+

@@ -1,0 +1,12 @@
+<div class="account-transaction-list-item">
+  <mat-icon class="account-transaction-list-item__icon" [ngClass]="transaction.amount >= 0 ? 'green' : 'red'">
+    {{transaction.amount >= 0 ? 'arrow_upward' : 'arrow_downward'}}</mat-icon>
+  <span class="account-transaction-list-item__year">{{date | date:'yyyy'}}</span>
+  <span class="account-transaction-list-item__date">{{date | date:'dd. MM.'}}</span>
+  <span class="account-transaction-list-item__time">{{date | date:'HH:mm'}}</span>
+  <span class="account-transaction-list-item__title">{{title}}</span>
+  <span class="account-transaction-list-item__recipient">{{transaction.recipient.name}}</span>
+  <span class="account-transaction-list-item__description">{{transaction.description}}</span>
+  <span class="account-transaction-list-item__amount"
+    [ngClass]="transaction.amount >= 0 ? 'green' : 'red'">{{transaction.amount}} {{transaction.account.currency}}</span>
+</div>

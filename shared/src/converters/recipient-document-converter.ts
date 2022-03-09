@@ -27,6 +27,8 @@ export const recipientDocumentConverterFactory = (): IRecipientDocumentConverter
     toResponse: (doc): Recipient.Response => {
       return {
         ...doc,
+        createdAt: doc.createdAt.toISOString(),
+        updatedAt: doc.updatedAt.toISOString(),
         _id: undefined,
         expiresAt: undefined,
         recipientId: doc._id.toString() as Recipient.IdType,

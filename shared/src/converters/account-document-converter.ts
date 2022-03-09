@@ -32,6 +32,8 @@ export const accountDocumentConverterFactory = (): IAccountDocumentConverter => 
     toResponse: (document): Account.Response => {
       return {
         ...document,
+        createdAt: document.createdAt.toISOString(),
+        updatedAt: document.updatedAt.toISOString(),
         _id: undefined,
         expiresAt: undefined,
         accountId: document._id.toString() as Account.IdType,

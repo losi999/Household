@@ -30,6 +30,8 @@ export const projectDocumentConverterFactory = (): IProjectDocumentConverter => 
     toResponse: (doc): Project.Response => {
       return {
         ...doc,
+        createdAt: doc.createdAt.toISOString(),
+        updatedAt: doc.updatedAt.toISOString(),
         _id: undefined,
         expiresAt: undefined,
         projectId: doc._id.toString() as Project.IdType,

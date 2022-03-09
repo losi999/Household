@@ -15,6 +15,16 @@ export const accountSchema = new Schema<Account.Document>({
     require: true,
     default: true,
   },
+  accountType: {
+    type: String,
+    enum: [
+      'bankAccount',
+      'cash',
+      'creditCard',
+      'loan',
+      'cafeteria'
+    ]
+  },
   expiresAt: {
     type: Schema.Types.Date,
     index: {
