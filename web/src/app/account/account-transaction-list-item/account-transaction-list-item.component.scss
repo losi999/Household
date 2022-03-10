@@ -1,7 +1,8 @@
 .account-transaction-list-item {
-  margin: 5px 0;
+  margin: 5px 5px;
+  padding: 0 5px;
   display: grid;
-  grid-template-columns: 15px 55px 1fr 80px;
+  grid-template-columns: 35px 55px 1fr auto;
   grid-template-rows: 80px;
   column-gap: 15px;
   grid-template-areas: "icon datetime details amount";
@@ -21,7 +22,6 @@
 
   &__details {
     grid-area: details;
-    max-width: 100%;
     min-width: 0;
   }
 
@@ -44,7 +44,6 @@
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
-    max-width: 100%;
   }
 
   &__account,
@@ -59,23 +58,23 @@
   &__amount {
     grid-area: amount;
     align-self: center;
-    justify-self: center;
+    justify-self: end;
     font-size: 20px;
     font-weight: bold;
   }
 
   @media all and (max-width: 639px) {
     & {
+      grid-template-columns: 45px 1fr auto;
+      grid-template-areas: "datetime details amount";
       column-gap: 5px;
     }
 
     &__icon {
-      width: 15px;
-      height: 15px;
-      font-size: 15px;
+      display: none;
     }
 
-    &__title {
+    &__date {
       font-size: 14px;
     }
 

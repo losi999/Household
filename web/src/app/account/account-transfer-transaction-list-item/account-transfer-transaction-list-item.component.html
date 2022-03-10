@@ -1,9 +1,0 @@
-<div>
-  <mat-icon>sync_alt</mat-icon>
-  <p>{{date | date:'yyyy'}}</p>
-  <p>{{date | date:'dd. MM.'}}</p>
-  <p>{{date | date:'HH:mm'}}</p>
-  <p>{{transaction.description}}</p>
-  <p>{{transaction.amount}} {{transaction.account.currency}}</p>
-  <p>Átvitel {{transaction.amount >= 0 ? 'innen' : 'ide'}}:  {{transaction.transferAccount.name}}</p>
-</div>

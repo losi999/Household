@@ -16,9 +16,9 @@ const routes: Routes = [
   {
     path: 'accounts/:accountId',
     component: AccountTransactionsHomeComponent,
-    // resolve: {
-    //   transactions: AccountTransactionsListResolver,
-    // }
+    resolve: {
+      transactions: AccountTransactionsListResolver,
+    }
   }
   // {
   //   path: 'create',

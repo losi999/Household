@@ -10,9 +10,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatBadgeModule } from '@angular/material/badge';
 import { AccountTransactionsHomeComponent } from './account-transactions-home/account-transactions-home.component';
 import { AccountTransactionsListComponent } from './account-transactions-list/account-transactions-list.component';
-import { AccountPaymentTransactionListItemComponent } from './account-payment-transaction-list-item/account-payment-transaction-list-item.component';
-import { AccountTransferTransactionListItemComponent } from './account-transfer-transaction-list-item/account-transfer-transaction-list-item.component';
-import { AccountSplitTransactionListItemComponent } from './account-split-transaction-list-item/account-split-transaction-list-item.component';
 import { AccountTransactionListItemComponent } from './account-transaction-list-item/account-transaction-list-item.component';
 
 @NgModule({
@@ -22,9 +19,6 @@ import { AccountTransactionListItemComponent } from './account-transaction-list-
     AccountListItemComponent,
     AccountTransactionsHomeComponent,
     AccountTransactionsListComponent,
-    AccountPaymentTransactionListItemComponent,
-    AccountTransferTransactionListItemComponent,
-    AccountSplitTransactionListItemComponent,
     AccountTransactionListItemComponent
   ],
   imports: [
