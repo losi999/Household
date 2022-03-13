@@ -8,17 +8,17 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatInputModule } from '@angular/material/input';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatTabsModule } from '@angular/material/tabs';
-import { AutocompleteFilterPipe } from 'src/app/transaction/pipes/autocomplete-filter.pipe';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatIconModule } from '@angular/material/icon';
+import { SharedModule } from 'src/app/shared/shared.module';
 
 @NgModule({
   declarations: [
     TransactionEditComponent,
-    AutocompleteFilterPipe,
   ],
   imports: [
     CommonModule,
+    SharedModule,
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,

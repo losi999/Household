@@ -25,82 +25,26 @@
         </mat-form-field>
       </div>
       <div class="transaction-edit__account">
-        <mat-form-field appearance="fill">
-          <mat-label>Számla</mat-label>
-          <input type="text" #inp matInput [matAutocomplete]="accountsAC" formControlName="account">
-          <mat-autocomplete #accountsAC="matAutocomplete" [displayWith]="displayName">
-            <mat-option *ngFor="let account of accounts | async | autocompleteFilter: 'name' : inp.value"
-              [value]="account">
-              {{account.name}}
-            </mat-option>
-          </mat-autocomplete>
-          <button matSuffix mat-icon-button aria-label="Clear" type="button" (click)="clearFormValue('account')">
-            <mat-icon>close</mat-icon>
-          </button>
-        </mat-form-field>
+        <app-autocomplete [items]="accounts | async" label="Számla" displayNameProperty="name"
+          formControlName="account"></app-autocomplete>
       </div>
       <mat-slide-toggle color="primary" formControlName="isTransfer">Átvitel másik számlára</mat-slide-toggle>
       <div class="transaction-edit__account" *ngIf="form.value.isTransfer">
-        <mat-form-field appearance="fill">
-          <mat-label>Átvitel {{form.value.amount >= 0 ? 'innen' : 'ide'}}</mat-label>
-          <input type="text" #inp matInput [matAutocomplete]="transferAccountsAC" formControlName="transferAccount">
-          <mat-autocomplete #transferAccountsAC="matAutocomplete" [displayWith]="displayName">
-            <mat-option
-              *ngFor="let transferAccount of transferAccounts | async | autocompleteFilter: 'name' : inp.value"
-              [value]="transferAccount">
-              {{transferAccount.name}}
-            </mat-option>
-          </mat-autocomplete>
-          <button matSuffix mat-icon-button aria-label="Clear" type="button"
-            (click)="clearFormValue('transferAccount')">
-            <mat-icon>close</mat-icon>
-          </button>
-        </mat-form-field>
+        <app-autocomplete [items]="transferAccounts | async"
+          label="Átvitel {{form.value.amount >= 0 ? 'innen' : 'ide'}}" displayNameProperty="name"
+          formControlName="transferAccount"></app-autocomplete>
       </div>
       <div class="transaction-edit__category" *ngIf="!form.value.isTransfer">
-        <mat-form-field appearance="fill">
-          <mat-label>Kategória</mat-label>
-          <input type="text" #inp matInput [matAutocomplete]="categorysAC" formControlName="category">
-          <mat-autocomplete #categorysAC="matAutocomplete" [displayWith]="displayFullName">
-            <mat-option *ngFor="let category of categories | async | autocompleteFilter: 'fullName' : inp.value"
-              [value]="category">
-              {{category.fullName}}
-            </mat-option>
-          </mat-autocomplete>
-          <button matSuffix mat-icon-button aria-label="Clear" type="button" (click)="clearFormValue('category')">
-            <mat-icon>close</mat-icon>
-          </button>
-        </mat-form-field>
+        <app-autocomplete [items]="categories | async" label="Kategória" displayNameProperty="fullName"
+          formControlName="category"></app-autocomplete>
       </div>
       <div class="transaction-edit__project" *ngIf="!form.value.isTransfer">
-        <mat-form-field appearance="fill">
-          <mat-label>Projekt</mat-label>
-          <input type="text" #inp matInput [matAutocomplete]="projectsAC" formControlName="project">
-          <mat-autocomplete #projectsAC="matAutocomplete" [displayWith]="displayName">
-            <mat-option *ngFor="let project of projects | async | autocompleteFilter: 'name' : inp.value"
-              [value]="project">
-              {{project.name}}
-            </mat-option>
-          </mat-autocomplete>
-          <button matSuffix mat-icon-button aria-label="Clear" type="button" (click)="clearFormValue('project')">
-            <mat-icon>close</mat-icon>
-          </button>
-        </mat-form-field>
+        <app-autocomplete [items]="projects | async" label="Projekt" displayNameProperty="name"
+          formControlName="project"></app-autocomplete>
       </div>
       <div class="transaction-edit__recipient" *ngIf="!form.value.isTransfer">
-        <mat-form-field appearance="fill">
-          <mat-label>Partner</mat-label>
-          <input type="text" #inp matInput [matAutocomplete]="recipientsAC" formControlName="recipient">
-          <mat-autocomplete #recipientsAC="matAutocomplete" [displayWith]="displayName">
-            <mat-option *ngFor="let recipient of recipients | async | autocompleteFilter: 'name' : inp.value"
-              [value]="recipient">
-              {{recipient.name}}
-            </mat-option>
-          </mat-autocomplete>
-          <button matSuffix mat-icon-button aria-label="Clear" type="button" (click)="clearFormValue('recipient')">
-            <mat-icon>close</mat-icon>
-          </button>
-        </mat-form-field>
+        <app-autocomplete [items]="recipients | async" label="Partner" displayNameProperty="name"
+          formControlName="recipient"></app-autocomplete>
       </div>
       <div class="transaction-edit__description">
         <mat-form-field appearance="fill">

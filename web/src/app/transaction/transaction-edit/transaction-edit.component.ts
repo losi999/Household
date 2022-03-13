@@ -66,7 +66,7 @@ export class TransactionEditComponent implements OnInit {
       project: new FormControl(),
       recipient: new FormControl(),
       category: new FormControl(),
-      splits: new FormArray([]),
+      // splits: new FormArray([]),
     });
 
     this.accountId = this.activatedRoute.snapshot.paramMap.get('accountId') as Account.IdType;
@@ -74,7 +74,7 @@ export class TransactionEditComponent implements OnInit {
 
     this.transactionService.getTransactionById(this.transactionId, this.accountId).subscribe((transaction) => {
       this.transaction = transaction;
-      console.log(transaction);
+      // console.log(transaction);
 
       const issuedAt = new Date(transaction.issuedAt);
       switch (transaction.transactionType) {
@@ -91,7 +91,7 @@ export class TransactionEditComponent implements OnInit {
             project: null,
             category: null,
             recipient: null,
-            splits: null,
+            // splits: null,
           });
         } break;
         case 'payment': {
@@ -107,7 +107,7 @@ export class TransactionEditComponent implements OnInit {
             project: transaction.project ?? null,
             category: transaction.category ?? null,
             recipient: transaction.recipient ?? null,
-            splits: null,
+            // splits: null,
           });
         } break;
         case 'split': {
@@ -123,12 +123,12 @@ export class TransactionEditComponent implements OnInit {
             project: null,
             category: null,
             recipient: transaction.recipient ?? null,
-            splits: transaction.splits.map(s => new FormGroup({
-              category: new FormControl(s.category),
-              amount: new FormControl(s.amount),
-              description: new FormControl(s.description),
-              project: new FormControl(s.project),
-            }))
+            // splits: transaction.splits.map(s => new FormGroup({
+            //   category: new FormControl(s.category),
+            //   amount: new FormControl(s.amount),
+            //   description: new FormControl(s.description),
+            //   project: new FormControl(s.project),
+            // }))
           });
         } break;
       }
