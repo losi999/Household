@@ -8,9 +8,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatBadgeModule } from '@angular/material/badge';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { AccountTransactionsHomeComponent } from './account-transactions-home/account-transactions-home.component';
 import { AccountTransactionsListComponent } from './account-transactions-list/account-transactions-list.component';
-import { AccountTransactionListItemComponent } from './account-transaction-list-item/account-transaction-list-item.component';
+import { AccountTransactionsListItemComponent } from './account-transactions-list-item/account-transactions-list-item.component';
+import { OpenAccountFilterPipe } from './pipes/open-account.pipe';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -19,7 +22,8 @@ import { AccountTransactionListItemComponent } from './account-transaction-list-
     AccountListItemComponent,
     AccountTransactionsHomeComponent,
     AccountTransactionsListComponent,
-    AccountTransactionListItemComponent
+    AccountTransactionsListItemComponent,
+    OpenAccountFilterPipe,
   ],
   imports: [
     CommonModule,
@@ -27,6 +31,8 @@ import { AccountTransactionListItemComponent } from './account-transaction-list-
     MatButtonModule,
     MatIconModule,
     MatBadgeModule,
+    MatSlideToggleModule,
+    FormsModule,
     AccountRoutingModule,
   ]
 })

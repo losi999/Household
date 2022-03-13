@@ -17,8 +17,7 @@ export const listCategoriesServiceFactory = (
       throw httpError(500, 'Error while listing categories');
     });
 
-    
-
+  
     return categoryDocumentConverter.toResponseList(documents);
   };
 };

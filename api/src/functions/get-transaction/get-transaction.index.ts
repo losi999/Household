@@ -4,7 +4,7 @@ import { default as handler } from '@household/api/functions/get-transaction/get
 import { cors } from '@household/api/dependencies/handlers/cors-handler';
 import { getTransactionServiceFactory } from '@household/api/functions/get-transaction/get-transaction.service';
 import { apiRequestValidator } from '@household/api/dependencies/handlers/api-request-validator-handler';
-import { default as pathParameters } from '@household/shared/schemas/transaction-id';
+import { default as pathParameters } from '@household/shared/schemas/get-transaction.schema';
 
 const getTransactionService = getTransactionServiceFactory(databaseService, transactionDocumentConverter);
 

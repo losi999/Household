@@ -180,7 +180,7 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref TransactionApi
-            Path: /v1/transactions/{transactionId}
+            Path: /v1/accounts/{accountId}/transactions/{transactionId}
             Method: GET
             # Auth:
             #   Authorizer: CognitoAuthorizer

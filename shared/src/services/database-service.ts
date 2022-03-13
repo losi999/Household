@@ -14,6 +14,10 @@ export interface IDatabaseService {
   getAccountById(accountId: Account.IdType): Promise<Account.Document>;
   getCategoryById(categoryId: Category.IdType): Promise<Category.Document>;
   getTransactionById(transactionId: Transaction.IdType): Promise<Transaction.Document>;
+  getTransactionByIdAndAccountId(query: {
+    transactionId: Transaction.IdType;
+    accountId: Account.IdType;
+  }): Promise<Transaction.Document>;
   deleteProject(projectId: Project.IdType): Promise<unknown>;
   deleteRecipient(recipientId: Recipient.IdType): Promise<unknown>;
   deleteAccount(accountId: Account.IdType): Promise<unknown>;
@@ -128,7 +132,33 @@ export const databaseServiceFactory = (mongodbService: IMongodbService): IDataba
       return !categoryId ? undefined : mongodbService.categories.findById(categoryId).lean().exec();
     },
     getTransactionById: async (transactionId) => {
-      return !transactionId ? undefined : mongodbService.transactions.findById(transactionId).lean().exec();
+      return !transactionId ? undefined : mongodbService.transactions.findById(transactionId)
+        .populate('project')
+        .populate('recipient')
+        .populate('account')
+        .populate('category')
+        .populate('transferAccount')
+        .populate('splits.category')
+        .populate('splits.project').lean().exec();
+    },
+    getTransactionByIdAndAccountId: async ({ transactionId, accountId }) => {
+      return !transactionId ? undefined : mongodbService.transactions.findOne({
+        _id: transactionId,
+        $or: [
+          {
+            account: accountId,
+          },
+          {
+            transferAccount: accountId,
+          }
+        ]
+      }).populate('project')
+        .populate('recipient')
+        .populate('account')
+        .populate('category')
+        .populate('transferAccount')
+        .populate('splits.category')
+        .populate('splits.project').lean().exec();
     },
     deleteProject: async (projectId) => {
       const session = await mongodbService.startSession();

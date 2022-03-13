@@ -164,10 +164,10 @@ export namespace Category {
     & Remove<Internal.Id>
     & Remove<Internal.ExpiresAt>
     & ParentCategoryId
-    & Remove<ParentCategory>
-    & {
-      children: Response[];
-    };
+    & Remove<ParentCategory>;
+    // & {
+    //   children: Response[];
+    // };
 
   export type Request = Base
     & ParentCategoryId;

@@ -6,15 +6,15 @@ import { Transaction } from '@household/shared/types/types';
 
 export default (getTransaction: IGetTransactionService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {
-    const { transactionId } = castPathParameters(event);
+    const { transactionId, accountId } = castPathParameters(event);
 
     let transaction: Transaction.Response;
     try {
       transaction = await getTransaction({
-        transactionId
+        transactionId,
+        accountId,
       });
     } catch (error) {
-      console.error(error);
       return errorResponse(error);
     }
 

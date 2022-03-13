@@ -1,0 +1,29 @@
+<div [routerLink]="['/accounts', transaction.account.accountId, 'transactions', transaction.transactionId]" class="account-transaction-list-item mat-elevation-z2">
+  <mat-icon class="account-transaction-list-item__icon" [ngClass]="iconColor">
+    {{iconName}}</mat-icon>
+  <div class="account-transaction-list-item__datetime">
+    <div class="account-transaction-list-item__year" *ngIf="showYear">{{date | date:'yyyy'}}</div>
+    <div class="account-transaction-list-item__date">{{date | date:'MM. dd.'}}</div>
+    <div class="account-transaction-list-item__time">{{date | date:'HH:mm'}}</div>
+  </div>
+  <div class="account-transaction-list-item__details" [ngSwitch]="transaction.transactionType">
+    <ng-container *ngSwitchCase="'payment'">
+      <div class="account-transaction-list-item__category">{{transaction.category?.fullName}}</div>
+      <div class="account-transaction-list-item__recipient">{{transaction.recipient?.name}}</div>
+      <div class="account-transaction-list-item__description">{{transaction.description}}</div>
+      <div class="account-transaction-list-item__project">{{transaction.project?.name}}</div>
+    </ng-container>
+    <ng-container *ngSwitchCase="'split'">
+      <div class="account-transaction-list-item__recipient">{{transaction.recipient?.name}}</div>
+      <div class="account-transaction-list-item__description">{{transaction.description}}</div>
+    </ng-container>
+    <ng-container *ngSwitchCase="'transfer'">
+      <div class="account-transaction-list-item__account">Átvitel {{transaction.amount >= 0 ? 'innen' : 'ide'}}:
+        {{transaction.transferAccount.name}}</div>
+      <div class="account-transaction-list-item__description">{{transaction.description}}</div>
+    </ng-container>
+  </div>
+  <span class="account-transaction-list-item__amount"
+    [ngClass]="transaction.amount >= 0 ? 'green' : 'red'">{{transaction.amount | number:'1.0-2':'hu' }}
+    {{transaction.account.currency}}</span>
+</div>

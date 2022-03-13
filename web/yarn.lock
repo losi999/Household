@@ -239,6 +239,13 @@
   dependencies:
     tslib "^2.0.0"
 
+"@angular/material-moment-adapter@^13.2.6":
+  version "13.2.6"
+  resolved "https://registry.yarnpkg.com/@angular/material-moment-adapter/-/material-moment-adapter-13.2.6.tgz#62461ae77ac3bcc61aec068151e726f8e4d4ce21"
+  integrity sha512-mlp+890uL8nr/ufiAw9axEkr4z5Xv4rvyq1bBDUBjrLhODS4gOyo3XC5vO57Ycf4zhSpHPjmDAU/BTFtmNLw4A==
+  dependencies:
+    tslib "^2.3.0"
+
 "@angular/material@11.2.13":
   version "11.2.13"
   resolved "https://registry.yarnpkg.com/@angular/material/-/material-11.2.13.tgz#99960316d3ce58aac7497d7bb8b0c05468f502b9"

@@ -1,12 +1,17 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { AccountHomeComponent } from 'src/app/account/account-home/account-home.component';
-import { AccountRoutingModule } from 'src/app/account/account-routing.module';
+import { TransactionEditComponent } from './transaction/transaction-edit/transaction-edit.component';
 
-const routes: Routes = [{
-  path: '',
-  loadChildren: () => import('./account/account.module').then(m => m.AccountModule),
-}];
+const routes: Routes = [
+  {
+    path: '',
+    loadChildren: () => import('./account/account.module').then(m => m.AccountModule),
+  },
+  {
+    path: 'transactions/:transactionId',
+    component: TransactionEditComponent,
+  }
+];
 
 @NgModule({
   imports: [RouterModule.forRoot(routes, {

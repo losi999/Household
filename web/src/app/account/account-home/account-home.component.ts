@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { AccountService } from 'src/app/account/account.service';
+import { Observable } from 'rxjs';
 import { Account } from '@household/shared/types/types';
 
 @Component({
@@ -8,16 +9,16 @@ import { Account } from '@household/shared/types/types';
   styleUrls: ['./account-home.component.scss']
 })
 export class AccountHomeComponent implements OnInit {
-  accounts: Account.Response[];
-  openAccounts: Account.Response[];
   onlyOpenAccounts: boolean;
 
-  constructor(private activatedRoute: ActivatedRoute) { }
+  get accounts(): Observable<Account.Response[]> {
+    return this.accountService.accounts;
+  }
+  constructor(private accountService: AccountService) { }
 
   ngOnInit(): void {
-    this.onlyOpenAccounts = false;
-    this.accounts = this.activatedRoute.snapshot.data.accounts;
-    this.openAccounts = this.accounts.filter(a => a.isOpen);
-  }
+    this.accountService.listAccounts();
 
+    this.onlyOpenAccounts = true;
+  }
 }

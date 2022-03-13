@@ -2,11 +2,11 @@ import { Component, Input, OnInit } from '@angular/core';
 import { Transaction } from '@household/shared/types/types';
 
 @Component({
-  selector: 'app-account-transaction-list-item',
-  templateUrl: './account-transaction-list-item.component.html',
-  styleUrls: ['./account-transaction-list-item.component.scss']
+  selector: 'app-account-transactions-list-item',
+  templateUrl: './account-transactions-list-item.component.html',
+  styleUrls: ['./account-transactions-list-item.component.scss']
 })
-export class AccountTransactionListItemComponent implements OnInit {
+export class AccountTransactionsListItemComponent implements OnInit {
   @Input() transaction: Transaction.Response;
   date: Date;
   iconName: string;

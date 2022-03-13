@@ -47,23 +47,23 @@ export const categoryDocumentConverterFactory = (): ICategoryDocumentConverter =
         categoryId: doc._id.toString() as Category.IdType,
         parentCategory: undefined,
         parentCategoryId: doc.parentCategory?._id.toString() as Category.IdType,
-        children: [],
       }
     },
     toResponseList: (docs) => {
-      const mapped = docs.reduce<{ [categoryId: string]: Category.Response }>((accumulator, currentValue) => {
-        const resp = instance.toResponse(currentValue);
-        if (currentValue.parentCategory) {
-          accumulator[currentValue.parentCategory.toString()].children.push(resp);
-        }
+      return docs.map(d => instance.toResponse(d));
+      // const mapped = docs.reduce<{ [categoryId: string]: Category.Response }>((accumulator, currentValue) => {
+      //   const resp = instance.toResponse(currentValue);
+      //   if (currentValue.parentCategory) {
+      //     accumulator[currentValue.parentCategory.toString()].children.push(resp);
+      //   }
 
-        return {
-          ...accumulator,
-          [currentValue._id.toString()]: resp,
-        };
-      }, {});
+      //   return {
+      //     ...accumulator,
+      //     [currentValue._id.toString()]: resp,
+      //   };
+      // }, {});
 
-      return Object.values(mapped).filter(x => !x.parentCategoryId);
+      // return Object.values(mapped).filter(x => !x.parentCategoryId);
     }
   };
 
