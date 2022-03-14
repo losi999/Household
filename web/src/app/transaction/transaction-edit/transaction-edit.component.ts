@@ -40,6 +40,20 @@ export class TransactionEditComponent implements OnInit {
     return this.categoryService.categories;
   }
 
+  get splits() {
+    return this.form.controls.splits as FormArray;
+  }
+
+  get splitsSum (): number {
+    return this.splits.value.reduce((accumulator, currentValue) => {
+      return accumulator + currentValue.amount;
+    }, 0);
+  }
+
+  get splitsDiff():number {
+    return this.form.value.amount - this.splitsSum;
+  }
+
   constructor(
     private activatedRoute: ActivatedRoute,
     private transactionService: TransactionService,
@@ -56,8 +70,6 @@ export class TransactionEditComponent implements OnInit {
 
     this.form = new FormGroup({
       issuedAt: new FormControl(),
-      hour: new FormControl(),
-      minute: new FormControl(),
       amount: new FormControl(),
       account: new FormControl(),
       isTransfer: new FormControl(),
@@ -66,7 +78,7 @@ export class TransactionEditComponent implements OnInit {
       project: new FormControl(),
       recipient: new FormControl(),
       category: new FormControl(),
-      // splits: new FormArray([]),
+      splits: new FormArray([]),
     });
 
     this.accountId = this.activatedRoute.snapshot.paramMap.get('accountId') as Account.IdType;
@@ -79,72 +91,62 @@ export class TransactionEditComponent implements OnInit {
       const issuedAt = new Date(transaction.issuedAt);
       switch (transaction.transactionType) {
         case 'transfer': {
-          this.form.setValue({
+          this.form.patchValue({
             issuedAt,
-            hour: issuedAt.getHours(),
-            minute: issuedAt.getMinutes(),
             amount: transaction.amount,
             account: transaction.account,
             description: transaction.description,
             isTransfer: true,
             transferAccount: transaction.transferAccount,
-            project: null,
-            category: null,
-            recipient: null,
-            // splits: null,
           });
         } break;
         case 'payment': {
-          this.form.setValue({
+          this.form.patchValue({
             issuedAt,
-            hour: issuedAt.getHours(),
-            minute: issuedAt.getMinutes(),
             amount: transaction.amount,
             account: transaction.account,
             description: transaction.description,
             isTransfer: false,
-            transferAccount: null,
             project: transaction.project ?? null,
             category: transaction.category ?? null,
             recipient: transaction.recipient ?? null,
-            // splits: null,
           });
         } break;
         case 'split': {
-          this.form.setValue({
+          this.form.patchValue({
             issuedAt,
-            hour: issuedAt.getHours(),
-            minute: issuedAt.getMinutes(),
             amount: transaction.amount,
             account: transaction.account,
             description: transaction.description,
             isTransfer: false,
-            transferAccount: null,
-            project: null,
-            category: null,
             recipient: transaction.recipient ?? null,
-            // splits: transaction.splits.map(s => new FormGroup({
-            //   category: new FormControl(s.category),
-            //   amount: new FormControl(s.amount),
-            //   description: new FormControl(s.description),
-            //   project: new FormControl(s.project),
-            // }))
           });
+
+          transaction.splits.forEach((s) => {
+            this.splits.push(new FormGroup({
+              category: new FormControl(s.category),
+              amount: new FormControl(s.amount),
+              description: new FormControl(s.description),
+              project: new FormControl(s.project),
+            }))
+          })
         } break;
       }
     });
   }
 
-  displayName(item: Account.Response | Project.Response | Recipient.Response) {
-    return item?.name;
+  deleteSplit(index: number) {
+    this.splits.removeAt(index);
   }
 
-  displayFullName(item: Category.Response) {
-    return item?.fullName;
-  }
-
-  clearFormValue(controlName: string) {
-    this.form.controls[controlName].reset();
+  addSplit() {
+    console.log('addSplit');
+    this.splits.push(new FormGroup({
+      category: new FormControl(),
+      amount: new FormControl(this.splitsDiff),
+      description: new FormControl(),
+      project: new FormControl(),
+    }))
   }
 
   onSubmit() {

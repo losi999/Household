@@ -8,11 +8,18 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { ReactiveFormsModule } from '@angular/forms';
+import { ClearableInputComponent } from './clearable-input/clearable-input.component';
+import { AmountInputComponent } from './amount-input/amount-input.component';
+import { DatetimeInputComponent } from './datetime-input/datetime-input.component';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 
 @NgModule({
   declarations: [
     AutocompleteComponent,
     AutocompleteFilterPipe,
+    ClearableInputComponent,
+    AmountInputComponent,
+    DatetimeInputComponent,
   ],
   imports: [
     CommonModule,
@@ -22,9 +29,13 @@ import { ReactiveFormsModule } from '@angular/forms';
     MatInputModule,
     MatIconModule,
     MatAutocompleteModule,
+    MatDatepickerModule,
   ],
   exports: [
     AutocompleteComponent,
+    ClearableInputComponent,
+    AmountInputComponent,
+    DatetimeInputComponent,
   ]
 })
 export class SharedModule { }

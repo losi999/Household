@@ -1,62 +1,91 @@
 <form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <mat-toolbar color="primary">
+    <button mat-icon-button class="example-icon" aria-label="Example icon-button with menu icon">
+      <mat-icon>menu</mat-icon>
+    </button>
+    <span>My App</span>
+    <span class="spacer"></span>
+    <button mat-icon-button class="example-icon favorite-icon" aria-label="Example icon-button with heart icon">
+      <mat-icon>save</mat-icon>
+    </button>
+  </mat-toolbar>
   <mat-tab-group>
     <mat-tab label="Részletek">
-      <div>
-        <mat-form-field class="transaction-edit__date" appearance="fill">
-          <mat-label>Tranzakció dátuma</mat-label>
-          <input matInput [matDatepicker]="picker" formControlName="issuedAt">
-          <mat-datepicker-toggle matPrefix [for]="picker"></mat-datepicker-toggle>
-          <mat-datepicker #picker></mat-datepicker>
-        </mat-form-field>
-        <mat-form-field class="transaction-edit__hour" appearance="fill">
-          <mat-label>Óra</mat-label>
-          <input matInput #hour type="number" min="0" max="23" placeholder="" formControlName="hour">
-        </mat-form-field>
-        <mat-form-field class="transaction-edit__minute" appearance="fill">
-          <mat-label>Perc</mat-label>
-          <input matInput #minute type="number" min="0" max="59" placeholder="" formControlName="minute">
-        </mat-form-field>
+      <div class="transaction-edit__tab">
+        <div>
+          <app-datetime-input formControlName="issuedAt">
+          </app-datetime-input>
+        </div>
+        <div class="transaction-edit__amount">
+          <app-amount-input formControlName="amount" [currency]="form.value.account?.currency">
+          </app-amount-input>
+        </div>
+        <div class="transaction-edit__account">
+          <app-autocomplete [items]="accounts | async" label="Számla" displayNameProperty="name"
+            formControlName="account"></app-autocomplete>
+        </div>
+        <mat-slide-toggle color="primary" formControlName="isTransfer">Átvitel másik számlára</mat-slide-toggle>
+        <div class="transaction-edit__account" *ngIf="form.value.isTransfer">
+          <app-autocomplete [items]="transferAccounts | async"
+            label="Átvitel {{form.value.amount >= 0 ? 'innen' : 'ide'}}" displayNameProperty="name"
+            formControlName="transferAccount"></app-autocomplete>
+        </div>
+        <div class="transaction-edit__category" *ngIf="!form.value.isTransfer && form.value.splits.length === 0">
+          <app-autocomplete [items]="categories | async" label="Kategória" displayNameProperty="fullName"
+            formControlName="category"></app-autocomplete>
+        </div>
+        <div class="transaction-edit__project" *ngIf="!form.value.isTransfer && form.value.splits.length === 0">
+          <app-autocomplete [items]="projects | async" label="Projekt" displayNameProperty="name"
+            formControlName="project"></app-autocomplete>
+        </div>
+        <div class="transaction-edit__recipient" *ngIf="!form.value.isTransfer">
+          <app-autocomplete [items]="recipients | async" label="Partner" displayNameProperty="name"
+            formControlName="recipient"></app-autocomplete>
+        </div>
+        <div class="transaction-edit__description">
+          <app-clearable-input formControlName="description" label="Megjegyzés">
+          </app-clearable-input>
+        </div>
       </div>
-      <div class="transaction-edit__amount">
-        <mat-form-field appearance="fill">
-          <mat-label>Összeg</mat-label>
-          <span matSuffix>{{form.value.account?.currency}}</span>
-          <input type="number" matInput formControlName="amount">
-        </mat-form-field>
-      </div>
-      <div class="transaction-edit__account">
-        <app-autocomplete [items]="accounts | async" label="Számla" displayNameProperty="name"
-          formControlName="account"></app-autocomplete>
-      </div>
-      <mat-slide-toggle color="primary" formControlName="isTransfer">Átvitel másik számlára</mat-slide-toggle>
-      <div class="transaction-edit__account" *ngIf="form.value.isTransfer">
-        <app-autocomplete [items]="transferAccounts | async"
-          label="Átvitel {{form.value.amount >= 0 ? 'innen' : 'ide'}}" displayNameProperty="name"
-          formControlName="transferAccount"></app-autocomplete>
-      </div>
-      <div class="transaction-edit__category" *ngIf="!form.value.isTransfer">
-        <app-autocomplete [items]="categories | async" label="Kategória" displayNameProperty="fullName"
-          formControlName="category"></app-autocomplete>
-      </div>
-      <div class="transaction-edit__project" *ngIf="!form.value.isTransfer">
-        <app-autocomplete [items]="projects | async" label="Projekt" displayNameProperty="name"
-          formControlName="project"></app-autocomplete>
-      </div>
-      <div class="transaction-edit__recipient" *ngIf="!form.value.isTransfer">
-        <app-autocomplete [items]="recipients | async" label="Partner" displayNameProperty="name"
-          formControlName="recipient"></app-autocomplete>
-      </div>
-      <div class="transaction-edit__description">
-        <mat-form-field appearance="fill">
-          <mat-label>Megjegyzés</mat-label>
-          <input type="text" matInput formControlName="description">
-          <button matSuffix mat-icon-button aria-label="Clear" type="button" (click)="clearFormValue('description')">
-            <mat-icon>close</mat-icon>
-          </button>
-        </mat-form-field>
-      </div>
-      <button mat-raised-button color="primary" type="submit">Mentés</button>
     </mat-tab>
-    <mat-tab label="Bontás"> Content 2 </mat-tab>
+    <mat-tab label="Bontás">
+      <div class="transaction-edit__tab" formArrayName="splits">
+        <p class="transaction-edit__split-amount">
+          Összesen: {{form.value.amount}} {{form.value.account?.currency}}
+          <button mat-mini-fab color="primary" (click)="addSplit()">
+            <mat-icon>add</mat-icon>
+          </button>
+        </p>
+        <p class="transaction-edit__split_diff" *ngIf="splitsDiff !== 0">
+          Hiányzó összeg: {{ splitsDiff}} {{form.value.account?.currency}}
+        </p>
+        <div *ngFor="let split of splits.controls; index as i" [formGroup]="split"
+          class="mat-elevation-z2 transaction-edit-split-item">
+          <div class="transaction-edit-split-item__details">
+            <div class="transaction-edit-split-item__amount">
+              <app-amount-input formControlName="amount" [currency]="form.value.account?.currency">
+              </app-amount-input>
+            </div>
+            <div class="transaction-edit-split-item__category">
+              <app-autocomplete [items]="categories | async" label="Kategória" displayNameProperty="fullName"
+                formControlName="category"></app-autocomplete>
+            </div>
+            <div class="transaction-edit-split-item__project">
+              <app-autocomplete [items]="projects | async" label="Projekt" displayNameProperty="name"
+                formControlName="project"></app-autocomplete>
+            </div>
+            <div class="transaction-edit-split-item__description">
+              <app-clearable-input formControlName="description" label="Megjegyzés">
+              </app-clearable-input>
+            </div>
+          </div>
+          <div class="transaction-edit-split-item__delete">
+            <button mat-icon-button color="warn" class="transaction-edit-split-item" (click)="deleteSplit(i)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
   </mat-tab-group>
 </form>

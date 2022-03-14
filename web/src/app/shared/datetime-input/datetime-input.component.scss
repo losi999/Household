@@ -1,0 +1,10 @@
+.datetime-input {
+  &__date {
+    width: 200px;
+  }
+
+  &__hour,
+  &__minute {
+    width: 50px;
+  }
+}

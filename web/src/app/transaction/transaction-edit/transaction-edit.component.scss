@@ -1,7 +1,31 @@
-.transaction-edit__date, .transaction-edit__amount {
-  width: 200px;
+.spacer {
+  flex: 1 1 auto;
 }
 
-.transaction-edit__hour, .transaction-edit__minute {
-  width: 50px;
+.transaction-edit-split-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: "details delete";
+
+  &__details {
+    grid-area: details;
+  }
+
+  &__delete {
+    grid-area: delete;
+  }
+}
+
+.transaction-edit {
+  &__tab {
+    padding: 10px;
+  }
+
+  &__split-amount {
+    font-size: 20px;
+  }
+
+  &__split-diff {
+    font-size: 18px;
+  }
 }

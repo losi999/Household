@@ -11,6 +11,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatIconModule } from '@angular/material/icon';
 import { SharedModule } from 'src/app/shared/shared.module';
+import { MatToolbarModule } from '@angular/material/toolbar';
 
 @NgModule({
   declarations: [
@@ -28,6 +29,7 @@ import { SharedModule } from 'src/app/shared/shared.module';
     MatSlideToggleModule,
     ReactiveFormsModule,
     MatTabsModule,
+    MatToolbarModule,
   ],
   exports: []
 })
