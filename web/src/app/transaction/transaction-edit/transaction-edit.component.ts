@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormArray, FormControl, FormGroup } from '@angular/forms';
+import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Account, Category, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { Observable } from 'rxjs';
@@ -44,13 +44,13 @@ export class TransactionEditComponent implements OnInit {
     return this.form.controls.splits as FormArray;
   }
 
-  get splitsSum (): number {
+  get splitsSum(): number {
     return this.splits.value.reduce((accumulator, currentValue) => {
       return accumulator + currentValue.amount;
     }, 0);
   }
 
-  get splitsDiff():number {
+  get splitsDiff(): number {
     return this.form.value.amount - this.splitsSum;
   }
 
@@ -63,13 +63,26 @@ export class TransactionEditComponent implements OnInit {
     private categoryService: CategoryService) { }
 
   ngOnInit(): void {
+    this.accountId = this.activatedRoute.snapshot.paramMap.get('accountId') as Account.IdType;
+    this.transactionId = this.activatedRoute.snapshot.paramMap.get('transactionId') as Transaction.IdType;
+
     this.accountService.listAccounts();
     this.projectService.listProjects();
     this.recipientService.listRecipients();
     this.categoryService.listCategories();
 
+    if (this.accountId) {
+      if (this.transactionId) {
+        // edit
+      } else {
+        // new for account
+      }
+    } else {
+      // new
+    }
+
     this.form = new FormGroup({
-      issuedAt: new FormControl(),
+      issuedAt: new FormControl(null, Validators.required),
       amount: new FormControl(),
       account: new FormControl(),
       isTransfer: new FormControl(),
@@ -81,8 +94,7 @@ export class TransactionEditComponent implements OnInit {
       splits: new FormArray([]),
     });
 
-    this.accountId = this.activatedRoute.snapshot.paramMap.get('accountId') as Account.IdType;
-    this.transactionId = this.activatedRoute.snapshot.paramMap.get('transactionId') as Transaction.IdType;
+
 
     this.transactionService.getTransactionById(this.transactionId, this.accountId).subscribe((transaction) => {
       this.transaction = transaction;
@@ -116,20 +128,20 @@ export class TransactionEditComponent implements OnInit {
           this.form.patchValue({
             issuedAt,
             amount: transaction.amount,
-            account: transaction.account,
+            account: transaction.account.accountId,
             description: transaction.description,
             isTransfer: false,
-            recipient: transaction.recipient ?? null,
+            recipient: transaction.recipient?.recipientId ?? null,
           });
 
-          transaction.splits.forEach((s) => {
-            this.splits.push(new FormGroup({
-              category: new FormControl(s.category),
-              amount: new FormControl(s.amount),
-              description: new FormControl(s.description),
-              project: new FormControl(s.project),
-            }))
-          })
+          // transaction.splits.forEach((s) => {
+          //   this.splits.push(new FormGroup({
+          //     category: new FormControl(s.category),
+          //     amount: new FormControl(s.amount),
+          //     description: new FormControl(s.description),
+          //     project: new FormControl(s.project),
+          //   }))
+          // })
         } break;
       }
     });
@@ -140,7 +152,6 @@ export class TransactionEditComponent implements OnInit {
   }
 
   addSplit() {
-    console.log('addSplit');
     this.splits.push(new FormGroup({
       category: new FormControl(),
       amount: new FormControl(this.splitsDiff),
@@ -150,6 +161,6 @@ export class TransactionEditComponent implements OnInit {
   }
 
   onSubmit() {
-    console.log(this.form);
+    console.log(this.form.value);
   }
 }

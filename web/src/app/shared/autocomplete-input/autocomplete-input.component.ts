@@ -1,19 +1,20 @@
 import { Component, forwardRef, Input, OnDestroy, OnInit } from '@angular/core';
-import { ControlValueAccessor, FormControl, FormGroup, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { NG_VALUE_ACCESSOR, ControlValueAccessor, FormGroup, FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-autocomplete',
-  templateUrl: './autocomplete.component.html',
-  styleUrls: ['./autocomplete.component.scss'],
+  selector: 'app-autocomplete-input',
+  templateUrl: './autocomplete-input.component.html',
+  styleUrls: ['./autocomplete-input.component.scss'],
   providers: [{
     provide: NG_VALUE_ACCESSOR,
     multi: true,
-    useExisting: forwardRef(() => AutocompleteComponent)
+    useExisting: forwardRef(() => AutocompleteInputComponent)
   }]
 })
-export class AutocompleteComponent implements OnInit, OnDestroy, ControlValueAccessor {
+export class AutocompleteInputComponent implements OnInit, OnDestroy, ControlValueAccessor {
   @Input() displayNameProperty: string;
+  @Input() idProperty: string;
   @Input() label: string;
   @Input() items: any[];
 
@@ -36,12 +37,18 @@ export class AutocompleteComponent implements OnInit, OnDestroy, ControlValueAcc
     })
 
     this.subs = this.form.controls.selected.valueChanges.subscribe((value) => {
-      this.changed?.(value);
+      console.log('sub', value);
+      this.changed?.(value/*?.[this.idProperty]*/);
     })
   }
 
   writeValue(selected: any): void {
+    console.log('writeValue', selected)
+    // console.log(selectedId);
+    // if (selectedId) {
+    //   const selected = this.items.find(i => i[this.idProperty] === selectedId);
     this.form.setValue({ selected });
+    // }
   }
 
   registerOnChange(fn: any): void {
@@ -57,10 +64,12 @@ export class AutocompleteComponent implements OnInit, OnDestroy, ControlValueAcc
   }
 
   displayName = (item: any) => {
-    return item?.[this.displayNameProperty];
+    console.log('displayName', item)
+    return this.items.find(i => i[this.idProperty] === item)?.[this.displayNameProperty];// item?.[this.displayNameProperty];
   }
 
   clearValue() {
     this.form.reset();
   }
+
 }

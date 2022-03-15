@@ -12,6 +12,7 @@
     "start:transaction": "sam local start-api -t sam.transaction.yaml -p 3004 -n env.json",
     "start": "concurrently 'yarn start:account' 'yarn start:category' 'yarn start:project' 'yarn start:recipient' 'yarn start:transaction'",
     "build:api": "rimraf ./dist/api && webpack",
+    "build:api:watch": "export ENV=localhost && yarn build:api --watch",
     "build:web": "rimraf ./dist/web && cd web && yarn build",
     "build:web:LOCAL": "yarn build:web -c LOCAL",
     "deploy:web:LOCAL": "export ENV=LOCAL && aws s3 sync dist/web s3://$(aws cloudformation describe-stacks --stack-name Household-${ENV} --query \"Stacks[0].Outputs[?OutputKey=='WebsiteBucket'].OutputValue\" --output text --profile losonczil) --profile losonczil"

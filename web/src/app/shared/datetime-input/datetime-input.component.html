@@ -1,16 +1,16 @@
 <div [formGroup]="form">
   <mat-form-field class="datetime-input__date" appearance="fill">
     <mat-label>Tranzakció dátuma</mat-label>
-    <input matInput [matDatepicker]="picker" formControlName="date">
+    <input matInput [matDatepicker]="picker" formControlName="date" (blur)="touched()">
     <mat-datepicker-toggle matPrefix [for]="picker"></mat-datepicker-toggle>
     <mat-datepicker #picker></mat-datepicker>
   </mat-form-field>
   <mat-form-field class="datetime-input__hour" appearance="fill">
     <mat-label>Óra</mat-label>
-    <input matInput #hour type="number" min="0" max="23" placeholder="" formControlName="hour">
+    <input matInput #hour type="number" min="0" max="23" placeholder="" formControlName="hour" (blur)="touched()">
   </mat-form-field>
   <mat-form-field class="datetime-input__minute" appearance="fill">
     <mat-label>Perc</mat-label>
-    <input matInput #minute type="number" min="0" max="59" placeholder="" formControlName="minute">
+    <input matInput #minute type="number" min="0" max="59" placeholder="" formControlName="minute" (blur)="touched()">
   </mat-form-field>
 </div>

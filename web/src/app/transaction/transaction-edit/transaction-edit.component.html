@@ -21,26 +21,26 @@
           </app-amount-input>
         </div>
         <div class="transaction-edit__account">
-          <app-autocomplete [items]="accounts | async" label="Számla" displayNameProperty="name"
-            formControlName="account"></app-autocomplete>
+          <app-autocomplete-input [items]="accounts | async" label="Számla" displayNameProperty="name" idProperty="accountId"
+            formControlName="account"></app-autocomplete-input>
         </div>
         <mat-slide-toggle color="primary" formControlName="isTransfer">Átvitel másik számlára</mat-slide-toggle>
         <div class="transaction-edit__account" *ngIf="form.value.isTransfer">
-          <app-autocomplete [items]="transferAccounts | async"
-            label="Átvitel {{form.value.amount >= 0 ? 'innen' : 'ide'}}" displayNameProperty="name"
-            formControlName="transferAccount"></app-autocomplete>
+          <app-autocomplete-input [items]="transferAccounts | async"
+            label="Átvitel {{form.value.amount >= 0 ? 'innen' : 'ide'}}" displayNameProperty="name" idProperty="accountId"
+            formControlName="transferAccount"></app-autocomplete-input>
         </div>
         <div class="transaction-edit__category" *ngIf="!form.value.isTransfer && form.value.splits.length === 0">
-          <app-autocomplete [items]="categories | async" label="Kategória" displayNameProperty="fullName"
-            formControlName="category"></app-autocomplete>
+          <app-autocomplete-input [items]="categories | async" label="Kategória" displayNameProperty="fullName" idProperty="categoryId"
+            formControlName="category"></app-autocomplete-input>
         </div>
         <div class="transaction-edit__project" *ngIf="!form.value.isTransfer && form.value.splits.length === 0">
-          <app-autocomplete [items]="projects | async" label="Projekt" displayNameProperty="name"
-            formControlName="project"></app-autocomplete>
+          <app-autocomplete-input [items]="projects | async" label="Projekt" displayNameProperty="name" idProperty="projectId"
+            formControlName="project"></app-autocomplete-input>
         </div>
         <div class="transaction-edit__recipient" *ngIf="!form.value.isTransfer">
-          <app-autocomplete [items]="recipients | async" label="Partner" displayNameProperty="name"
-            formControlName="recipient"></app-autocomplete>
+          <app-autocomplete-input [items]="recipients | async" label="Partner" displayNameProperty="name" idProperty="recipientId"
+            formControlName="recipient"></app-autocomplete-input>
         </div>
         <div class="transaction-edit__description">
           <app-clearable-input formControlName="description" label="Megjegyzés">
@@ -67,12 +67,12 @@
               </app-amount-input>
             </div>
             <div class="transaction-edit-split-item__category">
-              <app-autocomplete [items]="categories | async" label="Kategória" displayNameProperty="fullName"
-                formControlName="category"></app-autocomplete>
+              <app-autocomplete-input [items]="categories | async" label="Kategória" displayNameProperty="fullName" idProperty="categoryId"
+                formControlName="category"></app-autocomplete-input>
             </div>
             <div class="transaction-edit-split-item__project">
-              <app-autocomplete [items]="projects | async" label="Projekt" displayNameProperty="name"
-                formControlName="project"></app-autocomplete>
+              <app-autocomplete-input [items]="projects | async" label="Projekt" displayNameProperty="name" idProperty="projectId"
+                formControlName="project"></app-autocomplete-input>
             </div>
             <div class="transaction-edit-split-item__description">
               <app-clearable-input formControlName="description" label="Megjegyzés">

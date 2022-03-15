@@ -10,6 +10,11 @@ Parameters:
     Type: String
   MongodbConnectionString:
     Type: String
+  MongooseLayer:
+    Type: String
+
+Conditions:
+  ShouldUseLayers: !Not [!Equals [!Ref MongooseLayer, "MongooseLayer"]]
 
 Globals:
   Function:
@@ -18,6 +23,8 @@ Globals:
     Timeout: 60
     MemorySize: 512
     Tracing: Active
+    Layers:
+      - !If [ShouldUseLayers, !Ref MongooseLayer, !Ref "AWS::NoValue"]
     Environment:
       Variables:
         MONGODB_CONNECTION_STRING: !Ref MongodbConnectionString
@@ -94,7 +101,7 @@ Resources:
     Properties:
       FunctionName: !Sub Household-${Env}-Account-ListAccounts
       CodeUri: dist/api/list-accounts
-      Role: !Ref LambdaRoleArn
+      Role: !Ref LambdaRoleArn      
       Events:
         API:
           Type: Api

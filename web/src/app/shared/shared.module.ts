@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AutocompleteComponent } from './autocomplete/autocomplete.component';
 import { AutocompleteFilterPipe } from 'src/app/shared/pipes/autocomplete-filter.pipe';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -12,14 +11,15 @@ import { ClearableInputComponent } from './clearable-input/clearable-input.compo
 import { AmountInputComponent } from './amount-input/amount-input.component';
 import { DatetimeInputComponent } from './datetime-input/datetime-input.component';
 import { MatDatepickerModule } from '@angular/material/datepicker';
+import { AutocompleteInputComponent } from './autocomplete-input/autocomplete-input.component';
 
 @NgModule({
   declarations: [
-    AutocompleteComponent,
     AutocompleteFilterPipe,
     ClearableInputComponent,
     AmountInputComponent,
     DatetimeInputComponent,
+    AutocompleteInputComponent,
   ],
   imports: [
     CommonModule,
@@ -32,10 +32,10 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
     MatDatepickerModule,
   ],
   exports: [
-    AutocompleteComponent,
     ClearableInputComponent,
     AmountInputComponent,
     DatetimeInputComponent,
+    AutocompleteInputComponent,
   ]
 })
 export class SharedModule { }

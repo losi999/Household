@@ -63,6 +63,7 @@ Resources:
       TemplateURL: sam.project.yaml
       Parameters:
         LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
+        MongooseLayer: !GetAtt Infrastructure.Outputs.MongooseLayer
         # Database: !GetAtt Data.Outputs.Database
         # UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
@@ -74,6 +75,7 @@ Resources:
       TemplateURL: sam.recipient.yaml
       Parameters:
         LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
+        MongooseLayer: !GetAtt Infrastructure.Outputs.MongooseLayer
         # Database: !GetAtt Data.Outputs.Database
         # UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
@@ -85,6 +87,7 @@ Resources:
       TemplateURL: sam.account.yaml
       Parameters:
         LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
+        MongooseLayer: !GetAtt Infrastructure.Outputs.MongooseLayer
         # Database: !GetAtt Data.Outputs.Database
         # UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
@@ -96,6 +99,7 @@ Resources:
       TemplateURL: sam.category.yaml
       Parameters:
         LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
+        MongooseLayer: !GetAtt Infrastructure.Outputs.MongooseLayer
         # Database: !GetAtt Data.Outputs.Database
         # UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
@@ -107,6 +111,7 @@ Resources:
       TemplateURL: sam.transaction.yaml
       Parameters:
         LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
+        MongooseLayer: !GetAtt Infrastructure.Outputs.MongooseLayer
         # Database: !GetAtt Data.Outputs.Database
         # UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
