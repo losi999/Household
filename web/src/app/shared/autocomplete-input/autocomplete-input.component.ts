@@ -14,7 +14,6 @@ import { Subscription } from 'rxjs';
 })
 export class AutocompleteInputComponent implements OnInit, OnDestroy, ControlValueAccessor {
   @Input() displayNameProperty: string;
-  @Input() idProperty: string;
   @Input() label: string;
   @Input() items: any[];
 
@@ -37,18 +36,12 @@ export class AutocompleteInputComponent implements OnInit, OnDestroy, ControlVal
     })
 
     this.subs = this.form.controls.selected.valueChanges.subscribe((value) => {
-      console.log('sub', value);
-      this.changed?.(value/*?.[this.idProperty]*/);
+      this.changed?.(value);
     })
   }
 
   writeValue(selected: any): void {
-    console.log('writeValue', selected)
-    // console.log(selectedId);
-    // if (selectedId) {
-    //   const selected = this.items.find(i => i[this.idProperty] === selectedId);
     this.form.setValue({ selected });
-    // }
   }
 
   registerOnChange(fn: any): void {
@@ -64,8 +57,7 @@ export class AutocompleteInputComponent implements OnInit, OnDestroy, ControlVal
   }
 
   displayName = (item: any) => {
-    console.log('displayName', item)
-    return this.items.find(i => i[this.idProperty] === item)?.[this.displayNameProperty];// item?.[this.displayNameProperty];
+    return item?.[this.displayNameProperty];
   }
 
   clearValue() {

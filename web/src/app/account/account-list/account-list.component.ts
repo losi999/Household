@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { Account } from '@household/shared/types/types';
 
 @Component({
@@ -6,12 +6,8 @@ import { Account } from '@household/shared/types/types';
   templateUrl: './account-list.component.html',
   styleUrls: ['./account-list.component.scss']
 })
-export class AccountListComponent implements OnInit {
+export class AccountListComponent {
   @Input() accounts: Account.Response[];
 
   constructor() { }
-
-  ngOnInit(): void {
-  }
-
 }

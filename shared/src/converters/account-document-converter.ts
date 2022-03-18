@@ -22,18 +22,18 @@ export const accountDocumentConverterFactory = (): IAccountDocumentConverter => 
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
-    update: ({ document, body }, expiresIn): Account.Document => {
+    update: ({ document: { _id, createdAt }, body }, expiresIn): Account.Document => {
       return {
-        ...document,
-        ...body,
-        expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
+        ...instance.create(body, expiresIn),
+        _id,
+        createdAt,
       };
     },
     toResponse: (document): Account.Response => {
       return {
         ...document,
-        createdAt: document.createdAt.toISOString(),
-        updatedAt: document.updatedAt.toISOString(),
+        createdAt: undefined,
+        updatedAt: undefined,
         _id: undefined,
         expiresAt: undefined,
         accountId: document._id.toString() as Account.IdType,

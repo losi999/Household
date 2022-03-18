@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { Account, Transaction } from '@household/shared/types/types';
 import { environment } from 'src/environments/environment';
 
@@ -8,36 +8,52 @@ import { environment } from 'src/environments/environment';
   providedIn: 'root'
 })
 export class AccountService {
-  private _accounts = new BehaviorSubject<Account.Response[]>([]);
-  private _accountTransactions: { [accountId: string]: BehaviorSubject<Transaction.Response[]> } = {};
+  private _refreshList: Subject<void> = new Subject();
 
-  get accounts() {
-    return this._accounts.asObservable();
-  }
-
-  accountTransactions(accountId: Account.IdType): Observable<Transaction.Response[]> {
-    if (!this._accountTransactions[accountId]) {
-      this._accountTransactions[accountId] = new BehaviorSubject([]);
-    }
-
-    return this._accountTransactions[accountId].asObservable();
+  get refreshList():Observable<void> {
+    return this._refreshList.asObservable();
   }
 
   constructor(private httpClient: HttpClient) { }
 
-  listAccounts(): void {
-    this.httpClient.get<Account.Response[]>(`${environment.apiUrl}${environment.accountStage}v1/accounts`)
-      .subscribe(accounts => this._accounts.next(accounts));
+  listAccounts(): Observable<Account.Response[]> {
+    return this.httpClient.get<Account.Response[]>(`${environment.apiUrl}${environment.accountStage}v1/accounts`);
   }
 
-  listTransactionsByAccountId(accountId: Account.IdType): void {
-    this.httpClient.get<Transaction.Response[]>(`${environment.apiUrl}${environment.accountStage}v1/accounts/${accountId}/transactions`)
-      .subscribe((transactions) => {
-        if (!this._accountTransactions[accountId]) {
-          this._accountTransactions[accountId] = new BehaviorSubject(transactions);
-        } else {
-          this._accountTransactions[accountId].next(transactions);
-        }
-      });
+  listTransactionsByAccountId(accountId: Account.IdType): Observable<Transaction.Response[]> {
+    return this.httpClient.get<Transaction.Response[]>(`${environment.apiUrl}${environment.accountStage}v1/accounts/${accountId}/transactions`);
+  }
+
+  createAccount(body: Account.Request): void {
+    this.httpClient.post(`${environment.apiUrl}${environment.accountStage}v1/accounts`, body).subscribe({
+      next: () => {
+        this._refreshList.next();
+      },
+      error: (error) => {
+        console.error(error);
+      }
+    });
+  }
+
+  updateAccount(accountId: Account.IdType, body: Account.Request): void {
+    this.httpClient.put(`${environment.apiUrl}${environment.accountStage}v1/accounts/${accountId}`, body).subscribe({
+      next: () => {
+        this._refreshList.next();
+      },
+      error: (error) => {
+        console.error(error);
+      }
+    });
+  }
+
+  deleteAccount(accountId: Account.IdType): void {
+    this.httpClient.delete(`${environment.apiUrl}${environment.accountStage}v1/accounts/${accountId}`).subscribe({
+      next: () => {
+        this._refreshList.next();
+      },
+      error: (error) => {
+        console.error(error);
+      }
+    });
   }
 }

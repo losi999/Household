@@ -20,18 +20,18 @@ export const projectDocumentConverterFactory = (): IProjectDocumentConverter => 
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
-    update: ({ document, body }, expiresIn): Project.Document => {
+    update: ({ document: { _id, createdAt }, body }, expiresIn): Project.Document => {
       return {
-        ...document,
-        ...body,
-        expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
+        ...instance.create(body, expiresIn),
+        _id,
+        createdAt,
       };
     },
     toResponse: (doc): Project.Response => {
       return {
         ...doc,
-        createdAt: doc.createdAt.toISOString(),
-        updatedAt: doc.updatedAt.toISOString(),
+        createdAt: undefined,
+        updatedAt: undefined,
         _id: undefined,
         expiresAt: undefined,
         projectId: doc._id.toString() as Project.IdType,

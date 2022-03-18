@@ -1,5 +1,5 @@
 import { Component, forwardRef, Input, OnDestroy, OnInit } from '@angular/core';
-import { ControlValueAccessor, FormControl, FormGroup, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { ControlValueAccessor, FormControl, FormGroup, NG_VALUE_ACCESSOR, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -29,7 +29,7 @@ export class AmountInputComponent implements OnInit, OnDestroy, ControlValueAcce
 
   ngOnInit(): void {
     this.form = new FormGroup({
-      amount: new FormControl()
+      amount: new FormControl(null, [Validators.required])
     })
 
     this.subs = this.form.controls.amount.valueChanges.subscribe((value) => {

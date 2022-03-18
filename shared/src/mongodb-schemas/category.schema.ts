@@ -12,7 +12,7 @@ export const categorySchema = new Schema<Category.Document>({
   },
   parentCategory: {
     type: Schema.Types.ObjectId,
-    
+    ref: 'categories'
   },
   expiresAt: {
     type: Schema.Types.Date,

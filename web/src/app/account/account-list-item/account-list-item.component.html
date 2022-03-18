@@ -1,22 +1,25 @@
-<div [routerLink]="['/accounts', account.accountId]" class="account-list-item">
+<div class="account-list-item">
   <mat-card mat-button [matBadge]="notificationCount" matBadgePosition="after" matBadgeColor="warn"
     matBadgeSize="large">
     <mat-card-header>
-      <div mat-card-avatar class="account-list-item__image"></div>
+      <!-- <div mat-card-avatar class="account-list-item__image"></div> -->
       <mat-card-title>{{account.name}}</mat-card-title>
       <mat-card-subtitle>{{balanceTitle}}: {{account.balance}} {{account.currency}}</mat-card-subtitle>
     </mat-card-header>
     <mat-card-actions align="end">
-      <button mat-icon-button color="primary">
-        <mat-icon>settings</mat-icon>
+      <button mat-icon-button color="primary" [routerLink]="['/accounts', account.accountId]">
+        <mat-icon>format_list_bulleted</mat-icon>
       </button>
-      <button mat-icon-button color="primary" *ngIf="account.isOpen">
-        <mat-icon>lock_outline</mat-icon>
+      <button mat-icon-button color="primary" (click)="edit()">
+        <mat-icon>edit</mat-icon>
       </button>
-      <button mat-icon-button color="primary" *ngIf="!account.isOpen">
-        <mat-icon>lock_open</mat-icon>
+      <button mat-icon-button color="primary" *ngIf="account.isOpen" (click)="close()">
+        <mat-icon>credit_card_off</mat-icon>
       </button>
-      <button mat-icon-button color="warn">
+      <button mat-icon-button color="primary" *ngIf="!account.isOpen" (click)="open()">
+        <mat-icon>credit_card</mat-icon>
+      </button>
+      <button mat-icon-button color="warn" (click)="delete()">
         <mat-icon>delete</mat-icon>
       </button>
     </mat-card-actions>

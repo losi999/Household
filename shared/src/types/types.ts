@@ -17,14 +17,6 @@ namespace Internal {
   export type UpdatedAtDate = {
     updatedAt: Date;
   }
-
-  export type CreatedAtText = {
-    createdAt: string;
-  }
-
-  export type UpdatedAtText = {
-    updatedAt: String;
-  }
 }
 
 export namespace Project {
@@ -47,8 +39,8 @@ export namespace Project {
 
   export type Response = Base
     & Id
-    & Internal.CreatedAtText
-    & Internal.UpdatedAtText
+    & Remove<Internal.CreatedAtDate>
+    & Remove<Internal.UpdatedAtDate>
     & Remove<Internal.Id>
     & Remove<Internal.ExpiresAt>;
 
@@ -74,8 +66,8 @@ export namespace Recipient {
 
   export type Response = Base
     & Id
-    & Internal.CreatedAtText
-    & Internal.UpdatedAtText
+    & Remove<Internal.CreatedAtDate>
+    & Remove<Internal.UpdatedAtDate>
     & Remove<Internal.Id>
     & Remove<Internal.ExpiresAt>;
 
@@ -93,10 +85,12 @@ export namespace Account {
     isOpen: boolean;
   };
 
+  export type AccountType = 'bankAccount' | 'cash' | 'creditCard' | 'loan' | 'cafeteria';
+
   type Base = {
     name: string;
     currency: string;
-    accountType: 'bankAccount' | 'cash' | 'creditCard' | 'loan' | 'cafeteria';
+    accountType: AccountType;
   };
 
   type Balance = {
@@ -116,8 +110,8 @@ export namespace Account {
     & IsOpen
     & Balance
     & Id
-    & Internal.CreatedAtText
-    & Internal.UpdatedAtText
+    & Remove<Internal.CreatedAtDate>
+    & Remove<Internal.UpdatedAtDate>
     & Remove<Internal.Id>
     & Remove<Internal.ExpiresAt>;
 
@@ -159,12 +153,13 @@ export namespace Category {
   export type Response = Base
     & FullName
     & Id
-    & Internal.CreatedAtText
-    & Internal.UpdatedAtText
+    & Remove<Internal.CreatedAtDate>
+    & Remove<Internal.UpdatedAtDate>
     & Remove<Internal.Id>
     & Remove<Internal.ExpiresAt>
-    & ParentCategoryId
-    & Remove<ParentCategory>;
+    & {
+      parentCategory: Category.Response;
+    };
     // & {
     //   children: Response[];
     // };
@@ -294,8 +289,8 @@ export namespace Transaction {
   export type PaymentResponse = Id
     & Base
     & IssuedAtText
-    & Internal.CreatedAtText
-    & Internal.UpdatedAtText
+    & Remove<Internal.CreatedAtDate>
+    & Remove<Internal.UpdatedAtDate>
     & Remove<Internal.Id>
     & Remove<Internal.ExpiresAt>
     & TransactionType<'payment'>
@@ -309,8 +304,8 @@ export namespace Transaction {
   export type TransferResponse = Id
     & Base
     & IssuedAtText
-    & Internal.CreatedAtText
-    & Internal.UpdatedAtText
+    & Remove<Internal.CreatedAtDate>
+    & Remove<Internal.UpdatedAtDate>
     & Remove<Internal.Id>
     & Remove<Internal.ExpiresAt>
     & TransactionType<'transfer'>
@@ -322,8 +317,8 @@ export namespace Transaction {
   export type SplitResponse = Id
     & Base
     & IssuedAtText
-    & Internal.CreatedAtText
-    & Internal.UpdatedAtText
+    & Remove<Internal.CreatedAtDate>
+    & Remove<Internal.UpdatedAtDate>
     & Remove<Internal.Id>
     & Remove<Internal.ExpiresAt>
     & TransactionType<'split'>

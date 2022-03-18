@@ -216,6 +216,7 @@ export const databaseServiceFactory = (mongodbService: IMongodbService): IDataba
       const session = await mongodbService.startSession();
       return session.withTransaction(async () => {
         const deleted = await mongodbService.categories.findOneAndDelete({ _id: categoryId }, { session }).exec();
+
         await mongodbService.categories.updateMany({ parentCategory: deleted },
           deleted.parentCategory ? {
             $set: {
@@ -229,18 +230,18 @@ export const databaseServiceFactory = (mongodbService: IMongodbService): IDataba
           runValidators: true,
           session
         }).exec();
-        await updateCategoryFullName(deleted.fullName, deleted.fullName.replace(new RegExp(`${deleted.name}$`), ''), session);
+        // await updateCategoryFullName(deleted.fullName, deleted.fullName.replace(new RegExp(`${deleted.name}$`), ''), session);
         await mongodbService.categories.updateMany({
           fullName: {
-            $regex: `^${deleted.fullName}`
+            $regex: `^${deleted.fullName}` 
           }
         }, [{
           $set: {
             fullName: {
               $replaceOne: {
                 input: '$fullName',
-                find: `${deleted.fullName}:`,
-                replacement: deleted.fullName.replace(new RegExp(`${deleted.name}$`), ''),
+                find: `${deleted.fullName}:`, 
+                replacement: deleted.fullName.replace(new RegExp(`${deleted.name}$`), ''), 
               }
             }
           }
@@ -329,6 +330,7 @@ export const databaseServiceFactory = (mongodbService: IMongodbService): IDataba
     listCategories: () => {
       return mongodbService.categories.find()
         .collation({ locale: 'hu' })
+        .populate('parentCategory')
         .sort('fullName')
         .lean()
         .exec();

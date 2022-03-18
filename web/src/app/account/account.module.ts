@@ -13,7 +13,10 @@ import { AccountTransactionsHomeComponent } from './account-transactions-home/ac
 import { AccountTransactionsListComponent } from './account-transactions-list/account-transactions-list.component';
 import { AccountTransactionsListItemComponent } from './account-transactions-list-item/account-transactions-list-item.component';
 import { OpenAccountFilterPipe } from './pipes/open-account.pipe';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { SharedModule } from 'src/app/shared/shared.module';
+import { AccountFormComponent } from './account-form/account-form.component';
+import { MatDialogModule } from '@angular/material/dialog';
 
 @NgModule({
   declarations: [
@@ -24,9 +27,11 @@ import { FormsModule } from '@angular/forms';
     AccountTransactionsListComponent,
     AccountTransactionsListItemComponent,
     OpenAccountFilterPipe,
+    AccountFormComponent,
   ],
   imports: [
     CommonModule,
+    ReactiveFormsModule,
     MatCardModule,
     MatButtonModule,
     MatIconModule,
@@ -34,6 +39,8 @@ import { FormsModule } from '@angular/forms';
     MatSlideToggleModule,
     FormsModule,
     AccountRoutingModule,
+    SharedModule,
+    MatDialogModule,
   ]
 })
 export class AccountModule { }

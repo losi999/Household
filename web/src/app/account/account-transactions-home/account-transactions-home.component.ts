@@ -1,8 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Account, Transaction } from '@household/shared/types/types';
-import { Observable } from 'rxjs';
-import { AccountService } from 'src/app/account/account.service';
 
 @Component({
   selector: 'app-account-transactions-home',
@@ -11,15 +9,13 @@ import { AccountService } from 'src/app/account/account.service';
 })
 export class AccountTransactionsHomeComponent implements OnInit {
   accountId: Account.IdType;
-  get transactions(): Observable<Transaction.Response[]> {
-    return  this.accountService.accountTransactions(this.accountId);
-  }
+  transactions: Transaction.Response[]
 
-  constructor(private activatedRoute: ActivatedRoute, private accountService: AccountService) { }
+  constructor(private activatedRoute: ActivatedRoute) { }
 
   ngOnInit(): void {
     this.accountId = this.activatedRoute.snapshot.paramMap.get('accountId') as Account.IdType;
-    this.accountService.listTransactionsByAccountId(this.accountId);
+    this.transactions = this.activatedRoute.snapshot.data.transactions;
   }
 
 }

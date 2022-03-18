@@ -12,6 +12,15 @@ import { AmountInputComponent } from './amount-input/amount-input.component';
 import { DatetimeInputComponent } from './datetime-input/datetime-input.component';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { AutocompleteInputComponent } from './autocomplete-input/autocomplete-input.component';
+import { ConfirmationDialogComponent } from './confirmation-dialog/confirmation-dialog.component';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MainMenuComponent } from './main-menu/main-menu.component';
+import { MatMenuModule } from '@angular/material/menu';
+import { ToolbarComponent } from './toolbar/toolbar.component';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { RouterModule } from '@angular/router';
+import { CatalogSubmenuComponent } from './catalog-submenu/catalog-submenu.component';
+import { MatListModule } from '@angular/material/list';
 
 @NgModule({
   declarations: [
@@ -20,9 +29,14 @@ import { AutocompleteInputComponent } from './autocomplete-input/autocomplete-in
     AmountInputComponent,
     DatetimeInputComponent,
     AutocompleteInputComponent,
+    ConfirmationDialogComponent,
+    MainMenuComponent,
+    ToolbarComponent,
+    CatalogSubmenuComponent,
   ],
   imports: [
     CommonModule,
+    RouterModule,
     ReactiveFormsModule,
     MatFormFieldModule,
     MatButtonModule,
@@ -30,12 +44,20 @@ import { AutocompleteInputComponent } from './autocomplete-input/autocomplete-in
     MatIconModule,
     MatAutocompleteModule,
     MatDatepickerModule,
+    MatDialogModule,
+    MatMenuModule,
+    MatToolbarModule,
+    MatListModule,
   ],
   exports: [
     ClearableInputComponent,
     AmountInputComponent,
     DatetimeInputComponent,
     AutocompleteInputComponent,
+    ConfirmationDialogComponent,
+    MainMenuComponent,
+    ToolbarComponent,
+    CatalogSubmenuComponent,
   ]
 })
 export class SharedModule { }

@@ -1,12 +1,16 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { Account } from '@household/shared/types/types';
+import { AccountFormComponent, AccountFormData, AccountFormResult } from 'src/app/account/account-form/account-form.component';
+import { AccountService } from 'src/app/account/account.service';
+import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/confirmation-dialog.component';
 
 @Component({
   selector: 'app-account-list-item',
   templateUrl: './account-list-item.component.html',
   styleUrls: ['./account-list-item.component.scss']
 })
-export class AccountListItemComponent implements OnInit {
+export class AccountListItemComponent {
   @Input() account: Account.Response;
   notificationCount: number;
 
@@ -17,10 +21,39 @@ export class AccountListItemComponent implements OnInit {
     }
   }
 
+  constructor(private accountService: AccountService, private dialog: MatDialog,) { }
 
-  constructor() { }
+  delete() {
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        title: 'Törölni akarod ezt a számlát?',
+        content: this.account.name
+      },
+    });
 
-  ngOnInit(): void {
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.accountService.deleteAccount(this.account.accountId)
+      }
+    });
   }
 
+  open() {
+    console.log('open');
+  }
+
+  close() {
+    console.log('close');
+  }
+
+  edit() {
+    const dialogRef = this.dialog.open<AccountFormComponent, AccountFormData, AccountFormResult>(AccountFormComponent, { data: this.account })
+
+    dialogRef.afterClosed().subscribe((values) => {
+      console.log(values);
+      if (values) {
+        this.accountService.updateAccount(this.account.accountId, values);
+      }
+    });
+  }
 }

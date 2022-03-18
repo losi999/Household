@@ -1,7 +1,7 @@
 <div class="amount-input">
   <mat-form-field appearance="fill" [formGroup]="form" class="amount">
     <mat-label>Összeg</mat-label>
-    <input type="number" matInput formControlName="amount">
+    <input type="number" matInput formControlName="amount" (blur)="touched()">
     <span matSuffix>{{currency}}</span>
   </mat-form-field>
   <button mat-icon-button aria-label="Clear" type="button" class="switch" (click)="inverseValue()">

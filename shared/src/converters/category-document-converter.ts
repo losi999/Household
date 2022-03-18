@@ -27,44 +27,25 @@ export const categoryDocumentConverterFactory = (): ICategoryDocumentConverter =
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
-    update: ({ document, body, parentCategory }, expiresIn): Category.Document => {
+    update: ({ document: { _id, createdAt }, body, parentCategory }, expiresIn): Category.Document => {
       return {
-        ...document,
-        ...body,
-        fullName: parentCategory ? `${parentCategory.fullName}:${body.name}` : body.name,
-        parentCategory: parentCategory,
-        parentCategoryId: undefined,
-        expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
+        ...instance.create({ body, parentCategory }, expiresIn),
+        _id,
+        createdAt,
       };
     },
     toResponse: (doc): Category.Response => {
       return {
         ...doc,
-        createdAt: doc.createdAt.toISOString(),
-        updatedAt: doc.updatedAt.toISOString(),
+        createdAt: undefined,
+        updatedAt: undefined,
         _id: undefined,
         expiresAt: undefined,
         categoryId: doc._id.toString() as Category.IdType,
-        parentCategory: undefined,
-        parentCategoryId: doc.parentCategory?._id.toString() as Category.IdType,
+        parentCategory: doc.parentCategory ? instance.toResponse(doc.parentCategory) : undefined,
       }
     },
-    toResponseList: (docs) => {
-      return docs.map(d => instance.toResponse(d));
-      // const mapped = docs.reduce<{ [categoryId: string]: Category.Response }>((accumulator, currentValue) => {
-      //   const resp = instance.toResponse(currentValue);
-      //   if (currentValue.parentCategory) {
-      //     accumulator[currentValue.parentCategory.toString()].children.push(resp);
-      //   }
-
-      //   return {
-      //     ...accumulator,
-      //     [currentValue._id.toString()]: resp,
-      //   };
-      // }, {});
-
-      // return Object.values(mapped).filter(x => !x.parentCategoryId);
-    }
+    toResponseList: docs => docs.map(d => instance.toResponse(d)),
   };
 
   return instance;

@@ -1,5 +1,5 @@
 import { Component, forwardRef, OnDestroy, OnInit } from '@angular/core';
-import { ControlValueAccessor, FormGroup, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { ControlValueAccessor, FormGroup, FormControl, NG_VALUE_ACCESSOR, Validators, NG_VALIDATORS } from '@angular/forms';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -27,9 +27,9 @@ export class DatetimeInputComponent implements OnInit, OnDestroy, ControlValueAc
 
   ngOnInit(): void {
     this.form = new FormGroup({
-      date: new FormControl(),
-      hour: new FormControl(),
-      minute: new FormControl()
+      date: new FormControl(null, [Validators.required]),
+      hour: new FormControl(null, [Validators.required, Validators.min(0), Validators.max(23)]),
+      minute: new FormControl(null, [Validators.required, Validators.min(0), Validators.max(59)])
     })
 
     this.subs = this.form.valueChanges.subscribe((value: {
@@ -37,8 +37,12 @@ export class DatetimeInputComponent implements OnInit, OnDestroy, ControlValueAc
       hour: number;
       minute: number;
     }) => {
-      const newDate = new Date(value.date.getFullYear(), value.date.getMonth(), value.date.getDate(), value.hour, value.minute, 0);
-      this.changed(newDate);
+      if (this.form.invalid) {
+        this.changed?.(null);
+      } else {
+        const newDate = new Date(value.date.getFullYear(), value.date.getMonth(), value.date.getDate(), value.hour, value.minute, 0);
+        this.changed?.(newDate);
+      }
     })
   }
 

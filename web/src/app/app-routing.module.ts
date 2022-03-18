@@ -8,6 +8,18 @@ const routes: Routes = [
     loadChildren: () => import('./account/account.module').then(m => m.AccountModule),
   },
   {
+    path: 'projects',
+    loadChildren: () => import('./project/project.module').then(m => m.ProjectModule),
+  },
+  {
+    path: 'categories',
+    loadChildren: () => import('./category/category.module').then(m => m.CategoryModule),
+  },
+  {
+    path: 'recipients',
+    loadChildren: () => import('./recipient/recipient.module').then(m => m.RecipientModule),
+  },
+  {
     path: 'transactions/:transactionId',
     component: TransactionEditComponent,
   }

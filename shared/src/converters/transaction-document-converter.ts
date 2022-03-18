@@ -60,8 +60,8 @@ export const transactionDocumentConverterFactory = (
   const toResponsePayment = (doc: Transaction.PaymentDocument): Transaction.PaymentResponse => {
     return {
       ...doc,
-      createdAt: doc.createdAt.toISOString(),
-      updatedAt: doc.updatedAt.toISOString(),
+      createdAt: undefined,
+      updatedAt: undefined,
       transactionId: doc._id.toString() as Transaction.IdType,
       issuedAt: doc.issuedAt.toISOString(),
       _id: undefined,
@@ -76,8 +76,8 @@ export const transactionDocumentConverterFactory = (
   const toResponseSplit = (doc: Transaction.SplitDocument): Transaction.SplitResponse => {
     return {
       ...doc,
-      createdAt: doc.createdAt.toISOString(),
-      updatedAt: doc.updatedAt.toISOString(),
+      createdAt: undefined,
+      updatedAt: undefined,
       transactionId: doc._id.toString() as Transaction.IdType,
       issuedAt: doc.issuedAt.toISOString(),
       _id: undefined,
@@ -99,8 +99,8 @@ export const transactionDocumentConverterFactory = (
     console.log('B');
     return {
       ...doc,
-      createdAt: doc.createdAt.toISOString(),
-      updatedAt: doc.updatedAt.toISOString(),
+      createdAt: undefined,
+      updatedAt: undefined,
       transactionId: doc._id.toString() as Transaction.IdType,
       issuedAt: doc.issuedAt.toISOString(),
       _id: undefined,
