@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
 import { Account, Transaction } from '@household/shared/types/types';
 import { environment } from 'src/environments/environment';
+import { transactionsaPageSize } from 'src/app/constants';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +11,7 @@ import { environment } from 'src/environments/environment';
 export class AccountService {
   private _refreshList: Subject<void> = new Subject();
 
-  get refreshList():Observable<void> {
+  get refreshList(): Observable<void> {
     return this._refreshList.asObservable();
   }
 
@@ -20,8 +21,13 @@ export class AccountService {
     return this.httpClient.get<Account.Response[]>(`${environment.apiUrl}${environment.accountStage}v1/accounts`);
   }
 
-  listTransactionsByAccountId(accountId: Account.IdType): Observable<Transaction.Response[]> {
-    return this.httpClient.get<Transaction.Response[]>(`${environment.apiUrl}${environment.accountStage}v1/accounts/${accountId}/transactions`);
+  listTransactionsByAccountId(accountId: Account.IdType, pageNumber: number = 1, pageSize: number = transactionsaPageSize): Observable<Transaction.Response[]> {
+    return this.httpClient.get<Transaction.Response[]>(`${environment.apiUrl}${environment.accountStage}v1/accounts/${accountId}/transactions`, {
+      params: {
+        pageSize: `${pageSize}`,
+        pageNumber: `${pageNumber}`,
+      }
+    });
   }
 
   createAccount(body: Account.Request): void {
