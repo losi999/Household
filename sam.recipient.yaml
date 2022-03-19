@@ -4,8 +4,8 @@ Description: "Household Recipient Api"
 Parameters:
   LambdaRoleArn:
     Type: String
-  # UserPoolArn:
-  #   Type: String
+  UserPoolArn:
+    Type: String
   Env:
     Type: String
   MongodbConnectionString:
@@ -40,10 +40,10 @@ Resources:
         AllowMethods: "'*'"
         AllowHeaders: "'*'"
         AllowOrigin: "'*'"
-      # Auth:
-      #   Authorizers:
-      #     CognitoAuthorizer:
-      #       UserPoolArn: !Ref UserPoolArn
+      Auth:
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn: !Ref UserPoolArn
       GatewayResponses:
         UNAUTHORIZED:
           StatusCode: 401
@@ -77,8 +77,8 @@ Resources:
             RestApiId: !Ref RecipientApi
             Path: /v1/recipients
             Method: POST
-            # Auth:
-            #   Authorizer: CognitoAuthorizer
+            Auth:
+              Authorizer: CognitoAuthorizer
 
   UpdateRecipient:
     Type: AWS::Serverless::Function
@@ -93,8 +93,8 @@ Resources:
             RestApiId: !Ref RecipientApi
             Path: /v1/recipients/{recipientId}
             Method: PUT
-  #           Auth:
-  #             Authorizer: CognitoAuthorizer
+            Auth:
+              Authorizer: CognitoAuthorizer
 
   ListRecipients:
     Type: AWS::Serverless::Function
@@ -109,8 +109,8 @@ Resources:
             RestApiId: !Ref RecipientApi
             Path: /v1/recipients
             Method: GET
-  #           Auth:
-  #             Authorizer: CognitoAuthorizer
+            Auth:
+              Authorizer: CognitoAuthorizer
 
   GetRecipient:
     Type: AWS::Serverless::Function
@@ -125,8 +125,8 @@ Resources:
             RestApiId: !Ref RecipientApi
             Path: /v1/recipients/{recipientId}
             Method: GET
-            # Auth:
-            #   Authorizer: CognitoAuthorizer
+            Auth:
+              Authorizer: CognitoAuthorizer
 
   DeleteRecipient:
     Type: AWS::Serverless::Function
@@ -141,8 +141,8 @@ Resources:
             RestApiId: !Ref RecipientApi
             Path: /v1/recipients/{recipientId}
             Method: DELETE
-  #           Auth:
-  #             Authorizer: CognitoAuthorizer
+            Auth:
+              Authorizer: CognitoAuthorizer
 
 Outputs:
   RecipientApi:

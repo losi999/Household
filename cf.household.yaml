@@ -43,12 +43,12 @@ Resources:
   #       # DatabaseArchive: !GetAtt Data.Outputs.DatabaseArchive
   #       # EventDeadLetterQueueArn: !GetAtt Infrastructure.Outputs.EventDeadLetterQueueArn
 
-  # Data:
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: cf.data.yaml
-  #     Parameters:
-  #       Env: !Ref Env
+  Data:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: cf.data.yaml
+      Parameters:
+        Env: !Ref Env
 
   Infrastructure:
     Type: AWS::CloudFormation::Stack
@@ -64,8 +64,7 @@ Resources:
       Parameters:
         LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
         MongooseLayer: !GetAtt Infrastructure.Outputs.MongooseLayer
-        # Database: !GetAtt Data.Outputs.Database
-        # UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
+        UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
         MongodbConnectionString: !Sub "mongodb+srv://${MongodbUsername}:${MongodbPassword}@${MongodbClusterDomain}/household-${Env}?retryWrites=true&w=majority"
 
@@ -76,8 +75,7 @@ Resources:
       Parameters:
         LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
         MongooseLayer: !GetAtt Infrastructure.Outputs.MongooseLayer
-        # Database: !GetAtt Data.Outputs.Database
-        # UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
+        UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
         MongodbConnectionString: !Sub "mongodb+srv://${MongodbUsername}:${MongodbPassword}@${MongodbClusterDomain}/household-${Env}?retryWrites=true&w=majority"
 
@@ -88,8 +86,7 @@ Resources:
       Parameters:
         LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
         MongooseLayer: !GetAtt Infrastructure.Outputs.MongooseLayer
-        # Database: !GetAtt Data.Outputs.Database
-        # UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
+        UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
         MongodbConnectionString: !Sub "mongodb+srv://${MongodbUsername}:${MongodbPassword}@${MongodbClusterDomain}/household-${Env}?retryWrites=true&w=majority"
 
@@ -100,8 +97,7 @@ Resources:
       Parameters:
         LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
         MongooseLayer: !GetAtt Infrastructure.Outputs.MongooseLayer
-        # Database: !GetAtt Data.Outputs.Database
-        # UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
+        UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
         MongodbConnectionString: !Sub "mongodb+srv://${MongodbUsername}:${MongodbPassword}@${MongodbClusterDomain}/household-${Env}?retryWrites=true&w=majority"
         
@@ -112,10 +108,19 @@ Resources:
       Parameters:
         LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
         MongooseLayer: !GetAtt Infrastructure.Outputs.MongooseLayer
-        # Database: !GetAtt Data.Outputs.Database
-        # UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
+        UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
         MongodbConnectionString: !Sub "mongodb+srv://${MongodbUsername}:${MongodbPassword}@${MongodbClusterDomain}/household-${Env}?retryWrites=true&w=majority"
+
+  User:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: sam.user.yaml
+      Parameters:
+        LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
+        UserPoolId: !GetAtt Data.Outputs.UserPoolId
+        ClientId: !GetAtt Data.Outputs.ClientId
+        Env: !Ref Env        
 
   Api:
     Type: AWS::CloudFront::Distribution
@@ -236,7 +241,25 @@ Resources:
               - PUT
               - PATCH
               - POST
-              - DELETE                       
+              - DELETE           
+          - ForwardedValues:
+              QueryString: true
+              Headers:
+                - Authorization
+            PathPattern: /user/*
+            TargetOriginId: User
+            ViewerProtocolPolicy: redirect-to-https
+            MinTTL: 0
+            MaxTTL: 0
+            DefaultTTL: 0
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+              - PUT
+              - PATCH
+              - POST
+              - DELETE                          
         Origins:
           - DomainName: !GetAtt Project.Outputs.ProjectApi
             Id: Project
@@ -257,7 +280,11 @@ Resources:
           - DomainName: !GetAtt Transaction.Outputs.TransactionApi
             Id: Transaction
             CustomOriginConfig:
-              OriginProtocolPolicy: https-only                  
+              OriginProtocolPolicy: https-only  
+          - DomainName: !GetAtt User.Outputs.UserApi
+            Id: User
+            CustomOriginConfig:
+              OriginProtocolPolicy: https-only                             
 
   ApiDNSRecord:
     Type: AWS::Route53::RecordSet
@@ -324,5 +351,3 @@ Outputs:
              - Domain: !FindInMap [EnvMapping, !Ref Env, WebsiteDomain]
   WebsiteBucket:
     Value: !GetAtt Infrastructure.Outputs.WebsiteBucket
-  # Database:
-  #   Value: !GetAtt Data.Outputs.Database

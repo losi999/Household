@@ -160,9 +160,9 @@ export namespace Category {
     & {
       parentCategory: Category.Response;
     };
-    // & {
-    //   children: Response[];
-    // };
+  // & {
+  //   children: Response[];
+  // };
 
   export type Request = Base
     & ParentCategoryId;
@@ -332,4 +332,30 @@ export namespace Transaction {
     };
 
   export type Response = PaymentResponse | TransferResponse | SplitResponse;
+}
+
+export namespace Auth {
+  type IdTokenResponse = {
+    idToken: string;
+  };
+
+  export namespace Login {
+
+    export type Request = {
+      email: string;
+      password: string;
+    };
+
+    export type Response = IdTokenResponse & {
+      refreshToken: string;
+    };
+  }
+
+  export namespace RefreshToken {
+    export type Request = {
+      refreshToken: string;
+    };
+
+    export type Response = IdTokenResponse;
+  }
 }
