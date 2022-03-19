@@ -39,18 +39,15 @@ export class AccountListItemComponent {
   }
 
   open() {
-    console.log('open');
   }
 
   close() {
-    console.log('close');
   }
 
   edit() {
     const dialogRef = this.dialog.open<AccountFormComponent, AccountFormData, AccountFormResult>(AccountFormComponent, { data: this.account })
 
     dialogRef.afterClosed().subscribe((values) => {
-      console.log(values);
       if (values) {
         this.accountService.updateAccount(this.account.accountId, values);
       }

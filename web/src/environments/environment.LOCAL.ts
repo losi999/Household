@@ -10,6 +10,7 @@ export const environment = {
   recipientStage: 'recipient/',
   transactionStage: 'transaction/',
   categoryStage: 'category/',
+  authStage: 'user/',
 };
 
 /*

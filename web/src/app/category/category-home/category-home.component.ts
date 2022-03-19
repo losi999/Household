@@ -43,7 +43,6 @@ export class CategoryHomeComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe({
       next: (values) => {
-        console.log(values);
         if (values) {
           this.categoryService.createCategory(values);
         }

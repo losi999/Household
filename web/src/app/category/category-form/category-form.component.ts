@@ -20,7 +20,6 @@ export class CategoryFormComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: CategoryFormData) { }
 
   ngOnInit(): void {
-    console.log(this.data.category);
     this.form = new FormGroup({
       name: new FormControl(this.data.category?.name, [Validators.required]),
       parentCategory: new FormControl(this.data.category?.parentCategory),

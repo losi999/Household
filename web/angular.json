@@ -34,6 +34,14 @@
             "scripts": []
           },
           "configurations": {
+            "localhost-auth": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.LOCAL.ts"
+                }
+              ]
+            },
             "PROD": {
               "fileReplacements": [
                 {
@@ -150,8 +158,8 @@
             "browserTarget": "household:build"
           },
           "configurations": {
-            "production": {
-              "browserTarget": "household:build:production"
+            "LOCAL": {
+              "browserTarget": "household:build:localhost-auth"
             }
           }
         },

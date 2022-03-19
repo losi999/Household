@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { ProgressService } from 'src/app/shared/progress.service';
 
 @Component({
   selector: 'app-root',
@@ -7,4 +8,10 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   title = 'household';
+
+  constructor(private progressService: ProgressService) { }
+
+  get isInProgress():boolean {
+    return this.progressService.isInProgress;
+  }
 }

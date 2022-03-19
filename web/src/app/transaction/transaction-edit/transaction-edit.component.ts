@@ -102,7 +102,7 @@ export class TransactionEditComponent implements OnInit {
             this.router.navigate(['/accounts', this.account.accountId]);
           },
           error: (error) => {
-            console.log(error);
+            console.error(error);
           }
         })
       }
@@ -131,7 +131,7 @@ export class TransactionEditComponent implements OnInit {
     };
 
     const error = (error) => {
-      console.log(error);
+      console.error(error);
     };
 
     if (this.form.invalid || this.amount === 0) {

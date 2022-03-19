@@ -21,6 +21,8 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { RouterModule } from '@angular/router';
 import { CatalogSubmenuComponent } from './catalog-submenu/catalog-submenu.component';
 import { MatListModule } from '@angular/material/list';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { ProgressIndicatorComponent } from './progress-indicator/progress-indicator.component';
 
 @NgModule({
   declarations: [
@@ -33,6 +35,7 @@ import { MatListModule } from '@angular/material/list';
     MainMenuComponent,
     ToolbarComponent,
     CatalogSubmenuComponent,
+    ProgressIndicatorComponent,
   ],
   imports: [
     CommonModule,
@@ -48,6 +51,7 @@ import { MatListModule } from '@angular/material/list';
     MatMenuModule,
     MatToolbarModule,
     MatListModule,
+    MatProgressSpinnerModule,
   ],
   exports: [
     ClearableInputComponent,
@@ -58,6 +62,7 @@ import { MatListModule } from '@angular/material/list';
     MainMenuComponent,
     ToolbarComponent,
     CatalogSubmenuComponent,
+    ProgressIndicatorComponent,
   ]
 })
 export class SharedModule { }

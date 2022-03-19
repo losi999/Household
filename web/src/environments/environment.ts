@@ -10,6 +10,7 @@ export const environment = {
   recipientStage: ':3003/',
   transactionStage: ':3004/',
   categoryStage: ':3001/',
+  authStage: '',
 };
 
 /*
