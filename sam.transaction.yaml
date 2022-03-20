@@ -1,0 +1,214 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: "AWS::Serverless-2016-10-31"
+Description: "Household Transaction Api"
+Parameters:
+  LambdaRoleArn:
+    Type: String
+  UserPoolArn:
+    Type: String
+  Env:
+    Type: String
+  MongodbConnectionString:
+    Type: String
+  MongooseLayer:
+    Type: String
+
+Conditions:
+  ShouldUseLayers: !Not [!Equals [!Ref MongooseLayer, "MongooseLayer"]]
+
+Globals:
+  Function:
+    Handler: index.default
+    Runtime: nodejs14.x
+    Timeout: 60
+    MemorySize: 512
+    Tracing: Active
+    Layers:
+      - !If [ShouldUseLayers, !Ref MongooseLayer, !Ref "AWS::NoValue"]
+    Environment:
+      Variables:
+        MONGODB_CONNECTION_STRING: !Ref MongodbConnectionString
+
+Resources:
+  TransactionApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub Household-${Env}-Transaction
+      StageName: transaction
+      TracingEnabled: true
+      Cors:
+        AllowMethods: "'*'"
+        AllowHeaders: "'*'"
+        AllowOrigin: "'*'"
+      Auth:
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn: !Ref UserPoolArn
+      GatewayResponses:
+        UNAUTHORIZED:
+          StatusCode: 401
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"  
+              Access-Control-Allow-Headers: "'*'"
+              Access-Control-Allow-Methods: "'*'"
+          ResponseTemplates:
+            application/json: '{ "message": $context.error.messageString }'            
+        MISSING_AUTHENTICATION_TOKEN:
+          StatusCode: 404
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"  
+              Access-Control-Allow-Headers: "'*'"
+              Access-Control-Allow-Methods: "'*'"
+          ResponseTemplates:
+            application/json: '{ "message": $context.error.messageString }'
+
+  CreatePaymentTransaction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-Transaction-CreatePaymentTransaction
+      CodeUri: dist/api/create-payment-transaction
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TransactionApi
+            Path: /v1/transactions/payment
+            Method: POST
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  CreateSplitTransaction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-Transaction-CreateSplitTransaction
+      CodeUri: dist/api/create-split-transaction
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TransactionApi
+            Path: /v1/transactions/split
+            Method: POST
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  CreateTransferTransaction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-Transaction-CreateTransferTransaction
+      CodeUri: dist/api/create-transfer-transaction
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TransactionApi
+            Path: /v1/transactions/transfer
+            Method: POST
+            Auth:
+              Authorizer: CognitoAuthorizer            
+
+  UpdateToPaymentTransaction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-Transaction-UpdateToPaymentTransaction
+      CodeUri: dist/api/update-to-payment-transaction
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TransactionApi
+            Path: /v1/transactions/{transactionId}/payment
+            Method: PUT
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  UpdateToSplitTransaction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-Transaction-UpdateToSplitTransaction
+      CodeUri: dist/api/update-to-split-transaction
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TransactionApi
+            Path: /v1/transactions/{transactionId}/split
+            Method: PUT
+            Auth:
+              Authorizer: CognitoAuthorizer  
+
+  UpdateToTransferTransaction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-Transaction-UpdateToTransferTransaction
+      CodeUri: dist/api/update-to-transfer-transaction
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TransactionApi
+            Path: /v1/transactions/{transactionId}/transfer
+            Method: PUT
+            Auth:
+              Authorizer: CognitoAuthorizer    
+
+  ListTransactions:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-Transaction-ListTransactions
+      CodeUri: dist/api/list-transactions
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TransactionApi
+            Path: /v1/transactions
+            Method: GET
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  GetTransaction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-Transaction-GetTransaction
+      CodeUri: dist/api/get-transaction
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TransactionApi
+            Path: /v1/accounts/{accountId}/transactions/{transactionId}
+            Method: GET
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  DeleteTransaction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-Transaction-DeleteTransaction
+      CodeUri: dist/api/delete-transaction
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TransactionApi
+            Path: /v1/transactions/{transactionId}
+            Method: DELETE
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+Outputs:
+  TransactionApi:
+    Description: "Household Transaction API"
+    Value: !Sub "${TransactionApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}"

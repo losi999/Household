@@ -1,0 +1,295 @@
+version: 2.1
+orbs:
+  sam: circleci/aws-sam-serverless@3.0
+jobs:
+  install:
+    docker:
+      - image: circleci/node:16.13.1
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - restore_cache:
+          name: Restoring dependecies from cache
+          key: dependencies-v1-{{ checksum "package.json" }}
+
+      - run:
+          name: Installing dependencies
+          command: yarn
+
+      - save_cache:
+          paths:
+            - node_modules
+          key: dependencies-v1-{{ checksum "package.json" }}
+
+      - restore_cache:
+          name: Restoring web dependecies from cache
+          key: web-dependencies-v1-{{ checksum "web/package.json" }}
+
+      - run:
+          name: Installing dependencies
+          command: cd web && yarn
+
+      - save_cache:
+          paths:
+            - web/node_modules
+          key: web-dependencies-v1-{{ checksum "web/package.json" }}
+
+      - restore_cache:
+          name: Restoring layer dependecies from cache
+          key: layer-dependencies-v1-{{ checksum "layers/mongoose/nodejs/package.json" }}
+
+      - run:
+          name: Installing layer dependencies
+          command: cd layers/mongoose/nodejs && yarn
+
+      - save_cache:
+          paths:
+            - layers/mongoose/nodejs/node_modules
+          key: layer-dependencies-v1-{{ checksum "layers/mongoose/nodejs/package.json" }}          
+
+      # - restore_cache:
+      #     name: Restoring test dependencies from cache
+      #     key: test-dependencies-v1-{{ checksum "test/package.json" }}
+
+      # - run:
+      #     name: Installing test dependencies
+      #     command: cd test && yarn
+
+      # - save_cache:
+      #     paths:
+      #       - test/node_modules
+      #       - /root/.cache/Cypress
+      #     key: test-dependencies-v1-{{ checksum "test/package.json" }}
+
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - repo
+  # unit_test:
+  #   docker:
+  #     - image: circleci/node:16.13.1
+  #   working_directory: ~/repo
+  #   steps:
+  #     - attach_workspace:
+  #         at: ~/
+
+  #     - run:
+  #         name: Running API unit tests
+  #         command: yarn test:api
+
+      # - run:
+      #     name: Running Web unit tests
+      #     command: yarn test:web
+
+      # - store_artifacts:
+      #     path: coverage
+      #     destination: coverage
+  # lint:
+  #   docker:
+  #     - image: circleci/node:16.13.1
+  #   working_directory: ~/repo
+  #   steps:
+  #     - attach_workspace:
+  #         at: ~/
+
+  #     - run:
+  #         name: Running API linter
+  #         command: yarn lint:api
+
+      # - run:
+      #     name: Running Web linter
+      #     command: yarn lint:web
+  build:
+    parameters:
+      env:
+        type: string
+    docker:
+      - image: circleci/node:16.13.1
+    working_directory: ~/repo
+    steps:
+      - attach_workspace:
+          at: ~/
+
+      - run:
+          name: Build API
+          command: yarn build:api
+
+      - run:
+          name: Build Web
+          command: yarn build:web -c <<parameters.env>>
+
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - repo/dist
+            - repo/layers
+  api_deploy:
+    executor: sam/default
+    parameters:
+      env:
+        type: string
+      # cypress_password:
+      #   type: string
+      # admin_user_email:
+      #   type: string
+    working_directory: ~/repo
+    steps:
+      - attach_workspace:
+          at: ~/
+      - sam/install
+      - deploy:
+          name: SAM Deploy
+          command: sam deploy --template-file cf.household.yaml --s3-bucket ${AWS_PACKAGES_S3} --stack-name Household-<<parameters.env>> --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND CAPABILITY_NAMED_IAM --parameter-overrides Env=<<parameters.env>>
+      # - run:
+      #     name: Invoke Post deploy Lambda
+      #     command: aws lambda invoke --function-name Household-<<parameters.env>>-PostDeploy /dev/null
+      # - run:
+      #     name: Get Database name
+      #     command: echo "export CYPRESS_DYNAMO_TABLE=$(aws cloudformation describe-stacks --stack-name Household-<<parameters.env>> --query "Stacks[0].Outputs[?OutputKey=='Database'].OutputValue" --output text)" >> env
+      # - persist_to_workspace:
+      #     root: ~/
+      #     paths:
+      #       - repo/env
+  web_deploy:
+    parameters:
+      env:
+        type: string
+    docker:
+      - image: cibuilds/aws:1.16.1
+    working_directory: ~/repo
+    steps:
+      - attach_workspace:
+          at: ~/
+      - deploy:
+          name: Web deploy
+          command: aws s3 sync dist/web s3://$(aws cloudformation describe-stacks --stack-name Household-<<parameters.env>> --query "Stacks[0].Outputs[?OutputKey=='WebsiteBucket'].OutputValue" --output text)
+  # test:
+  #   parameters:
+  #     env:
+  #       type: string
+  #   docker:
+  #     - image: cypress/base
+  #       environment:
+  #         ENV: <<parameters.env>>
+  #   working_directory: ~/repo
+  #   steps:
+  #     - attach_workspace:
+  #         at: ~/
+
+  #     - restore_cache:
+  #         name: Restoring test dependencies from cache
+  #         key: test-dependencies-v1-{{ checksum "test/package.json" }}
+
+  #     - run:
+  #         name: Set environment variables
+  #         command: cat env >> $BASH_ENV
+
+  #     - run:
+  #         name: Running tests
+  #         command: cd test && yarn run test
+
+  #     - store_artifacts:
+  #         path: test/cypress/screenshots
+  #         destination: test/cypress/screenshots
+workflows:
+  version: 2.1
+  local:
+    jobs:
+      - install:
+          name: install
+          filters:
+            branches:
+              ignore:
+                - development
+                - master
+      # - unit_test:
+      #     name: unit_test
+      #     requires:
+      #       - install
+      # - lint:
+      #     name: lint
+      #     requires:
+      #       - install
+      - build:
+          name: build
+          env: "LOCAL"
+          requires:
+            - install
+    
+  dev:
+    jobs:
+      - install:
+          name: install
+          filters:
+            branches:
+              only:
+                - development
+      # - unit_test:
+      #     name: unit_test
+      #     requires:
+      #       - install
+      # - lint:
+      #     name: lint
+      #     requires:
+      #       - install
+      - build:
+          name: build
+          env: "DEV"
+          requires:
+            - install
+      - api_deploy:
+          name: api_deploy
+          env: "DEV"
+          # cypress_password: ${CYPRESS_PASSWORD}
+          # admin_user_email: ${ADMIN_USER_EMAIL}
+          requires:
+            # - unit_test
+            # - lint
+            - build
+      - web_deploy:
+          name: web_deploy
+          env: "DEV"
+          requires:
+            - api_deploy
+      # - test:
+      #     name: test
+      #     env: "DEV"
+      #     requires:
+      #       - web_deploy
+
+  prod:
+    jobs:
+      - install:
+          name: install
+          filters:
+            branches:
+              only:
+                - master
+      # - unit_test:
+      #     name: unit_test
+      #     requires:
+      #       - install
+      # - lint:
+      #     name: lint
+      #     requires:
+      #       - install
+      - build:
+          name: build
+          env: "PROD"
+          requires:
+            - install
+      - api_deploy:
+          name: api_deploy
+          env: "PROD"
+          # cypress_password: ""
+          # admin_user_email: ${ADMIN_USER_EMAIL}
+          requires:
+            # - unit_test
+            # - lint
+            - build
+      - web_deploy:
+          name: web_deploy
+          env: "PROD"
+          requires:
+            - api_deploy
+

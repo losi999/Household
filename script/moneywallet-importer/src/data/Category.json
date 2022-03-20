@@ -1,0 +1,1802 @@
+[
+    {
+        "CategoryID": "5570BD46-3C3A-418D-86CD-2A8D5D44C6C0",
+        "Description": "",
+        "FullName": "Számlák",
+        "IsIncome": 0,
+        "Name": "Számlák",
+        "ParentCategoryCategoryID": null,
+        "UserId": null
+    },
+    {
+        "CategoryID": "A024FAA1-5CCD-4DE9-9E3F-1F674E856AF0",
+        "Description": "",
+        "FullName": "Étel",
+        "IsIncome": 0,
+        "Name": "Étel",
+        "ParentCategoryCategoryID": null,
+        "UserId": null
+    },
+    {
+        "CategoryID": "11F442C5-C48C-4093-8458-DF69A92AF938",
+        "Description": "",
+        "FullName": "Számlák:Telefon",
+        "IsIncome": 0,
+        "Name": "Telefon",
+        "ParentCategoryCategoryID": "5570BD46-3C3A-418D-86CD-2A8D5D44C6C0",
+        "UserId": null
+    },
+    {
+        "CategoryID": "F2C15AA2-5937-4949-B43A-4FEB0C656413",
+        "Description": "",
+        "FullName": "Szórakozás",
+        "IsIncome": 0,
+        "Name": "Szórakozás",
+        "ParentCategoryCategoryID": null,
+        "UserId": null
+    },
+    {
+        "CategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "Description": "",
+        "FullName": "Bevásárlás",
+        "IsIncome": 0,
+        "Name": "Bevásárlás",
+        "ParentCategoryCategoryID": null,
+        "UserId": null
+    },
+    {
+        "CategoryID": "BFCD62F8-53F8-44DD-A413-7BE4C6F2A5E6",
+        "Description": "",
+        "FullName": "Fizetés",
+        "IsIncome": 1,
+        "Name": "Fizetés",
+        "ParentCategoryCategoryID": null,
+        "UserId": null
+    },
+    {
+        "CategoryID": "2B429D40-6499-4B4B-8BDC-7E65408CD85E",
+        "Description": "",
+        "FullName": "Számlák:Lakás:Lakbér",
+        "IsIncome": 0,
+        "Name": "Lakbér",
+        "ParentCategoryCategoryID": "6CB05050-6349-4272-A93C-A46DD6037509",
+        "UserId": null
+    },
+    {
+        "CategoryID": "1338C026-3F2B-45F0-9864-133AA509C777",
+        "Description": "",
+        "FullName": "Étel:New York",
+        "IsIncome": 0,
+        "Name": "New York",
+        "ParentCategoryCategoryID": "A024FAA1-5CCD-4DE9-9E3F-1F674E856AF0",
+        "UserId": null
+    },
+    {
+        "CategoryID": "C0FDA135-BA1F-4132-9423-D75FADAF3D0B",
+        "Description": "",
+        "FullName": "Étel:Pizza",
+        "IsIncome": 0,
+        "Name": "Pizza",
+        "ParentCategoryCategoryID": "A024FAA1-5CCD-4DE9-9E3F-1F674E856AF0",
+        "UserId": null
+    },
+    {
+        "CategoryID": "6E0FA737-FB74-4BAD-8108-7C0B8100B116",
+        "Description": "",
+        "FullName": "Étel:Hamburger",
+        "IsIncome": 0,
+        "Name": "Hamburger",
+        "ParentCategoryCategoryID": "A024FAA1-5CCD-4DE9-9E3F-1F674E856AF0",
+        "UserId": null
+    },
+    {
+        "CategoryID": "B2D3AC4A-21FC-4C38-A163-4F7653B7D251",
+        "Description": "",
+        "FullName": "Közlekedés",
+        "IsIncome": 0,
+        "Name": "Közlekedés",
+        "ParentCategoryCategoryID": null,
+        "UserId": null
+    },
+    {
+        "CategoryID": "AA1F05CA-67DD-4134-B7C7-06E9A6B83A23",
+        "Description": "",
+        "FullName": "Közlekedés:Vonat",
+        "IsIncome": 0,
+        "Name": "Vonat",
+        "ParentCategoryCategoryID": "B2D3AC4A-21FC-4C38-A163-4F7653B7D251",
+        "UserId": null
+    },
+    {
+        "CategoryID": "24AEE8E5-C650-4124-8606-5ED037F932DA",
+        "Description": "",
+        "FullName": "Közlekedés:Busz",
+        "IsIncome": 0,
+        "Name": "Busz",
+        "ParentCategoryCategoryID": "B2D3AC4A-21FC-4C38-A163-4F7653B7D251",
+        "UserId": null
+    },
+    {
+        "CategoryID": "852C6F22-F4EE-4343-95BF-3D2E26CEF7E6",
+        "Description": "",
+        "FullName": "Számlák:Diákhitel",
+        "IsIncome": 0,
+        "Name": "Diákhitel",
+        "ParentCategoryCategoryID": "5570BD46-3C3A-418D-86CD-2A8D5D44C6C0",
+        "UserId": null
+    },
+    {
+        "CategoryID": "37EC3D33-E098-452B-AB9D-2113D3D0D49A",
+        "Description": "",
+        "FullName": "Sport",
+        "IsIncome": 0,
+        "Name": "Sport",
+        "ParentCategoryCategoryID": null,
+        "UserId": null
+    },
+    {
+        "CategoryID": "49B637A3-9CD3-43FC-9DE3-4783178AE4EF",
+        "Description": "",
+        "FullName": "Sport:Kosár",
+        "IsIncome": 0,
+        "Name": "Kosár",
+        "ParentCategoryCategoryID": "37EC3D33-E098-452B-AB9D-2113D3D0D49A",
+        "UserId": null
+    },
+    {
+        "CategoryID": "7F35329B-BB1D-4E3B-855E-7091F8F3675F",
+        "Description": "",
+        "FullName": "Tippmix",
+        "IsIncome": 0,
+        "Name": "Tippmix",
+        "ParentCategoryCategoryID": null,
+        "UserId": null
+    },
+    {
+        "CategoryID": "D4754B9C-DBAD-4141-AF77-D19374734024",
+        "Description": "",
+        "FullName": "Kölcsön vissza",
+        "IsIncome": 1,
+        "Name": "Kölcsön vissza",
+        "ParentCategoryCategoryID": null,
+        "UserId": null
+    },
+    {
+        "CategoryID": "5D5E5B33-DD55-48A3-A9DD-5FDD588765A2",
+        "Description": "",
+        "FullName": "Közlekedés:Szervíz",
+        "IsIncome": 0,
+        "Name": "Szervíz",
+        "ParentCategoryCategoryID": "B2D3AC4A-21FC-4C38-A163-4F7653B7D251",
+        "UserId": null
+    },
+    {
+        "CategoryID": "DAC10D9C-A575-482C-9124-A1B48B4B3D8B",
+        "Description": "",
+        "FullName": "Banki költség",
+        "IsIncome": 0,
+        "Name": "Banki költség",
+        "ParentCategoryCategoryID": null,
+        "UserId": null
+    },
+    {
+        "CategoryID": "B5767DAB-F7C2-48FE-8D99-11DBC6F8B27C",
+        "Description": "",
+        "FullName": "Közlekedés:Benzin",
+        "IsIncome": 0,
+        "Name": "Benzin",
+        "ParentCategoryCategoryID": "B2D3AC4A-21FC-4C38-A163-4F7653B7D251",
+        "UserId": null
+    },
+    {
+        "CategoryID": "23EEEE6F-575A-4F81-8537-25B5A5793467",
+        "Description": "",
+        "FullName": "Bevásárlás:Sör",
+        "IsIncome": 0,
+        "Name": "Sör",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "C6387FAA-7A38-484D-9F60-1F36B1A601AE",
+        "Description": "",
+        "FullName": "Bevásárlás:Víz",
+        "IsIncome": 0,
+        "Name": "Víz",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "7F0E9127-8005-4807-8A7B-8D847CD4A4ED",
+        "Description": "",
+        "FullName": "Bevásárlás:Pizzalap",
+        "IsIncome": 0,
+        "Name": "Pizzalap",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "5C69C94A-501C-4F74-BA83-84C512FD5392",
+        "Description": "",
+        "FullName": "Bevásárlás:Baguette",
+        "IsIncome": 0,
+        "Name": "Baguette",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "829BA27D-9559-4E21-90FF-D0F4B2CB82A6",
+        "Description": "",
+        "FullName": "Bevásárlás:Virsli",
+        "IsIncome": 0,
+        "Name": "Virsli",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "05D6A21E-9A38-45DF-8B61-D6E37BD9C36B",
+        "Description": "",
+        "FullName": "Bevásárlás:Toast kenyér",
+        "IsIncome": 0,
+        "Name": "Toast kenyér",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "04CBBD96-0BA0-4322-805F-78996372DCB1",
+        "Description": "",
+        "FullName": "Bevásárlás:Margarin",
+        "IsIncome": 0,
+        "Name": "Margarin",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "C4B51F6F-DEB2-4BB2-B41C-367A6850348C",
+        "Description": "",
+        "FullName": "Bevásárlás:Liszt",
+        "IsIncome": 0,
+        "Name": "Liszt",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "94CFF2CB-0CE7-4B5E-995A-E4966825F555",
+        "Description": "",
+        "FullName": "Bevásárlás:Tej 2.8%",
+        "IsIncome": 0,
+        "Name": "Tej 2.8%",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "C4AFF892-EE54-4780-BC98-E8493F4F623B",
+        "Description": "",
+        "FullName": "Bevásárlás:Sütőpor",
+        "IsIncome": 0,
+        "Name": "Sütőpor",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "8CE323D8-14AC-44E2-A54C-30CB833500CC",
+        "Description": "",
+        "FullName": "Bevásárlás:Szalámi",
+        "IsIncome": 0,
+        "Name": "Szalámi",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "1AC30FCE-757B-4793-BFC4-69B664CC0282",
+        "Description": "",
+        "FullName": "Bevásárlás:Pizzakrém",
+        "IsIncome": 0,
+        "Name": "Pizzakrém",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "D128F5D7-7A77-49A6-A6EA-B058AB038719",
+        "Description": "",
+        "FullName": "Bevásárlás:Sajt",
+        "IsIncome": 0,
+        "Name": "Sajt",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "103F254D-3338-46BD-9909-3B00F17DB3D5",
+        "Description": "",
+        "FullName": "Bevásárlás:Fagyi",
+        "IsIncome": 0,
+        "Name": "Fagyi",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "CC7F4D26-1A14-4588-8652-A8E471A0B333",
+        "Description": "",
+        "FullName": "Bevásárlás:Tojás",
+        "IsIncome": 0,
+        "Name": "Tojás",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "3FEDA71C-E234-4244-80B9-BD772FBF8DFE",
+        "Description": "",
+        "FullName": "Bevásárlás:Mogyorókrém",
+        "IsIncome": 0,
+        "Name": "Mogyorókrém",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "9D5DF5A1-39A1-4831-9524-0BEA207F1A61",
+        "Description": "",
+        "FullName": "Bevásárlás:Kakaópor",
+        "IsIncome": 0,
+        "Name": "Kakaópor",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "67471D7E-5367-47CC-B94E-A737B78FAD56",
+        "Description": "",
+        "FullName": "Bevásárlás:Chips",
+        "IsIncome": 0,
+        "Name": "Chips",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "16F24F03-70F0-4774-9293-EA9128ADFCBF",
+        "Description": "",
+        "FullName": "Bevásárlás:Fogkrém",
+        "IsIncome": 0,
+        "Name": "Fogkrém",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "E854D156-121E-426C-8307-B4C3E5DC2D93",
+        "Description": "",
+        "FullName": "Bevásárlás:Kifli",
+        "IsIncome": 0,
+        "Name": "Kifli",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "2E6B6BBB-7710-4586-963E-C3F7D8583C00",
+        "Description": "",
+        "FullName": "Bevásárlás:Hagyma",
+        "IsIncome": 0,
+        "Name": "Hagyma",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "9205A591-4156-471D-92A9-BA0022368C37",
+        "Description": "",
+        "FullName": "Bevásárlás:Fonott kalács",
+        "IsIncome": 0,
+        "Name": "Fonott kalács",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "0E8109EF-2D1E-4E2B-8A73-75B6D300566C",
+        "Description": "",
+        "FullName": "Bevásárlás:Víz 2l",
+        "IsIncome": 0,
+        "Name": "Víz 2l",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "90B962AA-5B4F-4FF8-B5A3-81217E3A6974",
+        "Description": "",
+        "FullName": "Bevásárlás:Keksz",
+        "IsIncome": 0,
+        "Name": "Keksz",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "078BD8CB-BEA5-4E90-ADF2-90BE682C400F",
+        "Description": "",
+        "FullName": "Bevásárlás:Paprika",
+        "IsIncome": 0,
+        "Name": "Paprika",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "AA4AC680-42FB-48AD-8BEE-97C3112FF162",
+        "Description": "",
+        "FullName": "Bevásárlás:Krumpli",
+        "IsIncome": 0,
+        "Name": "Krumpli",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "6E3ACF98-7C25-4842-81A0-A24B7876618B",
+        "Description": "",
+        "FullName": "Bevásárlás:Paradicsom",
+        "IsIncome": 0,
+        "Name": "Paradicsom",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "7386EB7F-0F39-47CC-87F2-853C0C388B38",
+        "Description": "",
+        "FullName": "Bevásárlás:Kenyér",
+        "IsIncome": 0,
+        "Name": "Kenyér",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "E0A31F95-686C-4EB4-AC8E-5B09E432D71C",
+        "Description": "",
+        "FullName": "Bevásárlás:Spagetti",
+        "IsIncome": 0,
+        "Name": "Spagetti",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "939D4EE6-C4EF-4B8E-99CC-B38FA045B5B6",
+        "Description": "",
+        "FullName": "Bevásárlás:Öblítő",
+        "IsIncome": 0,
+        "Name": "Öblítő",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "9EF6252B-88A8-42C8-A73C-B76AA647D4CA",
+        "Description": "",
+        "FullName": "Bevásárlás:Papírtörlő",
+        "IsIncome": 0,
+        "Name": "Papírtörlő",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "10539E23-3438-4980-B5D6-61FE00757D23",
+        "Description": "",
+        "FullName": "Bevásárlás:Gabonapehely",
+        "IsIncome": 0,
+        "Name": "Gabonapehely",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "5601BEE3-1B9E-491D-8517-AC55E9BF508A",
+        "Description": "",
+        "FullName": "Bevásárlás:Twix",
+        "IsIncome": 0,
+        "Name": "Twix",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "8D9969E5-C7BD-4FAD-B719-EA93E31DB191",
+        "Description": "",
+        "FullName": "Bevásárlás:Zsemle",
+        "IsIncome": 0,
+        "Name": "Zsemle",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "CB56960D-A9F5-49BE-A0C0-96A5754DABEF",
+        "Description": "",
+        "FullName": "Bevásárlás:Negro",
+        "IsIncome": 0,
+        "Name": "Negro",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "580D7065-0FD5-40DF-8BB0-B3BC968A5C89",
+        "Description": "",
+        "FullName": "Bevásárlás:Banán",
+        "IsIncome": 0,
+        "Name": "Banán",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "1C6ACB7A-A3A7-4069-864B-175D68D8A6A7",
+        "Description": "",
+        "FullName": "Bevásárlás:Alufólia",
+        "IsIncome": 0,
+        "Name": "Alufólia",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "7DF1F2BA-04AD-435B-A8CC-F72A71CE34C5",
+        "Description": "",
+        "FullName": "Bevásárlás:Gulyáskrém",
+        "IsIncome": 0,
+        "Name": "Gulyáskrém",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "63655E95-5232-40BA-86D2-3CD5DC31AC35",
+        "Description": "",
+        "FullName": "Bevásárlás:WC papír",
+        "IsIncome": 0,
+        "Name": "WC papír",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "975D66B4-79D4-4B00-A97E-F87B1D48EA9C",
+        "Description": "",
+        "FullName": "Bevásárlás:Rágó",
+        "IsIncome": 0,
+        "Name": "Rágó",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "BE7DE882-5B7A-4EFB-9CD7-9EEB4B2E7B40",
+        "Description": "",
+        "FullName": "Bevásárlás:Narancs",
+        "IsIncome": 0,
+        "Name": "Narancs",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "BD9FB0C5-A5B8-4B05-AC7E-4DE8819C1BB0",
+        "Description": "",
+        "FullName": "Bevásárlás:Uborka",
+        "IsIncome": 0,
+        "Name": "Uborka",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "3620A7CD-9259-4655-A777-FA65E0313376",
+        "Description": "",
+        "FullName": "Bevásárlás:Túró",
+        "IsIncome": 0,
+        "Name": "Túró",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "F8BA8E1F-0BA7-414E-8287-D62E7C3916C5",
+        "Description": "",
+        "FullName": "Bevásárlás:Gesztenye massza",
+        "IsIncome": 0,
+        "Name": "Gesztenye massza",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "3A5FBAB0-F85A-4D3C-B4FD-F779DB534869",
+        "Description": "",
+        "FullName": "Bevásárlás:Darált hús",
+        "IsIncome": 0,
+        "Name": "Darált hús",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "F49ABD21-EDB6-448A-8BD9-98E0761DA33A",
+        "Description": "",
+        "FullName": "Bevásárlás:Ketchup",
+        "IsIncome": 0,
+        "Name": "Ketchup",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "8E539A5D-F086-4E71-934C-2C3780E59ECD",
+        "Description": "",
+        "FullName": "Bevásárlás:Üdítő",
+        "IsIncome": 0,
+        "Name": "Üdítő",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "C8100CA3-ACF9-46DF-B236-2A493C6C04D3",
+        "Description": "",
+        "FullName": "Bevásárlás:Oregano",
+        "IsIncome": 0,
+        "Name": "Oregano",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "03C35E8D-FF6B-425C-92F9-BB2DF92B4CC8",
+        "Description": "",
+        "FullName": "Bevásárlás:Folpack",
+        "IsIncome": 0,
+        "Name": "Folpack",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "8AACE234-D124-4669-BF7C-2615AB00BB03",
+        "Description": "",
+        "FullName": "Bevásárlás:Stift",
+        "IsIncome": 0,
+        "Name": "Stift",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "828DB4BE-678F-4CD2-9A11-1AF934584E2A",
+        "Description": "",
+        "FullName": "Étel:Trója",
+        "IsIncome": 0,
+        "Name": "Trója",
+        "ParentCategoryCategoryID": "A024FAA1-5CCD-4DE9-9E3F-1F674E856AF0",
+        "UserId": null
+    },
+    {
+        "CategoryID": "D1F95DFA-A12F-4CEB-8B3D-0D9BE668F384",
+        "Description": "",
+        "FullName": "Bevásárlás:Cukor",
+        "IsIncome": 0,
+        "Name": "Cukor",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "C341A5FC-1A35-4FA3-8C20-7B5F91FFE9D8",
+        "Description": "",
+        "FullName": "Bevásárlás:Citromlé",
+        "IsIncome": 0,
+        "Name": "Citromlé",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "9C3B33DC-EDAC-482F-BDA1-CCE3BB73E872",
+        "Description": "",
+        "FullName": "Étel:Sauce Box",
+        "IsIncome": 0,
+        "Name": "Sauce Box",
+        "ParentCategoryCategoryID": "A024FAA1-5CCD-4DE9-9E3F-1F674E856AF0",
+        "UserId": null
+    },
+    {
+        "CategoryID": "BC8F4937-5144-401A-BE8C-7CA5460BC256",
+        "Description": "",
+        "FullName": "Bevásárlás:Csoki",
+        "IsIncome": 0,
+        "Name": "Csoki",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "90E8E2E2-2BCF-45CD-B8BC-D63C1E543B03",
+        "Description": "",
+        "FullName": "Bevásárlás:Alma",
+        "IsIncome": 0,
+        "Name": "Alma",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "EA8328FA-D1C5-458D-B737-E09200B746DA",
+        "Description": "",
+        "FullName": "Bevásárlás:Porcukor",
+        "IsIncome": 0,
+        "Name": "Porcukor",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "512001D9-FA60-4304-8C5B-25896FFA4BCA",
+        "Description": "",
+        "FullName": "Bevásárlás:Kókusz",
+        "IsIncome": 0,
+        "Name": "Kókusz",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "E31B04AB-2056-4987-8A52-F2B70545F5E9",
+        "Description": "",
+        "FullName": "Bevásárlás:Darált keksz",
+        "IsIncome": 0,
+        "Name": "Darált keksz",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "47BC5239-45D4-48DA-99EC-83329CE3E53B",
+        "Description": "",
+        "FullName": "Bevásárlás:Vaníliás cukor",
+        "IsIncome": 0,
+        "Name": "Vaníliás cukor",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "DDF6F174-4637-4193-B89F-EB68DB44FCFD",
+        "Description": "",
+        "FullName": "Bevásárlás:Tortilla",
+        "IsIncome": 0,
+        "Name": "Tortilla",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "92E1B881-71FE-4DD1-B2B6-28739808A9B1",
+        "Description": "",
+        "FullName": "Bevásárlás:Chili szósz",
+        "IsIncome": 0,
+        "Name": "Chili szósz",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "35A1B1BD-2377-4052-B380-13C399198725",
+        "Description": "",
+        "FullName": "Bevásárlás:Joghurt",
+        "IsIncome": 0,
+        "Name": "Joghurt",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "E974C5F9-D8B2-4263-A6D5-6C725F0A0E08",
+        "Description": "",
+        "FullName": "Bevásárlás:Zselatin fix",
+        "IsIncome": 0,
+        "Name": "Zselatin fix",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "B8C10892-157F-46DC-A907-E37AC60EC375",
+        "Description": "",
+        "FullName": "Bevásárlás:Gyümölcs konzerv",
+        "IsIncome": 0,
+        "Name": "Gyümölcs konzerv",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "CE118E0F-107D-4728-AD64-3AE49244E340",
+        "Description": "",
+        "FullName": "Bevásárlás:Tusfürdő",
+        "IsIncome": 0,
+        "Name": "Tusfürdő",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "54C383F9-C244-45D7-82F4-432B8A19BB19",
+        "Description": "",
+        "FullName": "Bevásárlás:Tej 1.5%",
+        "IsIncome": 0,
+        "Name": "Tej 1.5%",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "8C86CF43-A641-4ED1-AC51-93A9040D3FD7",
+        "Description": "",
+        "FullName": "Bevásárlás:Kukorica",
+        "IsIncome": 0,
+        "Name": "Kukorica",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "222AEBCD-B44A-46F9-A2B8-C57CC808A530",
+        "Description": "",
+        "FullName": "Bevásárlás:Ananász",
+        "IsIncome": 0,
+        "Name": "Ananász",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "BFC3385D-A439-44E6-9E26-3DB610F4FD57",
+        "Description": "",
+        "FullName": "Bevásárlás:Édesítő",
+        "IsIncome": 0,
+        "Name": "Édesítő",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "F165B48E-8F01-4811-85B1-E684060C16A2",
+        "Description": "",
+        "FullName": "Étel:Jalapeno",
+        "IsIncome": 0,
+        "Name": "Jalapeno",
+        "ParentCategoryCategoryID": "A024FAA1-5CCD-4DE9-9E3F-1F674E856AF0",
+        "UserId": null
+    },
+    {
+        "CategoryID": "A3D3B515-88DB-4672-B6BE-396AAA51AD58",
+        "Description": "",
+        "FullName": "Étel:Fish & Chips ",
+        "IsIncome": 0,
+        "Name": "Fish & Chips ",
+        "ParentCategoryCategoryID": "A024FAA1-5CCD-4DE9-9E3F-1F674E856AF0",
+        "UserId": null
+    },
+    {
+        "CategoryID": "05DC2C3C-62E9-4BCD-A386-EF736E4D7AD3",
+        "Description": "",
+        "FullName": "Szórakozás:Egyéb",
+        "IsIncome": 0,
+        "Name": "Egyéb",
+        "ParentCategoryCategoryID": "F2C15AA2-5937-4949-B43A-4FEB0C656413",
+        "UserId": null
+    },
+    {
+        "CategoryID": "EA56C3AE-B740-4A10-83B9-BD9F32ABD572",
+        "Description": "",
+        "FullName": "Bevásárlás:Ropi",
+        "IsIncome": 0,
+        "Name": "Ropi",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "495BD7B5-24B9-445D-9549-F3A8F251476F",
+        "Description": "",
+        "FullName": "Bevásárlás:Mosogatószivacs",
+        "IsIncome": 0,
+        "Name": "Mosogatószivacs",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "30E7F562-3509-4F15-849A-8D003414705A",
+        "Description": "",
+        "FullName": "Bevásárlás:Gumikesztyű",
+        "IsIncome": 0,
+        "Name": "Gumikesztyű",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "23B5B44F-95F9-4574-B691-110F68CE315C",
+        "Description": "",
+        "FullName": "Bevásárlás:Törlőkendő",
+        "IsIncome": 0,
+        "Name": "Törlőkendő",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "F2E54362-4687-494E-9E04-C7D907EAFF4D",
+        "Description": "",
+        "FullName": "Bevásárlás:Nudli",
+        "IsIncome": 0,
+        "Name": "Nudli",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "11E3B364-884F-496E-8DC0-D20995900827",
+        "Description": "",
+        "FullName": "Étel:Büfé",
+        "IsIncome": 0,
+        "Name": "Büfé",
+        "ParentCategoryCategoryID": "A024FAA1-5CCD-4DE9-9E3F-1F674E856AF0",
+        "UserId": null
+    },
+    {
+        "CategoryID": "B6CB5508-A0CE-42C7-A2E5-ACDD1E7070C7",
+        "Description": "",
+        "FullName": "Bevásárlás:Sampon",
+        "IsIncome": 0,
+        "Name": "Sampon",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "46CA9F71-7884-4592-9049-37CA49BE151D",
+        "Description": "",
+        "FullName": "Bevásárlás:Mosószer",
+        "IsIncome": 0,
+        "Name": "Mosószer",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "E29EA0C1-DBFC-4F84-BA88-573AA63E6EF7",
+        "Description": "",
+        "FullName": "Bevásárlás:Tea",
+        "IsIncome": 0,
+        "Name": "Tea",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "12ED28BF-A774-47A5-84DB-B90B12D9D607",
+        "Description": "",
+        "FullName": "Bevásárlás:Nektarin",
+        "IsIncome": 0,
+        "Name": "Nektarin",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "8583A19F-9FC8-4F22-90A3-A679C933EEBC",
+        "Description": "",
+        "FullName": "Bevásárlás:Búzadara",
+        "IsIncome": 0,
+        "Name": "Búzadara",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "95D49922-F537-4FD6-901D-24B2ABB59A18",
+        "Description": "",
+        "FullName": "Bevásárlás:Mák",
+        "IsIncome": 0,
+        "Name": "Mák",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "C0037C97-F332-44AA-BEE0-B8E29EDDAB48",
+        "Description": "",
+        "FullName": "Bevásárlás:Só",
+        "IsIncome": 0,
+        "Name": "Só",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "BEB8BE7E-D618-4B8D-9E35-3E19792F9ADD",
+        "Description": "",
+        "FullName": "Bevásárlás:Étolaj",
+        "IsIncome": 0,
+        "Name": "Étolaj",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "BBFA53B6-C494-48C2-8673-A5DBE08533C8",
+        "Description": "",
+        "FullName": "Bevásárlás:Bacon",
+        "IsIncome": 0,
+        "Name": "Bacon",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "DFB14B08-6BAE-4B72-B60E-341C250AE9F3",
+        "Description": "",
+        "FullName": "Bevásárlás:Curry",
+        "IsIncome": 0,
+        "Name": "Curry",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "3D78D956-F75D-45B2-AB69-F2833D76032F",
+        "Description": "",
+        "FullName": "Bevásárlás:Kávé",
+        "IsIncome": 0,
+        "Name": "Kávé",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "099FBA09-525F-411B-AC4F-CDBE32E12410",
+        "Description": "",
+        "FullName": "Bevásárlás:Saláta",
+        "IsIncome": 0,
+        "Name": "Saláta",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "2563D5A6-6496-401E-A831-2B7DEA69A0B6",
+        "Description": "",
+        "FullName": "Bevásárlás:Tészta",
+        "IsIncome": 0,
+        "Name": "Tészta",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "0A5695C9-DEA8-47BE-AE81-56B72EFD73F9",
+        "Description": "",
+        "FullName": "Bevásárlás:Zsemlemorzsa",
+        "IsIncome": 0,
+        "Name": "Zsemlemorzsa",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "726C0CF3-B545-4548-93EB-F581A864EF4C",
+        "Description": "",
+        "FullName": "Bevásárlás:Fűszer",
+        "IsIncome": 0,
+        "Name": "Fűszer",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "588039AE-BFB1-4558-80B3-8FBF31CE4EED",
+        "Description": "",
+        "FullName": "Bevásárlás:Vaj",
+        "IsIncome": 0,
+        "Name": "Vaj",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "34D124B5-BF9F-49C0-9CF4-4332B98F8DF0",
+        "Description": "",
+        "FullName": "Bevásárlás:Gyufa",
+        "IsIncome": 0,
+        "Name": "Gyufa",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "322B25A6-6C8E-428D-ABD6-27BA70BDA199",
+        "Description": "",
+        "FullName": "Bevásárlás:Kolbász",
+        "IsIncome": 0,
+        "Name": "Kolbász",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "ABD2A451-25D7-407E-9BD4-093003B2BA0B",
+        "Description": "",
+        "FullName": "Bevásárlás:Borsó",
+        "IsIncome": 0,
+        "Name": "Borsó",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "E2D0F25D-6163-43AA-BDCA-39D38F2BD1E7",
+        "Description": "",
+        "FullName": "Bevásárlás:Leveskocka",
+        "IsIncome": 0,
+        "Name": "Leveskocka",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "A9452ECE-EE5B-4C30-9AD3-F21C04ED097E",
+        "Description": "",
+        "FullName": "Bevásárlás:Szörp",
+        "IsIncome": 0,
+        "Name": "Szörp",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "F03AEFF8-9E49-4EC5-8276-43C9B735F8B8",
+        "Description": "",
+        "FullName": "Bevásárlás:Ecet",
+        "IsIncome": 0,
+        "Name": "Ecet",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "47FF7514-90D4-4C78-956B-D83D641D5D9F",
+        "Description": "",
+        "FullName": "Bevásárlás:Tejszín",
+        "IsIncome": 0,
+        "Name": "Tejszín",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "249B6394-8662-48BA-AA85-3D2F736EA04C",
+        "Description": "",
+        "FullName": "Bevásárlás:Mascarpone",
+        "IsIncome": 0,
+        "Name": "Mascarpone",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "8D65E9E5-5D56-43D3-9866-3CD57AFDBA88",
+        "Description": "",
+        "FullName": "Bevásárlás:Habpor",
+        "IsIncome": 0,
+        "Name": "Habpor",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "B667A99E-DD3B-436D-89F5-800E22AD5BEA",
+        "Description": "",
+        "FullName": "Bevásárlás:Habfixáló",
+        "IsIncome": 0,
+        "Name": "Habfixáló",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "8F01930F-DDA2-41BE-A259-83F3C1B0EFA6",
+        "Description": "",
+        "FullName": "Egyéb",
+        "IsIncome": 0,
+        "Name": "Egyéb",
+        "ParentCategoryCategoryID": null,
+        "UserId": null
+    },
+    {
+        "CategoryID": "9A6CAF51-9489-42CD-8B08-86C9DC54F2CD",
+        "Description": "",
+        "FullName": "Bevásárlás:Puding",
+        "IsIncome": 0,
+        "Name": "Puding",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "4A2BAF34-DE2B-425C-ABC9-D61D72B18FE8",
+        "Description": "",
+        "FullName": "Bevásárlás:Fogkefe",
+        "IsIncome": 0,
+        "Name": "Fogkefe",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "012486C6-59D1-41F0-BD07-5D1738F671AE",
+        "Description": "",
+        "FullName": "Bevásárlás:Babapiskóta",
+        "IsIncome": 0,
+        "Name": "Babapiskóta",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "6DF26DF8-FF7E-44D1-AC69-7B11553688DD",
+        "Description": "",
+        "FullName": "Bevásárlás:Barnacukor",
+        "IsIncome": 0,
+        "Name": "Barnacukor",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "304AF0C5-68FB-4FDB-8F78-EE1B52C0C82F",
+        "Description": "",
+        "FullName": "Bevásárlás:Fahéj",
+        "IsIncome": 0,
+        "Name": "Fahéj",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "89B2C9F0-F3CC-423A-9147-C92C17DEE4E9",
+        "Description": "",
+        "FullName": "Bevásárlás:Májkrém",
+        "IsIncome": 0,
+        "Name": "Májkrém",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "1BB21A22-4D5A-4692-A8BE-1F8ADF42EB2A",
+        "Description": "",
+        "FullName": "Bevásárlás:Nápolyi",
+        "IsIncome": 0,
+        "Name": "Nápolyi",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "5A8BBB27-DB72-4E3B-98DB-73495753C3EB",
+        "Description": "",
+        "FullName": "Bevásárlás:Gombóc",
+        "IsIncome": 0,
+        "Name": "Gombóc",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "21E24E18-A790-46A0-BBBB-7C6E10F535E3",
+        "Description": "",
+        "FullName": "Bevásárlás:Dinnye",
+        "IsIncome": 0,
+        "Name": "Dinnye",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "FE5BF0B0-E29D-414C-9689-423BA4EC0FEE",
+        "Description": "",
+        "FullName": "Bevásárlás:Hal",
+        "IsIncome": 0,
+        "Name": "Hal",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "9D52BABC-2BE5-4971-9266-B8F7FFE2DB2A",
+        "Description": "",
+        "FullName": "Bevásárlás:Karaj",
+        "IsIncome": 0,
+        "Name": "Karaj",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "7B13AED9-9E8B-424F-BC09-10C285077828",
+        "Description": "",
+        "FullName": "Bevásárlás:Mosogatószer",
+        "IsIncome": 0,
+        "Name": "Mosogatószer",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "FA4B7D32-A0E8-4AD3-8145-ABB0842BA0E7",
+        "Description": "",
+        "FullName": "Bevásárlás:Péksütemény",
+        "IsIncome": 0,
+        "Name": "Péksütemény",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "94AF4688-61C7-44ED-8286-D454E89315A2",
+        "Description": "",
+        "FullName": "Vásárlás",
+        "IsIncome": 0,
+        "Name": "Vásárlás",
+        "ParentCategoryCategoryID": null,
+        "UserId": null
+    },
+    {
+        "CategoryID": "E816E5BA-3DA9-4AE3-8238-65440A86325E",
+        "Description": "",
+        "FullName": "Vásárlás:TV",
+        "IsIncome": 0,
+        "Name": "TV",
+        "ParentCategoryCategoryID": "94AF4688-61C7-44ED-8286-D454E89315A2",
+        "UserId": null
+    },
+    {
+        "CategoryID": "F60A752C-710C-4582-9CFF-5F4A165E94C6",
+        "Description": "",
+        "FullName": "Vásárlás:Anya laptop",
+        "IsIncome": 0,
+        "Name": "Anya laptop",
+        "ParentCategoryCategoryID": "94AF4688-61C7-44ED-8286-D454E89315A2",
+        "UserId": null
+    },
+    {
+        "CategoryID": "ED4A8A8C-CCBF-4F73-A384-B8A2CE7A1EB5",
+        "Description": "",
+        "FullName": "Bevásárlás:WC frissítő",
+        "IsIncome": 0,
+        "Name": "WC frissítő",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "81A9B257-27D9-4790-8791-2C99844320B4",
+        "Description": "",
+        "FullName": "Bevásárlás:Szemeteszsák",
+        "IsIncome": 0,
+        "Name": "Szemeteszsák",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "930E2F3D-E509-4B75-A846-6BB2B93398DD",
+        "Description": "",
+        "FullName": "Bevásárlás:Szalonna",
+        "IsIncome": 0,
+        "Name": "Szalonna",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "3360BCE6-05E8-47F1-AD9D-7A26434CBDF9",
+        "Description": "",
+        "FullName": "Bevásárlás:Súrolószer",
+        "IsIncome": 0,
+        "Name": "Súrolószer",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "CA93C6C7-11F5-402C-A227-5AFB710804D2",
+        "Description": "",
+        "FullName": "Étel:Cukkini",
+        "IsIncome": 0,
+        "Name": "Cukkini",
+        "ParentCategoryCategoryID": "A024FAA1-5CCD-4DE9-9E3F-1F674E856AF0",
+        "UserId": null
+    },
+    {
+        "CategoryID": "9AFF8E5F-E16E-44F6-ABFF-11DE46241F45",
+        "Description": "",
+        "FullName": "Étel:Mega Megálló",
+        "IsIncome": 0,
+        "Name": "Mega Megálló",
+        "ParentCategoryCategoryID": "A024FAA1-5CCD-4DE9-9E3F-1F674E856AF0",
+        "UserId": null
+    },
+    {
+        "CategoryID": "8211ECCF-658E-4B99-8CD7-7CFECBF5EF3C",
+        "Description": "",
+        "FullName": "Hitelkártya visszatérítés",
+        "IsIncome": 1,
+        "Name": "Hitelkártya visszatérítés",
+        "ParentCategoryCategoryID": null,
+        "UserId": null
+    },
+    {
+        "CategoryID": "923428FB-F4DB-4AA6-87C6-5D62F1A9043F",
+        "Description": "",
+        "FullName": "Bevásárlás:Sárgarépa",
+        "IsIncome": 0,
+        "Name": "Sárgarépa",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "64B5C3FE-9BCC-4118-9142-BCEE7D2C12F0",
+        "Description": "",
+        "FullName": "Bevásárlás:Virág",
+        "IsIncome": 0,
+        "Name": "Virág",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "8DA59DD1-14D4-4837-B8E3-250E235E066E",
+        "Description": "",
+        "FullName": "Bevásárlás:Gyümölcs",
+        "IsIncome": 0,
+        "Name": "Gyümölcs",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "B5B45D78-314B-4438-9B47-C14C032A462E",
+        "Description": "",
+        "FullName": "Bevásárlás:Csirkehús",
+        "IsIncome": 0,
+        "Name": "Csirkehús",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "B8976267-EBF0-43F0-8CEA-96C4A39D0DA8",
+        "Description": "",
+        "FullName": "Bevásárlás:Élesztő",
+        "IsIncome": 0,
+        "Name": "Élesztő",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "B32E7431-D548-45EB-9AD1-DDAA31748FB9",
+        "Description": "",
+        "FullName": "Bevásárlás:Tejföl",
+        "IsIncome": 0,
+        "Name": "Tejföl",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "6CB05050-6349-4272-A93C-A46DD6037509",
+        "Description": "",
+        "FullName": "Számlák:Lakás",
+        "IsIncome": 0,
+        "Name": "Lakás",
+        "ParentCategoryCategoryID": "5570BD46-3C3A-418D-86CD-2A8D5D44C6C0",
+        "UserId": null
+    },
+    {
+        "CategoryID": "C2047658-A141-4508-9251-4D4E2F8C4FFC",
+        "Description": "",
+        "FullName": "Számlák:Lakás:Közös költség",
+        "IsIncome": 0,
+        "Name": "Közös költség",
+        "ParentCategoryCategoryID": "6CB05050-6349-4272-A93C-A46DD6037509",
+        "UserId": null
+    },
+    {
+        "CategoryID": "DEAE2C5A-5AC0-4575-8DD6-8A01B28DF08F",
+        "Description": "",
+        "FullName": "Számlák:Lakás:Digi",
+        "IsIncome": 0,
+        "Name": "Digi",
+        "ParentCategoryCategoryID": "6CB05050-6349-4272-A93C-A46DD6037509",
+        "UserId": null
+    },
+    {
+        "CategoryID": "FC2C3100-5DC2-4146-A289-74043CF62493",
+        "Description": "",
+        "FullName": "Számlák:Lakás:Hő",
+        "IsIncome": 0,
+        "Name": "Hő",
+        "ParentCategoryCategoryID": "6CB05050-6349-4272-A93C-A46DD6037509",
+        "UserId": null
+    },
+    {
+        "CategoryID": "76121AD1-6902-4D67-8F64-BAAF46AAAC9A",
+        "Description": "",
+        "FullName": "Számlák:Lakás:Hideg víz",
+        "IsIncome": 0,
+        "Name": "Hideg víz",
+        "ParentCategoryCategoryID": "6CB05050-6349-4272-A93C-A46DD6037509",
+        "UserId": null
+    },
+    {
+        "CategoryID": "97AF0ECA-8FA2-4974-AC3C-310CA4AE3B68",
+        "Description": "",
+        "FullName": "Számlák:Lakás:Áram",
+        "IsIncome": 0,
+        "Name": "Áram",
+        "ParentCategoryCategoryID": "6CB05050-6349-4272-A93C-A46DD6037509",
+        "UserId": null
+    },
+    {
+        "CategoryID": "99863C3A-EFDD-49DC-9419-84C27CDEDB61",
+        "Description": "",
+        "FullName": "Számlák:Lakás:Gáz",
+        "IsIncome": 0,
+        "Name": "Gáz",
+        "ParentCategoryCategoryID": "6CB05050-6349-4272-A93C-A46DD6037509",
+        "UserId": null
+    },
+    {
+        "CategoryID": "CF6853D1-649D-4980-90BE-B35D417CCFC5",
+        "Description": "",
+        "FullName": "Számlák:Lakás:Egyéb",
+        "IsIncome": 0,
+        "Name": "Egyéb",
+        "ParentCategoryCategoryID": "6CB05050-6349-4272-A93C-A46DD6037509",
+        "UserId": null
+    },
+    {
+        "CategoryID": "9FE1F770-FA8F-4437-9D47-C1764FF152ED",
+        "Description": "",
+        "FullName": "Bevásárlás:Hús",
+        "IsIncome": 0,
+        "Name": "Hús",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "E30D5529-13DE-42C9-8B87-739DDB1F2AB1",
+        "Description": "",
+        "FullName": "Bevásárlás:Mandarin",
+        "IsIncome": 0,
+        "Name": "Mandarin",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "BBB6A3F3-0903-41D5-92D6-AD5ED87E4325",
+        "Description": "",
+        "FullName": "Bevásárlás:Szőlőcukor",
+        "IsIncome": 0,
+        "Name": "Szőlőcukor",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "6349F943-FC4F-4538-8141-33C97F50657C",
+        "Description": "",
+        "FullName": "Bevásárlás:Mosogatógép",
+        "IsIncome": 0,
+        "Name": "Mosogatógép",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "5332A105-9AB9-4BBC-9D2D-255AFD34710F",
+        "Description": "",
+        "FullName": "Bevásárlás:Pita",
+        "IsIncome": 0,
+        "Name": "Pita",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "CA4D8609-65BC-4483-BFC7-3FC64B657E79",
+        "Description": "",
+        "FullName": "Bevásárlás:Olívaolaj",
+        "IsIncome": 0,
+        "Name": "Olívaolaj",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "961D4C98-EBBB-43DA-B8F8-8010FBBB6AC2",
+        "Description": "",
+        "FullName": "Bevásárlás:Fokhagyma",
+        "IsIncome": 0,
+        "Name": "Fokhagyma",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "9F823F9B-7E00-4521-A1FD-F1D80EC83A27",
+        "Description": "",
+        "FullName": "Szórakozás:Napfény",
+        "IsIncome": 0,
+        "Name": "Napfény",
+        "ParentCategoryCategoryID": "F2C15AA2-5937-4949-B43A-4FEB0C656413",
+        "UserId": null
+    },
+    {
+        "CategoryID": "4FF2EDE2-531F-4F81-AAF4-15E079483C9B",
+        "Description": "",
+        "FullName": "Utazás",
+        "IsIncome": 0,
+        "Name": "Utazás",
+        "ParentCategoryCategoryID": null,
+        "UserId": null
+    },
+    {
+        "CategoryID": "91C60FEF-67E2-4F58-8844-259999F9F3A8",
+        "Description": "",
+        "FullName": "Utazás:Szállás",
+        "IsIncome": 0,
+        "Name": "Szállás",
+        "ParentCategoryCategoryID": "4FF2EDE2-531F-4F81-AAF4-15E079483C9B",
+        "UserId": null
+    },
+    {
+        "CategoryID": "0D4A7086-B27A-43E8-AC2D-CC0D6A7A67DE",
+        "Description": "",
+        "FullName": "Utazás:Repülő",
+        "IsIncome": 0,
+        "Name": "Repülő",
+        "ParentCategoryCategoryID": "4FF2EDE2-531F-4F81-AAF4-15E079483C9B",
+        "UserId": null
+    },
+    {
+        "CategoryID": "882649A9-0AA8-4E61-823E-2F2B0BFD77C5",
+        "Description": "",
+        "FullName": "Utazás:Busz",
+        "IsIncome": 0,
+        "Name": "Busz",
+        "ParentCategoryCategoryID": "4FF2EDE2-531F-4F81-AAF4-15E079483C9B",
+        "UserId": null
+    },
+    {
+        "CategoryID": "F61109C4-8B97-460D-B20A-49A411637508",
+        "Description": "",
+        "FullName": "Utazás:Vonat",
+        "IsIncome": 0,
+        "Name": "Vonat",
+        "ParentCategoryCategoryID": "4FF2EDE2-531F-4F81-AAF4-15E079483C9B",
+        "UserId": null
+    },
+    {
+        "CategoryID": "46CE34A2-5807-4C58-A850-3CFF38B6721E",
+        "Description": "",
+        "FullName": "Utazás:Vásárlás",
+        "IsIncome": 0,
+        "Name": "Vásárlás",
+        "ParentCategoryCategoryID": "4FF2EDE2-531F-4F81-AAF4-15E079483C9B",
+        "UserId": null
+    },
+    {
+        "CategoryID": "6BEC7E93-E459-428A-89D8-47C46298E962",
+        "Description": "",
+        "FullName": "Utazás:Szórakozás",
+        "IsIncome": 0,
+        "Name": "Szórakozás",
+        "ParentCategoryCategoryID": "4FF2EDE2-531F-4F81-AAF4-15E079483C9B",
+        "UserId": null
+    },
+    {
+        "CategoryID": "655BC5FD-BB11-419A-B8AC-6F5A6F7B20CB",
+        "Description": "",
+        "FullName": "Utazás:Étel/Ital",
+        "IsIncome": 0,
+        "Name": "Étel/Ital",
+        "ParentCategoryCategoryID": "4FF2EDE2-531F-4F81-AAF4-15E079483C9B",
+        "UserId": null
+    },
+    {
+        "CategoryID": "3D59279B-B0A0-461F-B6A9-A7AC05343716",
+        "Description": "",
+        "FullName": "Utazás:Helyi közlekedés",
+        "IsIncome": 0,
+        "Name": "Helyi közlekedés",
+        "ParentCategoryCategoryID": "4FF2EDE2-531F-4F81-AAF4-15E079483C9B",
+        "UserId": null
+    },
+    {
+        "CategoryID": "DC7352C7-E8D7-466F-8FB6-0ECB6C6868B4",
+        "Description": "",
+        "FullName": "Szórakozás:PS4",
+        "IsIncome": 0,
+        "Name": "PS4",
+        "ParentCategoryCategoryID": "F2C15AA2-5937-4949-B43A-4FEB0C656413",
+        "UserId": null
+    },
+    {
+        "CategoryID": "9253E0CB-91C1-430D-80BA-E1CCECC76141",
+        "Description": "",
+        "FullName": "Szórakozás:Streaming",
+        "IsIncome": 0,
+        "Name": "Streaming",
+        "ParentCategoryCategoryID": "F2C15AA2-5937-4949-B43A-4FEB0C656413",
+        "UserId": null
+    },
+    {
+        "CategoryID": "3408C326-8C94-4583-AA7E-80B50FC4DC35",
+        "Description": "",
+        "FullName": "Bevásárlás:Citrom",
+        "IsIncome": 0,
+        "Name": "Citrom",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "7667642A-B4FE-4BD3-841F-0654B0905304",
+        "Description": "",
+        "FullName": "Bevásárlás:Rétesliszt",
+        "IsIncome": 0,
+        "Name": "Rétesliszt",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "EB56B93A-C99A-4601-82CB-0BD719489A88",
+        "Description": "",
+        "FullName": "Bevásárlás:Fürdősó",
+        "IsIncome": 0,
+        "Name": "Fürdősó",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "A7E09FAE-736F-4B55-B748-4555BE1A0EB4",
+        "Description": "",
+        "FullName": "Vásárlás:Ruha",
+        "IsIncome": 0,
+        "Name": "Ruha",
+        "ParentCategoryCategoryID": "94AF4688-61C7-44ED-8286-D454E89315A2",
+        "UserId": null
+    },
+    {
+        "CategoryID": "9A8BE547-83CC-447D-8553-E6CE6CEE3B08",
+        "Description": "",
+        "FullName": "Bevásárlás:Fogselyem",
+        "IsIncome": 0,
+        "Name": "Fogselyem",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "506904C0-E603-4619-B20E-C46B67E45A4B",
+        "Description": "",
+        "FullName": "Bevásárlás:Habfürdő",
+        "IsIncome": 0,
+        "Name": "Habfürdő",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "02A67EAE-EA31-4D89-B579-14E177B99B21",
+        "Description": "",
+        "FullName": "Vásárlás:AWS",
+        "IsIncome": 0,
+        "Name": "AWS",
+        "ParentCategoryCategoryID": "94AF4688-61C7-44ED-8286-D454E89315A2",
+        "UserId": null
+    },
+    {
+        "CategoryID": "F3ACA5A2-A61B-4F9D-8B4C-1BA6E8A50CB9",
+        "Description": "",
+        "FullName": "Bevásárlás:Balzsamecet",
+        "IsIncome": 0,
+        "Name": "Balzsamecet",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "BCD4A58A-B79B-460D-9920-61C14E65A562",
+        "Description": "",
+        "FullName": "Bevásárlás:Worcester szósz",
+        "IsIncome": 0,
+        "Name": "Worcester szósz",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "35AE589B-830D-4EAF-883D-EFB4889FEBA0",
+        "Description": "",
+        "FullName": "Bevásárlás:Mogyoróvaj",
+        "IsIncome": 0,
+        "Name": "Mogyoróvaj",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "2C4FE296-436D-48CE-BBFA-ADF647EC79E9",
+        "Description": "",
+        "FullName": "Bevásárlás:Szódabikarbóna",
+        "IsIncome": 0,
+        "Name": "Szódabikarbóna",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "A4D73823-AA08-4347-A548-C3799A293700",
+        "Description": "",
+        "FullName": "Bevásárlás:Sütőpapír",
+        "IsIncome": 0,
+        "Name": "Sütőpapír",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "D4D15B07-DB59-4533-B8A6-AD724B69F1BA",
+        "Description": "",
+        "FullName": "Bevásárlás:Leveles tészta",
+        "IsIncome": 0,
+        "Name": "Leveles tészta",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "73695C3F-9559-4122-B6C7-1E3D730AC950",
+        "Description": "",
+        "FullName": "Bevásárlás:Felmosó",
+        "IsIncome": 0,
+        "Name": "Felmosó",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "DA75D9B6-E2F5-4450-A498-27F796682084",
+        "Description": "",
+        "FullName": "Bevásárlás:Juharszirup",
+        "IsIncome": 0,
+        "Name": "Juharszirup",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "EB4D61E5-E878-428A-9B3B-2DE796A1E57E",
+        "Description": "",
+        "FullName": "Bevásárlás:Illatosító",
+        "IsIncome": 0,
+        "Name": "Illatosító",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    },
+    {
+        "CategoryID": "2C867408-64EA-4AD2-A189-8EEAEF4ECDCF",
+        "Description": "",
+        "FullName": "Bevásárlás:Kefír",
+        "IsIncome": 0,
+        "Name": "Kefír",
+        "ParentCategoryCategoryID": "8431FC6F-681A-40B0-8773-4E8A4BA379EB",
+        "UserId": null
+    }
+]

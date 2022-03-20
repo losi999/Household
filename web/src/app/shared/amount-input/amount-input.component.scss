@@ -1,0 +1,18 @@
+.amount-input {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: "amount switch";
+}
+
+.amount {
+  grid-area: amount;
+}
+
+.switch {
+  grid-area: switch;
+}
+
+.mat-form-field {
+  display: block;
+}

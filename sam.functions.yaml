@@ -1,0 +1,46 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: "AWS::Serverless-2016-10-31"
+Description: "Foci 2020 Functions"
+Parameters:
+  LambdaRoleArn:
+    Type: String
+  Env:
+    Type: String   
+  MongodbConnectionString:
+    Type: String
+  MongooseLayer:
+    Type: String
+  DatabaseArchiveBucket:
+    Type: String        
+
+
+Conditions:
+  ShouldUseLayers: !Not [!Equals [!Ref MongooseLayer, "MongooseLayer"]]
+
+Globals:
+  Function:
+    Handler: index.default
+    Runtime: nodejs14.x
+    Timeout: 60
+    MemorySize: 512
+    Tracing: Active
+    Layers:
+      - !If [ShouldUseLayers, !Ref MongooseLayer, !Ref "AWS::NoValue"]
+    Environment:
+      Variables:
+        MONGODB_CONNECTION_STRING: !Ref MongodbConnectionString
+        DATABASE_ARCHIVE_BUCKET: !Ref DatabaseArchiveBucket
+
+Resources:
+  DatabaseArchive:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-DatabaseArchive
+      CodeUri: dist/api/database-archive
+      Role: !Ref LambdaRoleArn
+      Events:
+        Schedule:
+          Type: Schedule
+          Properties:
+            Enabled: true
+            Schedule: "cron(0 0 * * ? *)"

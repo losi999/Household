@@ -1,0 +1,150 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: "AWS::Serverless-2016-10-31"
+Description: "Household Category Api"
+Parameters:
+  LambdaRoleArn:
+    Type: String
+  UserPoolArn:
+    Type: String
+  Env:
+    Type: String
+  MongodbConnectionString:
+    Type: String
+  MongooseLayer:
+    Type: String
+
+Conditions:
+  ShouldUseLayers: !Not [!Equals [!Ref MongooseLayer, "MongooseLayer"]]
+
+Globals:
+  Function:
+    Handler: index.default
+    Runtime: nodejs14.x
+    Timeout: 60
+    MemorySize: 512
+    Tracing: Active
+    Layers:
+      - !If [ShouldUseLayers, !Ref MongooseLayer, !Ref "AWS::NoValue"]
+    Environment:
+      Variables:
+        MONGODB_CONNECTION_STRING: !Ref MongodbConnectionString
+
+Resources:
+  CategoryApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub Household-${Env}-Category
+      StageName: category
+      TracingEnabled: true
+      Cors:
+        AllowMethods: "'*'"
+        AllowHeaders: "'*'"
+        AllowOrigin: "'*'"
+      Auth:
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn: !Ref UserPoolArn
+      GatewayResponses:
+        UNAUTHORIZED:
+          StatusCode: 401
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"  
+              Access-Control-Allow-Headers: "'*'"
+              Access-Control-Allow-Methods: "'*'"
+          ResponseTemplates:
+            application/json: '{ "message": $context.error.messageString }'            
+        MISSING_AUTHENTICATION_TOKEN:
+          StatusCode: 404
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"  
+              Access-Control-Allow-Headers: "'*'"
+              Access-Control-Allow-Methods: "'*'"
+          ResponseTemplates:
+            application/json: '{ "message": $context.error.messageString }'
+
+  CreateCategory:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-Category-CreateCategory
+      CodeUri: dist/api/create-category
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CategoryApi
+            Path: /v1/categories
+            Method: POST
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  UpdateCategory:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-Category-UpdateCategory
+      CodeUri: dist/api/update-category
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CategoryApi
+            Path: /v1/categories/{categoryId}
+            Method: PUT
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  ListCategories:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-Category-ListCategories
+      CodeUri: dist/api/list-categories
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CategoryApi
+            Path: /v1/categories
+            Method: GET
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  GetCategory:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-Category-GetCategory
+      CodeUri: dist/api/get-category
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CategoryApi
+            Path: /v1/categories/{categoryId}
+            Method: GET
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  DeleteCategory:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-Category-DeleteCategory
+      CodeUri: dist/api/delete-category
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CategoryApi
+            Path: /v1/categories/{categoryId}
+            Method: DELETE
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+Outputs:
+  CategoryApi:
+    Description: "Household Category API"
+    Value: !Sub "${CategoryApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}"

@@ -1,0 +1,52 @@
+[
+    {
+        "CurrencyID": "5F863DAC-5BAE-43EB-81F7-EF1F3C923F52",
+        "Digits": 2,
+        "ISOCode": "EUR",
+        "IsMain": 0,
+        "IsPrefix": 1,
+        "Name": "Euro",
+        "Suffix": "€",
+        "UserId": null
+    },
+    {
+        "CurrencyID": "578B963A-E2F0-492B-9FEB-194429D24565",
+        "Digits": 2,
+        "ISOCode": "USD",
+        "IsMain": 0,
+        "IsPrefix": 1,
+        "Name": "US Dollar",
+        "Suffix": "$",
+        "UserId": null
+    },
+    {
+        "CurrencyID": "D7AC84F9-68DD-466A-8823-465534707D5F",
+        "Digits": 2,
+        "ISOCode": "GBP",
+        "IsMain": 0,
+        "IsPrefix": 1,
+        "Name": "Pound sterling",
+        "Suffix": "£",
+        "UserId": null
+    },
+    {
+        "CurrencyID": "34AD2403-EAB9-4A40-B365-EE67632B49FE",
+        "Digits": 0,
+        "ISOCode": "HUF",
+        "IsMain": 1,
+        "IsPrefix": 0,
+        "Name": "Magyar Forint",
+        "Suffix": "Ft",
+        "UserId": null
+    },
+    {
+        "CurrencyID": "2D931F64-7941-41C9-AA76-87289FC491A7",
+        "Digits": 2,
+        "ISOCode": "PLN",
+        "IsMain": 0,
+        "IsPrefix": 0,
+        "Name": "Polish Zloty",
+        "Suffix": "zł",
+        "UserId": null
+    }
+]

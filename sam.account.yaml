@@ -1,0 +1,166 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: "AWS::Serverless-2016-10-31"
+Description: "Household Account Api"
+Parameters:
+  LambdaRoleArn:
+    Type: String
+  UserPoolArn:
+    Type: String
+  Env:
+    Type: String
+  MongodbConnectionString:
+    Type: String
+  MongooseLayer:
+    Type: String
+
+Conditions:
+  ShouldUseLayers: !Not [!Equals [!Ref MongooseLayer, "MongooseLayer"]]
+
+Globals:
+  Function:
+    Handler: index.default
+    Runtime: nodejs14.x
+    Timeout: 60
+    MemorySize: 512
+    Tracing: Active
+    Layers:
+      - !If [ShouldUseLayers, !Ref MongooseLayer, !Ref "AWS::NoValue"]
+    Environment:
+      Variables:
+        MONGODB_CONNECTION_STRING: !Ref MongodbConnectionString
+
+Resources:
+  AccountApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub Household-${Env}-Account
+      StageName: account
+      TracingEnabled: true
+      Cors:
+        AllowMethods: "'*'"
+        AllowHeaders: "'*'"
+        AllowOrigin: "'*'"
+      Auth:
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn: !Ref UserPoolArn
+      GatewayResponses:
+        UNAUTHORIZED:
+          StatusCode: 401
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"  
+              Access-Control-Allow-Headers: "'*'"
+              Access-Control-Allow-Methods: "'*'"
+          ResponseTemplates:
+            application/json: '{ "message": $context.error.messageString }'            
+        MISSING_AUTHENTICATION_TOKEN:
+          StatusCode: 404
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"  
+              Access-Control-Allow-Headers: "'*'"
+              Access-Control-Allow-Methods: "'*'"
+          ResponseTemplates:
+            application/json: '{ "message": $context.error.messageString }'
+
+  CreateAccount:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-Account-CreateAccount
+      CodeUri: dist/api/create-account
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref AccountApi
+            Path: /v1/accounts
+            Method: POST
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  UpdateAccount:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-Account-UpdateAccount
+      CodeUri: dist/api/update-account
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref AccountApi
+            Path: /v1/accounts/{accountId}
+            Method: PUT
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  ListAccounts:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-Account-ListAccounts
+      CodeUri: dist/api/list-accounts
+      Role: !Ref LambdaRoleArn      
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref AccountApi
+            Path: /v1/accounts
+            Method: GET
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  GetAccount:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-Account-GetAccount
+      CodeUri: dist/api/get-account
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref AccountApi
+            Path: /v1/accounts/{accountId}
+            Method: GET
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  DeleteAccount:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-Account-DeleteAccount
+      CodeUri: dist/api/delete-account
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref AccountApi
+            Path: /v1/accounts/{accountId}
+            Method: DELETE
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  ListTransactionsByAccount:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-Account-ListTransactionsByAccount
+      CodeUri: dist/api/list-transactions-by-account
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref AccountApi
+            Path: /v1/accounts/{accountId}/transactions
+            Method: GET
+            Auth:
+              Authorizer: CognitoAuthorizer  
+
+Outputs:
+  AccountApi:
+    Description: "Household Account API"
+    Value: !Sub "${AccountApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}"
