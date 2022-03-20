@@ -4,6 +4,9 @@ Parameters:
     Type: String
 
 Resources:
+  DatabaseArchiveBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
 
   UserPool:
     Type: AWS::Cognito::UserPool
@@ -63,3 +66,5 @@ Outputs:
     Value: !Ref ApplicationClient
   UserPoolArn:
     Value: !GetAtt UserPool.Arn
+  DatabaseArchiveBucket:
+    Value: !Ref DatabaseArchiveBucket

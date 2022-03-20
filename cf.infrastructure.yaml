@@ -44,13 +44,8 @@ Resources:
                   - cloudformation:DescribeStacks
                   - lambda:InvokeFunction
                   - sqs:SendMessage
+                  - s3:PutObject
                 Resource: "*"
-
-  # EventDeadLetterQueue:
-  #   Type: AWS::SQS::Queue
-  #   Properties:
-  #     QueueName: !Sub Household-${Env}-EventDeadLetterQueue
-  #     MessageRetentionPeriod: 1209000
 
   WebsiteBucket:
     Type: AWS::S3::Bucket
@@ -77,8 +72,6 @@ Resources:
 Outputs:
   LambdaRoleArn:
     Value: !GetAtt LambdaRole.Arn
-  # EventDeadLetterQueueArn:
-  #   Value: !GetAtt EventDeadLetterQueue.Arn
   WebsiteBucket:
     Value: !Ref WebsiteBucket
   MongooseLayer:

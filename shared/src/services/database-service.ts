@@ -3,6 +3,11 @@ import { Account, Category, Project, Recipient, Transaction } from '@household/s
 import { Aggregate, ClientSession, Types } from 'mongoose';
 
 export interface IDatabaseService {
+  dumpProjects(): Promise<Project.Document[]>;
+  dumpAccounts(): Promise<Account.Document[]>;
+  dumpRecipients(): Promise<Recipient.Document[]>;
+  dumpCategories(): Promise<Category.Document[]>;
+  dumpTransactions(): Promise<Transaction.Document[]>;
   saveProject(doc: Project.Document): Promise<Project.Document>;
   saveRecipient(doc: Recipient.Document): Promise<Recipient.Document>;
   saveAccount(doc: Account.Document): Promise<Account.Document>;
@@ -44,6 +49,7 @@ export interface IDatabaseService {
 }
 
 export const databaseServiceFactory = (mongodbService: IMongodbService): IDatabaseService => {
+
   const updateCategoryFullName = (oldName: string, newName: string, session: ClientSession): Promise<unknown> => {
     return mongodbService.categories.updateMany({
       fullName: {
@@ -97,6 +103,21 @@ export const databaseServiceFactory = (mongodbService: IMongodbService): IDataba
   };
 
   const instance: IDatabaseService = {
+    dumpAccounts: () => {
+      return mongodbService.accounts.find().lean().exec();
+    },
+    dumpProjects: () => {
+      return mongodbService.projects.find().lean().exec();
+    },
+    dumpRecipients: () => {
+      return mongodbService.recipients.find().lean().exec();
+    },
+    dumpCategories: () => {
+      return mongodbService.categories.find().lean().exec();
+    },
+    dumpTransactions: () => {
+      return mongodbService.transactions.find().lean().exec();
+    },
     saveProject: (doc) => {
       return mongodbService.projects.create(doc);
     },
@@ -233,15 +254,15 @@ export const databaseServiceFactory = (mongodbService: IMongodbService): IDataba
         // await updateCategoryFullName(deleted.fullName, deleted.fullName.replace(new RegExp(`${deleted.name}$`), ''), session);
         await mongodbService.categories.updateMany({
           fullName: {
-            $regex: `^${deleted.fullName}` 
+            $regex: `^${deleted.fullName}`
           }
         }, [{
           $set: {
             fullName: {
               $replaceOne: {
                 input: '$fullName',
-                find: `${deleted.fullName}:`, 
-                replacement: deleted.fullName.replace(new RegExp(`${deleted.name}$`), ''), 
+                find: `${deleted.fullName}:`,
+                replacement: deleted.fullName.replace(new RegExp(`${deleted.name}$`), ''),
               }
             }
           }

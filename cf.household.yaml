@@ -2,9 +2,6 @@ AWSTemplateFormatVersion: "2010-09-09"
 Parameters:
   Env:
     Type: String
-  # TestUserPassword:
-  #   Type: String
-  #   Default: ""
   MongodbUsername:
     Type: String
   MongodbPassword:
@@ -28,20 +25,16 @@ Mappings:
       ApiDomain: householdapi.losi999.hu            
 
 Resources:
-  # Functions:
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: sam.functions.yaml
-  #     Parameters:
-  #       LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
-  #       # Database: !GetAtt Data.Outputs.Database
-  #       # DatabaseStreamArn: !GetAtt Data.Outputs.DatabaseStreamArn
-  #       # UserPoolId: !GetAtt Data.Outputs.UserPoolId
-  #       # ClientId: !GetAtt Data.Outputs.ClientId
-  #       Env: !Ref Env
-  #       # TestUserPassword: !Ref TestUserPassword
-  #       # DatabaseArchive: !GetAtt Data.Outputs.DatabaseArchive
-  #       # EventDeadLetterQueueArn: !GetAtt Infrastructure.Outputs.EventDeadLetterQueueArn
+  Functions:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: sam.functions.yaml
+      Parameters:
+        LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
+        MongooseLayer: !GetAtt Infrastructure.Outputs.MongooseLayer
+        DatabaseArchiveBucket: !GetAtt Data.Outputs.DatabaseArchiveBucket
+        Env: !Ref Env
+        MongodbConnectionString: !Sub "mongodb+srv://${MongodbUsername}:${MongodbPassword}@${MongodbClusterDomain}/household-${Env}?retryWrites=true&w=majority"
 
   Data:
     Type: AWS::CloudFormation::Stack
