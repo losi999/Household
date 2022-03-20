@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -59,6 +59,12 @@ export class TransactionEditComponent implements OnInit {
     public dialog: MatDialog
   ) { }
 
+  @HostListener('window:keydown.meta.s', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    event.preventDefault();
+    this.onSubmit();
+  }
+
   ngOnInit(): void {
     this.accountId = this.activatedRoute.snapshot.paramMap.get('accountId') as Account.IdType;
     this.transactionId = this.activatedRoute.snapshot.paramMap.get('transactionId') as Transaction.IdType;
@@ -117,7 +123,7 @@ export class TransactionEditComponent implements OnInit {
     this.form.patchValue({
       isTransfer: false,
     });
-    this.splitsArray.push(new FormGroup({
+    this.splitsArray.insert(0, new FormGroup({
       category: new FormControl(),
       amount: new FormControl(this.splitsDiff),
       description: new FormControl(),

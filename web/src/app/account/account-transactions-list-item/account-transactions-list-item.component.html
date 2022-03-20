@@ -15,6 +15,7 @@
     </ng-container>
     <ng-container *ngSwitchCase="'split'">
       <div class="account-transaction-list-item__recipient">{{transaction.recipient?.name}}</div>
+      <div class="account-transaction-list-item__category">BONTÁS</div>
       <div class="account-transaction-list-item__description">{{transaction.description}}</div>
     </ng-container>
     <ng-container *ngSwitchCase="'transfer'">
