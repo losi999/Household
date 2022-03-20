@@ -1,4 +1,6 @@
 version: 2.1
+orbs:
+  sam: circleci/aws-sam-serverless@3.0
 jobs:
   install:
     docker:
@@ -32,9 +34,18 @@ jobs:
             - web/node_modules
           key: web-dependencies-v1-{{ checksum "web/package.json" }}
 
+      - restore_cache:
+          name: Restoring layer dependecies from cache
+          key: layer-dependencies-v1-{{ checksum "layers/mongoose/nodejs/package.json" }}
+
       - run:
           name: Installing layer dependencies
           command: cd layers/mongoose/nodejs && yarn
+
+      - save_cache:
+          paths:
+            - layers/mongoose/nodejs/node_modules
+          key: layer-dependencies-v1-{{ checksum "layers/mongoose/nodejs/package.json" }}          
 
       # - restore_cache:
       #     name: Restoring test dependencies from cache
@@ -113,6 +124,7 @@ jobs:
             - repo/dist
             - repo/layers
   api_deploy:
+    executor: sam/default
     parameters:
       env:
         type: string
@@ -120,18 +132,14 @@ jobs:
       #   type: string
       # admin_user_email:
       #   type: string
-    docker:
-      - image: cibuilds/aws:1.16.1
     working_directory: ~/repo
     steps:
       - attach_workspace:
           at: ~/
+      - sam/install
       - deploy:
-          name: AWS Package
-          command: aws cloudformation package --template-file cf.household.yaml --s3-bucket ${AWS_PACKAGES_S3} --output-template-file packaged.cf.household.yaml
-      - deploy:
-          name: AWS Deploy
-          command: aws cloudformation deploy --template-file packaged.cf.household.yaml --stack-name household-<<parameters.env>> --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND CAPABILITY_NAMED_IAM --parameter-overrides Env=<<parameters.env>>
+          name: SAM Deploy
+          command: sam deploy --template-file cf.household.yaml --s3-bucket ${AWS_PACKAGES_S3} --stack-name Household-<<parameters.env>> --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND CAPABILITY_NAMED_IAM --parameter-overrides Env=<<parameters.env>>
       # - run:
       #     name: Invoke Post deploy Lambda
       #     command: aws lambda invoke --function-name household-<<parameters.env>>-PostDeploy /dev/null
@@ -207,6 +215,7 @@ workflows:
           env: "LOCAL"
           requires:
             - install
+    
   dev:
     jobs:
       - install:
