@@ -2,7 +2,7 @@
   <mat-form-field class="datetime-input__date" appearance="fill">
     <mat-label>Tranzakció dátuma</mat-label>
     <input matInput [matDatepicker]="picker" formControlName="date" (blur)="touched()">
-    <mat-datepicker-toggle matPrefix [for]="picker"></mat-datepicker-toggle>
+    <mat-datepicker-toggle matPrefix [for]="picker" tabindex="-1"></mat-datepicker-toggle>
     <mat-datepicker #picker></mat-datepicker>
   </mat-form-field>
   <mat-form-field class="datetime-input__hour" appearance="fill">

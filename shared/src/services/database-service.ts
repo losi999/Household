@@ -351,7 +351,6 @@ export const databaseServiceFactory = (mongodbService: IMongodbService): IDataba
     listCategories: () => {
       return mongodbService.categories.find()
         .collation({ locale: 'hu' })
-        .populate('parentCategory')
         .sort('fullName')
         .lean()
         .exec();

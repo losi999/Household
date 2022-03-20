@@ -4,7 +4,7 @@
     <mat-card-header>
       <!-- <div mat-card-avatar class="account-list-item__image"></div> -->
       <mat-card-title>{{account.name}}</mat-card-title>
-      <mat-card-subtitle>{{balanceTitle}}: {{account.balance}} {{account.currency}}</mat-card-subtitle>
+      <mat-card-subtitle>{{balanceTitle}}: {{account.balance | number:'1.0-2':'hu'}} {{account.currency}}</mat-card-subtitle>
     </mat-card-header>
     <mat-card-actions align="end">
       <button mat-icon-button color="primary" [routerLink]="['/accounts', account.accountId]">
