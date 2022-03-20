@@ -1,0 +1,13 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <mat-form-field appearance="fill">
+    <mat-label>Email</mat-label>
+    <input type="email" matInput formControlName="email">
+  </mat-form-field>
+  <mat-form-field appearance="fill">
+    <mat-label>Jelszó</mat-label>
+    <input type="password" matInput formControlName="password">
+  </mat-form-field>
+  <div>
+    <button mat-raised-button color="primary">Bejelentkezés</button>
+  </div>
+</form>

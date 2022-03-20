@@ -4,10 +4,17 @@ Description: "Household Category Api"
 Parameters:
   LambdaRoleArn:
     Type: String
-  # UserPoolArn:
-  #   Type: String
+  UserPoolArn:
+    Type: String
   Env:
     Type: String
+  MongodbConnectionString:
+    Type: String
+  MongooseLayer:
+    Type: String
+
+Conditions:
+  ShouldUseLayers: !Not [!Equals [!Ref MongooseLayer, "MongooseLayer"]]
 
 Globals:
   Function:
@@ -16,9 +23,11 @@ Globals:
     Timeout: 60
     MemorySize: 512
     Tracing: Active
-    # Environment:
-    #   Variables:
-    #     DYNAMO_TABLE: !Ref Database
+    Layers:
+      - !If [ShouldUseLayers, !Ref MongooseLayer, !Ref "AWS::NoValue"]
+    Environment:
+      Variables:
+        MONGODB_CONNECTION_STRING: !Ref MongodbConnectionString
 
 Resources:
   CategoryApi:
@@ -31,10 +40,10 @@ Resources:
         AllowMethods: "'*'"
         AllowHeaders: "'*'"
         AllowOrigin: "'*'"
-      # Auth:
-      #   Authorizers:
-      #     CognitoAuthorizer:
-      #       UserPoolArn: !Ref UserPoolArn
+      Auth:
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn: !Ref UserPoolArn
       GatewayResponses:
         UNAUTHORIZED:
           StatusCode: 401
@@ -68,8 +77,8 @@ Resources:
             RestApiId: !Ref CategoryApi
             Path: /v1/categories
             Method: POST
-            # Auth:
-            #   Authorizer: CognitoAuthorizer
+            Auth:
+              Authorizer: CognitoAuthorizer
 
   UpdateCategory:
     Type: AWS::Serverless::Function
@@ -84,8 +93,8 @@ Resources:
             RestApiId: !Ref CategoryApi
             Path: /v1/categories/{categoryId}
             Method: PUT
-  #           Auth:
-  #             Authorizer: CognitoAuthorizer
+            Auth:
+              Authorizer: CognitoAuthorizer
 
   ListCategories:
     Type: AWS::Serverless::Function
@@ -100,8 +109,8 @@ Resources:
             RestApiId: !Ref CategoryApi
             Path: /v1/categories
             Method: GET
-  #           Auth:
-  #             Authorizer: CognitoAuthorizer
+            Auth:
+              Authorizer: CognitoAuthorizer
 
   GetCategory:
     Type: AWS::Serverless::Function
@@ -116,8 +125,8 @@ Resources:
             RestApiId: !Ref CategoryApi
             Path: /v1/categories/{categoryId}
             Method: GET
-            # Auth:
-            #   Authorizer: CognitoAuthorizer
+            Auth:
+              Authorizer: CognitoAuthorizer
 
   DeleteCategory:
     Type: AWS::Serverless::Function
@@ -132,8 +141,8 @@ Resources:
             RestApiId: !Ref CategoryApi
             Path: /v1/categories/{categoryId}
             Method: DELETE
-  #           Auth:
-  #             Authorizer: CognitoAuthorizer
+            Auth:
+              Authorizer: CognitoAuthorizer
 
 Outputs:
   CategoryApi:

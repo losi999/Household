@@ -21,6 +21,6 @@ export const listTransactionsByAccountServiceFactory = (
       throw httpError(500, 'Error while getting transactions');
     });
 
-    return transactionDocumentConverter.toResponseList(documents);
+    return transactionDocumentConverter.toResponseList(documents, accountId);
   };
 };

@@ -20,3 +20,4 @@ test/cypress
 .env
 samconfig.toml
 samconfig.*.toml
+env.json

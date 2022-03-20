@@ -4,10 +4,17 @@ Description: "Household Transaction Api"
 Parameters:
   LambdaRoleArn:
     Type: String
-  # UserPoolArn:
-  #   Type: String
+  UserPoolArn:
+    Type: String
   Env:
     Type: String
+  MongodbConnectionString:
+    Type: String
+  MongooseLayer:
+    Type: String
+
+Conditions:
+  ShouldUseLayers: !Not [!Equals [!Ref MongooseLayer, "MongooseLayer"]]
 
 Globals:
   Function:
@@ -16,9 +23,11 @@ Globals:
     Timeout: 60
     MemorySize: 512
     Tracing: Active
-    # Environment:
-    #   Variables:
-    #     DYNAMO_TABLE: !Ref Database
+    Layers:
+      - !If [ShouldUseLayers, !Ref MongooseLayer, !Ref "AWS::NoValue"]
+    Environment:
+      Variables:
+        MONGODB_CONNECTION_STRING: !Ref MongodbConnectionString
 
 Resources:
   TransactionApi:
@@ -31,10 +40,10 @@ Resources:
         AllowMethods: "'*'"
         AllowHeaders: "'*'"
         AllowOrigin: "'*'"
-      # Auth:
-      #   Authorizers:
-      #     CognitoAuthorizer:
-      #       UserPoolArn: !Ref UserPoolArn
+      Auth:
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn: !Ref UserPoolArn
       GatewayResponses:
         UNAUTHORIZED:
           StatusCode: 401
@@ -68,8 +77,8 @@ Resources:
             RestApiId: !Ref TransactionApi
             Path: /v1/transactions/payment
             Method: POST
-            # Auth:
-            #   Authorizer: CognitoAuthorizer
+            Auth:
+              Authorizer: CognitoAuthorizer
 
   CreateSplitTransaction:
     Type: AWS::Serverless::Function
@@ -84,8 +93,8 @@ Resources:
             RestApiId: !Ref TransactionApi
             Path: /v1/transactions/split
             Method: POST
-            # Auth:
-            #   Authorizer: CognitoAuthorizer
+            Auth:
+              Authorizer: CognitoAuthorizer
 
   CreateTransferTransaction:
     Type: AWS::Serverless::Function
@@ -100,8 +109,8 @@ Resources:
             RestApiId: !Ref TransactionApi
             Path: /v1/transactions/transfer
             Method: POST
-            # Auth:
-            #   Authorizer: CognitoAuthorizer            
+            Auth:
+              Authorizer: CognitoAuthorizer            
 
   UpdateToPaymentTransaction:
     Type: AWS::Serverless::Function
@@ -116,8 +125,8 @@ Resources:
             RestApiId: !Ref TransactionApi
             Path: /v1/transactions/{transactionId}/payment
             Method: PUT
-  #           Auth:
-  #             Authorizer: CognitoAuthorizer
+            Auth:
+              Authorizer: CognitoAuthorizer
 
   UpdateToSplitTransaction:
     Type: AWS::Serverless::Function
@@ -132,8 +141,8 @@ Resources:
             RestApiId: !Ref TransactionApi
             Path: /v1/transactions/{transactionId}/split
             Method: PUT
-  #           Auth:
-  #             Authorizer: CognitoAuthorizer  
+            Auth:
+              Authorizer: CognitoAuthorizer  
 
   UpdateToTransferTransaction:
     Type: AWS::Serverless::Function
@@ -148,8 +157,8 @@ Resources:
             RestApiId: !Ref TransactionApi
             Path: /v1/transactions/{transactionId}/transfer
             Method: PUT
-  #           Auth:
-  #             Authorizer: CognitoAuthorizer    
+            Auth:
+              Authorizer: CognitoAuthorizer    
 
   ListTransactions:
     Type: AWS::Serverless::Function
@@ -164,8 +173,8 @@ Resources:
             RestApiId: !Ref TransactionApi
             Path: /v1/transactions
             Method: GET
-  #           Auth:
-  #             Authorizer: CognitoAuthorizer
+            Auth:
+              Authorizer: CognitoAuthorizer
 
   GetTransaction:
     Type: AWS::Serverless::Function
@@ -178,10 +187,10 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref TransactionApi
-            Path: /v1/transactions/{transactionId}
+            Path: /v1/accounts/{accountId}/transactions/{transactionId}
             Method: GET
-            # Auth:
-            #   Authorizer: CognitoAuthorizer
+            Auth:
+              Authorizer: CognitoAuthorizer
 
   DeleteTransaction:
     Type: AWS::Serverless::Function
@@ -196,8 +205,8 @@ Resources:
             RestApiId: !Ref TransactionApi
             Path: /v1/transactions/{transactionId}
             Method: DELETE
-  #           Auth:
-  #             Authorizer: CognitoAuthorizer
+            Auth:
+              Authorizer: CognitoAuthorizer
 
 Outputs:
   TransactionApi:

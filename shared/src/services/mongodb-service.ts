@@ -26,7 +26,7 @@ const createModel = <T extends keyof CollectionMapping>(collectionName: T, schem
 };
 
 export const mongodbServiceFactory = (): IMongodbService => {
-    connect('mongodb+srv://admin:admin@household.4xisa.mongodb.net/household-LOCAL?retryWrites=true&w=majority', {
+    connect(process.env.MONGODB_CONNECTION_STRING, {
         autoIndex: true
     });
 

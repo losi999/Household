@@ -3,6 +3,11 @@ import { Account, Category, Project, Recipient, Transaction } from '@household/s
 import { Aggregate, ClientSession, Types } from 'mongoose';
 
 export interface IDatabaseService {
+  dumpProjects(): Promise<Project.Document[]>;
+  dumpAccounts(): Promise<Account.Document[]>;
+  dumpRecipients(): Promise<Recipient.Document[]>;
+  dumpCategories(): Promise<Category.Document[]>;
+  dumpTransactions(): Promise<Transaction.Document[]>;
   saveProject(doc: Project.Document): Promise<Project.Document>;
   saveRecipient(doc: Recipient.Document): Promise<Recipient.Document>;
   saveAccount(doc: Account.Document): Promise<Account.Document>;
@@ -14,6 +19,10 @@ export interface IDatabaseService {
   getAccountById(accountId: Account.IdType): Promise<Account.Document>;
   getCategoryById(categoryId: Category.IdType): Promise<Category.Document>;
   getTransactionById(transactionId: Transaction.IdType): Promise<Transaction.Document>;
+  getTransactionByIdAndAccountId(query: {
+    transactionId: Transaction.IdType;
+    accountId: Account.IdType;
+  }): Promise<Transaction.Document>;
   deleteProject(projectId: Project.IdType): Promise<unknown>;
   deleteRecipient(recipientId: Recipient.IdType): Promise<unknown>;
   deleteAccount(accountId: Account.IdType): Promise<unknown>;
@@ -40,6 +49,7 @@ export interface IDatabaseService {
 }
 
 export const databaseServiceFactory = (mongodbService: IMongodbService): IDatabaseService => {
+
   const updateCategoryFullName = (oldName: string, newName: string, session: ClientSession): Promise<unknown> => {
     return mongodbService.categories.updateMany({
       fullName: {
@@ -93,6 +103,21 @@ export const databaseServiceFactory = (mongodbService: IMongodbService): IDataba
   };
 
   const instance: IDatabaseService = {
+    dumpAccounts: () => {
+      return mongodbService.accounts.find().lean().exec();
+    },
+    dumpProjects: () => {
+      return mongodbService.projects.find().lean().exec();
+    },
+    dumpRecipients: () => {
+      return mongodbService.recipients.find().lean().exec();
+    },
+    dumpCategories: () => {
+      return mongodbService.categories.find().lean().exec();
+    },
+    dumpTransactions: () => {
+      return mongodbService.transactions.find().lean().exec();
+    },
     saveProject: (doc) => {
       return mongodbService.projects.create(doc);
     },
@@ -128,7 +153,33 @@ export const databaseServiceFactory = (mongodbService: IMongodbService): IDataba
       return !categoryId ? undefined : mongodbService.categories.findById(categoryId).lean().exec();
     },
     getTransactionById: async (transactionId) => {
-      return !transactionId ? undefined : mongodbService.transactions.findById(transactionId).lean().exec();
+      return !transactionId ? undefined : mongodbService.transactions.findById(transactionId)
+        .populate('project')
+        .populate('recipient')
+        .populate('account')
+        .populate('category')
+        .populate('transferAccount')
+        .populate('splits.category')
+        .populate('splits.project').lean().exec();
+    },
+    getTransactionByIdAndAccountId: async ({ transactionId, accountId }) => {
+      return !transactionId ? undefined : mongodbService.transactions.findOne({
+        _id: transactionId,
+        $or: [
+          {
+            account: accountId,
+          },
+          {
+            transferAccount: accountId,
+          }
+        ]
+      }).populate('project')
+        .populate('recipient')
+        .populate('account')
+        .populate('category')
+        .populate('transferAccount')
+        .populate('splits.category')
+        .populate('splits.project').lean().exec();
     },
     deleteProject: async (projectId) => {
       const session = await mongodbService.startSession();
@@ -186,6 +237,7 @@ export const databaseServiceFactory = (mongodbService: IMongodbService): IDataba
       const session = await mongodbService.startSession();
       return session.withTransaction(async () => {
         const deleted = await mongodbService.categories.findOneAndDelete({ _id: categoryId }, { session }).exec();
+
         await mongodbService.categories.updateMany({ parentCategory: deleted },
           deleted.parentCategory ? {
             $set: {
@@ -199,7 +251,7 @@ export const databaseServiceFactory = (mongodbService: IMongodbService): IDataba
           runValidators: true,
           session
         }).exec();
-        await updateCategoryFullName(deleted.fullName, deleted.fullName.replace(new RegExp(`${deleted.name}$`), ''), session);
+        // await updateCategoryFullName(deleted.fullName, deleted.fullName.replace(new RegExp(`${deleted.name}$`), ''), session);
         await mongodbService.categories.updateMany({
           fullName: {
             $regex: `^${deleted.fullName}`
@@ -299,6 +351,7 @@ export const databaseServiceFactory = (mongodbService: IMongodbService): IDataba
     listCategories: () => {
       return mongodbService.categories.find()
         .collation({ locale: 'hu' })
+        .populate('parentCategory')
         .sort('fullName')
         .lean()
         .exec();

@@ -4,105 +4,67 @@ Parameters:
     Type: String
 
 Resources:
+  DatabaseArchiveBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
 
-  # UserPool:
-  #   Type: AWS::Cognito::UserPool
-  #   DeletionPolicy: Retain
-  #   UpdateReplacePolicy: Retain
-  #   Properties:
-  #     AdminCreateUserConfig:
-  #       AllowAdminCreateUserOnly: true
-  #     UsernameAttributes:
-  #       - email
-  #     AutoVerifiedAttributes:
-  #       - email
-  #     Policies:
-  #       PasswordPolicy:
-  #         MinimumLength: 6
-  #         TemporaryPasswordValidityDays: 45
-  #     Schema:
-  #       - Name: nickname
-  #         AttributeDataType: String
-  #         DeveloperOnlyAttribute: false
-  #         Mutable: true
-  #         Required: true
-  #         StringAttributeConstraints:
-  #           MinLength: "0"
-  #           MaxLength: "2048"
-  #       - Name: email
-  #         AttributeDataType: String
-  #         DeveloperOnlyAttribute: false
-  #         Mutable: true
-  #         Required: true
-  #         StringAttributeConstraints:
-  #           MinLength: "0"
-  #           MaxLength: "2048"
-  #     UserPoolName: !Sub Foci2020-${Env}
-  # ApplicationClient:
-  #   Type: AWS::Cognito::UserPoolClient
-  #   Properties:
-  #     ClientName: !Sub Foci2020-${Env}-Application
-  #     ExplicitAuthFlows:
-  #       - ALLOW_ADMIN_USER_PASSWORD_AUTH
-  #       - ALLOW_REFRESH_TOKEN_AUTH
-  #     GenerateSecret: false
-  #     TokenValidityUnits:
-  #       IdToken: "days"
-  #     RefreshTokenValidity: 365
-  #     IdTokenValidity: 1
-  #     ReadAttributes:
-  #       - nickname
-  #       - email
-  #     UserPoolId: !Ref UserPool
-  #     WriteAttributes:
-  #       - nickname
-  #       - email
-  # AdminUserGroup:
-  #   Type: AWS::Cognito::UserPoolGroup
-  #   Properties:
-  #     UserPoolId: !Ref UserPool
-  #     GroupName: admin
-  # PlayerUserGroup:
-  #   Type: AWS::Cognito::UserPoolGroup
-  #   Properties:
-  #     UserPoolId: !Ref UserPool
-  #     GroupName: player
-  # AdminUser:
-  #   Type: AWS::Cognito::UserPoolUser
-  #   Properties:
-  #     UserPoolId: !Ref UserPool
-  #     Username: "{{resolve:ssm:AdminUserEmail:1}}"
-  #     UserAttributes:
-  #       - Name: email
-  #         Value: "{{resolve:ssm:AdminUserEmail:1}}"
-  #       - Name: nickname
-  #         Value: Losi
-  # AdminUserToAdminGroup:
-  #   Type: AWS::Cognito::UserPoolUserToGroupAttachment
-  #   DependsOn: AdminUser
-  #   Properties:
-  #     GroupName: admin
-  #     UserPoolId: !Ref UserPool
-  #     Username: "{{resolve:ssm:AdminUserEmail:1}}"
-  # AdminUserToPlayerGroup:
-  #   Type: AWS::Cognito::UserPoolUserToGroupAttachment
-  #   DependsOn: AdminUser
-  #   Properties:
-  #     GroupName: player
-  #     UserPoolId: !Ref UserPool
-  #     Username: "{{resolve:ssm:AdminUserEmail:1}}"
-
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: true
+      UsernameAttributes:
+        - email
+      AutoVerifiedAttributes:
+        - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 6
+          TemporaryPasswordValidityDays: 45
+      Schema:
+        - Name: email
+          AttributeDataType: String
+          DeveloperOnlyAttribute: false
+          Mutable: true
+          Required: true
+          StringAttributeConstraints:
+            MinLength: "0"
+            MaxLength: "2048"
+      UserPoolName: !Sub Household-${Env}
+  ApplicationClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: !Sub Household-${Env}-Application
+      ExplicitAuthFlows:
+        - ALLOW_ADMIN_USER_PASSWORD_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+      GenerateSecret: false
+      TokenValidityUnits:
+        IdToken: "days"
+      RefreshTokenValidity: 365
+      IdTokenValidity: 1
+      ReadAttributes:
+        - email
+      UserPoolId: !Ref UserPool
+      WriteAttributes:
+        - email
+  AdminUser:
+    Type: AWS::Cognito::UserPoolUser
+    Properties:
+      UserPoolId: !Ref UserPool
+      Username: "{{resolve:ssm:AdminUserEmail:1}}"
+      UserAttributes:
+        - Name: email
+          Value: "{{resolve:ssm:AdminUserEmail:1}}"
 
 Outputs:
-  # Database:
-  #   Value: !Ref Database
-  # DatabaseStreamArn:
-  #   Value: !GetAtt Database.StreamArn
-  # DatabaseArchive:
-  #   Value: !Ref DatabaseArchive
-  # UserPoolId:
-  #   Value: !Ref UserPool
-  # ClientId:
-  #   Value: !Ref ApplicationClient
-  # UserPoolArn:
-  #   Value: !GetAtt UserPool.Arn
+  UserPoolId:
+    Value: !Ref UserPool
+  ClientId:
+    Value: !Ref ApplicationClient
+  UserPoolArn:
+    Value: !GetAtt UserPool.Arn
+  DatabaseArchiveBucket:
+    Value: !Ref DatabaseArchiveBucket

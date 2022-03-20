@@ -4,10 +4,17 @@ Description: "Household Recipient Api"
 Parameters:
   LambdaRoleArn:
     Type: String
-  # UserPoolArn:
-  #   Type: String
+  UserPoolArn:
+    Type: String
   Env:
     Type: String
+  MongodbConnectionString:
+    Type: String
+  MongooseLayer:
+    Type: String
+
+Conditions:
+  ShouldUseLayers: !Not [!Equals [!Ref MongooseLayer, "MongooseLayer"]]
 
 Globals:
   Function:
@@ -16,9 +23,11 @@ Globals:
     Timeout: 60
     MemorySize: 512
     Tracing: Active
-    # Environment:
-    #   Variables:
-    #     DYNAMO_TABLE: !Ref Database
+    Layers:
+      - !If [ShouldUseLayers, !Ref MongooseLayer, !Ref "AWS::NoValue"]
+    Environment:
+      Variables:
+        MONGODB_CONNECTION_STRING: !Ref MongodbConnectionString
 
 Resources:
   RecipientApi:
@@ -31,10 +40,10 @@ Resources:
         AllowMethods: "'*'"
         AllowHeaders: "'*'"
         AllowOrigin: "'*'"
-      # Auth:
-      #   Authorizers:
-      #     CognitoAuthorizer:
-      #       UserPoolArn: !Ref UserPoolArn
+      Auth:
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn: !Ref UserPoolArn
       GatewayResponses:
         UNAUTHORIZED:
           StatusCode: 401
@@ -68,8 +77,8 @@ Resources:
             RestApiId: !Ref RecipientApi
             Path: /v1/recipients
             Method: POST
-            # Auth:
-            #   Authorizer: CognitoAuthorizer
+            Auth:
+              Authorizer: CognitoAuthorizer
 
   UpdateRecipient:
     Type: AWS::Serverless::Function
@@ -84,8 +93,8 @@ Resources:
             RestApiId: !Ref RecipientApi
             Path: /v1/recipients/{recipientId}
             Method: PUT
-  #           Auth:
-  #             Authorizer: CognitoAuthorizer
+            Auth:
+              Authorizer: CognitoAuthorizer
 
   ListRecipients:
     Type: AWS::Serverless::Function
@@ -100,8 +109,8 @@ Resources:
             RestApiId: !Ref RecipientApi
             Path: /v1/recipients
             Method: GET
-  #           Auth:
-  #             Authorizer: CognitoAuthorizer
+            Auth:
+              Authorizer: CognitoAuthorizer
 
   GetRecipient:
     Type: AWS::Serverless::Function
@@ -116,8 +125,8 @@ Resources:
             RestApiId: !Ref RecipientApi
             Path: /v1/recipients/{recipientId}
             Method: GET
-            # Auth:
-            #   Authorizer: CognitoAuthorizer
+            Auth:
+              Authorizer: CognitoAuthorizer
 
   DeleteRecipient:
     Type: AWS::Serverless::Function
@@ -132,8 +141,8 @@ Resources:
             RestApiId: !Ref RecipientApi
             Path: /v1/recipients/{recipientId}
             Method: DELETE
-  #           Auth:
-  #             Authorizer: CognitoAuthorizer
+            Auth:
+              Authorizer: CognitoAuthorizer
 
 Outputs:
   RecipientApi:

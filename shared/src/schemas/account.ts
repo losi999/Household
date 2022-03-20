@@ -16,6 +16,16 @@ const schema: StrictJSONSchema7<Account.Request> = {
     currency: {
       type: 'string',
       minLength: 1,
+    },
+    accountType: {
+      type: 'string',
+      enum: [
+        'bankAccount',
+        'cash',
+        'creditCard',
+        'loan',
+        'cafeteria'
+      ]
     }
   },
 };

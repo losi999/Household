@@ -17,19 +17,21 @@ export const recipientDocumentConverterFactory = (): IRecipientDocumentConverter
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
-    update: ({ document, body }, expiresIn): Recipient.Document => {
+    update: ({ document: { _id, createdAt }, body }, expiresIn): Recipient.Document => {
       return {
-        ...document,
-        ...body,
-        expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
+        ...instance.create(body, expiresIn),
+        _id,
+        createdAt,
       };
     },
     toResponse: (doc): Recipient.Response => {
       return {
         ...doc,
+        recipientId: doc._id.toString() as Recipient.IdType,
+        createdAt: undefined,
+        updatedAt: undefined,
         _id: undefined,
         expiresAt: undefined,
-        recipientId: doc._id.toString() as Recipient.IdType,
       }
     },
     toResponseList: docs => docs.map(d => instance.toResponse(d)),

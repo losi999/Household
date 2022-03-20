@@ -4,13 +4,19 @@
   "scripts": {
     "samconfig": "cp samconfig.${ENV}.toml samconfig.toml",
     "deploy:api:LOCAL": "export ENV=LOCAL && yarn samconfig && sam deploy -t cf.household.yaml --profile losonczil",
-    "start:account": "sam local start-api -t sam.account.yaml -p 3000",
-    "start:category": "sam local start-api -t sam.category.yaml -p 3001",
-    "start:project": "sam local start-api -t sam.project.yaml -p 3002",
-    "start:recipient": "sam local start-api -t sam.recipient.yaml -p 3003",
-    "start:transaction": "sam local start-api -t sam.transaction.yaml -p 3004",
+    "deploy:api:CI": "export ENV=CI && yarn samconfig && sam deploy -t cf.household.yaml --profile ci",
+    "start:account": "sam local start-api -t sam.account.yaml -p 3000 -n env.json",
+    "start:category": "sam local start-api -t sam.category.yaml -p 3001 -n env.json",
+    "start:project": "sam local start-api -t sam.project.yaml -p 3002 -n env.json",
+    "start:recipient": "sam local start-api -t sam.recipient.yaml -p 3003 -n env.json",
+    "start:transaction": "sam local start-api -t sam.transaction.yaml -p 3004 -n env.json",
     "start": "concurrently 'yarn start:account' 'yarn start:category' 'yarn start:project' 'yarn start:recipient' 'yarn start:transaction'",
-    "build:api": "rimraf ./dist/api && webpack"
+    "build:api": "rimraf ./dist/api && webpack",
+    "build:api:watch": "export ENV=localhost && yarn build:api --watch",
+    "build:web": "rimraf ./dist/web && cd web && yarn build",
+    "build:web:LOCAL": "yarn build:web -c LOCAL",
+    "build:web:CI": "yarn build:web -c CI",
+    "deploy:web:CI": "export ENV=CI && aws s3 sync dist/web s3://$(aws cloudformation describe-stacks --stack-name Household-${ENV} --query \"Stacks[0].Outputs[?OutputKey=='WebsiteBucket'].OutputValue\" --output text --profile ci) --profile ci"
   },
   "devDependencies": {
     "@types/aws-lambda": "8.10.71",

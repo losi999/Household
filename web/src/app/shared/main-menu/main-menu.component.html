@@ -1,0 +1,9 @@
+<button mat-icon-button type="button" [matMenuTriggerFor]="main">
+  <mat-icon>menu</mat-icon>
+</button>
+<mat-menu #main="matMenu">
+<button mat-menu-item [routerLink]="['/']">Számlák</button>
+<button mat-menu-item [routerLink]="['/projects']">Projektek</button>
+<button mat-menu-item [routerLink]="['/categories']">Kategóriák</button>
+<button mat-menu-item [routerLink]="['/recipients']">Partnerek</button>
+</mat-menu>

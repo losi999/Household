@@ -47,8 +47,8 @@ export interface ITransactionDocumentConverter {
     account: Account.Document;
     transferAccount: Account.Document;
   }, expiresIn: number): Transaction.TransferDocument;
-  toResponse(document: Transaction.Document): Transaction.Response;
-  toResponseList(documents: Transaction.Document[]): Transaction.Response[];
+  toResponse(document: Transaction.Document, mainAccountId?: Account.IdType): Transaction.Response;
+  toResponseList(documents: Transaction.Document[], mainAccountId?: Account.IdType): Transaction.Response[];
 }
 
 export const transactionDocumentConverterFactory = (
@@ -60,6 +60,8 @@ export const transactionDocumentConverterFactory = (
   const toResponsePayment = (doc: Transaction.PaymentDocument): Transaction.PaymentResponse => {
     return {
       ...doc,
+      createdAt: undefined,
+      updatedAt: undefined,
       transactionId: doc._id.toString() as Transaction.IdType,
       issuedAt: doc.issuedAt.toISOString(),
       _id: undefined,
@@ -74,6 +76,8 @@ export const transactionDocumentConverterFactory = (
   const toResponseSplit = (doc: Transaction.SplitDocument): Transaction.SplitResponse => {
     return {
       ...doc,
+      createdAt: undefined,
+      updatedAt: undefined,
       transactionId: doc._id.toString() as Transaction.IdType,
       issuedAt: doc.issuedAt.toISOString(),
       _id: undefined,
@@ -91,15 +95,19 @@ export const transactionDocumentConverterFactory = (
     };
   };
 
-  const toResponseTransfer = (doc: Transaction.TransferDocument): Transaction.TransferResponse => {
+  const toResponseTransfer = (doc: Transaction.TransferDocument, mainAccountId: Account.IdType): Transaction.TransferResponse => {
+    console.log('B');
     return {
       ...doc,
+      createdAt: undefined,
+      updatedAt: undefined,
       transactionId: doc._id.toString() as Transaction.IdType,
       issuedAt: doc.issuedAt.toISOString(),
       _id: undefined,
       expiresAt: undefined,
-      account: accountDocumentConverter.toResponse(doc.account),
-      transferAccount: accountDocumentConverter.toResponse(doc.transferAccount),
+      amount: mainAccountId === doc.transferAccount._id.toString() ? doc.amount * -1 : doc.amount,
+      account: mainAccountId === doc.transferAccount._id.toString() ? accountDocumentConverter.toResponse(doc.transferAccount) : accountDocumentConverter.toResponse(doc.account),
+      transferAccount: mainAccountId === doc.transferAccount._id.toString() ? accountDocumentConverter.toResponse(doc.account) : accountDocumentConverter.toResponse(doc.transferAccount),
     };
   };
 
@@ -175,15 +183,15 @@ export const transactionDocumentConverterFactory = (
         createdAt: document.createdAt,
       };
     },
-    toResponse: (doc): Transaction.Response => {
+    toResponse: (doc, mainAccountId): Transaction.Response => {
       switch (doc.transactionType) {
         case 'payment': return toResponsePayment(doc);
         case 'split': return toResponseSplit(doc);
-        case 'transfer': return toResponseTransfer(doc);
+        case 'transfer': return toResponseTransfer(doc, mainAccountId);
         default: return undefined;
       }
     },
-    toResponseList: docs => docs.map(d => instance.toResponse(d)),
+    toResponseList: (docs, mainAccountId) => docs.map(d => instance.toResponse(d, mainAccountId)),
   };
 
   return instance;

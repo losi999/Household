@@ -1,0 +1,27 @@
+.transaction-edit-split-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: "details delete";
+
+  &__details {
+    grid-area: details;
+  }
+
+  &__delete {
+    grid-area: delete;
+  }
+}
+
+.transaction-edit {
+  &__tab {
+    padding: 10px;
+  }
+
+  &__split-amount {
+    font-size: 20px;
+  }
+
+  &__split-diff {
+    font-size: 18px;
+  }
+}
