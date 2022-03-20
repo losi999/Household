@@ -8,7 +8,7 @@
     </button>
   </app-toolbar>
   <mat-tab-group>
-    <mat-tab label="Részletek">
+    <mat-tab label="Részletek" tabindex="-1">
       <div class="transaction-edit__tab">
         <div>
           <app-datetime-input formControlName="issuedAt">
@@ -31,13 +31,13 @@
           <app-autocomplete-input [items]="categories" label="Kategória" displayNameProperty="fullName"
             formControlName="category"></app-autocomplete-input>
         </div>
-        <div class="transaction-edit__project" *ngIf="!isTransfer && splits.length === 0">
-          <app-autocomplete-input [items]="projects" label="Projekt" displayNameProperty="name"
-            formControlName="project"></app-autocomplete-input>
-        </div>
         <div class="transaction-edit__recipient" *ngIf="!isTransfer">
           <app-autocomplete-input [items]="recipients" label="Partner" displayNameProperty="name"
             formControlName="recipient"></app-autocomplete-input>
+        </div>
+        <div class="transaction-edit__project" *ngIf="!isTransfer && splits.length === 0">
+          <app-autocomplete-input [items]="projects" label="Projekt" displayNameProperty="name"
+            formControlName="project"></app-autocomplete-input>
         </div>
         <div class="transaction-edit__description">
           <app-clearable-input formControlName="description" label="Megjegyzés">
@@ -45,7 +45,7 @@
         </div>
       </div>
     </mat-tab>
-    <mat-tab label="Bontás">
+    <mat-tab label="Bontás" tabindex="-1">
       <div class="transaction-edit__tab" formArrayName="splits">
         <p class="transaction-edit__split-amount">
           Összesen: {{amount}} {{account.currency}}

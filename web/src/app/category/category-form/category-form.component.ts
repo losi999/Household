@@ -22,7 +22,7 @@ export class CategoryFormComponent implements OnInit {
   ngOnInit(): void {
     this.form = new FormGroup({
       name: new FormControl(this.data.category?.name, [Validators.required]),
-      parentCategory: new FormControl(this.data.category?.parentCategory),
+      parentCategory: new FormControl(this.data.category?.parentCategory ? this.data.categories.find(x => x.categoryId === this.data.category.parentCategory.categoryId) : null),
     })
   }
 

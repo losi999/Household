@@ -1,7 +1,7 @@
 <mat-form-field appearance="fill" [formGroup]="form">
   <mat-label>{{label}}</mat-label>
   <input type="text" matInput formControlName="value" (blur)="touched()">
-  <button matSuffix mat-icon-button aria-label="Clear" type="button" (click)="clearValue()">
+  <button matSuffix mat-icon-button aria-label="Clear" type="button" (click)="clearValue()" tabindex="-1">
     <mat-icon>close</mat-icon>
   </button>
 </mat-form-field>
