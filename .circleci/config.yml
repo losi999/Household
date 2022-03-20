@@ -19,18 +19,18 @@ jobs:
             - node_modules
           key: dependencies-v1-{{ checksum "package.json" }}
 
-      # - restore_cache:
-      #     name: Restoring web dependecies from cache
-      #     key: web-dependencies-v1-{{ checksum "web/package.json" }}
+      - restore_cache:
+          name: Restoring web dependecies from cache
+          key: web-dependencies-v1-{{ checksum "web/package.json" }}
 
-      # - run:
-      #     name: Installing dependencies
-      #     command: cd web && yarn
+      - run:
+          name: Installing dependencies
+          command: cd web && yarn
 
-      # - save_cache:
-      #     paths:
-      #       - web/node_modules
-      #     key: web-dependencies-v1-{{ checksum "web/package.json" }}
+      - save_cache:
+          paths:
+            - web/node_modules
+          key: web-dependencies-v1-{{ checksum "web/package.json" }}
 
       # - restore_cache:
       #     name: Restoring test dependencies from cache
@@ -99,9 +99,9 @@ jobs:
           name: Build API
           command: yarn build:api
 
-      # - run:
-      #     name: Build Web
-      #     command: yarn build:web -c <<parameters.env>>
+      - run:
+          name: Build Web
+          command: yarn build:web -c <<parameters.env>>
 
       - persist_to_workspace:
           root: ~/
@@ -137,19 +137,19 @@ jobs:
       #     root: ~/
       #     paths:
       #       - repo/env
-  # web_deploy:
-  #   parameters:
-  #     env:
-  #       type: string
-  #   docker:
-  #     - image: cibuilds/aws:1.16.1
-  #   working_directory: ~/repo
-  #   steps:
-  #     - attach_workspace:
-  #         at: ~/
-  #     - deploy:
-  #         name: Web deploy
-  #         command: aws s3 sync dist/web s3://$(aws cloudformation describe-stacks --stack-name household-<<parameters.env>> --query "Stacks[0].Outputs[?OutputKey=='WebsiteBucket'].OutputValue" --output text)
+  web_deploy:
+    parameters:
+      env:
+        type: string
+    docker:
+      - image: cibuilds/aws:1.16.1
+    working_directory: ~/repo
+    steps:
+      - attach_workspace:
+          at: ~/
+      - deploy:
+          name: Web deploy
+          command: aws s3 sync dist/web s3://$(aws cloudformation describe-stacks --stack-name household-<<parameters.env>> --query "Stacks[0].Outputs[?OutputKey=='WebsiteBucket'].OutputValue" --output text)
   # test:
   #   parameters:
   #     env:
@@ -188,7 +188,6 @@ workflows:
             branches:
               ignore:
                 - development
-                - release
                 - master
       # - unit_test:
       #     name: unit_test
@@ -233,11 +232,11 @@ workflows:
             # - unit_test
             # - lint
             - build
-      # - web_deploy:
-      #     name: web_deploy
-      #     env: "DEV"
-      #     requires:
-      #       - api_deploy
+      - web_deploy:
+          name: web_deploy
+          env: "DEV"
+          requires:
+            - api_deploy
       # - test:
       #     name: test
       #     env: "DEV"
@@ -274,9 +273,9 @@ workflows:
             # - unit_test
             # - lint
             - build
-      # - web_deploy:
-      #     name: web_deploy
-      #     env: "PROD"
-      #     requires:
-      #       - api_deploy
+      - web_deploy:
+          name: web_deploy
+          env: "PROD"
+          requires:
+            - api_deploy
 

@@ -15,7 +15,8 @@
     "build:api:watch": "export ENV=localhost && yarn build:api --watch",
     "build:web": "rimraf ./dist/web && cd web && yarn build",
     "build:web:LOCAL": "yarn build:web -c LOCAL",
-    "deploy:web:LOCAL": "export ENV=LOCAL && aws s3 sync dist/web s3://$(aws cloudformation describe-stacks --stack-name Household-${ENV} --query \"Stacks[0].Outputs[?OutputKey=='WebsiteBucket'].OutputValue\" --output text --profile losonczil) --profile losonczil"
+    "build:web:CI": "yarn build:web -c CI",
+    "deploy:web:CI": "export ENV=CI && aws s3 sync dist/web s3://$(aws cloudformation describe-stacks --stack-name Household-${ENV} --query \"Stacks[0].Outputs[?OutputKey=='WebsiteBucket'].OutputValue\" --output text --profile ci) --profile ci"
   },
   "devDependencies": {
     "@types/aws-lambda": "8.10.71",

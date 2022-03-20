@@ -9,6 +9,7 @@ Resources:
     Type: AWS::Serverless::LayerVersion
     Properties:
       ContentUri: layers/mongoose
+      LayerName: !Sub Household-${Env}-MongooseLayer
       CompatibleRuntimes:
         - nodejs14.x
 
