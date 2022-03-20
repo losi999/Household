@@ -142,10 +142,10 @@ jobs:
           command: sam deploy --template-file cf.household.yaml --s3-bucket ${AWS_PACKAGES_S3} --stack-name Household-<<parameters.env>> --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND CAPABILITY_NAMED_IAM --parameter-overrides Env=<<parameters.env>>
       # - run:
       #     name: Invoke Post deploy Lambda
-      #     command: aws lambda invoke --function-name household-<<parameters.env>>-PostDeploy /dev/null
+      #     command: aws lambda invoke --function-name Household-<<parameters.env>>-PostDeploy /dev/null
       # - run:
       #     name: Get Database name
-      #     command: echo "export CYPRESS_DYNAMO_TABLE=$(aws cloudformation describe-stacks --stack-name household-<<parameters.env>> --query "Stacks[0].Outputs[?OutputKey=='Database'].OutputValue" --output text)" >> env
+      #     command: echo "export CYPRESS_DYNAMO_TABLE=$(aws cloudformation describe-stacks --stack-name Household-<<parameters.env>> --query "Stacks[0].Outputs[?OutputKey=='Database'].OutputValue" --output text)" >> env
       # - persist_to_workspace:
       #     root: ~/
       #     paths:
@@ -162,7 +162,7 @@ jobs:
           at: ~/
       - deploy:
           name: Web deploy
-          command: aws s3 sync dist/web s3://$(aws cloudformation describe-stacks --stack-name household-<<parameters.env>> --query "Stacks[0].Outputs[?OutputKey=='WebsiteBucket'].OutputValue" --output text)
+          command: aws s3 sync dist/web s3://$(aws cloudformation describe-stacks --stack-name Household-<<parameters.env>> --query "Stacks[0].Outputs[?OutputKey=='WebsiteBucket'].OutputValue" --output text)
   # test:
   #   parameters:
   #     env:
