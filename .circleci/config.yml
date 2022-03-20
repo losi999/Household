@@ -32,6 +32,10 @@ jobs:
             - web/node_modules
           key: web-dependencies-v1-{{ checksum "web/package.json" }}
 
+      - run:
+          name: Installing layer dependencies
+          command: cd layers/mongoose/nodejs && yarn
+
       # - restore_cache:
       #     name: Restoring test dependencies from cache
       #     key: test-dependencies-v1-{{ checksum "test/package.json" }}
@@ -107,6 +111,7 @@ jobs:
           root: ~/
           paths:
             - repo/dist
+            - repo/layers
   api_deploy:
     parameters:
       env:
