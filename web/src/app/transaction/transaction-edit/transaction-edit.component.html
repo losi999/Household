@@ -19,24 +19,24 @@
           </app-amount-input>
         </div>
         <div class="transaction-edit__account">
-          <app-autocomplete-input [items]="accounts" label="Számla" displayNameProperty="name"
+          <app-autocomplete-input [items]="accounts" label="Számla" displayPropertyName="name"
             formControlName="account"></app-autocomplete-input>
         </div>
         <mat-slide-toggle color="primary" formControlName="isTransfer">Átvitel másik számlára</mat-slide-toggle>
         <div class="transaction-edit__account" *ngIf="isTransfer">
           <app-autocomplete-input [items]="transferAccounts" label="Átvitel {{amount >= 0 ? 'innen' : 'ide'}}"
-            displayNameProperty="name" formControlName="transferAccount"></app-autocomplete-input>
+            displayPropertyName="name" formControlName="transferAccount"></app-autocomplete-input>
         </div>
         <div class="transaction-edit__category" *ngIf="!isTransfer && splits.length === 0">
-          <app-autocomplete-input [items]="categories" label="Kategória" displayNameProperty="fullName"
+          <app-autocomplete-input [items]="categories" label="Kategória" displayPropertyName="fullName" filterPropertyName="name"
             formControlName="category"></app-autocomplete-input>
         </div>
         <div class="transaction-edit__recipient" *ngIf="!isTransfer">
-          <app-autocomplete-input [items]="recipients" label="Partner" displayNameProperty="name"
+          <app-autocomplete-input [items]="recipients" label="Partner" displayPropertyName="name"
             formControlName="recipient"></app-autocomplete-input>
         </div>
         <div class="transaction-edit__project" *ngIf="!isTransfer && splits.length === 0">
-          <app-autocomplete-input [items]="projects" label="Projekt" displayNameProperty="name"
+          <app-autocomplete-input [items]="projects" label="Projekt" displayPropertyName="name"
             formControlName="project"></app-autocomplete-input>
         </div>
         <div class="transaction-edit__description">
@@ -64,11 +64,11 @@
               </app-amount-input>
             </div>
             <div class="transaction-edit-split-item__category">
-              <app-autocomplete-input [items]="categories" label="Kategória" displayNameProperty="fullName"
+              <app-autocomplete-input [items]="categories" label="Kategória" displayPropertyName="fullName" filterPropertyName="name"
                 formControlName="category"></app-autocomplete-input>
             </div>
             <div class="transaction-edit-split-item__project">
-              <app-autocomplete-input [items]="projects" label="Projekt" displayNameProperty="name"
+              <app-autocomplete-input [items]="projects" label="Projekt" displayPropertyName="name"
                 formControlName="project"></app-autocomplete-input>
             </div>
             <div class="transaction-edit-split-item__description">

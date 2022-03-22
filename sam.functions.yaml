@@ -16,6 +16,7 @@ Parameters:
 
 Conditions:
   ShouldUseLayers: !Not [!Equals [!Ref MongooseLayer, "MongooseLayer"]]
+  IsProd: !Equals [!Ref Env, "PROD"]
 
 Globals:
   Function:
@@ -34,6 +35,7 @@ Globals:
 Resources:
   DatabaseArchive:
     Type: AWS::Serverless::Function
+    Condition: IsProd
     Properties:
       FunctionName: !Sub Household-${Env}-DatabaseArchive
       CodeUri: dist/api/database-archive
