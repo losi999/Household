@@ -1,18 +1,28 @@
-import { IDatabaseService } from '@household/shared/services/database-service';
+import { IAccountService } from '@household/shared/services/account-service';
+import { ICategoryService } from '@household/shared/services/category-service';
+import { IProjectService } from '@household/shared/services/project-service';
+import { IRecipientService } from '@household/shared/services/recipient-service';
 import { IStorageService } from '@household/shared/services/storage-service';
+import { ITransactionService } from '@household/shared/services/transaction-service';
 
 export interface IDatabaseArchiveService {
   (): Promise<void>;
 }
 
-export const databaseArchiveServiceFactory = (databaseService: IDatabaseService, storageService: IStorageService): IDatabaseArchiveService =>
+export const databaseArchiveServiceFactory = (
+  accountService: IAccountService,
+  projectService: IProjectService,
+  categoryService: ICategoryService,
+  recipientService: IRecipientService,
+  transactionService: ITransactionService,
+   storageService: IStorageService): IDatabaseArchiveService =>
   async () => {
     const [accounts, projects, categories, recipients, transactions] = await Promise.all([
-      databaseService.dumpAccounts(),
-      databaseService.dumpProjects(),
-      databaseService.dumpCategories(),
-      databaseService.dumpRecipients(),
-      databaseService.dumpTransactions(),
+      accountService.dumpAccounts(),
+      projectService.dumpProjects(),
+      categoryService.dumpCategories(),
+      recipientService.dumpRecipients(),
+      transactionService.dumpTransactions(),
     ]);
     const folderName = new Date().toISOString();
 

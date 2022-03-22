@@ -1,6 +1,10 @@
 import { httpError } from '@household/shared/common/utils';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
-import { IDatabaseService } from '@household/shared/services/database-service';
+import { IAccountService } from '@household/shared/services/account-service';
+import { ICategoryService } from '@household/shared/services/category-service';
+import { IProjectService } from '@household/shared/services/project-service';
+import { IRecipientService } from '@household/shared/services/recipient-service';
+import { ITransactionService } from '@household/shared/services/transaction-service';
 import { Transaction } from '@household/shared/types/types';
 
 export interface ICreateSplitTransactionService {
@@ -11,7 +15,11 @@ export interface ICreateSplitTransactionService {
 }
 
 export const createSplitTransactionServiceFactory = (
-  databaseService: IDatabaseService,
+  accountService: IAccountService,
+  projectService: IProjectService,
+  categoryService: ICategoryService,
+  recipientService: IRecipientService,
+  transactionService: ITransactionService,
   transactionDocumentConverter: ITransactionDocumentConverter,
 ): ICreateSplitTransactionService => {
   return async ({ body, expiresIn }) => {
@@ -27,10 +35,10 @@ export const createSplitTransactionServiceFactory = (
     }
 
     const [account, categories, projects, recipient] = await Promise.all([
-      databaseService.getAccountById(body.accountId),
-      databaseService.listCategoriesByIds(categoryIds),
-      databaseService.listProjectsByIds(projectIds),
-      databaseService.getRecipientById(body.recipientId),
+      accountService.getAccountById(body.accountId),
+      categoryService.listCategoriesByIds(categoryIds),
+      projectService.listProjectsByIds(projectIds),
+      recipientService.getRecipientById(body.recipientId),
     ]);
 
     if (!account) {
@@ -55,7 +63,7 @@ export const createSplitTransactionServiceFactory = (
 
     const document = transactionDocumentConverter.createSplitDocument({ body, account, recipient, categories, projects }, expiresIn);
 
-    const saved = await databaseService.saveTransaction(document).catch((error) => {
+    const saved = await transactionService.saveTransaction(document).catch((error) => {
       console.error('Save transaction', error);
       throw httpError(500, 'Error while saving transaction');
     });

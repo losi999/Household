@@ -1,6 +1,6 @@
 import { httpError } from '@household/shared/common/utils';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
-import { IDatabaseService } from '@household/shared/services/database-service';
+import { ITransactionService } from '@household/shared/services/transaction-service';
 import { Account, Transaction } from '@household/shared/types/types';
 
 export interface IGetTransactionService {
@@ -11,11 +11,11 @@ export interface IGetTransactionService {
 }
 
 export const getTransactionServiceFactory = (
-  databaseService: IDatabaseService,
+  transactionService: ITransactionService,
   transactionDocumentConverter: ITransactionDocumentConverter): IGetTransactionService => {
   return async ({ transactionId, accountId }) => {
 
-    const document = await databaseService.getTransactionByIdAndAccountId({ transactionId, accountId }).catch((error) => {
+    const document = await transactionService.getTransactionByIdAndAccountId({ transactionId, accountId }).catch((error) => {
       console.error('Get transaction', error);
       throw httpError(500, 'Error while getting transaction');
     });

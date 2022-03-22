@@ -1,6 +1,6 @@
 import { httpError } from '@household/shared/common/utils';
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
-import { IDatabaseService } from '@household/shared/services/database-service';
+import { IRecipientService } from '@household/shared/services/recipient-service';
 import { Recipient } from '@household/shared/types/types';
 
 export interface IGetRecipientService {
@@ -10,11 +10,11 @@ export interface IGetRecipientService {
 }
 
 export const getRecipientServiceFactory = (
-  databaseService: IDatabaseService,
+  recipientService: IRecipientService,
   recipientDocumentConverter: IRecipientDocumentConverter): IGetRecipientService => {
   return async ({ recipientId }) => {
 
-    const document = await databaseService.getRecipientById(recipientId).catch((error) => {
+    const document = await recipientService.getRecipientById(recipientId).catch((error) => {
       console.error('Get recipient', error);
       throw httpError(500, 'Error while getting recipient');
     });

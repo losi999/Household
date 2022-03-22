@@ -1,6 +1,6 @@
 import { httpError } from '@household/shared/common/utils';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
-import { IDatabaseService } from '@household/shared/services/database-service';
+import { ICategoryService } from '@household/shared/services/category-service';
 import { Category } from '@household/shared/types/types';
 
 export interface ICreateCategoryService {
@@ -11,10 +11,10 @@ export interface ICreateCategoryService {
 }
 
 export const createCategoryServiceFactory = (
-  databaseService: IDatabaseService,
+  categoryService: ICategoryService,
   categoryDocumentConverter: ICategoryDocumentConverter): ICreateCategoryService => {
   return async ({ body, expiresIn }) => {
-    const parentCategory = await databaseService.getCategoryById(body.parentCategoryId).catch((error) => {
+    const parentCategory = await categoryService.getCategoryById(body.parentCategoryId).catch((error) => {
       console.error('Get category', error);
       throw httpError(500, 'Error while getting category');
     });
@@ -26,7 +26,7 @@ export const createCategoryServiceFactory = (
 
     const document = categoryDocumentConverter.create({ body, parentCategory }, expiresIn);
 
-    const saved = await databaseService.saveCategory(document).catch((error) => {
+    const saved = await categoryService.saveCategory(document).catch((error) => {
       console.error('Save category', error);
       throw httpError(500, 'Error while saving category');
     });

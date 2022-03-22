@@ -1,6 +1,10 @@
 import { httpError } from '@household/shared/common/utils';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
-import { IDatabaseService } from '@household/shared/services/database-service';
+import { IAccountService } from '@household/shared/services/account-service';
+import { ICategoryService } from '@household/shared/services/category-service';
+import { IProjectService } from '@household/shared/services/project-service';
+import { IRecipientService } from '@household/shared/services/recipient-service';
+import { ITransactionService } from '@household/shared/services/transaction-service';
 import { Transaction } from '@household/shared/types/types';
 
 export interface IUpdateToPaymentTransactionService {
@@ -12,11 +16,15 @@ export interface IUpdateToPaymentTransactionService {
 }
 
 export const updateToPaymentTransactionServiceFactory = (
-  databaseService: IDatabaseService,
+  accountService: IAccountService,
+  projectService: IProjectService,
+  categoryService: ICategoryService,
+  recipientService: IRecipientService,
+  transactionService: ITransactionService,
   transactionDocumentConverter: ITransactionDocumentConverter,
 ): IUpdateToPaymentTransactionService => {
   return async ({ body, transactionId, expiresIn }) => {
-    const document = await databaseService.getTransactionById(transactionId).catch((error) => {
+    const document = await transactionService.getTransactionById(transactionId).catch((error) => {
       console.error('Get transaction', error);
       throw httpError(500, 'Error while getting transaction');
     });
@@ -26,10 +34,10 @@ export const updateToPaymentTransactionServiceFactory = (
     }
 
     const [account, category, project, recipient] = await Promise.all([
-      databaseService.getAccountById(body.accountId),
-      databaseService.getCategoryById(body.categoryId),
-      databaseService.getProjectById(body.projectId),
-      databaseService.getRecipientById(body.recipientId),
+      accountService.getAccountById(body.accountId),
+      categoryService.getCategoryById(body.categoryId),
+      projectService.getProjectById(body.projectId),
+      recipientService.getRecipientById(body.recipientId),
     ]);
 
     if (!account) {
@@ -61,7 +69,7 @@ export const updateToPaymentTransactionServiceFactory = (
       document,
     }, expiresIn);
 
-    await databaseService.updateTransaction(updated).catch((error) => {
+    await transactionService.updateTransaction(updated).catch((error) => {
       console.error('Update transaction', error);
       throw httpError(500, 'Error while updating transaction');
     });

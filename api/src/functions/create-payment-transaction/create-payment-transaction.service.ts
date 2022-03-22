@@ -1,6 +1,10 @@
 import { httpError } from '@household/shared/common/utils';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
-import { IDatabaseService } from '@household/shared/services/database-service';
+import { IAccountService } from '@household/shared/services/account-service';
+import { ICategoryService } from '@household/shared/services/category-service';
+import { IProjectService } from '@household/shared/services/project-service';
+import { IRecipientService } from '@household/shared/services/recipient-service';
+import { ITransactionService } from '@household/shared/services/transaction-service';
 import { Transaction } from '@household/shared/types/types';
 
 export interface ICreatePaymentTransactionService {
@@ -11,15 +15,19 @@ export interface ICreatePaymentTransactionService {
 }
 
 export const createPaymentTransactionServiceFactory = (
-  databaseService: IDatabaseService,
+  accountService: IAccountService,
+  projectService: IProjectService,
+  categoryService: ICategoryService,
+  recipientService: IRecipientService,
+  transactionService: ITransactionService,
   transactionDocumentConverter: ITransactionDocumentConverter,
 ): ICreatePaymentTransactionService => {
   return async ({ body, expiresIn }) => {
     const [account, category, project, recipient] = await Promise.all([
-      databaseService.getAccountById(body.accountId),
-      databaseService.getCategoryById(body.categoryId),
-      databaseService.getProjectById(body.projectId),
-      databaseService.getRecipientById(body.recipientId),
+      accountService.getAccountById(body.accountId),
+      categoryService.getCategoryById(body.categoryId),
+      projectService.getProjectById(body.projectId),
+      recipientService.getRecipientById(body.recipientId),
     ]);
 
     if (!account) {
@@ -50,7 +58,7 @@ export const createPaymentTransactionServiceFactory = (
       recipient
     }, expiresIn);
 
-    const saved = await databaseService.saveTransaction(document).catch((error) => {
+    const saved = await transactionService.saveTransaction(document).catch((error) => {
       console.error('Save transaction', error);
       throw httpError(500, 'Error while saving transaction');
     });
