@@ -1,1 +1,1 @@
-export const transactionsaPageSize = 25;
+export const transactionsPageSize = 25;

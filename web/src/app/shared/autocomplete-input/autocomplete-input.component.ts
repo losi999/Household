@@ -13,7 +13,8 @@ import { Subscription } from 'rxjs';
   }]
 })
 export class AutocompleteInputComponent implements OnInit, OnDestroy, ControlValueAccessor {
-  @Input() displayNameProperty: string;
+  @Input() displayPropertyName: string;
+  @Input() filterPropertyName: string;
   @Input() label: string;
   @Input() items: any[];
 
@@ -57,7 +58,7 @@ export class AutocompleteInputComponent implements OnInit, OnDestroy, ControlVal
   }
 
   displayName = (item: any) => {
-    return item?.[this.displayNameProperty];
+    return item?.[this.displayPropertyName];
   }
 
   clearValue() {
