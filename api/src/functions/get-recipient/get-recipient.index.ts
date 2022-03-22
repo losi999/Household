@@ -8,6 +8,6 @@ import { recipientService } from '@household/shared/dependencies/services/recipi
 
 const getRecipientService = getRecipientServiceFactory(recipientService, recipientDocumentConverter);
 
-export default cors(/*authorizer('admin')*/(apiRequestValidator({
+export default cors(apiRequestValidator({
   pathParameters,
-})(handler(getRecipientService))));
+})(handler(getRecipientService)));

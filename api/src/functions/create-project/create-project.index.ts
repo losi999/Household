@@ -8,6 +8,6 @@ import { projectService } from '@household/shared/dependencies/services/project-
 
 const createProjectService = createProjectServiceFactory(projectService, projectDocumentConverter);
 
-export default cors(/*authorizer('admin')*/(apiRequestValidator({
+export default cors(apiRequestValidator({
   body,
-})(handler(createProjectService))));
+})(handler(createProjectService)));

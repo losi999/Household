@@ -9,7 +9,7 @@ import { projectService } from '@household/shared/dependencies/services/project-
 
 const updateProjectService = updateProjectServiceFactory(projectService, projectDocumentConverter);
 
-export default cors(/*authorizer('admin')*/(apiRequestValidator({
+export default cors(apiRequestValidator({
   pathParameters,
-  body
-})(handler(updateProjectService))));
+  body,
+})(handler(updateProjectService)));

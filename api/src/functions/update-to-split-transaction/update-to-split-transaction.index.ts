@@ -13,7 +13,7 @@ import { transactionService } from '@household/shared/dependencies/services/tran
 
 const updateToSplitTransactionService = updateToSplitTransactionServiceFactory(accountService, projectService, categoryService, recipientService, transactionService, transactionDocumentConverter);
 
-export default cors(/*authorizer('admin')*/(apiRequestValidator({
+export default cors(apiRequestValidator({
   pathParameters,
-  body
-})(handler(updateToSplitTransactionService))));
+  body,
+})(handler(updateToSplitTransactionService)));

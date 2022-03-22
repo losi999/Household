@@ -2,10 +2,10 @@ import { JSONSchema7 } from 'json-schema';
 
 type JSONSchemaType<T> =
   T extends string ? 'string' :
-  T extends number ? 'number' | 'integer' :
-  T extends boolean ? 'boolean' :
-  T extends any[] ? 'array' :
-  'object';
+    T extends number ? 'number' | 'integer' :
+      T extends boolean ? 'boolean' :
+        T extends any[] ? 'array' :
+          'object';
 
 export type StrictJSONSchema7<T> = Omit<JSONSchema7, 'properties' | 'type' | 'required' | 'items'> & {
   type: JSONSchemaType<T> | [JSONSchemaType<T>, 'null'];
@@ -21,11 +21,11 @@ export type Brand<K, T> = K & { __brand: T };
 export type RecursivePartial<T> = {
   [P in keyof T]?:
   T[P] extends (infer U)[] ? RecursivePartial<U>[] :
-  T[P] extends object ? RecursivePartial<T[P]> :
-  T[P];
+    T[P] extends object ? RecursivePartial<T[P]> :
+      T[P];
 };
 
 export type HttpError = {
   statusCode: number;
-   message: string;
+  message: string;
 };

@@ -37,14 +37,19 @@ export const updateToSplitTransactionServiceFactory = (
     const projectIds = [...new Set(body.splits.map(s => s.projectId).filter(s => s))];
 
     const total = body.splits.reduce((accumulator, currentValue) => {
-      return accumulator + currentValue.amount
+      return accumulator + currentValue.amount;
     }, 0);
 
     if (total !== body.amount) {
       throw httpError(400, 'Sum of splits must equal to total amount');
     }
 
-    const [account, categories, projects, recipient] = await Promise.all([
+    const [
+      account,
+      categories,
+      projects,
+      recipient,
+    ] = await Promise.all([
       accountService.getAccountById(body.accountId),
       categoryService.listCategoriesByIds(categoryIds),
       projectService.listProjectsByIds(projectIds),

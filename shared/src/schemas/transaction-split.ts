@@ -24,20 +24,18 @@ const schema: StrictJSONSchema7<Transaction.SplitRequest> = {
     },
     accountId: {
       type: 'string',
-      pattern: '^[a-zA-Z0-9]{24}$'
+      pattern: '^[a-zA-Z0-9]{24}$',
     },
     recipientId: {
       type: 'string',
-      pattern: '^[a-zA-Z0-9]{24}$'
+      pattern: '^[a-zA-Z0-9]{24}$',
     },
     splits: {
       type: 'array',
       minLength: 1,
       items: {
         type: 'object',
-        required:[
-          'amount',
-        ],
+        required: ['amount'],
         properties: {
           amount: {
             type: 'number',
@@ -48,15 +46,15 @@ const schema: StrictJSONSchema7<Transaction.SplitRequest> = {
           },
           categoryId: {
             type: 'string',
-            pattern: '^[a-zA-Z0-9]{24}$'
+            pattern: '^[a-zA-Z0-9]{24}$',
           },
           projectId: {
             type: 'string',
-            pattern: '^[a-zA-Z0-9]{24}$'
+            pattern: '^[a-zA-Z0-9]{24}$',
           },
-        }
-      }
-    }
+        },
+      },
+    },
   },
 };
 

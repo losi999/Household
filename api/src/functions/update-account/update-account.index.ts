@@ -9,7 +9,7 @@ import { accountService } from '@household/shared/dependencies/services/account-
 
 const updateAccountService = updateAccountServiceFactory(accountService, accountDocumentConverter);
 
-export default cors(/*authorizer('admin')*/(apiRequestValidator({
+export default cors(apiRequestValidator({
   pathParameters,
-  body
-})(handler(updateAccountService))));
+  body,
+})(handler(updateAccountService)));

@@ -7,6 +7,6 @@ import { accountService } from '@household/shared/dependencies/services/account-
 
 const deleteAccountService = deleteAccountServiceFactory(accountService);
 
-export default cors(/*authorizer('admin')*/(apiRequestValidator({
+export default cors(apiRequestValidator({
   pathParameters,
-})(handler(deleteAccountService))));
+})(handler(deleteAccountService)));

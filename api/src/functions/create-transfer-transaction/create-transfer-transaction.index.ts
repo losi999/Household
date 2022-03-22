@@ -9,6 +9,6 @@ import { transactionService } from '@household/shared/dependencies/services/tran
 
 const createTransferTransactionService = createTransferTransactionServiceFactory(accountService, transactionService, transactionDocumentConverter);
 
-export default cors(/*authorizer('admin')*/(apiRequestValidator({
+export default cors(apiRequestValidator({
   body,
-})(handler(createTransferTransactionService))));
+})(handler(createTransferTransactionService)));

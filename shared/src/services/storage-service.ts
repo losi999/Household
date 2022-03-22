@@ -17,4 +17,4 @@ export const storageServiceFactory = (s3: S3): IStorageService => {
   };
 
   return instance;
-}
+};

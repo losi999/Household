@@ -7,6 +7,6 @@ import { recipientService } from '@household/shared/dependencies/services/recipi
 
 const deleteRecipientService = deleteRecipientServiceFactory(recipientService);
 
-export default cors(/*authorizer('admin')*/(apiRequestValidator({
+export default cors(apiRequestValidator({
   pathParameters,
-})(handler(deleteRecipientService))));
+})(handler(deleteRecipientService)));

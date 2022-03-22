@@ -25,7 +25,10 @@ export const updateAccountServiceFactory = (
       throw httpError(404, 'No account found');
     }
 
-    const updated = accountDocumentConverter.update({ document, body }, expiresIn);
+    const updated = accountDocumentConverter.update({
+      document,
+      body, 
+    }, expiresIn);
 
     await accountService.updateAccount(updated).catch((error) => {
       console.error('Update account', error);

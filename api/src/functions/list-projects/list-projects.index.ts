@@ -6,4 +6,4 @@ import { projectService } from '@household/shared/dependencies/services/project-
 
 const listProjectsService = listProjectsServiceFactory(projectService, projectDocumentConverter);
 
-export default cors(/*authorizer('admin')*/(handler(listProjectsService)));
+export default cors(handler(listProjectsService));

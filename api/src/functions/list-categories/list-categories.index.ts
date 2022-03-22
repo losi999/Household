@@ -6,4 +6,4 @@ import { categoryService } from '@household/shared/dependencies/services/categor
 
 const listCategoriesService = listCategoriesServiceFactory(categoryService, categoryDocumentConverter);
 
-export default cors(/*authorizer('admin')*/(handler(listCategoriesService)));
+export default cors(handler(listCategoriesService));

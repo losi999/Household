@@ -17,104 +17,119 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
   const updateCategoryFullName = (oldName: string, newName: string, session: ClientSession): Promise<unknown> => {
     return mongodbService.categories.updateMany({
       fullName: {
-        $regex: `^${oldName}:`
-      }
-    }, [{
-      $set: {
-        fullName: {
-          $replaceOne: {
-            input: '$fullName',
-            find: `${oldName}:`,
-            replacement: `${newName}:`,
-          }
-        }
-      }
-    }], {
+        $regex: `^${oldName}:`,
+      },
+    }, [
+      {
+        $set: {
+          fullName: {
+            $replaceOne: {
+              input: '$fullName',
+              find: `${oldName}:`,
+              replacement: `${newName}:`,
+            },
+          },
+        },
+      },
+    ], {
       runValidators: true,
-      session
+      session,
     }).exec();
   };
-
 
   const instance: ICategoryService = {
     dumpCategories: () => {
       return mongodbService.inSession((session) => {
-        return mongodbService.categories.find({}, null, { session }).lean().exec();
+        return mongodbService.categories.find({}, null, {
+          session, 
+        }).lean()
+          .exec();
       });
     },
     saveCategory: (doc) => {
       return mongodbService.categories.create(doc);
     },
     getCategoryById: async (categoryId) => {
-      return !categoryId ? undefined : mongodbService.categories.findById(categoryId).lean().exec();
+      return !categoryId ? undefined : mongodbService.categories.findById(categoryId).lean()
+        .exec();
     },
     deleteCategory: async (categoryId) => {
       return mongodbService.inSession((session) => {
         return session.withTransaction(async () => {
-          const deleted = await mongodbService.categories.findOneAndDelete({ _id: categoryId }, { session }).exec();
+          const deleted = await mongodbService.categories.findOneAndDelete({
+            _id: categoryId, 
+          }, {
+            session, 
+          }).exec();
 
-          await mongodbService.categories.updateMany({ parentCategory: deleted },
-            deleted.parentCategory ? {
-              $set: {
-                parentCategory: deleted.parentCategory
-              }
-            } : {
-              $unset: {
-                parentCategory: 1
-              }
-            }, {
+          await mongodbService.categories.updateMany({
+            parentCategory: deleted, 
+          },
+          deleted.parentCategory ? {
+            $set: {
+              parentCategory: deleted.parentCategory,
+            },
+          } : {
+            $unset: {
+              parentCategory: 1,
+            },
+          }, {
             runValidators: true,
-            session
+            session,
           }).exec();
           // await updateCategoryFullName(deleted.fullName, deleted.fullName.replace(new RegExp(`${deleted.name}$`), ''), session);
           await mongodbService.categories.updateMany({
             fullName: {
-              $regex: `^${deleted.fullName}`
-            }
-          }, [{
-            $set: {
-              fullName: {
-                $replaceOne: {
-                  input: '$fullName',
-                  find: `${deleted.fullName}:`,
-                  replacement: deleted.fullName.replace(new RegExp(`${deleted.name}$`), ''),
-                }
-              }
-            }
-          }], {
+              $regex: `^${deleted.fullName}`,
+            },
+          }, [
+            {
+              $set: {
+                fullName: {
+                  $replaceOne: {
+                    input: '$fullName',
+                    find: `${deleted.fullName}:`,
+                    replacement: deleted.fullName.replace(new RegExp(`${deleted.name}$`), ''),
+                  },
+                },
+              },
+            },
+          ], {
             runValidators: true,
-            session
+            session,
           }).exec();
           await mongodbService.transactions.updateMany({
-            category: deleted
+            category: deleted,
           }, deleted.parentCategory ? {
             $set: {
-              category: deleted.parentCategory
-            }
+              category: deleted.parentCategory,
+            },
           } : {
             $unset: {
-              category: 1
-            }
+              category: 1,
+            },
           }, {
             runValidators: true,
-            session
+            session,
           }).exec();
           await mongodbService.transactions.updateMany({
-            'splits.category': categoryId
+            'splits.category': categoryId,
           }, deleted.parentCategory ? {
             $set: {
               'splits.$[element].category': deleted.parentCategory,
-            }
+            },
           } : {
             $unset: {
-              'splits.$[element].category': 1
-            }
+              'splits.$[element].category': 1,
+            },
           }, {
             session,
             runValidators: true,
-            arrayFilters: [{
-              'element.category': categoryId
-            }]
+            arrayFilters: [
+              {
+                'element.category': categoryId,
+              },
+            ],
           }).exec();
         });
       });
@@ -122,9 +137,11 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
     updateCategory: async (doc, oldFullName) => {
       return mongodbService.inSession((session) => {
         return session.withTransaction(async () => {
-          await mongodbService.categories.replaceOne({ _id: doc._id }, doc, {
+          await mongodbService.categories.replaceOne({
+            _id: doc._id, 
+          }, doc, {
             runValidators: true,
-            session
+            session,
           }).exec();
           await updateCategoryFullName(oldFullName, doc.fullName, session);
         });
@@ -132,8 +149,12 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
     },
     listCategories: () => {
       return mongodbService.inSession((session) => {
-        return mongodbService.categories.find({}, null, { session })
-          .collation({ locale: 'hu' })
+        return mongodbService.categories.find({}, null, {
+          session, 
+        })
+          .collation({
+            locale: 'hu', 
+          })
           .sort('fullName')
           .populate('parentCategory')
           .lean()
@@ -142,10 +163,17 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
     },
     listCategoriesByIds: async (categoryIds) => {
       return mongodbService.inSession((session) => {
-        return mongodbService.categories.find({ _id: { $in: categoryIds } }, null, { session }).lean().exec();
+        return mongodbService.categories.find({
+          _id: {
+            $in: categoryIds, 
+          }, 
+        }, null, {
+          session, 
+        }).lean()
+          .exec();
       });
     },
   };
 
   return instance;
-}
+};

@@ -16,7 +16,10 @@ export const updateCategoryServiceFactory = (
   categoryDocumentConverter: ICategoryDocumentConverter,
 ): IUpdateCategoryService => {
   return async ({ body, categoryId, expiresIn }) => {
-    const [{ updatedAt, ...document }, parentCategory] = await Promise.all([
+    const [
+      { updatedAt, ...document },
+      parentCategory,
+    ] = await Promise.all([
       categoryService.getCategoryById(categoryId),
       categoryService.getCategoryById(body.parentCategoryId),
     ]).catch((error) => {
@@ -32,7 +35,11 @@ export const updateCategoryServiceFactory = (
       throw httpError(400, 'Parent category not found');
     }
 
-    const updated = categoryDocumentConverter.update({ document, body, parentCategory }, expiresIn);
+    const updated = categoryDocumentConverter.update({
+      document,
+      body,
+      parentCategory, 
+    }, expiresIn);
     const oldFullName = document.fullName;
 
     await categoryService.updateCategory(updated, oldFullName).catch((error) => {

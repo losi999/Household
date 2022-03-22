@@ -24,9 +24,9 @@ const schema: StrictJSONSchema7<Account.Request> = {
         'cash',
         'creditCard',
         'loan',
-        'cafeteria'
-      ]
-    }
+        'cafeteria',
+      ],
+    },
   },
 };
 

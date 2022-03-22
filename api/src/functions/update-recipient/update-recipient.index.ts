@@ -9,7 +9,7 @@ import { recipientService } from '@household/shared/dependencies/services/recipi
 
 const updateRecipientService = updateRecipientServiceFactory(recipientService, recipientDocumentConverter);
 
-export default cors(/*authorizer('admin')*/(apiRequestValidator({
+export default cors(apiRequestValidator({
   pathParameters,
-  body
-})(handler(updateRecipientService))));
+  body,
+})(handler(updateRecipientService)));

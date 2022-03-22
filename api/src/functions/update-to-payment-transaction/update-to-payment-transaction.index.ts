@@ -13,7 +13,7 @@ import { transactionService } from '@household/shared/dependencies/services/tran
 
 const updateToPaymentTransactionService = updateToPaymentTransactionServiceFactory(accountService, projectService, categoryService, recipientService, transactionService, transactionDocumentConverter);
 
-export default cors(/*authorizer('admin')*/(apiRequestValidator({
+export default cors(apiRequestValidator({
   pathParameters,
-  body
-})(handler(updateToPaymentTransactionService))));
+  body,
+})(handler(updateToPaymentTransactionService)));

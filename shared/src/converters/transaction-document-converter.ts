@@ -90,8 +90,8 @@ export const transactionDocumentConverterFactory = (
           description: s.description,
           category: s.category ? categoryDocumentConverter.toResponse(s.category) : undefined,
           project: s.project ? projectDocumentConverter.toResponse(s.project) : undefined,
-        }
-      })
+        };
+      }),
     };
   };
 
@@ -148,7 +148,7 @@ export const transactionDocumentConverterFactory = (
         recipientId: undefined,
         _id: undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
-      }
+      };
     },
     createTransferDocument: ({ body, account, transferAccount }, expiresIn): Transaction.TransferDocument => {
       return {

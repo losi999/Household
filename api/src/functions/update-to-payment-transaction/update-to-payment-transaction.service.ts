@@ -33,7 +33,12 @@ export const updateToPaymentTransactionServiceFactory = (
       throw httpError(404, 'No transaction found');
     }
 
-    const [account, category, project, recipient] = await Promise.all([
+    const [
+      account,
+      category,
+      project,
+      recipient,
+    ] = await Promise.all([
       accountService.getAccountById(body.accountId),
       categoryService.getCategoryById(body.categoryId),
       projectService.getProjectById(body.projectId),

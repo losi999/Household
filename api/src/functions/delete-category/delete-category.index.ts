@@ -7,6 +7,6 @@ import { categoryService } from '@household/shared/dependencies/services/categor
 
 const deleteCategoryService = deleteCategoryServiceFactory(categoryService);
 
-export default cors(/*authorizer('admin')*/(apiRequestValidator({
+export default cors(apiRequestValidator({
   pathParameters,
-})(handler(deleteCategoryService))));
+})(handler(deleteCategoryService)));

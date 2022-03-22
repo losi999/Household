@@ -6,4 +6,4 @@ import { recipientService } from '@household/shared/dependencies/services/recipi
 
 const listRecipientsService = listRecipientsServiceFactory(recipientService, recipientDocumentConverter);
 
-export default cors(/*authorizer('admin')*/(handler(listRecipientsService)));
+export default cors(handler(listRecipientsService));

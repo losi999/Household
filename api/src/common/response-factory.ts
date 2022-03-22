@@ -10,7 +10,9 @@ const successResponse = (statusCode: number, data?: any): AWSLambda.APIGatewayPr
 export const errorResponse = ({ statusCode, message }: HttpError): AWSLambda.APIGatewayProxyResult => {
   return {
     statusCode,
-    body: JSON.stringify({ message }),
+    body: JSON.stringify({
+      message,
+    }),
   };
 };
 

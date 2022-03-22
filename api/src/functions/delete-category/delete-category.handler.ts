@@ -8,7 +8,7 @@ export default (deleteCategory: IDeleteCategoryService): AWSLambda.APIGatewayPro
 
     try {
       await deleteCategory({
-        categoryId
+        categoryId,
       });
     } catch (error) {
       console.error(error);

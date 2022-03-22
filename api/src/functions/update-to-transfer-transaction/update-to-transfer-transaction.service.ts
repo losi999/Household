@@ -19,7 +19,7 @@ export const updateToTransferTransactionServiceFactory = (
 ): IUpdateToTransferTransactionService => {
   return async ({ body, transactionId, expiresIn }) => {
     if (body.accountId === body.transferAccountId) {
-      console.error('Cannot transfer to same account', body.accountId, body.transferAccountId)
+      console.error('Cannot transfer to same account', body.accountId, body.transferAccountId);
       throw httpError(400, 'Cannot transfer to same account');
     }
 
@@ -32,7 +32,10 @@ export const updateToTransferTransactionServiceFactory = (
       throw httpError(404, 'No transaction found');
     }
 
-    const accounts = await accountService.listAccountsByIds([body.accountId, body.transferAccountId]);
+    const accounts = await accountService.listAccountsByIds([
+      body.accountId,
+      body.transferAccountId,
+    ]);
 
     if (accounts.length !== 2) {
       console.error('One of the accounts are not found', body.accountId, body.transferAccountId);
@@ -44,14 +47,14 @@ export const updateToTransferTransactionServiceFactory = (
 
     if (account.currency !== transferAccount.currency) {
       console.error('Accounts must be in the same currency');
-      throw httpError(400, 'Accounts must be in the same currency')
+      throw httpError(400, 'Accounts must be in the same currency');
     }
 
     const updated = transactionDocumentConverter.updateTransferDocument({
       document,
       body,
       account,
-      transferAccount
+      transferAccount,
     }, expiresIn);
 
     await transactionService.updateTransaction(updated).catch((error) => {

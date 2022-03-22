@@ -37,7 +37,7 @@ export const accountDocumentConverterFactory = (): IAccountDocumentConverter => 
         _id: undefined,
         expiresAt: undefined,
         accountId: document._id.toString() as Account.IdType,
-      }
+      };
     },
     toResponseList: docs => docs.map(document => instance.toResponse(document)),
   };

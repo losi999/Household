@@ -9,7 +9,7 @@ import { transactionService } from '@household/shared/dependencies/services/tran
 
 const listTransactionsByAccountService = listTransactionsByAccountServiceFactory(transactionService, transactionDocumentConverter);
 
-export default cors(/*authorizer('admin')*/(apiRequestValidator({
+export default cors(apiRequestValidator({
   pathParameters,
-  queryStringParameters
-})(handler(listTransactionsByAccountService))));
+  queryStringParameters,
+})(handler(listTransactionsByAccountService)));

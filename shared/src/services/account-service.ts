@@ -18,36 +18,39 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
       from: 'transactions',
       localField: '_id',
       foreignField: 'account',
-      as: 'in'
+      as: 'in',
     })
       .lookup({
         from: 'transactions',
         localField: '_id',
         foreignField: 'transferAccount',
-        as: 'out'
+        as: 'out',
       })
       .addFields({
         balance: {
           $subtract: [
             {
-              $sum: '$in.amount'
+              $sum: '$in.amount',
             },
             {
-              $sum: '$out.amount'
-            }
-          ]
-        }
+              $sum: '$out.amount',
+            },
+          ],
+        },
       })
       .project({
         in: false,
-        out: false
-      })
+        out: false,
+      });
   };
 
   const instance: IAccountService = {
     dumpAccounts: () => {
       return mongodbService.inSession((session) => {
-        return mongodbService.accounts.find({}, null, { session }).lean().exec();
+        return mongodbService.accounts.find({}, null, {
+          session, 
+        }).lean()
+          .exec();
       });
     },
     saveAccount: (doc) => {
@@ -55,7 +58,7 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
     },
     getAccountById: async (accountId) => {
       const [account] = await aggregateAccountBalance(mongodbService.accounts.aggregate().match({
-        _id: new Types.ObjectId(accountId)
+        _id: new Types.ObjectId(accountId),
       })).exec();
 
       return !accountId ? undefined : account;
@@ -63,35 +66,60 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
     deleteAccount: async (accountId) => {
       return mongodbService.inSession((session) => {
         return session.withTransaction(async () => {
-          await mongodbService.accounts.deleteOne({ _id: accountId }, { session }).exec();
+          await mongodbService.accounts.deleteOne({
+            _id: accountId, 
+          }, {
+            session, 
+          }).exec();
           await mongodbService.transactions.deleteMany({
-            $or: [{
-              account: accountId
-            }, {
-              transferAccount: accountId
-            }]
-          }, { session }).exec();
+            $or: [
+              {
+                account: accountId,
+              },
+              {
+                transferAccount: accountId,
+              },
+            ],
+          }, {
+            session, 
+          }).exec();
         });
       });
     },
     updateAccount: (doc) => {
-      return mongodbService.accounts.replaceOne({ _id: doc._id }, doc, { runValidators: true }).exec();
+      return mongodbService.accounts.replaceOne({
+        _id: doc._id, 
+      }, doc, {
+        runValidators: true, 
+      }).exec();
     },
     listAccounts: () => {
       return mongodbService.inSession((session) => {
-        return aggregateAccountBalance(mongodbService.accounts.aggregate(null, { session }))
-          .collation({ locale: 'hu' })
+        return aggregateAccountBalance(mongodbService.accounts.aggregate(null, {
+          session, 
+        }))
+          .collation({
+            locale: 'hu', 
+          })
           .sort({
-            name: 1
-          }).exec();
+            name: 1,
+          })
+          .exec();
       });
     },
     listAccountsByIds: async (accountIds) => {
       return mongodbService.inSession((session) => {
-        return mongodbService.accounts.find({ _id: { $in: accountIds } }, null, { session }).lean().exec();
+        return mongodbService.accounts.find({
+          _id: {
+            $in: accountIds, 
+          }, 
+        }, null, {
+          session, 
+        }).lean()
+          .exec();
       });
     },
   };
 
   return instance;
-}
+};

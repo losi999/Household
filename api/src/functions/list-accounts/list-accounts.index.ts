@@ -6,4 +6,4 @@ import { accountService } from '@household/shared/dependencies/services/account-
 
 const listAccountsService = listAccountsServiceFactory(accountService, accountDocumentConverter);
 
-export default cors(/*authorizer('admin')*/(handler(listAccountsService)));
+export default cors(handler(listAccountsService));

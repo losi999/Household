@@ -7,6 +7,6 @@ import { projectService } from '@household/shared/dependencies/services/project-
 
 const deleteProjectService = deleteProjectServiceFactory(projectService);
 
-export default cors(/*authorizer('admin')*/(apiRequestValidator({
+export default cors(apiRequestValidator({
   pathParameters,
-})(handler(deleteProjectService))));
+})(handler(deleteProjectService)));

@@ -10,7 +10,7 @@ export default (getCategory: IGetCategoryService): AWSLambda.APIGatewayProxyHand
     let category: Category.Response;
     try {
       category = await getCategory({
-        categoryId
+        categoryId,
       });
     } catch (error) {
       console.error(error);

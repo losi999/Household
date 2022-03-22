@@ -8,6 +8,6 @@ import { accountService } from '@household/shared/dependencies/services/account-
 
 const createAccountService = createAccountServiceFactory(accountService, accountDocumentConverter);
 
-export default cors(/*authorizer('admin')*/(apiRequestValidator({
+export default cors(apiRequestValidator({
   body,
-})(handler(createAccountService))));
+})(handler(createAccountService)));

@@ -10,7 +10,7 @@ export default (getAccount: IGetAccountService): AWSLambda.APIGatewayProxyHandle
     let account: Account.Response;
     try {
       account = await getAccount({
-        accountId
+        accountId,
       });
     } catch (error) {
       console.error(error);

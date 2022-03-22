@@ -22,8 +22,8 @@ export const accountSchema = new Schema<Account.Document>({
       'cash',
       'creditCard',
       'loan',
-      'cafeteria'
-    ]
+      'cafeteria',
+    ],
   },
   expiresAt: {
     type: Schema.Types.Date,
@@ -36,5 +36,5 @@ export const accountSchema = new Schema<Account.Document>({
   timestamps: {
     createdAt: true,
     updatedAt: true,
-  }
+  },
 });

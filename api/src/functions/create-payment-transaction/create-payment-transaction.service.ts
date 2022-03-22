@@ -23,7 +23,12 @@ export const createPaymentTransactionServiceFactory = (
   transactionDocumentConverter: ITransactionDocumentConverter,
 ): ICreatePaymentTransactionService => {
   return async ({ body, expiresIn }) => {
-    const [account, category, project, recipient] = await Promise.all([
+    const [
+      account,
+      category,
+      project,
+      recipient,
+    ] = await Promise.all([
       accountService.getAccountById(body.accountId),
       categoryService.getCategoryById(body.categoryId),
       projectService.getProjectById(body.projectId),
@@ -55,7 +60,7 @@ export const createPaymentTransactionServiceFactory = (
       account,
       category,
       project,
-      recipient
+      recipient,
     }, expiresIn);
 
     const saved = await transactionService.saveTransaction(document).catch((error) => {

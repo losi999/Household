@@ -12,6 +12,6 @@ import { transactionService } from '@household/shared/dependencies/services/tran
 
 const createSplitTransactionService = createSplitTransactionServiceFactory(accountService, projectService, categoryService, recipientService, transactionService, transactionDocumentConverter);
 
-export default cors(/*authorizer('admin')*/(apiRequestValidator({
+export default cors(apiRequestValidator({
   body,
-})(handler(createSplitTransactionService))));
+})(handler(createSplitTransactionService)));

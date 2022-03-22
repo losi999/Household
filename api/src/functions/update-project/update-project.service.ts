@@ -25,7 +25,10 @@ export const updateProjectServiceFactory = (
       throw httpError(404, 'No project found');
     }
 
-    const updated = projectDocumentConverter.update({ document, body }, expiresIn);
+    const updated = projectDocumentConverter.update({
+      document,
+      body, 
+    }, expiresIn);
 
     await projectService.updateProject(updated).catch((error) => {
       console.error('Update project', error);

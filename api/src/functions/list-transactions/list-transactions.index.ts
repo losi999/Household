@@ -6,4 +6,4 @@ import { transactionService } from '@household/shared/dependencies/services/tran
 
 const listTransactionsService = listTransactionsServiceFactory(transactionService, transactionDocumentConverter);
 
-export default cors(/*authorizer('admin')*/(handler(listTransactionsService)));
+export default cors(handler(listTransactionsService));

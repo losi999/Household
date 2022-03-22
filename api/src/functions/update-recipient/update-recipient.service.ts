@@ -25,7 +25,10 @@ export const updateRecipientServiceFactory = (
       throw httpError(404, 'No recipient found');
     }
 
-    const updated = recipientDocumentConverter.update({ document, body }, expiresIn);
+    const updated = recipientDocumentConverter.update({
+      document,
+      body, 
+    }, expiresIn);
 
     await recipientService.updateRecipient(updated).catch((error) => {
       console.error('Update recipient', error);

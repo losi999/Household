@@ -12,7 +12,7 @@ export const categorySchema = new Schema<Category.Document>({
   },
   parentCategory: {
     type: Schema.Types.ObjectId,
-    ref: 'categories'
+    ref: 'categories',
   },
   expiresAt: {
     type: Schema.Types.Date,
@@ -25,5 +25,5 @@ export const categorySchema = new Schema<Category.Document>({
   timestamps: {
     createdAt: true,
     updatedAt: true,
-  }
+  },
 });

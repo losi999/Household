@@ -16,7 +16,11 @@ export const listTransactionsByAccountServiceFactory = (
   transactionDocumentConverter: ITransactionDocumentConverter): IListTransactionsByAccountService => {
   return async ({ accountId, pageSize, pageNumber }) => {
 
-    const documents = await transactionService.listTransactionsByAccountId({ accountId, pageNumber, pageSize }).catch((error) => {
+    const documents = await transactionService.listTransactionsByAccountId({
+      accountId,
+      pageNumber,
+      pageSize, 
+    }).catch((error) => {
       console.error('List transactions by account', error);
       throw httpError(500, 'Error while getting transactions');
     });

@@ -15,9 +15,15 @@ export const databaseArchiveServiceFactory = (
   categoryService: ICategoryService,
   recipientService: IRecipientService,
   transactionService: ITransactionService,
-   storageService: IStorageService): IDatabaseArchiveService =>
+  storageService: IStorageService): IDatabaseArchiveService =>
   async () => {
-    const [accounts, projects, categories, recipients, transactions] = await Promise.all([
+    const [
+      accounts,
+      projects,
+      categories,
+      recipients,
+      transactions,
+    ] = await Promise.all([
       accountService.dumpAccounts(),
       projectService.dumpProjects(),
       categoryService.dumpCategories(),

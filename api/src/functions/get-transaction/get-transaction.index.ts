@@ -8,6 +8,6 @@ import { transactionService } from '@household/shared/dependencies/services/tran
 
 const getTransactionService = getTransactionServiceFactory(transactionService, transactionDocumentConverter);
 
-export default cors(/*authorizer('admin')*/(apiRequestValidator({
+export default cors(apiRequestValidator({
   pathParameters,
-})(handler(getTransactionService))));
+})(handler(getTransactionService)));

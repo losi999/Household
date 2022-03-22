@@ -21,11 +21,13 @@ export interface ITransactionService {
 
 export const transactionServiceFactory = (mongodbService: IMongodbService): ITransactionService => {
 
-  const instance: ITransactionService
- = {
+  const instance: ITransactionService = {
     dumpTransactions: () => {
       return mongodbService.inSession((session) => {
-        return mongodbService.transactions.find({}, null, { session }).lean().exec();
+        return mongodbService.transactions.find({}, null, {
+          session, 
+        }).lean()
+          .exec();
       });
     },
     saveTransaction: (doc) => {
@@ -39,7 +41,9 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
         .populate('category')
         .populate('transferAccount')
         .populate('splits.category')
-        .populate('splits.project').lean().exec();
+        .populate('splits.project')
+        .lean()
+        .exec();
     },
     getTransactionByIdAndAccountId: async ({ transactionId, accountId }) => {
       return !transactionId ? undefined : mongodbService.transactions.findOne({
@@ -50,27 +54,37 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
           },
           {
             transferAccount: accountId,
-          }
-        ]
+          },
+        ],
       }).populate('project')
         .populate('recipient')
         .populate('account')
         .populate('category')
         .populate('transferAccount')
         .populate('splits.category')
-        .populate('splits.project').lean().exec();
+        .populate('splits.project')
+        .lean()
+        .exec();
     },
     deleteTransaction: (transactionId) => {
-      return mongodbService.transactions.deleteOne({ _id: transactionId }).exec();
+      return mongodbService.transactions.deleteOne({
+        _id: transactionId, 
+      }).exec();
     },
     updateTransaction: (doc) => {
-      return mongodbService.transactions.replaceOne({ _id: doc._id }, doc, { runValidators: true }).exec();
+      return mongodbService.transactions.replaceOne({
+        _id: doc._id, 
+      }, doc, {
+        runValidators: true, 
+      }).exec();
     },
     listTransactions: (isAscending = true) => {
       return mongodbService.inSession((session) => {
-        return mongodbService.transactions.find({}, null, { session })
+        return mongodbService.transactions.find({}, null, {
+          session, 
+        })
           .sort({
-            issuedAt: isAscending ? 'asc' : 'desc'
+            issuedAt: isAscending ? 'asc' : 'desc',
           })
           .populate('project')
           .populate('recipient')
@@ -86,15 +100,19 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
     listTransactionsByAccountId: ({ accountId, pageSize, pageNumber }) => {
       return mongodbService.inSession((session) => {
         return mongodbService.transactions.find({
-          $or: [{
-            account: accountId,
-          },
-          {
-            transferAccount: accountId,
-          }]
-        }, null, { session })
+          $or: [
+            {
+              account: accountId,
+            },
+            {
+              transferAccount: accountId,
+            },
+          ],
+        }, null, {
+          session, 
+        })
           .sort({
-            issuedAt: 'desc'
+            issuedAt: 'desc',
           })
           .limit(pageSize)
           .skip((pageNumber - 1) * pageSize)
@@ -112,4 +130,4 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
   };
 
   return instance;
-}
+};

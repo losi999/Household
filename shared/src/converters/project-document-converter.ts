@@ -35,7 +35,7 @@ export const projectDocumentConverterFactory = (): IProjectDocumentConverter => 
         _id: undefined,
         expiresAt: undefined,
         projectId: doc._id.toString() as Project.IdType,
-      }
+      };
     },
     toResponseList: docs => docs.map(d => instance.toResponse(d)),
   };

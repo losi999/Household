@@ -24,7 +24,10 @@ export const createCategoryServiceFactory = (
       throw httpError(400, 'Parent category not found');
     }
 
-    const document = categoryDocumentConverter.create({ body, parentCategory }, expiresIn);
+    const document = categoryDocumentConverter.create({
+      body,
+      parentCategory, 
+    }, expiresIn);
 
     const saved = await categoryService.saveCategory(document).catch((error) => {
       console.error('Save category', error);

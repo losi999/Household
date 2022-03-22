@@ -8,6 +8,6 @@ import { categoryService } from '@household/shared/dependencies/services/categor
 
 const getCategoryService = getCategoryServiceFactory(categoryService, categoryDocumentConverter);
 
-export default cors(/*authorizer('admin')*/(apiRequestValidator({
+export default cors(apiRequestValidator({
   pathParameters,
-})(handler(getCategoryService))));
+})(handler(getCategoryService)));

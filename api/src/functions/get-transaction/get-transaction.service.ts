@@ -15,7 +15,10 @@ export const getTransactionServiceFactory = (
   transactionDocumentConverter: ITransactionDocumentConverter): IGetTransactionService => {
   return async ({ transactionId, accountId }) => {
 
-    const document = await transactionService.getTransactionByIdAndAccountId({ transactionId, accountId }).catch((error) => {
+    const document = await transactionService.getTransactionByIdAndAccountId({
+      transactionId,
+      accountId, 
+    }).catch((error) => {
       console.error('Get transaction', error);
       throw httpError(500, 'Error while getting transaction');
     });
