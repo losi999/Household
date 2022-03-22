@@ -33,7 +33,7 @@
     "jest": "26.6.3",
     "jest-date-mock": "1.0.8",
     "jest-dot-reporter": "1.0.14",
-    "mongoose": "6.2.1",
+    "mongoose": "6.2.7",
     "rimraf": "3.0.2",
     "ts-jest": "26.5.0",
     "ts-loader": "8.0.15",

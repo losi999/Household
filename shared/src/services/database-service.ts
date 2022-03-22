@@ -104,19 +104,29 @@ export const databaseServiceFactory = (mongodbService: IMongodbService): IDataba
 
   const instance: IDatabaseService = {
     dumpAccounts: () => {
-      return mongodbService.accounts.find().lean().exec();
+      return mongodbService.inSession((session) => {
+        return mongodbService.accounts.find({}, null, { session }).lean().exec();
+      });
     },
     dumpProjects: () => {
-      return mongodbService.projects.find().lean().exec();
+      return mongodbService.inSession((session) => {
+        return mongodbService.projects.find({}, null, { session }).lean().exec();
+      });
     },
     dumpRecipients: () => {
-      return mongodbService.recipients.find().lean().exec();
+      return mongodbService.inSession((session) => {
+        return mongodbService.recipients.find({}, null, { session }).lean().exec();
+      });
     },
     dumpCategories: () => {
-      return mongodbService.categories.find().lean().exec();
+      return mongodbService.inSession((session) => {
+        return mongodbService.categories.find({}, null, { session }).lean().exec();
+      });
     },
     dumpTransactions: () => {
-      return mongodbService.transactions.find().lean().exec();
+      return mongodbService.inSession((session) => {
+        return mongodbService.transactions.find({}, null, { session }).lean().exec();
+      });
     },
     saveProject: (doc) => {
       return mongodbService.projects.create(doc);
@@ -182,125 +192,129 @@ export const databaseServiceFactory = (mongodbService: IMongodbService): IDataba
         .populate('splits.project').lean().exec();
     },
     deleteProject: async (projectId) => {
-      const session = await mongodbService.startSession();
-      return session.withTransaction(async () => {
-        await mongodbService.projects.deleteOne({ _id: projectId }, { session }).exec();
-        await mongodbService.transactions.updateMany({ project: projectId }, {
-          $unset: {
-            project: 1
-          }
-        }, {
-          runValidators: true,
-          session
-        }).exec();
-        await mongodbService.transactions.updateMany({
-          'splits.project': projectId
-        }, {
+      return mongodbService.inSession((session) => {
+        return session.withTransaction(async () => {
+          await mongodbService.projects.deleteOne({ _id: projectId }, { session }).exec();
+          await mongodbService.transactions.updateMany({ project: projectId }, {
+            $unset: {
+              project: 1
+            }
+          }, {
+            runValidators: true,
+            session
+          }).exec();
+          await mongodbService.transactions.updateMany({
+            'splits.project': projectId
+          }, {
 
-          $unset: {
-            'splits.$[element].project': 1
-          }
-        }, {
-          session,
-          runValidators: true,
-          arrayFilters: [{
-            'element.project': projectId
-          }]
-        }).exec();
-      })
+            $unset: {
+              'splits.$[element].project': 1
+            }
+          }, {
+            session,
+            runValidators: true,
+            arrayFilters: [{
+              'element.project': projectId
+            }]
+          }).exec();
+        });
+      });
     },
     deleteRecipient: async (recipientId) => {
-      const session = await mongodbService.startSession();
-      return session.withTransaction(async () => {
-        await mongodbService.recipients.deleteOne({ _id: recipientId }, { session }).exec();
-        await mongodbService.transactions.updateMany({ recipient: recipientId }, {
-          $unset: {
-            recipient: 1
-          }
-        }, { session }).exec();
-      })
+      return mongodbService.inSession((session) => {
+        return session.withTransaction(async () => {
+          await mongodbService.recipients.deleteOne({ _id: recipientId }, { session }).exec();
+          await mongodbService.transactions.updateMany({ recipient: recipientId }, {
+            $unset: {
+              recipient: 1
+            }
+          }, { session }).exec();
+        })
+      });
     },
     deleteAccount: async (accountId) => {
-      const session = await mongodbService.startSession();
-      return session.withTransaction(async () => {
-        await mongodbService.accounts.deleteOne({ _id: accountId }, { session }).exec();
-        await mongodbService.transactions.deleteMany({
-          $or: [{
-            account: accountId
-          }, {
-            transferAccount: accountId
-          }]
-        }, { session }).exec();
+      return mongodbService.inSession((session) => {
+        return session.withTransaction(async () => {
+          await mongodbService.accounts.deleteOne({ _id: accountId }, { session }).exec();
+          await mongodbService.transactions.deleteMany({
+            $or: [{
+              account: accountId
+            }, {
+              transferAccount: accountId
+            }]
+          }, { session }).exec();
+        });
       });
     },
     deleteCategory: async (categoryId) => {
-      const session = await mongodbService.startSession();
-      return session.withTransaction(async () => {
-        const deleted = await mongodbService.categories.findOneAndDelete({ _id: categoryId }, { session }).exec();
+      return mongodbService.inSession((session) => {
+        return session.withTransaction(async () => {
+          const deleted = await mongodbService.categories.findOneAndDelete({ _id: categoryId }, { session }).exec();
 
-        await mongodbService.categories.updateMany({ parentCategory: deleted },
-          deleted.parentCategory ? {
+          await mongodbService.categories.updateMany({ parentCategory: deleted },
+            deleted.parentCategory ? {
+              $set: {
+                parentCategory: deleted.parentCategory
+              }
+            } : {
+              $unset: {
+                parentCategory: 1
+              }
+            }, {
+            runValidators: true,
+            session
+          }).exec();
+          // await updateCategoryFullName(deleted.fullName, deleted.fullName.replace(new RegExp(`${deleted.name}$`), ''), session);
+          await mongodbService.categories.updateMany({
+            fullName: {
+              $regex: `^${deleted.fullName}`
+            }
+          }, [{
             $set: {
-              parentCategory: deleted.parentCategory
+              fullName: {
+                $replaceOne: {
+                  input: '$fullName',
+                  find: `${deleted.fullName}:`,
+                  replacement: deleted.fullName.replace(new RegExp(`${deleted.name}$`), ''),
+                }
+              }
+            }
+          }], {
+            runValidators: true,
+            session
+          }).exec();
+          await mongodbService.transactions.updateMany({
+            category: deleted
+          }, deleted.parentCategory ? {
+            $set: {
+              category: deleted.parentCategory
             }
           } : {
             $unset: {
-              parentCategory: 1
+              category: 1
             }
           }, {
-          runValidators: true,
-          session
-        }).exec();
-        // await updateCategoryFullName(deleted.fullName, deleted.fullName.replace(new RegExp(`${deleted.name}$`), ''), session);
-        await mongodbService.categories.updateMany({
-          fullName: {
-            $regex: `^${deleted.fullName}`
-          }
-        }, [{
-          $set: {
-            fullName: {
-              $replaceOne: {
-                input: '$fullName',
-                find: `${deleted.fullName}:`,
-                replacement: deleted.fullName.replace(new RegExp(`${deleted.name}$`), ''),
-              }
+            runValidators: true,
+            session
+          }).exec();
+          await mongodbService.transactions.updateMany({
+            'splits.category': categoryId
+          }, deleted.parentCategory ? {
+            $set: {
+              'splits.$[element].category': deleted.parentCategory,
             }
-          }
-        }], {
-          runValidators: true,
-          session
-        }).exec();
-        await mongodbService.transactions.updateMany({
-          category: deleted
-        }, deleted.parentCategory ? {
-          $set: {
-            category: deleted.parentCategory
-          }
-        } : {
-          $unset: {
-            category: 1
-          }
-        }, {
-          runValidators: true,
-          session
-        }).exec();
-        await mongodbService.transactions.updateMany({
-          'splits.category': categoryId
-        }, deleted.parentCategory ? {
-          $set: {
-            'splits.$[element].category': deleted.parentCategory,
-          }
-        } : {
-          $unset: {
-            'splits.$[element].category': 1
-          }
-        }, {
-          session,
-          runValidators: true,
-          arrayFilters: [{
-            'element.category': categoryId
-          }]
-        }).exec();
+          } : {
+            $unset: {
+              'splits.$[element].category': 1
+            }
+          }, {
+            session,
+            runValidators: true,
+            arrayFilters: [{
+              'element.category': categoryId
+            }]
+          }).exec();
+        });
       });
     },
     deleteTransaction: (transactionId) => {
@@ -316,92 +330,113 @@ export const databaseServiceFactory = (mongodbService: IMongodbService): IDataba
       return mongodbService.accounts.replaceOne({ _id: doc._id }, doc, { runValidators: true }).exec();
     },
     updateCategory: async (doc, oldFullName) => {
-      const session = await mongodbService.startSession();
-      return session.withTransaction(async () => {
-        await mongodbService.categories.replaceOne({ _id: doc._id }, doc, {
-          runValidators: true,
-          session
-        }).exec();
-        await updateCategoryFullName(oldFullName, doc.fullName, session);
+      return mongodbService.inSession((session) => {
+        return session.withTransaction(async () => {
+          await mongodbService.categories.replaceOne({ _id: doc._id }, doc, {
+            runValidators: true,
+            session
+          }).exec();
+          await updateCategoryFullName(oldFullName, doc.fullName, session);
+        });
       });
     },
     updateTransaction: (doc) => {
       return mongodbService.transactions.replaceOne({ _id: doc._id }, doc, { runValidators: true }).exec();
     },
     listProjects: () => {
-      return mongodbService.projects.find()
-        .collation({ locale: 'hu' })
-        .sort('name')
-        .lean()
-        .exec();
+      return mongodbService.inSession((session) => {
+        return mongodbService.projects.find({}, null, { session })
+          .collation({ locale: 'hu' })
+          .sort('name')
+          .lean()
+          .exec();
+      });
     },
     listRecipients: () => {
-      return mongodbService.recipients.find()
-        .collation({ locale: 'hu' })
-        .sort('name')
-        .lean().exec();
+      return mongodbService.inSession((session) => {
+        return mongodbService.recipients.find({}, null, { session })
+          .collation({ locale: 'hu' })
+          .sort('name')
+          .lean()
+          .exec();
+      });
     },
     listAccounts: () => {
-      return aggregateAccountBalance(mongodbService.accounts.aggregate())
-        .collation({ locale: 'hu' })
-        .sort({
-          name: 1
-        }).exec();
+      return mongodbService.inSession((session) => {
+        return aggregateAccountBalance(mongodbService.accounts.aggregate(null, { session }))
+          .collation({ locale: 'hu' })
+          .sort({
+            name: 1
+          }).exec();
+      });
     },
     listCategories: () => {
-      return mongodbService.categories.find()
-        .collation({ locale: 'hu' })
-        .sort('fullName')
-        .lean()
-        .exec();
+      return mongodbService.inSession((session) => {
+        return mongodbService.categories.find({}, null, { session })
+          .collation({ locale: 'hu' })
+          .sort('fullName')
+          .populate('parentCategory')
+          .lean()
+          .exec();
+      });
     },
     listTransactions: (isAscending = true) => {
-      return mongodbService.transactions.find()
-        .sort({
-          issuedAt: isAscending ? 'asc' : 'desc'
-        })
-        .populate('project')
-        .populate('recipient')
-        .populate('account')
-        .populate('category')
-        .populate('transferAccount')
-        .populate('splits.category')
-        .populate('splits.project')
-        .lean()
-        .exec();
+      return mongodbService.inSession((session) => {
+        return mongodbService.transactions.find({}, null, { session })
+          .sort({
+            issuedAt: isAscending ? 'asc' : 'desc'
+          })
+          .populate('project')
+          .populate('recipient')
+          .populate('account')
+          .populate('category')
+          .populate('transferAccount')
+          .populate('splits.category')
+          .populate('splits.project')
+          .lean()
+          .exec();
+      });
     },
     listTransactionsByAccountId: ({ accountId, pageSize, pageNumber }) => {
-      return mongodbService.transactions.find({
-        $or: [{
-          account: accountId,
-        },
-        {
-          transferAccount: accountId,
-        }]
-      })
-        .sort({
-          issuedAt: 'desc'
-        })
-        .limit(pageSize)
-        .skip((pageNumber - 1) * pageSize)
-        .populate('project')
-        .populate('recipient')
-        .populate('account')
-        .populate('category')
-        .populate('transferAccount')
-        .populate('splits.category')
-        .populate('splits.project')
-        .lean()
-        .exec();
+      return mongodbService.inSession((session) => {
+        return mongodbService.transactions.find({
+          $or: [{
+            account: accountId,
+          },
+          {
+            transferAccount: accountId,
+          }]
+        }, null, { session })
+          .sort({
+            issuedAt: 'desc'
+          })
+          .limit(pageSize)
+          .skip((pageNumber - 1) * pageSize)
+          .populate('project')
+          .populate('recipient')
+          .populate('account')
+          .populate('category')
+          .populate('transferAccount')
+          .populate('splits.category')
+          .populate('splits.project')
+          .lean()
+          .exec();
+      });
     },
     listProjectsByIds: async (projectIds) => {
-      return mongodbService.projects.find({ _id: { $in: projectIds } }).lean().exec();
+      return mongodbService.inSession((session) => {
+        return mongodbService.projects.find({ _id: { $in: projectIds } }, null, { session }).lean().exec();
+      });
     },
     listAccountsByIds: async (accountIds) => {
-      return mongodbService.accounts.find({ _id: { $in: accountIds } }).lean().exec();
+      return mongodbService.inSession((session) => {
+        return mongodbService.accounts.find({ _id: { $in: accountIds } }, null, { session }).lean().exec();
+      });
     },
     listCategoriesByIds: async (categoryIds) => {
-      return mongodbService.categories.find({ _id: { $in: categoryIds } }).lean().exec();
+      return mongodbService.inSession((session) => {
+        return mongodbService.categories.find({ _id: { $in: categoryIds } }, null, { session }).lean().exec();
+      });
     },
   };
 
