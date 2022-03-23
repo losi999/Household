@@ -45,7 +45,7 @@ jobs:
       - save_cache:
           paths:
             - layers/mongoose/nodejs/node_modules
-          key: layer-dependencies-v1-{{ checksum "layers/mongoose/nodejs/package.json" }}          
+          key: layer-dependencies-v1-{{ checksum "layers/mongoose/nodejs/package.json" }}
 
       # - restore_cache:
       #     name: Restoring test dependencies from cache
@@ -65,40 +65,40 @@ jobs:
           root: ~/
           paths:
             - repo
-  # unit_test:
-  #   docker:
-  #     - image: circleci/node:16.13.1
-  #   working_directory: ~/repo
-  #   steps:
-  #     - attach_workspace:
-  #         at: ~/
+  unit_test:
+    docker:
+      - image: circleci/node:16.13.1
+    working_directory: ~/repo
+    steps:
+      - attach_workspace:
+          at: ~/
 
-  #     - run:
-  #         name: Running API unit tests
-  #         command: yarn test:api
+      - run:
+          name: Running API unit tests
+          command: yarn test:api
 
       # - run:
       #     name: Running Web unit tests
       #     command: yarn test:web
 
-      # - store_artifacts:
-      #     path: coverage
-      #     destination: coverage
-  # lint:
-  #   docker:
-  #     - image: circleci/node:16.13.1
-  #   working_directory: ~/repo
-  #   steps:
-  #     - attach_workspace:
-  #         at: ~/
+      - store_artifacts:
+          path: coverage
+          destination: coverage
+  lint:
+    docker:
+      - image: circleci/node:16.13.1
+    working_directory: ~/repo
+    steps:
+      - attach_workspace:
+          at: ~/
 
-  #     - run:
-  #         name: Running API linter
-  #         command: yarn lint:api
+      - run:
+          name: Running API linter
+          command: yarn lint:api
 
-      # - run:
-      #     name: Running Web linter
-      #     command: yarn lint:web
+  # - run:
+  #     name: Running Web linter
+  #     command: yarn lint:web
   build:
     parameters:
       env:
@@ -202,20 +202,20 @@ workflows:
               ignore:
                 - development
                 - master
-      # - unit_test:
-      #     name: unit_test
-      #     requires:
-      #       - install
-      # - lint:
-      #     name: lint
-      #     requires:
-      #       - install
+      - unit_test:
+          name: unit_test
+          requires:
+            - install
+      - lint:
+          name: lint
+          requires:
+            - install
       - build:
           name: build
           env: "LOCAL"
           requires:
             - install
-    
+
   dev:
     jobs:
       - install:
@@ -224,14 +224,14 @@ workflows:
             branches:
               only:
                 - development
-      # - unit_test:
-      #     name: unit_test
-      #     requires:
-      #       - install
-      # - lint:
-      #     name: lint
-      #     requires:
-      #       - install
+      - unit_test:
+          name: unit_test
+          requires:
+            - install
+      - lint:
+          name: lint
+          requires:
+            - install
       - build:
           name: build
           env: "DEV"
@@ -243,8 +243,8 @@ workflows:
           # cypress_password: ${CYPRESS_PASSWORD}
           # admin_user_email: ${ADMIN_USER_EMAIL}
           requires:
-            # - unit_test
-            # - lint
+            - unit_test
+            - lint
             - build
       - web_deploy:
           name: web_deploy
@@ -265,14 +265,14 @@ workflows:
             branches:
               only:
                 - master
-      # - unit_test:
-      #     name: unit_test
-      #     requires:
-      #       - install
-      # - lint:
-      #     name: lint
-      #     requires:
-      #       - install
+      - unit_test:
+          name: unit_test
+          requires:
+            - install
+      - lint:
+          name: lint
+          requires:
+            - install
       - build:
           name: build
           env: "PROD"
@@ -284,12 +284,11 @@ workflows:
           # cypress_password: ""
           # admin_user_email: ${ADMIN_USER_EMAIL}
           requires:
-            # - unit_test
-            # - lint
+            - unit_test
+            - lint
             - build
       - web_deploy:
           name: web_deploy
           env: "PROD"
           requires:
             - api_deploy
-

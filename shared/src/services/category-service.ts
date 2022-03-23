@@ -41,7 +41,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
     dumpCategories: () => {
       return mongodbService.inSession((session) => {
         return mongodbService.categories.find({}, null, {
-          session, 
+          session,
         }).lean()
           .exec();
       });
@@ -57,13 +57,13 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
       return mongodbService.inSession((session) => {
         return session.withTransaction(async () => {
           const deleted = await mongodbService.categories.findOneAndDelete({
-            _id: categoryId, 
+            _id: categoryId,
           }, {
-            session, 
+            session,
           }).exec();
 
           await mongodbService.categories.updateMany({
-            parentCategory: deleted, 
+            parentCategory: deleted,
           },
           deleted.parentCategory ? {
             $set: {
@@ -138,7 +138,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
       return mongodbService.inSession((session) => {
         return session.withTransaction(async () => {
           await mongodbService.categories.replaceOne({
-            _id: doc._id, 
+            _id: doc._id,
           }, doc, {
             runValidators: true,
             session,
@@ -150,10 +150,10 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
     listCategories: () => {
       return mongodbService.inSession((session) => {
         return mongodbService.categories.find({}, null, {
-          session, 
+          session,
         })
           .collation({
-            locale: 'hu', 
+            locale: 'hu',
           })
           .sort('fullName')
           .populate('parentCategory')
@@ -165,10 +165,10 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
       return mongodbService.inSession((session) => {
         return mongodbService.categories.find({
           _id: {
-            $in: categoryIds, 
-          }, 
+            $in: categoryIds,
+          },
         }, null, {
-          session, 
+          session,
         }).lean()
           .exec();
       });

@@ -5,6 +5,8 @@
     "samconfig": "cp samconfig.${ENV}.toml samconfig.toml",
     "lint:api": "eslint api shared --ext .ts",
     "lintfix:api": "eslint api shared --ext .ts --fix",
+    "test:api:dev": "jest --maxWorkers=4 --watchAll --silent",
+    "test:api": "jest --maxWorkers=4 --silent",
     "deploy:api:LOCAL": "export ENV=LOCAL && yarn samconfig && sam deploy -t cf.household.yaml --profile losonczil",
     "deploy:api:CI": "export ENV=CI && yarn samconfig && sam deploy -t cf.household.yaml --profile ci",
     "start:account": "sam local start-api -t sam.account.yaml -p 3000 -n env.json",
@@ -44,5 +46,38 @@
     "webpack": "5.20.2",
     "webpack-cli": "4.5.0",
     "webpack-glob-entry": "2.1.1"
+  },
+  "jest": {
+    "verbose": true,
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "moduleNameMapper": {
+      "^@household/api/(.+)$": "<rootDir>/api/src/$1",
+      "^@household/shared/(.+)$": "<rootDir>/shared/src/$1"
+    },
+    "testRegex": "(api|shared)/src/.*\\.spec\\.ts$",
+    "testEnvironment": "node",
+    "collectCoverage": true,
+    "collectCoverageFrom": [
+      "api/**/*.ts",
+      "shared/**/*.ts",
+      "!**/node_modules/**",
+      "!api/src/**/*.index.ts"
+    ],
+    "coverageReporters": [
+      "html"
+    ],
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json",
+      "node"
+    ],
+    "setupFiles": [
+      "jest-date-mock"
+    ]
   }
 }
