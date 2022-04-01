@@ -96,7 +96,6 @@ export const transactionDocumentConverterFactory = (
   };
 
   const toResponseTransfer = (doc: Transaction.TransferDocument, mainAccountId: Account.IdType): Transaction.TransferResponse => {
-    console.log('B');
     return {
       ...doc,
       createdAt: undefined,

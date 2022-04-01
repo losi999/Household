@@ -30,6 +30,10 @@ export const validateFunctionCall = <T extends (...args: any) => any>(func: T, .
   }
 };
 
+export const validateNthFunctionCall = <T extends (...args: any) => any>(func: T, nth: number, ...args: Parameters<T>): void => {
+  expect(func).toHaveBeenNthCalledWith(nth, ...args);
+};
+
 export const validateError = (message: string, statusCode?: number) => (error: any) => {
   expect(error.message).toEqual(message);
   if (statusCode) {
@@ -38,15 +42,15 @@ export const validateError = (message: string, statusCode?: number) => (error: a
 };
 
 export const validateSchemaType = (validation: string, propertyName: string, type: string) => {
-  expect(validation).toEqual(`data.${propertyName} should be ${type}`);
+  expect(validation).toContain(`data.${propertyName} should be ${type}`);
 };
 
 export const validateSchemaRequired = (validation: string, propertyName: string) => {
-  expect(validation).toEqual(`data should have required property '${propertyName}'`);
+  expect(validation).toContain(`should have required property '${propertyName}'`);
 };
 
 export const validateSchemaPattern = (validation: string, propertyName: string) => {
-  expect(validation).toEqual(`${propertyName} should match pattern`);
+  expect(validation).toContain(`data.${propertyName} should match pattern`);
 };
 
 export const validateSchemaFormat = (validation: string, propertyName: string, format: string) => {
@@ -54,7 +58,7 @@ export const validateSchemaFormat = (validation: string, propertyName: string, f
 };
 
 export const validateSchemaAdditionalProperties = (validation: string, propertyName: string) => {
-  expect(validation).toEqual(`${propertyName} should NOT have additional properties`);
+  expect(validation).toContain(`${propertyName} should NOT have additional properties`);
 };
 
 export const validateSchemaMinLength = (validation: string, propertyName: string, minLength: number) => {
@@ -66,17 +70,21 @@ export const validateSchemaMaxLength = (validation: string, propertyName: string
 };
 
 export const validateSchemaEnumValue = (validation: string, propertyName: string) => {
-  expect(validation).toEqual(`${propertyName} should be equal to one of the allowed values`);
+  expect(validation).toEqual(`data.${propertyName} should be equal to one of the allowed values`);
 };
 
 export const validateSchemaMinimum = (validation: string, propertyName: string, minimum: number) => {
   expect(validation).toEqual(`data.${propertyName} should be >= ${minimum}`);
 };
 
+export const validateSchemaMinItems = (validation: string, propertyName: string, minItems: number) => {
+  expect(validation).toEqual(`data.${propertyName} should NOT have fewer than ${minItems} items`);
+};
+
 export const awsResolvedValue = (data?: any) => ({
-  promise: () => Promise.resolve(data), 
+  promise: () => Promise.resolve(data),
 }) as any;
 
 export const awsRejectedValue = (data?: any) => ({
-  promise: () => Promise.reject(data), 
+  promise: () => Promise.reject(data),
 }) as any;

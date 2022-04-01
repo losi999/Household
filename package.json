@@ -6,6 +6,7 @@
     "lint:api": "eslint api shared --ext .ts",
     "lintfix:api": "eslint api shared --ext .ts --fix",
     "test:api:dev": "jest --maxWorkers=4 --watchAll --silent",
+    "test:api:debug": "jest --maxWorkers=4 --watchAll",
     "test:api": "jest --maxWorkers=4 --silent",
     "deploy:api:LOCAL": "export ENV=LOCAL && yarn samconfig && sam deploy -t cf.household.yaml --profile losonczil",
     "deploy:api:CI": "export ENV=CI && yarn samconfig && sam deploy -t cf.household.yaml --profile ci",
@@ -62,8 +63,12 @@
     "collectCoverageFrom": [
       "api/**/*.ts",
       "shared/**/*.ts",
+      "!**/dependencies/**/*.ts",
+      "!**/mongodb-schemas/**/*.ts",
       "!**/node_modules/**",
-      "!api/src/**/*.index.ts"
+      "!**/*.index.ts",
+      "!api/src/handlers/index.handler.ts",
+      "!shared/src/services/*.ts"
     ],
     "coverageReporters": [
       "html"

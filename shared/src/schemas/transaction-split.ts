@@ -32,9 +32,10 @@ const schema: StrictJSONSchema7<Transaction.SplitRequest> = {
     },
     splits: {
       type: 'array',
-      minLength: 1,
+      minItems: 1,
       items: {
         type: 'object',
+        additionalProperties: false,
         required: ['amount'],
         properties: {
           amount: {

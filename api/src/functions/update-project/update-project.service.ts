@@ -16,18 +16,20 @@ export const updateProjectServiceFactory = (
   projectDocumentConverter: IProjectDocumentConverter,
 ): IUpdateProjectService => {
   return async ({ body, projectId, expiresIn }) => {
-    const { updatedAt, ...document } = await projectService.getProjectById(projectId).catch((error) => {
+    const queried = await projectService.getProjectById(projectId).catch((error) => {
       console.error('Get project', error);
       throw httpError(500, 'Error while getting project');
     });
 
-    if (!document) {
+    if (!queried) {
       throw httpError(404, 'No project found');
     }
 
+    const { updatedAt, ...document } = queried;
+
     const updated = projectDocumentConverter.update({
       document,
-      body, 
+      body,
     }, expiresIn);
 
     await projectService.updateProject(updated).catch((error) => {

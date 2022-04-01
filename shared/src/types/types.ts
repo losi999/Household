@@ -103,7 +103,7 @@ export namespace Account {
   & Partial<Internal.UpdatedAtDate>
   & Base
   & IsOpen
-  & Balance;
+  & Partial<Balance>;
 
   export type Response = Base
   & IsOpen

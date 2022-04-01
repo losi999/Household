@@ -16,18 +16,20 @@ export const updateAccountServiceFactory = (
   accountDocumentConverter: IAccountDocumentConverter,
 ): IUpdateAccountService => {
   return async ({ body, accountId, expiresIn }) => {
-    const { updatedAt, ...document } = await accountService.getAccountById(accountId).catch((error) => {
+    const queried = await accountService.getAccountById(accountId).catch((error) => {
       console.error('Get account', error);
       throw httpError(500, 'Error while getting account');
     });
 
-    if (!document) {
+    if (!queried) {
       throw httpError(404, 'No account found');
     }
 
+    const { updatedAt, ...document } = queried;
+
     const updated = accountDocumentConverter.update({
       document,
-      body, 
+      body,
     }, expiresIn);
 
     await accountService.updateAccount(updated).catch((error) => {

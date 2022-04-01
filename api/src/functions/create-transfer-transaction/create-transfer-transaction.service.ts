@@ -25,7 +25,10 @@ export const createTransferTransactionServiceFactory = (
     const accounts = await accountService.listAccountsByIds([
       body.accountId,
       body.transferAccountId,
-    ]);
+    ]).catch((error) => {
+      console.error('Unable to query related data', error, body);
+      throw httpError(500, 'Unable to query related data');
+    });
 
     if (accounts.length !== 2) {
       console.error('One of the accounts are not found', body.accountId, body.transferAccountId);
@@ -43,10 +46,13 @@ export const createTransferTransactionServiceFactory = (
     const document = transactionDocumentConverter.createTransferDocument({
       body,
       account,
-      transferAccount, 
+      transferAccount,
     }, expiresIn);
 
-    const saved = await transactionService.saveTransaction(document);
+    const saved = await transactionService.saveTransaction(document).catch((error) => {
+      console.error('Save transaction', error);
+      throw httpError(500, 'Error while saving transaction');
+    });
 
     return saved._id.toString();
   };

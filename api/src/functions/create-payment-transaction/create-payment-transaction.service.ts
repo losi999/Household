@@ -33,7 +33,10 @@ export const createPaymentTransactionServiceFactory = (
       categoryService.getCategoryById(body.categoryId),
       projectService.getProjectById(body.projectId),
       recipientService.getRecipientById(body.recipientId),
-    ]);
+    ]).catch((error) => {
+      console.error('Unable to query related data', error, body);
+      throw httpError(500, 'Unable to query related data');
+    });
 
     if (!account) {
       console.error('No account found', body.accountId);

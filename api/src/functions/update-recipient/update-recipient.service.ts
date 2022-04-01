@@ -16,18 +16,20 @@ export const updateRecipientServiceFactory = (
   recipientDocumentConverter: IRecipientDocumentConverter,
 ): IUpdateRecipientService => {
   return async ({ body, recipientId, expiresIn }) => {
-    const { updatedAt, ...document } = await recipientService.getRecipientById(recipientId).catch((error) => {
+    const queried = await recipientService.getRecipientById(recipientId).catch((error) => {
       console.error('Get recipient', error);
       throw httpError(500, 'Error while getting recipient');
     });
 
-    if (!document) {
+    if (!queried) {
       throw httpError(404, 'No recipient found');
     }
 
+    const { updatedAt, ...document } = queried;
+
     const updated = recipientDocumentConverter.update({
       document,
-      body, 
+      body,
     }, expiresIn);
 
     await recipientService.updateRecipient(updated).catch((error) => {
