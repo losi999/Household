@@ -4,9 +4,7 @@ import { Category } from '@household/shared/types/types';
 const schema: StrictJSONSchema7<Category.Request> = {
   type: 'object',
   additionalProperties: false,
-  required: [
-    'name',
-  ],
+  required: ['name'],
   properties: {
     name: {
       type: 'string',
@@ -14,7 +12,7 @@ const schema: StrictJSONSchema7<Category.Request> = {
     },
     parentCategoryId: {
       type: 'string',
-      pattern: '^[a-zA-Z0-9]{24}$'
+      pattern: '^[a-zA-Z0-9]{24}$',
     },
   },
 };

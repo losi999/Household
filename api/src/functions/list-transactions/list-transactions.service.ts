@@ -1,6 +1,6 @@
 import { httpError } from '@household/shared/common/utils';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
-import { IDatabaseService } from '@household/shared/services/database-service';
+import { ITransactionService } from '@household/shared/services/transaction-service';
 import { Transaction } from '@household/shared/types/types';
 
 export interface IListTransactionsService {
@@ -8,11 +8,11 @@ export interface IListTransactionsService {
 }
 
 export const listTransactionsServiceFactory = (
-  databaseService: IDatabaseService,
+  transactionService: ITransactionService,
   transactionDocumentConverter: ITransactionDocumentConverter): IListTransactionsService => {
   return async () => {
 
-    const documents = await databaseService.listTransactions(false).catch((error) => {
+    const documents = await transactionService.listTransactions(false).catch((error) => {
       console.error('List transactions', error);
       throw httpError(500, 'Error while listing transactions');
     });

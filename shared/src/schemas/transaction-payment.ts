@@ -23,19 +23,19 @@ const schema: StrictJSONSchema7<Transaction.PaymentRequest> = {
     },
     accountId: {
       type: 'string',
-      pattern: '^[a-zA-Z0-9]{24}$'
+      pattern: '^[a-zA-Z0-9]{24}$',
     },
     categoryId: {
       type: 'string',
-      pattern: '^[a-zA-Z0-9]{24}$'
+      pattern: '^[a-zA-Z0-9]{24}$',
     },
     recipientId: {
       type: 'string',
-      pattern: '^[a-zA-Z0-9]{24}$'
+      pattern: '^[a-zA-Z0-9]{24}$',
     },
     projectId: {
       type: 'string',
-      pattern: '^[a-zA-Z0-9]{24}$'
+      pattern: '^[a-zA-Z0-9]{24}$',
     },
   },
 };

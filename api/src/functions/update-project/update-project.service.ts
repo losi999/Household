@@ -1,6 +1,6 @@
 import { httpError } from '@household/shared/common/utils';
 import { IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
-import { IDatabaseService } from '@household/shared/services/database-service';
+import { IProjectService } from '@household/shared/services/project-service';
 import { Project } from '@household/shared/types/types';
 
 export interface IUpdateProjectService {
@@ -12,22 +12,27 @@ export interface IUpdateProjectService {
 }
 
 export const updateProjectServiceFactory = (
-  databaseService: IDatabaseService,
+  projectService: IProjectService,
   projectDocumentConverter: IProjectDocumentConverter,
 ): IUpdateProjectService => {
   return async ({ body, projectId, expiresIn }) => {
-    const { updatedAt, ...document } = await databaseService.getProjectById(projectId).catch((error) => {
+    const queried = await projectService.getProjectById(projectId).catch((error) => {
       console.error('Get project', error);
       throw httpError(500, 'Error while getting project');
     });
 
-    if (!document) {
+    if (!queried) {
       throw httpError(404, 'No project found');
     }
 
-    const updated = projectDocumentConverter.update({ document, body }, expiresIn);
+    const { updatedAt, ...document } = queried;
 
-    await databaseService.updateProject(updated).catch((error) => {
+    const updated = projectDocumentConverter.update({
+      document,
+      body,
+    }, expiresIn);
+
+    await projectService.updateProject(updated).catch((error) => {
       console.error('Update project', error);
       throw httpError(500, 'Error while updating project');
     });

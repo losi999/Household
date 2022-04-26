@@ -8,7 +8,7 @@ export default (deleteRecipient: IDeleteRecipientService): AWSLambda.APIGatewayP
 
     try {
       await deleteRecipient({
-        recipientId
+        recipientId,
       });
     } catch (error) {
       console.error(error);

@@ -10,7 +10,7 @@ export default (getProject: IGetProjectService): AWSLambda.APIGatewayProxyHandle
     let project: Project.Response;
     try {
       project = await getProject({
-        projectId
+        projectId,
       });
     } catch (error) {
       console.error(error);

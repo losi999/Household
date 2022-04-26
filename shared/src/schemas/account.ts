@@ -7,6 +7,7 @@ const schema: StrictJSONSchema7<Account.Request> = {
   required: [
     'name',
     'currency',
+    'accountType',
   ],
   properties: {
     name: {
@@ -24,9 +25,9 @@ const schema: StrictJSONSchema7<Account.Request> = {
         'cash',
         'creditCard',
         'loan',
-        'cafeteria'
-      ]
-    }
+        'cafeteria',
+      ],
+    },
   },
 };
 

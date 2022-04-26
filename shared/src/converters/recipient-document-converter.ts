@@ -32,7 +32,7 @@ export const recipientDocumentConverterFactory = (): IRecipientDocumentConverter
         updatedAt: undefined,
         _id: undefined,
         expiresAt: undefined,
-      }
+      };
     },
     toResponseList: docs => docs.map(d => instance.toResponse(d)),
   };

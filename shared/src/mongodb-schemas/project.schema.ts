@@ -20,5 +20,5 @@ export const projectSchema = new Schema<Project.Document>({
   timestamps: {
     createdAt: true,
     updatedAt: true,
-  }
+  },
 });

@@ -17,5 +17,5 @@ export const recipientSchema = new Schema<Recipient.Document>({
   timestamps: {
     createdAt: true,
     updatedAt: true,
-  }
+  },
 });

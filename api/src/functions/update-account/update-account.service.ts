@@ -1,6 +1,6 @@
 import { httpError } from '@household/shared/common/utils';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
-import { IDatabaseService } from '@household/shared/services/database-service';
+import { IAccountService } from '@household/shared/services/account-service';
 import { Account } from '@household/shared/types/types';
 
 export interface IUpdateAccountService {
@@ -12,22 +12,27 @@ export interface IUpdateAccountService {
 }
 
 export const updateAccountServiceFactory = (
-  databaseService: IDatabaseService,
+  accountService: IAccountService,
   accountDocumentConverter: IAccountDocumentConverter,
 ): IUpdateAccountService => {
   return async ({ body, accountId, expiresIn }) => {
-    const { updatedAt, ...document } = await databaseService.getAccountById(accountId).catch((error) => {
+    const queried = await accountService.getAccountById(accountId).catch((error) => {
       console.error('Get account', error);
       throw httpError(500, 'Error while getting account');
     });
 
-    if (!document) {
+    if (!queried) {
       throw httpError(404, 'No account found');
     }
 
-    const updated = accountDocumentConverter.update({ document, body }, expiresIn);
+    const { updatedAt, ...document } = queried;
 
-    await databaseService.updateAccount(updated).catch((error) => {
+    const updated = accountDocumentConverter.update({
+      document,
+      body,
+    }, expiresIn);
+
+    await accountService.updateAccount(updated).catch((error) => {
       console.error('Update account', error);
       throw httpError(500, 'Error while updating account');
     });

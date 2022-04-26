@@ -10,7 +10,7 @@ export default (getRecipient: IGetRecipientService): AWSLambda.APIGatewayProxyHa
     let recipient: Recipient.Response;
     try {
       recipient = await getRecipient({
-        recipientId
+        recipientId,
       });
     } catch (error) {
       console.error(error);

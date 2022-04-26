@@ -24,12 +24,12 @@ const schema: StrictJSONSchema7<Transaction.TransferRequest> = {
     },
     accountId: {
       type: 'string',
-      pattern: '^[a-zA-Z0-9]{24}$'
+      pattern: '^[a-zA-Z0-9]{24}$',
     },
     transferAccountId: {
       type: 'string',
-      pattern: '^[a-zA-Z0-9]{24}$'
-    }
+      pattern: '^[a-zA-Z0-9]{24}$',
+    },
   },
 };
 

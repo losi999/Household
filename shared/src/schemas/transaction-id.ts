@@ -8,7 +8,7 @@ const schema: StrictJSONSchema7<Transaction.Id> = {
   properties: {
     transactionId: {
       type: 'string',
-      pattern: '^[a-zA-Z0-9]{24}$'
+      pattern: '^[a-zA-Z0-9]{24}$',
     },
   },
 };

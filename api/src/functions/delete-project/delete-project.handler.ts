@@ -8,7 +8,7 @@ export default (deleteProject: IDeleteProjectService): AWSLambda.APIGatewayProxy
 
     try {
       await deleteProject({
-        projectId
+        projectId,
       });
     } catch (error) {
       console.error(error);
