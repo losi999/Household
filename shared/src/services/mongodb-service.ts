@@ -1,4 +1,4 @@
-import { ClientSession, connect, model, startSession } from 'mongoose';
+import { ClientSession, connect, model, startSession, connection } from 'mongoose';
 import type { Model, Schema } from 'mongoose';
 import { projectSchema } from '@household/shared/mongodb-schemas/project.schema';
 import { accountSchema } from '@household/shared/mongodb-schemas/account.schema';
@@ -16,7 +16,7 @@ type CollectionMapping = {
 };
 
 export type IMongodbService = {
-  [collection in keyof CollectionMapping]: Model<CollectionMapping[collection]>;
+  [collection in keyof CollectionMapping]: () => Model<CollectionMapping[collection]>;
 } & {
   inSession<T>(fn: (session: ClientSession) => Promise<T>): Promise<T>
 };
@@ -26,21 +26,51 @@ const createModel = <T extends keyof CollectionMapping>(collectionName: T, schem
 };
 
 export const mongodbServiceFactory = (): IMongodbService => {
-  connect(process.env.MONGODB_CONNECTION_STRING, {
-    autoIndex: true,
-  });
+  const connectDb = () => {
+    if (connection.readyState === 0) {
+      connect(process.env.MONGODB_CONNECTION_STRING, {
+        autoIndex: true,
+      });
+    }
+  };
 
-  return {
-    inSession: async (fn) => {
-      const session = await startSession();
-      const result = await fn(session);
-      await session.endSession();
-      return result;
-    },
+  const models: {
+    [collection in keyof CollectionMapping]: Model<CollectionMapping[collection]>;
+  } = {
     recipients: createModel('recipients', recipientSchema),
     projects: createModel('projects', projectSchema),
     transactions: createModel('transactions', transactionSchema),
     accounts: createModel('accounts', accountSchema),
     categories: createModel('categories', categorySchema),
+  };
+
+  return {
+    inSession: async (fn) => {
+      connectDb();
+      const session = await startSession();
+      const result = await fn(session);
+      await session.endSession();
+      return result;
+    },
+    recipients: () => {
+      connectDb();
+      return models.recipients;
+    },
+    projects: () => {
+      connectDb();
+      return models.projects;
+    },
+    transactions: () => {
+      connectDb();
+      return models.transactions;
+    },
+    accounts: () => {
+      connectDb();
+      return models.accounts;
+    },
+    categories: () => {
+      connectDb();
+      return models.categories;
+    },
   };
 };

@@ -24,17 +24,18 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
   const instance: ITransactionService = {
     dumpTransactions: () => {
       return mongodbService.inSession((session) => {
-        return mongodbService.transactions.find({}, null, {
-          session, 
-        }).lean()
+        return mongodbService.transactions().find({}, null, {
+          session,
+        })
+          .lean()
           .exec();
       });
     },
     saveTransaction: (doc) => {
-      return mongodbService.transactions.create(doc);
+      return mongodbService.transactions().create(doc);
     },
     getTransactionById: async (transactionId) => {
-      return !transactionId ? undefined : mongodbService.transactions.findById(transactionId)
+      return !transactionId ? undefined : mongodbService.transactions().findById(transactionId)
         .populate('project')
         .populate('recipient')
         .populate('account')
@@ -46,7 +47,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
         .exec();
     },
     getTransactionByIdAndAccountId: async ({ transactionId, accountId }) => {
-      return !transactionId ? undefined : mongodbService.transactions.findOne({
+      return !transactionId ? undefined : mongodbService.transactions().findOne({
         _id: transactionId,
         $or: [
           {
@@ -56,7 +57,8 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
             transferAccount: accountId,
           },
         ],
-      }).populate('project')
+      })
+        .populate('project')
         .populate('recipient')
         .populate('account')
         .populate('category')
@@ -67,21 +69,23 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
         .exec();
     },
     deleteTransaction: (transactionId) => {
-      return mongodbService.transactions.deleteOne({
-        _id: transactionId, 
-      }).exec();
+      return mongodbService.transactions().deleteOne({
+        _id: transactionId,
+      })
+        .exec();
     },
     updateTransaction: (doc) => {
-      return mongodbService.transactions.replaceOne({
-        _id: doc._id, 
+      return mongodbService.transactions().replaceOne({
+        _id: doc._id,
       }, doc, {
-        runValidators: true, 
-      }).exec();
+        runValidators: true,
+      })
+        .exec();
     },
     listTransactions: (isAscending = true) => {
       return mongodbService.inSession((session) => {
-        return mongodbService.transactions.find({}, null, {
-          session, 
+        return mongodbService.transactions().find({}, null, {
+          session,
         })
           .sort({
             issuedAt: isAscending ? 'asc' : 'desc',
@@ -99,7 +103,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
     },
     listTransactionsByAccountId: ({ accountId, pageSize, pageNumber }) => {
       return mongodbService.inSession((session) => {
-        return mongodbService.transactions.find({
+        return mongodbService.transactions().find({
           $or: [
             {
               account: accountId,
@@ -109,7 +113,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
             },
           ],
         }, null, {
-          session, 
+          session,
         })
           .sort({
             issuedAt: 'desc',

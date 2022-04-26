@@ -15,29 +15,32 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
   return {
     dumpProjects: () => {
       return mongodbService.inSession((session) => {
-        return mongodbService.projects.find({}, null, {
-          session, 
-        }).lean()
+        return mongodbService.projects().find({}, null, {
+          session,
+        })
+          .lean()
           .exec();
       });
     },
     saveProject: (doc) => {
-      return mongodbService.projects.create(doc);
+      return mongodbService.projects().create(doc);
     },
     getProjectById: async (projectId) => {
-      return !projectId ? undefined : mongodbService.projects.findById(projectId).lean()
+      return !projectId ? undefined : mongodbService.projects().findById(projectId)
+        .lean()
         .exec();
     },
     deleteProject: async (projectId) => {
       return mongodbService.inSession((session) => {
         return session.withTransaction(async () => {
-          await mongodbService.projects.deleteOne({
-            _id: projectId, 
+          await mongodbService.projects().deleteOne({
+            _id: projectId,
           }, {
-            session, 
-          }).exec();
-          await mongodbService.transactions.updateMany({
-            project: projectId, 
+            session,
+          })
+            .exec();
+          await mongodbService.transactions().updateMany({
+            project: projectId,
           }, {
             $unset: {
               project: 1,
@@ -45,8 +48,9 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
           }, {
             runValidators: true,
             session,
-          }).exec();
-          await mongodbService.transactions.updateMany({
+          })
+            .exec();
+          await mongodbService.transactions().updateMany({
             'splits.project': projectId,
           }, {
 
@@ -61,24 +65,26 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
                 'element.project': projectId,
               },
             ],
-          }).exec();
+          })
+            .exec();
         });
       });
     },
     updateProject: (doc) => {
-      return mongodbService.projects.replaceOne({
-        _id: doc._id, 
+      return mongodbService.projects().replaceOne({
+        _id: doc._id,
       }, doc, {
-        runValidators: true, 
-      }).exec();
+        runValidators: true,
+      })
+        .exec();
     },
     listProjects: () => {
       return mongodbService.inSession((session) => {
-        return mongodbService.projects.find({}, null, {
-          session, 
+        return mongodbService.projects().find({}, null, {
+          session,
         })
           .collation({
-            locale: 'hu', 
+            locale: 'hu',
           })
           .sort('name')
           .lean()
@@ -87,13 +93,14 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
     },
     listProjectsByIds: async (projectIds) => {
       return mongodbService.inSession((session) => {
-        return mongodbService.projects.find({
+        return mongodbService.projects().find({
           _id: {
-            $in: projectIds, 
-          }, 
+            $in: projectIds,
+          },
         }, null, {
-          session, 
-        }).lean()
+          session,
+        })
+          .lean()
           .exec();
       });
     },
