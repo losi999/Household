@@ -1,5 +1,5 @@
 import { httpError } from '@household/shared/common/utils';
-import { IDatabaseService } from '@household/shared/services/database-service';
+import { ITransactionService } from '@household/shared/services/transaction-service';
 import { Transaction } from '@household/shared/types/types';
 
 export interface IDeleteTransactionService {
@@ -9,9 +9,9 @@ export interface IDeleteTransactionService {
 }
 
 export const deleteTransactionServiceFactory = (
-  databaseService: IDatabaseService): IDeleteTransactionService => {
+  transactionService: ITransactionService): IDeleteTransactionService => {
   return async ({ transactionId }) => {
-    await databaseService.deleteTransaction(transactionId).catch((error) => {
+    await transactionService.deleteTransaction(transactionId).catch((error) => {
       console.error('Delete transaction', error);
       throw httpError(500, 'Error while deleting transaction');
     });

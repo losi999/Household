@@ -8,7 +8,7 @@ export default (deleteAccount: IDeleteAccountService): AWSLambda.APIGatewayProxy
 
     try {
       await deleteAccount({
-        accountId
+        accountId,
       });
     } catch (error) {
       console.error(error);

@@ -1,5 +1,5 @@
 import { httpError } from '@household/shared/common/utils';
-import { IDatabaseService } from '@household/shared/services/database-service';
+import { IAccountService } from '@household/shared/services/account-service';
 import { Account } from '@household/shared/types/types';
 
 export interface IDeleteAccountService {
@@ -9,9 +9,9 @@ export interface IDeleteAccountService {
 }
 
 export const deleteAccountServiceFactory = (
-  databaseService: IDatabaseService): IDeleteAccountService => {
+  accountService: IAccountService): IDeleteAccountService => {
   return async ({ accountId }) => {
-    await databaseService.deleteAccount(accountId).catch((error) => {
+    await accountService.deleteAccount(accountId).catch((error) => {
       console.error('Delete account', error);
       throw httpError(500, 'Error while deleting account');
     });

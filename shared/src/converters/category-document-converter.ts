@@ -29,7 +29,10 @@ export const categoryDocumentConverterFactory = (): ICategoryDocumentConverter =
     },
     update: ({ document: { _id, createdAt }, body, parentCategory }, expiresIn): Category.Document => {
       return {
-        ...instance.create({ body, parentCategory }, expiresIn),
+        ...instance.create({
+          body,
+          parentCategory, 
+        }, expiresIn),
         _id,
         createdAt,
       };
@@ -43,7 +46,7 @@ export const categoryDocumentConverterFactory = (): ICategoryDocumentConverter =
         expiresAt: undefined,
         categoryId: doc._id.toString() as Category.IdType,
         parentCategory: doc.parentCategory ? instance.toResponse(doc.parentCategory) : undefined,
-      }
+      };
     },
     toResponseList: docs => docs.map(d => instance.toResponse(d)),
   };

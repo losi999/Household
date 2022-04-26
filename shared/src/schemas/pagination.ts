@@ -2,26 +2,29 @@
 import { JSONSchema7 } from 'json-schema';
 
 const schema: JSONSchema7 = {
-  type: ['object', 'null'],
+  type: [
+    'object',
+    'null',
+  ],
   additionalProperties: false,
   properties: {
     pageNumber: {
       type: 'string',
-      pattern: '^[1-9][0-9]*$'
+      pattern: '^[1-9][0-9]*$',
     },
     pageSize: {
       type: 'string',
-      pattern: '^[1-9][0-9]*$'
-    }
+      pattern: '^[1-9][0-9]*$',
+    },
   },
   dependencies: {
     pageSize: {
-      required: ['pageNumber']
+      required: ['pageNumber'],
     },
     pageNumber: {
-      required: ['pageSize']
-    }
-  }
+      required: ['pageSize'],
+    },
+  },
 };
 
 export default schema;

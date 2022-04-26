@@ -1,6 +1,10 @@
 import { httpError } from '@household/shared/common/utils';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
-import { IDatabaseService } from '@household/shared/services/database-service';
+import { IAccountService } from '@household/shared/services/account-service';
+import { ICategoryService } from '@household/shared/services/category-service';
+import { IProjectService } from '@household/shared/services/project-service';
+import { IRecipientService } from '@household/shared/services/recipient-service';
+import { ITransactionService } from '@household/shared/services/transaction-service';
 import { Transaction } from '@household/shared/types/types';
 
 export interface ICreateSplitTransactionService {
@@ -11,7 +15,11 @@ export interface ICreateSplitTransactionService {
 }
 
 export const createSplitTransactionServiceFactory = (
-  databaseService: IDatabaseService,
+  accountService: IAccountService,
+  projectService: IProjectService,
+  categoryService: ICategoryService,
+  recipientService: IRecipientService,
+  transactionService: ITransactionService,
   transactionDocumentConverter: ITransactionDocumentConverter,
 ): ICreateSplitTransactionService => {
   return async ({ body, expiresIn }) => {
@@ -19,19 +27,27 @@ export const createSplitTransactionServiceFactory = (
     const projectIds = [...new Set(body.splits.map(s => s.projectId).filter(s => s))];
 
     const total = body.splits.reduce((accumulator, currentValue) => {
-      return accumulator + currentValue.amount
+      return accumulator + currentValue.amount;
     }, 0);
 
     if (total !== body.amount) {
       throw httpError(400, 'Sum of splits must equal to total amount');
     }
 
-    const [account, categories, projects, recipient] = await Promise.all([
-      databaseService.getAccountById(body.accountId),
-      databaseService.listCategoriesByIds(categoryIds),
-      databaseService.listProjectsByIds(projectIds),
-      databaseService.getRecipientById(body.recipientId),
-    ]);
+    const [
+      account,
+      categories,
+      projects,
+      recipient,
+    ] = await Promise.all([
+      accountService.getAccountById(body.accountId),
+      categoryService.listCategoriesByIds(categoryIds),
+      projectService.listProjectsByIds(projectIds),
+      recipientService.getRecipientById(body.recipientId),
+    ]).catch((error) => {
+      console.error('Unable to query related data', error, body);
+      throw httpError(500, 'Unable to query related data');
+    });
 
     if (!account) {
       console.error('No account found', body.accountId);
@@ -53,9 +69,15 @@ export const createSplitTransactionServiceFactory = (
       throw httpError(400, 'No recipient found');
     }
 
-    const document = transactionDocumentConverter.createSplitDocument({ body, account, recipient, categories, projects }, expiresIn);
+    const document = transactionDocumentConverter.createSplitDocument({
+      body,
+      account,
+      recipient,
+      categories,
+      projects,
+    }, expiresIn);
 
-    const saved = await databaseService.saveTransaction(document).catch((error) => {
+    const saved = await transactionService.saveTransaction(document).catch((error) => {
       console.error('Save transaction', error);
       throw httpError(500, 'Error while saving transaction');
     });

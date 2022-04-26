@@ -8,7 +8,7 @@ export default (deleteTransaction: IDeleteTransactionService): AWSLambda.APIGate
 
     try {
       await deleteTransaction({
-        transactionId
+        transactionId,
       });
     } catch (error) {
       console.error(error);

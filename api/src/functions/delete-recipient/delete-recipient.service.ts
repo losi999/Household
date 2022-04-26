@@ -1,5 +1,5 @@
 import { httpError } from '@household/shared/common/utils';
-import { IDatabaseService } from '@household/shared/services/database-service';
+import { IRecipientService } from '@household/shared/services/recipient-service';
 import { Recipient } from '@household/shared/types/types';
 
 export interface IDeleteRecipientService {
@@ -9,9 +9,9 @@ export interface IDeleteRecipientService {
 }
 
 export const deleteRecipientServiceFactory = (
-  databaseService: IDatabaseService): IDeleteRecipientService => {
+  recipientService: IRecipientService): IDeleteRecipientService => {
   return async ({ recipientId }) => {
-    await databaseService.deleteRecipient(recipientId).catch((error) => {
+    await recipientService.deleteRecipient(recipientId).catch((error) => {
       console.error('Delete recipient', error);
       throw httpError(500, 'Error while deleting recipient');
     });

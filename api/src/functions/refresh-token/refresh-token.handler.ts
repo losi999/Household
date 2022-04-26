@@ -1,7 +1,6 @@
 import { IRefreshTokenService } from '@household/api/functions/refresh-token/refresh-token.service';
 import { Auth } from '@household/shared/types/types';
 
-
 export default (refreshToken: IRefreshTokenService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {
     const body = JSON.parse(event.body);

@@ -1,6 +1,6 @@
 import { httpError } from '@household/shared/common/utils';
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
-import { IDatabaseService } from '@household/shared/services/database-service';
+import { IRecipientService } from '@household/shared/services/recipient-service';
 import { Recipient } from '@household/shared/types/types';
 
 export interface IUpdateRecipientService {
@@ -12,22 +12,27 @@ export interface IUpdateRecipientService {
 }
 
 export const updateRecipientServiceFactory = (
-  databaseService: IDatabaseService,
+  recipientService: IRecipientService,
   recipientDocumentConverter: IRecipientDocumentConverter,
 ): IUpdateRecipientService => {
   return async ({ body, recipientId, expiresIn }) => {
-    const { updatedAt, ...document } = await databaseService.getRecipientById(recipientId).catch((error) => {
+    const queried = await recipientService.getRecipientById(recipientId).catch((error) => {
       console.error('Get recipient', error);
       throw httpError(500, 'Error while getting recipient');
     });
 
-    if (!document) {
+    if (!queried) {
       throw httpError(404, 'No recipient found');
     }
 
-    const updated = recipientDocumentConverter.update({ document, body }, expiresIn);
+    const { updatedAt, ...document } = queried;
 
-    await databaseService.updateRecipient(updated).catch((error) => {
+    const updated = recipientDocumentConverter.update({
+      document,
+      body,
+    }, expiresIn);
+
+    await recipientService.updateRecipient(updated).catch((error) => {
       console.error('Update recipient', error);
       throw httpError(500, 'Error while updating recipient');
     });

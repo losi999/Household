@@ -8,7 +8,7 @@ const schema: StrictJSONSchema7<Recipient.Id> = {
   properties: {
     recipientId: {
       type: 'string',
-      pattern: '^[a-zA-Z0-9]{24}$'
+      pattern: '^[a-zA-Z0-9]{24}$',
     },
   },
 };

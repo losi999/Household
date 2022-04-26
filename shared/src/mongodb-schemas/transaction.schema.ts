@@ -4,7 +4,11 @@ import { Schema } from 'mongoose';
 export const transactionSchema = new Schema<Transaction.Document>({
   transactionType: {
     type: String,
-    enum: ['payment', 'transfer', 'split']
+    enum: [
+      'payment',
+      'transfer',
+      'split',
+    ],
   },
   description: {
     type: String,
@@ -18,45 +22,47 @@ export const transactionSchema = new Schema<Transaction.Document>({
     required: true,
   },
   splits: {
-    type: [{
-      description: {
-        type: String,
+    type: [
+      {
+        description: {
+          type: String,
+        },
+        amount: {
+          type: Number,
+          required: true,
+        },
+        category: {
+          type: Schema.Types.ObjectId,
+          ref: 'categories',
+        },
+        project: {
+          type: Schema.Types.ObjectId,
+          ref: 'projects',
+        },
       },
-      amount: {
-        type: Number,
-        required: true,
-      },
-      category: {
-        type: Schema.Types.ObjectId,
-        ref: 'categories'
-      },
-      project: {
-        type: Schema.Types.ObjectId,
-        ref: 'projects'
-      },
-    }],
+    ],
     default: undefined,
     _id: false,
   },
   transferAccount: {
     type: Schema.Types.ObjectId,
-    ref: 'accounts'
+    ref: 'accounts',
   },
   category: {
     type: Schema.Types.ObjectId,
-    ref: 'categories'
+    ref: 'categories',
   },
   account: {
     type: Schema.Types.ObjectId,
-    ref: 'accounts'
+    ref: 'accounts',
   },
   project: {
     type: Schema.Types.ObjectId,
-    ref: 'projects'
+    ref: 'projects',
   },
   recipient: {
     type: Schema.Types.ObjectId,
-    ref: 'recipients'
+    ref: 'recipients',
   },
   expiresAt: {
     type: Schema.Types.Date,
@@ -69,5 +75,5 @@ export const transactionSchema = new Schema<Transaction.Document>({
   timestamps: {
     createdAt: true,
     updatedAt: true,
-  }
+  },
 });

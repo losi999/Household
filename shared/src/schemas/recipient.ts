@@ -4,14 +4,12 @@ import { Recipient } from '@household/shared/types/types';
 const schema: StrictJSONSchema7<Recipient.Request> = {
   type: 'object',
   additionalProperties: false,
-  required: [
-    'name',
-  ],
+  required: ['name'],
   properties: {
     name: {
       type: 'string',
       minLength: 1,
-    }
+    },
   },
 };
 

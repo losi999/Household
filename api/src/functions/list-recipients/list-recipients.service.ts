@@ -1,6 +1,6 @@
 import { httpError } from '@household/shared/common/utils';
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
-import { IDatabaseService } from '@household/shared/services/database-service';
+import { IRecipientService } from '@household/shared/services/recipient-service';
 import { Recipient } from '@household/shared/types/types';
 
 export interface IListRecipientsService {
@@ -8,11 +8,11 @@ export interface IListRecipientsService {
 }
 
 export const listRecipientsServiceFactory = (
-  databaseService: IDatabaseService,
+  recipientService: IRecipientService,
   recipientDocumentConverter: IRecipientDocumentConverter): IListRecipientsService => {
   return async () => {
 
-    const documents = await databaseService.listRecipients().catch((error) => {
+    const documents = await recipientService.listRecipients().catch((error) => {
       console.error('List recipients', error);
       throw httpError(500, 'Error while listing recipients');
     });

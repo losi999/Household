@@ -4,9 +4,7 @@ import { Project } from '@household/shared/types/types';
 const schema: StrictJSONSchema7<Project.Request> = {
   type: 'object',
   additionalProperties: false,
-  required: [
-    'name',
-  ],
+  required: ['name'],
   properties: {
     description: {
       type: 'string',
@@ -15,7 +13,7 @@ const schema: StrictJSONSchema7<Project.Request> = {
     name: {
       type: 'string',
       minLength: 1,
-    }
+    },
   },
 };
 
