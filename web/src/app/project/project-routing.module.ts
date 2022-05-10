@@ -9,7 +9,7 @@ const routes: Routes = [
     component: ProjectHomeComponent,
     resolve: {
       projects: ProjectListResolver,
-    }
+    },
   },
 ];
 

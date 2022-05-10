@@ -10,9 +10,7 @@ import { SharedModule } from 'src/app/shared/shared.module';
 import { MatDialogModule } from '@angular/material/dialog';
 
 @NgModule({
-  declarations: [
-    TransactionEditComponent,
-  ],
+  declarations: [TransactionEditComponent],
   imports: [
     CommonModule,
     SharedModule,
@@ -23,6 +21,6 @@ import { MatDialogModule } from '@angular/material/dialog';
     MatTabsModule,
     MatDialogModule,
   ],
-  exports: []
+  exports: [],
 })
 export class TransactionModule { }

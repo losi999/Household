@@ -204,9 +204,20 @@
               "devServerTarget": "household:serve:production"
             }
           }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "src/**/*.ts"
+            ]
+          }
         }
       }
     }
   },
-  "defaultProject": "household"
+  "defaultProject": "household",
+  "cli": {
+    "defaultCollection": "@angular-eslint/schematics"
+  }
 }

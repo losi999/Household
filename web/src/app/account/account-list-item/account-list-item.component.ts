@@ -8,7 +8,7 @@ import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/
 @Component({
   selector: 'app-account-list-item',
   templateUrl: './account-list-item.component.html',
-  styleUrls: ['./account-list-item.component.scss']
+  styleUrls: ['./account-list-item.component.scss'],
 })
 export class AccountListItemComponent {
   @Input() account: Account.Response;
@@ -27,13 +27,13 @@ export class AccountListItemComponent {
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       data: {
         title: 'Törölni akarod ezt a számlát?',
-        content: this.account.name
+        content: this.account.name,
       },
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.accountService.deleteAccount(this.account.accountId)
+        this.accountService.deleteAccount(this.account.accountId);
       }
     });
   }
@@ -45,7 +45,9 @@ export class AccountListItemComponent {
   }
 
   edit() {
-    const dialogRef = this.dialog.open<AccountFormComponent, AccountFormData, AccountFormResult>(AccountFormComponent, { data: this.account })
+    const dialogRef = this.dialog.open<AccountFormComponent, AccountFormData, AccountFormResult>(AccountFormComponent, {
+      data: this.account, 
+    });
 
     dialogRef.afterClosed().subscribe((values) => {
       if (values) {

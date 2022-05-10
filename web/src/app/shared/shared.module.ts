@@ -63,6 +63,6 @@ import { ProgressIndicatorComponent } from './progress-indicator/progress-indica
     ToolbarComponent,
     CatalogSubmenuComponent,
     ProgressIndicatorComponent,
-  ]
+  ],
 })
 export class SharedModule { }

@@ -8,9 +8,9 @@ describe('ProjectFormComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ ProjectFormComponent ]
+      declarations: [ ProjectFormComponent ],
     })
-    .compileComponents();
+      .compileComponents();
   });
 
   beforeEach(() => {

@@ -10,7 +10,7 @@ const routes: Routes = [
     data: {
       requireLogin: false,
     },
-    canActivate: [AnonymousGuard]
+    canActivate: [AnonymousGuard],
   },
   {
     path: 'projects',
@@ -18,7 +18,7 @@ const routes: Routes = [
     data: {
       requireLogin: true,
     },
-    canLoad: [AnonymousGuard]
+    canLoad: [AnonymousGuard],
   },
   {
     path: 'categories',
@@ -26,7 +26,7 @@ const routes: Routes = [
     data: {
       requireLogin: true,
     },
-    canLoad: [AnonymousGuard]
+    canLoad: [AnonymousGuard],
   },
   {
     path: 'recipients',
@@ -34,7 +34,7 @@ const routes: Routes = [
     data: {
       requireLogin: true,
     },
-    canLoad: [AnonymousGuard]
+    canLoad: [AnonymousGuard],
   },
   {
     path: '',
@@ -42,18 +42,20 @@ const routes: Routes = [
     data: {
       requireLogin: true,
     },
-    canLoad: [AnonymousGuard]
+    canLoad: [AnonymousGuard],
   },
   {
     path: '**',
-    redirectTo: ''
-  }
+    redirectTo: '',
+  },
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes, {
-    enableTracing: false,
-  })],
-  exports: [RouterModule]
+  imports: [
+    RouterModule.forRoot(routes, {
+      enableTracing: false,
+    }),
+  ],
+  exports: [RouterModule],
 })
 export class AppRoutingModule { }

@@ -6,11 +6,11 @@ import { AccountService } from 'src/app/account/account.service';
 @Component({
   selector: 'app-account-transactions-home',
   templateUrl: './account-transactions-home.component.html',
-  styleUrls: ['./account-transactions-home.component.scss']
+  styleUrls: ['./account-transactions-home.component.scss'],
 })
 export class AccountTransactionsHomeComponent implements OnInit {
   accountId: Account.IdType;
-  transactions: Transaction.Response[]
+  transactions: Transaction.Response[];
   private pageNumber: number;
 
   constructor(private activatedRoute: ActivatedRoute, private accountService: AccountService) {
@@ -28,6 +28,6 @@ export class AccountTransactionsHomeComponent implements OnInit {
 
     this.accountService.listTransactionsByAccountId(this.accountId, this.pageNumber).subscribe((response) => {
       this.transactions.push(...response);
-    })
+    });
   }
 }

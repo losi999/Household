@@ -13,14 +13,12 @@ import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatListModule } from '@angular/material/list';
 
-
-
 @NgModule({
   declarations: [
     CategoryHomeComponent,
     CategoryListComponent,
     CategoryListItemComponent,
-    CategoryFormComponent
+    CategoryFormComponent,
   ],
   imports: [
     CommonModule,
@@ -32,6 +30,6 @@ import { MatListModule } from '@angular/material/list';
     MatListModule,
     MatBottomSheetModule,
     MatDialogModule,
-  ]
+  ],
 })
 export class CategoryModule { }

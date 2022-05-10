@@ -16,14 +16,14 @@ const routes: Routes = [
     component: AccountHomeComponent,
     resolve: {
       accounts: AccountListResolver,
-    }
+    },
   },
   {
     path: 'accounts/:accountId',
     component: AccountTransactionsHomeComponent,
     resolve: {
       transactions: AccountTransactionListResolver,
-    }
+    },
   },
   {
     path: 'accounts/:accountId/transactions/:transactionId',
@@ -34,7 +34,7 @@ const routes: Routes = [
       categories: CategoryListResolver,
       recipients: RecipientListResolver,
       transaction: TransactionResolver,
-    }
+    },
   },
   {
     path: 'accounts/:accountId/new',
@@ -44,8 +44,8 @@ const routes: Routes = [
       projects: ProjectListResolver,
       categories: CategoryListResolver,
       recipients: RecipientListResolver,
-    }
-  }
+    },
+  },
 ];
 
 @NgModule({

@@ -9,7 +9,7 @@ import { CategoryService } from 'src/app/category/category.service';
 @Component({
   selector: 'app-category-home',
   templateUrl: './category-home.component.html',
-  styleUrls: ['./category-home.component.scss']
+  styleUrls: ['./category-home.component.scss'],
 })
 export class CategoryHomeComponent implements OnInit, OnDestroy {
   categories: Category.Response[];
@@ -29,7 +29,7 @@ export class CategoryHomeComponent implements OnInit, OnDestroy {
         this.categoryService.listCategories().subscribe((categories) => {
           this.categories = categories;
         });
-      }
+      },
     });
   }
 
@@ -38,7 +38,7 @@ export class CategoryHomeComponent implements OnInit, OnDestroy {
       data: {
         category: undefined,
         categories: this.categories,
-      }
+      },
     });
 
     dialogRef.afterClosed().subscribe({
@@ -46,7 +46,7 @@ export class CategoryHomeComponent implements OnInit, OnDestroy {
         if (values) {
           this.categoryService.createCategory(values);
         }
-      }
-    })
+      },
+    });
   }
 }

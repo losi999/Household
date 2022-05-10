@@ -9,7 +9,7 @@ const routes: Routes = [
     component: RecipientHomeComponent,
     resolve: {
       recipients: RecipientListResolver,
-    }
+    },
   },
 ];
 

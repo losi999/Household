@@ -3,7 +3,7 @@ import { ActivatedRouteSnapshot, CanActivate, CanLoad, Route } from '@angular/ro
 import { AuthService } from 'src/app/auth/auth.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AnonymousGuard implements CanActivate, CanLoad {
   constructor(private authService: AuthService) { }

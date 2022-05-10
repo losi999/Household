@@ -1,7 +1,7 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
-  name: 'autocompleteFilter'
+  name: 'autocompleteFilter',
 })
 export class AutocompleteFilterPipe implements PipeTransform {
 

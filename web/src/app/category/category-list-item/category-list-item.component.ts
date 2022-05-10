@@ -10,7 +10,7 @@ import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/
 @Component({
   selector: 'app-category-list-item',
   templateUrl: './category-list-item.component.html',
-  styleUrls: ['./category-list-item.component.scss']
+  styleUrls: ['./category-list-item.component.scss'],
 })
 export class CategoryListItemComponent {
   @Input() categories: Category.Response[];
@@ -24,13 +24,13 @@ export class CategoryListItemComponent {
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       data: {
         title: 'Törölni akarod ezt a kategóriát?',
-        content: this.category.name
+        content: this.category.name,
       },
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.categoryService.deleteCategory(this.category.categoryId)
+        this.categoryService.deleteCategory(this.category.categoryId);
       }
     });
   }
@@ -40,8 +40,8 @@ export class CategoryListItemComponent {
       data: {
         category: this.category,
         categories: this.categories,
-      }
-    })
+      },
+    });
 
     dialogRef.afterClosed().subscribe((values) => {
       if (values) {
@@ -51,13 +51,15 @@ export class CategoryListItemComponent {
   }
 
   showMenu() {
-    const bottomSheetRef = this.bottomSheet.open<CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult>(CatalogSubmenuComponent, { data: this.category.name })
+    const bottomSheetRef = this.bottomSheet.open<CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult>(CatalogSubmenuComponent, {
+      data: this.category.name, 
+    });
 
     bottomSheetRef.afterDismissed().subscribe((result) => {
       switch (result) {
         case 'delete': this.delete(); break;
         case 'edit': this.edit(); break;
       }
-    })
+    });
   }
 }

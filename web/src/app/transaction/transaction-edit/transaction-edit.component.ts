@@ -9,7 +9,7 @@ import { TransactionService } from 'src/app/transaction/transaction.service';
 @Component({
   selector: 'app-transaction-edit',
   templateUrl: './transaction-edit.component.html',
-  styleUrls: ['./transaction-edit.component.scss']
+  styleUrls: ['./transaction-edit.component.scss'],
 })
 export class TransactionEditComponent implements OnInit {
   form: FormGroup;
@@ -98,19 +98,24 @@ export class TransactionEditComponent implements OnInit {
   deleteTransaction() {
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       width: '250px',
-      data: { title: 'Törölni akarod ezt a tranzakciót?' },
+      data: {
+        title: 'Törölni akarod ezt a tranzakciót?', 
+      },
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.transactionService.deleteTransaction(this.transactionId).subscribe({
           next: () => {
-            this.router.navigate(['/accounts', this.account.accountId]);
+            this.router.navigate([
+              '/accounts',
+              this.account.accountId,
+            ]);
           },
           error: (error) => {
             console.error(error);
-          }
-        })
+          },
+        });
       }
     });
   }
@@ -128,12 +133,15 @@ export class TransactionEditComponent implements OnInit {
       amount: new FormControl(this.splitsDiff),
       description: new FormControl(),
       project: new FormControl(),
-    }))
+    }));
   }
 
   onSubmit() {
     const next = () => {
-      this.router.navigate(['/accounts', this.account.accountId]);
+      this.router.navigate([
+        '/accounts',
+        this.account.accountId,
+      ]);
     };
 
     const error = (error) => {
@@ -176,9 +184,9 @@ export class TransactionEditComponent implements OnInit {
             amount: s.amount,
             categoryId: s.category?.categoryId,
             description: s.description ?? undefined,
-            projectId: s.project?.projectId
-          }))
-        }
+            projectId: s.project?.projectId,
+          })),
+        };
 
         if (this.transactionId) {
           this.transactionService.updateSplitTransaction(this.transactionId, body).subscribe({
@@ -200,7 +208,7 @@ export class TransactionEditComponent implements OnInit {
           recipientId: this.recipient?.recipientId,
           projectId: this.project?.projectId,
           categoryId: this.category?.categoryId,
-        }
+        };
 
         if (this.transactionId) {
           this.transactionService.updatePaymentTransaction(this.transactionId, body).subscribe({

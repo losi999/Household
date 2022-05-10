@@ -4,7 +4,7 @@ import {
   HttpHandler,
   HttpEvent,
   HttpInterceptor,
-  HttpResponse
+  HttpResponse,
 } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
@@ -20,7 +20,7 @@ export class ProgressInterceptor implements HttpInterceptor {
         this.progressService.processFinished();
       }
       else {
-        this.progressService.processStarted()
+        this.progressService.processStarted();
       }
     }));
   }

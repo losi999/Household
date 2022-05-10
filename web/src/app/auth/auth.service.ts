@@ -7,7 +7,7 @@ import { environment } from 'src/environments/environment';
 import { map } from 'rxjs/operators';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
 

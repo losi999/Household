@@ -9,7 +9,7 @@ const routes: Routes = [
     component: CategoryHomeComponent,
     resolve: {
       categories: CategoryListResolver,
-    }
+    },
   },
 ];
 
