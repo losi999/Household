@@ -1,11 +1,11 @@
 import { default as schema } from '@household/shared/schemas/recipient-id';
-import { validateSchemaAdditionalProperties, validateSchemaPattern, validateSchemaRequired } from '@household/shared/common/unit-testing';
-import { validatorService } from '@household/shared/dependencies/services/validator-service';
 import { Recipient } from '@household/shared/types/types';
 import { createRecipientId } from '@household/shared/common/test-data-factory';
+import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 
 describe('Recipient id schema', () => {
   let data: Recipient.Id;
+  const tester = jsonSchemaTesterFactory<Recipient.Id>(schema);
 
   beforeEach(() => {
     data = {
@@ -14,30 +14,26 @@ describe('Recipient id schema', () => {
   });
 
   it('should accept valid body', () => {
-    const result = validatorService.validate(data, schema);
-    expect(result).toBeUndefined();
+    tester.validateSuccess(data);
   });
 
   describe('should deny', () => {
     describe('if data', () => {
       it('has additional property', () => {
         (data as any).extra = 'asd';
-        const result = validatorService.validate(data, schema);
-        validateSchemaAdditionalProperties(result, 'data');
+        tester.validateSchemaAdditionalProperties(data, 'data');
       });
     });
 
     describe('if data.recipientId', () => {
       it('is missing', () => {
         data.recipientId = undefined;
-        const result = validatorService.validate(data, schema);
-        validateSchemaRequired(result, 'recipientId');
+        tester.validateSchemaRequired(data, 'recipientId');
       });
 
       it('does not match pattern', () => {
         data.recipientId = createRecipientId();
-        const result = validatorService.validate(data, schema);
-        validateSchemaPattern(result, 'recipientId');
+        tester.validateSchemaPattern(data, 'recipientId');
       });
     });
   });

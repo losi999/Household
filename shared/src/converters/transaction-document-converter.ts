@@ -57,6 +57,22 @@ export const transactionDocumentConverterFactory = (
   categoryDocumentConverter: ICategoryDocumentConverter,
   recipientDocumentConverter: IRecipientDocumentConverter,
 ): ITransactionDocumentConverter => {
+  const toResponseInvoice = (doc: Transaction.Invoice<Date>['invoice']): Transaction.Invoice<string>['invoice'] => {
+    return doc ? {
+      invoiceNumber: doc.invoiceNumber,
+      billingEndDate: doc.billingEndDate.toISOString(),
+      billingStartDate: doc.billingStartDate.toISOString(),
+    } : undefined;
+  };
+
+  const toDocumentInvoice = (req: Transaction.Invoice<string>['invoice']): Transaction.Invoice<Date>['invoice'] => {
+    return {
+      invoiceNumber: req.invoiceNumber,
+      billingEndDate: new Date(req.billingEndDate),
+      billingStartDate: new Date(req.billingStartDate),
+    };
+  };
+
   const toResponsePayment = (doc: Transaction.PaymentDocument): Transaction.PaymentResponse => {
     return {
       ...doc,
@@ -70,6 +86,7 @@ export const transactionDocumentConverterFactory = (
       category: doc.category ? categoryDocumentConverter.toResponse(doc.category) : undefined,
       recipient: doc.recipient ? recipientDocumentConverter.toResponse(doc.recipient) : undefined,
       project: doc.project ? projectDocumentConverter.toResponse(doc.project) : undefined,
+      invoice: toResponseInvoice(doc.invoice),
     };
   };
 
@@ -88,6 +105,8 @@ export const transactionDocumentConverterFactory = (
         return {
           amount: s.amount,
           description: s.description,
+          inventory: s.inventory,
+          invoice: toResponseInvoice(s.invoice),
           category: s.category ? categoryDocumentConverter.toResponse(s.category) : undefined,
           project: s.project ? projectDocumentConverter.toResponse(s.project) : undefined,
         };
@@ -120,6 +139,8 @@ export const transactionDocumentConverterFactory = (
         recipient,
         issuedAt: new Date(body.issuedAt),
         transactionType: 'payment',
+        inventory: category?.categoryType === 'inventory' ? body.inventory : undefined,
+        invoice: category?.categoryType === 'invoice' ? toDocumentInvoice(body.invoice) : undefined,
         accountId: undefined,
         categoryId: undefined,
         projectId: undefined,
@@ -136,11 +157,14 @@ export const transactionDocumentConverterFactory = (
         transactionType: 'split',
         issuedAt: new Date(body.issuedAt),
         splits: body.splits.map((s) => {
+          const category = categories.find(x => x._id.toString() === s.categoryId);
           return {
+            category,
             amount: s.amount,
             description: s.description,
-            category: categories.find(x => x._id.toString() === s.categoryId),
             project: projects.find(x => x._id.toString() === s.projectId),
+            inventory: category?.categoryType === 'inventory' ? s.inventory : undefined,
+            invoice: category?.categoryType === 'invoice' ? toDocumentInvoice(s.invoice) : undefined,
           };
         }),
         accountId: undefined,

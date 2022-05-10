@@ -3,7 +3,7 @@ import { default as handler } from '@household/api/functions/get-transaction/get
 import { cors } from '@household/api/dependencies/handlers/cors.handler';
 import { getTransactionServiceFactory } from '@household/api/functions/get-transaction/get-transaction.service';
 import { apiRequestValidator } from '@household/api/dependencies/handlers/api-request-validator.handler';
-import { default as pathParameters } from '@household/shared/schemas/get-transaction.schema';
+import { default as pathParameters } from '@household/shared/schemas/get-transaction';
 import { transactionService } from '@household/shared/dependencies/services/transaction-service';
 import { default as index } from '@household/api/handlers/index.handler';
 
