@@ -241,16 +241,18 @@ export namespace Transaction {
   & Base
   & TransferAccountId;
 
+  type SplitRequestItem = Project.Id
+  & Category.Id
+  & Invoice<string>
+  & Inventory
+  & Base;
+
   export type SplitRequest = Account.Id
   & Recipient.Id
   & IssuedAt<string>
   & Base
   & {
-    splits: (Project.Id
-    & Category.Id
-    & Invoice<string>
-    & Inventory
-    & Base)[];
+    splits: SplitRequestItem[];
   };
 
   export type PaymentDocument = Partial<Internal.Id>
@@ -283,6 +285,12 @@ export namespace Transaction {
   & TransferAccount<Account.Document>
   & Base;
 
+  type SplitDocumentItem = Project<Project.Document>
+  & Category<Category.Document>
+  & Invoice<Date>
+  & Inventory
+  & Base;
+
   export type SplitDocument = Partial<Internal.Id>
   & Internal.ExpiresAt
   & Partial<Internal.CreatedAt>
@@ -295,11 +303,7 @@ export namespace Transaction {
   & IssuedAt<Date>
   & Base
   & {
-    splits: (Project<Project.Document>
-    & Category<Category.Document>
-    & Invoice<Date>
-    & Inventory
-    & Base)[];
+    splits: SplitDocumentItem[];
   };
 
   export type Document = PaymentDocument | TransferDocument | SplitDocument;
@@ -330,6 +334,12 @@ export namespace Transaction {
   & Account<Account.Response>
   & TransferAccount<Account.Response>;
 
+  export type SplitResponseItem = Base
+  & Invoice<string>
+  & Inventory
+  & Project<Project.Response>
+  & Category<Category.Response>;
+
   export type SplitResponse = Id
   & Base
   & IssuedAt<string>
@@ -341,12 +351,7 @@ export namespace Transaction {
   & Account<Account.Response>
   & Recipient<Recipient.Response>
   & {
-    splits: (Base
-    & Invoice<string>
-    & Inventory
-    & Project<Project.Response>
-    & Category<Category.Response>
-    )[];
+    splits: SplitResponseItem[];
   };
 
   export type Response = PaymentResponse | TransferResponse | SplitResponse;

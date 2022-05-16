@@ -5,6 +5,7 @@
     "samconfig": "cp samconfig.${ENV}.toml samconfig.toml",
     "lint:api": "eslint api shared --ext .ts",
     "lint:web": "cd web && yarn lint",
+    "lint": "yarn lint:api && yarn lint:web",
     "lintfix:api": "eslint api shared --ext .ts --fix",
     "test:api:dev": "jest --maxWorkers=4 --watchAll --silent",
     "test:api:debug": "jest --maxWorkers=4 --watchAll",

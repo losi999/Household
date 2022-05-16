@@ -60,8 +60,8 @@ export const transactionDocumentConverterFactory = (
   const toResponseInvoice = (doc: Transaction.Invoice<Date>['invoice']): Transaction.Invoice<string>['invoice'] => {
     return doc ? {
       invoiceNumber: doc.invoiceNumber,
-      billingEndDate: doc.billingEndDate.toISOString(),
-      billingStartDate: doc.billingStartDate.toISOString(),
+      billingEndDate: doc.billingEndDate.toISOString().split('T')[0],
+      billingStartDate: doc.billingStartDate.toISOString().split('T')[0],
     } : undefined;
   };
 

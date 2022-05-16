@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Account, Category, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/confirmation-dialog.component';
 import { TransactionService } from 'src/app/transaction/transaction.service';
+import { isInventoryCategory, isInvoiceCategory, isPaymentTransaction, isSplitTransaction, isTransferTransaction } from '@household/shared/common/type-guards';
 
 @Component({
   selector: 'app-transaction-edit',
@@ -45,12 +46,10 @@ export class TransactionEditComponent implements OnInit {
   get project(): Project.Response { return this.form.value.project; }
   get recipient(): Recipient.Response { return this.form.value.recipient; }
   get category(): Category.Response { return this.form.value.category; }
-  get splits(): {
-    category: Category.Response;
-    amount: number;
-    description: string;
-    project: Project.Response;
-  }[] { return this.form.value.splits; }
+  get invoice(): Transaction.Invoice<string>['invoice'] { return this.form.value.invoice; }
+  get inventory(): Transaction.Inventory['inventory'] { return this.form.value.inventory; }
+
+  get splits(): Transaction.SplitResponseItem[] { return this.form.value.splits; }
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -63,6 +62,17 @@ export class TransactionEditComponent implements OnInit {
   handleKeyboardEvent(event: KeyboardEvent) {
     event.preventDefault();
     this.onSubmit();
+  }
+
+  private createSplitFormGroup(split?: Transaction.SplitResponseItem): FormGroup {
+    return new FormGroup({
+      category: new FormControl(split?.category),
+      amount: new FormControl(split?.amount),
+      description: new FormControl(split?.description),
+      project: new FormControl(split?.project),
+      inventory: new FormControl(isInventoryCategory(split?.category) ? split.inventory : null),
+      invoice: new FormControl(isInvoiceCategory(split?.category) ? split.invoice : null),
+    });
   }
 
   ngOnInit(): void {
@@ -80,18 +90,15 @@ export class TransactionEditComponent implements OnInit {
       issuedAt: new FormControl(this.transaction ? new Date(this.transaction.issuedAt) : new Date(), [Validators.required]),
       amount: new FormControl(this.transaction?.amount, [Validators.required]),
       account: new FormControl(this.transaction?.account ?? account, [Validators.required]),
-      isTransfer: new FormControl(this.transaction?.transactionType === 'transfer'),
+      isTransfer: new FormControl(isTransferTransaction(this.transaction)),
       description: new FormControl(this.transaction?.description),
-      transferAccount: new FormControl(this.transaction?.transactionType === 'transfer' ? this.transaction.transferAccount : null),
-      project: new FormControl(this.transaction?.transactionType === 'payment' ? this.transaction.project : null),
-      recipient: new FormControl(this.transaction?.transactionType !== 'transfer' ? this.transaction?.recipient : null),
-      category: new FormControl(this.transaction?.transactionType === 'payment' ? this.transaction.category : null),
-      splits: new FormArray(this.transaction?.transactionType === 'split' ? this.transaction.splits.map(s => new FormGroup({
-        category: new FormControl(s.category),
-        amount: new FormControl(s.amount),
-        description: new FormControl(s.description),
-        project: new FormControl(s.project),
-      })) : []),
+      transferAccount: new FormControl(isTransferTransaction(this.transaction) ? this.transaction.transferAccount : null),
+      project: new FormControl(isPaymentTransaction(this.transaction) ? this.transaction.project : null),
+      recipient: new FormControl(!isTransferTransaction(this.transaction) ? this.transaction?.recipient : null),
+      category: new FormControl(isPaymentTransaction(this.transaction) ? this.transaction.category : null),
+      inventory: new FormControl(isPaymentTransaction(this.transaction) && isInventoryCategory(this.transaction?.category) ? this.transaction.inventory : null),
+      invoice: new FormControl(isPaymentTransaction(this.transaction) && isInvoiceCategory(this.transaction?.category) ? this.transaction.invoice : null),
+      splits: new FormArray(isSplitTransaction(this.transaction) ? this.transaction.splits.map(s => this.createSplitFormGroup(s)) : []),
     });
   }
 
@@ -99,7 +106,7 @@ export class TransactionEditComponent implements OnInit {
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       width: '250px',
       data: {
-        title: 'Törölni akarod ezt a tranzakciót?', 
+        title: 'Törölni akarod ezt a tranzakciót?',
       },
     });
 
@@ -128,12 +135,7 @@ export class TransactionEditComponent implements OnInit {
     this.form.patchValue({
       isTransfer: false,
     });
-    this.splitsArray.insert(0, new FormGroup({
-      category: new FormControl(),
-      amount: new FormControl(this.splitsDiff),
-      description: new FormControl(),
-      project: new FormControl(),
-    }));
+    this.splitsArray.insert(0, this.createSplitFormGroup());
   }
 
   onSubmit() {
@@ -185,6 +187,8 @@ export class TransactionEditComponent implements OnInit {
             categoryId: s.category?.categoryId,
             description: s.description ?? undefined,
             projectId: s.project?.projectId,
+            inventory: isInventoryCategory(s.category) ? s.inventory : undefined,
+            invoice: isInvoiceCategory(s.category) ? s.invoice : undefined,
           })),
         };
 
@@ -208,6 +212,8 @@ export class TransactionEditComponent implements OnInit {
           recipientId: this.recipient?.recipientId,
           projectId: this.project?.projectId,
           categoryId: this.category?.categoryId,
+          inventory: isInventoryCategory(this.category) ? this.inventory : undefined,
+          invoice: isInvoiceCategory(this.category) ? this.invoice : undefined,
         };
 
         if (this.transactionId) {

@@ -1,7 +1,10 @@
 <mat-form-field appearance="fill" [formGroup]="form">
   <mat-label>{{label}}</mat-label>
-  <input type="text" matInput formControlName="value" (blur)="touched()">
-  <button matSuffix mat-icon-button aria-label="Clear" type="button" (click)="clearValue()" tabindex="-1">
+  <ng-container [ngSwitch]="type">
+    <input *ngSwitchCase="'number'" type="number" matInput formControlName="value" (blur)="touched?.()">
+    <input *ngSwitchCase="'text'" type="text" matInput formControlName="value" (blur)="touched?.()">
+  </ng-container>
+  <button matSuffix mat-icon-button aria-label="Clear" type="button" (click)="clearValue?.()" tabindex="-1">
     <mat-icon>close</mat-icon>
   </button>
 </mat-form-field>

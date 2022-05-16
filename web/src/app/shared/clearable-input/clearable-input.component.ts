@@ -16,6 +16,7 @@ import { Subscription } from 'rxjs';
 })
 export class ClearableInputComponent implements OnInit, OnDestroy, ControlValueAccessor {
   @Input() label: string;
+  @Input() type: 'text' | 'number' = 'text';
 
   form: FormGroup;
   changed: (value: string) => void;
@@ -41,7 +42,7 @@ export class ClearableInputComponent implements OnInit, OnDestroy, ControlValueA
 
   writeValue(value: any): void {
     this.form.setValue({
-      value, 
+      value,
     });
   }
 

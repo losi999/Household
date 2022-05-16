@@ -41,7 +41,7 @@ export class AmountInputComponent implements OnInit, OnDestroy, ControlValueAcce
 
   writeValue(amount: any): void {
     this.form.setValue({
-      amount, 
+      amount,
     });
   }
 

@@ -21,8 +21,11 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { RouterModule } from '@angular/router';
 import { CatalogSubmenuComponent } from './catalog-submenu/catalog-submenu.component';
 import { MatListModule } from '@angular/material/list';
+import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ProgressIndicatorComponent } from './progress-indicator/progress-indicator.component';
+import { InventoryInputComponent } from './inventory-input/inventory-input.component';
+import { InvoiceInputComponent } from './invoice-input/invoice-input.component';
 
 @NgModule({
   declarations: [
@@ -36,6 +39,8 @@ import { ProgressIndicatorComponent } from './progress-indicator/progress-indica
     ToolbarComponent,
     CatalogSubmenuComponent,
     ProgressIndicatorComponent,
+    InventoryInputComponent,
+    InvoiceInputComponent,
   ],
   imports: [
     CommonModule,
@@ -52,6 +57,7 @@ import { ProgressIndicatorComponent } from './progress-indicator/progress-indica
     MatToolbarModule,
     MatListModule,
     MatProgressSpinnerModule,
+    MatSelectModule,
   ],
   exports: [
     ClearableInputComponent,
@@ -63,6 +69,8 @@ import { ProgressIndicatorComponent } from './progress-indicator/progress-indica
     ToolbarComponent,
     CatalogSubmenuComponent,
     ProgressIndicatorComponent,
+    InventoryInputComponent,
+    InvoiceInputComponent,
   ],
 })
 export class SharedModule { }

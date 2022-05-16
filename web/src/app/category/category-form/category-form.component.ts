@@ -22,6 +22,7 @@ export class CategoryFormComponent implements OnInit {
   ngOnInit(): void {
     this.form = new FormGroup({
       name: new FormControl(this.data.category?.name, [Validators.required]),
+      categoryType: new FormControl(this.data.category?.categoryType ?? 'regular', [Validators.required]),
       parentCategory: new FormControl(this.data.category?.parentCategory),
     });
   }
@@ -30,6 +31,7 @@ export class CategoryFormComponent implements OnInit {
     if (this.form.valid) {
       this.dialogRef.close({
         name: this.form.value.name,
+        categoryType: this.form.value.categoryType,
         parentCategoryId: this.form.value.parentCategory?.categoryId,
       });
     }
