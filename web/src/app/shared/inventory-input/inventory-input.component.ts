@@ -55,7 +55,7 @@ export class InventoryInputComponent implements OnInit, OnDestroy, ControlValueA
   }
   writeValue(obj: Transaction.Inventory['inventory']): void {
     if (obj) {
-      this.form.setValue(obj);
+      this.form.patchValue(obj);
     }
   }
 

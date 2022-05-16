@@ -52,8 +52,8 @@ export class InvoiceInputComponent implements OnInit, OnDestroy, ControlValueAcc
     if (obj) {
       const startDate = new Date(obj.billingStartDate);
       const endDate = new Date(obj.billingEndDate);
-      this.form.setValue({
-        invoiceNumber: obj.invoiceNumber,
+      this.form.patchValue({
+        invoiceNumber: obj.invoiceNumber ?? null,
         billingStartDate: obj.billingStartDate ? new Date(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate()) : new Date(),
         billingEndDate: obj.billingEndDate ? new Date(endDate.getUTCFullYear(), endDate.getUTCMonth(), endDate.getUTCDate()) : new Date(),
       });
