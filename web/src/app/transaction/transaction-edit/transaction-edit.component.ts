@@ -67,7 +67,7 @@ export class TransactionEditComponent implements OnInit {
   private createSplitFormGroup(split?: Transaction.SplitResponseItem): FormGroup {
     return new FormGroup({
       category: new FormControl(split?.category),
-      amount: new FormControl(split?.amount),
+      amount: new FormControl(split?.amount ?? this.splitsDiff),
       description: new FormControl(split?.description),
       project: new FormControl(split?.project),
       inventory: new FormControl(isInventoryCategory(split?.category) ? split.inventory : null),
