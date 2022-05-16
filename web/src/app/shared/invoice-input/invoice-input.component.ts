@@ -1,5 +1,5 @@
 import { Component, forwardRef, OnDestroy, OnInit } from '@angular/core';
-import { ControlValueAccessor, FormControl, FormGroup, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { ControlValueAccessor, FormControl, FormGroup, NG_VALUE_ACCESSOR, Validators } from '@angular/forms';
 import { Transaction } from '@household/shared/types/types';
 import { Subscription } from 'rxjs';
 
@@ -26,8 +26,8 @@ export class InvoiceInputComponent implements OnInit, OnDestroy, ControlValueAcc
   ngOnInit(): void {
     this.form = new FormGroup({
       invoiceNumber: new FormControl(null),
-      billingStartDate: new FormControl(null),
-      billingEndDate: new FormControl(null),
+      billingStartDate: new FormControl(null, [Validators.required]),
+      billingEndDate: new FormControl(null, [Validators.required]),
     });
 
     this.subs = this.form.valueChanges.subscribe((value: Transaction.Invoice<Date>['invoice']) => {
