@@ -9,7 +9,7 @@ import { ProjectService } from 'src/app/project/project.service';
 @Component({
   selector: 'app-project-home',
   templateUrl: './project-home.component.html',
-  styleUrls: ['./project-home.component.scss']
+  styleUrls: ['./project-home.component.scss'],
 })
 export class ProjectHomeComponent implements OnInit, OnDestroy {
   projects: Project.Response[];
@@ -29,7 +29,7 @@ export class ProjectHomeComponent implements OnInit, OnDestroy {
         this.projectService.listProjects().subscribe((projects) => {
           this.projects = projects;
         });
-      }
+      },
     });
   }
 
@@ -41,8 +41,8 @@ export class ProjectHomeComponent implements OnInit, OnDestroy {
         if (values) {
           this.projectService.createProject(values);
         }
-      }
-    })
+      },
+    });
   }
 
 }

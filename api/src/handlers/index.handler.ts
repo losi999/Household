@@ -1,6 +1,6 @@
 export default <E, R>(params: {
   before: ((event: E) => E)[];
-  after: ((event: R) => R)[];
+  after: ((result: R) => R)[];
   handler: AWSLambda.Handler<E, R>;
 }): AWSLambda.Handler<E, R> => {
   return async (event, context, callback) => {

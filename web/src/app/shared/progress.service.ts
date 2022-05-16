@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ProgressService {
-  private progressCounter: number
+  private progressCounter: number;
   constructor() {
     this.progressCounter = 0;
   }

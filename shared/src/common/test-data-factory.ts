@@ -1,23 +1,23 @@
 import { Account, Category, Project, Recipient, Transaction } from '@household/shared/types/types';
 
 export const createAccountId = (id?: string): Account.IdType => {
-  return (id ?? 'accountId')as Account.IdType;
+  return (id ?? 'accountId') as Account.IdType;
 };
 
 export const createCategoryId = (id?: string): Category.IdType => {
-  return (id ?? 'categoryId')as Category.IdType;
+  return (id ?? 'categoryId') as Category.IdType;
 };
 
 export const createProjectId = (id?: string): Project.IdType => {
-  return (id ?? 'projectId')as Project.IdType;
+  return (id ?? 'projectId') as Project.IdType;
 };
 
 export const createRecipientId = (id?: string): Recipient.IdType => {
-  return (id ?? 'recipientId')as Recipient.IdType;
+  return (id ?? 'recipientId') as Recipient.IdType;
 };
 
 export const createTransactionId = (id?: string): Transaction.IdType => {
-  return (id ?? 'transactionId')as Transaction.IdType;
+  return (id ?? 'transactionId') as Transaction.IdType;
 };
 
 export const createAccountDocument = (doc?: Partial<Account.Document>): Account.Document => {
@@ -46,6 +46,7 @@ export const createCategoryDocument = (doc?: Partial<Category.Document>): Catego
     parentCategory: undefined,
     parentCategoryId: undefined,
     fullName: 'category name',
+    categoryType: 'regular',
     ...doc,
   };
 };
@@ -62,6 +63,8 @@ export const createPaymentTransactionDocument = (doc?: Partial<Transaction.Payme
     transactionType: 'payment',
     amount: 100,
     description: 'transaction description',
+    inventory: undefined,
+    invoice: undefined,
     issuedAt: new Date(),
     expiresAt: undefined,
     accountId: undefined,
@@ -93,6 +96,8 @@ export const createSplitTransactionDocument = (doc?: Partial<Transaction.SplitDo
         category: createCategoryDocument(),
         project: createProjectDocument(),
         description: 'split description',
+        inventory: undefined,
+        invoice: undefined,
         ...s,
       };
     }) : [
@@ -101,6 +106,8 @@ export const createSplitTransactionDocument = (doc?: Partial<Transaction.SplitDo
         category: createCategoryDocument(),
         project: createProjectDocument(),
         description: 'split description',
+        inventory: undefined,
+        invoice: undefined,
       },
     ],
     ...doc,
@@ -142,6 +149,7 @@ export const createCategoryRequest = (req?: Partial<Category.Request>): Category
   return {
     name: 'category name',
     parentCategoryId: 'parentCategoryId' as Category.IdType,
+    categoryType: 'regular',
     ...req,
   };
 };
@@ -156,6 +164,8 @@ export const createPaymentTransactionRequest = (req?: Partial<Transaction.Paymen
   return {
     amount: 100,
     description: 'transaction description',
+    inventory: undefined,
+    invoice: undefined,
     issuedAt: new Date().toISOString(),
     accountId: 'accountId' as Account.IdType,
     categoryId: 'categoryId' as Category.IdType,
@@ -178,6 +188,8 @@ export const createSplitTransactionRequest = (req?: Partial<Transaction.SplitReq
         categoryId: 'categoryId' as Category.IdType,
         projectId: 'projectId' as Project.IdType,
         description: 'split description',
+        inventory: undefined,
+        invoice: undefined,
         ...s,
       };
     }) : [
@@ -186,6 +198,8 @@ export const createSplitTransactionRequest = (req?: Partial<Transaction.SplitReq
         categoryId: 'categoryId' as Category.IdType,
         projectId: 'projectId' as Project.IdType,
         description: 'split description',
+        inventory: undefined,
+        invoice: undefined,
       },
     ],
     ...req,
@@ -241,6 +255,7 @@ export const createCategoryResponse = (resp?: Partial<Category.Response>): Categ
     _id: undefined,
     parentCategory: undefined,
     fullName: 'category name',
+    categoryType: 'regular',
     ...resp,
   };
 };
@@ -262,6 +277,8 @@ export const createPaymentTransactionResponse = (resp?: Partial<Transaction.Paym
     transactionType: 'payment',
     amount: 100,
     description: 'transaction description',
+    inventory: undefined,
+    invoice: undefined,
     issuedAt: new Date().toISOString(),
     expiresAt: undefined,
     createdAt: undefined,
@@ -294,6 +311,8 @@ export const createSplitTransactionResponse = (resp?: Partial<Transaction.SplitR
         category: createCategoryResponse(),
         project: createProjectResponse(),
         description: 'split description',
+        inventory: undefined,
+        invoice: undefined,
         ...s,
       };
     }) : [
@@ -302,6 +321,8 @@ export const createSplitTransactionResponse = (resp?: Partial<Transaction.SplitR
         category: createCategoryResponse(),
         project: createProjectResponse(),
         description: 'split description',
+        inventory: undefined,
+        invoice: undefined,
       },
     ],
     ...resp,

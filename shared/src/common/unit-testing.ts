@@ -41,46 +41,6 @@ export const validateError = (message: string, statusCode?: number) => (error: a
   }
 };
 
-export const validateSchemaType = (validation: string, propertyName: string, type: string) => {
-  expect(validation).toContain(`data.${propertyName} should be ${type}`);
-};
-
-export const validateSchemaRequired = (validation: string, propertyName: string) => {
-  expect(validation).toContain(`should have required property '${propertyName}'`);
-};
-
-export const validateSchemaPattern = (validation: string, propertyName: string) => {
-  expect(validation).toContain(`data.${propertyName} should match pattern`);
-};
-
-export const validateSchemaFormat = (validation: string, propertyName: string, format: string) => {
-  expect(validation).toEqual(`data.${propertyName} should match format "${format}"`);
-};
-
-export const validateSchemaAdditionalProperties = (validation: string, propertyName: string) => {
-  expect(validation).toContain(`${propertyName} should NOT have additional properties`);
-};
-
-export const validateSchemaMinLength = (validation: string, propertyName: string, minLength: number) => {
-  expect(validation).toEqual(`data.${propertyName} should NOT be shorter than ${minLength} characters`);
-};
-
-export const validateSchemaMaxLength = (validation: string, propertyName: string, maxLength: number) => {
-  expect(validation).toEqual(`data.${propertyName} should NOT be longer than ${maxLength} characters`);
-};
-
-export const validateSchemaEnumValue = (validation: string, propertyName: string) => {
-  expect(validation).toEqual(`data.${propertyName} should be equal to one of the allowed values`);
-};
-
-export const validateSchemaMinimum = (validation: string, propertyName: string, minimum: number) => {
-  expect(validation).toEqual(`data.${propertyName} should be >= ${minimum}`);
-};
-
-export const validateSchemaMinItems = (validation: string, propertyName: string, minItems: number) => {
-  expect(validation).toEqual(`data.${propertyName} should NOT have fewer than ${minItems} items`);
-};
-
 export const awsResolvedValue = (data?: any) => ({
   promise: () => Promise.resolve(data),
 }) as any;

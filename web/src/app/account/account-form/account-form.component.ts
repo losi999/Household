@@ -9,12 +9,12 @@ export type AccountFormResult = Account.Request;
 type AccountTypeMap = {
   key: Account.AccountType;
   value: string;
-}
+};
 
 @Component({
   selector: 'app-account-form',
   templateUrl: './account-form.component.html',
-  styleUrls: ['./account-form.component.scss']
+  styleUrls: ['./account-form.component.scss'],
 })
 export class AccountFormComponent implements OnInit {
   form: FormGroup;
@@ -35,13 +35,13 @@ export class AccountFormComponent implements OnInit {
     const accountType: AccountTypeMap = {
       key: this.account?.accountType,
       value: this.accountTypes[this.account?.accountType],
-    }
+    };
 
     this.form = new FormGroup({
       name: new FormControl(this.account?.name, [Validators.required]),
       accountType: new FormControl(accountType, [Validators.required]),
       currency: new FormControl(this.account?.currency, [Validators.required]),
-    })
+    });
   }
 
   save() {
@@ -49,7 +49,7 @@ export class AccountFormComponent implements OnInit {
       this.dialogRef.close({
         name: this.form.value.name,
         accountType: this.form.value.accountType.key,
-        currency: this.form.value.currency
+        currency: this.form.value.currency,
       });
     }
   }

@@ -1,30 +1,29 @@
 import { default as schema } from '@household/shared/schemas/category';
-import { validateSchemaAdditionalProperties, validateSchemaMinLength, validateSchemaPattern, validateSchemaRequired, validateSchemaType } from '@household/shared/common/unit-testing';
-import { validatorService } from '@household/shared/dependencies/services/validator-service';
 import { Category } from '@household/shared/types/types';
 import { createCategoryId } from '@household/shared/common/test-data-factory';
+import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 
 describe('Category schema', () => {
   let data: Category.Request;
+  const tester = jsonSchemaTesterFactory<Category.Request>(schema);
 
   beforeEach(() => {
     data = {
       name: 'name',
+      categoryType: 'regular',
       parentCategoryId: createCategoryId('62378f3a6add840bbd4c630c'),
     };
   });
 
   describe('should accept', () => {
     it('complete body', () => {
-      const result = validatorService.validate(data, schema);
-      expect(result).toBeUndefined();
+      tester.validateSuccess(data);
     });
 
     describe('without optional property', () => {
       it('parentCategoryId', () => {
         delete data.parentCategoryId;
-        const result = validatorService.validate(data, schema);
-        expect(result).toBeUndefined();
+        tester.validateSuccess(data);
       });
     });
   });
@@ -33,42 +32,53 @@ describe('Category schema', () => {
     describe('if data', () => {
       it('has additional property', () => {
         (data as any).extra = 'asd';
-        const result = validatorService.validate(data, schema);
-        validateSchemaAdditionalProperties(result, 'data');
+        tester.validateSchemaAdditionalProperties(data, 'data');
       });
     });
 
     describe('if data.name', () => {
       it('is missing', () => {
         data.name = undefined;
-        const result = validatorService.validate(data, schema);
-        validateSchemaRequired(result, 'name');
+        tester.validateSchemaRequired(data, 'name');
       });
 
       it('is not string', () => {
         (data.name as any) = 2;
-        const result = validatorService.validate(data, schema);
-        validateSchemaType(result, 'name', 'string');
+        tester.validateSchemaType(data, 'name', 'string');
       });
 
       it('is too short', () => {
         data.name = '';
-        const result = validatorService.validate(data, schema);
-        validateSchemaMinLength(result, 'name', 1);
+        tester.validateSchemaMinLength(data, 'name', 1);
+      });
+    });
+
+    describe('if data.categoryType', () => {
+      it('is missing', () => {
+        data.categoryType = undefined;
+        tester.validateSchemaRequired(data, 'categoryType');
+      });
+
+      it('is not string', () => {
+        (data.categoryType as any) = 2;
+        tester.validateSchemaType(data, 'categoryType', 'string');
+      });
+
+      it('is not valid enum value', () => {
+        data.categoryType = 'not-valid' as any;
+        tester.validateSchemaEnumValue(data, 'categoryType');
       });
     });
 
     describe('if data.parentCategoryId', () => {
       it('is not string', () => {
         (data.parentCategoryId as any) = 2;
-        const result = validatorService.validate(data, schema);
-        validateSchemaType(result, 'parentCategoryId', 'string');
+        tester.validateSchemaType(data, 'parentCategoryId', 'string');
       });
 
       it('does not match pattern', () => {
         data.parentCategoryId = createCategoryId();
-        const result = validatorService.validate(data, schema);
-        validateSchemaPattern(result, 'parentCategoryId');
+        tester.validateSchemaPattern(data, 'parentCategoryId');
       });
     });
   });

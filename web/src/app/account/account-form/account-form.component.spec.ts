@@ -8,9 +8,9 @@ describe('AccountFormComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ AccountFormComponent ]
+      declarations: [ AccountFormComponent ],
     })
-    .compileComponents();
+      .compileComponents();
   });
 
   beforeEach(() => {

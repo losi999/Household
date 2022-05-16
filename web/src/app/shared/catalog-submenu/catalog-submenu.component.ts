@@ -7,7 +7,7 @@ export type CatalogSubmenuResult = 'edit' | 'delete';
 @Component({
   selector: 'app-catalog-submenu',
   templateUrl: './catalog-submenu.component.html',
-  styleUrls: ['./catalog-submenu.component.scss']
+  styleUrls: ['./catalog-submenu.component.scss'],
 })
 export class CatalogSubmenuComponent {
 
@@ -21,6 +21,5 @@ export class CatalogSubmenuComponent {
   delete() {
     this.bottomSheetRef.dismiss('delete');
   }
-
 
 }

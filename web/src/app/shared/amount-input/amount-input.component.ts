@@ -6,11 +6,13 @@ import { Subscription } from 'rxjs';
   selector: 'app-amount-input',
   templateUrl: './amount-input.component.html',
   styleUrls: ['./amount-input.component.scss'],
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    multi: true,
-    useExisting: forwardRef(() => AmountInputComponent)
-  }]
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      multi: true,
+      useExisting: forwardRef(() => AmountInputComponent),
+    },
+  ],
 })
 export class AmountInputComponent implements OnInit, OnDestroy, ControlValueAccessor {
   @Input() currency: string;
@@ -29,16 +31,18 @@ export class AmountInputComponent implements OnInit, OnDestroy, ControlValueAcce
 
   ngOnInit(): void {
     this.form = new FormGroup({
-      amount: new FormControl(null, [Validators.required])
-    })
+      amount: new FormControl(null, [Validators.required]),
+    });
 
     this.subs = this.form.controls.amount.valueChanges.subscribe((value) => {
       this.changed?.(value);
-    })
+    });
   }
 
   writeValue(amount: any): void {
-    this.form.setValue({ amount });
+    this.form.setValue({
+      amount,
+    });
   }
 
   registerOnChange(fn: any): void {

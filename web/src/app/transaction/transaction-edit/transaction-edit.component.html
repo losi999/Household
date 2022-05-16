@@ -28,9 +28,13 @@
             displayPropertyName="name" formControlName="transferAccount"></app-autocomplete-input>
         </div>
         <div class="transaction-edit__category" *ngIf="!isTransfer && splits.length === 0">
-          <app-autocomplete-input [items]="categories" label="Kategória" displayPropertyName="fullName" filterPropertyName="name"
-            formControlName="category"></app-autocomplete-input>
+          <app-autocomplete-input [items]="categories" label="Kategória" displayPropertyName="fullName"
+            filterPropertyName="name" formControlName="category"></app-autocomplete-input>
         </div>
+        <app-invoice-input *ngIf="category?.categoryType === 'invoice'" formControlName="invoice">
+        </app-invoice-input>
+        <app-inventory-input *ngIf="category?.categoryType === 'inventory'" formControlName="inventory">
+        </app-inventory-input>
         <div class="transaction-edit__recipient" *ngIf="!isTransfer">
           <app-autocomplete-input [items]="recipients" label="Partner" displayPropertyName="name"
             formControlName="recipient"></app-autocomplete-input>
@@ -54,7 +58,7 @@
           </button>
         </p>
         <p class="transaction-edit__split_diff" *ngIf="splitsDiff !== 0">
-          Hiányzó összeg: {{ splitsDiff}} {{account.currency}}
+          Hiányzó összeg: {{splitsDiff}} {{account.currency}}
         </p>
         <div *ngFor="let split of splitsArray.controls; index as i" [formGroup]="split"
           class="mat-elevation-z2 transaction-edit-split-item">
@@ -64,9 +68,13 @@
               </app-amount-input>
             </div>
             <div class="transaction-edit-split-item__category">
-              <app-autocomplete-input [items]="categories" label="Kategória" displayPropertyName="fullName" filterPropertyName="name"
-                formControlName="category"></app-autocomplete-input>
+              <app-autocomplete-input [items]="categories" label="Kategória" displayPropertyName="fullName"
+                filterPropertyName="name" formControlName="category"></app-autocomplete-input>
             </div>
+            <app-invoice-input *ngIf="split.value.category?.categoryType === 'invoice'" formControlName="invoice">
+            </app-invoice-input>
+            <app-inventory-input *ngIf="split.value.category?.categoryType === 'inventory'" formControlName="inventory">
+            </app-inventory-input>
             <div class="transaction-edit-split-item__project">
               <app-autocomplete-input [items]="projects" label="Projekt" displayPropertyName="name"
                 formControlName="project"></app-autocomplete-input>

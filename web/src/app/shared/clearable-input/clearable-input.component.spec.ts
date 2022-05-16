@@ -8,9 +8,9 @@ describe('ClearableInputComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ ClearableInputComponent ]
+      declarations: [ ClearableInputComponent ],
     })
-    .compileComponents();
+      .compileComponents();
   });
 
   beforeEach(() => {

@@ -8,9 +8,9 @@ describe('AccountListItemComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ AccountListItemComponent ]
+      declarations: [ AccountListItemComponent ],
     })
-    .compileComponents();
+      .compileComponents();
   });
 
   beforeEach(() => {

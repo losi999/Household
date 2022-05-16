@@ -1,11 +1,11 @@
-import { default as schema } from '@household/shared/schemas/get-transaction.schema';
-import { validateSchemaAdditionalProperties, validateSchemaPattern, validateSchemaRequired } from '@household/shared/common/unit-testing';
-import { validatorService } from '@household/shared/dependencies/services/validator-service';
+import { default as schema } from '@household/shared/schemas/get-transaction';
 import { Account, Transaction } from '@household/shared/types/types';
 import { createAccountId, createTransactionId } from '@household/shared/common/test-data-factory';
+import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 
 describe('Get transaction schema', () => {
   let data: Account.Id & Transaction.Id;
+  const tester = jsonSchemaTesterFactory<Account.Id & Transaction.Id>(schema);
 
   beforeEach(() => {
     data = {
@@ -15,44 +15,38 @@ describe('Get transaction schema', () => {
   });
 
   it('should accept valid body', () => {
-    const result = validatorService.validate(data, schema);
-    expect(result).toBeUndefined();
+    tester.validateSuccess(data);
   });
 
   describe('should deny', () => {
     describe('if data', () => {
       it('has additional property', () => {
         (data as any).extra = 'asd';
-        const result = validatorService.validate(data, schema);
-        validateSchemaAdditionalProperties(result, 'data');
+        tester.validateSchemaAdditionalProperties(data, 'data');
       });
     });
 
     describe('if data.accountId', () => {
       it('is missing', () => {
         data.accountId = undefined;
-        const result = validatorService.validate(data, schema);
-        validateSchemaRequired(result, 'accountId');
+        tester.validateSchemaRequired(data, 'accountId');
       });
 
       it('does not match pattern', () => {
         data.accountId = createAccountId();
-        const result = validatorService.validate(data, schema);
-        validateSchemaPattern(result, 'accountId');
+        tester.validateSchemaPattern(data, 'accountId');
       });
     });
 
     describe('if data.transactionId', () => {
       it('is missing', () => {
         data.transactionId = undefined;
-        const result = validatorService.validate(data, schema);
-        validateSchemaRequired(result, 'transactionId');
+        tester.validateSchemaRequired(data, 'transactionId');
       });
 
       it('does not match pattern', () => {
         data.transactionId = createTransactionId();
-        const result = validatorService.validate(data, schema);
-        validateSchemaPattern(result, 'transactionId');
+        tester.validateSchemaPattern(data, 'transactionId');
       });
     });
   });

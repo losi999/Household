@@ -13,6 +13,13 @@
       "**/.DS_Store": true,
       "**/node_modules": true,
       "**/coverage": true
+    },
+    "eslint.format.enable": true,
+    "[typescript]": {
+      "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "[javascript]": {
+      "editor.defaultFormatter": "vscode.typescript-language-features"
     }
   }
 }

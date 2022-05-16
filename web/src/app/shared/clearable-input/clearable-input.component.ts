@@ -6,14 +6,17 @@ import { Subscription } from 'rxjs';
   selector: 'app-clearable-input',
   templateUrl: './clearable-input.component.html',
   styleUrls: ['./clearable-input.component.scss'],
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    multi: true,
-    useExisting: forwardRef(() => ClearableInputComponent)
-  }]
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      multi: true,
+      useExisting: forwardRef(() => ClearableInputComponent),
+    },
+  ],
 })
 export class ClearableInputComponent implements OnInit, OnDestroy, ControlValueAccessor {
   @Input() label: string;
+  @Input() type: 'text' | 'number' = 'text';
 
   form: FormGroup;
   changed: (value: string) => void;
@@ -29,16 +32,18 @@ export class ClearableInputComponent implements OnInit, OnDestroy, ControlValueA
 
   ngOnInit(): void {
     this.form = new FormGroup({
-      value: new FormControl()
-    })
+      value: new FormControl(),
+    });
 
     this.subs = this.form.controls.value.valueChanges.subscribe((value) => {
       this.changed?.(value);
-    })
+    });
   }
 
   writeValue(value: any): void {
-    this.form.setValue({ value });
+    this.form.setValue({
+      value,
+    });
   }
 
   registerOnChange(fn: any): void {

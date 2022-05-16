@@ -1,6 +1,6 @@
 import { HttpError } from '@household/shared/types/common';
 
-const successResponse = (statusCode: number, data?: any): AWSLambda.APIGatewayProxyResult => {
+const response = (statusCode: number, data?: any): AWSLambda.APIGatewayProxyResult => {
   return {
     statusCode,
     body: data ? JSON.stringify(data) : '',
@@ -8,14 +8,12 @@ const successResponse = (statusCode: number, data?: any): AWSLambda.APIGatewayPr
 };
 
 export const errorResponse = ({ statusCode, message }: HttpError): AWSLambda.APIGatewayProxyResult => {
-  return {
-    statusCode,
-    body: JSON.stringify({
-      message,
-    }),
-  };
+  return response(statusCode, {
+    message,
+  });
 };
 
-export const okResponse = (data: any) => successResponse(200, data);
-export const createdResponse = (data: any) => successResponse(201, data);
-export const noContentResponse = () => successResponse(204);
+export const okResponse = (data: any) => response(200, data);
+export const createdResponse = (data: any) => response(201, data);
+export const noContentResponse = () => response(204);
+export const badRequestResponse = (data: any) => response(400, data);

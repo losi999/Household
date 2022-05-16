@@ -4,9 +4,7 @@ import { ProgressInterceptor } from './progress.interceptor';
 
 describe('ProgressInterceptor', () => {
   beforeEach(() => TestBed.configureTestingModule({
-    providers: [
-      ProgressInterceptor
-      ]
+    providers: [ProgressInterceptor],
   }));
 
   it('should be created', () => {

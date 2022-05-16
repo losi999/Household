@@ -4,10 +4,12 @@ import { Account } from '@household/shared/types/types';
 @Component({
   selector: 'app-account-list',
   templateUrl: './account-list.component.html',
-  styleUrls: ['./account-list.component.scss']
+  styleUrls: ['./account-list.component.scss'],
 })
 export class AccountListComponent {
   @Input() accounts: Account.Response[];
 
-  constructor() { }
+  constructor() {
+
+  }
 }

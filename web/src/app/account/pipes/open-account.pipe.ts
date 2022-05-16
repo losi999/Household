@@ -2,7 +2,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { Account } from '@household/shared/types/types';
 
 @Pipe({
-  name: 'openAccountFilter'
+  name: 'openAccountFilter',
 })
 export class OpenAccountFilterPipe implements PipeTransform {
 

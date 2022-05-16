@@ -1,4 +1,4 @@
-import { Ajv } from 'ajv';
+import { default as Ajv } from 'ajv';
 import { JSONSchema7 } from 'json-schema';
 
 export interface IValidatorService {

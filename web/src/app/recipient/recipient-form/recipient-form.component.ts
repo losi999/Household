@@ -9,7 +9,7 @@ export type RecipientFormResult = Recipient.Request;
 @Component({
   selector: 'app-recipient-form',
   templateUrl: './recipient-form.component.html',
-  styleUrls: ['./recipient-form.component.scss']
+  styleUrls: ['./recipient-form.component.scss'],
 })
 export class RecipientFormComponent implements OnInit {
   form: FormGroup;
@@ -18,8 +18,8 @@ export class RecipientFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.form = new FormGroup({
-      name: new FormControl(this.recipient?.name, [Validators.required])
-    })
+      name: new FormControl(this.recipient?.name, [Validators.required]),
+    });
   }
 
   save() {

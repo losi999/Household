@@ -8,9 +8,9 @@ describe('ProgressIndicatorComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ ProgressIndicatorComponent ]
+      declarations: [ ProgressIndicatorComponent ],
     })
-    .compileComponents();
+      .compileComponents();
   });
 
   beforeEach(() => {

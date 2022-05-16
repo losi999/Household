@@ -6,7 +6,7 @@ import { RecipientListItemComponent } from './recipient-list-item/recipient-list
 import { SharedModule } from 'src/app/shared/shared.module';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatListModule} from '@angular/material/list';
+import { MatListModule } from '@angular/material/list';
 import { RecipientRoutingModule } from 'src/app/recipient/recipient-routing.module';
 import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { RecipientFormComponent } from './recipient-form/recipient-form.component';
@@ -18,7 +18,7 @@ import { MatDialogModule } from '@angular/material/dialog';
     RecipientHomeComponent,
     RecipientListComponent,
     RecipientListItemComponent,
-    RecipientFormComponent
+    RecipientFormComponent,
   ],
   imports: [
     CommonModule,
@@ -30,6 +30,6 @@ import { MatDialogModule } from '@angular/material/dialog';
     MatListModule,
     MatBottomSheetModule,
     MatDialogModule,
-  ]
+  ],
 })
 export class RecipientModule { }
