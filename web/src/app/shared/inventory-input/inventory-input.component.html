@@ -1,0 +1,24 @@
+<div [formGroup]="form">
+  <div class="inventory__brand">
+    <app-clearable-input label="Márka" formControlName="brand" (blur)="touched()">
+    </app-clearable-input>
+  </div>
+  <div class="inventory__quantity">
+    <app-clearable-input label="Mennyiség" formControlName="quantity" (blur)="touched()" type="number">
+    </app-clearable-input>
+  </div>
+  <div class="inventory__measurement">
+    <app-clearable-input label="Kiszerelés" formControlName="measurement" (blur)="touched()" type="number">
+    </app-clearable-input>
+  </div>
+  <div>
+    <mat-form-field appearance="fill">
+      <mat-label>Mértékegység</mat-label>
+      <mat-select name="unitOfMeasurement" formControlName="unitOfMeasurement" (blur)="touched()">
+        <mat-option *ngFor="let u of unitsOfMeasurement" [value]="u">
+          {{u}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+</div>

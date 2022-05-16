@@ -96,9 +96,9 @@ jobs:
           name: Running API linter
           command: yarn lint:api
 
-  # - run:
-  #     name: Running Web linter
-  #     command: yarn lint:web
+      - run:
+          name: Running Web linter
+          command: yarn lint:web
   build:
     parameters:
       env:

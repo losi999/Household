@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 import { ProjectService } from 'src/app/project/project.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ProjectListResolver implements Resolve<Project.Response[]> {
   constructor(private projectService: ProjectService) { }

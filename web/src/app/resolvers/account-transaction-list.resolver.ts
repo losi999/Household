@@ -1,14 +1,14 @@
 import { Injectable } from '@angular/core';
 import {
   Resolve,
-  ActivatedRouteSnapshot
+  ActivatedRouteSnapshot,
 } from '@angular/router';
 import { Account, Transaction } from '@household/shared/types/types';
 import { Observable } from 'rxjs';
 import { AccountService } from 'src/app/account/account.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AccountTransactionListResolver implements Resolve<Transaction.Response[]> {
   constructor(private accountService: AccountService) { }

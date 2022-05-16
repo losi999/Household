@@ -10,7 +10,7 @@ import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/
 @Component({
   selector: 'app-project-list-item',
   templateUrl: './project-list-item.component.html',
-  styleUrls: ['./project-list-item.component.scss']
+  styleUrls: ['./project-list-item.component.scss'],
 })
 export class ProjectListItemComponent {
   @Input() project: Project.Response;
@@ -23,19 +23,21 @@ export class ProjectListItemComponent {
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       data: {
         title: 'Törölni akarod ezt a projektet?',
-        content: this.project.name
+        content: this.project.name,
       },
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.projectService.deleteProject(this.project.projectId)
+        this.projectService.deleteProject(this.project.projectId);
       }
     });
   }
 
   edit() {
-    const dialogRef = this.dialog.open<ProjectFormComponent, ProjectFormData, ProjectFormResult>(ProjectFormComponent, { data: this.project })
+    const dialogRef = this.dialog.open<ProjectFormComponent, ProjectFormData, ProjectFormResult>(ProjectFormComponent, {
+      data: this.project, 
+    });
 
     dialogRef.afterClosed().subscribe((values) => {
       if (values) {
@@ -45,13 +47,15 @@ export class ProjectListItemComponent {
   }
 
   showMenu() {
-    const bottomSheetRef = this.bottomSheet.open<CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult>(CatalogSubmenuComponent, { data: this.project.name })
+    const bottomSheetRef = this.bottomSheet.open<CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult>(CatalogSubmenuComponent, {
+      data: this.project.name, 
+    });
 
     bottomSheetRef.afterDismissed().subscribe((result) => {
       switch (result) {
         case 'delete': this.delete(); break;
         case 'edit': this.edit(); break;
       }
-    })
+    });
   }
 }

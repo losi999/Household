@@ -8,9 +8,9 @@ describe('RecipientListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ RecipientListComponent ]
+      declarations: [ RecipientListComponent ],
     })
-    .compileComponents();
+      .compileComponents();
   });
 
   beforeEach(() => {

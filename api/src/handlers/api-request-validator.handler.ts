@@ -1,5 +1,6 @@
 import { JSONSchema7 } from 'json-schema';
 import { IValidatorService } from '@household/shared/services/validator-service';
+import { badRequestResponse } from '@household/api/common/response-factory';
 
 type RequestSchemaTypes = {
   body?: JSONSchema7;
@@ -27,10 +28,7 @@ export default (validatorService: IValidatorService) => {
       }, {});
 
       if (Object.values(validationErrors).length > 0) {
-        throw {
-          statusCode: 400,
-          body: JSON.stringify(validationErrors),
-        };
+        throw badRequestResponse(validationErrors);
       }
 
       return event;

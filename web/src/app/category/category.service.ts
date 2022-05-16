@@ -5,12 +5,12 @@ import { Observable, Subject } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CategoryService {
   private _refreshList: Subject<void> = new Subject();
 
-  get refreshList():Observable<void> {
+  get refreshList(): Observable<void> {
     return this._refreshList.asObservable();
   }
 
@@ -27,7 +27,7 @@ export class CategoryService {
       },
       error: (error) => {
         console.error(error);
-      }
+      },
     });
   }
 
@@ -38,7 +38,7 @@ export class CategoryService {
       },
       error: (error) => {
         console.error(error);
-      }
+      },
     });
   }
 
@@ -49,7 +49,7 @@ export class CategoryService {
       },
       error: (error) => {
         console.error(error);
-      }
+      },
     });
   }
 }

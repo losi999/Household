@@ -104,6 +104,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
             session,
           })
             .exec();
+          // TODO
           await mongodbService.transactions().updateMany({
             category: deleted,
           }, deleted.parentCategory ? {
@@ -153,6 +154,51 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
           })
             .exec();
           await updateCategoryFullName(oldFullName, doc.fullName, session);
+          await mongodbService.transactions().updateMany({
+            category: doc._id,
+          }, doc.categoryType === 'regular' ? {
+            $unset: {
+              invoice: 1,
+              inventory: 1,
+            },
+          } : doc.categoryType === 'inventory' ? {
+            $unset: {
+              invoice: 1,
+            },
+          } : {
+            $unset: {
+              inventory: 1,
+            },
+          }, {
+            runValidators: true,
+            session,
+          })
+            .exec();
+          await mongodbService.transactions().updateMany({
+            'splits.category': doc._id,
+          }, doc.categoryType === 'regular' ? {
+            $unset: {
+              'splits.$[element].invoice': 1,
+              'splits.$[element].inventory': 1,
+            },
+          } : doc.categoryType === 'inventory' ? {
+            $unset: {
+              'splits.$[element].invoice': 1,
+            },
+          } : {
+            $unset: {
+              'splits.$[element].inventory': 1,
+            },
+          }, {
+            session,
+            runValidators: true,
+            arrayFilters: [
+              {
+                'element.category': doc._id,
+              },
+            ],
+          })
+            .exec();
         });
       });
     },

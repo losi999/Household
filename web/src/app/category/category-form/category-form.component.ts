@@ -12,7 +12,7 @@ export type CategoryFormResult = Category.Request;
 @Component({
   selector: 'app-category-form',
   templateUrl: './category-form.component.html',
-  styleUrls: ['./category-form.component.scss']
+  styleUrls: ['./category-form.component.scss'],
 })
 export class CategoryFormComponent implements OnInit {
   form: FormGroup;
@@ -22,14 +22,16 @@ export class CategoryFormComponent implements OnInit {
   ngOnInit(): void {
     this.form = new FormGroup({
       name: new FormControl(this.data.category?.name, [Validators.required]),
+      categoryType: new FormControl(this.data.category?.categoryType ?? 'regular', [Validators.required]),
       parentCategory: new FormControl(this.data.category?.parentCategory),
-    })
+    });
   }
 
   save() {
     if (this.form.valid) {
       this.dialogRef.close({
         name: this.form.value.name,
+        categoryType: this.form.value.categoryType,
         parentCategoryId: this.form.value.parentCategory?.categoryId,
       });
     }

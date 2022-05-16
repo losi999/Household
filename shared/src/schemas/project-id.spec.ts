@@ -1,11 +1,11 @@
 import { default as schema } from '@household/shared/schemas/project-id';
-import { validateSchemaAdditionalProperties, validateSchemaPattern, validateSchemaRequired } from '@household/shared/common/unit-testing';
-import { validatorService } from '@household/shared/dependencies/services/validator-service';
 import { Project } from '@household/shared/types/types';
 import { createProjectId } from '@household/shared/common/test-data-factory';
+import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 
 describe('Project id schema', () => {
   let data: Project.Id;
+  const tester = jsonSchemaTesterFactory<Project.Id>(schema);
 
   beforeEach(() => {
     data = {
@@ -14,30 +14,26 @@ describe('Project id schema', () => {
   });
 
   it('should accept valid body', () => {
-    const result = validatorService.validate(data, schema);
-    expect(result).toBeUndefined();
+    tester.validateSuccess(data);
   });
 
   describe('should deny', () => {
     describe('if data', () => {
       it('has additional property', () => {
         (data as any).extra = 'asd';
-        const result = validatorService.validate(data, schema);
-        validateSchemaAdditionalProperties(result, 'data');
+        tester.validateSchemaAdditionalProperties(data, 'data');
       });
     });
 
     describe('if data.projectId', () => {
       it('is missing', () => {
         data.projectId = undefined;
-        const result = validatorService.validate(data, schema);
-        validateSchemaRequired(result, 'projectId');
+        tester.validateSchemaRequired(data, 'projectId');
       });
 
       it('does not match pattern', () => {
         data.projectId = createProjectId();
-        const result = validatorService.validate(data, schema);
-        validateSchemaPattern(result, 'projectId');
+        tester.validateSchemaPattern(data, 'projectId');
       });
     });
   });

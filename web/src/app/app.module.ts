@@ -17,9 +17,7 @@ import { SharedModule } from 'src/app/shared/shared.module';
 registerLocaleData(localeHu);
 
 @NgModule({
-  declarations: [
-    AppComponent,
-  ],
+  declarations: [AppComponent],
   imports: [
     BrowserModule,
     SharedModule,
@@ -31,7 +29,10 @@ registerLocaleData(localeHu);
     AuthModule,
   ],
   providers: [
-    { provide: MAT_DATE_LOCALE, useValue: 'hu-HU' },
+    {
+      provide: MAT_DATE_LOCALE,
+      useValue: 'hu-HU', 
+    },
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,
@@ -43,6 +44,6 @@ registerLocaleData(localeHu);
       multi: true,
     },
   ],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
 export class AppModule { }

@@ -13,14 +13,12 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatListModule } from '@angular/material/list';
 import { ReactiveFormsModule } from '@angular/forms';
 
-
-
 @NgModule({
   declarations: [
     ProjectHomeComponent,
     ProjectListComponent,
     ProjectListItemComponent,
-    ProjectFormComponent
+    ProjectFormComponent,
   ],
   imports: [
     CommonModule,
@@ -32,6 +30,6 @@ import { ReactiveFormsModule } from '@angular/forms';
     MatListModule,
     MatBottomSheetModule,
     MatDialogModule,
-  ]
+  ],
 })
 export class ProjectModule { }

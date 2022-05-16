@@ -9,7 +9,7 @@ import { RecipientService } from 'src/app/recipient/recipient.service';
 @Component({
   selector: 'app-recipient-home',
   templateUrl: './recipient-home.component.html',
-  styleUrls: ['./recipient-home.component.scss']
+  styleUrls: ['./recipient-home.component.scss'],
 })
 export class RecipientHomeComponent implements OnInit, OnDestroy {
   recipients: Recipient.Response[];
@@ -29,7 +29,7 @@ export class RecipientHomeComponent implements OnInit, OnDestroy {
         this.recipientService.listRecipients().subscribe((recipients) => {
           this.recipients = recipients;
         });
-      }
+      },
     });
   }
 
@@ -41,7 +41,7 @@ export class RecipientHomeComponent implements OnInit, OnDestroy {
         if (values) {
           this.recipientService.createRecipient(values);
         }
-      }
-    })
+      },
+    });
   }
 }

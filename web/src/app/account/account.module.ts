@@ -41,6 +41,6 @@ import { MatDialogModule } from '@angular/material/dialog';
     AccountRoutingModule,
     SharedModule,
     MatDialogModule,
-  ]
+  ],
 })
 export class AccountModule { }

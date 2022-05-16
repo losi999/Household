@@ -3,7 +3,14 @@
   <div mat-dialog-content>
     <app-clearable-input formControlName="name" label="Név">
     </app-clearable-input>
-    <app-autocomplete-input [items]="data.categories" label="Szülő" displayNameProperty="fullName" formControlName="parentCategory">
+    <label id="example-radio-group-label">Kategória fajta</label>
+    <mat-radio-group formControlName="categoryType">
+      <mat-radio-button value="regular">Alap </mat-radio-button>
+      <mat-radio-button value="inventory">Leltározható </mat-radio-button>
+      <mat-radio-button value="invoice">Számla </mat-radio-button>
+    </mat-radio-group>
+    <app-autocomplete-input [items]="data.categories" label="Szülő" displayPropertyName="fullName"
+      filterPropertyName="name" formControlName="parentCategory">
     </app-autocomplete-input>
   </div>
   <div mat-dialog-actions>

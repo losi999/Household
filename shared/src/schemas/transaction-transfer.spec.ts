@@ -1,11 +1,11 @@
 import { default as schema } from '@household/shared/schemas/transaction-transfer';
-import { validateSchemaAdditionalProperties, validateSchemaFormat, validateSchemaMinLength, validateSchemaPattern, validateSchemaRequired, validateSchemaType } from '@household/shared/common/unit-testing';
-import { validatorService } from '@household/shared/dependencies/services/validator-service';
 import { Transaction } from '@household/shared/types/types';
 import { createAccountId } from '@household/shared/common/test-data-factory';
+import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 
 describe('Transfer transaction schema', () => {
   let data: Transaction.TransferRequest;
+  const tester = jsonSchemaTesterFactory<Transaction.TransferRequest>(schema);
 
   beforeEach(() => {
     data = {
@@ -19,15 +19,13 @@ describe('Transfer transaction schema', () => {
 
   describe('should accept', () => {
     it('complete body', () => {
-      const result = validatorService.validate(data, schema);
-      expect(result).toBeUndefined();
+      tester.validateSuccess(data);
     });
 
     describe('without optional property', () => {
       it('description', () => {
         delete data.description;
-        const result = validatorService.validate(data, schema);
-        expect(result).toBeUndefined();
+        tester.validateSuccess(data);
       });
     });
   });
@@ -36,83 +34,71 @@ describe('Transfer transaction schema', () => {
     describe('if data', () => {
       it('has additional property', () => {
         (data as any).extra = 'asd';
-        const result = validatorService.validate(data, schema);
-        validateSchemaAdditionalProperties(result, 'data');
+        tester.validateSchemaAdditionalProperties(data, 'data');
       });
     });
 
     describe('if data.amount', () => {
       it('is missing', () => {
         data.amount = undefined;
-        const result = validatorService.validate(data, schema);
-        validateSchemaRequired(result, 'amount');
+        tester.validateSchemaRequired(data, 'amount');
       });
 
       it('is not number', () => {
         (data.amount as any) = 'text';
-        const result = validatorService.validate(data, schema);
-        validateSchemaType(result, 'amount', 'number');
+        tester.validateSchemaType(data, 'amount', 'number');
       });
     });
 
     describe('if data.description', () => {
       it('is not string', () => {
         (data.description as any) = 2;
-        const result = validatorService.validate(data, schema);
-        validateSchemaType(result, 'description', 'string');
+        tester.validateSchemaType(data, 'description', 'string');
       });
 
       it('is too short', () => {
         data.description = '';
-        const result = validatorService.validate(data, schema);
-        validateSchemaMinLength(result, 'description', 1);
+        tester.validateSchemaMinLength(data, 'description', 1);
       });
     });
 
     describe('if data.issuedAt', () => {
       it('is missing', () => {
         data.issuedAt = undefined;
-        const result = validatorService.validate(data, schema);
-        validateSchemaRequired(result, 'issuedAt');
+        tester.validateSchemaRequired(data, 'issuedAt');
       });
       it('is not string', () => {
         (data.issuedAt as any) = 2;
-        const result = validatorService.validate(data, schema);
-        validateSchemaType(result, 'issuedAt', 'string');
+        tester.validateSchemaType(data, 'issuedAt', 'string');
       });
 
       it('is wrong format', () => {
         data.issuedAt = 'not-date-time';
-        const result = validatorService.validate(data, schema);
-        validateSchemaFormat(result, 'issuedAt', 'date-time');
+        tester.validateSchemaFormat(data, 'issuedAt', 'date-time');
       });
     });
 
     describe('if data.accountId', () => {
       it('is missing', () => {
         data.accountId = undefined;
-        const result = validatorService.validate(data, schema);
-        validateSchemaRequired(result, 'accountId');
+        tester.validateSchemaRequired(data, 'accountId');
       });
 
       it('does not match pattern', () => {
         data.accountId = createAccountId();
-        const result = validatorService.validate(data, schema);
-        validateSchemaPattern(result, 'accountId');
+        tester.validateSchemaPattern(data, 'accountId');
       });
     });
 
     describe('if data.transferAccountId', () => {
       it('is missing', () => {
         data.transferAccountId = undefined;
-        const result = validatorService.validate(data, schema);
-        validateSchemaRequired(result, 'transferAccountId');
+        tester.validateSchemaRequired(data, 'transferAccountId');
       });
 
       it('does not match pattern', () => {
         data.transferAccountId = createAccountId();
-        const result = validatorService.validate(data, schema);
-        validateSchemaPattern(result, 'transferAccountId');
+        tester.validateSchemaPattern(data, 'transferAccountId');
       });
     });
   });

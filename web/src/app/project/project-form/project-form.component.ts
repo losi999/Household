@@ -9,7 +9,7 @@ export type ProjectFormResult = Project.Request;
 @Component({
   selector: 'app-project-form',
   templateUrl: './project-form.component.html',
-  styleUrls: ['./project-form.component.scss']
+  styleUrls: ['./project-form.component.scss'],
 })
 export class ProjectFormComponent implements OnInit {
   form: FormGroup;
@@ -20,7 +20,7 @@ export class ProjectFormComponent implements OnInit {
     this.form = new FormGroup({
       name: new FormControl(this.project?.name, [Validators.required]),
       description: new FormControl(this.project?.description),
-    })
+    });
   }
 
   save() {

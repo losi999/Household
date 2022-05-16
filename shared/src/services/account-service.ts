@@ -15,13 +15,13 @@ export interface IAccountService {
 export const accountServiceFactory = (mongodbService: IMongodbService): IAccountService => {
   const aggregateAccountBalance = (aggregate: Aggregate<any[]>): Aggregate<any[]> => {
     return aggregate.lookup({
-      from: 'transactions()',
+      from: 'transactions',
       localField: '_id',
       foreignField: 'account',
       as: 'in',
     })
       .lookup({
-        from: 'transactions()',
+        from: 'transactions',
         localField: '_id',
         foreignField: 'transferAccount',
         as: 'out',

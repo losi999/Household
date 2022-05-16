@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 import { AccountService } from 'src/app/account/account.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AccountListResolver implements Resolve<Account.Response[]> {
   constructor(private accountService: AccountService) { }

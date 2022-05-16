@@ -28,9 +28,9 @@ module.exports = {
     'no-plusplus': 'error',
     'object-property-newline': 'error',
     'object-curly-newline': ['error', {
-        'ObjectExpression': {
-            'minProperties': 1
-        }
+      'ObjectExpression': {
+        'minProperties': 1
+      }
     }],
     'object-curly-spacing': ['error', 'always'],
     '@typescript-eslint/indent': ['error', 2],

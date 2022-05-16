@@ -8,9 +8,9 @@ describe('CatalogSubmenuComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ CatalogSubmenuComponent ]
+      declarations: [ CatalogSubmenuComponent ],
     })
-    .compileComponents();
+      .compileComponents();
   });
 
   beforeEach(() => {
