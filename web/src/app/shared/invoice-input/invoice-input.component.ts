@@ -32,10 +32,10 @@ export class InvoiceInputComponent implements OnInit, OnDestroy, ControlValueAcc
 
     this.subs = this.form.valueChanges.subscribe((value: Transaction.Invoice<Date>['invoice']) => {
       if (this.form.invalid) {
-        this.changed?.(null);
+        this.changed?.(undefined);
       } else {
         this.changed?.({
-          invoiceNumber: value.invoiceNumber,
+          invoiceNumber: value.invoiceNumber ?? undefined,
           billingStartDate: new Date(value.billingStartDate.getTime() - value.billingStartDate.getTimezoneOffset() * 60000).toISOString()
             .split('T')[0],
           billingEndDate: new Date(value.billingEndDate.getTime() - value.billingEndDate.getTimezoneOffset() * 60000).toISOString()
