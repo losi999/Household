@@ -8,7 +8,7 @@ const response = (statusCode: number, data?: any): AWSLambda.APIGatewayProxyResu
 };
 
 export const errorResponse = ({ statusCode, message }: HttpError): AWSLambda.APIGatewayProxyResult => {
-  return response(statusCode, {
+  return response(statusCode ?? 500, {
     message,
   });
 };

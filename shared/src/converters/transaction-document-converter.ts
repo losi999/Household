@@ -66,11 +66,11 @@ export const transactionDocumentConverterFactory = (
   };
 
   const toDocumentInvoice = (req: Transaction.Invoice<string>['invoice']): Transaction.Invoice<Date>['invoice'] => {
-    return {
+    return req ? {
       invoiceNumber: req.invoiceNumber,
       billingEndDate: new Date(req.billingEndDate),
       billingStartDate: new Date(req.billingStartDate),
-    };
+    } : undefined;
   };
 
   const toResponsePayment = (doc: Transaction.PaymentDocument): Transaction.PaymentResponse => {
