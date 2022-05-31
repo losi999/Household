@@ -1,5 +1,5 @@
 import { Component, forwardRef, OnDestroy, OnInit } from '@angular/core';
-import { ControlValueAccessor, FormControl, FormGroup, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { ControlValueAccessor, FormControl, FormGroup, NG_VALUE_ACCESSOR, Validators } from '@angular/forms';
 import { Transaction } from '@household/shared/types/types';
 import { Subscription } from 'rxjs';
 
@@ -26,16 +26,16 @@ export class InvoiceInputComponent implements OnInit, OnDestroy, ControlValueAcc
   ngOnInit(): void {
     this.form = new FormGroup({
       invoiceNumber: new FormControl(null),
-      billingStartDate: new FormControl(null),
-      billingEndDate: new FormControl(null),
+      billingStartDate: new FormControl(null, [Validators.required]),
+      billingEndDate: new FormControl(null, [Validators.required]),
     });
 
     this.subs = this.form.valueChanges.subscribe((value: Transaction.Invoice<Date>['invoice']) => {
       if (this.form.invalid) {
-        this.changed?.(null);
+        this.changed?.(undefined);
       } else {
         this.changed?.({
-          invoiceNumber: value.invoiceNumber,
+          invoiceNumber: value.invoiceNumber ?? undefined,
           billingStartDate: new Date(value.billingStartDate.getTime() - value.billingStartDate.getTimezoneOffset() * 60000).toISOString()
             .split('T')[0],
           billingEndDate: new Date(value.billingEndDate.getTime() - value.billingEndDate.getTimezoneOffset() * 60000).toISOString()
@@ -52,8 +52,8 @@ export class InvoiceInputComponent implements OnInit, OnDestroy, ControlValueAcc
     if (obj) {
       const startDate = new Date(obj.billingStartDate);
       const endDate = new Date(obj.billingEndDate);
-      this.form.setValue({
-        invoiceNumber: obj.invoiceNumber,
+      this.form.patchValue({
+        invoiceNumber: obj.invoiceNumber ?? null,
         billingStartDate: obj.billingStartDate ? new Date(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate()) : new Date(),
         billingEndDate: obj.billingEndDate ? new Date(endDate.getUTCFullYear(), endDate.getUTCMonth(), endDate.getUTCDate()) : new Date(),
       });

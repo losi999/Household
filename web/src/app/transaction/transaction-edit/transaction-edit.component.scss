@@ -2,6 +2,7 @@
   display: grid;
   grid-template-columns: 1fr auto;
   grid-template-areas: "details delete";
+  margin-bottom: 50px;
 
   &__details {
     grid-area: details;

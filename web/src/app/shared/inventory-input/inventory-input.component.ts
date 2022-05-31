@@ -29,15 +29,23 @@ export class InventoryInputComponent implements OnInit, OnDestroy, ControlValueA
     this.form = new FormGroup({
       brand: new FormControl(null),
       measurement: new FormControl(null, Validators.min(0)),
-      quantity: new FormControl(null, Validators.min(0)),
+      quantity: new FormControl(null, [
+        Validators.min(0),
+        Validators.required,
+      ]),
       unitOfMeasurement: new FormControl(null),
     });
 
     this.subs = this.form.valueChanges.subscribe((value: Transaction.Inventory['inventory']) => {
       if (this.form.invalid) {
-        this.changed?.(null);
+        this.changed?.(undefined);
       } else {
-        this.changed?.(value);
+        this.changed?.({
+          brand: value.brand ?? undefined,
+          unitOfMeasurement: value.unitOfMeasurement ?? undefined,
+          measurement: value.measurement ?? undefined,
+          quantity: value.quantity ?? undefined,
+        });
       }
     });
   }
@@ -47,7 +55,7 @@ export class InventoryInputComponent implements OnInit, OnDestroy, ControlValueA
   }
   writeValue(obj: Transaction.Inventory['inventory']): void {
     if (obj) {
-      this.form.setValue(obj);
+      this.form.patchValue(obj);
     }
   }
 

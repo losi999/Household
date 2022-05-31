@@ -46,8 +46,8 @@ export class TransactionEditComponent implements OnInit {
   get project(): Project.Response { return this.form.value.project; }
   get recipient(): Recipient.Response { return this.form.value.recipient; }
   get category(): Category.Response { return this.form.value.category; }
-  get invoice(): Transaction.Invoice<string>['invoice'] { return this.form.value.invoice; }
-  get inventory(): Transaction.Inventory['inventory'] { return this.form.value.inventory; }
+  get invoice(): Transaction.Invoice<string>['invoice'] { return this.form.value.invoice ?? undefined; }
+  get inventory(): Transaction.Inventory['inventory'] { return this.form.value.inventory ?? undefined; }
 
   get splits(): Transaction.SplitResponseItem[] { return this.form.value.splits; }
 
@@ -67,7 +67,7 @@ export class TransactionEditComponent implements OnInit {
   private createSplitFormGroup(split?: Transaction.SplitResponseItem): FormGroup {
     return new FormGroup({
       category: new FormControl(split?.category),
-      amount: new FormControl(split?.amount),
+      amount: new FormControl(split?.amount ?? this.splitsDiff),
       description: new FormControl(split?.description),
       project: new FormControl(split?.project),
       inventory: new FormControl(isInventoryCategory(split?.category) ? split.inventory : null),
@@ -96,7 +96,7 @@ export class TransactionEditComponent implements OnInit {
       project: new FormControl(isPaymentTransaction(this.transaction) ? this.transaction.project : null),
       recipient: new FormControl(!isTransferTransaction(this.transaction) ? this.transaction?.recipient : null),
       category: new FormControl(isPaymentTransaction(this.transaction) ? this.transaction.category : null),
-      inventory: new FormControl(isPaymentTransaction(this.transaction) && isInventoryCategory(this.transaction?.category) ? this.transaction.inventory : null),
+      inventory: new FormControl(isPaymentTransaction(this.transaction) && isInventoryCategory(this.transaction?.category) ? this.transaction.inventory : undefined),
       invoice: new FormControl(isPaymentTransaction(this.transaction) && isInvoiceCategory(this.transaction?.category) ? this.transaction.invoice : null),
       splits: new FormArray(isSplitTransaction(this.transaction) ? this.transaction.splits.map(s => this.createSplitFormGroup(s)) : []),
     });
@@ -187,8 +187,8 @@ export class TransactionEditComponent implements OnInit {
             categoryId: s.category?.categoryId,
             description: s.description ?? undefined,
             projectId: s.project?.projectId,
-            inventory: isInventoryCategory(s.category) ? s.inventory : undefined,
-            invoice: isInvoiceCategory(s.category) ? s.invoice : undefined,
+            inventory: isInventoryCategory(s.category) && s.inventory ? s.inventory : undefined,
+            invoice: isInvoiceCategory(s.category) && s.invoice ? s.invoice : undefined,
           })),
         };
 
