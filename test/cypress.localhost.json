@@ -1,0 +1,11 @@
+{
+    "integrationFolder": "src/api",
+    "testFiles": "**/*.spec.ts",
+    "supportFile": "src/support",
+    "baseUrl": "http://localhost:5050",
+    "pluginsFile": "src/plugins",
+    "viewportWidth": 0,
+    "viewportHeight": 0,
+    "defaultCommandTimeout": 10000,
+    "videoCompression": false
+}
