@@ -36,6 +36,16 @@ describe('POST project/v1/projects', () => {
             .expectBadRequestResponse()
             .expectWrongPropertyType('name', 'string', 'body');
         });
+
+        it('is too short', () => {
+          cy.authenticate('admin1')
+            .requestCreateProject({
+              ...request,
+              name: '',
+            })
+            .expectBadRequestResponse()
+            .expectTooShortProperty('name', 1, 'body');
+        });
       });
 
       describe('if description', () => {
@@ -47,6 +57,16 @@ describe('POST project/v1/projects', () => {
             })
             .expectBadRequestResponse()
             .expectWrongPropertyType('description', 'string', 'body');
+        });
+
+        it('is too short', () => {
+          cy.authenticate('admin1')
+            .requestCreateProject({
+              ...request,
+              description: '',
+            })
+            .expectBadRequestResponse()
+            .expectTooShortProperty('description', 1, 'body');
         });
       });
     });

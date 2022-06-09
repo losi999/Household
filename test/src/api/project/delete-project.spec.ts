@@ -21,7 +21,7 @@ describe('DELETE /project/v1/projects/{projectId}', () => {
     describe('with test data created', () => {
       let projectDocument: Project.Document;
       beforeEach(() => {
-        cy.saveProjectDocument(projectDocumentConverter.create(project, Cypress.env('EXPIRES_IN'))).then((document: Project.Document) => {
+        cy.projectTask('saveProject', [projectDocumentConverter.create(project, Cypress.env('EXPIRES_IN'))]).then((document: Project.Document) => {
           projectDocument = document;
         });
       });

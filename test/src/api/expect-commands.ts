@@ -38,7 +38,7 @@ const expectNotFoundResponse = (response: Cypress.Response<any>) => {
 };
 
 const expectMessage = (body: any, message: string) => {
-  expect(body).to.equal(message);
+  expect(body.message).to.equal(message);
 };
 
 const expectValidResponseSchema = (body: object, schema: JSONSchema7) => {
@@ -65,8 +65,12 @@ const expectWrongPropertyPattern = (body: any, propertyName: string, requestPart
   expect(body[requestPart]).to.contain(propertyName).to.contain('pattern');
 };
 
+const expectWrongEnumValue = (body: any, propertyName: string, requestPart: string) => {
+  expect(body[requestPart]).to.contain(propertyName).to.contain('allowed values');
+};
+
 const expectTooShortProperty = (body: any, propertyName: string, minLength: number, requestPart: string) => {
-  expect(body[requestPart]).to.contain(propertyName).to.contain('shorter').to.contain(minLength);
+  expect(body[requestPart]).to.contain(propertyName).to.contain('fewer').to.contain(minLength);
 };
 
 const expectTooLongProperty = (body: any, propertyName: string, maxLength: number, requestPart: string) => {
@@ -91,9 +95,6 @@ export const setExpectCommands = () => {
   Cypress.Commands.add<any>('expectNoContentResponse', {
     prevSubject: true,
   }, expectNoContentResponse);
-  // Cypress.Commands.addAll({
-  //   expectOkResponse,
-  // });
   Cypress.Commands.add<any>('expectBadRequestResponse', {
     prevSubject: true,
   }, expectBadRequestResponse);
@@ -122,6 +123,9 @@ export const setExpectCommands = () => {
   Cypress.Commands.add<any>('expectWrongPropertyPattern', {
     prevSubject: true,
   }, expectWrongPropertyPattern);
+  Cypress.Commands.add<any>('expectWrongEnumValue', {
+    prevSubject: true,
+  }, expectWrongEnumValue);
   Cypress.Commands.add<any>('expectTooShortProperty', {
     prevSubject: true,
   }, expectTooShortProperty);
@@ -143,8 +147,8 @@ declare global {
   namespace Cypress {
     interface ChainableResponse extends Chainable {
       expectOkResponse: CommandFunctionWithPreviousSubject<typeof expectOkResponse>;
-      expectNoContentResponse: CommandFunctionWithPreviousSubject<typeof expectNoContentResponse>;
       expectCreatedResponse: CommandFunctionWithPreviousSubject<typeof expectCreatedResponse>;
+      expectNoContentResponse: CommandFunctionWithPreviousSubject<typeof expectNoContentResponse>;
       expectBadRequestResponse: CommandFunctionWithPreviousSubject<typeof expectBadRequestResponse>;
       expectUnauthorizedResponse: CommandFunctionWithPreviousSubject<typeof expectUnauthorizedResponse>;
       expectForbiddenResponse: CommandFunctionWithPreviousSubject<typeof expectForbiddenResponse>;
@@ -157,6 +161,7 @@ declare global {
       expectWrongPropertyType: CommandFunctionWithPreviousSubject<typeof expectWrongPropertyType>;
       expectWrongPropertyFormat: CommandFunctionWithPreviousSubject<typeof expectWrongPropertyFormat>;
       expectWrongPropertyPattern: CommandFunctionWithPreviousSubject<typeof expectWrongPropertyPattern>;
+      expectWrongEnumValue: CommandFunctionWithPreviousSubject<typeof expectWrongEnumValue>;
       expectTooShortProperty: CommandFunctionWithPreviousSubject<typeof expectTooShortProperty>;
       expectTooLongProperty: CommandFunctionWithPreviousSubject<typeof expectTooLongProperty>;
       expectTooSmallNumberProperty: CommandFunctionWithPreviousSubject<typeof expectTooSmallNumberProperty>;

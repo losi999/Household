@@ -1,12 +1,17 @@
 import { Project } from '@household/shared/types/types';
 import { headerExpiresIn } from '@household/shared/constants';
 import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/test/api/types';
+import { IProjectService } from '@household/shared/services/project-service';
+
+const projectTask = <T extends keyof IProjectService>(name: T, params: Parameters<IProjectService[T]>) => {
+  return cy.task(name, ...params);
+};
 
 const requestCreateProject = (idToken: string, project: Project.Request) => {
   return cy.request({
     body: project,
     method: 'POST',
-    url: 'project/v1/projects',
+    url: '/project/v1/projects',
     headers: {
       Authorization: idToken,
       [headerExpiresIn]: Cypress.env('EXPIRES_IN'),
@@ -61,17 +66,11 @@ const requestGetProjectList = (idToken: string) => {
   }) as Cypress.ChainableResponse;
 };
 
-const saveProjectDocument = (document: Project.Document) => {
-  return cy.log('Save project document', document).task('saveProject', document, {
-    log: false,
-  });
-};
-
-const validateProjectDocument = (response: Project.Response, request: Project.Request, projectId?: string) => {
-  const id = response?.projectId ?? projectId as Project.IdType;
+const validateProjectDocument = (response: Project.Id, request: Project.Request) => {
+  const id = response?.projectId;
 
   cy.log('Get project document', id)
-    .task('getProjectById', id)
+    .projectTask('getProjectById', [id])
     .should((document: Project.Document) => {
       expect(document._id.toString()).to.equal(id);
       expect(document.name).to.equal(request.name);
@@ -87,50 +86,46 @@ const validateProjectResponse = (response: Project.Response, document: Project.D
 
 const validateProjectDeleted = (projectId: Project.IdType) => {
   cy.log('Get project document', projectId)
-    .task('getProjectById', projectId)
+    .projectTask('getProjectById', [projectId])
     .should((document) => {
       expect(document).to.be.null;
     });
 };
 
 export const setProjectCommands = () => {
-  Cypress.Commands.add<any>('requestCreateProject', {
+  Cypress.Commands.addAll<any, string>({
     prevSubject: true,
-  }, requestCreateProject);
-  Cypress.Commands.add<any>('requestUpdateProject', {
-    prevSubject: true,
-  }, requestUpdateProject);
-  Cypress.Commands.add<any>('requestDeleteProject', {
-    prevSubject: true,
-  }, requestDeleteProject);
-  Cypress.Commands.add<any>('requestGetProject', {
-    prevSubject: true,
-  }, requestGetProject);
-  Cypress.Commands.add<any>('requestGetProjectList', {
-    prevSubject: true,
-  }, requestGetProjectList);
+  }, {
+    requestCreateProject,
+    requestUpdateProject,
+    requestDeleteProject,
+    requestGetProject,
+    requestGetProjectList,
+  });
 
-  Cypress.Commands.add<any>('saveProjectDocument', saveProjectDocument);
+  Cypress.Commands.addAll({
+    prevSubject: true,
+  }, {
+    validateProjectDocument,
+    validateProjectResponse,
+  });
 
-  Cypress.Commands.add<any>('validateProjectDocument', {
-    prevSubject: true,
-  }, validateProjectDocument);
-  Cypress.Commands.add<any>('validateProjectResponse', {
-    prevSubject: true,
-  }, validateProjectResponse);
-  Cypress.Commands.add<any>('validateProjectDeleted', validateProjectDeleted);
+  Cypress.Commands.addAll({
+    projectTask,
+    validateProjectDeleted,
+  });
 };
 
 declare global {
   namespace Cypress {
     interface Chainable {
-      saveProjectDocument: CommandFunction<typeof saveProjectDocument>;
       validateProjectDeleted: CommandFunction<typeof validateProjectDeleted>;
+      projectTask: CommandFunction<typeof projectTask>
     }
 
     interface ChainableRequest extends Chainable {
-      requestGetProject: CommandFunctionWithPreviousSubject<typeof requestGetProject>;
       requestCreateProject: CommandFunctionWithPreviousSubject<typeof requestCreateProject>;
+      requestGetProject: CommandFunctionWithPreviousSubject<typeof requestGetProject>;
       requestUpdateProject: CommandFunctionWithPreviousSubject<typeof requestUpdateProject>;
       requestDeleteProject: CommandFunctionWithPreviousSubject<typeof requestDeleteProject>;
       requestGetProjectList: CommandFunctionWithPreviousSubject<typeof requestGetProjectList>;

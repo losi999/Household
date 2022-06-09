@@ -1,17 +1,14 @@
 import 'regenerator-runtime/runtime';
 import { setAuthCommands } from '../api/auth/auth-commands';
-// import { setMatchCommands } from '../api/match/match-commands';
 import { setProjectCommands } from '../api/project/project-commands';
-// import { setTournamentCommands } from '../api/tournament/tournament-commands';
-// import { setCommonCommands } from '../api/common-commands';
 import { setExpectCommands } from '../api/expect-commands';
-// import { setBettingCommands } from '../api/betting/betting-commands';
+import { setRecipientCommands } from '@household/test/api/recipient/recipient-commands';
+import { setAccountCommands } from '@household/test/api/account/account-commands';
+import { setCategoryCommands } from '@household/test/api/category/category-commands';
 
 setProjectCommands();
+setRecipientCommands();
+setAccountCommands();
+setCategoryCommands();
 setAuthCommands();
-// setMatchCommands();
-// setTeamCommands();
-// setTournamentCommands();
-// setCommonCommands();
 setExpectCommands();
-// setBettingCommands();

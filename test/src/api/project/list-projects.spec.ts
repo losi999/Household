@@ -31,8 +31,8 @@ describe('GET /project/v1/projects', () => {
 
   describe('called as an admin', () => {
     it('should get a list of projects', () => {
-      cy.saveProjectDocument(projectDocument1)
-        .saveProjectDocument(projectDocument2)
+      cy.projectTask('saveProject', [projectDocument1])
+        .projectTask('saveProject', [projectDocument2])
         .authenticate('admin1')
         .requestGetProjectList()
         .expectOkResponse()

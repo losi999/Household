@@ -22,13 +22,14 @@ describe('GET /project/v1/projects/{projectId}', () => {
       let projectDocument: Project.Document;
 
       beforeEach(() => {
-        cy.saveProjectDocument(projectDocumentConverter.create(project, Cypress.env('EXPIRES_IN'))).then((document: Project.Document) => {
+        cy.projectTask('saveProject', [projectDocumentConverter.create(project, Cypress.env('EXPIRES_IN'))]).then((document: Project.Document) => {
           projectDocument = document;
         });
       });
 
       it('should get project by id', () => {
-        cy.authenticate('admin1').requestGetProject(projectDocument._id.toString() as Project.IdType)
+        cy.authenticate('admin1')
+          .requestGetProject(projectDocument._id.toString() as Project.IdType)
           .expectOkResponse()
           .expectValidResponseSchema(schema)
           .validateProjectResponse(projectDocument);

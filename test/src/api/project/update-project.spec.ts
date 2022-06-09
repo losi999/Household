@@ -26,7 +26,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
       let projectDocument: Project.Document;
 
       beforeEach(() => {
-        cy.saveProjectDocument(projectDocumentConverter.create(project, Cypress.env('EXPIRES_IN'))).then((document: Project.Document) => {
+        cy.projectTask('saveProject', [projectDocumentConverter.create(project, Cypress.env('EXPIRES_IN'))]).then((document: Project.Document) => {
           projectDocument = document;
         });
       });
@@ -35,7 +35,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
           .authenticate('admin1')
           .requestUpdateProject(projectDocument._id.toString() as Project.IdType, projectToUpdate)
           .expectCreatedResponse()
-          .validateProjectDocument(projectToUpdate, projectDocument._id.toString() as Project.IdType);
+          .validateProjectDocument(projectToUpdate);
       });
     });
     describe('should return error', () => {
@@ -59,17 +59,37 @@ describe('PUT /project/v1/projects/{projectId}', () => {
             .expectBadRequestResponse()
             .expectWrongPropertyType('name', 'string', 'body');
         });
+
+        it('is too short', () => {
+          cy.authenticate('admin1')
+            .requestUpdateProject(new Types.ObjectId().toString() as Project.IdType, {
+              ...project,
+              name: '',
+            })
+            .expectBadRequestResponse()
+            .expectTooShortProperty('name', 1, 'body');
+        });
       });
 
       describe('if description', () => {
         it('is not string', () => {
           cy.authenticate('admin1')
-            .requestCreateProject({
+            .requestUpdateProject(new Types.ObjectId().toString() as Project.IdType, {
               ...project,
               description: 1 as any,
             })
             .expectBadRequestResponse()
             .expectWrongPropertyType('description', 'string', 'body');
+        });
+
+        it('is too short', () => {
+          cy.authenticate('admin1')
+            .requestUpdateProject(new Types.ObjectId().toString() as Project.IdType, {
+              ...project,
+              description: '',
+            })
+            .expectBadRequestResponse()
+            .expectTooShortProperty('description', 1, 'body');
         });
       });
 

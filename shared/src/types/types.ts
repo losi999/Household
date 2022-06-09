@@ -158,8 +158,9 @@ export namespace Category {
   & Remove<Internal.UpdatedAt>
   & Remove<Internal.Id>
   & Remove<Internal.ExpiresAt>
+  & Remove<ParentCategoryId>
   & {
-    parentCategory: Category.Response;
+    parentCategory: Category.Response & Remove<ParentCategory>;
   };
 
   export type Request = Base

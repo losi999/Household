@@ -23,8 +23,10 @@ const authenticate = (user: string) => {
 };
 
 export const setAuthCommands = () => {
-  Cypress.Commands.add('authenticate', authenticate);
-  Cypress.Commands.add('unauthenticate', unauthenticate);
+  Cypress.Commands.addAll({
+    authenticate,
+    unauthenticate,
+  });
 };
 
 declare global {
