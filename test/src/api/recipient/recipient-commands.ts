@@ -72,21 +72,21 @@ const validateRecipientDocument = (response: Recipient.Id, request: Recipient.Re
   cy.log('Get recipient document', id)
     .recipientTask('getRecipientById', [id])
     .should((document: Recipient.Document) => {
-      expect(document._id.toString()).to.equal(id);
-      expect(document.name).to.equal(request.name);
+      expect(document._id.toString(), '_id').to.equal(id);
+      expect(document.name, 'name').to.equal(request.name);
     });
 };
 
 const validateRecipientResponse = (response: Recipient.Response, document: Recipient.Document) => {
-  expect(response.recipientId).to.equal(document._id.toString());
-  expect(response.name).to.equal(document.name);
+  expect(response.recipientId, 'recipientId').to.equal(document._id.toString());
+  expect(response.name, 'name').to.equal(document.name);
 };
 
 const validateRecipientDeleted = (recipientId: Recipient.IdType) => {
   cy.log('Get recipient document', recipientId)
     .recipientTask('getRecipientById', [recipientId])
     .should((document) => {
-      expect(document).to.be.null;
+      expect(document, 'document').to.be.null;
     });
 };
 

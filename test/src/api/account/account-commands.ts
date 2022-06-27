@@ -72,21 +72,30 @@ const validateAccountDocument = (response: Account.Id, request: Account.Request)
   cy.log('Get account document', id)
     .accountTask('getAccountById', [id])
     .should((document: Account.Document) => {
-      expect(document._id.toString()).to.equal(id);
-      expect(document.name).to.equal(request.name);
+      expect(document._id.toString(), '_id').to.equal(id);
+      expect(document.name, 'name').to.equal(request.name);
+      expect(document.accountType, 'accountType').to.equal(request.accountType);
+      expect(document.currency, 'currency').to.equal(request.currency);
+      expect(document.balance, 'balance').to.equal(0);
+      expect(document.isOpen, 'isOpen').to.equal(true);
+
     });
 };
 
 const validateAccountResponse = (response: Account.Response, document: Account.Document) => {
-  expect(response.accountId).to.equal(document._id.toString());
-  expect(response.name).to.equal(document.name);
+  expect(response.accountId, 'accountId').to.equal(document._id.toString());
+  expect(response.name, 'name').to.equal(document.name);
+  expect(response.accountType, 'accountType').to.equal(document.accountType);
+  expect(response.currency, 'currency').to.equal(document.currency);
+  expect(response.balance, 'balance').to.equal(document.balance);
+  expect(response.isOpen, 'isOpen').to.equal(document.isOpen);
 };
 
 const validateAccountDeleted = (accountId: Account.IdType) => {
   cy.log('Get account document', accountId)
     .accountTask('getAccountById', [accountId])
     .should((document) => {
-      expect(document).to.be.null;
+      expect(document, 'document').to.be.null;
     });
 };
 

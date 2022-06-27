@@ -21,15 +21,16 @@ describe('GET /project/v1/projects/{projectId}', () => {
     describe('with test data created', () => {
       let projectDocument: Project.Document;
 
-      beforeEach(() => {
-        cy.projectTask('saveProject', [projectDocumentConverter.create(project, Cypress.env('EXPIRES_IN'))]).then((document: Project.Document) => {
-          projectDocument = document;
-        });
-      });
+      // beforeEach(() => {
+      //   cy.projectTask('saveProject', [projectDocumentConverter.create(project, Cypress.env('EXPIRES_IN'))]).then((document: Project.Document) => {
+      //     projectDocument = document;
+      //   });
+      // });
 
-      it('should get project by id', () => {
-        cy.authenticate('admin1')
-          .requestGetProject(projectDocument._id.toString() as Project.IdType)
+      it.only('should get project by id', () => {
+        cy.saveProjectDocument(projectDocumentConverter.create(project, Cypress.env('EXPIRES_IN')), 'project')
+          .authenticate('admin1')
+          .requestGetProjectByAlias('project')
           .expectOkResponse()
           .expectValidResponseSchema(schema)
           .validateProjectResponse(projectDocument);

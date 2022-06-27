@@ -55,6 +55,19 @@ const requestGetProject = (idToken: string, projectId: Project.IdType) => {
   }) as Cypress.ChainableResponse;
 };
 
+const requestGetProjectByAlias = (idToken: string, alias: string) => {
+  return cy.get(`@${alias}`).then((doc: any) => {
+    return cy.request({
+      method: 'GET',
+      url: `/project/v1/projects/${doc._id.toString()}`,
+      headers: {
+        Authorization: idToken,
+      },
+      failOnStatusCode: false,
+    });
+  }) as Cypress.ChainableResponse;
+};
+
 const requestGetProjectList = (idToken: string) => {
   return cy.request({
     method: 'GET',
@@ -72,24 +85,28 @@ const validateProjectDocument = (response: Project.Id, request: Project.Request)
   cy.log('Get project document', id)
     .projectTask('getProjectById', [id])
     .should((document: Project.Document) => {
-      expect(document._id.toString()).to.equal(id);
-      expect(document.name).to.equal(request.name);
-      expect(document.description).to.equal(request.description);
+      expect(document._id.toString(), 'id').to.equal(id);
+      expect(document.name, 'name').to.equal(request.name);
+      expect(document.description, 'description').to.equal(request.description);
     });
 };
 
 const validateProjectResponse = (response: Project.Response, document: Project.Document) => {
-  expect(response.projectId).to.equal(document._id.toString());
-  expect(response.name).to.equal(document.name);
-  expect(response.description).to.equal(document.description);
+  expect(response.projectId, 'projectId').to.equal(document._id.toString());
+  expect(response.name, 'name').to.equal(document.name);
+  expect(response.description, 'description').to.equal(document.description);
 };
 
 const validateProjectDeleted = (projectId: Project.IdType) => {
   cy.log('Get project document', projectId)
     .projectTask('getProjectById', [projectId])
     .should((document) => {
-      expect(document).to.be.null;
+      expect(document, 'document').to.be.null;
     });
+};
+
+const saveProjectDocument = (document: Project.Document, alias: string) => {
+  cy.projectTask('saveProject', [document]).as(alias);
 };
 
 export const setProjectCommands = () => {
@@ -100,6 +117,7 @@ export const setProjectCommands = () => {
     requestUpdateProject,
     requestDeleteProject,
     requestGetProject,
+    requestGetProjectByAlias,
     requestGetProjectList,
   });
 
@@ -113,6 +131,7 @@ export const setProjectCommands = () => {
   Cypress.Commands.addAll({
     projectTask,
     validateProjectDeleted,
+    saveProjectDocument,
   });
 };
 
@@ -120,12 +139,14 @@ declare global {
   namespace Cypress {
     interface Chainable {
       validateProjectDeleted: CommandFunction<typeof validateProjectDeleted>;
+      saveProjectDocument: CommandFunction<typeof saveProjectDocument>;
       projectTask: CommandFunction<typeof projectTask>
     }
 
     interface ChainableRequest extends Chainable {
       requestCreateProject: CommandFunctionWithPreviousSubject<typeof requestCreateProject>;
       requestGetProject: CommandFunctionWithPreviousSubject<typeof requestGetProject>;
+      requestGetProjectByAlias: CommandFunctionWithPreviousSubject<typeof requestGetProjectByAlias>;
       requestUpdateProject: CommandFunctionWithPreviousSubject<typeof requestUpdateProject>;
       requestDeleteProject: CommandFunctionWithPreviousSubject<typeof requestDeleteProject>;
       requestGetProjectList: CommandFunctionWithPreviousSubject<typeof requestGetProjectList>;
