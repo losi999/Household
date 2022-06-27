@@ -36,7 +36,11 @@ export class ClearableInputComponent implements OnInit, OnDestroy, ControlValueA
     });
 
     this.subs = this.form.controls.value.valueChanges.subscribe((value) => {
-      this.changed?.(value);
+      if(value) {
+        this.changed?.(value);
+      } else {
+        this.changed?.(undefined);
+      }
     });
   }
 
