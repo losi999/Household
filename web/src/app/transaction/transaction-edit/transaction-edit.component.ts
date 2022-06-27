@@ -6,6 +6,7 @@ import { Account, Category, Project, Recipient, Transaction } from '@household/s
 import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/confirmation-dialog.component';
 import { TransactionService } from 'src/app/transaction/transaction.service';
 import { isInventoryCategory, isInvoiceCategory, isPaymentTransaction, isSplitTransaction, isTransferTransaction } from '@household/shared/common/type-guards';
+import { ProgressService } from 'src/app/shared/progress.service';
 
 @Component({
   selector: 'app-transaction-edit',
@@ -54,6 +55,7 @@ export class TransactionEditComponent implements OnInit {
   constructor(
     private activatedRoute: ActivatedRoute,
     private transactionService: TransactionService,
+    private progressService: ProgressService,
     private router: Router,
     public dialog: MatDialog
   ) { }
@@ -148,6 +150,8 @@ export class TransactionEditComponent implements OnInit {
 
     const error = (error) => {
       console.error(error);
+      alert(JSON.stringify(error, null, 2));
+      this.progressService.processFinished();
     };
 
     if (this.form.invalid || this.amount === 0) {
