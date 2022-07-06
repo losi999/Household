@@ -6,16 +6,18 @@ export default <E, R>(params: {
   return async (event, context, callback) => {
     context.callbackWaitsForEmptyEventLoop = false;
     let modifiedEvent: E;
-
+    let result: R;
     try {
       modifiedEvent = params.before.reduce((accumulator, currentValue) => {
         return currentValue(accumulator);
       }, event);
     } catch (error) {
-      return error;
+      result = error as R;
     }
 
-    const result = await params.handler(modifiedEvent, context, callback);
+    if (!result) {
+      result = (await params.handler(modifiedEvent, context, callback)) as R;
+    }
 
     if (result) {
       const modifiedResult = params.after.reduce((accumulator, currentValue) => {
