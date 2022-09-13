@@ -9,8 +9,8 @@ describe('Get transaction schema', () => {
 
   beforeEach(() => {
     data = {
-      accountId: createAccountId('62378f3a6add840bbd4c630c'),
-      transactionId: createTransactionId('62378f3a6add840bbd4c630c'),
+      accountId: createAccountId(),
+      transactionId: createTransactionId(),
     };
   });
 
@@ -33,7 +33,7 @@ describe('Get transaction schema', () => {
       });
 
       it('does not match pattern', () => {
-        data.accountId = createAccountId();
+        data.accountId = createAccountId('not-valid');
         tester.validateSchemaPattern(data, 'accountId');
       });
     });
@@ -45,7 +45,7 @@ describe('Get transaction schema', () => {
       });
 
       it('does not match pattern', () => {
-        data.transactionId = createTransactionId();
+        data.transactionId = createTransactionId('not-valid');
         tester.validateSchemaPattern(data, 'transactionId');
       });
     });

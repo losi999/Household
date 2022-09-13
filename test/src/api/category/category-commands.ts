@@ -76,7 +76,10 @@ const validateCategoryDocument = (response: Category.Id, request: Category.Reque
       expect(document.name, 'name').to.equal(request.name);
       expect(document.categoryType, 'categoryType').to.equal(request.categoryType);
       expect(document.fullName, 'fullName').to.equal(parentCategory ? `${parentCategory.fullName}:${request.name}` : request.name);
-      expect(document.parentCategory, 'parentCategory').to.equal(parentCategory?._id.toString());
+      expect(document.parentCategory?.name, 'parentCategory.name').to.equal(parentCategory?.name);
+      expect(document.parentCategory?.fullName, 'parentCategory.fullName').to.equal(parentCategory?.fullName);
+      expect(document.parentCategory?.categoryType, 'parentCategory.categoryType').to.equal(parentCategory?.categoryType);
+      expect(document.parentCategory?._id.toString(), 'parentCategory.categoryId').to.equal(parentCategory?._id.toString());
     });
 };
 
@@ -99,8 +102,12 @@ const validateCategoryDeleted = (categoryId: Category.IdType) => {
     });
 };
 
+const saveCategoryDocument = (document: Category.Document) => {
+  cy.categoryTask('saveCategory', [document]);
+};
+
 export const setCategoryCommands = () => {
-  Cypress.Commands.addAll<any, string>({
+  Cypress.Commands.addAll<any>({
     prevSubject: true,
   }, {
     requestCreateCategory,
@@ -108,17 +115,13 @@ export const setCategoryCommands = () => {
     requestDeleteCategory,
     requestGetCategory,
     requestGetCategoryList,
-  });
-
-  Cypress.Commands.addAll({
-    prevSubject: true,
-  }, {
     validateCategoryDocument,
     validateCategoryResponse,
   });
 
   Cypress.Commands.addAll({
     categoryTask,
+    saveCategoryDocument,
     validateCategoryDeleted,
   });
 };
@@ -127,6 +130,7 @@ declare global {
   namespace Cypress {
     interface Chainable {
       validateCategoryDeleted: CommandFunction<typeof validateCategoryDeleted>;
+      saveCategoryDocument: CommandFunction<typeof saveCategoryDocument>;
       categoryTask: CommandFunction<typeof categoryTask>
     }
 

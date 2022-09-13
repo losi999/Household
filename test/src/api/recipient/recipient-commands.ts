@@ -90,8 +90,12 @@ const validateRecipientDeleted = (recipientId: Recipient.IdType) => {
     });
 };
 
+const saveRecipientDocument = (document: Recipient.Document) => {
+  cy.recipientTask('saveRecipient', [document]);
+};
+
 export const setRecipientCommands = () => {
-  Cypress.Commands.addAll<any, string>({
+  Cypress.Commands.addAll<any>({
     prevSubject: true,
   }, {
     requestCreateRecipient,
@@ -99,17 +103,13 @@ export const setRecipientCommands = () => {
     requestDeleteRecipient,
     requestGetRecipient,
     requestGetRecipientList,
-  });
-
-  Cypress.Commands.addAll({
-    prevSubject: true,
-  }, {
     validateRecipientDocument,
     validateRecipientResponse,
   });
 
   Cypress.Commands.addAll({
     recipientTask,
+    saveRecipientDocument,
     validateRecipientDeleted,
   });
 };
@@ -118,6 +118,7 @@ declare global {
   namespace Cypress {
     interface Chainable {
       validateRecipientDeleted: CommandFunction<typeof validateRecipientDeleted>;
+      saveRecipientDocument: CommandFunction<typeof saveRecipientDocument>;
       recipientTask: CommandFunction<typeof recipientTask>
     }
 

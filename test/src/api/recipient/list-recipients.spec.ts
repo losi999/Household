@@ -29,8 +29,8 @@ describe('GET /recipient/v1/recipients', () => {
 
   describe('called as an admin', () => {
     it('should get a list of recipients', () => {
-      cy.recipientTask('saveRecipient', [recipientDocument1])
-        .recipientTask('saveRecipient', [recipientDocument2])
+      cy.saveRecipientDocument(recipientDocument1)
+        .saveRecipientDocument(recipientDocument2)
         .authenticate('admin1')
         .requestGetRecipientList()
         .expectOkResponse()

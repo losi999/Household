@@ -2,6 +2,7 @@ import { accountDocumentConverter } from '@household/shared/dependencies/convert
 import { default as schema } from '@household/test/api/schemas/account-response';
 import { Account } from '@household/shared/types/types';
 import { Types } from 'mongoose';
+import { createAccountId } from '@household/shared/common/test-data-factory';
 
 describe('GET /account/v1/accounts/{accountId}', () => {
   const account: Account.Request = {
@@ -10,44 +11,42 @@ describe('GET /account/v1/accounts/{accountId}', () => {
     currency: 'Ft',
   };
 
+  let accountDocument: Account.Document;
+
+  beforeEach(() => {
+    accountDocument = accountDocumentConverter.create(account, Cypress.env('EXPIRES_IN'));
+    accountDocument._id = new Types.ObjectId();
+  });
+
   describe('called as anonymous', () => {
     it.skip('should return unauthorized', () => {
       cy.unauthenticate()
-        .requestGetAccount(new Types.ObjectId().toString() as Account.IdType)
+        .requestGetAccount(createAccountId())
         .expectUnauthorizedResponse();
     });
   });
 
   describe('called as an admin', () => {
-    describe('with test data created', () => {
-      let accountDocument: Account.Document;
-
-      beforeEach(() => {
-        cy.accountTask('saveAccount', [accountDocumentConverter.create(account, Cypress.env('EXPIRES_IN'))]).then((document: Account.Document) => {
-          accountDocument = document;
-        });
-      });
-
-      it('should get account by id', () => {
-        cy.authenticate('admin1')
-          .requestGetAccount(accountDocument._id.toString() as Account.IdType)
-          .expectOkResponse()
-          .expectValidResponseSchema(schema)
-          .validateAccountResponse(accountDocument);
-      });
+    it('should get account by id', () => {
+      cy.saveAccountDocument(accountDocument)
+        .authenticate('admin1')
+        .requestGetAccount(createAccountId(accountDocument._id))
+        .expectOkResponse()
+        .expectValidResponseSchema(schema)
+        .validateAccountResponse(accountDocument, 0);
     });
 
     describe('should return error if accountId', () => {
       it('is not mongo id', () => {
         cy.authenticate('admin1')
-          .requestGetAccount(`${new Types.ObjectId().toString()}-not-valid` as Account.IdType)
+          .requestGetAccount(createAccountId('not-valid'))
           .expectBadRequestResponse()
           .expectWrongPropertyPattern('accountId', 'pathParameters');
       });
 
       it('does not belong to any account', () => {
         cy.authenticate('admin1')
-          .requestGetAccount(new Types.ObjectId().toString() as Account.IdType)
+          .requestGetAccount(createAccountId())
           .expectNotFoundResponse();
       });
     });

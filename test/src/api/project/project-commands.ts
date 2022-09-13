@@ -55,19 +55,6 @@ const requestGetProject = (idToken: string, projectId: Project.IdType) => {
   }) as Cypress.ChainableResponse;
 };
 
-const requestGetProjectByAlias = (idToken: string, alias: string) => {
-  return cy.get(`@${alias}`).then((doc: any) => {
-    return cy.request({
-      method: 'GET',
-      url: `/project/v1/projects/${doc._id.toString()}`,
-      headers: {
-        Authorization: idToken,
-      },
-      failOnStatusCode: false,
-    });
-  }) as Cypress.ChainableResponse;
-};
-
 const requestGetProjectList = (idToken: string) => {
   return cy.request({
     method: 'GET',
@@ -105,25 +92,19 @@ const validateProjectDeleted = (projectId: Project.IdType) => {
     });
 };
 
-const saveProjectDocument = (document: Project.Document, alias: string) => {
-  cy.projectTask('saveProject', [document]).as(alias);
+const saveProjectDocument = (document: Project.Document) => {
+  cy.projectTask('saveProject', [document]);
 };
 
 export const setProjectCommands = () => {
-  Cypress.Commands.addAll<any, string>({
+  Cypress.Commands.addAll<any>({
     prevSubject: true,
   }, {
     requestCreateProject,
     requestUpdateProject,
     requestDeleteProject,
     requestGetProject,
-    requestGetProjectByAlias,
     requestGetProjectList,
-  });
-
-  Cypress.Commands.addAll({
-    prevSubject: true,
-  }, {
     validateProjectDocument,
     validateProjectResponse,
   });
@@ -146,7 +127,6 @@ declare global {
     interface ChainableRequest extends Chainable {
       requestCreateProject: CommandFunctionWithPreviousSubject<typeof requestCreateProject>;
       requestGetProject: CommandFunctionWithPreviousSubject<typeof requestGetProject>;
-      requestGetProjectByAlias: CommandFunctionWithPreviousSubject<typeof requestGetProjectByAlias>;
       requestUpdateProject: CommandFunctionWithPreviousSubject<typeof requestUpdateProject>;
       requestDeleteProject: CommandFunctionWithPreviousSubject<typeof requestDeleteProject>;
       requestGetProjectList: CommandFunctionWithPreviousSubject<typeof requestGetProjectList>;

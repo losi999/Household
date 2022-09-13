@@ -1,3 +1,4 @@
+import { createCategoryId } from '@household/shared/common/test-data-factory';
 import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
 import { Category } from '@household/shared/types/types';
 import { Types } from 'mongoose';
@@ -9,6 +10,20 @@ describe('POST category/v1/categories', () => {
     parentCategoryId: undefined,
   };
 
+  let parentCategoryDocument: Category.Document;
+
+  beforeEach(() => {
+    parentCategoryDocument = categoryDocumentConverter.create({
+      body: {
+        name: 'parent',
+        categoryType: 'regular',
+        parentCategoryId: undefined,
+      },
+      parentCategory: undefined,
+    }, Cypress.env('EXPIRES_IN'));
+    parentCategoryDocument._id = new Types.ObjectId();
+  });
+
   describe('called as an admin', () => {
 
     it('should create category', () => {
@@ -18,32 +33,15 @@ describe('POST category/v1/categories', () => {
         .validateCategoryDocument(request);
     });
 
-    describe('with parent category', () => {
-      let parentCategory: Category.Document;
-      beforeEach(() => {
-        cy.categoryTask('saveCategory', [
-          categoryDocumentConverter.create({
-            body: {
-              name: 'parent',
-              categoryType: 'regular',
-              parentCategoryId: undefined,
-            },
-            parentCategory: undefined,
-          }, Cypress.env('EXPIRES_IN')),
-        ]).then((parent: Category.Document) => {
-          parentCategory = parent;
-        });
-      });
-
-      it('should create category', () => {
-        cy.authenticate('admin1')
-          .requestCreateCategory({
-            ...request,
-            parentCategoryId: parentCategory._id.toString() as Category.IdType,
-          })
-          .expectCreatedResponse()
-          .validateCategoryDocument(request, parentCategory);
-      });
+    it('should create category with parent category', () => {
+      cy.saveCategoryDocument(parentCategoryDocument)
+        .authenticate('admin1')
+        .requestCreateCategory({
+          ...request,
+          parentCategoryId: createCategoryId(parentCategoryDocument._id),
+        })
+        .expectCreatedResponse()
+        .validateCategoryDocument(request, parentCategoryDocument);
     });
 
     describe('should return error', () => {
@@ -132,11 +130,11 @@ describe('POST category/v1/categories', () => {
             .expectWrongPropertyPattern('parentCategoryId', 'body');
         });
 
-        it.only('does not belong to any category', () => {
+        it('does not belong to any category', () => {
           cy.authenticate('admin1')
             .requestCreateCategory({
               ...request,
-              parentCategoryId: new Types.ObjectId().toString() as Category.IdType,
+              parentCategoryId: createCategoryId(),
             })
             .expectBadRequestResponse()
             .expectMessage('Parent category not found');

@@ -9,7 +9,7 @@ describe('Project id schema', () => {
 
   beforeEach(() => {
     data = {
-      projectId: createProjectId('62378f3a6add840bbd4c630c'),
+      projectId: createProjectId(),
     };
   });
 
@@ -32,7 +32,7 @@ describe('Project id schema', () => {
       });
 
       it('does not match pattern', () => {
-        data.projectId = createProjectId();
+        data.projectId = createProjectId('not valid');
         tester.validateSchemaPattern(data, 'projectId');
       });
     });

@@ -1,3 +1,4 @@
+import { createRecipientId } from '@household/shared/common/test-data-factory';
 import { recipientDocumentConverter } from '@household/shared/dependencies/converters/recipient-document-converter';
 import { Recipient } from '@household/shared/types/types';
 import { Types } from 'mongoose';
@@ -11,36 +12,35 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
     name: 'new name',
   };
 
+  let recipientDocument: Recipient.Document;
+
+  beforeEach(() => {
+    recipientDocument = recipientDocumentConverter.create(recipient, Cypress.env('EXPIRES_IN'));
+    recipientDocument._id = new Types.ObjectId();
+  });
+
   describe.skip('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
-        .requestUpdateRecipient(new Types.ObjectId().toString() as Recipient.IdType, recipientToUpdate)
+        .requestUpdateRecipient(createRecipientId(), recipientToUpdate)
         .expectUnauthorizedResponse();
     });
   });
 
   describe('called as an admin', () => {
-    describe('with test data created', () => {
-      let recipientDocument: Recipient.Document;
-
-      beforeEach(() => {
-        cy.recipientTask('saveRecipient', [recipientDocumentConverter.create(recipient, Cypress.env('EXPIRES_IN'))]).then((document: Recipient.Document) => {
-          recipientDocument = document;
-        });
-      });
-      it('should update a recipient', () => {
-        cy
-          .authenticate('admin1')
-          .requestUpdateRecipient(recipientDocument._id.toString() as Recipient.IdType, recipientToUpdate)
-          .expectCreatedResponse()
-          .validateRecipientDocument(recipientToUpdate);
-      });
+    it('should update a recipient', () => {
+      cy.saveRecipientDocument(recipientDocument)
+        .authenticate('admin1')
+        .requestUpdateRecipient(createRecipientId(recipientDocument._id), recipientToUpdate)
+        .expectCreatedResponse()
+        .validateRecipientDocument(recipientToUpdate);
     });
+
     describe('should return error', () => {
       describe('if name', () => {
         it('is missing from body', () => {
           cy.authenticate('admin1')
-            .requestUpdateRecipient(new Types.ObjectId().toString() as Recipient.IdType, {
+            .requestUpdateRecipient(createRecipientId(), {
               ...recipient,
               name: undefined,
             })
@@ -50,7 +50,7 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
 
         it('is not string', () => {
           cy.authenticate('admin1')
-            .requestUpdateRecipient(new Types.ObjectId().toString() as Recipient.IdType, {
+            .requestUpdateRecipient(createRecipientId(), {
               ...recipient,
               name: 1 as any,
             })
@@ -60,7 +60,7 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
 
         it('is too short', () => {
           cy.authenticate('admin1')
-            .requestUpdateRecipient(new Types.ObjectId().toString() as Recipient.IdType, {
+            .requestUpdateRecipient(createRecipientId(), {
               ...recipient,
               name: '',
             })
@@ -72,18 +72,17 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
       describe('if recipientId', () => {
         it('is not mongo id', () => {
           cy.authenticate('admin1')
-            .requestUpdateRecipient(`${new Types.ObjectId().toString()}-not-valid` as Recipient.IdType, recipientToUpdate)
+            .requestUpdateRecipient(createRecipientId('not-valid'), recipientToUpdate)
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('recipientId', 'pathParameters');
         });
 
         it('does not belong to any recipient', () => {
           cy.authenticate('admin1')
-            .requestUpdateRecipient(new Types.ObjectId().toString() as Recipient.IdType, recipientToUpdate)
+            .requestUpdateRecipient(createRecipientId(), recipientToUpdate)
             .expectNotFoundResponse();
         });
       });
     });
   });
-
 });

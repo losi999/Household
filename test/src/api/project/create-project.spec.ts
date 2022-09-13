@@ -7,12 +7,26 @@ describe('POST project/v1/projects', () => {
   };
 
   describe('called as an admin', () => {
+    describe('should create project', () => {
+      it('with complete body', () => {
+        cy.authenticate('admin1')
+          .requestCreateProject(request)
+          .expectCreatedResponse()
+          .validateProjectDocument(request);
+      });
 
-    it('should create project', () => {
-      cy.authenticate('admin1')
-        .requestCreateProject(request)
-        .expectCreatedResponse()
-        .validateProjectDocument(request);
+      describe('without optional property in body', () => {
+        it('description', () => {
+          const modifiedRequest: Project.Request = {
+            ...request,
+            description: undefined,
+          };
+          cy.authenticate('admin1')
+            .requestCreateProject(modifiedRequest)
+            .expectCreatedResponse()
+            .validateProjectDocument(modifiedRequest);
+        });
+      });
     });
 
     describe('should return error', () => {

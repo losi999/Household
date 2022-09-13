@@ -12,8 +12,8 @@ describe('Transfer transaction schema', () => {
       amount: 200,
       issuedAt: new Date().toISOString(),
       description: 'description',
-      accountId: createAccountId('62378f3a6add840bbd4c630c'),
-      transferAccountId: createAccountId('62378f3a6add840bbd4c630d'),
+      accountId: createAccountId(),
+      transferAccountId: createAccountId(),
     };
   });
 
@@ -85,7 +85,7 @@ describe('Transfer transaction schema', () => {
       });
 
       it('does not match pattern', () => {
-        data.accountId = createAccountId();
+        data.accountId = createAccountId('not-valid');
         tester.validateSchemaPattern(data, 'accountId');
       });
     });
@@ -97,7 +97,7 @@ describe('Transfer transaction schema', () => {
       });
 
       it('does not match pattern', () => {
-        data.transferAccountId = createAccountId();
+        data.transferAccountId = createAccountId('not-valid');
         tester.validateSchemaPattern(data, 'transferAccountId');
       });
     });

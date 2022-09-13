@@ -1,3 +1,4 @@
+import { createProjectId } from '@household/shared/common/test-data-factory';
 import { projectDocumentConverter } from '@household/shared/dependencies/converters/project-document-converter';
 import { Project } from '@household/shared/types/types';
 import { Types } from 'mongoose';
@@ -13,36 +14,52 @@ describe('PUT /project/v1/projects/{projectId}', () => {
     description: 'new desc',
   };
 
+  let projectDocument: Project.Document;
+
+  beforeEach(() => {
+    projectDocument = projectDocumentConverter.create(project, Cypress.env('EXPIRES_IN'));
+    projectDocument._id = new Types.ObjectId();
+  });
+
   describe.skip('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
-        .requestUpdateProject(new Types.ObjectId().toString() as Project.IdType, projectToUpdate)
+        .requestUpdateProject(createProjectId(), projectToUpdate)
         .expectUnauthorizedResponse();
     });
   });
 
   describe('called as an admin', () => {
-    describe('with test data created', () => {
-      let projectDocument: Project.Document;
-
-      beforeEach(() => {
-        cy.projectTask('saveProject', [projectDocumentConverter.create(project, Cypress.env('EXPIRES_IN'))]).then((document: Project.Document) => {
-          projectDocument = document;
-        });
-      });
-      it('should update a project', () => {
+    describe('should update project', () => {
+      it('with complete body', () => {
         cy
+          .saveProjectDocument(projectDocument)
           .authenticate('admin1')
-          .requestUpdateProject(projectDocument._id.toString() as Project.IdType, projectToUpdate)
+          .requestUpdateProject(createProjectId(projectDocument._id), projectToUpdate)
           .expectCreatedResponse()
           .validateProjectDocument(projectToUpdate);
       });
+
+      describe('without optional property in body', () => {
+        it('description', () => {
+          const modifiedRequest: Project.Request = {
+            ...projectToUpdate,
+            description: undefined,
+          };
+          cy.saveProjectDocument(projectDocument)
+            .authenticate('admin1')
+            .requestUpdateProject(createProjectId(projectDocument._id), modifiedRequest)
+            .expectCreatedResponse()
+            .validateProjectDocument(modifiedRequest);
+        });
+      });
     });
+
     describe('should return error', () => {
       describe('if name', () => {
         it('is missing from body', () => {
           cy.authenticate('admin1')
-            .requestUpdateProject(new Types.ObjectId().toString() as Project.IdType, {
+            .requestUpdateProject(createProjectId(), {
               ...project,
               name: undefined,
             })
@@ -52,7 +69,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
 
         it('is not string', () => {
           cy.authenticate('admin1')
-            .requestUpdateProject(new Types.ObjectId().toString() as Project.IdType, {
+            .requestUpdateProject(createProjectId(), {
               ...project,
               name: 1 as any,
             })
@@ -62,7 +79,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
 
         it('is too short', () => {
           cy.authenticate('admin1')
-            .requestUpdateProject(new Types.ObjectId().toString() as Project.IdType, {
+            .requestUpdateProject(createProjectId(), {
               ...project,
               name: '',
             })
@@ -74,7 +91,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
       describe('if description', () => {
         it('is not string', () => {
           cy.authenticate('admin1')
-            .requestUpdateProject(new Types.ObjectId().toString() as Project.IdType, {
+            .requestUpdateProject(createProjectId(), {
               ...project,
               description: 1 as any,
             })
@@ -84,7 +101,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
 
         it('is too short', () => {
           cy.authenticate('admin1')
-            .requestUpdateProject(new Types.ObjectId().toString() as Project.IdType, {
+            .requestUpdateProject(createProjectId(), {
               ...project,
               description: '',
             })
@@ -96,14 +113,14 @@ describe('PUT /project/v1/projects/{projectId}', () => {
       describe('if projectId', () => {
         it('is not mongo id', () => {
           cy.authenticate('admin1')
-            .requestUpdateProject(`${new Types.ObjectId().toString()}-not-valid` as Project.IdType, projectToUpdate)
+            .requestUpdateProject(createProjectId('not-valid'), projectToUpdate)
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('projectId', 'pathParameters');
         });
 
         it('does not belong to any project', () => {
           cy.authenticate('admin1')
-            .requestUpdateProject(new Types.ObjectId().toString() as Project.IdType, projectToUpdate)
+            .requestUpdateProject(createProjectId(), projectToUpdate)
             .expectNotFoundResponse();
         });
       });

@@ -1,3 +1,4 @@
+import { createRecipientId } from '@household/shared/common/test-data-factory';
 import { recipientDocumentConverter } from '@household/shared/dependencies/converters/recipient-document-converter';
 import { Recipient } from '@household/shared/types/types';
 import { Types } from 'mongoose';
@@ -7,46 +8,44 @@ describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
     name: 'recipient',
   };
 
+  let recipientDocument: Recipient.Document;
+
+  beforeEach(() => {
+    recipientDocument = recipientDocumentConverter.create(recipient, Cypress.env('EXPIRES_IN'));
+    recipientDocument._id = new Types.ObjectId();
+  });
+
   describe.skip('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
-        .requestDeleteRecipient(new Types.ObjectId().toString() as Recipient.IdType)
+        .requestDeleteRecipient(createRecipientId())
         .expectUnauthorizedResponse();
     });
   });
 
   describe('called as an admin', () => {
 
-    describe('with test data created', () => {
-      let recipientDocument: Recipient.Document;
+    it('should delete recipient', () => {
+      cy.saveRecipientDocument(recipientDocument)
+        .authenticate('admin1')
+        .requestDeleteRecipient(createRecipientId(recipientDocument._id))
+        .expectNoContentResponse()
+        .validateRecipientDeleted(createRecipientId(recipientDocument._id));
+    });
+
+    describe('in related transactions recipient', () => {
+
       beforeEach(() => {
-        cy.recipientTask('saveRecipient', [recipientDocumentConverter.create(recipient, Cypress.env('EXPIRES_IN'))]).then((document: Recipient.Document) => {
-          recipientDocument = document;
-        });
       });
-
-      it('should delete recipient', () => {
-        cy .authenticate('admin1')
-          .requestDeleteRecipient(recipientDocument._id.toString() as Recipient.IdType)
-          .expectNoContentResponse()
-          .validateRecipientDeleted(recipientDocument._id.toString() as Recipient.IdType);
+      it.skip('should be unset if recipient is deleted', () => {
       });
-
-      describe('in related transactions recipient', () => {
-
-        beforeEach(() => {
-        });
-        it.skip('should be unset if recipient is deleted', () => {
-        });
-      });
-
     });
 
     describe('should return error', () => {
       describe('if recipientId', () => {
         it('is not mongo id', () => {
           cy.authenticate('admin1')
-            .requestDeleteRecipient(`${new Types.ObjectId()}-not-valid` as Recipient.IdType)
+            .requestDeleteRecipient(createRecipientId('not-valid'))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('recipientId', 'pathParameters');
         });

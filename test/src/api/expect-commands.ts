@@ -53,6 +53,10 @@ const expectRequiredProperty = (body: any, propertyName: string, requestPart: st
   expect(body[requestPart]).to.contain(propertyName).to.contain('required');
 };
 
+const expectAdditionalProperty = (body: any, propertyName: string, requestPart: string) => {
+  expect(body[requestPart]).to.contain(propertyName).to.contain('additional');
+};
+
 const expectWrongPropertyType = (body: any, propertyName: string, propertyType: string, requestPart: string) => {
   expect(body[requestPart]).to.contain(propertyName).to.contain(propertyType);
 };
@@ -77,70 +81,48 @@ const expectTooLongProperty = (body: any, propertyName: string, maxLength: numbe
   expect(body[requestPart]).to.contain(propertyName).to.contain('longer').to.contain(maxLength);
 };
 
-const expectTooSmallNumberProperty = (body: any, propertyName: string, minimum: number, requestPart: string) => {
-  expect(body[requestPart]).to.contain(propertyName).to.contain('>=').to.contain(minimum);
+const expectTooSmallNumberProperty = (body: any, propertyName: string, minimum: number, isExclusive: boolean, requestPart: string) => {
+  expect(body[requestPart]).to.contain(propertyName).to.contain(isExclusive ? '>' : '>=').to.contain(minimum);
 };
 
-const expectTooLargeNumberProperty = (body: any, propertyName: string, maximum: number, requestPart: string) => {
-  expect(body[requestPart]).to.contain(propertyName).to.contain('<=').to.contain(maximum);
+const expectTooLargeNumberProperty = (body: any, propertyName: string, maximum: number, isExclusive: boolean, requestPart: string) => {
+  expect(body[requestPart]).to.contain(propertyName).to.contain(isExclusive ? '<' : '<=').to.contain(maximum);
+};
+
+const expectTooEarlyDateProperty = (body: any, propertyName: string, requestPart: string) => {
+  expect(body[requestPart]).to.contain(propertyName).to.contain('>');
+};
+
+const expectTooFewItemsProperty = (body: any, propertyName: string, minItems: number, requestPart: string) => {
+  expect(body[requestPart]).to.contain(propertyName).to.contain('fewer').to.contain(minItems);
 };
 
 export const setExpectCommands = () => {
-  Cypress.Commands.add<any>('expectOkResponse', {
+  Cypress.Commands.addAll<any>({
     prevSubject: true,
-  }, expectOkResponse);
-  Cypress.Commands.add<any>('expectCreatedResponse', {
-    prevSubject: true,
-  }, expectCreatedResponse);
-  Cypress.Commands.add<any>('expectNoContentResponse', {
-    prevSubject: true,
-  }, expectNoContentResponse);
-  Cypress.Commands.add<any>('expectBadRequestResponse', {
-    prevSubject: true,
-  }, expectBadRequestResponse);
-  Cypress.Commands.add<any>('expectUnauthorizedResponse', {
-    prevSubject: true,
-  }, expectUnauthorizedResponse);
-  Cypress.Commands.add<any>('expectForbiddenResponse', {
-    prevSubject: true,
-  }, expectForbiddenResponse);
-  Cypress.Commands.add<any>('expectNotFoundResponse', {
-    prevSubject: true,
-  }, expectNotFoundResponse);
-
-  Cypress.Commands.add<any>('expectValidResponseSchema', {
-    prevSubject: true,
-  }, expectValidResponseSchema);
-  Cypress.Commands.add<any>('expectRequiredProperty', {
-    prevSubject: true,
-  }, expectRequiredProperty);
-  Cypress.Commands.add<any>('expectWrongPropertyType', {
-    prevSubject: true,
-  }, expectWrongPropertyType);
-  Cypress.Commands.add<any>('expectWrongPropertyFormat', {
-    prevSubject: true,
-  }, expectWrongPropertyFormat);
-  Cypress.Commands.add<any>('expectWrongPropertyPattern', {
-    prevSubject: true,
-  }, expectWrongPropertyPattern);
-  Cypress.Commands.add<any>('expectWrongEnumValue', {
-    prevSubject: true,
-  }, expectWrongEnumValue);
-  Cypress.Commands.add<any>('expectTooShortProperty', {
-    prevSubject: true,
-  }, expectTooShortProperty);
-  Cypress.Commands.add<any>('expectTooLongProperty', {
-    prevSubject: true,
-  }, expectTooLongProperty);
-  Cypress.Commands.add<any>('expectTooSmallNumberProperty', {
-    prevSubject: true,
-  }, expectTooSmallNumberProperty);
-  Cypress.Commands.add<any>('expectTooLargeNumberProperty', {
-    prevSubject: true,
-  }, expectTooLargeNumberProperty);
-  Cypress.Commands.add<any>('expectMessage', {
-    prevSubject: true,
-  }, expectMessage);
+  }, {
+    expectOkResponse,
+    expectCreatedResponse,
+    expectNoContentResponse,
+    expectBadRequestResponse,
+    expectUnauthorizedResponse,
+    expectForbiddenResponse,
+    expectNotFoundResponse,
+    expectValidResponseSchema,
+    expectRequiredProperty,
+    expectAdditionalProperty,
+    expectWrongPropertyType,
+    expectWrongPropertyFormat,
+    expectWrongPropertyPattern,
+    expectWrongEnumValue,
+    expectTooShortProperty,
+    expectTooLongProperty,
+    expectTooSmallNumberProperty,
+    expectTooLargeNumberProperty,
+    expectTooEarlyDateProperty,
+    expectTooFewItemsProperty,
+    expectMessage,
+  });
 };
 
 declare global {
@@ -157,6 +139,7 @@ declare global {
 
     interface ChainableResponseBody extends Chainable {
       expectValidResponseSchema: CommandFunctionWithPreviousSubject<typeof expectValidResponseSchema>;
+      expectAdditionalProperty: CommandFunctionWithPreviousSubject<typeof expectAdditionalProperty>;
       expectRequiredProperty: CommandFunctionWithPreviousSubject<typeof expectRequiredProperty>;
       expectWrongPropertyType: CommandFunctionWithPreviousSubject<typeof expectWrongPropertyType>;
       expectWrongPropertyFormat: CommandFunctionWithPreviousSubject<typeof expectWrongPropertyFormat>;
@@ -166,6 +149,8 @@ declare global {
       expectTooLongProperty: CommandFunctionWithPreviousSubject<typeof expectTooLongProperty>;
       expectTooSmallNumberProperty: CommandFunctionWithPreviousSubject<typeof expectTooSmallNumberProperty>;
       expectTooLargeNumberProperty: CommandFunctionWithPreviousSubject<typeof expectTooLargeNumberProperty>;
+      expectTooEarlyDateProperty: CommandFunctionWithPreviousSubject<typeof expectTooEarlyDateProperty>;
+      expectTooFewItemsProperty: CommandFunctionWithPreviousSubject<typeof expectTooFewItemsProperty>;
       expectMessage: CommandFunctionWithPreviousSubject<typeof expectMessage>;
     }
   }

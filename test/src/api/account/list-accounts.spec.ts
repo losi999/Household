@@ -33,8 +33,8 @@ describe('GET /account/v1/accounts', () => {
 
   describe('called as an admin', () => {
     it('should get a list of accounts', () => {
-      cy.accountTask('saveAccount', [accountDocument1])
-        .accountTask('saveAccount', [accountDocument2])
+      cy.saveAccountDocument(accountDocument1)
+        .saveAccountDocument(accountDocument2)
         .authenticate('admin1')
         .requestGetAccountList()
         .expectOkResponse()

@@ -1,5 +1,4 @@
 import { ClientSession, connect, model, startSession, connection } from 'mongoose';
-import mongoose from 'mongoose';
 import type { Model, Schema } from 'mongoose';
 import { projectSchema } from '@household/shared/mongodb-schemas/project.schema';
 import { accountSchema } from '@household/shared/mongodb-schemas/account.schema';

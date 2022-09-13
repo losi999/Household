@@ -104,7 +104,7 @@ describe('Create transfer transaction service', () => {
       await service({
         body,
         expiresIn: undefined,
-      }).catch(validateError('One of the accounts are not found', 400));
+      }).catch(validateError('One of the accounts is not found', 400));
       validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
         body.accountId,
         body.transferAccountId,

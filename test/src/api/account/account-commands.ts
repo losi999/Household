@@ -82,12 +82,12 @@ const validateAccountDocument = (response: Account.Id, request: Account.Request)
     });
 };
 
-const validateAccountResponse = (response: Account.Response, document: Account.Document) => {
+const validateAccountResponse = (response: Account.Response, document: Account.Document, balance: number) => {
   expect(response.accountId, 'accountId').to.equal(document._id.toString());
   expect(response.name, 'name').to.equal(document.name);
   expect(response.accountType, 'accountType').to.equal(document.accountType);
   expect(response.currency, 'currency').to.equal(document.currency);
-  expect(response.balance, 'balance').to.equal(document.balance);
+  expect(response.balance, 'balance').to.equal(balance);
   expect(response.isOpen, 'isOpen').to.equal(document.isOpen);
 };
 
@@ -99,8 +99,12 @@ const validateAccountDeleted = (accountId: Account.IdType) => {
     });
 };
 
+const saveAccountDocument = (document: Account.Document) => {
+  cy.accountTask('saveAccount', [document]);
+};
+
 export const setAccountCommands = () => {
-  Cypress.Commands.addAll<any, string>({
+  Cypress.Commands.addAll<any>({
     prevSubject: true,
   }, {
     requestCreateAccount,
@@ -108,17 +112,13 @@ export const setAccountCommands = () => {
     requestDeleteAccount,
     requestGetAccount,
     requestGetAccountList,
-  });
-
-  Cypress.Commands.addAll({
-    prevSubject: true,
-  }, {
     validateAccountDocument,
     validateAccountResponse,
   });
 
   Cypress.Commands.addAll({
     accountTask,
+    saveAccountDocument,
     validateAccountDeleted,
   });
 };
@@ -127,7 +127,8 @@ declare global {
   namespace Cypress {
     interface Chainable {
       validateAccountDeleted: CommandFunction<typeof validateAccountDeleted>;
-      accountTask: CommandFunction<typeof accountTask>
+      saveAccountDocument: CommandFunction<typeof saveAccountDocument>;
+      accountTask: CommandFunction<typeof accountTask>;
     }
 
     interface ChainableRequest extends Chainable {

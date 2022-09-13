@@ -1,3 +1,4 @@
+import { createAccountId } from '@household/shared/common/test-data-factory';
 import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
 import { Account } from '@household/shared/types/types';
 import { Types } from 'mongoose';
@@ -9,62 +10,59 @@ describe('DELETE /account/v1/accounts/{accountId}', () => {
     currency: 'Ft',
   };
 
+  let accountDocument: Account.Document;
+
+  beforeEach(() => {
+    accountDocument = accountDocumentConverter.create(account, Cypress.env('EXPIRES_IN'));
+    accountDocument._id = new Types.ObjectId();
+  });
+
   describe.skip('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
-        .requestDeleteAccount(new Types.ObjectId().toString() as Account.IdType)
+        .requestDeleteAccount(createAccountId())
         .expectUnauthorizedResponse();
     });
   });
 
   describe('called as an admin', () => {
+    it('should delete account', () => {
+      cy.saveAccountDocument(accountDocument)
+        .authenticate('admin1')
+        .requestDeleteAccount(createAccountId(accountDocument._id))
+        .expectNoContentResponse()
+        .validateAccountDeleted(createAccountId(accountDocument._id));
+    });
 
-    describe('with test data created', () => {
-      let accountDocument: Account.Document;
+    describe('related payment transactions', () => {
+
       beforeEach(() => {
-        cy.accountTask('saveAccount', [accountDocumentConverter.create(account, Cypress.env('EXPIRES_IN'))]).then((document: Account.Document) => {
-          accountDocument = document;
-        });
       });
-
-      it('should delete account', () => {
-        cy .authenticate('admin1')
-          .requestDeleteAccount(accountDocument._id.toString() as Account.IdType)
-          .expectNoContentResponse()
-          .validateAccountDeleted(accountDocument._id.toString() as Account.IdType);
+      it.skip('should be deleted if account is deleted', () => {
       });
+    });
 
-      describe('related payment transactions', () => {
+    describe('related split transactions', () => {
 
-        beforeEach(() => {
-        });
-        it.skip('should be deleted if account is deleted', () => {
-        });
+      beforeEach(() => {
       });
-
-      describe('related split transactions', () => {
-
-        beforeEach(() => {
-        });
-        it.skip('should be deleted if account is deleted', () => {
-        });
+      it.skip('should be deleted if account is deleted', () => {
       });
+    });
 
-      describe('related transfer transactions', () => {
+    describe('related transfer transactions', () => {
 
-        beforeEach(() => {
-        });
-        it.skip('should be deleted if account is deleted', () => {
-        });
+      beforeEach(() => {
       });
-
+      it.skip('should be deleted if account is deleted', () => {
+      });
     });
 
     describe('should return error', () => {
       describe('if accountId', () => {
         it('is not mongo id', () => {
           cy.authenticate('admin1')
-            .requestDeleteAccount(`${new Types.ObjectId()}-not-valid` as Account.IdType)
+            .requestDeleteAccount(createAccountId('not-valid'))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('accountId', 'pathParameters');
         });

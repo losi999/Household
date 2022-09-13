@@ -242,7 +242,7 @@ export namespace Transaction {
   & Base
   & TransferAccountId;
 
-  type SplitRequestItem = Project.Id
+  export type SplitRequestItem = Project.Id
   & Category.Id
   & Invoice<string>
   & Inventory

@@ -2,6 +2,7 @@ import { projectDocumentConverter } from '@household/shared/dependencies/convert
 import { default as schema } from '@household/test/api/schemas/project-response';
 import { Project } from '@household/shared/types/types';
 import { Types } from 'mongoose';
+import { createProjectId } from '@household/shared/common/test-data-factory';
 
 describe('GET /project/v1/projects/{projectId}', () => {
   const project: Project.Request = {
@@ -9,45 +10,42 @@ describe('GET /project/v1/projects/{projectId}', () => {
     description: 'desc',
   };
 
+  let projectDocument: Project.Document;
+
+  beforeEach(() => {
+    projectDocument = projectDocumentConverter.create(project, Cypress.env('EXPIRES_IN'));
+    projectDocument._id = new Types.ObjectId();
+  });
+
   describe('called as anonymous', () => {
     it.skip('should return unauthorized', () => {
       cy.unauthenticate()
-        .requestGetProject(new Types.ObjectId().toString() as Project.IdType)
+        .requestGetProject(createProjectId())
         .expectUnauthorizedResponse();
     });
   });
 
   describe('called as an admin', () => {
-    describe('with test data created', () => {
-      let projectDocument: Project.Document;
-
-      // beforeEach(() => {
-      //   cy.projectTask('saveProject', [projectDocumentConverter.create(project, Cypress.env('EXPIRES_IN'))]).then((document: Project.Document) => {
-      //     projectDocument = document;
-      //   });
-      // });
-
-      it.only('should get project by id', () => {
-        cy.saveProjectDocument(projectDocumentConverter.create(project, Cypress.env('EXPIRES_IN')), 'project')
-          .authenticate('admin1')
-          .requestGetProjectByAlias('project')
-          .expectOkResponse()
-          .expectValidResponseSchema(schema)
-          .validateProjectResponse(projectDocument);
-      });
+    it('should get project by id', () => {
+      cy.saveProjectDocument(projectDocument)
+        .authenticate('admin1')
+        .requestGetProject(createProjectId(projectDocument._id))
+        .expectOkResponse()
+        .expectValidResponseSchema(schema)
+        .validateProjectResponse(projectDocument);
     });
 
     describe('should return error if projectId', () => {
       it('is not mongo id', () => {
         cy.authenticate('admin1')
-          .requestGetProject(`${new Types.ObjectId().toString()}-not-valid` as Project.IdType)
+          .requestGetProject(createProjectId('not-valid'))
           .expectBadRequestResponse()
           .expectWrongPropertyPattern('projectId', 'pathParameters');
       });
 
       it('does not belong to any project', () => {
         cy.authenticate('admin1')
-          .requestGetProject(new Types.ObjectId().toString() as Project.IdType)
+          .requestGetProject(createProjectId())
           .expectNotFoundResponse();
       });
     });

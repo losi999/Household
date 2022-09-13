@@ -1,3 +1,4 @@
+import { createAccountId } from '@household/shared/common/test-data-factory';
 import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
 import { Account } from '@household/shared/types/types';
 import { Types } from 'mongoose';
@@ -15,36 +16,34 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
     currency: 'Ft',
   };
 
+  let accountDocument: Account.Document;
+
+  beforeEach(() => {
+    accountDocument = accountDocumentConverter.create(account, Cypress.env('EXPIRES_IN'));
+    accountDocument._id = new Types.ObjectId();
+  });
+
   describe.skip('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
-        .requestUpdateAccount(new Types.ObjectId().toString() as Account.IdType, accountToUpdate)
+        .requestUpdateAccount(createAccountId(), accountToUpdate)
         .expectUnauthorizedResponse();
     });
   });
 
   describe('called as an admin', () => {
-    describe('with test data created', () => {
-      let accountDocument: Account.Document;
-
-      beforeEach(() => {
-        cy.accountTask('saveAccount', [accountDocumentConverter.create(account, Cypress.env('EXPIRES_IN'))]).then((document: Account.Document) => {
-          accountDocument = document;
-        });
-      });
-      it('should update a account', () => {
-        cy
-          .authenticate('admin1')
-          .requestUpdateAccount(accountDocument._id.toString() as Account.IdType, accountToUpdate)
-          .expectCreatedResponse()
-          .validateAccountDocument(accountToUpdate);
-      });
+    it('should update a account', () => {
+      cy.saveAccountDocument(accountDocument)
+        .authenticate('admin1')
+        .requestUpdateAccount(createAccountId(accountDocument._id), accountToUpdate)
+        .expectCreatedResponse()
+        .validateAccountDocument(accountToUpdate);
     });
     describe('should return error', () => {
       describe('if name', () => {
         it('is missing from body', () => {
           cy.authenticate('admin1')
-            .requestUpdateAccount(new Types.ObjectId().toString() as Account.IdType, {
+            .requestUpdateAccount(createAccountId(), {
               ...account,
               name: undefined,
             })
@@ -54,7 +53,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
 
         it('is not string', () => {
           cy.authenticate('admin1')
-            .requestUpdateAccount(new Types.ObjectId().toString() as Account.IdType, {
+            .requestUpdateAccount(createAccountId(), {
               ...account,
               name: 1 as any,
             })
@@ -64,7 +63,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
 
         it('is too short', () => {
           cy.authenticate('admin1')
-            .requestUpdateAccount(new Types.ObjectId().toString() as Account.IdType, {
+            .requestUpdateAccount(createAccountId(), {
               ...account,
               name: '',
             })
@@ -76,7 +75,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
       describe('if accountType', () => {
         it('is missing from body', () => {
           cy.authenticate('admin1')
-            .requestUpdateAccount(new Types.ObjectId().toString() as Account.IdType, {
+            .requestUpdateAccount(createAccountId(), {
               ...account,
               accountType: undefined,
             })
@@ -86,7 +85,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
 
         it('is not string', () => {
           cy.authenticate('admin1')
-            .requestUpdateAccount(new Types.ObjectId().toString() as Account.IdType, {
+            .requestUpdateAccount(createAccountId(), {
               ...account,
               accountType: 1 as any,
             })
@@ -96,7 +95,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
 
         it('is not a valid enum value', () => {
           cy.authenticate('admin1')
-            .requestUpdateAccount(new Types.ObjectId().toString() as Account.IdType, {
+            .requestUpdateAccount(createAccountId(), {
               ...account,
               accountType: 'not-account-type' as any,
             })
@@ -108,7 +107,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
       describe('if currency', () => {
         it('is missing from body', () => {
           cy.authenticate('admin1')
-            .requestUpdateAccount(new Types.ObjectId().toString() as Account.IdType, {
+            .requestUpdateAccount(createAccountId(), {
               ...account,
               currency: undefined,
             })
@@ -118,7 +117,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
 
         it('is not string', () => {
           cy.authenticate('admin1')
-            .requestUpdateAccount(new Types.ObjectId().toString() as Account.IdType, {
+            .requestUpdateAccount(createAccountId(), {
               ...account,
               currency: 1 as any,
             })
@@ -128,7 +127,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
 
         it('is too short', () => {
           cy.authenticate('admin1')
-            .requestUpdateAccount(new Types.ObjectId().toString() as Account.IdType, {
+            .requestUpdateAccount(createAccountId(), {
               ...account,
               currency: '',
             })
@@ -140,14 +139,14 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
       describe('if accountId', () => {
         it('is not mongo id', () => {
           cy.authenticate('admin1')
-            .requestUpdateAccount(`${new Types.ObjectId().toString()}-not-valid` as Account.IdType, accountToUpdate)
+            .requestUpdateAccount(createAccountId('not-valid'), accountToUpdate)
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('accountId', 'pathParameters');
         });
 
         it('does not belong to any account', () => {
           cy.authenticate('admin1')
-            .requestUpdateAccount(new Types.ObjectId().toString() as Account.IdType, accountToUpdate)
+            .requestUpdateAccount(createAccountId(), accountToUpdate)
             .expectNotFoundResponse();
         });
       });

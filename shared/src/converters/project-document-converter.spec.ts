@@ -76,7 +76,7 @@ describe('Project document converter', () => {
     it('should return response', () => {
       const result = converter.toResponse(queriedDocument);
       expect(result).toEqual(createProjectResponse({
-        projectId: createProjectId(projectId.toString()),
+        projectId: createProjectId(projectId),
         description,
         name,
       }));
@@ -88,7 +88,7 @@ describe('Project document converter', () => {
       const result = converter.toResponseList([queriedDocument]);
       expect(result).toEqual([
         createProjectResponse({
-          projectId: createProjectId(projectId.toString()),
+          projectId: createProjectId(projectId),
           description,
           name,
         }),
