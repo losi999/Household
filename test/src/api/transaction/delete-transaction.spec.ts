@@ -1,29 +1,29 @@
+import { createAccountId, createTransactionId } from '@household/shared/common/test-data-factory';
 import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
-import { default as schema } from '@household/test/api/schemas/account-response';
+import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
 import { Account, Transaction } from '@household/shared/types/types';
 import { Types } from 'mongoose';
-import { createAccountId } from '@household/shared/common/test-data-factory';
-import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
 
-describe('GET /account/v1/accounts/{accountId}', () => {
-  const account: Account.Request = {
-    name: 'account',
-    accountType: 'bankAccount',
-    currency: 'Ft',
-  };
-
+describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
   let accountDocument: Account.Document;
   let transferAccountDocument: Account.Document;
   let paymentTransactionDocument: Transaction.PaymentDocument;
   let splitTransactionDocument: Transaction.SplitDocument;
   let transferTransactionDocument: Transaction.TransferDocument;
-  let invertedTransferTransactionDocument: Transaction.TransferDocument;
 
   beforeEach(() => {
-    accountDocument = accountDocumentConverter.create(account, Cypress.env('EXPIRES_IN'));
+    accountDocument = accountDocumentConverter.create({
+      name: 'account',
+      accountType: 'bankAccount',
+      currency: 'Ft',
+    }, Cypress.env('EXPIRES_IN'));
     accountDocument._id = new Types.ObjectId();
 
-    transferAccountDocument = accountDocumentConverter.create(account, Cypress.env('EXPIRES_IN'));
+    transferAccountDocument = accountDocumentConverter.create({
+      name: 'account2',
+      accountType: 'bankAccount',
+      currency: 'Ft',
+    }, Cypress.env('EXPIRES_IN'));
     transferAccountDocument._id = new Types.ObjectId();
 
     paymentTransactionDocument = transactionDocumentConverter.createPaymentDocument({
@@ -82,56 +82,56 @@ describe('GET /account/v1/accounts/{accountId}', () => {
       transferAccount: transferAccountDocument,
     }, Cypress.env('EXPIRES_IN'));
     transferTransactionDocument._id = new Types.ObjectId();
-
-    invertedTransferTransactionDocument = transactionDocumentConverter.createTransferDocument({
-      body: {
-        accountId: createAccountId(transferAccountDocument._id),
-        amount: -100,
-        transferAccountId: createAccountId(accountDocument._id),
-        description: 'transfer1',
-        issuedAt: new Date().toISOString(),
-      },
-      account: transferAccountDocument,
-      transferAccount: accountDocument,
-    }, Cypress.env('EXPIRES_IN'));
-    invertedTransferTransactionDocument._id = new Types.ObjectId();
   });
 
-  describe('called as anonymous', () => {
-    it.skip('should return unauthorized', () => {
+  describe.skip('called as anonymous', () => {
+    it('should return unauthorized', () => {
       cy.unauthenticate()
-        .requestGetAccount(createAccountId())
+        .requestDeleteTransaction(createTransactionId())
         .expectUnauthorizedResponse();
     });
   });
 
   describe('called as an admin', () => {
-    it('should get account by id', () => {
+
+    it('should delete payment transaction', () => {
       cy.saveAccountDocument(accountDocument)
         .saveAccountDocument(transferAccountDocument)
         .saveTransactionDocument(paymentTransactionDocument)
-        .saveTransactionDocument(splitTransactionDocument)
-        .saveTransactionDocument(transferTransactionDocument)
-        .saveTransactionDocument(invertedTransferTransactionDocument)
         .authenticate('admin1')
-        .requestGetAccount(createAccountId(accountDocument._id))
-        .expectOkResponse()
-        .expectValidResponseSchema(schema)
-        .validateAccountResponse(accountDocument, 400);
+        .requestDeleteTransaction(createTransactionId(paymentTransactionDocument._id))
+        .expectNoContentResponse()
+        .validateTransactionDeleted(createTransactionId(paymentTransactionDocument._id));
     });
 
-    describe('should return error if accountId', () => {
-      it('is not mongo id', () => {
-        cy.authenticate('admin1')
-          .requestGetAccount(createAccountId('not-valid'))
-          .expectBadRequestResponse()
-          .expectWrongPropertyPattern('accountId', 'pathParameters');
-      });
+    it('should delete split transaction', () => {
+      cy.saveAccountDocument(accountDocument)
+        .saveAccountDocument(transferAccountDocument)
+        .saveTransactionDocument(splitTransactionDocument)
+        .authenticate('admin1')
+        .requestDeleteTransaction(createTransactionId(splitTransactionDocument._id))
+        .expectNoContentResponse()
+        .validateTransactionDeleted(createTransactionId(splitTransactionDocument._id));
+    });
 
-      it('does not belong to any account', () => {
-        cy.authenticate('admin1')
-          .requestGetAccount(createAccountId())
-          .expectNotFoundResponse();
+    it('should delete transfer transaction', () => {
+      cy.saveAccountDocument(accountDocument)
+        .saveAccountDocument(transferAccountDocument)
+        .saveTransactionDocument(transferTransactionDocument)
+        .authenticate('admin1')
+        .requestDeleteTransaction(createTransactionId(transferTransactionDocument._id))
+        .expectNoContentResponse()
+        .validateTransactionDeleted(createTransactionId(transferTransactionDocument._id));
+    });
+
+    describe('should return error', () => {
+      describe('if transactionId', () => {
+        it('is not mongo id', () => {
+          cy.authenticate('admin1')
+            .requestDeleteTransaction(createTransactionId('not-valid'))
+            .expectBadRequestResponse()
+            .expectWrongPropertyPattern('transactionId', 'pathParameters');
+        });
       });
     });
   });

@@ -42,6 +42,89 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
         .expectCreatedResponse()
         .validateCategoryDocument(categoryToUpdate);
     });
+
+    describe('children should be reassigned', () => {
+      let childCategory: Category.Document;
+      let grandChildCategory: Category.Document;
+      let otherParentCategory: Category.Document;
+
+      beforeEach(() => {
+        childCategory = categoryDocumentConverter.create({
+          body: {
+            name: 'child',
+            categoryType: 'regular',
+            parentCategoryId: createCategoryId(categoryDocument._id),
+          },
+          parentCategory: categoryDocument,
+        }, Cypress.env('EXPIRES_IN'));
+        childCategory._id = new Types.ObjectId();
+
+        grandChildCategory = categoryDocumentConverter.create({
+          body: {
+            name: 'child of child',
+            categoryType: 'regular',
+            parentCategoryId: createCategoryId(childCategory._id),
+          },
+          parentCategory: childCategory,
+        }, Cypress.env('EXPIRES_IN'));
+        grandChildCategory._id = new Types.ObjectId();
+
+        otherParentCategory = categoryDocumentConverter.create({
+          body: {
+            name: 'parent',
+            categoryType: 'regular',
+            parentCategoryId: undefined,
+          },
+          parentCategory: undefined,
+        }, Cypress.env('EXPIRES_IN'));
+        otherParentCategory._id = new Types.ObjectId();
+      });
+
+      it('to a different parent category', () => {
+        cy.saveCategoryDocument(categoryDocument)
+          .saveCategoryDocument(childCategory)
+          .saveCategoryDocument(grandChildCategory)
+          .saveCategoryDocument(otherParentCategory)
+          .authenticate('admin1')
+          .requestUpdateCategory(createCategoryId(childCategory._id), {
+            ...categoryToUpdate,
+            parentCategoryId: createCategoryId(otherParentCategory._id),
+          })
+          .expectCreatedResponse()
+          .validateCategoryParentReassign(createCategoryId(childCategory._id), createCategoryId(otherParentCategory._id))
+          .validateCategoryParentReassign(createCategoryId(grandChildCategory._id), createCategoryId(childCategory._id));
+      });
+
+      it('to root from previously set parent', () => {
+        cy.saveCategoryDocument(categoryDocument)
+          .saveCategoryDocument(childCategory)
+          .saveCategoryDocument(grandChildCategory)
+          .authenticate('admin1')
+          .requestUpdateCategory(createCategoryId(childCategory._id), {
+            ...categoryToUpdate,
+            parentCategoryId: undefined,
+          })
+          .expectCreatedResponse()
+          .validateCategoryParentReassign(createCategoryId(childCategory._id))
+          .validateCategoryParentReassign(createCategoryId(grandChildCategory._id), createCategoryId(childCategory._id));
+      });
+
+      it('to a parent from previously unset value', () => {
+        cy.saveCategoryDocument(categoryDocument)
+          .saveCategoryDocument(childCategory)
+          .saveCategoryDocument(grandChildCategory)
+          .saveCategoryDocument(otherParentCategory)
+          .authenticate('admin1')
+          .requestUpdateCategory(createCategoryId(categoryDocument._id), {
+            ...categoryToUpdate,
+            parentCategoryId: createCategoryId(otherParentCategory._id),
+          })
+          .expectCreatedResponse()
+          .validateCategoryParentReassign(createCategoryId(categoryDocument._id), createCategoryId(otherParentCategory._id))
+          .validateCategoryParentReassign(createCategoryId(childCategory._id), createCategoryId(categoryDocument._id))
+          .validateCategoryParentReassign(createCategoryId(grandChildCategory._id), createCategoryId(childCategory._id));
+      });
+    });
   });
   describe('should return error', () => {
     describe('if name', () => {

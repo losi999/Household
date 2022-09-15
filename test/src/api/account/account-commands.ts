@@ -66,6 +66,17 @@ const requestGetAccountList = (idToken: string) => {
   }) as Cypress.ChainableResponse;
 };
 
+const requestGetTransactionListByAccount = (idToken: string, accountId: Account.IdType) => {
+  return cy.request({
+    method: 'GET',
+    url: `/account/v1/accounts/${accountId}/transactions`,
+    headers: {
+      Authorization: idToken,
+    },
+    failOnStatusCode: false,
+  }) as Cypress.ChainableResponse;
+};
+
 const validateAccountDocument = (response: Account.Id, request: Account.Request) => {
   const id = response?.accountId;
 
@@ -78,7 +89,6 @@ const validateAccountDocument = (response: Account.Id, request: Account.Request)
       expect(document.currency, 'currency').to.equal(request.currency);
       expect(document.balance, 'balance').to.equal(0);
       expect(document.isOpen, 'isOpen').to.equal(true);
-
     });
 };
 
@@ -89,6 +99,19 @@ const validateAccountResponse = (response: Account.Response, document: Account.D
   expect(response.currency, 'currency').to.equal(document.currency);
   expect(response.balance, 'balance').to.equal(balance);
   expect(response.isOpen, 'isOpen').to.equal(document.isOpen);
+};
+
+const validateAccountListResponse = (responses: Account.Response[], documents: Account.Document[], balances: number[]) => {
+  documents.forEach((document, index) => {
+    const response = responses.find(r => r.accountId === document._id.toString());
+    const balance = balances[index];
+    expect(response.accountId, 'accountId').to.equal(document._id.toString());
+    expect(response.name, 'name').to.equal(document.name);
+    expect(response.accountType, 'accountType').to.equal(document.accountType);
+    expect(response.currency, 'currency').to.equal(document.currency);
+    expect(response.balance, 'balance').to.equal(balance);
+    expect(response.isOpen, 'isOpen').to.equal(document.isOpen);
+  });
 };
 
 const validateAccountDeleted = (accountId: Account.IdType) => {
@@ -112,8 +135,10 @@ export const setAccountCommands = () => {
     requestDeleteAccount,
     requestGetAccount,
     requestGetAccountList,
+    requestGetTransactionListByAccount,
     validateAccountDocument,
     validateAccountResponse,
+    validateAccountListResponse,
   });
 
   Cypress.Commands.addAll({
@@ -137,11 +162,13 @@ declare global {
       requestUpdateAccount: CommandFunctionWithPreviousSubject<typeof requestUpdateAccount>;
       requestDeleteAccount: CommandFunctionWithPreviousSubject<typeof requestDeleteAccount>;
       requestGetAccountList: CommandFunctionWithPreviousSubject<typeof requestGetAccountList>;
+      requestGetTransactionListByAccount: CommandFunctionWithPreviousSubject<typeof requestGetTransactionListByAccount>;
     }
 
     interface ChainableResponseBody extends Chainable {
       validateAccountDocument: CommandFunctionWithPreviousSubject<typeof validateAccountDocument>;
       validateAccountResponse: CommandFunctionWithPreviousSubject<typeof validateAccountResponse>;
+      validateAccountListResponse: CommandFunctionWithPreviousSubject<typeof validateAccountListResponse>;
     }
   }
 }

@@ -174,7 +174,7 @@ export namespace Transaction {
     transactionId: IdType;
   };
 
-  type IssuedAt<D extends string | Date> = {
+  export type IssuedAt<D extends string | Date> = {
     issuedAt: D;
   };
 
@@ -182,7 +182,7 @@ export namespace Transaction {
     transactionType: T;
   };
 
-  type Base = {
+  export type Base = {
     amount: number;
     description: string;
   };

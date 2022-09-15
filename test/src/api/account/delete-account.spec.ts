@@ -1,6 +1,7 @@
-import { createAccountId } from '@household/shared/common/test-data-factory';
+import { createAccountId, createTransactionId } from '@household/shared/common/test-data-factory';
 import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
-import { Account } from '@household/shared/types/types';
+import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
+import { Account, Transaction } from '@household/shared/types/types';
 import { Types } from 'mongoose';
 
 describe('DELETE /account/v1/accounts/{accountId}', () => {
@@ -34,27 +35,104 @@ describe('DELETE /account/v1/accounts/{accountId}', () => {
         .validateAccountDeleted(createAccountId(accountDocument._id));
     });
 
-    describe('related payment transactions', () => {
+    describe('related transactions', () => {
+      let paymentTransactionDocument: Transaction.PaymentDocument;
+      let splitTransactionDocument: Transaction.SplitDocument;
+      let transferTransactionDocument: Transaction.TransferDocument;
+      let invertedTransferTransactionDocument: Transaction.TransferDocument;
+      let transferAccountDocument: Account.Document;
 
       beforeEach(() => {
-      });
-      it.skip('should be deleted if account is deleted', () => {
-      });
-    });
+        transferAccountDocument = accountDocumentConverter.create({
+          ...account,
+          name: 'transfer',
+        }, Cypress.env('EXPIRES_IN'));
+        transferAccountDocument._id = new Types.ObjectId();
 
-    describe('related split transactions', () => {
+        paymentTransactionDocument = transactionDocumentConverter.createPaymentDocument({
+          body: {
+            accountId: createAccountId(accountDocument._id),
+            amount: 100,
+            description: 'description',
+            issuedAt: new Date(2022, 2, 3).toISOString(),
+            categoryId: undefined,
+            inventory: undefined,
+            invoice: undefined,
+            projectId: undefined,
+            recipientId: undefined,
+          },
+          account: accountDocument,
+          category: undefined,
+          project: undefined,
+          recipient: undefined,
+        }, Cypress.env('EXPIRES_IN'));
+        paymentTransactionDocument._id = new Types.ObjectId();
 
-      beforeEach(() => {
-      });
-      it.skip('should be deleted if account is deleted', () => {
-      });
-    });
+        splitTransactionDocument = transactionDocumentConverter.createSplitDocument({
+          body: {
+            accountId: createAccountId(accountDocument._id),
+            amount: 100,
+            description: 'description',
+            issuedAt: new Date(2022, 2, 3).toISOString(),
+            recipientId: undefined,
+            splits: [
+              {
+                amount: 100,
+                categoryId: undefined,
+                description: undefined,
+                inventory: undefined,
+                invoice: undefined,
+                projectId: undefined,
+              },
+            ],
+          },
+          account: accountDocument,
+          recipient: undefined,
+          categories: [],
+          projects: [],
+        }, Cypress.env('EXPIRES_IN'));
+        splitTransactionDocument._id = new Types.ObjectId();
 
-    describe('related transfer transactions', () => {
+        transferTransactionDocument = transactionDocumentConverter.createTransferDocument({
+          body: {
+            accountId: createAccountId(accountDocument._id),
+            amount: 100,
+            description: 'description',
+            issuedAt: new Date(2022, 2, 3).toISOString(),
+            transferAccountId: createAccountId(transferAccountDocument._id),
+          },
+          account: accountDocument,
+          transferAccount: transferAccountDocument,
+        }, Cypress.env('EXPIRES_IN'));
+        transferTransactionDocument._id = new Types.ObjectId();
 
-      beforeEach(() => {
+        invertedTransferTransactionDocument = transactionDocumentConverter.createTransferDocument({
+          body: {
+            accountId: createAccountId(transferAccountDocument._id),
+            amount: 100,
+            description: 'description',
+            issuedAt: new Date(2022, 2, 3).toISOString(),
+            transferAccountId: createAccountId(accountDocument._id),
+          },
+          account: transferAccountDocument,
+          transferAccount: accountDocument,
+        }, Cypress.env('EXPIRES_IN'));
+        invertedTransferTransactionDocument._id = new Types.ObjectId();
       });
-      it.skip('should be deleted if account is deleted', () => {
+      it('should be deleted if account is deleted', () => {
+        cy.saveAccountDocument(accountDocument)
+          .saveTransactionDocument(paymentTransactionDocument)
+          .saveTransactionDocument(splitTransactionDocument)
+          .saveTransactionDocument(transferTransactionDocument)
+          .saveTransactionDocument(invertedTransferTransactionDocument)
+          .authenticate('admin1')
+          .requestDeleteAccount(createAccountId(accountDocument._id))
+          .expectNoContentResponse()
+          .validateAccountDeleted(createAccountId(accountDocument._id))
+          .validateTransactionDeleted(createTransactionId(paymentTransactionDocument._id))
+          .validateTransactionDeleted(createTransactionId(splitTransactionDocument._id))
+          .validateTransactionDeleted(createTransactionId(transferTransactionDocument._id))
+          .validateTransactionDeleted(createTransactionId(invertedTransferTransactionDocument._id));
       });
     });
 

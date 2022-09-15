@@ -1,107 +1,41 @@
-import { unitsOfMeasurement } from '@household/shared/constants';
 import { StrictJSONSchema7 } from '@household/shared/types/common';
 import { Transaction } from '@household/shared/types/types';
+import { default as inventory } from '@household/shared/schemas/partials/transaction-inventory';
+import { default as invoice } from '@household/shared/schemas/partials/transaction-invoice';
+import { default as base } from '@household/shared/schemas/partials/transaction-base';
+import { default as issuedAt } from '@household/shared/schemas/partials/transaction-issued-at';
+import { default as accountId } from '@household/shared/schemas/account-id';
+import { default as categoryId } from '@household/shared/schemas/category-id';
+import { default as projectId } from '@household/shared/schemas/project-id';
+import { default as recipientId } from '@household/shared/schemas/recipient-id';
 
 const schema: StrictJSONSchema7<Transaction.SplitRequest> = {
   type: 'object',
   additionalProperties: false,
   required: [
-    'amount',
-    'issuedAt',
-    'accountId',
+    ...base.required,
+    ...issuedAt.required,
+    ...accountId.required,
     'splits',
   ],
   properties: {
-    amount: {
-      type: 'number',
-    },
-    description: {
-      type: 'string',
-      minLength: 1,
-    },
-    issuedAt: {
-      type: 'string',
-      format: 'date-time',
-    },
-    accountId: {
-      type: 'string',
-      pattern: '^[a-zA-Z0-9]{24}$',
-    },
-    recipientId: {
-      type: 'string',
-      pattern: '^[a-zA-Z0-9]{24}$',
-    },
+    ...base.properties,
+    ...issuedAt.properties,
+    ...accountId.properties,
+    ...recipientId.properties,
     splits: {
       type: 'array',
       minItems: 1,
       items: {
         type: 'object',
         additionalProperties: false,
-        required: ['amount'],
+        required: [ ...base.required],
         properties: {
-          amount: {
-            type: 'number',
-          },
-          description: {
-            type: 'string',
-            minLength: 1,
-          },
-          inventory: {
-            type: 'object',
-            required: ['quantity'],
-            additionalProperties: false,
-            properties: {
-              quantity: {
-                type: 'number',
-                exclusiveMinimum: 0,
-              },
-              brand: {
-                type: 'string',
-                minLength: 1,
-              },
-              measurement: {
-                type: 'number',
-                exclusiveMinimum: 0,
-              },
-              unitOfMeasurement: {
-                type: 'string',
-                enum: [...unitsOfMeasurement],
-              },
-            },
-          },
-          invoice: {
-            type: 'object',
-            required: [
-              'billingStartDate',
-              'billingEndDate',
-            ],
-            additionalProperties: false,
-            properties: {
-              invoiceNumber: {
-                type: 'string',
-                minLength: 1,
-              },
-              billingEndDate: {
-                type: 'string',
-                format: 'date',
-                formatExclusiveMinimum: {
-                  $data: '1/billingStartDate',
-                },
-              },
-              billingStartDate: {
-                type: 'string',
-                format: 'date',
-              },
-            },
-          },
-          categoryId: {
-            type: 'string',
-            pattern: '^[a-zA-Z0-9]{24}$',
-          },
-          projectId: {
-            type: 'string',
-            pattern: '^[a-zA-Z0-9]{24}$',
-          },
+          ...base.properties,
+          inventory,
+          invoice,
+          ...categoryId.properties,
+          ...projectId.properties,
         },
       },
     },

@@ -145,7 +145,7 @@ describe('Update to transfer transaction service', () => {
         body,
         transactionId,
         expiresIn: undefined,
-      }).catch(validateError('One of the accounts are not found', 400));
+      }).catch(validateError('One of the accounts is not found', 400));
       validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
       validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
         body.accountId,
