@@ -165,7 +165,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
     transferTransactionDocument._id = new Types.ObjectId();
   });
 
-  describe.skip('called as anonymous', () => {
+  describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
         .requestGetTransactionListByAccount(createAccountId(accountDocument._id))
@@ -214,7 +214,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
           project: projectDocument,
           recipient: recipientDocument,
         }, Cypress.env('EXPIRES_IN')))
-        .authenticate('admin1')
+        .authenticate(1)
         .requestGetTransactionListByAccount(createAccountId(accountDocument._id))
         .expectOkResponse()
         .expectValidResponseSchema(schema);

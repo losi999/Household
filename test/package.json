@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "start": "cypress open -d -C cypress.localhost.json",
-    "start:LOCAL": "cypress open -d -C cypress.LOCAL.json",
+    "cypress-env": "cp cypress.${ENV}.env.json cypress.env.json",
+    "start": "export ENV=localhost && yarn cypress-env && cypress open -d -C cypress.localhost.json",
+    "start:LOCAL": "export ENV=LOCAL && yarn cypress-env && cypress open -d -C cypress.LOCAL.json",
     "test": "cypress run -C cypress.${ENV}.json",
-    "test:local": "cypress run -C cypress.LOCAL.json"
+    "test:LOCAL": "export ENV=LOCAL && yarn cypress-env && cypress run -C cypress.LOCAL.json"
   },
   "devDependencies": {
     "@cypress/webpack-preprocessor": "5.11.0",

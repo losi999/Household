@@ -1,5 +1,4 @@
 import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
-import { default as schema } from '@household/test/api/schemas/category-response-list';
 import { Category } from '@household/shared/types/types';
 
 describe('GET /category/v1/categories', () => {
@@ -29,7 +28,7 @@ describe('GET /category/v1/categories', () => {
     }, Cypress.env('EXPIRES_IN'));
   });
 
-  describe.skip('called as anonymous', () => {
+  describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
         .requestGetCategoryList()
@@ -41,7 +40,7 @@ describe('GET /category/v1/categories', () => {
     it('should get a list of categories', () => {
       cy.saveCategoryDocument(categoryDocument1)
         .saveCategoryDocument(categoryDocument2)
-        .authenticate('admin1')
+        .authenticate(1)
         .requestGetCategoryList()
         .expectOkResponse();
       // .expectValidResponseSchema(schema);

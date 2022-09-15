@@ -18,7 +18,7 @@ describe('DELETE /account/v1/accounts/{accountId}', () => {
     accountDocument._id = new Types.ObjectId();
   });
 
-  describe.skip('called as anonymous', () => {
+  describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
         .requestDeleteAccount(createAccountId())
@@ -29,7 +29,7 @@ describe('DELETE /account/v1/accounts/{accountId}', () => {
   describe('called as an admin', () => {
     it('should delete account', () => {
       cy.saveAccountDocument(accountDocument)
-        .authenticate('admin1')
+        .authenticate(1)
         .requestDeleteAccount(createAccountId(accountDocument._id))
         .expectNoContentResponse()
         .validateAccountDeleted(createAccountId(accountDocument._id));
@@ -125,7 +125,7 @@ describe('DELETE /account/v1/accounts/{accountId}', () => {
           .saveTransactionDocument(splitTransactionDocument)
           .saveTransactionDocument(transferTransactionDocument)
           .saveTransactionDocument(invertedTransferTransactionDocument)
-          .authenticate('admin1')
+          .authenticate(1)
           .requestDeleteAccount(createAccountId(accountDocument._id))
           .expectNoContentResponse()
           .validateAccountDeleted(createAccountId(accountDocument._id))
@@ -139,7 +139,7 @@ describe('DELETE /account/v1/accounts/{accountId}', () => {
     describe('should return error', () => {
       describe('if accountId', () => {
         it('is not mongo id', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestDeleteAccount(createAccountId('not-valid'))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('accountId', 'pathParameters');

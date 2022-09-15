@@ -19,7 +19,7 @@ describe('GET /recipient/v1/recipients', () => {
     recipientDocument2 = recipientDocumentConverter.create(recipient2, Cypress.env('EXPIRES_IN'));
   });
 
-  describe.skip('called as anonymous', () => {
+  describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
         .requestGetRecipientList()
@@ -31,7 +31,7 @@ describe('GET /recipient/v1/recipients', () => {
     it('should get a list of recipients', () => {
       cy.saveRecipientDocument(recipientDocument1)
         .saveRecipientDocument(recipientDocument2)
-        .authenticate('admin1')
+        .authenticate(1)
         .requestGetRecipientList()
         .expectOkResponse()
         .expectValidResponseSchema(schema);

@@ -88,6 +88,14 @@ describe('POST transaction/v1/transactions/payment', () => {
     };
   });
 
+  describe('called as anonymous', () => {
+    it('should return unauthorized', () => {
+      cy.unauthenticate()
+        .requestCreatePaymentTransaction(request)
+        .expectUnauthorizedResponse();
+    });
+  });
+
   describe('called as an admin', () => {
     describe('should create transaction', () => {
       describe('with complete body', () => {
@@ -96,7 +104,7 @@ describe('POST transaction/v1/transactions/payment', () => {
             .saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestCreatePaymentTransaction(request)
             .expectCreatedResponse()
             .validateTransactionPaymentDocument(request, regularCategoryDocument);
@@ -112,7 +120,7 @@ describe('POST transaction/v1/transactions/payment', () => {
             .saveCategoryDocument(invoiceCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestCreatePaymentTransaction(modifiedRequest)
             .expectCreatedResponse()
             .validateTransactionPaymentDocument(modifiedRequest, invoiceCategoryDocument);
@@ -127,7 +135,7 @@ describe('POST transaction/v1/transactions/payment', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestCreatePaymentTransaction(modifiedRequest)
             .expectCreatedResponse()
             .validateTransactionPaymentDocument(modifiedRequest, inventoryCategoryDocument);
@@ -144,7 +152,7 @@ describe('POST transaction/v1/transactions/payment', () => {
             .saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestCreatePaymentTransaction(modifiedRequest)
             .expectCreatedResponse()
             .validateTransactionPaymentDocument(modifiedRequest, regularCategoryDocument);
@@ -160,7 +168,7 @@ describe('POST transaction/v1/transactions/payment', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestCreatePaymentTransaction(modifiedRequest)
             .expectCreatedResponse()
             .validateTransactionPaymentDocument(modifiedRequest, inventoryCategoryDocument);
@@ -180,7 +188,7 @@ describe('POST transaction/v1/transactions/payment', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestCreatePaymentTransaction(modifiedRequest)
             .expectCreatedResponse()
             .validateTransactionPaymentDocument(modifiedRequest, inventoryCategoryDocument);
@@ -200,7 +208,7 @@ describe('POST transaction/v1/transactions/payment', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestCreatePaymentTransaction(modifiedRequest)
             .expectCreatedResponse()
             .validateTransactionPaymentDocument(modifiedRequest, inventoryCategoryDocument);
@@ -220,7 +228,7 @@ describe('POST transaction/v1/transactions/payment', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestCreatePaymentTransaction(modifiedRequest)
             .expectCreatedResponse()
             .validateTransactionPaymentDocument(modifiedRequest, inventoryCategoryDocument);
@@ -237,7 +245,7 @@ describe('POST transaction/v1/transactions/payment', () => {
             .saveCategoryDocument(invoiceCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestCreatePaymentTransaction(modifiedRequest)
             .expectCreatedResponse()
             .validateTransactionPaymentDocument(modifiedRequest, invoiceCategoryDocument);
@@ -257,7 +265,7 @@ describe('POST transaction/v1/transactions/payment', () => {
             .saveCategoryDocument(invoiceCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestCreatePaymentTransaction(modifiedRequest)
             .expectCreatedResponse()
             .validateTransactionPaymentDocument(modifiedRequest, invoiceCategoryDocument);
@@ -272,7 +280,7 @@ describe('POST transaction/v1/transactions/payment', () => {
           cy.saveAccountDocument(accountDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestCreatePaymentTransaction(modifiedRequest)
             .expectCreatedResponse()
             .validateTransactionPaymentDocument(modifiedRequest);
@@ -287,7 +295,7 @@ describe('POST transaction/v1/transactions/payment', () => {
           cy.saveAccountDocument(accountDocument)
             .saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestCreatePaymentTransaction(modifiedRequest)
             .expectCreatedResponse()
             .validateTransactionPaymentDocument(modifiedRequest, regularCategoryDocument);
@@ -302,7 +310,7 @@ describe('POST transaction/v1/transactions/payment', () => {
           cy.saveAccountDocument(accountDocument)
             .saveCategoryDocument(regularCategoryDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestCreatePaymentTransaction(modifiedRequest)
             .expectCreatedResponse()
             .validateTransactionPaymentDocument(modifiedRequest, regularCategoryDocument);
@@ -313,7 +321,7 @@ describe('POST transaction/v1/transactions/payment', () => {
     describe('should return error', () => {
       describe('if body', () => {
         it('has additional properties', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               extra: 123,
@@ -325,7 +333,7 @@ describe('POST transaction/v1/transactions/payment', () => {
 
       describe('if amount', () => {
         it('is missing', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               amount: undefined,
@@ -335,7 +343,7 @@ describe('POST transaction/v1/transactions/payment', () => {
         });
 
         it('is not number', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               amount: '1' as any,
@@ -347,7 +355,7 @@ describe('POST transaction/v1/transactions/payment', () => {
 
       describe('if description', () => {
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               description: 1 as any,
@@ -357,7 +365,7 @@ describe('POST transaction/v1/transactions/payment', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               description: '',
@@ -369,7 +377,7 @@ describe('POST transaction/v1/transactions/payment', () => {
 
       describe('if inventory', () => {
         it('is not object', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               inventory: '1' as any,
@@ -379,7 +387,7 @@ describe('POST transaction/v1/transactions/payment', () => {
         });
 
         it('has additional properties', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               inventory: {
@@ -394,7 +402,7 @@ describe('POST transaction/v1/transactions/payment', () => {
 
       describe('if inventory.quantity', () => {
         it('is missing', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               inventory: {
@@ -407,7 +415,7 @@ describe('POST transaction/v1/transactions/payment', () => {
         });
 
         it('is not number', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               inventory: {
@@ -420,7 +428,7 @@ describe('POST transaction/v1/transactions/payment', () => {
         });
 
         it('is too small', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               inventory: {
@@ -435,7 +443,7 @@ describe('POST transaction/v1/transactions/payment', () => {
 
       describe('if inventory.brand', () => {
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               inventory: {
@@ -448,7 +456,7 @@ describe('POST transaction/v1/transactions/payment', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               inventory: {
@@ -463,7 +471,7 @@ describe('POST transaction/v1/transactions/payment', () => {
 
       describe('if inventory.measurement', () => {
         it('is not number', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               inventory: {
@@ -476,7 +484,7 @@ describe('POST transaction/v1/transactions/payment', () => {
         });
 
         it('is too small', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               inventory: {
@@ -491,7 +499,7 @@ describe('POST transaction/v1/transactions/payment', () => {
 
       describe('if inventory.unitOfMeasurement', () => {
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               inventory: {
@@ -504,7 +512,7 @@ describe('POST transaction/v1/transactions/payment', () => {
         });
 
         it('is not a valid enum value', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               inventory: {
@@ -519,7 +527,7 @@ describe('POST transaction/v1/transactions/payment', () => {
 
       describe('if invoice', () => {
         it('is not object', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               invoice: '1' as any,
@@ -529,7 +537,7 @@ describe('POST transaction/v1/transactions/payment', () => {
         });
 
         it('has additional properties', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               invoice: {
@@ -544,7 +552,7 @@ describe('POST transaction/v1/transactions/payment', () => {
 
       describe('if invoice.invoiceNumber', () => {
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               invoice: {
@@ -557,7 +565,7 @@ describe('POST transaction/v1/transactions/payment', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               invoice: {
@@ -572,7 +580,7 @@ describe('POST transaction/v1/transactions/payment', () => {
 
       describe('if invoice.billingEndDate', () => {
         it('is missing', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               invoice: {
@@ -585,7 +593,7 @@ describe('POST transaction/v1/transactions/payment', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               invoice: {
@@ -598,7 +606,7 @@ describe('POST transaction/v1/transactions/payment', () => {
         });
 
         it('is not date format', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               invoice: {
@@ -611,7 +619,7 @@ describe('POST transaction/v1/transactions/payment', () => {
         });
 
         it('is earlier than billingStartDate', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               invoice: {
@@ -627,7 +635,7 @@ describe('POST transaction/v1/transactions/payment', () => {
 
       describe('if invoice.billingStartDate', () => {
         it('is missing', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               invoice: {
@@ -640,7 +648,7 @@ describe('POST transaction/v1/transactions/payment', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               invoice: {
@@ -653,7 +661,7 @@ describe('POST transaction/v1/transactions/payment', () => {
         });
 
         it('is not date format', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               invoice: {
@@ -668,7 +676,7 @@ describe('POST transaction/v1/transactions/payment', () => {
 
       describe('if issuedAt', () => {
         it('is missing', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               issuedAt: undefined,
@@ -678,7 +686,7 @@ describe('POST transaction/v1/transactions/payment', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               issuedAt: 1 as any,
@@ -688,7 +696,7 @@ describe('POST transaction/v1/transactions/payment', () => {
         });
 
         it('is not date-time format', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               issuedAt: 'not-date-time',
@@ -703,7 +711,7 @@ describe('POST transaction/v1/transactions/payment', () => {
           cy.saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               accountId: createAccountId(),
@@ -713,7 +721,7 @@ describe('POST transaction/v1/transactions/payment', () => {
         });
 
         it('is missing', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               accountId: undefined,
@@ -723,7 +731,7 @@ describe('POST transaction/v1/transactions/payment', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               accountId: 1 as any,
@@ -733,7 +741,7 @@ describe('POST transaction/v1/transactions/payment', () => {
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               accountId: createAccountId('not-mongo-id'),
@@ -748,7 +756,7 @@ describe('POST transaction/v1/transactions/payment', () => {
           cy.saveAccountDocument(accountDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               categoryId: createCategoryId(),
@@ -758,7 +766,7 @@ describe('POST transaction/v1/transactions/payment', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               categoryId: 1 as any,
@@ -768,7 +776,7 @@ describe('POST transaction/v1/transactions/payment', () => {
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               categoryId: createCategoryId('not-mongo-id'),
@@ -783,7 +791,7 @@ describe('POST transaction/v1/transactions/payment', () => {
           cy.saveAccountDocument(accountDocument)
             .saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               recipientId: createRecipientId(),
@@ -793,7 +801,7 @@ describe('POST transaction/v1/transactions/payment', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               recipientId: 1 as any,
@@ -803,7 +811,7 @@ describe('POST transaction/v1/transactions/payment', () => {
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               recipientId: createRecipientId('not-mongo-id'),
@@ -818,7 +826,7 @@ describe('POST transaction/v1/transactions/payment', () => {
           cy.saveAccountDocument(accountDocument)
             .saveCategoryDocument(regularCategoryDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               projectId: createProjectId(),
@@ -828,7 +836,7 @@ describe('POST transaction/v1/transactions/payment', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               projectId: 1 as any,
@@ -838,7 +846,7 @@ describe('POST transaction/v1/transactions/payment', () => {
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               projectId: createProjectId('not-mongo-id'),

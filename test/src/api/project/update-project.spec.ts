@@ -21,7 +21,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
     projectDocument._id = new Types.ObjectId();
   });
 
-  describe.skip('called as anonymous', () => {
+  describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
         .requestUpdateProject(createProjectId(), projectToUpdate)
@@ -34,7 +34,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
       it('with complete body', () => {
         cy
           .saveProjectDocument(projectDocument)
-          .authenticate('admin1')
+          .authenticate(1)
           .requestUpdateProject(createProjectId(projectDocument._id), projectToUpdate)
           .expectCreatedResponse()
           .validateProjectDocument(projectToUpdate);
@@ -47,7 +47,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
             description: undefined,
           };
           cy.saveProjectDocument(projectDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestUpdateProject(createProjectId(projectDocument._id), modifiedRequest)
             .expectCreatedResponse()
             .validateProjectDocument(modifiedRequest);
@@ -58,7 +58,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
     describe('should return error', () => {
       describe('if name', () => {
         it('is missing from body', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateProject(createProjectId(), {
               ...project,
               name: undefined,
@@ -68,7 +68,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateProject(createProjectId(), {
               ...project,
               name: 1 as any,
@@ -78,7 +78,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateProject(createProjectId(), {
               ...project,
               name: '',
@@ -90,7 +90,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
 
       describe('if description', () => {
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateProject(createProjectId(), {
               ...project,
               description: 1 as any,
@@ -100,7 +100,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateProject(createProjectId(), {
               ...project,
               description: '',
@@ -112,14 +112,14 @@ describe('PUT /project/v1/projects/{projectId}', () => {
 
       describe('if projectId', () => {
         it('is not mongo id', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateProject(createProjectId('not-valid'), projectToUpdate)
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('projectId', 'pathParameters');
         });
 
         it('does not belong to any project', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateProject(createProjectId(), projectToUpdate)
             .expectNotFoundResponse();
         });

@@ -185,6 +185,10 @@ jobs:
           key: test-dependencies-v1-{{ checksum "test/package.json" }}
 
       - run:
+          name: Set env name for test
+          command: export CYPRESS_ENV=<<parameters.env>>
+
+      - run:
           name: Set environment variables
           command: cat env >> $BASH_ENV
 

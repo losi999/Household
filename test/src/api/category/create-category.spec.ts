@@ -24,10 +24,18 @@ describe('POST category/v1/categories', () => {
     parentCategoryDocument._id = new Types.ObjectId();
   });
 
+  describe('called as anonymous', () => {
+    it('should return unauthorized', () => {
+      cy.unauthenticate()
+        .requestCreateCategory(request)
+        .expectUnauthorizedResponse();
+    });
+  });
+
   describe('called as an admin', () => {
 
     it('should create category', () => {
-      cy.authenticate('admin1')
+      cy.authenticate(1)
         .requestCreateCategory(request)
         .expectCreatedResponse()
         .validateCategoryDocument(request);
@@ -35,7 +43,7 @@ describe('POST category/v1/categories', () => {
 
     it('should create category with parent category', () => {
       cy.saveCategoryDocument(parentCategoryDocument)
-        .authenticate('admin1')
+        .authenticate(1)
         .requestCreateCategory({
           ...request,
           parentCategoryId: createCategoryId(parentCategoryDocument._id),
@@ -47,7 +55,7 @@ describe('POST category/v1/categories', () => {
     describe('should return error', () => {
       describe('if name', () => {
         it('is missing from body', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreateCategory({
               ...request,
               name: undefined,
@@ -57,7 +65,7 @@ describe('POST category/v1/categories', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreateCategory({
               ...request,
               name: 1 as any,
@@ -67,7 +75,7 @@ describe('POST category/v1/categories', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreateCategory({
               ...request,
               name: '',
@@ -79,7 +87,7 @@ describe('POST category/v1/categories', () => {
 
       describe('if categoryType', () => {
         it('is missing from body', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreateCategory({
               ...request,
               categoryType: undefined,
@@ -89,7 +97,7 @@ describe('POST category/v1/categories', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreateCategory({
               ...request,
               categoryType: 1 as any,
@@ -99,7 +107,7 @@ describe('POST category/v1/categories', () => {
         });
 
         it('is not a valid enum value', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreateCategory({
               ...request,
               categoryType: 'not-category-type' as any,
@@ -111,7 +119,7 @@ describe('POST category/v1/categories', () => {
 
       describe('if parentCategoryId', () => {
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreateCategory({
               ...request,
               parentCategoryId: 1 as any,
@@ -121,7 +129,7 @@ describe('POST category/v1/categories', () => {
         });
 
         it('does not match pattern', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreateCategory({
               ...request,
               parentCategoryId: 'not-mongo-id' as Category.IdType,
@@ -131,7 +139,7 @@ describe('POST category/v1/categories', () => {
         });
 
         it('does not belong to any category', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreateCategory({
               ...request,
               parentCategoryId: createCategoryId(),

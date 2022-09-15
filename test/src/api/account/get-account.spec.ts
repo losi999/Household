@@ -98,7 +98,7 @@ describe('GET /account/v1/accounts/{accountId}', () => {
   });
 
   describe('called as anonymous', () => {
-    it.skip('should return unauthorized', () => {
+    it('should return unauthorized', () => {
       cy.unauthenticate()
         .requestGetAccount(createAccountId())
         .expectUnauthorizedResponse();
@@ -113,7 +113,7 @@ describe('GET /account/v1/accounts/{accountId}', () => {
         .saveTransactionDocument(splitTransactionDocument)
         .saveTransactionDocument(transferTransactionDocument)
         .saveTransactionDocument(invertedTransferTransactionDocument)
-        .authenticate('admin1')
+        .authenticate(1)
         .requestGetAccount(createAccountId(accountDocument._id))
         .expectOkResponse()
         .expectValidResponseSchema(schema)
@@ -122,14 +122,14 @@ describe('GET /account/v1/accounts/{accountId}', () => {
 
     describe('should return error if accountId', () => {
       it('is not mongo id', () => {
-        cy.authenticate('admin1')
+        cy.authenticate(1)
           .requestGetAccount(createAccountId('not-valid'))
           .expectBadRequestResponse()
           .expectWrongPropertyPattern('accountId', 'pathParameters');
       });
 
       it('does not belong to any account', () => {
-        cy.authenticate('admin1')
+        cy.authenticate(1)
           .requestGetAccount(createAccountId())
           .expectNotFoundResponse();
       });

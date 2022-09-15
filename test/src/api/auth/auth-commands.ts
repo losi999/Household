@@ -1,11 +1,16 @@
 import { Auth } from '@household/shared/types/types';
 import { CommandFunction } from '@household/test/api/types';
+import { isLocalhost } from '@household/test/api/utils';
 
 const unauthenticate = () => {
   return undefined as Cypress.ChainableRequest;
 };
 
 const authenticate = (userIndex: number) => {
+  if (isLocalhost()) {
+    return undefined as Cypress.ChainableRequest;
+  }
+
   const email = `losonczil+${userIndex}@gmail.com`;
   const body: Auth.Login.Request = {
     email,

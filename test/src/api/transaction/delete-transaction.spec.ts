@@ -84,7 +84,7 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
     transferTransactionDocument._id = new Types.ObjectId();
   });
 
-  describe.skip('called as anonymous', () => {
+  describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
         .requestDeleteTransaction(createTransactionId())
@@ -98,7 +98,7 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
       cy.saveAccountDocument(accountDocument)
         .saveAccountDocument(transferAccountDocument)
         .saveTransactionDocument(paymentTransactionDocument)
-        .authenticate('admin1')
+        .authenticate(1)
         .requestDeleteTransaction(createTransactionId(paymentTransactionDocument._id))
         .expectNoContentResponse()
         .validateTransactionDeleted(createTransactionId(paymentTransactionDocument._id));
@@ -108,7 +108,7 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
       cy.saveAccountDocument(accountDocument)
         .saveAccountDocument(transferAccountDocument)
         .saveTransactionDocument(splitTransactionDocument)
-        .authenticate('admin1')
+        .authenticate(1)
         .requestDeleteTransaction(createTransactionId(splitTransactionDocument._id))
         .expectNoContentResponse()
         .validateTransactionDeleted(createTransactionId(splitTransactionDocument._id));
@@ -118,7 +118,7 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
       cy.saveAccountDocument(accountDocument)
         .saveAccountDocument(transferAccountDocument)
         .saveTransactionDocument(transferTransactionDocument)
-        .authenticate('admin1')
+        .authenticate(1)
         .requestDeleteTransaction(createTransactionId(transferTransactionDocument._id))
         .expectNoContentResponse()
         .validateTransactionDeleted(createTransactionId(transferTransactionDocument._id));
@@ -127,7 +127,7 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
     describe('should return error', () => {
       describe('if transactionId', () => {
         it('is not mongo id', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestDeleteTransaction(createTransactionId('not-valid'))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('transactionId', 'pathParameters');

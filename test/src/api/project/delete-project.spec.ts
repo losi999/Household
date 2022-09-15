@@ -18,7 +18,7 @@ describe('DELETE /project/v1/projects/{projectId}', () => {
     projectDocument._id = new Types.ObjectId();
   });
 
-  describe.skip('called as anonymous', () => {
+  describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
         .requestDeleteProject(createProjectId())
@@ -29,7 +29,7 @@ describe('DELETE /project/v1/projects/{projectId}', () => {
   describe('called as an admin', () => {
 
     it('should delete project', () => {
-      cy.authenticate('admin1')
+      cy.authenticate(1)
         .requestDeleteProject(createProjectId(projectDocument._id))
         .expectNoContentResponse()
         .validateProjectDeleted(createProjectId(projectDocument._id));
@@ -105,7 +105,7 @@ describe('DELETE /project/v1/projects/{projectId}', () => {
           .saveProjectDocument(projectDocument)
           .saveTransactionDocument(paymentTransactionDocument)
           .saveTransactionDocument(splitTransactionDocument)
-          .authenticate('admin1')
+          .authenticate(1)
           .requestDeleteProject(createProjectId(projectDocument._id))
           .expectNoContentResponse()
           .validateProjectDeleted(createProjectId(projectDocument._id))
@@ -117,7 +117,7 @@ describe('DELETE /project/v1/projects/{projectId}', () => {
     describe('should return error', () => {
       describe('if projectId', () => {
         it('is not mongo id', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestDeleteProject(createProjectId('not-valid'))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('projectId', 'pathParameters');

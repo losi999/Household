@@ -81,7 +81,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
     categoryDocument._id = new Types.ObjectId();
   });
 
-  describe.skip('called as anonymous', () => {
+  describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
         .requestDeleteCategory(createCategoryId())
@@ -93,7 +93,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
 
     it('should delete category', () => {
       cy.saveCategoryDocument(categoryDocument)
-        .authenticate('admin1')
+        .authenticate(1)
         .requestDeleteCategory(createCategoryId(categoryDocument._id))
         .expectNoContentResponse()
         .validateCategoryDeleted(createCategoryId(categoryDocument._id));
@@ -129,7 +129,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
         cy.saveCategoryDocument(categoryDocument)
           .saveCategoryDocument(childCategory)
           .saveCategoryDocument(grandChildCategory)
-          .authenticate('admin1')
+          .authenticate(1)
           .requestDeleteCategory(createCategoryId(categoryDocument._id))
           .expectNoContentResponse()
           .validateCategoryDeleted(createCategoryId(categoryDocument._id))
@@ -141,7 +141,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
         cy.saveCategoryDocument(categoryDocument)
           .saveCategoryDocument(childCategory)
           .saveCategoryDocument(grandChildCategory)
-          .authenticate('admin1')
+          .authenticate(1)
           .requestDeleteCategory(createCategoryId(childCategory._id))
           .expectNoContentResponse()
           .validateCategoryDeleted(createCategoryId(childCategory._id))
@@ -172,7 +172,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
           .saveCategoryDocument(categoryDocument)
           .saveTransactionDocument(paymentTransactionDocument)
           .saveTransactionDocument(splitTransactionDocument)
-          .authenticate('admin1')
+          .authenticate(1)
           .requestDeleteCategory(createCategoryId(categoryDocument._id))
           .expectNoContentResponse()
           .validateCategoryDeleted(createCategoryId(categoryDocument._id))
@@ -201,7 +201,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
           .saveCategoryDocument(childCategoryDocument)
           .saveTransactionDocument(paymentTransactionDocument)
           .saveTransactionDocument(splitTransactionDocument)
-          .authenticate('admin1')
+          .authenticate(1)
           .requestDeleteCategory(createCategoryId(childCategoryDocument._id))
           .expectNoContentResponse()
           .validateCategoryDeleted(createCategoryId(childCategoryDocument._id))
@@ -213,7 +213,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
     describe('should return error', () => {
       describe('if categoryId', () => {
         it('is not mongo id', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestDeleteCategory(createCategoryId('not-valid'))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('categoryId', 'pathParameters');

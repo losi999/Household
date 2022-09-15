@@ -137,6 +137,14 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
     };
   });
 
+  describe('called as anonymous', () => {
+    it('should return unauthorized', () => {
+      cy.unauthenticate()
+        .requestUpdateToSplitTransaction(createTransactionId(), request)
+        .expectUnauthorizedResponse();
+    });
+  });
+
   describe('called as an admin', () => {
     describe('should create transaction', () => {
       it('with complete body', () => {
@@ -147,7 +155,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
           .saveCategoryDocument(inventoryCategoryDocument)
           .saveProjectDocument(projectDocument)
           .saveRecipientDocument(recipientDocument)
-          .authenticate('admin1')
+          .authenticate(1)
           .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), request)
           .expectCreatedResponse()
           .validateTransactionSplitDocument(request, regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
@@ -165,7 +173,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), modifiedRequest)
             .expectCreatedResponse()
             .validateTransactionSplitDocument(modifiedRequest, regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
@@ -182,7 +190,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
             .saveCategoryDocument(invoiceCategoryDocument)
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), modifiedRequest)
             .expectCreatedResponse()
             .validateTransactionSplitDocument(modifiedRequest, regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
@@ -203,7 +211,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), modifiedRequest)
             .expectCreatedResponse()
             .validateTransactionSplitDocument(modifiedRequest, regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
@@ -224,7 +232,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), modifiedRequest)
             .expectCreatedResponse()
             .validateTransactionSplitDocument(modifiedRequest, regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
@@ -249,7 +257,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), modifiedRequest)
             .expectCreatedResponse()
             .validateTransactionSplitDocument(modifiedRequest, regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
@@ -274,7 +282,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), modifiedRequest)
             .expectCreatedResponse()
             .validateTransactionSplitDocument(modifiedRequest, regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
@@ -299,7 +307,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), modifiedRequest)
             .expectCreatedResponse()
             .validateTransactionSplitDocument(modifiedRequest, regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
@@ -320,7 +328,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), modifiedRequest)
             .expectCreatedResponse()
             .validateTransactionSplitDocument(modifiedRequest, regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
@@ -344,7 +352,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), modifiedRequest)
             .expectCreatedResponse()
             .validateTransactionSplitDocument(modifiedRequest, regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
@@ -362,7 +370,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
             .saveAccountDocument(accountDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), modifiedRequest)
             .expectCreatedResponse()
             .validateTransactionSplitDocument(modifiedRequest);
@@ -382,7 +390,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
             .saveCategoryDocument(invoiceCategoryDocument)
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), modifiedRequest)
             .expectCreatedResponse()
             .validateTransactionSplitDocument(modifiedRequest, regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
@@ -393,14 +401,14 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
     describe('should return error', () => {
       describe('if transactionId', () => {
         it('is not mongo id', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId('not-valid'), request)
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('transactionId', 'pathParameters');
         });
 
         it('does not belong to any transaction', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(), request)
             .expectNotFoundResponse();
         });
@@ -408,7 +416,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
 
       describe('if body', () => {
         it('has additional properties', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               extra: 123,
@@ -421,7 +429,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
       describe('if amount', () => {
         it('is not the same as sum of splits', () => {
           cy.saveTransactionDocument(originalDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               amount: 2,
@@ -431,7 +439,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
         });
 
         it('is missing', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               amount: undefined,
@@ -441,7 +449,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
         });
 
         it('is not number', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               amount: '1' as any,
@@ -453,7 +461,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
 
       describe('if description', () => {
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               description: 1 as any,
@@ -463,7 +471,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               description: '',
@@ -475,7 +483,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
 
       describe('if issuedAt', () => {
         it('is missing', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               issuedAt: undefined,
@@ -485,7 +493,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               issuedAt: 1 as any,
@@ -495,7 +503,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
         });
 
         it('is not date-time format', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               issuedAt: 'not-date-time',
@@ -513,7 +521,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               accountId: createAccountId(),
@@ -523,7 +531,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
         });
 
         it('is missing', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               accountId: undefined,
@@ -533,7 +541,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               accountId: 1 as any,
@@ -543,7 +551,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               accountId: createAccountId('not-mongo-id'),
@@ -561,7 +569,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
             .saveCategoryDocument(invoiceCategoryDocument)
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               recipientId: createRecipientId(),
@@ -571,7 +579,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               recipientId: 1 as any,
@@ -581,7 +589,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               recipientId: createRecipientId('not-mongo-id'),
@@ -593,7 +601,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
 
       describe('if splits', () => {
         it('is missing', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: undefined,
@@ -603,7 +611,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
         });
 
         it('is not an array', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: 1 as any,
@@ -613,7 +621,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
         });
 
         it('is empty array', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: [],
@@ -625,7 +633,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
 
       describe('if splits[0]', () => {
         it('is not object', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: [1] as any,
@@ -635,7 +643,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
         });
 
         it('has additional properties', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: request.splits.map(s => ({
@@ -650,7 +658,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
 
       describe('if splits.amount', () => {
         it('is missing', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: request.splits.map(s => ({
@@ -663,7 +671,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
         });
 
         it('is not number', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: request.splits.map(s => ({
@@ -678,7 +686,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
 
       describe('if splits.description', () => {
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: request.splits.map(s => ({
@@ -691,7 +699,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: request.splits.map(s => ({
@@ -706,7 +714,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
 
       describe('if splits.inventory', () => {
         it('is not object', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: request.splits.map(s => ({
@@ -719,7 +727,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
         });
 
         it('has additional properties', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: request.splits.map(s => ({
@@ -737,7 +745,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
 
       describe('if splits.inventory.quantity', () => {
         it('is missing', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: request.splits.map(s => ({
@@ -753,7 +761,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
         });
 
         it('is not number', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: request.splits.map(s => ({
@@ -769,7 +777,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
         });
 
         it('is too small', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: request.splits.map(s => ({
@@ -787,7 +795,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
 
       describe('if splits.inventory.brand', () => {
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: request.splits.map(s => ({
@@ -803,7 +811,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: request.splits.map(s => ({
@@ -821,7 +829,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
 
       describe('if splits.inventory.measurement', () => {
         it('is not number', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: request.splits.map(s => ({
@@ -837,7 +845,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
         });
 
         it('is too small', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: request.splits.map(s => ({
@@ -855,7 +863,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
 
       describe('if splits.inventory.unitOfMeasurement', () => {
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: request.splits.map(s => ({
@@ -871,7 +879,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
         });
 
         it('is not a valid enum value', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: request.splits.map(s => ({
@@ -889,7 +897,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
 
       describe('if splits.invoice', () => {
         it('is not object', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: request.splits.map(s => ({
@@ -902,7 +910,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
         });
 
         it('has additional properties', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: request.splits.map(s => ({
@@ -920,7 +928,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
 
       describe('if splits.invoice.invoiceNumber', () => {
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: request.splits.map(s => ({
@@ -936,7 +944,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: request.splits.map(s => ({
@@ -954,7 +962,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
 
       describe('if splits.invoice.billingEndDate', () => {
         it('is missing', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: request.splits.map(s => ({
@@ -970,7 +978,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: request.splits.map(s => ({
@@ -986,7 +994,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
         });
 
         it('is not date format', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: request.splits.map(s => ({
@@ -1002,7 +1010,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
         });
 
         it('is earlier than billingStartDate', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: request.splits.map(s => ({
@@ -1021,7 +1029,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
 
       describe('if splits.invoice.billingStartDate', () => {
         it('is missing', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: request.splits.map(s => ({
@@ -1037,7 +1045,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: request.splits.map(s => ({
@@ -1053,7 +1061,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
         });
 
         it('is not date format', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: request.splits.map(s => ({
@@ -1075,7 +1083,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
             .saveAccountDocument(accountDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: request.splits.map(s => ({
@@ -1088,7 +1096,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: request.splits.map(s => ({
@@ -1101,7 +1109,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: request.splits.map(s => ({
@@ -1122,7 +1130,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
             .saveCategoryDocument(invoiceCategoryDocument)
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: request.splits.map(s => ({
@@ -1135,7 +1143,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: request.splits.map(s => ({
@@ -1148,7 +1156,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
               ...request,
               splits: request.splits.map(s => ({

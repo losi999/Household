@@ -7,10 +7,17 @@ describe('POST account/v1/accounts', () => {
     currency: 'Ft',
   };
 
-  describe('called as an admin', () => {
+  describe('called as anonymous', () => {
+    it('should return unauthorized', () => {
+      cy.unauthenticate()
+        .requestCreateAccount(request)
+        .expectUnauthorizedResponse();
+    });
+  });
 
+  describe('called as an admin', () => {
     it('should create account', () => {
-      cy.authenticate('admin1')
+      cy.authenticate(1)
         .requestCreateAccount(request)
         .expectCreatedResponse()
         .validateAccountDocument(request);
@@ -19,7 +26,7 @@ describe('POST account/v1/accounts', () => {
     describe('should return error', () => {
       describe('if name', () => {
         it('is missing from body', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreateAccount({
               ...request,
               name: undefined,
@@ -29,7 +36,7 @@ describe('POST account/v1/accounts', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreateAccount({
               ...request,
               name: 1 as any,
@@ -39,7 +46,7 @@ describe('POST account/v1/accounts', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreateAccount({
               ...request,
               name: '',
@@ -51,7 +58,7 @@ describe('POST account/v1/accounts', () => {
 
       describe('if accountType', () => {
         it('is missing from body', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreateAccount({
               ...request,
               accountType: undefined,
@@ -61,7 +68,7 @@ describe('POST account/v1/accounts', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreateAccount({
               ...request,
               accountType: 1 as any,
@@ -71,7 +78,7 @@ describe('POST account/v1/accounts', () => {
         });
 
         it('is not a valid enum value', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreateAccount({
               ...request,
               accountType: 'not-account-type' as any,
@@ -83,7 +90,7 @@ describe('POST account/v1/accounts', () => {
 
       describe('if currency', () => {
         it('is missing from body', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreateAccount({
               ...request,
               currency: undefined,
@@ -93,7 +100,7 @@ describe('POST account/v1/accounts', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreateAccount({
               ...request,
               currency: 1 as any,
@@ -103,7 +110,7 @@ describe('POST account/v1/accounts', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreateAccount({
               ...request,
               currency: '',

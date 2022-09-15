@@ -103,7 +103,7 @@ describe('GET /account/v1/accounts', () => {
     invertedTransferTransactionDocument._id = new Types.ObjectId();
   });
 
-  describe.skip('called as anonymous', () => {
+  describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
         .requestGetAccountList()
@@ -119,7 +119,7 @@ describe('GET /account/v1/accounts', () => {
         .saveTransactionDocument(splitTransactionDocument)
         .saveTransactionDocument(transferTransactionDocument)
         .saveTransactionDocument(invertedTransferTransactionDocument)
-        .authenticate('admin1')
+        .authenticate(1)
         .requestGetAccountList()
         .expectOkResponse()
         .expectValidResponseSchema(schema)

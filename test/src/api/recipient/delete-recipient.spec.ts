@@ -17,7 +17,7 @@ describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
     recipientDocument._id = new Types.ObjectId();
   });
 
-  describe.skip('called as anonymous', () => {
+  describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
         .requestDeleteRecipient(createRecipientId())
@@ -29,7 +29,7 @@ describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
 
     it('should delete recipient', () => {
       cy.saveRecipientDocument(recipientDocument)
-        .authenticate('admin1')
+        .authenticate(1)
         .requestDeleteRecipient(createRecipientId(recipientDocument._id))
         .expectNoContentResponse()
         .validateRecipientDeleted(createRecipientId(recipientDocument._id));
@@ -98,7 +98,7 @@ describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
           .saveRecipientDocument(recipientDocument)
           .saveTransactionDocument(paymentTransactionDocument)
           .saveTransactionDocument(splitTransactionDocument)
-          .authenticate('admin1')
+          .authenticate(1)
           .requestDeleteRecipient(createRecipientId(recipientDocument._id))
           .expectNoContentResponse()
           .validateRecipientDeleted(createRecipientId(recipientDocument._id))
@@ -110,7 +110,7 @@ describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
     describe('should return error', () => {
       describe('if recipientId', () => {
         it('is not mongo id', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestDeleteRecipient(createRecipientId('not-valid'))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('recipientId', 'pathParameters');

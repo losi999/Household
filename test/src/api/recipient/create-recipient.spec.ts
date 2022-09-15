@@ -15,7 +15,7 @@ describe('POST recipient/v1/recipients', () => {
 
   describe('called as an admin', () => {
 
-    it.only('should create recipient', () => {
+    it('should create recipient', () => {
       cy.authenticate(1)
         .requestCreateRecipient(request)
         .expectCreatedResponse()

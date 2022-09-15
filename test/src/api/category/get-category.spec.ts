@@ -38,7 +38,7 @@ describe('GET /category/v1/categories/{categoryId}', () => {
   });
 
   describe('called as anonymous', () => {
-    it.skip('should return unauthorized', () => {
+    it('should return unauthorized', () => {
       cy.unauthenticate()
         .requestGetCategory(createCategoryId())
         .expectUnauthorizedResponse();
@@ -48,7 +48,7 @@ describe('GET /category/v1/categories/{categoryId}', () => {
   describe('called as an admin', () => {
     it('should get category by id', () => {
       cy.saveCategoryDocument(categoryDocument)
-        .authenticate('admin1')
+        .authenticate(1)
         .requestGetCategory(createCategoryId(categoryDocument._id))
         .expectOkResponse()
         .expectValidResponseSchema(schema)
@@ -58,7 +58,7 @@ describe('GET /category/v1/categories/{categoryId}', () => {
     it('with child category should get category by id', () => {
       cy.saveCategoryDocument(categoryDocument)
         .saveCategoryDocument(childCategoryDocument)
-        .authenticate('admin1')
+        .authenticate(1)
         .requestGetCategory(createCategoryId(childCategoryDocument._id))
         .expectOkResponse()
         .expectValidResponseSchema(schema)
@@ -67,14 +67,14 @@ describe('GET /category/v1/categories/{categoryId}', () => {
 
     describe('should return error if categoryId', () => {
       it('is not mongo id', () => {
-        cy.authenticate('admin1')
+        cy.authenticate(1)
           .requestGetCategory(createCategoryId('not-valid'))
           .expectBadRequestResponse()
           .expectWrongPropertyPattern('categoryId', 'pathParameters');
       });
 
       it('does not belong to any category', () => {
-        cy.authenticate('admin1')
+        cy.authenticate(1)
           .requestGetCategory(createCategoryId())
           .expectNotFoundResponse();
       });

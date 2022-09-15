@@ -21,7 +21,7 @@ describe('GET /project/v1/projects', () => {
     projectDocument2 = projectDocumentConverter.create(project2, Cypress.env('EXPIRES_IN'));
   });
 
-  describe.skip('called as anonymous', () => {
+  describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
         .requestGetProjectList()
@@ -33,7 +33,7 @@ describe('GET /project/v1/projects', () => {
     it('should get a list of projects', () => {
       cy.saveProjectDocument(projectDocument1)
         .saveProjectDocument(projectDocument2)
-        .authenticate('admin1')
+        .authenticate(1)
         .requestGetProjectList()
         .expectOkResponse()
         .expectValidResponseSchema(schema);

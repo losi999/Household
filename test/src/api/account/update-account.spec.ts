@@ -23,7 +23,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
     accountDocument._id = new Types.ObjectId();
   });
 
-  describe.skip('called as anonymous', () => {
+  describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
         .requestUpdateAccount(createAccountId(), accountToUpdate)
@@ -32,9 +32,9 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
   });
 
   describe('called as an admin', () => {
-    it('should update a account', () => {
+    it('should update account', () => {
       cy.saveAccountDocument(accountDocument)
-        .authenticate('admin1')
+        .authenticate(1)
         .requestUpdateAccount(createAccountId(accountDocument._id), accountToUpdate)
         .expectCreatedResponse()
         .validateAccountDocument(accountToUpdate);
@@ -42,7 +42,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
     describe('should return error', () => {
       describe('if name', () => {
         it('is missing from body', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateAccount(createAccountId(), {
               ...account,
               name: undefined,
@@ -52,7 +52,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateAccount(createAccountId(), {
               ...account,
               name: 1 as any,
@@ -62,7 +62,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateAccount(createAccountId(), {
               ...account,
               name: '',
@@ -74,7 +74,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
 
       describe('if accountType', () => {
         it('is missing from body', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateAccount(createAccountId(), {
               ...account,
               accountType: undefined,
@@ -84,7 +84,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateAccount(createAccountId(), {
               ...account,
               accountType: 1 as any,
@@ -94,7 +94,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
         });
 
         it('is not a valid enum value', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateAccount(createAccountId(), {
               ...account,
               accountType: 'not-account-type' as any,
@@ -106,7 +106,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
 
       describe('if currency', () => {
         it('is missing from body', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateAccount(createAccountId(), {
               ...account,
               currency: undefined,
@@ -116,7 +116,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateAccount(createAccountId(), {
               ...account,
               currency: 1 as any,
@@ -126,7 +126,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateAccount(createAccountId(), {
               ...account,
               currency: '',
@@ -138,14 +138,14 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
 
       describe('if accountId', () => {
         it('is not mongo id', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateAccount(createAccountId('not-valid'), accountToUpdate)
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('accountId', 'pathParameters');
         });
 
         it('does not belong to any account', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateAccount(createAccountId(), accountToUpdate)
             .expectNotFoundResponse();
         });

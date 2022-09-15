@@ -17,7 +17,7 @@ describe('GET /recipient/v1/recipients/{recipientId}', () => {
   });
 
   describe('called as anonymous', () => {
-    it.skip('should return unauthorized', () => {
+    it('should return unauthorized', () => {
       cy.unauthenticate()
         .requestGetRecipient(createRecipientId())
         .expectUnauthorizedResponse();
@@ -27,7 +27,7 @@ describe('GET /recipient/v1/recipients/{recipientId}', () => {
   describe('called as an admin', () => {
     it('should get recipient by id', () => {
       cy.saveRecipientDocument(recipientDocument)
-        .authenticate('admin1')
+        .authenticate(1)
         .requestGetRecipient(createRecipientId(recipientDocument._id))
         .expectOkResponse()
         .expectValidResponseSchema(schema)
@@ -36,14 +36,14 @@ describe('GET /recipient/v1/recipients/{recipientId}', () => {
 
     describe('should return error if recipientId', () => {
       it('is not mongo id', () => {
-        cy.authenticate('admin1')
+        cy.authenticate(1)
           .requestGetRecipient(createRecipientId('not-valid'))
           .expectBadRequestResponse()
           .expectWrongPropertyPattern('recipientId', 'pathParameters');
       });
 
       it('does not belong to any recipient', () => {
-        cy.authenticate('admin1')
+        cy.authenticate(1)
           .requestGetRecipient(createRecipientId())
           .expectNotFoundResponse();
       });

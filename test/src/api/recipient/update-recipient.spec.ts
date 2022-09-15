@@ -19,7 +19,7 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
     recipientDocument._id = new Types.ObjectId();
   });
 
-  describe.skip('called as anonymous', () => {
+  describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
         .requestUpdateRecipient(createRecipientId(), recipientToUpdate)
@@ -30,7 +30,7 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
   describe('called as an admin', () => {
     it('should update a recipient', () => {
       cy.saveRecipientDocument(recipientDocument)
-        .authenticate('admin1')
+        .authenticate(1)
         .requestUpdateRecipient(createRecipientId(recipientDocument._id), recipientToUpdate)
         .expectCreatedResponse()
         .validateRecipientDocument(recipientToUpdate);
@@ -39,7 +39,7 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
     describe('should return error', () => {
       describe('if name', () => {
         it('is missing from body', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateRecipient(createRecipientId(), {
               ...recipient,
               name: undefined,
@@ -49,7 +49,7 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateRecipient(createRecipientId(), {
               ...recipient,
               name: 1 as any,
@@ -59,7 +59,7 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateRecipient(createRecipientId(), {
               ...recipient,
               name: '',
@@ -71,14 +71,14 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
 
       describe('if recipientId', () => {
         it('is not mongo id', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateRecipient(createRecipientId('not-valid'), recipientToUpdate)
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('recipientId', 'pathParameters');
         });
 
         it('does not belong to any recipient', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateRecipient(createRecipientId(), recipientToUpdate)
             .expectNotFoundResponse();
         });

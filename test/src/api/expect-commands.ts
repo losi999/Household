@@ -1,6 +1,7 @@
 import { CommandFunctionWithPreviousSubject } from '@household/test/api/types';
 import { JSONSchema7 } from 'json-schema';
 import { validatorService } from '@household/shared/dependencies/services/validator-service';
+import { isLocalhost } from '@household/test/api/utils';
 
 const expectOkResponse = (response: Cypress.Response<any>) => {
   expect(response.status).to.equal(200);
@@ -23,7 +24,9 @@ const expectBadRequestResponse = (response: Cypress.Response<any>) => {
 };
 
 const expectUnauthorizedResponse = (response: Cypress.Response<any>) => {
-  expect(response.status).to.equal(401);
+  if (!isLocalhost()) {
+    expect(response.status).to.equal(401);
+  }
   return response.body as Cypress.ChainableResponseBody;
 };
 

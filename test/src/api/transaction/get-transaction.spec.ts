@@ -167,7 +167,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
     transferTransactionDocument._id = new Types.ObjectId();
   });
 
-  describe.skip('called as anonymous', () => {
+  describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
         .requestGetTransaction(createAccountId(accountDocument._id), createTransactionId())
@@ -194,7 +194,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .saveRecipientDocument(recipientDocument)
         .saveCategoryDocument(regularCategoryDocument)
         .saveTransactionDocument(document)
-        .authenticate('admin1')
+        .authenticate(1)
         .requestGetTransaction(createAccountId(accountDocument._id), createTransactionId(document._id))
         .expectOkResponse()
         .expectValidResponseSchema(paymentTransactionSchema)
@@ -219,7 +219,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .saveRecipientDocument(recipientDocument)
         .saveCategoryDocument(inventoryCategoryDocument)
         .saveTransactionDocument(document)
-        .authenticate('admin1')
+        .authenticate(1)
         .requestGetTransaction(createAccountId(accountDocument._id), createTransactionId(document._id))
         .expectOkResponse()
         .expectValidResponseSchema(paymentTransactionSchema)
@@ -244,7 +244,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .saveRecipientDocument(recipientDocument)
         .saveCategoryDocument(invoiceCategoryDocument)
         .saveTransactionDocument(document)
-        .authenticate('admin1')
+        .authenticate(1)
         .requestGetTransaction(createAccountId(accountDocument._id), createTransactionId(document._id))
         .expectOkResponse()
         .expectValidResponseSchema(paymentTransactionSchema)
@@ -259,7 +259,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .saveCategoryDocument(invoiceCategoryDocument)
         .saveCategoryDocument(inventoryCategoryDocument)
         .saveTransactionDocument(splitTransactionDocument)
-        .authenticate('admin1')
+        .authenticate(1)
         .requestGetTransaction(createAccountId(accountDocument._id), createTransactionId(splitTransactionDocument._id))
         .expectOkResponse()
         .expectValidResponseSchema(splitTransactionSchema)
@@ -270,7 +270,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
       cy.saveAccountDocument(accountDocument)
         .saveAccountDocument(transferAccountDocument)
         .saveTransactionDocument(transferTransactionDocument)
-        .authenticate('admin1')
+        .authenticate(1)
         .requestGetTransaction(createAccountId(accountDocument._id), createTransactionId(transferTransactionDocument._id))
         .expectOkResponse()
         .expectValidResponseSchema(transferTransactionSchema)
@@ -280,14 +280,14 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
     describe('should return error', () => {
       describe('if transactionId', () => {
         it('is not mongo id', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestGetTransaction(createAccountId(), createTransactionId('not-valid'))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('transactionId', 'pathParameters');
         });
 
         it('does not belong to any transaction', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestGetTransaction(createAccountId(), createTransactionId())
             .expectNotFoundResponse();
         });
@@ -295,7 +295,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
 
       describe('if accountId', () => {
         it('is not mongo id', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestGetTransaction(createAccountId('not-valid'), createTransactionId())
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('accountId', 'pathParameters');

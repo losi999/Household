@@ -54,13 +54,21 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
     };
   });
 
+  describe('called as anonymous', () => {
+    it('should return unauthorized', () => {
+      cy.unauthenticate()
+        .requestUpdateToTransferTransaction(createTransactionId(), request)
+        .expectUnauthorizedResponse();
+    });
+  });
+
   describe('called as an admin', () => {
     describe('should create transaction', () => {
       it('with complete body', () => {
         cy.saveTransactionDocument(originalDocument)
           .saveAccountDocument(accountDocument)
           .saveAccountDocument(transferAccountDocument)
-          .authenticate('admin1')
+          .authenticate(1)
           .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), request)
           .expectCreatedResponse()
           .validateTransactionTransferDocument(request);
@@ -75,7 +83,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
           cy.saveTransactionDocument(originalDocument)
             .saveAccountDocument(accountDocument)
             .saveAccountDocument(transferAccountDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), modifiedRequest)
             .expectCreatedResponse()
             .validateTransactionTransferDocument(modifiedRequest);
@@ -86,14 +94,14 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
     describe('should return error', () => {
       describe('if transactionId', () => {
         it('is not mongo id', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToTransferTransaction(createTransactionId('not-valid'), request)
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('transactionId', 'pathParameters');
         });
 
         it('does not belong to any transaction', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToTransferTransaction(createTransactionId(), request)
             .expectNotFoundResponse();
         });
@@ -101,7 +109,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
 
       describe('if body', () => {
         it('has additional properties', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), {
               ...request,
               extra: 123,
@@ -113,7 +121,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
 
       describe('if amount', () => {
         it('is missing', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), {
               ...request,
               amount: undefined,
@@ -123,7 +131,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
         });
 
         it('is not number', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), {
               ...request,
               amount: '1' as any,
@@ -135,7 +143,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
 
       describe('if description', () => {
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), {
               ...request,
               description: 1 as any,
@@ -145,7 +153,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), {
               ...request,
               description: '',
@@ -157,7 +165,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
 
       describe('if issuedAt', () => {
         it('is missing', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), {
               ...request,
               issuedAt: undefined,
@@ -167,7 +175,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), {
               ...request,
               issuedAt: 1 as any,
@@ -177,7 +185,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
         });
 
         it('is not date-time format', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), {
               ...request,
               issuedAt: 'not-date-time',
@@ -191,7 +199,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
         it('does not belong to any account', () => {
           cy.saveTransactionDocument(originalDocument)
             .saveAccountDocument(transferAccountDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), {
               ...request,
               accountId: createAccountId(),
@@ -200,7 +208,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
             .expectMessage('One of the accounts is not found');
         });
         it('is missing', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), {
               ...request,
               accountId: undefined,
@@ -210,7 +218,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), {
               ...request,
               accountId: 1 as any,
@@ -220,7 +228,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), {
               ...request,
               accountId: createAccountId('not-mongo-id'),
@@ -232,7 +240,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
 
       describe('if transferAccountId', () => {
         it('is the same as accountId', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), {
               ...request,
               transferAccountId: createAccountId(accountDocument._id),
@@ -244,7 +252,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
         it('does not belong to any account', () => {
           cy.saveTransactionDocument(originalDocument)
             .saveAccountDocument(accountDocument)
-            .authenticate('admin1')
+            .authenticate(1)
             .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), {
               ...request,
               transferAccountId: createAccountId(),
@@ -260,14 +268,14 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
               ...transferAccountDocument,
               currency: '$',
             })
-            .authenticate('admin1')
+            .authenticate(1)
             .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), request)
             .expectBadRequestResponse()
             .expectMessage('Accounts must be in the same currency');
         });
 
         it('is missing', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), {
               ...request,
               transferAccountId: undefined,
@@ -277,7 +285,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), {
               ...request,
               transferAccountId: 1 as any,
@@ -287,7 +295,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), {
               ...request,
               transferAccountId: createAccountId('not-mongo-id'),
