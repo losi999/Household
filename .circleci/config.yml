@@ -2,24 +2,6 @@ version: 2.1
 orbs:
   sam: circleci/aws-sam-serverless@3.0
 jobs:
-  dummy:
-    executor: sam/default
-    parameters:
-      env:
-        type: string
-      mongodb_username:
-        type: string
-      mongodb_password:
-        type: string
-      mongodb_cluster_domain:
-        type: string
-    working_directory: ~/repo      
-    - attach_workspace:
-          at: ~/  
-    steps:
-      - run:
-          name: Get Database name
-          command: echo MONGODB_CONNECTION_STRING=mongodb+srv://<<parameters.mongodb_username>>:<<parameters.mongodb_password>>@<<parameters.mongodb_cluster_domain>>/household-<<parameters.env>>?retryWrites=true&w=majority      
   install:
     docker:
       - image: circleci/node:16.13.1
@@ -167,7 +149,7 @@ jobs:
           command: aws lambda invoke --function-name Household-<<parameters.env>>-PostDeploy /dev/null
       - run:
           name: Get Database name
-          command: echo MONGODB_CONNECTION_STRING=mongodb+srv://<<parameters.mongodb_username>>:<<parameters.mongodb_password>>@<<parameters.mongodb_cluster_domain>>/household-<<parameters.env>>?retryWrites=true&w=majority
+          command: echo "export MONGODB_CONNECTION_STRING=\"mongodb+srv://<<parameters.mongodb_username>>:<<parameters.mongodb_password>>@<<parameters.mongodb_cluster_domain>>/household-<<parameters.env>>?retryWrites=true&w=majority\"" >> env    
       - persist_to_workspace:
           root: ~/
           paths:
@@ -216,33 +198,27 @@ jobs:
 workflows:
   version: 2.1
   local:
-    jobs:
-      - dummy:
-          name: dummy
+    jobs:  
+      - install:
+          name: install
+          filters:
+            branches:
+              ignore:
+                - development
+                - master
+      - unit_test:
+          name: unit_test
+          requires:
+            - install
+      - lint:
+          name: lint
+          requires:
+            - install
+      - build:
+          name: build
           env: "LOCAL"
-          mongodb_username: ${MONGODB_USERNAME}
-          mongodb_password: ${MONGODB_PASSWORD}
-          mongodb_cluster_domain: ${MONGODB_CLUSTER_DOMAIN}        
-      # - install:
-      #     name: install
-      #     filters:
-      #       branches:
-      #         ignore:
-      #           - development
-      #           - master
-      # - unit_test:
-      #     name: unit_test
-      #     requires:
-      #       - install
-      # - lint:
-      #     name: lint
-      #     requires:
-      #       - install
-      # - build:
-      #     name: build
-      #     env: "LOCAL"
-      #     requires:
-      #       - install
+          requires:
+            - install
 
   dev:
     jobs:
@@ -311,6 +287,9 @@ workflows:
       - api_deploy:
           name: api_deploy
           env: "PROD"
+          mongodb_username: ""
+          mongodb_password: ""
+          mongodb_cluster_domain: ""
           cypress_password: ""
           requires:
             - unit_test
