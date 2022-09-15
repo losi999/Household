@@ -2,7 +2,7 @@
     "integrationFolder": "src/api",
     "testFiles": "**/*.spec.ts",
     "supportFile": "src/support",
-    "baseUrl": "https://local-fociapi.losi999.hu",
+    "baseUrl": "https://local-householdapi.losi999.hu",
     "pluginsFile": "src/plugins",
     "viewportWidth": 0,
     "viewportHeight": 0,

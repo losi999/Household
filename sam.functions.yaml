@@ -12,10 +12,17 @@ Parameters:
     Type: String
   DatabaseArchiveBucket:
     Type: String        
-
+  TestUserPassword:
+    Type: String
+    Default: ""
+  UserPoolId:
+    Type: String
+  ClientId:
+    Type: String    
 
 Conditions:
   ShouldUseLayers: !Not [!Equals [!Ref MongooseLayer, "MongooseLayer"]]
+  ShouldCreateTestUsers: !Not [!Equals [!Ref TestUserPassword, ""]]
   IsProd: !Equals [!Ref Env, "PROD"]
 
 Globals:
@@ -46,3 +53,31 @@ Resources:
           Properties:
             Enabled: true
             Schedule: "cron(0 0 * * ? *)"
+
+  PostDeploy:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-PostDeploy
+      CodeUri: dist/api/post-deploy
+      Role: !Ref LambdaRoleArn
+      Environment:
+        Variables:
+          INFRASTRUCTURE_STACK: !Ref AWS::StackName
+
+  CreateTestUsers:
+    Type: AWS::Serverless::Function
+    Condition: ShouldCreateTestUsers
+    Properties:
+      FunctionName: !Sub Household-${Env}-CreateTestUsers
+      CodeUri: dist/api/create-test-users
+      Role: !Ref LambdaRoleArn
+      Environment:
+        Variables:
+          USER_POOL_ID: !Ref UserPoolId
+          CLIENT_ID: !Ref ClientId
+          ADMIN_COUNT: "1"
+          TEST_USER_PASSWORD: !Ref TestUserPassword            
+
+Outputs:
+  PostDeployCreateTestUsers:
+    Value: !If [ShouldCreateTestUsers, !GetAtt CreateTestUsers.Arn, ""]

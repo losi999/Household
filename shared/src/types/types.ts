@@ -363,6 +363,14 @@ export namespace Auth {
     idToken: string;
   };
 
+  export namespace Registration {
+    export type Request = {
+      email: string;
+      displayName: string;
+      password: string;
+    };
+  }
+
   export namespace Login {
 
     export type Request = {

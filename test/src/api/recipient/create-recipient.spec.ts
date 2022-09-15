@@ -5,10 +5,18 @@ describe('POST recipient/v1/recipients', () => {
     name: 'name',
   };
 
+  describe('called as anonymous', () => {
+    it('should return unauthorized', () => {
+      cy.unauthenticate()
+        .requestCreateRecipient(request)
+        .expectUnauthorizedResponse();
+    });
+  });
+
   describe('called as an admin', () => {
 
-    it('should create recipient', () => {
-      cy.authenticate('admin1')
+    it.only('should create recipient', () => {
+      cy.authenticate(1)
         .requestCreateRecipient(request)
         .expectCreatedResponse()
         .validateRecipientDocument(request);
@@ -17,7 +25,7 @@ describe('POST recipient/v1/recipients', () => {
     describe('should return error', () => {
       describe('if name', () => {
         it('is missing from body', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreateRecipient({
               ...request,
               name: undefined,
@@ -27,7 +35,7 @@ describe('POST recipient/v1/recipients', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreateRecipient({
               ...request,
               name: 1 as any,
@@ -37,7 +45,7 @@ describe('POST recipient/v1/recipients', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate('admin1')
+          cy.authenticate(1)
             .requestCreateRecipient({
               ...request,
               name: '',

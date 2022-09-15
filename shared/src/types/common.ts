@@ -15,7 +15,6 @@ export type StrictJSONSchema7<T> = Omit<JSONSchema7, 'properties' | 'type' | 're
   items?: T extends any[] ? StrictJSONSchema7<T[0]> : never;
 };
 
-export type UserType = 'admin' | 'player';
 export type Remove<T> = { [prop in keyof T]: undefined };
 export type Restrict<T, K extends keyof T> = Omit<T, K> & Partial<Record<K, never>>;
 export type Brand<K, T> = K & { __brand: T };

@@ -4,6 +4,7 @@
   "description": "",
   "scripts": {
     "start": "cypress open -d -C cypress.localhost.json",
+    "start:LOCAL": "cypress open -d -C cypress.LOCAL.json",
     "test": "cypress run -C cypress.${ENV}.json",
     "test:local": "cypress run -C cypress.LOCAL.json"
   },
