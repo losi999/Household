@@ -1,7 +1,6 @@
 import { errorResponse, createdResponse } from '@household/api/common/response-factory';
 import { IUpdateCategoryService } from '@household/api/functions/update-category/update-category.service';
-import { castPathParameters } from '@household/shared/common/utils';
-import { headerExpiresIn } from '@household/shared/constants';
+import { castPathParameters, getExpiresInHeader } from '@household/shared/common/utils';
 
 export default (updateCategory: IUpdateCategoryService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {
@@ -12,7 +11,7 @@ export default (updateCategory: IUpdateCategoryService): AWSLambda.APIGatewayPro
       await updateCategory({
         categoryId,
         body,
-        expiresIn: Number(event.headers[headerExpiresIn]),
+        expiresIn: Number(getExpiresInHeader(event)),
       });
     } catch (error) {
       console.error(error);

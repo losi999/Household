@@ -12,8 +12,8 @@ describe('Split transaction schema', () => {
       amount: 200,
       issuedAt: new Date().toISOString(),
       description: 'description',
-      accountId: createAccountId('62378f3a6add840bbd4c630c'),
-      recipientId: createRecipientId('62378f3a6add840bbd4c630c'),
+      accountId: createAccountId(),
+      recipientId: createRecipientId(),
       splits: [
         {
           amount: 200,
@@ -31,8 +31,8 @@ describe('Split transaction schema', () => {
             billingStartDate: new Date(2022, 5, 2).toISOString()
               .split('T')[0],
           },
-          categoryId: createCategoryId('62378f3a6add840bbd4c630c'),
-          projectId: createProjectId('62378f3a6add840bbd4c630c'),
+          categoryId: createCategoryId(),
+          projectId: createProjectId(),
         },
       ],
     };
@@ -136,14 +136,14 @@ describe('Split transaction schema', () => {
       });
 
       it('does not match pattern', () => {
-        data.accountId = createAccountId();
+        data.accountId = createAccountId('not-valid');
         tester.validateSchemaPattern(data, 'accountId');
       });
     });
 
     describe('if data.recipientId', () => {
       it('does not match pattern', () => {
-        data.recipientId = createRecipientId();
+        data.recipientId = createRecipientId('not-valid');
         tester.validateSchemaPattern(data, 'recipientId');
       });
     });
@@ -312,14 +312,14 @@ describe('Split transaction schema', () => {
 
     describe('if data.splits[0].categoryId', () => {
       it('does not match pattern', () => {
-        data.splits[0].categoryId = createCategoryId();
+        data.splits[0].categoryId = createCategoryId('not-valid');
         tester.validateSchemaPattern(data, 'splits/0/categoryId');
       });
     });
 
     describe('if data.splits[0].projectId', () => {
       it('does not match pattern', () => {
-        data.splits[0].projectId = createProjectId();
+        data.splits[0].projectId = createProjectId('not valid');
         tester.validateSchemaPattern(data, 'splits/0/projectId');
       });
     });

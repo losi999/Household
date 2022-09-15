@@ -1,0 +1,578 @@
+[
+  {
+    "_id": "62378f3c6add840bbd4c6b94",
+    "index": 0,
+    "description": "2020/918786E 2020.03.01-2020.03.31",
+    "invoiceNumber": "2020/918786E",
+    "billingStartDate": "2020.03.01",
+    "billingEndDate": "2020.03.31"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6b94",
+    "index": 1,
+    "description": "2020/068891 2017.07.01-2020.02.29",
+    "invoiceNumber": "2020/068891",
+    "billingStartDate": "2017.07.01",
+    "billingEndDate": "2020.02.29"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6bba",
+    "index": 0,
+    "description": "2020.10.01-2020.10.31",
+    "invoiceNumber": null,
+    "billingStartDate": "2020.10.01",
+    "billingEndDate": "2020.10.31"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6bba",
+    "index": 1,
+    "description": "2020/257420 2020.09.01-2020.09.30",
+    "invoiceNumber": "2020/257420",
+    "billingStartDate": "2020.09.01",
+    "billingEndDate": "2020.09.30"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6bba",
+    "index": 2,
+    "description": "33991154220 2020.03.10-2020.09.11",
+    "invoiceNumber": "33991154220",
+    "billingStartDate": "2020.03.10",
+    "billingEndDate": "2020.09.11"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6bba",
+    "index": 3,
+    "description": "101904220268 2020.07.01-2020.09.30",
+    "invoiceNumber": "101904220268",
+    "billingStartDate": "2020.07.01",
+    "billingEndDate": "2020.09.30"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6be9",
+    "index": 0,
+    "description": "2021/064627 2020.11.01-2021.02.28",
+    "invoiceNumber": "2021/064627",
+    "billingStartDate": "2020.11.01",
+    "billingEndDate": "2021.02.28"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6be9",
+    "index": 1,
+    "description": "2020/7235323 E 2021.01.01-2021.01.31",
+    "invoiceNumber": "2020/7235323 E",
+    "billingStartDate": "2021.01.01",
+    "billingEndDate": "2021.01.31"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6be9",
+    "index": 2,
+    "description": "101310411447 2021.01.01-2021.03.31",
+    "invoiceNumber": "101310411447",
+    "billingStartDate": "2021.01.01",
+    "billingEndDate": "2021.03.31"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6be9",
+    "index": 3,
+    "description": "14021406994 2020.12.08-2021.02.24",
+    "invoiceNumber": "14021406994",
+    "billingStartDate": "2020.12.08",
+    "billingEndDate": "2021.02.24"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6be9",
+    "index": 4,
+    "description": "2021/1044054 E 2021.03.01-2021.03.31.",
+    "invoiceNumber": "2021/1044054 E",
+    "billingStartDate": "2021.03.01",
+    "billingEndDate": "2021.03.31."
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6bfb",
+    "index": 0,
+    "description": "2021.07.01-2021.07.31 2021/184746",
+    "invoiceNumber": "2021/184746",
+    "billingStartDate": "2021.07.01",
+    "billingEndDate": "2021.07.31"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6bfb",
+    "index": 1,
+    "description": "2021.04.29-2021.06.28 13021404318",
+    "invoiceNumber": "13021404318",
+    "billingStartDate": "2021.04.29",
+    "billingEndDate": "2021.06.28"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6c2a",
+    "index": 0,
+    "description": "2021/322375 2021. 11. 01. - 2021. 11. 30.",
+    "invoiceNumber": "2021/322375",
+    "billingStartDate": "2021. 11. 01.",
+    "billingEndDate": "2021. 11. 30."
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6c2a",
+    "index": 1,
+    "description": "13021697312 2021. 08. 29. - 2021. 10. 27.",
+    "invoiceNumber": "13021697312",
+    "billingStartDate": "2021. 08. 29.",
+    "billingEndDate": "2021. 10. 27"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6c2a",
+    "index": 2,
+    "description": "2021/291124 2021. 10. 01. - 2021. 10. 31. ",
+    "invoiceNumber": "2021/291124",
+    "billingStartDate": "2021. 10. 01.",
+    "billingEndDate": "2021. 10. 31."
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6c36",
+    "index": 0,
+    "description": "2021/7468901 E 2021.12.01-2021.12.31",
+    "invoiceNumber": "2021/7468901 E",
+    "billingStartDate": "2021.12.01",
+    "billingEndDate": "2021.12.31"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6c36",
+    "index": 1,
+    "description": "2021/352681 2021.01.01-2021.12.31",
+    "invoiceNumber": "2021/352681",
+    "billingStartDate": "2021.01.01",
+    "billingEndDate": "2021.12.31"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6c36",
+    "index": 2,
+    "description": "101213399385 2021.10.01-2021.12.31",
+    "invoiceNumber": "101213399385",
+    "billingStartDate": "2021.10.01",
+    "billingEndDate": "2021.12.31"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6bab",
+    "index": 0,
+    "description": "2020/27741195E 200.06.01-2020.06.30",
+    "invoiceNumber": "2020/27741195E",
+    "billingStartDate": "200.06.01",
+    "billingEndDate": "2020.06.30"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6bab",
+    "index": 1,
+    "description": "2020/126451 2020.05.01-2020.05.31",
+    "invoiceNumber": "2020/126451",
+    "billingStartDate": "2020.05.01",
+    "billingEndDate": "2020.05.31"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6bab",
+    "index": 2,
+    "description": "101606291103 2020.04.01-2020.06.30",
+    "invoiceNumber": "101606291103",
+    "billingStartDate": "2020.04.01",
+    "billingEndDate": "2020.06.30"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6c05",
+    "index": 0,
+    "description": "2021.06.01-2021.06.30 2021/151399",
+    "invoiceNumber": "2021/151399",
+    "billingStartDate": "2021.06.01",
+    "billingEndDate": "2021.06.30"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6c05",
+    "index": 1,
+    "description": "2021.06.01-2021.06.30 2021/3172281 E",
+    "invoiceNumber": "2021/3172281 E",
+    "billingStartDate": "2021.06.01",
+    "billingEndDate": "2021.06.30"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6c05",
+    "index": 2,
+    "description": "2021.01.16-2021.05.18 15971154221",
+    "invoiceNumber": "15971154221",
+    "billingStartDate": "2021.01.16",
+    "billingEndDate": "2021.05.18"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6c05",
+    "index": 3,
+    "description": "2021.04.01-2021.06.30 101116735834",
+    "invoiceNumber": "101116735834",
+    "billingStartDate": "2021.04.01",
+    "billingEndDate": "2021.06.30"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6c3e",
+    "index": 0,
+    "description": "2022/5514149 E 2022.02.01-2022.02.28",
+    "invoiceNumber": "2022/5514149 E",
+    "billingStartDate": "2022.02.01",
+    "billingEndDate": "2022.02.28"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6c3e",
+    "index": 1,
+    "description": "2021/8403573 E 2022.01.01-2022.01.31",
+    "invoiceNumber": "2021/8403573 E",
+    "billingStartDate": "2022.01.01",
+    "billingEndDate": "2022.01.31"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6c3e",
+    "index": 2,
+    "description": "14022136925 2021.12.08 - 2021.12.15",
+    "invoiceNumber": "14022136925",
+    "billingStartDate": "2021.12.08",
+    "billingEndDate": "2021.12.15"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6bb8",
+    "index": 0,
+    "description": "2020/3983507E 2020.08.01-2020.08.31",
+    "invoiceNumber": "2020/3983507E",
+    "billingStartDate": "2020.08.01",
+    "billingEndDate": "2020.08.31"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6bb8",
+    "index": 1,
+    "description": "2020/224633 2020.08.01-2020.08.31",
+    "invoiceNumber": "2020/224633",
+    "billingStartDate": "2020.08.01",
+    "billingEndDate": "2020.08.31"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6bb8",
+    "index": 2,
+    "description": "2020/4613457E 2020.09.01-2020.09.30",
+    "invoiceNumber": "2020/4613457E",
+    "billingStartDate": "2020.09.01",
+    "billingEndDate": "2020.09.30"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6bd0",
+    "index": 0,
+    "description": "2020/5872203E 2020.11.01-2020.11.30",
+    "invoiceNumber": "2020/5872203E",
+    "billingStartDate": "2020.11.01",
+    "billingEndDate": "2020.11.30"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6bd0",
+    "index": 1,
+    "description": "2020/289346 2020.10.01-2020.10.31",
+    "invoiceNumber": "2020/289346",
+    "billingStartDate": "2020.10.01",
+    "billingEndDate": "2020.10.31"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6bd0",
+    "index": 2,
+    "description": "2020.320748 2019.01.01-2020.10.31",
+    "invoiceNumber": "2020.320748",
+    "billingStartDate": "2019.01.01",
+    "billingEndDate": "2020.10.31"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6bd3",
+    "index": 0,
+    "description": "14021204179 2020.08.26-2020.11.26",
+    "invoiceNumber": "14021204179",
+    "billingStartDate": "2020.08.26",
+    "billingEndDate": "2020.11.26"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6bd3",
+    "index": 1,
+    "description": "2020/6453212E 2020.12.01-2020.12.31",
+    "invoiceNumber": "2020/6453212E",
+    "billingStartDate": "2020.12.01",
+    "billingEndDate": "2020.12.31"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6bd3",
+    "index": 2,
+    "description": "101114779905 2020.10.01-2020.12.31",
+    "invoiceNumber": "101114779905",
+    "billingStartDate": "2020.10.01",
+    "billingEndDate": "2020.12.31"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6bd3",
+    "index": 3,
+    "description": "2020/351897 2020.12.01-2020.12.31",
+    "invoiceNumber": "2020/351897",
+    "billingStartDate": "2020.12.01",
+    "billingEndDate": "2020.12.31"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6be0",
+    "index": 0,
+    "description": "2021/035735 2021.02.01-2021.02.28",
+    "invoiceNumber": "2021/035735",
+    "billingStartDate": "2021.02.01",
+    "billingEndDate": "2021.02.28"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6be0",
+    "index": 1,
+    "description": "1735654221 2020.01.18-2021.01.14",
+    "invoiceNumber": "1735654221",
+    "billingStartDate": "2020.01.18",
+    "billingEndDate": "2021.01.14"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6bf9",
+    "index": 0,
+    "description": "2021.05.01-2021.05.31 2021/2451515 E",
+    "invoiceNumber": "2021/2451515 E",
+    "billingStartDate": "2021.05.01",
+    "billingEndDate": "2021.05.31"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6bf9",
+    "index": 1,
+    "description": "2021.05.01-2021.05.31 2021/122276",
+    "invoiceNumber": "2021/122276",
+    "billingStartDate": "2021.05.01",
+    "billingEndDate": "2021.05.31"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6bf9",
+    "index": 2,
+    "description": "2021.02.25-2021.04.28 13021257336",
+    "invoiceNumber": "13021257336",
+    "billingStartDate": "2021.02.25",
+    "billingEndDate": "2021.04.28"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6c18",
+    "index": 0,
+    "description": "2021/3883531 E 2021.07.01-2021.07.31",
+    "invoiceNumber": "2021/3883531 E",
+    "billingStartDate": "2021.07.01",
+    "billingEndDate": "2021.07.31"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6c18",
+    "index": 1,
+    "description": "2021/226404 2021.08.01-2021.08.31.",
+    "invoiceNumber": "2021/226404",
+    "billingStartDate": "2021.08.01",
+    "billingEndDate": "2021.08.31."
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6c18",
+    "index": 2,
+    "description": "2021/4542445 E 2021.08.01-2021.08.31",
+    "invoiceNumber": "2021/4542445 E",
+    "billingStartDate": "2021.08.01",
+    "billingEndDate": "2021.08.31"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6b9e",
+    "index": 0,
+    "description": "2020/1983123E 2020.05.01-2020.05.31",
+    "invoiceNumber": "2020/1983123E",
+    "billingStartDate": "2020.05.01",
+    "billingEndDate": "2020.05.31"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6b9e",
+    "index": 1,
+    "description": "2020/097349 2020.04.01-2020.04.30",
+    "invoiceNumber": "2020/097349",
+    "billingStartDate": "2020.04.01",
+    "billingEndDate": "2020.04.30"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6b9e",
+    "index": 2,
+    "description": "14020643950 2019.12.13-2020.03.27",
+    "invoiceNumber": "14020643950",
+    "billingStartDate": "2019.12.13",
+    "billingEndDate": "2020.03.27"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6bb0",
+    "index": 0,
+    "description": "2020/3365071E 2020.07.01-2020.07.31",
+    "invoiceNumber": "2020/3365071E",
+    "billingStartDate": "2020.07.01",
+    "billingEndDate": "2020.07.31"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6bb0",
+    "index": 1,
+    "description": "2020/189035 2019.06.15-2020.06.14",
+    "invoiceNumber": "2020/189035",
+    "billingStartDate": "2019.06.15",
+    "billingEndDate": "2020.06.14"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6bb0",
+    "index": 2,
+    "description": "12020525321 2020.03.28-2020.06.26",
+    "invoiceNumber": "12020525321",
+    "billingStartDate": "2020.03.28",
+    "billingEndDate": "2020.06.26"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6bb0",
+    "index": 3,
+    "description": "2020/155321 2020.06.01-2020.06.30",
+    "invoiceNumber": "2020/155321",
+    "billingStartDate": "2020.06.01",
+    "billingEndDate": "2020.06.30"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6bd9",
+    "index": 0,
+    "description": "2021/341630E 2021.02.01-2021.02.28",
+    "invoiceNumber": "2021/341630E",
+    "billingStartDate": "2021.02.01",
+    "billingEndDate": "2021.02.28"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6bd9",
+    "index": 1,
+    "description": "2021/006701 2021.01.01-2021.01.31",
+    "invoiceNumber": "2021/006701",
+    "billingStartDate": "2021.01.01",
+    "billingEndDate": "2021.01.31"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6bd9",
+    "index": 2,
+    "description": "13020968643 2019.12.13-2020.12.07",
+    "invoiceNumber": "13020968643",
+    "billingStartDate": "2019.12.13",
+    "billingEndDate": "2020.12.07"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6bef",
+    "index": 0,
+    "description": "2021.04.01-2021.04.30 2021/1801052E",
+    "invoiceNumber": "2021/1801052E",
+    "billingStartDate": "2021.04.01",
+    "billingEndDate": "2021.04.30"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6bef",
+    "index": 1,
+    "description": "2021.04.01-2021.04.30 2021/093155",
+    "invoiceNumber": "2021/093155",
+    "billingStartDate": "2021.04.01",
+    "billingEndDate": "2021.04.30"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6c17",
+    "index": 0,
+    "description": "2021/5468198 E 2021. 09. 01. - 2021. 09. 30.",
+    "invoiceNumber": "2021/5468198 E",
+    "billingStartDate": "2021. 09. 01.",
+    "billingEndDate": " 2021. 09. 30."
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6c17",
+    "index": 1,
+    "description": "13021550256 2021. 06. 29. - 2021. 08. 27.",
+    "invoiceNumber": "13021550256",
+    "billingStartDate": "2021. 06. 29.",
+    "billingEndDate": "2021. 08. 27."
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6c17",
+    "index": 2,
+    "description": "2021/258973 2020.06.15-2021.06.30.",
+    "invoiceNumber": "2021/258973",
+    "billingStartDate": "2020.06.15",
+    "billingEndDate": "2021.06.30."
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6c17",
+    "index": 3,
+    "description": "101117513003 2021. 07. 01. - 2021. 09. 30.",
+    "invoiceNumber": "101117513003",
+    "billingStartDate": "2021. 07. 01.",
+    "billingEndDate": "2021. 09. 30."
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6c17",
+    "index": 4,
+    "description": "2021/258974 2021.09.01-2021.09.30",
+    "invoiceNumber": "2021/258974",
+    "billingStartDate": "2021.09.01",
+    "billingEndDate": "2021.09.30"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6c29",
+    "index": 0,
+    "description": "2021/6534032 E 2021.11.01-2021.11.30.",
+    "invoiceNumber": "2021/6534032 E",
+    "billingStartDate": "2021.11.01",
+    "billingEndDate": "2021.11.30."
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6c29",
+    "index": 1,
+    "description": "28664654221 2021.05.19-2021.09.11.",
+    "invoiceNumber": "28664654221",
+    "billingStartDate": "2021.05.19",
+    "billingEndDate": "2021.09.11."
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6c44",
+    "index": 0,
+    "description": "2022/793799 E 21022.03.01-2022.03.31",
+    "invoiceNumber": "2022/793799 E",
+    "billingStartDate": "2022.03.01",
+    "billingEndDate": "2022.03.31"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6c44",
+    "index": 1,
+    "description": "2022/036346 2022.0201-2022.02.28",
+    "invoiceNumber": "2022/036346",
+    "billingStartDate": "2022.02.01",
+    "billingEndDate": "2022.02.28"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6c44",
+    "index": 2,
+    "description": "1730454222 2021.01.15-2022.01.12",
+    "invoiceNumber": "1730454222",
+    "billingStartDate": "2021.01.15",
+    "billingEndDate": "2022.01.12"
+  },
+  {
+    "_id": "62378f3c6add840bbd4c6c44",
+    "index": 3,
+    "description": "101510208413 2022.01.01-2022.03.31",
+    "invoiceNumber": "101510208413",
+    "billingStartDate": "2022.01.01",
+    "billingEndDate": "2022.03.31"
+  },
+  {
+    "_id": "6239c4b680840cd3a24d92c1",
+    "index": 0,
+    "description": "2022. 01. 01-2022. 03. 31 101510208413",
+    "invoiceNumber": "101510208413",
+    "billingStartDate": "2022. 01. 01",
+    "billingEndDate": "2022. 03. 31"
+  },
+  {
+    "_id": "6239c4b680840cd3a24d92c1",
+    "index": 1,
+    "description": "2021. 12. 16-2022. 02. 24 14022295829",
+    "invoiceNumber": "14022295829",
+    "billingStartDate": "2021. 12. 16",
+    "billingEndDate": "2022. 02. 24"
+  }
+]

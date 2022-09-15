@@ -204,7 +204,7 @@ describe('Transaction document converter', () => {
     }, {
       description,
       categoryId: createCategoryId(categoryId.toString()),
-      projectId: createProjectId(projectId.toString()),
+      projectId: createProjectId(projectId),
     });
 
     const queriedDocument = createSplitTransactionDocument({

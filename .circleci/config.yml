@@ -47,19 +47,19 @@ jobs:
             - layers/mongoose/nodejs/node_modules
           key: layer-dependencies-v1-{{ checksum "layers/mongoose/nodejs/package.json" }}
 
-      # - restore_cache:
-      #     name: Restoring test dependencies from cache
-      #     key: test-dependencies-v1-{{ checksum "test/package.json" }}
+      - restore_cache:
+          name: Restoring test dependencies from cache
+          key: test-dependencies-v1-{{ checksum "test/package.json" }}
 
-      # - run:
-      #     name: Installing test dependencies
-      #     command: cd test && yarn
+      - run:
+          name: Installing test dependencies
+          command: cd test && yarn
 
-      # - save_cache:
-      #     paths:
-      #       - test/node_modules
-      #       - /root/.cache/Cypress
-      #     key: test-dependencies-v1-{{ checksum "test/package.json" }}
+      - save_cache:
+          paths:
+            - test/node_modules
+            - /root/.cache/Cypress
+          key: test-dependencies-v1-{{ checksum "test/package.json" }}
 
       - persist_to_workspace:
           root: ~/
@@ -128,10 +128,14 @@ jobs:
     parameters:
       env:
         type: string
-      # cypress_password:
-      #   type: string
-      # admin_user_email:
-      #   type: string
+      mongodb_username:
+        type: string
+      mongodb_password:
+        type: string
+      mongodb_cluster_domain:
+        type: string
+      cypress_password:
+        type: string
     working_directory: ~/repo
     steps:
       - attach_workspace:
@@ -140,16 +144,16 @@ jobs:
       - deploy:
           name: SAM Deploy
           command: sam deploy --template-file cf.household.yaml --s3-bucket ${AWS_PACKAGES_S3} --stack-name Household-<<parameters.env>> --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND CAPABILITY_NAMED_IAM --parameter-overrides Env=<<parameters.env>>
-      # - run:
-      #     name: Invoke Post deploy Lambda
-      #     command: aws lambda invoke --function-name Household-<<parameters.env>>-PostDeploy /dev/null
-      # - run:
-      #     name: Get Database name
-      #     command: echo "export CYPRESS_DYNAMO_TABLE=$(aws cloudformation describe-stacks --stack-name Household-<<parameters.env>> --query "Stacks[0].Outputs[?OutputKey=='Database'].OutputValue" --output text)" >> env
-      # - persist_to_workspace:
-      #     root: ~/
-      #     paths:
-      #       - repo/env
+      - run:
+          name: Invoke Post deploy Lambda
+          command: aws lambda invoke --function-name Household-<<parameters.env>>-PostDeploy /dev/null
+      - run:
+          name: Get Database name
+          command: echo "export MONGODB_CONNECTION_STRING=\"mongodb+srv://<<parameters.mongodb_username>>:<<parameters.mongodb_password>>@<<parameters.mongodb_cluster_domain>>/household-<<parameters.env>>?retryWrites=true&w=majority\"" >> env    
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - repo/env
   web_deploy:
     parameters:
       env:
@@ -163,38 +167,42 @@ jobs:
       - deploy:
           name: Web deploy
           command: aws s3 sync dist/web s3://$(aws cloudformation describe-stacks --stack-name Household-<<parameters.env>> --query "Stacks[0].Outputs[?OutputKey=='WebsiteBucket'].OutputValue" --output text)
-  # test:
-  #   parameters:
-  #     env:
-  #       type: string
-  #   docker:
-  #     - image: cypress/base
-  #       environment:
-  #         ENV: <<parameters.env>>
-  #   working_directory: ~/repo
-  #   steps:
-  #     - attach_workspace:
-  #         at: ~/
+  test:
+    parameters:
+      env:
+        type: string
+    docker:
+      - image: cypress/base
+        environment:
+          ENV: <<parameters.env>>
+    working_directory: ~/repo
+    steps:
+      - attach_workspace:
+          at: ~/
 
-  #     - restore_cache:
-  #         name: Restoring test dependencies from cache
-  #         key: test-dependencies-v1-{{ checksum "test/package.json" }}
+      - restore_cache:
+          name: Restoring test dependencies from cache
+          key: test-dependencies-v1-{{ checksum "test/package.json" }}
 
-  #     - run:
-  #         name: Set environment variables
-  #         command: cat env >> $BASH_ENV
+      - run:
+          name: Set env name for test
+          command: export CYPRESS_ENV=<<parameters.env>>
 
-  #     - run:
-  #         name: Running tests
-  #         command: cd test && yarn run test
+      - run:
+          name: Set environment variables
+          command: cat env >> $BASH_ENV
 
-  #     - store_artifacts:
-  #         path: test/cypress/screenshots
-  #         destination: test/cypress/screenshots
+      - run:
+          name: Running tests
+          command: cd test && yarn run test
+
+      - store_artifacts:
+          path: test/cypress/screenshots
+          destination: test/cypress/screenshots
 workflows:
   version: 2.1
   local:
-    jobs:
+    jobs:  
       - install:
           name: install
           filters:
@@ -240,8 +248,10 @@ workflows:
       - api_deploy:
           name: api_deploy
           env: "DEV"
-          # cypress_password: ${CYPRESS_PASSWORD}
-          # admin_user_email: ${ADMIN_USER_EMAIL}
+          cypress_password: ${CYPRESS_PASSWORD}
+          mongodb_username: ${MONGODB_USERNAME}
+          mongodb_password: ${MONGODB_PASSWORD}
+          mongodb_cluster_domain: ${MONGODB_CLUSTER_DOMAIN}
           requires:
             - unit_test
             - lint
@@ -251,11 +261,11 @@ workflows:
           env: "DEV"
           requires:
             - api_deploy
-      # - test:
-      #     name: test
-      #     env: "DEV"
-      #     requires:
-      #       - web_deploy
+      - test:
+          name: test
+          env: "DEV"
+          requires:
+            - web_deploy
 
   prod:
     jobs:
@@ -281,8 +291,10 @@ workflows:
       - api_deploy:
           name: api_deploy
           env: "PROD"
-          # cypress_password: ""
-          # admin_user_email: ${ADMIN_USER_EMAIL}
+          mongodb_username: ""
+          mongodb_password: ""
+          mongodb_cluster_domain: ""
+          cypress_password: ""
           requires:
             - unit_test
             - lint

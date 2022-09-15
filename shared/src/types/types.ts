@@ -158,8 +158,9 @@ export namespace Category {
   & Remove<Internal.UpdatedAt>
   & Remove<Internal.Id>
   & Remove<Internal.ExpiresAt>
+  & Remove<ParentCategoryId>
   & {
-    parentCategory: Category.Response;
+    parentCategory: Category.Response & Remove<ParentCategory>;
   };
 
   export type Request = Base
@@ -173,7 +174,7 @@ export namespace Transaction {
     transactionId: IdType;
   };
 
-  type IssuedAt<D extends string | Date> = {
+  export type IssuedAt<D extends string | Date> = {
     issuedAt: D;
   };
 
@@ -181,7 +182,7 @@ export namespace Transaction {
     transactionType: T;
   };
 
-  type Base = {
+  export type Base = {
     amount: number;
     description: string;
   };
@@ -241,7 +242,7 @@ export namespace Transaction {
   & Base
   & TransferAccountId;
 
-  type SplitRequestItem = Project.Id
+  export type SplitRequestItem = Project.Id
   & Category.Id
   & Invoice<string>
   & Inventory
@@ -361,6 +362,14 @@ export namespace Auth {
   type IdTokenResponse = {
     idToken: string;
   };
+
+  export namespace Registration {
+    export type Request = {
+      email: string;
+      displayName: string;
+      password: string;
+    };
+  }
 
   export namespace Login {
 

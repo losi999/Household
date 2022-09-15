@@ -11,7 +11,7 @@ describe('Category schema', () => {
     data = {
       name: 'name',
       categoryType: 'regular',
-      parentCategoryId: createCategoryId('62378f3a6add840bbd4c630c'),
+      parentCategoryId: createCategoryId(),
     };
   });
 
@@ -77,7 +77,7 @@ describe('Category schema', () => {
       });
 
       it('does not match pattern', () => {
-        data.parentCategoryId = createCategoryId();
+        data.parentCategoryId = createCategoryId('not-valid');
         tester.validateSchemaPattern(data, 'parentCategoryId');
       });
     });

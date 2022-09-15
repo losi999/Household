@@ -9,7 +9,7 @@ describe('Category id schema', () => {
 
   beforeEach(() => {
     data = {
-      categoryId: createCategoryId('62378f3a6add840bbd4c630c'),
+      categoryId: createCategoryId(),
     };
   });
 
@@ -32,7 +32,7 @@ describe('Category id schema', () => {
       });
 
       it('does not match pattern', () => {
-        data.categoryId = createCategoryId();
+        data.categoryId = createCategoryId('not-valid');
         tester.validateSchemaPattern(data, 'categoryId');
       });
     });

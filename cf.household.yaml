@@ -2,6 +2,9 @@ AWSTemplateFormatVersion: "2010-09-09"
 Parameters:
   Env:
     Type: String
+  TestUserPassword:
+    Type: String
+    Default: ""    
 
 Mappings: 
   EnvMapping: 
@@ -28,6 +31,9 @@ Resources:
         MongooseLayer: !GetAtt Infrastructure.Outputs.MongooseLayer
         DatabaseArchiveBucket: !GetAtt Data.Outputs.DatabaseArchiveBucket
         Env: !Ref Env
+        TestUserPassword: !Ref TestUserPassword
+        UserPoolId: !GetAtt Data.Outputs.UserPoolId
+        ClientId: !GetAtt Data.Outputs.ClientId
         MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
 
   Data:

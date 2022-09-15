@@ -31,8 +31,8 @@ describe('Create split transaction service', () => {
 
   const categoryId1 = createCategoryId('category1');
   const categoryId2 = createCategoryId('category2');
-  const projectId1 = createProjectId('project1');
-  const projectId2 = createProjectId('project2');
+  const projectId1 = createProjectId();
+  const projectId2 = createProjectId();
 
   const body = createSplitTransactionRequest({}, {
     categoryId: categoryId1,

@@ -1,6 +1,6 @@
 import { errorResponse, createdResponse } from '@household/api/common/response-factory';
 import { ICreateCategoryService } from '@household/api/functions/create-category/create-category.service';
-import { headerExpiresIn } from '@household/shared/constants';
+import { getExpiresInHeader } from '@household/shared/common/utils';
 
 export default (createCategory: ICreateCategoryService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {
@@ -10,7 +10,7 @@ export default (createCategory: ICreateCategoryService): AWSLambda.APIGatewayPro
     try {
       categoryId = await createCategory({
         body,
-        expiresIn: Number(event.headers[headerExpiresIn]),
+        expiresIn: Number(getExpiresInHeader(event)),
       });
     } catch (error) {
       console.error(error);

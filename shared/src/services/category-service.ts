@@ -52,7 +52,8 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
       return mongodbService.categories().create(doc);
     },
     getCategoryById: async (categoryId) => {
-      return !categoryId ? undefined : mongodbService.categories().findById(categoryId)
+      return !categoryId ? null : mongodbService.categories().findById(categoryId)
+        .populate('parentCategory')
         .lean()
         .exec();
     },

@@ -1,0 +1,11 @@
+{
+    "integrationFolder": "src/api",
+    "testFiles": "**/*.spec.ts",
+    "supportFile": "src/support",
+    "baseUrl": "https://dev-fociapi.losi999.hu",
+    "pluginsFile": "src/plugins",
+    "viewportWidth": 0,
+    "viewportHeight": 0,
+    "videoCompression": false,
+    "defaultCommandTimeout": 10000
+}

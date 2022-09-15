@@ -1,6 +1,6 @@
 import { errorResponse, createdResponse } from '@household/api/common/response-factory';
 import { ICreatePaymentTransactionService } from '@household/api/functions/create-payment-transaction/create-payment-transaction.service';
-import { headerExpiresIn } from '@household/shared/constants';
+import { getExpiresInHeader } from '@household/shared/common/utils';
 
 export default (createPaymentTransaction: ICreatePaymentTransactionService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {
@@ -10,7 +10,7 @@ export default (createPaymentTransaction: ICreatePaymentTransactionService): AWS
     try {
       transactionId = await createPaymentTransaction({
         body,
-        expiresIn: Number(event.headers[headerExpiresIn]),
+        expiresIn: Number(getExpiresInHeader(event)),
       });
     } catch (error) {
       console.error(error);

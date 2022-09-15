@@ -9,7 +9,7 @@ describe('Transaction id schema', () => {
 
   beforeEach(() => {
     data = {
-      transactionId: createTransactionId('62378f3a6add840bbd4c630c'),
+      transactionId: createTransactionId(),
     };
   });
 
@@ -32,7 +32,7 @@ describe('Transaction id schema', () => {
       });
 
       it('does not match pattern', () => {
-        data.transactionId = createTransactionId();
+        data.transactionId = createTransactionId('not-valid');
         tester.validateSchemaPattern(data, 'transactionId');
       });
     });

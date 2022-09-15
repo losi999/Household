@@ -31,8 +31,8 @@ export const createTransferTransactionServiceFactory = (
     });
 
     if (accounts.length !== 2) {
-      console.error('One of the accounts are not found', body.accountId, body.transferAccountId);
-      throw httpError(400, 'One of the accounts are not found');
+      console.error('One of the accounts is not found', body.accountId, body.transferAccountId);
+      throw httpError(400, 'One of the accounts is not found');
     }
 
     const account = accounts.find(x => x._id.toString() === body.accountId);

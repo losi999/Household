@@ -1,23 +1,28 @@
 import { Account, Category, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Types } from 'mongoose';
 
-export const createAccountId = (id?: string): Account.IdType => {
-  return (id ?? 'accountId') as Account.IdType;
+const generateId = (id?: Types.ObjectId | string): string => {
+  return typeof id === 'string' ? id : id?.toString() ?? new Types.ObjectId().toString();
 };
 
-export const createCategoryId = (id?: string): Category.IdType => {
-  return (id ?? 'categoryId') as Category.IdType;
+export const createAccountId = (id?: Types.ObjectId | string): Account.IdType => {
+  return generateId(id) as Account.IdType;
 };
 
-export const createProjectId = (id?: string): Project.IdType => {
-  return (id ?? 'projectId') as Project.IdType;
+export const createCategoryId = (id?: Types.ObjectId | string): Category.IdType => {
+  return generateId(id) as Category.IdType;
 };
 
-export const createRecipientId = (id?: string): Recipient.IdType => {
-  return (id ?? 'recipientId') as Recipient.IdType;
+export const createProjectId = (id?: Types.ObjectId | string): Project.IdType => {
+  return generateId(id) as Project.IdType;
 };
 
-export const createTransactionId = (id?: string): Transaction.IdType => {
-  return (id ?? 'transactionId') as Transaction.IdType;
+export const createRecipientId = (id?: Types.ObjectId | string): Recipient.IdType => {
+  return generateId(id) as Recipient.IdType;
+};
+
+export const createTransactionId = (id?: Types.ObjectId | string): Transaction.IdType => {
+  return generateId(id) as Transaction.IdType;
 };
 
 export const createAccountDocument = (doc?: Partial<Account.Document>): Account.Document => {
@@ -175,7 +180,7 @@ export const createPaymentTransactionRequest = (req?: Partial<Transaction.Paymen
   };
 };
 
-export const createSplitTransactionRequest = (req?: Partial<Transaction.SplitRequest>, ...splits: Partial<Transaction.SplitRequest['splits'][number]>[]): Transaction.SplitRequest => {
+export const createSplitTransactionRequest = (req?: Partial<Transaction.SplitRequest>, ...splits: Partial<Transaction.SplitRequestItem>[]): Transaction.SplitRequest => {
   return {
     amount: Math.max(splits.length, 1),
     description: 'transaction description',
@@ -256,6 +261,7 @@ export const createCategoryResponse = (resp?: Partial<Category.Response>): Categ
     parentCategory: undefined,
     fullName: 'category name',
     categoryType: 'regular',
+    parentCategoryId: undefined,
     ...resp,
   };
 };

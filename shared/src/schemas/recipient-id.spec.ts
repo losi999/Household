@@ -9,7 +9,7 @@ describe('Recipient id schema', () => {
 
   beforeEach(() => {
     data = {
-      recipientId: createRecipientId('62378f3a6add840bbd4c630c'),
+      recipientId: createRecipientId(),
     };
   });
 
@@ -32,7 +32,7 @@ describe('Recipient id schema', () => {
       });
 
       it('does not match pattern', () => {
-        data.recipientId = createRecipientId();
+        data.recipientId = createRecipientId('not-valid');
         tester.validateSchemaPattern(data, 'recipientId');
       });
     });

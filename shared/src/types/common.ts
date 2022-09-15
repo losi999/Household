@@ -1,20 +1,20 @@
 import { JSONSchema7 } from 'json-schema';
 
 type JSONSchemaType<T> =
-  T extends string ? 'string' :
-    T extends number ? 'number' | 'integer' :
-      T extends boolean ? 'boolean' :
-        T extends any[] ? 'array' :
-          'object';
+  T extends undefined ? 'null' :
+    T extends string ? 'string' :
+      T extends number ? 'number' | 'integer' :
+        T extends boolean ? 'boolean' :
+          T extends any[] ? 'array' :
+            'object';
 
 export type StrictJSONSchema7<T> = Omit<JSONSchema7, 'properties' | 'type' | 'required' | 'items'> & {
   type: JSONSchemaType<T> | [JSONSchemaType<T>, 'null'];
   required?: JSONSchemaType<T> extends 'object' ? (keyof T)[] : never;
-  properties?: JSONSchemaType<T> extends 'object' ? { [prop in keyof T]: StrictJSONSchema7<T[prop]> } : never;
+  properties?: JSONSchemaType<T> extends 'object' ? { [prop in keyof T]?: StrictJSONSchema7<T[prop]> } : never;
   items?: T extends any[] ? StrictJSONSchema7<T[0]> : never;
 };
 
-export type UserType = 'admin' | 'player';
 export type Remove<T> = { [prop in keyof T]: undefined };
 export type Restrict<T, K extends keyof T> = Omit<T, K> & Partial<Record<K, never>>;
 export type Brand<K, T> = K & { __brand: T };

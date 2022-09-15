@@ -9,7 +9,7 @@ describe('Account id schema', () => {
 
   beforeEach(() => {
     data = {
-      accountId: createAccountId('62378f3a6add840bbd4c630c'),
+      accountId: createAccountId(),
     };
   });
 
@@ -32,7 +32,7 @@ describe('Account id schema', () => {
       });
 
       it('does not match pattern', () => {
-        data.accountId = createAccountId();
+        data.accountId = createAccountId('not-valid');
         tester.validateSchemaPattern(data, 'accountId');
       });
     });

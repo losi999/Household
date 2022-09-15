@@ -28,7 +28,7 @@ describe('Payment transaction schema', () => {
       accountId: createAccountId('62378f3a6add840bbd4c630c'),
       categoryId: createCategoryId('62378f3a6add840bbd4c630c'),
       recipientId: createRecipientId('62378f3a6add840bbd4c630c'),
-      projectId: createProjectId('62378f3a6add840bbd4c630c'),
+      projectId: createProjectId(),
     };
   });
 
@@ -246,28 +246,28 @@ describe('Payment transaction schema', () => {
       });
 
       it('does not match pattern', () => {
-        data.accountId = createAccountId();
+        data.accountId = createAccountId('not-valid');
         tester.validateSchemaPattern(data, 'accountId');
       });
     });
 
     describe('if data.categoryId', () => {
       it('does not match pattern', () => {
-        data.categoryId = createCategoryId();
+        data.categoryId = createCategoryId('not-valid');
         tester.validateSchemaPattern(data, 'categoryId');
       });
     });
 
     describe('if data.recipientId', () => {
       it('does not match pattern', () => {
-        data.recipientId = createRecipientId();
+        data.recipientId = createRecipientId('not-valid');
         tester.validateSchemaPattern(data, 'recipientId');
       });
     });
 
     describe('if data.projectId', () => {
       it('does not match pattern', () => {
-        data.projectId = createProjectId();
+        data.projectId = createProjectId('not valid');
         tester.validateSchemaPattern(data, 'projectId');
       });
     });

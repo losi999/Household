@@ -25,10 +25,10 @@ const createModel = <T extends keyof CollectionMapping>(collectionName: T, schem
   return model(collectionName, schema);
 };
 
-export const mongodbServiceFactory = (): IMongodbService => {
+export const mongodbServiceFactory = (mongodbConnectionString: string): IMongodbService => {
   const connectDb = () => {
-    if (connection.readyState === 0) {
-      connect(process.env.MONGODB_CONNECTION_STRING, {
+    if (!connection || connection.readyState === 0) {
+      connect(mongodbConnectionString, {
         autoIndex: true,
       });
     }
