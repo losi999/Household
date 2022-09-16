@@ -45,6 +45,9 @@ jobs:
       - run:
           name: printenv
           command: printenv
+          environment:
+            ASD6: $MONGODB_USERNAME
+            ASD7: sadfsad
       # - checkout
       # - restore_cache:
       #     key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "test/yarn.lock"}}   
