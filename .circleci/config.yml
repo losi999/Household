@@ -158,6 +158,7 @@ jobs:
         type: string
       cypress_password:
         type: string
+        default: ${CYPRESS_PASSWORD}
     working_directory: ~/repo
     steps:
       - attach_workspace:
@@ -185,19 +186,13 @@ jobs:
   test:
     parameters:
       env:
-        type: string
-      mongodb_username:
-        type: string
-      mongodb_password:
-        type: string
-      mongodb_cluster_domain:
-        type: string        
+        type: string      
     docker:
       - image: cypress/base:16.14.2
         environment:
           ENV: <<parameters.env>>
           CYPRESS_ENV: <<parameters.env>>
-          MONGODB_CONNECTION_STRING: mongodb+srv://<<parameters.mongodb_username>>:<<parameters.mongodb_password>>@<<parameters.mongodb_cluster_domain>>/household-<<parameters.env>>?retryWrites=true&w=majority
+          MONGODB_CONNECTION_STRING: mongodb+srv://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CLUSTER_DOMAIN}/household-<<parameters.env>>?retryWrites=true&w=majority
     working_directory: ~/repo
     steps:
       - attach_workspace:
@@ -209,7 +204,7 @@ jobs:
       - list-files
       - run: 
           name: asd
-          command: echo <<parameters.mongodb_username>>
+          command: echo ${MONGODB_USERNAME}
       - run:
           name: printenv
           command: printenv
@@ -230,10 +225,7 @@ workflows:
           name: dummy
       - test:
           name: test
-          env: "LOCAL"
-          mongodb_username: ${MONGODB_USERNAME}
-          mongodb_password: ${MONGODB_PASSWORD}
-          mongodb_cluster_domain: ${MONGODB_CLUSTER_DOMAIN}          
+          env: "LOCAL"       
           requires:
             - dummy
       # - install:
@@ -281,7 +273,6 @@ workflows:
       - api_deploy:
           name: api_deploy
           env: "DEV"
-          cypress_password: ${CYPRESS_PASSWORD}
           requires:
             - unit_test
             - lint
@@ -294,9 +285,6 @@ workflows:
       - test:
           name: test
           env: "DEV"
-          mongodb_username: ${MONGODB_USERNAME}
-          mongodb_password: ${MONGODB_PASSWORD}
-          mongodb_cluster_domain: ${MONGODB_CLUSTER_DOMAIN}
           requires:
             - web_deploy
 
