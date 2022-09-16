@@ -1,7 +1,39 @@
 version: 2.1
 orbs:
   sam: circleci/aws-sam-serverless@3.0
+commands:
+  list-files:
+    steps:
+      - run:
+          name: List files
+          command: |
+            echo "current folder $(pwd)"
+            echo ""
+            echo "current folder contents"
+            ls -l
+            echo ""
+            echo "api folder"
+            ls -l api
+            echo ""
+            echo "web folder"
+            ls -l web
+            echo ""
+            echo "test folder"
+            ls -l test  
+            echo ""
+            echo ".cache folder"
+            ls -l ~/.cache
 jobs:
+  dummy:
+    docker:
+      - image: circleci/node:16.13.1
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - restore_cache:
+          name: Restoring .cache
+          key: cache-v1    
+      - list-files
   install:
     docker:
       - image: circleci/node:16.13.1
@@ -17,7 +49,7 @@ jobs:
           command: yarn
 
       - run:
-          name: Installing dependencies
+          name: Installing web dependencies
           command: cd web && yarn
 
       - run:
@@ -175,26 +207,28 @@ workflows:
   version: 2.1
   local:
     jobs:  
-      - install:
-          name: install
-          filters:
-            branches:
-              ignore:
-                - development
-                - master
-      - unit_test:
-          name: unit_test
-          requires:
-            - install
-      - lint:
-          name: lint
-          requires:
-            - install
-      - build:
-          name: build
-          env: "LOCAL"
-          requires:
-            - install
+      - dummy:
+          name: dummy
+      # - install:
+      #     name: install
+      #     filters:
+      #       branches:
+      #         ignore:
+      #           - development
+      #           - master
+      # - unit_test:
+      #     name: unit_test
+      #     requires:
+      #       - install
+      # - lint:
+      #     name: lint
+      #     requires:
+      #       - install
+      # - build:
+      #     name: build
+      #     env: "LOCAL"
+      #     requires:
+      #       - install
 
   dev:
     jobs:
