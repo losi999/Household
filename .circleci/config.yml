@@ -197,7 +197,7 @@ jobs:
         environment:
           ENV: <<parameters.env>>
           CYPRESS_ENV: <<parameters.env>>
-          MONGODB_CONNECTION_STRING: "mongodb+srv://<<parameters.mongodb_username>>:<<parameters.mongodb_password>>@<<parameters.mongodb_cluster_domain>>/household-<<parameters.env>>?retryWrites=true&w=majority"
+          MONGODB_CONNECTION_STRING: mongodb+srv://<<parameters.mongodb_username>>:<<parameters.mongodb_password>>@<<parameters.mongodb_cluster_domain>>/household-<<parameters.env>>?retryWrites=true&w=majority
     working_directory: ~/repo
     steps:
       - attach_workspace:
@@ -207,7 +207,9 @@ jobs:
           key: cache-cypress-v1-{{checksum "test/yarn.lock"}} 
 
       - list-files
-      
+      - run: 
+          name: asd
+          command: echo <<parameters.mongodb_username>>
       - run:
           name: printenv
           command: printenv
