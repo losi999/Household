@@ -22,7 +22,7 @@ commands:
             ls -l test  
             echo ""
             echo ".cache folder"
-            ls -l ~/.cache/Cypress
+            ls -l ~/.cache/Cypress/9.7.0
 jobs:
   dummy:
     docker:
@@ -33,23 +33,23 @@ jobs:
       - restore_cache:
           name: Restoring .cache
           key: cache-v1    
-      - run:
-          name: Install API dependencies
-          command: yarn
-          working_directory: api
-      - run:
-          name: Install web dependencies
-          command: yarn
-          working_directory: web
+      # - run:
+      #     name: Install API dependencies
+      #     command: yarn
+      #     working_directory: api
+      # - run:
+      #     name: Install web dependencies
+      #     command: yarn
+      #     working_directory: web
       - run:
           name: Install test dependencies
           command: yarn
           working_directory: test
       - list-files    
-      - run:
-          name: Cypress install
-          command: npx cypress install
-          working_directory: test
+      # - run:
+      #     name: Cypress install
+      #     command: npx cypress install
+      #     working_directory: test
       - run:
           name: Check Cypress
           command: npx cypress verify
