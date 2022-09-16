@@ -32,40 +32,34 @@ jobs:
       - image: cypress/base:16.14.2
     working_directory: ~/repo
     steps:
+      - checkout
+      - restore_cache:
+          key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "test/yarn.lock"}}   
+      - restore_cache:
+          key: cache-cypress-v1-{{checksum "test/yarn.lock"}}   
       - run:
-          name: asd
-          command: echo "export MONGODB_CONNECTION_STRING=\"mongodb+srv://$MONGODB_USERNAME:$MONGODB_PASSWORD@$MONGODB_CLUSTER_DOMAIN/household-<<parameters.env>>?retryWrites=true&w=majority\"" >> "$BASH_ENV"
+          name: Install API dependencies
+          command: yarn
       - run:
-          name: printenv
-          command: printenv
-      # - checkout
-      # - restore_cache:
-      #     key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "test/yarn.lock"}}   
-      # - restore_cache:
-      #     key: cache-cypress-v1-{{checksum "test/yarn.lock"}}   
-      # - run:
-      #     name: Install API dependencies
-      #     command: yarn
-      # - run:
-      #     name: Install web dependencies
-      #     command: yarn
-      #     working_directory: web
-      # - run:
-      #     name: Install test dependencies
-      #     command: yarn
-      #     working_directory: test
-      # - save_cache:
-      #     key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "test/yarn.lock"}}  
-      #     paths:
-      #       - ~/.cache/yarn
-      # - save_cache:
-      #     key: cache-cypress-v1-{{checksum "test/yarn.lock"}} 
-      #     paths:
-      #       - ~/.cache/Cypress           
-      # - persist_to_workspace:
-      #     root: ~/
-      #     paths:
-      #       - repo
+          name: Install web dependencies
+          command: yarn
+          working_directory: web
+      - run:
+          name: Install test dependencies
+          command: yarn
+          working_directory: test
+      - save_cache:
+          key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "test/yarn.lock"}}  
+          paths:
+            - ~/.cache/yarn
+      - save_cache:
+          key: cache-cypress-v1-{{checksum "test/yarn.lock"}} 
+          paths:
+            - ~/.cache/Cypress           
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - repo
   install:
     docker:
       - image: circleci/node:16.13.1
@@ -197,10 +191,9 @@ jobs:
         type: string    
     docker:
       - image: cypress/base:16.14.2
-        environment:
-          ENV: $MONGODB_USERNAME
-          CYPRESS_ENV: <<parameters.env>>       
-          MONGODB_CONNECTION_STRING: mongodb+srv://$MONGODB_USERNAME:$MONGODB_PASSWORD@$MONGODB_CLUSTER_DOMAIN/household-<<parameters.env>>?retryWrites=true&w=majority 
+    environment:
+      ENV: <<parameters.env>>    
+      CYPRESS_ENV: <<parameters.env>>       
     working_directory: ~/repo
     steps:
       - attach_workspace:
@@ -211,9 +204,10 @@ jobs:
 
       - list-files
 
-      - run: 
-          name: asd
-          command: echo ${MONGODB_USERNAME}
+      - run:
+          name: Setting MongoDB connection string
+          command: echo "export MONGODB_CONNECTION_STRING=\"mongodb+srv://$MONGODB_USERNAME:$MONGODB_PASSWORD@$MONGODB_CLUSTER_DOMAIN/household-<<parameters.env>>?retryWrites=true&w=majority\"" >> "$BASH_ENV"
+
       - run:
           name: printenv
           command: printenv
@@ -233,11 +227,11 @@ workflows:
       - dummy:
           name: dummy
           env: "LOCAL"
-      # - test:
-      #     name: test
-      #     env: "LOCAL"       
-      #     requires:
-      #       - dummy
+      - test:
+          name: test
+          env: "LOCAL"       
+          requires:
+            - dummy
       # - install:
       #     name: install
       #     filters:
