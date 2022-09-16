@@ -31,9 +31,9 @@ jobs:
         default: $MONGODB_USERNAME  
     docker:
       - image: cypress/base:16.14.2
-        environment:
-          ASD: <<parameters.asd>>
-          ASD2: $MONGODB_USERNAME
+    environment:
+      ASD: <<parameters.asd>>
+      ASD2: $MONGODB_USERNAME
     working_directory: ~/repo
     steps:
       - run:
