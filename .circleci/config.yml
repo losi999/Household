@@ -28,6 +28,7 @@ jobs:
     parameters:
       asd:
         type: string
+        default: $MONGODB_USERNAME  
     docker:
       - image: cypress/base:16.14.2
         environment:
@@ -197,7 +198,7 @@ jobs:
   test:
     parameters:
       env:
-        type: string      
+        type: string    
     docker:
       - image: cypress/base:16.14.2
         environment:
@@ -235,7 +236,6 @@ workflows:
     jobs:  
       - dummy:
           name: dummy
-          asd: $MONGODB_USERNAME
       # - test:
       #     name: test
       #     env: "LOCAL"       
