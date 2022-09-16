@@ -31,21 +31,29 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          name: Restoring .cache
-          key: cache-v1    
-      # - run:
-      #     name: Install API dependencies
-      #     command: yarn
-      #     working_directory: api
-      # - run:
-      #     name: Install web dependencies
-      #     command: yarn
-      #     working_directory: web
+          key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "test/yarn.lock"}}   
+      - restore_cache:
+          key: cache-cypress-v1-{{checksum "test/yarn.lock"}}   
+      - run:
+          name: Install API dependencies
+          command: yarn
+      - run:
+          name: Install web dependencies
+          command: yarn
+          working_directory: web
       - run:
           name: Install test dependencies
           command: yarn
           working_directory: test
-      - list-files    
+      - list-files
+      - save_cache:
+          key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "test/yarn.lock"}}  
+          paths:
+            - ~/.cache/yarn
+      - save_cache:
+          key: cache-cypress-v1-{{checksum "test/yarn.lock"}} 
+          paths:
+            - ~/.cache/Cypress
       # - run:
       #     name: Cypress install
       #     command: npx cypress install
@@ -196,7 +204,7 @@ jobs:
       env:
         type: string
     docker:
-      - image: cypress/base
+      - image: cypress/base:16.14.2
         environment:
           ENV: <<parameters.env>>
     working_directory: ~/repo
@@ -205,20 +213,22 @@ jobs:
           at: ~/
 
       - restore_cache:
-          name: Restoring .cache
-          key: cache-v1
+          key: cache-cypress-v1-{{checksum "test/yarn.lock"}} 
+
+      - list-files
 
       - run:
           name: Set env name for test
           command: export CYPRESS_ENV=<<parameters.env>>
 
-      - run:
-          name: Set environment variables
-          command: cat env >> $BASH_ENV
+      # - run:
+      #     name: Set environment variables
+      #     command: cat env >> $BASH_ENV
 
       - run:
           name: Running tests
-          command: cd test && yarn run test
+          working_directory: test
+          command: yarn run test
 
       - store_artifacts:
           path: test/cypress/screenshots
@@ -229,6 +239,11 @@ workflows:
     jobs:  
       - dummy:
           name: dummy
+      - test:
+          name: test
+          env: "LOCAL"
+          requires:
+            - dummy
       # - install:
       #     name: install
       #     filters:
