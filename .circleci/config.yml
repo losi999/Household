@@ -33,7 +33,6 @@ jobs:
       - restore_cache:
           name: Restoring .cache
           key: cache-v1    
-      - list-files
       - run:
           name: Install API dependencies
           command: yarn
