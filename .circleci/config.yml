@@ -26,28 +26,26 @@ commands:
 jobs:
   dummy:
     parameters:
-      asd:
+      env:
+        type: string
+      mongodb_username:
         type: string
         default: $MONGODB_USERNAME  
+      mongodb_password:
+        type: string
+        default: $MONGODB_PASSWORD 
+      mongodb_cluster_domain:
+        type: string
+        default: $MONGODB_CLUSTER_DOMAIN  
     docker:
       - image: cypress/base:16.14.2
-    environment:
-      ASD: <<parameters.asd>>
-      ASD2: $MONGODB_USERNAME
-      ASD3: ${MONGODB_USERNAME}
-      ASD4: "$MONGODB_USERNAME"
-      ASD5: "${MONGODB_USERNAME}"
     working_directory: ~/repo
     steps:
-      - run:
-          name: asd
-          command: echo <<parameters.asd>>
       - run:
           name: printenv
           command: printenv
           environment:
-            ASD6: $MONGODB_USERNAME
-            ASD7: sadfsad
+            MONGODB_CONNECTION_STRING: mongodb+srv://<parameters.mongodb_username>>:<parameters.mongodb_password>>@<parameters.mongodb_cluster_domain>>/household-<<parameters.env>>?retryWrites=true&w=majority 
       # - checkout
       # - restore_cache:
       #     key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "test/yarn.lock"}}   
@@ -242,6 +240,7 @@ workflows:
     jobs:  
       - dummy:
           name: dummy
+          env: "LOCAL"
       # - test:
       #     name: test
       #     env: "LOCAL"       
