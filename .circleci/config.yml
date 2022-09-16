@@ -34,6 +34,23 @@ jobs:
           name: Restoring .cache
           key: cache-v1    
       - list-files
+      - run:
+          name: Install API dependencies
+          command: yarn
+          working_directory: api
+      - run:
+          name: Install web dependencies
+          command: yarn
+          working_directory: web
+      - run:
+          name: Install test dependencies
+          command: yarn
+          working_directory: test
+      - list-files    
+      - run:
+        name: Check Cypress
+        command: npx cypress verify
+        working_directory: test  
   install:
     docker:
       - image: circleci/node:16.13.1
