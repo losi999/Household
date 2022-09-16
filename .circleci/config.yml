@@ -28,19 +28,13 @@ jobs:
     parameters:
       env:
         type: string
-      mongodb_username:
-        type: string
-      mongodb_password:
-        type: string
-      mongodb_cluster_domain:
-        type: string
     docker:
       - image: cypress/base:16.14.2
     working_directory: ~/repo
     steps:
       - run:
           name: asd
-          command: echo "export MONGODB_CONNECTION_STRING=\"mongodb+srv://<<parameters.mongodb_username>>:$MONGODB_PASSWORD@<<parameters.mongodb_cluster_domain>>/household-<<parameters.env>>?retryWrites=true&w=majority\"" >> "$BASH_ENV"
+          command: echo "export MONGODB_CONNECTION_STRING=\"mongodb+srv://$MONGODB_USERNAME:$MONGODB_PASSWORD@$MONGODB_CLUSTER_DOMAIN/household-<<parameters.env>>?retryWrites=true&w=majority\"" >> "$BASH_ENV"
       - run:
           name: printenv
           command: printenv
@@ -239,9 +233,6 @@ workflows:
       - dummy:
           name: dummy
           env: "LOCAL"
-          mongodb_username: $MONGODB_USERNAME
-          mongodb_password: $MONGODB_PASSWORD
-          mongodb_cluster_domain: $MONGODB_CLUSTER_DOMAIN
       # - test:
       #     name: test
       #     env: "LOCAL"       
