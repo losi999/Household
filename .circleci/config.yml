@@ -34,6 +34,9 @@ jobs:
     environment:
       ASD: <<parameters.asd>>
       ASD2: $MONGODB_USERNAME
+      ASD3: ${MONGODB_USERNAME}
+      ASD4: "$MONGODB_USERNAME"
+      ASD5: "${MONGODB_USERNAME}"
     working_directory: ~/repo
     steps:
       - run:
