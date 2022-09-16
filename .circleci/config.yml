@@ -9,7 +9,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "test/yarn.lock"}}   
+          key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "test/yarn.lock"}}-{{checksum "layers/mongoose/nodejs/yarn.lock"}}
       - restore_cache:
           key: cache-cypress-v1-{{checksum "test/yarn.lock"}}   
       - run:
@@ -20,11 +20,15 @@ jobs:
           command: yarn
           working_directory: web
       - run:
+          name: Installing layer dependencies
+          command: yarn          
+          working_directory: layers/mongoose/nodejs
+      - run:
           name: Install test dependencies
           command: yarn
           working_directory: test
       - save_cache:
-          key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "test/yarn.lock"}}  
+          key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "test/yarn.lock"}}-{{checksum "layers/mongoose/nodejs/yarn.lock"}}
           paths:
             - ~/.cache/yarn
       - save_cache:
