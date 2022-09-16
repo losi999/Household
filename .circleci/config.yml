@@ -4,35 +4,33 @@ orbs:
 jobs:
   install:
     docker:
-      - image: circleci/node:16.13.1
+      - image: cypress/base:16.14.2
     working_directory: ~/repo
     steps:
       - checkout
       - restore_cache:
-          name: Restoring .cache
-          key: cache-v1
-
+          key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "test/yarn.lock"}}   
+      - restore_cache:
+          key: cache-cypress-v1-{{checksum "test/yarn.lock"}}   
       - run:
-          name: Installing dependencies
+          name: Install API dependencies
           command: yarn
-
       - run:
-          name: Installing dependencies
-          command: cd web && yarn
-
+          name: Install web dependencies
+          command: yarn
+          working_directory: web
       - run:
-          name: Installing layer dependencies
-          command: cd layers/mongoose/nodejs && yarn
-
-      - run:
-          name: Installing test dependencies
-          command: cd test && yarn
-
+          name: Install test dependencies
+          command: yarn
+          working_directory: test
       - save_cache:
+          key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "test/yarn.lock"}}  
           paths:
-            - ~/.cache
-          key: cache-v1
-
+            - ~/.cache/yarn
+      - save_cache:
+          key: cache-cypress-v1-{{checksum "test/yarn.lock"}} 
+          paths:
+            - ~/.cache/Cypress           
       - persist_to_workspace:
           root: ~/
           paths:
@@ -100,14 +98,9 @@ jobs:
     parameters:
       env:
         type: string
-      mongodb_username:
-        type: string
-      mongodb_password:
-        type: string
-      mongodb_cluster_domain:
-        type: string
       cypress_password:
         type: string
+        default: ${CYPRESS_PASSWORD}
     working_directory: ~/repo
     steps:
       - attach_workspace:
@@ -119,13 +112,6 @@ jobs:
       - run:
           name: Invoke Post deploy Lambda
           command: aws lambda invoke --function-name Household-<<parameters.env>>-PostDeploy /dev/null
-      - run:
-          name: Get Database name
-          command: echo "export MONGODB_CONNECTION_STRING=\"mongodb+srv://<<parameters.mongodb_username>>:<<parameters.mongodb_password>>@<<parameters.mongodb_cluster_domain>>/household-<<parameters.env>>?retryWrites=true&w=majority\"" >> env    
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - repo/env
   web_deploy:
     parameters:
       env:
@@ -142,31 +128,28 @@ jobs:
   test:
     parameters:
       env:
-        type: string
+        type: string    
     docker:
-      - image: cypress/base
-        environment:
-          ENV: <<parameters.env>>
+      - image: cypress/base:16.14.2
+    environment:
+      ENV: <<parameters.env>>    
+      CYPRESS_ENV: <<parameters.env>>       
     working_directory: ~/repo
     steps:
       - attach_workspace:
           at: ~/
 
       - restore_cache:
-          name: Restoring .cache
-          key: cache-v1
+          key: cache-cypress-v1-{{checksum "test/yarn.lock"}} 
 
       - run:
-          name: Set env name for test
-          command: export CYPRESS_ENV=<<parameters.env>>
-
-      - run:
-          name: Set environment variables
-          command: cat env >> $BASH_ENV
+          name: Setting MongoDB connection string
+          command: echo "export MONGODB_CONNECTION_STRING=\"mongodb+srv://$MONGODB_USERNAME:$MONGODB_PASSWORD@$MONGODB_CLUSTER_DOMAIN/household-<<parameters.env>>?retryWrites=true&w=majority\"" >> "$BASH_ENV"
 
       - run:
           name: Running tests
-          command: cd test && yarn run test
+          working_directory: test
+          command: yarn run test
 
       - store_artifacts:
           path: test/cypress/screenshots
@@ -220,10 +203,6 @@ workflows:
       - api_deploy:
           name: api_deploy
           env: "DEV"
-          cypress_password: ${CYPRESS_PASSWORD}
-          mongodb_username: ${MONGODB_USERNAME}
-          mongodb_password: ${MONGODB_PASSWORD}
-          mongodb_cluster_domain: ${MONGODB_CLUSTER_DOMAIN}
           requires:
             - unit_test
             - lint
@@ -263,9 +242,6 @@ workflows:
       - api_deploy:
           name: api_deploy
           env: "PROD"
-          mongodb_username: ""
-          mongodb_password: ""
-          mongodb_cluster_domain: ""
           cypress_password: ""
           requires:
             - unit_test
