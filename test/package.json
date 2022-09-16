@@ -6,8 +6,8 @@
     "cypress-env": "cp cypress.${ENV}.env.json cypress.env.json",
     "start": "export ENV=localhost && yarn cypress-env && cypress open -d -C cypress.localhost.json",
     "start:LOCAL": "export ENV=LOCAL && yarn cypress-env && cypress open -d -C cypress.LOCAL.json",
-    "test": "cypress run -C cypress.${ENV}.json -s src/api/recipient/get-recipient.spec.ts",
-    "test:LOCAL": "export ENV=LOCAL && yarn cypress-env && cypress run -C cypress.LOCAL.json -s src/api/recipient/get-recipient.spec.ts"
+    "test": "cypress run -C cypress.${ENV}.json",
+    "test:LOCAL": "export ENV=LOCAL && yarn cypress-env && cypress run -C cypress.LOCAL.json"
   },
   "devDependencies": {
     "@cypress/webpack-preprocessor": "5.11.0",

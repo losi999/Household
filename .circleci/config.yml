@@ -1,33 +1,8 @@
 version: 2.1
 orbs:
   sam: circleci/aws-sam-serverless@3.0
-commands:
-  list-files:
-    steps:
-      - run:
-          name: List files
-          command: |
-            echo "current folder $(pwd)"
-            echo ""
-            echo "current folder contents"
-            ls -l
-            echo ""
-            echo "api folder"
-            ls -l api
-            echo ""
-            echo "web folder"
-            ls -l web
-            echo ""
-            echo "test folder"
-            ls -l test  
-            echo ""
-            echo ".cache folder"
-            ls -l ~/.cache
 jobs:
-  dummy:
-    parameters:
-      env:
-        type: string
+  install:
     docker:
       - image: cypress/base:16.14.2
     working_directory: ~/repo
@@ -56,41 +31,6 @@ jobs:
           key: cache-cypress-v1-{{checksum "test/yarn.lock"}} 
           paths:
             - ~/.cache/Cypress           
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - repo
-  install:
-    docker:
-      - image: circleci/node:16.13.1
-    working_directory: ~/repo
-    steps:
-      - checkout
-      - restore_cache:
-          name: Restoring .cache
-          key: cache-v1
-
-      - run:
-          name: Installing dependencies
-          command: yarn
-
-      - run:
-          name: Installing web dependencies
-          command: cd web && yarn
-
-      - run:
-          name: Installing layer dependencies
-          command: cd layers/mongoose/nodejs && yarn
-
-      - run:
-          name: Installing test dependencies
-          command: cd test && yarn
-
-      - save_cache:
-          paths:
-            - ~/.cache
-          key: cache-v1
-
       - persist_to_workspace:
           root: ~/
           paths:
@@ -202,15 +142,9 @@ jobs:
       - restore_cache:
           key: cache-cypress-v1-{{checksum "test/yarn.lock"}} 
 
-      - list-files
-
       - run:
           name: Setting MongoDB connection string
           command: echo "export MONGODB_CONNECTION_STRING=\"mongodb+srv://$MONGODB_USERNAME:$MONGODB_PASSWORD@$MONGODB_CLUSTER_DOMAIN/household-<<parameters.env>>?retryWrites=true&w=majority\"" >> "$BASH_ENV"
-
-      - run:
-          name: printenv
-          command: printenv
 
       - run:
           name: Running tests
@@ -224,34 +158,26 @@ workflows:
   version: 2.1
   local:
     jobs:  
-      - dummy:
-          name: dummy
-          env: "LOCAL"
-      - test:
-          name: test
-          env: "LOCAL"       
+      - install:
+          name: install
+          filters:
+            branches:
+              ignore:
+                - development
+                - master
+      - unit_test:
+          name: unit_test
           requires:
-            - dummy
-      # - install:
-      #     name: install
-      #     filters:
-      #       branches:
-      #         ignore:
-      #           - development
-      #           - master
-      # - unit_test:
-      #     name: unit_test
-      #     requires:
-      #       - install
-      # - lint:
-      #     name: lint
-      #     requires:
-      #       - install
-      # - build:
-      #     name: build
-      #     env: "LOCAL"
-      #     requires:
-      #       - install
+            - install
+      - lint:
+          name: lint
+          requires:
+            - install
+      - build:
+          name: build
+          env: "LOCAL"
+          requires:
+            - install
 
   dev:
     jobs:
