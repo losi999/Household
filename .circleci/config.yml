@@ -190,7 +190,7 @@ jobs:
     docker:
       - image: cypress/base:16.14.2
         environment:
-          ENV: <<parameters.env>>
+          ENV: $MONGODB_USERNAME
           CYPRESS_ENV: <<parameters.env>>       
           MONGODB_CONNECTION_STRING: mongodb+srv://$MONGODB_USERNAME:$MONGODB_PASSWORD@$MONGODB_CLUSTER_DOMAIN/household-<<parameters.env>>?retryWrites=true&w=majority 
     working_directory: ~/repo
