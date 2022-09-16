@@ -48,6 +48,10 @@ jobs:
           working_directory: test
       - list-files    
       - run:
+          name: Cypress install
+          command: npx cypress install
+          working_directory: test
+      - run:
           name: Check Cypress
           command: npx cypress verify
           working_directory: test  
