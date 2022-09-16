@@ -30,13 +30,10 @@ jobs:
         type: string
       mongodb_username:
         type: string
-        default: $MONGODB_USERNAME  
       mongodb_password:
         type: string
-        default: $MONGODB_PASSWORD 
       mongodb_cluster_domain:
         type: string
-        default: $MONGODB_CLUSTER_DOMAIN  
     docker:
       - image: cypress/base:16.14.2
     working_directory: ~/repo
@@ -241,6 +238,9 @@ workflows:
       - dummy:
           name: dummy
           env: "LOCAL"
+          mongodb_username: $MONGODB_USERNAME
+          mongodb_password: $MONGODB_PASSWORD
+          mongodb_cluster_domain: $MONGODB_CLUSTER_DOMAIN
       # - test:
       #     name: test
       #     env: "LOCAL"       
