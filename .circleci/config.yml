@@ -48,9 +48,9 @@ jobs:
           working_directory: test
       - list-files    
       - run:
-        name: Check Cypress
-        command: npx cypress verify
-        working_directory: test  
+          name: Check Cypress
+          command: npx cypress verify
+          working_directory: test  
   install:
     docker:
       - image: circleci/node:16.13.1
