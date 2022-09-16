@@ -39,6 +39,9 @@ jobs:
     working_directory: ~/repo
     steps:
       - run:
+          name: asd
+          command: echo <<parameters.mongodb_username>>
+      - run:
           name: printenv
           command: printenv
           environment:
