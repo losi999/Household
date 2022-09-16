@@ -1,4 +1,4 @@
-import { Account } from '@household/shared/types/types';
+import { Account, Common } from '@household/shared/types/types';
 import { headerExpiresIn } from '@household/shared/constants';
 import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/test/api/types';
 import { IAccountService } from '@household/shared/services/account-service';
@@ -66,10 +66,11 @@ const requestGetAccountList = (idToken: string) => {
   }) as Cypress.ChainableResponse;
 };
 
-const requestGetTransactionListByAccount = (idToken: string, accountId: Account.IdType) => {
+const requestGetTransactionListByAccount = (idToken: string, accountId: Account.IdType, querystring?: Common.Pagination<number>) => {
   return cy.request({
     method: 'GET',
     url: `/account/v1/accounts/${accountId}/transactions`,
+    qs: querystring,
     headers: {
       Authorization: idToken,
     },

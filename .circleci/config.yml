@@ -178,7 +178,7 @@ workflows:
           requires:
             - install
       - build:
-          name: build
+          name: build_local
           env: "LOCAL"
           requires:
             - install
@@ -200,27 +200,27 @@ workflows:
           requires:
             - install
       - build:
-          name: build
+          name: build_dev
           env: "DEV"
           requires:
             - install
       - api_deploy:
-          name: api_deploy
+          name: api_deploy_dev
           env: "DEV"
           requires:
             - unit_test
             - lint
-            - build
+            - build_dev
       - web_deploy:
-          name: web_deploy
+          name: web_deploy_dev
           env: "DEV"
           requires:
-            - api_deploy
+            - api_deploy_dev
       - test:
-          name: test
+          name: test_dev
           env: "DEV"
           requires:
-            - web_deploy
+            - web_deploy_dev
 
   prod:
     jobs:
@@ -239,20 +239,20 @@ workflows:
           requires:
             - install
       - build:
-          name: build
+          name: build_prod
           env: "PROD"
           requires:
             - install
       - api_deploy:
-          name: api_deploy
+          name: api_deploy_prod
           env: "PROD"
           cypress_password: ""
           requires:
             - unit_test
             - lint
-            - build
+            - build_prod
       - web_deploy:
-          name: web_deploy
+          name: web_deploy_prod
           env: "PROD"
           requires:
-            - api_deploy
+            - api_deploy_prod

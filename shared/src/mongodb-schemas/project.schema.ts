@@ -5,9 +5,11 @@ export const projectSchema = new Schema<Project.Document>({
   name: {
     type: String,
     required: true,
+    minlength: 1,
   },
   description: {
     type: String,
+    minlength: 1,
   },
   expiresAt: {
     type: Schema.Types.Date,

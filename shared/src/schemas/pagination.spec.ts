@@ -1,11 +1,9 @@
 import { default as schema } from '@household/shared/schemas/pagination';
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
+import { Common } from '@household/shared/types/types';
 
 describe('Pagination schema', () => {
-  let data: {
-    pageSize: string;
-    pageNumber: string;
-  };
+  let data: Common.Pagination<string>;
   const tester = jsonSchemaTesterFactory<{
     pageSize: string;
     pageNumber: string;

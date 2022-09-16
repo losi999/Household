@@ -63,7 +63,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
   });
 
   describe('called as an admin', () => {
-    describe('should create transaction', () => {
+    describe('should update transaction', () => {
       it('with complete body', () => {
         cy.saveTransactionDocument(originalDocument)
           .saveAccountDocument(accountDocument)

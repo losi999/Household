@@ -215,9 +215,91 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
           recipient: recipientDocument,
         }, Cypress.env('EXPIRES_IN')))
         .authenticate(1)
-        .requestGetTransactionListByAccount(createAccountId(accountDocument._id))
+        .requestGetTransactionListByAccount(createAccountId(accountDocument._id), {
+          pageNumber: 1,
+          pageSize: 100000,
+        })
         .expectOkResponse()
         .expectValidResponseSchema(schema);
+    });
+
+    describe('should return error', () => {
+      describe('if querystring', () => {
+        it('has additional parameter', () => {
+          cy.authenticate(1)
+            .requestGetTransactionListByAccount(createAccountId(), {
+              pageNumber: 1,
+              pageSize: 100,
+              extra: 1,
+            } as any)
+            .expectBadRequestResponse()
+            .expectAdditionalProperty('data', 'queryStringParameters');
+        });
+      });
+
+      describe('if querystring.pageSize', () => {
+        it('is missing while pageNumber is set', () => {
+          cy.authenticate(1)
+            .requestGetTransactionListByAccount(createAccountId(), {
+              pageNumber: 1,
+              pageSize: undefined,
+            })
+            .expectBadRequestResponse()
+            .expectRequiredProperty('pageSize', 'queryStringParameters');
+        });
+
+        it('is not number', () => {
+          cy.authenticate(1)
+            .requestGetTransactionListByAccount(createAccountId(), {
+              pageNumber: 1,
+              pageSize: 'asd' as any,
+            })
+            .expectBadRequestResponse()
+            .expectWrongPropertyPattern('pageSize', 'queryStringParameters');
+        });
+
+        it('is too small', () => {
+          cy.authenticate(1)
+            .requestGetTransactionListByAccount(createAccountId(), {
+              pageNumber: 1,
+              pageSize: 0,
+            })
+            .expectBadRequestResponse()
+            .expectWrongPropertyPattern('pageSize', 'queryStringParameters');
+        });
+      });
+
+      describe('if querystring.pageNumber', () => {
+        it('is missing while pageSize is set', () => {
+          cy.authenticate(1)
+            .requestGetTransactionListByAccount(createAccountId(), {
+              pageNumber: undefined,
+              pageSize: 1,
+            })
+            .expectBadRequestResponse()
+            .expectRequiredProperty('pageNumber', 'queryStringParameters');
+        });
+
+        it('is not number', () => {
+          cy.authenticate(1)
+            .requestGetTransactionListByAccount(createAccountId(), {
+              pageNumber: 'asd' as any,
+              pageSize: 1,
+            })
+            .expectBadRequestResponse()
+            .expectWrongPropertyPattern('pageNumber', 'queryStringParameters');
+        });
+
+        it('is too small', () => {
+          cy.authenticate(1)
+            .requestGetTransactionListByAccount(createAccountId(), {
+              pageNumber: 0,
+              pageSize: 1,
+            })
+            .expectBadRequestResponse()
+            .expectWrongPropertyPattern('pageNumber', 'queryStringParameters');
+        });
+      });
     });
   });
 });

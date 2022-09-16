@@ -1,7 +1,8 @@
 
-import { JSONSchema7 } from 'json-schema';
+import { StrictJSONSchema7 } from '@household/shared/types/common';
+import { Common } from '@household/shared/types/types';
 
-const schema: JSONSchema7 = {
+const schema: StrictJSONSchema7<Common.Pagination<string>> = {
   type: [
     'object',
     'null',

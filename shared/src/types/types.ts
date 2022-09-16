@@ -391,3 +391,10 @@ export namespace Auth {
     export type Response = IdTokenResponse;
   }
 }
+
+export namespace Common {
+  export type Pagination<P> = {
+    pageSize: P;
+    pageNumber: P;
+  };
+}
