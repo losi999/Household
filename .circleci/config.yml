@@ -45,7 +45,7 @@ jobs:
           name: printenv
           command: printenv
           environment:
-            MONGODB_CONNECTION_STRING: mongodb+srv://<parameters.mongodb_username>>:<parameters.mongodb_password>>@<parameters.mongodb_cluster_domain>>/household-<<parameters.env>>?retryWrites=true&w=majority 
+            MONGODB_CONNECTION_STRING: mongodb+srv://<<parameters.mongodb_username>>:<<parameters.mongodb_password>>@<<parameters.mongodb_cluster_domain>>/household-<<parameters.env>>?retryWrites=true&w=majority 
       # - checkout
       # - restore_cache:
       #     key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "test/yarn.lock"}}   
