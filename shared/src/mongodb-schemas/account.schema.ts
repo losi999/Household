@@ -5,10 +5,12 @@ export const accountSchema = new Schema<Account.Document>({
   name: {
     type: String,
     required: true,
+    minlength: 1,
   },
   currency: {
     type: String,
     required: true,
+    minlength: 1,
   },
   isOpen: {
     type: Boolean,

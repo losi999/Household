@@ -5,6 +5,7 @@ import { Schema } from 'mongoose';
 const invoiceSchema = new Schema<Transaction.Invoice<Date>['invoice']>({
   invoiceNumber: {
     type: String,
+    minlength: 1,
   },
   billingEndDate: {
     type: Date,
@@ -31,6 +32,7 @@ const inventorySchema = new Schema<Transaction.Inventory['inventory']>({
   },
   brand: {
     type: String,
+    minlength: 1,
   },
 }, {
   _id: false,
@@ -47,6 +49,7 @@ export const transactionSchema = new Schema<Transaction.Document>({
   },
   description: {
     type: String,
+    minlength: 1,
   },
   amount: {
     type: Number,
@@ -63,6 +66,7 @@ export const transactionSchema = new Schema<Transaction.Document>({
       {
         description: {
           type: String,
+          minlength: 1,
         },
         amount: {
           type: Number,

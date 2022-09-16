@@ -6,6 +6,7 @@ export const categorySchema = new Schema<Category.Document>({
   name: {
     type: String,
     required: true,
+    minlength: 1,
   },
   categoryType: {
     type: String,
@@ -15,6 +16,7 @@ export const categorySchema = new Schema<Category.Document>({
   fullName: {
     type: String,
     required: true,
+    minlength: 1,
   },
   parentCategory: {
     type: Schema.Types.ObjectId,

@@ -7,7 +7,7 @@ import { transactionDocumentConverter } from '@household/shared/dependencies/con
 import { Account, Category, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { Types } from 'mongoose';
 
-describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
+describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
   let request: Transaction.SplitRequest;
   let originalDocument: Transaction.PaymentDocument;
 
@@ -146,7 +146,7 @@ describe('POST transaction/v1/accounts/{accountId}/transactions/split', () => {
   });
 
   describe('called as an admin', () => {
-    describe('should create transaction', () => {
+    describe('should update transaction', () => {
       it('with complete body', () => {
         cy.saveTransactionDocument(originalDocument)
           .saveAccountDocument(accountDocument)
