@@ -207,6 +207,10 @@ jobs:
           key: cache-cypress-v1-{{checksum "test/yarn.lock"}} 
 
       - list-files
+      
+      - run:
+          name: printenv
+          command: printenv
 
       - run:
           name: Running tests
