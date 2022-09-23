@@ -1,273 +1,254 @@
 import { default as schema } from '@household/shared/schemas/transaction-payment-request';
 import { Transaction } from '@household/shared/types/types';
-import { createAccountId, createCategoryId, createProductId, createProjectId, createRecipientId } from '@household/shared/common/test-data-factory';
+import { createAccountId, createCategoryId, createInventoryRequest, createInvoiceRequest, createPaymentTransactionRequest, createProductId, createProjectId, createRecipientId } from '@household/shared/common/test-data-factory';
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 
 describe('Payment transaction schema', () => {
-  let data: Transaction.PaymentRequest;
+
   const tester = jsonSchemaTesterFactory<Transaction.PaymentRequest>(schema);
 
-  beforeEach(() => {
-    data = {
-      amount: 200,
-      issuedAt: new Date().toISOString(),
-      description: 'description',
-      inventory: {
-        quantity: 1,
-        productId: createProductId(),
-      },
-      invoice: {
-        invoiceNumber: 'asdf',
-        billingEndDate: new Date(2022, 5, 3).toISOString()
-          .split('T')[0],
-        billingStartDate: new Date(2022, 5, 2).toISOString()
-          .split('T')[0],
-      },
-      accountId: createAccountId(),
-      categoryId: createCategoryId(),
-      recipientId: createRecipientId(),
-      projectId: createProjectId(),
-    };
-  });
-
   describe('should accept', () => {
-    it('complete body', () => {
-      tester.validateSuccess(data);
-    });
+    tester.validateSuccess(createPaymentTransactionRequest());
 
     describe('without optional property', () => {
-      it('description', () => {
-        delete data.description;
-        tester.validateSuccess(data);
-      });
+      tester.validateSuccess(createPaymentTransactionRequest({
+        description: undefined,
+      }));
 
-      it('categoryId', () => {
-        delete data.categoryId;
-        tester.validateSuccess(data);
-      });
+      tester.validateSuccess(createPaymentTransactionRequest({
+        categoryId: undefined,
+      }));
 
-      it('recipientId', () => {
-        delete data.recipientId;
-        tester.validateSuccess(data);
-      });
+      tester.validateSuccess(createPaymentTransactionRequest({
+        recipientId: undefined,
+      }));
 
-      it('projectId', () => {
-        delete data.projectId;
-        tester.validateSuccess(data);
-      });
+      tester.validateSuccess(createPaymentTransactionRequest({
+        projectId: undefined,
+      }));
 
-      it('inventory', () => {
-        delete data.inventory;
-        tester.validateSuccess(data);
-      });
+      tester.validateSuccess(createPaymentTransactionRequest({
+        inventory: undefined,
+      }));
 
-      it('invoice', () => {
-        delete data.invoice;
-        tester.validateSuccess(data);
-      });
+      tester.validateSuccess(createPaymentTransactionRequest({
+        invoice: undefined,
+      }));
     });
   });
 
   describe('should deny', () => {
     describe('if data', () => {
-      it('has additional property', () => {
-        (data as any).extra = 'asd';
-        tester.validateSchemaAdditionalProperties(data, 'data');
-      });
+      tester.validateSchemaAdditionalProperties({
+        ...createPaymentTransactionRequest(),
+        extra: 1,
+      } as any, 'data');
     });
 
     describe('if data.amount', () => {
-      it('is missing', () => {
-        data.amount = undefined;
-        tester.validateSchemaRequired(data, 'amount');
-      });
+      tester.validateSchemaRequired(createPaymentTransactionRequest({
+        amount: undefined,
+      }), 'amount');
 
-      it('is not number', () => {
-        (data.amount as any) = 'text';
-        tester.validateSchemaType(data, 'amount', 'number');
-      });
+      tester.validateSchemaType(createPaymentTransactionRequest({
+        amount: '1' as any,
+      }), 'amount', 'number');
     });
 
     describe('if data.description', () => {
-      it('is not string', () => {
-        (data.description as any) = 2;
-        tester.validateSchemaType(data, 'description', 'string');
-      });
+      tester.validateSchemaType(createPaymentTransactionRequest({
+        description: 1 as any,
+      }), 'description', 'string');
 
-      it('is too short', () => {
-        data.description = '';
-        tester.validateSchemaMinLength(data, 'description', 1);
-      });
+      tester.validateSchemaMinLength(createPaymentTransactionRequest({
+        description: '',
+      }), 'description', 1);
     });
 
     describe('if data.inventory', () => {
-      it('is not object', () => {
-        (data.inventory as any) = 2;
-        tester.validateSchemaType(data, 'inventory', 'object');
-      });
+      tester.validateSchemaType(createPaymentTransactionRequest({
+        inventory: 1 as any,
+      }), 'inventory', 'object');
 
-      it('has additional properties', () => {
-        (data.inventory as any).extra = 'asd';
-        tester.validateSchemaAdditionalProperties(data, 'inventory');
-      });
+      tester.validateSchemaAdditionalProperties(createPaymentTransactionRequest({
+        inventory: {
+          ...createInventoryRequest(),
+          extra: 1,
+        } as any,
+      }), 'inventory');
     });
 
     describe('if data.inventory.quantity', () => {
-      it('is not number', () => {
-        (data.inventory.quantity as any) = 'a';
-        tester.validateSchemaType(data, 'inventory/quantity', 'number');
-      });
+      tester.validateSchemaRequired(createPaymentTransactionRequest({
+        inventory: createInventoryRequest({
+          quantity: undefined,
+        }),
+      }), 'quantity');
 
-      it('is too small', () => {
-        data.inventory.quantity = 0;
-        tester.validateSchemaExclusiveMinimum(data, 'inventory/quantity', 0);
-      });
+      tester.validateSchemaType(createPaymentTransactionRequest({
+        inventory: createInventoryRequest({
+          quantity: '1' as any,
+        }),
+      }), 'inventory/quantity', 'number');
+
+      tester.validateSchemaExclusiveMinimum(createPaymentTransactionRequest({
+        inventory: createInventoryRequest({
+          quantity: 0,
+        }),
+      }), 'inventory/quantity', 0);
     });
 
-    // describe('if data.inventory.brand', () => {
-    //   it('is not string', () => {
-    //     (data.inventory.brand as any) = 1;
-    //     tester.validateSchemaType(data, 'inventory/brand', 'string');
-    //   });
+    describe('if data.inventory.productId', () => {
+      tester.validateSchemaRequired(createPaymentTransactionRequest({
+        inventory: createInventoryRequest({
+          productId: undefined,
+        }),
+      }), 'productId');
 
-    //   it('is too short', () => {
-    //     data.inventory.brand = '';
-    //     tester.validateSchemaMinLength(data, 'inventory/brand', 1);
-    //   });
-    // });
+      tester.validateSchemaType(createPaymentTransactionRequest({
+        inventory: createInventoryRequest({
+          productId: 1 as any,
+        }),
+      }), 'inventory/productId', 'string');
 
-    // describe('if data.inventory.measurement', () => {
-    //   it('is not number', () => {
-    //     (data.inventory.measurement as any) = 'a';
-    //     tester.validateSchemaType(data, 'inventory/measurement', 'number');
-    //   });
-
-    //   it('is too small', () => {
-    //     data.inventory.measurement = 0;
-    //     tester.validateSchemaExclusiveMinimum(data, 'inventory/measurement', 0);
-    //   });
-    // });
-
-    // describe('if data.inventory.unitOfMeasurement', () => {
-    //   it('is not string', () => {
-    //     (data.inventory.unitOfMeasurement as any) = 1;
-    //     tester.validateSchemaType(data, 'inventory/unitOfMeasurement', 'string');
-    //   });
-
-    //   it('is not a valid enum vale', () => {
-    //     (data.inventory.unitOfMeasurement as any) = 'km';
-    //     tester.validateSchemaEnumValue(data, 'inventory/unitOfMeasurement');
-    //   });
-    // });
+      tester.validateSchemaPattern(createPaymentTransactionRequest({
+        inventory: createInventoryRequest({
+          productId: createProductId('not-valid'),
+        }),
+      }), 'inventory/productId');
+    });
 
     describe('if data.invoice', () => {
-      it('is not object', () => {
-        (data.invoice as any) = 2;
-        tester.validateSchemaType(data, 'invoice', 'object');
-      });
+      tester.validateSchemaType(createPaymentTransactionRequest({
+        invoice: 1 as any,
+      }), 'invoice', 'object');
 
-      it('has additional properties', () => {
-        (data.invoice as any).extra = 'asd';
-        tester.validateSchemaAdditionalProperties(data, 'invoice');
-      });
+      tester.validateSchemaAdditionalProperties(createPaymentTransactionRequest({
+        invoice: {
+          ...createInvoiceRequest(),
+          extra: 1,
+        } as any,
+      }), 'invoice');
     });
 
     describe('if data.invoice.invoiceNumber', () => {
-      it('is not string', () => {
-        (data.invoice.invoiceNumber as any) = 2;
-        tester.validateSchemaType(data, 'invoice/invoiceNumber', 'string');
-      });
+      tester.validateSchemaType(createPaymentTransactionRequest({
+        invoice: createInvoiceRequest({
+          invoiceNumber: 1 as any,
+        }),
+      }), 'invoice/invoiceNumber', 'string');
 
-      it('is too short', () => {
-        data.invoice.invoiceNumber = '';
-        tester.validateSchemaMinLength(data, 'invoice/invoiceNumber', 1);
-      });
+      tester.validateSchemaMinLength(createPaymentTransactionRequest({
+        invoice: createInvoiceRequest({
+          invoiceNumber: '',
+        }),
+      }), 'invoice/invoiceNumber', 1);
     });
 
     describe('if data.invoice.billingEndDate', () => {
-      it('is missing', () => {
-        data.invoice.billingEndDate = undefined;
-        tester.validateSchemaRequired(data, 'billingEndDate');
-      });
-      it('is not string', () => {
-        (data.invoice.billingEndDate as any) = 2;
-        tester.validateSchemaType(data, 'invoice/billingEndDate', 'string');
-      });
+      tester.validateSchemaRequired(createPaymentTransactionRequest({
+        invoice: createInvoiceRequest({
+          billingEndDate: undefined,
+        }),
+      }), 'billingEndDate');
 
-      it('is wrong format', () => {
-        data.invoice.billingEndDate = 'not-date-time';
-        tester.validateSchemaFormat(data, 'invoice/billingEndDate', 'date');
-      });
+      tester.validateSchemaType(createPaymentTransactionRequest({
+        invoice: createInvoiceRequest({
+          billingEndDate: 1 as any,
+        }),
+      }), 'invoice/billingEndDate', 'string');
 
-      it('is earlier than required', () => {
-        data.invoice.billingEndDate = data.invoice.billingStartDate;
-        tester.validateSchemaFormatExclusiveMinimum(data, 'invoice/billingEndDate');
-      });
+      tester.validateSchemaFormat(createPaymentTransactionRequest({
+        invoice: createInvoiceRequest({
+          billingEndDate: 'not-date',
+        }),
+      }), 'invoice/billingEndDate', 'date');
+
+      tester.validateSchemaFormatExclusiveMinimum(createPaymentTransactionRequest({
+        invoice: createInvoiceRequest({
+          billingEndDate: '2022-01-01',
+          billingStartDate: '2022-12-31',
+        }),
+      }), 'invoice/billingEndDate');
     });
 
     describe('if data.invoice.billingStartDate', () => {
-      it('is missing', () => {
-        data.invoice.billingStartDate = undefined;
-        tester.validateSchemaRequired(data, 'billingStartDate');
-      });
-      it('is not string', () => {
-        (data.invoice.billingStartDate as any) = 2;
-        tester.validateSchemaType(data, 'invoice/billingStartDate', 'string');
-      });
+      tester.validateSchemaRequired(createPaymentTransactionRequest({
+        invoice: createInvoiceRequest({
+          billingStartDate: undefined,
+        }),
+      }), 'billingStartDate');
 
-      it('is wrong format', () => {
-        data.invoice.billingStartDate = 'not-date';
-        tester.validateSchemaFormat(data, 'invoice/billingStartDate', 'date');
-      });
+      tester.validateSchemaType(createPaymentTransactionRequest({
+        invoice: createInvoiceRequest({
+          billingStartDate: 1 as any,
+        }),
+      }), 'invoice/billingStartDate', 'string');
+
+      tester.validateSchemaFormat(createPaymentTransactionRequest({
+        invoice: createInvoiceRequest({
+          billingStartDate: 'not-date',
+        }),
+      }), 'invoice/billingStartDate', 'date');
+
     });
 
     describe('if data.issuedAt', () => {
-      it('is missing', () => {
-        data.issuedAt = undefined;
-        tester.validateSchemaRequired(data, 'issuedAt');
-      });
-      it('is not string', () => {
-        (data.issuedAt as any) = 2;
-        tester.validateSchemaType(data, 'issuedAt', 'string');
-      });
+      tester.validateSchemaRequired(createPaymentTransactionRequest({
+        issuedAt: undefined,
+      }), 'issuedAt');
 
-      it('is wrong format', () => {
-        data.issuedAt = 'not-date-time';
-        tester.validateSchemaFormat(data, 'issuedAt', 'date-time');
-      });
+      tester.validateSchemaType(createPaymentTransactionRequest({
+        issuedAt: 1 as any,
+      }), 'issuedAt', 'string');
+
+      tester.validateSchemaFormat(createPaymentTransactionRequest({
+        issuedAt: 'not-date-time',
+      }), 'issuedAt', 'date-time');
     });
 
     describe('if data.accountId', () => {
-      it('is missing', () => {
-        data.accountId = undefined;
-        tester.validateSchemaRequired(data, 'accountId');
-      });
+      tester.validateSchemaRequired(createPaymentTransactionRequest({
+        accountId: undefined,
+      }), 'accountId');
 
-      it('does not match pattern', () => {
-        data.accountId = createAccountId('not-valid');
-        tester.validateSchemaPattern(data, 'accountId');
-      });
+      tester.validateSchemaType(createPaymentTransactionRequest({
+        accountId: 1 as any,
+      }), 'accountId', 'string');
+
+      tester.validateSchemaPattern(createPaymentTransactionRequest({
+        accountId: createAccountId('not-valid'),
+      }), 'accountId');
     });
 
     describe('if data.categoryId', () => {
-      it('does not match pattern', () => {
-        data.categoryId = createCategoryId('not-valid');
-        tester.validateSchemaPattern(data, 'categoryId');
-      });
+      tester.validateSchemaType(createPaymentTransactionRequest({
+        categoryId: 1 as any,
+      }), 'categoryId', 'string');
+
+      tester.validateSchemaPattern(createPaymentTransactionRequest({
+        categoryId: createCategoryId('not-valid'),
+      }), 'categoryId');
     });
 
     describe('if data.recipientId', () => {
-      it('does not match pattern', () => {
-        data.recipientId = createRecipientId('not-valid');
-        tester.validateSchemaPattern(data, 'recipientId');
-      });
+      tester.validateSchemaType(createPaymentTransactionRequest({
+        recipientId: 1 as any,
+      }), 'recipientId', 'string');
+
+      tester.validateSchemaPattern(createPaymentTransactionRequest({
+        recipientId: createRecipientId('not-valid'),
+      }), 'recipientId');
     });
 
     describe('if data.projectId', () => {
-      it('does not match pattern', () => {
-        data.projectId = createProjectId('not valid');
-        tester.validateSchemaPattern(data, 'projectId');
-      });
+      tester.validateSchemaType(createPaymentTransactionRequest({
+        projectId: 1 as any,
+      }), 'projectId', 'string');
+
+      tester.validateSchemaPattern(createPaymentTransactionRequest({
+        projectId: createProjectId('not-valid'),
+      }), 'projectId');
     });
   });
 });

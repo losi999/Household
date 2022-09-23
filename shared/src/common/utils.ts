@@ -1,6 +1,6 @@
 import { headerExpiresIn } from '@household/shared/constants';
 import { Dictionary, HttpError } from '@household/shared/types/common';
-import { Account, Category, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 
 export const httpError = (statusCode: number, message: string): HttpError => ({
   statusCode,
@@ -15,7 +15,7 @@ export const addSeconds = (seconds: number, dateFrom?: Date): Date => {
 };
 
 export const castPathParameters = (event: AWSLambda.APIGatewayProxyEvent) => {
-  return event.pathParameters as (Account.Id & Project.Id & Category.Id & Recipient.Id & Transaction.Id);
+  return event.pathParameters as (Account.Id & Project.Id & Category.Id & Recipient.Id & Transaction.Id & Product.Id);
 };
 
 export const getExpiresInHeader = (event: AWSLambda.APIGatewayProxyEvent) => {

@@ -4,37 +4,32 @@ import { createRecipientId } from '@household/shared/common/test-data-factory';
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 
 describe('Recipient id schema', () => {
-  let data: Recipient.Id;
   const tester = jsonSchemaTesterFactory<Recipient.Id>(schema);
 
-  beforeEach(() => {
-    data = {
-      recipientId: createRecipientId(),
-    };
-  });
-
-  it('should accept valid body', () => {
-    tester.validateSuccess(data);
+  tester.validateSuccess({
+    recipientId: createRecipientId(),
   });
 
   describe('should deny', () => {
     describe('if data', () => {
-      it('has additional property', () => {
-        (data as any).extra = 'asd';
-        tester.validateSchemaAdditionalProperties(data, 'data');
-      });
+      tester.validateSchemaAdditionalProperties({
+        recipientId: createRecipientId(),
+        extra: 1,
+      } as any, 'data');
     });
 
     describe('if data.recipientId', () => {
-      it('is missing', () => {
-        data.recipientId = undefined;
-        tester.validateSchemaRequired(data, 'recipientId');
-      });
+      tester.validateSchemaRequired({
+        recipientId: undefined,
+      }, 'recipientId');
 
-      it('does not match pattern', () => {
-        data.recipientId = createRecipientId('not-valid');
-        tester.validateSchemaPattern(data, 'recipientId');
-      });
+      tester.validateSchemaType({
+        recipientId: 1 as any,
+      }, 'recipientId', 'string');
+
+      tester.validateSchemaPattern({
+        recipientId: createRecipientId('not-valid'),
+      }, 'recipientId');
     });
   });
 });

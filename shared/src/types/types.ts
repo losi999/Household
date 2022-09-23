@@ -237,12 +237,14 @@ export namespace Transaction {
     inventory: InventoryItem<P>;
   };
 
+  export type InvoiceItem<D extends string | Date> = {
+    invoiceNumber: string;
+    billingStartDate: D;
+    billingEndDate: D;
+  };
+
   export type Invoice<D extends string | Date> = {
-    invoice: {
-      invoiceNumber: string;
-      billingStartDate: D;
-      billingEndDate: D;
-    };
+    invoice: InvoiceItem<D>;
   };
 
   type TransferAccountId = {

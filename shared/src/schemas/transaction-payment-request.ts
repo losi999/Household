@@ -1,9 +1,9 @@
 import { StrictJSONSchema7 } from '@household/shared/types/common';
 import { Transaction } from '@household/shared/types/types';
-import { default as inventory } from '@household/shared/schemas/transaction-inventory';
-import { default as invoice } from '@household/shared/schemas/transaction-invoice';
-import { default as base } from '@household/shared/schemas/transaction-base';
-import { default as issuedAt } from '@household/shared/schemas/transaction-issued-at';
+import { default as inventory } from '@household/shared/schemas/partials/transaction-inventory';
+import { default as invoice } from '@household/shared/schemas/partials/transaction-invoice';
+import { default as base } from '@household/shared/schemas/partials/transaction-base';
+import { default as issuedAt } from '@household/shared/schemas/partials/transaction-issued-at';
 import { default as accountId } from '@household/shared/schemas/account-id';
 import { default as categoryId } from '@household/shared/schemas/category-id';
 import { default as projectId } from '@household/shared/schemas/project-id';

@@ -1,4 +1,4 @@
-import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Account, Auth, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { Types } from 'mongoose';
 
 const generateId = (id?: Types.ObjectId | string): string => {
@@ -176,7 +176,7 @@ export const createProjectRequest = (req?: Partial<Project.Request>): Project.Re
 export const createCategoryRequest = (req?: Partial<Category.Request>): Category.Request => {
   return {
     name: 'category name',
-    parentCategoryId: 'parentCategoryId' as Category.IdType,
+    parentCategoryId: createCategoryId(),
     categoryType: 'regular',
     ...req,
   };
@@ -197,48 +197,58 @@ export const createProductRequest = (req?: Partial<Product.Request>): Product.Re
   };
 };
 
-export const createPaymentTransactionRequest = (req?: Partial<Transaction.PaymentRequest>): Transaction.PaymentRequest => {
+export const createInventoryRequest = (req?: Partial<Transaction.InventoryItem<Product.Id>>): Transaction.InventoryItem<Product.Id> => {
   return {
-    amount: 100,
-    description: 'transaction description',
-    inventory: undefined,
-    invoice: undefined,
-    issuedAt: new Date().toISOString(),
-    accountId: 'accountId' as Account.IdType,
-    categoryId: 'categoryId' as Category.IdType,
-    projectId: 'projectId' as Project.IdType,
-    recipientId: 'recipientId' as Recipient.IdType,
+    productId: createProductId(),
+    quantity: 100,
     ...req,
   };
 };
 
-export const createSplitTransactionRequest = (req?: Partial<Transaction.SplitRequest>, ...splits: Partial<Transaction.SplitRequestItem>[]): Transaction.SplitRequest => {
+export const createInvoiceRequest = (req?: Partial<Transaction.InvoiceItem<string>>): Transaction.InvoiceItem<string> => {
   return {
-    amount: Math.max(splits.length, 1),
+    invoiceNumber: 'inv123',
+    billingEndDate: '2022-03-21',
+    billingStartDate: '2022-01-01',
+    ...req,
+  };
+};
+
+export const createPaymentTransactionRequest = (req?: Partial<Transaction.PaymentRequest>): Transaction.PaymentRequest => {
+  return {
+    amount: 100,
+    description: 'transaction description',
+    inventory: createInventoryRequest(),
+    invoice: createInvoiceRequest(),
+    issuedAt: new Date().toISOString(),
+    accountId: createAccountId(),
+    categoryId: createCategoryId(),
+    projectId: createProjectId(),
+    recipientId: createRecipientId(),
+    ...req,
+  };
+};
+
+export const createSplitRequestIem = (req?: Partial<Transaction.SplitRequestItem>): Transaction.SplitRequestItem => {
+  return {
+    amount: 1,
+    categoryId: createCategoryId(),
+    projectId: createProjectId(),
+    description: 'split description',
+    inventory: createInventoryRequest(),
+    invoice: createInvoiceRequest(),
+    ...req,
+  };
+};
+
+export const createSplitTransactionRequest = (req?: Partial<Transaction.SplitRequest>): Transaction.SplitRequest => {
+  return {
+    amount: 1,
     description: 'transaction description',
     issuedAt: new Date().toISOString(),
-    accountId: 'accountId' as Account.IdType,
-    recipientId: 'recipientId' as Recipient.IdType,
-    splits: splits.length > 0 ? splits.map((s) => {
-      return {
-        amount: 1,
-        categoryId: 'categoryId' as Category.IdType,
-        projectId: 'projectId' as Project.IdType,
-        description: 'split description',
-        inventory: undefined,
-        invoice: undefined,
-        ...s,
-      };
-    }) : [
-      {
-        amount: 1,
-        categoryId: 'categoryId' as Category.IdType,
-        projectId: 'projectId' as Project.IdType,
-        description: 'split description',
-        inventory: undefined,
-        invoice: undefined,
-      },
-    ],
+    accountId: createAccountId(),
+    recipientId: createRecipientId(),
+    splits: [createSplitRequestIem()],
     ...req,
   };
 };
@@ -248,8 +258,16 @@ export const createTransferTransactionRequest = (req?: Partial<Transaction.Trans
     amount: 100,
     description: 'transaction description',
     issuedAt: new Date().toISOString(),
-    accountId: 'accountId' as Account.IdType,
-    transferAccountId: 'transferAccountId' as Account.IdType,
+    accountId: createAccountId(),
+    transferAccountId: createAccountId(),
+    ...req,
+  };
+};
+
+export const createLoginRequest = (req?: Partial<Auth.Login.Request>): Auth.Login.Request => {
+  return {
+    email: 'aaa@email.com',
+    password: 'password123',
     ...req,
   };
 };
@@ -260,7 +278,7 @@ export const createAccountResponse = (resp?: Partial<Account.Response>): Account
     name: 'account name',
     currency: 'Ft',
     balance: 123,
-    accountId: 'accountId' as Account.IdType,
+    accountId: createAccountId(),
     expiresAt: undefined,
     createdAt: undefined,
     updatedAt: undefined,
@@ -272,7 +290,7 @@ export const createAccountResponse = (resp?: Partial<Account.Response>): Account
 
 export const createProjectResponse = (resp?: Partial<Project.Response>): Project.Response => {
   return {
-    projectId: 'projectId' as Project.IdType,
+    projectId: createProjectId(),
     name: 'project name',
     description: 'project description',
     expiresAt: undefined,
@@ -284,7 +302,7 @@ export const createProjectResponse = (resp?: Partial<Project.Response>): Project
 };
 export const createCategoryResponse = (resp?: Partial<Category.Response>): Category.Response => {
   return {
-    categoryId: 'categoryId' as Category.IdType,
+    categoryId: createCategoryId(),
     name: 'category name',
     expiresAt: undefined,
     createdAt: undefined,
@@ -300,7 +318,7 @@ export const createCategoryResponse = (resp?: Partial<Category.Response>): Categ
 };
 export const createRecipientResponse = (resp?: Partial<Recipient.Response>): Recipient.Response => {
   return {
-    recipientId: 'recipientId' as Recipient.IdType,
+    recipientId: createRecipientId(),
     name: 'recipient name',
     expiresAt: undefined,
     createdAt: undefined,
@@ -312,7 +330,7 @@ export const createRecipientResponse = (resp?: Partial<Recipient.Response>): Rec
 
 export const createPaymentTransactionResponse = (resp?: Partial<Transaction.PaymentResponse>): Transaction.PaymentResponse => {
   return {
-    transactionId: 'transactionId' as Transaction.IdType,
+    transactionId: createTransactionId(),
     transactionType: 'payment',
     amount: 100,
     description: 'transaction description',
@@ -333,7 +351,7 @@ export const createPaymentTransactionResponse = (resp?: Partial<Transaction.Paym
 
 export const createSplitTransactionResponse = (resp?: Partial<Transaction.SplitResponse>, ...splits: Partial<Transaction.SplitResponse['splits'][number]>[]): Transaction.SplitResponse => {
   return {
-    transactionId: 'transactionId' as Transaction.IdType,
+    transactionId: createTransactionId(),
     transactionType: 'split',
     amount: Math.max(splits.length, 1),
     description: 'transaction description',
@@ -370,7 +388,7 @@ export const createSplitTransactionResponse = (resp?: Partial<Transaction.SplitR
 
 export const createTransferTransactionResponse = (resp?: Partial<Transaction.TransferResponse>): Transaction.TransferResponse => {
   return {
-    transactionId: 'transactionId' as Transaction.IdType,
+    transactionId: createTransactionId(),
     transactionType: 'transfer',
     amount: 100,
     description: 'transaction description',

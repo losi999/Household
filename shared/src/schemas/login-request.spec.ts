@@ -1,39 +1,47 @@
-import { default as schema } from '@household/shared/schemas/refresh-token-request';
+import { default as schema } from '@household/shared/schemas/login-request';
 import { Auth } from '@household/shared/types/types';
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
+import { createLoginRequest } from '@household/shared/common/test-data-factory';
 
-describe('Refresh token schema', () => {
-  let data: Auth.RefreshToken.Request;
-  const tester = jsonSchemaTesterFactory<Auth.RefreshToken.Request>(schema);
+describe('Login request schema', () => {
+  const tester = jsonSchemaTesterFactory<Auth.Login.Request>(schema);
 
-  beforeEach(() => {
-    data = {
-      refreshToken: 'some.refresh.token',
-    };
-  });
-
-  it('should accept valid body', () => {
-    tester.validateSuccess(data);
-  });
+  tester.validateSuccess(createLoginRequest());
 
   describe('should deny', () => {
     describe('if data', () => {
-      it('has additional property', () => {
-        (data as any).extra = 'asd';
-        tester.validateSchemaAdditionalProperties(data, 'data');
-      });
+      tester.validateSchemaAdditionalProperties({
+        ...createLoginRequest(),
+        extra: 1,
+      } as any, 'data');
     });
 
-    describe('if data.refreshToken', () => {
-      it('is missing', () => {
-        data.refreshToken = undefined;
-        tester.validateSchemaRequired(data, 'refreshToken');
-      });
+    describe('if data.email', () => {
+      tester.validateSchemaRequired(createLoginRequest({
+        email: undefined,
+      }), 'email');
 
-      it('is not string', () => {
-        (data.refreshToken as any) = 2;
-        tester.validateSchemaType(data, 'refreshToken', 'string');
-      });
+      tester.validateSchemaType(createLoginRequest({
+        email: 1 as any,
+      }), 'email', 'string');
+
+      tester.validateSchemaFormat(createLoginRequest({
+        email: 'asbd',
+      }), 'email', 'email');
+    });
+
+    describe('if data.password', () => {
+      tester.validateSchemaRequired(createLoginRequest({
+        password: undefined,
+      }), 'password');
+
+      tester.validateSchemaType(createLoginRequest({
+        password: 1 as any,
+      }), 'password', 'string');
+
+      tester.validateSchemaMinLength(createLoginRequest({
+        password: '',
+      }), 'password', 6);
     });
   });
 });

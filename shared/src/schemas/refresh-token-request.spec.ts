@@ -1,62 +1,35 @@
-import { default as schema } from '@household/shared/schemas/login-request';
+import { default as schema } from '@household/shared/schemas/refresh-token-request';
 import { Auth } from '@household/shared/types/types';
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 
-describe('Login schema', () => {
-  let data: Auth.Login.Request;
-  const tester = jsonSchemaTesterFactory<Auth.Login.Request>(schema);
+describe('Refresh token schema', () => {
+  const tester = jsonSchemaTesterFactory<Auth.RefreshToken.Request>(schema);
 
-  beforeEach(() => {
-    data = {
-      email: 'aaa@aaa.com',
-      password: 'asdfghjk',
-    };
-  });
-
-  it('should accept valid body', () => {
-    tester.validateSuccess(data);
+  tester.validateSuccess({
+    refreshToken: 'some.refresh.token',
   });
 
   describe('should deny', () => {
     describe('if data', () => {
-      it('has additional property', () => {
-        (data as any).extra = 'asd';
-        tester.validateSchemaAdditionalProperties(data, 'data');
-      });
+      tester.validateSchemaAdditionalProperties({
+        refreshToken: 'some.refresh.token',
+        extra: 1,
+      } as any, 'data');
     });
 
-    describe('if data.email', () => {
-      it('is missing', () => {
-        data.email = undefined;
-        tester.validateSchemaRequired(data, 'email');
-      });
+    describe('if data.refreshToken', () => {
+      tester.validateSchemaRequired({
+        refreshToken: undefined,
+      }, 'refreshToken');
 
-      it('is not string', () => {
-        (data.email as any) = 2;
-        tester.validateSchemaType(data, 'email', 'string');
-      });
+      tester.validateSchemaType({
+        refreshToken: 1 as any,
+      }, 'refreshToken', 'string');
 
-      it('is not email', () => {
-        data.email = 'abcd';
-        tester.validateSchemaFormat(data, 'email', 'email');
-      });
-    });
-
-    describe('if data.password', () => {
-      it('is missing', () => {
-        data.password = undefined;
-        tester.validateSchemaRequired(data, 'password');
-      });
-
-      it('is not string', () => {
-        (data.password as any) = 2;
-        tester.validateSchemaType(data, 'password', 'string');
-      });
-
-      it('is too short', () => {
-        data.password = 'ab';
-        tester.validateSchemaMinLength(data, 'password', 6);
-      });
+      tester.validateSchemaMinLength({
+        refreshToken: '',
+      }, 'refreshToken', 1);
     });
   });
 });
+

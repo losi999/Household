@@ -8,6 +8,7 @@ const schema: StrictJSONSchema7<Auth.RefreshToken.Request> = {
   properties: {
     refreshToken: {
       type: 'string',
+      minLength: 1,
     },
   },
 };
