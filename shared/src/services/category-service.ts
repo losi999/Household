@@ -1,4 +1,6 @@
+import { toDictionary } from '@household/shared/common/utils';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
+import { Dictionary } from '@household/shared/types/common';
 import { Category } from '@household/shared/types/types';
 import { ClientSession } from 'mongoose';
 
@@ -9,7 +11,7 @@ export interface ICategoryService {
   deleteCategory(categoryId: Category.IdType): Promise<unknown>;
   updateCategory(doc: Category.Document, oldFullName: string): Promise<unknown>;
   listCategories(): Promise<Category.Document[]>;
-  listCategoriesByIds(categoryIds: Category.IdType[]): Promise<Category.Document[]>;
+  listCategoriesByIds(categoryIds: Category.IdType[]): Promise<Dictionary<Category.Document>>;
 }
 
 export const categoryServiceFactory = (mongodbService: IMongodbService): ICategoryService => {
@@ -52,7 +54,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
       return mongodbService.categories().create(doc);
     },
     getCategoryById: async (categoryId) => {
-      return !categoryId ? null : mongodbService.categories().findById(categoryId)
+      return !categoryId ? undefined : mongodbService.categories().findById(categoryId)
         .populate('parentCategory')
         .lean()
         .exec();
@@ -218,7 +220,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
       });
     },
     listCategoriesByIds: async (categoryIds) => {
-      return mongodbService.inSession((session) => {
+      const categories = await mongodbService.inSession((session) => {
         return mongodbService.categories().find({
           _id: {
             $in: categoryIds,
@@ -229,6 +231,8 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
           .lean()
           .exec();
       });
+
+      return toDictionary(categories, '_id');
     },
   };
 

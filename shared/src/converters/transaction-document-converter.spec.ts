@@ -1,4 +1,4 @@
-import { createAccountDocument, createAccountId, createAccountResponse, createCategoryDocument, createCategoryId, createCategoryResponse, createPaymentTransactionDocument, createPaymentTransactionRequest, createPaymentTransactionResponse, createProjectDocument, createProjectId, createProjectResponse, createRecipientDocument, createRecipientResponse, createTransactionId, createSplitTransactionDocument, createSplitTransactionRequest, createSplitTransactionResponse, createTransferTransactionDocument, createTransferTransactionRequest, createTransferTransactionResponse } from '@household/shared/common/test-data-factory';
+import { createAccountDocument, createAccountId, createAccountResponse, createCategoryDocument, createCategoryId, createCategoryResponse, createPaymentTransactionDocument, createPaymentTransactionRequest, createPaymentTransactionResponse, createProjectDocument, createProjectId, createProjectResponse, createRecipientDocument, createRecipientResponse, createTransactionId, createSplitTransactionDocument, createSplitTransactionRequest, createSplitTransactionResponse, createTransferTransactionDocument, createTransferTransactionRequest, createTransferTransactionResponse, createProductDocument } from '@household/shared/common/test-data-factory';
 import { addSeconds } from '@household/shared/common/utils';
 import { transactionDocumentConverterFactory, ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { Types } from 'mongoose';
@@ -8,6 +8,7 @@ import { IProjectDocumentConverter } from '@household/shared/converters/project-
 import { createMockService, Mock, validateFunctionCall, validateNthFunctionCall } from '@household/shared/common/unit-testing';
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
+import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
 
 describe('Transaction document converter', () => {
   let converter: ITransactionDocumentConverter;
@@ -15,6 +16,7 @@ describe('Transaction document converter', () => {
   let mockProjectDocumentConverter: Mock<IProjectDocumentConverter>;
   let mockRecipientDocumentConverter: Mock<IRecipientDocumentConverter>;
   let mockCategoryDocumentConverter: Mock<ICategoryDocumentConverter>;
+  let mockProductDocumentConverter: Mock<IProductDocumentConverter>;
   const now = new Date();
 
   beforeEach(() => {
@@ -22,9 +24,10 @@ describe('Transaction document converter', () => {
     mockProjectDocumentConverter = createMockService('toResponse');
     mockRecipientDocumentConverter = createMockService('toResponse');
     mockCategoryDocumentConverter = createMockService('toResponse');
+    mockProductDocumentConverter = createMockService('toResponse');
 
     advanceTo(now);
-    converter = transactionDocumentConverterFactory(mockAccountDocumentConverter.service, mockProjectDocumentConverter.service, mockCategoryDocumentConverter.service, mockRecipientDocumentConverter.service);
+    converter = transactionDocumentConverterFactory(mockAccountDocumentConverter.service, mockProjectDocumentConverter.service, mockCategoryDocumentConverter.service, mockRecipientDocumentConverter.service, mockProductDocumentConverter.service);
   });
 
   afterEach(() => {
@@ -34,6 +37,7 @@ describe('Transaction document converter', () => {
   const accountId = new Types.ObjectId();
   const projectId = new Types.ObjectId();
   const categoryId = new Types.ObjectId();
+  const productId = new Types.ObjectId();
   const amount = 12000;
   const description = 'bevásárlás';
   const expiresIn = 3600;
@@ -46,6 +50,9 @@ describe('Transaction document converter', () => {
   const recipient = createRecipientDocument();
   const category = createCategoryDocument({
     _id: categoryId,
+  });
+  const product = createProductDocument({
+    _id: productId,
   });
 
   const accountResponse = createAccountResponse();
@@ -81,6 +88,7 @@ describe('Transaction document converter', () => {
           category,
           project,
           recipient,
+          product,
         }, undefined);
         expect(result).toEqual(createPaymentTransactionDocument({
           account,
@@ -101,6 +109,7 @@ describe('Transaction document converter', () => {
           category,
           project,
           recipient,
+          product,
         }, expiresIn);
         expect(result).toEqual(createPaymentTransactionDocument({
           account,
@@ -126,6 +135,7 @@ describe('Transaction document converter', () => {
           category,
           project,
           recipient,
+          product,
         }, expiresIn);
         expect(result).toEqual(createPaymentTransactionDocument({
           _id: transactionId,
@@ -226,8 +236,9 @@ describe('Transaction document converter', () => {
         const result = converter.createSplitDocument({
           body,
           account,
-          categories: [category],
-          projects: [project],
+          categories: {},
+          projects: {},
+          products: {},
           recipient,
         }, undefined);
         expect(result).toEqual(createSplitTransactionDocument({
@@ -247,8 +258,9 @@ describe('Transaction document converter', () => {
         const result = converter.createSplitDocument({
           body,
           account,
-          categories: [category],
-          projects: [project],
+          categories: {},
+          projects: {},
+          products: {},
           recipient,
         }, expiresIn);
         expect(result).toEqual(createSplitTransactionDocument({
@@ -272,8 +284,9 @@ describe('Transaction document converter', () => {
           body,
           document,
           account,
-          categories: [category],
-          projects: [project],
+          categories: {},
+          projects: {},
+          products: {},
           recipient,
         }, expiresIn);
         expect(result).toEqual(createSplitTransactionDocument({

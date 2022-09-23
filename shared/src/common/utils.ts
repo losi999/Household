@@ -1,5 +1,5 @@
 import { headerExpiresIn } from '@household/shared/constants';
-import { HttpError } from '@household/shared/types/common';
+import { Dictionary, HttpError } from '@household/shared/types/common';
 import { Account, Category, Project, Recipient, Transaction } from '@household/shared/types/types';
 
 export const httpError = (statusCode: number, message: string): HttpError => ({
@@ -23,4 +23,13 @@ export const getExpiresInHeader = (event: AWSLambda.APIGatewayProxyEvent) => {
   const headerName = Object.keys(event.headers).find(name => name.toLowerCase() === expiresInLowercased);
 
   return event.headers[headerName];
+};
+
+export const toDictionary = <P>(docs: P[], key: keyof P): Dictionary<P> => {
+  return docs.reduce((accumulator, currentValue) => {
+    return {
+      ...accumulator,
+      [currentValue[key].toString()]: currentValue,
+    };
+  }, {});
 };

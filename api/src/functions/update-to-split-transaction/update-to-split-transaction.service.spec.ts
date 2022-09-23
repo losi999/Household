@@ -4,9 +4,12 @@ import { createMockService, Mock, validateError, validateFunctionCall } from '@h
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICategoryService } from '@household/shared/services/category-service';
+import { IProductService } from '@household/shared/services/product-service';
 import { IProjectService } from '@household/shared/services/project-service';
 import { IRecipientService } from '@household/shared/services/recipient-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
+import { Dictionary } from '@household/shared/types/common';
+import { Category, Project } from '@household/shared/types/types';
 
 describe('Update to split transaction service', () => {
   let service: IUpdateToSplitTransactionService;
@@ -14,6 +17,7 @@ describe('Update to split transaction service', () => {
   let mockCategoryService: Mock<ICategoryService>;
   let mockRecipientService: Mock<IRecipientService>;
   let mockProjectService: Mock<IProjectService>;
+  let mockProductService: Mock<IProductService>;
   let mockTransactionService: Mock<ITransactionService>;
   let mockTransactionDocumentConverter: Mock<ITransactionDocumentConverter>;
 
@@ -22,17 +26,33 @@ describe('Update to split transaction service', () => {
     mockProjectService = createMockService('listProjectsByIds');
     mockCategoryService = createMockService('listCategoriesByIds');
     mockRecipientService = createMockService('getRecipientById');
+    mockProductService = createMockService('listProductsByIds');
     mockTransactionService = createMockService('updateTransaction', 'getTransactionById');
     mockTransactionDocumentConverter = createMockService('updateSplitDocument');
 
-    service = updateToSplitTransactionServiceFactory(mockAccountService.service, mockProjectService.service, mockCategoryService.service, mockRecipientService.service, mockTransactionService.service, mockTransactionDocumentConverter.service);
+    service = updateToSplitTransactionServiceFactory(mockAccountService.service, mockProjectService.service, mockCategoryService.service, mockRecipientService.service, mockProductService.service, mockTransactionService.service, mockTransactionDocumentConverter.service);
   });
 
-  const categoryId1 = createCategoryId('category1');
-  const categoryId2 = createCategoryId('category2');
-  const projectId1 = createProjectId();
-  const projectId2 = createProjectId();
   const transactionId = createTransactionId();
+
+  const queriedCategory1 = createCategoryDocument();
+  const queriedCategory2 = createCategoryDocument();
+  const categoryId1 = createCategoryId(queriedCategory1._id);
+  const categoryId2 = createCategoryId(queriedCategory2._id);
+  const queriedProject1 = createProjectDocument();
+  const queriedProject2 = createProjectDocument();
+  const projectId1 = createProjectId(queriedProject1._id);
+  const projectId2 = createProjectId(queriedProject2._id);
+
+  const categoryDictionary: Dictionary<Category.Document> = {
+    [categoryId1]: queriedCategory1,
+    [categoryId2]: queriedCategory2,
+  };
+
+  const projectDictionary: Dictionary<Project.Document> = {
+    [projectId1]: queriedProject1,
+    [projectId2]: queriedProject2,
+  };
 
   const body = createSplitTransactionRequest({}, {
     categoryId: categoryId1,
@@ -49,22 +69,14 @@ describe('Update to split transaction service', () => {
     description: 'updated',
   });
   const queriedAccount = createAccountDocument();
-  const queriedCategory = createCategoryDocument();
-  const queriedProject = createProjectDocument();
   const queriedRecipient = createRecipientDocument();
 
   describe('should return', () => {
     it('if every body property is filled', async () => {
       mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
       mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([
-        queriedCategory,
-        queriedCategory,
-      ]);
-      mockProjectService.functions.listProjectsByIds.mockResolvedValue([
-        queriedProject,
-        queriedProject,
-      ]);
+      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue(categoryDictionary);
+      mockProjectService.functions.listProjectsByIds.mockResolvedValue(projectDictionary);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
       mockTransactionDocumentConverter.functions.updateSplitDocument.mockReturnValue(updatedDocument);
       mockTransactionService.functions.updateTransaction.mockResolvedValue(updatedDocument);
@@ -88,16 +100,11 @@ describe('Update to split transaction service', () => {
       validateFunctionCall(mockTransactionDocumentConverter.functions.updateSplitDocument, {
         document: queriedDocument,
         body,
-        categories: [
-          queriedCategory,
-          queriedCategory,
-        ],
+        categories: categoryDictionary,
         account: queriedAccount,
-        projects: [
-          queriedProject,
-          queriedProject,
-        ],
+        projects: projectDictionary,
         recipient: queriedRecipient,
+        products: undefined,
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.updateTransaction, updatedDocument);
       expect.assertions(7);
@@ -109,8 +116,8 @@ describe('Update to split transaction service', () => {
       });
       mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
       mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([]);
-      mockProjectService.functions.listProjectsByIds.mockResolvedValue([queriedProject]);
+      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue({});
+      mockProjectService.functions.listProjectsByIds.mockResolvedValue(projectDictionary);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
       mockTransactionDocumentConverter.functions.updateSplitDocument.mockReturnValue(updatedDocument);
       mockTransactionService.functions.updateTransaction.mockResolvedValue(updatedDocument);
@@ -128,10 +135,11 @@ describe('Update to split transaction service', () => {
       validateFunctionCall(mockTransactionDocumentConverter.functions.updateSplitDocument, {
         document: queriedDocument,
         body: modifiedBody,
-        categories: [],
+        categories: {},
         account: queriedAccount,
-        projects: [queriedProject],
+        projects: projectDictionary,
         recipient: queriedRecipient,
+        products: undefined,
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.updateTransaction, updatedDocument);
       expect.assertions(7);
@@ -143,8 +151,8 @@ describe('Update to split transaction service', () => {
       });
       mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
       mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([queriedCategory]);
-      mockProjectService.functions.listProjectsByIds.mockResolvedValue([]);
+      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue(categoryDictionary);
+      mockProjectService.functions.listProjectsByIds.mockResolvedValue({});
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
       mockTransactionDocumentConverter.functions.updateSplitDocument.mockReturnValue(updatedDocument);
       mockTransactionService.functions.updateTransaction.mockResolvedValue(updatedDocument);
@@ -162,10 +170,11 @@ describe('Update to split transaction service', () => {
       validateFunctionCall(mockTransactionDocumentConverter.functions.updateSplitDocument, {
         document: queriedDocument,
         body: modifiedBody,
-        categories: [queriedCategory],
+        categories: categoryDictionary,
         account: queriedAccount,
-        projects: [],
+        projects: {},
         recipient: queriedRecipient,
+        products: undefined,
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.updateTransaction, updatedDocument);
       expect.assertions(7);
@@ -177,8 +186,8 @@ describe('Update to split transaction service', () => {
       });
       mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
       mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([queriedCategory]);
-      mockProjectService.functions.listProjectsByIds.mockResolvedValue([queriedProject]);
+      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue(categoryDictionary);
+      mockProjectService.functions.listProjectsByIds.mockResolvedValue(projectDictionary);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(undefined);
       mockTransactionDocumentConverter.functions.updateSplitDocument.mockReturnValue(updatedDocument);
       mockTransactionService.functions.updateTransaction.mockResolvedValue(updatedDocument);
@@ -196,9 +205,10 @@ describe('Update to split transaction service', () => {
       validateFunctionCall(mockTransactionDocumentConverter.functions.updateSplitDocument, {
         document: queriedDocument,
         body: modifiedBody,
-        categories: [queriedCategory],
+        categories: categoryDictionary,
         account: queriedAccount,
-        projects: [queriedProject],
+        projects: projectDictionary,
+        products: undefined,
         recipient: undefined,
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.updateTransaction, updatedDocument);
@@ -267,14 +277,8 @@ describe('Update to split transaction service', () => {
     it('if unable to query account', async () => {
       mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
       mockAccountService.functions.getAccountById.mockRejectedValue('this is a mongo error');
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([
-        queriedCategory,
-        queriedCategory,
-      ]);
-      mockProjectService.functions.listProjectsByIds.mockResolvedValue([
-        queriedProject,
-        queriedProject,
-      ]);
+      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue(categoryDictionary);
+      mockProjectService.functions.listProjectsByIds.mockResolvedValue(projectDictionary);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedAccount);
 
       await service({
@@ -302,10 +306,7 @@ describe('Update to split transaction service', () => {
       mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
       mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
       mockCategoryService.functions.listCategoriesByIds.mockRejectedValue('this is a mongo error');
-      mockProjectService.functions.listProjectsByIds.mockResolvedValue([
-        queriedProject,
-        queriedProject,
-      ]);
+      mockProjectService.functions.listProjectsByIds.mockResolvedValue(projectDictionary);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedAccount);
 
       await service({
@@ -332,10 +333,7 @@ describe('Update to split transaction service', () => {
     it('if unable to query projects', async () => {
       mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
       mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([
-        queriedCategory,
-        queriedCategory,
-      ]);
+      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue(categoryDictionary);
       mockProjectService.functions.listProjectsByIds.mockRejectedValue('this is a mongo error');
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedAccount);
 
@@ -363,14 +361,8 @@ describe('Update to split transaction service', () => {
     it('if unable to query recipients', async () => {
       mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
       mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([
-        queriedCategory,
-        queriedCategory,
-      ]);
-      mockProjectService.functions.listProjectsByIds.mockResolvedValue([
-        queriedProject,
-        queriedProject,
-      ]);
+      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue(categoryDictionary);
+      mockProjectService.functions.listProjectsByIds.mockResolvedValue(projectDictionary);
       mockRecipientService.functions.getRecipientById.mockRejectedValue('this is a mongo error');
 
       await service({
@@ -397,14 +389,8 @@ describe('Update to split transaction service', () => {
     it('if no account found', async () => {
       mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
       mockAccountService.functions.getAccountById.mockResolvedValue(undefined);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([
-        queriedCategory,
-        queriedCategory,
-      ]);
-      mockProjectService.functions.listProjectsByIds.mockResolvedValue([
-        queriedProject,
-        queriedProject,
-      ]);
+      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue(categoryDictionary);
+      mockProjectService.functions.listProjectsByIds.mockResolvedValue(projectDictionary);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
 
       await service({
@@ -431,11 +417,8 @@ describe('Update to split transaction service', () => {
     it('if no categories found', async () => {
       mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
       mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([]);
-      mockProjectService.functions.listProjectsByIds.mockResolvedValue([
-        queriedProject,
-        queriedProject,
-      ]);
+      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue({});
+      mockProjectService.functions.listProjectsByIds.mockResolvedValue(projectDictionary);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
 
       await service({
@@ -462,11 +445,8 @@ describe('Update to split transaction service', () => {
     it('if no projects found', async () => {
       mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
       mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([
-        queriedCategory,
-        queriedCategory,
-      ]);
-      mockProjectService.functions.listProjectsByIds.mockResolvedValue([]);
+      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue(categoryDictionary);
+      mockProjectService.functions.listProjectsByIds.mockResolvedValue({});
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
 
       await service({
@@ -493,14 +473,8 @@ describe('Update to split transaction service', () => {
     it('if no recipient found', async () => {
       mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
       mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([
-        queriedCategory,
-        queriedCategory,
-      ]);
-      mockProjectService.functions.listProjectsByIds.mockResolvedValue([
-        queriedProject,
-        queriedProject,
-      ]);
+      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue(categoryDictionary);
+      mockProjectService.functions.listProjectsByIds.mockResolvedValue(projectDictionary);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(undefined);
 
       await service({
@@ -527,14 +501,8 @@ describe('Update to split transaction service', () => {
     it('if unable to update transaction', async () => {
       mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
       mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([
-        queriedCategory,
-        queriedCategory,
-      ]);
-      mockProjectService.functions.listProjectsByIds.mockResolvedValue([
-        queriedProject,
-        queriedProject,
-      ]);
+      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue(categoryDictionary);
+      mockProjectService.functions.listProjectsByIds.mockResolvedValue(projectDictionary);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
       mockTransactionDocumentConverter.functions.updateSplitDocument.mockReturnValue(updatedDocument);
       mockTransactionService.functions.updateTransaction.mockRejectedValue('this is a mongo error');
@@ -558,16 +526,11 @@ describe('Update to split transaction service', () => {
       validateFunctionCall(mockTransactionDocumentConverter.functions.updateSplitDocument, {
         document: queriedDocument,
         body,
-        categories: [
-          queriedCategory,
-          queriedCategory,
-        ],
+        categories: categoryDictionary,
         account: queriedAccount,
-        projects: [
-          queriedProject,
-          queriedProject,
-        ],
+        projects: projectDictionary,
         recipient: queriedRecipient,
+        products: undefined,
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.updateTransaction, updatedDocument);
       expect.assertions(9);

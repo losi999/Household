@@ -1,4 +1,4 @@
-import { default as schema } from '@household/shared/schemas/transaction-transfer';
+import { default as schema } from '@household/shared/schemas/transaction-transfer-request';
 import { Transaction } from '@household/shared/types/types';
 import { createAccountId } from '@household/shared/common/test-data-factory';
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';

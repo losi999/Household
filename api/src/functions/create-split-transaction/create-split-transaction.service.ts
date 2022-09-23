@@ -1,7 +1,8 @@
-import { httpError } from '@household/shared/common/utils';
+import { httpErrors } from '@household/api/common/error-handlers';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICategoryService } from '@household/shared/services/category-service';
+import { IProductService } from '@household/shared/services/product-service';
 import { IProjectService } from '@household/shared/services/project-service';
 import { IRecipientService } from '@household/shared/services/recipient-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
@@ -19,55 +20,75 @@ export const createSplitTransactionServiceFactory = (
   projectService: IProjectService,
   categoryService: ICategoryService,
   recipientService: IRecipientService,
+  productService: IProductService,
   transactionService: ITransactionService,
   transactionDocumentConverter: ITransactionDocumentConverter,
 ): ICreateSplitTransactionService => {
   return async ({ body, expiresIn }) => {
     const categoryIds = [...new Set(body.splits.map(s => s.categoryId).filter(s => s))];
     const projectIds = [...new Set(body.splits.map(s => s.projectId).filter(s => s))];
+    const productIds = [...new Set(body.splits.map(s => s.inventory?.productId).filter(s => s))];
 
     const total = body.splits.reduce((accumulator, currentValue) => {
       return accumulator + currentValue.amount;
     }, 0);
 
-    if (total !== body.amount) {
-      throw httpError(400, 'Sum of splits must equal to total amount');
-    }
+    httpErrors.transaction.sumOfSplits(total !== body.amount, body);
+
+    const { accountId, recipientId } = body;
 
     const [
       account,
       categories,
       projects,
       recipient,
+      products,
     ] = await Promise.all([
-      accountService.getAccountById(body.accountId),
+      accountService.getAccountById(accountId),
       categoryService.listCategoriesByIds(categoryIds),
       projectService.listProjectsByIds(projectIds),
-      recipientService.getRecipientById(body.recipientId),
-    ]).catch((error) => {
-      console.error('Unable to query related data', error, body);
-      throw httpError(500, 'Unable to query related data');
+      recipientService.getRecipientById(recipientId),
+      productService.listProductsByIds(productIds),
+    ]).catch(httpErrors.common.getRelatedData({
+      accountId,
+      categoryIds,
+      productIds,
+      projectIds,
+      recipientId,
+    }));
+
+    httpErrors.account.notFound(!account, {
+      accountId,
+    }, 400);
+
+    httpErrors.category.multipleNotFound(categoryIds.length !== Object.keys(categories).length, {
+      categoryIds,
     });
 
-    if (!account) {
-      console.error('No account found', body.accountId);
-      throw httpError(400, 'No account found');
-    }
+    httpErrors.project.multipleNotFound(projectIds.length !== Object.keys(projects).length, {
+      projectIds,
+    });
 
-    if (categoryIds.length !== categories.length) {
-      console.error('Some of the categories are not found', categoryIds);
-      throw httpError(400, 'Some of the categories are not found');
-    }
+    httpErrors.recipient.notFound(!recipient && !!recipientId, {
+      recipientId,
+    }, 400);
 
-    if (projectIds.length !== projects.length) {
-      console.error('Some of the projects are not found', projectIds);
-      throw httpError(400, 'Some of the projects are not found');
-    }
+    body.splits.forEach((s) => {
+      const category = categories[s.categoryId];
+      if (category?.categoryType === 'inventory' && s.inventory) {
+        const productId = s.inventory.productId;
+        const product = products[productId];
 
-    if (!recipient && body.recipientId) {
-      console.error('No recipient found', body.recipientId);
-      throw httpError(400, 'No recipient found');
-    }
+        httpErrors.product.notFound(!product && !!productId, {
+          productId,
+        }, 400);
+
+        httpErrors.product.categoryRelation(product.category._id.toString() !== category._id.toString(), {
+          categoryId: s.categoryId,
+          productId,
+        });
+      }
+    });
 
     const document = transactionDocumentConverter.createSplitDocument({
       body,
@@ -75,12 +96,10 @@ export const createSplitTransactionServiceFactory = (
       recipient,
       categories,
       projects,
+      products,
     }, expiresIn);
 
-    const saved = await transactionService.saveTransaction(document).catch((error) => {
-      console.error('Save transaction', error);
-      throw httpError(500, 'Error while saving transaction');
-    });
+    const saved = await transactionService.saveTransaction(document).catch(httpErrors.transaction.save(document));
 
     return saved._id.toString();
   };

@@ -49,6 +49,7 @@ export const categoryDocumentConverterFactory = (): ICategoryDocumentConverter =
           ...instance.toResponse(doc.parentCategory),
           parentCategory: undefined,
         } : undefined,
+        products: undefined, // TODO
       };
     },
     toResponseList: docs => docs.map(d => instance.toResponse(d)),

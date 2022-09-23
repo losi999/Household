@@ -1,16 +1,16 @@
 import { unitsOfMeasurement } from '@household/shared/constants';
 import { StrictJSONSchema7 } from '@household/shared/types/common';
-import { Transaction } from '@household/shared/types/types';
+import { Product } from '@household/shared/types/types';
 
-const schema: StrictJSONSchema7<Transaction.Inventory['inventory']> = {
+const schema: StrictJSONSchema7<Product.Request> = {
   type: 'object',
-  required: ['quantity'],
   additionalProperties: false,
+  required: [
+    'brand',
+    'measurement',
+    'unitOfMeasurement',
+  ],
   properties: {
-    quantity: {
-      type: 'number',
-      exclusiveMinimum: 0,
-    },
     brand: {
       type: 'string',
       minLength: 1,

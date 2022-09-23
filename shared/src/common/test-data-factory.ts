@@ -1,4 +1,4 @@
-import { Account, Category, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { Types } from 'mongoose';
 
 const generateId = (id?: Types.ObjectId | string): string => {
@@ -25,8 +25,13 @@ export const createTransactionId = (id?: Types.ObjectId | string): Transaction.I
   return generateId(id) as Transaction.IdType;
 };
 
+export const createProductId = (id?: Types.ObjectId | string): Product.IdType => {
+  return generateId(id) as Product.IdType;
+};
+
 export const createAccountDocument = (doc?: Partial<Account.Document>): Account.Document => {
   return {
+    _id: new Types.ObjectId(),
     accountType: 'bankAccount',
     name: 'account name',
     currency: 'Ft',
@@ -38,6 +43,7 @@ export const createAccountDocument = (doc?: Partial<Account.Document>): Account.
 
 export const createProjectDocument = (doc?: Partial<Project.Document>): Project.Document => {
   return {
+    _id: new Types.ObjectId(),
     name: 'project name',
     description: 'project description',
     expiresAt: undefined,
@@ -46,6 +52,7 @@ export const createProjectDocument = (doc?: Partial<Project.Document>): Project.
 };
 export const createCategoryDocument = (doc?: Partial<Category.Document>): Category.Document => {
   return {
+    _id: new Types.ObjectId(),
     name: 'category name',
     expiresAt: undefined,
     parentCategory: undefined,
@@ -57,7 +64,20 @@ export const createCategoryDocument = (doc?: Partial<Category.Document>): Catego
 };
 export const createRecipientDocument = (doc?: Partial<Recipient.Document>): Recipient.Document => {
   return {
+    _id: new Types.ObjectId(),
     name: 'recipient name',
+    expiresAt: undefined,
+    ...doc,
+  };
+};
+
+export const createProductDocument = (doc?: Partial<Product.Document>): Product.Document => {
+  return {
+    _id: new Types.ObjectId(),
+    brand: 'product brand',
+    measurement: 300,
+    unitOfMeasurement: 'g',
+    category: createCategoryDocument(),
     expiresAt: undefined,
     ...doc,
   };
@@ -65,6 +85,7 @@ export const createRecipientDocument = (doc?: Partial<Recipient.Document>): Reci
 
 export const createPaymentTransactionDocument = (doc?: Partial<Transaction.PaymentDocument>): Transaction.PaymentDocument => {
   return {
+    _id: new Types.ObjectId(),
     transactionType: 'payment',
     amount: 100,
     description: 'transaction description',
@@ -86,6 +107,7 @@ export const createPaymentTransactionDocument = (doc?: Partial<Transaction.Payme
 
 export const createSplitTransactionDocument = (doc?: Partial<Transaction.SplitDocument>, ...splits: Partial<Transaction.SplitDocument['splits'][number]>[]): Transaction.SplitDocument => {
   return {
+    _id: new Types.ObjectId(),
     transactionType: 'split',
     amount: Math.max(splits.length, 1),
     description: 'transaction description',
@@ -121,6 +143,7 @@ export const createSplitTransactionDocument = (doc?: Partial<Transaction.SplitDo
 
 export const createTransferTransactionDocument = (doc?: Partial<Transaction.TransferDocument>): Transaction.TransferDocument => {
   return {
+    _id: new Types.ObjectId(),
     transactionType: 'transfer',
     amount: 100,
     description: 'transaction description',
@@ -161,6 +184,15 @@ export const createCategoryRequest = (req?: Partial<Category.Request>): Category
 export const createRecipientRequest = (req?: Partial<Recipient.Request>): Recipient.Request => {
   return {
     name: 'recipient name',
+    ...req,
+  };
+};
+
+export const createProductRequest = (req?: Partial<Product.Request>): Product.Request => {
+  return {
+    brand: 'product brand',
+    measurement: 300,
+    unitOfMeasurement: 'g',
     ...req,
   };
 };
@@ -262,6 +294,7 @@ export const createCategoryResponse = (resp?: Partial<Category.Response>): Categ
     fullName: 'category name',
     categoryType: 'regular',
     parentCategoryId: undefined,
+    products: [], // TODO
     ...resp,
   };
 };

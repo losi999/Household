@@ -1,6 +1,6 @@
-import { default as schema } from '@household/shared/schemas/transaction-payment';
+import { default as schema } from '@household/shared/schemas/transaction-payment-request';
 import { Transaction } from '@household/shared/types/types';
-import { createAccountId, createCategoryId, createProjectId, createRecipientId } from '@household/shared/common/test-data-factory';
+import { createAccountId, createCategoryId, createProductId, createProjectId, createRecipientId } from '@household/shared/common/test-data-factory';
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 
 describe('Payment transaction schema', () => {
@@ -14,9 +14,7 @@ describe('Payment transaction schema', () => {
       description: 'description',
       inventory: {
         quantity: 1,
-        brand: 'spar',
-        measurement: 250,
-        unitOfMeasurement: 'g',
+        productId: createProductId(),
       },
       invoice: {
         invoiceNumber: 'asdf',
@@ -25,9 +23,9 @@ describe('Payment transaction schema', () => {
         billingStartDate: new Date(2022, 5, 2).toISOString()
           .split('T')[0],
       },
-      accountId: createAccountId('62378f3a6add840bbd4c630c'),
-      categoryId: createCategoryId('62378f3a6add840bbd4c630c'),
-      recipientId: createRecipientId('62378f3a6add840bbd4c630c'),
+      accountId: createAccountId(),
+      categoryId: createCategoryId(),
+      recipientId: createRecipientId(),
       projectId: createProjectId(),
     };
   });
@@ -126,41 +124,41 @@ describe('Payment transaction schema', () => {
       });
     });
 
-    describe('if data.inventory.brand', () => {
-      it('is not string', () => {
-        (data.inventory.brand as any) = 1;
-        tester.validateSchemaType(data, 'inventory/brand', 'string');
-      });
+    // describe('if data.inventory.brand', () => {
+    //   it('is not string', () => {
+    //     (data.inventory.brand as any) = 1;
+    //     tester.validateSchemaType(data, 'inventory/brand', 'string');
+    //   });
 
-      it('is too short', () => {
-        data.inventory.brand = '';
-        tester.validateSchemaMinLength(data, 'inventory/brand', 1);
-      });
-    });
+    //   it('is too short', () => {
+    //     data.inventory.brand = '';
+    //     tester.validateSchemaMinLength(data, 'inventory/brand', 1);
+    //   });
+    // });
 
-    describe('if data.inventory.measurement', () => {
-      it('is not number', () => {
-        (data.inventory.measurement as any) = 'a';
-        tester.validateSchemaType(data, 'inventory/measurement', 'number');
-      });
+    // describe('if data.inventory.measurement', () => {
+    //   it('is not number', () => {
+    //     (data.inventory.measurement as any) = 'a';
+    //     tester.validateSchemaType(data, 'inventory/measurement', 'number');
+    //   });
 
-      it('is too small', () => {
-        data.inventory.measurement = 0;
-        tester.validateSchemaExclusiveMinimum(data, 'inventory/measurement', 0);
-      });
-    });
+    //   it('is too small', () => {
+    //     data.inventory.measurement = 0;
+    //     tester.validateSchemaExclusiveMinimum(data, 'inventory/measurement', 0);
+    //   });
+    // });
 
-    describe('if data.inventory.unitOfMeasurement', () => {
-      it('is not string', () => {
-        (data.inventory.unitOfMeasurement as any) = 1;
-        tester.validateSchemaType(data, 'inventory/unitOfMeasurement', 'string');
-      });
+    // describe('if data.inventory.unitOfMeasurement', () => {
+    //   it('is not string', () => {
+    //     (data.inventory.unitOfMeasurement as any) = 1;
+    //     tester.validateSchemaType(data, 'inventory/unitOfMeasurement', 'string');
+    //   });
 
-      it('is not a valid enum vale', () => {
-        (data.inventory.unitOfMeasurement as any) = 'km';
-        tester.validateSchemaEnumValue(data, 'inventory/unitOfMeasurement');
-      });
-    });
+    //   it('is not a valid enum vale', () => {
+    //     (data.inventory.unitOfMeasurement as any) = 'km';
+    //     tester.validateSchemaEnumValue(data, 'inventory/unitOfMeasurement');
+    //   });
+    // });
 
     describe('if data.invoice', () => {
       it('is not object', () => {

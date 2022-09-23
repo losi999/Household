@@ -1,0 +1,150 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: "AWS::Serverless-2016-10-31"
+Description: "Household Product Api"
+Parameters:
+  LambdaRoleArn:
+    Type: String
+  UserPoolArn:
+    Type: String
+  Env:
+    Type: String
+  MongodbConnectionString:
+    Type: String
+  MongooseLayer:
+    Type: String
+
+Conditions:
+  ShouldUseLayers: !Not [!Equals [!Ref MongooseLayer, "MongooseLayer"]]
+
+Globals:
+  Function:
+    Handler: index.default
+    Runtime: nodejs14.x
+    Timeout: 60
+    MemorySize: 512
+    Tracing: Active
+    Layers:
+      - !If [ShouldUseLayers, !Ref MongooseLayer, !Ref "AWS::NoValue"]
+    Environment:
+      Variables:
+        MONGODB_CONNECTION_STRING: !Ref MongodbConnectionString
+
+Resources:
+  ProductApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub Household-${Env}-Product
+      StageName: product
+      TracingEnabled: true
+      Cors:
+        AllowMethods: "'*'"
+        AllowHeaders: "'*'"
+        AllowOrigin: "'*'"
+      Auth:
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn: !Ref UserPoolArn
+      GatewayResponses:
+        UNAUTHORIZED:
+          StatusCode: 401
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"  
+              Access-Control-Allow-Headers: "'*'"
+              Access-Control-Allow-Methods: "'*'"
+          ResponseTemplates:
+            application/json: '{ "message": $context.error.messageString }'            
+        MISSING_AUTHENTICATION_TOKEN:
+          StatusCode: 404
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"  
+              Access-Control-Allow-Headers: "'*'"
+              Access-Control-Allow-Methods: "'*'"
+          ResponseTemplates:
+            application/json: '{ "message": $context.error.messageString }'
+
+  CreateProduct:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-CreateProduct
+      CodeUri: dist/api/create-product
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ProductApi
+            Path: /v1/categories/{categoryId}/products
+            Method: POST
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  # UpdateProduct:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     FunctionName: !Sub Household-${Env}-UpdateProduct
+  #     CodeUri: dist/api/update-product
+  #     Role: !Ref LambdaRoleArn
+  #     Events:
+  #       API:
+  #         Type: Api
+  #         Properties:
+  #           RestApiId: !Ref ProductApi
+  #           Path: /v1/categories/{categoryId}/products/{productId}
+  #           Method: PUT
+  #           Auth:
+  #             Authorizer: CognitoAuthorizer
+
+  # ListCategories:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     FunctionName: !Sub Household-${Env}-ListCategories
+  #     CodeUri: dist/api/list-products
+  #     Role: !Ref LambdaRoleArn
+  #     Events:
+  #       API:
+  #         Type: Api
+  #         Properties:
+  #           RestApiId: !Ref ProductApi
+  #           Path: /v1/categories/{categoryId}/products
+  #           Method: GET
+  #           Auth:
+  #             Authorizer: CognitoAuthorizer
+
+  # GetProduct:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     FunctionName: !Sub Household-${Env}-GetProduct
+  #     CodeUri: dist/api/get-product
+  #     Role: !Ref LambdaRoleArn
+  #     Events:
+  #       API:
+  #         Type: Api
+  #         Properties:
+  #           RestApiId: !Ref ProductApi
+  #           Path: /v1/categories/{categoryId}/products/{productId}
+  #           Method: GET
+  #           Auth:
+  #             Authorizer: CognitoAuthorizer
+
+  # DeleteProduct:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     FunctionName: !Sub Household-${Env}-DeleteProduct
+  #     CodeUri: dist/api/delete-product
+  #     Role: !Ref LambdaRoleArn
+  #     Events:
+  #       API:
+  #         Type: Api
+  #         Properties:
+  #           RestApiId: !Ref ProductApi
+  #           Path: /v1/categories/{categoryId}/products/{productId}
+  #           Method: DELETE
+  #           Auth:
+  #             Authorizer: CognitoAuthorizer
+
+Outputs:
+  ProductApi:
+    Description: "Household Product API"
+    Value: !Sub "${ProductApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}"

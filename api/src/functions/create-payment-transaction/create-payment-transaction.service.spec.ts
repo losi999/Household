@@ -1,9 +1,10 @@
 import { ICreatePaymentTransactionService, createPaymentTransactionServiceFactory } from '@household/api/functions/create-payment-transaction/create-payment-transaction.service';
-import { createAccountDocument, createCategoryDocument, createPaymentTransactionDocument, createPaymentTransactionRequest, createProjectDocument, createRecipientDocument } from '@household/shared/common/test-data-factory';
+import { createAccountDocument, createCategoryDocument, createPaymentTransactionDocument, createPaymentTransactionRequest, createProductDocument, createProjectDocument, createRecipientDocument } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICategoryService } from '@household/shared/services/category-service';
+import { IProductService } from '@household/shared/services/product-service';
 import { IProjectService } from '@household/shared/services/project-service';
 import { IRecipientService } from '@household/shared/services/recipient-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
@@ -15,6 +16,7 @@ describe('Create payment transaction service', () => {
   let mockCategoryService: Mock<ICategoryService>;
   let mockRecipientService: Mock<IRecipientService>;
   let mockProjectService: Mock<IProjectService>;
+  let mockProductService: Mock<IProductService>;
   let mockTransactionService: Mock<ITransactionService>;
   let mockTransactionDocumentConverter: Mock<ITransactionDocumentConverter>;
 
@@ -23,10 +25,11 @@ describe('Create payment transaction service', () => {
     mockProjectService = createMockService('getProjectById');
     mockCategoryService = createMockService('getCategoryById');
     mockRecipientService = createMockService('getRecipientById');
+    mockProductService = createMockService('getProductById');
     mockTransactionService = createMockService('saveTransaction');
     mockTransactionDocumentConverter = createMockService('createPaymentDocument');
 
-    service = createPaymentTransactionServiceFactory(mockAccountService.service, mockProjectService.service, mockCategoryService.service, mockRecipientService.service, mockTransactionService.service, mockTransactionDocumentConverter.service);
+    service = createPaymentTransactionServiceFactory(mockAccountService.service, mockProjectService.service, mockCategoryService.service, mockRecipientService.service, mockProductService.service, mockTransactionService.service, mockTransactionDocumentConverter.service);
   });
 
   const body = createPaymentTransactionRequest();
@@ -34,6 +37,7 @@ describe('Create payment transaction service', () => {
   const queriedCategory = createCategoryDocument();
   const queriedProject = createProjectDocument();
   const queriedRecipient = createRecipientDocument();
+  const queriedProduct = createProductDocument();
   const transactionId = new Types.ObjectId();
   const createdDocument = createPaymentTransactionDocument({
     _id: transactionId,
@@ -63,6 +67,7 @@ describe('Create payment transaction service', () => {
         account: queriedAccount,
         project: queriedProject,
         recipient: queriedRecipient,
+        product: queriedProduct,
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.saveTransaction, createdDocument);
       expect.assertions(7);
@@ -94,6 +99,7 @@ describe('Create payment transaction service', () => {
         account: queriedAccount,
         project: queriedProject,
         recipient: queriedRecipient,
+        product: queriedProduct,
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.saveTransaction, createdDocument);
       expect.assertions(7);
@@ -125,6 +131,7 @@ describe('Create payment transaction service', () => {
         account: queriedAccount,
         project: undefined,
         recipient: queriedRecipient,
+        product: queriedProduct,
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.saveTransaction, createdDocument);
       expect.assertions(7);
@@ -156,6 +163,7 @@ describe('Create payment transaction service', () => {
         account: queriedAccount,
         project: queriedProject,
         recipient: undefined,
+        product: queriedProduct,
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.saveTransaction, createdDocument);
       expect.assertions(7);
@@ -337,6 +345,7 @@ describe('Create payment transaction service', () => {
         account: queriedAccount,
         project: queriedProject,
         recipient: queriedRecipient,
+        product: queriedProduct,
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.saveTransaction, createdDocument);
       expect.assertions(8);

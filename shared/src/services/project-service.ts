@@ -1,4 +1,6 @@
+import { toDictionary } from '@household/shared/common/utils';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
+import { Dictionary } from '@household/shared/types/common';
 import { Project } from '@household/shared/types/types';
 
 export interface IProjectService {
@@ -8,7 +10,7 @@ export interface IProjectService {
   deleteProject(projectId: Project.IdType): Promise<unknown>;
   updateProject(doc: Project.Document): Promise<unknown>;
   listProjects(): Promise<Project.Document[]>;
-  listProjectsByIds(projectIds: Project.IdType[]): Promise<Project.Document[]>;
+  listProjectsByIds(projectIds: Project.IdType[]): Promise<Dictionary<Project.Document>>;
 }
 
 export const projectServiceFactory = (mongodbService: IMongodbService): IProjectService => {
@@ -92,7 +94,7 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
       });
     },
     listProjectsByIds: async (projectIds) => {
-      return mongodbService.inSession((session) => {
+      const projects = await mongodbService.inSession((session) => {
         return mongodbService.projects().find({
           _id: {
             $in: projectIds,
@@ -103,6 +105,8 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
           .lean()
           .exec();
       });
+
+      return toDictionary(projects, '_id');
     },
   };
 };

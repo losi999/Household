@@ -1,4 +1,4 @@
-import { default as schema } from '@household/shared/schemas/login';
+import { default as schema } from '@household/shared/schemas/login-request';
 import { Auth } from '@household/shared/types/types';
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 

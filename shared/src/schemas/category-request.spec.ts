@@ -1,4 +1,4 @@
-import { default as schema } from '@household/shared/schemas/category';
+import { default as schema } from '@household/shared/schemas/category-request';
 import { Category } from '@household/shared/types/types';
 import { createCategoryId } from '@household/shared/common/test-data-factory';
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';

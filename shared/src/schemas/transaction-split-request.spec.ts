@@ -1,6 +1,6 @@
-import { default as schema } from '@household/shared/schemas/transaction-split';
+import { default as schema } from '@household/shared/schemas/transaction-split-request';
 import { Transaction } from '@household/shared/types/types';
-import { createAccountId, createCategoryId, createProjectId, createRecipientId } from '@household/shared/common/test-data-factory';
+import { createAccountId, createCategoryId, createProductId, createProjectId, createRecipientId } from '@household/shared/common/test-data-factory';
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 
 describe('Split transaction schema', () => {
@@ -20,9 +20,7 @@ describe('Split transaction schema', () => {
           description: 'description',
           inventory: {
             quantity: 1,
-            brand: 'spar',
-            measurement: 250,
-            unitOfMeasurement: 'g',
+            productId: createProductId(),
           },
           invoice: {
             invoiceNumber: 'asdf',
@@ -213,41 +211,41 @@ describe('Split transaction schema', () => {
       });
     });
 
-    describe('if data.splits.inventory.brand', () => {
-      it('is not string', () => {
-        (data.splits[0].inventory.brand as any) = 1;
-        tester.validateSchemaType(data, 'splits/0/inventory/brand', 'string');
-      });
+    // describe('if data.splits.inventory.brand', () => {
+    //   it('is not string', () => {
+    //     (data.splits[0].inventory.brand as any) = 1;
+    //     tester.validateSchemaType(data, 'splits/0/inventory/brand', 'string');
+    //   });
 
-      it('is too short', () => {
-        data.splits[0].inventory.brand = '';
-        tester.validateSchemaMinLength(data, 'splits/0/inventory/brand', 1);
-      });
-    });
+    //   it('is too short', () => {
+    //     data.splits[0].inventory.brand = '';
+    //     tester.validateSchemaMinLength(data, 'splits/0/inventory/brand', 1);
+    //   });
+    // });
 
-    describe('if data.splits.inventory.measurement', () => {
-      it('is not number', () => {
-        (data.splits[0].inventory.measurement as any) = 'a';
-        tester.validateSchemaType(data, 'splits/0/inventory/measurement', 'number');
-      });
+    // describe('if data.splits.inventory.measurement', () => {
+    //   it('is not number', () => {
+    //     (data.splits[0].inventory.measurement as any) = 'a';
+    //     tester.validateSchemaType(data, 'splits/0/inventory/measurement', 'number');
+    //   });
 
-      it('is too small', () => {
-        data.splits[0].inventory.measurement = 0;
-        tester.validateSchemaExclusiveMinimum(data, 'splits/0/inventory/measurement', 0);
-      });
-    });
+    //   it('is too small', () => {
+    //     data.splits[0].inventory.measurement = 0;
+    //     tester.validateSchemaExclusiveMinimum(data, 'splits/0/inventory/measurement', 0);
+    //   });
+    // });
 
-    describe('if data.splits.inventory.unitOfMeasurement', () => {
-      it('is not string', () => {
-        (data.splits[0].inventory.unitOfMeasurement as any) = 1;
-        tester.validateSchemaType(data, 'splits/0/inventory/unitOfMeasurement', 'string');
-      });
+    // describe('if data.splits.inventory.unitOfMeasurement', () => {
+    //   it('is not string', () => {
+    //     (data.splits[0].inventory.unitOfMeasurement as any) = 1;
+    //     tester.validateSchemaType(data, 'splits/0/inventory/unitOfMeasurement', 'string');
+    //   });
 
-      it('is not a valid enum vale', () => {
-        (data.splits[0].inventory.unitOfMeasurement as any) = 'km';
-        tester.validateSchemaEnumValue(data, 'splits/0/inventory/unitOfMeasurement');
-      });
-    });
+    //   it('is not a valid enum vale', () => {
+    //     (data.splits[0].inventory.unitOfMeasurement as any) = 'km';
+    //     tester.validateSchemaEnumValue(data, 'splits/0/inventory/unitOfMeasurement');
+    //   });
+    // });
 
     describe('if data.splits.invoice', () => {
       it('is not object', () => {

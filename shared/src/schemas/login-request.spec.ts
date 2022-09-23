@@ -1,4 +1,4 @@
-import { default as schema } from '@household/shared/schemas/refresh-token';
+import { default as schema } from '@household/shared/schemas/refresh-token-request';
 import { Auth } from '@household/shared/types/types';
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 

@@ -1,7 +1,8 @@
-import { httpError } from '@household/shared/common/utils';
+import { httpErrors } from '@household/api/common/error-handlers';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICategoryService } from '@household/shared/services/category-service';
+import { IProductService } from '@household/shared/services/product-service';
 import { IProjectService } from '@household/shared/services/project-service';
 import { IRecipientService } from '@household/shared/services/recipient-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
@@ -20,52 +21,67 @@ export const updateToPaymentTransactionServiceFactory = (
   projectService: IProjectService,
   categoryService: ICategoryService,
   recipientService: IRecipientService,
+  productService: IProductService,
   transactionService: ITransactionService,
   transactionDocumentConverter: ITransactionDocumentConverter,
 ): IUpdateToPaymentTransactionService => {
   return async ({ body, transactionId, expiresIn }) => {
-    const document = await transactionService.getTransactionById(transactionId).catch((error) => {
-      console.error('Get transaction', error);
-      throw httpError(500, 'Error while getting transaction');
+    const document = await transactionService.getTransactionById(transactionId).catch(httpErrors.transaction.getById({
+      transactionId,
+    }));
+
+    httpErrors.transaction.notFound(!document, {
+      transactionId,
     });
 
-    if (!document) {
-      throw httpError(404, 'No transaction found');
-    }
+    const { accountId, categoryId, projectId, recipientId } = body;
+    const productId = body.inventory?.productId;
 
     const [
       account,
       category,
       project,
       recipient,
+      product,
     ] = await Promise.all([
-      accountService.getAccountById(body.accountId),
-      categoryService.getCategoryById(body.categoryId),
-      projectService.getProjectById(body.projectId),
-      recipientService.getRecipientById(body.recipientId),
-    ]).catch((error) => {
-      console.error('Unable to query related data', error, body);
-      throw httpError(500, 'Unable to query related data');
-    });
+      accountService.getAccountById(accountId),
+      categoryService.getCategoryById(categoryId),
+      projectService.getProjectById(projectId),
+      recipientService.getRecipientById(recipientId),
+      productService.getProductById(productId),
+    ]).catch(httpErrors.common.getRelatedData({
+      accountId,
+      categoryId,
+      productId,
+      projectId,
+      recipientId,
+    }));
 
-    if (!account) {
-      console.error('No account found', body.accountId);
-      throw httpError(400, 'No account found');
-    }
+    httpErrors.account.notFound(!account, {
+      accountId,
+    }, 400);
 
-    if (!category && body.categoryId) {
-      console.error('No category found', body.categoryId);
-      throw httpError(400, 'No category found');
-    }
+    httpErrors.category.notFound(!category && !!categoryId, {
+      categoryId,
+    }, 400);
 
-    if (!project && body.projectId) {
-      console.error('No project found', body.projectId);
-      throw httpError(400, 'No project found');
-    }
+    httpErrors.project.notFound(!project && !!projectId, {
+      projectId,
+    }, 400);
 
-    if (!recipient && body.recipientId) {
-      console.error('No recipient found', body.recipientId);
-      throw httpError(400, 'No recipient found');
+    httpErrors.recipient.notFound(!recipient && !!recipientId, {
+      recipientId,
+    }, 400);
+
+    if (category?.categoryType === 'inventory' && productId) {
+      httpErrors.product.notFound(!product, {
+        productId,
+      }, 400);
+
+      httpErrors.product.categoryRelation(product.category._id.toString() !== category._id.toString(), {
+        productId,
+        categoryId,
+      });
     }
 
     const updated = transactionDocumentConverter.updatePaymentDocument({
@@ -75,11 +91,9 @@ export const updateToPaymentTransactionServiceFactory = (
       category,
       recipient,
       document,
+      product,
     }, expiresIn);
 
-    await transactionService.updateTransaction(updated).catch((error) => {
-      console.error('Update transaction', error);
-      throw httpError(500, 'Error while updating transaction');
-    });
+    await transactionService.updateTransaction(updated).catch(httpErrors.transaction.save(updated));
   };
 };

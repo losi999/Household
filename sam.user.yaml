@@ -57,7 +57,7 @@ Resources:
   Login:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub Household-${Env}-User-Login
+      FunctionName: !Sub Household-${Env}-Login
       CodeUri: dist/api/login
       Role: !Ref LambdaRoleArn
       Events:
@@ -71,7 +71,7 @@ Resources:
   RefreshToken:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub Household-${Env}-User-RefreshToken
+      FunctionName: !Sub Household-${Env}-RefreshToken
       CodeUri: dist/api/refresh-token
       Role: !Ref LambdaRoleArn
       Events:

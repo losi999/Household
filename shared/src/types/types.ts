@@ -129,7 +129,7 @@ export namespace Category {
     fullName: string;
   };
 
-  type ParentCategoryId = {
+  export type ParentCategoryId = {
     parentCategoryId: IdType;
   };
 
@@ -140,6 +140,10 @@ export namespace Category {
   type Base = {
     categoryType: typeof categoryTypes[number];
     name: string;
+  };
+
+  type Products<T> = {
+    products: T[];
   };
 
   export type Document = Partial<Internal.Id>
@@ -154,6 +158,7 @@ export namespace Category {
   export type Response = Base
   & FullName
   & Id
+  & Products<Product.Response>
   & Remove<Internal.CreatedAt>
   & Remove<Internal.UpdatedAt>
   & Remove<Internal.Id>
@@ -165,6 +170,41 @@ export namespace Category {
 
   export type Request = Base
   & ParentCategoryId;
+}
+
+export namespace Product {
+  export type IdType = Brand<string, 'product'>;
+
+  export type Id = {
+    productId: IdType;
+  };
+
+  type Base = {
+    brand: string;
+    unitOfMeasurement: typeof unitsOfMeasurement[number];
+    measurement: number;
+  };
+
+  type Category = {
+    category: Category.Document;
+  };
+
+  export type Document = Partial<Internal.Id>
+  & Internal.ExpiresAt
+  & Partial<Internal.CreatedAt>
+  & Partial<Internal.UpdatedAt>
+  & Base
+  & Category;
+
+  export type Response = Base
+  & Id
+  & Remove<Category>
+  & Remove<Internal.CreatedAt>
+  & Remove<Internal.UpdatedAt>
+  & Remove<Internal.Id>
+  & Remove<Internal.ExpiresAt>;
+
+  export type Request = Base;
 }
 
 export namespace Transaction {
@@ -187,13 +227,14 @@ export namespace Transaction {
     description: string;
   };
 
-  export type Inventory = {
-    inventory: {
-      quantity: number;
-      brand: string;
-      unitOfMeasurement: typeof unitsOfMeasurement[number];
-      measurement: number;
-    };
+  export type Quantity = {
+    quantity: number;
+  };
+
+  export type InventoryItem<P> = Quantity & P;
+
+  export type Inventory<P> = {
+    inventory: InventoryItem<P>;
   };
 
   export type Invoice<D extends string | Date> = {
@@ -228,13 +269,17 @@ export namespace Transaction {
     transferAccount: A;
   };
 
+  export type Product<P extends Product.Document | Product.Response> = {
+    product: P;
+  };
+
   export type PaymentRequest = Account.Id
   & Category.Id
   & Project.Id
   & Recipient.Id
   & IssuedAt<string>
   & Invoice<string>
-  & Inventory
+  & Inventory<Product.Id>
   & Base;
 
   export type TransferRequest = Account.Id
@@ -245,7 +290,7 @@ export namespace Transaction {
   export type SplitRequestItem = Project.Id
   & Category.Id
   & Invoice<string>
-  & Inventory
+  & Inventory<Product.Id>
   & Base;
 
   export type SplitRequest = Account.Id
@@ -271,7 +316,7 @@ export namespace Transaction {
   & Recipient<Recipient.Document>
   & IssuedAt<Date>
   & Invoice<Date>
-  & Inventory
+  & Inventory<Product<Product.Document>>
   & Base;
 
   export type TransferDocument = Partial<Internal.Id>
@@ -289,7 +334,7 @@ export namespace Transaction {
   type SplitDocumentItem = Project<Project.Document>
   & Category<Category.Document>
   & Invoice<Date>
-  & Inventory
+  & Inventory<Product<Product.Document>>
   & Base;
 
   export type SplitDocument = Partial<Internal.Id>
@@ -313,7 +358,7 @@ export namespace Transaction {
   & Base
   & IssuedAt<string>
   & Invoice<string>
-  & Inventory
+  & Inventory<Product<Product.Response>>
   & Remove<Internal.CreatedAt>
   & Remove<Internal.UpdatedAt>
   & Remove<Internal.Id>
@@ -337,7 +382,7 @@ export namespace Transaction {
 
   export type SplitResponseItem = Base
   & Invoice<string>
-  & Inventory
+  & Inventory<Product<Product.Response>>
   & Project<Project.Response>
   & Category<Category.Response>;
 

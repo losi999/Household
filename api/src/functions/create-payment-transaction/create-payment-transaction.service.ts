@@ -1,7 +1,8 @@
-import { httpError } from '@household/shared/common/utils';
+import { httpErrors } from '@household/api/common/error-handlers';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICategoryService } from '@household/shared/services/category-service';
+import { IProductService } from '@household/shared/services/product-service';
 import { IProjectService } from '@household/shared/services/project-service';
 import { IRecipientService } from '@household/shared/services/recipient-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
@@ -19,43 +20,59 @@ export const createPaymentTransactionServiceFactory = (
   projectService: IProjectService,
   categoryService: ICategoryService,
   recipientService: IRecipientService,
+  productService: IProductService,
   transactionService: ITransactionService,
   transactionDocumentConverter: ITransactionDocumentConverter,
 ): ICreatePaymentTransactionService => {
   return async ({ body, expiresIn }) => {
+    const { accountId, categoryId, projectId, recipientId } = body;
+    const productId = body.inventory?.productId;
+
     const [
       account,
       category,
       project,
       recipient,
+      product,
     ] = await Promise.all([
-      accountService.getAccountById(body.accountId),
-      categoryService.getCategoryById(body.categoryId),
-      projectService.getProjectById(body.projectId),
-      recipientService.getRecipientById(body.recipientId),
-    ]).catch((error) => {
-      console.error('Unable to query related data', error, body);
-      throw httpError(500, 'Unable to query related data');
-    });
+      accountService.getAccountById(accountId),
+      categoryService.getCategoryById(categoryId),
+      projectService.getProjectById(projectId),
+      recipientService.getRecipientById(recipientId),
+      productService.getProductById(productId),
+    ]).catch(httpErrors.common.getRelatedData({
+      accountId,
+      categoryId,
+      productId,
+      projectId,
+      recipientId,
+    }));
 
-    if (!account) {
-      console.error('No account found', body.accountId);
-      throw httpError(400, 'No account found');
-    }
+    httpErrors.account.notFound(!account, {
+      accountId,
+    }, 400);
 
-    if (!category && body.categoryId) {
-      console.error('No category found', body.categoryId);
-      throw httpError(400, 'No category found');
-    }
+    httpErrors.category.notFound(!category && !!categoryId, {
+      categoryId,
+    }, 400);
 
-    if (!project && body.projectId) {
-      console.error('No project found', body.projectId);
-      throw httpError(400, 'No project found');
-    }
+    httpErrors.project.notFound(!project && !!projectId, {
+      projectId,
+    }, 400);
 
-    if (!recipient && body.recipientId) {
-      console.error('No recipient found', body.recipientId);
-      throw httpError(400, 'No recipient found');
+    httpErrors.recipient.notFound(!recipient && !!recipientId, {
+      recipientId,
+    }, 400);
+
+    if (category?.categoryType === 'inventory' && body.inventory) {
+      httpErrors.product.notFound(!product, {
+        productId,
+      }, 400);
+
+      httpErrors.product.categoryRelation(product.category._id.toString() !== category._id.toString(), {
+        productId,
+        categoryId,
+      });
     }
 
     const document = transactionDocumentConverter.createPaymentDocument({
@@ -64,12 +81,10 @@ export const createPaymentTransactionServiceFactory = (
       category,
       project,
       recipient,
+      product,
     }, expiresIn);
 
-    const saved = await transactionService.saveTransaction(document).catch((error) => {
-      console.error('Save transaction', error);
-      throw httpError(500, 'Error while saving transaction');
-    });
+    const saved = await transactionService.saveTransaction(document).catch(httpErrors.transaction.save(document));
 
     return saved._id.toString();
   };

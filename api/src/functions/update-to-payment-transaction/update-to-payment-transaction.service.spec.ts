@@ -4,6 +4,7 @@ import { createMockService, Mock, validateError, validateFunctionCall } from '@h
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICategoryService } from '@household/shared/services/category-service';
+import { IProductService } from '@household/shared/services/product-service';
 import { IProjectService } from '@household/shared/services/project-service';
 import { IRecipientService } from '@household/shared/services/recipient-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
@@ -14,6 +15,7 @@ describe('Update to payment transaction service', () => {
   let mockCategoryService: Mock<ICategoryService>;
   let mockRecipientService: Mock<IRecipientService>;
   let mockProjectService: Mock<IProjectService>;
+  let mockProductService: Mock<IProductService>;
   let mockTransactionService: Mock<ITransactionService>;
   let mockTransactionDocumentConverter: Mock<ITransactionDocumentConverter>;
 
@@ -22,10 +24,11 @@ describe('Update to payment transaction service', () => {
     mockProjectService = createMockService('getProjectById');
     mockCategoryService = createMockService('getCategoryById');
     mockRecipientService = createMockService('getRecipientById');
+    mockProductService = createMockService('getProductById');
     mockTransactionService = createMockService('updateTransaction', 'getTransactionById');
     mockTransactionDocumentConverter = createMockService('updatePaymentDocument');
 
-    service = updateToPaymentTransactionServiceFactory(mockAccountService.service, mockProjectService.service, mockCategoryService.service, mockRecipientService.service, mockTransactionService.service, mockTransactionDocumentConverter.service);
+    service = updateToPaymentTransactionServiceFactory(mockAccountService.service, mockProjectService.service, mockCategoryService.service, mockRecipientService.service, mockProductService.service, mockTransactionService.service, mockTransactionDocumentConverter.service);
   });
 
   const transactionId = createTransactionId();
@@ -66,6 +69,7 @@ describe('Update to payment transaction service', () => {
         account: queriedAccount,
         project: queriedProject,
         recipient: queriedRecipient,
+        product: undefined,
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.updateTransaction, updatedDocument);
       expect.assertions(7);
@@ -100,6 +104,7 @@ describe('Update to payment transaction service', () => {
         account: queriedAccount,
         project: queriedProject,
         recipient: queriedRecipient,
+        product: undefined,
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.updateTransaction, updatedDocument);
       expect.assertions(7);
@@ -134,6 +139,7 @@ describe('Update to payment transaction service', () => {
         account: queriedAccount,
         project: undefined,
         recipient: queriedRecipient,
+        product: undefined,
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.updateTransaction, updatedDocument);
       expect.assertions(7);
@@ -168,6 +174,7 @@ describe('Update to payment transaction service', () => {
         account: queriedAccount,
         project: queriedProject,
         recipient: undefined,
+        product: undefined,
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.updateTransaction, updatedDocument);
       expect.assertions(7);
@@ -412,6 +419,7 @@ describe('Update to payment transaction service', () => {
         account: queriedAccount,
         project: queriedProject,
         recipient: queriedRecipient,
+        product: undefined,
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.updateTransaction, updatedDocument);
       expect.assertions(9);
