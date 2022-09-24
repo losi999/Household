@@ -94,6 +94,6 @@ export const updateToPaymentTransactionServiceFactory = (
       product,
     }, expiresIn);
 
-    await transactionService.updateTransaction(updated).catch(httpErrors.transaction.save(updated));
+    await transactionService.updateTransaction(updated).catch(httpErrors.transaction.update(updated));
   };
 };

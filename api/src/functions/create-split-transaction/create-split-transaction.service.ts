@@ -75,8 +75,8 @@ export const createSplitTransactionServiceFactory = (
 
     body.splits.forEach((s) => {
       const category = categories[s.categoryId];
-      if (category?.categoryType === 'inventory' && s.inventory) {
-        const productId = s.inventory.productId;
+      const productId = s.inventory?.productId;
+      if (category?.categoryType === 'inventory' && productId) {
         const product = products[productId];
 
         httpErrors.product.notFound(!product && !!productId, {

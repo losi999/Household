@@ -8,7 +8,7 @@ const log = (message: string, ctx: any, error?: any) => {
 
 export const httpErrors = {
   transaction: {
-    save: (doc: Transaction.Document, statusCode = 404): Catch => (error) => {
+    save: (doc: Transaction.Document, statusCode = 500): Catch => (error) => {
       log('Save transaction', doc, error);
       throw httpError(statusCode, 'Error while saving transaction');
     },

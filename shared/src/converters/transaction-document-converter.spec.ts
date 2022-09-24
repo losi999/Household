@@ -1,4 +1,4 @@
-import { createAccountDocument, createAccountId, createAccountResponse, createCategoryDocument, createCategoryId, createCategoryResponse, createPaymentTransactionDocument, createPaymentTransactionRequest, createPaymentTransactionResponse, createProjectDocument, createProjectId, createProjectResponse, createRecipientDocument, createRecipientResponse, createTransactionId, createSplitTransactionDocument, createSplitTransactionRequest, createSplitTransactionResponse, createTransferTransactionDocument, createTransferTransactionRequest, createTransferTransactionResponse, createProductDocument } from '@household/shared/common/test-data-factory';
+import { createAccountDocument, createAccountId, createAccountResponse, createCategoryDocument, createCategoryId, createCategoryResponse, createPaymentTransactionDocument, createPaymentTransactionRequest, createPaymentTransactionResponse, createProjectDocument, createProjectId, createProjectResponse, createRecipientDocument, createRecipientResponse, createTransactionId, createSplitTransactionDocument, createSplitTransactionRequest, createSplitTransactionResponse, createTransferTransactionDocument, createTransferTransactionRequest, createTransferTransactionResponse, createProductDocument, createSplitRequestIem } from '@household/shared/common/test-data-factory';
 import { addSeconds } from '@household/shared/common/utils';
 import { transactionDocumentConverterFactory, ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { Types } from 'mongoose';
@@ -211,10 +211,13 @@ describe('Transaction document converter', () => {
     const body = createSplitTransactionRequest({
       description,
       issuedAt: now.toISOString(),
-    }, {
-      description,
-      categoryId: createCategoryId(categoryId.toString()),
-      projectId: createProjectId(projectId),
+      splits: [
+        createSplitRequestIem({
+          description,
+          categoryId: createCategoryId(categoryId.toString()),
+          projectId: createProjectId(projectId),
+        }),
+      ],
     });
 
     const queriedDocument = createSplitTransactionDocument({
@@ -236,9 +239,15 @@ describe('Transaction document converter', () => {
         const result = converter.createSplitDocument({
           body,
           account,
-          categories: {},
-          projects: {},
-          products: {},
+          categories: {
+            [categoryId.toString()]: category,
+          },
+          projects: {
+            [projectId.toString()]: project,
+          },
+          products: {
+            [productId.toString()]: product,
+          },
           recipient,
         }, undefined);
         expect(result).toEqual(createSplitTransactionDocument({
@@ -258,9 +267,15 @@ describe('Transaction document converter', () => {
         const result = converter.createSplitDocument({
           body,
           account,
-          categories: {},
-          projects: {},
-          products: {},
+          categories: {
+            [categoryId.toString()]: category,
+          },
+          projects: {
+            [projectId.toString()]: project,
+          },
+          products: {
+            [productId.toString()]: product,
+          },
           recipient,
         }, expiresIn);
         expect(result).toEqual(createSplitTransactionDocument({
@@ -284,9 +299,15 @@ describe('Transaction document converter', () => {
           body,
           document,
           account,
-          categories: {},
-          projects: {},
-          products: {},
+          categories: {
+            [categoryId.toString()]: category,
+          },
+          projects: {
+            [projectId.toString()]: project,
+          },
+          products: {
+            [productId.toString()]: product,
+          },
           recipient,
         }, expiresIn);
         expect(result).toEqual(createSplitTransactionDocument({

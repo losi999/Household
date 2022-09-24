@@ -64,7 +64,7 @@ export const createPaymentTransactionServiceFactory = (
       recipientId,
     }, 400);
 
-    if (category?.categoryType === 'inventory' && body.inventory) {
+    if (category?.categoryType === 'inventory' && productId) {
       httpErrors.product.notFound(!product, {
         productId,
       }, 400);

@@ -23,12 +23,15 @@ describe('Create product service', () => {
   const body = createProductRequest();
   const categoryId = createCategoryId();
   const productId = new Types.ObjectId();
-  const queriedCategory = createCategoryDocument();
+  const queriedCategory = createCategoryDocument({
+    categoryType: 'inventory',
+  });
   const convertedProductDocument = createProductDocument({
     _id: productId,
   });
 
   it('should return new id', async () => {
+    mockCategoryService.functions.getCategoryById.mockResolvedValue(queriedCategory);
     mockProductDocumentConverter.functions.create.mockReturnValue(convertedProductDocument);
     mockProductService.functions.saveProduct.mockResolvedValue(convertedProductDocument);
 
@@ -38,15 +41,63 @@ describe('Create product service', () => {
       expiresIn: undefined,
     });
     expect(result).toEqual(productId.toString()),
+    validateFunctionCall(mockCategoryService.functions.getCategoryById, categoryId);
     validateFunctionCall(mockProductDocumentConverter.functions.create, {
       body,
       category: queriedCategory,
     }, undefined);
     validateFunctionCall(mockProductService.functions.saveProduct, convertedProductDocument);
-    expect.assertions(3);
+    expect.assertions(4);
   });
   describe('should throw error', () => {
+    it('if unable to query category', async () => {
+      mockCategoryService.functions.getCategoryById.mockRejectedValue('this is a mongo error');
+
+      await service({
+        body,
+        categoryId,
+        expiresIn: undefined,
+      }).catch(validateError('Error while getting category', 500));
+      validateFunctionCall(mockCategoryService.functions.getCategoryById, categoryId);
+      validateFunctionCall(mockProductDocumentConverter.functions.create);
+      validateFunctionCall(mockProductService.functions.saveProduct);
+      expect.assertions(5);
+    });
+
+    it('if no category found', async () => {
+      mockCategoryService.functions.getCategoryById.mockResolvedValue(undefined);
+
+      await service({
+        body,
+        categoryId,
+        expiresIn: undefined,
+      }).catch(validateError('No category found', 400));
+      validateFunctionCall(mockCategoryService.functions.getCategoryById, categoryId);
+      validateFunctionCall(mockProductDocumentConverter.functions.create);
+      validateFunctionCall(mockProductService.functions.saveProduct);
+      expect.assertions(5);
+    });
+
+    it('if category is not "inventory" type', async () => {
+      mockCategoryService.functions.getCategoryById.mockResolvedValue(createCategoryDocument({
+        categoryType: 'regular',
+      }));
+      mockProductDocumentConverter.functions.create.mockReturnValue(convertedProductDocument);
+      mockProductService.functions.saveProduct.mockResolvedValue(convertedProductDocument);
+
+      await service({
+        body,
+        categoryId,
+        expiresIn: undefined,
+      }).catch(validateError('Category must be "inventory" type', 400));
+      validateFunctionCall(mockCategoryService.functions.getCategoryById, categoryId);
+      validateFunctionCall(mockProductDocumentConverter.functions.create);
+      validateFunctionCall(mockProductService.functions.saveProduct);
+      expect.assertions(5);
+    });
+
     it('if unable to save document', async () => {
+      mockCategoryService.functions.getCategoryById.mockResolvedValue(queriedCategory);
       mockProductDocumentConverter.functions.create.mockReturnValue(convertedProductDocument);
       mockProductService.functions.saveProduct.mockRejectedValue('this is a mongo error');
 
@@ -55,12 +106,13 @@ describe('Create product service', () => {
         categoryId,
         expiresIn: undefined,
       }).catch(validateError('Error while saving product', 500));
+      validateFunctionCall(mockCategoryService.functions.getCategoryById, categoryId);
       validateFunctionCall(mockProductDocumentConverter.functions.create, {
         body,
         category: queriedCategory,
       }, undefined);
       validateFunctionCall(mockProductService.functions.saveProduct, convertedProductDocument);
-      expect.assertions(4);
+      expect.assertions(5);
     });
   });
 });
