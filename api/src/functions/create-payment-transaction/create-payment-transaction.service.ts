@@ -1,4 +1,5 @@
 import { httpErrors } from '@household/api/common/error-handlers';
+import { getCategoryId, getTransactionId } from '@household/shared/common/utils';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICategoryService } from '@household/shared/services/category-service';
@@ -12,7 +13,7 @@ export interface ICreatePaymentTransactionService {
   (ctx: {
     body: Transaction.PaymentRequest;
     expiresIn: number;
-  }): Promise<string>;
+  }): Promise<Transaction.IdType>;
 }
 
 export const createPaymentTransactionServiceFactory = (
@@ -69,7 +70,7 @@ export const createPaymentTransactionServiceFactory = (
         productId,
       }, 400);
 
-      httpErrors.product.categoryRelation(product.category._id.toString() !== category._id.toString(), {
+      httpErrors.product.categoryRelation(getCategoryId(product.category) !== categoryId, {
         productId,
         categoryId,
       });
@@ -86,6 +87,6 @@ export const createPaymentTransactionServiceFactory = (
 
     const saved = await transactionService.saveTransaction(document).catch(httpErrors.transaction.save(document));
 
-    return saved._id.toString();
+    return getTransactionId(saved);
   };
 };

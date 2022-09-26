@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/create-category/create-category.handler';
 import { ICreateCategoryService } from '@household/api/functions/create-category/create-category.service';
-import { createCategoryRequest } from '@household/shared/common/test-data-factory';
+import { createCategoryId, createCategoryRequest } from '@household/shared/common/test-data-factory';
 import { headerExpiresIn } from '@household/shared/constants';
 
 describe('Create category handler', () => {
@@ -42,7 +42,7 @@ describe('Create category handler', () => {
   });
 
   it('should respond with success', async () => {
-    const categoryId = 'categoryId';
+    const categoryId = createCategoryId();
 
     mockCreateCategoryService.mockResolvedValue(categoryId);
 

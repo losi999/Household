@@ -1,6 +1,4 @@
-import { toDictionary } from '@household/shared/common/utils';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
-import { Dictionary } from '@household/shared/types/common';
 import { Category } from '@household/shared/types/types';
 import { ClientSession } from 'mongoose';
 
@@ -11,7 +9,7 @@ export interface ICategoryService {
   deleteCategory(categoryId: Category.IdType): Promise<unknown>;
   updateCategory(doc: Category.Document, oldFullName: string): Promise<unknown>;
   listCategories(): Promise<Category.Document[]>;
-  listCategoriesByIds(categoryIds: Category.IdType[]): Promise<Dictionary<Category.Document>>;
+  listCategoriesByIds(categoryIds: Category.IdType[]): Promise<Category.Document[]>;
 }
 
 export const categoryServiceFactory = (mongodbService: IMongodbService): ICategoryService => {
@@ -219,8 +217,8 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
           .exec();
       });
     },
-    listCategoriesByIds: async (categoryIds) => {
-      const categories = await mongodbService.inSession((session) => {
+    listCategoriesByIds: (categoryIds) => {
+      return mongodbService.inSession((session) => {
         return mongodbService.categories().find({
           _id: {
             $in: categoryIds,
@@ -231,8 +229,6 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
           .lean()
           .exec();
       });
-
-      return toDictionary(categories, '_id');
     },
   };
 

@@ -1,4 +1,4 @@
-import { httpError } from '@household/shared/common/utils';
+import { httpErrors } from '@household/api/common/error-handlers';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { Account } from '@household/shared/types/types';
@@ -12,10 +12,7 @@ export const listAccountsServiceFactory = (
   accountDocumentConverter: IAccountDocumentConverter): IListAccountsService => {
   return async () => {
 
-    const documents = await accountService.listAccounts().catch((error) => {
-      console.error('List accounts', error);
-      throw httpError(500, 'Error while listing accounts');
-    });
+    const documents = await accountService.listAccounts().catch(httpErrors.account.list());
 
     return accountDocumentConverter.toResponseList(documents);
   };

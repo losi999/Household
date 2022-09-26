@@ -1,7 +1,6 @@
-import { createCategoryDocument, createCategoryId, createCategoryRequest, createCategoryResponse } from '@household/shared/common/test-data-factory';
-import { addSeconds } from '@household/shared/common/utils';
+import { createCategoryDocument, createCategoryRequest, createCategoryResponse } from '@household/shared/common/test-data-factory';
+import { addSeconds, getCategoryId } from '@household/shared/common/utils';
 import { categoryDocumentConverterFactory, ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
-import { Types } from 'mongoose';
 import { advanceTo, clear } from 'jest-date-mock';
 
 describe('Category document converter', () => {
@@ -17,10 +16,8 @@ describe('Category document converter', () => {
     clear();
   });
 
-  const categoryId = new Types.ObjectId();
   const name = 'child';
   const expiresIn = 3600;
-  const parentCategoryId = new Types.ObjectId();
   const parentCategoryName = 'parent';
 
   const body = createCategoryRequest({
@@ -29,12 +26,10 @@ describe('Category document converter', () => {
   const queriedDocument = createCategoryDocument({
     name,
     fullName: name,
-    _id: categoryId,
     createdAt: now,
     updatedAt: now,
   });
   const queriedParentCategory = createCategoryDocument({
-    _id: parentCategoryId,
     name: parentCategoryName,
     fullName: parentCategoryName,
     createdAt: now,
@@ -48,6 +43,7 @@ describe('Category document converter', () => {
         parentCategory: undefined,
       }, undefined);
       expect(result).toEqual(createCategoryDocument({
+        _id: undefined,
         name,
         fullName: name,
         expiresAt: undefined,
@@ -60,6 +56,7 @@ describe('Category document converter', () => {
         parentCategory: queriedParentCategory,
       }, undefined);
       expect(result).toEqual(createCategoryDocument({
+        _id: undefined,
         name,
         fullName: `${parentCategoryName}:${name}`,
         parentCategory: queriedParentCategory,
@@ -73,6 +70,7 @@ describe('Category document converter', () => {
         parentCategory: undefined,
       }, expiresIn);
       expect(result).toEqual(createCategoryDocument({
+        _id: undefined,
         name,
         fullName: name,
         expiresAt: addSeconds(expiresIn, now),
@@ -90,7 +88,7 @@ describe('Category document converter', () => {
         document,
       }, expiresIn);
       expect(result).toEqual(createCategoryDocument({
-        _id: categoryId,
+        _id: document._id,
         name,
         fullName: `${parentCategoryName}:${name}`,
         parentCategory: queriedParentCategory,
@@ -106,7 +104,7 @@ describe('Category document converter', () => {
         document,
       }, expiresIn);
       expect(result).toEqual(createCategoryDocument({
-        _id: categoryId,
+        _id: document._id,
         name,
         fullName: name,
         createdAt: now,
@@ -119,7 +117,7 @@ describe('Category document converter', () => {
     it('should return response', () => {
       const result = converter.toResponse(queriedDocument);
       expect(result).toEqual(createCategoryResponse({
-        categoryId: createCategoryId(categoryId.toString()),
+        categoryId: getCategoryId(queriedDocument),
         name,
         fullName: name,
       }));
@@ -131,7 +129,7 @@ describe('Category document converter', () => {
       const result = converter.toResponseList([queriedDocument]);
       expect(result).toEqual([
         createCategoryResponse({
-          categoryId: createCategoryId(categoryId.toString()),
+          categoryId: getCategoryId(queriedDocument),
           name,
           fullName: name,
         }),

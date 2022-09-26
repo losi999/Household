@@ -1,4 +1,5 @@
 import { httpErrors } from '@household/api/common/error-handlers';
+import { getProductId } from '@household/shared/common/utils';
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
 import { ICategoryService } from '@household/shared/services/category-service';
 import { IProductService } from '@household/shared/services/product-service';
@@ -8,7 +9,7 @@ export interface ICreateProductService {
   (ctx: {
     body: Product.Request;
     expiresIn: number;
-  } & Category.Id): Promise<string>;
+  } & Category.Id): Promise<Product.IdType>;
 }
 
 export const createProductServiceFactory = (
@@ -33,6 +34,6 @@ export const createProductServiceFactory = (
 
     const saved = await productService.saveProduct(document).catch(httpErrors.product.save(document));
 
-    return saved._id.toString();
+    return getProductId(saved);
   };
 };

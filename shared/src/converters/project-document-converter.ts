@@ -1,4 +1,4 @@
-import { addSeconds } from '@household/shared/common/utils';
+import { addSeconds, getProjectId } from '@household/shared/common/utils';
 import { Restrict } from '@household/shared/types/common';
 import { Project } from '@household/shared/types/types';
 
@@ -17,6 +17,7 @@ export const projectDocumentConverterFactory = (): IProjectDocumentConverter => 
     create: (body, expiresIn): Project.Document => {
       return {
         ...body,
+        _id: undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
@@ -34,7 +35,7 @@ export const projectDocumentConverterFactory = (): IProjectDocumentConverter => 
         updatedAt: undefined,
         _id: undefined,
         expiresAt: undefined,
-        projectId: doc._id.toString() as Project.IdType,
+        projectId: getProjectId(doc),
       };
     },
     toResponseList: docs => docs.map(d => instance.toResponse(d)),

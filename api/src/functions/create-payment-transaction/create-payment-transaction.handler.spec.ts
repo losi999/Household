@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/create-payment-transaction/create-payment-transaction.handler';
 import { ICreatePaymentTransactionService } from '@household/api/functions/create-payment-transaction/create-payment-transaction.service';
-import { createPaymentTransactionRequest } from '@household/shared/common/test-data-factory';
+import { createPaymentTransactionRequest, createTransactionId } from '@household/shared/common/test-data-factory';
 import { headerExpiresIn } from '@household/shared/constants';
 
 describe('Create payment transaction handler', () => {
@@ -42,7 +42,7 @@ describe('Create payment transaction handler', () => {
   });
 
   it('should respond with success', async () => {
-    const transactionId = 'transactionId';
+    const transactionId = createTransactionId();
 
     mockCreatePaymentTransactionService.mockResolvedValue(transactionId);
 

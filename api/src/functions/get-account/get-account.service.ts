@@ -1,4 +1,4 @@
-import { httpError } from '@household/shared/common/utils';
+import { httpErrors } from '@household/api/common/error-handlers';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { Account } from '@household/shared/types/types';
@@ -14,14 +14,13 @@ export const getAccountServiceFactory = (
   accountDocumentConverter: IAccountDocumentConverter): IGetAccountService => {
   return async ({ accountId }) => {
 
-    const document = await accountService.getAccountById(accountId).catch((error) => {
-      console.error('Get account', error);
-      throw httpError(500, 'Error while getting account');
-    });
+    const document = await accountService.getAccountById(accountId).catch(httpErrors.account.getById({
+      accountId,
+    }));
 
-    if (!document) {
-      throw httpError(404, 'No account found');
-    }
+    httpErrors.account.notFound(!document, {
+      accountId,
+    });
 
     return accountDocumentConverter.toResponse(document);
   };

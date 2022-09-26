@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/create-split-transaction/create-split-transaction.handler';
 import { ICreateSplitTransactionService } from '@household/api/functions/create-split-transaction/create-split-transaction.service';
-import { createSplitTransactionRequest } from '@household/shared/common/test-data-factory';
+import { createSplitTransactionRequest, createTransactionId } from '@household/shared/common/test-data-factory';
 import { headerExpiresIn } from '@household/shared/constants';
 
 describe('Create split transaction handler', () => {
@@ -41,7 +41,7 @@ describe('Create split transaction handler', () => {
   });
 
   it('should respond with success', async () => {
-    const transactionId = 'transactionId';
+    const transactionId = createTransactionId();
 
     mockCreateSplitTransactionService.mockResolvedValue(transactionId);
 

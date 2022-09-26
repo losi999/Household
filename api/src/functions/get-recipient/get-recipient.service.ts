@@ -1,4 +1,4 @@
-import { httpError } from '@household/shared/common/utils';
+import { httpErrors } from '@household/api/common/error-handlers';
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
 import { IRecipientService } from '@household/shared/services/recipient-service';
 import { Recipient } from '@household/shared/types/types';
@@ -14,14 +14,13 @@ export const getRecipientServiceFactory = (
   recipientDocumentConverter: IRecipientDocumentConverter): IGetRecipientService => {
   return async ({ recipientId }) => {
 
-    const document = await recipientService.getRecipientById(recipientId).catch((error) => {
-      console.error('Get recipient', error);
-      throw httpError(500, 'Error while getting recipient');
-    });
+    const document = await recipientService.getRecipientById(recipientId).catch(httpErrors.recipient.getById({
+      recipientId,
+    }));
 
-    if (!document) {
-      throw httpError(404, 'No recipient found');
-    }
+    httpErrors.recipient.notFound(!document, {
+      recipientId,
+    });
 
     return recipientDocumentConverter.toResponse(document);
   };

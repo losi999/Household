@@ -1,10 +1,10 @@
 import { ICreateProductService, createProductServiceFactory } from '@household/api/functions/create-product/create-product.service';
 import { createProductRequest, createProductDocument, createCategoryId, createCategoryDocument } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { getProductId } from '@household/shared/common/utils';
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
 import { ICategoryService } from '@household/shared/services/category-service';
 import { IProductService } from '@household/shared/services/product-service';
-import { Types } from 'mongoose';
 
 describe('Create product service', () => {
   let service: ICreateProductService;
@@ -22,13 +22,11 @@ describe('Create product service', () => {
 
   const body = createProductRequest();
   const categoryId = createCategoryId();
-  const productId = new Types.ObjectId();
   const queriedCategory = createCategoryDocument({
     categoryType: 'inventory',
   });
-  const convertedProductDocument = createProductDocument({
-    _id: productId,
-  });
+  const convertedProductDocument = createProductDocument();
+  const productId = getProductId(convertedProductDocument);
 
   it('should return new id', async () => {
     mockCategoryService.functions.getCategoryById.mockResolvedValue(queriedCategory);

@@ -1,4 +1,5 @@
 import { httpErrors } from '@household/api/common/error-handlers';
+import { getCategoryId } from '@household/shared/common/utils';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
 import { ICategoryService } from '@household/shared/services/category-service';
 import { Category } from '@household/shared/types/types';
@@ -7,7 +8,7 @@ export interface ICreateCategoryService {
   (ctx: {
     body: Category.Request;
     expiresIn: number;
-  }): Promise<string>;
+  }): Promise<Category.IdType>;
 }
 
 export const createCategoryServiceFactory = (
@@ -29,6 +30,6 @@ export const createCategoryServiceFactory = (
 
     const saved = await categoryService.saveCategory(document).catch(httpErrors.category.save(document));
 
-    return saved._id.toString();
+    return getCategoryId(saved);
   };
 };

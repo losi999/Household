@@ -19,6 +19,7 @@ export const accountDocumentConverterFactory = (): IAccountDocumentConverter => 
         ...body,
         isOpen: true,
         balance: undefined,
+        _id: undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },

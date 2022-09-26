@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/create-product/create-product.handler';
 import { ICreateProductService } from '@household/api/functions/create-product/create-product.service';
-import { createCategoryId, createProductRequest } from '@household/shared/common/test-data-factory';
+import { createCategoryId, createProductId, createProductRequest } from '@household/shared/common/test-data-factory';
 import { headerExpiresIn } from '@household/shared/constants';
 
 describe('Create product handler', () => {
@@ -47,7 +47,7 @@ describe('Create product handler', () => {
   });
 
   it('should respond with success', async () => {
-    const productId = 'productId';
+    const productId = createProductId();
 
     mockCreateProductService.mockResolvedValue(productId);
 

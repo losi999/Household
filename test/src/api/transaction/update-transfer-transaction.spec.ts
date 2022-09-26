@@ -205,7 +205,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
               accountId: createAccountId(),
             })
             .expectBadRequestResponse()
-            .expectMessage('One of the accounts is not found');
+            .expectMessage('No account found');
         });
         it('is missing', () => {
           cy.authenticate(1)
@@ -258,7 +258,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
               transferAccountId: createAccountId(),
             })
             .expectBadRequestResponse()
-            .expectMessage('One of the accounts is not found');
+            .expectMessage('No account found');
         });
 
         it('is a different currency than base account', () => {

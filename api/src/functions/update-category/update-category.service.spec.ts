@@ -3,7 +3,6 @@ import { createCategoryDocument, createCategoryId, createCategoryRequest } from 
 import { createMockService, Mock, validateError, validateFunctionCall, validateNthFunctionCall } from '@household/shared/common/unit-testing';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
 import { ICategoryService } from '@household/shared/services/category-service';
-import { Types } from 'mongoose';
 
 describe('Update category service', () => {
   let service: IUpdateCategoryService;
@@ -17,16 +16,10 @@ describe('Update category service', () => {
     service = updateCategoryServiceFactory(mockCategoryService.service, mockCategoryDocumentConverter.service);
   });
 
+  const body = createCategoryRequest();
   const categoryId = createCategoryId();
-  const parentCategoryId = new Types.ObjectId();
-  const parentCategoryIdString = createCategoryId(parentCategoryId.toString());
-  const body = createCategoryRequest({
-    parentCategoryId: parentCategoryIdString,
-  });
   const queriedDocument = createCategoryDocument();
-  const queriedParentCategory = createCategoryDocument({
-    _id: parentCategoryId,
-  });
+  const queriedParentCategory = createCategoryDocument();
   const { updatedAt, ...toUpdate } = queriedDocument;
   const updatedDocument = createCategoryDocument({
     name: 'updated',
@@ -45,7 +38,7 @@ describe('Update category service', () => {
         expiresIn: undefined,
       });
       validateNthFunctionCall(mockCategoryService.functions.getCategoryById, 1, categoryId);
-      validateNthFunctionCall(mockCategoryService.functions.getCategoryById, 2, parentCategoryIdString);
+      validateNthFunctionCall(mockCategoryService.functions.getCategoryById, 2, body.parentCategoryId);
       validateFunctionCall(mockCategoryDocumentConverter.functions.update, {
         document: toUpdate,
         body,
@@ -92,7 +85,7 @@ describe('Update category service', () => {
         expiresIn: undefined,
       }).catch(validateError('Error while getting category', 500));
       validateNthFunctionCall(mockCategoryService.functions.getCategoryById, 1, categoryId);
-      validateNthFunctionCall(mockCategoryService.functions.getCategoryById, 2, parentCategoryIdString);
+      validateNthFunctionCall(mockCategoryService.functions.getCategoryById, 2, body.parentCategoryId);
       validateFunctionCall(mockCategoryDocumentConverter.functions.update);
       validateFunctionCall(mockCategoryService.functions.updateCategory);
       expect.assertions(6);
@@ -108,7 +101,7 @@ describe('Update category service', () => {
         expiresIn: undefined,
       }).catch(validateError('Error while getting category', 500));
       validateNthFunctionCall(mockCategoryService.functions.getCategoryById, 1, categoryId);
-      validateNthFunctionCall(mockCategoryService.functions.getCategoryById, 2, parentCategoryIdString);
+      validateNthFunctionCall(mockCategoryService.functions.getCategoryById, 2, body.parentCategoryId);
       validateFunctionCall(mockCategoryDocumentConverter.functions.update);
       validateFunctionCall(mockCategoryService.functions.updateCategory);
       expect.assertions(6);
@@ -123,7 +116,7 @@ describe('Update category service', () => {
         expiresIn: undefined,
       }).catch(validateError('No category found', 404));
       validateNthFunctionCall(mockCategoryService.functions.getCategoryById, 1, categoryId);
-      validateNthFunctionCall(mockCategoryService.functions.getCategoryById, 2, parentCategoryIdString);
+      validateNthFunctionCall(mockCategoryService.functions.getCategoryById, 2, body.parentCategoryId);
       validateFunctionCall(mockCategoryDocumentConverter.functions.update);
       validateFunctionCall(mockCategoryService.functions.updateCategory);
       expect.assertions(6);
@@ -139,7 +132,7 @@ describe('Update category service', () => {
         expiresIn: undefined,
       }).catch(validateError('Parent category not found', 400));
       validateNthFunctionCall(mockCategoryService.functions.getCategoryById, 1, categoryId);
-      validateNthFunctionCall(mockCategoryService.functions.getCategoryById, 2, parentCategoryIdString);
+      validateNthFunctionCall(mockCategoryService.functions.getCategoryById, 2, body.parentCategoryId);
       validateFunctionCall(mockCategoryDocumentConverter.functions.update);
       validateFunctionCall(mockCategoryService.functions.updateCategory);
       expect.assertions(6);
@@ -157,7 +150,7 @@ describe('Update category service', () => {
         expiresIn: undefined,
       }).catch(validateError('Error while updating category', 500));
       validateNthFunctionCall(mockCategoryService.functions.getCategoryById, 1, categoryId);
-      validateNthFunctionCall(mockCategoryService.functions.getCategoryById, 2, parentCategoryIdString);
+      validateNthFunctionCall(mockCategoryService.functions.getCategoryById, 2, body.parentCategoryId);
       validateFunctionCall(mockCategoryDocumentConverter.functions.update, {
         document: toUpdate,
         body,

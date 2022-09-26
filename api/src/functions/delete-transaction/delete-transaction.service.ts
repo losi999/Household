@@ -1,4 +1,4 @@
-import { httpError } from '@household/shared/common/utils';
+import { httpErrors } from '@household/api/common/error-handlers';
 import { ITransactionService } from '@household/shared/services/transaction-service';
 import { Transaction } from '@household/shared/types/types';
 
@@ -11,9 +11,8 @@ export interface IDeleteTransactionService {
 export const deleteTransactionServiceFactory = (
   transactionService: ITransactionService): IDeleteTransactionService => {
   return async ({ transactionId }) => {
-    await transactionService.deleteTransaction(transactionId).catch((error) => {
-      console.error('Delete transaction', error);
-      throw httpError(500, 'Error while deleting transaction');
-    });
+    await transactionService.deleteTransaction(transactionId).catch(httpErrors.transaction.delete({
+      transactionId,
+    }));
   };
 };

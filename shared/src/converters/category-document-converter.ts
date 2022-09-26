@@ -1,4 +1,4 @@
-import { addSeconds } from '@household/shared/common/utils';
+import { addSeconds, getCategoryId } from '@household/shared/common/utils';
 import { Restrict } from '@household/shared/types/common';
 import { Category } from '@household/shared/types/types';
 
@@ -24,6 +24,7 @@ export const categoryDocumentConverterFactory = (): ICategoryDocumentConverter =
         fullName: parentCategory ? `${parentCategory.fullName}:${body.name}` : body.name,
         parentCategory: parentCategory,
         parentCategoryId: undefined,
+        _id: undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
@@ -44,7 +45,7 @@ export const categoryDocumentConverterFactory = (): ICategoryDocumentConverter =
         updatedAt: undefined,
         _id: undefined,
         expiresAt: undefined,
-        categoryId: doc._id.toString() as Category.IdType,
+        categoryId: getCategoryId(doc),
         parentCategory: doc.parentCategory ? {
           ...instance.toResponse(doc.parentCategory),
           parentCategory: undefined,

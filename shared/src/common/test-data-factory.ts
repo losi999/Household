@@ -1,8 +1,10 @@
 import { Account, Auth, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { Types } from 'mongoose';
 
+export const generateMongoId = (): Types.ObjectId => new Types.ObjectId();
+
 const generateId = (id?: Types.ObjectId | string): string => {
-  return typeof id === 'string' ? id : id?.toString() ?? new Types.ObjectId().toString();
+  return typeof id === 'string' ? id : id?.toString() ?? generateMongoId().toString();
 };
 
 export const createAccountId = (id?: Types.ObjectId | string): Account.IdType => {
@@ -31,6 +33,7 @@ export const createProductId = (id?: Types.ObjectId | string): Product.IdType =>
 
 export const createAccountDocument = (doc?: Partial<Account.Document>): Account.Document => {
   return {
+    _id: generateMongoId(),
     accountType: 'bankAccount',
     name: 'account name',
     currency: 'Ft',
@@ -42,6 +45,7 @@ export const createAccountDocument = (doc?: Partial<Account.Document>): Account.
 
 export const createProjectDocument = (doc?: Partial<Project.Document>): Project.Document => {
   return {
+    _id: generateMongoId(),
     name: 'project name',
     description: 'project description',
     expiresAt: undefined,
@@ -50,6 +54,7 @@ export const createProjectDocument = (doc?: Partial<Project.Document>): Project.
 };
 export const createCategoryDocument = (doc?: Partial<Category.Document>): Category.Document => {
   return {
+    _id: generateMongoId(),
     name: 'category name',
     expiresAt: undefined,
     parentCategory: undefined,
@@ -61,6 +66,7 @@ export const createCategoryDocument = (doc?: Partial<Category.Document>): Catego
 };
 export const createRecipientDocument = (doc?: Partial<Recipient.Document>): Recipient.Document => {
   return {
+    _id: generateMongoId(),
     name: 'recipient name',
     expiresAt: undefined,
     ...doc,
@@ -69,6 +75,7 @@ export const createRecipientDocument = (doc?: Partial<Recipient.Document>): Reci
 
 export const createProductDocument = (doc?: Partial<Product.Document>): Product.Document => {
   return {
+    _id: generateMongoId(),
     brand: 'product brand',
     measurement: 300,
     unitOfMeasurement: 'g',
@@ -80,6 +87,7 @@ export const createProductDocument = (doc?: Partial<Product.Document>): Product.
 
 export const createPaymentTransactionDocument = (doc?: Partial<Transaction.PaymentDocument>): Transaction.PaymentDocument => {
   return {
+    _id: generateMongoId(),
     transactionType: 'payment',
     amount: 100,
     description: 'transaction description',
@@ -101,6 +109,7 @@ export const createPaymentTransactionDocument = (doc?: Partial<Transaction.Payme
 
 export const createSplitTransactionDocument = (doc?: Partial<Transaction.SplitDocument>, ...splits: Partial<Transaction.SplitDocument['splits'][number]>[]): Transaction.SplitDocument => {
   return {
+    _id: generateMongoId(),
     transactionType: 'split',
     amount: Math.max(splits.length, 1),
     description: 'transaction description',
@@ -136,6 +145,7 @@ export const createSplitTransactionDocument = (doc?: Partial<Transaction.SplitDo
 
 export const createTransferTransactionDocument = (doc?: Partial<Transaction.TransferDocument>): Transaction.TransferDocument => {
   return {
+    _id: generateMongoId(),
     transactionType: 'transfer',
     amount: 100,
     description: 'transaction description',
@@ -235,7 +245,7 @@ export const createSplitRequestIem = (req?: Partial<Transaction.SplitRequestItem
 
 export const createSplitTransactionRequest = (req?: Partial<Transaction.SplitRequest>): Transaction.SplitRequest => {
   return {
-    amount: 1,
+    amount: req?.splits?.length ?? 1,
     description: 'transaction description',
     issuedAt: new Date().toISOString(),
     accountId: createAccountId(),

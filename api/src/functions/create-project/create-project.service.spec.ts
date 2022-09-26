@@ -1,9 +1,10 @@
 import { ICreateProjectService, createProjectServiceFactory } from '@household/api/functions/create-project/create-project.service';
 import { createProjectRequest, createProjectDocument } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { getProjectId } from '@household/shared/common/utils';
 import { IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
 import { IProjectService } from '@household/shared/services/project-service';
-import { Types } from 'mongoose';
+
 describe('Create project service', () => {
   let service: ICreateProjectService;
   let mockProjectService: Mock<IProjectService>;
@@ -17,10 +18,8 @@ describe('Create project service', () => {
   });
 
   const body = createProjectRequest();
-  const projectId = new Types.ObjectId();
-  const convertedProjectDocument = createProjectDocument({
-    _id: projectId,
-  });
+  const convertedProjectDocument = createProjectDocument();
+  const projectId = getProjectId(convertedProjectDocument);
 
   it('should return new id', async () => {
     mockProjectDocumentConverter.functions.create.mockReturnValue(convertedProjectDocument);

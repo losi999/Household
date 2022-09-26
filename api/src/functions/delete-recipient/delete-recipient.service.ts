@@ -1,4 +1,4 @@
-import { httpError } from '@household/shared/common/utils';
+import { httpErrors } from '@household/api/common/error-handlers';
 import { IRecipientService } from '@household/shared/services/recipient-service';
 import { Recipient } from '@household/shared/types/types';
 
@@ -11,9 +11,8 @@ export interface IDeleteRecipientService {
 export const deleteRecipientServiceFactory = (
   recipientService: IRecipientService): IDeleteRecipientService => {
   return async ({ recipientId }) => {
-    await recipientService.deleteRecipient(recipientId).catch((error) => {
-      console.error('Delete recipient', error);
-      throw httpError(500, 'Error while deleting recipient');
-    });
+    await recipientService.deleteRecipient(recipientId).catch(httpErrors.recipient.delete({
+      recipientId,
+    }));
   };
 };

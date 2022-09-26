@@ -1,4 +1,4 @@
-import { addSeconds } from '@household/shared/common/utils';
+import { addSeconds, getRecipientId } from '@household/shared/common/utils';
 import { Restrict } from '@household/shared/types/common';
 import { Recipient } from '@household/shared/types/types';
 
@@ -14,6 +14,7 @@ export const recipientDocumentConverterFactory = (): IRecipientDocumentConverter
     create: (body, expiresIn): Recipient.Document => {
       return {
         ...body,
+        _id: undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
@@ -27,7 +28,7 @@ export const recipientDocumentConverterFactory = (): IRecipientDocumentConverter
     toResponse: (doc): Recipient.Response => {
       return {
         ...doc,
-        recipientId: doc._id.toString() as Recipient.IdType,
+        recipientId: getRecipientId(doc),
         createdAt: undefined,
         updatedAt: undefined,
         _id: undefined,

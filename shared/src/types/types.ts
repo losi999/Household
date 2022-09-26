@@ -2,7 +2,7 @@ import { categoryTypes, unitsOfMeasurement } from '@household/shared/constants';
 import { Brand, Remove } from '@household/shared/types/common';
 import { Types } from 'mongoose';
 
-namespace Internal {
+export namespace Internal {
   export type Id = {
     _id: Types.ObjectId;
   };
@@ -32,7 +32,7 @@ export namespace Project {
     description: string;
   };
 
-  export type Document = Partial<Internal.Id>
+  export type Document = Internal.Id
   & Internal.ExpiresAt
   & Partial<Internal.CreatedAt>
   & Partial<Internal.UpdatedAt>
@@ -59,7 +59,7 @@ export namespace Recipient {
     name: string;
   };
 
-  export type Document = Partial<Internal.Id>
+  export type Document = Internal.Id
   & Internal.ExpiresAt
   & Partial<Internal.CreatedAt>
   & Partial<Internal.UpdatedAt>
@@ -98,7 +98,7 @@ export namespace Account {
     balance: number;
   };
 
-  export type Document = Partial<Internal.Id>
+  export type Document = Internal.Id
   & Internal.ExpiresAt
   & Partial<Internal.CreatedAt>
   & Partial<Internal.UpdatedAt>
@@ -146,7 +146,7 @@ export namespace Category {
     products: T[];
   };
 
-  export type Document = Partial<Internal.Id>
+  export type Document = Internal.Id
   & Internal.ExpiresAt
   & Partial<Internal.CreatedAt>
   & Partial<Internal.UpdatedAt>
@@ -189,7 +189,7 @@ export namespace Product {
     category: Category.Document;
   };
 
-  export type Document = Partial<Internal.Id>
+  export type Document = Internal.Id
   & Internal.ExpiresAt
   & Partial<Internal.CreatedAt>
   & Partial<Internal.UpdatedAt>
@@ -247,7 +247,7 @@ export namespace Transaction {
     invoice: InvoiceItem<D>;
   };
 
-  type TransferAccountId = {
+  export type TransferAccountId = {
     transferAccountId: Account.IdType;
   };
 
@@ -303,7 +303,7 @@ export namespace Transaction {
     splits: SplitRequestItem[];
   };
 
-  export type PaymentDocument = Partial<Internal.Id>
+  export type PaymentDocument = Internal.Id
   & Internal.ExpiresAt
   & Partial<Internal.CreatedAt>
   & Partial<Internal.UpdatedAt>
@@ -321,7 +321,7 @@ export namespace Transaction {
   & Inventory<Product<Product.Document>>
   & Base;
 
-  export type TransferDocument = Partial<Internal.Id>
+  export type TransferDocument = Internal.Id
   & Internal.ExpiresAt
   & Partial<Internal.CreatedAt>
   & Partial<Internal.UpdatedAt>
@@ -339,7 +339,7 @@ export namespace Transaction {
   & Inventory<Product<Product.Document>>
   & Base;
 
-  export type SplitDocument = Partial<Internal.Id>
+  export type SplitDocument = Internal.Id
   & Internal.ExpiresAt
   & Partial<Internal.CreatedAt>
   & Partial<Internal.UpdatedAt>

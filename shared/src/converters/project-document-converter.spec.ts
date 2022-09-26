@@ -1,7 +1,6 @@
-import { createProjectDocument, createProjectId, createProjectRequest, createProjectResponse } from '@household/shared/common/test-data-factory';
-import { addSeconds } from '@household/shared/common/utils';
+import { createProjectDocument, createProjectRequest, createProjectResponse } from '@household/shared/common/test-data-factory';
+import { addSeconds, getProjectId } from '@household/shared/common/utils';
 import { projectDocumentConverterFactory, IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
-import { Types } from 'mongoose';
 import { advanceTo, clear } from 'jest-date-mock';
 
 describe('Project document converter', () => {
@@ -20,7 +19,6 @@ describe('Project document converter', () => {
   const name = 'Nyaralás';
   const description = '2022';
   const expiresIn = 3600;
-  const projectId = new Types.ObjectId();
 
   const body = createProjectRequest({
     description,
@@ -29,7 +27,6 @@ describe('Project document converter', () => {
   const queriedDocument = createProjectDocument({
     name,
     description,
-    _id: projectId,
     createdAt: now,
     updatedAt: now,
   });
@@ -41,6 +38,7 @@ describe('Project document converter', () => {
         description,
         name,
         expiresAt: undefined,
+        _id: undefined,
       }));
     });
 
@@ -50,6 +48,7 @@ describe('Project document converter', () => {
         description,
         name,
         expiresAt: addSeconds(expiresIn, now),
+        _id: undefined,
       }));
     });
 
@@ -63,7 +62,7 @@ describe('Project document converter', () => {
         document,
       }, expiresIn);
       expect(result).toEqual(createProjectDocument({
-        _id: projectId,
+        _id: document._id,
         description,
         name,
         createdAt: now,
@@ -76,7 +75,7 @@ describe('Project document converter', () => {
     it('should return response', () => {
       const result = converter.toResponse(queriedDocument);
       expect(result).toEqual(createProjectResponse({
-        projectId: createProjectId(projectId),
+        projectId: getProjectId(queriedDocument),
         description,
         name,
       }));
@@ -88,7 +87,7 @@ describe('Project document converter', () => {
       const result = converter.toResponseList([queriedDocument]);
       expect(result).toEqual([
         createProjectResponse({
-          projectId: createProjectId(projectId),
+          projectId: getProjectId(queriedDocument),
           description,
           name,
         }),

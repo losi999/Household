@@ -1,7 +1,6 @@
-import { createAccountDocument, createAccountId, createAccountResponse, createCategoryDocument, createCategoryId, createCategoryResponse, createPaymentTransactionDocument, createPaymentTransactionRequest, createPaymentTransactionResponse, createProjectDocument, createProjectId, createProjectResponse, createRecipientDocument, createRecipientResponse, createTransactionId, createSplitTransactionDocument, createSplitTransactionRequest, createSplitTransactionResponse, createTransferTransactionDocument, createTransferTransactionRequest, createTransferTransactionResponse, createProductDocument, createSplitRequestIem } from '@household/shared/common/test-data-factory';
-import { addSeconds } from '@household/shared/common/utils';
+import { createAccountDocument, createAccountResponse, createCategoryDocument, createCategoryResponse, createPaymentTransactionDocument, createPaymentTransactionRequest, createPaymentTransactionResponse, createProjectDocument, createProjectResponse, createRecipientDocument, createRecipientResponse, createSplitTransactionDocument, createSplitTransactionRequest, createSplitTransactionResponse, createTransferTransactionDocument, createTransferTransactionRequest, createTransferTransactionResponse, createProductDocument, createSplitRequestIem } from '@household/shared/common/test-data-factory';
+import { addSeconds, getTransactionId, getProjectId, getCategoryId, toDictionary, getAccountId } from '@household/shared/common/utils';
 import { transactionDocumentConverterFactory, ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
-import { Types } from 'mongoose';
 import { advanceTo, clear } from 'jest-date-mock';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
@@ -34,26 +33,15 @@ describe('Transaction document converter', () => {
     clear();
   });
 
-  const accountId = new Types.ObjectId();
-  const projectId = new Types.ObjectId();
-  const categoryId = new Types.ObjectId();
-  const productId = new Types.ObjectId();
   const amount = 12000;
   const description = 'bevásárlás';
   const expiresIn = 3600;
-  const transactionId = new Types.ObjectId();
 
   const account = createAccountDocument();
-  const project = createProjectDocument({
-    _id: projectId,
-  });
+  const project = createProjectDocument();
   const recipient = createRecipientDocument();
-  const category = createCategoryDocument({
-    _id: categoryId,
-  });
-  const product = createProductDocument({
-    _id: productId,
-  });
+  const category = createCategoryDocument();
+  const product = createProductDocument();
 
   const accountResponse = createAccountResponse();
   const categoryResponse = createCategoryResponse();
@@ -68,7 +56,6 @@ describe('Transaction document converter', () => {
     });
 
     const queriedDocument = createPaymentTransactionDocument({
-      _id: transactionId,
       account,
       project,
       category,
@@ -99,6 +86,7 @@ describe('Transaction document converter', () => {
           description,
           issuedAt: now,
           expiresAt: undefined,
+          _id: undefined,
         }));
       });
 
@@ -120,6 +108,7 @@ describe('Transaction document converter', () => {
           description,
           issuedAt: now,
           expiresAt: addSeconds(expiresIn, now),
+          _id: undefined,
         }));
       });
 
@@ -138,7 +127,7 @@ describe('Transaction document converter', () => {
           product,
         }, expiresIn);
         expect(result).toEqual(createPaymentTransactionDocument({
-          _id: transactionId,
+          _id: document._id,
           account,
           category,
           project,
@@ -161,7 +150,7 @@ describe('Transaction document converter', () => {
 
         const result = converter.toResponse(queriedDocument);
         expect(result).toEqual(createPaymentTransactionResponse({
-          transactionId: createTransactionId(transactionId.toString()),
+          transactionId: getTransactionId(queriedDocument),
           description,
           amount,
           issuedAt: now.toISOString(),
@@ -188,7 +177,7 @@ describe('Transaction document converter', () => {
         const result = converter.toResponseList([queriedDocument]);
         expect(result).toEqual([
           createPaymentTransactionResponse({
-            transactionId: createTransactionId(transactionId.toString()),
+            transactionId: getTransactionId(queriedDocument),
             description,
             amount,
             issuedAt: now.toISOString(),
@@ -214,14 +203,13 @@ describe('Transaction document converter', () => {
       splits: [
         createSplitRequestIem({
           description,
-          categoryId: createCategoryId(categoryId.toString()),
-          projectId: createProjectId(projectId),
+          categoryId: getCategoryId(category),
+          projectId: getProjectId(project),
         }),
       ],
     });
 
     const queriedDocument = createSplitTransactionDocument({
-      _id: transactionId,
       account,
       recipient,
       description,
@@ -239,15 +227,9 @@ describe('Transaction document converter', () => {
         const result = converter.createSplitDocument({
           body,
           account,
-          categories: {
-            [categoryId.toString()]: category,
-          },
-          projects: {
-            [projectId.toString()]: project,
-          },
-          products: {
-            [productId.toString()]: product,
-          },
+          categories: toDictionary([category], '_id'),
+          projects: toDictionary([project], '_id'),
+          products: toDictionary([product], '_id'),
           recipient,
         }, undefined);
         expect(result).toEqual(createSplitTransactionDocument({
@@ -256,6 +238,7 @@ describe('Transaction document converter', () => {
           description,
           issuedAt: now,
           expiresAt: undefined,
+          _id: undefined,
         }, {
           description,
           project,
@@ -267,15 +250,9 @@ describe('Transaction document converter', () => {
         const result = converter.createSplitDocument({
           body,
           account,
-          categories: {
-            [categoryId.toString()]: category,
-          },
-          projects: {
-            [projectId.toString()]: project,
-          },
-          products: {
-            [productId.toString()]: product,
-          },
+          categories: toDictionary([category], '_id'),
+          projects: toDictionary([project], '_id'),
+          products: toDictionary([product], '_id'),
           recipient,
         }, expiresIn);
         expect(result).toEqual(createSplitTransactionDocument({
@@ -284,6 +261,7 @@ describe('Transaction document converter', () => {
           description,
           issuedAt: now,
           expiresAt: addSeconds(expiresIn, now),
+          _id: undefined,
         }, {
           description,
           project,
@@ -299,25 +277,19 @@ describe('Transaction document converter', () => {
           body,
           document,
           account,
-          categories: {
-            [categoryId.toString()]: category,
-          },
-          projects: {
-            [projectId.toString()]: project,
-          },
-          products: {
-            [productId.toString()]: product,
-          },
+          categories: toDictionary([category], '_id'),
+          projects: toDictionary([project], '_id'),
+          products: toDictionary([product], '_id'),
           recipient,
         }, expiresIn);
         expect(result).toEqual(createSplitTransactionDocument({
-          _id: transactionId,
           account,
           recipient,
           description,
           issuedAt: now,
           createdAt: now,
           expiresAt: addSeconds(expiresIn, now),
+          _id: document._id,
         }, {
           description,
           project,
@@ -335,7 +307,7 @@ describe('Transaction document converter', () => {
 
         const result = converter.toResponse(queriedDocument);
         expect(result).toEqual(createSplitTransactionResponse({
-          transactionId: createTransactionId(transactionId.toString()),
+          transactionId: getTransactionId(queriedDocument),
           description,
           issuedAt: now.toISOString(),
           account: accountResponse,
@@ -363,7 +335,7 @@ describe('Transaction document converter', () => {
         const result = converter.toResponseList([queriedDocument]);
         expect(result).toEqual([
           createSplitTransactionResponse({
-            transactionId: createTransactionId(transactionId.toString()),
+            transactionId: getTransactionId(queriedDocument),
             description,
             issuedAt: now.toISOString(),
             account: accountResponse,
@@ -384,10 +356,8 @@ describe('Transaction document converter', () => {
   });
 
   describe('transfer', () => {
-    const transferAccountId = new Types.ObjectId();
     const transferAccountName = 'transfer account';
     const transferAccount = createAccountDocument({
-      _id: transferAccountId,
       name: transferAccountName,
     });
     const transferAccountResponse = createAccountResponse({
@@ -400,7 +370,6 @@ describe('Transaction document converter', () => {
     });
 
     const queriedDocument = createTransferTransactionDocument({
-      _id: transactionId,
       account,
       transferAccount,
       amount,
@@ -424,6 +393,7 @@ describe('Transaction document converter', () => {
           description,
           issuedAt: now,
           expiresAt: undefined,
+          _id: undefined,
         }));
       });
 
@@ -440,6 +410,7 @@ describe('Transaction document converter', () => {
           description,
           issuedAt: now,
           expiresAt: addSeconds(expiresIn, now),
+          _id: undefined,
         }));
       });
 
@@ -455,7 +426,6 @@ describe('Transaction document converter', () => {
           transferAccount,
         }, expiresIn);
         expect(result).toEqual(createTransferTransactionDocument({
-          _id: transactionId,
           account,
           transferAccount,
           amount,
@@ -463,6 +433,7 @@ describe('Transaction document converter', () => {
           issuedAt: now,
           createdAt: now,
           expiresAt: addSeconds(expiresIn, now),
+          _id: document._id,
         }));
       });
     });
@@ -472,9 +443,9 @@ describe('Transaction document converter', () => {
         mockAccountDocumentConverter.functions.toResponse.mockReturnValueOnce(accountResponse);
         mockAccountDocumentConverter.functions.toResponse.mockReturnValueOnce(transferAccountResponse);
 
-        const result = converter.toResponse(queriedDocument, createAccountId(accountId.toString()));
+        const result = converter.toResponse(queriedDocument, getAccountId(account));
         expect(result).toEqual(createTransferTransactionResponse({
-          transactionId: createTransactionId(transactionId.toString()),
+          transactionId: getTransactionId(queriedDocument),
           description,
           amount: amount,
           issuedAt: now.toISOString(),
@@ -494,9 +465,9 @@ describe('Transaction document converter', () => {
         mockAccountDocumentConverter.functions.toResponse.mockReturnValueOnce(transferAccountResponse);
         mockAccountDocumentConverter.functions.toResponse.mockReturnValueOnce(accountResponse);
 
-        const result = converter.toResponse(queriedDocument, createAccountId(transferAccountId.toString()));
+        const result = converter.toResponse(queriedDocument, getAccountId(transferAccount));
         expect(result).toEqual(createTransferTransactionResponse({
-          transactionId: createTransactionId(transactionId.toString()),
+          transactionId: getTransactionId(queriedDocument),
           description,
           amount: -1 * amount,
           issuedAt: now.toISOString(),
@@ -518,10 +489,10 @@ describe('Transaction document converter', () => {
         mockAccountDocumentConverter.functions.toResponse.mockReturnValueOnce(accountResponse);
         mockAccountDocumentConverter.functions.toResponse.mockReturnValueOnce(transferAccountResponse);
 
-        const result = converter.toResponseList([queriedDocument], createAccountId(accountId.toString()));
+        const result = converter.toResponseList([queriedDocument], getAccountId(account));
         expect(result).toEqual([
           createTransferTransactionResponse({
-            transactionId: createTransactionId(transactionId.toString()),
+            transactionId: getTransactionId(queriedDocument),
             description,
             amount: amount,
             issuedAt: now.toISOString(),

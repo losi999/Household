@@ -1,4 +1,5 @@
 import { httpErrors } from '@household/api/common/error-handlers';
+import { getCategoryId, toDictionary } from '@household/shared/common/utils';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICategoryService } from '@household/shared/services/category-service';
@@ -48,10 +49,10 @@ export const updateToSplitTransactionServiceFactory = (
 
     const [
       account,
-      categories,
-      projects,
+      categoryList,
+      projectList,
       recipient,
-      products,
+      productList,
     ] = await Promise.all([
       accountService.getAccountById(accountId),
       categoryService.listCategoriesByIds(categoryIds),
@@ -70,17 +71,21 @@ export const updateToSplitTransactionServiceFactory = (
       accountId,
     }, 400);
 
-    httpErrors.category.multipleNotFound(categoryIds.length !== Object.keys(categories).length, {
+    httpErrors.category.multipleNotFound(categoryIds.length !== categoryList.length, {
       categoryIds,
     });
 
-    httpErrors.project.multipleNotFound(projectIds.length !== Object.keys(projects).length, {
+    httpErrors.project.multipleNotFound(projectIds.length !== projectList.length, {
       projectIds,
     });
 
     httpErrors.recipient.notFound(!recipient && !!recipientId, {
       recipientId,
     }, 400);
+
+    const categories = toDictionary(categoryList, '_id');
+    const projects = toDictionary(projectList, '_id');
+    const products = toDictionary(productList, '_id');
 
     body.splits.forEach((s) => {
       const category = categories[s.categoryId];
@@ -92,7 +97,7 @@ export const updateToSplitTransactionServiceFactory = (
           productId,
         }, 400);
 
-        httpErrors.product.categoryRelation(product.category._id.toString() !== category._id.toString(), {
+        httpErrors.product.categoryRelation(getCategoryId(product.category) !== s.categoryId, {
           categoryId: s.categoryId,
           productId,
         });

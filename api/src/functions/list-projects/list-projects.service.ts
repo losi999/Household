@@ -1,4 +1,4 @@
-import { httpError } from '@household/shared/common/utils';
+import { httpErrors } from '@household/api/common/error-handlers';
 import { IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
 import { IProjectService } from '@household/shared/services/project-service';
 import { Project } from '@household/shared/types/types';
@@ -12,10 +12,7 @@ export const listProjectsServiceFactory = (
   projectDocumentConverter: IProjectDocumentConverter): IListProjectsService => {
   return async () => {
 
-    const documents = await projectService.listProjects().catch((error) => {
-      console.error('List projects', error);
-      throw httpError(500, 'Error while listing projects');
-    });
+    const documents = await projectService.listProjects().catch(httpErrors.project.list());
 
     return projectDocumentConverter.toResponseList(documents);
   };

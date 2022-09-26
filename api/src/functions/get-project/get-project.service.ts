@@ -1,4 +1,4 @@
-import { httpError } from '@household/shared/common/utils';
+import { httpErrors } from '@household/api/common/error-handlers';
 import { IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
 import { IProjectService } from '@household/shared/services/project-service';
 import { Project } from '@household/shared/types/types';
@@ -14,14 +14,13 @@ export const getProjectServiceFactory = (
   projectDocumentConverter: IProjectDocumentConverter): IGetProjectService => {
   return async ({ projectId }) => {
 
-    const document = await projectService.getProjectById(projectId).catch((error) => {
-      console.error('Get project', error);
-      throw httpError(500, 'Error while getting project');
-    });
+    const document = await projectService.getProjectById(projectId).catch(httpErrors.project.getById({
+      projectId,
+    }));
 
-    if (!document) {
-      throw httpError(404, 'No project found');
-    }
+    httpErrors.project.notFound(!document, {
+      projectId,
+    });
 
     return projectDocumentConverter.toResponse(document);
   };

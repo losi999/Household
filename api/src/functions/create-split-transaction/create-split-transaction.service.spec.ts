@@ -1,6 +1,7 @@
 import { ICreateSplitTransactionService, createSplitTransactionServiceFactory } from '@household/api/functions/create-split-transaction/create-split-transaction.service';
-import { createAccountDocument, createCategoryDocument, createCategoryId, createInventoryRequest, createProductDocument, createProductId, createProjectDocument, createProjectId, createRecipientDocument, createSplitRequestIem, createSplitTransactionDocument, createSplitTransactionRequest } from '@household/shared/common/test-data-factory';
+import { createAccountDocument, createCategoryDocument, createInventoryRequest, createProductDocument, createProjectDocument, createRecipientDocument, createSplitRequestIem, createSplitTransactionDocument, createSplitTransactionRequest } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { getCategoryId, getProductId, getProjectId, getTransactionId, toDictionary } from '@household/shared/common/utils';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICategoryService } from '@household/shared/services/category-service';
@@ -8,9 +9,7 @@ import { IProductService } from '@household/shared/services/product-service';
 import { IProjectService } from '@household/shared/services/project-service';
 import { IRecipientService } from '@household/shared/services/recipient-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
-import { Dictionary } from '@household/shared/types/common';
-import { Category, Product, Project, Transaction } from '@household/shared/types/types';
-import { Types } from 'mongoose';
+import { Transaction } from '@household/shared/types/types';
 
 describe('Create split transaction service', () => {
   let service: ICreateSplitTransactionService;
@@ -34,26 +33,17 @@ describe('Create split transaction service', () => {
     service = createSplitTransactionServiceFactory(mockAccountService.service, mockProjectService.service, mockCategoryService.service, mockRecipientService.service, mockProductService.service, mockTransactionService.service, mockTransactionDocumentConverter.service);
   });
 
-  const categoryId = createCategoryId();
-  const projectId = createProjectId();
-  const productId = createProductId();
+  const category = createCategoryDocument({
+    categoryType: 'inventory',
+  });
+  const project = createProjectDocument();
+  const product = createProductDocument({
+    category,
+  });
 
-  const categoryDictionary: Dictionary<Category.Document> = {
-    [categoryId]: createCategoryDocument({
-      categoryType: 'inventory',
-      _id: new Types.ObjectId(categoryId),
-    }),
-  };
-
-  const projectDictionary: Dictionary<Project.Document> = {
-    [projectId]: createProjectDocument(),
-  };
-
-  const productDictionary: Dictionary<Product.Document> = {
-    [productId]: createProductDocument({
-      category: categoryDictionary[categoryId],
-    }),
-  };
+  const categoryId = getCategoryId(category);
+  const projectId = getProjectId(project);
+  const productId = getProductId(product);
 
   const body = createSplitTransactionRequest({
     splits: [
@@ -68,18 +58,16 @@ describe('Create split transaction service', () => {
   });
   const queriedAccount = createAccountDocument();
   const queriedRecipient = createRecipientDocument();
-  const transactionId = new Types.ObjectId();
-  const createdDocument = createSplitTransactionDocument({
-    _id: transactionId,
-  });
+  const createdDocument = createSplitTransactionDocument();
+  const transactionId = getTransactionId(createdDocument);
 
   describe('should return new id', () => {
     it('if every body property is filled', async () => {
       mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue(categoryDictionary);
-      mockProjectService.functions.listProjectsByIds.mockResolvedValue(projectDictionary);
+      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([category]);
+      mockProjectService.functions.listProjectsByIds.mockResolvedValue([project]);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
-      mockProductService.functions.listProductsByIds.mockResolvedValue(productDictionary);
+      mockProductService.functions.listProductsByIds.mockResolvedValue([product]);
       mockTransactionDocumentConverter.functions.createSplitDocument.mockReturnValue(createdDocument);
       mockTransactionService.functions.saveTransaction.mockResolvedValue(createdDocument);
 
@@ -87,7 +75,7 @@ describe('Create split transaction service', () => {
         body,
         expiresIn: undefined,
       });
-      expect(result).toEqual(transactionId.toString());
+      expect(result).toEqual(transactionId);
       validateFunctionCall(mockAccountService.functions.getAccountById, body.accountId);
       validateFunctionCall(mockCategoryService.functions.listCategoriesByIds, [categoryId]);
       validateFunctionCall(mockProjectService.functions.listProjectsByIds, [projectId]);
@@ -95,11 +83,11 @@ describe('Create split transaction service', () => {
       validateFunctionCall(mockProductService.functions.listProductsByIds, [productId]);
       validateFunctionCall(mockTransactionDocumentConverter.functions.createSplitDocument, {
         body,
-        categories: categoryDictionary,
+        categories: toDictionary([category], '_id'),
         account: queriedAccount,
-        projects: projectDictionary,
+        projects: toDictionary([project], '_id'),
         recipient: queriedRecipient,
-        products: productDictionary,
+        products: toDictionary([product], '_id'),
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.saveTransaction, createdDocument);
       expect.assertions(8);
@@ -118,10 +106,10 @@ describe('Create split transaction service', () => {
         ],
       });
       mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue({});
-      mockProjectService.functions.listProjectsByIds.mockResolvedValue(projectDictionary);
+      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([]);
+      mockProjectService.functions.listProjectsByIds.mockResolvedValue([project]);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
-      mockProductService.functions.listProductsByIds.mockResolvedValue(productDictionary);
+      mockProductService.functions.listProductsByIds.mockResolvedValue([product]);
       mockTransactionDocumentConverter.functions.createSplitDocument.mockReturnValue(createdDocument);
       mockTransactionService.functions.saveTransaction.mockResolvedValue(createdDocument);
 
@@ -129,7 +117,7 @@ describe('Create split transaction service', () => {
         body: modifiedBody,
         expiresIn: undefined,
       });
-      expect(result).toEqual(transactionId.toString());
+      expect(result).toEqual(transactionId);
       validateFunctionCall(mockAccountService.functions.getAccountById, modifiedBody.accountId);
       validateFunctionCall(mockCategoryService.functions.listCategoriesByIds, []);
       validateFunctionCall(mockProjectService.functions.listProjectsByIds, [projectId]);
@@ -139,9 +127,9 @@ describe('Create split transaction service', () => {
         body: modifiedBody,
         categories: {},
         account: queriedAccount,
-        projects: projectDictionary,
+        projects: toDictionary([project], '_id'),
         recipient: queriedRecipient,
-        products: productDictionary,
+        products: toDictionary([product], '_id'),
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.saveTransaction, createdDocument);
       expect.assertions(8);
@@ -160,10 +148,10 @@ describe('Create split transaction service', () => {
         ],
       });
       mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue(categoryDictionary);
-      mockProjectService.functions.listProjectsByIds.mockResolvedValue({});
+      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([category]);
+      mockProjectService.functions.listProjectsByIds.mockResolvedValue([]);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
-      mockProductService.functions.listProductsByIds.mockResolvedValue(productDictionary);
+      mockProductService.functions.listProductsByIds.mockResolvedValue([product]);
       mockTransactionDocumentConverter.functions.createSplitDocument.mockReturnValue(createdDocument);
       mockTransactionService.functions.saveTransaction.mockResolvedValue(createdDocument);
 
@@ -171,7 +159,7 @@ describe('Create split transaction service', () => {
         body: modifiedBody,
         expiresIn: undefined,
       });
-      expect(result).toEqual(transactionId.toString());
+      expect(result).toEqual(transactionId);
       validateFunctionCall(mockAccountService.functions.getAccountById, modifiedBody.accountId);
       validateFunctionCall(mockCategoryService.functions.listCategoriesByIds, [categoryId]);
       validateFunctionCall(mockProjectService.functions.listProjectsByIds, []);
@@ -179,11 +167,11 @@ describe('Create split transaction service', () => {
       validateFunctionCall(mockProductService.functions.listProductsByIds, [productId]);
       validateFunctionCall(mockTransactionDocumentConverter.functions.createSplitDocument, {
         body: modifiedBody,
-        categories: categoryDictionary,
+        categories: toDictionary([category], '_id'),
         account: queriedAccount,
         projects: {},
         recipient: queriedRecipient,
-        products: productDictionary,
+        products: toDictionary([product], '_id'),
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.saveTransaction, createdDocument);
       expect.assertions(8);
@@ -195,10 +183,10 @@ describe('Create split transaction service', () => {
         recipientId: undefined,
       };
       mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue(categoryDictionary);
-      mockProjectService.functions.listProjectsByIds.mockResolvedValue(projectDictionary);
+      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([category]);
+      mockProjectService.functions.listProjectsByIds.mockResolvedValue([project]);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(undefined);
-      mockProductService.functions.listProductsByIds.mockResolvedValue(productDictionary);
+      mockProductService.functions.listProductsByIds.mockResolvedValue([product]);
       mockTransactionDocumentConverter.functions.createSplitDocument.mockReturnValue(createdDocument);
       mockTransactionService.functions.saveTransaction.mockResolvedValue(createdDocument);
 
@@ -206,7 +194,7 @@ describe('Create split transaction service', () => {
         body: modifiedBody,
         expiresIn: undefined,
       });
-      expect(result).toEqual(transactionId.toString());
+      expect(result).toEqual(transactionId);
       validateFunctionCall(mockAccountService.functions.getAccountById, modifiedBody.accountId);
       validateFunctionCall(mockCategoryService.functions.listCategoriesByIds, [categoryId]);
       validateFunctionCall(mockProjectService.functions.listProjectsByIds, [projectId]);
@@ -214,45 +202,53 @@ describe('Create split transaction service', () => {
       validateFunctionCall(mockProductService.functions.listProductsByIds, [productId]);
       validateFunctionCall(mockTransactionDocumentConverter.functions.createSplitDocument, {
         body: modifiedBody,
-        categories: categoryDictionary,
+        categories: toDictionary([category], '_id'),
         account: queriedAccount,
-        projects: projectDictionary,
+        projects: toDictionary([project], '_id'),
         recipient: undefined,
-        products: productDictionary,
+        products: toDictionary([product], '_id'),
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.saveTransaction, createdDocument);
       expect.assertions(8);
     });
 
     it('if no product found but category is not "inventory"', async () => {
-      const modifiedCategoryDictionary: Dictionary<Category.Document> = {
-        [categoryId]: createCategoryDocument({
-          categoryType: 'regular',
-        }),
-      };
+      const regularCategory = createCategoryDocument({
+        categoryType: 'regular',
+      });
+      const regularCategoryId = getCategoryId(regularCategory);
+      const modifiedBody = createSplitTransactionRequest({
+        splits: [
+          createSplitRequestIem({
+            categoryId: regularCategoryId,
+            projectId,
+            inventory: undefined,
+          }),
+        ],
+      });
       mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue(modifiedCategoryDictionary);
-      mockProjectService.functions.listProjectsByIds.mockResolvedValue(projectDictionary);
+      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([regularCategory]);
+      mockProjectService.functions.listProjectsByIds.mockResolvedValue([project]);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
-      mockProductService.functions.listProductsByIds.mockResolvedValue({});
+      mockProductService.functions.listProductsByIds.mockResolvedValue([]);
       mockTransactionDocumentConverter.functions.createSplitDocument.mockReturnValue(createdDocument);
       mockTransactionService.functions.saveTransaction.mockResolvedValue(createdDocument);
 
       const result = await service({
-        body,
+        body: modifiedBody,
         expiresIn: undefined,
       });
-      expect(result).toEqual(transactionId.toString());
-      validateFunctionCall(mockAccountService.functions.getAccountById, body.accountId);
-      validateFunctionCall(mockCategoryService.functions.listCategoriesByIds, [categoryId]);
+      expect(result).toEqual(transactionId);
+      validateFunctionCall(mockAccountService.functions.getAccountById, modifiedBody.accountId);
+      validateFunctionCall(mockCategoryService.functions.listCategoriesByIds, [regularCategoryId]);
       validateFunctionCall(mockProjectService.functions.listProjectsByIds, [projectId]);
-      validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
-      validateFunctionCall(mockProductService.functions.listProductsByIds, [productId]);
+      validateFunctionCall(mockRecipientService.functions.getRecipientById, modifiedBody.recipientId);
+      validateFunctionCall(mockProductService.functions.listProductsByIds, []);
       validateFunctionCall(mockTransactionDocumentConverter.functions.createSplitDocument, {
-        body,
-        categories: modifiedCategoryDictionary,
+        body: modifiedBody,
+        categories: toDictionary([regularCategory], '_id'),
         account: queriedAccount,
-        projects: projectDictionary,
+        projects: toDictionary([project], '_id'),
         recipient: queriedRecipient,
         products: {},
       }, undefined);
@@ -272,10 +268,10 @@ describe('Create split transaction service', () => {
       });
 
       mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue(categoryDictionary);
-      mockProjectService.functions.listProjectsByIds.mockResolvedValue(projectDictionary);
+      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([category]);
+      mockProjectService.functions.listProjectsByIds.mockResolvedValue([project]);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
-      mockProductService.functions.listProductsByIds.mockResolvedValue({});
+      mockProductService.functions.listProductsByIds.mockResolvedValue([]);
       mockTransactionDocumentConverter.functions.createSplitDocument.mockReturnValue(createdDocument);
       mockTransactionService.functions.saveTransaction.mockResolvedValue(createdDocument);
 
@@ -283,7 +279,7 @@ describe('Create split transaction service', () => {
         body: modifiedBody,
         expiresIn: undefined,
       });
-      expect(result).toEqual(transactionId.toString());
+      expect(result).toEqual(transactionId);
       validateFunctionCall(mockAccountService.functions.getAccountById, modifiedBody.accountId);
       validateFunctionCall(mockCategoryService.functions.listCategoriesByIds, [categoryId]);
       validateFunctionCall(mockProjectService.functions.listProjectsByIds, [projectId]);
@@ -291,11 +287,115 @@ describe('Create split transaction service', () => {
       validateFunctionCall(mockProductService.functions.listProductsByIds, []);
       validateFunctionCall(mockTransactionDocumentConverter.functions.createSplitDocument, {
         body: modifiedBody,
-        categories: categoryDictionary,
+        categories: toDictionary([category], '_id'),
         account: queriedAccount,
-        projects: projectDictionary,
+        projects: toDictionary([project], '_id'),
         recipient: queriedRecipient,
         products: {},
+      }, undefined);
+      validateFunctionCall(mockTransactionService.functions.saveTransaction, createdDocument);
+      expect.assertions(8);
+    });
+
+    it('with related ids filtered into a distinct array', async () => {
+      const category2 = createCategoryDocument();
+      const project2 = createProjectDocument();
+      const product2 = createProductDocument({
+        category: category2,
+      });
+
+      const categoryId2 = getCategoryId(category2);
+      const projectId2 = getProjectId(project2);
+      const productId2 = getProductId(product2);
+
+      const modifiedBody = createSplitTransactionRequest({
+        splits: [
+          createSplitRequestIem({
+            categoryId,
+            projectId,
+            inventory: createInventoryRequest({
+              productId,
+            }),
+          }),
+          createSplitRequestIem({
+            categoryId: categoryId2,
+            projectId: undefined,
+            inventory: createInventoryRequest({
+              productId: productId2,
+            }),
+          }),
+          createSplitRequestIem({
+            categoryId,
+            projectId: projectId2,
+            inventory: undefined,
+          }),
+          createSplitRequestIem({
+            categoryId: undefined,
+            projectId,
+            inventory: createInventoryRequest({
+              productId: productId2,
+            }),
+          }),
+          createSplitRequestIem({
+            categoryId: categoryId2,
+            projectId,
+            inventory: undefined,
+          }),
+        ],
+      });
+
+      mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
+      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([
+        category,
+        category2,
+      ]);
+      mockProjectService.functions.listProjectsByIds.mockResolvedValue([
+        project,
+        project2,
+      ]);
+      mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
+      mockProductService.functions.listProductsByIds.mockResolvedValue([
+        product,
+        product2,
+      ]);
+      mockTransactionDocumentConverter.functions.createSplitDocument.mockReturnValue(createdDocument);
+      mockTransactionService.functions.saveTransaction.mockResolvedValue(createdDocument);
+
+      const result = await service({
+        body: modifiedBody,
+        expiresIn: undefined,
+      });
+      expect(result).toEqual(transactionId);
+      validateFunctionCall(mockAccountService.functions.getAccountById, modifiedBody.accountId);
+      validateFunctionCall(mockCategoryService.functions.listCategoriesByIds, [
+        categoryId,
+        categoryId2,
+      ]);
+      validateFunctionCall(mockProjectService.functions.listProjectsByIds, [
+        projectId,
+        projectId2,
+      ]);
+      validateFunctionCall(mockRecipientService.functions.getRecipientById, modifiedBody.recipientId);
+      validateFunctionCall(mockProductService.functions.listProductsByIds, [
+        productId,
+        productId2,
+      ]);
+      validateFunctionCall(mockTransactionDocumentConverter.functions.createSplitDocument, {
+        body: modifiedBody,
+        categories: toDictionary([
+          category,
+          category2,
+        ], '_id'),
+        account: queriedAccount,
+        projects: toDictionary([
+          project,
+          project2,
+        ], '_id'),
+        recipient: queriedRecipient,
+        products: toDictionary([
+          product,
+          product2,
+        ], '_id'),
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.saveTransaction, createdDocument);
       expect.assertions(8);
@@ -324,10 +424,10 @@ describe('Create split transaction service', () => {
 
     it('if unable to query account', async () => {
       mockAccountService.functions.getAccountById.mockRejectedValue('this is a mongo error');
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue(categoryDictionary);
-      mockProjectService.functions.listProjectsByIds.mockResolvedValue(projectDictionary);
+      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([category]);
+      mockProjectService.functions.listProjectsByIds.mockResolvedValue([project]);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
-      mockProductService.functions.listProductsByIds.mockResolvedValue(productDictionary);
+      mockProductService.functions.listProductsByIds.mockResolvedValue([product]);
 
       await service({
         body,
@@ -346,9 +446,9 @@ describe('Create split transaction service', () => {
     it('if unable to query categories', async () => {
       mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
       mockCategoryService.functions.listCategoriesByIds.mockRejectedValue('this is a mongo error');
-      mockProjectService.functions.listProjectsByIds.mockResolvedValue(projectDictionary);
+      mockProjectService.functions.listProjectsByIds.mockResolvedValue([project]);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
-      mockProductService.functions.listProductsByIds.mockResolvedValue(productDictionary);
+      mockProductService.functions.listProductsByIds.mockResolvedValue([product]);
 
       await service({
         body,
@@ -366,10 +466,10 @@ describe('Create split transaction service', () => {
 
     it('if unable to query projects', async () => {
       mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue(categoryDictionary);
+      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([category]);
       mockProjectService.functions.listProjectsByIds.mockRejectedValue('this is a mongo error');
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
-      mockProductService.functions.listProductsByIds.mockResolvedValue(productDictionary);
+      mockProductService.functions.listProductsByIds.mockResolvedValue([product]);
 
       await service({
         body,
@@ -387,10 +487,10 @@ describe('Create split transaction service', () => {
 
     it('if unable to query recipients', async () => {
       mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue(categoryDictionary);
-      mockProjectService.functions.listProjectsByIds.mockResolvedValue(projectDictionary);
+      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([category]);
+      mockProjectService.functions.listProjectsByIds.mockResolvedValue([project]);
       mockRecipientService.functions.getRecipientById.mockRejectedValue('this is a mongo error');
-      mockProductService.functions.listProductsByIds.mockResolvedValue(productDictionary);
+      mockProductService.functions.listProductsByIds.mockResolvedValue([product]);
 
       await service({
         body,
@@ -408,8 +508,8 @@ describe('Create split transaction service', () => {
 
     it('if unable to query products', async () => {
       mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue(categoryDictionary);
-      mockProjectService.functions.listProjectsByIds.mockResolvedValue(projectDictionary);
+      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([category]);
+      mockProjectService.functions.listProjectsByIds.mockResolvedValue([project]);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
       mockProductService.functions.listProductsByIds.mockRejectedValue('this is a mongo error');
 
@@ -429,10 +529,10 @@ describe('Create split transaction service', () => {
 
     it('if no account found', async () => {
       mockAccountService.functions.getAccountById.mockResolvedValue(undefined);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue(categoryDictionary);
-      mockProjectService.functions.listProjectsByIds.mockResolvedValue(projectDictionary);
+      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([category]);
+      mockProjectService.functions.listProjectsByIds.mockResolvedValue([project]);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
-      mockProductService.functions.listProductsByIds.mockResolvedValue(productDictionary);
+      mockProductService.functions.listProductsByIds.mockResolvedValue([product]);
 
       await service({
         body,
@@ -450,10 +550,10 @@ describe('Create split transaction service', () => {
 
     it('if no categories found', async () => {
       mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue({});
-      mockProjectService.functions.listProjectsByIds.mockResolvedValue(projectDictionary);
+      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([]);
+      mockProjectService.functions.listProjectsByIds.mockResolvedValue([project]);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
-      mockProductService.functions.listProductsByIds.mockResolvedValue(productDictionary);
+      mockProductService.functions.listProductsByIds.mockResolvedValue([product]);
 
       await service({
         body,
@@ -471,10 +571,10 @@ describe('Create split transaction service', () => {
 
     it('if no projects found', async () => {
       mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue(categoryDictionary);
-      mockProjectService.functions.listProjectsByIds.mockResolvedValue({});
+      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([category]);
+      mockProjectService.functions.listProjectsByIds.mockResolvedValue([]);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
-      mockProductService.functions.listProductsByIds.mockResolvedValue(productDictionary);
+      mockProductService.functions.listProductsByIds.mockResolvedValue([product]);
 
       await service({
         body,
@@ -492,10 +592,10 @@ describe('Create split transaction service', () => {
 
     it('if no recipient found', async () => {
       mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue(categoryDictionary);
-      mockProjectService.functions.listProjectsByIds.mockResolvedValue(projectDictionary);
+      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([category]);
+      mockProjectService.functions.listProjectsByIds.mockResolvedValue([project]);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(undefined);
-      mockProductService.functions.listProductsByIds.mockResolvedValue(productDictionary);
+      mockProductService.functions.listProductsByIds.mockResolvedValue([product]);
 
       await service({
         body,
@@ -513,10 +613,10 @@ describe('Create split transaction service', () => {
 
     it('if category is "inventory" and no product found', async () => {
       mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue(categoryDictionary);
-      mockProjectService.functions.listProjectsByIds.mockResolvedValue(projectDictionary);
+      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([category]);
+      mockProjectService.functions.listProjectsByIds.mockResolvedValue([project]);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
-      mockProductService.functions.listProductsByIds.mockResolvedValue({});
+      mockProductService.functions.listProductsByIds.mockResolvedValue([]);
 
       await service({
         body,
@@ -533,28 +633,37 @@ describe('Create split transaction service', () => {
     });
 
     it('if product belongs to different category', async () => {
-      const modifiedProductDictionary: Dictionary<Product.Document> = {
-        [productId]: createProductDocument({
-          category: createCategoryDocument({
-            _id: new Types.ObjectId(),
+      const otherProduct = createProductDocument({
+        category: createCategoryDocument(),
+      });
+      const otherProductId = getProductId(otherProduct);
+
+      const modifiedBody = createSplitTransactionRequest({
+        splits: [
+          createSplitRequestIem({
+            categoryId,
+            projectId,
+            inventory: createInventoryRequest({
+              productId: otherProductId,
+            }),
           }),
-        }),
-      };
+        ],
+      });
       mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue(categoryDictionary);
-      mockProjectService.functions.listProjectsByIds.mockResolvedValue(projectDictionary);
+      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([category]);
+      mockProjectService.functions.listProjectsByIds.mockResolvedValue([project]);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
-      mockProductService.functions.listProductsByIds.mockResolvedValue(modifiedProductDictionary);
+      mockProductService.functions.listProductsByIds.mockResolvedValue([otherProduct]);
 
       await service({
-        body,
+        body: modifiedBody,
         expiresIn: undefined,
       }).catch(validateError('Product belongs to different category', 400));
-      validateFunctionCall(mockAccountService.functions.getAccountById, body.accountId);
+      validateFunctionCall(mockAccountService.functions.getAccountById, modifiedBody.accountId);
       validateFunctionCall(mockCategoryService.functions.listCategoriesByIds, [categoryId]);
       validateFunctionCall(mockProjectService.functions.listProjectsByIds, [projectId]);
-      validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
-      validateFunctionCall(mockProductService.functions.listProductsByIds, [productId]);
+      validateFunctionCall(mockRecipientService.functions.getRecipientById, modifiedBody.recipientId);
+      validateFunctionCall(mockProductService.functions.listProductsByIds, [otherProductId]);
       validateFunctionCall(mockTransactionDocumentConverter.functions.createSplitDocument);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
       expect.assertions(9);
@@ -562,10 +671,10 @@ describe('Create split transaction service', () => {
 
     it('if unable to save transaction', async () => {
       mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue(categoryDictionary);
-      mockProjectService.functions.listProjectsByIds.mockResolvedValue(projectDictionary);
+      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([category]);
+      mockProjectService.functions.listProjectsByIds.mockResolvedValue([project]);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
-      mockProductService.functions.listProductsByIds.mockResolvedValue(productDictionary);
+      mockProductService.functions.listProductsByIds.mockResolvedValue([product]);
       mockTransactionDocumentConverter.functions.createSplitDocument.mockReturnValue(createdDocument);
       mockTransactionService.functions.saveTransaction.mockRejectedValue('this is a mongo error');
 
@@ -580,11 +689,11 @@ describe('Create split transaction service', () => {
       validateFunctionCall(mockProductService.functions.listProductsByIds, [productId]);
       validateFunctionCall(mockTransactionDocumentConverter.functions.createSplitDocument, {
         body,
-        categories: categoryDictionary,
+        categories: toDictionary([category], '_id'),
         account: queriedAccount,
-        projects: projectDictionary,
+        projects: toDictionary([project], '_id'),
         recipient: queriedRecipient,
-        products: productDictionary,
+        products: toDictionary([product], '_id'),
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.saveTransaction, createdDocument);
       expect.assertions(9);

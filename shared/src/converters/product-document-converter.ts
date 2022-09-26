@@ -1,4 +1,4 @@
-import { addSeconds } from '@household/shared/common/utils';
+import { addSeconds, getProductId } from '@household/shared/common/utils';
 import { Category, Product } from '@household/shared/types/types';
 
 export interface IProductDocumentConverter {
@@ -12,6 +12,7 @@ export const productDocumentConverterFactory = (): IProductDocumentConverter => 
       return {
         ...body,
         category,
+        _id: undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
@@ -23,7 +24,7 @@ export const productDocumentConverterFactory = (): IProductDocumentConverter => 
         createdAt: undefined,
         updatedAt: undefined,
         expiresAt: undefined,
-        productId: doc._id.toString() as Product.IdType,
+        productId: getProductId(doc),
       };
     },
   };

@@ -1,13 +1,11 @@
-import { toDictionary } from '@household/shared/common/utils';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
-import { Dictionary } from '@household/shared/types/common';
 import { Product } from '@household/shared/types/types';
 
 export interface IProductService {
   // dumpProducts(): Promise<Product.Document[]>;
   saveProduct(doc: Product.Document): Promise<Product.Document>;
   getProductById(productId: Product.IdType): Promise<Product.Document>;
-  listProductsByIds(productIds: Product.IdType[]): Promise<Dictionary<Product.Document>>;
+  listProductsByIds(productIds: Product.IdType[]): Promise<Product.Document[]>;
   // deleteProduct(productId: Product.IdType): Promise<unknown>;
   // updateProduct(doc: Product.Document): Promise<unknown>;
   // listProducts(): Promise<Product.Document[]>;
@@ -33,8 +31,8 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
         .lean()
         .exec();
     },
-    listProductsByIds: async (productIds) => {
-      const products = await mongodbService.inSession((session) => {
+    listProductsByIds: (productIds) => {
+      return mongodbService.inSession((session) => {
         return mongodbService.products().find({
           _id: {
             $in: productIds,
@@ -46,7 +44,6 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
           .exec();
 
       });
-      return toDictionary(products, '_id');
     },
     // deleteProduct: async (productId) => {
     //   return mongodbService.inSession((session) => {

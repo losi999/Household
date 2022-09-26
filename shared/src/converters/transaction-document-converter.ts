@@ -1,4 +1,4 @@
-import { addSeconds } from '@household/shared/common/utils';
+import { addSeconds, getAccountId, getTransactionId } from '@household/shared/common/utils';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
@@ -99,7 +99,7 @@ export const transactionDocumentConverterFactory = (
       ...doc,
       createdAt: undefined,
       updatedAt: undefined,
-      transactionId: doc._id.toString() as Transaction.IdType,
+      transactionId: getTransactionId(doc),
       issuedAt: doc.issuedAt.toISOString(),
       _id: undefined,
       expiresAt: undefined,
@@ -117,7 +117,7 @@ export const transactionDocumentConverterFactory = (
       ...doc,
       createdAt: undefined,
       updatedAt: undefined,
-      transactionId: doc._id.toString() as Transaction.IdType,
+      transactionId: getTransactionId(doc),
       issuedAt: doc.issuedAt.toISOString(),
       _id: undefined,
       expiresAt: undefined,
@@ -141,13 +141,13 @@ export const transactionDocumentConverterFactory = (
       ...doc,
       createdAt: undefined,
       updatedAt: undefined,
-      transactionId: doc._id.toString() as Transaction.IdType,
+      transactionId: getTransactionId(doc),
       issuedAt: doc.issuedAt.toISOString(),
       _id: undefined,
       expiresAt: undefined,
-      amount: mainAccountId === doc.transferAccount._id.toString() ? doc.amount * -1 : doc.amount,
-      account: mainAccountId === doc.transferAccount._id.toString() ? accountDocumentConverter.toResponse(doc.transferAccount) : accountDocumentConverter.toResponse(doc.account),
-      transferAccount: mainAccountId === doc.transferAccount._id.toString() ? accountDocumentConverter.toResponse(doc.account) : accountDocumentConverter.toResponse(doc.transferAccount),
+      amount: mainAccountId === getAccountId(doc.transferAccount) ? doc.amount * -1 : doc.amount,
+      account: mainAccountId === getAccountId(doc.transferAccount) ? accountDocumentConverter.toResponse(doc.transferAccount) : accountDocumentConverter.toResponse(doc.account),
+      transferAccount: mainAccountId === getAccountId(doc.transferAccount) ? accountDocumentConverter.toResponse(doc.account) : accountDocumentConverter.toResponse(doc.transferAccount),
     };
   };
 
@@ -202,6 +202,7 @@ export const transactionDocumentConverterFactory = (
         transferAccount,
         issuedAt: new Date(body.issuedAt),
         transactionType: 'transfer',
+        _id: undefined,
         accountId: undefined,
         transferAccountId: undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,

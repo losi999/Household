@@ -1,7 +1,6 @@
-import { createRecipientDocument, createRecipientId, createRecipientRequest, createRecipientResponse } from '@household/shared/common/test-data-factory';
-import { addSeconds } from '@household/shared/common/utils';
+import { createRecipientDocument, createRecipientRequest, createRecipientResponse } from '@household/shared/common/test-data-factory';
+import { addSeconds, getRecipientId } from '@household/shared/common/utils';
 import { recipientDocumentConverterFactory, IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
-import { Types } from 'mongoose';
 import { advanceTo, clear } from 'jest-date-mock';
 
 describe('Recipient document converter', () => {
@@ -19,14 +18,12 @@ describe('Recipient document converter', () => {
 
   const name = 'Bolt';
   const expiresIn = 3600;
-  const recipientId = new Types.ObjectId();
 
   const body = createRecipientRequest({
     name,
   });
   const queriedDocument = createRecipientDocument({
     name,
-    _id: recipientId,
     createdAt: now,
     updatedAt: now,
   });
@@ -37,6 +34,7 @@ describe('Recipient document converter', () => {
       expect(result).toEqual(createRecipientDocument({
         name,
         expiresAt: undefined,
+        _id: undefined,
       }));
     });
 
@@ -45,6 +43,7 @@ describe('Recipient document converter', () => {
       expect(result).toEqual(createRecipientDocument({
         name,
         expiresAt: addSeconds(expiresIn, now),
+        _id: undefined,
       }));
     });
 
@@ -58,7 +57,7 @@ describe('Recipient document converter', () => {
         document,
       }, expiresIn);
       expect(result).toEqual(createRecipientDocument({
-        _id: recipientId,
+        _id: document._id,
         name,
         createdAt: now,
         expiresAt: addSeconds(expiresIn, now),
@@ -70,7 +69,7 @@ describe('Recipient document converter', () => {
     it('should return response', () => {
       const result = converter.toResponse(queriedDocument);
       expect(result).toEqual(createRecipientResponse({
-        recipientId: createRecipientId(recipientId.toString()),
+        recipientId: getRecipientId(queriedDocument),
         name,
       }));
     });
@@ -81,7 +80,7 @@ describe('Recipient document converter', () => {
       const result = converter.toResponseList([queriedDocument]);
       expect(result).toEqual([
         createRecipientResponse({
-          recipientId: createRecipientId(recipientId.toString()),
+          recipientId: getRecipientId(queriedDocument),
           name,
         }),
       ]);
