@@ -1,7 +1,7 @@
 import { IUpdateToPaymentTransactionService, updateToPaymentTransactionServiceFactory } from '@household/api/functions/update-to-payment-transaction/update-to-payment-transaction.service';
-import { createAccountDocument, createCategoryDocument, createInventoryRequest, createPaymentTransactionDocument, createPaymentTransactionRequest, createProductDocument, createProjectDocument, createRecipientDocument, createTransactionId } from '@household/shared/common/test-data-factory';
+import { createAccountDocument, createCategoryDocument, createInventoryRequest, createPaymentTransactionDocument, createPaymentTransactionRequest, createProductDocument, createProjectDocument, createRecipientDocument } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
-import { getCategoryId, getProjectId, getRecipientId, getAccountId, getProductId } from '@household/shared/common/utils';
+import { getCategoryId, getProjectId, getRecipientId, getAccountId, getProductId, getTransactionId } from '@household/shared/common/utils';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICategoryService } from '@household/shared/services/category-service';
@@ -62,8 +62,8 @@ describe('Update to payment transaction service', () => {
     });
   });
 
-  const transactionId = createTransactionId();
   const queriedDocument = createPaymentTransactionDocument();
+  const transactionId = getTransactionId(queriedDocument);
   const updatedDocument = createPaymentTransactionDocument({
     description: 'updated',
   });

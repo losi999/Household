@@ -185,8 +185,8 @@ export const transactionDocumentConverterFactory = (
             amount: s.amount,
             description: s.description,
             project: projects[s.projectId],
-            inventory: category?.categoryType === 'inventory' ? toDocumentInventory(s.inventory, products[s.inventory.productId]) : undefined,
-            invoice: category?.categoryType === 'invoice' ? toDocumentInvoice(s.invoice) : undefined,
+            inventory: category.categoryType === 'inventory' ? toDocumentInventory(s.inventory, products[s.inventory.productId]) : undefined,
+            invoice: category.categoryType === 'invoice' ? toDocumentInvoice(s.invoice) : undefined,
           };
         }),
         accountId: undefined,

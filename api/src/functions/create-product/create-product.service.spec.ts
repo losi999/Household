@@ -1,7 +1,7 @@
 import { ICreateProductService, createProductServiceFactory } from '@household/api/functions/create-product/create-product.service';
-import { createProductRequest, createProductDocument, createCategoryId, createCategoryDocument } from '@household/shared/common/test-data-factory';
+import { createProductRequest, createProductDocument, createCategoryDocument } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
-import { getProductId } from '@household/shared/common/utils';
+import { getCategoryId, getProductId } from '@household/shared/common/utils';
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
 import { ICategoryService } from '@household/shared/services/category-service';
 import { IProductService } from '@household/shared/services/product-service';
@@ -21,10 +21,10 @@ describe('Create product service', () => {
   });
 
   const body = createProductRequest();
-  const categoryId = createCategoryId();
   const queriedCategory = createCategoryDocument({
     categoryType: 'inventory',
   });
+  const categoryId = getCategoryId(queriedCategory);
   const convertedProductDocument = createProductDocument();
   const productId = getProductId(convertedProductDocument);
 

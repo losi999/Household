@@ -1,6 +1,7 @@
 import { IUpdateCategoryService, updateCategoryServiceFactory } from '@household/api/functions/update-category/update-category.service';
-import { createCategoryDocument, createCategoryId, createCategoryRequest } from '@household/shared/common/test-data-factory';
+import { createCategoryDocument, createCategoryRequest } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall, validateNthFunctionCall } from '@household/shared/common/unit-testing';
+import { getCategoryId } from '@household/shared/common/utils';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
 import { ICategoryService } from '@household/shared/services/category-service';
 
@@ -17,8 +18,8 @@ describe('Update category service', () => {
   });
 
   const body = createCategoryRequest();
-  const categoryId = createCategoryId();
   const queriedDocument = createCategoryDocument();
+  const categoryId = getCategoryId(queriedDocument);
   const queriedParentCategory = createCategoryDocument();
   const { updatedAt, ...toUpdate } = queriedDocument;
   const updatedDocument = createCategoryDocument({

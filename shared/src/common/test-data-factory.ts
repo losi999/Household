@@ -3,32 +3,28 @@ import { Types } from 'mongoose';
 
 export const generateMongoId = (): Types.ObjectId => new Types.ObjectId();
 
-const generateId = (id?: Types.ObjectId | string): string => {
-  return typeof id === 'string' ? id : id?.toString() ?? generateMongoId().toString();
+export const createAccountId = (id?: string): Account.IdType => {
+  return (id ?? generateMongoId().toString()) as Account.IdType;
 };
 
-export const createAccountId = (id?: Types.ObjectId | string): Account.IdType => {
-  return generateId(id) as Account.IdType;
+export const createCategoryId = (id?: string): Category.IdType => {
+  return (id ?? generateMongoId().toString()) as Category.IdType;
 };
 
-export const createCategoryId = (id?: Types.ObjectId | string): Category.IdType => {
-  return generateId(id) as Category.IdType;
+export const createProjectId = (id?: string): Project.IdType => {
+  return (id ?? generateMongoId().toString()) as Project.IdType;
 };
 
-export const createProjectId = (id?: Types.ObjectId | string): Project.IdType => {
-  return generateId(id) as Project.IdType;
+export const createRecipientId = (id?: string): Recipient.IdType => {
+  return (id ?? generateMongoId().toString()) as Recipient.IdType;
 };
 
-export const createRecipientId = (id?: Types.ObjectId | string): Recipient.IdType => {
-  return generateId(id) as Recipient.IdType;
+export const createTransactionId = (id?: string): Transaction.IdType => {
+  return (id ?? generateMongoId().toString()) as Transaction.IdType;
 };
 
-export const createTransactionId = (id?: Types.ObjectId | string): Transaction.IdType => {
-  return generateId(id) as Transaction.IdType;
-};
-
-export const createProductId = (id?: Types.ObjectId | string): Product.IdType => {
-  return generateId(id) as Product.IdType;
+export const createProductId = (id?: string): Product.IdType => {
+  return (id ?? generateMongoId().toString()) as Product.IdType;
 };
 
 export const createAccountDocument = (doc?: Partial<Account.Document>): Account.Document => {
@@ -42,7 +38,6 @@ export const createAccountDocument = (doc?: Partial<Account.Document>): Account.
     ...doc,
   };
 };
-
 export const createProjectDocument = (doc?: Partial<Project.Document>): Project.Document => {
   return {
     _id: generateMongoId(),
@@ -85,14 +80,31 @@ export const createProductDocument = (doc?: Partial<Product.Document>): Product.
   };
 };
 
+export const createInventoryDocument = (req?: Partial<Transaction.InventoryItem<Transaction.Product<Product.Document>>>): Transaction.InventoryItem<Transaction.Product<Product.Document>> => {
+  return {
+    product: createProductDocument(),
+    quantity: 100,
+    ...req,
+  };
+};
+
+export const createInvoiceDocument = (req?: Partial<Transaction.InvoiceItem<Date>>): Transaction.InvoiceItem<Date> => {
+  return {
+    invoiceNumber: 'inv123',
+    billingEndDate: new Date(2022, 3, 10),
+    billingStartDate: new Date(2022, 3, 2),
+    ...req,
+  };
+};
+
 export const createPaymentTransactionDocument = (doc?: Partial<Transaction.PaymentDocument>): Transaction.PaymentDocument => {
   return {
     _id: generateMongoId(),
     transactionType: 'payment',
     amount: 100,
     description: 'transaction description',
-    inventory: undefined,
-    invoice: undefined,
+    inventory: createInventoryDocument(),
+    invoice: createInvoiceDocument(),
     issuedAt: new Date(),
     expiresAt: undefined,
     accountId: undefined,
@@ -107,11 +119,23 @@ export const createPaymentTransactionDocument = (doc?: Partial<Transaction.Payme
   };
 };
 
-export const createSplitTransactionDocument = (doc?: Partial<Transaction.SplitDocument>, ...splits: Partial<Transaction.SplitDocument['splits'][number]>[]): Transaction.SplitDocument => {
+export const createSplitDocumentIem = (req?: Partial<Transaction.SplitDocumentItem>): Transaction.SplitDocumentItem => {
+  return {
+    amount: 1,
+    category: createCategoryDocument(),
+    project: createProjectDocument(),
+    description: 'split description',
+    inventory: createInventoryDocument(),
+    invoice: createInvoiceDocument(),
+    ...req,
+  };
+};
+
+export const createSplitTransactionDocument = (doc?: Partial<Transaction.SplitDocument>): Transaction.SplitDocument => {
   return {
     _id: generateMongoId(),
     transactionType: 'split',
-    amount: Math.max(splits.length, 1),
+    amount: doc?.splits?.length ?? 1,
     description: 'transaction description',
     issuedAt: new Date(),
     expiresAt: undefined,
@@ -119,26 +143,7 @@ export const createSplitTransactionDocument = (doc?: Partial<Transaction.SplitDo
     recipientId: undefined,
     account: createAccountDocument(),
     recipient: createRecipientDocument(),
-    splits: splits.length > 0 ? splits.map((s) => {
-      return {
-        amount: 1,
-        category: createCategoryDocument(),
-        project: createProjectDocument(),
-        description: 'split description',
-        inventory: undefined,
-        invoice: undefined,
-        ...s,
-      };
-    }) : [
-      {
-        amount: 1,
-        category: createCategoryDocument(),
-        project: createProjectDocument(),
-        description: 'split description',
-        inventory: undefined,
-        invoice: undefined,
-      },
-    ],
+    splits: [createSplitDocumentIem()],
     ...doc,
   };
 };
@@ -330,14 +335,46 @@ export const createRecipientResponse = (resp?: Partial<Recipient.Response>): Rec
   };
 };
 
+export const createProductResponse = (doc?: Partial<Product.Response>): Product.Response => {
+  return {
+    productId: createProductId(),
+    brand: 'product brand',
+    measurement: 300,
+    unitOfMeasurement: 'g',
+    expiresAt: undefined,
+    category: undefined,
+    createdAt: undefined,
+    updatedAt: undefined,
+    _id: undefined,
+    ...doc,
+  };
+};
+
+export const createInventoryResponse = (req?: Partial<Transaction.InventoryItem<Transaction.Product<Product.Response>>>): Transaction.InventoryItem<Transaction.Product<Product.Response>> => {
+  return {
+    product: createProductResponse(),
+    quantity: 100,
+    ...req,
+  };
+};
+
+export const createInvoiceResponse = (req?: Partial<Transaction.InvoiceItem<string>>): Transaction.InvoiceItem<string> => {
+  return {
+    invoiceNumber: 'inv123',
+    billingEndDate: '2022-03-10',
+    billingStartDate: '2022-03-01',
+    ...req,
+  };
+};
+
 export const createPaymentTransactionResponse = (resp?: Partial<Transaction.PaymentResponse>): Transaction.PaymentResponse => {
   return {
     transactionId: createTransactionId(),
     transactionType: 'payment',
     amount: 100,
     description: 'transaction description',
-    inventory: undefined,
-    invoice: undefined,
+    inventory: createInventoryResponse(),
+    invoice: createInvoiceResponse(),
     issuedAt: new Date().toISOString(),
     expiresAt: undefined,
     createdAt: undefined,
@@ -351,11 +388,23 @@ export const createPaymentTransactionResponse = (resp?: Partial<Transaction.Paym
   };
 };
 
-export const createSplitTransactionResponse = (resp?: Partial<Transaction.SplitResponse>, ...splits: Partial<Transaction.SplitResponse['splits'][number]>[]): Transaction.SplitResponse => {
+export const createSplitResponseIem = (req?: Partial<Transaction.SplitResponseItem>): Transaction.SplitResponseItem => {
+  return {
+    amount: 1,
+    category: createCategoryResponse(),
+    project: createProjectResponse(),
+    description: 'split description',
+    inventory: createInventoryResponse(),
+    invoice: createInvoiceResponse(),
+    ...req,
+  };
+};
+
+export const createSplitTransactionResponse = (resp?: Partial<Transaction.SplitResponse>): Transaction.SplitResponse => {
   return {
     transactionId: createTransactionId(),
     transactionType: 'split',
-    amount: Math.max(splits.length, 1),
+    amount: resp?.splits?.length ?? 1,
     description: 'transaction description',
     issuedAt: new Date().toISOString(),
     expiresAt: undefined,
@@ -364,26 +413,7 @@ export const createSplitTransactionResponse = (resp?: Partial<Transaction.SplitR
     _id: undefined,
     account: createAccountResponse(),
     recipient: createRecipientResponse(),
-    splits: splits.length > 0 ? splits.map((s) => {
-      return {
-        amount: 1,
-        category: createCategoryResponse(),
-        project: createProjectResponse(),
-        description: 'split description',
-        inventory: undefined,
-        invoice: undefined,
-        ...s,
-      };
-    }) : [
-      {
-        amount: 1,
-        category: createCategoryResponse(),
-        project: createProjectResponse(),
-        description: 'split description',
-        inventory: undefined,
-        invoice: undefined,
-      },
-    ],
+    splits: [createSplitResponseIem()],
     ...resp,
   };
 };

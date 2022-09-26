@@ -1,6 +1,7 @@
 import { IUpdateAccountService, updateAccountServiceFactory } from '@household/api/functions/update-account/update-account.service';
-import { createAccountDocument, createAccountRequest, createAccountId } from '@household/shared/common/test-data-factory';
+import { createAccountDocument, createAccountRequest } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { getAccountId } from '@household/shared/common/utils';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 
@@ -16,9 +17,9 @@ describe('Update account service', () => {
     service = updateAccountServiceFactory(mockAccountService.service, mockAccountDocumentConverter.service);
   });
 
-  const accountId = createAccountId();
   const body = createAccountRequest();
   const queriedDocument = createAccountDocument();
+  const accountId = getAccountId(queriedDocument);
   const updatedDocument = createAccountDocument({
     name: 'updated',
   });

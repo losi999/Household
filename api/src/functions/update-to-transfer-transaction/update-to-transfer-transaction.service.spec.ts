@@ -1,7 +1,7 @@
 import { IUpdateToTransferTransactionService, updateToTransferTransactionServiceFactory } from '@household/api/functions/update-to-transfer-transaction/update-to-transfer-transaction.service';
-import { createTransferTransactionRequest, createAccountDocument, createTransferTransactionDocument, createTransactionId } from '@household/shared/common/test-data-factory';
+import { createTransferTransactionRequest, createAccountDocument, createTransferTransactionDocument } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
-import { getAccountId } from '@household/shared/common/utils';
+import { getAccountId, getTransactionId } from '@household/shared/common/utils';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
@@ -27,8 +27,8 @@ describe('Update to transfer transaction service', () => {
     accountId: getAccountId(queriedAccount),
     transferAccountId: getAccountId(queriedTransferAccount),
   });
-  const transactionId = createTransactionId();
   const queriedDocument = createTransferTransactionDocument();
+  const transactionId = getTransactionId(queriedDocument);
   const updatedDocument = createTransferTransactionDocument({
     description: 'updated',
   });

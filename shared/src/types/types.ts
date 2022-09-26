@@ -333,7 +333,7 @@ export namespace Transaction {
   & TransferAccount<Account.Document>
   & Base;
 
-  type SplitDocumentItem = Project<Project.Document>
+  export type SplitDocumentItem = Project<Project.Document>
   & Category<Category.Document>
   & Invoice<Date>
   & Inventory<Product<Product.Document>>

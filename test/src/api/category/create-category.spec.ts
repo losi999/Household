@@ -1,4 +1,5 @@
 import { createCategoryId } from '@household/shared/common/test-data-factory';
+import { getCategoryId } from '@household/shared/common/utils';
 import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
 import { Category } from '@household/shared/types/types';
 import { Types } from 'mongoose';
@@ -46,7 +47,7 @@ describe('POST category/v1/categories', () => {
         .authenticate(1)
         .requestCreateCategory({
           ...request,
-          parentCategoryId: createCategoryId(parentCategoryDocument._id),
+          parentCategoryId: getCategoryId(parentCategoryDocument),
         })
         .expectCreatedResponse()
         .validateCategoryDocument(request, parentCategoryDocument);
