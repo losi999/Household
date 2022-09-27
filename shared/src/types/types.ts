@@ -153,7 +153,8 @@ export namespace Category {
   & Base
   & FullName
   & Remove<ParentCategoryId>
-  & ParentCategory;
+  & ParentCategory
+  & Partial<Products<Product.Document>>;
 
   export type Response = Base
   & FullName

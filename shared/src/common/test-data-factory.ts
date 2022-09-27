@@ -1,6 +1,8 @@
 import { Account, Auth, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { Types } from 'mongoose';
 
+type DataFactoryFunction<T> = (input?: Partial<T>) => T;
+
 export const generateMongoId = (): Types.ObjectId => new Types.ObjectId();
 
 export const createAccountId = (id?: string): Account.IdType => {
@@ -27,7 +29,7 @@ export const createProductId = (id?: string): Product.IdType => {
   return (id ?? generateMongoId().toString()) as Product.IdType;
 };
 
-export const createAccountDocument = (doc?: Partial<Account.Document>): Account.Document => {
+export const createAccountDocument: DataFactoryFunction<Account.Document> = (doc) => {
   return {
     _id: generateMongoId(),
     accountType: 'bankAccount',
@@ -38,7 +40,7 @@ export const createAccountDocument = (doc?: Partial<Account.Document>): Account.
     ...doc,
   };
 };
-export const createProjectDocument = (doc?: Partial<Project.Document>): Project.Document => {
+export const createProjectDocument: DataFactoryFunction<Project.Document> = (doc) => {
   return {
     _id: generateMongoId(),
     name: 'project name',
@@ -47,7 +49,7 @@ export const createProjectDocument = (doc?: Partial<Project.Document>): Project.
     ...doc,
   };
 };
-export const createCategoryDocument = (doc?: Partial<Category.Document>): Category.Document => {
+export const createCategoryDocument: DataFactoryFunction<Category.Document> = (doc) => {
   return {
     _id: generateMongoId(),
     name: 'category name',
@@ -59,7 +61,7 @@ export const createCategoryDocument = (doc?: Partial<Category.Document>): Catego
     ...doc,
   };
 };
-export const createRecipientDocument = (doc?: Partial<Recipient.Document>): Recipient.Document => {
+export const createRecipientDocument: DataFactoryFunction<Recipient.Document> = (doc) => {
   return {
     _id: generateMongoId(),
     name: 'recipient name',
@@ -68,7 +70,7 @@ export const createRecipientDocument = (doc?: Partial<Recipient.Document>): Reci
   };
 };
 
-export const createProductDocument = (doc?: Partial<Product.Document>): Product.Document => {
+export const createProductDocument: DataFactoryFunction<Product.Document> = (doc) => {
   return {
     _id: generateMongoId(),
     brand: 'product brand',
@@ -80,24 +82,24 @@ export const createProductDocument = (doc?: Partial<Product.Document>): Product.
   };
 };
 
-export const createInventoryDocument = (req?: Partial<Transaction.InventoryItem<Transaction.Product<Product.Document>>>): Transaction.InventoryItem<Transaction.Product<Product.Document>> => {
+export const createInventoryDocument: DataFactoryFunction<Transaction.InventoryItem<Transaction.Product<Product.Document>>> = (doc) => {
   return {
     product: createProductDocument(),
     quantity: 100,
-    ...req,
+    ...doc,
   };
 };
 
-export const createInvoiceDocument = (req?: Partial<Transaction.InvoiceItem<Date>>): Transaction.InvoiceItem<Date> => {
+export const createInvoiceDocument: DataFactoryFunction<Transaction.InvoiceItem<Date>> = (doc) => {
   return {
     invoiceNumber: 'inv123',
     billingEndDate: new Date(2022, 3, 10),
     billingStartDate: new Date(2022, 3, 2),
-    ...req,
+    ...doc,
   };
 };
 
-export const createPaymentTransactionDocument = (doc?: Partial<Transaction.PaymentDocument>): Transaction.PaymentDocument => {
+export const createPaymentTransactionDocument: DataFactoryFunction<Transaction.PaymentDocument> = (doc) => {
   return {
     _id: generateMongoId(),
     transactionType: 'payment',
@@ -119,7 +121,7 @@ export const createPaymentTransactionDocument = (doc?: Partial<Transaction.Payme
   };
 };
 
-export const createSplitDocumentIem = (req?: Partial<Transaction.SplitDocumentItem>): Transaction.SplitDocumentItem => {
+export const createSplitDocumentIem: DataFactoryFunction<Transaction.SplitDocumentItem> = (doc) => {
   return {
     amount: 1,
     category: createCategoryDocument(),
@@ -127,11 +129,11 @@ export const createSplitDocumentIem = (req?: Partial<Transaction.SplitDocumentIt
     description: 'split description',
     inventory: createInventoryDocument(),
     invoice: createInvoiceDocument(),
-    ...req,
+    ...doc,
   };
 };
 
-export const createSplitTransactionDocument = (doc?: Partial<Transaction.SplitDocument>): Transaction.SplitDocument => {
+export const createSplitTransactionDocument: DataFactoryFunction<Transaction.SplitDocument> = (doc) => {
   return {
     _id: generateMongoId(),
     transactionType: 'split',
@@ -148,7 +150,7 @@ export const createSplitTransactionDocument = (doc?: Partial<Transaction.SplitDo
   };
 };
 
-export const createTransferTransactionDocument = (doc?: Partial<Transaction.TransferDocument>): Transaction.TransferDocument => {
+export const createTransferTransactionDocument: DataFactoryFunction<Transaction.TransferDocument> = (doc) => {
   return {
     _id: generateMongoId(),
     transactionType: 'transfer',
@@ -164,7 +166,7 @@ export const createTransferTransactionDocument = (doc?: Partial<Transaction.Tran
   };
 };
 
-export const createAccountRequest = (req?: Partial<Account.Request>): Account.Request => {
+export const createAccountRequest: DataFactoryFunction<Account.Request> = (req) => {
   return {
     accountType: 'bankAccount',
     name: 'account name',
@@ -173,14 +175,14 @@ export const createAccountRequest = (req?: Partial<Account.Request>): Account.Re
   };
 };
 
-export const createProjectRequest = (req?: Partial<Project.Request>): Project.Request => {
+export const createProjectRequest: DataFactoryFunction<Project.Request> = (req) => {
   return {
     name: 'project name',
     description: 'project description',
     ...req,
   };
 };
-export const createCategoryRequest = (req?: Partial<Category.Request>): Category.Request => {
+export const createCategoryRequest: DataFactoryFunction<Category.Request> = (req) => {
   return {
     name: 'category name',
     parentCategoryId: createCategoryId(),
@@ -188,14 +190,14 @@ export const createCategoryRequest = (req?: Partial<Category.Request>): Category
     ...req,
   };
 };
-export const createRecipientRequest = (req?: Partial<Recipient.Request>): Recipient.Request => {
+export const createRecipientRequest: DataFactoryFunction<Recipient.Request> = (req) => {
   return {
     name: 'recipient name',
     ...req,
   };
 };
 
-export const createProductRequest = (req?: Partial<Product.Request>): Product.Request => {
+export const createProductRequest: DataFactoryFunction<Product.Request> = (req) => {
   return {
     brand: 'product brand',
     measurement: 300,
@@ -204,7 +206,7 @@ export const createProductRequest = (req?: Partial<Product.Request>): Product.Re
   };
 };
 
-export const createInventoryRequest = (req?: Partial<Transaction.InventoryItem<Product.Id>>): Transaction.InventoryItem<Product.Id> => {
+export const createInventoryRequest: DataFactoryFunction<Transaction.InventoryItem<Product.Id>> = (req) => {
   return {
     productId: createProductId(),
     quantity: 100,
@@ -212,7 +214,7 @@ export const createInventoryRequest = (req?: Partial<Transaction.InventoryItem<P
   };
 };
 
-export const createInvoiceRequest = (req?: Partial<Transaction.InvoiceItem<string>>): Transaction.InvoiceItem<string> => {
+export const createInvoiceRequest: DataFactoryFunction<Transaction.InvoiceItem<string>> = (req) => {
   return {
     invoiceNumber: 'inv123',
     billingEndDate: '2022-03-21',
@@ -221,7 +223,7 @@ export const createInvoiceRequest = (req?: Partial<Transaction.InvoiceItem<strin
   };
 };
 
-export const createPaymentTransactionRequest = (req?: Partial<Transaction.PaymentRequest>): Transaction.PaymentRequest => {
+export const createPaymentTransactionRequest: DataFactoryFunction<Transaction.PaymentRequest> = (req) => {
   return {
     amount: 100,
     description: 'transaction description',
@@ -236,7 +238,7 @@ export const createPaymentTransactionRequest = (req?: Partial<Transaction.Paymen
   };
 };
 
-export const createSplitRequestIem = (req?: Partial<Transaction.SplitRequestItem>): Transaction.SplitRequestItem => {
+export const createSplitRequestIem: DataFactoryFunction<Transaction.SplitRequestItem> = (req) => {
   return {
     amount: 1,
     categoryId: createCategoryId(),
@@ -248,7 +250,7 @@ export const createSplitRequestIem = (req?: Partial<Transaction.SplitRequestItem
   };
 };
 
-export const createSplitTransactionRequest = (req?: Partial<Transaction.SplitRequest>): Transaction.SplitRequest => {
+export const createSplitTransactionRequest: DataFactoryFunction<Transaction.SplitRequest> = (req) => {
   return {
     amount: req?.splits?.length ?? 1,
     description: 'transaction description',
@@ -260,7 +262,7 @@ export const createSplitTransactionRequest = (req?: Partial<Transaction.SplitReq
   };
 };
 
-export const createTransferTransactionRequest = (req?: Partial<Transaction.TransferRequest>): Transaction.TransferRequest => {
+export const createTransferTransactionRequest: DataFactoryFunction<Transaction.TransferRequest> = (req) => {
   return {
     amount: 100,
     description: 'transaction description',
@@ -271,7 +273,7 @@ export const createTransferTransactionRequest = (req?: Partial<Transaction.Trans
   };
 };
 
-export const createLoginRequest = (req?: Partial<Auth.Login.Request>): Auth.Login.Request => {
+export const createLoginRequest: DataFactoryFunction<Auth.Login.Request> = (req) => {
   return {
     email: 'aaa@email.com',
     password: 'password123',
@@ -279,7 +281,7 @@ export const createLoginRequest = (req?: Partial<Auth.Login.Request>): Auth.Logi
   };
 };
 
-export const createAccountResponse = (resp?: Partial<Account.Response>): Account.Response => {
+export const createAccountResponse: DataFactoryFunction<Account.Response> = (resp) => {
   return {
     accountType: 'bankAccount',
     name: 'account name',
@@ -295,7 +297,7 @@ export const createAccountResponse = (resp?: Partial<Account.Response>): Account
   };
 };
 
-export const createProjectResponse = (resp?: Partial<Project.Response>): Project.Response => {
+export const createProjectResponse: DataFactoryFunction<Project.Response> = (resp) => {
   return {
     projectId: createProjectId(),
     name: 'project name',
@@ -307,7 +309,7 @@ export const createProjectResponse = (resp?: Partial<Project.Response>): Project
     ...resp,
   };
 };
-export const createCategoryResponse = (resp?: Partial<Category.Response>): Category.Response => {
+export const createCategoryResponse: DataFactoryFunction<Category.Response> = (resp) => {
   return {
     categoryId: createCategoryId(),
     name: 'category name',
@@ -319,11 +321,11 @@ export const createCategoryResponse = (resp?: Partial<Category.Response>): Categ
     fullName: 'category name',
     categoryType: 'regular',
     parentCategoryId: undefined,
-    products: undefined, // TODO
+    products: [createProductResponse()],
     ...resp,
   };
 };
-export const createRecipientResponse = (resp?: Partial<Recipient.Response>): Recipient.Response => {
+export const createRecipientResponse: DataFactoryFunction<Recipient.Response> = (resp) => {
   return {
     recipientId: createRecipientId(),
     name: 'recipient name',
@@ -335,7 +337,7 @@ export const createRecipientResponse = (resp?: Partial<Recipient.Response>): Rec
   };
 };
 
-export const createProductResponse = (doc?: Partial<Product.Response>): Product.Response => {
+export const createProductResponse: DataFactoryFunction<Product.Response> = (resp) => {
   return {
     productId: createProductId(),
     brand: 'product brand',
@@ -346,28 +348,28 @@ export const createProductResponse = (doc?: Partial<Product.Response>): Product.
     createdAt: undefined,
     updatedAt: undefined,
     _id: undefined,
-    ...doc,
+    ...resp,
   };
 };
 
-export const createInventoryResponse = (req?: Partial<Transaction.InventoryItem<Transaction.Product<Product.Response>>>): Transaction.InventoryItem<Transaction.Product<Product.Response>> => {
+export const createInventoryResponse: DataFactoryFunction<Transaction.InventoryItem<Transaction.Product<Product.Response>>> = (resp) => {
   return {
     product: createProductResponse(),
     quantity: 100,
-    ...req,
+    ...resp,
   };
 };
 
-export const createInvoiceResponse = (req?: Partial<Transaction.InvoiceItem<string>>): Transaction.InvoiceItem<string> => {
+export const createInvoiceResponse: DataFactoryFunction<Transaction.InvoiceItem<string>> = (resp) => {
   return {
     invoiceNumber: 'inv123',
     billingEndDate: '2022-03-10',
     billingStartDate: '2022-03-01',
-    ...req,
+    ...resp,
   };
 };
 
-export const createPaymentTransactionResponse = (resp?: Partial<Transaction.PaymentResponse>): Transaction.PaymentResponse => {
+export const createPaymentTransactionResponse: DataFactoryFunction<Transaction.PaymentResponse> = (resp) => {
   return {
     transactionId: createTransactionId(),
     transactionType: 'payment',
@@ -388,7 +390,7 @@ export const createPaymentTransactionResponse = (resp?: Partial<Transaction.Paym
   };
 };
 
-export const createSplitResponseIem = (req?: Partial<Transaction.SplitResponseItem>): Transaction.SplitResponseItem => {
+export const createSplitResponseIem: DataFactoryFunction<Transaction.SplitResponseItem> = (resp) => {
   return {
     amount: 1,
     category: createCategoryResponse(),
@@ -396,11 +398,11 @@ export const createSplitResponseIem = (req?: Partial<Transaction.SplitResponseIt
     description: 'split description',
     inventory: createInventoryResponse(),
     invoice: createInvoiceResponse(),
-    ...req,
+    ...resp,
   };
 };
 
-export const createSplitTransactionResponse = (resp?: Partial<Transaction.SplitResponse>): Transaction.SplitResponse => {
+export const createSplitTransactionResponse: DataFactoryFunction<Transaction.SplitResponse> = (resp) => {
   return {
     transactionId: createTransactionId(),
     transactionType: 'split',
@@ -418,7 +420,7 @@ export const createSplitTransactionResponse = (resp?: Partial<Transaction.SplitR
   };
 };
 
-export const createTransferTransactionResponse = (resp?: Partial<Transaction.TransferResponse>): Transaction.TransferResponse => {
+export const createTransferTransactionResponse: DataFactoryFunction<Transaction.TransferResponse> = (resp) => {
   return {
     transactionId: createTransactionId(),
     transactionType: 'transfer',

@@ -1,4 +1,5 @@
 import { addSeconds, getCategoryId } from '@household/shared/common/utils';
+import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
 import { Restrict } from '@household/shared/types/common';
 import { Category } from '@household/shared/types/types';
 
@@ -16,7 +17,9 @@ export interface ICategoryDocumentConverter {
   toResponseList(docs: Category.Document[]): Category.Response[];
 }
 
-export const categoryDocumentConverterFactory = (): ICategoryDocumentConverter => {
+export const categoryDocumentConverterFactory = (
+  productDocumentConverter: IProductDocumentConverter,
+): ICategoryDocumentConverter => {
   const instance: ICategoryDocumentConverter = {
     create: ({ body, parentCategory }, expiresIn): Category.Document => {
       return {
@@ -39,6 +42,7 @@ export const categoryDocumentConverterFactory = (): ICategoryDocumentConverter =
       };
     },
     toResponse: (doc): Category.Response => {
+      console.log('prod', doc._id, JSON.stringify(doc.products));
       return {
         ...doc,
         createdAt: undefined,
@@ -50,7 +54,7 @@ export const categoryDocumentConverterFactory = (): ICategoryDocumentConverter =
           ...instance.toResponse(doc.parentCategory),
           parentCategory: undefined,
         } : undefined,
-        products: undefined, // TODO
+        products: doc.products ? productDocumentConverter.toResponseList(doc.products) : undefined,
       };
     },
     toResponseList: docs => docs.map(d => instance.toResponse(d)),

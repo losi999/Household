@@ -4,6 +4,7 @@ import { Category, Product } from '@household/shared/types/types';
 export interface IProductDocumentConverter {
   create(data: { body: Product.Request, category: Category.Document }, expiresIn: number): Product.Document;
   toResponse(document: Product.Document): Product.Response;
+  toResponseList(documents: Product.Document[]): Product.Response[];
 }
 
 export const productDocumentConverterFactory = (): IProductDocumentConverter => {
@@ -27,6 +28,7 @@ export const productDocumentConverterFactory = (): IProductDocumentConverter => 
         productId: getProductId(doc),
       };
     },
+    toResponseList: docs => docs.map(d => instance.toResponse(d)),
   };
 
   return instance;

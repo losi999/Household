@@ -204,17 +204,28 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
       });
     },
     listCategories: () => {
-      return mongodbService.inSession((session) => {
-        return mongodbService.categories().find({}, null, {
-          session,
-        })
+      return mongodbService.inSession(async (session) => {
+        const docs = await mongodbService.categories()
+          .aggregate(null, {
+            session,
+          })
+          .lookup({
+            from: 'products',
+            localField: '_id',
+            foreignField: 'category',
+            as: 'products',
+          })
           .collation({
             locale: 'hu',
           })
-          .sort('fullName')
-          .populate('parentCategory')
-          .lean()
-          .exec();
+          .sort('fullName');
+
+        return mongodbService.categories().populate(docs, {
+          path: 'parentCategory',
+          options: {
+            lean: true,
+          },
+        });
       });
     },
     listCategoriesByIds: (categoryIds) => {
