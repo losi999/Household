@@ -2,7 +2,7 @@ import { Component, HostListener, OnInit } from '@angular/core';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Account, Category, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/confirmation-dialog.component';
 import { TransactionService } from 'src/app/transaction/transaction.service';
 import { isInventoryCategory, isInvoiceCategory, isPaymentTransaction, isSplitTransaction, isTransferTransaction } from '@household/shared/common/type-guards';
@@ -48,7 +48,7 @@ export class TransactionEditComponent implements OnInit {
   get recipient(): Recipient.Response { return this.form.value.recipient; }
   get category(): Category.Response { return this.form.value.category; }
   get invoice(): Transaction.Invoice<string>['invoice'] { return this.form.value.invoice ?? undefined; }
-  get inventory(): Transaction.Inventory['inventory'] { return this.form.value.inventory ?? undefined; }
+  get inventory(): Transaction.InventoryItem<Product.Id> { return this.form.value.inventory ?? undefined; }
 
   get splits(): Transaction.SplitResponseItem[] { return this.form.value.splits; }
 
@@ -191,7 +191,10 @@ export class TransactionEditComponent implements OnInit {
             categoryId: s.category?.categoryId,
             description: s.description ?? undefined,
             projectId: s.project?.projectId,
-            inventory: isInventoryCategory(s.category) && s.inventory ? s.inventory : undefined,
+            inventory: isInventoryCategory(s.category) && s.inventory ? {
+              productId: undefined,
+              quantity: s.inventory.quantity,
+            } : undefined,
             invoice: isInvoiceCategory(s.category) && s.invoice ? s.invoice : undefined,
           })),
         };
