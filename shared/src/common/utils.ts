@@ -29,7 +29,7 @@ export const toDictionary = <P>(docs: P[], key: keyof P): Dictionary<P> => {
   }, {});
 };
 
-const getId = (doc: Internal.Id) => doc._id.toString();
+const getId = (doc: Internal.Id) => doc?._id.toString();
 export const getTransactionId = (doc: Transaction.Document): Transaction.IdType => getId(doc) as Transaction.IdType;
 export const getAccountId = (doc: Account.Document): Account.IdType => getId(doc) as Account.IdType;
 export const getProjectId = (doc: Project.Document): Project.IdType => getId(doc) as Project.IdType;

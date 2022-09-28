@@ -1,7 +1,7 @@
 import { createRecipientId } from '@household/shared/common/test-data-factory';
+import { getRecipientId } from '@household/shared/common/utils';
 import { recipientDocumentConverter } from '@household/shared/dependencies/converters/recipient-document-converter';
 import { Recipient } from '@household/shared/types/types';
-import { Types } from 'mongoose';
 
 describe('PUT /recipient/v1/recipients/{recipientId}', () => {
   const recipient: Recipient.Request = {
@@ -15,8 +15,7 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
   let recipientDocument: Recipient.Document;
 
   beforeEach(() => {
-    recipientDocument = recipientDocumentConverter.create(recipient, Cypress.env('EXPIRES_IN'));
-    recipientDocument._id = new Types.ObjectId();
+    recipientDocument = recipientDocumentConverter.create(recipient, Cypress.env('EXPIRES_IN'), true);
   });
 
   describe('called as anonymous', () => {
@@ -31,7 +30,7 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
     it('should update a recipient', () => {
       cy.saveRecipientDocument(recipientDocument)
         .authenticate(1)
-        .requestUpdateRecipient(createRecipientId(recipientDocument._id), recipientToUpdate)
+        .requestUpdateRecipient(getRecipientId(recipientDocument), recipientToUpdate)
         .expectCreatedResponse()
         .validateRecipientDocument(recipientToUpdate);
     });

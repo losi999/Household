@@ -2,6 +2,7 @@ import { Recipient } from '@household/shared/types/types';
 import { headerExpiresIn } from '@household/shared/constants';
 import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/test/api/types';
 import { IRecipientService } from '@household/shared/services/recipient-service';
+import { getRecipientId } from '@household/shared/common/utils';
 
 const recipientTask = <T extends keyof IRecipientService>(name: T, params: Parameters<IRecipientService[T]>) => {
   return cy.task(name, ...params);
@@ -72,14 +73,21 @@ const validateRecipientDocument = (response: Recipient.Id, request: Recipient.Re
   cy.log('Get recipient document', id)
     .recipientTask('getRecipientById', [id])
     .should((document: Recipient.Document) => {
-      expect(document._id.toString(), '_id').to.equal(id);
+      expect(getRecipientId(document), '_id').to.equal(id);
       expect(document.name, 'name').to.equal(request.name);
     });
 };
 
 const validateRecipientResponse = (response: Recipient.Response, document: Recipient.Document) => {
-  expect(response.recipientId, 'recipientId').to.equal(document._id.toString());
+  expect(response.recipientId, 'recipientId').to.equal(getRecipientId(document));
   expect(response.name, 'name').to.equal(document.name);
+};
+
+const validateRecipientListResponse = (responses: Recipient.Response[], documents: Recipient.Document[]) => {
+  documents.forEach((document) => {
+    const response = responses.find(r => r.recipientId === getRecipientId(document));
+    validateRecipientResponse(response, document);
+  });
 };
 
 const validateRecipientDeleted = (recipientId: Recipient.IdType) => {
@@ -105,6 +113,7 @@ export const setRecipientCommands = () => {
     requestGetRecipientList,
     validateRecipientDocument,
     validateRecipientResponse,
+    validateRecipientListResponse,
   });
 
   Cypress.Commands.addAll({
@@ -133,6 +142,7 @@ declare global {
     interface ChainableResponseBody extends Chainable {
       validateRecipientDocument: CommandFunctionWithPreviousSubject<typeof validateRecipientDocument>;
       validateRecipientResponse: CommandFunctionWithPreviousSubject<typeof validateRecipientResponse>;
+      validateRecipientListResponse: CommandFunctionWithPreviousSubject<typeof validateRecipientListResponse>;
     }
   }
 }

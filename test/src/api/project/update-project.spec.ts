@@ -1,7 +1,7 @@
 import { createProjectId } from '@household/shared/common/test-data-factory';
+import { getProjectId } from '@household/shared/common/utils';
 import { projectDocumentConverter } from '@household/shared/dependencies/converters/project-document-converter';
 import { Project } from '@household/shared/types/types';
-import { Types } from 'mongoose';
 
 describe('PUT /project/v1/projects/{projectId}', () => {
   const project: Project.Request = {
@@ -17,8 +17,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
   let projectDocument: Project.Document;
 
   beforeEach(() => {
-    projectDocument = projectDocumentConverter.create(project, Cypress.env('EXPIRES_IN'));
-    projectDocument._id = new Types.ObjectId();
+    projectDocument = projectDocumentConverter.create(project, Cypress.env('EXPIRES_IN'), true);
   });
 
   describe('called as anonymous', () => {
@@ -35,7 +34,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
         cy
           .saveProjectDocument(projectDocument)
           .authenticate(1)
-          .requestUpdateProject(createProjectId(projectDocument._id), projectToUpdate)
+          .requestUpdateProject(getProjectId(projectDocument), projectToUpdate)
           .expectCreatedResponse()
           .validateProjectDocument(projectToUpdate);
       });
@@ -48,7 +47,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
           };
           cy.saveProjectDocument(projectDocument)
             .authenticate(1)
-            .requestUpdateProject(createProjectId(projectDocument._id), modifiedRequest)
+            .requestUpdateProject(getProjectId(projectDocument), modifiedRequest)
             .expectCreatedResponse()
             .validateProjectDocument(modifiedRequest);
         });

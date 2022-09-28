@@ -1,9 +1,10 @@
+import { generateMongoId } from '@household/shared/common/test-data-factory';
 import { addSeconds, getRecipientId } from '@household/shared/common/utils';
 import { Restrict } from '@household/shared/types/common';
 import { Recipient } from '@household/shared/types/types';
 
 export interface IRecipientDocumentConverter {
-  create(body: Recipient.Request, expiresIn: number): Recipient.Document;
+  create(body: Recipient.Request, expiresIn: number, generateId?: boolean): Recipient.Document;
   update(data: { document: Restrict<Recipient.Document, 'updatedAt'>; body: Recipient.Request }, expiresIn: number): Recipient.Document;
   toResponse(doc: Recipient.Document): Recipient.Response;
   toResponseList(docs: Recipient.Document[]): Recipient.Response[];
@@ -11,10 +12,10 @@ export interface IRecipientDocumentConverter {
 
 export const recipientDocumentConverterFactory = (): IRecipientDocumentConverter => {
   const instance: IRecipientDocumentConverter = {
-    create: (body, expiresIn): Recipient.Document => {
+    create: (body, expiresIn, generateId): Recipient.Document => {
       return {
         ...body,
-        _id: undefined,
+        _id: generateId ? generateMongoId() : undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },

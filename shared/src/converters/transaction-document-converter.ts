@@ -1,3 +1,4 @@
+import { generateMongoId } from '@household/shared/common/test-data-factory';
 import { addSeconds, getAccountId, getTransactionId } from '@household/shared/common/utils';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
@@ -15,7 +16,7 @@ export interface ITransactionDocumentConverter {
     recipient: Recipient.Document;
     project: Project.Document;
     product: Product.Document;
-  }, expiresIn: number,): Transaction.PaymentDocument;
+  }, expiresIn: number, generateId?: boolean): Transaction.PaymentDocument;
   createSplitDocument(data: {
     body: Transaction.SplitRequest;
     account: Account.Document;
@@ -23,12 +24,12 @@ export interface ITransactionDocumentConverter {
     recipient: Recipient.Document;
     projects: Dictionary<Project.Document>;
     products: Dictionary<Product.Document>;
-  }, expiresIn: number): Transaction.SplitDocument;
+  }, expiresIn: number, generateId?: boolean): Transaction.SplitDocument;
   createTransferDocument(data: {
     body: Transaction.TransferRequest;
     account: Account.Document;
     transferAccount: Account.Document;
-  }, expiresIn: number): Transaction.TransferDocument;
+  }, expiresIn: number, generateId?: boolean): Transaction.TransferDocument;
   updatePaymentDocument(data: {
     document: Transaction.Document;
     body: Transaction.PaymentRequest;
@@ -88,10 +89,10 @@ export const transactionDocumentConverterFactory = (
   };
 
   const toDocumentInventory = (req: Transaction.Quantity, product: Product.Document): Transaction.InventoryItem<Transaction.Product<Product.Document>> => {
-    return {
+    return req ? {
       quantity: req.quantity,
-      product,
-    };
+      product: product ?? undefined,
+    } : undefined;
   };
 
   const toResponsePayment = (doc: Transaction.PaymentDocument): Transaction.PaymentResponse => {
@@ -152,13 +153,13 @@ export const transactionDocumentConverterFactory = (
   };
 
   const instance: ITransactionDocumentConverter = {
-    createPaymentDocument: ({ body, account, project, category, recipient, product }, expiresIn) => {
+    createPaymentDocument: ({ body, account, project, category, recipient, product }, expiresIn, generateId) => {
       return {
         ...body,
-        account,
-        category,
-        project,
-        recipient,
+        account: account ?? undefined,
+        recipient: recipient ?? undefined,
+        category: category ?? undefined,
+        project: project ?? undefined,
         issuedAt: new Date(body.issuedAt),
         transactionType: 'payment',
         inventory: category?.categoryType === 'inventory' ? toDocumentInventory(body.inventory, product) : undefined,
@@ -167,42 +168,42 @@ export const transactionDocumentConverterFactory = (
         categoryId: undefined,
         projectId: undefined,
         recipientId: undefined,
-        _id: undefined,
+        _id: generateId ? generateMongoId() : undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
-    createSplitDocument: ({ body, account, projects, categories, recipient, products }, expiresIn): Transaction.SplitDocument => {
+    createSplitDocument: ({ body, account, projects, categories, recipient, products }, expiresIn, generateId): Transaction.SplitDocument => {
       return {
         ...body,
-        account,
-        recipient,
+        account: account ?? undefined,
+        recipient: recipient ?? undefined,
         transactionType: 'split',
         issuedAt: new Date(body.issuedAt),
         splits: body.splits.map((s) => {
           const category = categories[s.categoryId];
           return {
-            category,
+            category: category ?? undefined,
             amount: s.amount,
             description: s.description,
             project: projects[s.projectId],
-            inventory: category.categoryType === 'inventory' ? toDocumentInventory(s.inventory, products[s.inventory.productId]) : undefined,
-            invoice: category.categoryType === 'invoice' ? toDocumentInvoice(s.invoice) : undefined,
+            inventory: category?.categoryType === 'inventory' ? toDocumentInventory(s.inventory, products[s.inventory?.productId]) : undefined,
+            invoice: category?.categoryType === 'invoice' ? toDocumentInvoice(s.invoice) : undefined,
           };
         }),
         accountId: undefined,
         recipientId: undefined,
-        _id: undefined,
+        _id: generateId ? generateMongoId() : undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
-    createTransferDocument: ({ body, account, transferAccount }, expiresIn): Transaction.TransferDocument => {
+    createTransferDocument: ({ body, account, transferAccount }, expiresIn, generateId): Transaction.TransferDocument => {
       return {
         ...body,
-        account,
-        transferAccount,
+        account: account ?? undefined,
+        transferAccount: transferAccount ?? undefined,
         issuedAt: new Date(body.issuedAt),
         transactionType: 'transfer',
-        _id: undefined,
+        _id: generateId ? generateMongoId() : undefined,
         accountId: undefined,
         transferAccountId: undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,

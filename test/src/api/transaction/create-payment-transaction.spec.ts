@@ -1,10 +1,11 @@
-import { createAccountId, createCategoryId, createProjectId, createRecipientId } from '@household/shared/common/test-data-factory';
+import { createAccountId, createCategoryId, createProductId, createProjectId, createRecipientId } from '@household/shared/common/test-data-factory';
+import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId } from '@household/shared/common/utils';
 import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
 import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
+import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
 import { projectDocumentConverter } from '@household/shared/dependencies/converters/project-document-converter';
 import { recipientDocumentConverter } from '@household/shared/dependencies/converters/recipient-document-converter';
-import { Account, Category, Project, Recipient, Transaction } from '@household/shared/types/types';
-import { Types } from 'mongoose';
+import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 
 describe('POST transaction/v1/transactions/payment', () => {
   let request: Transaction.PaymentRequest;
@@ -14,25 +15,23 @@ describe('POST transaction/v1/transactions/payment', () => {
   let regularCategoryDocument: Category.Document;
   let invoiceCategoryDocument: Category.Document;
   let inventoryCategoryDocument: Category.Document;
+  let productDocument: Product.Document;
 
   beforeEach(() => {
     projectDocument = projectDocumentConverter.create({
       name: 'proj',
       description: 'desc',
-    }, Cypress.env('EXPIRES_IN'));
-    projectDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     recipientDocument = recipientDocumentConverter.create({
       name: 'recipient',
-    }, Cypress.env('EXPIRES_IN'));
-    recipientDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     accountDocument = accountDocumentConverter.create({
       name: 'bank',
       accountType: 'bankAccount',
       currency: 'Ft',
-    }, Cypress.env('EXPIRES_IN'));
-    accountDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     regularCategoryDocument = categoryDocumentConverter.create({
       body: {
@@ -41,8 +40,7 @@ describe('POST transaction/v1/transactions/payment', () => {
         parentCategoryId: undefined,
       },
       parentCategory: undefined,
-    }, Cypress.env('EXPIRES_IN'));
-    regularCategoryDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     invoiceCategoryDocument = categoryDocumentConverter.create({
       body: {
@@ -51,8 +49,7 @@ describe('POST transaction/v1/transactions/payment', () => {
         parentCategoryId: undefined,
       },
       parentCategory: undefined,
-    }, Cypress.env('EXPIRES_IN'));
-    invoiceCategoryDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     inventoryCategoryDocument = categoryDocumentConverter.create({
       body: {
@@ -61,15 +58,23 @@ describe('POST transaction/v1/transactions/payment', () => {
         parentCategoryId: undefined,
       },
       parentCategory: undefined,
-    }, Cypress.env('EXPIRES_IN'));
-    inventoryCategoryDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
+
+    productDocument = productDocumentConverter.create({
+      body: {
+        brand: 'brand',
+        measurement: 200,
+        unitOfMeasurement: 'kg',
+      },
+      category: inventoryCategoryDocument,
+    }, Cypress.env('EXPIRES_IN'), true);
 
     request = {
       amount: 100,
-      accountId: createAccountId(accountDocument._id),
-      categoryId: createCategoryId(regularCategoryDocument._id),
-      projectId: createProjectId(projectDocument._id),
-      recipientId: createRecipientId(recipientDocument._id),
+      accountId: getAccountId(accountDocument),
+      categoryId: getCategoryId(regularCategoryDocument),
+      projectId: getProjectId(projectDocument),
+      recipientId: getRecipientId(recipientDocument),
       description: 'description',
       issuedAt: new Date(2022, 6, 9, 22, 30, 12).toISOString(),
       invoice: {
@@ -80,10 +85,8 @@ describe('POST transaction/v1/transactions/payment', () => {
         invoiceNumber: 'invoice123',
       },
       inventory: {
-        brand: 'brand',
-        measurement: 200,
+        productId: getProductId(productDocument),
         quantity: 1,
-        unitOfMeasurement: 'kg',
       },
     };
   });
@@ -107,13 +110,13 @@ describe('POST transaction/v1/transactions/payment', () => {
             .authenticate(1)
             .requestCreatePaymentTransaction(request)
             .expectCreatedResponse()
-            .validateTransactionPaymentDocument(request, regularCategoryDocument);
+            .validateTransactionPaymentDocument(request);
         });
 
         it('using invoice category', () => {
           const modifiedRequest: Transaction.PaymentRequest = {
             ...request,
-            categoryId: createCategoryId(invoiceCategoryDocument._id),
+            categoryId: getCategoryId(invoiceCategoryDocument),
           };
 
           cy.saveAccountDocument(accountDocument)
@@ -123,22 +126,23 @@ describe('POST transaction/v1/transactions/payment', () => {
             .authenticate(1)
             .requestCreatePaymentTransaction(modifiedRequest)
             .expectCreatedResponse()
-            .validateTransactionPaymentDocument(modifiedRequest, invoiceCategoryDocument);
+            .validateTransactionPaymentDocument(modifiedRequest);
         });
         it('using inventory category', () => {
           const modifiedRequest: Transaction.PaymentRequest = {
             ...request,
-            categoryId: createCategoryId(inventoryCategoryDocument._id),
+            categoryId: getCategoryId(inventoryCategoryDocument),
           };
 
           cy.saveAccountDocument(accountDocument)
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
+            .saveProductDocument(productDocument)
             .authenticate(1)
             .requestCreatePaymentTransaction(modifiedRequest)
             .expectCreatedResponse()
-            .validateTransactionPaymentDocument(modifiedRequest, inventoryCategoryDocument);
+            .validateTransactionPaymentDocument(modifiedRequest);
         });
       });
 
@@ -155,13 +159,13 @@ describe('POST transaction/v1/transactions/payment', () => {
             .authenticate(1)
             .requestCreatePaymentTransaction(modifiedRequest)
             .expectCreatedResponse()
-            .validateTransactionPaymentDocument(modifiedRequest, regularCategoryDocument);
+            .validateTransactionPaymentDocument(modifiedRequest);
         });
         it('inventory', () => {
           const modifiedRequest: Transaction.PaymentRequest = {
             ...request,
             inventory: undefined,
-            categoryId: createCategoryId(inventoryCategoryDocument._id),
+            categoryId: getCategoryId(inventoryCategoryDocument),
           };
 
           cy.saveAccountDocument(accountDocument)
@@ -171,73 +175,13 @@ describe('POST transaction/v1/transactions/payment', () => {
             .authenticate(1)
             .requestCreatePaymentTransaction(modifiedRequest)
             .expectCreatedResponse()
-            .validateTransactionPaymentDocument(modifiedRequest, inventoryCategoryDocument);
-        });
-
-        it('inventory.brand', () => {
-          const modifiedRequest: Transaction.PaymentRequest = {
-            ...request,
-            categoryId: createCategoryId(inventoryCategoryDocument._id),
-            inventory: {
-              ...request.inventory,
-              brand: undefined,
-            },
-          };
-
-          cy.saveAccountDocument(accountDocument)
-            .saveCategoryDocument(inventoryCategoryDocument)
-            .saveProjectDocument(projectDocument)
-            .saveRecipientDocument(recipientDocument)
-            .authenticate(1)
-            .requestCreatePaymentTransaction(modifiedRequest)
-            .expectCreatedResponse()
-            .validateTransactionPaymentDocument(modifiedRequest, inventoryCategoryDocument);
-        });
-
-        it('inventory.measurement', () => {
-          const modifiedRequest: Transaction.PaymentRequest = {
-            ...request,
-            categoryId: createCategoryId(inventoryCategoryDocument._id),
-            inventory: {
-              ...request.inventory,
-              measurement: undefined,
-            },
-          };
-
-          cy.saveAccountDocument(accountDocument)
-            .saveCategoryDocument(inventoryCategoryDocument)
-            .saveProjectDocument(projectDocument)
-            .saveRecipientDocument(recipientDocument)
-            .authenticate(1)
-            .requestCreatePaymentTransaction(modifiedRequest)
-            .expectCreatedResponse()
-            .validateTransactionPaymentDocument(modifiedRequest, inventoryCategoryDocument);
-        });
-
-        it('inventory.unitOfMeasurement', () => {
-          const modifiedRequest: Transaction.PaymentRequest = {
-            ...request,
-            categoryId: createCategoryId(inventoryCategoryDocument._id),
-            inventory: {
-              ...request.inventory,
-              unitOfMeasurement: undefined,
-            },
-          };
-
-          cy.saveAccountDocument(accountDocument)
-            .saveCategoryDocument(inventoryCategoryDocument)
-            .saveProjectDocument(projectDocument)
-            .saveRecipientDocument(recipientDocument)
-            .authenticate(1)
-            .requestCreatePaymentTransaction(modifiedRequest)
-            .expectCreatedResponse()
-            .validateTransactionPaymentDocument(modifiedRequest, inventoryCategoryDocument);
+            .validateTransactionPaymentDocument(modifiedRequest);
         });
 
         it('invoice', () => {
           const modifiedRequest: Transaction.PaymentRequest = {
             ...request,
-            categoryId: createCategoryId(invoiceCategoryDocument._id),
+            categoryId: getCategoryId(invoiceCategoryDocument),
             invoice: undefined,
           };
 
@@ -248,13 +192,13 @@ describe('POST transaction/v1/transactions/payment', () => {
             .authenticate(1)
             .requestCreatePaymentTransaction(modifiedRequest)
             .expectCreatedResponse()
-            .validateTransactionPaymentDocument(modifiedRequest, invoiceCategoryDocument);
+            .validateTransactionPaymentDocument(modifiedRequest);
         });
 
         it('invoice.invoiceNumber', () => {
           const modifiedRequest: Transaction.PaymentRequest = {
             ...request,
-            categoryId: createCategoryId(invoiceCategoryDocument._id),
+            categoryId: getCategoryId(invoiceCategoryDocument),
             invoice: {
               ...request.invoice,
               invoiceNumber: undefined,
@@ -268,7 +212,7 @@ describe('POST transaction/v1/transactions/payment', () => {
             .authenticate(1)
             .requestCreatePaymentTransaction(modifiedRequest)
             .expectCreatedResponse()
-            .validateTransactionPaymentDocument(modifiedRequest, invoiceCategoryDocument);
+            .validateTransactionPaymentDocument(modifiedRequest);
         });
 
         it('categoryId', () => {
@@ -298,7 +242,7 @@ describe('POST transaction/v1/transactions/payment', () => {
             .authenticate(1)
             .requestCreatePaymentTransaction(modifiedRequest)
             .expectCreatedResponse()
-            .validateTransactionPaymentDocument(modifiedRequest, regularCategoryDocument);
+            .validateTransactionPaymentDocument(modifiedRequest);
         });
 
         it('projectId', () => {
@@ -313,7 +257,7 @@ describe('POST transaction/v1/transactions/payment', () => {
             .authenticate(1)
             .requestCreatePaymentTransaction(modifiedRequest)
             .expectCreatedResponse()
-            .validateTransactionPaymentDocument(modifiedRequest, regularCategoryDocument);
+            .validateTransactionPaymentDocument(modifiedRequest);
         });
       });
     });
@@ -441,87 +385,60 @@ describe('POST transaction/v1/transactions/payment', () => {
         });
       });
 
-      describe('if inventory.brand', () => {
+      describe('if inventory.productId', () => {
+        it('is missing', () => {
+          cy.authenticate(1)
+            .requestCreatePaymentTransaction({
+              ...request,
+              inventory: {
+                ...request.inventory,
+                productId: undefined,
+              },
+            })
+            .expectBadRequestResponse()
+            .expectRequiredProperty('productId', 'body');
+        });
+
         it('is not string', () => {
           cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               inventory: {
                 ...request.inventory,
-                brand: 1 as any,
+                productId: 1 as any,
               },
             })
             .expectBadRequestResponse()
-            .expectWrongPropertyType('brand', 'string', 'body');
+            .expectWrongPropertyType('productId', 'string', 'body');
         });
 
-        it('is too short', () => {
+        it('is not mongo id format', () => {
           cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
               inventory: {
                 ...request.inventory,
-                brand: '',
+                productId: createProductId('not-valid'),
               },
             })
             .expectBadRequestResponse()
-            .expectTooShortProperty('brand', 1, 'body');
-        });
-      });
-
-      describe('if inventory.measurement', () => {
-        it('is not number', () => {
-          cy.authenticate(1)
-            .requestCreatePaymentTransaction({
-              ...request,
-              inventory: {
-                ...request.inventory,
-                measurement: 'a' as any,
-              },
-            })
-            .expectBadRequestResponse()
-            .expectWrongPropertyType('measurement', 'number', 'body');
+            .expectWrongPropertyPattern('productId', 'body');
         });
 
-        it('is too small', () => {
-          cy.authenticate(1)
-            .requestCreatePaymentTransaction({
-              ...request,
-              inventory: {
-                ...request.inventory,
-                measurement: 0,
-              },
-            })
-            .expectBadRequestResponse()
-            .expectTooSmallNumberProperty('measurement', 0, true, 'body');
-        });
-      });
+        it('does not belong to any product', () => {
+          const modifiedRequest: Transaction.PaymentRequest = {
+            ...request,
+            categoryId: getCategoryId(inventoryCategoryDocument),
+          };
 
-      describe('if inventory.unitOfMeasurement', () => {
-        it('is not string', () => {
-          cy.authenticate(1)
-            .requestCreatePaymentTransaction({
-              ...request,
-              inventory: {
-                ...request.inventory,
-                unitOfMeasurement: 1 as any,
-              },
-            })
+          cy.saveAccountDocument(accountDocument)
+            .saveCategoryDocument(inventoryCategoryDocument)
+            .saveProjectDocument(projectDocument)
+            .saveRecipientDocument(recipientDocument)
+            .authenticate(1)
+            .requestCreatePaymentTransaction(modifiedRequest)
             .expectBadRequestResponse()
-            .expectWrongPropertyType('unitOfMeasurement', 'string', 'body');
-        });
-
-        it('is not a valid enum value', () => {
-          cy.authenticate(1)
-            .requestCreatePaymentTransaction({
-              ...request,
-              inventory: {
-                ...request.inventory,
-                unitOfMeasurement: 'lb' as any,
-              },
-            })
-            .expectBadRequestResponse()
-            .expectWrongEnumValue('unitOfMeasurement', 'body');
+            .expectMessage('No product found');
         });
       });
 

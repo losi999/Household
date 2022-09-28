@@ -1,8 +1,8 @@
 import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
 import { default as schema } from '@household/test/api/schemas/category-response';
 import { Category } from '@household/shared/types/types';
-import { Types } from 'mongoose';
 import { createCategoryId } from '@household/shared/common/test-data-factory';
+import { getCategoryId } from '@household/shared/common/utils';
 
 describe('GET /category/v1/categories/{categoryId}', () => {
   const category: Category.Request = {
@@ -24,17 +24,15 @@ describe('GET /category/v1/categories/{categoryId}', () => {
     categoryDocument = categoryDocumentConverter.create({
       body: category,
       parentCategory: undefined,
-    }, Cypress.env('EXPIRES_IN'));
-    categoryDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     childCategoryDocument = categoryDocumentConverter.create({
       body: {
         ...childCategory,
-        parentCategoryId: createCategoryId(categoryDocument._id),
+        parentCategoryId: getCategoryId(categoryDocument),
       },
       parentCategory: categoryDocument,
-    }, Cypress.env('EXPIRES_IN'));
-    childCategoryDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
   });
 
   describe('called as anonymous', () => {
@@ -49,7 +47,7 @@ describe('GET /category/v1/categories/{categoryId}', () => {
     it('should get category by id', () => {
       cy.saveCategoryDocument(categoryDocument)
         .authenticate(1)
-        .requestGetCategory(createCategoryId(categoryDocument._id))
+        .requestGetCategory(getCategoryId(categoryDocument))
         .expectOkResponse()
         .expectValidResponseSchema(schema)
         .validateCategoryResponse(categoryDocument);
@@ -59,7 +57,7 @@ describe('GET /category/v1/categories/{categoryId}', () => {
       cy.saveCategoryDocument(categoryDocument)
         .saveCategoryDocument(childCategoryDocument)
         .authenticate(1)
-        .requestGetCategory(createCategoryId(childCategoryDocument._id))
+        .requestGetCategory(getCategoryId(childCategoryDocument))
         .expectOkResponse()
         .expectValidResponseSchema(schema)
         .validateCategoryResponse(childCategoryDocument, categoryDocument);

@@ -1,9 +1,9 @@
 import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
 import { default as schema } from '@household/test/api/schemas/account-response';
 import { Account, Transaction } from '@household/shared/types/types';
-import { Types } from 'mongoose';
 import { createAccountId } from '@household/shared/common/test-data-factory';
 import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
+import { getAccountId } from '@household/shared/common/utils';
 
 describe('GET /account/v1/accounts/{accountId}', () => {
   const account: Account.Request = {
@@ -20,15 +20,12 @@ describe('GET /account/v1/accounts/{accountId}', () => {
   let invertedTransferTransactionDocument: Transaction.TransferDocument;
 
   beforeEach(() => {
-    accountDocument = accountDocumentConverter.create(account, Cypress.env('EXPIRES_IN'));
-    accountDocument._id = new Types.ObjectId();
-
-    transferAccountDocument = accountDocumentConverter.create(account, Cypress.env('EXPIRES_IN'));
-    transferAccountDocument._id = new Types.ObjectId();
+    accountDocument = accountDocumentConverter.create(account, Cypress.env('EXPIRES_IN'), true);
+    transferAccountDocument = accountDocumentConverter.create(account, Cypress.env('EXPIRES_IN'), true);
 
     paymentTransactionDocument = transactionDocumentConverter.createPaymentDocument({
       body: {
-        accountId: createAccountId(accountDocument._id),
+        accountId: getAccountId(accountDocument),
         amount: 100,
         issuedAt: new Date().toISOString(),
         categoryId: undefined,
@@ -42,12 +39,12 @@ describe('GET /account/v1/accounts/{accountId}', () => {
       category: undefined,
       recipient: undefined,
       project: undefined,
-    }, Cypress.env('EXPIRES_IN'));
-    paymentTransactionDocument._id = new Types.ObjectId();
+      product: undefined,
+    }, Cypress.env('EXPIRES_IN'), true);
 
     splitTransactionDocument = transactionDocumentConverter.createSplitDocument({
       body: {
-        accountId: createAccountId(accountDocument._id),
+        accountId: getAccountId(accountDocument),
         amount: 100,
         issuedAt: new Date().toISOString(),
         description: 'split',
@@ -64,37 +61,35 @@ describe('GET /account/v1/accounts/{accountId}', () => {
         ],
       },
       account: accountDocument,
-      categories: [],
+      categories: {},
       recipient: undefined,
-      projects: [],
-    }, Cypress.env('EXPIRES_IN'));
-    splitTransactionDocument._id = new Types.ObjectId();
+      projects: {},
+      products: {},
+    }, Cypress.env('EXPIRES_IN'), true);
 
     transferTransactionDocument = transactionDocumentConverter.createTransferDocument({
       body: {
-        accountId: createAccountId(accountDocument._id),
+        accountId: getAccountId(accountDocument),
         amount: 100,
-        transferAccountId: createAccountId(transferAccountDocument._id),
+        transferAccountId: getAccountId(transferAccountDocument),
         description: 'transfer1',
         issuedAt: new Date().toISOString(),
       },
       account: accountDocument,
       transferAccount: transferAccountDocument,
-    }, Cypress.env('EXPIRES_IN'));
-    transferTransactionDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     invertedTransferTransactionDocument = transactionDocumentConverter.createTransferDocument({
       body: {
-        accountId: createAccountId(transferAccountDocument._id),
+        accountId: getAccountId(transferAccountDocument),
         amount: -100,
-        transferAccountId: createAccountId(accountDocument._id),
+        transferAccountId: getAccountId(accountDocument),
         description: 'transfer1',
         issuedAt: new Date().toISOString(),
       },
       account: transferAccountDocument,
       transferAccount: accountDocument,
-    }, Cypress.env('EXPIRES_IN'));
-    invertedTransferTransactionDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
   });
 
   describe('called as anonymous', () => {
@@ -114,7 +109,7 @@ describe('GET /account/v1/accounts/{accountId}', () => {
         .saveTransactionDocument(transferTransactionDocument)
         .saveTransactionDocument(invertedTransferTransactionDocument)
         .authenticate(1)
-        .requestGetAccount(createAccountId(accountDocument._id))
+        .requestGetAccount(getAccountId(accountDocument))
         .expectOkResponse()
         .expectValidResponseSchema(schema)
         .validateAccountResponse(accountDocument, 400);

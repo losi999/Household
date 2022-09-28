@@ -27,7 +27,7 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
       return mongodbService.products().create(doc);
     },
     getProductById: async (productId) => {
-      return !productId ? undefined : mongodbService.products().findById(productId)
+      return !productId ? null : mongodbService.products().findById(productId)
         .lean()
         .exec();
     },

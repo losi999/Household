@@ -15,8 +15,8 @@ describe('GET /recipient/v1/recipients', () => {
   let recipientDocument2: Recipient.Document;
 
   beforeEach(() => {
-    recipientDocument1 = recipientDocumentConverter.create(recipient1, Cypress.env('EXPIRES_IN'));
-    recipientDocument2 = recipientDocumentConverter.create(recipient2, Cypress.env('EXPIRES_IN'));
+    recipientDocument1 = recipientDocumentConverter.create(recipient1, Cypress.env('EXPIRES_IN'), true);
+    recipientDocument2 = recipientDocumentConverter.create(recipient2, Cypress.env('EXPIRES_IN'), true);
   });
 
   describe('called as anonymous', () => {
@@ -34,7 +34,11 @@ describe('GET /recipient/v1/recipients', () => {
         .authenticate(1)
         .requestGetRecipientList()
         .expectOkResponse()
-        .expectValidResponseSchema(schema);
+        .expectValidResponseSchema(schema)
+        .validateRecipientListResponse([
+          recipientDocument1,
+          recipientDocument2,
+        ]);
     });
   });
 });

@@ -1,8 +1,8 @@
 import { recipientDocumentConverter } from '@household/shared/dependencies/converters/recipient-document-converter';
 import { default as schema } from '@household/test/api/schemas/recipient-response';
 import { Recipient } from '@household/shared/types/types';
-import { Types } from 'mongoose';
 import { createRecipientId } from '@household/shared/common/test-data-factory';
+import { getRecipientId } from '@household/shared/common/utils';
 
 describe('GET /recipient/v1/recipients/{recipientId}', () => {
   const recipient: Recipient.Request = {
@@ -12,8 +12,7 @@ describe('GET /recipient/v1/recipients/{recipientId}', () => {
   let recipientDocument: Recipient.Document;
 
   beforeEach(() => {
-    recipientDocument = recipientDocumentConverter.create(recipient, Cypress.env('EXPIRES_IN'));
-    recipientDocument._id = new Types.ObjectId();
+    recipientDocument = recipientDocumentConverter.create(recipient, Cypress.env('EXPIRES_IN'), true);
   });
 
   describe('called as anonymous', () => {
@@ -28,7 +27,7 @@ describe('GET /recipient/v1/recipients/{recipientId}', () => {
     it('should get recipient by id', () => {
       cy.saveRecipientDocument(recipientDocument)
         .authenticate(1)
-        .requestGetRecipient(createRecipientId(recipientDocument._id))
+        .requestGetRecipient(getRecipientId(recipientDocument))
         .expectOkResponse()
         .expectValidResponseSchema(schema)
         .validateRecipientResponse(recipientDocument);

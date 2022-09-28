@@ -1,9 +1,8 @@
 import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
 import { default as schema } from '@household/test/api/schemas/account-response-list';
 import { Account, Transaction } from '@household/shared/types/types';
-import { Types } from 'mongoose';
 import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
-import { createAccountId } from '@household/shared/common/test-data-factory';
+import { getAccountId } from '@household/shared/common/utils';
 
 describe('GET /account/v1/accounts', () => {
   const account1: Account.Request = {
@@ -26,15 +25,13 @@ describe('GET /account/v1/accounts', () => {
   let invertedTransferTransactionDocument: Transaction.TransferDocument;
 
   beforeEach(() => {
-    accountDocument = accountDocumentConverter.create(account1, Cypress.env('EXPIRES_IN'));
-    accountDocument._id = new Types.ObjectId();
+    accountDocument = accountDocumentConverter.create(account1, Cypress.env('EXPIRES_IN'), true);
 
-    transferAccountDocument = accountDocumentConverter.create(account2, Cypress.env('EXPIRES_IN'));
-    transferAccountDocument._id = new Types.ObjectId();
+    transferAccountDocument = accountDocumentConverter.create(account2, Cypress.env('EXPIRES_IN'), true);
 
     paymentTransactionDocument = transactionDocumentConverter.createPaymentDocument({
       body: {
-        accountId: createAccountId(accountDocument._id),
+        accountId: getAccountId(accountDocument),
         amount: 100,
         issuedAt: new Date().toISOString(),
         categoryId: undefined,
@@ -48,12 +45,12 @@ describe('GET /account/v1/accounts', () => {
       category: undefined,
       recipient: undefined,
       project: undefined,
-    }, Cypress.env('EXPIRES_IN'));
-    paymentTransactionDocument._id = new Types.ObjectId();
+      product: undefined,
+    }, Cypress.env('EXPIRES_IN'), true);
 
     splitTransactionDocument = transactionDocumentConverter.createSplitDocument({
       body: {
-        accountId: createAccountId(accountDocument._id),
+        accountId: getAccountId(accountDocument),
         amount: 100,
         issuedAt: new Date().toISOString(),
         description: 'split',
@@ -70,37 +67,35 @@ describe('GET /account/v1/accounts', () => {
         ],
       },
       account: accountDocument,
-      categories: [],
+      categories: {},
       recipient: undefined,
-      projects: [],
-    }, Cypress.env('EXPIRES_IN'));
-    splitTransactionDocument._id = new Types.ObjectId();
+      projects: {},
+      products: {},
+    }, Cypress.env('EXPIRES_IN'), true);
 
     transferTransactionDocument = transactionDocumentConverter.createTransferDocument({
       body: {
-        accountId: createAccountId(accountDocument._id),
+        accountId: getAccountId(accountDocument),
         amount: 100,
-        transferAccountId: createAccountId(transferAccountDocument._id),
+        transferAccountId: getAccountId(transferAccountDocument),
         description: 'transfer1',
         issuedAt: new Date().toISOString(),
       },
       account: accountDocument,
       transferAccount: transferAccountDocument,
-    }, Cypress.env('EXPIRES_IN'));
-    transferTransactionDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     invertedTransferTransactionDocument = transactionDocumentConverter.createTransferDocument({
       body: {
-        accountId: createAccountId(transferAccountDocument._id),
+        accountId: getAccountId(transferAccountDocument),
         amount: -100,
-        transferAccountId: createAccountId(accountDocument._id),
+        transferAccountId: getAccountId(accountDocument),
         description: 'transfer1',
         issuedAt: new Date().toISOString(),
       },
       account: transferAccountDocument,
       transferAccount: accountDocument,
-    }, Cypress.env('EXPIRES_IN'));
-    invertedTransferTransactionDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
   });
 
   describe('called as anonymous', () => {

@@ -2,6 +2,7 @@ import { Category } from '@household/shared/types/types';
 import { headerExpiresIn } from '@household/shared/constants';
 import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/test/api/types';
 import { ICategoryService } from '@household/shared/services/category-service';
+import { getCategoryId } from '@household/shared/common/utils';
 
 const categoryTask = <T extends keyof ICategoryService>(name: T, params: Parameters<ICategoryService[T]>) => {
   return cy.task(name, ...params);
@@ -72,26 +73,33 @@ const validateCategoryDocument = (response: Category.Id, request: Category.Reque
   cy.log('Get category document', id)
     .categoryTask('getCategoryById', [id])
     .should((document: Category.Document) => {
-      expect(document._id.toString(), 'id').to.equal(id);
+      expect(getCategoryId(document), 'id').to.equal(id);
       expect(document.name, 'name').to.equal(request.name);
       expect(document.categoryType, 'categoryType').to.equal(request.categoryType);
       expect(document.fullName, 'fullName').to.equal(parentCategory ? `${parentCategory.fullName}:${request.name}` : request.name);
       expect(document.parentCategory?.name, 'parentCategory.name').to.equal(parentCategory?.name);
       expect(document.parentCategory?.fullName, 'parentCategory.fullName').to.equal(parentCategory?.fullName);
       expect(document.parentCategory?.categoryType, 'parentCategory.categoryType').to.equal(parentCategory?.categoryType);
-      expect(document.parentCategory?._id.toString(), 'parentCategory.categoryId').to.equal(parentCategory?._id.toString());
+      expect(getCategoryId(document.parentCategory), 'parentCategory.categoryId').to.equal(getCategoryId(parentCategory));
     });
 };
 
 const validateCategoryResponse = (response: Category.Response, document: Category.Document, parentCategory?: Category.Document) => {
-  expect(response.categoryId, 'categoryId').to.equal(document._id.toString());
+  expect(response.categoryId, 'categoryId').to.equal(getCategoryId(document));
   expect(response.name, 'name').to.equal(document.name);
   expect(response.categoryType, 'categoryType').to.equal(document.categoryType);
   expect(response.fullName, 'fullName').to.equal(document.fullName);
   expect(response.parentCategory?.name, 'parentCategory.name').to.equal(parentCategory?.name);
   expect(response.parentCategory?.fullName, 'parentCategory.fullName').to.equal(parentCategory?.fullName);
   expect(response.parentCategory?.categoryType, 'parentCategory.categoryType').to.equal(parentCategory?.categoryType);
-  expect(response.parentCategory?.categoryId, 'parentCategory.categoryId').to.equal(parentCategory?._id.toString());
+  expect(response.parentCategory?.categoryId, 'parentCategory.categoryId').to.equal(getCategoryId(parentCategory));
+};
+
+const validateCategoryListResponse = (responses: Category.Response[], documents: Category.Document[]) => {
+  documents.forEach((document) => {
+    const response = responses.find(r => r.categoryId === getCategoryId(document));
+    validateCategoryResponse(response, document);
+  });
 };
 
 const validateCategoryDeleted = (categoryId: Category.IdType) => {
@@ -115,7 +123,7 @@ const validateCategoryParentReassign = (categoryId: Category.IdType, parentCateg
     .should((document: Category.Document) => {
       if (parentCategoryDocument) {
         expect(document.fullName, 'fullName').to.equal(`${parentCategoryDocument.fullName}:${document.name}`);
-        expect(document.parentCategory._id.toString(), 'parentCategory').to.equal(parentCategoryDocument._id.toString());
+        expect(getCategoryId(document.parentCategory), 'parentCategory').to.equal(getCategoryId(parentCategoryDocument));
       } else {
         expect(document.fullName, 'fullName').to.equal(document.name);
         expect(!!document.parentCategory, 'parentCategory').to.be.false;
@@ -138,6 +146,7 @@ export const setCategoryCommands = () => {
     requestGetCategoryList,
     validateCategoryDocument,
     validateCategoryResponse,
+    validateCategoryListResponse,
   });
 
   Cypress.Commands.addAll({
@@ -168,6 +177,7 @@ declare global {
     interface ChainableResponseBody extends Chainable {
       validateCategoryDocument: CommandFunctionWithPreviousSubject<typeof validateCategoryDocument>;
       validateCategoryResponse: CommandFunctionWithPreviousSubject<typeof validateCategoryResponse>;
+      validateCategoryListResponse: CommandFunctionWithPreviousSubject<typeof validateCategoryListResponse>;
     }
   }
 }

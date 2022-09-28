@@ -1,7 +1,7 @@
 import { createAccountId } from '@household/shared/common/test-data-factory';
+import { getAccountId } from '@household/shared/common/utils';
 import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
 import { Account, Transaction } from '@household/shared/types/types';
-import { Types } from 'mongoose';
 
 describe('POST transaction/v1/transactions/transfer', () => {
   let request: Transaction.TransferRequest;
@@ -13,19 +13,17 @@ describe('POST transaction/v1/transactions/transfer', () => {
       name: 'bank',
       accountType: 'bankAccount',
       currency: 'Ft',
-    }, Cypress.env('EXPIRES_IN'));
-    accountDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     transferAccountDocument = accountDocumentConverter.create({
       name: 'wallett',
       accountType: 'cash',
       currency: 'Ft',
-    }, Cypress.env('EXPIRES_IN'));
-    transferAccountDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     request = {
-      accountId: createAccountId(accountDocument._id),
-      transferAccountId: createAccountId(transferAccountDocument._id),
+      accountId: getAccountId(accountDocument),
+      transferAccountId: getAccountId(transferAccountDocument),
       amount: 100,
       description: 'description',
       issuedAt: new Date(2022, 6, 9, 22, 30, 12).toISOString(),
@@ -203,7 +201,7 @@ describe('POST transaction/v1/transactions/transfer', () => {
           cy.authenticate(1)
             .requestCreateTransferTransaction({
               ...request,
-              transferAccountId: createAccountId(accountDocument._id),
+              transferAccountId: getAccountId(accountDocument),
             })
             .expectBadRequestResponse()
             .expectMessage('Cannot transfer to same account');

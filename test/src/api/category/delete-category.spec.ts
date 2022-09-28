@@ -1,18 +1,18 @@
-import { createAccountId, createCategoryId, createTransactionId } from '@household/shared/common/test-data-factory';
+import { createCategoryId } from '@household/shared/common/test-data-factory';
+import { getAccountId, getCategoryId, getTransactionId, toDictionary } from '@household/shared/common/utils';
 import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
 import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
 import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
 import { Account, Category, Transaction } from '@household/shared/types/types';
-import { Types } from 'mongoose';
 
 const createRelatedTransactions = (accountDocument: Account.Document, categoryDocument: Category.Document): [Transaction.PaymentDocument, Transaction.SplitDocument] => {
   const paymentTransactionDocument = transactionDocumentConverter.createPaymentDocument({
     body: {
-      accountId: createAccountId(accountDocument._id),
+      accountId: getAccountId(accountDocument),
       amount: 100,
       description: 'description',
       issuedAt: new Date(2022, 2, 3).toISOString(),
-      categoryId: createCategoryId(categoryDocument._id),
+      categoryId: getCategoryId(categoryDocument),
       inventory: undefined,
       invoice: undefined,
       projectId: undefined,
@@ -22,12 +22,12 @@ const createRelatedTransactions = (accountDocument: Account.Document, categoryDo
     category: categoryDocument,
     project: undefined,
     recipient: undefined,
-  }, Cypress.env('EXPIRES_IN'));
-  paymentTransactionDocument._id = new Types.ObjectId();
+    product: undefined,
+  }, Cypress.env('EXPIRES_IN'), true);
 
   const splitTransactionDocument = transactionDocumentConverter.createSplitDocument({
     body: {
-      accountId: createAccountId(accountDocument._id),
+      accountId: getAccountId(accountDocument),
       amount: 200,
       description: 'description',
       issuedAt: new Date(2022, 2, 3).toISOString(),
@@ -35,7 +35,7 @@ const createRelatedTransactions = (accountDocument: Account.Document, categoryDo
       splits: [
         {
           amount: 100,
-          categoryId: createCategoryId(categoryDocument._id),
+          categoryId: getCategoryId(categoryDocument),
           description: undefined,
           inventory: undefined,
           invoice: undefined,
@@ -53,10 +53,10 @@ const createRelatedTransactions = (accountDocument: Account.Document, categoryDo
     },
     account: accountDocument,
     recipient: undefined,
-    categories: [categoryDocument],
-    projects: [],
-  }, Cypress.env('EXPIRES_IN'));
-  splitTransactionDocument._id = new Types.ObjectId();
+    categories: toDictionary([categoryDocument], '_id'),
+    projects: {},
+    products: {},
+  }, Cypress.env('EXPIRES_IN'), true);
 
   return [
     paymentTransactionDocument,
@@ -77,8 +77,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
     categoryDocument = categoryDocumentConverter.create({
       body: category,
       parentCategory: undefined,
-    }, Cypress.env('EXPIRES_IN'));
-    categoryDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
   });
 
   describe('called as anonymous', () => {
@@ -94,9 +93,9 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
     it('should delete category', () => {
       cy.saveCategoryDocument(categoryDocument)
         .authenticate(1)
-        .requestDeleteCategory(createCategoryId(categoryDocument._id))
+        .requestDeleteCategory(getCategoryId(categoryDocument))
         .expectNoContentResponse()
-        .validateCategoryDeleted(createCategoryId(categoryDocument._id));
+        .validateCategoryDeleted(getCategoryId(categoryDocument));
     });
 
     describe('children should be reassigned', () => {
@@ -108,21 +107,19 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
           body: {
             name: 'child',
             categoryType: 'regular',
-            parentCategoryId: createCategoryId(categoryDocument._id),
+            parentCategoryId: getCategoryId(categoryDocument),
           },
           parentCategory: categoryDocument,
-        }, Cypress.env('EXPIRES_IN'));
-        childCategory._id = new Types.ObjectId();
+        }, Cypress.env('EXPIRES_IN'), true);
 
         grandChildCategory = categoryDocumentConverter.create({
           body: {
             name: 'child of child',
             categoryType: 'regular',
-            parentCategoryId: createCategoryId(childCategory._id),
+            parentCategoryId: getCategoryId(childCategory),
           },
           parentCategory: childCategory,
-        }, Cypress.env('EXPIRES_IN'));
-        grandChildCategory._id = new Types.ObjectId();
+        }, Cypress.env('EXPIRES_IN'), true);
       });
 
       it('to root if did not have parent', () => {
@@ -130,11 +127,11 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
           .saveCategoryDocument(childCategory)
           .saveCategoryDocument(grandChildCategory)
           .authenticate(1)
-          .requestDeleteCategory(createCategoryId(categoryDocument._id))
+          .requestDeleteCategory(getCategoryId(categoryDocument))
           .expectNoContentResponse()
-          .validateCategoryDeleted(createCategoryId(categoryDocument._id))
-          .validateCategoryParentReassign(createCategoryId(childCategory._id))
-          .validateCategoryParentReassign(createCategoryId(grandChildCategory._id), createCategoryId(childCategory._id));
+          .validateCategoryDeleted(getCategoryId(categoryDocument))
+          .validateCategoryParentReassign(getCategoryId(childCategory))
+          .validateCategoryParentReassign(getCategoryId(grandChildCategory), getCategoryId(childCategory));
       });
 
       it('to parent if had parent', () => {
@@ -142,10 +139,10 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
           .saveCategoryDocument(childCategory)
           .saveCategoryDocument(grandChildCategory)
           .authenticate(1)
-          .requestDeleteCategory(createCategoryId(childCategory._id))
+          .requestDeleteCategory(getCategoryId(childCategory))
           .expectNoContentResponse()
-          .validateCategoryDeleted(createCategoryId(childCategory._id))
-          .validateCategoryParentReassign(createCategoryId(grandChildCategory._id), createCategoryId(categoryDocument._id));
+          .validateCategoryDeleted(getCategoryId(childCategory))
+          .validateCategoryParentReassign(getCategoryId(grandChildCategory), getCategoryId(categoryDocument));
       });
     });
 
@@ -159,8 +156,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
           name: 'account',
           accountType: 'bankAccount',
           currency: 'Ft',
-        }, Cypress.env('EXPIRES_IN'));
-        accountDocument._id = new Types.ObjectId();
+        }, Cypress.env('EXPIRES_IN'), true);
       });
       it('should be unset if category is deleted', () => {
         [
@@ -173,11 +169,11 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
           .saveTransactionDocument(paymentTransactionDocument)
           .saveTransactionDocument(splitTransactionDocument)
           .authenticate(1)
-          .requestDeleteCategory(createCategoryId(categoryDocument._id))
+          .requestDeleteCategory(getCategoryId(categoryDocument))
           .expectNoContentResponse()
-          .validateCategoryDeleted(createCategoryId(categoryDocument._id))
-          .validateCategoryUnset(createTransactionId(paymentTransactionDocument._id))
-          .validateCategoryUnset(createTransactionId(splitTransactionDocument._id), 0);
+          .validateCategoryDeleted(getCategoryId(categoryDocument))
+          .validateCategoryUnset(getTransactionId(paymentTransactionDocument))
+          .validateCategoryUnset(getTransactionId(splitTransactionDocument), 0);
       });
 
       it('should be set to parent category if child is deleted', () => {
@@ -185,11 +181,10 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
           body: {
             categoryType: 'regular',
             name: 'child',
-            parentCategoryId: createCategoryId(categoryDocument._id),
+            parentCategoryId: getCategoryId(categoryDocument),
           },
           parentCategory: categoryDocument,
-        }, Cypress.env('EXPIRES_IN'));
-        childCategoryDocument._id = new Types.ObjectId();
+        }, Cypress.env('EXPIRES_IN'), true);
 
         [
           paymentTransactionDocument,
@@ -202,11 +197,11 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
           .saveTransactionDocument(paymentTransactionDocument)
           .saveTransactionDocument(splitTransactionDocument)
           .authenticate(1)
-          .requestDeleteCategory(createCategoryId(childCategoryDocument._id))
+          .requestDeleteCategory(getCategoryId(childCategoryDocument))
           .expectNoContentResponse()
-          .validateCategoryDeleted(createCategoryId(childCategoryDocument._id))
-          .validateCategoryUpdate(createTransactionId(paymentTransactionDocument._id), createCategoryId(categoryDocument._id))
-          .validateCategoryUpdate(createTransactionId(splitTransactionDocument._id), createCategoryId(categoryDocument._id), 0);
+          .validateCategoryDeleted(getCategoryId(childCategoryDocument))
+          .validateCategoryUpdate(getTransactionId(paymentTransactionDocument), getCategoryId(categoryDocument))
+          .validateCategoryUpdate(getTransactionId(splitTransactionDocument), getCategoryId(categoryDocument), 0);
       });
     });
 

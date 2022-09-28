@@ -1,11 +1,12 @@
-import { createAccountId, createCategoryId, createProjectId, createRecipientId, createTransactionId } from '@household/shared/common/test-data-factory';
+import { createAccountId, createCategoryId, createProductId, createProjectId, createRecipientId, createTransactionId } from '@household/shared/common/test-data-factory';
+import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
 import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
 import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
+import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
 import { projectDocumentConverter } from '@household/shared/dependencies/converters/project-document-converter';
 import { recipientDocumentConverter } from '@household/shared/dependencies/converters/recipient-document-converter';
 import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
-import { Account, Category, Project, Recipient, Transaction } from '@household/shared/types/types';
-import { Types } from 'mongoose';
+import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 
 describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
   let request: Transaction.SplitRequest;
@@ -17,25 +18,23 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
   let regularCategoryDocument: Category.Document;
   let invoiceCategoryDocument: Category.Document;
   let inventoryCategoryDocument: Category.Document;
+  let productDocument: Product.Document;
 
   beforeEach(() => {
     projectDocument = projectDocumentConverter.create({
       name: 'proj',
       description: 'desc',
-    }, Cypress.env('EXPIRES_IN'));
-    projectDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     recipientDocument = recipientDocumentConverter.create({
       name: 'recipient',
-    }, Cypress.env('EXPIRES_IN'));
-    recipientDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     accountDocument = accountDocumentConverter.create({
       name: 'bank',
       accountType: 'bankAccount',
       currency: 'Ft',
-    }, Cypress.env('EXPIRES_IN'));
-    accountDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     regularCategoryDocument = categoryDocumentConverter.create({
       body: {
@@ -44,8 +43,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
         parentCategoryId: undefined,
       },
       parentCategory: undefined,
-    }, Cypress.env('EXPIRES_IN'));
-    regularCategoryDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     invoiceCategoryDocument = categoryDocumentConverter.create({
       body: {
@@ -54,8 +52,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
         parentCategoryId: undefined,
       },
       parentCategory: undefined,
-    }, Cypress.env('EXPIRES_IN'));
-    invoiceCategoryDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     inventoryCategoryDocument = categoryDocumentConverter.create({
       body: {
@@ -64,17 +61,23 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
         parentCategoryId: undefined,
       },
       parentCategory: undefined,
-    }, Cypress.env('EXPIRES_IN'));
-    inventoryCategoryDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
-    const inventory: Transaction.Inventory['inventory'] = {
-      brand: 'brand',
-      measurement: 200,
+    productDocument = productDocumentConverter.create({
+      body: {
+        brand: 'brand',
+        measurement: 200,
+        unitOfMeasurement: 'kg',
+      },
+      category: inventoryCategoryDocument,
+    }, Cypress.env('EXPIRES_IN'), true);
+
+    const inventory: Transaction.InventoryItem<Product.Id> = {
       quantity: 1,
-      unitOfMeasurement: 'kg',
+      productId: getProductId(productDocument),
     };
 
-    const invoice: Transaction.Invoice<string>['invoice'] = {
+    const invoice: Transaction.InvoiceItem<string> = {
       billingStartDate: new Date(2022, 6, 1, 0, 0, 0).toISOString()
         .split('T')[0],
       billingEndDate: new Date(2022, 6, 25, 0, 0, 0).toISOString()
@@ -84,7 +87,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
 
     originalDocument = transactionDocumentConverter.createPaymentDocument({
       body: {
-        accountId: createAccountId(accountDocument._id),
+        accountId: getAccountId(accountDocument),
         amount: 100,
         description: undefined,
         issuedAt: new Date().toISOString(),
@@ -98,12 +101,12 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
       category: undefined,
       project: undefined,
       recipient: undefined,
-    }, Cypress.env('EXPIRES_IN'));
-    originalDocument._id = new Types.ObjectId();
+      product: undefined,
+    }, Cypress.env('EXPIRES_IN'), true);
 
     request = {
-      accountId: createAccountId(accountDocument._id),
-      recipientId: createRecipientId(recipientDocument._id),
+      accountId: getAccountId(accountDocument),
+      recipientId: getRecipientId(recipientDocument),
       amount: 3,
       description: 'description',
       issuedAt: new Date(2022, 6, 9, 22, 30, 12).toISOString(),
@@ -111,24 +114,24 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
         {
           amount: 1,
           description: 'split1',
-          categoryId: createCategoryId(regularCategoryDocument._id),
-          projectId: createProjectId(projectDocument._id),
+          categoryId: getCategoryId(regularCategoryDocument),
+          projectId: getProjectId(projectDocument),
           invoice,
           inventory,
         },
         {
           amount: 1,
           description: 'split2',
-          categoryId: createCategoryId(inventoryCategoryDocument._id),
-          projectId: createProjectId(projectDocument._id),
+          categoryId: getCategoryId(inventoryCategoryDocument),
+          projectId: getProjectId(projectDocument),
           invoice,
           inventory,
         },
         {
           amount: 1,
           description: 'split3',
-          categoryId: createCategoryId(invoiceCategoryDocument._id),
-          projectId: createProjectId(projectDocument._id),
+          categoryId: getCategoryId(invoiceCategoryDocument),
+          projectId: getProjectId(projectDocument),
           invoice,
           inventory,
         },
@@ -155,10 +158,11 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
           .saveCategoryDocument(inventoryCategoryDocument)
           .saveProjectDocument(projectDocument)
           .saveRecipientDocument(recipientDocument)
+          .saveProductDocument(productDocument)
           .authenticate(1)
-          .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), request)
+          .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
           .expectCreatedResponse()
-          .validateTransactionSplitDocument(request, regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+          .validateTransactionSplitDocument(request);
       });
       describe('without optional properties', () => {
         it('description', () => {
@@ -173,10 +177,11 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
+            .saveProductDocument(productDocument)
             .authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), modifiedRequest)
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), modifiedRequest)
             .expectCreatedResponse()
-            .validateTransactionSplitDocument(modifiedRequest, regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+            .validateTransactionSplitDocument(modifiedRequest);
         });
 
         it('recipientId', () => {
@@ -190,10 +195,11 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
             .saveCategoryDocument(invoiceCategoryDocument)
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
+            .saveProductDocument(productDocument)
             .authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), modifiedRequest)
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), modifiedRequest)
             .expectCreatedResponse()
-            .validateTransactionSplitDocument(modifiedRequest, regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+            .validateTransactionSplitDocument(modifiedRequest);
         });
 
         it('splits.description', () => {
@@ -211,10 +217,11 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
+            .saveProductDocument(productDocument)
             .authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), modifiedRequest)
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), modifiedRequest)
             .expectCreatedResponse()
-            .validateTransactionSplitDocument(modifiedRequest, regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+            .validateTransactionSplitDocument(modifiedRequest);
         });
 
         it('splits.inventory', () => {
@@ -232,85 +239,11 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
+            .saveProductDocument(productDocument)
             .authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), modifiedRequest)
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), modifiedRequest)
             .expectCreatedResponse()
-            .validateTransactionSplitDocument(modifiedRequest, regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
-        });
-
-        it('splits.inventory.brand', () => {
-          const modifiedRequest: Transaction.SplitRequest = {
-            ...request,
-            splits: request.splits.map(s => ({
-              ...s,
-              inventory: {
-                ...s.inventory,
-                brand: undefined,
-              },
-            })),
-          };
-
-          cy.saveTransactionDocument(originalDocument)
-            .saveAccountDocument(accountDocument)
-            .saveCategoryDocument(regularCategoryDocument)
-            .saveCategoryDocument(invoiceCategoryDocument)
-            .saveCategoryDocument(inventoryCategoryDocument)
-            .saveProjectDocument(projectDocument)
-            .saveRecipientDocument(recipientDocument)
-            .authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), modifiedRequest)
-            .expectCreatedResponse()
-            .validateTransactionSplitDocument(modifiedRequest, regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
-        });
-
-        it('splits.inventory.measurement', () => {
-          const modifiedRequest: Transaction.SplitRequest = {
-            ...request,
-            splits: request.splits.map(s => ({
-              ...s,
-              inventory: {
-                ...s.inventory,
-                measurement: undefined,
-              },
-            })),
-          };
-
-          cy.saveTransactionDocument(originalDocument)
-            .saveAccountDocument(accountDocument)
-            .saveCategoryDocument(regularCategoryDocument)
-            .saveCategoryDocument(invoiceCategoryDocument)
-            .saveCategoryDocument(inventoryCategoryDocument)
-            .saveProjectDocument(projectDocument)
-            .saveRecipientDocument(recipientDocument)
-            .authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), modifiedRequest)
-            .expectCreatedResponse()
-            .validateTransactionSplitDocument(modifiedRequest, regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
-        });
-
-        it('splits.inventory.unitOfMeasurement', () => {
-          const modifiedRequest: Transaction.SplitRequest = {
-            ...request,
-            splits: request.splits.map(s => ({
-              ...s,
-              inventory: {
-                ...s.inventory,
-                unitOfMeasurement: undefined,
-              },
-            })),
-          };
-
-          cy.saveTransactionDocument(originalDocument)
-            .saveAccountDocument(accountDocument)
-            .saveCategoryDocument(regularCategoryDocument)
-            .saveCategoryDocument(invoiceCategoryDocument)
-            .saveCategoryDocument(inventoryCategoryDocument)
-            .saveProjectDocument(projectDocument)
-            .saveRecipientDocument(recipientDocument)
-            .authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), modifiedRequest)
-            .expectCreatedResponse()
-            .validateTransactionSplitDocument(modifiedRequest, regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+            .validateTransactionSplitDocument(modifiedRequest);
         });
 
         it('splits.invoice', () => {
@@ -328,10 +261,11 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
+            .saveProductDocument(productDocument)
             .authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), modifiedRequest)
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), modifiedRequest)
             .expectCreatedResponse()
-            .validateTransactionSplitDocument(modifiedRequest, regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+            .validateTransactionSplitDocument(modifiedRequest);
         });
 
         it('splits.invoice.invoiceNumber', () => {
@@ -352,10 +286,11 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
+            .saveProductDocument(productDocument)
             .authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), modifiedRequest)
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), modifiedRequest)
             .expectCreatedResponse()
-            .validateTransactionSplitDocument(modifiedRequest, regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+            .validateTransactionSplitDocument(modifiedRequest);
         });
 
         it('splits.categoryId', () => {
@@ -371,7 +306,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), modifiedRequest)
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), modifiedRequest)
             .expectCreatedResponse()
             .validateTransactionSplitDocument(modifiedRequest);
         });
@@ -390,10 +325,11 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
             .saveCategoryDocument(invoiceCategoryDocument)
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveRecipientDocument(recipientDocument)
+            .saveProductDocument(productDocument)
             .authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), modifiedRequest)
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), modifiedRequest)
             .expectCreatedResponse()
-            .validateTransactionSplitDocument(modifiedRequest, regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+            .validateTransactionSplitDocument(modifiedRequest);
         });
       });
     });
@@ -417,7 +353,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
       describe('if body', () => {
         it('has additional properties', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               extra: 123,
             } as any)
@@ -430,7 +366,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
         it('is not the same as sum of splits', () => {
           cy.saveTransactionDocument(originalDocument)
             .authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               amount: 2,
             })
@@ -440,7 +376,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
 
         it('is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               amount: undefined,
             })
@@ -450,7 +386,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
 
         it('is not number', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               amount: '1' as any,
             })
@@ -462,7 +398,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
       describe('if description', () => {
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               description: 1 as any,
             })
@@ -472,7 +408,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
 
         it('is too short', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               description: '',
             })
@@ -484,7 +420,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
       describe('if issuedAt', () => {
         it('is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               issuedAt: undefined,
             })
@@ -494,7 +430,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               issuedAt: 1 as any,
             })
@@ -504,7 +440,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
 
         it('is not date-time format', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               issuedAt: 'not-date-time',
             })
@@ -522,7 +458,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               accountId: createAccountId(),
             })
@@ -532,7 +468,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
 
         it('is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               accountId: undefined,
             })
@@ -542,7 +478,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               accountId: 1 as any,
             })
@@ -552,7 +488,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
 
         it('is not mongo id format', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               accountId: createAccountId('not-mongo-id'),
             })
@@ -570,7 +506,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               recipientId: createRecipientId(),
             })
@@ -580,7 +516,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               recipientId: 1 as any,
             })
@@ -590,7 +526,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
 
         it('is not mongo id format', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               recipientId: createRecipientId('not-mongo-id'),
             })
@@ -602,7 +538,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
       describe('if splits', () => {
         it('is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               splits: undefined,
             })
@@ -612,7 +548,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
 
         it('is not an array', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               splits: 1 as any,
             })
@@ -622,7 +558,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
 
         it('is empty array', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               splits: [],
             })
@@ -634,7 +570,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
       describe('if splits[0]', () => {
         it('is not object', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               splits: [1] as any,
             })
@@ -644,7 +580,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
 
         it('has additional properties', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
@@ -659,7 +595,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
       describe('if splits.amount', () => {
         it('is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
@@ -672,7 +608,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
 
         it('is not number', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
@@ -687,7 +623,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
       describe('if splits.description', () => {
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
@@ -700,7 +636,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
 
         it('is too short', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
@@ -715,7 +651,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
       describe('if splits.inventory', () => {
         it('is not object', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
@@ -728,7 +664,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
 
         it('has additional properties', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
@@ -746,7 +682,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
       describe('if splits.inventory.quantity', () => {
         it('is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
@@ -762,7 +698,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
 
         it('is not number', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
@@ -778,7 +714,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
 
         it('is too small', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
@@ -793,112 +729,74 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
         });
       });
 
-      describe('if splits.inventory.brand', () => {
+      describe('if splits.inventory.productId', () => {
+        it('is missing', () => {
+          cy.authenticate(1)
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
+              ...request,
+              splits: request.splits.map(s => ({
+                ...s,
+                inventory: {
+                  ...s.inventory,
+                  productId: undefined,
+                },
+              })),
+            })
+            .expectBadRequestResponse()
+            .expectRequiredProperty('productId', 'body');
+        });
+
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
                 inventory: {
                   ...s.inventory,
-                  brand: 1 as any,
+                  productId: 1 as any,
                 },
               })),
             })
             .expectBadRequestResponse()
-            .expectWrongPropertyType('brand', 'string', 'body');
+            .expectWrongPropertyType('productId', 'string', 'body');
         });
 
-        it('is too short', () => {
+        it('is not mongo id format', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
                 inventory: {
                   ...s.inventory,
-                  brand: '',
+                  productId: createProductId('not-valid'),
                 },
               })),
             })
             .expectBadRequestResponse()
-            .expectTooShortProperty('brand', 1, 'body');
-        });
-      });
-
-      describe('if splits.inventory.measurement', () => {
-        it('is not number', () => {
-          cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                inventory: {
-                  ...s.inventory,
-                  measurement: '1' as any,
-                },
-              })),
-            })
-            .expectBadRequestResponse()
-            .expectWrongPropertyType('measurement', 'number', 'body');
+            .expectWrongPropertyPattern('productId', 'body');
         });
 
-        it('is too small', () => {
-          cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                inventory: {
-                  ...s.inventory,
-                  measurement: 0,
-                },
-              })),
-            })
+        it('does not belong to any product', () => {
+          cy.saveTransactionDocument(originalDocument)
+            .saveAccountDocument(accountDocument)
+            .saveCategoryDocument(regularCategoryDocument)
+            .saveCategoryDocument(invoiceCategoryDocument)
+            .saveCategoryDocument(inventoryCategoryDocument)
+            .saveProjectDocument(projectDocument)
+            .saveRecipientDocument(recipientDocument)
+            .authenticate(1)
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
             .expectBadRequestResponse()
-            .expectTooSmallNumberProperty('measurement', 0, true, 'body');
-        });
-      });
-
-      describe('if splits.inventory.unitOfMeasurement', () => {
-        it('is not string', () => {
-          cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                inventory: {
-                  ...s.inventory,
-                  unitOfMeasurement: 1 as any,
-                },
-              })),
-            })
-            .expectBadRequestResponse()
-            .expectWrongPropertyType('unitOfMeasurement', 'string', 'body');
-        });
-
-        it('is not a valid enum value', () => {
-          cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                inventory: {
-                  ...s.inventory,
-                  unitOfMeasurement: 'lb' as any,
-                },
-              })),
-            })
-            .expectBadRequestResponse()
-            .expectWrongEnumValue('unitOfMeasurement', 'body');
+            .expectMessage('No product found');
         });
       });
 
       describe('if splits.invoice', () => {
         it('is not object', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
@@ -911,7 +809,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
 
         it('has additional properties', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
@@ -929,7 +827,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
       describe('if splits.invoice.invoiceNumber', () => {
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
@@ -945,7 +843,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
 
         it('is too short', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
@@ -963,7 +861,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
       describe('if splits.invoice.billingEndDate', () => {
         it('is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
@@ -979,7 +877,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
@@ -995,7 +893,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
 
         it('is not date format', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
@@ -1011,7 +909,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
 
         it('is earlier than billingStartDate', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
@@ -1030,7 +928,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
       describe('if splits.invoice.billingStartDate', () => {
         it('is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
@@ -1046,7 +944,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
@@ -1062,7 +960,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
 
         it('is not date format', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
@@ -1084,7 +982,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
@@ -1097,7 +995,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
@@ -1110,7 +1008,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
 
         it('is not mongo id format', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
@@ -1131,7 +1029,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
@@ -1144,7 +1042,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
@@ -1157,7 +1055,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
 
         it('is not mongo id format', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,

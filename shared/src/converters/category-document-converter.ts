@@ -1,3 +1,4 @@
+import { generateMongoId } from '@household/shared/common/test-data-factory';
 import { addSeconds, getCategoryId } from '@household/shared/common/utils';
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
 import { Restrict } from '@household/shared/types/common';
@@ -7,7 +8,7 @@ export interface ICategoryDocumentConverter {
   create(data: {
     body: Category.Request;
     parentCategory: Category.Document
-  }, expiresIn: number): Category.Document;
+  }, expiresIn: number, generateId?: boolean): Category.Document;
   update(data: {
     document: Restrict<Category.Document, 'updatedAt'>;
     body: Category.Request;
@@ -21,13 +22,13 @@ export const categoryDocumentConverterFactory = (
   productDocumentConverter: IProductDocumentConverter,
 ): ICategoryDocumentConverter => {
   const instance: ICategoryDocumentConverter = {
-    create: ({ body, parentCategory }, expiresIn): Category.Document => {
+    create: ({ body, parentCategory }, expiresIn, generateId): Category.Document => {
       return {
         ...body,
         fullName: parentCategory ? `${parentCategory.fullName}:${body.name}` : body.name,
-        parentCategory: parentCategory,
+        parentCategory: parentCategory ?? undefined,
         parentCategoryId: undefined,
-        _id: undefined,
+        _id: generateId ? generateMongoId() : undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
