@@ -1,5 +1,6 @@
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICategoryService } from '@household/shared/services/category-service';
+import { IProductService } from '@household/shared/services/product-service';
 import { IProjectService } from '@household/shared/services/project-service';
 import { IRecipientService } from '@household/shared/services/recipient-service';
 import { IStorageService } from '@household/shared/services/storage-service';
@@ -15,6 +16,7 @@ export const databaseArchiveServiceFactory = (
   categoryService: ICategoryService,
   recipientService: IRecipientService,
   transactionService: ITransactionService,
+  productService: IProductService,
   storageService: IStorageService): IDatabaseArchiveService =>
   async () => {
     const [
@@ -23,12 +25,14 @@ export const databaseArchiveServiceFactory = (
       categories,
       recipients,
       transactions,
+      products,
     ] = await Promise.all([
       accountService.dumpAccounts(),
       projectService.dumpProjects(),
       categoryService.dumpCategories(),
       recipientService.dumpRecipients(),
       transactionService.dumpTransactions(),
+      productService.dumpProducts(),
     ]);
     const folderName = new Date().toISOString();
 
@@ -38,5 +42,6 @@ export const databaseArchiveServiceFactory = (
       storageService.writeFile(process.env.DATABASE_ARCHIVE_BUCKET, 'categories.json', categories, folderName),
       storageService.writeFile(process.env.DATABASE_ARCHIVE_BUCKET, 'recipients.json', recipients, folderName),
       storageService.writeFile(process.env.DATABASE_ARCHIVE_BUCKET, 'transactions.json', transactions, folderName),
+      storageService.writeFile(process.env.DATABASE_ARCHIVE_BUCKET, 'products.json', products, folderName),
     ]);
   };

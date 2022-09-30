@@ -4,10 +4,6 @@ import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/
 import { IRecipientService } from '@household/shared/services/recipient-service';
 import { getRecipientId } from '@household/shared/common/utils';
 
-const recipientTask = <T extends keyof IRecipientService>(name: T, params: Parameters<IRecipientService[T]>) => {
-  return cy.task(name, ...params);
-};
-
 const requestCreateRecipient = (idToken: string, recipient: Recipient.Request) => {
   return cy.request({
     body: recipient,
@@ -71,8 +67,8 @@ const validateRecipientDocument = (response: Recipient.Id, request: Recipient.Re
   const id = response?.recipientId;
 
   cy.log('Get recipient document', id)
-    .recipientTask('getRecipientById', [id])
-    .should((document: Recipient.Document) => {
+    .getRecipientDocumentById(id)
+    .should((document) => {
       expect(getRecipientId(document), '_id').to.equal(id);
       expect(document.name, 'name').to.equal(request.name);
     });
@@ -92,14 +88,18 @@ const validateRecipientListResponse = (responses: Recipient.Response[], document
 
 const validateRecipientDeleted = (recipientId: Recipient.IdType) => {
   cy.log('Get recipient document', recipientId)
-    .recipientTask('getRecipientById', [recipientId])
+    .getRecipientDocumentById(recipientId)
     .should((document) => {
       expect(document, 'document').to.be.null;
     });
 };
 
-const saveRecipientDocument = (document: Recipient.Document) => {
-  cy.recipientTask('saveRecipient', [document]);
+const saveRecipientDocument = (...params: Parameters<IRecipientService['saveRecipient']>) => {
+  return cy.task('saveRecipient', ...params);
+};
+
+const getRecipientDocumentById = (...params: Parameters<IRecipientService['getRecipientById']>) => {
+  return cy.task<Recipient.Document>('getRecipientById', ...params);
 };
 
 export const setRecipientCommands = () => {
@@ -117,8 +117,8 @@ export const setRecipientCommands = () => {
   });
 
   Cypress.Commands.addAll({
-    recipientTask,
     saveRecipientDocument,
+    getRecipientDocumentById,
     validateRecipientDeleted,
   });
 };
@@ -128,7 +128,7 @@ declare global {
     interface Chainable {
       validateRecipientDeleted: CommandFunction<typeof validateRecipientDeleted>;
       saveRecipientDocument: CommandFunction<typeof saveRecipientDocument>;
-      recipientTask: CommandFunction<typeof recipientTask>
+      getRecipientDocumentById: CommandFunction<typeof getRecipientDocumentById>
     }
 
     interface ChainableRequest extends Chainable {

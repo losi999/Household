@@ -216,6 +216,10 @@ export const httpErrors = {
         throw httpError(statusCode, 'No product found');
       }
     },
+    delete: (ctx: Product.Id, statusCode = 500): Catch => (error) => {
+      log('Delete product', ctx, error);
+      throw httpError(statusCode, 'Error while deleting product');
+    },
     categoryRelation: (condition: boolean, ctx: Category.Id & Product.Id, statusCode = 400) => {
       if (condition) {
         log('Product belongs to different category', ctx);

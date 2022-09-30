@@ -64,12 +64,9 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
     }, Cypress.env('EXPIRES_IN'), true);
 
     productDocument = productDocumentConverter.create({
-      body: {
-        brand: 'brand',
-        measurement: 200,
-        unitOfMeasurement: 'kg',
-      },
-      category: inventoryCategoryDocument,
+      brand: 'brand',
+      measurement: 200,
+      unitOfMeasurement: 'kg',
     }, Cypress.env('EXPIRES_IN'), true);
 
     const inventory: Transaction.InventoryItem<Product.Id> = {
@@ -158,7 +155,10 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
           .saveCategoryDocument(inventoryCategoryDocument)
           .saveProjectDocument(projectDocument)
           .saveRecipientDocument(recipientDocument)
-          .saveProductDocument(productDocument)
+          .saveProductDocument({
+            document: productDocument,
+            categoryId: getCategoryId(inventoryCategoryDocument),
+          })
           .authenticate(1)
           .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
           .expectCreatedResponse()
@@ -177,7 +177,10 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .saveProductDocument(productDocument)
+            .saveProductDocument({
+              document: productDocument,
+              categoryId: getCategoryId(inventoryCategoryDocument),
+            })
             .authenticate(1)
             .requestUpdateToSplitTransaction(getTransactionId(originalDocument), modifiedRequest)
             .expectCreatedResponse()
@@ -195,7 +198,10 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
             .saveCategoryDocument(invoiceCategoryDocument)
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
-            .saveProductDocument(productDocument)
+            .saveProductDocument({
+              document: productDocument,
+              categoryId: getCategoryId(inventoryCategoryDocument),
+            })
             .authenticate(1)
             .requestUpdateToSplitTransaction(getTransactionId(originalDocument), modifiedRequest)
             .expectCreatedResponse()
@@ -217,7 +223,10 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .saveProductDocument(productDocument)
+            .saveProductDocument({
+              document: productDocument,
+              categoryId: getCategoryId(inventoryCategoryDocument),
+            })
             .authenticate(1)
             .requestUpdateToSplitTransaction(getTransactionId(originalDocument), modifiedRequest)
             .expectCreatedResponse()
@@ -239,7 +248,10 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .saveProductDocument(productDocument)
+            .saveProductDocument({
+              document: productDocument,
+              categoryId: getCategoryId(inventoryCategoryDocument),
+            })
             .authenticate(1)
             .requestUpdateToSplitTransaction(getTransactionId(originalDocument), modifiedRequest)
             .expectCreatedResponse()
@@ -261,7 +273,10 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .saveProductDocument(productDocument)
+            .saveProductDocument({
+              document: productDocument,
+              categoryId: getCategoryId(inventoryCategoryDocument),
+            })
             .authenticate(1)
             .requestUpdateToSplitTransaction(getTransactionId(originalDocument), modifiedRequest)
             .expectCreatedResponse()
@@ -286,7 +301,10 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .saveProductDocument(productDocument)
+            .saveProductDocument({
+              document: productDocument,
+              categoryId: getCategoryId(inventoryCategoryDocument),
+            })
             .authenticate(1)
             .requestUpdateToSplitTransaction(getTransactionId(originalDocument), modifiedRequest)
             .expectCreatedResponse()
@@ -325,7 +343,10 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
             .saveCategoryDocument(invoiceCategoryDocument)
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveRecipientDocument(recipientDocument)
-            .saveProductDocument(productDocument)
+            .saveProductDocument({
+              document: productDocument,
+              categoryId: getCategoryId(inventoryCategoryDocument),
+            })
             .authenticate(1)
             .requestUpdateToSplitTransaction(getTransactionId(originalDocument), modifiedRequest)
             .expectCreatedResponse()

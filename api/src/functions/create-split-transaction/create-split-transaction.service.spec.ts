@@ -33,13 +33,12 @@ describe('Create split transaction service', () => {
     service = createSplitTransactionServiceFactory(mockAccountService.service, mockProjectService.service, mockCategoryService.service, mockRecipientService.service, mockProductService.service, mockTransactionService.service, mockTransactionDocumentConverter.service);
   });
 
+  const product = createProductDocument();
   const category = createCategoryDocument({
     categoryType: 'inventory',
+    products: [product],
   });
   const project = createProjectDocument();
-  const product = createProductDocument({
-    category,
-  });
 
   const categoryId = getCategoryId(category);
   const projectId = getProjectId(project);
@@ -298,11 +297,11 @@ describe('Create split transaction service', () => {
     });
 
     it('with related ids filtered into a distinct array', async () => {
-      const category2 = createCategoryDocument();
-      const project2 = createProjectDocument();
-      const product2 = createProductDocument({
-        category: category2,
+      const product2 = createProductDocument();
+      const category2 = createCategoryDocument({
+        products: [product2],
       });
+      const project2 = createProjectDocument();
 
       const categoryId2 = getCategoryId(category2);
       const projectId2 = getProjectId(project2);
@@ -633,9 +632,7 @@ describe('Create split transaction service', () => {
     });
 
     it('if product belongs to different category', async () => {
-      const otherProduct = createProductDocument({
-        category: createCategoryDocument(),
-      });
+      const otherProduct = createProductDocument();
       const otherProductId = getProductId(otherProduct);
 
       const modifiedBody = createSplitTransactionRequest({

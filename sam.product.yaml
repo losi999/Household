@@ -80,69 +80,37 @@ Resources:
             Auth:
               Authorizer: CognitoAuthorizer
 
-  # UpdateProduct:
-  #   Type: AWS::Serverless::Function
-  #   Properties:
-  #     FunctionName: !Sub Household-${Env}-UpdateProduct
-  #     CodeUri: dist/api/update-product
-  #     Role: !Ref LambdaRoleArn
-  #     Events:
-  #       API:
-  #         Type: Api
-  #         Properties:
-  #           RestApiId: !Ref ProductApi
-  #           Path: /v1/categories/{categoryId}/products/{productId}
-  #           Method: PUT
-  #           Auth:
-  #             Authorizer: CognitoAuthorizer
+  UpdateProduct:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-UpdateProduct
+      CodeUri: dist/api/update-product
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ProductApi
+            Path: /v1/products/{productId}
+            Method: PUT
+            Auth:
+              Authorizer: CognitoAuthorizer
 
-  # ListCategories:
-  #   Type: AWS::Serverless::Function
-  #   Properties:
-  #     FunctionName: !Sub Household-${Env}-ListCategories
-  #     CodeUri: dist/api/list-products
-  #     Role: !Ref LambdaRoleArn
-  #     Events:
-  #       API:
-  #         Type: Api
-  #         Properties:
-  #           RestApiId: !Ref ProductApi
-  #           Path: /v1/categories/{categoryId}/products
-  #           Method: GET
-  #           Auth:
-  #             Authorizer: CognitoAuthorizer
-
-  # GetProduct:
-  #   Type: AWS::Serverless::Function
-  #   Properties:
-  #     FunctionName: !Sub Household-${Env}-GetProduct
-  #     CodeUri: dist/api/get-product
-  #     Role: !Ref LambdaRoleArn
-  #     Events:
-  #       API:
-  #         Type: Api
-  #         Properties:
-  #           RestApiId: !Ref ProductApi
-  #           Path: /v1/categories/{categoryId}/products/{productId}
-  #           Method: GET
-  #           Auth:
-  #             Authorizer: CognitoAuthorizer
-
-  # DeleteProduct:
-  #   Type: AWS::Serverless::Function
-  #   Properties:
-  #     FunctionName: !Sub Household-${Env}-DeleteProduct
-  #     CodeUri: dist/api/delete-product
-  #     Role: !Ref LambdaRoleArn
-  #     Events:
-  #       API:
-  #         Type: Api
-  #         Properties:
-  #           RestApiId: !Ref ProductApi
-  #           Path: /v1/categories/{categoryId}/products/{productId}
-  #           Method: DELETE
-  #           Auth:
-  #             Authorizer: CognitoAuthorizer
+  DeleteProduct:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-DeleteProduct
+      CodeUri: dist/api/delete-product
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ProductApi
+            Path: /v1/products/{productId}
+            Method: DELETE
+            Auth:
+              Authorizer: CognitoAuthorizer
 
 Outputs:
   ProductApi:

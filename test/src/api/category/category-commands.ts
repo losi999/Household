@@ -1,12 +1,8 @@
-import { Category } from '@household/shared/types/types';
+import { Category, Product } from '@household/shared/types/types';
 import { headerExpiresIn } from '@household/shared/constants';
 import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/test/api/types';
 import { ICategoryService } from '@household/shared/services/category-service';
-import { getCategoryId } from '@household/shared/common/utils';
-
-const categoryTask = <T extends keyof ICategoryService>(name: T, params: Parameters<ICategoryService[T]>) => {
-  return cy.task(name, ...params);
-};
+import { getCategoryId, getProductId } from '@household/shared/common/utils';
 
 const requestCreateCategory = (idToken: string, category: Category.Request) => {
   return cy.request({
@@ -67,12 +63,12 @@ const requestGetCategoryList = (idToken: string) => {
   }) as Cypress.ChainableResponse;
 };
 
-const validateCategoryDocument = (response: Category.Id, request: Category.Request, parentCategory?: Category.Document) => {
+const validateCategoryDocument = (response: Category.Id, request: Category.Request, parentCategory?: Category.Document, product?: Product.Document) => {
   const id = response?.categoryId;
 
   cy.log('Get category document', id)
-    .categoryTask('getCategoryById', [id])
-    .should((document: Category.Document) => {
+    .getCategoryDocumentById(id)
+    .should((document) => {
       expect(getCategoryId(document), 'id').to.equal(id);
       expect(document.name, 'name').to.equal(request.name);
       expect(document.categoryType, 'categoryType').to.equal(request.categoryType);
@@ -81,6 +77,9 @@ const validateCategoryDocument = (response: Category.Id, request: Category.Reque
       expect(document.parentCategory?.fullName, 'parentCategory.fullName').to.equal(parentCategory?.fullName);
       expect(document.parentCategory?.categoryType, 'parentCategory.categoryType').to.equal(parentCategory?.categoryType);
       expect(getCategoryId(document.parentCategory), 'parentCategory.categoryId').to.equal(getCategoryId(parentCategory));
+      if (product) {
+        expect(document.products).to.contain(getProductId(product));
+      }
     });
 };
 
@@ -104,7 +103,7 @@ const validateCategoryListResponse = (responses: Category.Response[], documents:
 
 const validateCategoryDeleted = (categoryId: Category.IdType) => {
   cy.log('Get category document', categoryId)
-    .categoryTask('getCategoryById', [categoryId])
+    .getCategoryDocumentById(categoryId)
     .should((document) => {
       expect(document, 'document').to.be.null;
     });
@@ -114,13 +113,13 @@ const validateCategoryParentReassign = (categoryId: Category.IdType, parentCateg
   let parentCategoryDocument: Category.Document;
 
   cy.log('Get parent category document', parentCategoryId)
-    .categoryTask('getCategoryById', [parentCategoryId])
-    .should((document: Category.Document) => {
+    .getCategoryDocumentById(parentCategoryId)
+    .should((document) => {
       parentCategoryDocument = document;
     })
     .log('Get category document', categoryId)
-    .categoryTask('getCategoryById', [categoryId])
-    .should((document: Category.Document) => {
+    .getCategoryDocumentById(categoryId)
+    .should((document) => {
       if (parentCategoryDocument) {
         expect(document.fullName, 'fullName').to.equal(`${parentCategoryDocument.fullName}:${document.name}`);
         expect(getCategoryId(document.parentCategory), 'parentCategory').to.equal(getCategoryId(parentCategoryDocument));
@@ -131,8 +130,12 @@ const validateCategoryParentReassign = (categoryId: Category.IdType, parentCateg
     });
 };
 
-const saveCategoryDocument = (document: Category.Document) => {
-  cy.categoryTask('saveCategory', [document]);
+const saveCategoryDocument = (...params: Parameters<ICategoryService['saveCategory']>) => {
+  return cy.task<Category.Document>('saveCategory', ...params);
+};
+
+const getCategoryDocumentById = (...params: Parameters<ICategoryService['getCategoryById']>) => {
+  return cy.task<Category.Document>('getCategoryById', ...params);
 };
 
 export const setCategoryCommands = () => {
@@ -150,8 +153,8 @@ export const setCategoryCommands = () => {
   });
 
   Cypress.Commands.addAll({
-    categoryTask,
     saveCategoryDocument,
+    getCategoryDocumentById,
     validateCategoryDeleted,
     validateCategoryParentReassign,
   });
@@ -163,7 +166,7 @@ declare global {
       validateCategoryDeleted: CommandFunction<typeof validateCategoryDeleted>;
       validateCategoryParentReassign: CommandFunction<typeof validateCategoryParentReassign>;
       saveCategoryDocument: CommandFunction<typeof saveCategoryDocument>;
-      categoryTask: CommandFunction<typeof categoryTask>
+      getCategoryDocumentById: CommandFunction<typeof getCategoryDocumentById>;
     }
 
     interface ChainableRequest extends Chainable {

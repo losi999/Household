@@ -4,10 +4,6 @@ import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/
 import { IAccountService } from '@household/shared/services/account-service';
 import { getAccountId } from '@household/shared/common/utils';
 
-const accountTask = <T extends keyof IAccountService>(name: T, params: Parameters<IAccountService[T]>) => {
-  return cy.task(name, ...params);
-};
-
 const requestCreateAccount = (idToken: string, account: Account.Request) => {
   return cy.request({
     body: account,
@@ -71,8 +67,8 @@ const validateAccountDocument = (response: Account.Id, request: Account.Request)
   const id = response?.accountId;
 
   cy.log('Get account document', id)
-    .accountTask('getAccountById', [id])
-    .should((document: Account.Document) => {
+    .getAccountDocumentById(id)
+    .should((document) => {
       expect(getAccountId(document), '_id').to.equal(id);
       expect(document.name, 'name').to.equal(request.name);
       expect(document.accountType, 'accountType').to.equal(request.accountType);
@@ -101,14 +97,18 @@ const validateAccountListResponse = (responses: Account.Response[], documents: A
 
 const validateAccountDeleted = (accountId: Account.IdType) => {
   cy.log('Get account document', accountId)
-    .accountTask('getAccountById', [accountId])
+    .getAccountDocumentById(accountId)
     .should((document) => {
       expect(document, 'document').to.be.null;
     });
 };
 
-const saveAccountDocument = (document: Account.Document) => {
-  cy.accountTask('saveAccount', [document]);
+const saveAccountDocument = (...params: Parameters<IAccountService['saveAccount']>) => {
+  return cy.task<Account.Document>('saveAccount', ...params);
+};
+
+const getAccountDocumentById = (...params: Parameters<IAccountService['getAccountById']>) => {
+  return cy.task<Account.Document>('getAccountById', ...params);
 };
 
 export const setAccountCommands = () => {
@@ -126,8 +126,8 @@ export const setAccountCommands = () => {
   });
 
   Cypress.Commands.addAll({
-    accountTask,
     saveAccountDocument,
+    getAccountDocumentById,
     validateAccountDeleted,
   });
 };
@@ -137,7 +137,7 @@ declare global {
     interface Chainable {
       validateAccountDeleted: CommandFunction<typeof validateAccountDeleted>;
       saveAccountDocument: CommandFunction<typeof saveAccountDocument>;
-      accountTask: CommandFunction<typeof accountTask>;
+      getAccountDocumentById: CommandFunction<typeof getAccountDocumentById>;
     }
 
     interface ChainableRequest extends Chainable {

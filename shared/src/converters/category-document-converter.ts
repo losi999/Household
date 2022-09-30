@@ -27,12 +27,13 @@ export const categoryDocumentConverterFactory = (
         ...body,
         fullName: parentCategory ? `${parentCategory.fullName}:${body.name}` : body.name,
         parentCategory: parentCategory ?? undefined,
+        products: undefined,
         parentCategoryId: undefined,
         _id: generateId ? generateMongoId() : undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
-    update: ({ document: { _id, createdAt }, body, parentCategory }, expiresIn): Category.Document => {
+    update: ({ document: { _id, createdAt, products }, body, parentCategory }, expiresIn): Category.Document => {
       return {
         ...instance.create({
           body,
@@ -40,6 +41,7 @@ export const categoryDocumentConverterFactory = (
         }, expiresIn),
         _id,
         createdAt,
+        products,
       };
     },
     toResponse: (doc): Category.Response => {

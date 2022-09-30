@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "cypress-env": "cp cypress.${ENV}.env.json cypress.env.json",
-    "start": "export ENV=localhost && yarn cypress-env && cypress open -d -C cypress.localhost.json",
+    "start": "export ENV=localhost && yarn cypress-env && cypress open -C cypress.localhost.json",
     "start:LOCAL": "export ENV=LOCAL && yarn cypress-env && cypress open -d -C cypress.LOCAL.json",
     "test": "cypress run -C cypress.${ENV}.json",
     "test:LOCAL": "export ENV=LOCAL && yarn cypress-env && cypress run -C cypress.LOCAL.json"

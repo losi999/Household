@@ -2,6 +2,7 @@ import { categoryDocumentConverter } from '@household/shared/dependencies/conver
 import { default as schema } from '@household/test/api/schemas/category-response-list';
 import { Category, Product } from '@household/shared/types/types';
 import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
+import { getCategoryId } from '@household/shared/common/utils';
 
 describe('GET /category/v1/categories', () => {
   const category1: Category.Request = {
@@ -32,13 +33,11 @@ describe('GET /category/v1/categories', () => {
     }, Cypress.env('EXPIRES_IN'), true);
 
     productDocument = productDocumentConverter.create({
-      body: {
-        brand: 'tesco',
-        unitOfMeasurement: 'g',
-        measurement: 300,
-      },
-      category: categoryDocument2,
-    }, Cypress.env('EXPIRES_IN'), true);
+      brand: 'tesco',
+      unitOfMeasurement: 'g',
+      measurement: 300,
+    },
+    Cypress.env('EXPIRES_IN'), true);
   });
 
   describe('called as anonymous', () => {
@@ -53,7 +52,10 @@ describe('GET /category/v1/categories', () => {
     it('should get a list of categories', () => {
       cy.saveCategoryDocument(categoryDocument1)
         .saveCategoryDocument(categoryDocument2)
-        .saveProductDocument(productDocument)
+        .saveProductDocument({
+          document: productDocument,
+          categoryId: getCategoryId(categoryDocument1),
+        })
         .authenticate(1)
         .requestGetCategoryList()
         .expectOkResponse()

@@ -1,7 +1,8 @@
 import { createCategoryId } from '@household/shared/common/test-data-factory';
-import { getAccountId, getCategoryId, getTransactionId, toDictionary } from '@household/shared/common/utils';
+import { getAccountId, getCategoryId, getProductId, getTransactionId, toDictionary } from '@household/shared/common/utils';
 import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
 import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
+import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
 import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
 import { Account, Category, Transaction } from '@household/shared/types/types';
 
@@ -202,6 +203,27 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
           .validateCategoryDeleted(getCategoryId(childCategoryDocument))
           .validateCategoryUpdate(getTransactionId(paymentTransactionDocument), getCategoryId(categoryDocument))
           .validateCategoryUpdate(getTransactionId(splitTransactionDocument), getCategoryId(categoryDocument), 0);
+      });
+    });
+
+    describe('related products', () => {
+      it('should be deleted', () => {
+        const productDocument = productDocumentConverter.create({
+          brand: 'tesco',
+          measurement: 500,
+          unitOfMeasurement: 'g',
+        }, Cypress.env('EXPIRES_IN'), true);
+
+        cy.saveCategoryDocument(categoryDocument)
+          .saveProductDocument({
+            document: productDocument,
+            categoryId: getCategoryId(categoryDocument),
+          })
+          .authenticate(1)
+          .requestDeleteCategory(getCategoryId(categoryDocument))
+          .expectNoContentResponse()
+          .validateCategoryDeleted(getCategoryId(categoryDocument))
+          .validateProductDeleted(getProductId(productDocument));
       });
     });
 

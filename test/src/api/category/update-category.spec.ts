@@ -1,6 +1,7 @@
 import { createCategoryId } from '@household/shared/common/test-data-factory';
 import { getCategoryId } from '@household/shared/common/utils';
 import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
+import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
 import { Category } from '@household/shared/types/types';
 
 describe('PUT /category/v1/categories/{categoryId}', () => {
@@ -40,6 +41,24 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
         .requestUpdateCategory(getCategoryId(categoryDocument), categoryToUpdate)
         .expectCreatedResponse()
         .validateCategoryDocument(categoryToUpdate);
+    });
+
+    it('should keep existing product', () => {
+      const productDocument = productDocumentConverter.create({
+        brand: 'tesco',
+        measurement: 500,
+        unitOfMeasurement: 'g',
+      }, Cypress.env('EXPIRES_IN'), true);
+
+      cy.saveCategoryDocument(categoryDocument)
+        .saveProductDocument({
+          document: productDocument,
+          categoryId: getCategoryId(categoryDocument),
+        })
+        .authenticate(1)
+        .requestUpdateCategory(getCategoryId(categoryDocument), categoryToUpdate)
+        .expectCreatedResponse()
+        .validateCategoryDocument(categoryToUpdate, undefined, productDocument);
     });
 
     describe('children should be reassigned', () => {

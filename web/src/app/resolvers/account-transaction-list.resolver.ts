@@ -5,15 +5,15 @@ import {
 } from '@angular/router';
 import { Account, Transaction } from '@household/shared/types/types';
 import { Observable } from 'rxjs';
-import { AccountService } from 'src/app/account/account.service';
+import { TransactionService } from 'src/app/transaction/transaction.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AccountTransactionListResolver implements Resolve<Transaction.Response[]> {
-  constructor(private accountService: AccountService) { }
+  constructor(private transactionService: TransactionService) { }
 
   resolve(route: ActivatedRouteSnapshot): Observable<Transaction.Response[]> {
-    return this.accountService.listTransactionsByAccountId(route.paramMap.get('accountId') as Account.IdType);
+    return this.transactionService.listTransactionsByAccountId(route.paramMap.get('accountId') as Account.IdType);
   }
 }

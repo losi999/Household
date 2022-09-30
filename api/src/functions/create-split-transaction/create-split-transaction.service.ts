@@ -1,5 +1,5 @@
 import { httpErrors } from '@household/api/common/error-handlers';
-import { getCategoryId, getTransactionId, toDictionary } from '@household/shared/common/utils';
+import { getProductId, getTransactionId, toDictionary } from '@household/shared/common/utils';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICategoryService } from '@household/shared/services/category-service';
@@ -88,7 +88,7 @@ export const createSplitTransactionServiceFactory = (
           productId,
         }, 400);
 
-        httpErrors.product.categoryRelation(getCategoryId(product.category) !== s.categoryId, {
+        httpErrors.product.categoryRelation(!category.products.find(product => getProductId(product) === productId), {
           categoryId: s.categoryId,
           productId,
         });

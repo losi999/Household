@@ -4,15 +4,17 @@ import { ICategoryService } from '@household/shared/services/category-service';
 import { Category } from '@household/shared/types/types';
 
 export interface IListCategoriesService {
-  (): Promise<Category.Response[]>;
+  (ctx: Category.CategoryType): Promise<Category.Response[]>;
 }
 
 export const listCategoriesServiceFactory = (
   categoryService: ICategoryService,
   categoryDocumentConverter: ICategoryDocumentConverter): IListCategoriesService => {
-  return async () => {
+  return async ({ categoryType }) => {
 
-    const documents = await categoryService.listCategories().catch(httpErrors.category.list());
+    const documents = await categoryService.listCategories({
+      categoryType,
+    }).catch(httpErrors.category.list());
 
     return categoryDocumentConverter.toResponseList(documents);
   };

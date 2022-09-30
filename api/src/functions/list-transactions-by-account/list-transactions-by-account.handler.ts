@@ -6,7 +6,7 @@ import { Common, Transaction } from '@household/shared/types/types';
 export default (listTransactionsByAccount: IListTransactionsByAccountService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {
     const { accountId } = castPathParameters(event);
-    const { pageSize, pageNumber } = event.queryStringParameters ?? {} as Common.Pagination<string>;
+    const { pageSize, pageNumber } = (event.queryStringParameters ?? {}) as Common.Pagination<string>;
 
     let transactions: Transaction.Response[];
     try {

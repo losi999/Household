@@ -58,6 +58,7 @@ export const createCategoryDocument: DataFactoryFunction<Category.Document> = (d
     parentCategoryId: undefined,
     fullName: 'category name',
     categoryType: 'regular',
+    products: undefined,
     ...doc,
   };
 };
@@ -76,8 +77,8 @@ export const createProductDocument: DataFactoryFunction<Product.Document> = (doc
     brand: 'product brand',
     measurement: 300,
     unitOfMeasurement: 'g',
-    category: createCategoryDocument(),
     expiresAt: undefined,
+    fullName: doc ? `${doc.brand} ${doc.measurement} ${doc.unitOfMeasurement}` : 'product brand 300 g',
     ...doc,
   };
 };
@@ -343,6 +344,7 @@ export const createProductResponse: DataFactoryFunction<Product.Response> = (res
     brand: 'product brand',
     measurement: 300,
     unitOfMeasurement: 'g',
+    fullName: resp ? `${resp.brand} ${resp.measurement} ${resp.unitOfMeasurement}` : 'product brand 300 g',
     expiresAt: undefined,
     category: undefined,
     createdAt: undefined,

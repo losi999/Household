@@ -4,10 +4,6 @@ import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/
 import { IProjectService } from '@household/shared/services/project-service';
 import { getProjectId } from '@household/shared/common/utils';
 
-const projectTask = <T extends keyof IProjectService>(name: T, params: Parameters<IProjectService[T]>) => {
-  return cy.task(name, ...params);
-};
-
 const requestCreateProject = (idToken: string, project: Project.Request) => {
   return cy.request({
     body: project,
@@ -71,8 +67,8 @@ const validateProjectDocument = (response: Project.Id, request: Project.Request)
   const id = response?.projectId;
 
   cy.log('Get project document', id)
-    .projectTask('getProjectById', [id])
-    .should((document: Project.Document) => {
+    .getProjectDocumentById(id)
+    .should((document) => {
       expect(getProjectId(document), 'id').to.equal(id);
       expect(document.name, 'name').to.equal(request.name);
       expect(document.description, 'description').to.equal(request.description);
@@ -94,14 +90,18 @@ const validateProjectListResponse = (responses: Project.Response[], documents: P
 
 const validateProjectDeleted = (projectId: Project.IdType) => {
   cy.log('Get project document', projectId)
-    .projectTask('getProjectById', [projectId])
+    .getProjectDocumentById(projectId)
     .should((document) => {
       expect(document, 'document').to.be.null;
     });
 };
 
-const saveProjectDocument = (document: Project.Document) => {
-  cy.projectTask('saveProject', [document]);
+const saveProjectDocument = (...params: Parameters<IProjectService['saveProject']>) => {
+  return cy.task<Project.Document>('saveProject', ...params);
+};
+
+const getProjectDocumentById = (...params: Parameters<IProjectService['getProjectById']>) => {
+  return cy.task<Project.Document>('getProjectById', ...params);
 };
 
 export const setProjectCommands = () => {
@@ -119,9 +119,9 @@ export const setProjectCommands = () => {
   });
 
   Cypress.Commands.addAll({
-    projectTask,
     validateProjectDeleted,
     saveProjectDocument,
+    getProjectDocumentById,
   });
 };
 
@@ -130,7 +130,7 @@ declare global {
     interface Chainable {
       validateProjectDeleted: CommandFunction<typeof validateProjectDeleted>;
       saveProjectDocument: CommandFunction<typeof saveProjectDocument>;
-      projectTask: CommandFunction<typeof projectTask>
+      getProjectDocumentById: CommandFunction<typeof getProjectDocumentById>
     }
 
     interface ChainableRequest extends Chainable {

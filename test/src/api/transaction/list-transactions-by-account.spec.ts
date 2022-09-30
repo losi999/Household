@@ -72,12 +72,9 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
     }, Cypress.env('EXPIRES_IN'), true);
 
     productDocument = productDocumentConverter.create({
-      body: {
-        brand: 'brand',
-        measurement: 500,
-        unitOfMeasurement: 'g',
-      },
-      category: inventoryCategoryDocument,
+      brand: 'brand',
+      measurement: 500,
+      unitOfMeasurement: 'g',
     }, Cypress.env('EXPIRES_IN'), true);
 
     transactionPaymentRequest = {
@@ -215,7 +212,10 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
         .saveCategoryDocument(invoiceCategoryDocument)
         .saveCategoryDocument(inventoryCategoryDocument)
         .saveProjectDocument(projectDocument)
-        .saveProductDocument(productDocument)
+        .saveProductDocument({
+          document: productDocument,
+          categoryId: getCategoryId(inventoryCategoryDocument),
+        })
         .saveTransactionDocument(transferTransactionDocument)
         .saveTransactionDocument(splitTransactionDocument)
         .saveTransactionDocument(regularPaymentTransactionDocument)

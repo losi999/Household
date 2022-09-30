@@ -137,8 +137,11 @@ export namespace Category {
     parentCategory: Document;
   };
 
-  type Base = {
+  export type CategoryType = {
     categoryType: typeof categoryTypes[number];
+  };
+
+  type Base = CategoryType & {
     name: string;
   };
 
@@ -154,7 +157,7 @@ export namespace Category {
   & FullName
   & Remove<ParentCategoryId>
   & ParentCategory
-  & Partial<Products<Product.Document>>;
+  & Products<Product.Document>;
 
   export type Response = Base
   & FullName
@@ -186,8 +189,8 @@ export namespace Product {
     measurement: number;
   };
 
-  type Category = {
-    category: Category.Document;
+  type FullName = {
+    fullName: string;
   };
 
   export type Document = Internal.Id
@@ -195,11 +198,11 @@ export namespace Product {
   & Partial<Internal.CreatedAt>
   & Partial<Internal.UpdatedAt>
   & Base
-  & Category;
+  & FullName;
 
   export type Response = Base
   & Id
-  & Remove<Category>
+  & FullName
   & Remove<Internal.CreatedAt>
   & Remove<Internal.UpdatedAt>
   & Remove<Internal.Id>

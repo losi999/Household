@@ -42,7 +42,16 @@ const schema: StrictJSONSchema7<Transaction.SplitResponse> = {
         required: [...base.required],
         properties: {
           ...base.properties,
-          category,
+          category: {
+            ...category,
+            properties: {
+              ...category.properties,
+              products: {
+                type: 'array',
+                items: productId,
+              },
+            },
+          },
           project,
           invoice,
           inventory: {

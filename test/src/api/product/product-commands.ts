@@ -4,10 +4,6 @@ import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/
 import { IProductService } from '@household/shared/services/product-service';
 import { getProductId } from '@household/shared/common/utils';
 
-const productTask = <T extends keyof IProductService>(name: T, params: Parameters<IProductService[T]>) => {
-  return cy.task(name, ...params);
-};
-
 const requestCreateProduct = (idToken: string, product: Product.Request, categoryId: Category.IdType) => {
   return cy.request({
     body: product,
@@ -71,8 +67,8 @@ const validateProductDocument = (response: Product.Id, request: Product.Request)
   const id = response?.productId;
 
   cy.log('Get product document', id)
-    .productTask('getProductById', [id])
-    .should((document: Product.Document) => {
+    .getProductDocumentById(id)
+    .should((document) => {
       expect(getProductId(document), 'id').to.equal(id);
       expect(document.brand, 'brand').to.equal(request.brand);
       expect(document.measurement, 'measurement').to.equal(request.measurement);
@@ -86,16 +82,20 @@ const validateProductDocument = (response: Product.Id, request: Product.Request)
 //   expect(response.description, 'description').to.equal(document.description);
 // };
 
-// const validateProductDeleted = (productId: Product.IdType) => {
-//   cy.log('Get product document', productId)
-//     .productTask('getProductById', [productId])
-//     .should((document) => {
-//       expect(document, 'document').to.be.null;
-//     });
-// };
+const validateProductDeleted = (productId: Product.IdType) => {
+  cy.log('Get product document', productId)
+    .getProductDocumentById(productId,)
+    .should((document) => {
+      expect(document, 'document').to.be.null;
+    });
+};
 
-const saveProductDocument = (document: Product.Document) => {
-  cy.productTask('saveProduct', [document]);
+const saveProductDocument = (...params: Parameters<IProductService['saveProduct']>) => {
+  return cy.task<Product.Document>('saveProduct', ...params);
+};
+
+const getProductDocumentById = (...params: Parameters<IProductService['getProductById']>) => {
+  return cy.task<Product.Document>('getProductById', ...params);
 };
 
 export const setProductCommands = () => {
@@ -112,18 +112,18 @@ export const setProductCommands = () => {
   });
 
   Cypress.Commands.addAll({
-    productTask,
-    // validateProductDeleted,
+    validateProductDeleted,
     saveProductDocument,
+    getProductDocumentById,
   });
 };
 
 declare global {
   namespace Cypress {
     interface Chainable {
-      // validateProductDeleted: CommandFunction<typeof validateProductDeleted>;
+      validateProductDeleted: CommandFunction<typeof validateProductDeleted>;
       saveProductDocument: CommandFunction<typeof saveProductDocument>;
-      productTask: CommandFunction<typeof productTask>
+      getProductDocumentById: CommandFunction<typeof getProductDocumentById>;
     }
 
     interface ChainableRequest extends Chainable {

@@ -54,7 +54,16 @@ const schema: StrictJSONSchema7<Transaction.PaymentResponse> = {
     invoice,
     account,
     recipient,
-    category,
+    category: {
+      ...category,
+      properties: {
+        ...category.properties,
+        products: {
+          type: 'array',
+          items: productId,
+        },
+      },
+    },
     project,
   },
 };

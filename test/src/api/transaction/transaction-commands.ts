@@ -4,10 +4,6 @@ import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/
 import { ITransactionService } from '@household/shared/services/transaction-service';
 import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
 
-const transactionTask = <T extends keyof ITransactionService>(name: T, params: Parameters<ITransactionService[T]>) => {
-  return cy.task(name, ...params);
-};
-
 const requestCreatePaymentTransaction = (idToken: string, transaction: Transaction.PaymentRequest) => {
   return cy.request({
     body: transaction,
@@ -124,11 +120,11 @@ const validateInventoryDocument = (request: Transaction.Inventory<Product.Id>, d
   let category: Category.Document;
 
   cy.log('Get category document', categoryId)
-    .categoryTask('getCategoryById', [categoryId])
-    .then((doc: Category.Document) => category = doc)
+    .getCategoryDocumentById(categoryId)
+    .then((doc) => category = doc)
     .log('Get product document', productId)
-    .productTask('getProductById', [productId])
-    .should((product: Product.Document) => {
+    .getProductDocumentById(productId)
+    .should((product) => {
       if (category?.categoryType === 'inventory' && document.inventory) {
         expect(document.inventory.quantity, 'inventory.quantity').to.equal(request.inventory.quantity);
         expect(getProductId(document.inventory.product), 'inventory.product.productId').to.equal(request.inventory.productId);
@@ -143,8 +139,8 @@ const validateInventoryDocument = (request: Transaction.Inventory<Product.Id>, d
 
 const validateInvoiceDocument = (request: Transaction.Invoice<string>, document: Transaction.Invoice<Date>, categoryId: Category.IdType) => {
   cy.log('Get category document', categoryId)
-    .categoryTask('getCategoryById', [categoryId])
-    .should((category: Category.Document) => {
+    .getCategoryDocumentById(categoryId)
+    .should((category) => {
       if (category?.categoryType === 'invoice' && document.invoice) {
         expect(document.invoice.invoiceNumber, 'invoice.invoiceNumber').to.equal(request.invoice.invoiceNumber);
         expect(new Date(document.invoice.billingStartDate).toISOString(), 'invoice.billingStartDate').to.equal(new Date(request.invoice.billingStartDate).toISOString());
@@ -159,7 +155,7 @@ const validateTransactionPaymentDocument = (response: Transaction.Id, request: T
   const id = response?.transactionId;
 
   cy.log('Get transaction document', id)
-    .transactionTask('getTransactionById', [id])
+    .getTransactionDocumentById(id)
     .should((document: Transaction.PaymentDocument) => {
       expect(getTransactionId(document), 'id').to.equal(id);
       expect(document.amount, 'amount').to.equal(request.amount);
@@ -180,7 +176,7 @@ const validateTransactionSplitDocument = (response: Transaction.Id, request: Tra
   const id = response?.transactionId;
 
   cy.log('Get transaction document', id)
-    .transactionTask('getTransactionById', [id])
+    .getTransactionDocumentById(id)
     .should((document: Transaction.SplitDocument) => {
       expect(getTransactionId(document), 'id').to.equal(id);
       expect(document.amount, 'amount').to.equal(request.amount);
@@ -206,7 +202,7 @@ const validateTransactionTransferDocument = (response: Transaction.Id, request: 
   const id = response?.transactionId;
 
   cy.log('Get transaction document', id)
-    .transactionTask('getTransactionById', [id])
+    .getTransactionDocumentById(id)
     .should((document: Transaction.TransferDocument) => {
       expect(getTransactionId(document), 'id').to.equal(id);
       expect(document.amount, 'amount').to.equal(request.amount);
@@ -342,7 +338,7 @@ const validateTransactionListResponse = (responses: Transaction.Response[], docu
 
 const validateTransactionDeleted = (transactionId: Transaction.IdType) => {
   cy.log('Get transaction document', transactionId)
-    .transactionTask('getTransactionById', [transactionId])
+    .getTransactionDocumentById(transactionId)
     .should((document) => {
       expect(document).to.be.null;
     });
@@ -350,7 +346,7 @@ const validateTransactionDeleted = (transactionId: Transaction.IdType) => {
 
 const validateRecipientUnset = (transactionId: Transaction.IdType) => {
   cy.log('Get transaction document', transactionId)
-    .transactionTask('getTransactionById', [transactionId])
+    .getTransactionDocumentById(transactionId)
     .should((document: Transaction.Document) => {
       if (document.transactionType !== 'transfer') {
         expect(document.recipient, 'recipient').to.be.undefined;
@@ -360,7 +356,7 @@ const validateRecipientUnset = (transactionId: Transaction.IdType) => {
 
 const validateProjectUnset = (transactionId: Transaction.IdType, splitIndex?: number) => {
   cy.log('Get transaction document', transactionId)
-    .transactionTask('getTransactionById', [transactionId])
+    .getTransactionDocumentById(transactionId)
     .should((document: Transaction.Document) => {
       switch(document.transactionType) {
         case 'payment': {
@@ -377,7 +373,7 @@ const validateProjectUnset = (transactionId: Transaction.IdType, splitIndex?: nu
 
 const validateCategoryUnset = (transactionId: Transaction.IdType, splitIndex?: number) => {
   cy.log('Get transaction document', transactionId)
-    .transactionTask('getTransactionById', [transactionId])
+    .getTransactionDocumentById(transactionId)
     .should((document: Transaction.Document) => {
       switch(document.transactionType) {
         case 'payment': {
@@ -394,7 +390,7 @@ const validateCategoryUnset = (transactionId: Transaction.IdType, splitIndex?: n
 
 const validateCategoryUpdate = (transactionId: Transaction.IdType, newValue: Category.IdType, splitIndex?: number) => {
   cy.log('Get transaction document', transactionId)
-    .transactionTask('getTransactionById', [transactionId])
+    .getTransactionDocumentById(transactionId)
     .should((document: Transaction.Document) => {
       switch(document.transactionType) {
         case 'payment': {
@@ -409,8 +405,12 @@ const validateCategoryUpdate = (transactionId: Transaction.IdType, newValue: Cat
     });
 };
 
-const saveTransactionDocument = (document: Transaction.Document) => {
-  cy.transactionTask('saveTransaction', [document]);
+const saveTransactionDocument = (...params: Parameters<ITransactionService['saveTransaction']>) => {
+  return cy.task<Transaction.Document>('saveTransaction', ...params);
+};
+
+const getTransactionDocumentById = (...params: Parameters<ITransactionService['getTransactionById']>) => {
+  return cy.task<Transaction.Document>('getTransactionById', ...params);
 };
 
 export const setTransactionCommands = () => {
@@ -440,7 +440,7 @@ export const setTransactionCommands = () => {
     validateCategoryUnset,
     validateCategoryUpdate,
     validateRecipientUnset,
-    transactionTask,
+    getTransactionDocumentById,
     saveTransactionDocument,
     validateTransactionDeleted,
   });
@@ -455,7 +455,7 @@ declare global {
       validateCategoryUpdate: CommandFunction<typeof validateCategoryUpdate>;
       validateRecipientUnset: CommandFunction<typeof validateRecipientUnset>;
       saveTransactionDocument: CommandFunction<typeof saveTransactionDocument>;
-      transactionTask: CommandFunction<typeof transactionTask>
+      getTransactionDocumentById: CommandFunction<typeof getTransactionDocumentById>
     }
 
     interface ChainableRequest extends Chainable {

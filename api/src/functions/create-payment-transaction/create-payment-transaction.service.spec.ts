@@ -1,5 +1,5 @@
 import { ICreatePaymentTransactionService, createPaymentTransactionServiceFactory } from '@household/api/functions/create-payment-transaction/create-payment-transaction.service';
-import { createAccountDocument, createCategoryDocument, createInventoryRequest, createPaymentTransactionDocument, createPaymentTransactionRequest, createProductDocument, createProjectDocument, createRecipientDocument } from '@household/shared/common/test-data-factory';
+import { createAccountDocument, createCategoryDocument, createInventoryRequest, createPaymentTransactionDocument, createPaymentTransactionRequest, createProductDocument, createProductId, createProjectDocument, createRecipientDocument } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
@@ -44,14 +44,13 @@ describe('Create payment transaction service', () => {
 
   beforeEach(() => {
     queriedAccount = createAccountDocument();
+    queriedProduct = createProductDocument();
     queriedCategory = createCategoryDocument({
       categoryType: 'inventory',
+      products: [queriedProduct],
     });
     queriedProject = createProjectDocument();
     queriedRecipient = createRecipientDocument();
-    queriedProduct = createProductDocument({
-      category: queriedCategory,
-    });
 
     body = createPaymentTransactionRequest({
       categoryId: getCategoryId(queriedCategory),
@@ -369,13 +368,13 @@ describe('Create payment transaction service', () => {
     });
 
     it('if product belongs to different category', async () => {
+      body.inventory.productId = createProductId();
+
       mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
       mockCategoryService.functions.getCategoryById.mockResolvedValue(queriedCategory);
       mockProjectService.functions.getProjectById.mockResolvedValue(queriedProject);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
-      mockProductService.functions.getProductById.mockResolvedValue(createProductDocument({
-        category: createCategoryDocument(),
-      }));
+      mockProductService.functions.getProductById.mockResolvedValue(queriedProduct);
 
       await service({
         body,

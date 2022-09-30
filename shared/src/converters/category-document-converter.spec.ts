@@ -100,6 +100,7 @@ describe('Category document converter', () => {
         parentCategory: queriedParentCategory,
         createdAt: now,
         expiresAt: addSeconds(expiresIn, now),
+        products: document.products,
       }));
     });
 
@@ -115,6 +116,7 @@ describe('Category document converter', () => {
         fullName: name,
         createdAt: now,
         expiresAt: addSeconds(expiresIn, now),
+        products: document.products,
       }));
     });
   });

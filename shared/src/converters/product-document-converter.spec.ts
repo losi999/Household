@@ -1,4 +1,4 @@
-import { createCategoryDocument, createProductDocument, createProductRequest, createProductResponse } from '@household/shared/common/test-data-factory';
+import { createProductDocument, createProductRequest, createProductResponse } from '@household/shared/common/test-data-factory';
 import { addSeconds, getProductId } from '@household/shared/common/utils';
 import { productDocumentConverterFactory, IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
 import { advanceTo, clear } from 'jest-date-mock';
@@ -20,7 +20,6 @@ describe('Product document converter', () => {
   const unitOfMeasurement = 'kg';
   const measurement = 200;
   const expiresIn = 3600;
-  const category = createCategoryDocument();
 
   const body = createProductRequest({
     unitOfMeasurement,
@@ -37,30 +36,22 @@ describe('Product document converter', () => {
 
   describe('create', () => {
     it('should return document', () => {
-      const result = converter.create({
-        body,
-        category,
-      }, undefined);
+      const result = converter.create(body, undefined);
       expect(result).toEqual(createProductDocument({
         unitOfMeasurement,
         brand,
         measurement,
-        category,
         expiresAt: undefined,
         _id: undefined,
       }));
     });
 
     it('should return expiring document', () => {
-      const result = converter.create({
-        body,
-        category,
-      }, expiresIn);
+      const result = converter.create(body, expiresIn);
       expect(result).toEqual(createProductDocument({
         unitOfMeasurement,
         brand,
         measurement,
-        category,
         expiresAt: addSeconds(expiresIn, now),
         _id: undefined,
       }));
