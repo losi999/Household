@@ -40,7 +40,6 @@ export class ProductListProductItemComponent {
     });
 
     dialogRef.afterClosed().subscribe((values) => {
-      console.log(values);
       if (values) {
         this.productService.updateProduct(this.product.productId, values);
       }

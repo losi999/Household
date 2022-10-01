@@ -31,9 +31,11 @@
           <app-autocomplete-input [items]="categories" label="Kategória" displayPropertyName="fullName"
             filterPropertyName="name" formControlName="category"></app-autocomplete-input>
         </div>
-        <app-invoice-input *ngIf="category?.categoryType === 'invoice'" formControlName="invoice">
+        <app-invoice-input *ngIf="category?.categoryType === 'invoice' && !isTransfer && splits.length === 0"
+          formControlName="invoice">
         </app-invoice-input>
-        <app-inventory-input *ngIf="category?.categoryType === 'inventory'" formControlName="inventory">
+        <app-inventory-input *ngIf="category?.categoryType === 'inventory' && !isTransfer && splits.length === 0"
+          [products]="getProducts(category.categoryId)" formControlName="inventory">
         </app-inventory-input>
         <div class="transaction-edit__recipient" *ngIf="!isTransfer">
           <app-autocomplete-input [items]="recipients" label="Partner" displayPropertyName="name"
@@ -73,7 +75,8 @@
             </div>
             <app-invoice-input *ngIf="split.value.category?.categoryType === 'invoice'" formControlName="invoice">
             </app-invoice-input>
-            <app-inventory-input *ngIf="split.value.category?.categoryType === 'inventory'" formControlName="inventory">
+            <app-inventory-input *ngIf="split.value.category?.categoryType === 'inventory'"
+              [products]="getProducts(split.value.category.categoryId)" formControlName="inventory">
             </app-inventory-input>
             <div class="transaction-edit-split-item__project">
               <app-autocomplete-input [items]="projects" label="Projekt" displayPropertyName="name"

@@ -44,7 +44,7 @@ export class AutocompleteInputComponent implements OnInit, OnDestroy, ControlVal
 
   writeValue(selected: any): void {
     this.form.setValue({
-      selected, 
+      selected,
     });
   }
 

@@ -9,10 +9,15 @@ const schema: StrictJSONSchema7<Product.Response> = {
   required: [
     ...productId.required,
     ...product.required,
+    'fullName',
   ],
   properties: {
     ...productId.properties,
     ...product.properties,
+    fullName: {
+      type: 'string',
+      minLength: 1,
+    },
   },
 };
 

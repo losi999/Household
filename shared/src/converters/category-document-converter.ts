@@ -45,7 +45,6 @@ export const categoryDocumentConverterFactory = (
       };
     },
     toResponse: (doc): Category.Response => {
-      console.log('prod', doc._id, JSON.stringify(doc.products));
       return {
         ...doc,
         createdAt: undefined,
