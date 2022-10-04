@@ -17,29 +17,29 @@ const requestCreateProduct = (idToken: string, product: Product.Request, categor
   }) as Cypress.ChainableResponse;
 };
 
-// const requestUpdateProduct = (idToken: string, productId: Product.IdType, product: Product.Request) => {
-//   return cy.request({
-//     body: product,
-//     method: 'PUT',
-//     url: `/product/v1/products/${productId}`,
-//     headers: {
-//       Authorization: idToken,
-//       [headerExpiresIn]: Cypress.env('EXPIRES_IN'),
-//     },
-//     failOnStatusCode: false,
-//   }) as Cypress.ChainableResponse;
-// };
+const requestUpdateProduct = (idToken: string, productId: Product.IdType, product: Product.Request) => {
+  return cy.request({
+    body: product,
+    method: 'PUT',
+    url: `/product/v1/products/${productId}`,
+    headers: {
+      Authorization: idToken,
+      [headerExpiresIn]: Cypress.env('EXPIRES_IN'),
+    },
+    failOnStatusCode: false,
+  }) as Cypress.ChainableResponse;
+};
 
-// const requestDeleteProduct = (idToken: string, productId: Product.IdType) => {
-//   return cy.request({
-//     method: 'DELETE',
-//     url: `/product/v1/products/${productId}`,
-//     headers: {
-//       Authorization: idToken,
-//     },
-//     failOnStatusCode: false,
-//   }) as Cypress.ChainableResponse;
-// };
+const requestDeleteProduct = (idToken: string, productId: Product.IdType) => {
+  return cy.request({
+    method: 'DELETE',
+    url: `/product/v1/products/${productId}`,
+    headers: {
+      Authorization: idToken,
+    },
+    failOnStatusCode: false,
+  }) as Cypress.ChainableResponse;
+};
 
 // const requestGetProduct = (idToken: string, productId: Product.IdType) => {
 //   return cy.request({
@@ -103,8 +103,8 @@ export const setProductCommands = () => {
     prevSubject: true,
   }, {
     requestCreateProduct,
-    // requestUpdateProduct,
-    // requestDeleteProduct,
+    requestUpdateProduct,
+    requestDeleteProduct,
     // requestGetProduct,
     // requestGetProductList,
     validateProductDocument,
@@ -129,8 +129,8 @@ declare global {
     interface ChainableRequest extends Chainable {
       requestCreateProduct: CommandFunctionWithPreviousSubject<typeof requestCreateProduct>;
       // requestGetProduct: CommandFunctionWithPreviousSubject<typeof requestGetProduct>;
-      // requestUpdateProduct: CommandFunctionWithPreviousSubject<typeof requestUpdateProduct>;
-      // requestDeleteProduct: CommandFunctionWithPreviousSubject<typeof requestDeleteProduct>;
+      requestUpdateProduct: CommandFunctionWithPreviousSubject<typeof requestUpdateProduct>;
+      requestDeleteProduct: CommandFunctionWithPreviousSubject<typeof requestDeleteProduct>;
       // requestGetProductList: CommandFunctionWithPreviousSubject<typeof requestGetProductList>;
     }
 

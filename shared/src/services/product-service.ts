@@ -84,7 +84,7 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
           }, {
 
             $unset: {
-              'splits.$[element].inventory.product': 1,
+              'splits.$[element].inventory': 1,
             },
           }, {
             session,

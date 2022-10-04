@@ -371,6 +371,23 @@ const validateProjectUnset = (transactionId: Transaction.IdType, splitIndex?: nu
     });
 };
 
+const validateInventoryUnset = (transactionId: Transaction.IdType, splitIndex?: number) => {
+  cy.log('Get transaction document', transactionId)
+    .getTransactionDocumentById(transactionId)
+    .should((document: Transaction.Document) => {
+      switch(document.transactionType) {
+        case 'payment': {
+          expect(document.inventory, 'inventory').to.be.undefined;
+          break;
+        }
+        case 'split': {
+          expect(document.splits[splitIndex].inventory, 'splits.inventory').to.be.undefined;
+          break;
+        }
+      }
+    });
+};
+
 const validateCategoryUnset = (transactionId: Transaction.IdType, splitIndex?: number) => {
   cy.log('Get transaction document', transactionId)
     .getTransactionDocumentById(transactionId)
@@ -437,6 +454,7 @@ export const setTransactionCommands = () => {
 
   Cypress.Commands.addAll({
     validateProjectUnset,
+    validateInventoryUnset,
     validateCategoryUnset,
     validateCategoryUpdate,
     validateRecipientUnset,
@@ -451,6 +469,7 @@ declare global {
     interface Chainable {
       validateTransactionDeleted: CommandFunction<typeof validateTransactionDeleted>;
       validateProjectUnset: CommandFunction<typeof validateProjectUnset>;
+      validateInventoryUnset: CommandFunction<typeof validateInventoryUnset>;
       validateCategoryUnset: CommandFunction<typeof validateCategoryUnset>;
       validateCategoryUpdate: CommandFunction<typeof validateCategoryUpdate>;
       validateRecipientUnset: CommandFunction<typeof validateRecipientUnset>;

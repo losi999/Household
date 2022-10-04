@@ -28,7 +28,8 @@ describe('DELETE /project/v1/projects/{projectId}', () => {
   describe('called as an admin', () => {
 
     it('should delete project', () => {
-      cy.authenticate(1)
+      cy.saveProjectDocument(projectDocument)
+        .authenticate(1)
         .requestDeleteProject(getProjectId(projectDocument))
         .expectNoContentResponse()
         .validateProjectDeleted(getProjectId(projectDocument));
