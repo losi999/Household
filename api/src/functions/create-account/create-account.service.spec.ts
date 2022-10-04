@@ -1,9 +1,9 @@
 import { ICreateAccountService, createAccountServiceFactory } from '@household/api/functions/create-account/create-account.service';
 import { createAccountDocument, createAccountRequest } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { getAccountId } from '@household/shared/common/utils';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
-import { Types } from 'mongoose';
 
 describe('Create account service', () => {
   let service: ICreateAccountService;
@@ -18,10 +18,8 @@ describe('Create account service', () => {
   });
 
   const body = createAccountRequest();
-  const accountId = new Types.ObjectId();
-  const convertedAccountDocument = createAccountDocument({
-    _id: accountId,
-  });
+  const convertedAccountDocument = createAccountDocument();
+  const accountId = getAccountId(convertedAccountDocument);
 
   it('should return new id', async () => {
     mockAccountDocumentConverter.functions.create.mockReturnValue(convertedAccountDocument);
@@ -31,7 +29,7 @@ describe('Create account service', () => {
       body,
       expiresIn: undefined,
     });
-    expect(result).toEqual(accountId.toString()),
+    expect(result).toEqual(accountId),
     validateFunctionCall(mockAccountDocumentConverter.functions.create, body, undefined);
     validateFunctionCall(mockAccountService.functions.saveAccount, convertedAccountDocument);
     expect.assertions(3);

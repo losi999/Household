@@ -91,7 +91,7 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
           .exec();
       });
     },
-    listProjectsByIds: async (projectIds) => {
+    listProjectsByIds: (projectIds) => {
       return mongodbService.inSession((session) => {
         return mongodbService.projects().find({
           _id: {

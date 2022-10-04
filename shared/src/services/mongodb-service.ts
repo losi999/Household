@@ -4,8 +4,9 @@ import { projectSchema } from '@household/shared/mongodb-schemas/project.schema'
 import { accountSchema } from '@household/shared/mongodb-schemas/account.schema';
 import { recipientSchema } from '@household/shared/mongodb-schemas/recipient.schema';
 import { categorySchema } from '@household/shared/mongodb-schemas/category.schema';
+import { productSchema } from '@household/shared/mongodb-schemas/product.schema';
 import { transactionSchema } from '@household/shared/mongodb-schemas/transaction.schema';
-import { Recipient, Project, Account, Category, Transaction } from '@household/shared/types/types';
+import { Recipient, Project, Account, Category, Transaction, Product } from '@household/shared/types/types';
 
 type CollectionMapping = {
   recipients: Recipient.Document;
@@ -13,6 +14,7 @@ type CollectionMapping = {
   transactions: Transaction.Document;
   accounts: Account.Document;
   categories: Category.Document;
+  products: Product.Document;
 };
 
 export type IMongodbService = {
@@ -25,10 +27,10 @@ const createModel = <T extends keyof CollectionMapping>(collectionName: T, schem
   return model(collectionName, schema);
 };
 
-export const mongodbServiceFactory = (): IMongodbService => {
+export const mongodbServiceFactory = (mongodbConnectionString: string): IMongodbService => {
   const connectDb = () => {
-    if (connection.readyState === 0) {
-      connect(process.env.MONGODB_CONNECTION_STRING, {
+    if (!connection || connection.readyState === 0) {
+      connect(mongodbConnectionString, {
         autoIndex: true,
       });
     }
@@ -42,6 +44,7 @@ export const mongodbServiceFactory = (): IMongodbService => {
     transactions: createModel('transactions', transactionSchema),
     accounts: createModel('accounts', accountSchema),
     categories: createModel('categories', categorySchema),
+    products: createModel('products', productSchema),
   };
 
   return {
@@ -71,6 +74,10 @@ export const mongodbServiceFactory = (): IMongodbService => {
     categories: () => {
       connectDb();
       return models.categories;
+    },
+    products: () => {
+      connectDb();
+      return models.products;
     },
   };
 };

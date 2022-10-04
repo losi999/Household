@@ -4,37 +4,32 @@ import { createCategoryId } from '@household/shared/common/test-data-factory';
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 
 describe('Category id schema', () => {
-  let data: Category.Id;
   const tester = jsonSchemaTesterFactory<Category.Id>(schema);
 
-  beforeEach(() => {
-    data = {
-      categoryId: createCategoryId('62378f3a6add840bbd4c630c'),
-    };
-  });
-
-  it('should accept valid body', () => {
-    tester.validateSuccess(data);
+  tester.validateSuccess({
+    categoryId: createCategoryId(),
   });
 
   describe('should deny', () => {
     describe('if data', () => {
-      it('has additional property', () => {
-        (data as any).extra = 'asd';
-        tester.validateSchemaAdditionalProperties(data, 'data');
-      });
+      tester.validateSchemaAdditionalProperties({
+        categoryId: createCategoryId(),
+        extra: 1,
+      } as any, 'data');
     });
 
     describe('if data.categoryId', () => {
-      it('is missing', () => {
-        data.categoryId = undefined;
-        tester.validateSchemaRequired(data, 'categoryId');
-      });
+      tester.validateSchemaRequired({
+        categoryId: undefined,
+      }, 'categoryId');
 
-      it('does not match pattern', () => {
-        data.categoryId = createCategoryId();
-        tester.validateSchemaPattern(data, 'categoryId');
-      });
+      tester.validateSchemaType({
+        categoryId: 1 as any,
+      }, 'categoryId', 'string');
+
+      tester.validateSchemaPattern({
+        categoryId: createCategoryId('not-valid'),
+      }, 'categoryId');
     });
   });
 });

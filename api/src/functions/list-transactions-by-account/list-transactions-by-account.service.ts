@@ -1,14 +1,10 @@
-import { httpError } from '@household/shared/common/utils';
+import { httpErrors } from '@household/api/common/error-handlers';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { ITransactionService } from '@household/shared/services/transaction-service';
-import { Account, Transaction } from '@household/shared/types/types';
+import { Account, Common, Transaction } from '@household/shared/types/types';
 
 export interface IListTransactionsByAccountService {
-  (ctx: {
-    accountId: Account.IdType;
-    pageSize: number;
-    pageNumber: number;
-  }): Promise<Transaction.Response[]>;
+  (ctx: Account.Id & Common.Pagination<number>): Promise<Transaction.Response[]>;
 }
 
 export const listTransactionsByAccountServiceFactory = (
@@ -19,11 +15,12 @@ export const listTransactionsByAccountServiceFactory = (
     const documents = await transactionService.listTransactionsByAccountId({
       accountId,
       pageNumber,
-      pageSize, 
-    }).catch((error) => {
-      console.error('List transactions by account', error);
-      throw httpError(500, 'Error while getting transactions');
-    });
+      pageSize,
+    }).catch(httpErrors.transaction.listByAccountId({
+      accountId,
+      pageNumber,
+      pageSize,
+    }));
 
     return transactionDocumentConverter.toResponseList(documents, accountId);
   };

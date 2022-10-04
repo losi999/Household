@@ -3,7 +3,7 @@ import { cors } from '@household/api/dependencies/handlers/cors.handler';
 import { updateRecipientServiceFactory } from '@household/api/functions/update-recipient/update-recipient.service';
 import { recipientDocumentConverter } from '@household/shared/dependencies/converters/recipient-document-converter';
 import { default as pathParameters } from '@household/shared/schemas/recipient-id';
-import { default as body } from '@household/shared/schemas/recipient';
+import { default as body } from '@household/shared/schemas/recipient-request';
 import { apiRequestValidator } from '@household/api/dependencies/handlers/api-request-validator.handler';
 import { recipientService } from '@household/shared/dependencies/services/recipient-service';
 import { default as index } from '@household/api/handlers/index.handler';

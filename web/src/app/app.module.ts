@@ -13,6 +13,7 @@ import { AuthInterceptor } from 'src/app/auth/auth.interceptor';
 import { AuthModule } from 'src/app/auth/auth.module';
 import { ProgressInterceptor } from 'src/app/shared/interceptors/progress.interceptor';
 import { SharedModule } from 'src/app/shared/shared.module';
+import { ProductModule } from 'src/app/product/product.module';
 
 registerLocaleData(localeHu);
 
@@ -26,12 +27,13 @@ registerLocaleData(localeHu);
     BrowserAnimationsModule,
     MatNativeDateModule,
     TransactionModule,
+    ProductModule,
     AuthModule,
   ],
   providers: [
     {
       provide: MAT_DATE_LOCALE,
-      useValue: 'hu-HU', 
+      useValue: 'hu-HU',
     },
     {
       provide: HTTP_INTERCEPTORS,

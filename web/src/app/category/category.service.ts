@@ -16,8 +16,12 @@ export class CategoryService {
 
   constructor(private httpClient: HttpClient) { }
 
-  listCategories(): Observable<Category.Response[]> {
-    return this.httpClient.get<Category.Response[]>(`${environment.apiUrl}${environment.categoryStage}v1/categories`);
+  listCategories(categoryType?: Category.CategoryType['categoryType']): Observable<Category.Response[]> {
+    return this.httpClient.get<Category.Response[]>(`${environment.apiUrl}${environment.categoryStage}v1/categories`, {
+      params: categoryType ? {
+        categoryType,
+      } : undefined,
+    });
   }
 
   createCategory(body: Category.Request): void {

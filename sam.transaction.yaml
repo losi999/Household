@@ -67,7 +67,7 @@ Resources:
   CreatePaymentTransaction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub Household-${Env}-Transaction-CreatePaymentTransaction
+      FunctionName: !Sub Household-${Env}-CreatePaymentTransaction
       CodeUri: dist/api/create-payment-transaction
       Role: !Ref LambdaRoleArn
       Events:
@@ -83,7 +83,7 @@ Resources:
   CreateSplitTransaction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub Household-${Env}-Transaction-CreateSplitTransaction
+      FunctionName: !Sub Household-${Env}-CreateSplitTransaction
       CodeUri: dist/api/create-split-transaction
       Role: !Ref LambdaRoleArn
       Events:
@@ -99,7 +99,7 @@ Resources:
   CreateTransferTransaction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub Household-${Env}-Transaction-CreateTransferTransaction
+      FunctionName: !Sub Household-${Env}-CreateTransferTransaction
       CodeUri: dist/api/create-transfer-transaction
       Role: !Ref LambdaRoleArn
       Events:
@@ -115,7 +115,7 @@ Resources:
   UpdateToPaymentTransaction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub Household-${Env}-Transaction-UpdateToPaymentTransaction
+      FunctionName: !Sub Household-${Env}-UpdateToPaymentTransaction
       CodeUri: dist/api/update-to-payment-transaction
       Role: !Ref LambdaRoleArn
       Events:
@@ -131,7 +131,7 @@ Resources:
   UpdateToSplitTransaction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub Household-${Env}-Transaction-UpdateToSplitTransaction
+      FunctionName: !Sub Household-${Env}-UpdateToSplitTransaction
       CodeUri: dist/api/update-to-split-transaction
       Role: !Ref LambdaRoleArn
       Events:
@@ -147,7 +147,7 @@ Resources:
   UpdateToTransferTransaction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub Household-${Env}-Transaction-UpdateToTransferTransaction
+      FunctionName: !Sub Household-${Env}-UpdateToTransferTransaction
       CodeUri: dist/api/update-to-transfer-transaction
       Role: !Ref LambdaRoleArn
       Events:
@@ -160,26 +160,10 @@ Resources:
             Auth:
               Authorizer: CognitoAuthorizer    
 
-  ListTransactions:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: !Sub Household-${Env}-Transaction-ListTransactions
-      CodeUri: dist/api/list-transactions
-      Role: !Ref LambdaRoleArn
-      Events:
-        API:
-          Type: Api
-          Properties:
-            RestApiId: !Ref TransactionApi
-            Path: /v1/transactions
-            Method: GET
-            Auth:
-              Authorizer: CognitoAuthorizer
-
   GetTransaction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub Household-${Env}-Transaction-GetTransaction
+      FunctionName: !Sub Household-${Env}-GetTransaction
       CodeUri: dist/api/get-transaction
       Role: !Ref LambdaRoleArn
       Events:
@@ -195,7 +179,7 @@ Resources:
   DeleteTransaction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub Household-${Env}-Transaction-DeleteTransaction
+      FunctionName: !Sub Household-${Env}-DeleteTransaction
       CodeUri: dist/api/delete-transaction
       Role: !Ref LambdaRoleArn
       Events:
@@ -207,6 +191,22 @@ Resources:
             Method: DELETE
             Auth:
               Authorizer: CognitoAuthorizer
+
+  ListTransactionsByAccount:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-ListTransactionsByAccount
+      CodeUri: dist/api/list-transactions-by-account
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TransactionApi
+            Path: /v1/accounts/{accountId}/transactions
+            Method: GET
+            Auth:
+              Authorizer: CognitoAuthorizer                
 
 Outputs:
   TransactionApi:

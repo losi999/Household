@@ -1,6 +1,6 @@
 import { errorResponse, okResponse } from '@household/api/common/response-factory';
 import { IGetAccountService } from '@household/api/functions/get-account/get-account.service';
-import { castPathParameters } from '@household/shared/common/utils';
+import { castPathParameters } from '@household/shared/common/aws-utils';
 import { Account } from '@household/shared/types/types';
 
 export default (getAccount: IGetAccountService): AWSLambda.APIGatewayProxyHandler => {

@@ -1,6 +1,7 @@
 import { IGetProjectService, getProjectServiceFactory } from '@household/api/functions/get-project/get-project.service';
-import { createProjectId, createProjectDocument, createProjectResponse } from '@household/shared/common/test-data-factory';
+import { createProjectDocument, createProjectResponse } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { getProjectId } from '@household/shared/common/utils';
 import { IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
 import { IProjectService } from '@household/shared/services/project-service';
 describe('Get project service', () => {
@@ -15,8 +16,8 @@ describe('Get project service', () => {
     service = getProjectServiceFactory(mockProjectService.service, mockProjectDocumentConverter.service);
   });
 
-  const projectId = createProjectId();
   const queriedDocument = createProjectDocument();
+  const projectId = getProjectId(queriedDocument);
   const convertedResponse = createProjectResponse();
 
   it('should return project', async () => {

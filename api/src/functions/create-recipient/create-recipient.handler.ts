@@ -1,6 +1,6 @@
 import { errorResponse, createdResponse } from '@household/api/common/response-factory';
 import { ICreateRecipientService } from '@household/api/functions/create-recipient/create-recipient.service';
-import { headerExpiresIn } from '@household/shared/constants';
+import { getExpiresInHeader } from '@household/shared/common/aws-utils';
 
 export default (createRecipient: ICreateRecipientService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {
@@ -10,7 +10,7 @@ export default (createRecipient: ICreateRecipientService): AWSLambda.APIGatewayP
     try {
       recipientId = await createRecipient({
         body,
-        expiresIn: Number(event.headers[headerExpiresIn]),
+        expiresIn: Number(getExpiresInHeader(event)),
       });
     } catch (error) {
       console.error(error);

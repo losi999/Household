@@ -1,7 +1,7 @@
 import { default as handler } from '@household/api/functions/update-to-split-transaction/update-to-split-transaction.handler';
 import { cors } from '@household/api/dependencies/handlers/cors.handler';
 import { default as pathParameters } from '@household/shared/schemas/transaction-id';
-import { default as body } from '@household/shared/schemas/transaction-split';
+import { default as body } from '@household/shared/schemas/transaction-split-request';
 import { apiRequestValidator } from '@household/api/dependencies/handlers/api-request-validator.handler';
 import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
 import { updateToSplitTransactionServiceFactory } from '@household/api/functions/update-to-split-transaction/update-to-split-transaction.service';
@@ -11,8 +11,9 @@ import { projectService } from '@household/shared/dependencies/services/project-
 import { recipientService } from '@household/shared/dependencies/services/recipient-service';
 import { transactionService } from '@household/shared/dependencies/services/transaction-service';
 import { default as index } from '@household/api/handlers/index.handler';
+import { productService } from '@household/shared/dependencies/services/product-service';
 
-const updateToSplitTransactionService = updateToSplitTransactionServiceFactory(accountService, projectService, categoryService, recipientService, transactionService, transactionDocumentConverter);
+const updateToSplitTransactionService = updateToSplitTransactionServiceFactory(accountService, projectService, categoryService, recipientService, productService, transactionService, transactionDocumentConverter);
 
 export default index({
   handler: handler(updateToSplitTransactionService),

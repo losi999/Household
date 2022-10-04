@@ -1,7 +1,6 @@
 import { errorResponse, createdResponse } from '@household/api/common/response-factory';
 import { IUpdateToSplitTransactionService } from '@household/api/functions/update-to-split-transaction/update-to-split-transaction.service';
-import { castPathParameters } from '@household/shared/common/utils';
-import { headerExpiresIn } from '@household/shared/constants';
+import { castPathParameters, getExpiresInHeader } from '@household/shared/common/aws-utils';
 
 export default (updateTransaction: IUpdateToSplitTransactionService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {
@@ -12,7 +11,7 @@ export default (updateTransaction: IUpdateToSplitTransactionService): AWSLambda.
       await updateTransaction({
         transactionId,
         body,
-        expiresIn: Number(event.headers[headerExpiresIn]),
+        expiresIn: Number(getExpiresInHeader(event)),
       });
     } catch (error) {
       console.error(error);

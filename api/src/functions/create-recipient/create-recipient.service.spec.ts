@@ -1,9 +1,9 @@
 import { ICreateRecipientService, createRecipientServiceFactory } from '@household/api/functions/create-recipient/create-recipient.service';
 import { createRecipientRequest, createRecipientDocument } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { getRecipientId } from '@household/shared/common/utils';
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
 import { IRecipientService } from '@household/shared/services/recipient-service';
-import { Types } from 'mongoose';
 
 describe('Create recipient service', () => {
   let service: ICreateRecipientService;
@@ -17,10 +17,8 @@ describe('Create recipient service', () => {
   });
 
   const body = createRecipientRequest();
-  const recipientId = new Types.ObjectId();
-  const convertedRecipientDocument = createRecipientDocument({
-    _id: recipientId,
-  });
+  const convertedRecipientDocument = createRecipientDocument();
+  const recipientId = getRecipientId(convertedRecipientDocument);
 
   it('should return new id', async () => {
     mockRecipientDocumentConverter.functions.create.mockReturnValue(convertedRecipientDocument);

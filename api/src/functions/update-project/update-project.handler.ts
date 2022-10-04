@@ -1,7 +1,6 @@
 import { errorResponse, createdResponse } from '@household/api/common/response-factory';
 import { IUpdateProjectService } from '@household/api/functions/update-project/update-project.service';
-import { castPathParameters } from '@household/shared/common/utils';
-import { headerExpiresIn } from '@household/shared/constants';
+import { castPathParameters, getExpiresInHeader } from '@household/shared/common/aws-utils';
 
 export default (updateProject: IUpdateProjectService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {
@@ -12,7 +11,7 @@ export default (updateProject: IUpdateProjectService): AWSLambda.APIGatewayProxy
       await updateProject({
         projectId,
         body,
-        expiresIn: Number(event.headers[headerExpiresIn]),
+        expiresIn: Number(getExpiresInHeader(event)),
       });
     } catch (error) {
       console.error(error);

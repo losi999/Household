@@ -1,6 +1,6 @@
 import { errorResponse, createdResponse } from '@household/api/common/response-factory';
 import { ICreateSplitTransactionService } from '@household/api/functions/create-split-transaction/create-split-transaction.service';
-import { headerExpiresIn } from '@household/shared/constants';
+import { getExpiresInHeader } from '@household/shared/common/aws-utils';
 
 export default (createSplitTransaction: ICreateSplitTransactionService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {
@@ -10,7 +10,7 @@ export default (createSplitTransaction: ICreateSplitTransactionService): AWSLamb
     try {
       transactionId = await createSplitTransaction({
         body,
-        expiresIn: Number(event.headers[headerExpiresIn]),
+        expiresIn: Number(getExpiresInHeader(event)),
       });
     } catch (error) {
       console.error(error);

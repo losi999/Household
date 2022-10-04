@@ -2,6 +2,9 @@ AWSTemplateFormatVersion: "2010-09-09"
 Parameters:
   Env:
     Type: String
+  TestUserPassword:
+    Type: String
+    Default: ""    
 
 Mappings: 
   EnvMapping: 
@@ -28,6 +31,9 @@ Resources:
         MongooseLayer: !GetAtt Infrastructure.Outputs.MongooseLayer
         DatabaseArchiveBucket: !GetAtt Data.Outputs.DatabaseArchiveBucket
         Env: !Ref Env
+        TestUserPassword: !Ref TestUserPassword
+        UserPoolId: !GetAtt Data.Outputs.UserPoolId
+        ClientId: !GetAtt Data.Outputs.ClientId
         MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
 
   Data:
@@ -87,7 +93,18 @@ Resources:
         UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
         MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
-        
+
+  Product:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: sam.product.yaml
+      Parameters:
+        LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
+        MongooseLayer: !GetAtt Infrastructure.Outputs.MongooseLayer
+        UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
+        Env: !Ref Env
+        MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
+
   Transaction:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -215,6 +232,24 @@ Resources:
               QueryString: true
               Headers:
                 - Authorization
+            PathPattern: /product/*
+            TargetOriginId: Product
+            ViewerProtocolPolicy: redirect-to-https
+            MinTTL: 0
+            MaxTTL: 0
+            DefaultTTL: 0
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+              - PUT
+              - PATCH
+              - POST
+              - DELETE                   
+          - ForwardedValues:
+              QueryString: true
+              Headers:
+                - Authorization
             PathPattern: /transaction/*
             TargetOriginId: Transaction
             ViewerProtocolPolicy: redirect-to-https
@@ -262,6 +297,10 @@ Resources:
               OriginProtocolPolicy: https-only
           - DomainName: !GetAtt Category.Outputs.CategoryApi
             Id: Category
+            CustomOriginConfig:
+              OriginProtocolPolicy: https-only        
+          - DomainName: !GetAtt Product.Outputs.ProductApi
+            Id: Product
             CustomOriginConfig:
               OriginProtocolPolicy: https-only        
           - DomainName: !GetAtt Transaction.Outputs.TransactionApi

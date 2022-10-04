@@ -1,7 +1,7 @@
-import { Component, forwardRef, OnDestroy, OnInit } from '@angular/core';
+import { Component, forwardRef, Input, OnDestroy, OnInit } from '@angular/core';
 import { ControlValueAccessor, FormControl, FormGroup, NG_VALUE_ACCESSOR, Validators } from '@angular/forms';
 import { unitsOfMeasurement } from '@household/shared/constants';
-import { Transaction } from '@household/shared/types/types';
+import { Product, Transaction } from '@household/shared/types/types';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -18,7 +18,8 @@ import { Subscription } from 'rxjs';
 })
 export class InventoryInputComponent implements OnInit, OnDestroy, ControlValueAccessor {
   form: FormGroup;
-  changed: (value: Transaction.Inventory['inventory']) => void;
+  @Input() products: Product.Response[];
+  changed: (value: Transaction.InventoryItem<Transaction.Product<Product.Response>>) => void;
   touched: () => void;
   isDisabled: boolean;
   subs: Subscription;
@@ -27,24 +28,20 @@ export class InventoryInputComponent implements OnInit, OnDestroy, ControlValueA
 
   ngOnInit(): void {
     this.form = new FormGroup({
-      brand: new FormControl(null),
-      measurement: new FormControl(null, Validators.min(0)),
+      product: new FormControl(null, [Validators.required]),
       quantity: new FormControl(null, [
         Validators.min(0),
         Validators.required,
       ]),
-      unitOfMeasurement: new FormControl(null),
     });
 
-    this.subs = this.form.valueChanges.subscribe((value: Transaction.Inventory['inventory']) => {
+    this.subs = this.form.valueChanges.subscribe((value: Transaction.InventoryItem<Transaction.Product<Product.Response>>) => {
       if (this.form.invalid) {
         this.changed?.(undefined);
       } else {
         this.changed?.({
-          brand: value.brand ?? undefined,
-          unitOfMeasurement: value.unitOfMeasurement ?? undefined,
-          measurement: value.measurement ?? undefined,
           quantity: value.quantity ?? undefined,
+          product: value.product ?? undefined,
         });
       }
     });
@@ -53,7 +50,8 @@ export class InventoryInputComponent implements OnInit, OnDestroy, ControlValueA
   ngOnDestroy(): void {
     this.subs.unsubscribe();
   }
-  writeValue(obj: Transaction.Inventory['inventory']): void {
+
+  writeValue(obj: Transaction.InventoryItem<Transaction.Product<Product.Response>>): void {
     if (obj) {
       this.form.patchValue(obj);
     }

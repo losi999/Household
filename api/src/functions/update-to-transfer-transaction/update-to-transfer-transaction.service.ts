@@ -1,4 +1,5 @@
-import { httpError } from '@household/shared/common/utils';
+import { httpErrors } from '@household/api/common/error-handlers';
+import { getAccountId } from '@household/shared/common/utils';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
@@ -18,40 +19,41 @@ export const updateToTransferTransactionServiceFactory = (
   transactionDocumentConverter: ITransactionDocumentConverter,
 ): IUpdateToTransferTransactionService => {
   return async ({ body, transactionId, expiresIn }) => {
-    if (body.accountId === body.transferAccountId) {
-      console.error('Cannot transfer to same account', body.accountId, body.transferAccountId);
-      throw httpError(400, 'Cannot transfer to same account');
-    }
+    const { accountId, transferAccountId } = body;
 
-    const document = await transactionService.getTransactionById(transactionId).catch((error) => {
-      console.error('Get transaction', error);
-      throw httpError(500, 'Error while getting transaction');
+    httpErrors.transaction.sameAccountTransfer({
+      accountId,
+      transferAccountId,
     });
 
-    if (!document) {
-      throw httpError(404, 'No transaction found');
-    }
+    const document = await transactionService.getTransactionById(transactionId).catch(httpErrors.transaction.getById({
+      transactionId,
+    }));
+
+    httpErrors.transaction.notFound(!document, {
+      transactionId,
+    });
 
     const accounts = await accountService.listAccountsByIds([
-      body.accountId,
-      body.transferAccountId,
-    ]).catch((error) => {
-      console.error('Unable to query related data', error, body);
-      throw httpError(500, 'Unable to query related data');
-    });
+      accountId,
+      transferAccountId,
+    ]).catch(httpErrors.common.getRelatedData({
+      accountId,
+      transferAccountId,
+    }));
 
-    if (accounts.length !== 2) {
-      console.error('One of the accounts are not found', body.accountId, body.transferAccountId);
-      throw httpError(400, 'One of the accounts are not found');
-    }
+    const account = accounts.find(a => getAccountId(a) === accountId);
+    const transferAccount = accounts.find(a => getAccountId(a) === transferAccountId);
 
-    const account = accounts.find(x => x._id.toString() === body.accountId);
-    const transferAccount = accounts.find(x => x._id.toString() === body.transferAccountId);
+    httpErrors.account.notFound(!account, {
+      accountId,
+    }, 400);
 
-    if (account.currency !== transferAccount.currency) {
-      console.error('Accounts must be in the same currency');
-      throw httpError(400, 'Accounts must be in the same currency');
-    }
+    httpErrors.account.notFound(!transferAccount, {
+      accountId: transferAccountId,
+    }, 400);
+
+    httpErrors.account.differentCurrency(account, transferAccount);
 
     const updated = transactionDocumentConverter.updateTransferDocument({
       document,
@@ -60,9 +62,6 @@ export const updateToTransferTransactionServiceFactory = (
       transferAccount,
     }, expiresIn);
 
-    await transactionService.updateTransaction(updated).catch((error) => {
-      console.error('Update transaction', error);
-      throw httpError(500, 'Error while updating transaction');
-    });
+    await transactionService.updateTransaction(updated).catch(httpErrors.transaction.update(updated));
   };
 };

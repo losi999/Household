@@ -67,7 +67,7 @@ Resources:
   CreateAccount:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub Household-${Env}-Account-CreateAccount
+      FunctionName: !Sub Household-${Env}-CreateAccount
       CodeUri: dist/api/create-account
       Role: !Ref LambdaRoleArn
       Events:
@@ -83,7 +83,7 @@ Resources:
   UpdateAccount:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub Household-${Env}-Account-UpdateAccount
+      FunctionName: !Sub Household-${Env}-UpdateAccount
       CodeUri: dist/api/update-account
       Role: !Ref LambdaRoleArn
       Events:
@@ -99,7 +99,7 @@ Resources:
   ListAccounts:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub Household-${Env}-Account-ListAccounts
+      FunctionName: !Sub Household-${Env}-ListAccounts
       CodeUri: dist/api/list-accounts
       Role: !Ref LambdaRoleArn      
       Events:
@@ -115,7 +115,7 @@ Resources:
   GetAccount:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub Household-${Env}-Account-GetAccount
+      FunctionName: !Sub Household-${Env}-GetAccount
       CodeUri: dist/api/get-account
       Role: !Ref LambdaRoleArn
       Events:
@@ -131,7 +131,7 @@ Resources:
   DeleteAccount:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub Household-${Env}-Account-DeleteAccount
+      FunctionName: !Sub Household-${Env}-DeleteAccount
       CodeUri: dist/api/delete-account
       Role: !Ref LambdaRoleArn
       Events:
@@ -143,22 +143,6 @@ Resources:
             Method: DELETE
             Auth:
               Authorizer: CognitoAuthorizer
-
-  ListTransactionsByAccount:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: !Sub Household-${Env}-Account-ListTransactionsByAccount
-      CodeUri: dist/api/list-transactions-by-account
-      Role: !Ref LambdaRoleArn
-      Events:
-        API:
-          Type: Api
-          Properties:
-            RestApiId: !Ref AccountApi
-            Path: /v1/accounts/{accountId}/transactions
-            Method: GET
-            Auth:
-              Authorizer: CognitoAuthorizer  
 
 Outputs:
   AccountApi:

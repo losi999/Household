@@ -1,4 +1,4 @@
-import { httpError } from '@household/shared/common/utils';
+import { httpErrors } from '@household/api/common/error-handlers';
 import { IProjectService } from '@household/shared/services/project-service';
 import { Project } from '@household/shared/types/types';
 
@@ -11,9 +11,8 @@ export interface IDeleteProjectService {
 export const deleteProjectServiceFactory = (
   projectService: IProjectService): IDeleteProjectService => {
   return async ({ projectId }) => {
-    await projectService.deleteProject(projectId).catch((error) => {
-      console.error('Delete project', error);
-      throw httpError(500, 'Error while deleting project');
-    });
+    await projectService.deleteProject(projectId).catch(httpErrors.project.delete({
+      projectId,
+    }));
   };
 };

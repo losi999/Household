@@ -63,7 +63,7 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
           _id: new Types.ObjectId(accountId),
         })).exec();
 
-      return !accountId ? undefined : account;
+      return !accountId ? undefined : account ?? null;
     },
     deleteAccount: async (accountId) => {
       return mongodbService.inSession((session) => {
@@ -112,7 +112,7 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
           .exec();
       });
     },
-    listAccountsByIds: async (accountIds) => {
+    listAccountsByIds: (accountIds) => {
       return mongodbService.inSession((session) => {
         return mongodbService.accounts().find({
           _id: {

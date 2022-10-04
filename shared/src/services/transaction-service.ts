@@ -1,22 +1,15 @@
 import { IMongodbService } from '@household/shared/services/mongodb-service';
-import { Account, Transaction } from '@household/shared/types/types';
+import { Account, Common, Transaction } from '@household/shared/types/types';
 
 export interface ITransactionService {
   dumpTransactions(): Promise<Transaction.Document[]>;
   saveTransaction(doc: Transaction.Document): Promise<Transaction.Document>;
   getTransactionById(transactionId: Transaction.IdType): Promise<Transaction.Document>;
-  getTransactionByIdAndAccountId(query: {
-    transactionId: Transaction.IdType;
-    accountId: Account.IdType;
-  }): Promise<Transaction.Document>;
+  getTransactionByIdAndAccountId(query: Transaction.Id & Account.Id): Promise<Transaction.Document>;
   deleteTransaction(transactionId: Transaction.IdType): Promise<unknown>;
   updateTransaction(doc: Transaction.Document): Promise<unknown>;
   listTransactions(isAscending?: boolean): Promise<Transaction.Document[]>;
-  listTransactionsByAccountId(data: {
-    accountId: Account.IdType;
-    pageSize: number;
-    pageNumber: number;
-  }): Promise<Transaction.Document[]>;
+  listTransactionsByAccountId(data: Account.Id & Common.Pagination<number>): Promise<Transaction.Document[]>;
 }
 
 export const transactionServiceFactory = (mongodbService: IMongodbService): ITransactionService => {
@@ -40,9 +33,11 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
         .populate('recipient')
         .populate('account')
         .populate('category')
+        .populate('inventory.product')
         .populate('transferAccount')
         .populate('splits.category')
         .populate('splits.project')
+        .populate('splits.inventory.product')
         .lean()
         .exec();
     },
@@ -62,9 +57,11 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
         .populate('recipient')
         .populate('account')
         .populate('category')
+        .populate('inventory.product')
         .populate('transferAccount')
         .populate('splits.category')
         .populate('splits.project')
+        .populate('splits.inventory.product')
         .lean()
         .exec();
     },
@@ -124,9 +121,11 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
           .populate('recipient')
           .populate('account')
           .populate('category')
+          .populate('inventory.product')
           .populate('transferAccount')
           .populate('splits.category')
           .populate('splits.project')
+          .populate('splits.inventory.product')
           .lean()
           .exec();
       });

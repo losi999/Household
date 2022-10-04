@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Account, Transaction } from '@household/shared/types/types';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
+import { transactionsPageSize } from 'src/app/constants';
 
 @Injectable({
   providedIn: 'root',
@@ -10,6 +11,15 @@ import { environment } from 'src/environments/environment';
 export class TransactionService {
 
   constructor(private httpClient: HttpClient) { }
+
+  listTransactionsByAccountId(accountId: Account.IdType, pageNumber = 1, pageSize: number = transactionsPageSize): Observable<Transaction.Response[]> {
+    return this.httpClient.get<Transaction.Response[]>(`${environment.apiUrl}${environment.transactionStage}v1/accounts/${accountId}/transactions`, {
+      params: {
+        pageSize: `${pageSize}`,
+        pageNumber: `${pageNumber}`,
+      },
+    });
+  }
 
   getTransactionById(transactionId: Transaction.IdType, accountId: Account.IdType): Observable<Transaction.Response> {
     return this.httpClient.get<Transaction.Response>(`${environment.apiUrl}${environment.transactionStage}v1/accounts/${accountId}/transactions/${transactionId}`);

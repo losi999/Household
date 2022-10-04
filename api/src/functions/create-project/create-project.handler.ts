@@ -1,6 +1,6 @@
 import { errorResponse, createdResponse } from '@household/api/common/response-factory';
 import { ICreateProjectService } from '@household/api/functions/create-project/create-project.service';
-import { headerExpiresIn } from '@household/shared/constants';
+import { getExpiresInHeader } from '@household/shared/common/aws-utils';
 
 export default (createProject: ICreateProjectService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {
@@ -10,7 +10,7 @@ export default (createProject: ICreateProjectService): AWSLambda.APIGatewayProxy
     try {
       projectId = await createProject({
         body,
-        expiresIn: Number(event.headers[headerExpiresIn]),
+        expiresIn: Number(getExpiresInHeader(event)),
       });
     } catch (error) {
       console.error(error);

@@ -2,7 +2,7 @@ import { Component, HostListener, OnInit } from '@angular/core';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Account, Category, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/confirmation-dialog.component';
 import { TransactionService } from 'src/app/transaction/transaction.service';
 import { isInventoryCategory, isInvoiceCategory, isPaymentTransaction, isSplitTransaction, isTransferTransaction } from '@household/shared/common/type-guards';
@@ -48,7 +48,7 @@ export class TransactionEditComponent implements OnInit {
   get recipient(): Recipient.Response { return this.form.value.recipient; }
   get category(): Category.Response { return this.form.value.category; }
   get invoice(): Transaction.Invoice<string>['invoice'] { return this.form.value.invoice ?? undefined; }
-  get inventory(): Transaction.Inventory['inventory'] { return this.form.value.inventory ?? undefined; }
+  get inventory(): Transaction.InventoryItem<Transaction.Product<Product.Response>> { return this.form.value.inventory ?? undefined; }
 
   get splits(): Transaction.SplitResponseItem[] { return this.form.value.splits; }
 
@@ -75,6 +75,10 @@ export class TransactionEditComponent implements OnInit {
       inventory: new FormControl(isInventoryCategory(split?.category) ? split.inventory : null),
       invoice: new FormControl(isInvoiceCategory(split?.category) ? split.invoice : null),
     });
+  }
+
+  getProducts(categoryId: Category.IdType): Product.Response[] {
+    return this.categories.find(c => c.categoryId === categoryId).products;
   }
 
   ngOnInit(): void {
@@ -191,7 +195,10 @@ export class TransactionEditComponent implements OnInit {
             categoryId: s.category?.categoryId,
             description: s.description ?? undefined,
             projectId: s.project?.projectId,
-            inventory: isInventoryCategory(s.category) && s.inventory ? s.inventory : undefined,
+            inventory: isInventoryCategory(s.category) && s.inventory ? {
+              productId: s.inventory.product.productId,
+              quantity: s.inventory.quantity,
+            } : undefined,
             invoice: isInvoiceCategory(s.category) && s.invoice ? s.invoice : undefined,
           })),
         };
@@ -216,7 +223,10 @@ export class TransactionEditComponent implements OnInit {
           recipientId: this.recipient?.recipientId,
           projectId: this.project?.projectId,
           categoryId: this.category?.categoryId,
-          inventory: isInventoryCategory(this.category) ? this.inventory : undefined,
+          inventory: isInventoryCategory(this.category) && this.inventory ? {
+            productId: this.inventory.product.productId,
+            quantity: this.inventory.quantity,
+          } : undefined,
           invoice: isInvoiceCategory(this.category) ? this.invoice : undefined,
         };
 

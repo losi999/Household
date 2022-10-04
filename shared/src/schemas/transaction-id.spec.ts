@@ -4,37 +4,32 @@ import { createTransactionId } from '@household/shared/common/test-data-factory'
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 
 describe('Transaction id schema', () => {
-  let data: Transaction.Id;
   const tester = jsonSchemaTesterFactory<Transaction.Id>(schema);
 
-  beforeEach(() => {
-    data = {
-      transactionId: createTransactionId('62378f3a6add840bbd4c630c'),
-    };
-  });
-
-  it('should accept valid body', () => {
-    tester.validateSuccess(data);
+  tester.validateSuccess({
+    transactionId: createTransactionId(),
   });
 
   describe('should deny', () => {
     describe('if data', () => {
-      it('has additional property', () => {
-        (data as any).extra = 'asd';
-        tester.validateSchemaAdditionalProperties(data, 'data');
-      });
+      tester.validateSchemaAdditionalProperties({
+        transactionId: createTransactionId(),
+        extra: 1,
+      } as any, 'data');
     });
 
     describe('if data.transactionId', () => {
-      it('is missing', () => {
-        data.transactionId = undefined;
-        tester.validateSchemaRequired(data, 'transactionId');
-      });
+      tester.validateSchemaRequired({
+        transactionId: undefined,
+      }, 'transactionId');
 
-      it('does not match pattern', () => {
-        data.transactionId = createTransactionId();
-        tester.validateSchemaPattern(data, 'transactionId');
-      });
+      tester.validateSchemaType({
+        transactionId: 1 as any,
+      }, 'transactionId', 'string');
+
+      tester.validateSchemaPattern({
+        transactionId: createTransactionId('not-valid'),
+      }, 'transactionId');
     });
   });
 });

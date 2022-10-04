@@ -1,10 +1,11 @@
 import { ICreateTransferTransactionService, createTransferTransactionServiceFactory } from '@household/api/functions/create-transfer-transaction/create-transfer-transaction.service';
-import { createTransferTransactionRequest, createAccountDocument, createTransferTransactionDocument, createAccountId } from '@household/shared/common/test-data-factory';
+import { createTransferTransactionRequest, createAccountDocument, createTransferTransactionDocument } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { getAccountId, getTransactionId } from '@household/shared/common/utils';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
-import { Types } from 'mongoose';
+import { Account } from '@household/shared/types/types';
 
 describe('Create transfer transaction service', () => {
   let service: ICreateTransferTransactionService;
@@ -20,22 +21,14 @@ describe('Create transfer transaction service', () => {
     service = createTransferTransactionServiceFactory(mockAccountService.service, mockTransactionService.service, mockTransactionDocumentConverter.service);
   });
 
-  const accountId = new Types.ObjectId();
-  const transferAccountId = new Types.ObjectId();
+  const queriedAccount = createAccountDocument();
+  const queriedTransferAccount = createAccountDocument();
   const body = createTransferTransactionRequest({
-    accountId: createAccountId(accountId.toString()),
-    transferAccountId: createAccountId(transferAccountId.toString()),
+    accountId: getAccountId(queriedAccount),
+    transferAccountId: getAccountId(queriedTransferAccount),
   });
-  const queriedAccount = createAccountDocument({
-    _id: accountId,
-  });
-  const queriedTransferAccount = createAccountDocument({
-    _id: transferAccountId,
-  });
-  const transactionId = new Types.ObjectId();
-  const createdDocument = createTransferTransactionDocument({
-    _id: transactionId,
-  });
+  const createdDocument = createTransferTransactionDocument();
+  const transactionId = getTransactionId(createdDocument);
 
   describe('should return new id', () => {
     it('if every body property is filled', async () => {
@@ -68,8 +61,8 @@ describe('Create transfer transaction service', () => {
   describe('should throw error', () => {
     it('if both accounts are the same', async () => {
       const modifiedBody = createTransferTransactionRequest({
-        accountId: createAccountId(accountId.toString()),
-        transferAccountId: createAccountId(accountId.toString()),
+        accountId: getAccountId(queriedAccount),
+        transferAccountId: getAccountId(queriedAccount),
       });
 
       await service({
@@ -99,12 +92,12 @@ describe('Create transfer transaction service', () => {
     });
 
     it('if no account found', async () => {
-      mockAccountService.functions.listAccountsByIds.mockResolvedValue([ ]);
+      mockAccountService.functions.listAccountsByIds.mockResolvedValue([]);
 
       await service({
         body,
         expiresIn: undefined,
-      }).catch(validateError('One of the accounts are not found', 400));
+      }).catch(validateError('No account found', 400));
       validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
         body.accountId,
         body.transferAccountId,
@@ -115,10 +108,11 @@ describe('Create transfer transaction service', () => {
     });
 
     it('if accounts are in different currency', async () => {
-      const otherCurrencyAccount = createAccountDocument({
-        _id: transferAccountId,
+      const otherCurrencyAccount: Account.Document = {
+        ...queriedTransferAccount,
         currency: '$',
-      });
+      };
+
       mockAccountService.functions.listAccountsByIds.mockResolvedValue([
         queriedAccount,
         otherCurrencyAccount,

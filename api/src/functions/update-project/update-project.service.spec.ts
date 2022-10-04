@@ -1,6 +1,7 @@
 import { IUpdateProjectService, updateProjectServiceFactory } from '@household/api/functions/update-project/update-project.service';
-import { createProjectId, createProjectRequest, createProjectDocument } from '@household/shared/common/test-data-factory';
+import { createProjectRequest, createProjectDocument } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { getProjectId } from '@household/shared/common/utils';
 import { IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
 import { IProjectService } from '@household/shared/services/project-service';
 
@@ -16,9 +17,9 @@ describe('Update project service', () => {
     service = updateProjectServiceFactory(mockProjectService.service, mockProjectDocumentConverter.service);
   });
 
-  const projectId = createProjectId();
   const body = createProjectRequest();
   const queriedDocument = createProjectDocument();
+  const projectId = getProjectId(queriedDocument);
   const updatedDocument = createProjectDocument({
     name: 'updated',
   });

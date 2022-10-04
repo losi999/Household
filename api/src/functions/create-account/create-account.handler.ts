@@ -1,6 +1,6 @@
 import { createdResponse, errorResponse } from '@household/api/common/response-factory';
 import { ICreateAccountService } from '@household/api/functions/create-account/create-account.service';
-import { headerExpiresIn } from '@household/shared/constants';
+import { getExpiresInHeader } from '@household/shared/common/aws-utils';
 
 export default (createAccount: ICreateAccountService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {
@@ -10,7 +10,7 @@ export default (createAccount: ICreateAccountService): AWSLambda.APIGatewayProxy
     try {
       accountId = await createAccount({
         body,
-        expiresIn: Number(event.headers[headerExpiresIn]),
+        expiresIn: Number(getExpiresInHeader(event)),
       });
     } catch (error) {
       console.error(error);

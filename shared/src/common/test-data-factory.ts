@@ -1,27 +1,37 @@
-import { Account, Category, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Account, Auth, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Types } from 'mongoose';
+
+type DataFactoryFunction<T> = (input?: Partial<T>) => T;
+
+export const generateMongoId = (): Types.ObjectId => new Types.ObjectId();
 
 export const createAccountId = (id?: string): Account.IdType => {
-  return (id ?? 'accountId') as Account.IdType;
+  return (id ?? generateMongoId().toString()) as Account.IdType;
 };
 
 export const createCategoryId = (id?: string): Category.IdType => {
-  return (id ?? 'categoryId') as Category.IdType;
+  return (id ?? generateMongoId().toString()) as Category.IdType;
 };
 
 export const createProjectId = (id?: string): Project.IdType => {
-  return (id ?? 'projectId') as Project.IdType;
+  return (id ?? generateMongoId().toString()) as Project.IdType;
 };
 
 export const createRecipientId = (id?: string): Recipient.IdType => {
-  return (id ?? 'recipientId') as Recipient.IdType;
+  return (id ?? generateMongoId().toString()) as Recipient.IdType;
 };
 
 export const createTransactionId = (id?: string): Transaction.IdType => {
-  return (id ?? 'transactionId') as Transaction.IdType;
+  return (id ?? generateMongoId().toString()) as Transaction.IdType;
 };
 
-export const createAccountDocument = (doc?: Partial<Account.Document>): Account.Document => {
+export const createProductId = (id?: string): Product.IdType => {
+  return (id ?? generateMongoId().toString()) as Product.IdType;
+};
+
+export const createAccountDocument: DataFactoryFunction<Account.Document> = (doc) => {
   return {
+    _id: generateMongoId(),
     accountType: 'bankAccount',
     name: 'account name',
     currency: 'Ft',
@@ -30,41 +40,74 @@ export const createAccountDocument = (doc?: Partial<Account.Document>): Account.
     ...doc,
   };
 };
-
-export const createProjectDocument = (doc?: Partial<Project.Document>): Project.Document => {
+export const createProjectDocument: DataFactoryFunction<Project.Document> = (doc) => {
   return {
+    _id: generateMongoId(),
     name: 'project name',
     description: 'project description',
     expiresAt: undefined,
     ...doc,
   };
 };
-export const createCategoryDocument = (doc?: Partial<Category.Document>): Category.Document => {
+export const createCategoryDocument: DataFactoryFunction<Category.Document> = (doc) => {
   return {
+    _id: generateMongoId(),
     name: 'category name',
     expiresAt: undefined,
     parentCategory: undefined,
     parentCategoryId: undefined,
     fullName: 'category name',
     categoryType: 'regular',
+    products: undefined,
     ...doc,
   };
 };
-export const createRecipientDocument = (doc?: Partial<Recipient.Document>): Recipient.Document => {
+export const createRecipientDocument: DataFactoryFunction<Recipient.Document> = (doc) => {
   return {
+    _id: generateMongoId(),
     name: 'recipient name',
     expiresAt: undefined,
     ...doc,
   };
 };
 
-export const createPaymentTransactionDocument = (doc?: Partial<Transaction.PaymentDocument>): Transaction.PaymentDocument => {
+export const createProductDocument: DataFactoryFunction<Product.Document> = (doc) => {
   return {
+    _id: generateMongoId(),
+    brand: 'product brand',
+    measurement: 300,
+    unitOfMeasurement: 'g',
+    expiresAt: undefined,
+    fullName: doc ? `${doc.brand} ${doc.measurement} ${doc.unitOfMeasurement}` : 'product brand 300 g',
+    ...doc,
+  };
+};
+
+export const createInventoryDocument: DataFactoryFunction<Transaction.InventoryItem<Transaction.Product<Product.Document>>> = (doc) => {
+  return {
+    product: createProductDocument(),
+    quantity: 100,
+    ...doc,
+  };
+};
+
+export const createInvoiceDocument: DataFactoryFunction<Transaction.InvoiceItem<Date>> = (doc) => {
+  return {
+    invoiceNumber: 'inv123',
+    billingEndDate: new Date(2022, 3, 10),
+    billingStartDate: new Date(2022, 3, 2),
+    ...doc,
+  };
+};
+
+export const createPaymentTransactionDocument: DataFactoryFunction<Transaction.PaymentDocument> = (doc) => {
+  return {
+    _id: generateMongoId(),
     transactionType: 'payment',
     amount: 100,
     description: 'transaction description',
-    inventory: undefined,
-    invoice: undefined,
+    inventory: createInventoryDocument(),
+    invoice: createInvoiceDocument(),
     issuedAt: new Date(),
     expiresAt: undefined,
     accountId: undefined,
@@ -79,10 +122,23 @@ export const createPaymentTransactionDocument = (doc?: Partial<Transaction.Payme
   };
 };
 
-export const createSplitTransactionDocument = (doc?: Partial<Transaction.SplitDocument>, ...splits: Partial<Transaction.SplitDocument['splits'][number]>[]): Transaction.SplitDocument => {
+export const createSplitDocumentIem: DataFactoryFunction<Transaction.SplitDocumentItem> = (doc) => {
   return {
+    amount: 1,
+    category: createCategoryDocument(),
+    project: createProjectDocument(),
+    description: 'split description',
+    inventory: createInventoryDocument(),
+    invoice: createInvoiceDocument(),
+    ...doc,
+  };
+};
+
+export const createSplitTransactionDocument: DataFactoryFunction<Transaction.SplitDocument> = (doc) => {
+  return {
+    _id: generateMongoId(),
     transactionType: 'split',
-    amount: Math.max(splits.length, 1),
+    amount: doc?.splits?.length ?? 1,
     description: 'transaction description',
     issuedAt: new Date(),
     expiresAt: undefined,
@@ -90,32 +146,14 @@ export const createSplitTransactionDocument = (doc?: Partial<Transaction.SplitDo
     recipientId: undefined,
     account: createAccountDocument(),
     recipient: createRecipientDocument(),
-    splits: splits.length > 0 ? splits.map((s) => {
-      return {
-        amount: 1,
-        category: createCategoryDocument(),
-        project: createProjectDocument(),
-        description: 'split description',
-        inventory: undefined,
-        invoice: undefined,
-        ...s,
-      };
-    }) : [
-      {
-        amount: 1,
-        category: createCategoryDocument(),
-        project: createProjectDocument(),
-        description: 'split description',
-        inventory: undefined,
-        invoice: undefined,
-      },
-    ],
+    splits: [createSplitDocumentIem()],
     ...doc,
   };
 };
 
-export const createTransferTransactionDocument = (doc?: Partial<Transaction.TransferDocument>): Transaction.TransferDocument => {
+export const createTransferTransactionDocument: DataFactoryFunction<Transaction.TransferDocument> = (doc) => {
   return {
+    _id: generateMongoId(),
     transactionType: 'transfer',
     amount: 100,
     description: 'transaction description',
@@ -129,7 +167,7 @@ export const createTransferTransactionDocument = (doc?: Partial<Transaction.Tran
   };
 };
 
-export const createAccountRequest = (req?: Partial<Account.Request>): Account.Request => {
+export const createAccountRequest: DataFactoryFunction<Account.Request> = (req) => {
   return {
     accountType: 'bankAccount',
     name: 'account name',
@@ -138,92 +176,119 @@ export const createAccountRequest = (req?: Partial<Account.Request>): Account.Re
   };
 };
 
-export const createProjectRequest = (req?: Partial<Project.Request>): Project.Request => {
+export const createProjectRequest: DataFactoryFunction<Project.Request> = (req) => {
   return {
     name: 'project name',
     description: 'project description',
     ...req,
   };
 };
-export const createCategoryRequest = (req?: Partial<Category.Request>): Category.Request => {
+export const createCategoryRequest: DataFactoryFunction<Category.Request> = (req) => {
   return {
     name: 'category name',
-    parentCategoryId: 'parentCategoryId' as Category.IdType,
+    parentCategoryId: createCategoryId(),
     categoryType: 'regular',
     ...req,
   };
 };
-export const createRecipientRequest = (req?: Partial<Recipient.Request>): Recipient.Request => {
+export const createRecipientRequest: DataFactoryFunction<Recipient.Request> = (req) => {
   return {
     name: 'recipient name',
     ...req,
   };
 };
 
-export const createPaymentTransactionRequest = (req?: Partial<Transaction.PaymentRequest>): Transaction.PaymentRequest => {
+export const createProductRequest: DataFactoryFunction<Product.Request> = (req) => {
+  return {
+    brand: 'product brand',
+    measurement: 300,
+    unitOfMeasurement: 'g',
+    ...req,
+  };
+};
+
+export const createInventoryRequest: DataFactoryFunction<Transaction.InventoryItem<Product.Id>> = (req) => {
+  return {
+    productId: createProductId(),
+    quantity: 100,
+    ...req,
+  };
+};
+
+export const createInvoiceRequest: DataFactoryFunction<Transaction.InvoiceItem<string>> = (req) => {
+  return {
+    invoiceNumber: 'inv123',
+    billingEndDate: '2022-03-21',
+    billingStartDate: '2022-01-01',
+    ...req,
+  };
+};
+
+export const createPaymentTransactionRequest: DataFactoryFunction<Transaction.PaymentRequest> = (req) => {
   return {
     amount: 100,
     description: 'transaction description',
-    inventory: undefined,
-    invoice: undefined,
+    inventory: createInventoryRequest(),
+    invoice: createInvoiceRequest(),
     issuedAt: new Date().toISOString(),
-    accountId: 'accountId' as Account.IdType,
-    categoryId: 'categoryId' as Category.IdType,
-    projectId: 'projectId' as Project.IdType,
-    recipientId: 'recipientId' as Recipient.IdType,
+    accountId: createAccountId(),
+    categoryId: createCategoryId(),
+    projectId: createProjectId(),
+    recipientId: createRecipientId(),
     ...req,
   };
 };
 
-export const createSplitTransactionRequest = (req?: Partial<Transaction.SplitRequest>, ...splits: Partial<Transaction.SplitRequest['splits'][number]>[]): Transaction.SplitRequest => {
+export const createSplitRequestIem: DataFactoryFunction<Transaction.SplitRequestItem> = (req) => {
   return {
-    amount: Math.max(splits.length, 1),
+    amount: 1,
+    categoryId: createCategoryId(),
+    projectId: createProjectId(),
+    description: 'split description',
+    inventory: createInventoryRequest(),
+    invoice: createInvoiceRequest(),
+    ...req,
+  };
+};
+
+export const createSplitTransactionRequest: DataFactoryFunction<Transaction.SplitRequest> = (req) => {
+  return {
+    amount: req?.splits?.length ?? 1,
     description: 'transaction description',
     issuedAt: new Date().toISOString(),
-    accountId: 'accountId' as Account.IdType,
-    recipientId: 'recipientId' as Recipient.IdType,
-    splits: splits.length > 0 ? splits.map((s) => {
-      return {
-        amount: 1,
-        categoryId: 'categoryId' as Category.IdType,
-        projectId: 'projectId' as Project.IdType,
-        description: 'split description',
-        inventory: undefined,
-        invoice: undefined,
-        ...s,
-      };
-    }) : [
-      {
-        amount: 1,
-        categoryId: 'categoryId' as Category.IdType,
-        projectId: 'projectId' as Project.IdType,
-        description: 'split description',
-        inventory: undefined,
-        invoice: undefined,
-      },
-    ],
+    accountId: createAccountId(),
+    recipientId: createRecipientId(),
+    splits: [createSplitRequestIem()],
     ...req,
   };
 };
 
-export const createTransferTransactionRequest = (req?: Partial<Transaction.TransferRequest>): Transaction.TransferRequest => {
+export const createTransferTransactionRequest: DataFactoryFunction<Transaction.TransferRequest> = (req) => {
   return {
     amount: 100,
     description: 'transaction description',
     issuedAt: new Date().toISOString(),
-    accountId: 'accountId' as Account.IdType,
-    transferAccountId: 'transferAccountId' as Account.IdType,
+    accountId: createAccountId(),
+    transferAccountId: createAccountId(),
     ...req,
   };
 };
 
-export const createAccountResponse = (resp?: Partial<Account.Response>): Account.Response => {
+export const createLoginRequest: DataFactoryFunction<Auth.Login.Request> = (req) => {
+  return {
+    email: 'aaa@email.com',
+    password: 'password123',
+    ...req,
+  };
+};
+
+export const createAccountResponse: DataFactoryFunction<Account.Response> = (resp) => {
   return {
     accountType: 'bankAccount',
     name: 'account name',
     currency: 'Ft',
     balance: 123,
-    accountId: 'accountId' as Account.IdType,
+    accountId: createAccountId(),
     expiresAt: undefined,
     createdAt: undefined,
     updatedAt: undefined,
@@ -233,9 +298,9 @@ export const createAccountResponse = (resp?: Partial<Account.Response>): Account
   };
 };
 
-export const createProjectResponse = (resp?: Partial<Project.Response>): Project.Response => {
+export const createProjectResponse: DataFactoryFunction<Project.Response> = (resp) => {
   return {
-    projectId: 'projectId' as Project.IdType,
+    projectId: createProjectId(),
     name: 'project name',
     description: 'project description',
     expiresAt: undefined,
@@ -245,9 +310,9 @@ export const createProjectResponse = (resp?: Partial<Project.Response>): Project
     ...resp,
   };
 };
-export const createCategoryResponse = (resp?: Partial<Category.Response>): Category.Response => {
+export const createCategoryResponse: DataFactoryFunction<Category.Response> = (resp) => {
   return {
-    categoryId: 'categoryId' as Category.IdType,
+    categoryId: createCategoryId(),
     name: 'category name',
     expiresAt: undefined,
     createdAt: undefined,
@@ -256,12 +321,14 @@ export const createCategoryResponse = (resp?: Partial<Category.Response>): Categ
     parentCategory: undefined,
     fullName: 'category name',
     categoryType: 'regular',
+    parentCategoryId: undefined,
+    products: [createProductResponse()],
     ...resp,
   };
 };
-export const createRecipientResponse = (resp?: Partial<Recipient.Response>): Recipient.Response => {
+export const createRecipientResponse: DataFactoryFunction<Recipient.Response> = (resp) => {
   return {
-    recipientId: 'recipientId' as Recipient.IdType,
+    recipientId: createRecipientId(),
     name: 'recipient name',
     expiresAt: undefined,
     createdAt: undefined,
@@ -271,14 +338,47 @@ export const createRecipientResponse = (resp?: Partial<Recipient.Response>): Rec
   };
 };
 
-export const createPaymentTransactionResponse = (resp?: Partial<Transaction.PaymentResponse>): Transaction.PaymentResponse => {
+export const createProductResponse: DataFactoryFunction<Product.Response> = (resp) => {
   return {
-    transactionId: 'transactionId' as Transaction.IdType,
+    productId: createProductId(),
+    brand: 'product brand',
+    measurement: 300,
+    unitOfMeasurement: 'g',
+    fullName: resp ? `${resp.brand} ${resp.measurement} ${resp.unitOfMeasurement}` : 'product brand 300 g',
+    expiresAt: undefined,
+    category: undefined,
+    createdAt: undefined,
+    updatedAt: undefined,
+    _id: undefined,
+    ...resp,
+  };
+};
+
+export const createInventoryResponse: DataFactoryFunction<Transaction.InventoryItem<Transaction.Product<Product.Response>>> = (resp) => {
+  return {
+    product: createProductResponse(),
+    quantity: 100,
+    ...resp,
+  };
+};
+
+export const createInvoiceResponse: DataFactoryFunction<Transaction.InvoiceItem<string>> = (resp) => {
+  return {
+    invoiceNumber: 'inv123',
+    billingEndDate: '2022-03-10',
+    billingStartDate: '2022-03-01',
+    ...resp,
+  };
+};
+
+export const createPaymentTransactionResponse: DataFactoryFunction<Transaction.PaymentResponse> = (resp) => {
+  return {
+    transactionId: createTransactionId(),
     transactionType: 'payment',
     amount: 100,
     description: 'transaction description',
-    inventory: undefined,
-    invoice: undefined,
+    inventory: createInventoryResponse(),
+    invoice: createInvoiceResponse(),
     issuedAt: new Date().toISOString(),
     expiresAt: undefined,
     createdAt: undefined,
@@ -292,11 +392,23 @@ export const createPaymentTransactionResponse = (resp?: Partial<Transaction.Paym
   };
 };
 
-export const createSplitTransactionResponse = (resp?: Partial<Transaction.SplitResponse>, ...splits: Partial<Transaction.SplitResponse['splits'][number]>[]): Transaction.SplitResponse => {
+export const createSplitResponseIem: DataFactoryFunction<Transaction.SplitResponseItem> = (resp) => {
   return {
-    transactionId: 'transactionId' as Transaction.IdType,
+    amount: 1,
+    category: createCategoryResponse(),
+    project: createProjectResponse(),
+    description: 'split description',
+    inventory: createInventoryResponse(),
+    invoice: createInvoiceResponse(),
+    ...resp,
+  };
+};
+
+export const createSplitTransactionResponse: DataFactoryFunction<Transaction.SplitResponse> = (resp) => {
+  return {
+    transactionId: createTransactionId(),
     transactionType: 'split',
-    amount: Math.max(splits.length, 1),
+    amount: resp?.splits?.length ?? 1,
     description: 'transaction description',
     issuedAt: new Date().toISOString(),
     expiresAt: undefined,
@@ -305,33 +417,14 @@ export const createSplitTransactionResponse = (resp?: Partial<Transaction.SplitR
     _id: undefined,
     account: createAccountResponse(),
     recipient: createRecipientResponse(),
-    splits: splits.length > 0 ? splits.map((s) => {
-      return {
-        amount: 1,
-        category: createCategoryResponse(),
-        project: createProjectResponse(),
-        description: 'split description',
-        inventory: undefined,
-        invoice: undefined,
-        ...s,
-      };
-    }) : [
-      {
-        amount: 1,
-        category: createCategoryResponse(),
-        project: createProjectResponse(),
-        description: 'split description',
-        inventory: undefined,
-        invoice: undefined,
-      },
-    ],
+    splits: [createSplitResponseIem()],
     ...resp,
   };
 };
 
-export const createTransferTransactionResponse = (resp?: Partial<Transaction.TransferResponse>): Transaction.TransferResponse => {
+export const createTransferTransactionResponse: DataFactoryFunction<Transaction.TransferResponse> = (resp) => {
   return {
-    transactionId: 'transactionId' as Transaction.IdType,
+    transactionId: createTransactionId(),
     transactionType: 'transfer',
     amount: 100,
     description: 'transaction description',

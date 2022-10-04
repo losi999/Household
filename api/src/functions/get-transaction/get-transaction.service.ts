@@ -1,4 +1,4 @@
-import { httpError } from '@household/shared/common/utils';
+import { httpErrors } from '@household/api/common/error-handlers';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { ITransactionService } from '@household/shared/services/transaction-service';
 import { Account, Transaction } from '@household/shared/types/types';
@@ -17,15 +17,16 @@ export const getTransactionServiceFactory = (
 
     const document = await transactionService.getTransactionByIdAndAccountId({
       transactionId,
-      accountId, 
-    }).catch((error) => {
-      console.error('Get transaction', error);
-      throw httpError(500, 'Error while getting transaction');
-    });
+      accountId,
+    }).catch(httpErrors.transaction.getById({
+      transactionId,
+      accountId,
+    }));
 
-    if (!document) {
-      throw httpError(404, 'No transaction found');
-    }
+    httpErrors.transaction.notFound(!document, {
+      transactionId,
+      accountId,
+    });
 
     return transactionDocumentConverter.toResponse(document, accountId);
   };

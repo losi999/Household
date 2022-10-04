@@ -1,6 +1,6 @@
 import { errorResponse, noContentResponse } from '@household/api/common/response-factory';
 import { IDeleteRecipientService } from '@household/api/functions/delete-recipient/delete-recipient.service';
-import { castPathParameters } from '@household/shared/common/utils';
+import { castPathParameters } from '@household/shared/common/aws-utils';
 
 export default (deleteRecipient: IDeleteRecipientService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {

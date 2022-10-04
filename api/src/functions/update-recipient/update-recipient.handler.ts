@@ -1,7 +1,6 @@
 import { errorResponse, createdResponse } from '@household/api/common/response-factory';
 import { IUpdateRecipientService } from '@household/api/functions/update-recipient/update-recipient.service';
-import { castPathParameters } from '@household/shared/common/utils';
-import { headerExpiresIn } from '@household/shared/constants';
+import { castPathParameters, getExpiresInHeader } from '@household/shared/common/aws-utils';
 
 export default (updateRecipient: IUpdateRecipientService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {
@@ -12,7 +11,7 @@ export default (updateRecipient: IUpdateRecipientService): AWSLambda.APIGatewayP
       await updateRecipient({
         recipientId,
         body,
-        expiresIn: Number(event.headers[headerExpiresIn]),
+        expiresIn: Number(getExpiresInHeader(event)),
       });
     } catch (error) {
       console.error(error);
