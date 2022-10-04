@@ -1,6 +1,6 @@
 import { errorResponse, createdResponse } from '@household/api/common/response-factory';
 import { ICreateSplitTransactionService } from '@household/api/functions/create-split-transaction/create-split-transaction.service';
-import { getExpiresInHeader } from '@household/shared/common/utils';
+import { getExpiresInHeader } from '@household/shared/common/aws-utils';
 
 export default (createSplitTransaction: ICreateSplitTransactionService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {

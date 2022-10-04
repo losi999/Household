@@ -1,8 +1,8 @@
-import { createAccountId, createTransactionId } from '@household/shared/common/test-data-factory';
+import { createTransactionId } from '@household/shared/common/test-data-factory';
+import { getAccountId, getTransactionId } from '@household/shared/common/utils';
 import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
 import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
 import { Account, Transaction } from '@household/shared/types/types';
-import { Types } from 'mongoose';
 
 describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
   let accountDocument: Account.Document;
@@ -16,19 +16,17 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
       name: 'account',
       accountType: 'bankAccount',
       currency: 'Ft',
-    }, Cypress.env('EXPIRES_IN'));
-    accountDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     transferAccountDocument = accountDocumentConverter.create({
       name: 'account2',
       accountType: 'bankAccount',
       currency: 'Ft',
-    }, Cypress.env('EXPIRES_IN'));
-    transferAccountDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     paymentTransactionDocument = transactionDocumentConverter.createPaymentDocument({
       body: {
-        accountId: createAccountId(accountDocument._id),
+        accountId: getAccountId(accountDocument),
         amount: 100,
         issuedAt: new Date().toISOString(),
         categoryId: undefined,
@@ -42,12 +40,12 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
       category: undefined,
       recipient: undefined,
       project: undefined,
-    }, Cypress.env('EXPIRES_IN'));
-    paymentTransactionDocument._id = new Types.ObjectId();
+      product: undefined,
+    }, Cypress.env('EXPIRES_IN'), true);
 
     splitTransactionDocument = transactionDocumentConverter.createSplitDocument({
       body: {
-        accountId: createAccountId(accountDocument._id),
+        accountId: getAccountId(accountDocument),
         amount: 100,
         issuedAt: new Date().toISOString(),
         description: 'split',
@@ -64,24 +62,23 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
         ],
       },
       account: accountDocument,
-      categories: [],
+      categories: {},
       recipient: undefined,
-      projects: [],
-    }, Cypress.env('EXPIRES_IN'));
-    splitTransactionDocument._id = new Types.ObjectId();
+      projects: {},
+      products: {},
+    }, Cypress.env('EXPIRES_IN'), true);
 
     transferTransactionDocument = transactionDocumentConverter.createTransferDocument({
       body: {
-        accountId: createAccountId(accountDocument._id),
+        accountId: getAccountId(accountDocument),
         amount: 100,
-        transferAccountId: createAccountId(transferAccountDocument._id),
+        transferAccountId: getAccountId(transferAccountDocument),
         description: 'transfer1',
         issuedAt: new Date().toISOString(),
       },
       account: accountDocument,
       transferAccount: transferAccountDocument,
-    }, Cypress.env('EXPIRES_IN'));
-    transferTransactionDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
   });
 
   describe('called as anonymous', () => {
@@ -99,9 +96,9 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
         .saveAccountDocument(transferAccountDocument)
         .saveTransactionDocument(paymentTransactionDocument)
         .authenticate(1)
-        .requestDeleteTransaction(createTransactionId(paymentTransactionDocument._id))
+        .requestDeleteTransaction(getTransactionId(paymentTransactionDocument))
         .expectNoContentResponse()
-        .validateTransactionDeleted(createTransactionId(paymentTransactionDocument._id));
+        .validateTransactionDeleted(getTransactionId(paymentTransactionDocument));
     });
 
     it('should delete split transaction', () => {
@@ -109,9 +106,9 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
         .saveAccountDocument(transferAccountDocument)
         .saveTransactionDocument(splitTransactionDocument)
         .authenticate(1)
-        .requestDeleteTransaction(createTransactionId(splitTransactionDocument._id))
+        .requestDeleteTransaction(getTransactionId(splitTransactionDocument))
         .expectNoContentResponse()
-        .validateTransactionDeleted(createTransactionId(splitTransactionDocument._id));
+        .validateTransactionDeleted(getTransactionId(splitTransactionDocument));
     });
 
     it('should delete transfer transaction', () => {
@@ -119,9 +116,9 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
         .saveAccountDocument(transferAccountDocument)
         .saveTransactionDocument(transferTransactionDocument)
         .authenticate(1)
-        .requestDeleteTransaction(createTransactionId(transferTransactionDocument._id))
+        .requestDeleteTransaction(getTransactionId(transferTransactionDocument))
         .expectNoContentResponse()
-        .validateTransactionDeleted(createTransactionId(transferTransactionDocument._id));
+        .validateTransactionDeleted(getTransactionId(transferTransactionDocument));
     });
 
     describe('should return error', () => {

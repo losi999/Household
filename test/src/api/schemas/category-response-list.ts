@@ -4,7 +4,14 @@ import { default as category } from '@household/test/api/schemas/category-respon
 
 const schema: StrictJSONSchema7<Category.Response[]> = {
   type: 'array',
-  items: category,
+  items: {
+    type: 'object',
+    additionalProperties: false,
+    required: [...category.required],
+    properties: {
+      ...category.properties,
+    },
+  },
 };
 
 export default schema;

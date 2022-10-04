@@ -1,9 +1,10 @@
+import { generateMongoId } from '@household/shared/common/test-data-factory';
 import { addSeconds } from '@household/shared/common/utils';
 import { Restrict } from '@household/shared/types/common';
 import { Account } from '@household/shared/types/types';
 
 export interface IAccountDocumentConverter {
-  create(body: Account.Request, expiresIn: number): Account.Document;
+  create(body: Account.Request, expiresIn: number, generateId?: boolean): Account.Document;
   update(data: {
     document: Restrict<Account.Document, 'updatedAt'>;
     body: Account.Request
@@ -14,11 +15,12 @@ export interface IAccountDocumentConverter {
 
 export const accountDocumentConverterFactory = (): IAccountDocumentConverter => {
   const instance: IAccountDocumentConverter = {
-    create: (body, expiresIn): Account.Document => {
+    create: (body, expiresIn, generateId): Account.Document => {
       return {
         ...body,
         isOpen: true,
         balance: undefined,
+        _id: generateId ? generateMongoId() : undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },

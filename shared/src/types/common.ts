@@ -29,3 +29,5 @@ export type HttpError = {
   statusCode: number;
   message: string;
 };
+
+export type Dictionary<P> = {[key: string]: P};

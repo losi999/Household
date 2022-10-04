@@ -1,8 +1,7 @@
-import { createAccountDocument, createAccountId, createAccountRequest, createAccountResponse } from '@household/shared/common/test-data-factory';
-import { addSeconds } from '@household/shared/common/utils';
+import { createAccountDocument, createAccountRequest, createAccountResponse } from '@household/shared/common/test-data-factory';
+import { addSeconds, getAccountId } from '@household/shared/common/utils';
 import { accountDocumentConverterFactory, IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { Account } from '@household/shared/types/types';
-import { Types } from 'mongoose';
 import { advanceTo, clear } from 'jest-date-mock';
 
 describe('Account document converter', () => {
@@ -22,7 +21,6 @@ describe('Account document converter', () => {
   const currency = 'Ft';
   const accountType: Account.AccountType = 'cash';
   const expiresIn = 3600;
-  const accountId = new Types.ObjectId();
   const balance = 12000;
   const isOpen = false;
 
@@ -37,7 +35,6 @@ describe('Account document converter', () => {
     accountType,
     balance,
     isOpen,
-    _id: accountId,
     createdAt: now,
     updatedAt: now,
   });
@@ -52,6 +49,7 @@ describe('Account document converter', () => {
         isOpen: true,
         balance: undefined,
         expiresAt: undefined,
+        _id: undefined,
       }));
     });
 
@@ -64,6 +62,7 @@ describe('Account document converter', () => {
         isOpen: true,
         balance: undefined,
         expiresAt: addSeconds(expiresIn, now),
+        _id: undefined,
       }));
     });
 
@@ -77,12 +76,12 @@ describe('Account document converter', () => {
         document,
       }, expiresIn);
       expect(result).toEqual(createAccountDocument({
-        _id: accountId,
         accountType,
         currency,
         name,
         isOpen: true,
         balance: undefined,
+        _id: queriedDocument._id,
         createdAt: now,
         expiresAt: addSeconds(expiresIn, now),
       }));
@@ -93,7 +92,7 @@ describe('Account document converter', () => {
     it('should return response', () => {
       const result = converter.toResponse(queriedDocument);
       expect(result).toEqual(createAccountResponse({
-        accountId: createAccountId(accountId.toString()),
+        accountId: getAccountId(queriedDocument),
         accountType,
         balance,
         currency,
@@ -108,7 +107,7 @@ describe('Account document converter', () => {
       const result = converter.toResponseList([queriedDocument]);
       expect(result).toEqual([
         createAccountResponse({
-          accountId: createAccountId(accountId.toString()),
+          accountId: getAccountId(queriedDocument),
           accountType,
           balance,
           currency,

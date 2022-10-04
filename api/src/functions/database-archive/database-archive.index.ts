@@ -7,8 +7,9 @@ import { recipientService } from '@household/shared/dependencies/services/recipi
 import { storageService } from '@household/shared/dependencies/services/storage-service';
 import { transactionService } from '@household/shared/dependencies/services/transaction-service';
 import { default as index } from '@household/api/handlers/index.handler';
+import { productService } from '@household/shared/dependencies/services/product-service';
 
-const databaseArchiveService = databaseArchiveServiceFactory(accountService, projectService, categoryService, recipientService, transactionService, storageService);
+const databaseArchiveService = databaseArchiveServiceFactory(accountService, projectService, categoryService, recipientService, transactionService, productService, storageService);
 
 export default index({
   handler: handler(databaseArchiveService),

@@ -1,6 +1,6 @@
 import { errorResponse, createdResponse } from '@household/api/common/response-factory';
 import { IUpdateToTransferTransactionService } from '@household/api/functions/update-to-transfer-transaction/update-to-transfer-transaction.service';
-import { castPathParameters, getExpiresInHeader } from '@household/shared/common/utils';
+import { castPathParameters, getExpiresInHeader } from '@household/shared/common/aws-utils';
 
 export default (updateTransaction: IUpdateToTransferTransactionService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {

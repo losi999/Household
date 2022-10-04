@@ -1,6 +1,6 @@
 import { errorResponse, createdResponse } from '@household/api/common/response-factory';
 import { ICreatePaymentTransactionService } from '@household/api/functions/create-payment-transaction/create-payment-transaction.service';
-import { getExpiresInHeader } from '@household/shared/common/utils';
+import { getExpiresInHeader } from '@household/shared/common/aws-utils';
 
 export default (createPaymentTransaction: ICreatePaymentTransactionService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {

@@ -1,7 +1,7 @@
 
 import { errorResponse, okResponse } from '@household/api/common/response-factory';
 import { IGetTransactionService } from '@household/api/functions/get-transaction/get-transaction.service';
-import { castPathParameters } from '@household/shared/common/utils';
+import { castPathParameters } from '@household/shared/common/aws-utils';
 import { Transaction } from '@household/shared/types/types';
 
 export default (getTransaction: IGetTransactionService): AWSLambda.APIGatewayProxyHandler => {

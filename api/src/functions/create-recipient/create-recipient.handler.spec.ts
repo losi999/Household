@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/create-recipient/create-recipient.handler';
 import { ICreateRecipientService } from '@household/api/functions/create-recipient/create-recipient.service';
-import { createRecipientRequest } from '@household/shared/common/test-data-factory';
+import { createRecipientId, createRecipientRequest } from '@household/shared/common/test-data-factory';
 import { headerExpiresIn } from '@household/shared/constants';
 
 describe('Create recipient handler', () => {
@@ -42,7 +42,7 @@ describe('Create recipient handler', () => {
   });
 
   it('should respond with success', async () => {
-    const recipientId = 'recipientId';
+    const recipientId = createRecipientId();
 
     mockCreateRecipientService.mockResolvedValue(recipientId);
 

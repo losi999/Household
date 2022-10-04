@@ -18,14 +18,19 @@ describe('List categories service', () => {
 
   const queriedDocument = createCategoryDocument();
   const convertedResponse = createCategoryResponse();
+  const categoryType = 'regular';
 
   it('should return documents', async () => {
     mockCategoryService.functions.listCategories.mockResolvedValue([queriedDocument]);
     mockCategoryDocumentConverter.functions.toResponseList.mockReturnValue([convertedResponse]);
 
-    const result = await service();
+    const result = await service({
+      categoryType,
+    });
     expect(result).toEqual([convertedResponse]);
-    expect(mockCategoryService.functions.listCategories).toHaveBeenCalled();
+    validateFunctionCall(mockCategoryService.functions.listCategories, {
+      categoryType,
+    });
     validateFunctionCall(mockCategoryDocumentConverter.functions.toResponseList, [queriedDocument]);
     expect.assertions(3);
   });
@@ -34,8 +39,12 @@ describe('List categories service', () => {
     it('if unable to query categories', async () => {
       mockCategoryService.functions.listCategories.mockRejectedValue('this is a mongo error');
 
-      await service().catch(validateError('Error while listing categories', 500));
-      expect(mockCategoryService.functions.listCategories).toHaveBeenCalled();
+      await service({
+        categoryType,
+      }).catch(validateError('Error while listing categories', 500));
+      validateFunctionCall(mockCategoryService.functions.listCategories, {
+        categoryType,
+      });
       validateFunctionCall(mockCategoryDocumentConverter.functions.toResponseList);
       expect.assertions(4);
     });

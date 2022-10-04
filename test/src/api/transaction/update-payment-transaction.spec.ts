@@ -1,11 +1,12 @@
-import { createAccountId, createCategoryId, createProjectId, createRecipientId, createTransactionId } from '@household/shared/common/test-data-factory';
+import { createTransactionId, createAccountId, createCategoryId, createRecipientId, createProjectId, createProductId } from '@household/shared/common/test-data-factory';
+import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
 import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
 import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
+import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
 import { projectDocumentConverter } from '@household/shared/dependencies/converters/project-document-converter';
 import { recipientDocumentConverter } from '@household/shared/dependencies/converters/recipient-document-converter';
 import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
-import { Account, Category, Project, Recipient, Transaction } from '@household/shared/types/types';
-import { Types } from 'mongoose';
+import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 
 describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
   let request: Transaction.PaymentRequest;
@@ -17,25 +18,23 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
   let regularCategoryDocument: Category.Document;
   let invoiceCategoryDocument: Category.Document;
   let inventoryCategoryDocument: Category.Document;
+  let productDocument: Product.Document;
 
   beforeEach(() => {
     projectDocument = projectDocumentConverter.create({
       name: 'proj',
       description: 'desc',
-    }, Cypress.env('EXPIRES_IN'));
-    projectDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     recipientDocument = recipientDocumentConverter.create({
       name: 'recipient',
-    }, Cypress.env('EXPIRES_IN'));
-    recipientDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     accountDocument = accountDocumentConverter.create({
       name: 'bank',
       accountType: 'bankAccount',
       currency: 'Ft',
-    }, Cypress.env('EXPIRES_IN'));
-    accountDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     regularCategoryDocument = categoryDocumentConverter.create({
       body: {
@@ -44,8 +43,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
         parentCategoryId: undefined,
       },
       parentCategory: undefined,
-    }, Cypress.env('EXPIRES_IN'));
-    regularCategoryDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     invoiceCategoryDocument = categoryDocumentConverter.create({
       body: {
@@ -54,8 +52,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
         parentCategoryId: undefined,
       },
       parentCategory: undefined,
-    }, Cypress.env('EXPIRES_IN'));
-    invoiceCategoryDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     inventoryCategoryDocument = categoryDocumentConverter.create({
       body: {
@@ -64,28 +61,32 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
         parentCategoryId: undefined,
       },
       parentCategory: undefined,
-    }, Cypress.env('EXPIRES_IN'));
-    inventoryCategoryDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
+
+    productDocument = productDocumentConverter.create({
+      brand: 'brand',
+      measurement: 200,
+      unitOfMeasurement: 'kg',
+    }, Cypress.env('EXPIRES_IN'), true);
 
     originalDocument = transactionDocumentConverter.createTransferDocument({
       body: {
-        accountId: createAccountId(accountDocument._id),
+        accountId: getAccountId(accountDocument),
         amount: 100,
         description: undefined,
         issuedAt: new Date().toISOString(),
-        transferAccountId: createAccountId(accountDocument._id),
+        transferAccountId: getAccountId(accountDocument),
       },
       account: accountDocument,
       transferAccount: accountDocument,
-    }, Cypress.env('EXPIRES_IN'));
-    originalDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     request = {
       amount: 100,
-      accountId: createAccountId(accountDocument._id),
-      categoryId: createCategoryId(regularCategoryDocument._id),
-      projectId: createProjectId(projectDocument._id),
-      recipientId: createRecipientId(recipientDocument._id),
+      accountId: getAccountId(accountDocument),
+      categoryId: getCategoryId(regularCategoryDocument),
+      projectId: getProjectId(projectDocument),
+      recipientId: getRecipientId(recipientDocument),
       description: 'new description',
       issuedAt: new Date(2022, 6, 9, 22, 30, 12).toISOString(),
       invoice: {
@@ -96,10 +97,8 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
         invoiceNumber: 'invoice123',
       },
       inventory: {
-        brand: 'brand',
-        measurement: 200,
+        productId: getProductId(productDocument),
         quantity: 1,
-        unitOfMeasurement: 'kg',
       },
     };
   });
@@ -122,15 +121,15 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), request)
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request)
             .expectCreatedResponse()
-            .validateTransactionPaymentDocument(request, regularCategoryDocument);
+            .validateTransactionPaymentDocument(request);
         });
 
         it('using invoice category', () => {
           const modifiedRequest: Transaction.PaymentRequest = {
             ...request,
-            categoryId: createCategoryId(invoiceCategoryDocument._id),
+            categoryId: getCategoryId(invoiceCategoryDocument),
           };
 
           cy.saveTransactionDocument(originalDocument)
@@ -139,14 +138,14 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), modifiedRequest)
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), modifiedRequest)
             .expectCreatedResponse()
-            .validateTransactionPaymentDocument(modifiedRequest, invoiceCategoryDocument);
+            .validateTransactionPaymentDocument(modifiedRequest);
         });
         it('using inventory category', () => {
           const modifiedRequest: Transaction.PaymentRequest = {
             ...request,
-            categoryId: createCategoryId(inventoryCategoryDocument._id),
+            categoryId: getCategoryId(inventoryCategoryDocument),
           };
 
           cy.saveTransactionDocument(originalDocument)
@@ -154,10 +153,14 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
+            .saveProductDocument({
+              document: productDocument,
+              categoryId: getCategoryId(inventoryCategoryDocument),
+            })
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), modifiedRequest)
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), modifiedRequest)
             .expectCreatedResponse()
-            .validateTransactionPaymentDocument(modifiedRequest, inventoryCategoryDocument);
+            .validateTransactionPaymentDocument(modifiedRequest);
         });
       });
 
@@ -173,15 +176,15 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), modifiedRequest)
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), modifiedRequest)
             .expectCreatedResponse()
-            .validateTransactionPaymentDocument(modifiedRequest, regularCategoryDocument);
+            .validateTransactionPaymentDocument(modifiedRequest);
         });
         it('inventory', () => {
           const modifiedRequest: Transaction.PaymentRequest = {
             ...request,
             inventory: undefined,
-            categoryId: createCategoryId(inventoryCategoryDocument._id),
+            categoryId: getCategoryId(inventoryCategoryDocument),
           };
 
           cy.saveTransactionDocument(originalDocument)
@@ -190,78 +193,15 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), modifiedRequest)
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), modifiedRequest)
             .expectCreatedResponse()
-            .validateTransactionPaymentDocument(modifiedRequest, inventoryCategoryDocument);
-        });
-
-        it('inventory.brand', () => {
-          const modifiedRequest: Transaction.PaymentRequest = {
-            ...request,
-            categoryId: createCategoryId(inventoryCategoryDocument._id),
-            inventory: {
-              ...request.inventory,
-              brand: undefined,
-            },
-          };
-
-          cy.saveTransactionDocument(originalDocument)
-            .saveAccountDocument(accountDocument)
-            .saveCategoryDocument(inventoryCategoryDocument)
-            .saveProjectDocument(projectDocument)
-            .saveRecipientDocument(recipientDocument)
-            .authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), modifiedRequest)
-            .expectCreatedResponse()
-            .validateTransactionPaymentDocument(modifiedRequest, inventoryCategoryDocument);
-        });
-
-        it('inventory.measurement', () => {
-          const modifiedRequest: Transaction.PaymentRequest = {
-            ...request,
-            categoryId: createCategoryId(inventoryCategoryDocument._id),
-            inventory: {
-              ...request.inventory,
-              measurement: undefined,
-            },
-          };
-
-          cy.saveTransactionDocument(originalDocument)
-            .saveAccountDocument(accountDocument)
-            .saveCategoryDocument(inventoryCategoryDocument)
-            .saveProjectDocument(projectDocument)
-            .saveRecipientDocument(recipientDocument)
-            .authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), modifiedRequest)
-            .expectCreatedResponse()
-            .validateTransactionPaymentDocument(modifiedRequest, inventoryCategoryDocument);
-        });
-
-        it('inventory.unitOfMeasurement', () => {
-          const modifiedRequest: Transaction.PaymentRequest = {
-            ...request,
-            categoryId: createCategoryId(inventoryCategoryDocument._id),
-            inventory: {
-              ...request.inventory,
-              unitOfMeasurement: undefined,
-            },
-          };
-
-          cy.saveTransactionDocument(originalDocument)
-            .saveAccountDocument(accountDocument)
-            .saveCategoryDocument(inventoryCategoryDocument)
-            .saveProjectDocument(projectDocument)
-            .saveRecipientDocument(recipientDocument)
-            .authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), modifiedRequest)
-            .expectCreatedResponse()
-            .validateTransactionPaymentDocument(modifiedRequest, inventoryCategoryDocument);
+            .validateTransactionPaymentDocument(modifiedRequest);
         });
 
         it('invoice', () => {
           const modifiedRequest: Transaction.PaymentRequest = {
             ...request,
-            categoryId: createCategoryId(invoiceCategoryDocument._id),
+            categoryId: getCategoryId(invoiceCategoryDocument),
             invoice: undefined,
           };
 
@@ -271,15 +211,15 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), modifiedRequest)
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), modifiedRequest)
             .expectCreatedResponse()
-            .validateTransactionPaymentDocument(modifiedRequest, invoiceCategoryDocument);
+            .validateTransactionPaymentDocument(modifiedRequest);
         });
 
         it('invoice.invoiceNumber', () => {
           const modifiedRequest: Transaction.PaymentRequest = {
             ...request,
-            categoryId: createCategoryId(invoiceCategoryDocument._id),
+            categoryId: getCategoryId(invoiceCategoryDocument),
             invoice: {
               ...request.invoice,
               invoiceNumber: undefined,
@@ -292,9 +232,9 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), modifiedRequest)
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), modifiedRequest)
             .expectCreatedResponse()
-            .validateTransactionPaymentDocument(modifiedRequest, invoiceCategoryDocument);
+            .validateTransactionPaymentDocument(modifiedRequest);
         });
 
         it('categoryId', () => {
@@ -308,7 +248,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), modifiedRequest)
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), modifiedRequest)
             .expectCreatedResponse()
             .validateTransactionPaymentDocument(modifiedRequest);
         });
@@ -324,9 +264,9 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
             .saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), modifiedRequest)
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), modifiedRequest)
             .expectCreatedResponse()
-            .validateTransactionPaymentDocument(modifiedRequest, regularCategoryDocument);
+            .validateTransactionPaymentDocument(modifiedRequest);
         });
 
         it('projectId', () => {
@@ -340,9 +280,9 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
             .saveCategoryDocument(regularCategoryDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), modifiedRequest)
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), modifiedRequest)
             .expectCreatedResponse()
-            .validateTransactionPaymentDocument(modifiedRequest, regularCategoryDocument);
+            .validateTransactionPaymentDocument(modifiedRequest);
         });
       });
     });
@@ -366,7 +306,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
       describe('if body', () => {
         it('has additional properties', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               extra: 123,
             } as any)
@@ -378,7 +318,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
       describe('if amount', () => {
         it('is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               amount: undefined,
             })
@@ -388,7 +328,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
 
         it('is not number', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               amount: '1' as any,
             })
@@ -400,7 +340,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
       describe('if description', () => {
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               description: 1 as any,
             })
@@ -410,7 +350,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
 
         it('is too short', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               description: '',
             })
@@ -422,7 +362,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
       describe('if inventory', () => {
         it('is not object', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               inventory: '1' as any,
             })
@@ -432,7 +372,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
 
         it('has additional properties', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               inventory: {
                 ...request.inventory,
@@ -447,7 +387,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
       describe('if inventory.quantity', () => {
         it('is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               inventory: {
                 ...request.inventory,
@@ -460,7 +400,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
 
         it('is not number', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               inventory: {
                 ...request.inventory,
@@ -473,7 +413,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
 
         it('is too small', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               inventory: {
                 ...request.inventory,
@@ -485,94 +425,68 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
         });
       });
 
-      describe('if inventory.brand', () => {
+      describe('if inventory.productId', () => {
+        it('is missing', () => {
+          cy.authenticate(1)
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
+              ...request,
+              inventory: {
+                ...request.inventory,
+                productId: undefined,
+              },
+            })
+            .expectBadRequestResponse()
+            .expectRequiredProperty('productId', 'body');
+        });
+
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               inventory: {
                 ...request.inventory,
-                brand: 1 as any,
+                productId: 1 as any,
               },
             })
             .expectBadRequestResponse()
-            .expectWrongPropertyType('brand', 'string', 'body');
+            .expectWrongPropertyType('productId', 'string', 'body');
         });
 
-        it('is too short', () => {
+        it('is not mongo id format', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               inventory: {
                 ...request.inventory,
-                brand: '',
+                productId: createProductId('not-valid'),
               },
             })
             .expectBadRequestResponse()
-            .expectTooShortProperty('brand', 1, 'body');
-        });
-      });
-
-      describe('if inventory.measurement', () => {
-        it('is not number', () => {
-          cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
-              ...request,
-              inventory: {
-                ...request.inventory,
-                measurement: 'a' as any,
-              },
-            })
-            .expectBadRequestResponse()
-            .expectWrongPropertyType('measurement', 'number', 'body');
+            .expectWrongPropertyPattern('productId', 'body');
         });
 
-        it('is too small', () => {
-          cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
-              ...request,
-              inventory: {
-                ...request.inventory,
-                measurement: 0,
-              },
-            })
-            .expectBadRequestResponse()
-            .expectTooSmallNumberProperty('measurement', 0, true, 'body');
-        });
-      });
+        it('does not belong to any product', () => {
+          const modifiedRequest: Transaction.PaymentRequest = {
+            ...request,
+            categoryId: getCategoryId(inventoryCategoryDocument),
+          };
 
-      describe('if inventory.unitOfMeasurement', () => {
-        it('is not string', () => {
-          cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
-              ...request,
-              inventory: {
-                ...request.inventory,
-                unitOfMeasurement: 1 as any,
-              },
-            })
+          cy.saveTransactionDocument(originalDocument)
+            .saveAccountDocument(accountDocument)
+            .saveCategoryDocument(inventoryCategoryDocument)
+            .saveProjectDocument(projectDocument)
+            .saveRecipientDocument(recipientDocument)
+            .authenticate(1)
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), modifiedRequest)
             .expectBadRequestResponse()
-            .expectWrongPropertyType('unitOfMeasurement', 'string', 'body');
-        });
-
-        it('is not a valid enum value', () => {
-          cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
-              ...request,
-              inventory: {
-                ...request.inventory,
-                unitOfMeasurement: 'lb' as any,
-              },
-            })
-            .expectBadRequestResponse()
-            .expectWrongEnumValue('unitOfMeasurement', 'body');
+            .expectMessage('No product found');
         });
       });
 
       describe('if invoice', () => {
         it('is not object', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               invoice: '1' as any,
             })
@@ -582,7 +496,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
 
         it('has additional properties', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               invoice: {
                 ...request.invoice,
@@ -597,7 +511,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
       describe('if invoice.invoiceNumber', () => {
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               invoice: {
                 ...request.invoice,
@@ -610,7 +524,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
 
         it('is too short', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               invoice: {
                 ...request.invoice,
@@ -625,7 +539,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
       describe('if invoice.billingEndDate', () => {
         it('is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               invoice: {
                 ...request.invoice,
@@ -638,7 +552,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               invoice: {
                 ...request.invoice,
@@ -651,7 +565,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
 
         it('is not date format', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               invoice: {
                 ...request.invoice,
@@ -664,7 +578,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
 
         it('is earlier than billingStartDate', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               invoice: {
                 ...request.invoice,
@@ -680,7 +594,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
       describe('if invoice.billingStartDate', () => {
         it('is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               invoice: {
                 ...request.invoice,
@@ -693,7 +607,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               invoice: {
                 ...request.invoice,
@@ -706,7 +620,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
 
         it('is not date format', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               invoice: {
                 ...request.invoice,
@@ -721,7 +635,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
       describe('if issuedAt', () => {
         it('is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               issuedAt: undefined,
             })
@@ -731,7 +645,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               issuedAt: 1 as any,
             })
@@ -741,7 +655,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
 
         it('is not date-time format', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               issuedAt: 'not-date-time',
             })
@@ -757,7 +671,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               accountId: createAccountId(),
             })
@@ -767,7 +681,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
 
         it('is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               accountId: undefined,
             })
@@ -777,7 +691,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               accountId: 1 as any,
             })
@@ -787,7 +701,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
 
         it('is not mongo id format', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               accountId: createAccountId('not-mongo-id'),
             })
@@ -803,7 +717,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               categoryId: createCategoryId(),
             })
@@ -813,7 +727,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               categoryId: 1 as any,
             })
@@ -823,7 +737,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
 
         it('is not mongo id format', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               categoryId: createCategoryId('not-mongo-id'),
             })
@@ -839,7 +753,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
             .saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               recipientId: createRecipientId(),
             })
@@ -849,7 +763,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               recipientId: 1 as any,
             })
@@ -859,7 +773,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
 
         it('is not mongo id format', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               recipientId: createRecipientId('not-mongo-id'),
             })
@@ -875,7 +789,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
             .saveCategoryDocument(regularCategoryDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               projectId: createProjectId(),
             })
@@ -885,7 +799,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               projectId: 1 as any,
             })
@@ -895,7 +809,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
 
         it('is not mongo id format', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
               ...request,
               projectId: createProjectId('not-mongo-id'),
             })

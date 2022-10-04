@@ -1,4 +1,5 @@
-import { httpError } from '@household/shared/common/utils';
+import { httpErrors } from '@household/api/common/error-handlers';
+import { getAccountId } from '@household/shared/common/utils';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { Account } from '@household/shared/types/types';
@@ -7,7 +8,7 @@ export interface ICreateAccountService {
   (ctx: {
     body: Account.Request;
     expiresIn: number;
-  }): Promise<string>;
+  }): Promise<Account.IdType>;
 }
 
 export const createAccountServiceFactory = (
@@ -16,11 +17,8 @@ export const createAccountServiceFactory = (
   return async ({ body, expiresIn }) => {
     const document = accountDocumentConverter.create(body, expiresIn);
 
-    const saved = await accountService.saveAccount(document).catch((error) => {
-      console.error('Save account', error);
-      throw httpError(500, 'Error while saving account');
-    });
+    const saved = await accountService.saveAccount(document).catch(httpErrors.account.save(document));
 
-    return saved._id.toString();
+    return getAccountId(saved);
   };
 };

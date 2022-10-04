@@ -1,14 +1,15 @@
-import { createAccountId, createCategoryId, createProjectId, createRecipientId, createTransactionId } from '@household/shared/common/test-data-factory';
+import { createAccountId, createTransactionId } from '@household/shared/common/test-data-factory';
 import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
 import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
 import { projectDocumentConverter } from '@household/shared/dependencies/converters/project-document-converter';
 import { recipientDocumentConverter } from '@household/shared/dependencies/converters/recipient-document-converter';
 import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
-import { Account, Category, Project, Recipient, Transaction } from '@household/shared/types/types';
-import { Types } from 'mongoose';
+import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { default as paymentTransactionSchema } from '@household/test/api/schemas/transaction-payment-response';
 import { default as transferTransactionSchema } from '@household/test/api/schemas/transaction-transfer-response';
 import { default as splitTransactionSchema } from '@household/test/api/schemas/transaction-split-response';
+import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId, toDictionary } from '@household/shared/common/utils';
+import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
 
 describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}', () => {
   let accountDocument: Account.Document;
@@ -18,6 +19,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
   let regularCategoryDocument: Category.Document;
   let inventoryCategoryDocument: Category.Document;
   let invoiceCategoryDocument: Category.Document;
+  let productDocument: Product.Document;
   let splitTransactionDocument: Transaction.SplitDocument;
   let transferTransactionDocument: Transaction.TransferDocument;
   let transactionPaymentRequest: Transaction.PaymentRequest;
@@ -27,26 +29,22 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
       name: 'account',
       accountType: 'bankAccount',
       currency: 'Ft',
-    }, Cypress.env('EXPIRES_IN'));
-    accountDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     transferAccountDocument = accountDocumentConverter.create({
       name: 'account2',
       accountType: 'bankAccount',
       currency: 'Ft',
-    }, Cypress.env('EXPIRES_IN'));
-    transferAccountDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     recipientDocument = recipientDocumentConverter.create({
       name: 'recipient',
-    }, Cypress.env('EXPIRES_IN'));
-    recipientDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     projectDocument = projectDocumentConverter.create({
       name: 'project',
       description: 'decription',
-    }, Cypress.env('EXPIRES_IN'));
-    projectDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     regularCategoryDocument = categoryDocumentConverter.create({
       body: {
@@ -55,8 +53,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         parentCategoryId: undefined,
       },
       parentCategory: undefined,
-    }, Cypress.env('EXPIRES_IN'));
-    regularCategoryDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     inventoryCategoryDocument = categoryDocumentConverter.create({
       body: {
@@ -65,8 +62,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         parentCategoryId: undefined,
       },
       parentCategory: undefined,
-    }, Cypress.env('EXPIRES_IN'));
-    inventoryCategoryDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     invoiceCategoryDocument = categoryDocumentConverter.create({
       body: {
@@ -75,102 +71,102 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         parentCategoryId: undefined,
       },
       parentCategory: undefined,
-    }, Cypress.env('EXPIRES_IN'));
-    invoiceCategoryDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
+
+    productDocument = productDocumentConverter.create({
+      brand: 'brand',
+      measurement: 500,
+      unitOfMeasurement: 'g',
+    }, Cypress.env('EXPIRES_IN'), true);
 
     transactionPaymentRequest = {
-      accountId: createAccountId(accountDocument._id),
+      accountId: getAccountId(accountDocument),
       amount: 100,
       issuedAt: new Date().toISOString(),
       categoryId: undefined,
       description: 'payment',
       inventory: {
-        brand: 'brand',
-        measurement: 500,
+        productId: getProductId(productDocument),
         quantity: 3,
-        unitOfMeasurement: 'g',
       },
       invoice: {
         billingEndDate: '2022-02-20',
         billingStartDate: '2022-02-01',
         invoiceNumber: 'invNumber',
       },
-      projectId: createProjectId(projectDocument._id),
-      recipientId: createRecipientId(recipientDocument._id),
+      projectId: getProjectId(projectDocument),
+      recipientId: getRecipientId(recipientDocument),
     };
 
     splitTransactionDocument = transactionDocumentConverter.createSplitDocument({
       body: {
-        accountId: createAccountId(accountDocument._id),
+        accountId: getAccountId(accountDocument),
         amount: 300,
         issuedAt: new Date().toISOString(),
         description: 'split',
-        recipientId: createRecipientId(recipientDocument._id),
+        recipientId: getRecipientId(recipientDocument),
         splits: [
           {
             amount: 100,
             description: 'split1',
-            categoryId: createCategoryId(regularCategoryDocument._id),
+            categoryId: getCategoryId(regularCategoryDocument),
             inventory: undefined,
             invoice: undefined,
-            projectId: createProjectId(projectDocument._id),
+            projectId: getProjectId(projectDocument),
           },
           {
             amount: 100,
             description: 'split2',
-            categoryId: createCategoryId(invoiceCategoryDocument._id),
+            categoryId: getCategoryId(invoiceCategoryDocument),
             inventory: undefined,
             invoice: {
               billingEndDate: '2022-02-20',
               billingStartDate: '2022-02-01',
               invoiceNumber: 'invNumber',
             },
-            projectId: createProjectId(projectDocument._id),
+            projectId: getProjectId(projectDocument),
           },
           {
             amount: 100,
             description: 'split3',
-            categoryId: createCategoryId(inventoryCategoryDocument._id),
+            categoryId: getCategoryId(inventoryCategoryDocument),
             inventory: {
-              brand: 'brand',
-              measurement: 500,
+              productId: getProductId(productDocument),
               quantity: 3,
-              unitOfMeasurement: 'g',
             },
             invoice: undefined,
-            projectId: createProjectId(projectDocument._id),
+            projectId: getProjectId(projectDocument),
           },
         ],
       },
       account: accountDocument,
-      categories: [
+      categories: toDictionary([
         regularCategoryDocument,
         inventoryCategoryDocument,
         invoiceCategoryDocument,
-      ],
+      ], '_id'),
       recipient: recipientDocument,
-      projects: [projectDocument],
-    }, Cypress.env('EXPIRES_IN'));
-    splitTransactionDocument._id = new Types.ObjectId();
+      projects: toDictionary([projectDocument], '_id'),
+      products: toDictionary([productDocument], '_id'),
+    }, Cypress.env('EXPIRES_IN'), true);
 
     transferTransactionDocument = transactionDocumentConverter.createTransferDocument({
       body: {
-        accountId: createAccountId(accountDocument._id),
+        accountId: getAccountId(accountDocument),
         amount: 100,
-        transferAccountId: createAccountId(transferAccountDocument._id),
+        transferAccountId: getAccountId(transferAccountDocument),
         description: 'transfer1',
         issuedAt: new Date().toISOString(),
       },
       account: accountDocument,
       transferAccount: transferAccountDocument,
-    }, Cypress.env('EXPIRES_IN'));
-    transferTransactionDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
   });
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
-        .requestGetTransaction(createAccountId(accountDocument._id), createTransactionId())
+        .requestGetTransaction(getAccountId(accountDocument), createTransactionId())
         .expectUnauthorizedResponse();
     });
   });
@@ -180,14 +176,14 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
       const document = transactionDocumentConverter.createPaymentDocument({
         body: {
           ...transactionPaymentRequest,
-          categoryId: createCategoryId(regularCategoryDocument._id),
+          categoryId: getCategoryId(regularCategoryDocument),
         },
         account: accountDocument,
         category: regularCategoryDocument,
         project: projectDocument,
         recipient: recipientDocument,
-      }, Cypress.env('EXPIRES_IN'));
-      document._id = new Types.ObjectId();
+        product: productDocument,
+      }, Cypress.env('EXPIRES_IN'), true);
 
       cy.saveAccountDocument(accountDocument)
         .saveProjectDocument(projectDocument)
@@ -195,7 +191,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .saveCategoryDocument(regularCategoryDocument)
         .saveTransactionDocument(document)
         .authenticate(1)
-        .requestGetTransaction(createAccountId(accountDocument._id), createTransactionId(document._id))
+        .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
         .expectOkResponse()
         .expectValidResponseSchema(paymentTransactionSchema)
         .validateTransactionPaymentResponse(document);
@@ -205,22 +201,26 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
       const document = transactionDocumentConverter.createPaymentDocument({
         body: {
           ...transactionPaymentRequest,
-          categoryId: createCategoryId(inventoryCategoryDocument._id),
+          categoryId: getCategoryId(inventoryCategoryDocument),
         },
         account: accountDocument,
         category: inventoryCategoryDocument,
         project: projectDocument,
         recipient: recipientDocument,
-      }, Cypress.env('EXPIRES_IN'));
-      document._id = new Types.ObjectId();
+        product: productDocument,
+      }, Cypress.env('EXPIRES_IN'), true);
 
       cy.saveAccountDocument(accountDocument)
         .saveProjectDocument(projectDocument)
         .saveRecipientDocument(recipientDocument)
         .saveCategoryDocument(inventoryCategoryDocument)
+        .saveProductDocument({
+          document: productDocument,
+          categoryId: getCategoryId(inventoryCategoryDocument),
+        })
         .saveTransactionDocument(document)
         .authenticate(1)
-        .requestGetTransaction(createAccountId(accountDocument._id), createTransactionId(document._id))
+        .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
         .expectOkResponse()
         .expectValidResponseSchema(paymentTransactionSchema)
         .validateTransactionPaymentResponse(document);
@@ -230,14 +230,14 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
       const document = transactionDocumentConverter.createPaymentDocument({
         body: {
           ...transactionPaymentRequest,
-          categoryId: createCategoryId(invoiceCategoryDocument._id),
+          categoryId: getCategoryId(invoiceCategoryDocument),
         },
         account: accountDocument,
         category: invoiceCategoryDocument,
         project: projectDocument,
         recipient: recipientDocument,
-      }, Cypress.env('EXPIRES_IN'));
-      document._id = new Types.ObjectId();
+        product: productDocument,
+      }, Cypress.env('EXPIRES_IN'), true);
 
       cy.saveAccountDocument(accountDocument)
         .saveProjectDocument(projectDocument)
@@ -245,7 +245,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .saveCategoryDocument(invoiceCategoryDocument)
         .saveTransactionDocument(document)
         .authenticate(1)
-        .requestGetTransaction(createAccountId(accountDocument._id), createTransactionId(document._id))
+        .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
         .expectOkResponse()
         .expectValidResponseSchema(paymentTransactionSchema)
         .validateTransactionPaymentResponse(document);
@@ -258,9 +258,13 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .saveCategoryDocument(regularCategoryDocument)
         .saveCategoryDocument(invoiceCategoryDocument)
         .saveCategoryDocument(inventoryCategoryDocument)
+        .saveProductDocument({
+          document: productDocument,
+          categoryId: getCategoryId(inventoryCategoryDocument),
+        })
         .saveTransactionDocument(splitTransactionDocument)
         .authenticate(1)
-        .requestGetTransaction(createAccountId(accountDocument._id), createTransactionId(splitTransactionDocument._id))
+        .requestGetTransaction(getAccountId(accountDocument), getTransactionId(splitTransactionDocument))
         .expectOkResponse()
         .expectValidResponseSchema(splitTransactionSchema)
         .validateTransactionSplitResponse(splitTransactionDocument);
@@ -271,7 +275,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .saveAccountDocument(transferAccountDocument)
         .saveTransactionDocument(transferTransactionDocument)
         .authenticate(1)
-        .requestGetTransaction(createAccountId(accountDocument._id), createTransactionId(transferTransactionDocument._id))
+        .requestGetTransaction(getAccountId(accountDocument), getTransactionId(transferTransactionDocument))
         .expectOkResponse()
         .expectValidResponseSchema(transferTransactionSchema)
         .validateTransactionTransferResponse(transferTransactionDocument);

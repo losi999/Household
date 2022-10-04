@@ -33,9 +33,11 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
         .populate('recipient')
         .populate('account')
         .populate('category')
+        .populate('inventory.product')
         .populate('transferAccount')
         .populate('splits.category')
         .populate('splits.project')
+        .populate('splits.inventory.product')
         .lean()
         .exec();
     },
@@ -55,9 +57,11 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
         .populate('recipient')
         .populate('account')
         .populate('category')
+        .populate('inventory.product')
         .populate('transferAccount')
         .populate('splits.category')
         .populate('splits.project')
+        .populate('splits.inventory.product')
         .lean()
         .exec();
     },
@@ -117,9 +121,11 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
           .populate('recipient')
           .populate('account')
           .populate('category')
+          .populate('inventory.product')
           .populate('transferAccount')
           .populate('splits.category')
           .populate('splits.project')
+          .populate('splits.inventory.product')
           .lean()
           .exec();
       });

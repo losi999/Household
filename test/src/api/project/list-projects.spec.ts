@@ -17,8 +17,8 @@ describe('GET /project/v1/projects', () => {
   let projectDocument2: Project.Document;
 
   beforeEach(() => {
-    projectDocument1 = projectDocumentConverter.create(project1, Cypress.env('EXPIRES_IN'));
-    projectDocument2 = projectDocumentConverter.create(project2, Cypress.env('EXPIRES_IN'));
+    projectDocument1 = projectDocumentConverter.create(project1, Cypress.env('EXPIRES_IN'), true);
+    projectDocument2 = projectDocumentConverter.create(project2, Cypress.env('EXPIRES_IN'), true);
   });
 
   describe('called as anonymous', () => {
@@ -36,7 +36,11 @@ describe('GET /project/v1/projects', () => {
         .authenticate(1)
         .requestGetProjectList()
         .expectOkResponse()
-        .expectValidResponseSchema(schema);
+        .expectValidResponseSchema(schema)
+        .validateProjectListResponse([
+          projectDocument1,
+          projectDocument2,
+        ]);
     });
   });
 });

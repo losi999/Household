@@ -1,9 +1,9 @@
-import { createAccountId, createProjectId, createTransactionId } from '@household/shared/common/test-data-factory';
+import { createProjectId } from '@household/shared/common/test-data-factory';
+import { getAccountId, getProjectId, getTransactionId, toDictionary } from '@household/shared/common/utils';
 import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
 import { projectDocumentConverter } from '@household/shared/dependencies/converters/project-document-converter';
 import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
 import { Account, Project, Transaction } from '@household/shared/types/types';
-import { Types } from 'mongoose';
 
 describe('DELETE /project/v1/projects/{projectId}', () => {
   const project: Project.Request = {
@@ -14,8 +14,7 @@ describe('DELETE /project/v1/projects/{projectId}', () => {
   let projectDocument: Project.Document;
 
   beforeEach(() => {
-    projectDocument = projectDocumentConverter.create(project, Cypress.env('EXPIRES_IN'));
-    projectDocument._id = new Types.ObjectId();
+    projectDocument = projectDocumentConverter.create(project, Cypress.env('EXPIRES_IN'), true);
   });
 
   describe('called as anonymous', () => {
@@ -30,9 +29,9 @@ describe('DELETE /project/v1/projects/{projectId}', () => {
 
     it('should delete project', () => {
       cy.authenticate(1)
-        .requestDeleteProject(createProjectId(projectDocument._id))
+        .requestDeleteProject(getProjectId(projectDocument))
         .expectNoContentResponse()
-        .validateProjectDeleted(createProjectId(projectDocument._id));
+        .validateProjectDeleted(getProjectId(projectDocument));
     });
 
     describe('in related transactions project', () => {
@@ -45,31 +44,30 @@ describe('DELETE /project/v1/projects/{projectId}', () => {
           name: 'account',
           accountType: 'bankAccount',
           currency: 'Ft',
-        }, Cypress.env('EXPIRES_IN'));
-        accountDocument._id = new Types.ObjectId();
+        }, Cypress.env('EXPIRES_IN'), true);
 
         paymentTransactionDocument = transactionDocumentConverter.createPaymentDocument({
           body: {
-            accountId: createAccountId(accountDocument._id),
+            accountId: getAccountId(accountDocument),
             amount: 100,
             description: 'description',
             issuedAt: new Date(2022, 2, 3).toISOString(),
             categoryId: undefined,
             inventory: undefined,
             invoice: undefined,
-            projectId: createProjectId(projectDocument._id),
+            projectId: getProjectId(projectDocument),
             recipientId: undefined,
           },
           account: accountDocument,
           category: undefined,
           project: projectDocument,
           recipient: undefined,
-        }, Cypress.env('EXPIRES_IN'));
-        paymentTransactionDocument._id = new Types.ObjectId();
+          product: undefined,
+        }, Cypress.env('EXPIRES_IN'), true);
 
         splitTransactionDocument = transactionDocumentConverter.createSplitDocument({
           body: {
-            accountId: createAccountId(accountDocument._id),
+            accountId: getAccountId(accountDocument),
             amount: 200,
             description: 'description',
             issuedAt: new Date(2022, 2, 3).toISOString(),
@@ -81,7 +79,7 @@ describe('DELETE /project/v1/projects/{projectId}', () => {
                 description: undefined,
                 inventory: undefined,
                 invoice: undefined,
-                projectId: createProjectId(projectDocument._id),
+                projectId: getProjectId(projectDocument),
               },
               {
                 amount: 100,
@@ -95,10 +93,10 @@ describe('DELETE /project/v1/projects/{projectId}', () => {
           },
           account: accountDocument,
           recipient: undefined,
-          categories: [],
-          projects: [projectDocument],
-        }, Cypress.env('EXPIRES_IN'));
-        splitTransactionDocument._id = new Types.ObjectId();
+          categories: {},
+          projects: toDictionary([projectDocument], '_id'),
+          products: {},
+        }, Cypress.env('EXPIRES_IN'), true);
       });
       it('should be unset if project is deleted', () => {
         cy.saveAccountDocument(accountDocument)
@@ -106,11 +104,11 @@ describe('DELETE /project/v1/projects/{projectId}', () => {
           .saveTransactionDocument(paymentTransactionDocument)
           .saveTransactionDocument(splitTransactionDocument)
           .authenticate(1)
-          .requestDeleteProject(createProjectId(projectDocument._id))
+          .requestDeleteProject(getProjectId(projectDocument))
           .expectNoContentResponse()
-          .validateProjectDeleted(createProjectId(projectDocument._id))
-          .validateProjectUnset(createTransactionId(paymentTransactionDocument._id))
-          .validateProjectUnset(createTransactionId(splitTransactionDocument._id), 0);
+          .validateProjectDeleted(getProjectId(projectDocument))
+          .validateProjectUnset(getTransactionId(paymentTransactionDocument))
+          .validateProjectUnset(getTransactionId(splitTransactionDocument), 0);
       });
     });
 

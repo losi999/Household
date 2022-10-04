@@ -1,10 +1,11 @@
 import { IUpdateToTransferTransactionService, updateToTransferTransactionServiceFactory } from '@household/api/functions/update-to-transfer-transaction/update-to-transfer-transaction.service';
-import { createTransferTransactionRequest, createAccountDocument, createTransferTransactionDocument, createAccountId, createTransactionId } from '@household/shared/common/test-data-factory';
+import { createTransferTransactionRequest, createAccountDocument, createTransferTransactionDocument } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { getAccountId, getTransactionId } from '@household/shared/common/utils';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
-import { Types } from 'mongoose';
+import { Account } from '@household/shared/types/types';
 
 describe('Update to transfer transaction service', () => {
   let service: IUpdateToTransferTransactionService;
@@ -20,20 +21,14 @@ describe('Update to transfer transaction service', () => {
     service = updateToTransferTransactionServiceFactory(mockAccountService.service, mockTransactionService.service, mockTransactionDocumentConverter.service);
   });
 
-  const accountId = new Types.ObjectId();
-  const transferAccountId = new Types.ObjectId();
+  const queriedAccount = createAccountDocument();
+  const queriedTransferAccount = createAccountDocument();
   const body = createTransferTransactionRequest({
-    accountId: createAccountId(accountId.toString()),
-    transferAccountId: createAccountId(transferAccountId.toString()),
+    accountId: getAccountId(queriedAccount),
+    transferAccountId: getAccountId(queriedTransferAccount),
   });
-  const queriedAccount = createAccountDocument({
-    _id: accountId,
-  });
-  const queriedTransferAccount = createAccountDocument({
-    _id: transferAccountId,
-  });
-  const transactionId = createTransactionId();
   const queriedDocument = createTransferTransactionDocument();
+  const transactionId = getTransactionId(queriedDocument);
   const updatedDocument = createTransferTransactionDocument({
     description: 'updated',
   });
@@ -72,8 +67,8 @@ describe('Update to transfer transaction service', () => {
   describe('should throw error', () => {
     it('if both accounts are the same', async () => {
       const modifiedBody = createTransferTransactionRequest({
-        accountId: createAccountId(accountId.toString()),
-        transferAccountId: createAccountId(accountId.toString()),
+        accountId: getAccountId(queriedAccount),
+        transferAccountId: getAccountId(queriedAccount),
       });
 
       await service({
@@ -145,7 +140,7 @@ describe('Update to transfer transaction service', () => {
         body,
         transactionId,
         expiresIn: undefined,
-      }).catch(validateError('One of the accounts is not found', 400));
+      }).catch(validateError('No account found', 400));
       validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
       validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
         body.accountId,
@@ -157,10 +152,11 @@ describe('Update to transfer transaction service', () => {
     });
 
     it('if accounts are in different currency', async () => {
-      const otherCurrencyAccount = createAccountDocument({
-        _id: transferAccountId,
+      const otherCurrencyAccount: Account.Document = {
+        ...queriedTransferAccount,
         currency: '$',
-      });
+      };
+
       mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
       mockAccountService.functions.listAccountsByIds.mockResolvedValue([
         queriedAccount,

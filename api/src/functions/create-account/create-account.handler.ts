@@ -1,6 +1,6 @@
 import { createdResponse, errorResponse } from '@household/api/common/response-factory';
 import { ICreateAccountService } from '@household/api/functions/create-account/create-account.service';
-import { getExpiresInHeader } from '@household/shared/common/utils';
+import { getExpiresInHeader } from '@household/shared/common/aws-utils';
 
 export default (createAccount: ICreateAccountService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {

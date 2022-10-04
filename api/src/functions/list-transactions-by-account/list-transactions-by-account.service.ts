@@ -1,4 +1,4 @@
-import { httpError } from '@household/shared/common/utils';
+import { httpErrors } from '@household/api/common/error-handlers';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { ITransactionService } from '@household/shared/services/transaction-service';
 import { Account, Common, Transaction } from '@household/shared/types/types';
@@ -16,10 +16,11 @@ export const listTransactionsByAccountServiceFactory = (
       accountId,
       pageNumber,
       pageSize,
-    }).catch((error) => {
-      console.error('List transactions by account', error);
-      throw httpError(500, 'Error while getting transactions');
-    });
+    }).catch(httpErrors.transaction.listByAccountId({
+      accountId,
+      pageNumber,
+      pageSize,
+    }));
 
     return transactionDocumentConverter.toResponseList(documents, accountId);
   };

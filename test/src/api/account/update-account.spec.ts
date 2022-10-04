@@ -1,7 +1,7 @@
 import { createAccountId } from '@household/shared/common/test-data-factory';
+import { getAccountId } from '@household/shared/common/utils';
 import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
 import { Account } from '@household/shared/types/types';
-import { Types } from 'mongoose';
 
 describe('PUT /account/v1/accounts/{accountId}', () => {
   const account: Account.Request = {
@@ -19,8 +19,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
   let accountDocument: Account.Document;
 
   beforeEach(() => {
-    accountDocument = accountDocumentConverter.create(account, Cypress.env('EXPIRES_IN'));
-    accountDocument._id = new Types.ObjectId();
+    accountDocument = accountDocumentConverter.create(account, Cypress.env('EXPIRES_IN'), true);
   });
 
   describe('called as anonymous', () => {
@@ -35,7 +34,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
     it('should update account', () => {
       cy.saveAccountDocument(accountDocument)
         .authenticate(1)
-        .requestUpdateAccount(createAccountId(accountDocument._id), accountToUpdate)
+        .requestUpdateAccount(getAccountId(accountDocument), accountToUpdate)
         .expectCreatedResponse()
         .validateAccountDocument(accountToUpdate);
     });

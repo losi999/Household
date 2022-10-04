@@ -67,7 +67,7 @@ Resources:
   CreateCategory:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub Household-${Env}-Category-CreateCategory
+      FunctionName: !Sub Household-${Env}-CreateCategory
       CodeUri: dist/api/create-category
       Role: !Ref LambdaRoleArn
       Events:
@@ -83,7 +83,7 @@ Resources:
   UpdateCategory:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub Household-${Env}-Category-UpdateCategory
+      FunctionName: !Sub Household-${Env}-UpdateCategory
       CodeUri: dist/api/update-category
       Role: !Ref LambdaRoleArn
       Events:
@@ -99,7 +99,7 @@ Resources:
   ListCategories:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub Household-${Env}-Category-ListCategories
+      FunctionName: !Sub Household-${Env}-ListCategories
       CodeUri: dist/api/list-categories
       Role: !Ref LambdaRoleArn
       Events:
@@ -115,7 +115,7 @@ Resources:
   GetCategory:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub Household-${Env}-Category-GetCategory
+      FunctionName: !Sub Household-${Env}-GetCategory
       CodeUri: dist/api/get-category
       Role: !Ref LambdaRoleArn
       Events:
@@ -131,7 +131,7 @@ Resources:
   DeleteCategory:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub Household-${Env}-Category-DeleteCategory
+      FunctionName: !Sub Household-${Env}-DeleteCategory
       CodeUri: dist/api/delete-category
       Role: !Ref LambdaRoleArn
       Events:

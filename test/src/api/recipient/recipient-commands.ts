@@ -2,10 +2,7 @@ import { Recipient } from '@household/shared/types/types';
 import { headerExpiresIn } from '@household/shared/constants';
 import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/test/api/types';
 import { IRecipientService } from '@household/shared/services/recipient-service';
-
-const recipientTask = <T extends keyof IRecipientService>(name: T, params: Parameters<IRecipientService[T]>) => {
-  return cy.task(name, ...params);
-};
+import { getRecipientId } from '@household/shared/common/utils';
 
 const requestCreateRecipient = (idToken: string, recipient: Recipient.Request) => {
   return cy.request({
@@ -70,28 +67,39 @@ const validateRecipientDocument = (response: Recipient.Id, request: Recipient.Re
   const id = response?.recipientId;
 
   cy.log('Get recipient document', id)
-    .recipientTask('getRecipientById', [id])
-    .should((document: Recipient.Document) => {
-      expect(document._id.toString(), '_id').to.equal(id);
+    .getRecipientDocumentById(id)
+    .should((document) => {
+      expect(getRecipientId(document), '_id').to.equal(id);
       expect(document.name, 'name').to.equal(request.name);
     });
 };
 
 const validateRecipientResponse = (response: Recipient.Response, document: Recipient.Document) => {
-  expect(response.recipientId, 'recipientId').to.equal(document._id.toString());
+  expect(response.recipientId, 'recipientId').to.equal(getRecipientId(document));
   expect(response.name, 'name').to.equal(document.name);
+};
+
+const validateRecipientListResponse = (responses: Recipient.Response[], documents: Recipient.Document[]) => {
+  documents.forEach((document) => {
+    const response = responses.find(r => r.recipientId === getRecipientId(document));
+    validateRecipientResponse(response, document);
+  });
 };
 
 const validateRecipientDeleted = (recipientId: Recipient.IdType) => {
   cy.log('Get recipient document', recipientId)
-    .recipientTask('getRecipientById', [recipientId])
+    .getRecipientDocumentById(recipientId)
     .should((document) => {
       expect(document, 'document').to.be.null;
     });
 };
 
-const saveRecipientDocument = (document: Recipient.Document) => {
-  cy.recipientTask('saveRecipient', [document]);
+const saveRecipientDocument = (...params: Parameters<IRecipientService['saveRecipient']>) => {
+  return cy.task('saveRecipient', ...params);
+};
+
+const getRecipientDocumentById = (...params: Parameters<IRecipientService['getRecipientById']>) => {
+  return cy.task<Recipient.Document>('getRecipientById', ...params);
 };
 
 export const setRecipientCommands = () => {
@@ -105,11 +113,12 @@ export const setRecipientCommands = () => {
     requestGetRecipientList,
     validateRecipientDocument,
     validateRecipientResponse,
+    validateRecipientListResponse,
   });
 
   Cypress.Commands.addAll({
-    recipientTask,
     saveRecipientDocument,
+    getRecipientDocumentById,
     validateRecipientDeleted,
   });
 };
@@ -119,7 +128,7 @@ declare global {
     interface Chainable {
       validateRecipientDeleted: CommandFunction<typeof validateRecipientDeleted>;
       saveRecipientDocument: CommandFunction<typeof saveRecipientDocument>;
-      recipientTask: CommandFunction<typeof recipientTask>
+      getRecipientDocumentById: CommandFunction<typeof getRecipientDocumentById>
     }
 
     interface ChainableRequest extends Chainable {
@@ -133,6 +142,7 @@ declare global {
     interface ChainableResponseBody extends Chainable {
       validateRecipientDocument: CommandFunctionWithPreviousSubject<typeof validateRecipientDocument>;
       validateRecipientResponse: CommandFunctionWithPreviousSubject<typeof validateRecipientResponse>;
+      validateRecipientListResponse: CommandFunctionWithPreviousSubject<typeof validateRecipientListResponse>;
     }
   }
 }

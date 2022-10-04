@@ -12,6 +12,7 @@ var server = http.createServer(function (req, res) {
     case 'project': port = 3002; break;
     case 'recipient': port = 3003; break;
     case 'transaction': port = 3004; break;
+    case 'product': port = 3005; break;
   }
   req.url = parts.slice(2).join('/')
 

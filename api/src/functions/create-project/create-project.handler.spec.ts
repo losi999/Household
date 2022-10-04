@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/create-project/create-project.handler';
 import { ICreateProjectService } from '@household/api/functions/create-project/create-project.service';
-import { createProjectRequest } from '@household/shared/common/test-data-factory';
+import { createProjectId, createProjectRequest } from '@household/shared/common/test-data-factory';
 import { headerExpiresIn } from '@household/shared/constants';
 
 describe('Create project handler', () => {
@@ -42,7 +42,7 @@ describe('Create project handler', () => {
   });
 
   it('should respond with success', async () => {
-    const projectId = 'projectId';
+    const projectId = createProjectId();
 
     mockCreateProjectService.mockResolvedValue(projectId);
 

@@ -2,7 +2,6 @@ const path = require('path');
 
 module.exports = {
   mode: 'production',
-  entry: './src/index.ts',
   experiments: {
     topLevelAwait: true,
   },

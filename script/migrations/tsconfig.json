@@ -18,7 +18,7 @@
     "outDir": "output",
     "baseUrl": ".",
     "paths": {
-      "@household/moneywallet-importer/*": [
+      "@household/migrations/*": [
         "src/*"
       ],
       "@household/shared/*": [

@@ -1,6 +1,7 @@
 import { IGetTransactionService, getTransactionServiceFactory } from '@household/api/functions/get-transaction/get-transaction.service';
-import { createAccountId, createPaymentTransactionDocument, createPaymentTransactionResponse, createTransactionId } from '@household/shared/common/test-data-factory';
+import { createAccountId, createPaymentTransactionDocument, createPaymentTransactionResponse } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { getTransactionId } from '@household/shared/common/utils';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { ITransactionService } from '@household/shared/services/transaction-service';
 
@@ -16,9 +17,9 @@ describe('Get transaction service', () => {
     service = getTransactionServiceFactory(mockTransactionService.service, mockTransactionDocumentConverter.service);
   });
 
-  const transactionId = createTransactionId();
   const accountId = createAccountId();
   const queriedDocument = createPaymentTransactionDocument();
+  const transactionId = getTransactionId(queriedDocument);
   const convertedResponse = createPaymentTransactionResponse();
 
   it('should return transaction', async () => {

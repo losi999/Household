@@ -1,6 +1,6 @@
 import { errorResponse, okResponse } from '@household/api/common/response-factory';
 import { IGetProjectService } from '@household/api/functions/get-project/get-project.service';
-import { castPathParameters } from '@household/shared/common/utils';
+import { castPathParameters } from '@household/shared/common/aws-utils';
 import { Project } from '@household/shared/types/types';
 
 export default (getProject: IGetProjectService): AWSLambda.APIGatewayProxyHandler => {

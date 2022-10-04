@@ -21,6 +21,14 @@ const routes: Routes = [
     canLoad: [AnonymousGuard],
   },
   {
+    path: 'products',
+    loadChildren: () => import('./product/product.module').then(m => m.ProductModule),
+    data: {
+      requireLogin: true,
+    },
+    canLoad: [AnonymousGuard],
+  },
+  {
     path: 'categories',
     loadChildren: () => import('./category/category.module').then(m => m.CategoryModule),
     data: {

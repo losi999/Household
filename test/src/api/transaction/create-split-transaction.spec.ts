@@ -1,10 +1,11 @@
-import { createAccountId, createCategoryId, createProjectId, createRecipientId } from '@household/shared/common/test-data-factory';
+import { createAccountId, createCategoryId, createProductId, createProjectId, createRecipientId } from '@household/shared/common/test-data-factory';
+import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId } from '@household/shared/common/utils';
 import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
 import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
+import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
 import { projectDocumentConverter } from '@household/shared/dependencies/converters/project-document-converter';
 import { recipientDocumentConverter } from '@household/shared/dependencies/converters/recipient-document-converter';
-import { Account, Category, Project, Recipient, Transaction } from '@household/shared/types/types';
-import { Types } from 'mongoose';
+import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 
 describe('POST transaction/v1/transactions/split', () => {
   let request: Transaction.SplitRequest;
@@ -14,25 +15,23 @@ describe('POST transaction/v1/transactions/split', () => {
   let regularCategoryDocument: Category.Document;
   let invoiceCategoryDocument: Category.Document;
   let inventoryCategoryDocument: Category.Document;
+  let productDocument: Product.Document;
 
   beforeEach(() => {
     projectDocument = projectDocumentConverter.create({
       name: 'proj',
       description: 'desc',
-    }, Cypress.env('EXPIRES_IN'));
-    projectDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     recipientDocument = recipientDocumentConverter.create({
       name: 'recipient',
-    }, Cypress.env('EXPIRES_IN'));
-    recipientDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     accountDocument = accountDocumentConverter.create({
       name: 'bank',
       accountType: 'bankAccount',
       currency: 'Ft',
-    }, Cypress.env('EXPIRES_IN'));
-    accountDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     regularCategoryDocument = categoryDocumentConverter.create({
       body: {
@@ -41,8 +40,7 @@ describe('POST transaction/v1/transactions/split', () => {
         parentCategoryId: undefined,
       },
       parentCategory: undefined,
-    }, Cypress.env('EXPIRES_IN'));
-    regularCategoryDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     invoiceCategoryDocument = categoryDocumentConverter.create({
       body: {
@@ -51,8 +49,7 @@ describe('POST transaction/v1/transactions/split', () => {
         parentCategoryId: undefined,
       },
       parentCategory: undefined,
-    }, Cypress.env('EXPIRES_IN'));
-    invoiceCategoryDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     inventoryCategoryDocument = categoryDocumentConverter.create({
       body: {
@@ -61,14 +58,17 @@ describe('POST transaction/v1/transactions/split', () => {
         parentCategoryId: undefined,
       },
       parentCategory: undefined,
-    }, Cypress.env('EXPIRES_IN'));
-    inventoryCategoryDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
-    const inventory: Transaction.Inventory['inventory'] = {
+    productDocument = productDocumentConverter.create({
       brand: 'brand',
       measurement: 200,
-      quantity: 1,
       unitOfMeasurement: 'kg',
+    }, Cypress.env('EXPIRES_IN'), true);
+
+    const inventory: Transaction.InventoryItem<Product.Id> = {
+      quantity: 1,
+      productId: getProductId(productDocument),
     };
 
     const invoice: Transaction.Invoice<string>['invoice'] = {
@@ -80,8 +80,8 @@ describe('POST transaction/v1/transactions/split', () => {
     };
 
     request = {
-      accountId: createAccountId(accountDocument._id),
-      recipientId: createRecipientId(recipientDocument._id),
+      accountId: getAccountId(accountDocument),
+      recipientId: getRecipientId(recipientDocument),
       amount: 3,
       description: 'description',
       issuedAt: new Date(2022, 6, 9, 22, 30, 12).toISOString(),
@@ -89,24 +89,24 @@ describe('POST transaction/v1/transactions/split', () => {
         {
           amount: 1,
           description: 'split1',
-          categoryId: createCategoryId(regularCategoryDocument._id),
-          projectId: createProjectId(projectDocument._id),
+          categoryId: getCategoryId(regularCategoryDocument),
+          projectId: getProjectId(projectDocument),
           invoice,
           inventory,
         },
         {
           amount: 1,
           description: 'split2',
-          categoryId: createCategoryId(inventoryCategoryDocument._id),
-          projectId: createProjectId(projectDocument._id),
+          categoryId: getCategoryId(inventoryCategoryDocument),
+          projectId: getProjectId(projectDocument),
           invoice,
           inventory,
         },
         {
           amount: 1,
           description: 'split3',
-          categoryId: createCategoryId(invoiceCategoryDocument._id),
-          projectId: createProjectId(projectDocument._id),
+          categoryId: getCategoryId(invoiceCategoryDocument),
+          projectId: getProjectId(projectDocument),
           invoice,
           inventory,
         },
@@ -132,10 +132,14 @@ describe('POST transaction/v1/transactions/split', () => {
           .saveCategoryDocument(inventoryCategoryDocument)
           .saveProjectDocument(projectDocument)
           .saveRecipientDocument(recipientDocument)
+          .saveProductDocument({
+            document: productDocument,
+            categoryId: getCategoryId(inventoryCategoryDocument),
+          })
           .authenticate(1)
           .requestCreateSplitTransaction(request)
           .expectCreatedResponse()
-          .validateTransactionSplitDocument(request, regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+          .validateTransactionSplitDocument(request);
       });
       describe('without optional properties', () => {
         it('description', () => {
@@ -149,10 +153,14 @@ describe('POST transaction/v1/transactions/split', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
+            .saveProductDocument({
+              document: productDocument,
+              categoryId: getCategoryId(inventoryCategoryDocument),
+            })
             .authenticate(1)
             .requestCreateSplitTransaction(modifiedRequest)
             .expectCreatedResponse()
-            .validateTransactionSplitDocument(modifiedRequest, regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+            .validateTransactionSplitDocument(modifiedRequest);
         });
 
         it('recipientId', () => {
@@ -165,10 +173,14 @@ describe('POST transaction/v1/transactions/split', () => {
             .saveCategoryDocument(invoiceCategoryDocument)
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
+            .saveProductDocument({
+              document: productDocument,
+              categoryId: getCategoryId(inventoryCategoryDocument),
+            })
             .authenticate(1)
             .requestCreateSplitTransaction(modifiedRequest)
             .expectCreatedResponse()
-            .validateTransactionSplitDocument(modifiedRequest, regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+            .validateTransactionSplitDocument(modifiedRequest);
         });
 
         it('splits.description', () => {
@@ -185,10 +197,14 @@ describe('POST transaction/v1/transactions/split', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
+            .saveProductDocument({
+              document: productDocument,
+              categoryId: getCategoryId(inventoryCategoryDocument),
+            })
             .authenticate(1)
             .requestCreateSplitTransaction(modifiedRequest)
             .expectCreatedResponse()
-            .validateTransactionSplitDocument(modifiedRequest, regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+            .validateTransactionSplitDocument(modifiedRequest);
         });
 
         it('splits.inventory', () => {
@@ -205,82 +221,14 @@ describe('POST transaction/v1/transactions/split', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
+            .saveProductDocument({
+              document: productDocument,
+              categoryId: getCategoryId(inventoryCategoryDocument),
+            })
             .authenticate(1)
             .requestCreateSplitTransaction(modifiedRequest)
             .expectCreatedResponse()
-            .validateTransactionSplitDocument(modifiedRequest, regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
-        });
-
-        it('splits.inventory.brand', () => {
-          const modifiedRequest: Transaction.SplitRequest = {
-            ...request,
-            splits: request.splits.map(s => ({
-              ...s,
-              inventory: {
-                ...s.inventory,
-                brand: undefined,
-              },
-            })),
-          };
-
-          cy.saveAccountDocument(accountDocument)
-            .saveCategoryDocument(regularCategoryDocument)
-            .saveCategoryDocument(invoiceCategoryDocument)
-            .saveCategoryDocument(inventoryCategoryDocument)
-            .saveProjectDocument(projectDocument)
-            .saveRecipientDocument(recipientDocument)
-            .authenticate(1)
-            .requestCreateSplitTransaction(modifiedRequest)
-            .expectCreatedResponse()
-            .validateTransactionSplitDocument(modifiedRequest, regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
-        });
-
-        it('splits.inventory.measurement', () => {
-          const modifiedRequest: Transaction.SplitRequest = {
-            ...request,
-            splits: request.splits.map(s => ({
-              ...s,
-              inventory: {
-                ...s.inventory,
-                measurement: undefined,
-              },
-            })),
-          };
-
-          cy.saveAccountDocument(accountDocument)
-            .saveCategoryDocument(regularCategoryDocument)
-            .saveCategoryDocument(invoiceCategoryDocument)
-            .saveCategoryDocument(inventoryCategoryDocument)
-            .saveProjectDocument(projectDocument)
-            .saveRecipientDocument(recipientDocument)
-            .authenticate(1)
-            .requestCreateSplitTransaction(modifiedRequest)
-            .expectCreatedResponse()
-            .validateTransactionSplitDocument(modifiedRequest, regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
-        });
-
-        it('splits.inventory.unitOfMeasurement', () => {
-          const modifiedRequest: Transaction.SplitRequest = {
-            ...request,
-            splits: request.splits.map(s => ({
-              ...s,
-              inventory: {
-                ...s.inventory,
-                unitOfMeasurement: undefined,
-              },
-            })),
-          };
-
-          cy.saveAccountDocument(accountDocument)
-            .saveCategoryDocument(regularCategoryDocument)
-            .saveCategoryDocument(invoiceCategoryDocument)
-            .saveCategoryDocument(inventoryCategoryDocument)
-            .saveProjectDocument(projectDocument)
-            .saveRecipientDocument(recipientDocument)
-            .authenticate(1)
-            .requestCreateSplitTransaction(modifiedRequest)
-            .expectCreatedResponse()
-            .validateTransactionSplitDocument(modifiedRequest, regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+            .validateTransactionSplitDocument(modifiedRequest);
         });
 
         it('splits.invoice', () => {
@@ -297,10 +245,14 @@ describe('POST transaction/v1/transactions/split', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
+            .saveProductDocument({
+              document: productDocument,
+              categoryId: getCategoryId(inventoryCategoryDocument),
+            })
             .authenticate(1)
             .requestCreateSplitTransaction(modifiedRequest)
             .expectCreatedResponse()
-            .validateTransactionSplitDocument(modifiedRequest, regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+            .validateTransactionSplitDocument(modifiedRequest);
         });
 
         it('splits.invoice.invoiceNumber', () => {
@@ -320,10 +272,14 @@ describe('POST transaction/v1/transactions/split', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
+            .saveProductDocument({
+              document: productDocument,
+              categoryId: getCategoryId(inventoryCategoryDocument),
+            })
             .authenticate(1)
             .requestCreateSplitTransaction(modifiedRequest)
             .expectCreatedResponse()
-            .validateTransactionSplitDocument(modifiedRequest, regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+            .validateTransactionSplitDocument(modifiedRequest);
         });
 
         it('splits.categoryId', () => {
@@ -356,10 +312,14 @@ describe('POST transaction/v1/transactions/split', () => {
             .saveCategoryDocument(invoiceCategoryDocument)
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveRecipientDocument(recipientDocument)
+            .saveProductDocument({
+              document: productDocument,
+              categoryId: getCategoryId(inventoryCategoryDocument),
+            })
             .authenticate(1)
             .requestCreateSplitTransaction(modifiedRequest)
             .expectCreatedResponse()
-            .validateTransactionSplitDocument(modifiedRequest, regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+            .validateTransactionSplitDocument(modifiedRequest);
         });
       });
     });
@@ -741,7 +701,23 @@ describe('POST transaction/v1/transactions/split', () => {
         });
       });
 
-      describe('if splits.inventory.brand', () => {
+      describe('if splits.inventory.productId', () => {
+        it('is missing', () => {
+          cy.authenticate(1)
+            .requestCreateSplitTransaction({
+              ...request,
+              splits: request.splits.map(s => ({
+                ...s,
+                inventory: {
+                  ...s.inventory,
+                  productId: undefined,
+                },
+              })),
+            })
+            .expectBadRequestResponse()
+            .expectRequiredProperty('productId', 'body');
+        });
+
         it('is not string', () => {
           cy.authenticate(1)
             .requestCreateSplitTransaction({
@@ -750,15 +726,15 @@ describe('POST transaction/v1/transactions/split', () => {
                 ...s,
                 inventory: {
                   ...s.inventory,
-                  brand: 1 as any,
+                  productId: 1 as any,
                 },
               })),
             })
             .expectBadRequestResponse()
-            .expectWrongPropertyType('brand', 'string', 'body');
+            .expectWrongPropertyType('productId', 'string', 'body');
         });
 
-        it('is too short', () => {
+        it('is not mongo id format', () => {
           cy.authenticate(1)
             .requestCreateSplitTransaction({
               ...request,
@@ -766,80 +742,25 @@ describe('POST transaction/v1/transactions/split', () => {
                 ...s,
                 inventory: {
                   ...s.inventory,
-                  brand: '',
+                  productId: createProductId('not-valid'),
                 },
               })),
             })
             .expectBadRequestResponse()
-            .expectTooShortProperty('brand', 1, 'body');
-        });
-      });
-
-      describe('if splits.inventory.measurement', () => {
-        it('is not number', () => {
-          cy.authenticate(1)
-            .requestCreateSplitTransaction({
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                inventory: {
-                  ...s.inventory,
-                  measurement: '1' as any,
-                },
-              })),
-            })
-            .expectBadRequestResponse()
-            .expectWrongPropertyType('measurement', 'number', 'body');
+            .expectWrongPropertyPattern('productId', 'body');
         });
 
-        it('is too small', () => {
-          cy.authenticate(1)
-            .requestCreateSplitTransaction({
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                inventory: {
-                  ...s.inventory,
-                  measurement: 0,
-                },
-              })),
-            })
+        it('does not belong to any product', () => {
+          cy.saveAccountDocument(accountDocument)
+            .saveCategoryDocument(regularCategoryDocument)
+            .saveCategoryDocument(invoiceCategoryDocument)
+            .saveCategoryDocument(inventoryCategoryDocument)
+            .saveProjectDocument(projectDocument)
+            .saveRecipientDocument(recipientDocument)
+            .authenticate(1)
+            .requestCreateSplitTransaction(request)
             .expectBadRequestResponse()
-            .expectTooSmallNumberProperty('measurement', 0, true, 'body');
-        });
-      });
-
-      describe('if splits.inventory.unitOfMeasurement', () => {
-        it('is not string', () => {
-          cy.authenticate(1)
-            .requestCreateSplitTransaction({
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                inventory: {
-                  ...s.inventory,
-                  unitOfMeasurement: 1 as any,
-                },
-              })),
-            })
-            .expectBadRequestResponse()
-            .expectWrongPropertyType('unitOfMeasurement', 'string', 'body');
-        });
-
-        it('is not a valid enum value', () => {
-          cy.authenticate(1)
-            .requestCreateSplitTransaction({
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                inventory: {
-                  ...s.inventory,
-                  unitOfMeasurement: 'lb' as any,
-                },
-              })),
-            })
-            .expectBadRequestResponse()
-            .expectWrongEnumValue('unitOfMeasurement', 'body');
+            .expectMessage('No product found');
         });
       });
 

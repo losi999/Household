@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/create-account/create-account.handler';
 import { ICreateAccountService } from '@household/api/functions/create-account/create-account.service';
-import { createAccountRequest } from '@household/shared/common/test-data-factory';
+import { createAccountId, createAccountRequest } from '@household/shared/common/test-data-factory';
 import { headerExpiresIn } from '@household/shared/constants';
 
 describe('Create account handler', () => {
@@ -22,7 +22,6 @@ describe('Create account handler', () => {
   } as AWSLambda.APIGatewayProxyEvent;
 
   it('should handle business service error', async () => {
-
     const statusCode = 418;
     const message = 'This is an error';
     mockCreateAccountService.mockRejectedValue({
@@ -41,7 +40,7 @@ describe('Create account handler', () => {
   });
 
   it('should respond with success', async () => {
-    const accountId = 'accountId';
+    const accountId = createAccountId();
 
     mockCreateAccountService.mockResolvedValue(accountId);
 

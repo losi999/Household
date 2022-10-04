@@ -1,8 +1,8 @@
 import { projectDocumentConverter } from '@household/shared/dependencies/converters/project-document-converter';
 import { default as schema } from '@household/test/api/schemas/project-response';
 import { Project } from '@household/shared/types/types';
-import { Types } from 'mongoose';
 import { createProjectId } from '@household/shared/common/test-data-factory';
+import { getProjectId } from '@household/shared/common/utils';
 
 describe('GET /project/v1/projects/{projectId}', () => {
   const project: Project.Request = {
@@ -13,8 +13,7 @@ describe('GET /project/v1/projects/{projectId}', () => {
   let projectDocument: Project.Document;
 
   beforeEach(() => {
-    projectDocument = projectDocumentConverter.create(project, Cypress.env('EXPIRES_IN'));
-    projectDocument._id = new Types.ObjectId();
+    projectDocument = projectDocumentConverter.create(project, Cypress.env('EXPIRES_IN'), true);
   });
 
   describe('called as anonymous', () => {
@@ -29,7 +28,7 @@ describe('GET /project/v1/projects/{projectId}', () => {
     it('should get project by id', () => {
       cy.saveProjectDocument(projectDocument)
         .authenticate(1)
-        .requestGetProject(createProjectId(projectDocument._id))
+        .requestGetProject(getProjectId(projectDocument))
         .expectOkResponse()
         .expectValidResponseSchema(schema)
         .validateProjectResponse(projectDocument);

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Account, Transaction } from '@household/shared/types/types';
-import { AccountService } from 'src/app/account/account.service';
+import { TransactionService } from 'src/app/transaction/transaction.service';
 
 @Component({
   selector: 'app-account-transactions-home',
@@ -13,7 +13,7 @@ export class AccountTransactionsHomeComponent implements OnInit {
   transactions: Transaction.Response[];
   private pageNumber: number;
 
-  constructor(private activatedRoute: ActivatedRoute, private accountService: AccountService) {
+  constructor(private activatedRoute: ActivatedRoute, private transactionService: TransactionService) {
   }
 
   ngOnInit(): void {
@@ -26,7 +26,7 @@ export class AccountTransactionsHomeComponent implements OnInit {
   loadMore() {
     this.pageNumber += 1;
 
-    this.accountService.listTransactionsByAccountId(this.accountId, this.pageNumber).subscribe((response) => {
+    this.transactionService.listTransactionsByAccountId(this.accountId, this.pageNumber).subscribe((response) => {
       this.transactions.push(...response);
     });
   }

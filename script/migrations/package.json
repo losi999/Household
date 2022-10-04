@@ -5,11 +5,13 @@
   "scripts": {
     "prebuild": "rimraf ./dist",
     "build": "webpack",
-    "start": "yarn build && node ./dist/index.js"
+    "products": "yarn build --entry ./src/products.ts && node ./dist/index.js",
+    "category-type": "yarn build --entry ./src/category-type.ts && node ./dist/index.js"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/aws-lambda": "8.10.93",
     "@types/node": "^16.11.1",
     "dotenv": "^16.0.0",
     "mongoose": "^6.0.11",

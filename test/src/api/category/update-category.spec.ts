@@ -1,7 +1,8 @@
 import { createCategoryId } from '@household/shared/common/test-data-factory';
+import { getCategoryId } from '@household/shared/common/utils';
 import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
+import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
 import { Category } from '@household/shared/types/types';
-import { Types } from 'mongoose';
 
 describe('PUT /category/v1/categories/{categoryId}', () => {
   const category: Category.Request = {
@@ -22,8 +23,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
     categoryDocument = categoryDocumentConverter.create({
       body: category,
       parentCategory: undefined,
-    }, Cypress.env('EXPIRES_IN'));
-    categoryDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
   });
 
   describe('called as anonymous', () => {
@@ -38,9 +38,27 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
     it('should update a category', () => {
       cy.saveCategoryDocument(categoryDocument)
         .authenticate(1)
-        .requestUpdateCategory(createCategoryId(categoryDocument._id), categoryToUpdate)
+        .requestUpdateCategory(getCategoryId(categoryDocument), categoryToUpdate)
         .expectCreatedResponse()
         .validateCategoryDocument(categoryToUpdate);
+    });
+
+    it('should keep existing product', () => {
+      const productDocument = productDocumentConverter.create({
+        brand: 'tesco',
+        measurement: 500,
+        unitOfMeasurement: 'g',
+      }, Cypress.env('EXPIRES_IN'), true);
+
+      cy.saveCategoryDocument(categoryDocument)
+        .saveProductDocument({
+          document: productDocument,
+          categoryId: getCategoryId(categoryDocument),
+        })
+        .authenticate(1)
+        .requestUpdateCategory(getCategoryId(categoryDocument), categoryToUpdate)
+        .expectCreatedResponse()
+        .validateCategoryDocument(categoryToUpdate, undefined, productDocument);
     });
 
     describe('children should be reassigned', () => {
@@ -53,21 +71,19 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
           body: {
             name: 'child',
             categoryType: 'regular',
-            parentCategoryId: createCategoryId(categoryDocument._id),
+            parentCategoryId: getCategoryId(categoryDocument),
           },
           parentCategory: categoryDocument,
-        }, Cypress.env('EXPIRES_IN'));
-        childCategory._id = new Types.ObjectId();
+        }, Cypress.env('EXPIRES_IN'), true);
 
         grandChildCategory = categoryDocumentConverter.create({
           body: {
             name: 'child of child',
             categoryType: 'regular',
-            parentCategoryId: createCategoryId(childCategory._id),
+            parentCategoryId: getCategoryId(childCategory),
           },
           parentCategory: childCategory,
-        }, Cypress.env('EXPIRES_IN'));
-        grandChildCategory._id = new Types.ObjectId();
+        }, Cypress.env('EXPIRES_IN'), true);
 
         otherParentCategory = categoryDocumentConverter.create({
           body: {
@@ -76,8 +92,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
             parentCategoryId: undefined,
           },
           parentCategory: undefined,
-        }, Cypress.env('EXPIRES_IN'));
-        otherParentCategory._id = new Types.ObjectId();
+        }, Cypress.env('EXPIRES_IN'), true);
       });
 
       it('to a different parent category', () => {
@@ -86,13 +101,13 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
           .saveCategoryDocument(grandChildCategory)
           .saveCategoryDocument(otherParentCategory)
           .authenticate(1)
-          .requestUpdateCategory(createCategoryId(childCategory._id), {
+          .requestUpdateCategory(getCategoryId(childCategory), {
             ...categoryToUpdate,
-            parentCategoryId: createCategoryId(otherParentCategory._id),
+            parentCategoryId: getCategoryId(otherParentCategory),
           })
           .expectCreatedResponse()
-          .validateCategoryParentReassign(createCategoryId(childCategory._id), createCategoryId(otherParentCategory._id))
-          .validateCategoryParentReassign(createCategoryId(grandChildCategory._id), createCategoryId(childCategory._id));
+          .validateCategoryParentReassign(getCategoryId(childCategory), getCategoryId(otherParentCategory))
+          .validateCategoryParentReassign(getCategoryId(grandChildCategory), getCategoryId(childCategory));
       });
 
       it('to root from previously set parent', () => {
@@ -100,13 +115,13 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
           .saveCategoryDocument(childCategory)
           .saveCategoryDocument(grandChildCategory)
           .authenticate(1)
-          .requestUpdateCategory(createCategoryId(childCategory._id), {
+          .requestUpdateCategory(getCategoryId(childCategory), {
             ...categoryToUpdate,
             parentCategoryId: undefined,
           })
           .expectCreatedResponse()
-          .validateCategoryParentReassign(createCategoryId(childCategory._id))
-          .validateCategoryParentReassign(createCategoryId(grandChildCategory._id), createCategoryId(childCategory._id));
+          .validateCategoryParentReassign(getCategoryId(childCategory))
+          .validateCategoryParentReassign(getCategoryId(grandChildCategory), getCategoryId(childCategory));
       });
 
       it('to a parent from previously unset value', () => {
@@ -115,14 +130,14 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
           .saveCategoryDocument(grandChildCategory)
           .saveCategoryDocument(otherParentCategory)
           .authenticate(1)
-          .requestUpdateCategory(createCategoryId(categoryDocument._id), {
+          .requestUpdateCategory(getCategoryId(categoryDocument), {
             ...categoryToUpdate,
-            parentCategoryId: createCategoryId(otherParentCategory._id),
+            parentCategoryId: getCategoryId(otherParentCategory),
           })
           .expectCreatedResponse()
-          .validateCategoryParentReassign(createCategoryId(categoryDocument._id), createCategoryId(otherParentCategory._id))
-          .validateCategoryParentReassign(createCategoryId(childCategory._id), createCategoryId(categoryDocument._id))
-          .validateCategoryParentReassign(createCategoryId(grandChildCategory._id), createCategoryId(childCategory._id));
+          .validateCategoryParentReassign(getCategoryId(categoryDocument), getCategoryId(otherParentCategory))
+          .validateCategoryParentReassign(getCategoryId(childCategory), getCategoryId(categoryDocument))
+          .validateCategoryParentReassign(getCategoryId(grandChildCategory), getCategoryId(childCategory));
       });
     });
   });
@@ -215,7 +230,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
       it('does not belong to any category', () => {
         cy.saveCategoryDocument(categoryDocument)
           .authenticate(1)
-          .requestUpdateCategory(createCategoryId(categoryDocument._id), {
+          .requestUpdateCategory(getCategoryId(categoryDocument), {
             ...category,
             parentCategoryId: createCategoryId(),
           })

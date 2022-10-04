@@ -1,8 +1,8 @@
-import { createAccountId, createTransactionId } from '@household/shared/common/test-data-factory';
+import { createTransactionId, createAccountId } from '@household/shared/common/test-data-factory';
+import { getAccountId, getTransactionId } from '@household/shared/common/utils';
 import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
 import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
 import { Account, Transaction } from '@household/shared/types/types';
-import { Types } from 'mongoose';
 
 describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
   let request: Transaction.TransferRequest;
@@ -16,19 +16,17 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
       name: 'bank',
       accountType: 'bankAccount',
       currency: 'Ft',
-    }, Cypress.env('EXPIRES_IN'));
-    accountDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     transferAccountDocument = accountDocumentConverter.create({
       name: 'wallett',
       accountType: 'cash',
       currency: 'Ft',
-    }, Cypress.env('EXPIRES_IN'));
-    transferAccountDocument._id = new Types.ObjectId();
+    }, Cypress.env('EXPIRES_IN'), true);
 
     originalDocument = transactionDocumentConverter.createPaymentDocument({
       body: {
-        accountId: createAccountId(accountDocument._id),
+        accountId: getAccountId(accountDocument),
         amount: 100,
         description: undefined,
         issuedAt: new Date().toISOString(),
@@ -42,12 +40,12 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
       category: undefined,
       project: undefined,
       recipient: undefined,
-    }, Cypress.env('EXPIRES_IN'));
-    originalDocument._id = new Types.ObjectId();
+      product: undefined,
+    }, Cypress.env('EXPIRES_IN'), true);
 
     request = {
-      accountId: createAccountId(accountDocument._id),
-      transferAccountId: createAccountId(transferAccountDocument._id),
+      accountId: getAccountId(accountDocument),
+      transferAccountId: getAccountId(transferAccountDocument),
       amount: 100,
       description: 'description',
       issuedAt: new Date(2022, 6, 9, 22, 30, 12).toISOString(),
@@ -69,7 +67,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
           .saveAccountDocument(accountDocument)
           .saveAccountDocument(transferAccountDocument)
           .authenticate(1)
-          .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), request)
+          .requestUpdateToTransferTransaction(getTransactionId(originalDocument), request)
           .expectCreatedResponse()
           .validateTransactionTransferDocument(request);
       });
@@ -84,7 +82,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
             .saveAccountDocument(accountDocument)
             .saveAccountDocument(transferAccountDocument)
             .authenticate(1)
-            .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), modifiedRequest)
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), modifiedRequest)
             .expectCreatedResponse()
             .validateTransactionTransferDocument(modifiedRequest);
         });
@@ -110,7 +108,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
       describe('if body', () => {
         it('has additional properties', () => {
           cy.authenticate(1)
-            .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
               ...request,
               extra: 123,
             } as any)
@@ -122,7 +120,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
       describe('if amount', () => {
         it('is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
               ...request,
               amount: undefined,
             })
@@ -132,7 +130,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
 
         it('is not number', () => {
           cy.authenticate(1)
-            .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
               ...request,
               amount: '1' as any,
             })
@@ -144,7 +142,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
       describe('if description', () => {
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
               ...request,
               description: 1 as any,
             })
@@ -154,7 +152,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
 
         it('is too short', () => {
           cy.authenticate(1)
-            .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
               ...request,
               description: '',
             })
@@ -166,7 +164,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
       describe('if issuedAt', () => {
         it('is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
               ...request,
               issuedAt: undefined,
             })
@@ -176,7 +174,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
               ...request,
               issuedAt: 1 as any,
             })
@@ -186,7 +184,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
 
         it('is not date-time format', () => {
           cy.authenticate(1)
-            .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
               ...request,
               issuedAt: 'not-date-time',
             })
@@ -200,16 +198,16 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
           cy.saveTransactionDocument(originalDocument)
             .saveAccountDocument(transferAccountDocument)
             .authenticate(1)
-            .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
               ...request,
               accountId: createAccountId(),
             })
             .expectBadRequestResponse()
-            .expectMessage('One of the accounts is not found');
+            .expectMessage('No account found');
         });
         it('is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
               ...request,
               accountId: undefined,
             })
@@ -219,7 +217,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
               ...request,
               accountId: 1 as any,
             })
@@ -229,7 +227,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
 
         it('is not mongo id format', () => {
           cy.authenticate(1)
-            .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
               ...request,
               accountId: createAccountId('not-mongo-id'),
             })
@@ -241,9 +239,9 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
       describe('if transferAccountId', () => {
         it('is the same as accountId', () => {
           cy.authenticate(1)
-            .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
               ...request,
-              transferAccountId: createAccountId(accountDocument._id),
+              transferAccountId: getAccountId(accountDocument),
             })
             .expectBadRequestResponse()
             .expectMessage('Cannot transfer to same account');
@@ -253,12 +251,12 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
           cy.saveTransactionDocument(originalDocument)
             .saveAccountDocument(accountDocument)
             .authenticate(1)
-            .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
               ...request,
               transferAccountId: createAccountId(),
             })
             .expectBadRequestResponse()
-            .expectMessage('One of the accounts is not found');
+            .expectMessage('No account found');
         });
 
         it('is a different currency than base account', () => {
@@ -269,14 +267,14 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
               currency: '$',
             })
             .authenticate(1)
-            .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), request)
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), request)
             .expectBadRequestResponse()
             .expectMessage('Accounts must be in the same currency');
         });
 
         it('is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
               ...request,
               transferAccountId: undefined,
             })
@@ -286,7 +284,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
               ...request,
               transferAccountId: 1 as any,
             })
@@ -296,7 +294,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
 
         it('is not mongo id format', () => {
           cy.authenticate(1)
-            .requestUpdateToTransferTransaction(createTransactionId(originalDocument._id), {
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
               ...request,
               transferAccountId: createAccountId('not-mongo-id'),
             })

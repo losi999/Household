@@ -1,12 +1,12 @@
 import { errorResponse, okResponse } from '@household/api/common/response-factory';
 import { IListTransactionsByAccountService } from '@household/api/functions/list-transactions-by-account/list-transactions-by-account.service';
-import { castPathParameters } from '@household/shared/common/utils';
+import { castPathParameters } from '@household/shared/common/aws-utils';
 import { Common, Transaction } from '@household/shared/types/types';
 
 export default (listTransactionsByAccount: IListTransactionsByAccountService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {
     const { accountId } = castPathParameters(event);
-    const { pageSize, pageNumber } = event.queryStringParameters ?? {} as Common.Pagination<string>;
+    const { pageSize, pageNumber } = (event.queryStringParameters ?? {}) as Common.Pagination<string>;
 
     let transactions: Transaction.Response[];
     try {

@@ -1,6 +1,6 @@
 import { errorResponse, createdResponse } from '@household/api/common/response-factory';
 import { IUpdateProjectService } from '@household/api/functions/update-project/update-project.service';
-import { castPathParameters, getExpiresInHeader } from '@household/shared/common/utils';
+import { castPathParameters, getExpiresInHeader } from '@household/shared/common/aws-utils';
 
 export default (updateProject: IUpdateProjectService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {

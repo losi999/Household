@@ -3,53 +3,54 @@ import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-te
 import { Common } from '@household/shared/types/types';
 
 describe('Pagination schema', () => {
-  let data: Common.Pagination<string>;
-  const tester = jsonSchemaTesterFactory<{
-    pageSize: string;
-    pageNumber: string;
-  }>(schema);
+  const tester = jsonSchemaTesterFactory<Common.Pagination<string>>(schema);
 
-  beforeEach(() => {
-    data = {
-      pageNumber: '1',
-      pageSize: '23',
-    };
-  });
-
-  it('should accept valid body', () => {
-    tester.validateSuccess(data);
+  tester.validateSuccess({
+    pageNumber: '1',
+    pageSize: '23',
   });
 
   describe('should deny', () => {
     describe('if data', () => {
-      it('has additional property', () => {
-        (data as any).extra = 'asd';
-        tester.validateSchemaAdditionalProperties(data, 'data');
-      });
+      tester.validateSchemaAdditionalProperties({
+        pageNumber: '1',
+        pageSize: '23',
+        extra: 1,
+      } as any, 'data');
     });
 
     describe('if data.pageNumber', () => {
-      it('is missing', () => {
-        data.pageNumber = undefined;
-        tester.validateSchemaRequired(data, 'pageNumber');
-      });
+      tester.validateSchemaRequired({
+        pageNumber: undefined,
+        pageSize: '23',
+      }, 'pageNumber');
 
-      it('does not match pattern', () => {
-        data.pageNumber = 'asd';
-        tester.validateSchemaPattern(data, 'pageNumber');
-      });
+      tester.validateSchemaType({
+        pageNumber: 1 as any,
+        pageSize: '23',
+      }, 'pageNumber', 'string');
+
+      tester.validateSchemaPattern({
+        pageNumber: 'asd',
+        pageSize: '23',
+      }, 'pageNumber');
     });
 
     describe('if data.pageSize', () => {
-      it('is missing', () => {
-        data.pageSize = undefined;
-        tester.validateSchemaRequired(data, 'pageSize');
-      });
+      tester.validateSchemaRequired({
+        pageNumber: '1',
+        pageSize: undefined,
+      }, 'pageSize');
 
-      it('does not match pattern', () => {
-        data.pageSize = 'asd';
-        tester.validateSchemaPattern(data, 'pageSize');
-      });
+      tester.validateSchemaType({
+        pageNumber: '1',
+        pageSize: 23 as any,
+      }, 'pageSize', 'string');
+
+      tester.validateSchemaPattern({
+        pageNumber: '1',
+        pageSize: 'asd',
+      }, 'pageSize');
     });
   });
 });

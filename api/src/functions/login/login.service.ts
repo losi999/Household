@@ -1,5 +1,5 @@
+import { httpErrors } from '@household/api/common/error-handlers';
 import { IIdentityService } from '@household/shared/services/identity-service';
-import { httpError } from '@household/shared/common/utils';
 import { Auth } from '@household/shared/types/types';
 
 export interface ILoginService {
@@ -10,10 +10,7 @@ export interface ILoginService {
 
 export const loginServiceFactory = (identityService: IIdentityService): ILoginService => {
   return async ({ body }) => {
-    const loginResponse = await identityService.login(body).catch((error) => {
-      console.error('Login', error);
-      throw httpError(500, error.message);
-    });
+    const loginResponse = await identityService.login(body).catch(httpErrors.common.genericError('Login', body));
 
     return {
       idToken: loginResponse.AuthenticationResult.IdToken,

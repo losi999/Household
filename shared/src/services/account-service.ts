@@ -112,7 +112,7 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
           .exec();
       });
     },
-    listAccountsByIds: async (accountIds) => {
+    listAccountsByIds: (accountIds) => {
       return mongodbService.inSession((session) => {
         return mongodbService.accounts().find({
           _id: {

@@ -1,5 +1,4 @@
-import { unitsOfMeasurement } from '@household/shared/constants';
-import { Transaction } from '@household/shared/types/types';
+import { Product, Transaction } from '@household/shared/types/types';
 import { Schema } from 'mongoose';
 
 const invoiceSchema = new Schema<Transaction.Invoice<Date>['invoice']>({
@@ -19,20 +18,13 @@ const invoiceSchema = new Schema<Transaction.Invoice<Date>['invoice']>({
   _id: false,
 });
 
-const inventorySchema = new Schema<Transaction.Inventory['inventory']>({
+const inventorySchema = new Schema<Transaction.InventoryItem<Transaction.Product<Product.Document>>>({
   quantity: {
     type: Number,
   },
-  unitOfMeasurement: {
-    type: String,
-    enum: [...unitsOfMeasurement],
-  },
-  measurement: {
-    type: Number,
-  },
-  brand: {
-    type: String,
-    minlength: 1,
+  product: {
+    type: Schema.Types.ObjectId,
+    ref: 'products',
   },
 }, {
   _id: false,

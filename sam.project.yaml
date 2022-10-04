@@ -67,7 +67,7 @@ Resources:
   CreateProject:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub Household-${Env}-Project-CreateProject
+      FunctionName: !Sub Household-${Env}-CreateProject
       CodeUri: dist/api/create-project
       Role: !Ref LambdaRoleArn
       Events:
@@ -83,7 +83,7 @@ Resources:
   UpdateProject:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub Household-${Env}-Project-UpdateProject
+      FunctionName: !Sub Household-${Env}-UpdateProject
       CodeUri: dist/api/update-project
       Role: !Ref LambdaRoleArn
       Events:
@@ -99,7 +99,7 @@ Resources:
   ListProjects:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub Household-${Env}-Project-ListProjects
+      FunctionName: !Sub Household-${Env}-ListProjects
       CodeUri: dist/api/list-projects
       Role: !Ref LambdaRoleArn
       Events:
@@ -115,7 +115,7 @@ Resources:
   GetProject:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub Household-${Env}-Project-GetProject
+      FunctionName: !Sub Household-${Env}-GetProject
       CodeUri: dist/api/get-project
       Role: !Ref LambdaRoleArn
       Events:
@@ -131,7 +131,7 @@ Resources:
   DeleteProject:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub Household-${Env}-Project-DeleteProject
+      FunctionName: !Sub Household-${Env}-DeleteProject
       CodeUri: dist/api/delete-project
       Role: !Ref LambdaRoleArn
       Events:

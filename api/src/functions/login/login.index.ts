@@ -2,7 +2,7 @@ import { identityService } from '@household/shared/dependencies/services/identit
 import { apiRequestValidator } from '@household/api/dependencies/handlers/api-request-validator.handler';
 import { default as handler } from '@household/api/functions/login/login.handler';
 import { loginServiceFactory } from '@household/api/functions/login/login.service';
-import { default as body } from '@household/shared/schemas/login';
+import { default as body } from '@household/shared/schemas/login-request';
 import { cors } from '@household/api/dependencies/handlers/cors.handler';
 import { default as index } from '@household/api/handlers/index.handler';
 

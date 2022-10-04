@@ -1,6 +1,6 @@
 import { errorResponse, createdResponse } from '@household/api/common/response-factory';
 import { IUpdateToSplitTransactionService } from '@household/api/functions/update-to-split-transaction/update-to-split-transaction.service';
-import { castPathParameters, getExpiresInHeader } from '@household/shared/common/utils';
+import { castPathParameters, getExpiresInHeader } from '@household/shared/common/aws-utils';
 
 export default (updateTransaction: IUpdateToSplitTransactionService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {

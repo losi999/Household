@@ -1,6 +1,6 @@
 import { errorResponse, createdResponse } from '@household/api/common/response-factory';
 import { ICreateCategoryService } from '@household/api/functions/create-category/create-category.service';
-import { getExpiresInHeader } from '@household/shared/common/utils';
+import { getExpiresInHeader } from '@household/shared/common/aws-utils';
 
 export default (createCategory: ICreateCategoryService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {

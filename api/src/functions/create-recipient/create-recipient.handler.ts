@@ -1,6 +1,6 @@
 import { errorResponse, createdResponse } from '@household/api/common/response-factory';
 import { ICreateRecipientService } from '@household/api/functions/create-recipient/create-recipient.service';
-import { getExpiresInHeader } from '@household/shared/common/utils';
+import { getExpiresInHeader } from '@household/shared/common/aws-utils';
 
 export default (createRecipient: ICreateRecipientService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {

@@ -4,50 +4,54 @@ import { createAccountId, createTransactionId } from '@household/shared/common/t
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 
 describe('Get transaction schema', () => {
-  let data: Account.Id & Transaction.Id;
   const tester = jsonSchemaTesterFactory<Account.Id & Transaction.Id>(schema);
 
-  beforeEach(() => {
-    data = {
-      accountId: createAccountId(),
-      transactionId: createTransactionId(),
-    };
-  });
-
-  it('should accept valid body', () => {
-    tester.validateSuccess(data);
+  tester.validateSuccess({
+    accountId: createAccountId(),
+    transactionId: createTransactionId(),
   });
 
   describe('should deny', () => {
     describe('if data', () => {
-      it('has additional property', () => {
-        (data as any).extra = 'asd';
-        tester.validateSchemaAdditionalProperties(data, 'data');
-      });
+      tester.validateSchemaAdditionalProperties({
+        accountId: createAccountId(),
+        transactionId: createTransactionId(),
+        extra: 1,
+      } as any, 'data');
     });
 
     describe('if data.accountId', () => {
-      it('is missing', () => {
-        data.accountId = undefined;
-        tester.validateSchemaRequired(data, 'accountId');
-      });
+      tester.validateSchemaRequired({
+        accountId: undefined,
+        transactionId: createTransactionId(),
+      }, 'accountId');
 
-      it('does not match pattern', () => {
-        data.accountId = createAccountId('not-valid');
-        tester.validateSchemaPattern(data, 'accountId');
-      });
+      tester.validateSchemaType({
+        accountId: 1 as any,
+        transactionId: createTransactionId(),
+      }, 'accountId', 'string');
+
+      tester.validateSchemaPattern({
+        accountId: createAccountId('not-valid'),
+        transactionId: createTransactionId(),
+      }, 'accountId');
     });
 
     describe('if data.transactionId', () => {
-      it('is missing', () => {
-        data.transactionId = undefined;
-        tester.validateSchemaRequired(data, 'transactionId');
-      });
+      tester.validateSchemaRequired({
+        accountId: createAccountId(),
+        transactionId: undefined,
+      }, 'transactionId');
 
-      it('does not match pattern', () => {
-        data.transactionId = createTransactionId('not-valid');
-        tester.validateSchemaPattern(data, 'transactionId');
-      });
+      tester.validateSchemaType({
+        accountId: createAccountId(),
+        transactionId: 1 as any,
+      }, 'transactionId', 'string');
+
+      tester.validateSchemaPattern({
+        accountId: createAccountId(),
+        transactionId: createTransactionId('not-valid'),
+      }, 'transactionId');
     });
   });
 });
