@@ -246,7 +246,7 @@ workflows:
       - api_deploy:
           name: api_deploy_prod
           env: "PROD"
-          cypress_password: ""
+          cypress_password: "''"
           requires:
             - unit_test
             - lint
