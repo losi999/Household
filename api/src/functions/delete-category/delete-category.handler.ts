@@ -1,6 +1,6 @@
 import { errorResponse, noContentResponse } from '@household/api/common/response-factory';
 import { IDeleteCategoryService } from '@household/api/functions/delete-category/delete-category.service';
-import { castPathParameters } from '@household/shared/common/utils';
+import { castPathParameters } from '@household/shared/common/aws-utils';
 
 export default (deleteCategory: IDeleteCategoryService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {

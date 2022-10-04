@@ -1,6 +1,6 @@
 import { errorResponse, okResponse } from '@household/api/common/response-factory';
 import { IGetRecipientService } from '@household/api/functions/get-recipient/get-recipient.service';
-import { castPathParameters } from '@household/shared/common/utils';
+import { castPathParameters } from '@household/shared/common/aws-utils';
 import { Recipient } from '@household/shared/types/types';
 
 export default (getRecipient: IGetRecipientService): AWSLambda.APIGatewayProxyHandler => {

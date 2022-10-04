@@ -1,6 +1,6 @@
 import { errorResponse, createdResponse } from '@household/api/common/response-factory';
 import { IUpdateCategoryService } from '@household/api/functions/update-category/update-category.service';
-import { castPathParameters, getExpiresInHeader } from '@household/shared/common/utils';
+import { castPathParameters, getExpiresInHeader } from '@household/shared/common/aws-utils';
 
 export default (updateCategory: IUpdateCategoryService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {

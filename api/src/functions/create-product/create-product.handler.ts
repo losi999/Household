@@ -1,6 +1,6 @@
 import { errorResponse, createdResponse } from '@household/api/common/response-factory';
 import { ICreateProductService } from '@household/api/functions/create-product/create-product.service';
-import { castPathParameters, getExpiresInHeader } from '@household/shared/common/utils';
+import { castPathParameters, getExpiresInHeader } from '@household/shared/common/aws-utils';
 
 export default (createProduct: ICreateProductService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {

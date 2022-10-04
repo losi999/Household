@@ -18,7 +18,6 @@ export class ProductListCategoryItemComponent {
 
     dialogRef.afterClosed().subscribe({
       next: (values) => {
-        console.log(values);
         if (values) {
           this.productService.createProduct(this.category.categoryId, values);
         }

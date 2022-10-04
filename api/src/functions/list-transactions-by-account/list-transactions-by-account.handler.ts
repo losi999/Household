@@ -1,6 +1,6 @@
 import { errorResponse, okResponse } from '@household/api/common/response-factory';
 import { IListTransactionsByAccountService } from '@household/api/functions/list-transactions-by-account/list-transactions-by-account.service';
-import { castPathParameters } from '@household/shared/common/utils';
+import { castPathParameters } from '@household/shared/common/aws-utils';
 import { Common, Transaction } from '@household/shared/types/types';
 
 export default (listTransactionsByAccount: IListTransactionsByAccountService): AWSLambda.APIGatewayProxyHandler => {

@@ -6,12 +6,10 @@ import { mongodbServiceFactory } from '@household/shared/services/mongodb-servic
     config();
     const mongodbService = mongodbServiceFactory(process.env.MONGODB_CONNECTION_STRING);
 
-    await mongodbService.projects().updateMany({
-      description: '',
+    await mongodbService.categories().updateMany({
+      categoryType: undefined,
     }, {
-      $unset: {
-        description: 1,
-      },
+      categoryType: 'regular',
     });
 
   } catch (error) {

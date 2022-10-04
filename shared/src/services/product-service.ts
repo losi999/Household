@@ -28,7 +28,7 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
       await mongodbService.inSession((session) => {
         return session.withTransaction(async () => {
           product = await mongodbService.products().create(document);
-          console.log(document, categoryId);
+
           return mongodbService.categories().updateOne({
             _id: categoryId,
           }, {
@@ -68,17 +68,34 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
             session,
           })
             .exec();
-          //TODO
-          // await mongodbService.transactions().updateMany({
-          //   product: productId,
-          // }, {
-          //   $unset: {
-          //     product: 1,
-          //   },
-          // }, {
-          //   session,
-          // })
-          //   .exec();
+          await mongodbService.transactions().updateMany({
+            'inventory.product': productId,
+          }, {
+            $unset: {
+              inventory: 1,
+            },
+          }, {
+            runValidators: true,
+            session,
+          })
+            .exec();
+          await mongodbService.transactions().updateMany({
+            'splits.inventory.product': productId,
+          }, {
+
+            $unset: {
+              'splits.$[element].inventory.product': 1,
+            },
+          }, {
+            session,
+            runValidators: true,
+            arrayFilters: [
+              {
+                'element.inventory.product': productId,
+              },
+            ],
+          })
+            .exec();
         });
       });
     },

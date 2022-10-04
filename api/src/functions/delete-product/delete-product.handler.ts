@@ -1,6 +1,6 @@
 import { errorResponse, noContentResponse } from '@household/api/common/response-factory';
 import { IDeleteProductService } from '@household/api/functions/delete-product/delete-product.service';
-import { castPathParameters } from '@household/shared/common/utils';
+import { castPathParameters } from '@household/shared/common/aws-utils';
 
 export default (deleteProduct: IDeleteProductService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {

@@ -1,6 +1,6 @@
 import { errorResponse, noContentResponse } from '@household/api/common/response-factory';
 import { IDeleteProjectService } from '@household/api/functions/delete-project/delete-project.service';
-import { castPathParameters } from '@household/shared/common/utils';
+import { castPathParameters } from '@household/shared/common/aws-utils';
 
 export default (deleteProject: IDeleteProjectService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {
