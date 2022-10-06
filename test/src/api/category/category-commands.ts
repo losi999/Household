@@ -4,6 +4,8 @@ import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/
 import { ICategoryService } from '@household/shared/services/category-service';
 import { getCategoryId, getProductId } from '@household/shared/common/utils';
 
+type RelatedDocumentOperation = 'parentReassign' | 'productRemoval';
+
 const requestCreateCategory = (idToken: string, category: Category.Request) => {
   return cy.request({
     body: category,
@@ -109,7 +111,23 @@ const validateCategoryDeleted = (categoryId: Category.IdType) => {
     });
 };
 
-const validateCategoryParentReassign = (categoryId: Category.IdType, parentCategoryId?: Category.IdType) => {
+const compareCategoryDocuments = (original: Category.Document, updated: Category.Document, operation: RelatedDocumentOperation) => {
+  expect(getCategoryId(original), 'id').to.equal(getCategoryId(updated));
+  expect(original.name, 'name').to.equal(updated.name);
+  expect(original.categoryType, 'categoryType').to.equal(updated.categoryType);
+
+  if (operation !== 'parentReassign') {
+    expect(original.fullName, 'fullName').to.equal(updated.fullName);
+    expect(getCategoryId(original.parentCategory), 'parentCategory.categoryId').to.equal(getCategoryId(updated.parentCategory));
+  }
+
+  if (operation !== 'productRemoval') {
+    expect(original.products).to.equal(updated.products);
+  }
+};
+
+const validateCategoryParentReassign = (originalDocument: Category.Document, parentCategoryId?: Category.IdType) => {
+  const categoryId = getCategoryId(originalDocument);
   let parentCategoryDocument: Category.Document;
 
   cy.log('Get parent category document', parentCategoryId)
@@ -120,6 +138,7 @@ const validateCategoryParentReassign = (categoryId: Category.IdType, parentCateg
     .log('Get category document', categoryId)
     .getCategoryDocumentById(categoryId)
     .should((document) => {
+      compareCategoryDocuments(originalDocument, document, 'parentReassign');
       if (parentCategoryDocument) {
         expect(document.fullName, 'fullName').to.equal(`${parentCategoryDocument.fullName}:${document.name}`);
         expect(getCategoryId(document.parentCategory), 'parentCategory').to.equal(getCategoryId(parentCategoryDocument));
@@ -127,6 +146,19 @@ const validateCategoryParentReassign = (categoryId: Category.IdType, parentCateg
         expect(document.fullName, 'fullName').to.equal(document.name);
         expect(!!document.parentCategory, 'parentCategory').to.be.false;
       }
+    });
+};
+
+const validateProductRemoval = (originalDocument: Category.Document, removedProductIds: Product.IdType[]) => {
+  const categoryId = getCategoryId(originalDocument);
+
+  cy.log('Get category document', categoryId)
+    .getCategoryDocumentById(categoryId)
+    .should((document) => {
+      compareCategoryDocuments(originalDocument, document, 'productRemoval');
+      removedProductIds.forEach(productId => {
+        expect(document.products, 'products').to.not.contain(productId);
+      });
     });
 };
 
@@ -157,6 +189,7 @@ export const setCategoryCommands = () => {
     getCategoryDocumentById,
     validateCategoryDeleted,
     validateCategoryParentReassign,
+    validateProductRemoval,
   });
 };
 
@@ -165,6 +198,7 @@ declare global {
     interface Chainable {
       validateCategoryDeleted: CommandFunction<typeof validateCategoryDeleted>;
       validateCategoryParentReassign: CommandFunction<typeof validateCategoryParentReassign>;
+      validateProductRemoval: CommandFunction<typeof validateProductRemoval>;
       saveCategoryDocument: CommandFunction<typeof saveCategoryDocument>;
       getCategoryDocumentById: CommandFunction<typeof getCategoryDocumentById>;
     }

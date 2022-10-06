@@ -5,16 +5,14 @@ import { transactionDocumentConverter } from '@household/shared/dependencies/con
 import { Account, Transaction } from '@household/shared/types/types';
 
 describe('DELETE /account/v1/accounts/{accountId}', () => {
-  const account: Account.Request = {
-    name: 'account',
-    accountType: 'bankAccount',
-    currency: 'Ft',
-  };
-
   let accountDocument: Account.Document;
 
   beforeEach(() => {
-    accountDocument = accountDocumentConverter.create(account, Cypress.env('EXPIRES_IN'), true);
+    accountDocument = accountDocumentConverter.create({
+      name: 'account',
+      accountType: 'bankAccount',
+      currency: 'Ft',
+    }, Cypress.env('EXPIRES_IN'), true);
   });
 
   describe('called as anonymous', () => {
@@ -43,8 +41,9 @@ describe('DELETE /account/v1/accounts/{accountId}', () => {
 
       beforeEach(() => {
         transferAccountDocument = accountDocumentConverter.create({
-          ...account,
           name: 'transfer',
+          accountType: 'bankAccount',
+          currency: 'Ft',
         }, Cypress.env('EXPIRES_IN'), true);
 
         paymentTransactionDocument = transactionDocumentConverter.createPaymentDocument({

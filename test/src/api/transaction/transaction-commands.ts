@@ -4,6 +4,8 @@ import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/
 import { ITransactionService } from '@household/shared/services/transaction-service';
 import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
 
+type RelatedDocumentOperation = 'categoryReassign' | 'productReassign' | 'categoryUnset' | 'inventoryUnset' | 'projectUnset' | 'recipientUnset';
+
 const requestCreatePaymentTransaction = (idToken: string, transaction: Transaction.PaymentRequest) => {
   return cy.request({
     body: transaction,
@@ -344,78 +346,185 @@ const validateTransactionDeleted = (transactionId: Transaction.IdType) => {
     });
 };
 
-const validateRecipientUnset = (transactionId: Transaction.IdType) => {
+const compareTransactionPaymentDocuments = (original: Transaction.PaymentDocument, updated: Transaction.PaymentDocument, operation: RelatedDocumentOperation) => {
+  expect(original.invoice, 'invoice').to.equal(updated.invoice);
+
+  if (operation !== 'recipientUnset') {
+    expect(getRecipientId(original.recipient), 'recipient').to.equal(getRecipientId(updated.recipient));
+  }
+
+  if (operation !== 'projectUnset') {
+    expect(getProjectId(original.project), 'project').to.equal(getProjectId(updated.project));
+  }
+
+  if (operation !== 'categoryReassign' && operation !== 'categoryUnset') {
+    expect(getCategoryId(original.category), 'category').to.equal(getCategoryId(updated.category));
+  }
+
+  if (operation !== 'inventoryUnset') {
+    expect(original.inventory?.quantity, 'inventory.quantity').to.equal(updated.inventory?.quantity);
+    if (operation !== 'productReassign') {
+      expect(getProductId(original.inventory?.product), 'inventory.product').to.equal(getProductId(updated.inventory?.product));
+    }
+  }
+};
+
+const compareTransactionSplitDocuments = (original: Transaction.SplitDocument, updated: Transaction.SplitDocument, operation: RelatedDocumentOperation, splitIndex: number) => {
+  if (operation !== 'recipientUnset') {
+    expect(getRecipientId(original.recipient), 'recipient').to.equal(getRecipientId(updated.recipient));
+  }
+
+  original.splits.forEach((split, index) => {
+    expect(split.invoice, `splits[${index}].invoice`).to.equal(updated.splits[index].invoice);
+
+    if (operation !== 'projectUnset' || index !== splitIndex) {
+      expect(getProjectId(split.project), `splits[${index}].project`).to.equal(getProjectId(updated.splits[index].project));
+    }
+
+    if (operation !== 'categoryReassign' && operation !== 'categoryUnset' || index !== splitIndex) {
+      expect(getCategoryId(split.category), `splits[${index}].category`).to.equal(getCategoryId(updated.splits[index].category));
+    }
+
+    if (operation !== 'inventoryUnset' || index !== splitIndex) {
+      expect(split.inventory?.quantity, `splits[${index}].inventory.quantity`).to.equal(updated.splits[index].inventory?.quantity);
+      if (operation !== 'productReassign' || index !== splitIndex) {
+        expect(getProductId(split.inventory?.product), `splits[${index}].inventory.product`).to.equal(getProductId(updated.splits[index].inventory?.product));
+      }
+    }
+  });
+};
+
+const compareTransactionTransferDocuments = (original: Transaction.TransferDocument, updated: Transaction.TransferDocument) => {
+  expect(getAccountId(original.transferAccount), 'transferAccount').to.equal(getAccountId(updated.transferAccount));
+};
+
+const compareTransactionDocuments = (original: Transaction.Document, updated: Transaction.Document, operation: RelatedDocumentOperation, splitIndex?: number) => {
+  expect(getTransactionId(original), 'id').to.equal(getTransactionId(updated));
+  expect(original.amount, 'amount').to.equal(updated.amount);
+  expect(new Date(original.issuedAt).toISOString(), 'issuedAt').to.equal(new Date(updated.issuedAt).toISOString());
+  expect(original.transactionType, 'transactionType').to.equal(updated.transactionType);
+  expect(original.description, 'description').to.equal(updated.description);
+  expect(getAccountId(original.account), 'account').to.equal(getAccountId(updated.account));
+  if (original.transactionType === 'payment' && updated.transactionType === 'payment') {
+    compareTransactionPaymentDocuments(original, updated, operation);
+  }
+
+  if (original.transactionType === 'split' && updated.transactionType === 'split') {
+    compareTransactionSplitDocuments(original, updated, operation, splitIndex);
+  }
+
+  if (original.transactionType === 'transfer' && updated.transactionType === 'transfer') {
+    compareTransactionTransferDocuments(original, updated);
+  }
+};
+
+const validateRecipientUnset = (originalDocument: Transaction.PaymentDocument | Transaction.SplitDocument) => {
+  const transactionId = getTransactionId(originalDocument);
+
   cy.log('Get transaction document', transactionId)
     .getTransactionDocumentById(transactionId)
     .should((document: Transaction.Document) => {
+      compareTransactionDocuments(originalDocument, document, 'recipientUnset');
       if (document.transactionType !== 'transfer') {
         expect(document.recipient, 'recipient').to.be.undefined;
       }
     });
 };
 
-const validateProjectUnset = (transactionId: Transaction.IdType, splitIndex?: number) => {
+const validateProjectUnset = (originalDocument: Transaction.PaymentDocument | Transaction.SplitDocument, splitIndex?: number) => {
+  const transactionId = getTransactionId(originalDocument);
+
   cy.log('Get transaction document', transactionId)
     .getTransactionDocumentById(transactionId)
     .should((document: Transaction.Document) => {
+      compareTransactionDocuments(originalDocument, document, 'projectUnset', splitIndex);
       switch(document.transactionType) {
         case 'payment': {
           expect(document.project, 'project').to.be.undefined;
           break;
         }
         case 'split': {
-          expect(document.splits[splitIndex].project, 'splits.project').to.be.undefined;
+          expect(document.splits[splitIndex].project, `splits[${splitIndex}].project`).to.be.undefined;
           break;
         }
       }
     });
 };
 
-const validateInventoryUnset = (transactionId: Transaction.IdType, splitIndex?: number) => {
+const validateInventoryUnset = (originalDocument: Transaction.PaymentDocument | Transaction.SplitDocument, splitIndex?: number) => {
+  const transactionId = getTransactionId(originalDocument);
+
   cy.log('Get transaction document', transactionId)
     .getTransactionDocumentById(transactionId)
     .should((document: Transaction.Document) => {
+      compareTransactionDocuments(originalDocument, document, 'inventoryUnset', splitIndex);
       switch(document.transactionType) {
         case 'payment': {
           expect(document.inventory, 'inventory').to.be.undefined;
           break;
         }
         case 'split': {
-          expect(document.splits[splitIndex].inventory, 'splits.inventory').to.be.undefined;
+          expect(document.splits[splitIndex].inventory, `splits[${splitIndex}].inventory`).to.be.undefined;
           break;
         }
       }
     });
 };
 
-const validateCategoryUnset = (transactionId: Transaction.IdType, splitIndex?: number) => {
+const validateCategoryUnset = (originalDocument: Transaction.PaymentDocument | Transaction.SplitDocument, splitIndex?: number) => {
+  const transactionId = getTransactionId(originalDocument);
+
   cy.log('Get transaction document', transactionId)
     .getTransactionDocumentById(transactionId)
     .should((document: Transaction.Document) => {
+      compareTransactionDocuments(originalDocument, document, 'categoryUnset', splitIndex);
       switch(document.transactionType) {
         case 'payment': {
           expect(document.category, 'category').to.be.undefined;
           break;
         }
         case 'split': {
-          expect(document.splits[splitIndex].category, 'splits.category').to.be.undefined;
+          expect(document.splits[splitIndex].category, `splits[${splitIndex}].category`).to.be.undefined;
           break;
         }
       }
     });
 };
 
-const validateCategoryUpdate = (transactionId: Transaction.IdType, newValue: Category.IdType, splitIndex?: number) => {
+const validateCategoryReassign = (originalDocument: Transaction.PaymentDocument | Transaction.SplitDocument, newCategoryId: Category.IdType, splitIndex?: number) => {
+  const transactionId = getTransactionId(originalDocument);
+
   cy.log('Get transaction document', transactionId)
     .getTransactionDocumentById(transactionId)
     .should((document: Transaction.Document) => {
+      compareTransactionDocuments(originalDocument, document, 'categoryReassign', splitIndex);
       switch(document.transactionType) {
         case 'payment': {
-          expect(getCategoryId(document.category), 'category').to.equal(newValue);
+          expect(getCategoryId(document.category), 'category').to.equal(newCategoryId);
           break;
         }
         case 'split': {
-          expect(getCategoryId(document.splits[splitIndex].category), 'splits.category').to.equal(newValue);
+          expect(getCategoryId(document.splits[splitIndex].category), `splits[${splitIndex}].category`).to.equal(newCategoryId);
+          break;
+        }
+      }
+    });
+};
+
+const validateProductReassign = (originalDocument: Transaction.PaymentDocument | Transaction.SplitDocument, newProductId: Product.IdType, splitIndex?: number) => {
+  const transactionId = getTransactionId(originalDocument);
+
+  cy.log('Get transaction document', transactionId)
+    .getTransactionDocumentById(transactionId)
+    .should((document: Transaction.Document) => {
+      compareTransactionDocuments(originalDocument, document, 'productReassign', splitIndex);
+      switch(document.transactionType) {
+        case 'payment': {
+          expect(getProductId(document.inventory.product), 'product').to.equal(newProductId);
+          break;
+        }
+        case 'split': {
+          expect(getProductId(document.splits[splitIndex].inventory.product), `splits[${splitIndex}].product`).to.equal(newProductId);
           break;
         }
       }
@@ -456,7 +565,8 @@ export const setTransactionCommands = () => {
     validateProjectUnset,
     validateInventoryUnset,
     validateCategoryUnset,
-    validateCategoryUpdate,
+    validateCategoryReassign,
+    validateProductReassign,
     validateRecipientUnset,
     getTransactionDocumentById,
     saveTransactionDocument,
@@ -471,7 +581,8 @@ declare global {
       validateProjectUnset: CommandFunction<typeof validateProjectUnset>;
       validateInventoryUnset: CommandFunction<typeof validateInventoryUnset>;
       validateCategoryUnset: CommandFunction<typeof validateCategoryUnset>;
-      validateCategoryUpdate: CommandFunction<typeof validateCategoryUpdate>;
+      validateCategoryReassign: CommandFunction<typeof validateCategoryReassign>;
+      validateProductReassign: CommandFunction<typeof validateProductReassign>;
       validateRecipientUnset: CommandFunction<typeof validateRecipientUnset>;
       saveTransactionDocument: CommandFunction<typeof saveTransactionDocument>;
       getTransactionDocumentById: CommandFunction<typeof getTransactionDocumentById>

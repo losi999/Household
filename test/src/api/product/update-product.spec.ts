@@ -5,13 +5,7 @@ import { productDocumentConverter } from '@household/shared/dependencies/convert
 import { Category, Product } from '@household/shared/types/types';
 
 describe('PUT /product/v1/products/{productId}', () => {
-  const product: Product.Request = {
-    brand: 'tesco',
-    measurement: 1,
-    unitOfMeasurement: 'kg',
-  };
-
-  const productToUpdate: Product.Request = {
+  const request: Product.Request = {
     brand: 'new tesco',
     measurement: 1000,
     unitOfMeasurement: 'g',
@@ -22,7 +16,11 @@ describe('PUT /product/v1/products/{productId}', () => {
   let categoryId: Category.IdType;
 
   beforeEach(() => {
-    productDocument = productDocumentConverter.create(product, Cypress.env('EXPIRES_IN'), true);
+    productDocument = productDocumentConverter.create({
+      brand: 'tesco',
+      measurement: 1,
+      unitOfMeasurement: 'kg',
+    }, Cypress.env('EXPIRES_IN'), true);
     categoryDocument = categoryDocumentConverter.create({
       body: {
         categoryType: 'inventory',
@@ -37,7 +35,7 @@ describe('PUT /product/v1/products/{productId}', () => {
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
-        .requestUpdateProduct(createProductId(), productToUpdate)
+        .requestUpdateProduct(createProductId(), request)
         .expectUnauthorizedResponse();
     });
   });
@@ -51,9 +49,9 @@ describe('PUT /product/v1/products/{productId}', () => {
             categoryId,
           })
           .authenticate(1)
-          .requestUpdateProduct(getProductId(productDocument), productToUpdate)
+          .requestUpdateProduct(getProductId(productDocument), request)
           .expectCreatedResponse()
-          .validateProductDocument(productToUpdate);
+          .validateProductDocument(request);
       });
     });
 
@@ -62,7 +60,7 @@ describe('PUT /product/v1/products/{productId}', () => {
         it('is missing from body', () => {
           cy.authenticate(1)
             .requestUpdateProduct(createProductId(), {
-              ...product,
+              ...request,
               brand: undefined,
             })
             .expectBadRequestResponse()
@@ -72,7 +70,7 @@ describe('PUT /product/v1/products/{productId}', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestUpdateProduct(createProductId(), {
-              ...product,
+              ...request,
               brand: 1 as any,
             })
             .expectBadRequestResponse()
@@ -82,7 +80,7 @@ describe('PUT /product/v1/products/{productId}', () => {
         it('is too short', () => {
           cy.authenticate(1)
             .requestUpdateProduct(createProductId(), {
-              ...product,
+              ...request,
               brand: '',
             })
             .expectBadRequestResponse()
@@ -94,7 +92,7 @@ describe('PUT /product/v1/products/{productId}', () => {
         it('is missing from body', () => {
           cy.authenticate(1)
             .requestUpdateProduct(createProductId(), {
-              ...product,
+              ...request,
               measurement: undefined,
             })
             .expectBadRequestResponse()
@@ -104,7 +102,7 @@ describe('PUT /product/v1/products/{productId}', () => {
         it('is not number', () => {
           cy.authenticate(1)
             .requestUpdateProduct(createProductId(), {
-              ...product,
+              ...request,
               measurement: '1' as any,
             })
             .expectBadRequestResponse()
@@ -114,7 +112,7 @@ describe('PUT /product/v1/products/{productId}', () => {
         it('is too small', () => {
           cy.authenticate(1)
             .requestUpdateProduct(createProductId(), {
-              ...product,
+              ...request,
               measurement: 0,
             })
             .expectBadRequestResponse()
@@ -126,7 +124,7 @@ describe('PUT /product/v1/products/{productId}', () => {
         it('is missing from body', () => {
           cy.authenticate(1)
             .requestUpdateProduct(createProductId(), {
-              ...product,
+              ...request,
               unitOfMeasurement: undefined,
             })
             .expectBadRequestResponse()
@@ -136,7 +134,7 @@ describe('PUT /product/v1/products/{productId}', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestUpdateProduct(createProductId(), {
-              ...product,
+              ...request,
               unitOfMeasurement: 1 as any,
             })
             .expectBadRequestResponse()
@@ -146,7 +144,7 @@ describe('PUT /product/v1/products/{productId}', () => {
         it('is not a valid enum value', () => {
           cy.authenticate(1)
             .requestUpdateProduct(createProductId(), {
-              ...product,
+              ...request,
               unitOfMeasurement: 'not-valid' as any,
             })
             .expectBadRequestResponse()
@@ -157,14 +155,14 @@ describe('PUT /product/v1/products/{productId}', () => {
       describe('if productId', () => {
         it('is not mongo id', () => {
           cy.authenticate(1)
-            .requestUpdateProduct(createProductId('not-valid'), productToUpdate)
+            .requestUpdateProduct(createProductId('not-valid'), request)
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('productId', 'pathParameters');
         });
 
         it('does not belong to any product', () => {
           cy.authenticate(1)
-            .requestUpdateProduct(createProductId(), productToUpdate)
+            .requestUpdateProduct(createProductId(), request)
             .expectNotFoundResponse();
         });
       });

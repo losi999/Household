@@ -5,30 +5,23 @@ import { createCategoryId } from '@household/shared/common/test-data-factory';
 import { getCategoryId } from '@household/shared/common/utils';
 
 describe('GET /category/v1/categories/{categoryId}', () => {
-  const category: Category.Request = {
-    name: 'category',
-    categoryType: 'regular',
-    parentCategoryId: undefined,
-  };
-
-  const childCategory: Category.Request = {
-    name: 'child',
-    categoryType: 'regular',
-    parentCategoryId: undefined,
-  };
-
   let categoryDocument: Category.Document;
   let childCategoryDocument: Category.Document;
 
   beforeEach(() => {
     categoryDocument = categoryDocumentConverter.create({
-      body: category,
+      body: {
+        name: 'category',
+        categoryType: 'regular',
+        parentCategoryId: undefined,
+      },
       parentCategory: undefined,
     }, Cypress.env('EXPIRES_IN'), true);
 
     childCategoryDocument = categoryDocumentConverter.create({
       body: {
-        ...childCategory,
+        name: 'child',
+        categoryType: 'regular',
         parentCategoryId: getCategoryId(categoryDocument),
       },
       parentCategory: categoryDocument,

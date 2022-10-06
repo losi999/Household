@@ -1,5 +1,5 @@
 import { createProductId } from '@household/shared/common/test-data-factory';
-import { getAccountId, getCategoryId, getProductId, getTransactionId, toDictionary } from '@household/shared/common/utils';
+import { getAccountId, getCategoryId, getProductId, toDictionary } from '@household/shared/common/utils';
 import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
 import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
 import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
@@ -132,8 +132,8 @@ describe('DELETE /product/v1/products/{productId}', () => {
           .requestDeleteProduct(getProductId(productDocument))
           .expectNoContentResponse()
           .validateProductDeleted(getProductId(productDocument))
-          .validateInventoryUnset(getTransactionId(paymentTransactionDocument))
-          .validateInventoryUnset(getTransactionId(splitTransactionDocument), 0);
+          .validateInventoryUnset(paymentTransactionDocument)
+          .validateInventoryUnset(splitTransactionDocument, 0);
       });
     });
 

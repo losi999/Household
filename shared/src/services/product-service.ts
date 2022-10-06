@@ -8,6 +8,11 @@ export interface IProductService {
   listProductsByIds(productIds: Product.IdType[]): Promise<Product.Document[]>;
   deleteProduct(productId: Product.IdType): Promise<unknown>;
   updateProduct(doc: Product.Document): Promise<unknown>;
+  mergeProducts(ctx: {
+    targetProductId: Product.IdType;
+    sourceProductIds: Product.IdType[];
+    categoryId: Category.IdType;
+  }): Promise<unknown>;
   // listProducts(): Promise<Product.Document[]>;
 }
 
@@ -106,6 +111,64 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
         runValidators: true,
       })
         .exec();
+    },
+    mergeProducts: ({ targetProductId, sourceProductIds, categoryId }) => {
+      console.log(sourceProductIds);
+      return mongodbService.inSession((session) => {
+        return session.withTransaction(async () => {
+          await mongodbService.products().deleteMany({
+            _id: {
+              $in: sourceProductIds,
+            },
+          }, {
+            session,
+          });
+
+          await mongodbService.categories().updateOne({
+            _id: categoryId,
+          }, {
+            $pullAll: {
+              products: sourceProductIds,
+            },
+          }, {
+            runValidators: true,
+            session,
+          });
+
+          await mongodbService.transactions().updateMany({
+            'inventory.product': {
+              $in: sourceProductIds,
+            },
+          }, {
+            $set: {
+              'inventory.product': targetProductId,
+            },
+          }, {
+            runValidators: true,
+            session,
+          });
+
+          await mongodbService.transactions().updateMany({
+            'splits.inventory.product': {
+              $in: sourceProductIds,
+            },
+          }, {
+            $set: {
+              'splits.$[element].inventory.product': targetProductId,
+            },
+          }, {
+            session,
+            runValidators: true,
+            arrayFilters: [
+              {
+                'element.inventory.product': {
+                  $in: sourceProductIds,
+                },
+              },
+            ],
+          });
+        });
+      });
     },
     // listProducts: () => {
     //   return mongodbService.inSession((session) => {

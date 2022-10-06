@@ -1,5 +1,5 @@
 import { IMongodbService } from '@household/shared/services/mongodb-service';
-import { Category } from '@household/shared/types/types';
+import { Category, Product } from '@household/shared/types/types';
 import { ClientSession } from 'mongoose';
 
 export interface ICategoryService {
@@ -10,6 +10,7 @@ export interface ICategoryService {
   updateCategory(doc: Category.Document, oldFullName: string): Promise<unknown>;
   listCategories(categoryType: Category.CategoryType): Promise<Category.Document[]>;
   listCategoriesByIds(categoryIds: Category.IdType[]): Promise<Category.Document[]>;
+  getCategoryByProductIds(productIds: Product.IdType[]): Promise<Category.Document>;
 }
 
 export const categoryServiceFactory = (mongodbService: IMongodbService): ICategoryService => {
@@ -235,6 +236,19 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
         return mongodbService.categories().find({
           _id: {
             $in: categoryIds,
+          },
+        }, null, {
+          session,
+        })
+          .lean()
+          .exec();
+      });
+    },
+    getCategoryByProductIds: (productIds) => {
+      return mongodbService.inSession(async (session) => {
+        return mongodbService.categories().findOne({
+          products: {
+            $all: productIds,
           },
         }, null, {
           session,

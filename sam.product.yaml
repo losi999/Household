@@ -96,6 +96,22 @@ Resources:
             Auth:
               Authorizer: CognitoAuthorizer
 
+  MergeProducts:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-MergeProducts
+      CodeUri: dist/api/merge-products
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ProductApi
+            Path: /v1/products/{productId}/merge
+            Method: POST
+            Auth:
+              Authorizer: CognitoAuthorizer
+
   DeleteProduct:
     Type: AWS::Serverless::Function
     Properties:

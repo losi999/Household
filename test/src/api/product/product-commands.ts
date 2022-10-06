@@ -41,6 +41,18 @@ const requestDeleteProduct = (idToken: string, productId: Product.IdType) => {
   }) as Cypress.ChainableResponse;
 };
 
+const requestMergeProducts = (idToken: string, productId: Product.IdType, sourceProductIds: Product.IdType[]) => {
+  return cy.request({
+    body: sourceProductIds,
+    method: 'POST',
+    url: `/product/v1/products/${productId}/merge`,
+    headers: {
+      Authorization: idToken,
+    },
+    failOnStatusCode: false,
+  }) as Cypress.ChainableResponse;
+};
+
 // const requestGetProduct = (idToken: string, productId: Product.IdType) => {
 //   return cy.request({
 //     method: 'GET',
@@ -105,6 +117,7 @@ export const setProductCommands = () => {
     requestCreateProduct,
     requestUpdateProduct,
     requestDeleteProduct,
+    requestMergeProducts,
     // requestGetProduct,
     // requestGetProductList,
     validateProductDocument,
@@ -128,6 +141,7 @@ declare global {
 
     interface ChainableRequest extends Chainable {
       requestCreateProduct: CommandFunctionWithPreviousSubject<typeof requestCreateProduct>;
+      requestMergeProducts: CommandFunctionWithPreviousSubject<typeof requestMergeProducts>;
       // requestGetProduct: CommandFunctionWithPreviousSubject<typeof requestGetProduct>;
       requestUpdateProduct: CommandFunctionWithPreviousSubject<typeof requestUpdateProduct>;
       requestDeleteProduct: CommandFunctionWithPreviousSubject<typeof requestDeleteProduct>;

@@ -5,15 +5,13 @@ import { createProjectId } from '@household/shared/common/test-data-factory';
 import { getProjectId } from '@household/shared/common/utils';
 
 describe('GET /project/v1/projects/{projectId}', () => {
-  const project: Project.Request = {
-    name: 'project',
-    description: 'desc',
-  };
-
   let projectDocument: Project.Document;
 
   beforeEach(() => {
-    projectDocument = projectDocumentConverter.create(project, Cypress.env('EXPIRES_IN'), true);
+    projectDocument = projectDocumentConverter.create({
+      name: 'project',
+      description: 'desc',
+    }, Cypress.env('EXPIRES_IN'), true);
   });
 
   describe('called as anonymous', () => {

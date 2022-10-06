@@ -5,18 +5,6 @@ import { transactionDocumentConverter } from '@household/shared/dependencies/con
 import { getAccountId } from '@household/shared/common/utils';
 
 describe('GET /account/v1/accounts', () => {
-  const account1: Account.Request = {
-    name: 'account 1',
-    accountType: 'bankAccount',
-    currency: 'Ft',
-  };
-
-  const account2: Account.Request = {
-    name: 'account 2',
-    accountType: 'bankAccount',
-    currency: 'Ft',
-  };
-
   let accountDocument: Account.Document;
   let transferAccountDocument: Account.Document;
   let paymentTransactionDocument: Transaction.PaymentDocument;
@@ -25,9 +13,17 @@ describe('GET /account/v1/accounts', () => {
   let invertedTransferTransactionDocument: Transaction.TransferDocument;
 
   beforeEach(() => {
-    accountDocument = accountDocumentConverter.create(account1, Cypress.env('EXPIRES_IN'), true);
+    accountDocument = accountDocumentConverter.create({
+      name: 'account 1',
+      accountType: 'bankAccount',
+      currency: 'Ft',
+    }, Cypress.env('EXPIRES_IN'), true);
 
-    transferAccountDocument = accountDocumentConverter.create(account2, Cypress.env('EXPIRES_IN'), true);
+    transferAccountDocument = accountDocumentConverter.create({
+      name: 'account 2',
+      accountType: 'bankAccount',
+      currency: 'Ft',
+    }, Cypress.env('EXPIRES_IN'), true);
 
     paymentTransactionDocument = transactionDocumentConverter.createPaymentDocument({
       body: {
