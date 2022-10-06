@@ -3,22 +3,18 @@ import { default as schema } from '@household/test/api/schemas/project-response-
 import { Project } from '@household/shared/types/types';
 
 describe('GET /project/v1/projects', () => {
-  const project1: Project.Request = {
-    name: 'project 1',
-    description: 'description 1',
-  };
-
-  const project2: Project.Request = {
-    name: 'project 2',
-    description: 'description 2',
-  };
-
   let projectDocument1: Project.Document;
   let projectDocument2: Project.Document;
 
   beforeEach(() => {
-    projectDocument1 = projectDocumentConverter.create(project1, Cypress.env('EXPIRES_IN'), true);
-    projectDocument2 = projectDocumentConverter.create(project2, Cypress.env('EXPIRES_IN'), true);
+    projectDocument1 = projectDocumentConverter.create({
+      name: 'project 1',
+      description: 'description 1',
+    }, Cypress.env('EXPIRES_IN'), true);
+    projectDocument2 = projectDocumentConverter.create({
+      name: 'project 2',
+      description: 'description 2',
+    }, Cypress.env('EXPIRES_IN'), true);
   });
 
   describe('called as anonymous', () => {

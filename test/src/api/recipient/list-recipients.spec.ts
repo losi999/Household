@@ -3,20 +3,16 @@ import { default as schema } from '@household/test/api/schemas/recipient-respons
 import { Recipient } from '@household/shared/types/types';
 
 describe('GET /recipient/v1/recipients', () => {
-  const recipient1: Recipient.Request = {
-    name: 'recipient 1',
-  };
-
-  const recipient2: Recipient.Request = {
-    name: 'recipient 2',
-  };
-
   let recipientDocument1: Recipient.Document;
   let recipientDocument2: Recipient.Document;
 
   beforeEach(() => {
-    recipientDocument1 = recipientDocumentConverter.create(recipient1, Cypress.env('EXPIRES_IN'), true);
-    recipientDocument2 = recipientDocumentConverter.create(recipient2, Cypress.env('EXPIRES_IN'), true);
+    recipientDocument1 = recipientDocumentConverter.create({
+      name: 'recipient 1',
+    }, Cypress.env('EXPIRES_IN'), true);
+    recipientDocument2 = recipientDocumentConverter.create({
+      name: 'recipient 2',
+    }, Cypress.env('EXPIRES_IN'), true);
   });
 
   describe('called as anonymous', () => {

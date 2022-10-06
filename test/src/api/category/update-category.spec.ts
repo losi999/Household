@@ -5,23 +5,22 @@ import { productDocumentConverter } from '@household/shared/dependencies/convert
 import { Category } from '@household/shared/types/types';
 
 describe('PUT /category/v1/categories/{categoryId}', () => {
-  const category: Category.Request = {
-    name: 'old name',
-    categoryType: 'regular',
-    parentCategoryId: undefined,
-  };
-
-  const categoryToUpdate: Category.Request = {
-    name: 'new name',
-    categoryType: 'regular',
-    parentCategoryId: undefined,
-  };
-
   let categoryDocument: Category.Document;
+  let request: Category.Request;
 
   beforeEach(() => {
+    request = {
+      name: 'new name',
+      categoryType: 'regular',
+      parentCategoryId: undefined,
+    };
+
     categoryDocument = categoryDocumentConverter.create({
-      body: category,
+      body: {
+        name: 'old name',
+        categoryType: 'regular',
+        parentCategoryId: undefined,
+      },
       parentCategory: undefined,
     }, Cypress.env('EXPIRES_IN'), true);
   });
@@ -29,7 +28,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
-        .requestUpdateCategory(createCategoryId(), categoryToUpdate)
+        .requestUpdateCategory(createCategoryId(), request)
         .expectUnauthorizedResponse();
     });
   });
@@ -38,9 +37,9 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
     it('should update a category', () => {
       cy.saveCategoryDocument(categoryDocument)
         .authenticate(1)
-        .requestUpdateCategory(getCategoryId(categoryDocument), categoryToUpdate)
+        .requestUpdateCategory(getCategoryId(categoryDocument), request)
         .expectCreatedResponse()
-        .validateCategoryDocument(categoryToUpdate);
+        .validateCategoryDocument(request);
     });
 
     it('should keep existing product', () => {
@@ -56,9 +55,9 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
           categoryId: getCategoryId(categoryDocument),
         })
         .authenticate(1)
-        .requestUpdateCategory(getCategoryId(categoryDocument), categoryToUpdate)
+        .requestUpdateCategory(getCategoryId(categoryDocument), request)
         .expectCreatedResponse()
-        .validateCategoryDocument(categoryToUpdate, undefined, productDocument);
+        .validateCategoryDocument(request, undefined, productDocument);
     });
 
     describe('children should be reassigned', () => {
@@ -96,48 +95,45 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
       });
 
       it('to a different parent category', () => {
+        request.parentCategoryId = getCategoryId(otherParentCategory);
+
         cy.saveCategoryDocument(categoryDocument)
           .saveCategoryDocument(childCategory)
           .saveCategoryDocument(grandChildCategory)
           .saveCategoryDocument(otherParentCategory)
           .authenticate(1)
-          .requestUpdateCategory(getCategoryId(childCategory), {
-            ...categoryToUpdate,
-            parentCategoryId: getCategoryId(otherParentCategory),
-          })
+          .requestUpdateCategory(getCategoryId(childCategory), request)
           .expectCreatedResponse()
-          .validateCategoryParentReassign(getCategoryId(childCategory), getCategoryId(otherParentCategory))
-          .validateCategoryParentReassign(getCategoryId(grandChildCategory), getCategoryId(childCategory));
+          .validateCategoryDocument(request, otherParentCategory)
+          .validateCategoryParentReassign(grandChildCategory, getCategoryId(childCategory));
       });
 
       it('to root from previously set parent', () => {
+        request.parentCategoryId = undefined;
+
         cy.saveCategoryDocument(categoryDocument)
           .saveCategoryDocument(childCategory)
           .saveCategoryDocument(grandChildCategory)
           .authenticate(1)
-          .requestUpdateCategory(getCategoryId(childCategory), {
-            ...categoryToUpdate,
-            parentCategoryId: undefined,
-          })
+          .requestUpdateCategory(getCategoryId(childCategory), request)
           .expectCreatedResponse()
-          .validateCategoryParentReassign(getCategoryId(childCategory))
-          .validateCategoryParentReassign(getCategoryId(grandChildCategory), getCategoryId(childCategory));
+          .validateCategoryDocument(request)
+          .validateCategoryParentReassign(grandChildCategory, getCategoryId(childCategory));
       });
 
       it('to a parent from previously unset value', () => {
+        request.parentCategoryId = getCategoryId(otherParentCategory);
+
         cy.saveCategoryDocument(categoryDocument)
           .saveCategoryDocument(childCategory)
           .saveCategoryDocument(grandChildCategory)
           .saveCategoryDocument(otherParentCategory)
           .authenticate(1)
-          .requestUpdateCategory(getCategoryId(categoryDocument), {
-            ...categoryToUpdate,
-            parentCategoryId: getCategoryId(otherParentCategory),
-          })
+          .requestUpdateCategory(getCategoryId(categoryDocument), request)
           .expectCreatedResponse()
-          .validateCategoryParentReassign(getCategoryId(categoryDocument), getCategoryId(otherParentCategory))
-          .validateCategoryParentReassign(getCategoryId(childCategory), getCategoryId(categoryDocument))
-          .validateCategoryParentReassign(getCategoryId(grandChildCategory), getCategoryId(childCategory));
+          .validateCategoryDocument(request, otherParentCategory)
+          .validateCategoryParentReassign(childCategory, getCategoryId(categoryDocument))
+          .validateCategoryParentReassign(grandChildCategory, getCategoryId(childCategory));
       });
     });
   });
@@ -146,7 +142,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
       it('is missing from body', () => {
         cy.authenticate(1)
           .requestUpdateCategory(createCategoryId(), {
-            ...category,
+            ...request,
             name: undefined,
           })
           .expectBadRequestResponse()
@@ -156,7 +152,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
       it('is not string', () => {
         cy.authenticate(1)
           .requestUpdateCategory(createCategoryId(), {
-            ...category,
+            ...request,
             name: 1 as any,
           })
           .expectBadRequestResponse()
@@ -166,7 +162,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
       it('is too short', () => {
         cy.authenticate(1)
           .requestUpdateCategory(createCategoryId(), {
-            ...category,
+            ...request,
             name: '',
           })
           .expectBadRequestResponse()
@@ -178,7 +174,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
       it('is missing from body', () => {
         cy.authenticate(1)
           .requestUpdateCategory(createCategoryId(), {
-            ...category,
+            ...request,
             categoryType: undefined,
           })
           .expectBadRequestResponse()
@@ -188,7 +184,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
       it('is not string', () => {
         cy.authenticate(1)
           .requestUpdateCategory(createCategoryId(), {
-            ...category,
+            ...request,
             categoryType: 1 as any,
           })
           .expectBadRequestResponse()
@@ -198,7 +194,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
       it('is not a valid enum value', () => {
         cy.authenticate(1)
           .requestUpdateCategory(createCategoryId(), {
-            ...category,
+            ...request,
             categoryType: 'not-category-type' as any,
           })
           .expectBadRequestResponse()
@@ -210,7 +206,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
       it('is not string', () => {
         cy.authenticate(1)
           .requestUpdateCategory(createCategoryId(), {
-            ...category,
+            ...request,
             parentCategoryId: 1 as any,
           })
           .expectBadRequestResponse()
@@ -220,7 +216,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
       it('does not match pattern', () => {
         cy.authenticate(1)
           .requestUpdateCategory(createCategoryId(), {
-            ...category,
+            ...request,
             parentCategoryId: 'not-mongo-id' as Category.IdType,
           })
           .expectBadRequestResponse()
@@ -231,7 +227,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
         cy.saveCategoryDocument(categoryDocument)
           .authenticate(1)
           .requestUpdateCategory(getCategoryId(categoryDocument), {
-            ...category,
+            ...request,
             parentCategoryId: createCategoryId(),
           })
           .expectBadRequestResponse();
@@ -241,14 +237,14 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
     describe('if categoryId', () => {
       it('is not mongo id', () => {
         cy.authenticate(1)
-          .requestUpdateCategory(createCategoryId('not-valid'), categoryToUpdate)
+          .requestUpdateCategory(createCategoryId('not-valid'), request)
           .expectBadRequestResponse()
           .expectWrongPropertyPattern('categoryId', 'pathParameters');
       });
 
       it('does not belong to any category', () => {
         cy.authenticate(1)
-          .requestUpdateCategory(createCategoryId(), categoryToUpdate)
+          .requestUpdateCategory(createCategoryId(), request)
           .expectNotFoundResponse();
       });
     });

@@ -4,13 +4,7 @@ import { accountDocumentConverter } from '@household/shared/dependencies/convert
 import { Account } from '@household/shared/types/types';
 
 describe('PUT /account/v1/accounts/{accountId}', () => {
-  const account: Account.Request = {
-    name: 'old name',
-    accountType: 'bankAccount',
-    currency: 'Ft',
-  };
-
-  const accountToUpdate: Account.Request = {
+  const request: Account.Request = {
     name: 'new name',
     accountType: 'bankAccount',
     currency: 'Ft',
@@ -19,13 +13,17 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
   let accountDocument: Account.Document;
 
   beforeEach(() => {
-    accountDocument = accountDocumentConverter.create(account, Cypress.env('EXPIRES_IN'), true);
+    accountDocument = accountDocumentConverter.create({
+      name: 'old name',
+      accountType: 'bankAccount',
+      currency: 'Ft',
+    }, Cypress.env('EXPIRES_IN'), true);
   });
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
-        .requestUpdateAccount(createAccountId(), accountToUpdate)
+        .requestUpdateAccount(createAccountId(), request)
         .expectUnauthorizedResponse();
     });
   });
@@ -34,16 +32,16 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
     it('should update account', () => {
       cy.saveAccountDocument(accountDocument)
         .authenticate(1)
-        .requestUpdateAccount(getAccountId(accountDocument), accountToUpdate)
+        .requestUpdateAccount(getAccountId(accountDocument), request)
         .expectCreatedResponse()
-        .validateAccountDocument(accountToUpdate);
+        .validateAccountDocument(request);
     });
     describe('should return error', () => {
       describe('if name', () => {
         it('is missing from body', () => {
           cy.authenticate(1)
             .requestUpdateAccount(createAccountId(), {
-              ...account,
+              ...request,
               name: undefined,
             })
             .expectBadRequestResponse()
@@ -53,7 +51,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestUpdateAccount(createAccountId(), {
-              ...account,
+              ...request,
               name: 1 as any,
             })
             .expectBadRequestResponse()
@@ -63,7 +61,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
         it('is too short', () => {
           cy.authenticate(1)
             .requestUpdateAccount(createAccountId(), {
-              ...account,
+              ...request,
               name: '',
             })
             .expectBadRequestResponse()
@@ -75,7 +73,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
         it('is missing from body', () => {
           cy.authenticate(1)
             .requestUpdateAccount(createAccountId(), {
-              ...account,
+              ...request,
               accountType: undefined,
             })
             .expectBadRequestResponse()
@@ -85,7 +83,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestUpdateAccount(createAccountId(), {
-              ...account,
+              ...request,
               accountType: 1 as any,
             })
             .expectBadRequestResponse()
@@ -95,7 +93,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
         it('is not a valid enum value', () => {
           cy.authenticate(1)
             .requestUpdateAccount(createAccountId(), {
-              ...account,
+              ...request,
               accountType: 'not-account-type' as any,
             })
             .expectBadRequestResponse()
@@ -107,7 +105,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
         it('is missing from body', () => {
           cy.authenticate(1)
             .requestUpdateAccount(createAccountId(), {
-              ...account,
+              ...request,
               currency: undefined,
             })
             .expectBadRequestResponse()
@@ -117,7 +115,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestUpdateAccount(createAccountId(), {
-              ...account,
+              ...request,
               currency: 1 as any,
             })
             .expectBadRequestResponse()
@@ -127,7 +125,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
         it('is too short', () => {
           cy.authenticate(1)
             .requestUpdateAccount(createAccountId(), {
-              ...account,
+              ...request,
               currency: '',
             })
             .expectBadRequestResponse()
@@ -138,14 +136,14 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
       describe('if accountId', () => {
         it('is not mongo id', () => {
           cy.authenticate(1)
-            .requestUpdateAccount(createAccountId('not-valid'), accountToUpdate)
+            .requestUpdateAccount(createAccountId('not-valid'), request)
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('accountId', 'pathParameters');
         });
 
         it('does not belong to any account', () => {
           cy.authenticate(1)
-            .requestUpdateAccount(createAccountId(), accountToUpdate)
+            .requestUpdateAccount(createAccountId(), request)
             .expectNotFoundResponse();
         });
       });

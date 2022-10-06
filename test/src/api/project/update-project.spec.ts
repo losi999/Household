@@ -4,12 +4,7 @@ import { projectDocumentConverter } from '@household/shared/dependencies/convert
 import { Project } from '@household/shared/types/types';
 
 describe('PUT /project/v1/projects/{projectId}', () => {
-  const project: Project.Request = {
-    name: 'old name',
-    description: 'old desc',
-  };
-
-  const projectToUpdate: Project.Request = {
+  const request: Project.Request = {
     name: 'new name',
     description: 'new desc',
   };
@@ -17,13 +12,16 @@ describe('PUT /project/v1/projects/{projectId}', () => {
   let projectDocument: Project.Document;
 
   beforeEach(() => {
-    projectDocument = projectDocumentConverter.create(project, Cypress.env('EXPIRES_IN'), true);
+    projectDocument = projectDocumentConverter.create({
+      name: 'old name',
+      description: 'old desc',
+    }, Cypress.env('EXPIRES_IN'), true);
   });
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
-        .requestUpdateProject(createProjectId(), projectToUpdate)
+        .requestUpdateProject(createProjectId(), request)
         .expectUnauthorizedResponse();
     });
   });
@@ -34,15 +32,15 @@ describe('PUT /project/v1/projects/{projectId}', () => {
         cy
           .saveProjectDocument(projectDocument)
           .authenticate(1)
-          .requestUpdateProject(getProjectId(projectDocument), projectToUpdate)
+          .requestUpdateProject(getProjectId(projectDocument), request)
           .expectCreatedResponse()
-          .validateProjectDocument(projectToUpdate);
+          .validateProjectDocument(request);
       });
 
       describe('without optional property in body', () => {
         it('description', () => {
           const modifiedRequest: Project.Request = {
-            ...projectToUpdate,
+            ...request,
             description: undefined,
           };
           cy.saveProjectDocument(projectDocument)
@@ -59,7 +57,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
         it('is missing from body', () => {
           cy.authenticate(1)
             .requestUpdateProject(createProjectId(), {
-              ...project,
+              ...request,
               name: undefined,
             })
             .expectBadRequestResponse()
@@ -69,7 +67,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestUpdateProject(createProjectId(), {
-              ...project,
+              ...request,
               name: 1 as any,
             })
             .expectBadRequestResponse()
@@ -79,7 +77,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
         it('is too short', () => {
           cy.authenticate(1)
             .requestUpdateProject(createProjectId(), {
-              ...project,
+              ...request,
               name: '',
             })
             .expectBadRequestResponse()
@@ -91,7 +89,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestUpdateProject(createProjectId(), {
-              ...project,
+              ...request,
               description: 1 as any,
             })
             .expectBadRequestResponse()
@@ -101,7 +99,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
         it('is too short', () => {
           cy.authenticate(1)
             .requestUpdateProject(createProjectId(), {
-              ...project,
+              ...request,
               description: '',
             })
             .expectBadRequestResponse()
@@ -112,14 +110,14 @@ describe('PUT /project/v1/projects/{projectId}', () => {
       describe('if projectId', () => {
         it('is not mongo id', () => {
           cy.authenticate(1)
-            .requestUpdateProject(createProjectId('not-valid'), projectToUpdate)
+            .requestUpdateProject(createProjectId('not-valid'), request)
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('projectId', 'pathParameters');
         });
 
         it('does not belong to any project', () => {
           cy.authenticate(1)
-            .requestUpdateProject(createProjectId(), projectToUpdate)
+            .requestUpdateProject(createProjectId(), request)
             .expectNotFoundResponse();
         });
       });

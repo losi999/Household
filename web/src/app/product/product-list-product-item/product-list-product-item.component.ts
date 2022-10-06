@@ -3,6 +3,7 @@ import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatDialog } from '@angular/material/dialog';
 import { Product } from '@household/shared/types/types';
 import { ProductFormComponent, ProductFormData, ProductFormResult } from 'src/app/product/product-form/product-form.component';
+import { ProductMergeDialogComponent, ProductMergeDialogData, ProductMergeDialogResult } from 'src/app/product/product-merge-dialog/product-merge-dialog.component';
 import { ProductService } from 'src/app/product/product.service';
 import { CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult } from 'src/app/shared/catalog-submenu/catalog-submenu.component';
 import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/confirmation-dialog.component';
@@ -14,6 +15,7 @@ import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/
 })
 export class ProductListProductItemComponent {
   @Input() product: Product.Response;
+  @Input() products: Product.Response[];
   constructor(
     private productService: ProductService,
     private dialog: MatDialog,
@@ -46,6 +48,18 @@ export class ProductListProductItemComponent {
     });
   }
 
+  merge() {
+    const dialogRef = this.dialog.open<ProductMergeDialogComponent, ProductMergeDialogData, ProductMergeDialogResult>(ProductMergeDialogComponent, {
+      data: this.products.filter(p => p.productId !== this.product.productId),
+    });
+
+    dialogRef.afterClosed().subscribe((values) => {
+      if (values) {
+        this.productService.mergeProducts(this.product.productId, values);
+      }
+    });
+  }
+
   showMenu() {
     const bottomSheetRef = this.bottomSheet.open<CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult>(CatalogSubmenuComponent, {
       data: this.product.fullName,
@@ -55,6 +69,7 @@ export class ProductListProductItemComponent {
       switch (result) {
         case 'delete': this.delete(); break;
         case 'edit': this.edit(); break;
+        case 'merge': this.merge(); break;
       }
     });
   }

@@ -48,4 +48,15 @@ export class ProductService {
       },
     });
   }
+
+  mergeProducts(productId: Product.IdType, body: Product.IdType[]): void {
+    this.httpClient.post(`${environment.apiUrl}${environment.productStage}v1/products/${productId}/merge`, body).subscribe({
+      next: () => {
+        this._refreshList.next();
+      },
+      error: (error) => {
+        console.error(error);
+      },
+    });
+  }
 }

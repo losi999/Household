@@ -136,11 +136,15 @@ export const httpErrors = {
       log('Get category', ctx, error);
       throw httpError(statusCode, 'Error while getting category');
     },
+    getByproductIds: (ctx: Product.IdType[], statusCode = 500): Catch => (error) => {
+      log('Get category by product Ids', ctx, error);
+      throw httpError(statusCode, 'Error while getting category by product Ids');
+    },
     list: (statusCode = 500): Catch => (error) => {
       log('List categories', undefined, error);
       throw httpError(statusCode, 'Error while listing categories');
     },
-    notFound: (condition: boolean, ctx: Category.Id, statusCode = 404) => {
+    notFound: (condition: boolean, ctx: Category.Id | { productIds: Product.IdType[] }, statusCode = 404) => {
       if (condition) {
         log('No category found', ctx);
         throw httpError(statusCode, 'No category found');
@@ -216,6 +220,12 @@ export const httpErrors = {
         throw httpError(statusCode, 'No product found');
       }
     },
+    multipleNotFound: (condition: boolean, ctx: { productIds: Product.IdType[] }, statusCode = 400) => {
+      if (condition) {
+        log('Some of the products are not found', ctx);
+        throw httpError(statusCode, 'Some of the products are not found');
+      }
+    },
     delete: (ctx: Product.Id, statusCode = 500): Catch => (error) => {
       log('Delete product', ctx, error);
       throw httpError(statusCode, 'Error while deleting product');
@@ -229,6 +239,20 @@ export const httpErrors = {
     update: (document: Product.Document, statusCode = 500): Catch => (error) => {
       log('Update product', document, error);
       throw httpError(statusCode, 'Error while updating product');
+    },
+    mergeTargetAmongSource: (condition: boolean, ctx: Product.Id & {source: Product.IdType[]}, statusCode = 400) => {
+      if (condition) {
+        log('Target product is is among the source product Ids', ctx);
+        throw httpError(statusCode, 'Target product is is among the source product Ids');
+      }
+    },
+    merge: (ctx: {
+      targetProductId: Product.IdType;
+      sourceProductIds: Product.IdType[];
+      categoryId: Category.IdType;
+    }, statusCode = 500): Catch => (error) => {
+      log('Merge products', ctx, error);
+      throw httpError(statusCode, 'Error while merging products');
     },
   },
   common: {

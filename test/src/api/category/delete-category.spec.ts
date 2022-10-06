@@ -1,5 +1,5 @@
 import { createCategoryId } from '@household/shared/common/test-data-factory';
-import { getAccountId, getCategoryId, getProductId, getTransactionId, toDictionary } from '@household/shared/common/utils';
+import { getAccountId, getCategoryId, getProductId, toDictionary } from '@household/shared/common/utils';
 import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
 import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
 import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
@@ -66,17 +66,15 @@ const createRelatedTransactions = (accountDocument: Account.Document, categoryDo
 };
 
 describe('DELETE /category/v1/categories/{categoryId}', () => {
-  const category: Category.Request = {
-    name: 'category',
-    categoryType: 'regular',
-    parentCategoryId: undefined,
-  };
-
   let categoryDocument: Category.Document;
 
   beforeEach(() => {
     categoryDocument = categoryDocumentConverter.create({
-      body: category,
+      body: {
+        name: 'category',
+        categoryType: 'regular',
+        parentCategoryId: undefined,
+      },
       parentCategory: undefined,
     }, Cypress.env('EXPIRES_IN'), true);
   });
@@ -131,8 +129,8 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
           .requestDeleteCategory(getCategoryId(categoryDocument))
           .expectNoContentResponse()
           .validateCategoryDeleted(getCategoryId(categoryDocument))
-          .validateCategoryParentReassign(getCategoryId(childCategory))
-          .validateCategoryParentReassign(getCategoryId(grandChildCategory), getCategoryId(childCategory));
+          .validateCategoryParentReassign(childCategory)
+          .validateCategoryParentReassign(grandChildCategory, getCategoryId(childCategory));
       });
 
       it('to parent if had parent', () => {
@@ -143,7 +141,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
           .requestDeleteCategory(getCategoryId(childCategory))
           .expectNoContentResponse()
           .validateCategoryDeleted(getCategoryId(childCategory))
-          .validateCategoryParentReassign(getCategoryId(grandChildCategory), getCategoryId(categoryDocument));
+          .validateCategoryParentReassign(grandChildCategory, getCategoryId(categoryDocument));
       });
     });
 
@@ -173,8 +171,8 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
           .requestDeleteCategory(getCategoryId(categoryDocument))
           .expectNoContentResponse()
           .validateCategoryDeleted(getCategoryId(categoryDocument))
-          .validateCategoryUnset(getTransactionId(paymentTransactionDocument))
-          .validateCategoryUnset(getTransactionId(splitTransactionDocument), 0);
+          .validateCategoryUnset(paymentTransactionDocument)
+          .validateCategoryUnset(splitTransactionDocument, 0);
       });
 
       it('should be set to parent category if child is deleted', () => {
@@ -201,8 +199,8 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
           .requestDeleteCategory(getCategoryId(childCategoryDocument))
           .expectNoContentResponse()
           .validateCategoryDeleted(getCategoryId(childCategoryDocument))
-          .validateCategoryUpdate(getTransactionId(paymentTransactionDocument), getCategoryId(categoryDocument))
-          .validateCategoryUpdate(getTransactionId(splitTransactionDocument), getCategoryId(categoryDocument), 0);
+          .validateCategoryReassign(paymentTransactionDocument, getCategoryId(categoryDocument))
+          .validateCategoryReassign(splitTransactionDocument, getCategoryId(categoryDocument), 0);
       });
     });
 
