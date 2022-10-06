@@ -1,20 +1,18 @@
 import { createProjectId } from '@household/shared/common/test-data-factory';
-import { getAccountId, getProjectId, getTransactionId, toDictionary } from '@household/shared/common/utils';
+import { getAccountId, getProjectId, toDictionary } from '@household/shared/common/utils';
 import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
 import { projectDocumentConverter } from '@household/shared/dependencies/converters/project-document-converter';
 import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
 import { Account, Project, Transaction } from '@household/shared/types/types';
 
 describe('DELETE /project/v1/projects/{projectId}', () => {
-  const project: Project.Request = {
-    name: 'project',
-    description: 'desc',
-  };
-
   let projectDocument: Project.Document;
 
   beforeEach(() => {
-    projectDocument = projectDocumentConverter.create(project, Cypress.env('EXPIRES_IN'), true);
+    projectDocument = projectDocumentConverter.create({
+      name: 'project',
+      description: 'desc',
+    }, Cypress.env('EXPIRES_IN'), true);
   });
 
   describe('called as anonymous', () => {
@@ -28,7 +26,8 @@ describe('DELETE /project/v1/projects/{projectId}', () => {
   describe('called as an admin', () => {
 
     it('should delete project', () => {
-      cy.authenticate(1)
+      cy.saveProjectDocument(projectDocument)
+        .authenticate(1)
         .requestDeleteProject(getProjectId(projectDocument))
         .expectNoContentResponse()
         .validateProjectDeleted(getProjectId(projectDocument));
@@ -107,8 +106,8 @@ describe('DELETE /project/v1/projects/{projectId}', () => {
           .requestDeleteProject(getProjectId(projectDocument))
           .expectNoContentResponse()
           .validateProjectDeleted(getProjectId(projectDocument))
-          .validateProjectUnset(getTransactionId(paymentTransactionDocument))
-          .validateProjectUnset(getTransactionId(splitTransactionDocument), 0);
+          .validateProjectUnset(paymentTransactionDocument)
+          .validateProjectUnset(splitTransactionDocument, 0);
       });
     });
 

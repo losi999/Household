@@ -105,8 +105,10 @@ import { getCategoryId, getProductId } from '@household/shared/common/utils';
 
     await mongodbService.inSession((session) => {
       return session.withTransaction(async () => {
-        await Promise.all(products.map(p => new (mongodbService.products())(p).save()));
-        console.log('done1');
+        await Promise.all(products.map(p => new (mongodbService.products())(p).save({
+          session,
+        })));
+
         await Promise.all(Object.keys(categories).map((categoryId: Category.IdType) => {
           return mongodbService.categories().updateOne({
             _id: categoryId,
@@ -114,11 +116,11 @@ import { getCategoryId, getProductId } from '@household/shared/common/utils';
             $push: {
               products: [...categories[categoryId]],
             },
+          }, {
+            session,
           });
-        }, {
-          session,
         }));
-        console.log('done2');
+
         await Promise.all(transactions.map(transaction => {
           if (transaction.transactionType === 'payment') {
             return mongodbService.transactions().updateOne({

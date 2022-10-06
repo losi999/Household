@@ -1,18 +1,16 @@
 import { createRecipientId } from '@household/shared/common/test-data-factory';
-import { getAccountId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
+import { getAccountId, getRecipientId } from '@household/shared/common/utils';
 import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
 import { recipientDocumentConverter } from '@household/shared/dependencies/converters/recipient-document-converter';
 import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
 import { Account, Recipient, Transaction } from '@household/shared/types/types';
 describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
-  const recipient: Recipient.Request = {
-    name: 'recipient',
-  };
-
   let recipientDocument: Recipient.Document;
 
   beforeEach(() => {
-    recipientDocument = recipientDocumentConverter.create(recipient, Cypress.env('EXPIRES_IN'), true);
+    recipientDocument = recipientDocumentConverter.create({
+      name: 'recipient',
+    }, Cypress.env('EXPIRES_IN'), true);
   });
 
   describe('called as anonymous', () => {
@@ -99,8 +97,8 @@ describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
           .requestDeleteRecipient(getRecipientId(recipientDocument))
           .expectNoContentResponse()
           .validateRecipientDeleted(getRecipientId(recipientDocument))
-          .validateRecipientUnset(getTransactionId(paymentTransactionDocument))
-          .validateRecipientUnset(getTransactionId(splitTransactionDocument));
+          .validateRecipientUnset(paymentTransactionDocument)
+          .validateRecipientUnset(splitTransactionDocument);
       });
     });
 

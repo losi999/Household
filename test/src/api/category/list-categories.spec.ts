@@ -5,30 +5,26 @@ import { productDocumentConverter } from '@household/shared/dependencies/convert
 import { getCategoryId } from '@household/shared/common/utils';
 
 describe('GET /category/v1/categories', () => {
-  const category1: Category.Request = {
-    name: 'category 1',
-    categoryType: 'regular',
-    parentCategoryId: undefined,
-  };
-
-  const category2: Category.Request = {
-    name: 'category 2',
-    categoryType: 'inventory',
-    parentCategoryId: undefined,
-  };
-
   let categoryDocument1: Category.Document;
   let categoryDocument2: Category.Document;
   let productDocument: Product.Document;
 
   beforeEach(() => {
     categoryDocument1 = categoryDocumentConverter.create({
-      body: category1,
+      body: {
+        name: 'category 1',
+        categoryType: 'regular',
+        parentCategoryId: undefined,
+      },
       parentCategory: undefined,
     }, Cypress.env('EXPIRES_IN'), true);
 
     categoryDocument2 = categoryDocumentConverter.create({
-      body: category2,
+      body: {
+        name: 'category 2',
+        categoryType: 'inventory',
+        parentCategoryId: undefined,
+      },
       parentCategory: undefined,
     }, Cypress.env('EXPIRES_IN'), true);
 

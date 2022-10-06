@@ -2,7 +2,7 @@ import { Component, Inject } from '@angular/core';
 import { MatBottomSheetRef, MAT_BOTTOM_SHEET_DATA } from '@angular/material/bottom-sheet';
 
 export type CatalogSubmenuData = string;
-export type CatalogSubmenuResult = 'edit' | 'delete';
+export type CatalogSubmenuResult = 'edit' | 'delete' | 'merge';
 
 @Component({
   selector: 'app-catalog-submenu',
@@ -20,6 +20,10 @@ export class CatalogSubmenuComponent {
 
   delete() {
     this.bottomSheetRef.dismiss('delete');
+  }
+
+  merge() {
+    this.bottomSheetRef.dismiss('merge');
   }
 
 }

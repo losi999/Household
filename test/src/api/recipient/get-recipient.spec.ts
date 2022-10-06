@@ -5,14 +5,12 @@ import { createRecipientId } from '@household/shared/common/test-data-factory';
 import { getRecipientId } from '@household/shared/common/utils';
 
 describe('GET /recipient/v1/recipients/{recipientId}', () => {
-  const recipient: Recipient.Request = {
-    name: 'recipient',
-  };
-
   let recipientDocument: Recipient.Document;
 
   beforeEach(() => {
-    recipientDocument = recipientDocumentConverter.create(recipient, Cypress.env('EXPIRES_IN'), true);
+    recipientDocument = recipientDocumentConverter.create({
+      name: 'recipient',
+    }, Cypress.env('EXPIRES_IN'), true);
   });
 
   describe('called as anonymous', () => {

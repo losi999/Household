@@ -4,24 +4,22 @@ import { recipientDocumentConverter } from '@household/shared/dependencies/conve
 import { Recipient } from '@household/shared/types/types';
 
 describe('PUT /recipient/v1/recipients/{recipientId}', () => {
-  const recipient: Recipient.Request = {
-    name: 'old name',
-  };
-
-  const recipientToUpdate: Recipient.Request = {
+  const request: Recipient.Request = {
     name: 'new name',
   };
 
   let recipientDocument: Recipient.Document;
 
   beforeEach(() => {
-    recipientDocument = recipientDocumentConverter.create(recipient, Cypress.env('EXPIRES_IN'), true);
+    recipientDocument = recipientDocumentConverter.create({
+      name: 'old name',
+    }, Cypress.env('EXPIRES_IN'), true);
   });
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
-        .requestUpdateRecipient(createRecipientId(), recipientToUpdate)
+        .requestUpdateRecipient(createRecipientId(), request)
         .expectUnauthorizedResponse();
     });
   });
@@ -30,9 +28,9 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
     it('should update a recipient', () => {
       cy.saveRecipientDocument(recipientDocument)
         .authenticate(1)
-        .requestUpdateRecipient(getRecipientId(recipientDocument), recipientToUpdate)
+        .requestUpdateRecipient(getRecipientId(recipientDocument), request)
         .expectCreatedResponse()
-        .validateRecipientDocument(recipientToUpdate);
+        .validateRecipientDocument(request);
     });
 
     describe('should return error', () => {
@@ -40,7 +38,7 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
         it('is missing from body', () => {
           cy.authenticate(1)
             .requestUpdateRecipient(createRecipientId(), {
-              ...recipient,
+              ...request,
               name: undefined,
             })
             .expectBadRequestResponse()
@@ -50,7 +48,7 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestUpdateRecipient(createRecipientId(), {
-              ...recipient,
+              ...request,
               name: 1 as any,
             })
             .expectBadRequestResponse()
@@ -60,7 +58,7 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
         it('is too short', () => {
           cy.authenticate(1)
             .requestUpdateRecipient(createRecipientId(), {
-              ...recipient,
+              ...request,
               name: '',
             })
             .expectBadRequestResponse()
@@ -71,14 +69,14 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
       describe('if recipientId', () => {
         it('is not mongo id', () => {
           cy.authenticate(1)
-            .requestUpdateRecipient(createRecipientId('not-valid'), recipientToUpdate)
+            .requestUpdateRecipient(createRecipientId('not-valid'), request)
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('recipientId', 'pathParameters');
         });
 
         it('does not belong to any recipient', () => {
           cy.authenticate(1)
-            .requestUpdateRecipient(createRecipientId(), recipientToUpdate)
+            .requestUpdateRecipient(createRecipientId(), request)
             .expectNotFoundResponse();
         });
       });
