@@ -2,13 +2,13 @@ import { errorResponse, createdResponse } from '@household/api/common/response-f
 import { IMergeProductsService } from '@household/api/functions/merge-products/merge-products.service';
 import { castPathParameters } from '@household/shared/common/aws-utils';
 
-export default (updateProduct: IMergeProductsService): AWSLambda.APIGatewayProxyHandler => {
+export default (mergeProducts: IMergeProductsService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {
     const body = JSON.parse(event.body);
     const { productId } = castPathParameters(event);
 
     try {
-      await updateProduct({
+      await mergeProducts({
         productId,
         body,
       });
