@@ -15,6 +15,7 @@ import { ProductListCategoryItemComponent } from './product-list-category-item/p
 import { MatListModule } from '@angular/material/list';
 import { ProductListProductItemComponent } from './product-list-product-item/product-list-product-item.component';
 import { MatSelectModule } from '@angular/material/select';
+import { ProductMergeDialogComponent } from './product-merge-dialog/product-merge-dialog.component';
 
 @NgModule({
   declarations: [
@@ -23,6 +24,7 @@ import { MatSelectModule } from '@angular/material/select';
     ProductFormComponent,
     ProductListCategoryItemComponent,
     ProductListProductItemComponent,
+    ProductMergeDialogComponent,
   ],
   imports: [
     CommonModule,
