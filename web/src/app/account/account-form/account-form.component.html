@@ -3,7 +3,8 @@
   <div mat-dialog-content>
     <app-clearable-input formControlName="name" label="Név">
     </app-clearable-input>
-    <app-autocomplete-input [items]="accountTypes | keyvalue" label="Típus" displayNameProperty="value" formControlName="accountType">
+    <app-autocomplete-input [items]="accountTypes | keyvalue" label="Típus" displayPropertyName="value"
+      formControlName="accountType">
     </app-autocomplete-input>
     <app-clearable-input formControlName="currency" label="Pénznem">
     </app-clearable-input>
