@@ -8,6 +8,7 @@ import { CategoryListResolver } from 'src/app/resolvers/category-list.resolver';
 import { ProjectListResolver } from 'src/app/resolvers/project-list.resolver';
 import { RecipientListResolver } from 'src/app/resolvers/recipient-list.resolver';
 import { TransactionResolver } from 'src/app/resolvers/transaction.resolver';
+import { TransactionDetailsComponent } from 'src/app/transaction/transaction-details/transaction-details.component';
 import { TransactionEditComponent } from 'src/app/transaction/transaction-edit/transaction-edit.component';
 
 const routes: Routes = [
@@ -27,6 +28,13 @@ const routes: Routes = [
   },
   {
     path: 'accounts/:accountId/transactions/:transactionId',
+    component: TransactionDetailsComponent,
+    resolve: {
+      transaction: TransactionResolver,
+    },
+  },
+  {
+    path: 'accounts/:accountId/transactions/:transactionId/edit',
     component: TransactionEditComponent,
     resolve: {
       accounts: AccountListResolver,
