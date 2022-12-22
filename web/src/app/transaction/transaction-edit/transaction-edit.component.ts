@@ -145,11 +145,15 @@ export class TransactionEditComponent implements OnInit {
   }
 
   onSubmit() {
-    const next = () => {
+    const next = (response: Transaction.Id) => {
       this.router.navigate([
         '/accounts',
         this.account.accountId,
-      ]);
+        'transactions',
+        this.transactionId ?? response.transactionId,
+      ], {
+        replaceUrl: true,
+      });
     };
 
     const error = (error) => {

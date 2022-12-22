@@ -1,0 +1,100 @@
+<app-toolbar title="Tranzakció">
+  <button mat-icon-button type="button" replaceUrl="true"
+    [routerLink]="['/accounts', transaction.account.accountId, 'transactions', transaction.transactionId, 'edit']">
+    <mat-icon>edit</mat-icon>
+  </button>
+</app-toolbar>
+<div>
+  {{issuedAt | date: 'yyyy. MM. dd. HH:mm'}}
+</div>
+<div>
+  Számla: {{transaction.account.name}}
+</div>
+<div [ngClass]="transaction.amount >= 0 ? 'green' : 'red'">
+  {{transaction.amount | number:'1.0-2':'hu'}} {{transaction.account.currency}}
+</div>
+<div *ngIf="transaction.description">
+  Megjegyzés: {{transaction.description}}
+</div>
+<div [ngSwitch]="transaction.transactionType">
+  <ng-container *ngSwitchCase="'split'">
+    <div *ngIf="transaction.recipient">
+      Partner: {{transaction.recipient.name}}
+    </div>
+    <ul style="margin-top: 25px;">
+      <li *ngFor="let split of transaction.splits">
+        <div *ngIf="split.category">
+          Kategória: {{split.category.fullName}}
+        </div>
+        <div [ngClass]="split.amount >= 0 ? 'green' : 'red'">
+          {{split.amount | number:'1.0-2':'hu'}} {{transaction.account.currency}}
+        </div>
+        <div *ngIf="split.category" [ngSwitch]="split.category.categoryType">
+          <ng-container *ngSwitchCase="'inventory'">
+            <div *ngIf="split.inventory">
+              <div>
+                Termék: {{split.inventory.product.fullName}}
+              </div>
+              <div>
+                Mennyiség: {{split.inventory.quantity}}
+              </div>
+            </div>
+          </ng-container>
+          <ng-container *ngSwitchCase="'invoice'">
+            <div *ngIf="split.invoice">
+              <div>
+                Számlázási időszak: {{split.invoice.billingStartDate}} - {{split.invoice.billingEndDate}}
+              </div>
+              <div>
+                Számlaszám: {{split.invoice.invoiceNumber}}
+              </div>
+            </div>
+          </ng-container>
+        </div>
+        <div *ngIf="split.project">
+          Projekt: {{split.project.name}}
+        </div>
+        <div *ngIf="split.description">
+          Megjegyzés: {{split.description}}
+        </div>
+      </li>
+    </ul>
+  </ng-container>
+  <ng-container *ngSwitchCase="'transfer'">
+    <div>Átvitel {{transaction.amount >= 0 ? 'innen' : 'ide'}}:
+      {{transaction.transferAccount.name}}</div>
+  </ng-container>
+  <ng-container *ngSwitchCase="'payment'">
+    <div *ngIf="transaction.category">
+      Kategória: {{transaction.category.fullName}}
+    </div>
+    <div *ngIf="transaction.category" [ngSwitch]="transaction.category.categoryType">
+      <ng-container *ngSwitchCase="'inventory'">
+        <div *ngIf="transaction.inventory">
+          <div>
+            Termék: {{transaction.inventory.product.fullName}}
+          </div>
+          <div>
+            Mennyiség: {{transaction.inventory.quantity}}
+          </div>
+        </div>
+      </ng-container>
+      <ng-container *ngSwitchCase="'invoice'">
+        <div *ngIf="transaction.invoice">
+          <div>
+            Számlázási időszak: {{transaction.invoice.billingStartDate}} - {{transaction.invoice.billingEndDate}}
+          </div>
+          <div>
+            Számlaszám: {{transaction.invoice.invoiceNumber}}
+          </div>
+        </div>
+      </ng-container>
+    </div>
+    <div *ngIf="transaction.recipient">
+      Partner: {{transaction.recipient.name}}
+    </div>
+    <div *ngIf="transaction.project">
+      Projekt: {{transaction.project.name}}
+    </div>
+  </ng-container>
+</div>

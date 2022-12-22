@@ -8,10 +8,16 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatIconModule } from '@angular/material/icon';
 import { SharedModule } from 'src/app/shared/shared.module';
 import { MatDialogModule } from '@angular/material/dialog';
+import { TransactionDetailsComponent } from './transaction-details/transaction-details.component';
+import { RouterModule } from '@angular/router';
 
 @NgModule({
-  declarations: [TransactionEditComponent],
+  declarations: [
+    TransactionEditComponent,
+    TransactionDetailsComponent,
+  ],
   imports: [
+    RouterModule,
     CommonModule,
     SharedModule,
     MatButtonModule,

@@ -39,7 +39,7 @@ export class AccountFormComponent implements OnInit {
 
     this.form = new FormGroup({
       name: new FormControl(this.account?.name, [Validators.required]),
-      accountType: new FormControl(accountType, [Validators.required]),
+      accountType: new FormControl(this.account ? accountType : null, [Validators.required]),
       currency: new FormControl(this.account?.currency, [Validators.required]),
     });
   }
