@@ -3,6 +3,7 @@ import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatDialog } from '@angular/material/dialog';
 import { Category } from '@household/shared/types/types';
 import { CategoryFormComponent, CategoryFormData, CategoryFormResult } from 'src/app/category/category-form/category-form.component';
+import { CategoryMergeDialogComponent, CategoryMergeDialogData, CategoryMergeDialogResult } from 'src/app/category/category-merge-dialog/category-merge-dialog.component';
 import { CategoryService } from 'src/app/category/category.service';
 import { CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult } from 'src/app/shared/catalog-submenu/catalog-submenu.component';
 import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/confirmation-dialog.component';
@@ -50,15 +51,28 @@ export class CategoryListItemComponent {
     });
   }
 
+  merge() {
+    const dialogRef = this.dialog.open<CategoryMergeDialogComponent, CategoryMergeDialogData, CategoryMergeDialogResult>(CategoryMergeDialogComponent, {
+      data: this.categories.filter(p => p.categoryId !== this.category.categoryId),
+    });
+
+    dialogRef.afterClosed().subscribe((values) => {
+      if (values) {
+        this.categoryService.mergeCategories(this.category.categoryId, values);
+      }
+    });
+  }
+
   showMenu() {
     const bottomSheetRef = this.bottomSheet.open<CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult>(CatalogSubmenuComponent, {
-      data: this.category.name, 
+      data: this.category.name,
     });
 
     bottomSheetRef.afterDismissed().subscribe((result) => {
       switch (result) {
         case 'delete': this.delete(); break;
         case 'edit': this.edit(); break;
+        case 'merge': this.merge(); break;
       }
     });
   }

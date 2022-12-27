@@ -56,4 +56,15 @@ export class CategoryService {
       },
     });
   }
+
+  mergeCategories(categoryId: Category.IdType, body: Category.IdType[]): void {
+    this.httpClient.post(`${environment.apiUrl}${environment.categoryStage}v1/categories/${categoryId}/merge`, body).subscribe({
+      next: () => {
+        this._refreshList.next();
+      },
+      error: (error) => {
+        console.error(error);
+      },
+    });
+  }
 }

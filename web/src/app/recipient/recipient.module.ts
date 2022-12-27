@@ -12,6 +12,7 @@ import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { RecipientFormComponent } from './recipient-form/recipient-form.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatDialogModule } from '@angular/material/dialog';
+import { RecipientMergeDialogComponent } from './recipient-merge-dialog/recipient-merge-dialog.component';
 
 @NgModule({
   declarations: [
@@ -19,6 +20,7 @@ import { MatDialogModule } from '@angular/material/dialog';
     RecipientListComponent,
     RecipientListItemComponent,
     RecipientFormComponent,
+    RecipientMergeDialogComponent,
   ],
   imports: [
     CommonModule,

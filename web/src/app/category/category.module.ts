@@ -13,6 +13,7 @@ import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatListModule } from '@angular/material/list';
 import { MatRadioModule } from '@angular/material/radio';
+import { CategoryMergeDialogComponent } from './category-merge-dialog/category-merge-dialog.component';
 
 @NgModule({
   declarations: [
@@ -20,6 +21,7 @@ import { MatRadioModule } from '@angular/material/radio';
     CategoryListComponent,
     CategoryListItemComponent,
     CategoryFormComponent,
+    CategoryMergeDialogComponent,
   ],
   imports: [
     CommonModule,
