@@ -60,7 +60,7 @@ describe('Merge product service', () => {
           sourceProductId,
         ],
         productId,
-      }).catch(validateError('Target product is is among the source product Ids', 400));
+      }).catch(validateError('Target product is among the source product Ids', 400));
       validateFunctionCall(mockProductService.functions.listProductsByIds);
       validateFunctionCall(mockCategoryService.functions.getCategoryByProductIds);
       validateFunctionCall(mockProductService.functions.mergeProducts);

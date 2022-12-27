@@ -63,6 +63,18 @@ const requestGetRecipientList = (idToken: string) => {
   }) as Cypress.ChainableResponse;
 };
 
+const requestMergeRecipients = (idToken: string, recipientId: Recipient.IdType, sourceRecipientIds: Recipient.IdType[]) => {
+  return cy.request({
+    body: sourceRecipientIds,
+    method: 'POST',
+    url: `/recipient/v1/recipients/${recipientId}/merge`,
+    headers: {
+      Authorization: idToken,
+    },
+    failOnStatusCode: false,
+  }) as Cypress.ChainableResponse;
+};
+
 const validateRecipientDocument = (response: Recipient.Id, request: Recipient.Request) => {
   const id = response?.recipientId;
 
@@ -111,6 +123,7 @@ export const setRecipientCommands = () => {
     requestDeleteRecipient,
     requestGetRecipient,
     requestGetRecipientList,
+    requestMergeRecipients,
     validateRecipientDocument,
     validateRecipientResponse,
     validateRecipientListResponse,
@@ -137,6 +150,7 @@ declare global {
       requestUpdateRecipient: CommandFunctionWithPreviousSubject<typeof requestUpdateRecipient>;
       requestDeleteRecipient: CommandFunctionWithPreviousSubject<typeof requestDeleteRecipient>;
       requestGetRecipientList: CommandFunctionWithPreviousSubject<typeof requestGetRecipientList>;
+      requestMergeRecipients: CommandFunctionWithPreviousSubject<typeof requestMergeRecipients>;
     }
 
     interface ChainableResponseBody extends Chainable {

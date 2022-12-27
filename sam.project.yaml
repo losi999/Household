@@ -144,6 +144,22 @@ Resources:
             Auth:
               Authorizer: CognitoAuthorizer
 
+  MergeProjects:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-MergeProjects
+      CodeUri: dist/api/merge-projects
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ProjectApi
+            Path: /v1/projects/{projectId}/merge
+            Method: POST
+            Auth:
+              Authorizer: CognitoAuthorizer
+
 Outputs:
   ProjectApi:
     Description: "Household Project API"
