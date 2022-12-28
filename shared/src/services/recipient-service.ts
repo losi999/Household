@@ -8,6 +8,11 @@ export interface IRecipientService {
   deleteRecipient(recipientId: Recipient.IdType): Promise<unknown>;
   updateRecipient(doc: Recipient.Document): Promise<unknown>;
   listRecipients(): Promise<Recipient.Document[]>;
+  listRecipientsByIds(recipientIds: Recipient.IdType[]): Promise<Recipient.Document[]>;
+  mergeRecipients(ctx: {
+    targetRecipientId: Recipient.IdType;
+    sourceRecipientIds: Recipient.IdType[];
+  }): Promise<unknown>;
 }
 
 export const recipientServiceFactory = (mongodbService: IMongodbService): IRecipientService => {
@@ -71,6 +76,47 @@ export const recipientServiceFactory = (mongodbService: IMongodbService): IRecip
           .sort('name')
           .lean()
           .exec();
+      });
+    },
+    listRecipientsByIds: (recipientIds) => {
+      return mongodbService.inSession((session) => {
+        return mongodbService.recipients().find({
+          _id: {
+            $in: recipientIds,
+          },
+        }, null, {
+          session,
+        })
+          .lean()
+          .exec();
+      });
+    },
+    mergeRecipients: ({ targetRecipientId, sourceRecipientIds }) => {
+      console.log(sourceRecipientIds);
+      return mongodbService.inSession((session) => {
+        return session.withTransaction(async () => {
+          await mongodbService.recipients().deleteMany({
+            _id: {
+              $in: sourceRecipientIds,
+            },
+          }, {
+            session,
+          });
+
+          await mongodbService.transactions().updateMany({
+            recipient: {
+              $in: sourceRecipientIds,
+            },
+          }, {
+            $set: {
+              recipient: targetRecipientId,
+            },
+          }, {
+            runValidators: true,
+            session,
+          });
+
+        });
       });
     },
   };

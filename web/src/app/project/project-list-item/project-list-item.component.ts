@@ -3,6 +3,7 @@ import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatDialog } from '@angular/material/dialog';
 import { Project } from '@household/shared/types/types';
 import { ProjectFormComponent, ProjectFormData, ProjectFormResult } from 'src/app/project/project-form/project-form.component';
+import { ProjectMergeDialogComponent, ProjectMergeDialogData, ProjectMergeDialogResult } from 'src/app/project/project-merge-dialog/project-merge-dialog.component';
 import { ProjectService } from 'src/app/project/project.service';
 import { CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult } from 'src/app/shared/catalog-submenu/catalog-submenu.component';
 import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/confirmation-dialog.component';
@@ -14,6 +15,7 @@ import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/
 })
 export class ProjectListItemComponent {
   @Input() project: Project.Response;
+  @Input() projects: Project.Response[];
   constructor(
     private projectService: ProjectService,
     private dialog: MatDialog,
@@ -36,7 +38,7 @@ export class ProjectListItemComponent {
 
   edit() {
     const dialogRef = this.dialog.open<ProjectFormComponent, ProjectFormData, ProjectFormResult>(ProjectFormComponent, {
-      data: this.project, 
+      data: this.project,
     });
 
     dialogRef.afterClosed().subscribe((values) => {
@@ -46,15 +48,28 @@ export class ProjectListItemComponent {
     });
   }
 
+  merge() {
+    const dialogRef = this.dialog.open<ProjectMergeDialogComponent, ProjectMergeDialogData, ProjectMergeDialogResult>(ProjectMergeDialogComponent, {
+      data: this.projects.filter(p => p.projectId !== this.project.projectId),
+    });
+
+    dialogRef.afterClosed().subscribe((values) => {
+      if (values) {
+        this.projectService.mergeProjects(this.project.projectId, values);
+      }
+    });
+  }
+
   showMenu() {
     const bottomSheetRef = this.bottomSheet.open<CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult>(CatalogSubmenuComponent, {
-      data: this.project.name, 
+      data: this.project.name,
     });
 
     bottomSheetRef.afterDismissed().subscribe((result) => {
       switch (result) {
         case 'delete': this.delete(); break;
         case 'edit': this.edit(); break;
+        case 'merge': this.merge(); break;
       }
     });
   }

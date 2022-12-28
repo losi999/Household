@@ -12,6 +12,7 @@ import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatListModule } from '@angular/material/list';
 import { ReactiveFormsModule } from '@angular/forms';
+import { ProjectMergeDialogComponent } from './project-merge-dialog/project-merge-dialog.component';
 
 @NgModule({
   declarations: [
@@ -19,6 +20,7 @@ import { ReactiveFormsModule } from '@angular/forms';
     ProjectListComponent,
     ProjectListItemComponent,
     ProjectFormComponent,
+    ProjectMergeDialogComponent,
   ],
   imports: [
     CommonModule,

@@ -144,6 +144,22 @@ Resources:
             Auth:
               Authorizer: CognitoAuthorizer
 
+  MergeRecipients:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-MergeRecipients
+      CodeUri: dist/api/merge-recipients
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RecipientApi
+            Path: /v1/recipients/{recipientId}/merge
+            Method: POST
+            Auth:
+              Authorizer: CognitoAuthorizer
+
 Outputs:
   RecipientApi:
     Description: "Household Recipient API"

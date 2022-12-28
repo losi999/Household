@@ -1,0 +1,14 @@
+<div [formGroup]="form">
+  <h1 mat-dialog-title>Egyesítés</h1>
+  <div mat-dialog-content>
+    <mat-selection-list formControlName="sourceCategories">
+      <mat-list-option *ngFor="let category of categories" [value]="category.categoryId">
+        {{category.name}}
+      </mat-list-option>
+    </mat-selection-list>
+  </div>
+  <div mat-dialog-actions>
+    <button mat-button cdkFocusInitial (click)="save()">Mentés</button>
+    <button mat-button mat-dialog-close>Mégse</button>
+  </div>
+</div>

@@ -9,6 +9,10 @@ export interface IProjectService {
   updateProject(doc: Project.Document): Promise<unknown>;
   listProjects(): Promise<Project.Document[]>;
   listProjectsByIds(projectIds: Project.IdType[]): Promise<Project.Document[]>;
+  mergeProjects(ctx: {
+    targetProjectId: Project.IdType;
+    sourceProjectIds: Project.IdType[];
+  }): Promise<unknown>;
 }
 
 export const projectServiceFactory = (mongodbService: IMongodbService): IProjectService => {
@@ -102,6 +106,52 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
         })
           .lean()
           .exec();
+      });
+    },
+    mergeProjects: ({ targetProjectId, sourceProjectIds }) => {
+      return mongodbService.inSession((session) => {
+        return session.withTransaction(async () => {
+          await mongodbService.projects().deleteMany({
+            _id: {
+              $in: sourceProjectIds,
+            },
+          }, {
+            session,
+          });
+
+          await mongodbService.transactions().updateMany({
+            project: {
+              $in: sourceProjectIds,
+            },
+          }, {
+            $set: {
+              project: targetProjectId,
+            },
+          }, {
+            runValidators: true,
+            session,
+          });
+
+          await mongodbService.transactions().updateMany({
+            'splits.project': {
+              $in: sourceProjectIds,
+            },
+          }, {
+            $set: {
+              'splits.$[element].project': targetProjectId,
+            },
+          }, {
+            session,
+            runValidators: true,
+            arrayFilters: [
+              {
+                'element.project': {
+                  $in: sourceProjectIds,
+                },
+              },
+            ],
+          });
+        });
       });
     },
   };

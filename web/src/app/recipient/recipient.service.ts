@@ -52,4 +52,15 @@ export class RecipientService {
       },
     });
   }
+
+  mergeRecipients(recipientId: Recipient.IdType, body: Recipient.IdType[]): void {
+    this.httpClient.post(`${environment.apiUrl}${environment.recipientStage}v1/recipients/${recipientId}/merge`, body).subscribe({
+      next: () => {
+        this._refreshList.next();
+      },
+      error: (error) => {
+        console.error(error);
+      },
+    });
+  }
 }
