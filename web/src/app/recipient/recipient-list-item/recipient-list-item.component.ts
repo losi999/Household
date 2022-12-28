@@ -6,6 +6,7 @@ import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/
 import { MatDialog } from '@angular/material/dialog';
 import { RecipientService } from 'src/app/recipient/recipient.service';
 import { RecipientFormComponent, RecipientFormData, RecipientFormResult } from 'src/app/recipient/recipient-form/recipient-form.component';
+import { RecipientMergeDialogComponent, RecipientMergeDialogData, RecipientMergeDialogResult } from 'src/app/recipient/recipient-merge-dialog/recipient-merge-dialog.component';
 
 @Component({
   selector: 'app-recipient-list-item',
@@ -14,6 +15,7 @@ import { RecipientFormComponent, RecipientFormData, RecipientFormResult } from '
 })
 export class RecipientListItemComponent {
   @Input() recipient: Recipient.Response;
+  @Input() recipients: Recipient.Response[];
   constructor(
     private recipientService: RecipientService,
     private dialog: MatDialog,
@@ -36,7 +38,7 @@ export class RecipientListItemComponent {
 
   edit() {
     const dialogRef = this.dialog.open<RecipientFormComponent, RecipientFormData, RecipientFormResult>(RecipientFormComponent, {
-      data: this.recipient, 
+      data: this.recipient,
     });
 
     dialogRef.afterClosed().subscribe((values) => {
@@ -46,15 +48,28 @@ export class RecipientListItemComponent {
     });
   }
 
+  merge() {
+    const dialogRef = this.dialog.open<RecipientMergeDialogComponent, RecipientMergeDialogData, RecipientMergeDialogResult>(RecipientMergeDialogComponent, {
+      data: this.recipients.filter(p => p.recipientId !== this.recipient.recipientId),
+    });
+
+    dialogRef.afterClosed().subscribe((values) => {
+      if (values) {
+        this.recipientService.mergeRecipients(this.recipient.recipientId, values);
+      }
+    });
+  }
+
   showMenu() {
     const bottomSheetRef = this.bottomSheet.open<CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult>(CatalogSubmenuComponent, {
-      data: this.recipient.name, 
+      data: this.recipient.name,
     });
 
     bottomSheetRef.afterDismissed().subscribe((result) => {
       switch (result) {
         case 'delete': this.delete(); break;
         case 'edit': this.edit(); break;
+        case 'merge': this.merge(); break;
       }
     });
   }

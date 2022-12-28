@@ -52,4 +52,15 @@ export class ProjectService {
       },
     });
   }
+
+  mergeProjects(projectId: Project.IdType, body: Project.IdType[]): void {
+    this.httpClient.post(`${environment.apiUrl}${environment.projectStage}v1/projects/${projectId}/merge`, body).subscribe({
+      next: () => {
+        this._refreshList.next();
+      },
+      error: (error) => {
+        console.error(error);
+      },
+    });
+  }
 }

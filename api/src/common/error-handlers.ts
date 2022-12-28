@@ -65,6 +65,10 @@ export const httpErrors = {
       log('Get project', ctx, error);
       throw httpError(statusCode, 'Error while getting project');
     },
+    listByIds: (ctx: Project.IdType[], statusCode = 500): Catch => (error) => {
+      log('List projects by ids', ctx, error);
+      throw httpError(statusCode, 'Error while listing projects by ids');
+    },
     list: (statusCode = 500): Catch => (error) => {
       log('List projects', undefined, error);
       throw httpError(statusCode, 'Error while listing projects');
@@ -88,6 +92,19 @@ export const httpErrors = {
     update: (doc: Project.Document, statusCode = 500): Catch => (error) => {
       log('Update project', doc, error);
       throw httpError(statusCode, 'Error while updating project');
+    },
+    mergeTargetAmongSource: (condition: boolean, ctx: Project.Id & {source: Project.IdType[]}, statusCode = 400) => {
+      if (condition) {
+        log('Target project is among the source project Ids', ctx);
+        throw httpError(statusCode, 'Target project is among the source project Ids');
+      }
+    },
+    merge: (ctx: {
+      targetProjectId: Project.IdType;
+      sourceProjectIds: Project.IdType[];
+    }, statusCode = 500): Catch => (error) => {
+      log('Merge projects', ctx, error);
+      throw httpError(statusCode, 'Error while merging projects');
     },
   },
   account: {
@@ -136,13 +153,17 @@ export const httpErrors = {
       log('Get category', ctx, error);
       throw httpError(statusCode, 'Error while getting category');
     },
-    getByproductIds: (ctx: Product.IdType[], statusCode = 500): Catch => (error) => {
+    getByProductIds: (ctx: Product.IdType[], statusCode = 500): Catch => (error) => {
       log('Get category by product Ids', ctx, error);
       throw httpError(statusCode, 'Error while getting category by product Ids');
     },
     list: (statusCode = 500): Catch => (error) => {
       log('List categories', undefined, error);
       throw httpError(statusCode, 'Error while listing categories');
+    },
+    listByIds: (ctx: Category.IdType[], statusCode = 500): Catch => (error) => {
+      log('List categories by ids', ctx, error);
+      throw httpError(statusCode, 'Error while listing categories by ids');
     },
     notFound: (condition: boolean, ctx: Category.Id | { productIds: Product.IdType[] }, statusCode = 404) => {
       if (condition) {
@@ -176,6 +197,19 @@ export const httpErrors = {
       log('Update category', ctx, error);
       throw httpError(statusCode, 'Error while updating category');
     },
+    mergeTargetAmongSource: (condition: boolean, ctx: Category.Id & {source: Category.IdType[]}, statusCode = 400) => {
+      if (condition) {
+        log('Target category is among the source category Ids', ctx);
+        throw httpError(statusCode, 'Target category is among the source category Ids');
+      }
+    },
+    merge: (ctx: {
+      targetCategoryId: Category.IdType;
+      sourceCategoryIds: Category.IdType[];
+    }, statusCode = 500): Catch => (error) => {
+      log('Merge categories', ctx, error);
+      throw httpError(statusCode, 'Error while merging categories');
+    },
   },
   recipient: {
     save: (ctx: Recipient.Document, statusCode = 500): Catch => (error) => {
@@ -190,10 +224,20 @@ export const httpErrors = {
       log('List recipients', undefined, error);
       throw httpError(statusCode, 'Error while listing recipients');
     },
+    listByIds: (ctx: Recipient.IdType[], statusCode = 500): Catch => (error) => {
+      log('List recipients by ids', ctx, error);
+      throw httpError(statusCode, 'Error while listing recipients by ids');
+    },
     notFound: (condition: boolean, ctx: Recipient.Id, statusCode = 404) => {
       if (condition) {
         log('No recipient found', ctx);
         throw httpError(statusCode, 'No recipient found');
+      }
+    },
+    multipleNotFound: (condition: boolean, ctx: { recipientIds: Recipient.IdType[] }, statusCode = 400) => {
+      if (condition) {
+        log('Some of the recipients are not found', ctx);
+        throw httpError(statusCode, 'Some of the recipients are not found');
       }
     },
     delete: (ctx: Recipient.Id, statusCode = 500): Catch => (error) => {
@@ -203,6 +247,19 @@ export const httpErrors = {
     update: (document: Recipient.Document, statusCode = 500): Catch => (error) => {
       log('Update recipient', document, error);
       throw httpError(statusCode, 'Error while updating recipient');
+    },
+    mergeTargetAmongSource: (condition: boolean, ctx: Recipient.Id & {source: Recipient.IdType[]}, statusCode = 400) => {
+      if (condition) {
+        log('Target recipient is among the source recipient Ids', ctx);
+        throw httpError(statusCode, 'Target recipient is among the source recipient Ids');
+      }
+    },
+    merge: (ctx: {
+      targetRecipientId: Recipient.IdType;
+      sourceRecipientIds: Recipient.IdType[];
+    }, statusCode = 500): Catch => (error) => {
+      log('Merge recipients', ctx, error);
+      throw httpError(statusCode, 'Error while merging recipients');
     },
   },
   product: {
@@ -242,8 +299,8 @@ export const httpErrors = {
     },
     mergeTargetAmongSource: (condition: boolean, ctx: Product.Id & {source: Product.IdType[]}, statusCode = 400) => {
       if (condition) {
-        log('Target product is is among the source product Ids', ctx);
-        throw httpError(statusCode, 'Target product is is among the source product Ids');
+        log('Target product is among the source product Ids', ctx);
+        throw httpError(statusCode, 'Target product is among the source product Ids');
       }
     },
     merge: (ctx: {

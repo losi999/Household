@@ -1,4 +1,7 @@
 <app-toolbar title="Tranzakció">
+  <button mat-icon-button [routerLink]="['/accounts', transaction.account.accountId, 'new']" replaceUrl="true">
+    <mat-icon>add</mat-icon>
+  </button>
   <button mat-icon-button type="button" replaceUrl="true"
     [routerLink]="['/accounts', transaction.account.accountId, 'transactions', transaction.transactionId, 'edit']">
     <mat-icon>edit</mat-icon>

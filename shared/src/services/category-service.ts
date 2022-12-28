@@ -11,6 +11,10 @@ export interface ICategoryService {
   listCategories(categoryType: Category.CategoryType): Promise<Category.Document[]>;
   listCategoriesByIds(categoryIds: Category.IdType[]): Promise<Category.Document[]>;
   getCategoryByProductIds(productIds: Product.IdType[]): Promise<Category.Document>;
+  mergeCategories(ctx: {
+    targetCategoryId: Category.IdType;
+    sourceCategoryIds: Category.IdType[];
+  }): Promise<unknown>;
 }
 
 export const categoryServiceFactory = (mongodbService: IMongodbService): ICategoryService => {
@@ -255,6 +259,52 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
         })
           .lean()
           .exec();
+      });
+    },
+    mergeCategories: ({ targetCategoryId, sourceCategoryIds }) => {
+      return mongodbService.inSession((session) => {
+        return session.withTransaction(async () => {
+          await mongodbService.categories().deleteMany({
+            _id: {
+              $in: sourceCategoryIds,
+            },
+          }, {
+            session,
+          });
+
+          await mongodbService.transactions().updateMany({
+            category: {
+              $in: sourceCategoryIds,
+            },
+          }, {
+            $set: {
+              category: targetCategoryId,
+            },
+          }, {
+            runValidators: true,
+            session,
+          });
+
+          await mongodbService.transactions().updateMany({
+            'splits.category': {
+              $in: sourceCategoryIds,
+            },
+          }, {
+            $set: {
+              'splits.$[element].category': targetCategoryId,
+            },
+          }, {
+            session,
+            runValidators: true,
+            arrayFilters: [
+              {
+                'element.category': {
+                  $in: sourceCategoryIds,
+                },
+              },
+            ],
+          });
+        });
       });
     },
   };

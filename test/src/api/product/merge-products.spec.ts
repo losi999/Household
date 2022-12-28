@@ -6,7 +6,7 @@ import { productDocumentConverter } from '@household/shared/dependencies/convert
 import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
 import { Account, Category, Product, Transaction } from '@household/shared/types/types';
 
-describe('POST product/v1/products', () => {
+describe('POST product/v1/products/{productId}/merge', () => {
   let accountDocument: Account.Document;
   let categoryDocument: Category.Document;
   let targetProductDocument: Product.Document;
@@ -98,7 +98,10 @@ describe('POST product/v1/products', () => {
       },
       account: accountDocument,
       categories: toDictionary([categoryDocument], '_id'),
-      products: toDictionary([sourceProductDocument], '_id'),
+      products: toDictionary([
+        sourceProductDocument,
+        targetProductDocument,
+      ], '_id'),
       recipient: undefined,
       projects: {},
     }, Cypress.env('EXPIRES_IN'), true);

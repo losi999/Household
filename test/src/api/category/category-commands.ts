@@ -65,6 +65,18 @@ const requestGetCategoryList = (idToken: string) => {
   }) as Cypress.ChainableResponse;
 };
 
+const requestMergeCategories = (idToken: string, categoryId: Category.IdType, sourceCategoryIds: Category.IdType[]) => {
+  return cy.request({
+    body: sourceCategoryIds,
+    method: 'POST',
+    url: `/category/v1/categories/${categoryId}/merge`,
+    headers: {
+      Authorization: idToken,
+    },
+    failOnStatusCode: false,
+  }) as Cypress.ChainableResponse;
+};
+
 const validateCategoryDocument = (response: Category.Id, request: Category.Request, parentCategory?: Category.Document, product?: Product.Document) => {
   const id = response?.categoryId;
 
@@ -179,6 +191,7 @@ export const setCategoryCommands = () => {
     requestDeleteCategory,
     requestGetCategory,
     requestGetCategoryList,
+    requestMergeCategories,
     validateCategoryDocument,
     validateCategoryResponse,
     validateCategoryListResponse,
@@ -209,6 +222,7 @@ declare global {
       requestUpdateCategory: CommandFunctionWithPreviousSubject<typeof requestUpdateCategory>;
       requestDeleteCategory: CommandFunctionWithPreviousSubject<typeof requestDeleteCategory>;
       requestGetCategoryList: CommandFunctionWithPreviousSubject<typeof requestGetCategoryList>;
+      requestMergeCategories: CommandFunctionWithPreviousSubject<typeof requestMergeCategories>;
     }
 
     interface ChainableResponseBody extends Chainable {

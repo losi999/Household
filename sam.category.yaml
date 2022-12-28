@@ -144,6 +144,22 @@ Resources:
             Auth:
               Authorizer: CognitoAuthorizer
 
+  MergeCategories:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-MergeCategories
+      CodeUri: dist/api/merge-categories
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CategoryApi
+            Path: /v1/categories/{categoryId}/merge
+            Method: POST
+            Auth:
+              Authorizer: CognitoAuthorizer
+
 Outputs:
   CategoryApi:
     Description: "Household Category API"

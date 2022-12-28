@@ -63,6 +63,18 @@ const requestGetProjectList = (idToken: string) => {
   }) as Cypress.ChainableResponse;
 };
 
+const requestMergeProjects = (idToken: string, projectId: Project.IdType, sourceProjectIds: Project.IdType[]) => {
+  return cy.request({
+    body: sourceProjectIds,
+    method: 'POST',
+    url: `/project/v1/projects/${projectId}/merge`,
+    headers: {
+      Authorization: idToken,
+    },
+    failOnStatusCode: false,
+  }) as Cypress.ChainableResponse;
+};
+
 const validateProjectDocument = (response: Project.Id, request: Project.Request) => {
   const id = response?.projectId;
 
@@ -113,6 +125,7 @@ export const setProjectCommands = () => {
     requestDeleteProject,
     requestGetProject,
     requestGetProjectList,
+    requestMergeProjects,
     validateProjectDocument,
     validateProjectResponse,
     validateProjectListResponse,
@@ -139,6 +152,7 @@ declare global {
       requestUpdateProject: CommandFunctionWithPreviousSubject<typeof requestUpdateProject>;
       requestDeleteProject: CommandFunctionWithPreviousSubject<typeof requestDeleteProject>;
       requestGetProjectList: CommandFunctionWithPreviousSubject<typeof requestGetProjectList>;
+      requestMergeProjects: CommandFunctionWithPreviousSubject<typeof requestMergeProjects>;
     }
 
     interface ChainableResponseBody extends Chainable {
