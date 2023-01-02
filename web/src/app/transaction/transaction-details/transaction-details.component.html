@@ -66,6 +66,9 @@
   <ng-container *ngSwitchCase="'transfer'">
     <div>Átvitel {{transaction.amount >= 0 ? 'innen' : 'ide'}}:
       {{transaction.transferAccount.name}}</div>
+    <div [ngClass]="transaction.transferAmount >= 0 ? 'green' : 'red'">
+      Átvitel összeg: {{transaction.transferAmount | number:'1.0-2':'hu'}} {{transaction.transferAccount.currency}}
+    </div>
   </ng-container>
   <ng-container *ngSwitchCase="'payment'">
     <div *ngIf="transaction.category">

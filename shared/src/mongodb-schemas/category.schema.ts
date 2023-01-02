@@ -17,6 +17,7 @@ export const categorySchema = new Schema<Category.Document>({
     type: String,
     required: true,
     minlength: 1,
+    unique: true,
   },
   parentCategory: {
     type: Schema.Types.ObjectId,

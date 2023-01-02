@@ -27,6 +27,10 @@
           <app-autocomplete-input [items]="transferAccounts" label="Átvitel {{amount >= 0 ? 'innen' : 'ide'}}"
             displayPropertyName="name" formControlName="transferAccount"></app-autocomplete-input>
         </div>
+        <div class="transaction-edit__amount" *ngIf="isTransfer">
+          <app-amount-input formControlName="transferAmount" [currency]="transferAccount?.currency">
+          </app-amount-input>
+        </div>
         <div class="transaction-edit__category" *ngIf="!isTransfer && splits.length === 0">
           <app-autocomplete-input [items]="categories" label="Kategória" displayPropertyName="fullName"
             filterPropertyName="name" formControlName="category"></app-autocomplete-input>

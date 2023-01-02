@@ -44,6 +44,7 @@ export class TransactionEditComponent implements OnInit {
   get isTransfer(): boolean { return this.form.value.isTransfer; }
   get description(): string { return this.form.value.description; }
   get transferAccount(): Account.Response { return this.form.value.transferAccount; }
+  get transferAmount(): number { return this.form.value.transferAmount; }
   get project(): Project.Response { return this.form.value.project; }
   get recipient(): Recipient.Response { return this.form.value.recipient; }
   get category(): Category.Response { return this.form.value.category; }
@@ -99,6 +100,7 @@ export class TransactionEditComponent implements OnInit {
       isTransfer: new FormControl(isTransferTransaction(this.transaction)),
       description: new FormControl(this.transaction?.description),
       transferAccount: new FormControl(isTransferTransaction(this.transaction) ? this.transaction.transferAccount : null),
+      transferAmount: new FormControl(isTransferTransaction(this.transaction) ? this.transaction.transferAmount : null),
       project: new FormControl(isPaymentTransaction(this.transaction) ? this.transaction.project : null),
       recipient: new FormControl(!isTransferTransaction(this.transaction) ? this.transaction?.recipient : null),
       category: new FormControl(isPaymentTransaction(this.transaction) ? this.transaction.category : null),
@@ -167,12 +169,17 @@ export class TransactionEditComponent implements OnInit {
     }
 
     if (this.form.value.isTransfer) {
+      if (this.amount * this.transferAmount >= 0) {
+        return;
+      }
+
       const body: Transaction.TransferRequest = {
         accountId: this.account.accountId,
         amount: this.amount,
         description: this.description ?? undefined,
         issuedAt: this.issuedAt.toISOString(),
         transferAccountId: this.transferAccount.accountId,
+        transferAmount: this.transferAmount,
       };
 
       if (this.transactionId) {

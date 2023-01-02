@@ -44,8 +44,6 @@ export const createTransferTransactionServiceFactory = (
       accountId: transferAccountId,
     }, 400);
 
-    httpErrors.account.differentCurrency(account, transferAccount);
-
     const document = transactionDocumentConverter.createTransferDocument({
       body,
       account,
