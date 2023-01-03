@@ -3,6 +3,7 @@ import { default as schema } from '@household/test/api/schemas/account-response-
 import { Account, Transaction } from '@household/shared/types/types';
 import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
 import { getAccountId } from '@household/shared/common/utils';
+import { v4 as uuid } from 'uuid';
 
 describe('GET /account/v1/accounts', () => {
   let accountDocument: Account.Document;
@@ -14,13 +15,13 @@ describe('GET /account/v1/accounts', () => {
 
   beforeEach(() => {
     accountDocument = accountDocumentConverter.create({
-      name: 'account 1',
+      name: `account 1-${uuid()}`,
       accountType: 'bankAccount',
       currency: 'Ft',
     }, Cypress.env('EXPIRES_IN'), true);
 
     transferAccountDocument = accountDocumentConverter.create({
-      name: 'account 2',
+      name: `account 2-${uuid()}`,
       accountType: 'bankAccount',
       currency: 'Ft',
     }, Cypress.env('EXPIRES_IN'), true);
@@ -73,6 +74,7 @@ describe('GET /account/v1/accounts', () => {
       body: {
         accountId: getAccountId(accountDocument),
         amount: 100,
+        transferAmount: -100,
         transferAccountId: getAccountId(transferAccountDocument),
         description: 'transfer1',
         issuedAt: new Date().toISOString(),
@@ -85,6 +87,7 @@ describe('GET /account/v1/accounts', () => {
       body: {
         accountId: getAccountId(transferAccountDocument),
         amount: -100,
+        transferAmount: 100,
         transferAccountId: getAccountId(accountDocument),
         description: 'transfer1',
         issuedAt: new Date().toISOString(),

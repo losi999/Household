@@ -1,6 +1,7 @@
 import { recipientDocumentConverter } from '@household/shared/dependencies/converters/recipient-document-converter';
 import { default as schema } from '@household/test/api/schemas/recipient-response-list';
 import { Recipient } from '@household/shared/types/types';
+import { v4 as uuid } from 'uuid';
 
 describe('GET /recipient/v1/recipients', () => {
   let recipientDocument1: Recipient.Document;
@@ -8,10 +9,10 @@ describe('GET /recipient/v1/recipients', () => {
 
   beforeEach(() => {
     recipientDocument1 = recipientDocumentConverter.create({
-      name: 'recipient 1',
+      name: `recipient 1-${uuid()}`,
     }, Cypress.env('EXPIRES_IN'), true);
     recipientDocument2 = recipientDocumentConverter.create({
-      name: 'recipient 2',
+      name: `recipient 2-${uuid()}`,
     }, Cypress.env('EXPIRES_IN'), true);
   });
 

@@ -7,6 +7,7 @@ import { projectDocumentConverter } from '@household/shared/dependencies/convert
 import { recipientDocumentConverter } from '@household/shared/dependencies/converters/recipient-document-converter';
 import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { v4 as uuid } from 'uuid';
 
 describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
   let request: Transaction.PaymentRequest;
@@ -22,23 +23,23 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
 
   beforeEach(() => {
     projectDocument = projectDocumentConverter.create({
-      name: 'proj',
+      name: `proj-${uuid()}`,
       description: 'desc',
     }, Cypress.env('EXPIRES_IN'), true);
 
     recipientDocument = recipientDocumentConverter.create({
-      name: 'recipient',
+      name: `recipient-${uuid()}`,
     }, Cypress.env('EXPIRES_IN'), true);
 
     accountDocument = accountDocumentConverter.create({
-      name: 'bank',
+      name: `bank-${uuid()}`,
       accountType: 'bankAccount',
       currency: 'Ft',
     }, Cypress.env('EXPIRES_IN'), true);
 
     regularCategoryDocument = categoryDocumentConverter.create({
       body: {
-        name: 'regular',
+        name: `regular-${uuid()}`,
         categoryType: 'regular',
         parentCategoryId: undefined,
       },
@@ -47,7 +48,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
 
     invoiceCategoryDocument = categoryDocumentConverter.create({
       body: {
-        name: 'invoice',
+        name: `invoice-${uuid()}`,
         categoryType: 'invoice',
         parentCategoryId: undefined,
       },
@@ -56,7 +57,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
 
     inventoryCategoryDocument = categoryDocumentConverter.create({
       body: {
-        name: 'inventory',
+        name: `inventory-${uuid()}`,
         categoryType: 'inventory',
         parentCategoryId: undefined,
       },
@@ -64,7 +65,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
     }, Cypress.env('EXPIRES_IN'), true);
 
     productDocument = productDocumentConverter.create({
-      brand: 'brand',
+      brand: `brand-${uuid()}`,
       measurement: 200,
       unitOfMeasurement: 'kg',
     }, Cypress.env('EXPIRES_IN'), true);
@@ -73,6 +74,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
       body: {
         accountId: getAccountId(accountDocument),
         amount: 100,
+        transferAmount: -10,
         description: undefined,
         issuedAt: new Date().toISOString(),
         transferAccountId: getAccountId(accountDocument),

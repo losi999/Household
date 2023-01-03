@@ -4,6 +4,7 @@ import { default as transactionId } from '@household/shared/schemas/transaction-
 import { default as account } from '@household/test/api/schemas/account-response';
 import { default as base } from '@household/shared/schemas/partials/transaction-base';
 import { default as issuedAt } from '@household/shared/schemas/partials/transaction-issued-at';
+import { default as transferAmount } from '@household/shared/schemas/partials/transaction-transfer-amount';
 
 const schema: StrictJSONSchema7<Transaction.TransferResponse> = {
   type: 'object',
@@ -12,6 +13,7 @@ const schema: StrictJSONSchema7<Transaction.TransferResponse> = {
     ...transactionId.required,
     ...base.required,
     ...issuedAt.required,
+    ...transferAmount.required,
     'account',
     'transactionType',
   ],
@@ -19,6 +21,7 @@ const schema: StrictJSONSchema7<Transaction.TransferResponse> = {
     ...transactionId.properties,
     ...base.properties,
     ...issuedAt.properties,
+    ...transferAmount.properties,
     transactionType: {
       type: 'string',
       const: 'transfer',

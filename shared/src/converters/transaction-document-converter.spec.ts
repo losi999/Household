@@ -35,6 +35,7 @@ describe('Transaction document converter', () => {
   });
 
   const amount = 12000;
+  const transferAmount = -12;
   const description = 'bevásárlás';
   const expiresIn = 3600;
   const quantity = 100;
@@ -636,6 +637,7 @@ describe('Transaction document converter', () => {
     });
     const body = createTransferTransactionRequest({
       amount,
+      transferAmount,
       description,
       issuedAt: now.toISOString(),
     });
@@ -644,6 +646,7 @@ describe('Transaction document converter', () => {
       account,
       transferAccount,
       amount,
+      transferAmount,
       description,
       issuedAt: now,
       createdAt: now,
@@ -660,6 +663,7 @@ describe('Transaction document converter', () => {
         expect(result).toEqual(createTransferTransactionDocument({
           account,
           transferAccount,
+          transferAmount,
           amount,
           description,
           issuedAt: now,
@@ -678,6 +682,7 @@ describe('Transaction document converter', () => {
           account,
           transferAccount,
           amount,
+          transferAmount,
           description,
           issuedAt: now,
           expiresAt: addSeconds(expiresIn, now),
@@ -700,6 +705,7 @@ describe('Transaction document converter', () => {
           account,
           transferAccount,
           amount,
+          transferAmount,
           description,
           issuedAt: now,
           createdAt: now,
@@ -718,7 +724,8 @@ describe('Transaction document converter', () => {
         expect(result).toEqual(createTransferTransactionResponse({
           transactionId: getTransactionId(queriedDocument),
           description,
-          amount: amount,
+          amount,
+          transferAmount,
           issuedAt: now.toISOString(),
           account: accountResponse,
           transferAccount: transferAccountResponse,
@@ -740,7 +747,8 @@ describe('Transaction document converter', () => {
         expect(result).toEqual(createTransferTransactionResponse({
           transactionId: getTransactionId(queriedDocument),
           description,
-          amount: -1 * amount,
+          amount: transferAmount,
+          transferAmount: amount,
           issuedAt: now.toISOString(),
           account: transferAccountResponse,
           transferAccount: accountResponse,
@@ -765,7 +773,8 @@ describe('Transaction document converter', () => {
           createTransferTransactionResponse({
             transactionId: getTransactionId(queriedDocument),
             description,
-            amount: amount,
+            amount,
+            transferAmount,
             issuedAt: now.toISOString(),
             account: accountResponse,
             transferAccount: transferAccountResponse,

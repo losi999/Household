@@ -2,20 +2,22 @@ import { createCategoryId } from '@household/shared/common/test-data-factory';
 import { getCategoryId } from '@household/shared/common/utils';
 import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
 import { Category } from '@household/shared/types/types';
+import { v4 as uuid } from 'uuid';
 
 describe('POST category/v1/categories', () => {
-  const request: Category.Request = {
-    name: 'name',
-    categoryType: 'regular',
-    parentCategoryId: undefined,
-  };
-
+  let request: Category.Request;
   let parentCategoryDocument: Category.Document;
 
   beforeEach(() => {
+    request = {
+      name: `name-${uuid()}`,
+      categoryType: 'regular',
+      parentCategoryId: undefined,
+    };
+
     parentCategoryDocument = categoryDocumentConverter.create({
       body: {
-        name: 'parent',
+        name: `parent-${uuid()}`,
         categoryType: 'regular',
         parentCategoryId: undefined,
       },
@@ -81,6 +83,19 @@ describe('POST category/v1/categories', () => {
             })
             .expectBadRequestResponse()
             .expectTooShortProperty('name', 1, 'body');
+        });
+
+        it('is already in used by a different category', () => {
+          const categoryDocument = categoryDocumentConverter.create({
+            body: request,
+            parentCategory: undefined,
+          }, Cypress.env('EXPIRES_IN'), true);
+
+          cy.saveCategoryDocument(categoryDocument)
+            .authenticate(1)
+            .requestCreateCategory(request)
+            .expectBadRequestResponse()
+            .expectMessage('Duplicate category name');
         });
       });
 

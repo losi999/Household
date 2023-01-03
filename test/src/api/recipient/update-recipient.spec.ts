@@ -2,17 +2,19 @@ import { createRecipientId } from '@household/shared/common/test-data-factory';
 import { getRecipientId } from '@household/shared/common/utils';
 import { recipientDocumentConverter } from '@household/shared/dependencies/converters/recipient-document-converter';
 import { Recipient } from '@household/shared/types/types';
+import { v4 as uuid } from 'uuid';
 
 describe('PUT /recipient/v1/recipients/{recipientId}', () => {
-  const request: Recipient.Request = {
-    name: 'new name',
-  };
-
+  let request: Recipient.Request;
   let recipientDocument: Recipient.Document;
 
   beforeEach(() => {
+    request = {
+      name: `new name-${uuid()}`,
+    };
+
     recipientDocument = recipientDocumentConverter.create({
-      name: 'old name',
+      name: `old name-${uuid()}`,
     }, Cypress.env('EXPIRES_IN'), true);
   });
 
@@ -63,6 +65,17 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
             })
             .expectBadRequestResponse()
             .expectTooShortProperty('name', 1, 'body');
+        });
+
+        it('is already in used by a different recipient', () => {
+          const updatedRecipientDocument = recipientDocumentConverter.create(request, Cypress.env('EXPIRES_IN'), true);
+
+          cy.saveRecipientDocument(recipientDocument)
+            .saveRecipientDocument(updatedRecipientDocument)
+            .authenticate(1)
+            .requestUpdateRecipient(getRecipientId(recipientDocument), request)
+            .expectBadRequestResponse()
+            .expectMessage('Duplicate recipient name');
         });
       });
 

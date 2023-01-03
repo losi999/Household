@@ -3,28 +3,30 @@ import { getCategoryId, getProductId } from '@household/shared/common/utils';
 import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
 import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
 import { Category, Product } from '@household/shared/types/types';
+import { v4 as uuid } from 'uuid';
 
 describe('PUT /product/v1/products/{productId}', () => {
-  const request: Product.Request = {
-    brand: 'new tesco',
-    measurement: 1000,
-    unitOfMeasurement: 'g',
-  };
-
+  let request: Product.Request;
   let productDocument: Product.Document;
   let categoryDocument: Category.Document;
   let categoryId: Category.IdType;
 
   beforeEach(() => {
+    request = {
+      brand: `new tesco-${uuid()}`,
+      measurement: 1000,
+      unitOfMeasurement: 'g',
+    };
+
     productDocument = productDocumentConverter.create({
-      brand: 'tesco',
+      brand: `tesco-${uuid()}`,
       measurement: 1,
       unitOfMeasurement: 'kg',
     }, Cypress.env('EXPIRES_IN'), true);
     categoryDocument = categoryDocumentConverter.create({
       body: {
         categoryType: 'inventory',
-        name: 'inv cat',
+        name: `inv cat-${uuid()}`,
         parentCategoryId: undefined,
       },
       parentCategory: undefined,
@@ -85,6 +87,23 @@ describe('PUT /product/v1/products/{productId}', () => {
             })
             .expectBadRequestResponse()
             .expectTooShortProperty('brand', 1, 'body');
+        });
+
+        it('is already in used by a different product', () => {
+          const duplicateProductDocument = productDocumentConverter.create(request, Cypress.env('EXPIRES_IN'), true);
+
+          cy.saveProductDocument({
+            document: productDocument,
+            categoryId,
+          })
+            .saveProductDocument({
+              document: duplicateProductDocument,
+              categoryId,
+            })
+            .authenticate(1)
+            .requestUpdateProduct(getProductId(productDocument), request)
+            .expectBadRequestResponse()
+            .expectMessage('Duplicate product name');
         });
       });
 

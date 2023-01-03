@@ -4,6 +4,7 @@ import { accountDocumentConverter } from '@household/shared/dependencies/convert
 import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
 import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
 import { Account, Category, Transaction } from '@household/shared/types/types';
+import { v4 as uuid } from 'uuid';
 
 describe('POST category/v1/categories/{categoryId}/merge', () => {
   let accountDocument: Account.Document;
@@ -16,13 +17,13 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
     accountDocument = accountDocumentConverter.create({
       accountType: 'bankAccount',
       currency: 'Ft',
-      name: 'acocunt',
+      name: `acocunt-${uuid()}`,
     }, Cypress.env('EXPIRES_IN'), true);
 
     sourceCategoryDocument = categoryDocumentConverter.create({
       body: {
         categoryType: 'regular',
-        name: 'source',
+        name: `source-${uuid()}`,
         parentCategoryId: undefined,
       },
       parentCategory: undefined,
@@ -31,7 +32,7 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
     targetCategoryDocument = categoryDocumentConverter.create({
       body: {
         categoryType: 'regular',
-        name: 'target',
+        name: `target-${uuid()}`,
         parentCategoryId: undefined,
       },
       parentCategory: undefined,

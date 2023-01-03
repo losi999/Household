@@ -10,6 +10,7 @@ import { default as transferTransactionSchema } from '@household/test/api/schema
 import { default as splitTransactionSchema } from '@household/test/api/schemas/transaction-split-response';
 import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId, toDictionary } from '@household/shared/common/utils';
 import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
+import { v4 as uuid } from 'uuid';
 
 describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}', () => {
   let accountDocument: Account.Document;
@@ -26,29 +27,29 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
 
   beforeEach(() => {
     accountDocument = accountDocumentConverter.create({
-      name: 'account',
+      name: `account-${uuid()}`,
       accountType: 'bankAccount',
       currency: 'Ft',
     }, Cypress.env('EXPIRES_IN'), true);
 
     transferAccountDocument = accountDocumentConverter.create({
-      name: 'account2',
+      name: `account2-${uuid()}`,
       accountType: 'bankAccount',
       currency: 'Ft',
     }, Cypress.env('EXPIRES_IN'), true);
 
     recipientDocument = recipientDocumentConverter.create({
-      name: 'recipient',
+      name: `recipient-${uuid()}`,
     }, Cypress.env('EXPIRES_IN'), true);
 
     projectDocument = projectDocumentConverter.create({
-      name: 'project',
+      name: `project-${uuid()}`,
       description: 'decription',
     }, Cypress.env('EXPIRES_IN'), true);
 
     regularCategoryDocument = categoryDocumentConverter.create({
       body: {
-        name: 'category',
+        name: `category-${uuid()}`,
         categoryType: 'regular',
         parentCategoryId: undefined,
       },
@@ -57,7 +58,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
 
     inventoryCategoryDocument = categoryDocumentConverter.create({
       body: {
-        name: 'category',
+        name: `category-${uuid()}`,
         categoryType: 'inventory',
         parentCategoryId: undefined,
       },
@@ -66,7 +67,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
 
     invoiceCategoryDocument = categoryDocumentConverter.create({
       body: {
-        name: 'category',
+        name: `category-${uuid()}`,
         categoryType: 'invoice',
         parentCategoryId: undefined,
       },
@@ -74,7 +75,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
     }, Cypress.env('EXPIRES_IN'), true);
 
     productDocument = productDocumentConverter.create({
-      brand: 'brand',
+      brand: `brand-${uuid()}`,
       measurement: 500,
       unitOfMeasurement: 'g',
     }, Cypress.env('EXPIRES_IN'), true);
@@ -154,6 +155,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
       body: {
         accountId: getAccountId(accountDocument),
         amount: 100,
+        transferAmount: -10,
         transferAccountId: getAccountId(transferAccountDocument),
         description: 'transfer1',
         issuedAt: new Date().toISOString(),

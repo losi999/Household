@@ -2,6 +2,7 @@ import { createAccountId } from '@household/shared/common/test-data-factory';
 import { getAccountId } from '@household/shared/common/utils';
 import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
 import { Account, Transaction } from '@household/shared/types/types';
+import { v4 as uuid } from 'uuid';
 
 describe('POST transaction/v1/transactions/transfer', () => {
   let request: Transaction.TransferRequest;
@@ -10,21 +11,22 @@ describe('POST transaction/v1/transactions/transfer', () => {
 
   beforeEach(() => {
     accountDocument = accountDocumentConverter.create({
-      name: 'bank',
+      name: `bank-${uuid()}`,
       accountType: 'bankAccount',
       currency: 'Ft',
     }, Cypress.env('EXPIRES_IN'), true);
 
     transferAccountDocument = accountDocumentConverter.create({
-      name: 'wallett',
+      name: `wallett-${uuid()}`,
       accountType: 'cash',
-      currency: 'Ft',
+      currency: '$',
     }, Cypress.env('EXPIRES_IN'), true);
 
     request = {
       accountId: getAccountId(accountDocument),
       transferAccountId: getAccountId(transferAccountDocument),
       amount: 100,
+      transferAmount: -1200,
       description: 'description',
       issuedAt: new Date(2022, 6, 9, 22, 30, 12).toISOString(),
     };
@@ -216,18 +218,6 @@ describe('POST transaction/v1/transactions/transfer', () => {
             })
             .expectBadRequestResponse()
             .expectMessage('No account found');
-        });
-
-        it('is a different currency than base account', () => {
-          cy.saveAccountDocument(accountDocument)
-            .saveAccountDocument({
-              ...transferAccountDocument,
-              currency: '$',
-            })
-            .authenticate(1)
-            .requestCreateTransferTransaction(request)
-            .expectBadRequestResponse()
-            .expectMessage('Accounts must be in the same currency');
         });
 
         it('is missing', () => {
