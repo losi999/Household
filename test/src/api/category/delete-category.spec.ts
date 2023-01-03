@@ -5,6 +5,7 @@ import { categoryDocumentConverter } from '@household/shared/dependencies/conver
 import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
 import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
 import { Account, Category, Transaction } from '@household/shared/types/types';
+import { v4 as uuid } from 'uuid';
 
 const createRelatedTransactions = (accountDocument: Account.Document, categoryDocument: Category.Document): [Transaction.PaymentDocument, Transaction.SplitDocument] => {
   const paymentTransactionDocument = transactionDocumentConverter.createPaymentDocument({
@@ -71,7 +72,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
   beforeEach(() => {
     categoryDocument = categoryDocumentConverter.create({
       body: {
-        name: 'category',
+        name: `category-${uuid()}`,
         categoryType: 'regular',
         parentCategoryId: undefined,
       },
@@ -104,7 +105,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
       beforeEach(() => {
         childCategory = categoryDocumentConverter.create({
           body: {
-            name: 'child',
+            name: `child-${uuid()}`,
             categoryType: 'regular',
             parentCategoryId: getCategoryId(categoryDocument),
           },
@@ -152,7 +153,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
 
       beforeEach(() => {
         accountDocument = accountDocumentConverter.create({
-          name: 'account',
+          name: `account-${uuid()}`,
           accountType: 'bankAccount',
           currency: 'Ft',
         }, Cypress.env('EXPIRES_IN'), true);
@@ -179,7 +180,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
         const childCategoryDocument = categoryDocumentConverter.create({
           body: {
             categoryType: 'regular',
-            name: 'child',
+            name: `child-${uuid()}`,
             parentCategoryId: getCategoryId(categoryDocument),
           },
           parentCategory: categoryDocument,
@@ -207,7 +208,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
     describe('related products', () => {
       it('should be deleted', () => {
         const productDocument = productDocumentConverter.create({
-          brand: 'tesco',
+          brand: `tesco-${uuid()}}`,
           measurement: 500,
           unitOfMeasurement: 'g',
         }, Cypress.env('EXPIRES_IN'), true);

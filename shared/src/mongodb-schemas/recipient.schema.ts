@@ -6,6 +6,7 @@ export const recipientSchema = new Schema<Recipient.Document>({
     type: String,
     required: true,
     minlength: 1,
+    unique: true,
   },
   expiresAt: {
     type: Schema.Types.Date,

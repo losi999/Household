@@ -18,29 +18,29 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
       from: 'transactions',
       localField: '_id',
       foreignField: 'account',
-      as: 'in',
+      as: 'regular',
     })
       .lookup({
         from: 'transactions',
         localField: '_id',
         foreignField: 'transferAccount',
-        as: 'out',
+        as: 'inverted',
       })
       .addFields({
         balance: {
-          $subtract: [
+          $sum: [
             {
-              $sum: '$in.amount',
+              $sum: '$regular.amount',
             },
             {
-              $sum: '$out.amount',
+              $sum: '$inverted.transferAmount',
             },
           ],
         },
       })
       .project({
-        in: false,
-        out: false,
+        regular: false,
+        inverted: false,
       });
   };
 

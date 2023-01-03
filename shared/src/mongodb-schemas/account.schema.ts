@@ -6,6 +6,7 @@ export const accountSchema = new Schema<Account.Document>({
     type: String,
     required: true,
     minlength: 1,
+    unique: true,
   },
   currency: {
     type: String,

@@ -1,11 +1,17 @@
+import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
 import { Account } from '@household/shared/types/types';
+import { v4 as uuid } from 'uuid';
 
 describe('POST account/v1/accounts', () => {
-  const request: Account.Request = {
-    name: 'name',
-    accountType: 'bankAccount',
-    currency: 'Ft',
-  };
+  let request: Account.Request;
+
+  beforeEach(() => {
+    request = {
+      name: `name-${uuid()}`,
+      accountType: 'bankAccount',
+      currency: 'Ft',
+    };
+  });
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
@@ -53,6 +59,16 @@ describe('POST account/v1/accounts', () => {
             })
             .expectBadRequestResponse()
             .expectTooShortProperty('name', 1, 'body');
+        });
+
+        it('is already in used by a different account', () => {
+          const accountDocument = accountDocumentConverter.create(request, Cypress.env('EXPIRES_IN'), true);
+
+          cy.saveAccountDocument(accountDocument)
+            .authenticate(1)
+            .requestCreateAccount(request)
+            .expectBadRequestResponse()
+            .expectMessage('Duplicate account name');
         });
       });
 

@@ -146,7 +146,8 @@ export const transactionDocumentConverterFactory = (
       issuedAt: doc.issuedAt.toISOString(),
       _id: undefined,
       expiresAt: undefined,
-      amount: mainAccountId === getAccountId(doc.transferAccount) ? doc.amount * -1 : doc.amount,
+      amount: mainAccountId === getAccountId(doc.transferAccount) ? doc.transferAmount : doc.amount,
+      transferAmount: mainAccountId === getAccountId(doc.transferAccount) ? doc.amount : doc.transferAmount,
       account: mainAccountId === getAccountId(doc.transferAccount) ? accountDocumentConverter.toResponse(doc.transferAccount) : accountDocumentConverter.toResponse(doc.account),
       transferAccount: mainAccountId === getAccountId(doc.transferAccount) ? accountDocumentConverter.toResponse(doc.account) : accountDocumentConverter.toResponse(doc.transferAccount),
     };
@@ -199,8 +200,8 @@ export const transactionDocumentConverterFactory = (
     createTransferDocument: ({ body, account, transferAccount }, expiresIn, generateId): Transaction.TransferDocument => {
       return {
         ...body,
-        account: account ?? undefined,
-        transferAccount: transferAccount ?? undefined,
+        account: account,
+        transferAccount: transferAccount,
         issuedAt: new Date(body.issuedAt),
         transactionType: 'transfer',
         _id: generateId ? generateMongoId() : undefined,

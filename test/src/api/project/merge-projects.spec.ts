@@ -4,6 +4,7 @@ import { accountDocumentConverter } from '@household/shared/dependencies/convert
 import { projectDocumentConverter } from '@household/shared/dependencies/converters/project-document-converter';
 import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
 import { Account, Project, Transaction } from '@household/shared/types/types';
+import { v4 as uuid } from 'uuid';
 
 describe('POST project/v1/projects/{projectId}/merge', () => {
   let accountDocument: Account.Document;
@@ -16,16 +17,16 @@ describe('POST project/v1/projects/{projectId}/merge', () => {
     accountDocument = accountDocumentConverter.create({
       accountType: 'bankAccount',
       currency: 'Ft',
-      name: 'acocunt',
+      name: `account-${uuid()}`,
     }, Cypress.env('EXPIRES_IN'), true);
 
     sourceProjectDocument = projectDocumentConverter.create({
-      name: 'source',
+      name: `source-${uuid()}`,
       description: 'source',
     }, Cypress.env('EXPIRES_IN'), true);
 
     targetProjectDocument = projectDocumentConverter.create({
-      name: 'target',
+      name: `target-${uuid()}`,
       description: 'target',
     }, Cypress.env('EXPIRES_IN'), true);
 

@@ -3,6 +3,7 @@ import { getCategoryId } from '@household/shared/common/utils';
 import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
 import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
 import { Category } from '@household/shared/types/types';
+import { v4 as uuid } from 'uuid';
 
 describe('PUT /category/v1/categories/{categoryId}', () => {
   let categoryDocument: Category.Document;
@@ -10,14 +11,14 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
 
   beforeEach(() => {
     request = {
-      name: 'new name',
+      name: `new name-${uuid()}`,
       categoryType: 'regular',
       parentCategoryId: undefined,
     };
 
     categoryDocument = categoryDocumentConverter.create({
       body: {
-        name: 'old name',
+        name: `old name-${uuid()}`,
         categoryType: 'regular',
         parentCategoryId: undefined,
       },
@@ -44,7 +45,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
 
     it('should keep existing product', () => {
       const productDocument = productDocumentConverter.create({
-        brand: 'tesco',
+        brand: `tesco-${uuid()}`,
         measurement: 500,
         unitOfMeasurement: 'g',
       }, Cypress.env('EXPIRES_IN'), true);
@@ -68,7 +69,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
       beforeEach(() => {
         childCategory = categoryDocumentConverter.create({
           body: {
-            name: 'child',
+            name: `child-${uuid()}`,
             categoryType: 'regular',
             parentCategoryId: getCategoryId(categoryDocument),
           },
@@ -77,7 +78,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
 
         grandChildCategory = categoryDocumentConverter.create({
           body: {
-            name: 'child of child',
+            name: `child of child-${uuid()}`,
             categoryType: 'regular',
             parentCategoryId: getCategoryId(childCategory),
           },
@@ -86,7 +87,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
 
         otherParentCategory = categoryDocumentConverter.create({
           body: {
-            name: 'parent',
+            name: `parent-${uuid()}`,
             categoryType: 'regular',
             parentCategoryId: undefined,
           },
@@ -167,6 +168,20 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
           })
           .expectBadRequestResponse()
           .expectTooShortProperty('name', 1, 'body');
+      });
+
+      it('is already in used by a different category', () => {
+        const duplicateCategoryDocument = categoryDocumentConverter.create({
+          body: request,
+          parentCategory: undefined,
+        }, Cypress.env('EXPIRES_IN'), true);
+
+        cy.saveCategoryDocument(duplicateCategoryDocument)
+          .saveCategoryDocument(categoryDocument)
+          .authenticate(1)
+          .requestUpdateCategory(getCategoryId(categoryDocument), request)
+          .expectBadRequestResponse()
+          .expectMessage('Duplicate category name');
       });
     });
 

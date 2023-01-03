@@ -83,6 +83,9 @@ export const transactionSchema = new Schema<Transaction.Document>({
     type: Schema.Types.ObjectId,
     ref: 'accounts',
   },
+  transferAmount: {
+    type: Number,
+  },
   category: {
     type: Schema.Types.ObjectId,
     ref: 'categories',

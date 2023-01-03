@@ -2,18 +2,20 @@ import { createProjectId } from '@household/shared/common/test-data-factory';
 import { getProjectId } from '@household/shared/common/utils';
 import { projectDocumentConverter } from '@household/shared/dependencies/converters/project-document-converter';
 import { Project } from '@household/shared/types/types';
+import { v4 as uuid } from 'uuid';
 
 describe('PUT /project/v1/projects/{projectId}', () => {
-  const request: Project.Request = {
-    name: 'new name',
-    description: 'new desc',
-  };
-
+  let request: Project.Request;
   let projectDocument: Project.Document;
 
   beforeEach(() => {
+    request = {
+      name: `new name-${uuid()}`,
+      description: 'new desc',
+    };
+
     projectDocument = projectDocumentConverter.create({
-      name: 'old name',
+      name: `old name-${uuid()}`,
       description: 'old desc',
     }, Cypress.env('EXPIRES_IN'), true);
   });
@@ -82,6 +84,17 @@ describe('PUT /project/v1/projects/{projectId}', () => {
             })
             .expectBadRequestResponse()
             .expectTooShortProperty('name', 1, 'body');
+        });
+
+        it('is already in used by a different project', () => {
+          const duplicateProjectDocument = projectDocumentConverter.create(request, Cypress.env('EXPIRES_IN'), true);
+
+          cy.saveProjectDocument(projectDocument)
+            .saveProjectDocument(duplicateProjectDocument)
+            .authenticate(1)
+            .requestUpdateProject(getProjectId(projectDocument), request)
+            .expectBadRequestResponse()
+            .expectMessage('Duplicate project name');
         });
       });
 

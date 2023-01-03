@@ -4,12 +4,13 @@ import { accountDocumentConverter } from '@household/shared/dependencies/convert
 import { recipientDocumentConverter } from '@household/shared/dependencies/converters/recipient-document-converter';
 import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
 import { Account, Recipient, Transaction } from '@household/shared/types/types';
+import { v4 as uuid } from 'uuid';
 describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
   let recipientDocument: Recipient.Document;
 
   beforeEach(() => {
     recipientDocument = recipientDocumentConverter.create({
-      name: 'recipient',
+      name: `recipient-${uuid()}`,
     }, Cypress.env('EXPIRES_IN'), true);
   });
 
@@ -38,7 +39,7 @@ describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
 
       beforeEach(() => {
         accountDocument = accountDocumentConverter.create({
-          name: 'account',
+          name: `account-${uuid()}`,
           accountType: 'bankAccount',
           currency: 'Ft',
         }, Cypress.env('EXPIRES_IN'), true);

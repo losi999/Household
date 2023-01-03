@@ -4,6 +4,7 @@ import { Account, Transaction } from '@household/shared/types/types';
 import { createAccountId } from '@household/shared/common/test-data-factory';
 import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
 import { getAccountId } from '@household/shared/common/utils';
+import { v4 as uuid } from 'uuid';
 
 describe('GET /account/v1/accounts/{accountId}', () => {
   let accountDocument: Account.Document;
@@ -15,12 +16,12 @@ describe('GET /account/v1/accounts/{accountId}', () => {
 
   beforeEach(() => {
     accountDocument = accountDocumentConverter.create({
-      name: 'account',
+      name: `account-${uuid()}`,
       accountType: 'bankAccount',
       currency: 'Ft',
     }, Cypress.env('EXPIRES_IN'), true);
     transferAccountDocument = accountDocumentConverter.create({
-      name: 'transfer',
+      name: `transfer-${uuid()}`,
       accountType: 'bankAccount',
       currency: 'Ft',
     }, Cypress.env('EXPIRES_IN'), true);
@@ -73,6 +74,7 @@ describe('GET /account/v1/accounts/{accountId}', () => {
       body: {
         accountId: getAccountId(accountDocument),
         amount: 100,
+        transferAmount: -100,
         transferAccountId: getAccountId(transferAccountDocument),
         description: 'transfer1',
         issuedAt: new Date().toISOString(),
@@ -85,6 +87,7 @@ describe('GET /account/v1/accounts/{accountId}', () => {
       body: {
         accountId: getAccountId(transferAccountDocument),
         amount: -100,
+        transferAmount: 100,
         transferAccountId: getAccountId(accountDocument),
         description: 'transfer1',
         issuedAt: new Date().toISOString(),
