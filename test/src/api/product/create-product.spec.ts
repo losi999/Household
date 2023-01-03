@@ -1,22 +1,25 @@
 import { createCategoryId } from '@household/shared/common/test-data-factory';
 import { getCategoryId } from '@household/shared/common/utils';
 import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
+import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
 import { Category, Product } from '@household/shared/types/types';
+import { v4 as uuid } from 'uuid';
 
 describe('POST product/v1/products', () => {
-  const request: Product.Request = {
-    brand: 'tesco',
-    measurement: 300,
-    unitOfMeasurement: 'g',
-  };
-
+  let request: Product.Request;
   let categoryDocument: Category.Document;
 
   beforeEach(() => {
+    request = {
+      brand: `tesco-${uuid()}`,
+      measurement: 300,
+      unitOfMeasurement: 'g',
+    };
+
     categoryDocument = categoryDocumentConverter.create({
       body: {
         categoryType: 'inventory',
-        name: 'category',
+        name: `category-${uuid()}`,
         parentCategoryId: undefined,
       },
       parentCategory: undefined,
@@ -72,6 +75,21 @@ describe('POST product/v1/products', () => {
             }, getCategoryId(categoryDocument))
             .expectBadRequestResponse()
             .expectTooShortProperty('brand', 1, 'body');
+        });
+
+        it('is already in used by a different product', () => {
+          const productDocument = productDocumentConverter.create(request, Cypress.env('EXPIRES_IN'), true);
+          const categoryId = getCategoryId(categoryDocument);
+
+          cy.saveProductDocument({
+            document: productDocument,
+            categoryId,
+          })
+            .saveCategoryDocument(categoryDocument)
+            .authenticate(1)
+            .requestCreateProduct(request, categoryId)
+            .expectBadRequestResponse()
+            .expectMessage('Duplicate product name');
         });
       });
 

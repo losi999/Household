@@ -1,10 +1,16 @@
+import { projectDocumentConverter } from '@household/shared/dependencies/converters/project-document-converter';
 import { Project } from '@household/shared/types/types';
+import { v4 as uuid } from 'uuid';
 
 describe('POST project/v1/projects', () => {
-  const request: Project.Request = {
-    name: 'name',
-    description: 'description',
-  };
+  let request: Project.Request;
+
+  beforeEach(() => {
+    request = {
+      name: `name-${uuid()}`,
+      description: 'description',
+    };
+  });
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
@@ -67,6 +73,16 @@ describe('POST project/v1/projects', () => {
             })
             .expectBadRequestResponse()
             .expectTooShortProperty('name', 1, 'body');
+        });
+
+        it('is already in used by a different project', () => {
+          const projectDocument = projectDocumentConverter.create(request, Cypress.env('EXPIRES_IN'), true);
+
+          cy.saveProjectDocument(projectDocument)
+            .authenticate(1)
+            .requestCreateProject(request)
+            .expectBadRequestResponse()
+            .expectMessage('Duplicate project name');
         });
       });
 

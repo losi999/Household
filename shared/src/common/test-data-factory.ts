@@ -163,6 +163,7 @@ export const createTransferTransactionDocument: DataFactoryFunction<Transaction.
     transferAccountId: undefined,
     account: createAccountDocument(),
     transferAccount: createAccountDocument(),
+    transferAmount: -1200,
     ...doc,
   };
 };
@@ -266,6 +267,7 @@ export const createSplitTransactionRequest: DataFactoryFunction<Transaction.Spli
 export const createTransferTransactionRequest: DataFactoryFunction<Transaction.TransferRequest> = (req) => {
   return {
     amount: 100,
+    transferAmount: -1200,
     description: 'transaction description',
     issuedAt: new Date().toISOString(),
     accountId: createAccountId(),
@@ -427,6 +429,7 @@ export const createTransferTransactionResponse: DataFactoryFunction<Transaction.
     transactionId: createTransactionId(),
     transactionType: 'transfer',
     amount: 100,
+    transferAmount: -1200,
     description: 'transaction description',
     issuedAt: new Date().toISOString(),
     expiresAt: undefined,

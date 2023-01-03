@@ -4,13 +4,14 @@ import { accountDocumentConverter } from '@household/shared/dependencies/convert
 import { projectDocumentConverter } from '@household/shared/dependencies/converters/project-document-converter';
 import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
 import { Account, Project, Transaction } from '@household/shared/types/types';
+import { v4 as uuid } from 'uuid';
 
 describe('DELETE /project/v1/projects/{projectId}', () => {
   let projectDocument: Project.Document;
 
   beforeEach(() => {
     projectDocument = projectDocumentConverter.create({
-      name: 'project',
+      name: `project-${uuid()}`,
       description: 'desc',
     }, Cypress.env('EXPIRES_IN'), true);
   });
@@ -40,7 +41,7 @@ describe('DELETE /project/v1/projects/{projectId}', () => {
 
       beforeEach(() => {
         accountDocument = accountDocumentConverter.create({
-          name: 'account',
+          name: `account-${uuid()}`,
           accountType: 'bankAccount',
           currency: 'Ft',
         }, Cypress.env('EXPIRES_IN'), true);

@@ -2,19 +2,21 @@ import { createAccountId } from '@household/shared/common/test-data-factory';
 import { getAccountId } from '@household/shared/common/utils';
 import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
 import { Account } from '@household/shared/types/types';
+import { v4 as uuid } from 'uuid';
 
 describe('PUT /account/v1/accounts/{accountId}', () => {
-  const request: Account.Request = {
-    name: 'new name',
-    accountType: 'bankAccount',
-    currency: 'Ft',
-  };
-
+  let request: Account.Request;
   let accountDocument: Account.Document;
 
   beforeEach(() => {
+    request = {
+      name: `new name-${uuid()}`,
+      accountType: 'bankAccount',
+      currency: 'Ft',
+    };
+
     accountDocument = accountDocumentConverter.create({
-      name: 'old name',
+      name: `old name-${uuid()}`,
       accountType: 'bankAccount',
       currency: 'Ft',
     }, Cypress.env('EXPIRES_IN'), true);
@@ -66,6 +68,17 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
             })
             .expectBadRequestResponse()
             .expectTooShortProperty('name', 1, 'body');
+        });
+
+        it('is already in used by a different account', () => {
+          const duplicateAccountDocument = accountDocumentConverter.create(request, Cypress.env('EXPIRES_IN'), true);
+
+          cy.saveAccountDocument(accountDocument)
+            .saveAccountDocument(duplicateAccountDocument)
+            .authenticate(1)
+            .requestUpdateAccount(getAccountId(accountDocument), request)
+            .expectBadRequestResponse()
+            .expectMessage('Duplicate account name');
         });
       });
 

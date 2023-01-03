@@ -3,6 +3,7 @@ import { default as schema } from '@household/test/api/schemas/category-response
 import { Category, Product } from '@household/shared/types/types';
 import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
 import { getCategoryId } from '@household/shared/common/utils';
+import { v4 as uuid } from 'uuid';
 
 describe('GET /category/v1/categories', () => {
   let categoryDocument1: Category.Document;
@@ -12,7 +13,7 @@ describe('GET /category/v1/categories', () => {
   beforeEach(() => {
     categoryDocument1 = categoryDocumentConverter.create({
       body: {
-        name: 'category 1',
+        name: `category 1-${uuid()}`,
         categoryType: 'regular',
         parentCategoryId: undefined,
       },
@@ -21,7 +22,7 @@ describe('GET /category/v1/categories', () => {
 
     categoryDocument2 = categoryDocumentConverter.create({
       body: {
-        name: 'category 2',
+        name: `category 2-${uuid()}`,
         categoryType: 'inventory',
         parentCategoryId: undefined,
       },
@@ -29,7 +30,7 @@ describe('GET /category/v1/categories', () => {
     }, Cypress.env('EXPIRES_IN'), true);
 
     productDocument = productDocumentConverter.create({
-      brand: 'tesco',
+      brand: `tesco-${uuid()}`,
       unitOfMeasurement: 'g',
       measurement: 300,
     },

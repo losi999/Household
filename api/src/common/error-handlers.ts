@@ -1,7 +1,7 @@
 import { HttpError } from '@household/shared/types/common';
 import { Account, Category, Common, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 
-type Catch = (error: Error) => never;
+type Catch = (error: any) => never;
 const log = (message: string, ctx: any, error?: any) => {
   console.error(message, JSON.stringify(ctx, null, 2), error);
 };
@@ -14,6 +14,11 @@ const httpError = (statusCode: number, message: string): HttpError => ({
 export const httpErrors = {
   transaction: {
     save: (doc: Transaction.Document, statusCode = 500): Catch => (error) => {
+      if (error .code === 11000) {
+        log('Duplicate transaction name', doc, error);
+        throw httpError(400, 'Duplicate transaction name');
+      }
+
       log('Save transaction', doc, error);
       throw httpError(statusCode, 'Error while saving transaction');
     },
@@ -36,6 +41,11 @@ export const httpErrors = {
       }
     },
     update: (doc: Transaction.Document, statusCode = 500): Catch => (error) => {
+      if (error .code === 11000) {
+        log('Duplicate transaction name', doc, error);
+        throw httpError(400, 'Duplicate transaction name');
+      }
+
       log('Update transaction', doc, error);
       throw httpError(statusCode, 'Error while updating transaction');
     },
@@ -58,6 +68,11 @@ export const httpErrors = {
   },
   project: {
     save: (doc: Project.Document, statusCode = 500): Catch => (error) => {
+      if (error .code === 11000) {
+        log('Duplicate project name', doc, error);
+        throw httpError(400, 'Duplicate project name');
+      }
+
       log('Save project', doc, error);
       throw httpError(statusCode, 'Error while saving project');
     },
@@ -90,6 +105,11 @@ export const httpErrors = {
       }
     },
     update: (doc: Project.Document, statusCode = 500): Catch => (error) => {
+      if (error .code === 11000) {
+        log('Duplicate project name', doc, error);
+        throw httpError(400, 'Duplicate project name');
+      }
+
       log('Update project', doc, error);
       throw httpError(statusCode, 'Error while updating project');
     },
@@ -109,6 +129,11 @@ export const httpErrors = {
   },
   account: {
     save: (doc: Account.Document, statusCode = 500): Catch => (error) => {
+      if (error .code === 11000) {
+        log('Duplicate account name', doc, error);
+        throw httpError(400, 'Duplicate account name');
+      }
+
       log('Save account', doc, error);
       throw httpError(statusCode, 'Error while saving account');
     },
@@ -127,6 +152,11 @@ export const httpErrors = {
       }
     },
     update: (doc: Account.Document, statusCode = 500): Catch => (error) => {
+      if (error .code === 11000) {
+        log('Duplicate account name', doc, error);
+        throw httpError(400, 'Duplicate account name');
+      }
+
       log('Update account', doc, error);
       throw httpError(statusCode, 'Error while updating account');
     },
@@ -145,8 +175,13 @@ export const httpErrors = {
     },
   },
   category: {
-    save: (ctx: Category.Document, statusCode = 500): Catch => (error) => {
-      log('Save category', ctx, error);
+    save: (doc: Category.Document, statusCode = 500): Catch => (error) => {
+      if (error .code === 11000) {
+        log('Duplicate category name', doc, error);
+        throw httpError(400, 'Duplicate category name');
+      }
+
+      log('Save category', doc, error);
       throw httpError(statusCode, 'Error while saving category');
     },
     getById: (ctx: Category.Id & Partial<Category.ParentCategoryId>, statusCode = 500): Catch => (error) => {
@@ -193,8 +228,13 @@ export const httpErrors = {
         throw httpError(statusCode, 'Parent category not found');
       }
     },
-    update: (ctx: {document: Category.Document, oldFullName: string}, statusCode = 500): Catch => (error) => {
-      log('Update category', ctx, error);
+    update: (doc: {document: Category.Document, oldFullName: string}, statusCode = 500): Catch => (error) => {
+      if (error .code === 11000) {
+        log('Duplicate category name', doc, error);
+        throw httpError(400, 'Duplicate category name');
+      }
+
+      log('Update category', doc, error);
       throw httpError(statusCode, 'Error while updating category');
     },
     mergeTargetAmongSource: (condition: boolean, ctx: Category.Id & {source: Category.IdType[]}, statusCode = 400) => {
@@ -212,8 +252,13 @@ export const httpErrors = {
     },
   },
   recipient: {
-    save: (ctx: Recipient.Document, statusCode = 500): Catch => (error) => {
-      log('Save recipient', ctx, error);
+    save: (doc: Recipient.Document, statusCode = 500): Catch => (error) => {
+      if (error .code === 11000) {
+        log('Duplicate recipient name', doc, error);
+        throw httpError(400, 'Duplicate recipient name');
+      }
+
+      log('Save recipient', doc, error);
       throw httpError(statusCode, 'Error while saving recipient');
     },
     getById: (ctx: Recipient.Id, statusCode = 500): Catch => (error) => {
@@ -245,6 +290,11 @@ export const httpErrors = {
       throw httpError(statusCode, 'Error while deleting recipient');
     },
     update: (document: Recipient.Document, statusCode = 500): Catch => (error) => {
+      if (error .code === 11000) {
+        log('Duplicate recipient name', document, error);
+        throw httpError(400, 'Duplicate recipient name');
+      }
+
       log('Update recipient', document, error);
       throw httpError(statusCode, 'Error while updating recipient');
     },
@@ -264,6 +314,11 @@ export const httpErrors = {
   },
   product: {
     save: (doc: Product.Document, statusCode = 500): Catch => (error) => {
+      if (error .code === 11000) {
+        log('Duplicate product name', doc, error);
+        throw httpError(400, 'Duplicate product name');
+      }
+
       log('Save product', doc, error);
       throw httpError(statusCode, 'Error while saving product');
     },
@@ -294,6 +349,11 @@ export const httpErrors = {
       }
     },
     update: (document: Product.Document, statusCode = 500): Catch => (error) => {
+      if (error .code === 11000) {
+        log('Duplicate product name', document, error);
+        throw httpError(400, 'Duplicate product name');
+      }
+
       log('Update product', document, error);
       throw httpError(statusCode, 'Error while updating product');
     },

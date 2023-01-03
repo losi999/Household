@@ -5,6 +5,7 @@ import { categoryDocumentConverter } from '@household/shared/dependencies/conver
 import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
 import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
 import { Account, Category, Product, Transaction } from '@household/shared/types/types';
+import { v4 as uuid } from 'uuid';
 
 describe('DELETE /product/v1/products/{productId}', () => {
   let productDocument: Product.Document;
@@ -13,14 +14,14 @@ describe('DELETE /product/v1/products/{productId}', () => {
 
   beforeEach(() => {
     productDocument = productDocumentConverter.create({
-      brand: 'tesco',
+      brand: `tesco-${uuid}`,
       measurement: 1,
       unitOfMeasurement: 'kg',
     }, Cypress.env('EXPIRES_IN'), true);
     categoryDocument = categoryDocumentConverter.create({
       body: {
         categoryType: 'inventory',
-        name: 'inv cat',
+        name: `inv cat-${uuid()}`,
         parentCategoryId: undefined,
       },
       parentCategory: undefined,
@@ -56,7 +57,7 @@ describe('DELETE /product/v1/products/{productId}', () => {
 
       beforeEach(() => {
         accountDocument = accountDocumentConverter.create({
-          name: 'account',
+          name: `account-${uuid()}`,
           accountType: 'bankAccount',
           currency: 'Ft',
         }, Cypress.env('EXPIRES_IN'), true);

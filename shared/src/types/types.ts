@@ -255,7 +255,11 @@ export namespace Transaction {
     transferAccountId: Account.IdType;
   };
 
-  type Category<C extends Category.Document | Category.Response> = {
+  export type TransferAmount ={
+    transferAmount: number;
+  };
+
+  export type Category<C extends Category.Document | Category.Response> = {
     category: C;
   };
 
@@ -291,7 +295,8 @@ export namespace Transaction {
   export type TransferRequest = Account.Id
   & IssuedAt<string>
   & Base
-  & TransferAccountId;
+  & TransferAccountId
+  & TransferAmount;
 
   export type SplitRequestItem = Project.Id
   & Category.Id
@@ -335,6 +340,7 @@ export namespace Transaction {
   & IssuedAt<Date>
   & Remove<TransferAccountId>
   & TransferAccount<Account.Document>
+  & TransferAmount
   & Base;
 
   export type SplitDocumentItem = Project<Project.Document>
@@ -384,7 +390,8 @@ export namespace Transaction {
   & Remove<Internal.ExpiresAt>
   & TransactionType<'transfer'>
   & Account<Account.Response>
-  & TransferAccount<Account.Response>;
+  & TransferAccount<Account.Response>
+  & TransferAmount;
 
   export type SplitResponseItem = Base
   & Invoice<string>

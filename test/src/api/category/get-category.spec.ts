@@ -3,6 +3,7 @@ import { default as schema } from '@household/test/api/schemas/category-response
 import { Category } from '@household/shared/types/types';
 import { createCategoryId } from '@household/shared/common/test-data-factory';
 import { getCategoryId } from '@household/shared/common/utils';
+import { v4 as uuid } from 'uuid';
 
 describe('GET /category/v1/categories/{categoryId}', () => {
   let categoryDocument: Category.Document;
@@ -11,7 +12,7 @@ describe('GET /category/v1/categories/{categoryId}', () => {
   beforeEach(() => {
     categoryDocument = categoryDocumentConverter.create({
       body: {
-        name: 'category',
+        name: `category-${uuid()}`,
         categoryType: 'regular',
         parentCategoryId: undefined,
       },
@@ -20,7 +21,7 @@ describe('GET /category/v1/categories/{categoryId}', () => {
 
     childCategoryDocument = categoryDocumentConverter.create({
       body: {
-        name: 'child',
+        name: `child-${uuid()}`,
         categoryType: 'regular',
         parentCategoryId: getCategoryId(categoryDocument),
       },

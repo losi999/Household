@@ -5,6 +5,7 @@ import { categoryDocumentConverter } from '@household/shared/dependencies/conver
 import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
 import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
 import { Account, Category, Product, Transaction } from '@household/shared/types/types';
+import { v4 as uuid } from 'uuid';
 
 describe('POST product/v1/products/{productId}/merge', () => {
   let accountDocument: Account.Document;
@@ -18,26 +19,26 @@ describe('POST product/v1/products/{productId}/merge', () => {
     accountDocument = accountDocumentConverter.create({
       accountType: 'bankAccount',
       currency: 'Ft',
-      name: 'acocunt',
+      name: `account-${uuid()}`,
     }, Cypress.env('EXPIRES_IN'), true);
 
     categoryDocument = categoryDocumentConverter.create({
       body: {
         categoryType: 'inventory',
-        name: 'category',
+        name: `category-${uuid()}`,
         parentCategoryId: undefined,
       },
       parentCategory: undefined,
     }, Cypress.env('EXPIRES_IN'), true);
 
     targetProductDocument = productDocumentConverter.create({
-      brand: 'target',
+      brand: `target-${uuid()}`,
       measurement: 100,
       unitOfMeasurement: 'g',
     }, Cypress.env('EXPIRES_IN'), true);
 
     sourceProductDocument = productDocumentConverter.create({
-      brand: 'source',
+      brand: `source-${uuid()}`,
       measurement: 1,
       unitOfMeasurement: 'kg',
     }, Cypress.env('EXPIRES_IN'), true);

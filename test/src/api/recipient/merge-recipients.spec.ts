@@ -4,6 +4,7 @@ import { accountDocumentConverter } from '@household/shared/dependencies/convert
 import { recipientDocumentConverter } from '@household/shared/dependencies/converters/recipient-document-converter';
 import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
 import { Account, Recipient, Transaction } from '@household/shared/types/types';
+import { v4 as uuid } from 'uuid';
 
 describe('POST recipient/v1/recipients/{recipientId}/merge', () => {
   let accountDocument: Account.Document;
@@ -16,15 +17,15 @@ describe('POST recipient/v1/recipients/{recipientId}/merge', () => {
     accountDocument = accountDocumentConverter.create({
       accountType: 'bankAccount',
       currency: 'Ft',
-      name: 'acocunt',
+      name: `account-${uuid()}`,
     }, Cypress.env('EXPIRES_IN'), true);
 
     sourceRecipientDocument = recipientDocumentConverter.create({
-      name: 'source',
+      name: `source-${uuid()}`,
     }, Cypress.env('EXPIRES_IN'), true);
 
     targetRecipientDocument = recipientDocumentConverter.create({
-      name: 'target',
+      name: `target-${uuid()}`,
     }, Cypress.env('EXPIRES_IN'), true);
 
     paymentTransactionDocument = transactionDocumentConverter.createPaymentDocument({

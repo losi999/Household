@@ -3,13 +3,14 @@ import { default as schema } from '@household/test/api/schemas/recipient-respons
 import { Recipient } from '@household/shared/types/types';
 import { createRecipientId } from '@household/shared/common/test-data-factory';
 import { getRecipientId } from '@household/shared/common/utils';
+import { v4 as uuid } from 'uuid';
 
 describe('GET /recipient/v1/recipients/{recipientId}', () => {
   let recipientDocument: Recipient.Document;
 
   beforeEach(() => {
     recipientDocument = recipientDocumentConverter.create({
-      name: 'recipient',
+      name: `recipient-${uuid()}`,
     }, Cypress.env('EXPIRES_IN'), true);
   });
 

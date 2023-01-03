@@ -3,6 +3,7 @@ import { getAccountId, getTransactionId } from '@household/shared/common/utils';
 import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
 import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
 import { Account, Transaction } from '@household/shared/types/types';
+import { v4 as uuid } from 'uuid';
 
 describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
   let request: Transaction.TransferRequest;
@@ -13,15 +14,15 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
 
   beforeEach(() => {
     accountDocument = accountDocumentConverter.create({
-      name: 'bank',
+      name: `bank-${uuid()}`,
       accountType: 'bankAccount',
       currency: 'Ft',
     }, Cypress.env('EXPIRES_IN'), true);
 
     transferAccountDocument = accountDocumentConverter.create({
-      name: 'wallett',
+      name: `wallett-${uuid()}`,
       accountType: 'cash',
-      currency: 'Ft',
+      currency: '$',
     }, Cypress.env('EXPIRES_IN'), true);
 
     originalDocument = transactionDocumentConverter.createPaymentDocument({
@@ -47,6 +48,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
       accountId: getAccountId(accountDocument),
       transferAccountId: getAccountId(transferAccountDocument),
       amount: 100,
+      transferAmount: -10,
       description: 'description',
       issuedAt: new Date(2022, 6, 9, 22, 30, 12).toISOString(),
     };
@@ -257,19 +259,6 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
             })
             .expectBadRequestResponse()
             .expectMessage('No account found');
-        });
-
-        it('is a different currency than base account', () => {
-          cy.saveTransactionDocument(originalDocument)
-            .saveAccountDocument(accountDocument)
-            .saveAccountDocument({
-              ...transferAccountDocument,
-              currency: '$',
-            })
-            .authenticate(1)
-            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), request)
-            .expectBadRequestResponse()
-            .expectMessage('Accounts must be in the same currency');
         });
 
         it('is missing', () => {

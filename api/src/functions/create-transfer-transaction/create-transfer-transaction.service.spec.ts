@@ -5,7 +5,6 @@ import { getAccountId, getTransactionId } from '@household/shared/common/utils';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
-import { Account } from '@household/shared/types/types';
 
 describe('Create transfer transaction service', () => {
   let service: ICreateTransferTransactionService;
@@ -98,30 +97,6 @@ describe('Create transfer transaction service', () => {
         body,
         expiresIn: undefined,
       }).catch(validateError('No account found', 400));
-      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
-        body.accountId,
-        body.transferAccountId,
-      ]);
-      validateFunctionCall(mockTransactionDocumentConverter.functions.createTransferDocument);
-      validateFunctionCall(mockTransactionService.functions.saveTransaction);
-      expect.assertions(5);
-    });
-
-    it('if accounts are in different currency', async () => {
-      const otherCurrencyAccount: Account.Document = {
-        ...queriedTransferAccount,
-        currency: '$',
-      };
-
-      mockAccountService.functions.listAccountsByIds.mockResolvedValue([
-        queriedAccount,
-        otherCurrencyAccount,
-      ]);
-
-      await service({
-        body,
-        expiresIn: undefined,
-      }).catch(validateError('Accounts must be in the same currency', 400));
       validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
         body.accountId,
         body.transferAccountId,

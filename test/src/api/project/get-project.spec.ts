@@ -3,13 +3,14 @@ import { default as schema } from '@household/test/api/schemas/project-response'
 import { Project } from '@household/shared/types/types';
 import { createProjectId } from '@household/shared/common/test-data-factory';
 import { getProjectId } from '@household/shared/common/utils';
+import { v4 as uuid } from 'uuid';
 
 describe('GET /project/v1/projects/{projectId}', () => {
   let projectDocument: Project.Document;
 
   beforeEach(() => {
     projectDocument = projectDocumentConverter.create({
-      name: 'project',
+      name: `project-${uuid()}`,
       description: 'desc',
     }, Cypress.env('EXPIRES_IN'), true);
   });
