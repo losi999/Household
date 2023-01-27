@@ -13,3 +13,12 @@ export const unitsOfMeasurement = [
   'l',
   'db',
 ] as const;
+
+export const groupByProperties = [
+  'year',
+  'month',
+  'account',
+  'project',
+  'category',
+  'recipient',
+] as const;
