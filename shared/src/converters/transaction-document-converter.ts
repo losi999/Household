@@ -56,6 +56,8 @@ export interface ITransactionDocumentConverter {
   }, expiresIn: number): Transaction.TransferDocument;
   toResponse(document: Transaction.Document, mainAccountId?: Account.IdType): Transaction.Response;
   toResponseList(documents: Transaction.Document[], mainAccountId?: Account.IdType): Transaction.Response[];
+  toReportResponseItem(document: Transaction.PaymentDocument | Transaction.SplitDocument): Transaction.ReportTransactionItem[];
+  toReportResponseItemList(documents: (Transaction.PaymentDocument | Transaction.SplitDocument)[]): Transaction.ReportTransactionItem[];
 }
 
 export const transactionDocumentConverterFactory = (
@@ -240,6 +242,34 @@ export const transactionDocumentConverterFactory = (
       }
     },
     toResponseList: (docs, mainAccountId) => docs.map(d => instance.toResponse(d, mainAccountId)),
+    toReportResponseItem: (document): Transaction.ReportTransactionItem[] => {
+      if (document.transactionType === 'payment') {
+        return [
+          {
+            amount: document.amount,
+            transactionId: getTransactionId(document),
+            issuedAt: document.issuedAt,
+            projectName: document.project?.name,
+            categoryName: document.category?.fullName,
+            recipientName: document.recipient?.name,
+            accountName: document.account.name,
+            description: document.description,
+          },
+        ];
+      }
+
+      return document.splits.map(s => ({
+        accountName: document.account.name,
+        transactionId: getTransactionId(document),
+        amount: s.amount,
+        issuedAt: document.issuedAt,
+        recipientName: document.recipient?.name,
+        description: s.description,
+        projectName: s.project?.name,
+        categoryName: s.category?.fullName,
+      }));
+    },
+    toReportResponseItemList: documents => documents.flatMap(d => instance.toReportResponseItem(d)),
   };
 
   return instance;

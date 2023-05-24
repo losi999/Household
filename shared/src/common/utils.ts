@@ -1,3 +1,4 @@
+import { groupByProperties } from '@household/shared/constants';
 import { Dictionary } from '@household/shared/types/common';
 import { Account, Category, Internal, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 
@@ -24,3 +25,14 @@ export const getProjectId = (doc: Project.Document): Project.IdType => getId(doc
 export const getRecipientId = (doc: Recipient.Document): Recipient.IdType => getId(doc) as Recipient.IdType;
 export const getProductId = (doc: Product.Document): Product.IdType => getId(doc) as Product.IdType;
 export const getCategoryId = (doc: Category.Document): Category.IdType => getId(doc) as Category.IdType;
+
+export const getGroupValue: {[key in typeof groupByProperties[number]]: (tx: Transaction.ReportTransactionItem) => string} = {
+  year: tx => tx.issuedAt.getFullYear().toString(),
+  month: tx => `${tx.issuedAt.getFullYear()}. ${tx.issuedAt.toLocaleString('hu', {
+    month: 'long',
+  })}`,
+  account: tx => tx.accountName,
+  recipient: tx => tx.recipientName,
+  category: tx => tx.categoryName,
+  project: tx => tx.projectName,
+};

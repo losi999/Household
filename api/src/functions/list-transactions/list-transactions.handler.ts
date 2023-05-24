@@ -4,10 +4,11 @@ import { IListTransactionsService } from '@household/api/functions/list-transact
 import { Transaction } from '@household/shared/types/types';
 
 export default (listTransactions: IListTransactionsService): AWSLambda.APIGatewayProxyHandler => {
-  return async () => {
-    let transactions: Transaction.Response[];
+  return async (event) => {
+    const body = JSON.parse(event.body);
+    let transactions: Transaction.ReportResponse;
     try {
-      transactions = await listTransactions();
+      transactions = await listTransactions(body);
     } catch (error) {
       console.error(error);
       return errorResponse(error);

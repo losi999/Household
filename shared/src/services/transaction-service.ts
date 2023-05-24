@@ -1,5 +1,6 @@
 import { IMongodbService } from '@household/shared/services/mongodb-service';
-import { Account, Common, Transaction } from '@household/shared/types/types';
+import { Account, Common, Transaction, Recipient, Project, Category } from '@household/shared/types/types';
+import { FilterQuery } from 'mongoose';
 
 export interface ITransactionService {
   dumpTransactions(): Promise<Transaction.Document[]>;
@@ -8,7 +9,14 @@ export interface ITransactionService {
   getTransactionByIdAndAccountId(query: Transaction.Id & Account.Id): Promise<Transaction.Document>;
   deleteTransaction(transactionId: Transaction.IdType): Promise<unknown>;
   updateTransaction(doc: Transaction.Document): Promise<unknown>;
-  listTransactions(isAscending?: boolean): Promise<Transaction.Document[]>;
+  listTransactions(query: {
+    accounts: Account.IdType[];
+    categories: Category.IdType[];
+    projects: Project.IdType[];
+    recipients: Recipient.IdType[];
+    issuedAtFrom: string;
+    issuedAtTo: string;
+  }): Promise<(Transaction.PaymentDocument | Transaction.SplitDocument)[]>;
   listTransactionsByAccountId(data: Account.Id & Common.Pagination<number>): Promise<Transaction.Document[]>;
 }
 
@@ -79,22 +87,95 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
       })
         .exec();
     },
-    listTransactions: (isAscending = true) => {
+    listTransactions: ({ accounts, categories, projects, recipients, issuedAtFrom, issuedAtTo }) => {
       return mongodbService.inSession((session) => {
-        return mongodbService.transactions().find({}, null, {
+        const query: FilterQuery<Transaction.Document> = {
+          transactionType: {
+            $not: {
+              $eq: 'transfer',
+            },
+          },
+          issuedAt: {
+            $lte: new Date(),
+          },
+          $and: [],
+        };
+
+        if (issuedAtFrom) {
+          query.issuedAt.$gte = new Date(issuedAtFrom);
+        }
+
+        if (issuedAtTo) {
+          query.issuedAt.$lte = new Date(issuedAtTo);
+        }
+
+        if (accounts) {
+          query.$and.push({
+            account: {
+              $in: accounts,
+            },
+          });
+        }
+
+        if (categories) {
+          query.$and.push({
+            $or: [
+              {
+                'splits.category': {
+                  $in: categories,
+                },
+              },
+              {
+                category: {
+                  $in: categories,
+                },
+              },
+            ],
+          });
+        }
+
+        if (projects) {
+          query.$and.push({
+            $or: [
+              {
+                'splits.project': {
+                  $in: projects,
+                },
+              },
+              {
+                project: {
+                  $in: projects,
+                },
+              },
+            ],
+          });
+        }
+
+        if (recipients) {
+          query.$and.push({
+            recipient: {
+              $in: recipients,
+            },
+          });
+        }
+
+        if (query.$and.length === 0) {
+          delete query.$and;
+        }
+
+        return mongodbService.transactions().find(query, null, {
           session,
         })
-          .sort({
-            issuedAt: isAscending ? 'asc' : 'desc',
-          })
+          // .sort({
+          //   amount: 'asc',
+          // })
           .populate('project')
           .populate('recipient')
           .populate('account')
           .populate('category')
-          .populate('transferAccount')
           .populate('splits.category')
           .populate('splits.project')
-          .lean()
+          .lean<(Transaction.PaymentDocument | Transaction.SplitDocument)[]>()
           .exec();
       });
     },
