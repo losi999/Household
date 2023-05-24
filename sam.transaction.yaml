@@ -206,6 +206,22 @@ Resources:
             Path: /v1/accounts/{accountId}/transactions
             Method: GET
             Auth:
+              Authorizer: CognitoAuthorizer       
+
+  ListTransactions:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-ListTransactions
+      CodeUri: dist/api/list-transactions
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TransactionApi
+            Path: /v1/transactions
+            Method: POST
+            Auth:
               Authorizer: CognitoAuthorizer                
 
 Outputs:

@@ -1,4 +1,4 @@
-import { categoryTypes, unitsOfMeasurement } from '@household/shared/constants';
+import { categoryTypes, groupByProperties, unitsOfMeasurement } from '@household/shared/constants';
 import { Brand, Remove } from '@household/shared/types/common';
 import { Types } from 'mongoose';
 
@@ -263,15 +263,15 @@ export namespace Transaction {
     category: C;
   };
 
-  type Project<P extends Project.Document | Project.Response> = {
+  export type Project<P extends Project.Document | Project.Response> = {
     project: P;
   };
 
-  type Account<A extends Account.Document | Account.Response> = {
+  export type Account<A extends Account.Document | Account.Response> = {
     account: A;
   };
 
-  type Recipient<R extends Recipient.Document | Recipient.Response> = {
+  export type Recipient<R extends Recipient.Document | Recipient.Response> = {
     recipient: R;
   };
 
@@ -414,6 +414,33 @@ export namespace Transaction {
   };
 
   export type Response = PaymentResponse | TransferResponse | SplitResponse;
+
+  export type ReportRequest = {
+    groupedBy: typeof groupByProperties[number]
+    accounts: Account.IdType[];
+    categories: Category.IdType[];
+    projects: Project.IdType[];
+    recipients: Recipient.IdType[];
+    issuedAtFrom: string;
+    issuedAtTo: string;
+  };
+
+  export type ReportTransactionItem = Id
+  & Base
+  & IssuedAt<Date>
+  & {
+    projectName: string;
+    categoryName: string;
+    recipientName: string;
+    accountName: string;
+  };
+
+  export type ReportResponse = {
+    [group: string]: {
+      totalAmount: number;
+      transactions: ReportTransactionItem[];
+    };
+  };
 }
 
 export namespace Auth {
