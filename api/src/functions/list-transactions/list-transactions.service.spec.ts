@@ -19,6 +19,8 @@ describe('List transactions service', () => {
   const queriedDocument = createPaymentTransactionDocument();
   const convertedResponse = createPaymentTransactionResponse();
 
+  it.todo('should be done');
+
   // it('should return documents', async () => {
   //   mockTransactionService.functions.listTransactions.mockResolvedValue([queriedDocument]);
   //   mockTransactionDocumentConverter.functions.toResponseList.mockReturnValue([convertedResponse]);

@@ -13,7 +13,9 @@ describe('List transactions handler', () => {
   });
 
   const transactions = [createPaymentTransactionResponse()];
-  const handlerEvent = {} as AWSLambda.APIGatewayProxyEvent;
+  const handlerEvent = {
+    body: '{}',
+  } as AWSLambda.APIGatewayProxyEvent;
 
   it('should handle business service error', async () => {
     const statusCode = 418;
