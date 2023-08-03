@@ -5,28 +5,28 @@ type DataFactoryFunction<T> = (input?: Partial<T>) => T;
 
 export const generateMongoId = (): Types.ObjectId => new Types.ObjectId();
 
-export const createAccountId = (id?: string): Account.IdType => {
-  return (id ?? generateMongoId().toString()) as Account.IdType;
+export const createAccountId = (id?: string): Account.Id => {
+  return (id ?? generateMongoId().toString()) as Account.Id;
 };
 
-export const createCategoryId = (id?: string): Category.IdType => {
-  return (id ?? generateMongoId().toString()) as Category.IdType;
+export const createCategoryId = (id?: string): Category.Id => {
+  return (id ?? generateMongoId().toString()) as Category.Id;
 };
 
-export const createProjectId = (id?: string): Project.IdType => {
-  return (id ?? generateMongoId().toString()) as Project.IdType;
+export const createProjectId = (id?: string): Project.Id => {
+  return (id ?? generateMongoId().toString()) as Project.Id;
 };
 
-export const createRecipientId = (id?: string): Recipient.IdType => {
-  return (id ?? generateMongoId().toString()) as Recipient.IdType;
+export const createRecipientId = (id?: string): Recipient.Id => {
+  return (id ?? generateMongoId().toString()) as Recipient.Id;
 };
 
-export const createTransactionId = (id?: string): Transaction.IdType => {
-  return (id ?? generateMongoId().toString()) as Transaction.IdType;
+export const createTransactionId = (id?: string): Transaction.Id => {
+  return (id ?? generateMongoId().toString()) as Transaction.Id;
 };
 
-export const createProductId = (id?: string): Product.IdType => {
-  return (id ?? generateMongoId().toString()) as Product.IdType;
+export const createProductId = (id?: string): Product.Id => {
+  return (id ?? generateMongoId().toString()) as Product.Id;
 };
 
 export const createAccountDocument: DataFactoryFunction<Account.Document> = (doc) => {
@@ -208,7 +208,7 @@ export const createProductRequest: DataFactoryFunction<Product.Request> = (req) 
   };
 };
 
-export const createInventoryRequest: DataFactoryFunction<Transaction.InventoryItem<Product.Id>> = (req) => {
+export const createInventoryRequest: DataFactoryFunction<Transaction.InventoryItem<Product.ProductId>> = (req) => {
   return {
     productId: createProductId(),
     quantity: 100,

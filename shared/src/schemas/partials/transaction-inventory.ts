@@ -3,7 +3,7 @@ import { Product, Transaction } from '@household/shared/types/types';
 import { default as productId } from '@household/shared/schemas/product-id';
 import { default as quantity } from '@household/shared/schemas/partials/transaction-quantity';
 
-const schema: StrictJSONSchema7<Transaction.InventoryItem<Product.Id>> = {
+const schema: StrictJSONSchema7<Transaction.InventoryItem<Product.ProductId>> = {
   type: 'object',
   additionalProperties: false,
   required: [

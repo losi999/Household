@@ -7,7 +7,7 @@ export interface IUpdateCategoryService {
   (ctx: {
     body: Category.Request;
     expiresIn: number;
-  } & Category.Id): Promise<void>;
+  } & Category.CategoryId): Promise<void>;
 }
 
 export const updateCategoryServiceFactory = (

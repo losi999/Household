@@ -3,15 +3,15 @@ import { Category, Product } from '@household/shared/types/types';
 
 export interface IProductService {
   dumpProducts(): Promise<Product.Document[]>;
-  saveProduct(ctx: {document: Product.Document } & Category.Id): Promise<Product.Document>;
-  getProductById(productId: Product.IdType): Promise<Product.Document>;
-  listProductsByIds(productIds: Product.IdType[]): Promise<Product.Document[]>;
-  deleteProduct(productId: Product.IdType): Promise<unknown>;
+  saveProduct(ctx: {document: Product.Document } & Category.CategoryId): Promise<Product.Document>;
+  getProductById(productId: Product.Id): Promise<Product.Document>;
+  listProductsByIds(productIds: Product.Id[]): Promise<Product.Document[]>;
+  deleteProduct(productId: Product.Id): Promise<unknown>;
   updateProduct(doc: Product.Document): Promise<unknown>;
   mergeProducts(ctx: {
-    targetProductId: Product.IdType;
-    sourceProductIds: Product.IdType[];
-    categoryId: Category.IdType;
+    targetProductId: Product.Id;
+    sourceProductIds: Product.Id[];
+    categoryId: Category.Id;
   }): Promise<unknown>;
   // listProducts(): Promise<Product.Document[]>;
 }

@@ -15,9 +15,9 @@ export type StrictJSONSchema7<T> = Omit<JSONSchema7, 'properties' | 'type' | 're
   items?: T extends any[] ? StrictJSONSchema7<T[0]> : never;
 };
 
-export type Remove<T> = { [prop in keyof T]: undefined };
+export type Remove<T> = Record<keyof T, undefined>;
 export type Restrict<T, K extends keyof T> = Omit<T, K> & Partial<Record<K, never>>;
-export type Brand<K, T> = K & { __brand: T };
+export type Branding<K, T> = K & { __brand: T };
 export type RecursivePartial<T> = {
   [P in keyof T]?:
   T[P] extends (infer U)[] ? RecursivePartial<U>[] :

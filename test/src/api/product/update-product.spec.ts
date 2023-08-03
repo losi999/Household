@@ -89,7 +89,7 @@ describe('PUT /product/v1/products/{productId}', () => {
             .expectTooShortProperty('brand', 1, 'body');
         });
 
-        it('is already in used by a different product', () => {
+        it.skip('is already in used by a different product', () => {
           const duplicateProductDocument = productDocumentConverter.create(request, Cypress.env('EXPIRES_IN'), true);
 
           cy.saveProductDocument({

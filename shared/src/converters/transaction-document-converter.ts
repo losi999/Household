@@ -54,8 +54,8 @@ export interface ITransactionDocumentConverter {
     account: Account.Document;
     transferAccount: Account.Document;
   }, expiresIn: number): Transaction.TransferDocument;
-  toResponse(document: Transaction.Document, mainAccountId?: Account.IdType): Transaction.Response;
-  toResponseList(documents: Transaction.Document[], mainAccountId?: Account.IdType): Transaction.Response[];
+  toResponse(document: Transaction.Document, mainAccountId?: Account.Id): Transaction.Response;
+  toResponseList(documents: Transaction.Document[], mainAccountId?: Account.Id): Transaction.Response[];
   toReportResponseItem(document: Transaction.PaymentDocument | Transaction.SplitDocument): Transaction.ReportTransactionItem[];
   toReportResponseItemList(documents: (Transaction.PaymentDocument | Transaction.SplitDocument)[]): Transaction.ReportTransactionItem[];
 }
@@ -139,7 +139,7 @@ export const transactionDocumentConverterFactory = (
     };
   };
 
-  const toResponseTransfer = (doc: Transaction.TransferDocument, mainAccountId: Account.IdType): Transaction.TransferResponse => {
+  const toResponseTransfer = (doc: Transaction.TransferDocument, mainAccountId: Account.Id): Transaction.TransferResponse => {
     return {
       ...doc,
       createdAt: undefined,

@@ -4,8 +4,8 @@ import { Project } from '@household/shared/types/types';
 
 export interface IMergeProjectsService {
   (ctx: {
-    body: Project.IdType[];
-  } & Project.Id): Promise<void>;
+    body: Project.Id[];
+  } & Project.ProjectId): Promise<void>;
 }
 
 export const mergeProjectsServiceFactory = (

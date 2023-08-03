@@ -8,7 +8,7 @@ import { Transaction } from '@household/shared/types/types';
 export interface IUpdateToTransferTransactionService {
   (ctx: {
     body: Transaction.TransferRequest;
-    transactionId: Transaction.IdType;
+    transactionId: Transaction.Id;
     expiresIn: number;
   }): Promise<void>;
 }

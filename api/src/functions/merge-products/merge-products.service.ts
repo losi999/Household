@@ -6,8 +6,8 @@ import { Product } from '@household/shared/types/types';
 
 export interface IMergeProductsService {
   (ctx: {
-    body: Product.IdType[];
-  } & Product.Id): Promise<void>;
+    body: Product.Id[];
+  } & Product.ProductId): Promise<void>;
 }
 
 export const mergeProductsServiceFactory = (

@@ -9,7 +9,7 @@ export interface ICreateProductService {
   (ctx: {
     body: Product.Request;
     expiresIn: number;
-  } & Category.Id): Promise<Product.IdType>;
+  } & Category.CategoryId): Promise<Product.Id>;
 }
 
 export const createProductServiceFactory = (

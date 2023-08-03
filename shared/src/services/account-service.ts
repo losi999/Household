@@ -5,11 +5,11 @@ import { Aggregate, Types } from 'mongoose';
 export interface IAccountService {
   dumpAccounts(): Promise<Account.Document[]>;
   saveAccount(doc: Account.Document): Promise<Account.Document>;
-  getAccountById(accountId: Account.IdType): Promise<Account.Document>;
-  deleteAccount(accountId: Account.IdType): Promise<unknown>;
+  getAccountById(accountId: Account.Id): Promise<Account.Document>;
+  deleteAccount(accountId: Account.Id): Promise<unknown>;
   updateAccount(doc: Account.Document): Promise<unknown>;
   listAccounts(): Promise<Account.Document[]>;
-  listAccountsByIds(accountIds: Account.IdType[]): Promise<Account.Document[]>;
+  listAccountsByIds(accountIds: Account.Id[]): Promise<Account.Document[]>;
 }
 
 export const accountServiceFactory = (mongodbService: IMongodbService): IAccountService => {

@@ -12,7 +12,7 @@ import { Transaction } from '@household/shared/types/types';
 export interface IUpdateToSplitTransactionService {
   (ctx: {
     body: Transaction.SplitRequest;
-    transactionId: Transaction.IdType;
+    transactionId: Transaction.Id;
     expiresIn: number;
   }): Promise<void>;
 }

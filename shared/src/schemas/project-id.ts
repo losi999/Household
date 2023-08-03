@@ -1,7 +1,7 @@
 import { StrictJSONSchema7 } from '@household/shared/types/common';
 import { Project } from '@household/shared/types/types';
 
-const schema: StrictJSONSchema7<Project.Id> = {
+const schema: StrictJSONSchema7<Project.ProjectId> = {
   type: 'object',
   additionalProperties: false,
   required: ['projectId'],

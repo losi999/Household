@@ -5,15 +5,15 @@ import { ClientSession } from 'mongoose';
 export interface ICategoryService {
   dumpCategories(): Promise<Category.Document[]>;
   saveCategory(doc: Category.Document): Promise<Category.Document>;
-  getCategoryById(categoryId: Category.IdType): Promise<Category.Document>;
-  deleteCategory(categoryId: Category.IdType): Promise<unknown>;
+  getCategoryById(categoryId: Category.Id): Promise<Category.Document>;
+  deleteCategory(categoryId: Category.Id): Promise<unknown>;
   updateCategory(doc: Category.Document, oldFullName: string): Promise<unknown>;
   listCategories(categoryType: Category.CategoryType): Promise<Category.Document[]>;
-  listCategoriesByIds(categoryIds: Category.IdType[]): Promise<Category.Document[]>;
-  getCategoryByProductIds(productIds: Product.IdType[]): Promise<Category.Document>;
+  listCategoriesByIds(categoryIds: Category.Id[]): Promise<Category.Document[]>;
+  getCategoryByProductIds(productIds: Product.Id[]): Promise<Category.Document>;
   mergeCategories(ctx: {
-    targetCategoryId: Category.IdType;
-    sourceCategoryIds: Category.IdType[];
+    targetCategoryId: Category.Id;
+    sourceCategoryIds: Category.Id[];
   }): Promise<unknown>;
 }
 

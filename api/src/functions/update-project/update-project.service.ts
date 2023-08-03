@@ -6,7 +6,7 @@ import { Project } from '@household/shared/types/types';
 export interface IUpdateProjectService {
   (ctx: {
     body: Project.Request;
-    projectId: Project.IdType;
+    projectId: Project.Id;
     expiresIn: number;
   }): Promise<void>;
 }

@@ -13,7 +13,7 @@ export interface ICreateSplitTransactionService {
   (ctx: {
     body: Transaction.SplitRequest;
     expiresIn: number;
-  }): Promise<Transaction.IdType>;
+  }): Promise<Transaction.Id>;
 }
 
 export const createSplitTransactionServiceFactory = (

@@ -4,7 +4,7 @@ import { ICategoryService } from '@household/shared/services/category-service';
 import { Category } from '@household/shared/types/types';
 
 export interface IGetCategoryService {
-  (ctx: Category.Id): Promise<Category.Response>;
+  (ctx: Category.CategoryId): Promise<Category.Response>;
 }
 
 export const getCategoryServiceFactory = (

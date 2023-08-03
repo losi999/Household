@@ -12,7 +12,7 @@ import { Transaction } from '@household/shared/types/types';
 export interface IUpdateToPaymentTransactionService {
   (ctx: {
     body: Transaction.PaymentRequest;
-    transactionId: Transaction.IdType;
+    transactionId: Transaction.Id;
     expiresIn: number;
   }): Promise<void>;
 }

@@ -5,19 +5,19 @@ import { FilterQuery } from 'mongoose';
 export interface ITransactionService {
   dumpTransactions(): Promise<Transaction.Document[]>;
   saveTransaction(doc: Transaction.Document): Promise<Transaction.Document>;
-  getTransactionById(transactionId: Transaction.IdType): Promise<Transaction.Document>;
-  getTransactionByIdAndAccountId(query: Transaction.Id & Account.Id): Promise<Transaction.Document>;
-  deleteTransaction(transactionId: Transaction.IdType): Promise<unknown>;
+  getTransactionById(transactionId: Transaction.Id): Promise<Transaction.Document>;
+  getTransactionByIdAndAccountId(query: Transaction.TransactionId & Account.AccountId): Promise<Transaction.Document>;
+  deleteTransaction(transactionId: Transaction.Id): Promise<unknown>;
   updateTransaction(doc: Transaction.Document): Promise<unknown>;
   listTransactions(query: {
-    accounts: Account.IdType[];
-    categories: Category.IdType[];
-    projects: Project.IdType[];
-    recipients: Recipient.IdType[];
+    accounts: Account.Id[];
+    categories: Category.Id[];
+    projects: Project.Id[];
+    recipients: Recipient.Id[];
     issuedAtFrom: string;
     issuedAtTo: string;
   }): Promise<(Transaction.PaymentDocument | Transaction.SplitDocument)[]>;
-  listTransactionsByAccountId(data: Account.Id & Common.Pagination<number>): Promise<Transaction.Document[]>;
+  listTransactionsByAccountId(data: Account.AccountId & Common.Pagination<number>): Promise<Transaction.Document[]>;
 }
 
 export const transactionServiceFactory = (mongodbService: IMongodbService): ITransactionService => {

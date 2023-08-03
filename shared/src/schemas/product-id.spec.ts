@@ -4,7 +4,7 @@ import { createProductId } from '@household/shared/common/test-data-factory';
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 
 describe('Product id schema', () => {
-  const tester = jsonSchemaTesterFactory<Product.Id>(schema);
+  const tester = jsonSchemaTesterFactory<Product.ProductId>(schema);
 
   tester.validateSuccess({
     productId: createProductId(),

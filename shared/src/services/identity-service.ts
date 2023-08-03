@@ -1,16 +1,16 @@
 import { Auth } from '@household/shared/types/types';
-import { CognitoIdentityServiceProvider } from 'aws-sdk';
+import type { AdminInitiateAuthResponse, CognitoIdentityProvider } from '@aws-sdk/client-cognito-identity-provider';
 
 export interface IIdentityService {
-  login(body: Auth.Login.Request): Promise<CognitoIdentityServiceProvider.AdminInitiateAuthResponse>;
+  login(body: Auth.Login.Request): Promise<AdminInitiateAuthResponse>;
   register(body: Auth.Registration.Request): Promise<any>;
-  refreshToken(body: Auth.RefreshToken.Request): Promise<CognitoIdentityServiceProvider.AdminInitiateAuthResponse>;
+  refreshToken(body: Auth.RefreshToken.Request): Promise<AdminInitiateAuthResponse>;
 }
 
 export const identityServiceFactory = (
   userPoolId: string,
   clientId: string,
-  cognito: CognitoIdentityServiceProvider): IIdentityService => {
+  cognito: CognitoIdentityProvider): IIdentityService => {
   const instance: IIdentityService = {
     login: (body) => {
       return cognito.adminInitiateAuth({
@@ -21,7 +21,7 @@ export const identityServiceFactory = (
           USERNAME: body.email,
           PASSWORD: body.password,
         },
-      }).promise();
+      });
     },
     register: async (body) => {
       await cognito.adminCreateUser({
@@ -38,14 +38,14 @@ export const identityServiceFactory = (
             Value: body.displayName,
           },
         ],
-      }).promise();
+      });
 
       return cognito.adminSetUserPassword({
         UserPoolId: userPoolId,
         Password: body.password,
         Permanent: true,
         Username: body.email,
-      }).promise();
+      });
     },
     refreshToken: (body) => {
       return cognito.adminInitiateAuth({
@@ -55,7 +55,7 @@ export const identityServiceFactory = (
         AuthParameters: {
           REFRESH_TOKEN: body.refreshToken,
         },
-      }).promise();
+      });
     },
   };
 

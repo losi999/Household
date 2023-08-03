@@ -1,7 +1,7 @@
 import { StrictJSONSchema7 } from '@household/shared/types/common';
 import { Recipient } from '@household/shared/types/types';
 
-const schema: StrictJSONSchema7<Recipient.Id> = {
+const schema: StrictJSONSchema7<Recipient.RecipientId> = {
   type: 'object',
   additionalProperties: false,
   required: ['recipientId'],

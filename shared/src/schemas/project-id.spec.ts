@@ -4,7 +4,7 @@ import { createProjectId } from '@household/shared/common/test-data-factory';
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 
 describe('Project id schema', () => {
-  const tester = jsonSchemaTesterFactory<Project.Id>(schema);
+  const tester = jsonSchemaTesterFactory<Project.ProjectId>(schema);
 
   tester.validateSuccess({
     projectId: createProjectId(),

@@ -6,7 +6,7 @@ import { Recipient } from '@household/shared/types/types';
 export interface IUpdateRecipientService {
   (ctx: {
     body: Recipient.Request;
-    recipientId: Recipient.IdType;
+    recipientId: Recipient.Id;
     expiresIn: number;
   }): Promise<void>;
 }

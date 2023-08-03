@@ -4,7 +4,7 @@ import { createAccountId } from '@household/shared/common/test-data-factory';
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 
 describe('Account id schema', () => {
-  const tester = jsonSchemaTesterFactory<Account.Id>(schema);
+  const tester = jsonSchemaTesterFactory<Account.AccountId>(schema);
 
   tester.validateSuccess({
     accountId: createAccountId(),

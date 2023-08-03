@@ -13,7 +13,7 @@ export interface ICreatePaymentTransactionService {
   (ctx: {
     body: Transaction.PaymentRequest;
     expiresIn: number;
-  }): Promise<Transaction.IdType>;
+  }): Promise<Transaction.Id>;
 }
 
 export const createPaymentTransactionServiceFactory = (
