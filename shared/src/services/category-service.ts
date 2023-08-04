@@ -49,7 +49,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
         return mongodbService.categories().find({}, null, {
           session,
         })
-          .lean()
+          .lean<Category.Document[]>()
           .exec();
       });
     },
@@ -59,7 +59,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
     getCategoryById: async (categoryId) => {
       return !categoryId ? null : mongodbService.categories().findById(categoryId)
         .populate('parentCategory')
-        .lean()
+        .lean<Category.Document>()
         .exec();
     },
     deleteCategory: async (categoryId) => {
@@ -75,7 +75,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
           })
             .exec();
 
-          await toDelete.remove({
+          await toDelete.deleteOne({
             session,
           });
 
@@ -231,7 +231,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
           })
           .sort('fullName')
           .sort('products.brand')
-          .lean()
+          .lean<Category.Document[]>()
           .exec();
       });
     },
@@ -244,7 +244,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
         }, null, {
           session,
         })
-          .lean()
+          .lean<Category.Document[]>()
           .exec();
       });
     },
@@ -257,7 +257,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
         }, null, {
           session,
         })
-          .lean()
+          .lean<Category.Document>()
           .exec();
       });
     },

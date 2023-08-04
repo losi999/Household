@@ -28,14 +28,14 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
         return mongodbService.transactions().find({}, null, {
           session,
         })
-          .lean()
+          .lean<Transaction.Document[]>()
           .exec();
       });
     },
     saveTransaction: (doc) => {
       return mongodbService.transactions().create(doc);
     },
-    getTransactionById: async (transactionId) => {
+    getTransactionById: (transactionId) => {
       return !transactionId ? undefined : mongodbService.transactions().findById(transactionId)
         .populate('project')
         .populate('recipient')
@@ -46,7 +46,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
         .populate('splits.category')
         .populate('splits.project')
         .populate('splits.inventory.product')
-        .lean()
+        .lean<Transaction.Document>()
         .exec();
     },
     getTransactionByIdAndAccountId: async ({ transactionId, accountId }) => {
@@ -70,7 +70,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
         .populate('splits.category')
         .populate('splits.project')
         .populate('splits.inventory.product')
-        .lean()
+        .lean<Transaction.Document>()
         .exec();
     },
     deleteTransaction: (transactionId) => {
@@ -207,7 +207,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
           .populate('splits.category')
           .populate('splits.project')
           .populate('splits.inventory.product')
-          .lean()
+          .lean<Transaction.Document[]>()
           .exec();
       });
     },

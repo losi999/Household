@@ -17,7 +17,7 @@ const requestCreateAccount = (idToken: string, account: Account.Request) => {
   }) as Cypress.ChainableResponse;
 };
 
-const requestUpdateAccount = (idToken: string, accountId: Account.IdType, account: Account.Request) => {
+const requestUpdateAccount = (idToken: string, accountId: Account.Id, account: Account.Request) => {
   return cy.request({
     body: account,
     method: 'PUT',
@@ -30,7 +30,7 @@ const requestUpdateAccount = (idToken: string, accountId: Account.IdType, accoun
   }) as Cypress.ChainableResponse;
 };
 
-const requestDeleteAccount = (idToken: string, accountId: Account.IdType) => {
+const requestDeleteAccount = (idToken: string, accountId: Account.Id) => {
   return cy.request({
     method: 'DELETE',
     url: `/account/v1/accounts/${accountId}`,
@@ -41,7 +41,7 @@ const requestDeleteAccount = (idToken: string, accountId: Account.IdType) => {
   }) as Cypress.ChainableResponse;
 };
 
-const requestGetAccount = (idToken: string, accountId: Account.IdType) => {
+const requestGetAccount = (idToken: string, accountId: Account.Id) => {
   return cy.request({
     method: 'GET',
     url: `/account/v1/accounts/${accountId}`,
@@ -63,7 +63,7 @@ const requestGetAccountList = (idToken: string) => {
   }) as Cypress.ChainableResponse;
 };
 
-const validateAccountDocument = (response: Account.Id, request: Account.Request) => {
+const validateAccountDocument = (response: Account.AccountId, request: Account.Request) => {
   const id = response?.accountId;
 
   cy.log('Get account document', id)
@@ -95,7 +95,7 @@ const validateAccountListResponse = (responses: Account.Response[], documents: A
   });
 };
 
-const validateAccountDeleted = (accountId: Account.IdType) => {
+const validateAccountDeleted = (accountId: Account.Id) => {
   cy.log('Get account document', accountId)
     .getAccountDocumentById(accountId)
     .should((document) => {

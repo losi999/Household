@@ -16,7 +16,7 @@ var server = http.createServer(function (req, res) {
   }
   req.url = parts.slice(2).join('/')
 
-  proxy.web(req, res, { target: `http://localhost:${port}`, headers: req.headers });
+  proxy.web(req, res, { target: `http://127.0.0.1:${port}`, headers: req.headers });
 });
 
 console.log("listening on port 5050")
