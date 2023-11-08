@@ -19,7 +19,7 @@ const requestCreateCategory = (idToken: string, category: Category.Request) => {
   }) as Cypress.ChainableResponse;
 };
 
-const requestUpdateCategory = (idToken: string, categoryId: Category.IdType, category: Category.Request) => {
+const requestUpdateCategory = (idToken: string, categoryId: Category.Id, category: Category.Request) => {
   return cy.request({
     body: category,
     method: 'PUT',
@@ -32,7 +32,7 @@ const requestUpdateCategory = (idToken: string, categoryId: Category.IdType, cat
   }) as Cypress.ChainableResponse;
 };
 
-const requestDeleteCategory = (idToken: string, categoryId: Category.IdType) => {
+const requestDeleteCategory = (idToken: string, categoryId: Category.Id) => {
   return cy.request({
     method: 'DELETE',
     url: `/category/v1/categories/${categoryId}`,
@@ -43,7 +43,7 @@ const requestDeleteCategory = (idToken: string, categoryId: Category.IdType) => 
   }) as Cypress.ChainableResponse;
 };
 
-const requestGetCategory = (idToken: string, categoryId: Category.IdType) => {
+const requestGetCategory = (idToken: string, categoryId: Category.Id) => {
   return cy.request({
     method: 'GET',
     url: `/category/v1/categories/${categoryId}`,
@@ -65,7 +65,7 @@ const requestGetCategoryList = (idToken: string) => {
   }) as Cypress.ChainableResponse;
 };
 
-const requestMergeCategories = (idToken: string, categoryId: Category.IdType, sourceCategoryIds: Category.IdType[]) => {
+const requestMergeCategories = (idToken: string, categoryId: Category.Id, sourceCategoryIds: Category.Id[]) => {
   return cy.request({
     body: sourceCategoryIds,
     method: 'POST',
@@ -77,7 +77,7 @@ const requestMergeCategories = (idToken: string, categoryId: Category.IdType, so
   }) as Cypress.ChainableResponse;
 };
 
-const validateCategoryDocument = (response: Category.Id, request: Category.Request, parentCategory?: Category.Document, product?: Product.Document) => {
+const validateCategoryDocument = (response: Category.CategoryId, request: Category.Request, parentCategory?: Category.Document, product?: Product.Document) => {
   const id = response?.categoryId;
 
   cy.log('Get category document', id)
@@ -115,7 +115,7 @@ const validateCategoryListResponse = (responses: Category.Response[], documents:
   });
 };
 
-const validateCategoryDeleted = (categoryId: Category.IdType) => {
+const validateCategoryDeleted = (categoryId: Category.Id) => {
   cy.log('Get category document', categoryId)
     .getCategoryDocumentById(categoryId)
     .should((document) => {
@@ -138,7 +138,7 @@ const compareCategoryDocuments = (original: Category.Document, updated: Category
   }
 };
 
-const validateCategoryParentReassign = (originalDocument: Category.Document, parentCategoryId?: Category.IdType) => {
+const validateCategoryParentReassign = (originalDocument: Category.Document, parentCategoryId?: Category.Id) => {
   const categoryId = getCategoryId(originalDocument);
   let parentCategoryDocument: Category.Document;
 
@@ -161,7 +161,7 @@ const validateCategoryParentReassign = (originalDocument: Category.Document, par
     });
 };
 
-const validateProductRemoval = (originalDocument: Category.Document, removedProductIds: Product.IdType[]) => {
+const validateProductRemoval = (originalDocument: Category.Document, removedProductIds: Product.Id[]) => {
   const categoryId = getCategoryId(originalDocument);
 
   cy.log('Get category document', categoryId)

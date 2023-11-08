@@ -9,7 +9,7 @@ import { TransactionService } from 'src/app/transaction/transaction.service';
   styleUrls: ['./account-transactions-home.component.scss'],
 })
 export class AccountTransactionsHomeComponent implements OnInit {
-  accountId: Account.IdType;
+  accountId: Account.Id;
   transactions: Transaction.Response[];
   private pageNumber: number;
 
@@ -19,7 +19,7 @@ export class AccountTransactionsHomeComponent implements OnInit {
   ngOnInit(): void {
     this.pageNumber = 1;
 
-    this.accountId = this.activatedRoute.snapshot.paramMap.get('accountId') as Account.IdType;
+    this.accountId = this.activatedRoute.snapshot.paramMap.get('accountId') as Account.Id;
     this.transactions = this.activatedRoute.snapshot.data.transactions;
   }
 

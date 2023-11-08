@@ -146,7 +146,7 @@ describe('POST category/v1/categories', () => {
           cy.authenticate(1)
             .requestCreateCategory({
               ...request,
-              parentCategoryId: 'not-mongo-id' as Category.IdType,
+              parentCategoryId: 'not-mongo-id' as Category.Id,
             })
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('parentCategoryId', 'body');

@@ -45,7 +45,7 @@ const requestCreateSplitTransaction = (idToken: string, transaction: Transaction
   }) as Cypress.ChainableResponse;
 };
 
-const requestUpdateToPaymentTransaction = (idToken: string, transactionId: Transaction.IdType, transaction: Transaction.PaymentRequest) => {
+const requestUpdateToPaymentTransaction = (idToken: string, transactionId: Transaction.Id, transaction: Transaction.PaymentRequest) => {
   return cy.request({
     body: transaction,
     method: 'PUT',
@@ -58,7 +58,7 @@ const requestUpdateToPaymentTransaction = (idToken: string, transactionId: Trans
   }) as Cypress.ChainableResponse;
 };
 
-const requestUpdateToTransferTransaction = (idToken: string, transactionId: Transaction.IdType, transaction: Transaction.TransferRequest) => {
+const requestUpdateToTransferTransaction = (idToken: string, transactionId: Transaction.Id, transaction: Transaction.TransferRequest) => {
   return cy.request({
     body: transaction,
     method: 'PUT',
@@ -71,7 +71,7 @@ const requestUpdateToTransferTransaction = (idToken: string, transactionId: Tran
   }) as Cypress.ChainableResponse;
 };
 
-const requestUpdateToSplitTransaction = (idToken: string, transactionId: Transaction.IdType, transaction: Transaction.SplitRequest) => {
+const requestUpdateToSplitTransaction = (idToken: string, transactionId: Transaction.Id, transaction: Transaction.SplitRequest) => {
   return cy.request({
     body: transaction,
     method: 'PUT',
@@ -84,7 +84,7 @@ const requestUpdateToSplitTransaction = (idToken: string, transactionId: Transac
   }) as Cypress.ChainableResponse;
 };
 
-const requestDeleteTransaction = (idToken: string, transactionId: Transaction.IdType) => {
+const requestDeleteTransaction = (idToken: string, transactionId: Transaction.Id) => {
   return cy.request({
     method: 'DELETE',
     url: `/transaction/v1/transactions/${transactionId}`,
@@ -95,7 +95,7 @@ const requestDeleteTransaction = (idToken: string, transactionId: Transaction.Id
   }) as Cypress.ChainableResponse;
 };
 
-const requestGetTransaction = (idToken: string, accountId: Account.IdType, transactionId: Transaction.IdType) => {
+const requestGetTransaction = (idToken: string, accountId: Account.Id, transactionId: Transaction.Id) => {
   return cy.request({
     method: 'GET',
     url: `/transaction/v1/accounts/${accountId}/transactions/${transactionId}`,
@@ -106,7 +106,7 @@ const requestGetTransaction = (idToken: string, accountId: Account.IdType, trans
   }) as Cypress.ChainableResponse;
 };
 
-const requestGetTransactionListByAccount = (idToken: string, accountId: Account.IdType, querystring?: Common.Pagination<number>) => {
+const requestGetTransactionListByAccount = (idToken: string, accountId: Account.Id, querystring?: Common.Pagination<number>) => {
   return cy.request({
     method: 'GET',
     url: `/transaction/v1/accounts/${accountId}/transactions`,
@@ -118,7 +118,7 @@ const requestGetTransactionListByAccount = (idToken: string, accountId: Account.
   }) as Cypress.ChainableResponse;
 };
 
-const validateInventoryDocument = (request: Transaction.Inventory<Product.Id>, document: Transaction.Inventory<Transaction.Product<Product.Document>>, categoryId: Category.IdType, productId: Product.IdType) => {
+const validateInventoryDocument = (request: Transaction.Inventory<Product.ProductId>, document: Transaction.Inventory<Transaction.Product<Product.Document>>, categoryId: Category.Id, productId: Product.Id) => {
   let category: Category.Document;
 
   cy.log('Get category document', categoryId)
@@ -139,7 +139,7 @@ const validateInventoryDocument = (request: Transaction.Inventory<Product.Id>, d
     });
 };
 
-const validateInvoiceDocument = (request: Transaction.Invoice<string>, document: Transaction.Invoice<Date>, categoryId: Category.IdType) => {
+const validateInvoiceDocument = (request: Transaction.Invoice<string>, document: Transaction.Invoice<Date>, categoryId: Category.Id) => {
   cy.log('Get category document', categoryId)
     .getCategoryDocumentById(categoryId)
     .should((category) => {
@@ -153,7 +153,7 @@ const validateInvoiceDocument = (request: Transaction.Invoice<string>, document:
     });
 };
 
-const validateTransactionPaymentDocument = (response: Transaction.Id, request: Transaction.PaymentRequest) => {
+const validateTransactionPaymentDocument = (response: Transaction.TransactionId, request: Transaction.PaymentRequest) => {
   const id = response?.transactionId;
 
   cy.log('Get transaction document', id)
@@ -174,7 +174,7 @@ const validateTransactionPaymentDocument = (response: Transaction.Id, request: T
     });
 };
 
-const validateTransactionSplitDocument = (response: Transaction.Id, request: Transaction.SplitRequest) => {
+const validateTransactionSplitDocument = (response: Transaction.TransactionId, request: Transaction.SplitRequest) => {
   const id = response?.transactionId;
 
   cy.log('Get transaction document', id)
@@ -200,7 +200,7 @@ const validateTransactionSplitDocument = (response: Transaction.Id, request: Tra
     });
 };
 
-const validateTransactionTransferDocument = (response: Transaction.Id, request: Transaction.TransferRequest) => {
+const validateTransactionTransferDocument = (response: Transaction.TransactionId, request: Transaction.TransferRequest) => {
   const id = response?.transactionId;
 
   cy.log('Get transaction document', id)
@@ -338,7 +338,7 @@ const validateTransactionListResponse = (responses: Transaction.Response[], docu
   });
 };
 
-const validateTransactionDeleted = (transactionId: Transaction.IdType) => {
+const validateTransactionDeleted = (transactionId: Transaction.Id) => {
   cy.log('Get transaction document', transactionId)
     .getTransactionDocumentById(transactionId)
     .should((document) => {
@@ -491,7 +491,7 @@ const validateCategoryUnset = (originalDocument: Transaction.PaymentDocument | T
     });
 };
 
-const validateCategoryReassign = (originalDocument: Transaction.PaymentDocument | Transaction.SplitDocument, newCategoryId: Category.IdType, splitIndex?: number) => {
+const validateCategoryReassign = (originalDocument: Transaction.PaymentDocument | Transaction.SplitDocument, newCategoryId: Category.Id, splitIndex?: number) => {
   const transactionId = getTransactionId(originalDocument);
 
   cy.log('Get transaction document', transactionId)
@@ -511,7 +511,7 @@ const validateCategoryReassign = (originalDocument: Transaction.PaymentDocument 
     });
 };
 
-const validateProjectReassign = (originalDocument: Transaction.PaymentDocument | Transaction.SplitDocument, newProjectId: Project.IdType, splitIndex?: number) => {
+const validateProjectReassign = (originalDocument: Transaction.PaymentDocument | Transaction.SplitDocument, newProjectId: Project.Id, splitIndex?: number) => {
   const transactionId = getTransactionId(originalDocument);
 
   cy.log('Get transaction document', transactionId)
@@ -531,7 +531,7 @@ const validateProjectReassign = (originalDocument: Transaction.PaymentDocument |
     });
 };
 
-const validateProductReassign = (originalDocument: Transaction.PaymentDocument | Transaction.SplitDocument, newProductId: Product.IdType, splitIndex?: number) => {
+const validateProductReassign = (originalDocument: Transaction.PaymentDocument | Transaction.SplitDocument, newProductId: Product.Id, splitIndex?: number) => {
   const transactionId = getTransactionId(originalDocument);
 
   cy.log('Get transaction document', transactionId)
@@ -551,7 +551,7 @@ const validateProductReassign = (originalDocument: Transaction.PaymentDocument |
     });
 };
 
-const validateRecipientReassign = (originalDocument: Transaction.PaymentDocument | Transaction.SplitDocument, newRecipientId: Recipient.IdType, splitIndex?: number) => {
+const validateRecipientReassign = (originalDocument: Transaction.PaymentDocument | Transaction.SplitDocument, newRecipientId: Recipient.Id, splitIndex?: number) => {
   const transactionId = getTransactionId(originalDocument);
 
   cy.log('Get transaction document', transactionId)

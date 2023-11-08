@@ -4,7 +4,7 @@ import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/
 import { IProductService } from '@household/shared/services/product-service';
 import { getProductId } from '@household/shared/common/utils';
 
-const requestCreateProduct = (idToken: string, product: Product.Request, categoryId: Category.IdType) => {
+const requestCreateProduct = (idToken: string, product: Product.Request, categoryId: Category.Id) => {
   return cy.request({
     body: product,
     method: 'POST',
@@ -17,7 +17,7 @@ const requestCreateProduct = (idToken: string, product: Product.Request, categor
   }) as Cypress.ChainableResponse;
 };
 
-const requestUpdateProduct = (idToken: string, productId: Product.IdType, product: Product.Request) => {
+const requestUpdateProduct = (idToken: string, productId: Product.Id, product: Product.Request) => {
   return cy.request({
     body: product,
     method: 'PUT',
@@ -30,7 +30,7 @@ const requestUpdateProduct = (idToken: string, productId: Product.IdType, produc
   }) as Cypress.ChainableResponse;
 };
 
-const requestDeleteProduct = (idToken: string, productId: Product.IdType) => {
+const requestDeleteProduct = (idToken: string, productId: Product.Id) => {
   return cy.request({
     method: 'DELETE',
     url: `/product/v1/products/${productId}`,
@@ -41,7 +41,7 @@ const requestDeleteProduct = (idToken: string, productId: Product.IdType) => {
   }) as Cypress.ChainableResponse;
 };
 
-const requestMergeProducts = (idToken: string, productId: Product.IdType, sourceProductIds: Product.IdType[]) => {
+const requestMergeProducts = (idToken: string, productId: Product.Id, sourceProductIds: Product.Id[]) => {
   return cy.request({
     body: sourceProductIds,
     method: 'POST',
@@ -53,7 +53,7 @@ const requestMergeProducts = (idToken: string, productId: Product.IdType, source
   }) as Cypress.ChainableResponse;
 };
 
-// const requestGetProduct = (idToken: string, productId: Product.IdType) => {
+// const requestGetProduct = (idToken: string, productId: Product.Id) => {
 //   return cy.request({
 //     method: 'GET',
 //     url: `/product/v1/products/${productId}`,
@@ -75,7 +75,7 @@ const requestMergeProducts = (idToken: string, productId: Product.IdType, source
 //   }) as Cypress.ChainableResponse;
 // };
 
-const validateProductDocument = (response: Product.Id, request: Product.Request) => {
+const validateProductDocument = (response: Product.ProductId, request: Product.Request) => {
   const id = response?.productId;
 
   cy.log('Get product document', id)
@@ -94,7 +94,7 @@ const validateProductDocument = (response: Product.Id, request: Product.Request)
 //   expect(response.description, 'description').to.equal(document.description);
 // };
 
-const validateProductDeleted = (productId: Product.IdType) => {
+const validateProductDeleted = (productId: Product.Id) => {
   cy.log('Get product document', productId)
     .getProductDocumentById(productId,)
     .should((document) => {

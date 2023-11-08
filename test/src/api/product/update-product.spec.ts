@@ -9,7 +9,7 @@ describe('PUT /product/v1/products/{productId}', () => {
   let request: Product.Request;
   let productDocument: Product.Document;
   let categoryDocument: Category.Document;
-  let categoryId: Category.IdType;
+  let categoryId: Category.Id;
 
   beforeEach(() => {
     request = {

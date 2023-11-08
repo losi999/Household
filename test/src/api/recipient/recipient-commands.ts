@@ -17,7 +17,7 @@ const requestCreateRecipient = (idToken: string, recipient: Recipient.Request) =
   }) as Cypress.ChainableResponse;
 };
 
-const requestUpdateRecipient = (idToken: string, recipientId: Recipient.IdType, recipient: Recipient.Request) => {
+const requestUpdateRecipient = (idToken: string, recipientId: Recipient.Id, recipient: Recipient.Request) => {
   return cy.request({
     body: recipient,
     method: 'PUT',
@@ -30,7 +30,7 @@ const requestUpdateRecipient = (idToken: string, recipientId: Recipient.IdType, 
   }) as Cypress.ChainableResponse;
 };
 
-const requestDeleteRecipient = (idToken: string, recipientId: Recipient.IdType) => {
+const requestDeleteRecipient = (idToken: string, recipientId: Recipient.Id) => {
   return cy.request({
     method: 'DELETE',
     url: `/recipient/v1/recipients/${recipientId}`,
@@ -41,7 +41,7 @@ const requestDeleteRecipient = (idToken: string, recipientId: Recipient.IdType) 
   }) as Cypress.ChainableResponse;
 };
 
-const requestGetRecipient = (idToken: string, recipientId: Recipient.IdType) => {
+const requestGetRecipient = (idToken: string, recipientId: Recipient.Id) => {
   return cy.request({
     method: 'GET',
     url: `/recipient/v1/recipients/${recipientId}`,
@@ -63,7 +63,7 @@ const requestGetRecipientList = (idToken: string) => {
   }) as Cypress.ChainableResponse;
 };
 
-const requestMergeRecipients = (idToken: string, recipientId: Recipient.IdType, sourceRecipientIds: Recipient.IdType[]) => {
+const requestMergeRecipients = (idToken: string, recipientId: Recipient.Id, sourceRecipientIds: Recipient.Id[]) => {
   return cy.request({
     body: sourceRecipientIds,
     method: 'POST',
@@ -75,7 +75,7 @@ const requestMergeRecipients = (idToken: string, recipientId: Recipient.IdType, 
   }) as Cypress.ChainableResponse;
 };
 
-const validateRecipientDocument = (response: Recipient.Id, request: Recipient.Request) => {
+const validateRecipientDocument = (response: Recipient.RecipientId, request: Recipient.Request) => {
   const id = response?.recipientId;
 
   cy.log('Get recipient document', id)
@@ -98,7 +98,7 @@ const validateRecipientListResponse = (responses: Recipient.Response[], document
   });
 };
 
-const validateRecipientDeleted = (recipientId: Recipient.IdType) => {
+const validateRecipientDeleted = (recipientId: Recipient.Id) => {
   cy.log('Get recipient document', recipientId)
     .getRecipientDocumentById(recipientId)
     .should((document) => {

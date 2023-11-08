@@ -16,7 +16,7 @@ export class ProductService {
 
   constructor(private httpClient: HttpClient) { }
 
-  createProduct(categoryId: Category.IdType, body: Product.Request): void {
+  createProduct(categoryId: Category.Id, body: Product.Request): void {
     this.httpClient.post(`${environment.apiUrl}${environment.productStage}v1/categories/${categoryId}/products`, body).subscribe({
       next: () => {
         this._refreshList.next();
@@ -27,7 +27,7 @@ export class ProductService {
     });
   }
 
-  updateProduct(productId: Product.IdType, body: Product.Request): void {
+  updateProduct(productId: Product.Id, body: Product.Request): void {
     this.httpClient.put(`${environment.apiUrl}${environment.productStage}v1/products/${productId}`, body).subscribe({
       next: () => {
         this._refreshList.next();
@@ -38,7 +38,7 @@ export class ProductService {
     });
   }
 
-  deleteProduct(productId: Product.IdType): void {
+  deleteProduct(productId: Product.Id): void {
     this.httpClient.delete(`${environment.apiUrl}${environment.productStage}v1/products/${productId}`).subscribe({
       next: () => {
         this._refreshList.next();
@@ -49,7 +49,7 @@ export class ProductService {
     });
   }
 
-  mergeProducts(productId: Product.IdType, body: Product.IdType[]): void {
+  mergeProducts(productId: Product.Id, body: Product.Id[]): void {
     this.httpClient.post(`${environment.apiUrl}${environment.productStage}v1/products/${productId}/merge`, body).subscribe({
       next: () => {
         this._refreshList.next();

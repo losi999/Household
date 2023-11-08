@@ -225,12 +225,18 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
             session,
           })
           .populate('parentCategory')
-          .populate('products')
+          .populate({
+            path: 'products',
+            options: {
+              sort: {
+                fullName: 1,
+              },
+            },
+          })
           .collation({
             locale: 'hu',
           })
           .sort('fullName')
-          .sort('products.brand')
           .lean<Category.Document[]>()
           .exec();
       });

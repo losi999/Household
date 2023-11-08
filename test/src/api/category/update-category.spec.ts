@@ -232,7 +232,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
         cy.authenticate(1)
           .requestUpdateCategory(createCategoryId(), {
             ...request,
-            parentCategoryId: 'not-mongo-id' as Category.IdType,
+            parentCategoryId: 'not-mongo-id' as Category.Id,
           })
           .expectBadRequestResponse()
           .expectWrongPropertyPattern('parentCategoryId', 'body');

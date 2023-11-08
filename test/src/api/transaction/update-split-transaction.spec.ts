@@ -70,7 +70,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
       unitOfMeasurement: 'kg',
     }, Cypress.env('EXPIRES_IN'), true);
 
-    const inventory: Transaction.InventoryItem<Product.Id> = {
+    const inventory: Transaction.InventoryItem<Product.ProductId> = {
       quantity: 1,
       productId: getProductId(productDocument),
     };

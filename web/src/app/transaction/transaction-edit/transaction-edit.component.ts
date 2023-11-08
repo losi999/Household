@@ -15,8 +15,8 @@ import { ProgressService } from 'src/app/shared/progress.service';
 })
 export class TransactionEditComponent implements OnInit {
   form: FormGroup;
-  transactionId: Transaction.IdType;
-  accountId: Account.IdType;
+  transactionId: Transaction.Id;
+  accountId: Account.Id;
   transaction: Transaction.Response;
   accounts: Account.Response[];
   transferAccounts: Account.Response[];
@@ -78,13 +78,13 @@ export class TransactionEditComponent implements OnInit {
     });
   }
 
-  getProducts(categoryId: Category.IdType): Product.Response[] {
+  getProducts(categoryId: Category.Id): Product.Response[] {
     return this.categories.find(c => c.categoryId === categoryId).products;
   }
 
   ngOnInit(): void {
-    this.accountId = this.activatedRoute.snapshot.paramMap.get('accountId') as Account.IdType;
-    this.transactionId = this.activatedRoute.snapshot.paramMap.get('transactionId') as Transaction.IdType;
+    this.accountId = this.activatedRoute.snapshot.paramMap.get('accountId') as Account.Id;
+    this.transactionId = this.activatedRoute.snapshot.paramMap.get('transactionId') as Transaction.Id;
     this.transaction = this.activatedRoute.snapshot.data.transaction;
     this.accounts = this.activatedRoute.snapshot.data.accounts;
     this.transferAccounts = this.activatedRoute.snapshot.data.accounts;
@@ -147,7 +147,7 @@ export class TransactionEditComponent implements OnInit {
   }
 
   onSubmit() {
-    const next = (response: Transaction.Id) => {
+    const next = (response: Transaction.TransactionId) => {
       this.router.navigate([
         '/accounts',
         this.account.accountId,

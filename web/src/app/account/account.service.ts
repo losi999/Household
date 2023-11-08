@@ -31,7 +31,7 @@ export class AccountService {
     });
   }
 
-  updateAccount(accountId: Account.IdType, body: Account.Request): void {
+  updateAccount(accountId: Account.Id, body: Account.Request): void {
     this.httpClient.put(`${environment.apiUrl}${environment.accountStage}v1/accounts/${accountId}`, body).subscribe({
       next: () => {
         this._refreshList.next();
@@ -42,7 +42,7 @@ export class AccountService {
     });
   }
 
-  deleteAccount(accountId: Account.IdType): void {
+  deleteAccount(accountId: Account.Id): void {
     this.httpClient.delete(`${environment.apiUrl}${environment.accountStage}v1/accounts/${accountId}`).subscribe({
       next: () => {
         this._refreshList.next();

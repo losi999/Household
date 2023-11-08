@@ -12,7 +12,7 @@ export class TransactionService {
 
   constructor(private httpClient: HttpClient) { }
 
-  listTransactionsByAccountId(accountId: Account.IdType, pageNumber = 1, pageSize: number = transactionsPageSize): Observable<Transaction.Response[]> {
+  listTransactionsByAccountId(accountId: Account.Id, pageNumber = 1, pageSize: number = transactionsPageSize): Observable<Transaction.Response[]> {
     return this.httpClient.get<Transaction.Response[]>(`${environment.apiUrl}${environment.transactionStage}v1/accounts/${accountId}/transactions`, {
       params: {
         pageSize: `${pageSize}`,
@@ -21,35 +21,35 @@ export class TransactionService {
     });
   }
 
-  getTransactionById(transactionId: Transaction.IdType, accountId: Account.IdType): Observable<Transaction.Response> {
+  getTransactionById(transactionId: Transaction.Id, accountId: Account.Id): Observable<Transaction.Response> {
     return this.httpClient.get<Transaction.Response>(`${environment.apiUrl}${environment.transactionStage}v1/accounts/${accountId}/transactions/${transactionId}`);
   }
 
-  createPaymentTransaction(body: Transaction.PaymentRequest): Observable<Transaction.Id> {
-    return this.httpClient.post<Transaction.Id>(`${environment.apiUrl}${environment.transactionStage}v1/transactions/payment`, body);
+  createPaymentTransaction(body: Transaction.PaymentRequest): Observable<Transaction.TransactionId> {
+    return this.httpClient.post<Transaction.TransactionId>(`${environment.apiUrl}${environment.transactionStage}v1/transactions/payment`, body);
   }
 
-  createSplitTransaction(body: Transaction.SplitRequest): Observable<Transaction.Id> {
-    return this.httpClient.post<Transaction.Id>(`${environment.apiUrl}${environment.transactionStage}v1/transactions/split`, body);
+  createSplitTransaction(body: Transaction.SplitRequest): Observable<Transaction.TransactionId> {
+    return this.httpClient.post<Transaction.TransactionId>(`${environment.apiUrl}${environment.transactionStage}v1/transactions/split`, body);
   }
 
-  createTransferTransaction(body: Transaction.TransferRequest): Observable<Transaction.Id> {
-    return this.httpClient.post<Transaction.Id>(`${environment.apiUrl}${environment.transactionStage}v1/transactions/transfer`, body);
+  createTransferTransaction(body: Transaction.TransferRequest): Observable<Transaction.TransactionId> {
+    return this.httpClient.post<Transaction.TransactionId>(`${environment.apiUrl}${environment.transactionStage}v1/transactions/transfer`, body);
   }
 
-  updatePaymentTransaction(transactionId: Transaction.IdType, body: Transaction.PaymentRequest): Observable<Transaction.Id> {
-    return this.httpClient.put<Transaction.Id>(`${environment.apiUrl}${environment.transactionStage}v1/transactions/${transactionId}/payment`, body);
+  updatePaymentTransaction(transactionId: Transaction.Id, body: Transaction.PaymentRequest): Observable<Transaction.TransactionId> {
+    return this.httpClient.put<Transaction.TransactionId>(`${environment.apiUrl}${environment.transactionStage}v1/transactions/${transactionId}/payment`, body);
   }
 
-  updateSplitTransaction(transactionId: Transaction.IdType, body: Transaction.SplitRequest): Observable<Transaction.Id> {
-    return this.httpClient.put<Transaction.Id>(`${environment.apiUrl}${environment.transactionStage}v1/transactions/${transactionId}/split`, body);
+  updateSplitTransaction(transactionId: Transaction.Id, body: Transaction.SplitRequest): Observable<Transaction.TransactionId> {
+    return this.httpClient.put<Transaction.TransactionId>(`${environment.apiUrl}${environment.transactionStage}v1/transactions/${transactionId}/split`, body);
   }
 
-  updateTransferTransaction(transactionId: Transaction.IdType, body: Transaction.TransferRequest): Observable<Transaction.Id> {
-    return this.httpClient.put<Transaction.Id>(`${environment.apiUrl}${environment.transactionStage}v1/transactions/${transactionId}/transfer`, body);
+  updateTransferTransaction(transactionId: Transaction.Id, body: Transaction.TransferRequest): Observable<Transaction.TransactionId> {
+    return this.httpClient.put<Transaction.TransactionId>(`${environment.apiUrl}${environment.transactionStage}v1/transactions/${transactionId}/transfer`, body);
   }
 
-  deleteTransaction(transactionId: Transaction.IdType): Observable<unknown> {
+  deleteTransaction(transactionId: Transaction.Id): Observable<unknown> {
     return this.httpClient.delete(`${environment.apiUrl}${environment.transactionStage}v1/transactions/${transactionId}`);
   }
 }

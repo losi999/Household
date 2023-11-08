@@ -1,32 +1,32 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "module": "CommonJS",
+    "module": "esnext",
     "esModuleInterop": true,
     "target": "es2017",
     "lib": [
       "es2017",
       "es2019"
     ],
+    "types": [
+      "node"
+    ],
     "noImplicitAny": true,
-    "noUnusedLocals": false,
     "sourceMap": false,
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "outDir": "output",
     "baseUrl": ".",
     "paths": {
-      "@household/api/*": [
-        "api/src/*"
+      "@household/mongoose-playground/*": [
+        "src/*"
       ],
       "@household/shared/*": [
-        "shared/src/*"
+        "../../shared/src/*"
       ]
     }
   },
   "include": [
-    "api/src",
-    "shared/src",
-    "localhost"
+    "src"
   ]
 }

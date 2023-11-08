@@ -31,7 +31,7 @@ export class RecipientService {
     });
   }
 
-  updateRecipient(recipientId: Recipient.IdType, body: Recipient.Request): void {
+  updateRecipient(recipientId: Recipient.Id, body: Recipient.Request): void {
     this.httpClient.put(`${environment.apiUrl}${environment.recipientStage}v1/recipients/${recipientId}`, body).subscribe({
       next: () => {
         this._refreshList.next();
@@ -42,7 +42,7 @@ export class RecipientService {
     });
   }
 
-  deleteRecipient(recipientId: Recipient.IdType): void {
+  deleteRecipient(recipientId: Recipient.Id): void {
     this.httpClient.delete(`${environment.apiUrl}${environment.recipientStage}v1/recipients/${recipientId}`).subscribe({
       next: () => {
         this._refreshList.next();
@@ -53,7 +53,7 @@ export class RecipientService {
     });
   }
 
-  mergeRecipients(recipientId: Recipient.IdType, body: Recipient.IdType[]): void {
+  mergeRecipients(recipientId: Recipient.Id, body: Recipient.Id[]): void {
     this.httpClient.post(`${environment.apiUrl}${environment.recipientStage}v1/recipients/${recipientId}/merge`, body).subscribe({
       next: () => {
         this._refreshList.next();

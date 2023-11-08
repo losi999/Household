@@ -35,7 +35,7 @@ export class CategoryService {
     });
   }
 
-  updateCategory(categoryId: Category.IdType, body: Category.Request): void {
+  updateCategory(categoryId: Category.Id, body: Category.Request): void {
     this.httpClient.put(`${environment.apiUrl}${environment.categoryStage}v1/categories/${categoryId}`, body).subscribe({
       next: () => {
         this._refreshList.next();
@@ -46,7 +46,7 @@ export class CategoryService {
     });
   }
 
-  deleteCategory(categoryId: Category.IdType): void {
+  deleteCategory(categoryId: Category.Id): void {
     this.httpClient.delete(`${environment.apiUrl}${environment.categoryStage}v1/categories/${categoryId}`).subscribe({
       next: () => {
         this._refreshList.next();
@@ -57,7 +57,7 @@ export class CategoryService {
     });
   }
 
-  mergeCategories(categoryId: Category.IdType, body: Category.IdType[]): void {
+  mergeCategories(categoryId: Category.Id, body: Category.Id[]): void {
     this.httpClient.post(`${environment.apiUrl}${environment.categoryStage}v1/categories/${categoryId}/merge`, body).subscribe({
       next: () => {
         this._refreshList.next();

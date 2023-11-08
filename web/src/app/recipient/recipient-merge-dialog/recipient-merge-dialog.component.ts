@@ -4,7 +4,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Recipient } from '@household/shared/types/types';
 
 export type RecipientMergeDialogData = Recipient.Response[];
-export type RecipientMergeDialogResult = Recipient.IdType[];
+export type RecipientMergeDialogResult = Recipient.Id[];
 
 @Component({
   selector: 'app-recipient-merge-dialog',

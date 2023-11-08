@@ -10,7 +10,7 @@ import { v4 as uuid } from 'uuid';
 describe('DELETE /product/v1/products/{productId}', () => {
   let productDocument: Product.Document;
   let categoryDocument: Category.Document;
-  let categoryId: Category.IdType;
+  let categoryId: Category.Id;
 
   beforeEach(() => {
     productDocument = productDocumentConverter.create({

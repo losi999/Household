@@ -4,7 +4,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Category } from '@household/shared/types/types';
 
 export type CategoryMergeDialogData = Category.Response[];
-export type CategoryMergeDialogResult = Category.IdType[];
+export type CategoryMergeDialogResult = Category.Id[];
 
 @Component({
   selector: 'app-category-merge-dialog',

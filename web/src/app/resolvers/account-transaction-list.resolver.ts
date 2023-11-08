@@ -14,6 +14,6 @@ export class AccountTransactionListResolver implements Resolve<Transaction.Respo
   constructor(private transactionService: TransactionService) { }
 
   resolve(route: ActivatedRouteSnapshot): Observable<Transaction.Response[]> {
-    return this.transactionService.listTransactionsByAccountId(route.paramMap.get('accountId') as Account.IdType);
+    return this.transactionService.listTransactionsByAccountId(route.paramMap.get('accountId') as Account.Id);
   }
 }

@@ -17,7 +17,7 @@ const requestCreateProject = (idToken: string, project: Project.Request) => {
   }) as Cypress.ChainableResponse;
 };
 
-const requestUpdateProject = (idToken: string, projectId: Project.IdType, project: Project.Request) => {
+const requestUpdateProject = (idToken: string, projectId: Project.Id, project: Project.Request) => {
   return cy.request({
     body: project,
     method: 'PUT',
@@ -30,7 +30,7 @@ const requestUpdateProject = (idToken: string, projectId: Project.IdType, projec
   }) as Cypress.ChainableResponse;
 };
 
-const requestDeleteProject = (idToken: string, projectId: Project.IdType) => {
+const requestDeleteProject = (idToken: string, projectId: Project.Id) => {
   return cy.request({
     method: 'DELETE',
     url: `/project/v1/projects/${projectId}`,
@@ -41,7 +41,7 @@ const requestDeleteProject = (idToken: string, projectId: Project.IdType) => {
   }) as Cypress.ChainableResponse;
 };
 
-const requestGetProject = (idToken: string, projectId: Project.IdType) => {
+const requestGetProject = (idToken: string, projectId: Project.Id) => {
   return cy.request({
     method: 'GET',
     url: `/project/v1/projects/${projectId}`,
@@ -63,7 +63,7 @@ const requestGetProjectList = (idToken: string) => {
   }) as Cypress.ChainableResponse;
 };
 
-const requestMergeProjects = (idToken: string, projectId: Project.IdType, sourceProjectIds: Project.IdType[]) => {
+const requestMergeProjects = (idToken: string, projectId: Project.Id, sourceProjectIds: Project.Id[]) => {
   return cy.request({
     body: sourceProjectIds,
     method: 'POST',
@@ -75,7 +75,7 @@ const requestMergeProjects = (idToken: string, projectId: Project.IdType, source
   }) as Cypress.ChainableResponse;
 };
 
-const validateProjectDocument = (response: Project.Id, request: Project.Request) => {
+const validateProjectDocument = (response: Project.ProjectId, request: Project.Request) => {
   const id = response?.projectId;
 
   cy.log('Get project document', id)
@@ -100,7 +100,7 @@ const validateProjectListResponse = (responses: Project.Response[], documents: P
   });
 };
 
-const validateProjectDeleted = (projectId: Project.IdType) => {
+const validateProjectDeleted = (projectId: Project.Id) => {
   cy.log('Get project document', projectId)
     .getProjectDocumentById(projectId)
     .should((document) => {

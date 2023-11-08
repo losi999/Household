@@ -31,7 +31,7 @@ export class ProjectService {
     });
   }
 
-  updateProject(projectId: Project.IdType, body: Project.Request): void {
+  updateProject(projectId: Project.Id, body: Project.Request): void {
     this.httpClient.put(`${environment.apiUrl}${environment.projectStage}v1/projects/${projectId}`, body).subscribe({
       next: () => {
         this._refreshList.next();
@@ -42,7 +42,7 @@ export class ProjectService {
     });
   }
 
-  deleteProject(projectId: Project.IdType): void {
+  deleteProject(projectId: Project.Id): void {
     this.httpClient.delete(`${environment.apiUrl}${environment.projectStage}v1/projects/${projectId}`).subscribe({
       next: () => {
         this._refreshList.next();
@@ -53,7 +53,7 @@ export class ProjectService {
     });
   }
 
-  mergeProjects(projectId: Project.IdType, body: Project.IdType[]): void {
+  mergeProjects(projectId: Project.Id, body: Project.Id[]): void {
     this.httpClient.post(`${environment.apiUrl}${environment.projectStage}v1/projects/${projectId}/merge`, body).subscribe({
       next: () => {
         this._refreshList.next();
