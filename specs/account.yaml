@@ -1,0 +1,56 @@
+openapi: "3.0.0"
+info:
+  title: Account API
+  version: 1.0.0
+components:
+  schemas:
+    AccountId:
+      type: object
+      required:
+        - accountId
+      properties:
+        accountId:
+          type: string
+    IsOpen:
+      type: object
+      required:
+        - isOpen
+      properties:
+        isOpen:
+          type: boolean
+    Base:
+      type: object
+      required:
+        - name
+        - currency
+        - accountType
+      properties:
+        name:
+          type: string
+          minLength: 1
+        currency:
+          type: string
+          minLength: 1
+        accountType:
+          type: string
+          enum:
+            - bankAccount
+            - cash
+            - creditCard
+            - loan
+            - cafeteria
+    Balance:
+      type: object
+      required:
+        - balance
+      properties:
+        balance:
+          type: number
+    Response:
+      allOf:
+        - $ref: "#/components/schemas/AccountId"
+        - $ref: "#/components/schemas/IsOpen"
+        - $ref: "#/components/schemas/Base"
+        - $ref: "#/components/schemas/Balance"
+    Request:
+      $ref: "#/components/schemas/Base"

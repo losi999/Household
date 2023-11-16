@@ -7,16 +7,10 @@ export namespace Internal {
     _id: Types.ObjectId;
   };
 
-  export type ExpiresAt = {
+  export type Timestamps = {
     expiresAt: Date;
-  };
-
-  export type CreatedAt = {
-    createdAt: Date;
-  };
-
-  export type UpdatedAt = {
-    updatedAt: Date;
+    createdAt?: Date;
+    updatedAt?: Date;
   };
 }
 
@@ -33,17 +27,13 @@ export namespace Project {
   };
 
   export type Document = Internal.Id
-  & Internal.ExpiresAt
-  & Partial<Internal.CreatedAt>
-  & Partial<Internal.UpdatedAt>
+  & Internal.Timestamps
   & Base;
 
   export type Response = Base
   & ProjectId
-  & Remove<Internal.CreatedAt>
-  & Remove<Internal.UpdatedAt>
   & Remove<Internal.Id>
-  & Remove<Internal.ExpiresAt>;
+  & Remove<Internal.Timestamps>;
 
   export type Request = Base;
 }
@@ -55,24 +45,20 @@ export namespace Recipient {
     recipientId: Id;
   };
 
-  type Base = {
+  type Name = {
     name: string;
   };
 
   export type Document = Internal.Id
-  & Internal.ExpiresAt
-  & Partial<Internal.CreatedAt>
-  & Partial<Internal.UpdatedAt>
-  & Base;
+  & Internal.Timestamps
+  & Name;
 
-  export type Response = Base
+  export type Response = Name
   & RecipientId
-  & Remove<Internal.CreatedAt>
-  & Remove<Internal.UpdatedAt>
   & Remove<Internal.Id>
-  & Remove<Internal.ExpiresAt>;
+  & Remove<Internal.Timestamps>;
 
-  export type Request = Base;
+  export type Request = Name;
 }
 
 export namespace Account {
@@ -86,12 +72,10 @@ export namespace Account {
     isOpen: boolean;
   };
 
-  export type AccountType = 'bankAccount' | 'cash' | 'creditCard' | 'loan' | 'cafeteria';
-
   type Base = {
     name: string;
     currency: string;
-    accountType: AccountType;
+    accountType: 'bankAccount' | 'cash' | 'creditCard' | 'loan' | 'cafeteria';
   };
 
   type Balance = {
@@ -99,9 +83,7 @@ export namespace Account {
   };
 
   export type Document = Internal.Id
-  & Internal.ExpiresAt
-  & Partial<Internal.CreatedAt>
-  & Partial<Internal.UpdatedAt>
+  & Internal.Timestamps
   & Base
   & IsOpen
   & Partial<Balance>;
@@ -110,10 +92,8 @@ export namespace Account {
   & IsOpen
   & Balance
   & AccountId
-  & Remove<Internal.CreatedAt>
-  & Remove<Internal.UpdatedAt>
   & Remove<Internal.Id>
-  & Remove<Internal.ExpiresAt>;
+  & Remove<Internal.Timestamps>;
 
   export type Request = Base;
 }
@@ -141,7 +121,7 @@ export namespace Category {
     categoryType: typeof categoryTypes[number];
   };
 
-  type Base = CategoryType & {
+  type Name = {
     name: string;
   };
 
@@ -150,29 +130,28 @@ export namespace Category {
   };
 
   export type Document = Internal.Id
-  & Internal.ExpiresAt
-  & Partial<Internal.CreatedAt>
-  & Partial<Internal.UpdatedAt>
-  & Base
+  & Internal.Timestamps
+  & CategoryType
+  & Name
   & FullName
   & Remove<ParentCategoryId>
   & ParentCategory
   & Products<Product.Document>;
 
-  export type Response = Base
+  export type Response = CategoryType
+  & Name
   & FullName
   & CategoryId
   & Products<Product.Response>
-  & Remove<Internal.CreatedAt>
-  & Remove<Internal.UpdatedAt>
   & Remove<Internal.Id>
-  & Remove<Internal.ExpiresAt>
+  & Remove<Internal.Timestamps>
   & Remove<ParentCategoryId>
   & {
-    parentCategory: Category.Response & Remove<ParentCategory>;
+    parentCategory: Response & Record<'parentCategory', undefined>;
   };
 
-  export type Request = Base
+  export type Request = CategoryType
+  & Name
   & ParentCategoryId;
 }
 
@@ -194,19 +173,15 @@ export namespace Product {
   };
 
   export type Document = Internal.Id
-  & Internal.ExpiresAt
-  & Partial<Internal.CreatedAt>
-  & Partial<Internal.UpdatedAt>
+  & Internal.Timestamps
   & Base
   & FullName;
 
   export type Response = Base
   & ProductId
   & FullName
-  & Remove<Internal.CreatedAt>
-  & Remove<Internal.UpdatedAt>
   & Remove<Internal.Id>
-  & Remove<Internal.ExpiresAt>;
+  & Remove<Internal.Timestamps>;
 
   export type Request = Base;
 }
@@ -231,24 +206,19 @@ export namespace Transaction {
     description: string;
   };
 
-  export type Quantity = {
-    quantity: number;
-  };
-
-  export type InventoryItem<P> = Quantity & P;
-
-  export type Inventory<P> = {
-    inventory: InventoryItem<P>;
-  };
-
-  export type InvoiceItem<D extends string | Date> = {
-    invoiceNumber: string;
-    billingStartDate: D;
-    billingEndDate: D;
+  export type Inventory<P extends Product.Document | Product.Response | Product.ProductId | Product.Request> = {
+    inventory: {
+      quantity: number;
+      product: P;
+    };
   };
 
   export type Invoice<D extends string | Date> = {
-    invoice: InvoiceItem<D>;
+    invoice: {
+      invoiceNumber: string;
+      billingStartDate: D;
+      billingEndDate: D;
+    };
   };
 
   export type TransferAccountId = {
@@ -259,11 +229,11 @@ export namespace Transaction {
     transferAmount: number;
   };
 
-  export type Category<C extends Category.Document | Category.Response> = {
+  export type Category<C extends Category.Document | Category.Response | Category.CategoryId | Category.Request> = {
     category: C;
   };
 
-  export type Project<P extends Project.Document | Project.Response> = {
+  export type Project<P extends Project.Document | Project.Response | Project.ProjectId | Project.Request> = {
     project: P;
   };
 
@@ -271,7 +241,7 @@ export namespace Transaction {
     account: A;
   };
 
-  export type Recipient<R extends Recipient.Document | Recipient.Response> = {
+  export type Recipient<R extends Recipient.Document | Recipient.Response | Recipient.RecipientId | Recipient.Request> = {
     recipient: R;
   };
 
@@ -279,17 +249,17 @@ export namespace Transaction {
     transferAccount: A;
   };
 
-  export type Product<P extends Product.Document | Product.Response> = {
-    product: P;
-  };
+  // export type Product<P extends Product.Document | Product.Response> = {
+  //   product: P;
+  // };
 
   export type PaymentRequest = Account.AccountId
-  & Category.CategoryId
-  & Project.ProjectId
-  & Recipient.RecipientId
+  & Category<Category.CategoryId | Category.Request>
+  & Project<Project.ProjectId | Project.Request>
+  & Recipient<Recipient.RecipientId | Recipient.Request>
   & IssuedAt<string>
   & Invoice<string>
-  & Inventory<Product.ProductId>
+  & Inventory<Product.ProductId | Product.Request>
   & Base;
 
   export type TransferRequest = Account.AccountId
@@ -298,14 +268,14 @@ export namespace Transaction {
   & TransferAccountId
   & TransferAmount;
 
-  export type SplitRequestItem = Project.ProjectId
-  & Category.CategoryId
+  export type SplitRequestItem = Category<Category.CategoryId | Category.Request>
+  & Project<Project.ProjectId | Project.Request>
   & Invoice<string>
-  & Inventory<Product.ProductId>
+  & Inventory<Product.ProductId | Product.Request>
   & Base;
 
   export type SplitRequest = Account.AccountId
-  & Recipient.RecipientId
+  & Recipient<Recipient.RecipientId | Recipient.Request>
   & IssuedAt<string>
   & Base
   & {
@@ -313,27 +283,20 @@ export namespace Transaction {
   };
 
   export type PaymentDocument = Internal.Id
-  & Internal.ExpiresAt
-  & Partial<Internal.CreatedAt>
-  & Partial<Internal.UpdatedAt>
+  & Internal.Timestamps
   & TransactionType<'payment'>
   & Remove<Account.AccountId>
   & Account<Account.Document>
-  & Remove<Category.CategoryId>
   & Category<Category.Document>
-  & Remove<Project.ProjectId>
   & Project<Project.Document>
-  & Remove<Recipient.RecipientId>
   & Recipient<Recipient.Document>
   & IssuedAt<Date>
   & Invoice<Date>
-  & Inventory<Product<Product.Document>>
+  & Inventory<Product.Document>
   & Base;
 
   export type TransferDocument = Internal.Id
-  & Internal.ExpiresAt
-  & Partial<Internal.CreatedAt>
-  & Partial<Internal.UpdatedAt>
+  & Internal.Timestamps
   & TransactionType<'transfer'>
   & Remove<Account.AccountId>
   & Account<Account.Document>
@@ -346,17 +309,14 @@ export namespace Transaction {
   export type SplitDocumentItem = Project<Project.Document>
   & Category<Category.Document>
   & Invoice<Date>
-  & Inventory<Product<Product.Document>>
+  & Inventory<Product.Document>
   & Base;
 
   export type SplitDocument = Internal.Id
-  & Internal.ExpiresAt
-  & Partial<Internal.CreatedAt>
-  & Partial<Internal.UpdatedAt>
+  & Internal.Timestamps
   & TransactionType<'split'>
   & Remove<Account.AccountId>
   & Account<Account.Document>
-  & Remove<Recipient.RecipientId>
   & Recipient<Recipient.Document>
   & IssuedAt<Date>
   & Base
@@ -370,11 +330,9 @@ export namespace Transaction {
   & Base
   & IssuedAt<string>
   & Invoice<string>
-  & Inventory<Product<Product.Response>>
-  & Remove<Internal.CreatedAt>
-  & Remove<Internal.UpdatedAt>
+  & Inventory<Product.Response>
   & Remove<Internal.Id>
-  & Remove<Internal.ExpiresAt>
+  & Remove<Internal.Timestamps>
   & TransactionType<'payment'>
   & Account<Account.Response>
   & Category<Category.Response>
@@ -384,10 +342,8 @@ export namespace Transaction {
   export type TransferResponse = TransactionId
   & Base
   & IssuedAt<string>
-  & Remove<Internal.CreatedAt>
-  & Remove<Internal.UpdatedAt>
   & Remove<Internal.Id>
-  & Remove<Internal.ExpiresAt>
+  & Remove<Internal.Timestamps>
   & TransactionType<'transfer'>
   & Account<Account.Response>
   & TransferAccount<Account.Response>
@@ -395,17 +351,15 @@ export namespace Transaction {
 
   export type SplitResponseItem = Base
   & Invoice<string>
-  & Inventory<Product<Product.Response>>
+  & Inventory<Product.Response>
   & Project<Project.Response>
   & Category<Category.Response>;
 
   export type SplitResponse = TransactionId
   & Base
   & IssuedAt<string>
-  & Remove<Internal.CreatedAt>
-  & Remove<Internal.UpdatedAt>
   & Remove<Internal.Id>
-  & Remove<Internal.ExpiresAt>
+  & Remove<Internal.Timestamps>
   & TransactionType<'split'>
   & Account<Account.Response>
   & Recipient<Recipient.Response>
@@ -478,7 +432,7 @@ export namespace Auth {
 }
 
 export namespace Common {
-  export type Pagination<P> = {
+  export type Pagination<P extends string | number> = {
     pageSize: P;
     pageNumber: P;
   };

@@ -83,7 +83,7 @@ export const createProductDocument: DataFactoryFunction<Product.Document> = (doc
   };
 };
 
-export const createInventoryDocument: DataFactoryFunction<Transaction.InventoryItem<Transaction.Product<Product.Document>>> = (doc) => {
+export const createInventoryDocument: DataFactoryFunction<Transaction.Inventory<Product.Document>['inventory']> = (doc) => {
   return {
     product: createProductDocument(),
     quantity: 100,
@@ -91,7 +91,7 @@ export const createInventoryDocument: DataFactoryFunction<Transaction.InventoryI
   };
 };
 
-export const createInvoiceDocument: DataFactoryFunction<Transaction.InvoiceItem<Date>> = (doc) => {
+export const createInvoiceDocument: DataFactoryFunction<Transaction.Invoice<Date>['invoice']> = (doc) => {
   return {
     invoiceNumber: 'inv123',
     billingEndDate: new Date(2022, 3, 10),
@@ -208,15 +208,17 @@ export const createProductRequest: DataFactoryFunction<Product.Request> = (req) 
   };
 };
 
-export const createInventoryRequest: DataFactoryFunction<Transaction.InventoryItem<Product.ProductId>> = (req) => {
+export const createInventoryRequest: DataFactoryFunction<Transaction.Inventory<Product.ProductId>['inventory']> = (req) => {
   return {
-    productId: createProductId(),
+    product: {
+      productId: createProductId(),
+    },
     quantity: 100,
     ...req,
   };
 };
 
-export const createInvoiceRequest: DataFactoryFunction<Transaction.InvoiceItem<string>> = (req) => {
+export const createInvoiceRequest: DataFactoryFunction<Transaction.Invoice<string>['invoice']> = (req) => {
   return {
     invoiceNumber: 'inv123',
     billingEndDate: '2022-03-21',
@@ -225,20 +227,20 @@ export const createInvoiceRequest: DataFactoryFunction<Transaction.InvoiceItem<s
   };
 };
 
-export const createPaymentTransactionRequest: DataFactoryFunction<Transaction.PaymentRequest> = (req) => {
-  return {
-    amount: 100,
-    description: 'transaction description',
-    inventory: createInventoryRequest(),
-    invoice: createInvoiceRequest(),
-    issuedAt: new Date().toISOString(),
-    accountId: createAccountId(),
-    categoryId: createCategoryId(),
-    projectId: createProjectId(),
-    recipientId: createRecipientId(),
-    ...req,
-  };
-};
+// export const createPaymentTransactionRequest: DataFactoryFunction<Transaction.PaymentRequest> = (req) => {
+//   return {
+//     amount: 100,
+//     description: 'transaction description',
+//     inventory: createInventoryRequest(),
+//     invoice: createInvoiceRequest(),
+//     issuedAt: new Date().toISOString(),
+//     accountId: createAccountId(),
+//     categoryId: createCategoryId(),
+//     projectId: createProjectId(),
+//     recipientId: createRecipientId(),
+//     ...req,
+//   };
+// };
 
 export const createSplitRequestIem: DataFactoryFunction<Transaction.SplitRequestItem> = (req) => {
   return {
@@ -356,7 +358,7 @@ export const createProductResponse: DataFactoryFunction<Product.Response> = (res
   };
 };
 
-export const createInventoryResponse: DataFactoryFunction<Transaction.InventoryItem<Transaction.Product<Product.Response>>> = (resp) => {
+export const createInventoryResponse: DataFactoryFunction<Transaction.Inventory<Product.Response>['inventory']> = (resp) => {
   return {
     product: createProductResponse(),
     quantity: 100,
@@ -364,7 +366,7 @@ export const createInventoryResponse: DataFactoryFunction<Transaction.InventoryI
   };
 };
 
-export const createInvoiceResponse: DataFactoryFunction<Transaction.InvoiceItem<string>> = (resp) => {
+export const createInvoiceResponse: DataFactoryFunction<Transaction.Invoice<string>['invoice']> = (resp) => {
   return {
     invoiceNumber: 'inv123',
     billingEndDate: '2022-03-10',

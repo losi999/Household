@@ -9,7 +9,7 @@ type JSONSchemaType<T> =
             'object';
 
 export type StrictJSONSchema7<T> = Omit<JSONSchema7, 'properties' | 'type' | 'required' | 'items'> & {
-  type: JSONSchemaType<T> | [JSONSchemaType<T>, 'null'];
+  type?: JSONSchemaType<T> | [JSONSchemaType<T>, 'null'];
   required?: JSONSchemaType<T> extends 'object' ? (keyof T)[] : never;
   properties?: JSONSchemaType<T> extends 'object' ? { [prop in keyof T]?: StrictJSONSchema7<T[prop]> } : never;
   items?: T extends any[] ? StrictJSONSchema7<T[0]> : never;

@@ -6,8 +6,11 @@ import { default as base } from '@household/shared/schemas/partials/transaction-
 import { default as issuedAt } from '@household/shared/schemas/partials/transaction-issued-at';
 import { default as accountId } from '@household/shared/schemas/account-id';
 import { default as categoryId } from '@household/shared/schemas/category-id';
+import { default as categoryRequest } from '@household/shared/schemas/category-request';
 import { default as projectId } from '@household/shared/schemas/project-id';
+import { default as projectRequest } from '@household/shared/schemas/project-request';
 import { default as recipientId } from '@household/shared/schemas/recipient-id';
+import { default as recipientRequest } from '@household/shared/schemas/recipient-request';
 
 const schema: StrictJSONSchema7<Transaction.PaymentRequest> = {
   type: 'object',
@@ -18,14 +21,29 @@ const schema: StrictJSONSchema7<Transaction.PaymentRequest> = {
     ...accountId.required,
   ],
   properties: {
-    ...base.properties,
-    ...issuedAt.properties,
-    inventory,
-    invoice,
     ...accountId.properties,
-    ...categoryId.properties,
-    ...recipientId.properties,
-    ...projectId.properties,
+    category: {
+      oneOf: [
+        categoryId,
+        categoryRequest,
+      ],
+    },
+    project: {
+      oneOf: [
+        projectId,
+        projectRequest,
+      ],
+    },
+    recipient: {
+      oneOf: [
+        recipientId,
+        recipientRequest,
+      ],
+    },
+    ...issuedAt.properties,
+    ...invoice.properties,
+    ...inventory.properties,
+    ...base.properties,
   },
 };
 

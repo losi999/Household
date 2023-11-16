@@ -83,11 +83,11 @@ export const transactionDocumentConverterFactory = (
     } : undefined;
   };
 
-  const toResponseInventory = (doc: Transaction.InventoryItem<Transaction.Product<Product.Document>>): Transaction.InventoryItem<Transaction.Product<Product.Response>> => {
-    return doc ? {
+  const toResponseInventory = (doc: Transaction.Inventory<Product.Document>): Transaction.Inventory<Product.Response> => {
+    return; /*doc ? {
       quantity: doc.quantity,
       product: productDocumentConverter.toResponse(doc.product),
-    } : undefined;
+    } : */undefined;
   };
 
   const toDocumentInventory = (req: Transaction.Quantity, product: Product.Document): Transaction.InventoryItem<Transaction.Product<Product.Document>> => {
@@ -111,7 +111,7 @@ export const transactionDocumentConverterFactory = (
       recipient: doc.recipient ? recipientDocumentConverter.toResponse(doc.recipient) : undefined,
       project: doc.project ? projectDocumentConverter.toResponse(doc.project) : undefined,
       invoice: toResponseInvoice(doc.invoice),
-      inventory: toResponseInventory(doc.inventory),
+      inventory: undefined, //toResponseInventory(doc.inventory),
     };
   };
 

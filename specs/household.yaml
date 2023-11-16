@@ -1,0 +1,482 @@
+openapi: "3.0.2"
+info:
+  title: Household API
+  version: 1.0.0
+paths:
+  /account/v1/accounts:
+    get:
+      responses:
+        200:
+          description: List of accounts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "account.yaml#/components/schemas/Response"
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "account.yaml#/components/schemas/Request"
+      responses:
+        201:
+          description: Account id
+          content:
+            application/json:
+              schema:
+                $ref: "account.yaml#/components/schemas/AccountId"
+  /account/v1/accounts/{accountId}:
+    parameters:
+      - $ref: "#/components/parameters/Path.AccountId"
+    get:
+      responses:
+        200:
+          description: Account details
+          content:
+            application/json:
+              schema:
+                $ref: "account.yaml#/components/schemas/Response"
+    put:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "account.yaml#/components/schemas/Request"
+      responses:
+        200:
+          description: Account id
+          content:
+            application/json:
+              schema:
+                $ref: "account.yaml#/components/schemas/AccountId"
+    delete:
+      responses:
+        204:
+          description: Account deleted
+  /category/v1/categories:
+    get:
+      responses:
+        200:
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "category.yaml#/components/schemas/Response"
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "category.yaml#/components/schemas/Request"
+      responses:
+        201:
+          description: Category id
+          content:
+            application/json:
+              schema:
+                $ref: "category.yaml#/components/schemas/CategoryId"
+  /category/v1/categories/{categoryId}:
+    parameters:
+      - $ref: "#/components/parameters/Path.CategoryId"
+    get:
+      responses:
+        200:
+          description: Category details
+          content:
+            application/json:
+              schema:
+                $ref: "category.yaml#/components/schemas/Response"
+    put:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "category.yaml#/components/schemas/Request"
+      responses:
+        200:
+          description: Category id
+          content:
+            application/json:
+              schema:
+                $ref: "category.yaml#/components/schemas/CategoryId"
+    delete:
+      responses:
+        204:
+          description: Category deleted
+  /category/v1/categories/{categoryId}/merge:
+    parameters:
+      - $ref: "#/components/parameters/Path.CategoryId"
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+      responses:
+        201:
+          description: Category id
+          content:
+            application/json:
+              schema:
+                $ref: "category.yaml#/components/schemas/CategoryId"
+  /product/v1/categories/{categoryId}/products:
+    parameters:
+      - $ref: "#/components/parameters/Path.CategoryId"
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "product.yaml#/components/schemas/Request"
+      responses:
+        201:
+          description: Product id
+          content:
+            application/json:
+              schema:
+                $ref: "product.yaml#/components/schemas/ProductId"
+  /product/v1/products/{productId}:
+    parameters:
+      - $ref: "#/components/parameters/Path.ProductId"
+    put:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "product.yaml#/components/schemas/Request"
+      responses:
+        200:
+          description: Product id
+          content:
+            application/json:
+              schema:
+                $ref: "product.yaml#/components/schemas/ProductId"
+    delete:
+      responses:
+        204:
+          description: Product deleted
+  /product/v1/products/{productId}/merge:
+    parameters:
+      - $ref: "#/components/parameters/Path.ProductId"
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+      responses:
+        201:
+          description: Product id
+          content:
+            application/json:
+              schema:
+                $ref: "product.yaml#/components/schemas/ProductId"
+
+  /project/v1/projects:
+    get:
+      responses:
+        200:
+          description: List of projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "project.yaml#/components/schemas/Response"
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "project.yaml#/components/schemas/Request"
+      responses:
+        201:
+          description: Project id
+          content:
+            application/json:
+              schema:
+                $ref: "project.yaml#/components/schemas/ProjectId"
+  /project/v1/projects/{projectId}:
+    parameters:
+      - $ref: "#/components/parameters/Path.ProjectId"
+    get:
+      responses:
+        200:
+          description: Project details
+          content:
+            application/json:
+              schema:
+                $ref: "project.yaml#/components/schemas/Response"
+    put:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "project.yaml#/components/schemas/Request"
+      responses:
+        200:
+          description: Project id
+          content:
+            application/json:
+              schema:
+                $ref: "project.yaml#/components/schemas/ProjectId"
+    delete:
+      responses:
+        204:
+          description: Project deleted
+  /project/v1/projects/{projectId}/merge:
+    parameters:
+      - $ref: "#/components/parameters/Path.ProjectId"
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+      responses:
+        201:
+          description: Project id
+          content:
+            application/json:
+              schema:
+                $ref: "project.yaml#/components/schemas/ProjectId"
+  /recipient/v1/recipients:
+    get:
+      responses:
+        200:
+          description: List of recipients
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "recipient.yaml#/components/schemas/Response"
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "recipient.yaml#/components/schemas/Request"
+      responses:
+        201:
+          description: Recipient id
+          content:
+            application/json:
+              schema:
+                $ref: "recipient.yaml#/components/schemas/RecipientId"
+  /recipient/v1/recipients/{recipientId}:
+    parameters:
+      - $ref: "#/components/parameters/Path.RecipientId"
+    get:
+      responses:
+        200:
+          description: Recipient details
+          content:
+            application/json:
+              schema:
+                $ref: "recipient.yaml#/components/schemas/Response"
+    put:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "recipient.yaml#/components/schemas/Request"
+      responses:
+        200:
+          description: Recipient id
+          content:
+            application/json:
+              schema:
+                $ref: "recipient.yaml#/components/schemas/RecipientId"
+    delete:
+      responses:
+        204:
+          description: Recipient deleted
+  /recipient/v1/recipients/{recipientId}/merge:
+    parameters:
+      - $ref: "#/components/parameters/Path.RecipientId"
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+      responses:
+        201:
+          description: Recipient id
+          content:
+            application/json:
+              schema:
+                $ref: "recipient.yaml#/components/schemas/RecipientId"
+  /transaction/v1/accounts/{accountId}/transactions:
+    parameters:
+      - $ref: "#/components/parameters/Path.AccountId"
+    get:
+      responses:
+        200:
+          description: List of transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "transaction.yaml#/components/schemas/Response"
+  /transaction/v1/accounts/{accountId}/transactions/{transactionId}:
+    parameters:
+      - $ref: "#/components/parameters/Path.AccountId"
+      - $ref: "#/components/parameters/Path.TransactionId"
+    get:
+      responses:
+        200:
+          description: Details of transaction
+          content:
+            application/json:
+              schema:
+                $ref: "transaction.yaml#/components/schemas/Response"
+  /transaction/v1/transactions/payment:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "transaction.yaml#/components/schemas/PaymentRequest"
+      responses:
+        201:
+          description: Transaction id
+          content:
+            application/json:
+              schema:
+                $ref: "transaction.yaml#/components/schemas/TransactionId"
+  /transaction/v1/transactions/split:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "transaction.yaml#/components/schemas/SplitRequest"
+      responses:
+        201:
+          description: Transaction id
+          content:
+            application/json:
+              schema:
+                $ref: "transaction.yaml#/components/schemas/TransactionId"
+  /transaction/v1/transactions/transfer:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "transaction.yaml#/components/schemas/TransferRequest"
+      responses:
+        201:
+          description: Transaction id
+          content:
+            application/json:
+              schema:
+                $ref: "transaction.yaml#/components/schemas/TransactionId"
+  /transaction/v1/transactions/{transactionId}/payment:
+    parameters:
+      - $ref: "#/components/parameters/Path.TransactionId"
+    put:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "transaction.yaml#/components/schemas/PaymentRequest"
+      responses:
+        201:
+          description: Transaction id
+          content:
+            application/json:
+              schema:
+                $ref: "transaction.yaml#/components/schemas/TransactionId"
+  /transaction/v1/transactions/{transactionId}/split:
+    parameters:
+      - $ref: "#/components/parameters/Path.TransactionId"
+    put:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "transaction.yaml#/components/schemas/SplitRequest"
+      responses:
+        201:
+          description: Transaction id
+          content:
+            application/json:
+              schema:
+                $ref: "transaction.yaml#/components/schemas/TransactionId"
+  /transaction/v1/transactions/{transactionId}/transfer:
+    parameters:
+      - $ref: "#/components/parameters/Path.TransactionId"
+    put:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "transaction.yaml#/components/schemas/TransferRequest"
+      responses:
+        201:
+          description: Transaction id
+          content:
+            application/json:
+              schema:
+                $ref: "transaction.yaml#/components/schemas/TransactionId"
+  # /transaction/v1/transactions:
+  /transaction/v1/transactions/{transactionId}:
+    delete:
+      responses:
+        204:
+          description: Transaction deleted
+
+components:
+  parameters:
+    Path.RecipientId:
+      name: recipientId
+      in: path
+      required: true
+      schema:
+        type: string
+    Path.ProjectId:
+      name: projectId
+      in: path
+      required: true
+      schema:
+        type: string
+    Path.ProductId:
+      name: productId
+      in: path
+      required: true
+      schema:
+        type: string
+    Path.CategoryId:
+      name: categoryId
+      in: path
+      required: true
+      schema:
+        type: string
+    Path.AccountId:
+      name: accountId
+      in: path
+      required: true
+      schema:
+        type: string
+    Path.TransactionId:
+      name: transactionId
+      in: path
+      required: true
+      schema:
+        type: string

@@ -16,13 +16,13 @@ const schema: StrictJSONSchema7<Transaction.TransferRequest> = {
     'transferAccountId',
   ],
   properties: {
-    ...base.properties,
-    ...issuedAt.properties,
     ...accountId.properties,
-    ...transferAmount.properties,
+    ...issuedAt.properties,
+    ...base.properties,
     transferAccountId: {
       ...accountId.properties.accountId,
     },
+    ...transferAmount.properties,
   },
 };
 
