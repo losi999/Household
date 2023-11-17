@@ -6,11 +6,8 @@ import { default as base } from '@household/shared/schemas/partials/transaction-
 import { default as issuedAt } from '@household/shared/schemas/partials/transaction-issued-at';
 import { default as accountId } from '@household/shared/schemas/account-id';
 import { default as categoryId } from '@household/shared/schemas/category-id';
-import { default as categoryRequest } from '@household/shared/schemas/category-request';
 import { default as projectId } from '@household/shared/schemas/project-id';
-import { default as projectRequest } from '@household/shared/schemas/project-request';
 import { default as recipientId } from '@household/shared/schemas/recipient-id';
-import { default as recipientRequest } from '@household/shared/schemas/recipient-request';
 
 const schema: StrictJSONSchema7<Transaction.SplitRequest> = {
   type: 'object',
@@ -23,12 +20,7 @@ const schema: StrictJSONSchema7<Transaction.SplitRequest> = {
   ],
   properties: {
     ...accountId.properties,
-    recipient: {
-      oneOf: [
-        recipientId,
-        recipientRequest,
-      ],
-    },
+    ...recipientId.properties,
     ...issuedAt.properties,
     ...base.properties,
     splits: {
@@ -39,18 +31,8 @@ const schema: StrictJSONSchema7<Transaction.SplitRequest> = {
         additionalProperties: false,
         required: [ ...base.required],
         properties: {
-          category: {
-            oneOf: [
-              categoryId,
-              categoryRequest,
-            ],
-          },
-          project: {
-            oneOf: [
-              projectId,
-              projectRequest,
-            ],
-          },
+          ...categoryId.properties,
+          ...projectId.properties,
           ...invoice.properties,
           ...inventory.properties,
           ...base.properties,

@@ -7,7 +7,7 @@ import { IProductService } from '@household/shared/services/product-service';
 import { IProjectService } from '@household/shared/services/project-service';
 import { IRecipientService } from '@household/shared/services/recipient-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
-import { Transaction } from '@household/shared/types/types';
+import { Category, Product, Project, Transaction } from '@household/shared/types/types';
 
 export interface ICreateSplitTransactionService {
   (ctx: {
@@ -26,13 +26,23 @@ export const createSplitTransactionServiceFactory = (
   transactionDocumentConverter: ITransactionDocumentConverter,
 ): ICreateSplitTransactionService => {
   return async ({ body, expiresIn }) => {
-    const categoryIds = [...new Set(body.splits.map(s => s.categoryId).filter(s => s))];
-    const projectIds = [...new Set(body.splits.map(s => s.projectId).filter(s => s))];
-    const productIds = [...new Set(body.splits.map(s => s.inventory?.productId).filter(s => s))];
+    let total = 0;
+    const categoryIds: Category.Id[] = [];
+    const projectIds: Project.Id[] = [];
+    const productIds: Product.Id[] = [];
 
-    const total = body.splits.reduce((accumulator, currentValue) => {
-      return accumulator + currentValue.amount;
-    }, 0);
+    for (const s of body.splits) {
+      total += s.amount;
+      if (s.categoryId && !categoryIds.includes(s.categoryId)) {
+        categoryIds.push(s.categoryId);
+      }
+      if (s.projectId && !projectIds.includes(s.projectId)) {
+        projectIds.push(s.projectId);
+      }
+      if (s.inventory?.productId && !productIds.includes(s.inventory.productId)) {
+        productIds.push(s.inventory.productId);
+      }
+    }
 
     httpErrors.transaction.sumOfSplits(total !== body.amount, body);
 

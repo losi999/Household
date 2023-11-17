@@ -206,9 +206,17 @@ export namespace Transaction {
     description: string;
   };
 
-  export type Inventory<P extends Product.Document | Product.Response | Product.ProductId | Product.Request> = {
-    inventory: {
-      quantity: number;
+  type InventoryQuantity = {
+    quantity: number;
+  };
+
+  export type InventoryRequest = {
+    inventory: InventoryQuantity & Product.ProductId
+  };
+
+  export type Inventory<P extends Product.Document | Product.Response> = {
+    inventory: InventoryQuantity
+    & {
       product: P;
     };
   };
@@ -229,11 +237,11 @@ export namespace Transaction {
     transferAmount: number;
   };
 
-  export type Category<C extends Category.Document | Category.Response | Category.CategoryId | Category.Request> = {
+  export type Category<C extends Category.Document | Category.Response> = {
     category: C;
   };
 
-  export type Project<P extends Project.Document | Project.Response | Project.ProjectId | Project.Request> = {
+  export type Project<P extends Project.Document | Project.Response> = {
     project: P;
   };
 
@@ -241,7 +249,7 @@ export namespace Transaction {
     account: A;
   };
 
-  export type Recipient<R extends Recipient.Document | Recipient.Response | Recipient.RecipientId | Recipient.Request> = {
+  export type Recipient<R extends Recipient.Document | Recipient.Response> = {
     recipient: R;
   };
 
@@ -249,17 +257,13 @@ export namespace Transaction {
     transferAccount: A;
   };
 
-  // export type Product<P extends Product.Document | Product.Response> = {
-  //   product: P;
-  // };
-
   export type PaymentRequest = Account.AccountId
-  & Category<Category.CategoryId | Category.Request>
-  & Project<Project.ProjectId | Project.Request>
-  & Recipient<Recipient.RecipientId | Recipient.Request>
+  & Category.CategoryId
+  & Project.ProjectId
+  & Recipient.RecipientId
   & IssuedAt<string>
   & Invoice<string>
-  & Inventory<Product.ProductId | Product.Request>
+  & InventoryRequest
   & Base;
 
   export type TransferRequest = Account.AccountId
@@ -268,14 +272,14 @@ export namespace Transaction {
   & TransferAccountId
   & TransferAmount;
 
-  export type SplitRequestItem = Category<Category.CategoryId | Category.Request>
-  & Project<Project.ProjectId | Project.Request>
+  export type SplitRequestItem = Category.CategoryId
+  & Project.ProjectId
   & Invoice<string>
-  & Inventory<Product.ProductId | Product.Request>
+  & InventoryRequest
   & Base;
 
   export type SplitRequest = Account.AccountId
-  & Recipient<Recipient.RecipientId | Recipient.Request>
+  & Recipient.RecipientId
   & IssuedAt<string>
   & Base
   & {
@@ -286,6 +290,9 @@ export namespace Transaction {
   & Internal.Timestamps
   & TransactionType<'payment'>
   & Remove<Account.AccountId>
+  & Remove<Category.CategoryId>
+  & Remove<Project.ProjectId>
+  & Remove<Recipient.RecipientId>
   & Account<Account.Document>
   & Category<Category.Document>
   & Project<Project.Document>
@@ -308,6 +315,8 @@ export namespace Transaction {
 
   export type SplitDocumentItem = Project<Project.Document>
   & Category<Category.Document>
+  & Remove<Project.ProjectId>
+  & Remove<Category.CategoryId>
   & Invoice<Date>
   & Inventory<Product.Document>
   & Base;
@@ -316,6 +325,7 @@ export namespace Transaction {
   & Internal.Timestamps
   & TransactionType<'split'>
   & Remove<Account.AccountId>
+  & Remove<Recipient.RecipientId>
   & Account<Account.Document>
   & Recipient<Recipient.Document>
   & IssuedAt<Date>

@@ -29,39 +29,29 @@ components:
         description:
           type: string
           minLength: 1
-    Inventory:
+    Inventory.Quantity:
+      type: object
+      required:
+        - quantity
+      properties:
+        quantity:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+    Inventory.Request:
       type: object
       properties:
         inventory:
-          type: object
-          required:
-            - quantity
-          properties:
-            quantity:
-              type: number
-              minimum: 0
-              exclusiveMinimum: true
-    Inventory.Request:
-      allOf:
-        - $ref: "#/components/schemas/Inventory"
-        - type: object
-          properties:
-            inventory:
-              type: object
-              required:
-                - product
-              properties:
-                product:
-                  oneOf:
-                    - $ref: "product.yaml#/components/schemas/ProductId"
-                    - $ref: "product.yaml#/components/schemas/Request"
+          allOf:
+            - $ref: "#/components/schemas/Inventory.Quantity"
+            - $ref: "product.yaml#/components/schemas/ProductId"
     Inventory.Response:
-      allOf:
-        - $ref: "#/components/schemas/Inventory"
-        - type: object
-          properties:
-            inventory:
-              type: object
+      type: object
+      properties:
+        inventory:
+          allOf:
+            - $ref: "#/components/schemas/Inventory.Quantity"
+            - type: object
               required:
                 - product
               properties:
@@ -101,26 +91,12 @@ components:
         transferAmount:
           type: string
           minLength: 1
-    Category.Request:
-      type: object
-      properties:
-        category:
-          oneOf:
-            - $ref: "category.yaml#/components/schemas/CategoryId"
-            - $ref: "category.yaml#/components/schemas/Request"
-    Category.Response:
+    Category:
       type: object
       properties:
         category:
           $ref: "category.yaml#/components/schemas/Response"
-    Project.Request:
-      type: object
-      properties:
-        project:
-          oneOf:
-            - $ref: "project.yaml#/components/schemas/ProjectId"
-            - $ref: "project.yaml#/components/schemas/Request"
-    Project.Response:
+    Project:
       type: object
       properties:
         project:
@@ -132,14 +108,7 @@ components:
       properties:
         account:
           $ref: "account.yaml#/components/schemas/Response"
-    Recipient.Request:
-      type: object
-      properties:
-        recipient:
-          oneOf:
-            - $ref: "recipient.yaml#/components/schemas/RecipientId"
-            - $ref: "recipient.yaml#/components/schemas/Request"
-    Recipient.Response:
+    Recipient:
       type: object
       properties:
         recipient:
@@ -154,9 +123,9 @@ components:
     PaymentRequest:
       allOf:
         - $ref: "account.yaml#/components/schemas/AccountId"
-        - $ref: "#/components/schemas/Category.Request"
-        - $ref: "#/components/schemas/Project.Request"
-        - $ref: "#/components/schemas/Recipient.Request"
+        - $ref: "category.yaml#/components/schemas/CategoryId"
+        - $ref: "project.yaml#/components/schemas/ProjectId"
+        - $ref: "recipient.yaml#/components/schemas/RecipientId"
         - $ref: "#/components/schemas/IssuedAt"
         - $ref: "#/components/schemas/Invoice"
         - $ref: "#/components/schemas/Inventory.Request"
@@ -170,15 +139,15 @@ components:
         - $ref: "#/components/schemas/TransferAmount"
     SplitRequestItem:
       allOf:
-        - $ref: "#/components/schemas/Category.Request"
-        - $ref: "#/components/schemas/Project.Request"
+        - $ref: "category.yaml#/components/schemas/CategoryId"
+        - $ref: "project.yaml#/components/schemas/ProjectId"
         - $ref: "#/components/schemas/Invoice"
         - $ref: "#/components/schemas/Inventory.Request"
         - $ref: "#/components/schemas/Base"
     SplitRequest:
       allOf:
         - $ref: "account.yaml#/components/schemas/AccountId"
-        - $ref: "#/components/schemas/Recipient.Request"
+        - $ref: "recipient.yaml#/components/schemas/RecipientId"
         - $ref: "#/components/schemas/IssuedAt"
         - $ref: "#/components/schemas/Base"
         - type: object
@@ -197,9 +166,9 @@ components:
         - $ref: "#/components/schemas/Invoice"
         - $ref: "#/components/schemas/Inventory.Response"
         - $ref: "#/components/schemas/Account"
-        - $ref: "#/components/schemas/Category.Response"
-        - $ref: "#/components/schemas/Project.Response"
-        - $ref: "#/components/schemas/Recipient.Response"
+        - $ref: "#/components/schemas/Category"
+        - $ref: "#/components/schemas/Project"
+        - $ref: "#/components/schemas/Recipient"
         - type: object
           required:
             - transactionType
@@ -229,15 +198,15 @@ components:
         - $ref: "#/components/schemas/Base"
         - $ref: "#/components/schemas/Invoice"
         - $ref: "#/components/schemas/Inventory.Response"
-        - $ref: "#/components/schemas/Project.Response"
-        - $ref: "#/components/schemas/Category.Response"
+        - $ref: "#/components/schemas/Project"
+        - $ref: "#/components/schemas/Category"
     SplitResponse:
       allOf:
         - $ref: "#/components/schemas/TransactionId"
         - $ref: "#/components/schemas/Base"
         - $ref: "#/components/schemas/IssuedAt"
         - $ref: "#/components/schemas/Account"
-        - $ref: "#/components/schemas/Recipient.Response"
+        - $ref: "#/components/schemas/Recipient"
         - type: object
           required:
             - transactionType

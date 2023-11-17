@@ -130,6 +130,8 @@ export const createSplitDocumentIem: DataFactoryFunction<Transaction.SplitDocume
     description: 'split description',
     inventory: createInventoryDocument(),
     invoice: createInvoiceDocument(),
+    categoryId: undefined,
+    projectId: undefined,
     ...doc,
   };
 };
@@ -208,11 +210,9 @@ export const createProductRequest: DataFactoryFunction<Product.Request> = (req) 
   };
 };
 
-export const createInventoryRequest: DataFactoryFunction<Transaction.Inventory<Product.ProductId>['inventory']> = (req) => {
+export const createInventoryRequest: DataFactoryFunction<Transaction.InventoryRequest['inventory']> = (req) => {
   return {
-    product: {
-      productId: createProductId(),
-    },
+    productId: createProductId(),
     quantity: 100,
     ...req,
   };
@@ -227,20 +227,20 @@ export const createInvoiceRequest: DataFactoryFunction<Transaction.Invoice<strin
   };
 };
 
-// export const createPaymentTransactionRequest: DataFactoryFunction<Transaction.PaymentRequest> = (req) => {
-//   return {
-//     amount: 100,
-//     description: 'transaction description',
-//     inventory: createInventoryRequest(),
-//     invoice: createInvoiceRequest(),
-//     issuedAt: new Date().toISOString(),
-//     accountId: createAccountId(),
-//     categoryId: createCategoryId(),
-//     projectId: createProjectId(),
-//     recipientId: createRecipientId(),
-//     ...req,
-//   };
-// };
+export const createPaymentTransactionRequest: DataFactoryFunction<Transaction.PaymentRequest> = (req) => {
+  return {
+    amount: 100,
+    description: 'transaction description',
+    inventory: createInventoryRequest(),
+    invoice: createInvoiceRequest(),
+    issuedAt: new Date().toISOString(),
+    accountId: createAccountId(),
+    categoryId: createCategoryId(),
+    projectId: createProjectId(),
+    recipientId: createRecipientId(),
+    ...req,
+  };
+};
 
 export const createSplitRequestIem: DataFactoryFunction<Transaction.SplitRequestItem> = (req) => {
   return {

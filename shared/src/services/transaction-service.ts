@@ -1,21 +1,10 @@
 import { IMongodbService } from '@household/shared/services/mongodb-service';
-import { Account, Common, Transaction, Recipient, Project, Category, Product } from '@household/shared/types/types';
+import { Account, Common, Transaction, Recipient, Project, Category } from '@household/shared/types/types';
 import { FilterQuery } from 'mongoose';
 
 export interface ITransactionService {
   dumpTransactions(): Promise<Transaction.Document[]>;
-  savePaymentTransaction(doc: Transaction.PaymentDocument, related?: {
-    category?: Category.Document;
-    project?: Project.Document;
-    recipient?: Recipient.Document;
-    product?: Product.Document;
-  }): Promise<Transaction.PaymentDocument>;
-  saveTransaction(doc: Transaction.Document, related?: {
-    categories?: Category.Document[];
-    projects?: Project.Document[];
-    recipients?: Recipient.Document[];
-    products?: Product.Document[];
-  }): Promise<Transaction.Document>;
+  saveTransaction(doc: Transaction.Document): Promise<Transaction.Document>;
   getTransactionById(transactionId: Transaction.Id): Promise<Transaction.Document>;
   getTransactionByIdAndAccountId(query: Transaction.TransactionId & Account.AccountId): Promise<Transaction.Document>;
   deleteTransaction(transactionId: Transaction.Id): Promise<unknown>;
@@ -45,56 +34,6 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
     },
     saveTransaction: (doc) => {
       return mongodbService.transactions().create(doc);
-    },
-    savePaymentTransaction: (doc, { category, product, project, recipient }) => {
-      return mongodbService.inSession(async(session) => {
-        const result = await session.withTransaction<Transaction.PaymentDocument>(async () => {
-          const [
-            [savedProduct],
-            [savedCategory],
-            [savedProject],
-            [savedRecipient],
-          ] = await Promise.all([
-            product ? mongodbService.products().create([product], {
-              session,
-            }) : undefined,
-            category ? mongodbService.categories().create([category], {
-              session,
-            }) : undefined,
-            project ? mongodbService.projects().create([project], {
-              session,
-            }) : undefined,
-            recipient ? mongodbService.recipients().create([recipient], {
-              session,
-            }) : undefined,
-          ]);
-
-          if (savedCategory) {
-            doc.category = savedCategory;
-          }
-
-          if (savedProject) {
-            doc.project = savedProject;
-          }
-
-          if (savedRecipient) {
-            doc.recipient = savedRecipient;
-          }
-
-          if (savedProduct) {
-            doc.inventory.product = savedProduct;
-          }
-
-          const [transaction] = await mongodbService.transactions().create(
-            [doc], {
-              session,
-            });
-
-          return transaction as Transaction.PaymentDocument;
-        });
-
-        return result as Transaction.PaymentDocument;
-      });
     },
     getTransactionById: (transactionId) => {
       return !transactionId ? undefined : mongodbService.transactions().findById(transactionId)
