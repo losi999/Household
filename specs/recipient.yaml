@@ -23,5 +23,9 @@ components:
       allOf:
         - $ref: "#/components/schemas/RecipientId"
         - $ref: "#/components/schemas/Name"
+    Report:
+      allOf:
+        - $ref: "#/components/schemas/RecipientId"
+        - $ref: "#/components/schemas/Name"
     Request:
       $ref: "#/components/schemas/Name"

@@ -1,7 +1,7 @@
 import { generateMongoId } from '@household/shared/common/test-data-factory';
 import { addSeconds, getProductId } from '@household/shared/common/utils';
 import { Restrict } from '@household/shared/types/common';
-import { Product } from '@household/shared/types/types';
+import { Product, Transaction } from '@household/shared/types/types';
 
 export interface IProductDocumentConverter {
   create(body: Product.Request, expiresIn: number, generateId?: boolean): Product.Document;
@@ -10,6 +10,7 @@ export interface IProductDocumentConverter {
     body: Product.Request;
   }, expiresIn: number): Product.Document;
   toResponse(document: Product.Document): Product.Response;
+  toReport(inventory: Transaction.Inventory<Product.Document>['inventory']): Product.Report;
   toResponseList(documents: Product.Document[]): Product.Response[];
 }
 
@@ -29,6 +30,13 @@ export const productDocumentConverterFactory = (): IProductDocumentConverter => 
         _id,
         createdAt,
       };
+    },
+    toReport: (inventory): Product.Report => {
+      return inventory ? {
+        productId: getProductId(inventory.product),
+        fullName: inventory.product.fullName,
+        quantity: inventory.quantity,
+      } : undefined;
     },
     toResponse: (doc): Product.Response => {
       return {

@@ -320,6 +320,74 @@ paths:
             application/json:
               schema:
                 $ref: "recipient.yaml#/components/schemas/RecipientId"
+  # /report/v1/reports:
+  #   get:
+  #     responses:
+  #       200:
+  #         description: List of saved reports
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: array
+  #               items:
+  #                 type: object
+  #                 required:
+  #                   - name
+  #                   - filters
+  #                 properties:
+  #                   name:
+  #                     type: string
+  #                     minLength: 1
+  #                   filters:
+  #                     type: object
+  #                     minProperties: 1
+  #                     properties:
+  #                       accountIds:
+  #                         type: array
+  #                         items:
+  #                           type: string
+  #                           minLength: 1
+  #                       categoryIds:
+  #                         type: array
+  #                         items:
+  #                           type: string
+  #                           minLength: 1
+  #                       projectIds:
+  #                         type: array
+  #                         items:
+  #                           type: string
+  #                           minLength: 1
+  #                       productIds:
+  #                         type: array
+  #                         items:
+  #                           type: string
+  #                           minLength: 1
+  #                       recipientIds:
+  #                         type: array
+  #                         items:
+  #                           type: string
+  #                           minLength: 1
+  #                       issuedAtFrom:
+  #                         type: string
+  #                         format: date-time
+  #                       issuedAtTo:
+  #                         type: string
+  #                         format: date-time
+  #   post:
+  #     requestBody:
+  #       content:
+  #         application/json:
+  #           schema:
+  #             $ref: "report.yaml#/components/schemas/Request"
+  #     responses:
+  #       200:
+  #         description: Generated report
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: array
+  #               items:
+  #                 $ref: "report.yaml#/components/schemas/Response"
   /transaction/v1/accounts/{accountId}/transactions:
     parameters:
       - $ref: "#/components/parameters/Path.AccountId"
@@ -345,6 +413,20 @@ paths:
             application/json:
               schema:
                 $ref: "transaction.yaml#/components/schemas/Response"
+  /transaction/v1/transactions:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "report.yaml#/components/schemas/Request"
+      responses:
+        200:
+          description: Transaction report
+          content:
+            application/json:
+              schema:
+                $ref: "transaction.yaml#/components/schemas/Report"
   /transaction/v1/transactions/payment:
     post:
       requestBody:

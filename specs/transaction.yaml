@@ -225,3 +225,22 @@ components:
         - $ref: "#/components/schemas/PaymentResponse"
         - $ref: "#/components/schemas/SplitResponse"
         - $ref: "#/components/schemas/TransferResponse"
+    Report:
+      allOf:
+        - $ref: "#/components/schemas/TransactionId"
+        - $ref: "#/components/schemas/Base"
+        - $ref: "#/components/schemas/IssuedAt"
+        - type: object
+          required:
+            - account
+          properties:
+            account:
+              $ref: "account.yaml#/components/schemas/Report"
+            category:
+              $ref: "category.yaml#/components/schemas/Report"
+            project:
+              $ref: "project.yaml#/components/schemas/Report"
+            recipient:
+              $ref: "recipient.yaml#/components/schemas/Response"
+            product:
+              $ref: "product.yaml#/components/schemas/Report"

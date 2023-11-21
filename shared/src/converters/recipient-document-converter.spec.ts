@@ -1,4 +1,4 @@
-import { createRecipientDocument, createRecipientRequest, createRecipientResponse } from '@household/shared/common/test-data-factory';
+import { createRecipientDocument, createRecipientReport, createRecipientRequest, createRecipientResponse } from '@household/shared/common/test-data-factory';
 import { addSeconds, getRecipientId } from '@household/shared/common/utils';
 import { recipientDocumentConverterFactory, IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
 import { advanceTo, clear } from 'jest-date-mock';
@@ -84,6 +84,16 @@ describe('Recipient document converter', () => {
           name,
         }),
       ]);
+    });
+  });
+
+  describe('toReport', () => {
+    it('should return report', () => {
+      const result = converter.toReport(queriedDocument);
+      expect(result).toEqual(createRecipientReport({
+        recipientId: getRecipientId(queriedDocument),
+        name,
+      }));
     });
   });
 });

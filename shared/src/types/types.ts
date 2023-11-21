@@ -1,4 +1,4 @@
-import { categoryTypes, groupByProperties, unitsOfMeasurement } from '@household/shared/constants';
+import { categoryTypes, unitsOfMeasurement } from '@household/shared/constants';
 import { Branding, Remove } from '@household/shared/types/common';
 import { Types } from 'mongoose';
 
@@ -21,10 +21,16 @@ export namespace Project {
     projectId: Id;
   };
 
-  type Base = {
+  type Name = {
     name: string;
+  };
+
+  type Description = {
     description: string;
   };
+
+  type Base = Name
+  & Description;
 
   export type Document = Internal.Id
   & Internal.Timestamps
@@ -34,6 +40,9 @@ export namespace Project {
   & ProjectId
   & Remove<Internal.Id>
   & Remove<Internal.Timestamps>;
+
+  export type Report = ProjectId
+  & Name;
 
   export type Request = Base;
 }
@@ -58,6 +67,9 @@ export namespace Recipient {
   & Remove<Internal.Id>
   & Remove<Internal.Timestamps>;
 
+  export type Report = RecipientId
+  & Name;
+
   export type Request = Name;
 }
 
@@ -72,11 +84,21 @@ export namespace Account {
     isOpen: boolean;
   };
 
-  type Base = {
+  type Name = {
     name: string;
+  };
+
+  type Currency = {
     currency: string;
+  };
+
+  type AccountType = {
     accountType: 'bankAccount' | 'cash' | 'creditCard' | 'loan' | 'cafeteria';
   };
+
+  type Base = Name
+  & Currency
+  & AccountType;
 
   type Balance = {
     balance: number;
@@ -94,6 +116,10 @@ export namespace Account {
   & AccountId
   & Remove<Internal.Id>
   & Remove<Internal.Timestamps>;
+
+  export type Report = AccountId
+  & Name
+  & Currency;
 
   export type Request = Base;
 }
@@ -137,6 +163,9 @@ export namespace Category {
   & Remove<ParentCategoryId>
   & ParentCategory
   & Products<Product.Document>;
+
+  export type Report = CategoryId
+  & FullName;
 
   export type Response = CategoryType
   & Name
@@ -183,6 +212,10 @@ export namespace Product {
   & Remove<Internal.Id>
   & Remove<Internal.Timestamps>;
 
+  export type Report = ProductId
+  & FullName
+  & Transaction.InventoryQuantity;
+
   export type Request = Base;
 }
 
@@ -206,7 +239,7 @@ export namespace Transaction {
     description: string;
   };
 
-  type InventoryQuantity = {
+  export type InventoryQuantity = {
     quantity: number;
   };
 
@@ -237,20 +270,24 @@ export namespace Transaction {
     transferAmount: number;
   };
 
-  export type Category<C extends Category.Document | Category.Response> = {
+  export type Category<C extends Category.Document | Category.Response | Category.Report> = {
     category: C;
   };
 
-  export type Project<P extends Project.Document | Project.Response> = {
+  export type Project<P extends Project.Document | Project.Response | Project.Report> = {
     project: P;
   };
 
-  export type Account<A extends Account.Document | Account.Response> = {
+  export type Account<A extends Account.Document | Account.Response | Account.Report> = {
     account: A;
   };
 
-  export type Recipient<R extends Recipient.Document | Recipient.Response> = {
+  export type Recipient<R extends Recipient.Document | Recipient.Response | Recipient.Report> = {
     recipient: R;
+  };
+
+  type Product<P extends Product.Report> = {
+    product: P;
   };
 
   type TransferAccount<A extends Account.Document | Account.Response> = {
@@ -379,32 +416,28 @@ export namespace Transaction {
 
   export type Response = PaymentResponse | TransferResponse | SplitResponse;
 
-  export type ReportRequest = {
-    groupedBy: typeof groupByProperties[number]
-    accounts: Account.Id[];
-    categories: Category.Id[];
-    projects: Project.Id[];
-    recipients: Recipient.Id[];
+  export type Report = TransactionId
+  & Base
+  & IssuedAt<string>
+  & Account<Account.Report>
+  & Category<Category.Report>
+  & Project<Project.Report>
+  & Recipient<Recipient.Report>
+  & Product<Product.Report>;
+}
+
+export namespace Report {
+  type Filters = {
+    accountIds: Account.Id[];
+    categoryIds: Category.Id[];
+    projectIds: Project.Id[];
+    productIds: Product.Id[];
+    recipientIds: Recipient.Id[];
     issuedAtFrom: string;
     issuedAtTo: string;
   };
 
-  export type ReportTransactionItem = TransactionId
-  & Base
-  & IssuedAt<Date>
-  & {
-    projectName: string;
-    categoryName: string;
-    recipientName: string;
-    accountName: string;
-  };
-
-  export type ReportResponse = {
-    [group: string]: {
-      totalAmount: number;
-      transactions: ReportTransactionItem[];
-    };
-  };
+  export type Request = Filters;
 }
 
 export namespace Auth {

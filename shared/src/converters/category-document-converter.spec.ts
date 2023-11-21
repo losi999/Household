@@ -1,4 +1,4 @@
-import { createCategoryDocument, createCategoryRequest, createCategoryResponse, createProductDocument, createProductResponse } from '@household/shared/common/test-data-factory';
+import { createCategoryDocument, createCategoryReport, createCategoryRequest, createCategoryResponse, createProductDocument, createProductResponse } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock } from '@household/shared/common/unit-testing';
 import { addSeconds, getCategoryId } from '@household/shared/common/utils';
 import { categoryDocumentConverterFactory, ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
@@ -148,6 +148,16 @@ describe('Category document converter', () => {
           products: [productResponse],
         }),
       ]);
+    });
+  });
+
+  describe('toReport', () => {
+    it('should return response', () => {
+      const result = converter.toReport(queriedDocument);
+      expect(result).toEqual(createCategoryReport({
+        categoryId: getCategoryId(queriedDocument),
+        fullName: name,
+      }));
     });
   });
 });

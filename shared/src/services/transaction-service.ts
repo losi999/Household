@@ -1,5 +1,5 @@
 import { IMongodbService } from '@household/shared/services/mongodb-service';
-import { Account, Common, Transaction, Recipient, Project, Category } from '@household/shared/types/types';
+import { Account, Common, Transaction, Recipient, Project, Category, Product } from '@household/shared/types/types';
 import { FilterQuery } from 'mongoose';
 
 export interface ITransactionService {
@@ -10,10 +10,11 @@ export interface ITransactionService {
   deleteTransaction(transactionId: Transaction.Id): Promise<unknown>;
   updateTransaction(doc: Transaction.Document): Promise<unknown>;
   listTransactions(query: {
-    accounts: Account.Id[];
-    categories: Category.Id[];
-    projects: Project.Id[];
-    recipients: Recipient.Id[];
+    accountIds: Account.Id[];
+    categoryIds: Category.Id[];
+    projectIds: Project.Id[];
+    recipientIds: Recipient.Id[];
+    productIds: Product.Id[];
     issuedAtFrom: string;
     issuedAtTo: string;
   }): Promise<(Transaction.PaymentDocument | Transaction.SplitDocument)[]>;
@@ -87,7 +88,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
       })
         .exec();
     },
-    listTransactions: ({ accounts, categories, projects, recipients, issuedAtFrom, issuedAtTo }) => {
+    listTransactions: ({ accountIds, categoryIds, projectIds, recipientIds, productIds, issuedAtFrom, issuedAtTo }) => {
       return mongodbService.inSession((session) => {
         const query: FilterQuery<Transaction.Document> = {
           transactionType: {
@@ -109,52 +110,69 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
           query.issuedAt.$lte = new Date(issuedAtTo);
         }
 
-        if (accounts) {
+        if (accountIds) {
           query.$and.push({
             account: {
-              $in: accounts,
+              $in: accountIds,
             },
           });
         }
 
-        if (categories) {
+        if (categoryIds) {
           query.$and.push({
             $or: [
               {
                 'splits.category': {
-                  $in: categories,
+                  $in: categoryIds,
                 },
               },
               {
                 category: {
-                  $in: categories,
+                  $in: categoryIds,
                 },
               },
             ],
           });
         }
 
-        if (projects) {
+        if (projectIds) {
           query.$and.push({
             $or: [
               {
                 'splits.project': {
-                  $in: projects,
+                  $in: projectIds,
                 },
               },
               {
                 project: {
-                  $in: projects,
+                  $in: projectIds,
                 },
               },
             ],
           });
         }
 
-        if (recipients) {
+        if (productIds) {
+          query.$and.push({
+            $or: [
+              {
+                'splits.inventory.product': {
+                  $in: productIds,
+                },
+              },
+              {
+                'inventory.product': {
+                  $in: productIds,
+                },
+              },
+            ],
+          });
+        }
+
+        if (recipientIds) {
           query.$and.push({
             recipient: {
-              $in: recipients,
+              $in: recipientIds,
             },
           });
         }
@@ -166,15 +184,17 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
         return mongodbService.transactions().find(query, null, {
           session,
         })
-          // .sort({
-          //   amount: 'asc',
-          // })
+          .sort({
+            issuedAt: 'asc',
+          })
           .populate('project')
           .populate('recipient')
           .populate('account')
           .populate('category')
+          .populate('inventory.product')
           .populate('splits.category')
           .populate('splits.project')
+          .populate('splits.inventory.product')
           .lean<(Transaction.PaymentDocument | Transaction.SplitDocument)[]>()
           .exec();
       });

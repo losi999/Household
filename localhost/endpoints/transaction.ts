@@ -67,7 +67,7 @@ export const transaction: EndpointConfig[] = [
   },
   {
     regex: '/transaction/v1/transactions',
-    method: 'GET',
+    method: 'POST',
     handler: 'list-transactions',
   },
 

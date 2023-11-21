@@ -1,4 +1,4 @@
-import { Account, Auth, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Account, Auth, Category, Product, Project, Recipient, Report, Transaction } from '@household/shared/types/types';
 import { Types } from 'mongoose';
 
 type DataFactoryFunction<T> = (input?: Partial<T>) => T;
@@ -122,7 +122,7 @@ export const createPaymentTransactionDocument: DataFactoryFunction<Transaction.P
   };
 };
 
-export const createSplitDocumentIem: DataFactoryFunction<Transaction.SplitDocumentItem> = (doc) => {
+export const createSplitDocumentItem: DataFactoryFunction<Transaction.SplitDocumentItem> = (doc) => {
   return {
     amount: 1,
     category: createCategoryDocument(),
@@ -148,7 +148,7 @@ export const createSplitTransactionDocument: DataFactoryFunction<Transaction.Spl
     recipientId: undefined,
     account: createAccountDocument(),
     recipient: createRecipientDocument(),
-    splits: [createSplitDocumentIem()],
+    splits: [createSplitDocumentItem()],
     ...doc,
   };
 };
@@ -282,6 +282,19 @@ export const createLoginRequest: DataFactoryFunction<Auth.Login.Request> = (req)
   return {
     email: 'aaa@email.com',
     password: 'password123',
+    ...req,
+  };
+};
+
+export const createReportRequest: DataFactoryFunction<Report.Request> = (req) => {
+  return {
+    accountIds: [createAccountId()],
+    categoryIds: [createCategoryId()],
+    recipientIds: [createRecipientId()],
+    productIds: [createProductId()],
+    projectIds: [createProjectId()],
+    issuedAtFrom: new Date(2023, 1, 1, 0, 0, 0).toISOString(),
+    issuedAtTo: new Date(2023, 12, 1, 0, 0, 0).toISOString(),
     ...req,
   };
 };
@@ -441,5 +454,62 @@ export const createTransferTransactionResponse: DataFactoryFunction<Transaction.
     account: createAccountResponse(),
     transferAccount: createAccountResponse(),
     ...resp,
+  };
+};
+
+export const createAccountReport: DataFactoryFunction<Account.Report> = (rep) => {
+  return {
+    accountId: createAccountId(),
+    currency: 'Ft',
+    name: 'acc name',
+    ...rep,
+  };
+};
+
+export const createCategoryReport: DataFactoryFunction<Category.Report> = (rep) => {
+  return {
+    categoryId: createCategoryId(),
+    fullName: 'category:name',
+    ...rep,
+  };
+};
+
+export const createProjectReport: DataFactoryFunction<Project.Report> = (rep) => {
+  return {
+    projectId: createProjectId(),
+    name: 'acc name',
+    ...rep,
+  };
+};
+
+export const createProductReport: DataFactoryFunction<Product.Report> = (rep) => {
+  return {
+    productId: createProductId(),
+    fullName: 'product name 100 g',
+    quantity: 1,
+    ...rep,
+  };
+};
+
+export const createRecipientReport: DataFactoryFunction<Recipient.Report> = (rep) => {
+  return {
+    recipientId: createRecipientId(),
+    name: 'acc name',
+    ...rep,
+  };
+};
+
+export const createTransactionReport: DataFactoryFunction<Transaction.Report> = (rep) => {
+  return {
+    transactionId: createTransactionId(),
+    amount: 100,
+    description: 'description',
+    issuedAt: new Date().toISOString(),
+    account: createAccountReport(),
+    category: createCategoryReport(),
+    product: createProductReport(),
+    project: createProjectReport(),
+    recipient: createRecipientReport(),
+    ...rep,
   };
 };

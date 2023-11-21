@@ -1,4 +1,4 @@
-import { createProductDocument, createProductRequest, createProductResponse } from '@household/shared/common/test-data-factory';
+import { createInventoryDocument, createProductDocument, createProductReport, createProductRequest, createProductResponse } from '@household/shared/common/test-data-factory';
 import { addSeconds, getProductId } from '@household/shared/common/utils';
 import { productDocumentConverterFactory, IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
 import { advanceTo, clear } from 'jest-date-mock';
@@ -59,22 +59,23 @@ describe('Product document converter', () => {
 
   });
 
-  // describe('update', () => {
-  //   const { updatedAt, ...document } = queriedDocument;
-  //   it('should update document', () => {
-  //     const result = converter.update({
-  //       body,
-  //       document,
-  //     }, expiresIn);
-  //     expect(result).toEqual(createProductDocument({
-  //       _id: document._id,
-  //       description,
-  //       name,
-  //       createdAt: now,
-  //       expiresAt: addSeconds(expiresIn, now),
-  //     }));
-  //   });
-  // });
+  describe('update', () => {
+    const { updatedAt, ...document } = queriedDocument;
+    it('should update document', () => {
+      const result = converter.update({
+        body,
+        document,
+      }, expiresIn);
+      expect(result).toEqual(createProductDocument({
+        _id: document._id,
+        unitOfMeasurement,
+        brand,
+        measurement,
+        createdAt: now,
+        expiresAt: addSeconds(expiresIn, now),
+      }));
+    });
+  });
 
   describe('toResponse', () => {
     it('should return response', () => {
@@ -88,16 +89,36 @@ describe('Product document converter', () => {
     });
   });
 
-  // describe('toResponseList', () => {
-  //   it('should return response list', () => {
-  //     const result = converter.toResponseList([queriedDocument]);
-  //     expect(result).toEqual([
-  //       createProductResponse({
-  //         productId: getProductId(queriedDocument),
-  //         description,
-  //         name,
-  //       }),
-  //     ]);
-  //   });
-  // });
+  describe('toResponseList', () => {
+    it('should return response list', () => {
+      const result = converter.toResponseList([queriedDocument]);
+      expect(result).toEqual([
+        createProductResponse({
+          productId: getProductId(queriedDocument),
+          unitOfMeasurement,
+          brand,
+          measurement,
+        }),
+      ]);
+    });
+  });
+
+  describe('toReport', () => {
+    it('should return response', () => {
+      const quantity = 1;
+      const fullName = 'full name of product 100 g';
+      const product = createProductDocument({
+        fullName,
+      });
+      const result = converter.toReport(createInventoryDocument({
+        product,
+        quantity,
+      }));
+      expect(result).toEqual(createProductReport({
+        productId: getProductId(product),
+        fullName,
+        quantity,
+      }));
+    });
+  });
 });

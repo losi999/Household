@@ -6,6 +6,9 @@ import { product } from './endpoints/product';
 import { project } from './endpoints/project';
 import { recipient } from './endpoints/recipient';
 import { transaction } from './endpoints/transaction';
+import { config } from 'dotenv';
+
+config();
 
 export type EndpointConfig = {
   regex: string;

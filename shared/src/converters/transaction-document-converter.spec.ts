@@ -1,4 +1,4 @@
-import { createAccountDocument, createAccountResponse, createCategoryDocument, createCategoryResponse, createPaymentTransactionDocument, createPaymentTransactionRequest, createPaymentTransactionResponse, createProjectDocument, createProjectResponse, createRecipientDocument, createRecipientResponse, createSplitTransactionDocument, createSplitTransactionRequest, createSplitTransactionResponse, createTransferTransactionDocument, createTransferTransactionRequest, createTransferTransactionResponse, createProductDocument, createSplitRequestIem, createSplitDocumentIem, createSplitResponseIem, createInvoiceRequest, createInventoryRequest, createInventoryDocument, createInvoiceDocument, createInventoryResponse, createInvoiceResponse, createProductResponse } from '@household/shared/common/test-data-factory';
+import { createAccountDocument, createAccountResponse, createCategoryDocument, createCategoryResponse, createPaymentTransactionDocument, createPaymentTransactionRequest, createPaymentTransactionResponse, createProjectDocument, createProjectResponse, createRecipientDocument, createRecipientResponse, createSplitTransactionDocument, createSplitTransactionRequest, createSplitTransactionResponse, createTransferTransactionDocument, createTransferTransactionRequest, createTransferTransactionResponse, createProductDocument, createSplitRequestIem, createSplitDocumentItem, createSplitResponseIem, createInvoiceRequest, createInventoryRequest, createInventoryDocument, createInvoiceDocument, createInventoryResponse, createInvoiceResponse, createProductResponse, createTransactionReport, createAccountReport, createCategoryReport, createProjectReport, createProductReport, createRecipientReport } from '@household/shared/common/test-data-factory';
 import { addSeconds, getTransactionId, getProjectId, getCategoryId, toDictionary, getAccountId, getProductId } from '@household/shared/common/utils';
 import { transactionDocumentConverterFactory, ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { advanceTo, clear } from 'jest-date-mock';
@@ -20,11 +20,11 @@ describe('Transaction document converter', () => {
   const now = new Date();
 
   beforeEach(() => {
-    mockAccountDocumentConverter = createMockService('toResponse');
-    mockProjectDocumentConverter = createMockService('toResponse');
-    mockRecipientDocumentConverter = createMockService('toResponse');
-    mockCategoryDocumentConverter = createMockService('toResponse');
-    mockProductDocumentConverter = createMockService('toResponse');
+    mockAccountDocumentConverter = createMockService('toResponse', 'toReport');
+    mockProjectDocumentConverter = createMockService('toResponse', 'toReport');
+    mockRecipientDocumentConverter = createMockService('toResponse', 'toReport');
+    mockCategoryDocumentConverter = createMockService('toResponse', 'toReport');
+    mockProductDocumentConverter = createMockService('toResponse', 'toReport');
 
     advanceTo(now);
     converter = transactionDocumentConverterFactory(mockAccountDocumentConverter.service, mockProjectDocumentConverter.service, mockCategoryDocumentConverter.service, mockRecipientDocumentConverter.service, mockProductDocumentConverter.service);
@@ -315,6 +315,37 @@ describe('Transaction document converter', () => {
         expect.assertions(5);
       });
     });
+
+    describe('toReport', () => {
+      it('should return report', () => {
+        const accountReport = createAccountReport();
+        const categoryReport = createCategoryReport();
+        const projectReport = createProjectReport();
+        const productReport = createProductReport();
+        const recipientReport = createRecipientReport();
+
+        mockAccountDocumentConverter.functions.toReport.mockReturnValue(accountReport);
+        mockCategoryDocumentConverter.functions.toReport.mockReturnValue(categoryReport);
+        mockProjectDocumentConverter.functions.toReport.mockReturnValue(projectReport);
+        mockProductDocumentConverter.functions.toReport.mockReturnValue(productReport);
+        mockRecipientDocumentConverter.functions.toReport.mockReturnValue(recipientReport);
+
+        const result = converter.toReport(queriedDocument);
+        expect(result).toEqual([
+          {
+            ...createTransactionReport(),
+            amount,
+            description,
+            transactionId: getTransactionId(queriedDocument),
+            account: accountReport,
+            category: categoryReport,
+            product: productReport,
+            project: projectReport,
+            recipient: recipientReport,
+          },
+        ]);
+      });
+    });
   });
 
   describe('split', () => {
@@ -357,7 +388,7 @@ describe('Transaction document converter', () => {
       createdAt: now,
       updatedAt: now,
       splits: [
-        createSplitDocumentIem({
+        createSplitDocumentItem({
           category: regularCategory,
           description,
           project,
@@ -396,14 +427,14 @@ describe('Transaction document converter', () => {
           expiresAt: undefined,
           _id: undefined,
           splits: [
-            createSplitDocumentIem({
+            createSplitDocumentItem({
               category: regularCategory,
               description,
               project,
               inventory: undefined,
               invoice: undefined,
             }),
-            createSplitDocumentIem({
+            createSplitDocumentItem({
               category: inventoryCategory,
               description,
               project,
@@ -413,7 +444,7 @@ describe('Transaction document converter', () => {
               }),
               invoice: undefined,
             }),
-            createSplitDocumentIem({
+            createSplitDocumentItem({
               category: invoiceCategory,
               description,
               project,
@@ -449,14 +480,14 @@ describe('Transaction document converter', () => {
           expiresAt: addSeconds(expiresIn, now),
           _id: undefined,
           splits: [
-            createSplitDocumentIem({
+            createSplitDocumentItem({
               category: regularCategory,
               description,
               project,
               inventory: undefined,
               invoice: undefined,
             }),
-            createSplitDocumentIem({
+            createSplitDocumentItem({
               category: inventoryCategory,
               description,
               project,
@@ -466,7 +497,7 @@ describe('Transaction document converter', () => {
               }),
               invoice: undefined,
             }),
-            createSplitDocumentIem({
+            createSplitDocumentItem({
               category: invoiceCategory,
               description,
               project,
@@ -507,14 +538,14 @@ describe('Transaction document converter', () => {
           expiresAt: addSeconds(expiresIn, now),
           _id: document._id,
           splits: [
-            createSplitDocumentIem({
+            createSplitDocumentItem({
               category: regularCategory,
               description,
               project,
               inventory: undefined,
               invoice: undefined,
             }),
-            createSplitDocumentIem({
+            createSplitDocumentItem({
               category: inventoryCategory,
               description,
               project,
@@ -524,7 +555,7 @@ describe('Transaction document converter', () => {
               }),
               invoice: undefined,
             }),
-            createSplitDocumentIem({
+            createSplitDocumentItem({
               category: invoiceCategory,
               description,
               project,
@@ -623,6 +654,71 @@ describe('Transaction document converter', () => {
         validateFunctionCall(mockCategoryDocumentConverter.functions.toResponse, regularCategory);
         validateFunctionCall(mockRecipientDocumentConverter.functions.toResponse, recipient);
         expect.assertions(5);
+      });
+    });
+
+    describe('toReport', () => {
+      it('should return report', () => {
+        const accountReport = createAccountReport();
+        const categoryReport = createCategoryReport();
+        const projectReport = createProjectReport();
+        const productReport = createProductReport();
+        const recipientReport = createRecipientReport();
+        const document = createSplitTransactionDocument({
+          recipient,
+          account,
+          splits: [
+            createSplitDocumentItem({
+              amount,
+              description,
+              category: regularCategory,
+              inventory: {
+                product,
+                quantity,
+              },
+              project,
+            }),
+            createSplitDocumentItem({
+              amount,
+              description,
+              project: undefined,
+              category: undefined,
+              inventory: undefined,
+            }),
+          ],
+        });
+
+        mockAccountDocumentConverter.functions.toReport.mockReturnValue(accountReport);
+        mockCategoryDocumentConverter.functions.toReport.mockReturnValueOnce(categoryReport);
+        mockProjectDocumentConverter.functions.toReport.mockReturnValueOnce(projectReport);
+        mockProductDocumentConverter.functions.toReport.mockReturnValueOnce(productReport);
+        mockRecipientDocumentConverter.functions.toReport.mockReturnValue(recipientReport);
+
+        const result = converter.toReport(document);
+        expect(result).toEqual([
+          {
+            ...createTransactionReport(),
+            amount,
+            description,
+            transactionId: getTransactionId(document),
+            account: accountReport,
+            recipient: recipientReport,
+            category: categoryReport,
+            product: productReport,
+            project: projectReport,
+          },
+          {
+            ...createTransactionReport(),
+            amount,
+            description,
+            transactionId: getTransactionId(document),
+            account: accountReport,
+            recipient: recipientReport,
+            category: undefined,
+            product: undefined,
+            project: undefined,
+          },
+        ]);
       });
     });
   });

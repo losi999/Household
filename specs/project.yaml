@@ -11,21 +11,31 @@ components:
       properties:
         projectId:
           type: string
-    Base:
+    Name:
       type: object
       required:
         - name
-        - description
       properties:
         name:
           type: string
           minLength: 1
+    Description:
+      type: object
+      properties:
         description:
           type: string
           minLength: 1
+    Base:
+      allOf:
+        - $ref: "#/components/schemas/Name"
+        - $ref: "#/components/schemas/Description"
     Response:
       allOf:
         - $ref: "#/components/schemas/ProjectId"
         - $ref: "#/components/schemas/Base"
+    Report:
+      allOf:
+        - $ref: "#/components/schemas/ProjectId"
+        - $ref: "#/components/schemas/Name"
     Request:
       $ref: "#/components/schemas/Base"

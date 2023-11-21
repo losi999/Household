@@ -1,6 +1,6 @@
 openapi: "3.0.0"
 info:
-  title: Account API
+  title: Account components
   version: 1.0.0
 components:
   schemas:
@@ -18,19 +18,27 @@ components:
       properties:
         isOpen:
           type: boolean
-    Base:
+    Name:
       type: object
       required:
         - name
-        - currency
-        - accountType
       properties:
         name:
           type: string
           minLength: 1
+    Currency:
+      type: object
+      required:
+        - currency
+      properties:
         currency:
           type: string
           minLength: 1
+    AccountType:
+      type: object
+      required:
+        - accountType
+      properties:
         accountType:
           type: string
           enum:
@@ -39,6 +47,11 @@ components:
             - creditCard
             - loan
             - cafeteria
+    Base:
+      allOf:
+        - $ref: "#/components/schemas/Name"
+        - $ref: "#/components/schemas/Currency"
+        - $ref: "#/components/schemas/AccountType"
     Balance:
       type: object
       required:
@@ -52,5 +65,10 @@ components:
         - $ref: "#/components/schemas/IsOpen"
         - $ref: "#/components/schemas/Base"
         - $ref: "#/components/schemas/Balance"
+    Report:
+      allOf:
+        - $ref: "#/components/schemas/AccountId"
+        - $ref: "#/components/schemas/Name"
+        - $ref: "#/components/schemas/Currency"
     Request:
       $ref: "#/components/schemas/Base"
