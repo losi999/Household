@@ -7,6 +7,12 @@ import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/
 import { TransactionService } from 'src/app/transaction/transaction.service';
 import { isInventoryCategory, isInvoiceCategory, isPaymentTransaction, isSplitTransaction, isTransferTransaction } from '@household/shared/common/type-guards';
 import { ProgressService } from 'src/app/shared/progress.service';
+import { RecipientFormComponent, RecipientFormData, RecipientFormResult } from 'src/app/recipient/recipient-form/recipient-form.component';
+import { RecipientService } from 'src/app/recipient/recipient.service';
+import { ProjectFormComponent, ProjectFormData, ProjectFormResult } from 'src/app/project/project-form/project-form.component';
+import { ProjectService } from 'src/app/project/project.service';
+import { CategoryFormComponent, CategoryFormData, CategoryFormResult } from 'src/app/category/category-form/category-form.component';
+import { CategoryService } from 'src/app/category/category.service';
 
 @Component({
   selector: 'app-transaction-edit',
@@ -56,6 +62,9 @@ export class TransactionEditComponent implements OnInit {
   constructor(
     private activatedRoute: ActivatedRoute,
     private transactionService: TransactionService,
+    private recipientService: RecipientService,
+    private projectService: ProjectService,
+    private categoryService: CategoryService,
     private progressService: ProgressService,
     private router: Router,
     public dialog: MatDialog
@@ -91,6 +100,29 @@ export class TransactionEditComponent implements OnInit {
     this.projects = this.activatedRoute.snapshot.data.projects;
     this.recipients = this.activatedRoute.snapshot.data.recipients;
     this.categories = this.activatedRoute.snapshot.data.categories;
+
+    this.recipientService.refreshList.subscribe({
+      next: () => {
+        this.recipientService.listRecipients().subscribe((recipients) => {
+          this.recipients = recipients
+        })
+      }
+    })
+    this.projectService.refreshList.subscribe({
+      next: () => {
+        this.projectService.listProjects().subscribe((projects) => {
+          this.projects = projects
+        })
+      }
+    })
+    this.categoryService.refreshList.subscribe({
+      next: () => {
+        this.categoryService.listCategories().subscribe((categories) => {
+          this.categories = categories
+        })
+      }
+    })
+
     const account = this.accounts.find(a => a.accountId === this.accountId);
 
     this.form = new FormGroup({
@@ -144,6 +176,47 @@ export class TransactionEditComponent implements OnInit {
       isTransfer: false,
     });
     this.splitsArray.insert(0, this.createSplitFormGroup());
+  }
+
+  createRecipient() {
+    const dialogRef = this.dialog.open<RecipientFormComponent, RecipientFormData, RecipientFormResult>(RecipientFormComponent);
+
+    dialogRef.afterClosed().subscribe({
+      next: (values) => {
+        if (values) {
+          this.recipientService.createRecipient(values);
+        }
+      },
+    });
+  }
+
+  createProject() {
+    const dialogRef = this.dialog.open<ProjectFormComponent, ProjectFormData, ProjectFormResult>(ProjectFormComponent);
+
+    dialogRef.afterClosed().subscribe({
+      next: (values) => {
+        if (values) {
+          this.projectService.createProject(values);
+        }
+      },
+    });
+  }
+
+  createCategory() {
+    const dialogRef = this.dialog.open<CategoryFormComponent, CategoryFormData, CategoryFormResult>(CategoryFormComponent, {
+      data: {
+        category: undefined,
+        categories: this.categories,
+      },
+    });
+
+    dialogRef.afterClosed().subscribe({
+      next: (values) => {
+        if (values) {
+          this.categoryService.createCategory(values);
+        }
+      },
+    });
   }
 
   onSubmit() {

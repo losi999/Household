@@ -11,6 +11,11 @@
   &__delete {
     grid-area: delete;
   }
+
+  &__category, &__project {
+    display: grid;
+    grid-template-columns: 1fr auto;
+  }
 }
 
 .transaction-edit {
@@ -24,5 +29,10 @@
 
   &__split-diff {
     font-size: 18px;
+  }
+
+  &__category, &__recipient, &__project {
+    display: grid;
+    grid-template-columns: 1fr auto;
   }
 }
