@@ -19,7 +19,7 @@ import { Subscription } from 'rxjs';
 export class InventoryInputComponent implements OnInit, OnDestroy, ControlValueAccessor {
   form: FormGroup;
   @Input() products: Product.Response[];
-  changed: (value: Transaction.InventoryItem<Transaction.Product<Product.Response>>) => void;
+  changed: (value: Transaction.Inventory<Product.Response>['inventory']) => void;
   touched: () => void;
   isDisabled: boolean;
   subs: Subscription;
@@ -35,7 +35,7 @@ export class InventoryInputComponent implements OnInit, OnDestroy, ControlValueA
       ]),
     });
 
-    this.subs = this.form.valueChanges.subscribe((value: Transaction.InventoryItem<Transaction.Product<Product.Response>>) => {
+    this.subs = this.form.valueChanges.subscribe((value: Transaction.Inventory<Product.Response>['inventory']) => {
       if (this.form.invalid) {
         this.changed?.(undefined);
       } else {
@@ -51,7 +51,7 @@ export class InventoryInputComponent implements OnInit, OnDestroy, ControlValueA
     this.subs.unsubscribe();
   }
 
-  writeValue(obj: Transaction.InventoryItem<Transaction.Product<Product.Response>>): void {
+  writeValue(obj: Transaction.Inventory<Product.Response>['inventory']): void {
     if (obj) {
       this.form.patchValue(obj);
     }

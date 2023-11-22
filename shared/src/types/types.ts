@@ -92,7 +92,7 @@ export namespace Account {
     currency: string;
   };
 
-  type AccountType = {
+  export type AccountType = {
     accountType: 'bankAccount' | 'cash' | 'creditCard' | 'loan' | 'cafeteria';
   };
 
@@ -278,7 +278,7 @@ export namespace Transaction {
     project: P;
   };
 
-  export type Account<A extends Account.Document | Account.Response | Account.Report> = {
+  export type Account<A extends Account.Document | Account.Response | Account.Report> = {
     account: A;
   };
 

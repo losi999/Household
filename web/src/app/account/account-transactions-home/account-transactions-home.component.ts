@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Account, Transaction } from '@household/shared/types/types';
+import { skip } from 'rxjs/operators';
 import { TransactionService } from 'src/app/transaction/transaction.service';
 
 @Component({
@@ -11,23 +12,32 @@ import { TransactionService } from 'src/app/transaction/transaction.service';
 export class AccountTransactionsHomeComponent implements OnInit {
   accountId: Account.Id;
   transactions: Transaction.Response[];
-  private pageNumber: number;
 
-  constructor(private activatedRoute: ActivatedRoute, private transactionService: TransactionService) {
+  constructor(private activatedRoute: ActivatedRoute, private transactionService: TransactionService, private router: Router) {
   }
 
   ngOnInit(): void {
-    this.pageNumber = 1;
+    this.activatedRoute.queryParams.pipe(skip(1)).subscribe((value) => {
+      this.transactionService.listTransactionsByAccountId(this.accountId, Number(value.page)).subscribe((response) => {
+        this.transactions.push(...response);
+      });
+    });
 
     this.accountId = this.activatedRoute.snapshot.paramMap.get('accountId') as Account.Id;
     this.transactions = this.activatedRoute.snapshot.data.transactions;
   }
 
   loadMore() {
-    this.pageNumber += 1;
 
-    this.transactionService.listTransactionsByAccountId(this.accountId, this.pageNumber).subscribe((response) => {
-      this.transactions.push(...response);
-    });
+    this.router.navigate(
+      [],
+      {
+        relativeTo: this.activatedRoute,
+        queryParams: { page: Number(this.activatedRoute.snapshot.queryParams.page ?? 1) + 1 },
+        queryParamsHandling: 'merge',
+        replaceUrl: true
+      }
+    );
+
   }
 }

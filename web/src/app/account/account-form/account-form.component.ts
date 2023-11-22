@@ -7,7 +7,7 @@ export type AccountFormData = Account.Response;
 export type AccountFormResult = Account.Request;
 
 type AccountTypeMap = {
-  key: Account.AccountType;
+  key: Account.AccountType['accountType'];
   value: string;
 };
 
@@ -19,7 +19,7 @@ type AccountTypeMap = {
 export class AccountFormComponent implements OnInit {
   form: FormGroup;
   accountTypes: {
-    [id in Account.AccountType]: string
+    [id in Account.AccountType['accountType']]: string
   } = {
       bankAccount: 'Bankszámla',
       cafeteria: 'Cafeteria',

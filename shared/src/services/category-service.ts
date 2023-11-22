@@ -228,6 +228,9 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
           .populate({
             path: 'products',
             options: {
+              collation: {
+                locale: 'hu',
+              },
               sort: {
                 fullName: 1,
               },

@@ -1,4 +1,5 @@
-<div [routerLink]="['/accounts', transaction.account.accountId, 'transactions', transaction.transactionId]" class="account-transaction-list-item mat-elevation-z2">
+<a [routerLink]="['/accounts', transaction.account.accountId, 'transactions', transaction.transactionId]"
+  class="account-transaction-list-item mat-elevation-z2" href="" target="_blank">
   <mat-icon class="account-transaction-list-item__icon" [ngClass]="iconColor">
     {{iconName}}</mat-icon>
   <div class="account-transaction-list-item__datetime">
@@ -27,4 +28,4 @@
   <span class="account-transaction-list-item__amount"
     [ngClass]="transaction.amount >= 0 ? 'green' : 'red'">{{transaction.amount | number:'1.0-2':'hu' }}
     {{transaction.account.currency}}</span>
-</div>
+</a>

@@ -49,7 +49,7 @@ export class TransactionEditComponent implements OnInit {
   get recipient(): Recipient.Response { return this.form.value.recipient; }
   get category(): Category.Response { return this.form.value.category; }
   get invoice(): Transaction.Invoice<string>['invoice'] { return this.form.value.invoice ?? undefined; }
-  get inventory(): Transaction.InventoryItem<Transaction.Product<Product.Response>> { return this.form.value.inventory ?? undefined; }
+  get inventory(): Transaction.Inventory<Product.Response>['inventory'] { return this.form.value.inventory ?? undefined; }
 
   get splits(): Transaction.SplitResponseItem[] { return this.form.value.splits; }
 
