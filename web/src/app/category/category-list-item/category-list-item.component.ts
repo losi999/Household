@@ -1,12 +1,9 @@
 import { Component, Input } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
-import { MatDialog } from '@angular/material/dialog';
 import { Category } from '@household/shared/types/types';
-import { CategoryFormComponent, CategoryFormData, CategoryFormResult } from 'src/app/category/category-form/category-form.component';
-import { CategoryMergeDialogComponent, CategoryMergeDialogData, CategoryMergeDialogResult } from 'src/app/category/category-merge-dialog/category-merge-dialog.component';
 import { CategoryService } from 'src/app/category/category.service';
 import { CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult } from 'src/app/shared/catalog-submenu/catalog-submenu.component';
-import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/confirmation-dialog.component';
+import { DialogService } from 'src/app/shared/dialog.service';
 
 @Component({
   selector: 'app-category-list-item',
@@ -18,49 +15,23 @@ export class CategoryListItemComponent {
   @Input() category: Category.Response;
   constructor(
     private categoryService: CategoryService,
-    private dialog: MatDialog,
+    private dialogService: DialogService,
     private bottomSheet: MatBottomSheet) { }
 
   delete() {
-    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-      data: {
-        title: 'Törölni akarod ezt a kategóriát?',
-        content: this.category.name,
-      },
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
+    this.dialogService.openDeleteCategoryDialog(this.category).afterClosed().subscribe(shouldDelete => {
+      if (shouldDelete) {
         this.categoryService.deleteCategory(this.category.categoryId);
       }
     });
   }
 
   edit() {
-    const dialogRef = this.dialog.open<CategoryFormComponent, CategoryFormData, CategoryFormResult>(CategoryFormComponent, {
-      data: {
-        category: this.category,
-        categories: this.categories,
-      },
-    });
-
-    dialogRef.afterClosed().subscribe((values) => {
-      if (values) {
-        this.categoryService.updateCategory(this.category.categoryId, values);
-      }
-    });
+    this.dialogService.openEditCategoryDialog(this.category, this.categories)
   }
 
   merge() {
-    const dialogRef = this.dialog.open<CategoryMergeDialogComponent, CategoryMergeDialogData, CategoryMergeDialogResult>(CategoryMergeDialogComponent, {
-      data: this.categories.filter(p => p.categoryId !== this.category.categoryId),
-    });
-
-    dialogRef.afterClosed().subscribe((values) => {
-      if (values) {
-        this.categoryService.mergeCategories(this.category.categoryId, values);
-      }
-    });
+    this.dialogService.openMergeCategoriesDialog(this.category, this.categories)
   }
 
   showMenu() {

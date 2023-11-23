@@ -1,10 +1,10 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute } from '@angular/router';
 import { Category } from '@household/shared/types/types';
-import { Subscription } from 'rxjs';
-import { CategoryFormComponent, CategoryFormData, CategoryFormResult } from 'src/app/category/category-form/category-form.component';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { CategoryService } from 'src/app/category/category.service';
+import { DialogService } from 'src/app/shared/dialog.service';
 
 @Component({
   selector: 'app-category-home',
@@ -13,40 +13,34 @@ import { CategoryService } from 'src/app/category/category.service';
 })
 export class CategoryHomeComponent implements OnInit, OnDestroy {
   categories: Category.Response[];
-  refreshList: Subscription;
+  private destroyed = new Subject();
 
-  constructor(private activatedRoute: ActivatedRoute, private categoryService: CategoryService, private dialog: MatDialog) { }
+  constructor(private activatedRoute: ActivatedRoute, private categoryService: CategoryService, private dialogService: DialogService) { }
 
   ngOnDestroy(): void {
-    this.refreshList.unsubscribe();
+    this.destroyed.next();
+    this.destroyed.complete();
   }
 
   ngOnInit(): void {
     this.categories = this.activatedRoute.snapshot.data.categories;
 
-    this.refreshList = this.categoryService.refreshList.subscribe({
-      next: () => {
-        this.categoryService.listCategories().subscribe((categories) => {
-          this.categories = categories;
-        });
-      },
-    });
+    this.categoryService.collectionUpdated.pipe(takeUntil(this.destroyed)).subscribe((event) => {
+      switch (event.action) {
+        case 'deleted': {
+          this.categories = this.categories.filter(p => p.categoryId !== event.categoryId);
+        } break;
+      }
+
+      this.categoryService.listCategories().subscribe({
+        next: (categories) => {
+          this.categories = categories
+        }
+      });
+    })
   }
 
   create() {
-    const dialogRef = this.dialog.open<CategoryFormComponent, CategoryFormData, CategoryFormResult>(CategoryFormComponent, {
-      data: {
-        category: undefined,
-        categories: this.categories,
-      },
-    });
-
-    dialogRef.afterClosed().subscribe({
-      next: (values) => {
-        if (values) {
-          this.categoryService.createCategory(values);
-        }
-      },
-    });
+    this.dialogService.openCreateCategoryDialog(this.categories);
   }
 }

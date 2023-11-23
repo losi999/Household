@@ -2,12 +2,12 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Category } from '@household/shared/types/types';
+import { CategoryService } from 'src/app/category/category.service';
 
 export type CategoryFormData = {
   category: Category.Response;
   categories: Category.Response[];
 };
-export type CategoryFormResult = Category.Request;
 
 @Component({
   selector: 'app-category-form',
@@ -16,7 +16,8 @@ export type CategoryFormResult = Category.Request;
 })
 export class CategoryFormComponent implements OnInit {
   form: FormGroup;
-  constructor(private dialogRef: MatDialogRef<CategoryFormComponent, CategoryFormResult>,
+  constructor(private dialogRef: MatDialogRef<CategoryFormComponent, void>,
+    private categoryService: CategoryService,
     @Inject(MAT_DIALOG_DATA) public data: CategoryFormData) { }
 
   ngOnInit(): void {
@@ -29,11 +30,19 @@ export class CategoryFormComponent implements OnInit {
 
   save() {
     if (this.form.valid) {
-      this.dialogRef.close({
+      const request: Category.Request = {
         name: this.form.value.name,
         categoryType: this.form.value.categoryType,
         parentCategoryId: this.form.value.parentCategory?.categoryId,
-      });
+      };
+
+      if (this.data.category) {
+        this.categoryService.updateCategory(this.data.category.categoryId, request)
+      } else {
+        this.categoryService.createCategory(request)
+      }
+
+      this.dialogRef.close();
     }
   }
 }

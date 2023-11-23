@@ -2,10 +2,13 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { unitsOfMeasurement } from '@household/shared/constants';
-import { Product } from '@household/shared/types/types';
+import { Category, Product } from '@household/shared/types/types';
+import { ProductService } from 'src/app/product/product.service';
 
-export type ProductFormData = Product.Response;
-export type ProductFormResult = Product.Request;
+export type ProductFormData = {
+  product: Product.Response
+  categories: Category.Response[];
+};
 
 @Component({
   selector: 'app-product-form',
@@ -16,24 +19,35 @@ export class ProductFormComponent implements OnInit {
   form: FormGroup;
   get unitsOfMeasurement() { return unitsOfMeasurement; }
 
-  constructor(private dialogRef: MatDialogRef<ProductFormComponent, ProductFormResult>,
-    @Inject(MAT_DIALOG_DATA) public product: ProductFormData) { }
+  constructor(private dialogRef: MatDialogRef<ProductFormComponent, void>,
+    private productService: ProductService,
+    @Inject(MAT_DIALOG_DATA) public data: ProductFormData) { }
 
   ngOnInit(): void {
     this.form = new FormGroup({
-      brand: new FormControl(this.product?.brand, [Validators.required]),
-      measurement: new FormControl(this.product?.measurement, [Validators.required]),
-      unitOfMeasurement: new FormControl(this.product?.unitOfMeasurement, [Validators.required]),
+      brand: new FormControl(this.data.product?.brand, [Validators.required]),
+      measurement: new FormControl(this.data.product?.measurement, [Validators.required]),
+      unitOfMeasurement: new FormControl(this.data.product?.unitOfMeasurement, [Validators.required]),
+      category: new FormControl(null),
     });
   }
 
   save() {
     if (this.form.valid) {
-      this.dialogRef.close({
+      const request: Product.Request = {
         brand: this.form.value.brand,
         measurement: this.form.value.measurement,
         unitOfMeasurement: this.form.value.unitOfMeasurement,
-      });
+      }
+
+      if (this.data.product) {
+        this.productService.updateProduct(this.data.product.productId, request);
+      } else {
+        this.productService.createProduct(this.form.value.category.categoryId, request);
+      }
+
+      this.dialogRef.close();
     }
+
   }
 }

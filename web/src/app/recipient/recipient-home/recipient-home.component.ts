@@ -1,10 +1,10 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute } from '@angular/router';
 import { Recipient } from '@household/shared/types/types';
-import { Subscription } from 'rxjs/internal/Subscription';
-import { RecipientFormComponent, RecipientFormData, RecipientFormResult } from 'src/app/recipient/recipient-form/recipient-form.component';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { RecipientService } from 'src/app/recipient/recipient.service';
+import { DialogService } from 'src/app/shared/dialog.service';
 
 @Component({
   selector: 'app-recipient-home',
@@ -13,35 +13,34 @@ import { RecipientService } from 'src/app/recipient/recipient.service';
 })
 export class RecipientHomeComponent implements OnInit, OnDestroy {
   recipients: Recipient.Response[];
-  refreshList: Subscription;
+  private destroyed = new Subject();
 
-  constructor(private activatedRoute: ActivatedRoute, private recipientService: RecipientService, private dialog: MatDialog) { }
+  constructor(private activatedRoute: ActivatedRoute, private recipientService: RecipientService, private dialogService: DialogService) { }
 
   ngOnDestroy(): void {
-    this.refreshList.unsubscribe();
+    this.destroyed.next();
+    this.destroyed.complete();
   }
 
   ngOnInit(): void {
     this.recipients = this.activatedRoute.snapshot.data.recipients;
 
-    this.refreshList = this.recipientService.refreshList.subscribe({
-      next: () => {
-        this.recipientService.listRecipients().subscribe((recipients) => {
-          this.recipients = recipients;
-        });
-      },
-    });
+    this.recipientService.collectionUpdated.pipe(takeUntil(this.destroyed)).subscribe((event) => {
+      switch (event.action) {
+        case 'deleted': {
+          this.recipients = this.recipients.filter(p => p.recipientId !== event.recipientId);
+        } break;
+      }
+
+      this.recipientService.listRecipients().subscribe({
+        next: (recipients) => {
+          this.recipients = recipients
+        }
+      });
+    })
   }
 
   create() {
-    const dialogRef = this.dialog.open<RecipientFormComponent, RecipientFormData, RecipientFormResult>(RecipientFormComponent);
-
-    dialogRef.afterClosed().subscribe({
-      next: (values) => {
-        if (values) {
-          this.recipientService.createRecipient(values);
-        }
-      },
-    });
+    this.dialogService.openCreateRecipientDialog();
   }
 }

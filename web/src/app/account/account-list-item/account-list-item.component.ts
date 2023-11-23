@@ -1,9 +1,7 @@
 import { Component, Input } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
 import { Account } from '@household/shared/types/types';
-import { AccountFormComponent, AccountFormData, AccountFormResult } from 'src/app/account/account-form/account-form.component';
 import { AccountService } from 'src/app/account/account.service';
-import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/confirmation-dialog.component';
+import { DialogService } from 'src/app/shared/dialog.service';
 
 @Component({
   selector: 'app-account-list-item',
@@ -21,18 +19,11 @@ export class AccountListItemComponent {
     }
   }
 
-  constructor(private accountService: AccountService, private dialog: MatDialog,) { }
+  constructor(private accountService: AccountService, private dialogService: DialogService,) { }
 
   delete() {
-    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-      data: {
-        title: 'Törölni akarod ezt a számlát?',
-        content: this.account.name,
-      },
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
+    this.dialogService.openDeleteAccountDialog(this.account).afterClosed().subscribe(shouldDelete => {
+      if (shouldDelete) {
         this.accountService.deleteAccount(this.account.accountId);
       }
     });
@@ -45,14 +36,6 @@ export class AccountListItemComponent {
   }
 
   edit() {
-    const dialogRef = this.dialog.open<AccountFormComponent, AccountFormData, AccountFormResult>(AccountFormComponent, {
-      data: this.account, 
-    });
-
-    dialogRef.afterClosed().subscribe((values) => {
-      if (values) {
-        this.accountService.updateAccount(this.account.accountId, values);
-      }
-    });
+    this.dialogService.openEditAccountDialog(this.account);
   }
 }

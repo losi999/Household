@@ -2,9 +2,12 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Recipient } from '@household/shared/types/types';
+import { RecipientService } from 'src/app/recipient/recipient.service';
 
-export type RecipientMergeDialogData = Recipient.Response[];
-export type RecipientMergeDialogResult = Recipient.Id[];
+export type RecipientMergeDialogData = {
+  recipients: Recipient.Response[];
+  targetRecipientId: Recipient.Id;
+};
 
 @Component({
   selector: 'app-recipient-merge-dialog',
@@ -14,8 +17,9 @@ export type RecipientMergeDialogResult = Recipient.Id[];
 export class RecipientMergeDialogComponent implements OnInit {
   form: FormGroup;
 
-  constructor(private dialogRef: MatDialogRef<RecipientMergeDialogComponent, RecipientMergeDialogResult>,
-    @Inject(MAT_DIALOG_DATA) public recipients: RecipientMergeDialogData) { }
+  constructor(private dialogRef: MatDialogRef<RecipientMergeDialogComponent, void>,
+    private recipientService: RecipientService,
+    @Inject(MAT_DIALOG_DATA) public data: RecipientMergeDialogData) { }
 
   ngOnInit(): void {
     this.form = new FormGroup({
@@ -24,6 +28,8 @@ export class RecipientMergeDialogComponent implements OnInit {
   }
 
   save() {
-    this.dialogRef.close(this.form.value.sourceRecipients);
+    this.recipientService.mergeRecipients(this.data.targetRecipientId, this.form.value.sourceRecipients);
+
+    this.dialogRef.close();
   }
 }

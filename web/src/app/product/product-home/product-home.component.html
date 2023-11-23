@@ -1,3 +1,6 @@
 <app-toolbar title="Termékek">
+  <button mat-icon-button (click)="create()" type="button">
+    <mat-icon>add</mat-icon>
+  </button>
 </app-toolbar>
 <app-product-list [categories]="categories"></app-product-list>

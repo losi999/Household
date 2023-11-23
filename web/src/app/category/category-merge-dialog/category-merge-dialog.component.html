@@ -2,7 +2,7 @@
   <h1 mat-dialog-title>Egyesítés</h1>
   <div mat-dialog-content>
     <mat-selection-list formControlName="sourceCategories">
-      <mat-list-option *ngFor="let category of categories" [value]="category.categoryId">
+      <mat-list-option *ngFor="let category of data.categories" [value]="category.categoryId">
         {{category.name}}
       </mat-list-option>
     </mat-selection-list>

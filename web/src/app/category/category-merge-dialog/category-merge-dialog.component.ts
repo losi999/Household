@@ -2,9 +2,13 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Category } from '@household/shared/types/types';
+import { CategoryService } from 'src/app/category/category.service';
 
-export type CategoryMergeDialogData = Category.Response[];
-export type CategoryMergeDialogResult = Category.Id[];
+export type CategoryMergeDialogData = {
+  categories: Category.Response[];
+  targetCategoryId: Category.Id;
+};
+
 
 @Component({
   selector: 'app-category-merge-dialog',
@@ -14,8 +18,9 @@ export type CategoryMergeDialogResult = Category.Id[];
 export class CategoryMergeDialogComponent implements OnInit {
   form: FormGroup;
 
-  constructor(private dialogRef: MatDialogRef<CategoryMergeDialogComponent, CategoryMergeDialogResult>,
-    @Inject(MAT_DIALOG_DATA) public categories: CategoryMergeDialogData) { }
+  constructor(private dialogRef: MatDialogRef<CategoryMergeDialogComponent, void>,
+    private categoryService: CategoryService,
+    @Inject(MAT_DIALOG_DATA) public data: CategoryMergeDialogData) { }
 
   ngOnInit(): void {
     this.form = new FormGroup({
@@ -24,6 +29,8 @@ export class CategoryMergeDialogComponent implements OnInit {
   }
 
   save() {
-    this.dialogRef.close(this.form.value.sourceCategories);
+    this.categoryService.mergeCategories(this.data.targetCategoryId, this.form.value.sourceCategories);
+
+    this.dialogRef.close();
   }
 }

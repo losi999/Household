@@ -1,10 +1,10 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Account } from '@household/shared/types/types';
 import { ActivatedRoute } from '@angular/router';
-import { MatDialog } from '@angular/material/dialog';
-import { Subscription } from 'rxjs';
-import { AccountFormComponent, AccountFormData, AccountFormResult } from 'src/app/account/account-form/account-form.component';
+import { Subject } from 'rxjs';
 import { AccountService } from 'src/app/account/account.service';
+import { DialogService } from 'src/app/shared/dialog.service';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-account-home',
@@ -14,36 +14,27 @@ import { AccountService } from 'src/app/account/account.service';
 export class AccountHomeComponent implements OnInit, OnDestroy {
   onlyOpenAccounts: boolean;
   accounts: Account.Response[];
-  refreshList: Subscription;
+  private destroyed = new Subject();
 
-  constructor(private activatedRoute: ActivatedRoute, private accountService: AccountService, private dialog: MatDialog) { }
+  constructor(private activatedRoute: ActivatedRoute, private accountService: AccountService, private dialogService: DialogService) { }
 
   ngOnDestroy(): void {
-    this.refreshList.unsubscribe();
+    this.destroyed.next();
+    this.destroyed.complete();
   }
 
   ngOnInit(): void {
     this.accounts = this.activatedRoute.snapshot.data.accounts;
     this.onlyOpenAccounts = true;
 
-    this.refreshList = this.accountService.refreshList.subscribe({
-      next: () => {
-        this.accountService.listAccounts().subscribe((accounts) => {
-          this.accounts = accounts;
-        });
-      },
-    });
+    this.accountService.collectionUpdated.pipe(takeUntil(this.destroyed)).subscribe((event) => {
+      this.accountService.listAccounts().subscribe((accounts) => {
+        this.accounts = accounts;
+      });
+    })
   }
 
   create() {
-    const dialogRef = this.dialog.open<AccountFormComponent, AccountFormData, AccountFormResult>(AccountFormComponent);
-
-    dialogRef.afterClosed().subscribe({
-      next: (values) => {
-        if (values) {
-          this.accountService.createAccount(values);
-        }
-      },
-    });
+    this.dialogService.openCreateAccountDialog();
   }
 }

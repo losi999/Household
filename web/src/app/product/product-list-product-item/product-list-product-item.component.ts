@@ -1,12 +1,9 @@
 import { Component, Input } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
-import { MatDialog } from '@angular/material/dialog';
 import { Product } from '@household/shared/types/types';
-import { ProductFormComponent, ProductFormData, ProductFormResult } from 'src/app/product/product-form/product-form.component';
-import { ProductMergeDialogComponent, ProductMergeDialogData, ProductMergeDialogResult } from 'src/app/product/product-merge-dialog/product-merge-dialog.component';
 import { ProductService } from 'src/app/product/product.service';
 import { CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult } from 'src/app/shared/catalog-submenu/catalog-submenu.component';
-import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/confirmation-dialog.component';
+import { DialogService } from 'src/app/shared/dialog.service';
 
 @Component({
   selector: 'app-product-list-product-item',
@@ -18,46 +15,23 @@ export class ProductListProductItemComponent {
   @Input() products: Product.Response[];
   constructor(
     private productService: ProductService,
-    private dialog: MatDialog,
+    private dialogService: DialogService,
     private bottomSheet: MatBottomSheet) { }
 
   delete() {
-    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-      data: {
-        title: 'Törölni akarod ezt a terméket?',
-        content: this.product.fullName,
-      },
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
+    this.dialogService.openDeleteProductDialog(this.product).afterClosed().subscribe(shouldDelete => {
+      if (shouldDelete) {
         this.productService.deleteProduct(this.product.productId);
       }
     });
   }
 
   edit() {
-    const dialogRef = this.dialog.open<ProductFormComponent, ProductFormData, ProductFormResult>(ProductFormComponent, {
-      data: this.product,
-    });
-
-    dialogRef.afterClosed().subscribe((values) => {
-      if (values) {
-        this.productService.updateProduct(this.product.productId, values);
-      }
-    });
+    this.dialogService.openEditProductDialog(this.product);
   }
 
   merge() {
-    const dialogRef = this.dialog.open<ProductMergeDialogComponent, ProductMergeDialogData, ProductMergeDialogResult>(ProductMergeDialogComponent, {
-      data: this.products.filter(p => p.productId !== this.product.productId),
-    });
-
-    dialogRef.afterClosed().subscribe((values) => {
-      if (values) {
-        this.productService.mergeProducts(this.product.productId, values);
-      }
-    });
+    this.dialogService.openMergeProductsDialog(this.product, this.products);
   }
 
   showMenu() {

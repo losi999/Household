@@ -1,10 +1,11 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute } from '@angular/router';
 import { Category } from '@household/shared/types/types';
-import { Subscription } from 'rxjs';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { CategoryService } from 'src/app/category/category.service';
 import { ProductService } from 'src/app/product/product.service';
+import { DialogService } from 'src/app/shared/dialog.service';
 
 @Component({
   selector: 'app-product-home',
@@ -13,24 +14,30 @@ import { ProductService } from 'src/app/product/product.service';
 })
 export class ProductHomeComponent implements OnInit, OnDestroy {
   categories: Category.Response[];
-  refreshList: Subscription;
+  private destroyed = new Subject();
 
-  constructor(private activatedRoute: ActivatedRoute, private productService: ProductService, private categoryService: CategoryService, private dialog: MatDialog) { }
+  constructor(private activatedRoute: ActivatedRoute, private productService: ProductService, private categoryService: CategoryService, private dialogService: DialogService) { }
 
   ngOnDestroy(): void {
-    this.refreshList.unsubscribe();
+    this.destroyed.next();
+    this.destroyed.complete();
   }
 
   ngOnInit(): void {
     this.categories = this.activatedRoute.snapshot.data.categories;
 
-    this.refreshList = this.productService.refreshList.subscribe({
-      next: () => {
-        this.categoryService.listCategories('inventory').subscribe((categories) => {
+    this.productService.collectionUpdated.pipe(takeUntil(this.destroyed)).subscribe((event) => {
+
+      this.categoryService.listCategories('inventory').subscribe({
+        next: (categories) => {
           this.categories = categories;
-        });
-      },
-    });
+        },
+      })
+    })
+  }
+
+  create() {
+    this.dialogService.openCreateProductDialog(this.categories);
   }
 }
 

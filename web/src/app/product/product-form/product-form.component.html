@@ -1,6 +1,9 @@
 <div [formGroup]="form">
-  <h1 mat-dialog-title>{{product ? 'Szerkesztése' : 'Új'}}</h1>
+  <h1 mat-dialog-title>{{data.product ? 'Szerkesztés' : 'Új'}}</h1>
   <div mat-dialog-content>
+    <app-autocomplete-input *ngIf="!data.product" [items]="data.categories" label="Kategória"
+      displayPropertyName="fullName" filterPropertyName="name" formControlName="category">
+    </app-autocomplete-input>
     <app-clearable-input label="Márka" formControlName="brand">
     </app-clearable-input>
     <app-clearable-input label="Kiszerelés" formControlName="measurement" type="number">

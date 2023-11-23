@@ -1,18 +1,14 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
-import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/confirmation-dialog.component';
 import { TransactionService } from 'src/app/transaction/transaction.service';
 import { isInventoryCategory, isInvoiceCategory, isPaymentTransaction, isSplitTransaction, isTransferTransaction } from '@household/shared/common/type-guards';
 import { ProgressService } from 'src/app/shared/progress.service';
-import { RecipientFormComponent, RecipientFormData, RecipientFormResult } from 'src/app/recipient/recipient-form/recipient-form.component';
 import { RecipientService } from 'src/app/recipient/recipient.service';
-import { ProjectFormComponent, ProjectFormData, ProjectFormResult } from 'src/app/project/project-form/project-form.component';
 import { ProjectService } from 'src/app/project/project.service';
-import { CategoryFormComponent, CategoryFormData, CategoryFormResult } from 'src/app/category/category-form/category-form.component';
 import { CategoryService } from 'src/app/category/category.service';
+import { DialogService } from 'src/app/shared/dialog.service';
 
 @Component({
   selector: 'app-transaction-edit',
@@ -67,7 +63,7 @@ export class TransactionEditComponent implements OnInit {
     private categoryService: CategoryService,
     private progressService: ProgressService,
     private router: Router,
-    public dialog: MatDialog
+    private dialogService: DialogService,
   ) { }
 
   @HostListener('window:keydown.meta.s', ['$event'])
@@ -101,25 +97,32 @@ export class TransactionEditComponent implements OnInit {
     this.recipients = this.activatedRoute.snapshot.data.recipients;
     this.categories = this.activatedRoute.snapshot.data.categories;
 
-    this.recipientService.refreshList.subscribe({
-      next: () => {
-        this.recipientService.listRecipients().subscribe((recipients) => {
-          this.recipients = recipients
-        })
+    this.recipientService.collectionUpdated.subscribe({
+      next: (event) => {
+        if (event.action === 'created') {
+          this.recipientService.listRecipients().subscribe((recipients) => {
+            this.recipients = recipients
+          })
+        }
       }
     })
-    this.projectService.refreshList.subscribe({
-      next: () => {
-        this.projectService.listProjects().subscribe((projects) => {
-          this.projects = projects
-        })
+    this.projectService.collectionUpdated.subscribe({
+      next: (event) => {
+        console.log(event);
+        if (event.action === 'created') {
+          this.projectService.listProjects().subscribe((projects) => {
+            this.projects = projects
+          })
+        }
       }
     })
-    this.categoryService.refreshList.subscribe({
-      next: () => {
-        this.categoryService.listCategories().subscribe((categories) => {
-          this.categories = categories
-        })
+    this.categoryService.collectionUpdated.subscribe({
+      next: (event) => {
+        if (event.action === 'created') {
+          this.categoryService.listCategories().subscribe((categories) => {
+            this.categories = categories
+          })
+        }
       }
     })
 
@@ -143,14 +146,7 @@ export class TransactionEditComponent implements OnInit {
   }
 
   deleteTransaction() {
-    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-      width: '250px',
-      data: {
-        title: 'Törölni akarod ezt a tranzakciót?',
-      },
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
+    this.dialogService.openDeleteTransactionDialog().afterClosed().subscribe(result => {
       if (result) {
         this.transactionService.deleteTransaction(this.transactionId).subscribe({
           next: () => {
@@ -179,44 +175,15 @@ export class TransactionEditComponent implements OnInit {
   }
 
   createRecipient() {
-    const dialogRef = this.dialog.open<RecipientFormComponent, RecipientFormData, RecipientFormResult>(RecipientFormComponent);
-
-    dialogRef.afterClosed().subscribe({
-      next: (values) => {
-        if (values) {
-          this.recipientService.createRecipient(values);
-        }
-      },
-    });
+    this.dialogService.openCreateRecipientDialog();
   }
 
   createProject() {
-    const dialogRef = this.dialog.open<ProjectFormComponent, ProjectFormData, ProjectFormResult>(ProjectFormComponent);
-
-    dialogRef.afterClosed().subscribe({
-      next: (values) => {
-        if (values) {
-          this.projectService.createProject(values);
-        }
-      },
-    });
+    this.dialogService.openCreateProjectDialog();
   }
 
   createCategory() {
-    const dialogRef = this.dialog.open<CategoryFormComponent, CategoryFormData, CategoryFormResult>(CategoryFormComponent, {
-      data: {
-        category: undefined,
-        categories: this.categories,
-      },
-    });
-
-    dialogRef.afterClosed().subscribe({
-      next: (values) => {
-        if (values) {
-          this.categoryService.createCategory(values);
-        }
-      },
-    });
+    this.dialogService.openCreateCategoryDialog(this.categories);
   }
 
   onSubmit() {
