@@ -70,12 +70,12 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
       unitOfMeasurement: 'kg',
     }, Cypress.env('EXPIRES_IN'), true);
 
-    const inventory: Transaction.InventoryItem<Product.ProductId> = {
+    const inventory: Transaction.InventoryRequest['inventory'] = {
       quantity: 1,
       productId: getProductId(productDocument),
     };
 
-    const invoice: Transaction.InvoiceItem<string> = {
+    const invoice: Transaction.Invoice<string>['invoice'] = {
       billingStartDate: new Date(2022, 6, 1, 0, 0, 0).toISOString()
         .split('T')[0],
       billingEndDate: new Date(2022, 6, 25, 0, 0, 0).toISOString()

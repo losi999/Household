@@ -118,7 +118,7 @@ const requestGetTransactionListByAccount = (idToken: string, accountId: Account.
   }) as Cypress.ChainableResponse;
 };
 
-const validateInventoryDocument = (request: Transaction.Inventory<Product.ProductId>, document: Transaction.Inventory<Transaction.Product<Product.Document>>, categoryId: Category.Id, productId: Product.Id) => {
+const validateInventoryDocument = (request: Transaction.InventoryRequest, document: Transaction.Inventory<Product.Document>, categoryId: Category.Id, productId: Product.Id) => {
   let category: Category.Document;
 
   cy.log('Get category document', categoryId)

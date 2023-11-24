@@ -96,7 +96,7 @@ const validateProductDocument = (response: Product.ProductId, request: Product.R
 
 const validateProductDeleted = (productId: Product.Id) => {
   cy.log('Get product document', productId)
-    .getProductDocumentById(productId,)
+    .getProductDocumentById(productId)
     .should((document) => {
       expect(document, 'document').to.be.null;
     });
