@@ -174,9 +174,10 @@ export namespace Category {
   & Products<Product.Response>
   & Remove<Internal.Id>
   & Remove<Internal.Timestamps>
-  & Remove<ParentCategoryId>;
+  & Remove<ParentCategoryId>
+  & Record<'parentCategory', undefined>;
 
-  export type Response = ResponseBase
+  export type Response = Omit<ResponseBase, 'parentCategory'>
   & {
     parentCategory: ResponseBase;
   };
