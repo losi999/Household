@@ -4,7 +4,7 @@ orbs:
 jobs:
   install:
     docker:
-      - image: cypress/base:16.14.2
+      - image: cimg/node:18.18
     working_directory: ~/repo
     steps:
       - checkout
@@ -41,7 +41,7 @@ jobs:
             - repo
   unit_test:
     docker:
-      - image: circleci/node:16.13.1
+      - image: cimg/node:18.18
     working_directory: ~/repo
     steps:
       - attach_workspace:
@@ -60,7 +60,7 @@ jobs:
           destination: coverage
   lint:
     docker:
-      - image: circleci/node:16.13.1
+      - image: cimg/node:18.18
     working_directory: ~/repo
     steps:
       - attach_workspace:
@@ -74,7 +74,7 @@ jobs:
       env:
         type: string
     docker:
-      - image: circleci/node:16.13.1
+      - image: cimg/node:18.18
     working_directory: ~/repo
     steps:
       - attach_workspace:
