@@ -100,8 +100,12 @@ describe('POST recipient/v1/recipients/{recipientId}/merge', () => {
         .requestMergeRecipients(getRecipientId(targetRecipientDocument), [getRecipientId(sourceRecipientDocument)])
         .expectCreatedResponse()
         .validateRecipientDeleted(getRecipientId(sourceRecipientDocument))
-        .validateRecipientReassign(paymentTransactionDocument, getRecipientId(targetRecipientDocument))
-        .validateRecipientReassign(splitTransactionDocument, getRecipientId(targetRecipientDocument), 0);
+        .validatePartiallyReassignedPaymentDocument(paymentTransactionDocument, {
+          recipient: getRecipientId(targetRecipientDocument),
+        })
+        .validatePartiallyReassignedSplitDocument(splitTransactionDocument, 0, {
+          recipient: getRecipientId(targetRecipientDocument),
+        });
     });
 
     describe('should return error', () => {

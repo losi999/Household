@@ -127,6 +127,8 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
           } : {
             $unset: {
               category: 1,
+              inventory: 1,
+              invoice: 1,
             },
           }, {
             runValidators: true,
@@ -142,6 +144,8 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
           } : {
             $unset: {
               'splits.$[element].category': 1,
+              'splits.$[element].inventory': 1,
+              'splits.$[element].invoice': 1,
             },
           }, {
             session,

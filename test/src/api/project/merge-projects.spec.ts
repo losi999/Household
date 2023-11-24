@@ -105,8 +105,12 @@ describe('POST project/v1/projects/{projectId}/merge', () => {
         .requestMergeProjects(getProjectId(targetProjectDocument), [getProjectId(sourceProjectDocument)])
         .expectCreatedResponse()
         .validateProjectDeleted(getProjectId(sourceProjectDocument))
-        .validateProjectReassign(paymentTransactionDocument, getProjectId(targetProjectDocument))
-        .validateProjectReassign(splitTransactionDocument, getProjectId(targetProjectDocument), 0);
+        .validatePartiallyReassignedPaymentDocument(paymentTransactionDocument, {
+          project: getProjectId(targetProjectDocument),
+        })
+        .validatePartiallyReassignedSplitDocument(splitTransactionDocument, 0, {
+          project: getProjectId(targetProjectDocument),
+        });
     });
 
     describe('should return error', () => {

@@ -133,8 +133,8 @@ describe('DELETE /product/v1/products/{productId}', () => {
           .requestDeleteProduct(getProductId(productDocument))
           .expectNoContentResponse()
           .validateProductDeleted(getProductId(productDocument))
-          .validateInventoryUnset(paymentTransactionDocument)
-          .validateInventoryUnset(splitTransactionDocument, 0);
+          .validatePartiallyUnsetPaymentDocument(paymentTransactionDocument, 'inventory')
+          .validatePartiallyUnsetSplitDocument(splitTransactionDocument, 0, 'inventory');
       });
     });
 

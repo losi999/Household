@@ -134,8 +134,12 @@ describe('POST product/v1/products/{productId}/merge', () => {
         .requestMergeProducts(getProductId(targetProductDocument), [getProductId(sourceProductDocument)])
         .expectCreatedResponse()
         .validateProductDeleted(getProductId(sourceProductDocument))
-        .validateProductReassign(paymentTransactionDocument, getProductId(targetProductDocument))
-        .validateProductReassign(splitTransactionDocument, getProductId(targetProductDocument), 0)
+        .validatePartiallyReassignedPaymentDocument(paymentTransactionDocument, {
+          product: getProductId(targetProductDocument),
+        })
+        .validatePartiallyReassignedSplitDocument(splitTransactionDocument, 0, {
+          product: getProductId(targetProductDocument),
+        })
         .validateProductRemoval(categoryDocument, [getProductId(sourceProductDocument)]);
     });
 

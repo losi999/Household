@@ -113,8 +113,12 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
         .requestMergeCategories(getCategoryId(targetCategoryDocument), [getCategoryId(sourceCategoryDocument)])
         .expectCreatedResponse()
         .validateCategoryDeleted(getCategoryId(sourceCategoryDocument))
-        .validateCategoryReassign(paymentTransactionDocument, getCategoryId(targetCategoryDocument))
-        .validateCategoryReassign(splitTransactionDocument, getCategoryId(targetCategoryDocument), 0);
+        .validatePartiallyReassignedPaymentDocument(paymentTransactionDocument, {
+          category: getCategoryId(targetCategoryDocument),
+        })
+        .validatePartiallyReassignedSplitDocument(splitTransactionDocument, 0, {
+          category: getCategoryId(targetCategoryDocument),
+        });
     });
 
     describe('should return error', () => {

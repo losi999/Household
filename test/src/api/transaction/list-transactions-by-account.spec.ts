@@ -258,7 +258,6 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
           cy.authenticate(1)
             .requestGetTransactionListByAccount(createAccountId(), {
               pageNumber: 1,
-              pageSize: undefined,
             })
             .expectBadRequestResponse()
             .expectRequiredProperty('pageSize', 'queryStringParameters');
@@ -289,7 +288,6 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
         it('is missing while pageSize is set', () => {
           cy.authenticate(1)
             .requestGetTransactionListByAccount(createAccountId(), {
-              pageNumber: undefined,
               pageSize: 1,
             })
             .expectBadRequestResponse()
