@@ -18,7 +18,7 @@ export class ProjectHomeComponent implements OnInit, OnDestroy {
   constructor(private activatedRoute: ActivatedRoute, private projectService: ProjectService, private dialogService: DialogService) { }
 
   ngOnDestroy(): void {
-    this.destroyed.next();
+    this.destroyed.next(undefined);
     this.destroyed.complete();
   }
 
@@ -34,10 +34,10 @@ export class ProjectHomeComponent implements OnInit, OnDestroy {
 
       this.projectService.listProjects().subscribe({
         next: (projects) => {
-          this.projects = projects
-        }
+          this.projects = projects;
+        },
       });
-    })
+    });
   }
 
   create() {

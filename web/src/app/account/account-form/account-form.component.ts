@@ -17,7 +17,11 @@ type AccountTypeMap = {
   styleUrls: ['./account-form.component.scss'],
 })
 export class AccountFormComponent implements OnInit {
-  form: FormGroup;
+  form: FormGroup<{
+    name: FormControl<string>;
+    accountType: FormControl<AccountTypeMap>;
+    currency: FormControl<string>;
+  }>;
   accountTypes: {
     [id in Account.AccountType['accountType']]: string
   } = {
@@ -51,7 +55,7 @@ export class AccountFormComponent implements OnInit {
         name: this.form.value.name,
         accountType: this.form.value.accountType.key,
         currency: this.form.value.currency,
-      }
+      };
 
       if (this.account) {
         this.accountService.updateAccount(this.account.accountId, request);

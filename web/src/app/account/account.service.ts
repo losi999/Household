@@ -59,8 +59,8 @@ export class AccountService {
         this._collectionUpdated.next({
           action: 'updated',
           accountId,
-          request: body
-        })
+          request: body,
+        });
       },
       error: (error) => {
         console.error(error);
@@ -73,7 +73,7 @@ export class AccountService {
       next: () => {
         this._collectionUpdated.next({
           action: 'deleted',
-          accountId
+          accountId,
         });
       },
       error: (error) => {

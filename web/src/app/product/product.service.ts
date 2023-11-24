@@ -25,7 +25,7 @@ type ProductsMerged = {
   action: 'merged';
   targetProductId: Product.Id;
   sourceProductIds: Product.Id[];
-}
+};
 type ProductEvent = ProductCreated | ProductUpdated | ProductDeleted | ProductsMerged;
 
 @Injectable({
@@ -61,8 +61,8 @@ export class ProductService {
         this._collectionUpdated.next({
           action: 'updated',
           productId,
-          request: body
-        })
+          request: body,
+        });
       },
       error: (error) => {
         console.error(error);
@@ -75,7 +75,7 @@ export class ProductService {
       next: () => {
         this._collectionUpdated.next({
           action: 'deleted',
-          productId
+          productId,
         });
       },
       error: (error) => {

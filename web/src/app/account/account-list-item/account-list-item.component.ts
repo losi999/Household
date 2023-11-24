@@ -19,14 +19,15 @@ export class AccountListItemComponent {
     }
   }
 
-  constructor(private accountService: AccountService, private dialogService: DialogService,) { }
+  constructor(private accountService: AccountService, private dialogService: DialogService) { }
 
   delete() {
-    this.dialogService.openDeleteAccountDialog(this.account).afterClosed().subscribe(shouldDelete => {
-      if (shouldDelete) {
-        this.accountService.deleteAccount(this.account.accountId);
-      }
-    });
+    this.dialogService.openDeleteAccountDialog(this.account).afterClosed()
+      .subscribe(shouldDelete => {
+        if (shouldDelete) {
+          this.accountService.deleteAccount(this.account.accountId);
+        }
+      });
   }
 
   open() {

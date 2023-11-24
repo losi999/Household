@@ -17,8 +17,10 @@ import { Subscription } from 'rxjs';
 export class AmountInputComponent implements OnInit, OnDestroy, ControlValueAccessor {
   @Input() currency: string;
 
-  form: FormGroup;
-  changed: (value: string) => void;
+  form: FormGroup<{
+    amount: FormControl<number>;
+  }>;
+  changed: (value: number) => void;
   touched: () => void;
   isDisabled: boolean;
   subs: Subscription;

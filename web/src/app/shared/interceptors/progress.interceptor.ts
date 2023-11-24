@@ -23,7 +23,7 @@ export class ProgressInterceptor implements HttpInterceptor {
         else {
           this.progressService.processStarted();
         }
-      }
+      },
     }));
   }
 }

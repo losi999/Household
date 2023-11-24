@@ -19,11 +19,12 @@ export class ProductListProductItemComponent {
     private bottomSheet: MatBottomSheet) { }
 
   delete() {
-    this.dialogService.openDeleteProductDialog(this.product).afterClosed().subscribe(shouldDelete => {
-      if (shouldDelete) {
-        this.productService.deleteProduct(this.product.productId);
-      }
-    });
+    this.dialogService.openDeleteProductDialog(this.product).afterClosed()
+      .subscribe(shouldDelete => {
+        if (shouldDelete) {
+          this.productService.deleteProduct(this.product.productId);
+        }
+      });
   }
 
   edit() {

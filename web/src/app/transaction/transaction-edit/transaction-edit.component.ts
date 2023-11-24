@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
@@ -9,14 +9,36 @@ import { RecipientService } from 'src/app/recipient/recipient.service';
 import { ProjectService } from 'src/app/project/project.service';
 import { CategoryService } from 'src/app/category/category.service';
 import { DialogService } from 'src/app/shared/dialog.service';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-transaction-edit',
   templateUrl: './transaction-edit.component.html',
   styleUrls: ['./transaction-edit.component.scss'],
 })
-export class TransactionEditComponent implements OnInit {
-  form: FormGroup;
+export class TransactionEditComponent implements OnInit, OnDestroy {
+  form: FormGroup<{
+    issuedAt: FormControl<Date>;
+    amount: FormControl<number>;
+    account: FormControl<Account.Response>;
+    isTransfer: FormControl<boolean>;
+    description: FormControl<string>;
+    transferAccount: FormControl<Account.Response>;
+    transferAmount: FormControl<number>;
+    project: FormControl<Project.Response>;
+    recipient: FormControl<Recipient.Response>;
+    category: FormControl<Category.Response>;
+    inventory: FormControl<Transaction.Inventory<Product.Response>['inventory']>;
+    invoice: FormControl<Transaction.Invoice<string>['invoice']>;
+    splits: FormArray<FormGroup<{
+      category: FormControl<Category.Response>;
+      amount: FormControl<number>;
+      description: FormControl<string>;
+      project: FormControl<Project.Response>;
+      inventory: FormControl<Transaction.Inventory<Product.Response>['inventory']>;
+      invoice: FormControl<Transaction.Invoice<string>['invoice']>;
+    }>>;
+  }>;
   transactionId: Transaction.Id;
   accountId: Account.Id;
   transaction: Transaction.Response;
@@ -25,6 +47,12 @@ export class TransactionEditComponent implements OnInit {
   projects: Project.Response[];
   recipients: Recipient.Response[];
   categories: Category.Response[];
+  private destroyed = new Subject();
+
+  ngOnDestroy(): void {
+    this.destroyed.next(undefined);
+    this.destroyed.complete();
+  }
 
   get splitsArray() {
     return this.form.controls.splits as FormArray;
@@ -53,7 +81,7 @@ export class TransactionEditComponent implements OnInit {
   get invoice(): Transaction.Invoice<string>['invoice'] { return this.form.value.invoice ?? undefined; }
   get inventory(): Transaction.Inventory<Product.Response>['inventory'] { return this.form.value.inventory ?? undefined; }
 
-  get splits(): Transaction.SplitResponseItem[] { return this.form.value.splits; }
+  get splits() { return this.form.value.splits; }
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -97,34 +125,34 @@ export class TransactionEditComponent implements OnInit {
     this.recipients = this.activatedRoute.snapshot.data.recipients;
     this.categories = this.activatedRoute.snapshot.data.categories;
 
-    this.recipientService.collectionUpdated.subscribe({
+    this.recipientService.collectionUpdated.pipe(takeUntil(this.destroyed)).subscribe({
       next: (event) => {
         if (event.action === 'created') {
           this.recipientService.listRecipients().subscribe((recipients) => {
-            this.recipients = recipients
-          })
+            this.recipients = recipients;
+          });
         }
-      }
-    })
-    this.projectService.collectionUpdated.subscribe({
+      },
+    });
+    this.projectService.collectionUpdated.pipe(takeUntil(this.destroyed)).subscribe({
       next: (event) => {
         console.log(event);
         if (event.action === 'created') {
           this.projectService.listProjects().subscribe((projects) => {
-            this.projects = projects
-          })
+            this.projects = projects;
+          });
         }
-      }
-    })
-    this.categoryService.collectionUpdated.subscribe({
+      },
+    });
+    this.categoryService.collectionUpdated.pipe(takeUntil(this.destroyed)).subscribe({
       next: (event) => {
         if (event.action === 'created') {
           this.categoryService.listCategories().subscribe((categories) => {
-            this.categories = categories
-          })
+            this.categories = categories;
+          });
         }
-      }
-    })
+      },
+    });
 
     const account = this.accounts.find(a => a.accountId === this.accountId);
 
@@ -146,21 +174,22 @@ export class TransactionEditComponent implements OnInit {
   }
 
   deleteTransaction() {
-    this.dialogService.openDeleteTransactionDialog().afterClosed().subscribe(result => {
-      if (result) {
-        this.transactionService.deleteTransaction(this.transactionId).subscribe({
-          next: () => {
-            this.router.navigate([
-              '/accounts',
-              this.account.accountId,
-            ]);
-          },
-          error: (error) => {
-            console.error(error);
-          },
-        });
-      }
-    });
+    this.dialogService.openDeleteTransactionDialog().afterClosed()
+      .subscribe(result => {
+        if (result) {
+          this.transactionService.deleteTransaction(this.transactionId).subscribe({
+            next: () => {
+              this.router.navigate([
+                '/accounts',
+                this.account.accountId,
+              ]);
+            },
+            error: (error) => {
+              console.error(error);
+            },
+          });
+        }
+      });
   }
 
   deleteSplit(index: number) {

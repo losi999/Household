@@ -19,19 +19,20 @@ export class CategoryListItemComponent {
     private bottomSheet: MatBottomSheet) { }
 
   delete() {
-    this.dialogService.openDeleteCategoryDialog(this.category).afterClosed().subscribe(shouldDelete => {
-      if (shouldDelete) {
-        this.categoryService.deleteCategory(this.category.categoryId);
-      }
-    });
+    this.dialogService.openDeleteCategoryDialog(this.category).afterClosed()
+      .subscribe(shouldDelete => {
+        if (shouldDelete) {
+          this.categoryService.deleteCategory(this.category.categoryId);
+        }
+      });
   }
 
   edit() {
-    this.dialogService.openEditCategoryDialog(this.category, this.categories)
+    this.dialogService.openEditCategoryDialog(this.category, this.categories);
   }
 
   merge() {
-    this.dialogService.openMergeCategoriesDialog(this.category, this.categories)
+    this.dialogService.openMergeCategoriesDialog(this.category, this.categories);
   }
 
   showMenu() {

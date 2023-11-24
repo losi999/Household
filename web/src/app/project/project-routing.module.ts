@@ -1,14 +1,14 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { ProjectHomeComponent } from 'src/app/project/project-home/project-home.component';
-import { ProjectListResolver } from 'src/app/resolvers/project-list.resolver';
+import { projectListResolver } from 'src/app/shared/resolvers';
 
 const routes: Routes = [
   {
     path: '',
     component: ProjectHomeComponent,
     resolve: {
-      projects: ProjectListResolver,
+      projects: projectListResolver,
     },
   },
 ];

@@ -19,21 +19,21 @@ export class ProductHomeComponent implements OnInit, OnDestroy {
   constructor(private activatedRoute: ActivatedRoute, private productService: ProductService, private categoryService: CategoryService, private dialogService: DialogService) { }
 
   ngOnDestroy(): void {
-    this.destroyed.next();
+    this.destroyed.next(undefined);
     this.destroyed.complete();
   }
 
   ngOnInit(): void {
     this.categories = this.activatedRoute.snapshot.data.categories;
 
-    this.productService.collectionUpdated.pipe(takeUntil(this.destroyed)).subscribe((event) => {
+    this.productService.collectionUpdated.pipe(takeUntil(this.destroyed)).subscribe(() => {
 
       this.categoryService.listCategories('inventory').subscribe({
         next: (categories) => {
           this.categories = categories;
         },
-      })
-    })
+      });
+    });
   }
 
   create() {

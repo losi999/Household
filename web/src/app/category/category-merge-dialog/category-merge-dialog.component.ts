@@ -9,14 +9,15 @@ export type CategoryMergeDialogData = {
   targetCategoryId: Category.Id;
 };
 
-
 @Component({
   selector: 'app-category-merge-dialog',
   templateUrl: './category-merge-dialog.component.html',
   styleUrls: ['./category-merge-dialog.component.scss'],
 })
 export class CategoryMergeDialogComponent implements OnInit {
-  form: FormGroup;
+  form: FormGroup<{
+    sourceCategories: FormControl<Category.Id[]>
+  }>;
 
   constructor(private dialogRef: MatDialogRef<CategoryMergeDialogComponent, void>,
     private categoryService: CategoryService,

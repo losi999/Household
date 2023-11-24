@@ -18,7 +18,7 @@ export class RecipientHomeComponent implements OnInit, OnDestroy {
   constructor(private activatedRoute: ActivatedRoute, private recipientService: RecipientService, private dialogService: DialogService) { }
 
   ngOnDestroy(): void {
-    this.destroyed.next();
+    this.destroyed.next(undefined);
     this.destroyed.complete();
   }
 
@@ -34,10 +34,10 @@ export class RecipientHomeComponent implements OnInit, OnDestroy {
 
       this.recipientService.listRecipients().subscribe({
         next: (recipients) => {
-          this.recipients = recipients
-        }
+          this.recipients = recipients;
+        },
       });
-    })
+    });
   }
 
   create() {

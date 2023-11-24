@@ -24,8 +24,9 @@
     <div *ngIf="transaction.recipient">
       Partner: {{transaction.recipient.name}}
     </div>
-    <ul style="margin-top: 25px;">
-      <li *ngFor="let split of transaction.splits">
+    <mat-list style="margin-top: 25px;">
+      <div *ngFor="let split of transaction.splits">
+        <mat-divider></mat-divider>
         <div *ngIf="split.category">
           Kategória: {{split.category.fullName}}
         </div>
@@ -60,8 +61,8 @@
         <div *ngIf="split.description">
           Megjegyzés: {{split.description}}
         </div>
-      </li>
-    </ul>
+      </div>
+    </mat-list>
   </ng-container>
   <ng-container *ngSwitchCase="'transfer'">
     <div>Átvitel {{transaction.amount >= 0 ? 'innen' : 'ide'}}:

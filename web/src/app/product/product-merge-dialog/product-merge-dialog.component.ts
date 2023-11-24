@@ -15,7 +15,9 @@ export type ProductMergeDialogData = {
   styleUrls: ['./product-merge-dialog.component.scss'],
 })
 export class ProductMergeDialogComponent implements OnInit {
-  form: FormGroup;
+  form: FormGroup<{
+    sourceProducts: FormControl<Product.Id[]>
+  }>;
 
   constructor(private dialogRef: MatDialogRef<ProductMergeDialogComponent, void>,
     private productService: ProductService,

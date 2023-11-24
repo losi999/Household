@@ -19,7 +19,7 @@ export class AccountHomeComponent implements OnInit, OnDestroy {
   constructor(private activatedRoute: ActivatedRoute, private accountService: AccountService, private dialogService: DialogService) { }
 
   ngOnDestroy(): void {
-    this.destroyed.next();
+    this.destroyed.next(undefined);
     this.destroyed.complete();
   }
 
@@ -27,11 +27,11 @@ export class AccountHomeComponent implements OnInit, OnDestroy {
     this.accounts = this.activatedRoute.snapshot.data.accounts;
     this.onlyOpenAccounts = true;
 
-    this.accountService.collectionUpdated.pipe(takeUntil(this.destroyed)).subscribe((event) => {
+    this.accountService.collectionUpdated.pipe(takeUntil(this.destroyed)).subscribe(() => {
       this.accountService.listAccounts().subscribe((accounts) => {
         this.accounts = accounts;
       });
-    })
+    });
   }
 
   create() {

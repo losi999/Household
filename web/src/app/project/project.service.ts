@@ -25,7 +25,7 @@ type ProjectsMerged = {
   action: 'merged';
   targetProjectId: Project.Id;
   sourceProjectIds: Project.Id[];
-}
+};
 type ProjectEvent = ProjectCreated | ProjectUpdated | ProjectDeleted | ProjectsMerged;
 
 @Injectable({
@@ -65,8 +65,8 @@ export class ProjectService {
         this._collectionUpdated.next({
           action: 'updated',
           projectId,
-          request: body
-        })
+          request: body,
+        });
       },
       error: (error) => {
         console.error(error);
@@ -79,7 +79,7 @@ export class ProjectService {
       next: () => {
         this._collectionUpdated.next({
           action: 'deleted',
-          projectId
+          projectId,
         });
       },
       error: (error) => {

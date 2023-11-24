@@ -3,6 +3,5 @@
     <mat-icon>add</mat-icon>
   </button>
 </app-toolbar>
-<mat-slide-toggle color="primary" [(ngModel)]="onlyOpenAccounts">{{onlyOpenAccounts ? 'Csak nyitott számlák' : 'Összes
-  számla'}}</mat-slide-toggle>
+  <mat-slide-toggle color="primary" [(ngModel)]="onlyOpenAccounts">{{onlyOpenAccounts ? 'Csak nyitott számlák' : 'Összes számla'}}</mat-slide-toggle>
 <app-account-list [accounts]="accounts | openAccountFilter: onlyOpenAccounts"></app-account-list>

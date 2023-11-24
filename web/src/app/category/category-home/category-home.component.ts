@@ -18,7 +18,7 @@ export class CategoryHomeComponent implements OnInit, OnDestroy {
   constructor(private activatedRoute: ActivatedRoute, private categoryService: CategoryService, private dialogService: DialogService) { }
 
   ngOnDestroy(): void {
-    this.destroyed.next();
+    this.destroyed.next(undefined);
     this.destroyed.complete();
   }
 
@@ -34,10 +34,10 @@ export class CategoryHomeComponent implements OnInit, OnDestroy {
 
       this.categoryService.listCategories().subscribe({
         next: (categories) => {
-          this.categories = categories
-        }
+          this.categories = categories;
+        },
       });
-    })
+    });
   }
 
   create() {

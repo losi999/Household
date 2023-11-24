@@ -18,8 +18,10 @@ export class ClearableInputComponent implements OnInit, OnDestroy, ControlValueA
   @Input() label: string;
   @Input() type: 'text' | 'number' = 'text';
 
-  form: FormGroup;
-  changed: (value: string) => void;
+  form: FormGroup<{
+    value: FormControl<string | number>;
+  }>;
+  changed: (value: string | number) => void;
   touched: () => void;
   isDisabled: boolean;
   subs: Subscription;

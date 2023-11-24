@@ -16,7 +16,11 @@ import { Subscription } from 'rxjs';
   ],
 })
 export class InvoiceInputComponent implements OnInit, OnDestroy, ControlValueAccessor {
-  form: FormGroup;
+  form: FormGroup<{
+    invoiceNumber: FormControl<string>;
+    billingStartDate: FormControl<Date>;
+    billingEndDate: FormControl<Date>;
+  }>;
   changed: (value: Transaction.Invoice<string>['invoice']) => void;
   touched: () => void;
   isDisabled: boolean;

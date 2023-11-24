@@ -17,7 +17,10 @@ import { Subscription } from 'rxjs';
   ],
 })
 export class InventoryInputComponent implements OnInit, OnDestroy, ControlValueAccessor {
-  form: FormGroup;
+  form: FormGroup<{
+    product: FormControl<Product.Response>;
+    quantity: FormControl<number>;
+  }>;
   @Input() products: Product.Response[];
   changed: (value: Transaction.Inventory<Product.Response>['inventory']) => void;
   touched: () => void;

@@ -25,7 +25,7 @@ type CategorysMerged = {
   action: 'merged';
   targetCategoryId: Category.Id;
   sourceCategoryIds: Category.Id[];
-}
+};
 type CategoryEvent = CategoryCreated | CategoryUpdated | CategoryDeleted | CategorysMerged;
 
 @Injectable({
@@ -69,8 +69,8 @@ export class CategoryService {
         this._collectionUpdated.next({
           action: 'updated',
           categoryId,
-          request: body
-        })
+          request: body,
+        });
       },
       error: (error) => {
         console.error(error);
@@ -83,7 +83,7 @@ export class CategoryService {
       next: () => {
         this._collectionUpdated.next({
           action: 'deleted',
-          categoryId
+          categoryId,
         });
       },
       error: (error) => {

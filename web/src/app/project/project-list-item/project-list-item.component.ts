@@ -19,11 +19,12 @@ export class ProjectListItemComponent {
     private bottomSheet: MatBottomSheet) { }
 
   delete() {
-    this.dialogService.openDeleteProjectDialog(this.project).afterClosed().subscribe(shouldDelete => {
-      if (shouldDelete) {
-        this.projectService.deleteProject(this.project.projectId);
-      }
-    });
+    this.dialogService.openDeleteProjectDialog(this.project).afterClosed()
+      .subscribe(shouldDelete => {
+        if (shouldDelete) {
+          this.projectService.deleteProject(this.project.projectId);
+        }
+      });
   }
 
   edit() {
@@ -31,7 +32,7 @@ export class ProjectListItemComponent {
   }
 
   merge() {
-    this.dialogService.openMergeProjectsDialog(this.project, this.projects)
+    this.dialogService.openMergeProjectsDialog(this.project, this.projects);
   }
 
   showMenu() {

@@ -25,7 +25,7 @@ type RecipientsMerged = {
   action: 'merged';
   targetRecipientId: Recipient.Id;
   sourceRecipientIds: Recipient.Id[];
-}
+};
 type RecipientEvent = RecipientCreated | RecipientUpdated | RecipientDeleted | RecipientsMerged;
 
 @Injectable({
@@ -65,8 +65,8 @@ export class RecipientService {
         this._collectionUpdated.next({
           action: 'updated',
           recipientId,
-          request: body
-        })
+          request: body,
+        });
       },
       error: (error) => {
         console.error(error);
@@ -79,7 +79,7 @@ export class RecipientService {
       next: () => {
         this._collectionUpdated.next({
           action: 'deleted',
-          recipientId
+          recipientId,
         });
       },
       error: (error) => {

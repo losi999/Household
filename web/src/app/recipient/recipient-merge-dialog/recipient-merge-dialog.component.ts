@@ -15,7 +15,9 @@ export type RecipientMergeDialogData = {
   styleUrls: ['./recipient-merge-dialog.component.scss'],
 })
 export class RecipientMergeDialogComponent implements OnInit {
-  form: FormGroup;
+  form: FormGroup<{
+    sourceRecipients: FormControl<Recipient.Id[]>
+  }>;
 
   constructor(private dialogRef: MatDialogRef<RecipientMergeDialogComponent, void>,
     private recipientService: RecipientService,

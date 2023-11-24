@@ -15,7 +15,9 @@ export type ProjectMergeDialogData = {
   styleUrls: ['./project-merge-dialog.component.scss'],
 })
 export class ProjectMergeDialogComponent implements OnInit {
-  form: FormGroup;
+  form: FormGroup<{
+    sourceProjects: FormControl<Project.Id[]>
+  }>;
 
   constructor(private dialogRef: MatDialogRef<ProjectMergeDialogComponent, void>,
     private projectService: ProjectService,

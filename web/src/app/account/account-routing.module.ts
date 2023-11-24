@@ -2,12 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AccountHomeComponent } from 'src/app/account/account-home/account-home.component';
 import { AccountTransactionsHomeComponent } from 'src/app/account/account-transactions-home/account-transactions-home.component';
-import { AccountListResolver } from 'src/app/resolvers/account-list.resolver';
-import { AccountTransactionListResolver } from 'src/app/resolvers/account-transaction-list.resolver';
-import { CategoryListResolver } from 'src/app/resolvers/category-list.resolver';
-import { ProjectListResolver } from 'src/app/resolvers/project-list.resolver';
-import { RecipientListResolver } from 'src/app/resolvers/recipient-list.resolver';
-import { TransactionResolver } from 'src/app/resolvers/transaction.resolver';
+import { accountListResolver, accountTransactionListResolver, categoryListResolver, projectListResolver, recipientListResolver, transactionResolver } from 'src/app/shared/resolvers';
 import { TransactionDetailsComponent } from 'src/app/transaction/transaction-details/transaction-details.component';
 import { TransactionEditComponent } from 'src/app/transaction/transaction-edit/transaction-edit.component';
 
@@ -16,42 +11,42 @@ const routes: Routes = [
     path: '',
     component: AccountHomeComponent,
     resolve: {
-      accounts: AccountListResolver,
+      accounts: accountListResolver,
     },
   },
   {
     path: 'accounts/:accountId',
     component: AccountTransactionsHomeComponent,
     resolve: {
-      transactions: AccountTransactionListResolver,
+      transactions: accountTransactionListResolver,
     },
   },
   {
     path: 'accounts/:accountId/transactions/:transactionId',
     component: TransactionDetailsComponent,
     resolve: {
-      transaction: TransactionResolver,
+      transaction: transactionResolver,
     },
   },
   {
     path: 'accounts/:accountId/transactions/:transactionId/edit',
     component: TransactionEditComponent,
     resolve: {
-      accounts: AccountListResolver,
-      projects: ProjectListResolver,
-      categories: CategoryListResolver,
-      recipients: RecipientListResolver,
-      transaction: TransactionResolver,
+      accounts: accountListResolver,
+      projects: projectListResolver,
+      categories: categoryListResolver,
+      recipients: recipientListResolver,
+      transaction: transactionResolver,
     },
   },
   {
     path: 'accounts/:accountId/new',
     component: TransactionEditComponent,
     resolve: {
-      accounts: AccountListResolver,
-      projects: ProjectListResolver,
-      categories: CategoryListResolver,
-      recipients: RecipientListResolver,
+      accounts: accountListResolver,
+      projects: projectListResolver,
+      categories: categoryListResolver,
+      recipients: recipientListResolver,
     },
   },
 ];

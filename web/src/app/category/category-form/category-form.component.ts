@@ -15,7 +15,11 @@ export type CategoryFormData = {
   styleUrls: ['./category-form.component.scss'],
 })
 export class CategoryFormComponent implements OnInit {
-  form: FormGroup;
+  form: FormGroup<{
+    name: FormControl<string>;
+    categoryType: FormControl<Category.CategoryType['categoryType']>;
+    parentCategory: FormControl<Category.ResponseBase>
+  }>;
   constructor(private dialogRef: MatDialogRef<CategoryFormComponent, void>,
     private categoryService: CategoryService,
     @Inject(MAT_DIALOG_DATA) public data: CategoryFormData) { }
@@ -37,9 +41,9 @@ export class CategoryFormComponent implements OnInit {
       };
 
       if (this.data.category) {
-        this.categoryService.updateCategory(this.data.category.categoryId, request)
+        this.categoryService.updateCategory(this.data.category.categoryId, request);
       } else {
-        this.categoryService.createCategory(request)
+        this.categoryService.createCategory(request);
       }
 
       this.dialogRef.close();

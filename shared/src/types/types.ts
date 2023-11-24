@@ -139,7 +139,7 @@ export namespace Category {
     parentCategoryId: Id;
   };
 
-  type ParentCategory = {
+  export type ParentCategory = {
     parentCategory: Document;
   };
 
@@ -167,16 +167,18 @@ export namespace Category {
   export type Report = CategoryId
   & FullName;
 
-  export type Response = CategoryType
+  export type ResponseBase = CategoryType
   & Name
   & FullName
   & CategoryId
   & Products<Product.Response>
   & Remove<Internal.Id>
   & Remove<Internal.Timestamps>
-  & Remove<ParentCategoryId>
+  & Remove<ParentCategoryId>;
+
+  export type Response = ResponseBase
   & {
-    parentCategory: Response & Record<'parentCategory', undefined>;
+    parentCategory: ResponseBase;
   };
 
   export type Request = CategoryType

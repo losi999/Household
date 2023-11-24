@@ -13,7 +13,7 @@ import { RecipientMergeDialogComponent, RecipientMergeDialogData } from 'src/app
 import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/confirmation-dialog.component';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class DialogService {
 
@@ -25,7 +25,7 @@ export class DialogService {
 
   openEditProjectDialog(project: Project.Response): void {
     this.dialog.open<ProjectFormComponent, ProjectFormData, void>(ProjectFormComponent, {
-      data: project
+      data: project,
     });
   }
 
@@ -43,7 +43,7 @@ export class DialogService {
       data: {
         projects: projects.filter(p => p.projectId !== project.projectId),
         targetProjectId: project.projectId,
-      }
+      },
     });
   }
 
@@ -53,7 +53,7 @@ export class DialogService {
 
   openEditRecipientDialog(recipient: Recipient.Response): void {
     this.dialog.open<RecipientFormComponent, RecipientFormData, void>(RecipientFormComponent, {
-      data: recipient
+      data: recipient,
     });
   }
 
@@ -71,7 +71,7 @@ export class DialogService {
       data: {
         recipients: recipients.filter(p => p.recipientId !== recipient.recipientId),
         targetRecipientId: recipient.recipientId,
-      }
+      },
     });
   }
 
@@ -89,7 +89,7 @@ export class DialogService {
       data: {
         category,
         categories,
-      }
+      },
     });
   }
 
@@ -107,7 +107,7 @@ export class DialogService {
       data: {
         categories: categories.filter(p => p.categoryId !== category.categoryId),
         targetCategoryId: category.categoryId,
-      }
+      },
     });
   }
 
@@ -116,7 +116,7 @@ export class DialogService {
       data: {
         product: undefined,
         categories,
-      }
+      },
     });
   }
 
@@ -125,7 +125,7 @@ export class DialogService {
       data: {
         product,
         categories: undefined,
-      }
+      },
     });
   }
 
@@ -143,7 +143,7 @@ export class DialogService {
       data: {
         products: products.filter(p => p.productId !== product.productId),
         targetProductId: product.productId,
-      }
+      },
     });
   }
 
@@ -153,7 +153,7 @@ export class DialogService {
 
   openEditAccountDialog(account: Account.Response): void {
     this.dialog.open<AccountFormComponent, AccountFormData, void>(AccountFormComponent, {
-      data: account
+      data: account,
     });
   }
 

@@ -33,10 +33,12 @@ export class AccountTransactionsHomeComponent implements OnInit {
       [],
       {
         relativeTo: this.activatedRoute,
-        queryParams: { page: Number(this.activatedRoute.snapshot.queryParams.page ?? 1) + 1 },
+        queryParams: {
+          page: Number(this.activatedRoute.snapshot.queryParams.page ?? 1) + 1, 
+        },
         queryParamsHandling: 'merge',
-        replaceUrl: true
-      }
+        replaceUrl: true,
+      },
     );
 
   }

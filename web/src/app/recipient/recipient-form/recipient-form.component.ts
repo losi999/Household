@@ -12,7 +12,9 @@ export type RecipientFormData = Recipient.Response;
   styleUrls: ['./recipient-form.component.scss'],
 })
 export class RecipientFormComponent implements OnInit {
-  form: FormGroup;
+  form: FormGroup<{
+    name: FormControl<string>;
+  }>;
   constructor(private dialogRef: MatDialogRef<RecipientFormComponent, void>,
     private recipientService: RecipientService,
     @Inject(MAT_DIALOG_DATA) public recipient: RecipientFormData) { }
@@ -27,11 +29,11 @@ export class RecipientFormComponent implements OnInit {
     if (this.form.valid) {
       const request: Recipient.Request = {
         name: this.form.value.name,
-      }
+      };
       if (this.recipient) {
-        this.recipientService.updateRecipient(this.recipient.recipientId, request)
+        this.recipientService.updateRecipient(this.recipient.recipientId, request);
       } else {
-        this.recipientService.createRecipient(request)
+        this.recipientService.createRecipient(request);
       }
 
       this.dialogRef.close();

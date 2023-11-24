@@ -16,7 +16,12 @@ export type ProductFormData = {
   styleUrls: ['./product-form.component.scss'],
 })
 export class ProductFormComponent implements OnInit {
-  form: FormGroup;
+  form: FormGroup<{
+    brand: FormControl<string>,
+    measurement: FormControl<number>,
+    unitOfMeasurement: FormControl<typeof unitsOfMeasurement[number]>,
+    category: FormControl<Category.Response>,
+  }>;
   get unitsOfMeasurement() { return unitsOfMeasurement; }
 
   constructor(private dialogRef: MatDialogRef<ProductFormComponent, void>,
@@ -38,7 +43,7 @@ export class ProductFormComponent implements OnInit {
         brand: this.form.value.brand,
         measurement: this.form.value.measurement,
         unitOfMeasurement: this.form.value.unitOfMeasurement,
-      }
+      };
 
       if (this.data.product) {
         this.productService.updateProduct(this.data.product.productId, request);

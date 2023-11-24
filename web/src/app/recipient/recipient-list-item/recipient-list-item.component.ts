@@ -20,19 +20,20 @@ export class RecipientListItemComponent {
     private bottomSheet: MatBottomSheet) { }
 
   delete() {
-    this.dialogService.openDeleteRecipientDialog(this.recipient).afterClosed().subscribe(shouldDelete => {
-      if (shouldDelete) {
-        this.recipientService.deleteRecipient(this.recipient.recipientId);
-      }
-    });
+    this.dialogService.openDeleteRecipientDialog(this.recipient).afterClosed()
+      .subscribe(shouldDelete => {
+        if (shouldDelete) {
+          this.recipientService.deleteRecipient(this.recipient.recipientId);
+        }
+      });
   }
 
   edit() {
-    this.dialogService.openEditRecipientDialog(this.recipient)
+    this.dialogService.openEditRecipientDialog(this.recipient);
   }
 
   merge() {
-    this.dialogService.openMergeRecipientsDialog(this.recipient, this.recipients)
+    this.dialogService.openMergeRecipientsDialog(this.recipient, this.recipients);
   }
 
   showMenu() {

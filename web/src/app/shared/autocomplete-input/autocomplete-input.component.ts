@@ -20,7 +20,9 @@ export class AutocompleteInputComponent implements OnInit, OnDestroy, ControlVal
   @Input() label: string;
   @Input() items: any[];
 
-  form: FormGroup;
+  form: FormGroup<{
+    selected: FormControl<any>
+  }>;
   changed: (value: string) => void;
   touched: () => void;
   isDisabled: boolean;

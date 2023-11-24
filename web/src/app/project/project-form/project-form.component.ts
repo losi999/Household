@@ -12,7 +12,10 @@ export type ProjectFormData = Project.Response;
   styleUrls: ['./project-form.component.scss'],
 })
 export class ProjectFormComponent implements OnInit {
-  form: FormGroup;
+  form: FormGroup<{
+    name: FormControl<string>;
+    description: FormControl<string>;
+  }>;
   constructor(private dialogRef: MatDialogRef<ProjectFormComponent, void>,
     private projectService: ProjectService,
     @Inject(MAT_DIALOG_DATA) public project: ProjectFormData) { }
@@ -29,11 +32,11 @@ export class ProjectFormComponent implements OnInit {
       const request: Project.Request = {
         name: this.form.value.name,
         description: this.form.value.description ?? undefined,
-      }
+      };
       if (this.project) {
-        this.projectService.updateProject(this.project.projectId, request)
+        this.projectService.updateProject(this.project.projectId, request);
       } else {
-        this.projectService.createProject(request)
+        this.projectService.createProject(request);
       }
 
       this.dialogRef.close();

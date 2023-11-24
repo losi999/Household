@@ -10,6 +10,7 @@ import { SharedModule } from 'src/app/shared/shared.module';
 import { MatDialogModule } from '@angular/material/dialog';
 import { TransactionDetailsComponent } from './transaction-details/transaction-details.component';
 import { RouterModule } from '@angular/router';
+import { MatListModule } from '@angular/material/list';
 
 @NgModule({
   declarations: [
@@ -26,6 +27,7 @@ import { RouterModule } from '@angular/router';
     ReactiveFormsModule,
     MatTabsModule,
     MatDialogModule,
+    MatListModule,
   ],
   exports: [],
 })

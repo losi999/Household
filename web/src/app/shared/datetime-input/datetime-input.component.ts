@@ -15,7 +15,11 @@ import { Subscription } from 'rxjs';
   ],
 })
 export class DatetimeInputComponent implements OnInit, OnDestroy, ControlValueAccessor {
-  form: FormGroup;
+  form: FormGroup<{
+    date: FormControl<Date>;
+    hour: FormControl<number>;
+    minute: FormControl<number>;
+  }>;
   changed: (value: Date) => void;
   touched: () => void;
   isDisabled: boolean;
