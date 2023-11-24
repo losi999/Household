@@ -5,9 +5,6 @@ import { productServiceFactory } from '@household/shared/services/product-servic
 import { projectServiceFactory } from '@household/shared/services/project-service';
 import { recipientServiceFactory } from '@household/shared/services/recipient-service';
 import { transactionServiceFactory } from '@household/shared/services/transaction-service';
-import { config } from 'dotenv';
-
-config();
 
 const mongoDbService = mongodbServiceFactory(process.env.MONGODB_CONNECTION_STRING.replace('{{ENV}}', process.env.ENV));
 

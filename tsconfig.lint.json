@@ -4,6 +4,7 @@
     "api/src",
     "shared/src",
     "web/src",
+    "test",
     "localhost"
   ]
 }
