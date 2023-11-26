@@ -1,3 +1,4 @@
+import { populate } from '@household/shared/common/utils';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { Account, Common, Transaction, Recipient, Project, Category, Product } from '@household/shared/types/types';
 import { FilterQuery } from 'mongoose';
@@ -26,10 +27,11 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
   const instance: ITransactionService = {
     dumpTransactions: () => {
       return mongodbService.inSession((session) => {
-        return mongodbService.transactions().find({}, null, {
-          session,
-        })
-          .lean<Transaction.Document[]>()
+        return mongodbService.transactions().find({})
+          .setOptions({
+            session,
+            lean: true,
+          })
           .exec();
       });
     },
@@ -38,16 +40,18 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
     },
     getTransactionById: (transactionId) => {
       return !transactionId ? undefined : mongodbService.transactions().findById(transactionId)
-        .populate('project')
-        .populate('recipient')
-        .populate('account')
-        .populate('category')
-        .populate('inventory.product')
-        .populate('transferAccount')
-        .populate('splits.category')
-        .populate('splits.project')
-        .populate('splits.inventory.product')
-        .lean<Transaction.Document>()
+        .setOptions({
+          populate: populate('project',
+            'recipient',
+            'account',
+            'category',
+            'inventory.product',
+            'transferAccount',
+            'splits.category',
+            'splits.project',
+            'splits.inventory.product'),
+          lean: true,
+        })
         .exec();
     },
     getTransactionByIdAndAccountId: async ({ transactionId, accountId }) => {
@@ -62,16 +66,18 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
           },
         ],
       })
-        .populate('project')
-        .populate('recipient')
-        .populate('account')
-        .populate('category')
-        .populate('inventory.product')
-        .populate('transferAccount')
-        .populate('splits.category')
-        .populate('splits.project')
-        .populate('splits.inventory.product')
-        .lean<Transaction.Document>()
+        .setOptions({
+          populate: populate('project',
+            'recipient',
+            'account',
+            'category',
+            'inventory.product',
+            'transferAccount',
+            'splits.category',
+            'splits.project',
+            'splits.inventory.product'),
+          lean: true,
+        })
         .exec();
     },
     deleteTransaction: (transactionId) => {
@@ -181,21 +187,23 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
           delete query.$and;
         }
 
-        return mongodbService.transactions().find(query, null, {
-          session,
-        })
-          .sort({
-            issuedAt: 'asc',
+        return mongodbService.transactions().find<Transaction.PaymentDocument | Transaction.SplitDocument>(query)
+          .setOptions({
+            session,
+            populate: populate('project',
+              'recipient',
+              'account',
+              'category',
+              'inventory.product',
+              'transferAccount',
+              'splits.category',
+              'splits.project',
+              'splits.inventory.product'),
+            lean: true,
+            sort: {
+              issuedAt: 'asc',
+            },
           })
-          .populate('project')
-          .populate('recipient')
-          .populate('account')
-          .populate('category')
-          .populate('inventory.product')
-          .populate('splits.category')
-          .populate('splits.project')
-          .populate('splits.inventory.product')
-          .lean<(Transaction.PaymentDocument | Transaction.SplitDocument)[]>()
           .exec();
       });
     },
@@ -210,24 +218,25 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
               transferAccount: accountId,
             },
           ],
-        }, null, {
-          session,
         })
-          .sort({
-            issuedAt: 'desc',
+          .setOptions({
+            session,
+            populate: populate('project',
+              'recipient',
+              'account',
+              'category',
+              'inventory.product',
+              'transferAccount',
+              'splits.category',
+              'splits.project',
+              'splits.inventory.product'),
+            lean: true,
+            sort: {
+              issuedAt: 'desc',
+            },
+            limit: pageSize,
+            skip: (pageNumber - 1) * pageSize,
           })
-          .limit(pageSize)
-          .skip((pageNumber - 1) * pageSize)
-          .populate('project')
-          .populate('recipient')
-          .populate('account')
-          .populate('category')
-          .populate('inventory.product')
-          .populate('transferAccount')
-          .populate('splits.category')
-          .populate('splits.project')
-          .populate('splits.inventory.product')
-          .lean<Transaction.Document[]>()
           .exec();
       });
     },

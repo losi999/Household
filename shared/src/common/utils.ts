@@ -1,5 +1,14 @@
 import { Dictionary } from '@household/shared/types/common';
 import { Account, Category, Internal, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { PopulateOptions } from 'mongoose';
+
+export const populate = (...populateOptions: (string | PopulateOptions)[]): PopulateOptions[] => {
+  return populateOptions.map(p => {
+    return typeof p === 'string' ? {
+      path: p,
+    } : p;
+  });
+};
 
 export const addSeconds = (seconds: number, dateFrom?: Date): Date => {
   if (dateFrom) {

@@ -1,8 +1,6 @@
 import { Project } from '@household/shared/types/types';
 import { headerExpiresIn } from '@household/shared/constants';
-import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/test/api/types';
-import { IProjectService } from '@household/shared/services/project-service';
-import { getProjectId } from '@household/shared/common/utils';
+import { CommandFunctionWithPreviousSubject } from '@household/test/api/types';
 
 const requestCreateProject = (idToken: string, project: Project.Request) => {
   return cy.request({
@@ -75,48 +73,7 @@ const requestMergeProjects = (idToken: string, projectId: Project.Id, sourceProj
   }) as Cypress.ChainableResponse;
 };
 
-const validateProjectDocument = (response: Project.ProjectId, request: Project.Request) => {
-  const id = response?.projectId;
-
-  cy.log('Get project document', id)
-    .getProjectDocumentById(id)
-    .should((document) => {
-      expect(getProjectId(document), 'id').to.equal(id);
-      expect(document.name, 'name').to.equal(request.name);
-      expect(document.description, 'description').to.equal(request.description);
-    });
-};
-
-const validateProjectResponse = (response: Project.Response, document: Project.Document) => {
-  expect(response.projectId, 'projectId').to.equal(getProjectId(document));
-  expect(response.name, 'name').to.equal(document.name);
-  expect(response.description, 'description').to.equal(document.description);
-};
-
-const validateProjectListResponse = (responses: Project.Response[], documents: Project.Document[]) => {
-  documents.forEach((document) => {
-    const response = responses.find(r => r.projectId === getProjectId(document));
-    validateProjectResponse(response, document);
-  });
-};
-
-const validateProjectDeleted = (projectId: Project.Id) => {
-  cy.log('Get project document', projectId)
-    .getProjectDocumentById(projectId)
-    .should((document) => {
-      expect(document, 'document').to.be.null;
-    });
-};
-
-const saveProjectDocument = (...params: Parameters<IProjectService['saveProject']>) => {
-  return cy.task<Project.Document>('saveProject', ...params);
-};
-
-const getProjectDocumentById = (...params: Parameters<IProjectService['getProjectById']>) => {
-  return cy.task<Project.Document>('getProjectById', ...params);
-};
-
-export const setProjectCommands = () => {
+export const setProjectRequestCommands = () => {
   Cypress.Commands.addAll<any>({
     prevSubject: true,
   }, {
@@ -126,26 +83,12 @@ export const setProjectCommands = () => {
     requestGetProject,
     requestGetProjectList,
     requestMergeProjects,
-    validateProjectDocument,
-    validateProjectResponse,
-    validateProjectListResponse,
   });
 
-  Cypress.Commands.addAll({
-    validateProjectDeleted,
-    saveProjectDocument,
-    getProjectDocumentById,
-  });
 };
 
 declare global {
   namespace Cypress {
-    interface Chainable {
-      validateProjectDeleted: CommandFunction<typeof validateProjectDeleted>;
-      saveProjectDocument: CommandFunction<typeof saveProjectDocument>;
-      getProjectDocumentById: CommandFunction<typeof getProjectDocumentById>
-    }
-
     interface ChainableRequest extends Chainable {
       requestCreateProject: CommandFunctionWithPreviousSubject<typeof requestCreateProject>;
       requestGetProject: CommandFunctionWithPreviousSubject<typeof requestGetProject>;
@@ -153,12 +96,6 @@ declare global {
       requestDeleteProject: CommandFunctionWithPreviousSubject<typeof requestDeleteProject>;
       requestGetProjectList: CommandFunctionWithPreviousSubject<typeof requestGetProjectList>;
       requestMergeProjects: CommandFunctionWithPreviousSubject<typeof requestMergeProjects>;
-    }
-
-    interface ChainableResponseBody extends Chainable {
-      validateProjectDocument: CommandFunctionWithPreviousSubject<typeof validateProjectDocument>;
-      validateProjectResponse: CommandFunctionWithPreviousSubject<typeof validateProjectResponse>;
-      validateProjectListResponse: CommandFunctionWithPreviousSubject<typeof validateProjectListResponse>;
     }
   }
 }

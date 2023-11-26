@@ -17,5 +17,6 @@ export default defineConfig({
     specPattern: 'src/api/**/*.spec.ts',
     supportFile: 'src/support',
     baseUrl: 'https://local-householdapi.losi999.hu',
+    experimentalRunAllSpecs: true,
   },
 });

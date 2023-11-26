@@ -1,122 +1,8 @@
-import { Account, Category, Common, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
-import { headerExpiresIn } from '@household/shared/constants';
+import { Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/test/api/types';
-import { ITransactionService } from '@household/shared/services/transaction-service';
 import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
 
 type RelatedDocument = 'category' | 'project' | 'recipient' | 'inventory' | 'invoice';
-
-const requestCreatePaymentTransaction = (idToken: string, transaction: Transaction.PaymentRequest) => {
-  return cy.request({
-    body: transaction,
-    method: 'POST',
-    url: '/transaction/v1/transactions/payment',
-    headers: {
-      Authorization: idToken,
-      [headerExpiresIn]: Cypress.env('EXPIRES_IN'),
-    },
-    failOnStatusCode: false,
-  }) as Cypress.ChainableResponse;
-};
-
-const requestCreateTransferTransaction = (idToken: string, transaction: Transaction.TransferRequest) => {
-  return cy.request({
-    body: transaction,
-    method: 'POST',
-    url: '/transaction/v1/transactions/transfer',
-    headers: {
-      Authorization: idToken,
-      [headerExpiresIn]: Cypress.env('EXPIRES_IN'),
-    },
-    failOnStatusCode: false,
-  }) as Cypress.ChainableResponse;
-};
-
-const requestCreateSplitTransaction = (idToken: string, transaction: Transaction.SplitRequest) => {
-  return cy.request({
-    body: transaction,
-    method: 'POST',
-    url: '/transaction/v1/transactions/split',
-    headers: {
-      Authorization: idToken,
-      [headerExpiresIn]: Cypress.env('EXPIRES_IN'),
-    },
-    failOnStatusCode: false,
-  }) as Cypress.ChainableResponse;
-};
-
-const requestUpdateToPaymentTransaction = (idToken: string, transactionId: Transaction.Id, transaction: Transaction.PaymentRequest) => {
-  return cy.request({
-    body: transaction,
-    method: 'PUT',
-    url: `/transaction/v1/transactions/${transactionId}/payment`,
-    headers: {
-      Authorization: idToken,
-      [headerExpiresIn]: Cypress.env('EXPIRES_IN'),
-    },
-    failOnStatusCode: false,
-  }) as Cypress.ChainableResponse;
-};
-
-const requestUpdateToTransferTransaction = (idToken: string, transactionId: Transaction.Id, transaction: Transaction.TransferRequest) => {
-  return cy.request({
-    body: transaction,
-    method: 'PUT',
-    url: `/transaction/v1/transactions/${transactionId}/transfer`,
-    headers: {
-      Authorization: idToken,
-      [headerExpiresIn]: Cypress.env('EXPIRES_IN'),
-    },
-    failOnStatusCode: false,
-  }) as Cypress.ChainableResponse;
-};
-
-const requestUpdateToSplitTransaction = (idToken: string, transactionId: Transaction.Id, transaction: Transaction.SplitRequest) => {
-  return cy.request({
-    body: transaction,
-    method: 'PUT',
-    url: `/transaction/v1/transactions/${transactionId}/split`,
-    headers: {
-      Authorization: idToken,
-      [headerExpiresIn]: Cypress.env('EXPIRES_IN'),
-    },
-    failOnStatusCode: false,
-  }) as Cypress.ChainableResponse;
-};
-
-const requestDeleteTransaction = (idToken: string, transactionId: Transaction.Id) => {
-  return cy.request({
-    method: 'DELETE',
-    url: `/transaction/v1/transactions/${transactionId}`,
-    headers: {
-      Authorization: idToken,
-    },
-    failOnStatusCode: false,
-  }) as Cypress.ChainableResponse;
-};
-
-const requestGetTransaction = (idToken: string, accountId: Account.Id, transactionId: Transaction.Id) => {
-  return cy.request({
-    method: 'GET',
-    url: `/transaction/v1/accounts/${accountId}/transactions/${transactionId}`,
-    headers: {
-      Authorization: idToken,
-    },
-    failOnStatusCode: false,
-  }) as Cypress.ChainableResponse;
-};
-
-const requestGetTransactionListByAccount = (idToken: string, accountId: Account.Id, querystring?: Partial<Common.Pagination<number>>) => {
-  return cy.request({
-    method: 'GET',
-    url: `/transaction/v1/accounts/${accountId}/transactions`,
-    qs: querystring,
-    headers: {
-      Authorization: idToken,
-    },
-    failOnStatusCode: false,
-  }) as Cypress.ChainableResponse;
-};
 
 const validateInventoryDocument = (request: Transaction.InventoryRequest['inventory'], document: Transaction.Inventory<Product.Document>['inventory'], category: Category.Document) => {
   if (category?.categoryType === 'inventory') {
@@ -512,27 +398,10 @@ const validatePartiallyReassignedSplitDocument = (originalDocument: Transaction.
     });
 };
 
-const saveTransactionDocument = (...params: Parameters<ITransactionService['saveTransaction']>) => {
-  return cy.task<Transaction.Document>('saveTransaction', ...params);
-};
-
-const getTransactionDocumentById = (...params: Parameters<ITransactionService['getTransactionById']>) => {
-  return cy.task<Transaction.Document>('getTransactionById', ...params);
-};
-
-export const setTransactionCommands = () => {
+export const setTransactionValidationCommands = () => {
   Cypress.Commands.addAll<any>({
     prevSubject: true,
   }, {
-    requestCreatePaymentTransaction,
-    requestCreateTransferTransaction,
-    requestCreateSplitTransaction,
-    requestUpdateToPaymentTransaction,
-    requestUpdateToTransferTransaction,
-    requestUpdateToSplitTransaction,
-    requestDeleteTransaction,
-    requestGetTransaction,
-    requestGetTransactionListByAccount,
     validateTransactionPaymentDocument,
     validateTransactionTransferDocument,
     validateTransactionSplitDocument,
@@ -543,8 +412,6 @@ export const setTransactionCommands = () => {
   });
 
   Cypress.Commands.addAll({
-    getTransactionDocumentById,
-    saveTransactionDocument,
     validateTransactionDeleted,
     validatePartiallyUnsetPaymentDocument,
     validatePartiallyUnsetSplitDocument,
@@ -561,20 +428,6 @@ declare global {
       validatePartiallyUnsetSplitDocument: CommandFunction<typeof validatePartiallyUnsetSplitDocument>;
       validatePartiallyReassignedPaymentDocument: CommandFunction<typeof validatePartiallyReassignedPaymentDocument>;
       validatePartiallyReassignedSplitDocument: CommandFunction<typeof validatePartiallyReassignedSplitDocument>;
-      saveTransactionDocument: CommandFunction<typeof saveTransactionDocument>;
-      getTransactionDocumentById: CommandFunction<typeof getTransactionDocumentById>
-    }
-
-    interface ChainableRequest extends Chainable {
-      requestCreatePaymentTransaction: CommandFunctionWithPreviousSubject<typeof requestCreatePaymentTransaction>;
-      requestCreateTransferTransaction: CommandFunctionWithPreviousSubject<typeof requestCreateTransferTransaction>;
-      requestCreateSplitTransaction: CommandFunctionWithPreviousSubject<typeof requestCreateSplitTransaction>;
-      requestGetTransaction: CommandFunctionWithPreviousSubject<typeof requestGetTransaction>;
-      requestUpdateToPaymentTransaction: CommandFunctionWithPreviousSubject<typeof requestUpdateToPaymentTransaction>;
-      requestUpdateToTransferTransaction: CommandFunctionWithPreviousSubject<typeof requestUpdateToTransferTransaction>;
-      requestUpdateToSplitTransaction: CommandFunctionWithPreviousSubject<typeof requestUpdateToSplitTransaction>;
-      requestDeleteTransaction: CommandFunctionWithPreviousSubject<typeof requestDeleteTransaction>;
-      requestGetTransactionListByAccount: CommandFunctionWithPreviousSubject<typeof requestGetTransactionListByAccount>;
     }
 
     interface ChainableResponseBody extends Chainable {

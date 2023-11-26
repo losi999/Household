@@ -1,3 +1,4 @@
+import { populate } from '@household/shared/common/utils';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { Category, Product } from '@household/shared/types/types';
 import { ClientSession } from 'mongoose';
@@ -18,7 +19,6 @@ export interface ICategoryService {
 }
 
 export const categoryServiceFactory = (mongodbService: IMongodbService): ICategoryService => {
-
   const updateCategoryFullName = (oldName: string, newName: string, session: ClientSession): Promise<unknown> => {
     return mongodbService.categories().updateMany({
       fullName: {
@@ -58,8 +58,10 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
     },
     getCategoryById: async (categoryId) => {
       return !categoryId ? null : mongodbService.categories().findById(categoryId)
-        .populate('parentCategory')
-        .lean<Category.Document>()
+        .setOptions({
+          populate: populate('parentCategory'),
+          lean: true,
+        })
         .exec();
     },
     deleteCategory: async (categoryId) => {
@@ -228,17 +230,20 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
           } : undefined, null, {
             session,
           })
-          .populate('parentCategory')
-          .populate({
-            path: 'products',
-            options: {
-              collation: {
-                locale: 'hu',
+          .setOptions({
+            populate: populate('parentCategory',
+              {
+                path: 'products',
+                options: {
+                  collation: {
+                    locale: 'hu',
+                  },
+                  sort: {
+                    fullName: 1,
+                  },
+                },
               },
-              sort: {
-                fullName: 1,
-              },
-            },
+            ),
           })
           .collation({
             locale: 'hu',
