@@ -18,6 +18,7 @@ export const productSchema = new Schema<Product.Document>({
     type: String,
     required: true,
     minlength: 1,
+    unique: true,
   },
   expiresAt: {
     type: Schema.Types.Date,

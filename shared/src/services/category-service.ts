@@ -59,7 +59,19 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
     getCategoryById: async (categoryId) => {
       return !categoryId ? null : mongodbService.categories().findById(categoryId)
         .setOptions({
-          populate: populate('parentCategory'),
+          populate: populate('parentCategory',
+            {
+              path: 'products',
+              options: {
+                collation: {
+                  locale: 'hu',
+                },
+                sort: {
+                  fullName: 1,
+                },
+              },
+            },
+          ),
           lean: true,
         })
         .exec();

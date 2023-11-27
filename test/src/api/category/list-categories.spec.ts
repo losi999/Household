@@ -60,7 +60,7 @@ describe('GET /category/v1/categories', () => {
         .validateCategoryListResponse([
           categoryDocument1,
           categoryDocument2,
-        ]);
+        ], [productDocument]);
     });
   });
 });

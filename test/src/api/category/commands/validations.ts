@@ -4,7 +4,7 @@ import { getCategoryId, getProductId } from '@household/shared/common/utils';
 
 type RelatedDocumentOperation = 'parentReassign' | 'productRemoval';
 
-const validateCategoryDocument = (response: Category.CategoryId, request: Category.Request, parentCategory?: Category.Document, product?: Product.Document) => {
+const validateCategoryDocument = (response: Category.CategoryId, request: Category.Request, parentCategory?: Category.Document, productDocument?: Product.Document) => {
   const id = response?.categoryId;
 
   cy.log('Get category document', id)
@@ -15,13 +15,13 @@ const validateCategoryDocument = (response: Category.CategoryId, request: Catego
       expect(document.categoryType, 'categoryType').to.equal(request.categoryType);
       expect(document.fullName, 'fullName').to.equal(request.parentCategoryId ? `${parentCategory.fullName}:${request.name}` : request.name);
       expect(getCategoryId(document.parentCategory), 'parentCategory.categoryId').to.equal(request.parentCategoryId);
-      if (product) {
-        expect(document.products).to.contain(getProductId(product));
+      if (productDocument) {
+        expect(document.products.map(p => getProductId(p)), 'products array').to.contain(getProductId(productDocument));
       }
     });
 };
 
-const validateCategoryResponse = (response: Category.Response, document: Category.Document, parentCategory?: Category.Document) => {
+const validateCategoryResponse = (response: Category.Response, document: Category.Document, parentCategory?: Category.Document, productDocument?: Product.Document) => {
   expect(response.categoryId, 'categoryId').to.equal(getCategoryId(document));
   expect(response.name, 'name').to.equal(document.name);
   expect(response.categoryType, 'categoryType').to.equal(document.categoryType);
@@ -30,12 +30,20 @@ const validateCategoryResponse = (response: Category.Response, document: Categor
   expect(response.parentCategory?.fullName, 'parentCategory.fullName').to.equal(parentCategory?.fullName);
   expect(response.parentCategory?.categoryType, 'parentCategory.categoryType').to.equal(parentCategory?.categoryType);
   expect(response.parentCategory?.categoryId, 'parentCategory.categoryId').to.equal(getCategoryId(parentCategory));
+  if (productDocument) {
+    expect(response.products.length, 'products count').to.equal(1);
+    expect(response.products[0].productId, 'products[0].productId').to.equal(getProductId(productDocument));
+    expect(response.products[0].brand, 'products[0].brand').to.equal(productDocument.brand);
+    expect(response.products[0].fullName, 'products[0].fullName').to.equal(productDocument.fullName);
+    expect(response.products[0].measurement, 'products[0].measurement').to.equal(productDocument.measurement);
+    expect(response.products[0].unitOfMeasurement, 'products[0].unitOfMeasurement').to.equal(productDocument.unitOfMeasurement);
+  }
 };
 
-const validateCategoryListResponse = (responses: Category.Response[], documents: Category.Document[]) => {
-  documents.forEach((document) => {
+const validateCategoryListResponse = (responses: Category.Response[], documents: Category.Document[], products?: Product.Document[]) => {
+  documents.forEach((document, index) => {
     const response = responses.find(r => r.categoryId === getCategoryId(document));
-    validateCategoryResponse(response, document);
+    validateCategoryResponse(response, document, undefined, products?.[index]);
   });
 };
 
@@ -73,14 +81,14 @@ const validateCategoryParentReassign = (originalDocument: Category.Document, par
     })
     .log('Get category document', categoryId)
     .getCategoryDocumentById(categoryId)
-    .should((document) => {
-      compareCategoryDocuments(originalDocument, document, 'parentReassign');
+    .should((currentDocument) => {
+      compareCategoryDocuments(originalDocument, currentDocument, 'parentReassign');
       if (parentCategoryDocument) {
-        expect(document.fullName, 'fullName').to.equal(`${parentCategoryDocument.fullName}:${document.name}`);
-        expect(getCategoryId(document.parentCategory), 'parentCategory').to.equal(getCategoryId(parentCategoryDocument));
+        expect(currentDocument.fullName, 'fullName').to.equal(`${parentCategoryDocument.fullName}:${currentDocument.name}`);
+        expect(getCategoryId(currentDocument.parentCategory), 'parentCategory').to.equal(getCategoryId(parentCategoryDocument));
       } else {
-        expect(document.fullName, 'fullName').to.equal(document.name);
-        expect(!!document.parentCategory, 'parentCategory').to.be.false;
+        expect(currentDocument.fullName, 'fullName').to.equal(currentDocument.name);
+        expect(!!currentDocument.parentCategory, 'parentCategory').to.be.false;
       }
     });
 };

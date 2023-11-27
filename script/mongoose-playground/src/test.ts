@@ -6,9 +6,9 @@ import { config } from 'dotenv';
     config();
     const mongodbService = mongodbServiceFactory(process.env.MONGODB_CONNECTION_STRING);
 
-    const res = await mongodbService.categories().findById('655743e8d9095e669b61ffe3');
+    const res = await mongodbService.transactions().find();
 
-    console.log('res', res);
+    console.log('res', typeof res[0].issuedAt);
 
   } catch (error) {
     console.log('ERR', error);
