@@ -13,11 +13,6 @@ describe('DELETE /product/v1/products/{productId}', () => {
   let categoryId: Category.Id;
 
   beforeEach(() => {
-    productDocument = productDocumentConverter.create({
-      brand: `tesco-${uuid}`,
-      measurement: 1,
-      unitOfMeasurement: 'kg',
-    }, Cypress.env('EXPIRES_IN'), true);
     categoryDocument = categoryDocumentConverter.create({
       body: {
         categoryType: 'inventory',
@@ -25,6 +20,14 @@ describe('DELETE /product/v1/products/{productId}', () => {
         parentCategoryId: undefined,
       },
       parentCategory: undefined,
+    }, Cypress.env('EXPIRES_IN'), true);
+    productDocument = productDocumentConverter.create({
+      body: {
+        brand: `tesco-${uuid}`,
+        measurement: 1,
+        unitOfMeasurement: 'kg',
+      },
+      category: categoryDocument,
     }, Cypress.env('EXPIRES_IN'), true);
     categoryId = getCategoryId(categoryDocument);
   });
@@ -40,10 +43,7 @@ describe('DELETE /product/v1/products/{productId}', () => {
   describe('called as an admin', () => {
 
     it('should delete product', () => {
-      cy.saveProductDocument({
-        document: productDocument,
-        categoryId,
-      })
+      cy.saveProductDocument(productDocument)
         .authenticate(1)
         .requestDeleteProduct(getProductId(productDocument))
         .expectNoContentResponse()
@@ -123,10 +123,7 @@ describe('DELETE /product/v1/products/{productId}', () => {
       it('should be unset if product is deleted', () => {
         cy.saveAccountDocument(accountDocument)
           .saveCategoryDocument(categoryDocument)
-          .saveProductDocument({
-            document: productDocument,
-            categoryId,
-          })
+          .saveProductDocument(productDocument)
           .saveTransactionDocument(paymentTransactionDocument)
           .saveTransactionDocument(splitTransactionDocument)
           .authenticate(1)

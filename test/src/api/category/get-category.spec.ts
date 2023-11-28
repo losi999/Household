@@ -31,9 +31,12 @@ describe('GET /category/v1/categories/{categoryId}', () => {
     }, Cypress.env('EXPIRES_IN'), true);
 
     productDocument = productDocumentConverter.create({
-      brand: `tesco-${uuid()}`,
-      measurement: 200,
-      unitOfMeasurement: 'g',
+      body: {
+        brand: `tesco-${uuid()}`,
+        measurement: 200,
+        unitOfMeasurement: 'g',
+      },
+      category: categoryDocument,
     }, Cypress.env('EXPIRES_IN'), true);
   });
 
@@ -48,10 +51,7 @@ describe('GET /category/v1/categories/{categoryId}', () => {
   describe('called as an admin', () => {
     it('should get category by id', () => {
       cy.saveCategoryDocument(categoryDocument)
-        .saveProductDocument({
-          document: productDocument,
-          categoryId: getCategoryId(categoryDocument),
-        })
+        .saveProductDocument(productDocument)
         .authenticate(1)
         .requestGetCategory(getCategoryId(categoryDocument))
         .expectOkResponse()

@@ -1,3 +1,4 @@
+import { getCategoryId, getProductId } from '@household/shared/common/utils';
 import { HttpError } from '@household/shared/types/common';
 import { Account, Category, Common, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 
@@ -326,6 +327,10 @@ export const httpErrors = {
       log('Get product', ctx, error);
       throw httpError(statusCode, 'Error while getting product');
     },
+    listByIds: (ctx: Product.Id[], statusCode = 500): Catch => (error) => {
+      log('List products by ids', ctx, error);
+      throw httpError(statusCode, 'Error while listing products by ids');
+    },
     notFound: (condition: boolean, ctx: Product.ProductId, statusCode = 404) => {
       if (condition) {
         log('No product found', ctx);
@@ -363,10 +368,17 @@ export const httpErrors = {
         throw httpError(statusCode, 'Target product is among the source product Ids');
       }
     },
+    notSameCategory: (products: Product.Document[], statusCode = 400) => {
+      const categoryId = getCategoryId(products[0].category);
+
+      if (!products.every(p => getCategoryId(p.category) === categoryId)) {
+        log('Not all products belong to the same category', products.map(p => getProductId(p)));
+        throw httpError(statusCode, 'Not all products belong to the same category');
+      }
+    },
     merge: (ctx: {
       targetProductId: Product.Id;
       sourceProductIds: Product.Id[];
-      categoryId: Category.Id;
     }, statusCode = 500): Catch => (error) => {
       log('Merge products', ctx, error);
       throw httpError(statusCode, 'Error while merging products');

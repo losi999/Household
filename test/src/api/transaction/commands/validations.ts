@@ -20,17 +20,17 @@ const validateTransactionPaymentDocument = (response: Transaction.TransactionId,
       expect(getProjectId(document.project), 'project').to.equal(request.projectId);
       expect(getRecipientId(document.recipient), 'recipient').to.equal(request.recipientId);
 
-      if (document.category?.categoryType === 'inventory') {
-        expect(document.inventory?.quantity, 'inventory.quantity').to.equal(request.inventory?.quantity);
-        expect(getProductId(document.inventory?.product), 'inventory.productId').to.equal(request.inventory?.productId);
+      if (document.category?.categoryType === 'inventory' && document.inventory) {
+        expect(document.inventory.quantity, 'inventory.quantity').to.equal(request.inventory.quantity);
+        expect(getProductId(document.inventory.product), 'inventory.productId').to.equal(request.inventory.productId);
       } else {
         expect(document.inventory, 'inventory').to.be.undefined;
       }
 
-      if (document.category?.categoryType === 'invoice') {
-        expect(document.invoice?.invoiceNumber, 'invoice.invoiceNumber').to.equal(request.invoice?.invoiceNumber);
-        expect(new Date(document.invoice.billingStartDate).toISOString(), 'invoice.billingStartDate').to.equal(new Date(request.invoice?.billingStartDate).toISOString());
-        expect(new Date(document.invoice.billingEndDate).toISOString(), 'invoice.billingEndDate').to.equal(new Date(request.invoice?.billingEndDate).toISOString());
+      if (document.category?.categoryType === 'invoice' && document.invoice) {
+        expect(document.invoice.invoiceNumber, 'invoice.invoiceNumber').to.equal(request.invoice.invoiceNumber);
+        expect(new Date(document.invoice.billingStartDate).toISOString(), 'invoice.billingStartDate').to.equal(new Date(request.invoice.billingStartDate).toISOString());
+        expect(new Date(document.invoice.billingEndDate).toISOString(), 'invoice.billingEndDate').to.equal(new Date(request.invoice.billingEndDate).toISOString());
       } else {
         expect(document.invoice, 'invoice').to.be.undefined;
       }
@@ -57,17 +57,17 @@ const validateTransactionSplitDocument = (response: Transaction.TransactionId, r
         expect(getProjectId(split.project), `splits[${index}].project`).to.equal(request.splits[index].projectId);
         expect(getCategoryId(split.category), `splits[${index}].category`).to.equal(request.splits[index].categoryId);
 
-        if (split.category?.categoryType === 'inventory') {
-          expect(split.inventory?.quantity, `splits[${index}].inventory.quantity`).to.equal(request.splits[index].inventory?.quantity);
-          expect(getProductId(split.inventory?.product), `splits[${index}].inventory.productId`).to.equal(request.splits[index].inventory?.productId);
+        if (split.category?.categoryType === 'inventory' && split.inventory) {
+          expect(split.inventory.quantity, `splits[${index}].inventory.quantity`).to.equal(request.splits[index].inventory.quantity);
+          expect(getProductId(split.inventory.product), `splits[${index}].inventory.productId`).to.equal(request.splits[index].inventory.productId);
         } else {
           expect(split.inventory, `splits[${index}].inventory`).to.be.undefined;
         }
 
-        if (split.category?.categoryType === 'invoice') {
-          expect(split.invoice?.invoiceNumber, `splits[${index}].invoice.invoiceNumber`).to.equal(request.splits[index].invoice?.invoiceNumber);
-          expect(new Date(split.invoice.billingStartDate).toISOString(), `splits[${index}].invoice.billingStartDate`).to.equal(new Date(request.splits[index].invoice?.billingStartDate).toISOString());
-          expect(new Date(split.invoice.billingEndDate).toISOString(), `splits[${index}].invoice.billingEndDate`).to.equal(new Date(request.splits[index].invoice?.billingEndDate).toISOString());
+        if (split.category?.categoryType === 'invoice' && split.invoice) {
+          expect(split.invoice.invoiceNumber, `splits[${index}].invoice.invoiceNumber`).to.equal(request.splits[index].invoice.invoiceNumber);
+          expect(new Date(split.invoice.billingStartDate).toISOString(), `splits[${index}].invoice.billingStartDate`).to.equal(new Date(request.splits[index].invoice.billingStartDate).toISOString());
+          expect(new Date(split.invoice.billingEndDate).toISOString(), `splits[${index}].invoice.billingEndDate`).to.equal(new Date(request.splits[index].invoice.billingEndDate).toISOString());
         } else {
           expect(split.invoice, `splits[${index}].invoice`).to.be.undefined;
         }

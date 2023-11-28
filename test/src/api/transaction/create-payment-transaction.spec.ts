@@ -62,9 +62,12 @@ describe('POST transaction/v1/transactions/payment', () => {
     }, Cypress.env('EXPIRES_IN'), true);
 
     productDocument = productDocumentConverter.create({
-      brand: `brand-${uuid()}`,
-      measurement: 200,
-      unitOfMeasurement: 'kg',
+      body: {
+        brand: `brand-${uuid()}`,
+        measurement: 200,
+        unitOfMeasurement: 'kg',
+      },
+      category: inventoryCategoryDocument,
     }, Cypress.env('EXPIRES_IN'), true);
 
     request = {
@@ -136,10 +139,7 @@ describe('POST transaction/v1/transactions/payment', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .saveProductDocument({
-              document: productDocument,
-              categoryId: getCategoryId(inventoryCategoryDocument),
-            })
+            .saveProductDocument(productDocument)
             .authenticate(1)
             .requestCreatePaymentTransaction(modifiedRequest)
             .expectCreatedResponse()

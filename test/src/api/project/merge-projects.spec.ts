@@ -114,6 +114,17 @@ describe('POST project/v1/projects/{projectId}/merge', () => {
     });
 
     describe('should return error', () => {
+      it('if a source project does not exist', () => {
+        cy.saveProjectDocument(targetProjectDocument)
+          .saveProjectDocument(sourceProjectDocument)
+          .authenticate(1)
+          .requestMergeProjects(getProjectId(targetProjectDocument), [
+            getProjectId(sourceProjectDocument),
+            createProjectId(),
+          ])
+          .expectBadRequestResponse()
+          .expectMessage('Some of the projects are not found');
+      });
       describe('if body', () => {
         it('is not array', () => {
           cy.authenticate(1)
@@ -152,6 +163,13 @@ describe('POST project/v1/projects/{projectId}/merge', () => {
             .requestMergeProjects(createProjectId('not-valid'), [createProjectId()])
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('projectId', 'pathParameters');
+        });
+
+        it('does not belong to any project', () => {
+          cy.authenticate(1)
+            .requestMergeProjects(createProjectId(), [getProjectId(sourceProjectDocument)])
+            .expectBadRequestResponse()
+            .expectMessage('Some of the projects are not found');
         });
       });
     });

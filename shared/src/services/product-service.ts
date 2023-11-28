@@ -1,9 +1,9 @@
 import { IMongodbService } from '@household/shared/services/mongodb-service';
-import { Category, Product } from '@household/shared/types/types';
+import { Product } from '@household/shared/types/types';
 
 export interface IProductService {
   dumpProducts(): Promise<Product.Document[]>;
-  saveProduct(ctx: {document: Product.Document } & Category.CategoryId): Promise<Product.Document>;
+  saveProduct(doc: Product.Document): Promise<Product.Document>;
   getProductById(productId: Product.Id): Promise<Product.Document>;
   listProductsByIds(productIds: Product.Id[]): Promise<Product.Document[]>;
   deleteProduct(productId: Product.Id): Promise<unknown>;
@@ -11,7 +11,6 @@ export interface IProductService {
   mergeProducts(ctx: {
     targetProductId: Product.Id;
     sourceProductIds: Product.Id[];
-    categoryId: Category.Id;
   }): Promise<unknown>;
   // listProducts(): Promise<Product.Document[]>;
 }
@@ -21,33 +20,22 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
   const instance: IProductService = {
     dumpProducts: () => {
       return mongodbService.inSession((session) => {
-        return mongodbService.products().find({}, null, {
-          session,
-        })
-          .lean()
+        return mongodbService.products().find({})
+          .setOptions({
+            session,
+            lean: true,
+          })
           .exec();
       });
     },
-    saveProduct: async ({ categoryId, document }) => {
-      let product: Product.Document;
-      await mongodbService.inSession((session) => {
-        return session.withTransaction(async () => {
-          product = await mongodbService.products().create(document);
-
-          return mongodbService.categories().updateOne({
-            _id: categoryId,
-          }, {
-            $push: {
-              products: product,
-            },
-          });
-        });
-      });
-      return product;
+    saveProduct: async (doc) => {
+      return mongodbService.products().create(doc);
     },
     getProductById: async (productId) => {
       return !productId ? null : mongodbService.products().findById(productId)
-        .lean()
+        .setOptions({
+          lean: true,
+        })
         .exec();
     },
     listProductsByIds: (productIds) => {
@@ -56,10 +44,12 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
           _id: {
             $in: productIds,
           },
-        }, null, {
-          session,
         })
-          .lean()
+          .populate('category')
+          .setOptions({
+            session,
+            lean: true,
+          })
           .exec();
 
       });
@@ -112,8 +102,7 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
       })
         .exec();
     },
-    mergeProducts: ({ targetProductId, sourceProductIds, categoryId }) => {
-      console.log(sourceProductIds);
+    mergeProducts: ({ targetProductId, sourceProductIds }) => {
       return mongodbService.inSession((session) => {
         return session.withTransaction(async () => {
           await mongodbService.products().deleteMany({
@@ -121,17 +110,6 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
               $in: sourceProductIds,
             },
           }, {
-            session,
-          });
-
-          await mongodbService.categories().updateOne({
-            _id: categoryId,
-          }, {
-            $pullAll: {
-              products: sourceProductIds,
-            },
-          }, {
-            runValidators: true,
             session,
           });
 

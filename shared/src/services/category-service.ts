@@ -1,7 +1,6 @@
-import { populate } from '@household/shared/common/utils';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
-import { Category, Product } from '@household/shared/types/types';
-import { ClientSession } from 'mongoose';
+import { Category } from '@household/shared/types/types';
+import { ClientSession, Types } from 'mongoose';
 
 export interface ICategoryService {
   dumpCategories(): Promise<Category.Document[]>;
@@ -11,7 +10,6 @@ export interface ICategoryService {
   updateCategory(doc: Category.Document, oldFullName: string): Promise<unknown>;
   listCategories(categoryType: Category.CategoryType): Promise<Category.Document[]>;
   listCategoriesByIds(categoryIds: Category.Id[]): Promise<Category.Document[]>;
-  getCategoryByProductIds(productIds: Product.Id[]): Promise<Category.Document>;
   mergeCategories(ctx: {
     targetCategoryId: Category.Id;
     sourceCategoryIds: Category.Id[];
@@ -57,33 +55,79 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
       return mongodbService.categories().create(doc);
     },
     getCategoryById: async (categoryId) => {
-      return !categoryId ? null : mongodbService.categories().findById(categoryId)
-        .setOptions({
-          populate: populate('parentCategory',
-            {
-              path: 'products',
-              options: {
-                collation: {
-                  locale: 'hu',
-                },
-                sort: {
+      let category: Category.Document;
+      if (categoryId) {
+        [category] = await mongodbService.categories()
+          .aggregate()
+          .match({
+            _id: new Types.ObjectId(categoryId),
+          })
+          .lookup({
+            from: 'categories',
+            localField: 'parentCategory',
+            foreignField: '_id',
+            as: 'parentCategory',
+          })
+          .lookup({
+            from: 'products',
+            localField: '_id',
+            foreignField: 'category',
+            as: 'products',
+            pipeline: [
+              {
+                $sort: {
                   fullName: 1,
                 },
               },
+            ],
+          })
+          .addFields({
+            parentCategory: {
+              $cond: {
+                if: {
+                  $eq: [
+                    {
+                      $size: '$parentCategory',
+                    },
+                    0,
+                  ],
+                },
+                then: '$$REMOVE',
+                else: {
+                  $arrayElemAt: [
+                    '$parentCategory',
+                    0,
+                  ],
+                },
+
+              },
             },
-          ),
-          lean: true,
-        })
-        .exec();
+            products: {
+              $cond: {
+                if: {
+                  $eq: [
+                    {
+                      $size: '$products',
+                    },
+                    0,
+                  ],
+                },
+                then: '$$REMOVE',
+                else: '$products',
+              },
+            },
+          })
+          .exec();
+      }
+
+      return category ?? null;
     },
     deleteCategory: async (categoryId) => {
       return mongodbService.inSession((session) => {
         return session.withTransaction(async () => {
           const toDelete = await mongodbService.categories().findById(categoryId);
           await mongodbService.products().deleteMany({
-            _id: {
-              $in: toDelete.products,
-            },
+            category: categoryId,
           }, {
             session,
           })
@@ -234,35 +278,78 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
       });
     },
     listCategories: ({ categoryType }) => {
-      console.log(categoryType);
       return mongodbService.inSession((session) => {
-        return mongodbService.categories()
-          .find(categoryType ? {
+        const aggregate = mongodbService.categories()
+          .aggregate()
+          .session(session);
+
+        if (categoryType) {
+          aggregate.match({
             categoryType,
-          } : undefined, null, {
-            session,
-          })
-          .setOptions({
-            populate: populate('parentCategory',
+          });
+        }
+
+        aggregate.lookup({
+          from: 'categories',
+          localField: 'parentCategory',
+          foreignField: '_id',
+          as: 'parentCategory',
+        })
+          .lookup({
+            from: 'products',
+            localField: '_id',
+            foreignField: 'category',
+            as: 'products',
+            pipeline: [
               {
-                path: 'products',
-                options: {
-                  collation: {
-                    locale: 'hu',
-                  },
-                  sort: {
-                    fullName: 1,
-                  },
+                $sort: {
+                  fullName: 1,
                 },
               },
-            ),
+            ],
+          })
+          .addFields({
+            parentCategory: {
+              $cond: {
+                if: {
+                  $eq: [
+                    {
+                      $size: '$parentCategory',
+                    },
+                    0,
+                  ],
+                },
+                then: '$$REMOVE',
+                else: {
+                  $arrayElemAt: [
+                    '$parentCategory',
+                    0,
+                  ],
+                },
+
+              },
+            },
+            products: {
+              $cond: {
+                if: {
+                  $eq: [
+                    {
+                      $size: '$products',
+                    },
+                    0,
+                  ],
+                },
+                then: '$$REMOVE',
+                else: '$products',
+              },
+            },
           })
           .collation({
             locale: 'hu',
           })
-          .sort('fullName')
-          .lean<Category.Document[]>()
-          .exec();
+          .sort('fullName');
+
+        return aggregate.exec();
       });
     },
     listCategoriesByIds: (categoryIds) => {
@@ -275,19 +362,6 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
           session,
         })
           .lean<Category.Document[]>()
-          .exec();
-      });
-    },
-    getCategoryByProductIds: (productIds) => {
-      return mongodbService.inSession(async (session) => {
-        return mongodbService.categories().findOne({
-          products: {
-            $all: productIds,
-          },
-        }, null, {
-          session,
-        })
-          .lean<Category.Document>()
           .exec();
       });
     },

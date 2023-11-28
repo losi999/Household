@@ -288,16 +288,16 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
     describe('related products', () => {
       it('should be deleted', () => {
         const productDocument = productDocumentConverter.create({
-          brand: `tesco-${uuid()}}`,
-          measurement: 500,
-          unitOfMeasurement: 'g',
+          body: {
+            brand: `tesco-${uuid()}}`,
+            measurement: 500,
+            unitOfMeasurement: 'g',
+          },
+          category: categoryDocument,
         }, Cypress.env('EXPIRES_IN'), true);
 
         cy.saveCategoryDocument(categoryDocument)
-          .saveProductDocument({
-            document: productDocument,
-            categoryId: getCategoryId(categoryDocument),
-          })
+          .saveProductDocument(productDocument)
           .authenticate(1)
           .requestDeleteCategory(getCategoryId(categoryDocument))
           .expectNoContentResponse()

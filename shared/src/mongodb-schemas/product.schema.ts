@@ -20,6 +20,11 @@ export const productSchema = new Schema<Product.Document>({
     minlength: 1,
     unique: true,
   },
+  category: {
+    type: Schema.Types.ObjectId,
+    ref: 'categories',
+    required: true,
+  },
   expiresAt: {
     type: Schema.Types.Date,
     index: {
@@ -32,4 +37,11 @@ export const productSchema = new Schema<Product.Document>({
     createdAt: true,
     updatedAt: true,
   },
+});
+
+productSchema.index({
+  fullName: 1,
+  category: 1,
+}, {
+  unique: true,
 });

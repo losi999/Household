@@ -15,6 +15,8 @@ export const getCategoryServiceFactory = (
       categoryId,
     }));
 
+    console.log(JSON.stringify(document, null, 2));
+
     httpErrors.category.notFound(!document, {
       categoryId,
     });

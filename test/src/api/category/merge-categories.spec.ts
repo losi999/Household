@@ -122,6 +122,18 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
     });
 
     describe('should return error', () => {
+      it('if a source category does not exist', () => {
+        cy.saveCategoryDocument(sourceCategoryDocument)
+          .saveCategoryDocument(targetCategoryDocument)
+          .authenticate(1)
+          .requestMergeCategories(getCategoryId(targetCategoryDocument), [
+            getCategoryId(sourceCategoryDocument),
+            createCategoryId(),
+          ])
+          .expectBadRequestResponse()
+          .expectMessage('Some of the categories are not found');
+      });
+
       describe('if body', () => {
         it('is not array', () => {
           cy.authenticate(1)
@@ -160,6 +172,13 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
             .requestMergeCategories(createCategoryId('not-valid'), [createCategoryId()])
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('categoryId', 'pathParameters');
+        });
+
+        it('does not belong to any category', () => {
+          cy.authenticate(1)
+            .requestMergeCategories(createCategoryId(), [getCategoryId(sourceCategoryDocument)])
+            .expectBadRequestResponse()
+            .expectMessage('Some of the categories are not found');
         });
       });
     });

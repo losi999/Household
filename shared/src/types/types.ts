@@ -151,7 +151,7 @@ export namespace Category {
     name: string;
   };
 
-  type Products<T> = {
+  type Products<T extends Product.Document | Product.Response> = {
     products: T[];
   };
 
@@ -162,7 +162,7 @@ export namespace Category {
   & FullName
   & Remove<ParentCategoryId>
   & ParentCategory
-  & Products<Product.Document>;
+  & Partial<Products<Product.Document>>;
 
   export type Report = CategoryId
   & FullName;
@@ -207,11 +207,15 @@ export namespace Product {
   export type Document = Internal.Id
   & Internal.Timestamps
   & Base
-  & FullName;
+  & FullName
+  & {
+    category: Category.Document;
+  };
 
   export type Response = Base
   & ProductId
   & FullName
+  & Record<'category', undefined>
   & Remove<Internal.Id>
   & Remove<Internal.Timestamps>;
 

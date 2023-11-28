@@ -57,16 +57,16 @@ const validateCategoryDeleted = (categoryId: Category.Id) => {
 
 const compareCategoryDocuments = (original: Category.Document, updated: Category.Document, operation: RelatedDocumentOperation) => {
   expect(getCategoryId(original), 'id').to.equal(getCategoryId(updated));
-  expect(original.name, 'name').to.equal(updated.name);
-  expect(original.categoryType, 'categoryType').to.equal(updated.categoryType);
+  expect(updated.name, 'name').to.equal(original.name);
+  expect(updated.categoryType, 'categoryType').to.equal(original.categoryType);
 
   if (operation !== 'parentReassign') {
-    expect(original.fullName, 'fullName').to.equal(updated.fullName);
-    expect(getCategoryId(original.parentCategory), 'parentCategory.categoryId').to.equal(getCategoryId(updated.parentCategory));
+    expect(updated.fullName, 'fullName').to.equal(original.fullName);
+    expect(getCategoryId(updated.parentCategory), 'parentCategory.categoryId').to.equal(getCategoryId(original.parentCategory));
   }
 
   if (operation !== 'productRemoval') {
-    expect(original.products).to.equal(updated.products);
+    expect(updated.products).to.equal(original.products);
   }
 };
 
