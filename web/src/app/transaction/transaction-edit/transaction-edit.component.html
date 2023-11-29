@@ -15,7 +15,7 @@
           </app-datetime-input>
         </div>
         <div class="transaction-edit__amount">
-          <app-amount-input formControlName="amount" [currency]="account.currency">
+          <app-amount-input formControlName="amount" [currency]="form.value.account.currency">
           </app-amount-input>
         </div>
         <div class="transaction-edit__account">
@@ -28,21 +28,20 @@
             displayPropertyName="name" formControlName="transferAccount"></app-autocomplete-input>
         </div>
         <div class="transaction-edit__amount" *ngIf="isTransfer">
-          <app-amount-input formControlName="transferAmount" [currency]="transferAccount?.currency">
+          <app-amount-input formControlName="transferAmount" [currency]="form.value.transferAccount?.currency">
           </app-amount-input>
         </div>
-        <div class="transaction-edit__category" *ngIf="!isTransfer && splits.length === 0">
+        <div class="transaction-edit__category" *ngIf="isPayment">
           <app-autocomplete-input [items]="categories" label="Kategória" displayPropertyName="fullName"
             filterPropertyName="name" formControlName="category"></app-autocomplete-input>
           <button mat-mini-fab color="primary" type="button" (click)="createCategory()">
             <mat-icon>library_add</mat-icon>
           </button>
         </div>
-        <app-invoice-input *ngIf="category?.categoryType === 'invoice' && !isTransfer && splits.length === 0"
-          formControlName="invoice">
+        <app-invoice-input *ngIf="isCategoryType('invoice') && isPayment" formControlName="invoice">
         </app-invoice-input>
-        <app-inventory-input *ngIf="category?.categoryType === 'inventory' && !isTransfer && splits.length === 0"
-          [products]="getProducts(category.categoryId)" formControlName="inventory">
+        <app-inventory-input *ngIf="isCategoryType('inventory') && isPayment"
+          [products]="getProducts(form.value.category.categoryId)" formControlName="inventory">
         </app-inventory-input>
         <div class="transaction-edit__recipient" *ngIf="!isTransfer">
           <app-autocomplete-input [items]="recipients" label="Partner" displayPropertyName="name"
@@ -51,7 +50,7 @@
             <mat-icon>library_add</mat-icon>
           </button>
         </div>
-        <div class="transaction-edit__project" *ngIf="!isTransfer && splits.length === 0">
+        <div class="transaction-edit__project" *ngIf="isPayment">
           <app-autocomplete-input [items]="projects" label="Projekt" displayPropertyName="name"
             formControlName="project"></app-autocomplete-input>
           <button mat-mini-fab color="primary" type="button" (click)="createProject()">
@@ -64,22 +63,22 @@
         </div>
       </div>
     </mat-tab>
-    <mat-tab label="Bontás" tabindex="-1">
+    <mat-tab label="Bontás" *ngIf="!isTransfer" tabindex="-1">
       <div class="transaction-edit__tab" formArrayName="splits">
         <p class="transaction-edit__split-amount">
-          Összesen: {{amount}} {{account.currency}}
+          Összesen: {{form.value.amount}} {{form.value.account.currency}}
           <button mat-mini-fab color="primary" (click)="addSplit()" type="button">
             <mat-icon>add</mat-icon>
           </button>
         </p>
         <p class="transaction-edit__split_diff" *ngIf="splitsDiff !== 0">
-          Hiányzó összeg: {{splitsDiff}} {{account.currency}}
+          Hiányzó összeg: {{splitsDiff}} {{form.value.account.currency}}
         </p>
-        <div *ngFor="let split of splitsArray.controls; index as i" [formGroup]="split"
+        <div *ngFor="let split of form.controls.splits.controls; index as i" [formGroup]="split"
           class="mat-elevation-z2 transaction-edit-split-item">
           <div class="transaction-edit-split-item__details">
             <div class="transaction-edit-split-item__amount">
-              <app-amount-input formControlName="amount" [currency]="account.currency">
+              <app-amount-input formControlName="amount" [currency]="form.value.account.currency">
               </app-amount-input>
             </div>
             <div class="transaction-edit-split-item__category">
@@ -89,9 +88,9 @@
                 <mat-icon>library_add</mat-icon>
               </button>
             </div>
-            <app-invoice-input *ngIf="split.value.category?.categoryType === 'invoice'" formControlName="invoice">
+            <app-invoice-input *ngIf="isCategoryType('invoice', i)" formControlName="invoice">
             </app-invoice-input>
-            <app-inventory-input *ngIf="split.value.category?.categoryType === 'inventory'"
+            <app-inventory-input *ngIf="isCategoryType('inventory', i)"
               [products]="getProducts(split.value.category.categoryId)" formControlName="inventory">
             </app-inventory-input>
             <div class="transaction-edit-split-item__project">
