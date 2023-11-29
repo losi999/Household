@@ -33,10 +33,11 @@ describe('Create split transaction service', () => {
     service = createSplitTransactionServiceFactory(mockAccountService.service, mockProjectService.service, mockCategoryService.service, mockRecipientService.service, mockProductService.service, mockTransactionService.service, mockTransactionDocumentConverter.service);
   });
 
-  const product = createProductDocument();
   const category = createCategoryDocument({
     categoryType: 'inventory',
-    products: [product],
+  });
+  const product = createProductDocument({
+    category,
   });
   const project = createProjectDocument();
 

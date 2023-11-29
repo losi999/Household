@@ -5,9 +5,9 @@ import { Account } from '@household/shared/types/types';
 
 export interface IUpdateAccountService {
   (ctx: {
-    body: Account.Request;
     accountId: Account.Id;
-    expiresIn: number;
+    expiresIn: number; body:
+    Account.Request;
   }): Promise<void>;
 }
 

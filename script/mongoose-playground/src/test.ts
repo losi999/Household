@@ -1,4 +1,6 @@
+import { populate } from '@household/shared/common/utils';
 import { mongodbServiceFactory } from '@household/shared/services/mongodb-service';
+import { Transaction } from '@household/shared/types/types';
 import { config } from 'dotenv';
 import { Types } from 'mongoose';
 
@@ -9,70 +11,64 @@ import { Types } from 'mongoose';
 
     const categoryId = '655f7ebf64f05d1d6e13bea8';
 
-    const res = await mongodbService.categories()
-      .aggregate()
-      .match({
-        _id: new Types.ObjectId(categoryId),
-      })
-      .lookup({
-        from: 'categories',
-        localField: 'parentCategory',
-        foreignField: '_id',
-        as: 'parentCategory',
-      })
-      .lookup({
-        from: 'products',
-        localField: '_id',
-        foreignField: 'category',
-        as: 'products',
-        pipeline: [
-          {
-            $sort: {
-              fullName: 1,
-            },
-          },
-        ],
-      })
-      .addFields({
-        parentCategory: {
-          $cond: {
-            if: {
-              $eq: [
-                {
-                  $size: '$parentCategory',
+    const res = await mongodbService.transactions().find<Transaction.PaymentDocument | Transaction.SplitDocument>({
+      transactionType: {
+        $not: {
+          $eq: 'transfer',
+        },
+      },
+      issuedAt: {
+        $lte: new Date(),
+      },
+      $and: [
+        {
+          $or: [
+            {
+              // 'splits.category': {
+              //   $in: [categoryId],
+              // },
+              splits: {
+                $elemMatch: {
+                  category: {
+                    $in: [categoryId],
+                  },
                 },
-                0,
-              ],
+              },
             },
-            then: '$$REMOVE',
-            else: {
-              $arrayElemAt: [
-                '$parentCategory',
-                0,
-              ],
+            {
+              category: {
+                $in: [categoryId],
+              },
             },
+          ],
+        },
+      ],
+    }, {
 
+      splits: {
+        $elemMatch: {
+          category: {
+            $in: [categoryId],
           },
         },
-        products: {
-          $cond: {
-            if: {
-              $eq: [
-                {
-                  $size: '$products',
-                },
-                0,
-              ],
-            },
-            then: '$$REMOVE',
-            else: '$products',
-          },
+      },
+    })
+
+      .setOptions({
+        // populate: populate('project',
+        //   'recipient',
+        //   'account',
+        //   'category',
+        //   'inventory.product',
+        //   'transferAccount',
+        //   'splits.category',
+        //   'splits.project',
+        //   'splits.inventory.product'),
+        lean: true,
+        sort: {
+          issuedAt: 'asc',
         },
       })
-      .collation({
-        locale: 'hu',
-      })
-      .sort('fullName')
       .exec();
 
     console.log(JSON.stringify(res, null, 2));
