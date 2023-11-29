@@ -1,8 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Recipient } from '@household/shared/types/types';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Subject, takeUntil } from 'rxjs';
 import { RecipientService } from 'src/app/recipient/recipient.service';
 import { DialogService } from 'src/app/shared/dialog.service';
 

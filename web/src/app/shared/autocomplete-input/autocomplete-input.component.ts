@@ -1,6 +1,6 @@
 import { Component, forwardRef, Input, OnDestroy, OnInit } from '@angular/core';
-import { NG_VALUE_ACCESSOR, ControlValueAccessor, FormGroup, FormControl } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { NG_VALUE_ACCESSOR, ControlValueAccessor, FormControl } from '@angular/forms';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-autocomplete-input',
@@ -20,34 +20,30 @@ export class AutocompleteInputComponent implements OnInit, OnDestroy, ControlVal
   @Input() label: string;
   @Input() items: any[];
 
-  form: FormGroup<{
-    selected: FormControl<any>
-  }>;
+  selected: FormControl<any>;
+
   changed: (value: string) => void;
   touched: () => void;
   isDisabled: boolean;
-  subs: Subscription;
+  private destroyed = new Subject();
 
   constructor() { }
 
   ngOnDestroy(): void {
-    this.subs.unsubscribe();
+    this.destroyed.next(undefined);
+    this.destroyed.complete();
   }
 
   ngOnInit(): void {
-    this.form = new FormGroup({
-      selected: new FormControl(),
-    });
+    this.selected = new FormControl(),
 
-    this.subs = this.form.controls.selected.valueChanges.subscribe((value) => {
+    this.selected.valueChanges.pipe(takeUntil(this.destroyed)).subscribe((value) => {
       this.changed?.(value);
     });
   }
 
   writeValue(selected: any): void {
-    this.form.setValue({
-      selected,
-    });
+    this.selected.setValue(selected);
   }
 
   registerOnChange(fn: any): void {
@@ -67,7 +63,7 @@ export class AutocompleteInputComponent implements OnInit, OnDestroy, ControlVal
   };
 
   clearValue() {
-    this.form.reset();
+    this.selected.reset();
   }
 
 }

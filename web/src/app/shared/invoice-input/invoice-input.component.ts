@@ -1,7 +1,7 @@
 import { Component, forwardRef, OnDestroy, OnInit } from '@angular/core';
 import { ControlValueAccessor, FormControl, FormGroup, NG_VALUE_ACCESSOR, Validators } from '@angular/forms';
 import { Transaction } from '@household/shared/types/types';
-import { Subscription } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-invoice-input',
@@ -24,7 +24,7 @@ export class InvoiceInputComponent implements OnInit, OnDestroy, ControlValueAcc
   changed: (value: Transaction.Invoice<string>['invoice']) => void;
   touched: () => void;
   isDisabled: boolean;
-  subs: Subscription;
+  private destroyed = new Subject();
   constructor() { }
 
   ngOnInit(): void {
@@ -34,7 +34,7 @@ export class InvoiceInputComponent implements OnInit, OnDestroy, ControlValueAcc
       billingEndDate: new FormControl(null, [Validators.required]),
     });
 
-    this.subs = this.form.valueChanges.subscribe((value: Transaction.Invoice<Date>['invoice']) => {
+    this.form.valueChanges.pipe(takeUntil(this.destroyed)).subscribe((value: Transaction.Invoice<Date>['invoice']) => {
       if (this.form.invalid) {
         this.changed?.(undefined);
       } else {
@@ -50,7 +50,8 @@ export class InvoiceInputComponent implements OnInit, OnDestroy, ControlValueAcc
   }
 
   ngOnDestroy(): void {
-    this.subs.unsubscribe();
+    this.destroyed.next(undefined);
+    this.destroyed.complete();
   }
   writeValue(obj: Transaction.Invoice<Date>['invoice']): void {
     if (obj) {

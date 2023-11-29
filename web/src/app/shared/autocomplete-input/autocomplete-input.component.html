@@ -1,6 +1,6 @@
-<mat-form-field appearance="fill" [formGroup]="form">
+<mat-form-field appearance="fill">
   <mat-label>{{label}}</mat-label>
-  <input type="text" #inp matInput [matAutocomplete]="autocomplete" (blur)="touched()" formControlName="selected">
+  <input type="text" #inp matInput [matAutocomplete]="autocomplete" (blur)="touched()" [formControl]="selected">
   <mat-autocomplete #autocomplete="matAutocomplete" [displayWith]="displayName">
     <mat-option *ngFor="let item of items | autocompleteFilter: (filterPropertyName || displayPropertyName) : inp.value"
       [value]="item">

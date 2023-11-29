@@ -1,10 +1,9 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Account } from '@household/shared/types/types';
 import { ActivatedRoute } from '@angular/router';
-import { Subject } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
 import { AccountService } from 'src/app/account/account.service';
 import { DialogService } from 'src/app/shared/dialog.service';
-import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-account-home',

@@ -2,7 +2,7 @@ import { Component, forwardRef, Input, OnDestroy, OnInit } from '@angular/core';
 import { ControlValueAccessor, FormControl, FormGroup, NG_VALUE_ACCESSOR, Validators } from '@angular/forms';
 import { unitsOfMeasurement } from '@household/shared/constants';
 import { Product, Transaction } from '@household/shared/types/types';
-import { Subscription } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-inventory-input',
@@ -25,7 +25,7 @@ export class InventoryInputComponent implements OnInit, OnDestroy, ControlValueA
   changed: (value: Transaction.Inventory<Product.Response>['inventory']) => void;
   touched: () => void;
   isDisabled: boolean;
-  subs: Subscription;
+  private destroyed = new Subject();
   get unitsOfMeasurement() { return unitsOfMeasurement; }
   constructor() { }
 
@@ -38,7 +38,7 @@ export class InventoryInputComponent implements OnInit, OnDestroy, ControlValueA
       ]),
     });
 
-    this.subs = this.form.valueChanges.subscribe((value: Transaction.Inventory<Product.Response>['inventory']) => {
+    this.form.valueChanges.pipe(takeUntil(this.destroyed)).subscribe((value: Transaction.Inventory<Product.Response>['inventory']) => {
       if (this.form.invalid) {
         this.changed?.(undefined);
       } else {
@@ -51,7 +51,8 @@ export class InventoryInputComponent implements OnInit, OnDestroy, ControlValueA
   }
 
   ngOnDestroy(): void {
-    this.subs.unsubscribe();
+    this.destroyed.next(undefined);
+    this.destroyed.complete();
   }
 
   writeValue(obj: Transaction.Inventory<Product.Response>['inventory']): void {

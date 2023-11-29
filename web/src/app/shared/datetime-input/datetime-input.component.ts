@@ -1,6 +1,6 @@
 import { Component, forwardRef, OnDestroy, OnInit } from '@angular/core';
 import { ControlValueAccessor, FormGroup, FormControl, NG_VALUE_ACCESSOR, Validators } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-datetime-input',
@@ -23,12 +23,13 @@ export class DatetimeInputComponent implements OnInit, OnDestroy, ControlValueAc
   changed: (value: Date) => void;
   touched: () => void;
   isDisabled: boolean;
-  subs: Subscription;
+  private destroyed = new Subject();
 
   constructor() { }
 
   ngOnDestroy(): void {
-    this.subs.unsubscribe();
+    this.destroyed.next(undefined);
+    this.destroyed.complete();
   }
 
   ngOnInit(): void {
@@ -46,7 +47,7 @@ export class DatetimeInputComponent implements OnInit, OnDestroy, ControlValueAc
       ]),
     });
 
-    this.subs = this.form.valueChanges.subscribe((value: {
+    this.form.valueChanges.pipe(takeUntil(this.destroyed)).subscribe((value: {
       date: Date;
       hour: number;
       minute: number;
