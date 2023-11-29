@@ -1,9 +1,10 @@
 import { createCategoryId } from '@household/shared/common/test-data-factory';
-import { getAccountId, getCategoryId, toDictionary } from '@household/shared/common/utils';
+import { getAccountId, getCategoryId, getProductId, toDictionary } from '@household/shared/common/utils';
 import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
 import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
+import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
 import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
-import { Account, Category, Transaction } from '@household/shared/types/types';
+import { Account, Category, Product, Transaction } from '@household/shared/types/types';
 import { v4 as uuid } from 'uuid';
 
 describe('POST category/v1/categories/{categoryId}/merge', () => {
@@ -12,6 +13,8 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
   let targetCategoryDocument: Category.Document;
   let paymentTransactionDocument: Transaction.PaymentDocument;
   let splitTransactionDocument: Transaction.SplitDocument;
+  let productOfSourceCategoryDocument: Product.Document;
+  let productOfTargetCategoryDocument: Product.Document;
 
   beforeEach(() => {
     accountDocument = accountDocumentConverter.create({
@@ -36,6 +39,24 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
         parentCategoryId: undefined,
       },
       parentCategory: undefined,
+    }, Cypress.env('EXPIRES_IN'), true);
+
+    productOfSourceCategoryDocument = productDocumentConverter.create({
+      body: {
+        brand: `sourceprod-${uuid()}`,
+        measurement: 100,
+        unitOfMeasurement: 'g',
+      },
+      category: sourceCategoryDocument,
+    }, Cypress.env('EXPIRES_IN'), true);
+
+    productOfTargetCategoryDocument = productDocumentConverter.create({
+      body: {
+        brand: `targetprod-${uuid()}`,
+        measurement: 100,
+        unitOfMeasurement: 'g',
+      },
+      category: targetCategoryDocument,
     }, Cypress.env('EXPIRES_IN'), true);
 
     paymentTransactionDocument = transactionDocumentConverter.createPaymentDocument({
@@ -103,16 +124,19 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
   });
 
   describe('called as an admin', () => {
-    it('should merge categories', () => {
+    it.only('should merge categories', () => {
       cy.saveAccountDocument(accountDocument)
         .saveCategoryDocument(sourceCategoryDocument)
         .saveCategoryDocument(targetCategoryDocument)
+        .saveProductDocument(productOfSourceCategoryDocument)
+        .saveProductDocument(productOfTargetCategoryDocument)
         .saveTransactionDocument(paymentTransactionDocument)
         .saveTransactionDocument(splitTransactionDocument)
         .authenticate(1)
         .requestMergeCategories(getCategoryId(targetCategoryDocument), [getCategoryId(sourceCategoryDocument)])
         .expectCreatedResponse()
         .validateCategoryDeleted(getCategoryId(sourceCategoryDocument))
+        .validateProductReassigned(getProductId(productOfSourceCategoryDocument), getCategoryId(targetCategoryDocument))
         .validatePartiallyReassignedPaymentDocument(paymentTransactionDocument, {
           category: getCategoryId(targetCategoryDocument),
         })

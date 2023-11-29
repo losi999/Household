@@ -376,6 +376,18 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
             session,
           });
 
+          await mongodbService.products().updateMany({
+            category: {
+              $in: sourceCategoryIds,
+            },
+          }, {
+            $set: {
+              category: targetCategoryId,
+            },
+          }, {
+            session,
+          });
+
           await mongodbService.transactions().updateMany({
             category: {
               $in: sourceCategoryIds,
