@@ -18,7 +18,7 @@ const routes: Routes = [
     data: {
       requireLogin: true,
     },
-    canLoad: [canMatch],
+    canMatch: [canMatch],
   },
   {
     path: 'products',
@@ -26,7 +26,7 @@ const routes: Routes = [
     data: {
       requireLogin: true,
     },
-    canLoad: [canMatch],
+    canMatch: [canMatch],
   },
   {
     path: 'categories',
@@ -34,7 +34,7 @@ const routes: Routes = [
     data: {
       requireLogin: true,
     },
-    canLoad: [canMatch],
+    canMatch: [canMatch],
   },
   {
     path: 'recipients',
@@ -42,7 +42,15 @@ const routes: Routes = [
     data: {
       requireLogin: true,
     },
-    canLoad: [canMatch],
+    canMatch: [canMatch],
+  },
+  {
+    path: 'reports',
+    loadChildren: () => import('./report/report.module').then(m => m.ReportModule),
+    data: {
+      requireLogin: true,
+    },
+    canMatch: [canMatch],
   },
   {
     path: '',
@@ -50,7 +58,7 @@ const routes: Routes = [
     data: {
       requireLogin: true,
     },
-    canLoad: [canMatch],
+    canMatch: [canMatch],
   },
   {
     path: '**',

@@ -1,0 +1,8 @@
+<mat-checkbox indeterminate="false" checked="false"
+  (change)="$event.checked ? list.selectAll() : list.deselectAll()">Összes
+  kijelölése</mat-checkbox>
+<mat-selection-list #list [formControl]="selected">
+  <mat-list-option togglePosition="before" *ngFor="let item of items" [value]="item[keyPropertyName]">
+    {{item[displayPropertyName]}}
+  </mat-list-option>
+</mat-selection-list>

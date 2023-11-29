@@ -6,7 +6,6 @@ import { ProductFormComponent } from './product-form/product-form.component';
 import { ProductRoutingModule } from 'src/app/product/product-routing.module';
 import { MatIconModule } from '@angular/material/icon';
 import { SharedModule } from 'src/app/shared/shared.module';
-import { MatExpansionModule } from '@angular/material/expansion';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
@@ -36,7 +35,6 @@ import { ProductMergeDialogComponent } from './product-merge-dialog/product-merg
     MatSelectModule,
     MatBottomSheetModule,
     MatDialogModule,
-    MatExpansionModule,
     MatListModule,
   ],
 })

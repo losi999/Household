@@ -1,0 +1,58 @@
+<app-toolbar title="Jelentések">
+  <!-- <button mat-icon-button (click)="create()" type="button">
+    <mat-icon>add</mat-icon>
+  </button> -->
+</app-toolbar>
+<div [formGroup]="form">
+  <button mat-flat-button color="primary" (click)="onSubmit()">Küldés</button>
+  <mat-accordion multi>
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          Számlák
+        </mat-panel-title>
+        <mat-panel-description>
+          {{form.value.accountIds?.length ?? 0}} kiválasztva
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      <app-select-all-list [items]="accounts" displayPropertyName="name" keyPropertyName="accountId"
+        formControlName="accountIds"></app-select-all-list>
+    </mat-expansion-panel>
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          Projektek
+        </mat-panel-title>
+        <mat-panel-description>
+          {{form.value.projectIds?.length ?? 0}} kiválasztva
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      <app-select-all-list [items]="projects" displayPropertyName="name" keyPropertyName="projectId"
+        formControlName="projectIds"></app-select-all-list>
+    </mat-expansion-panel>
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          Partnerek
+        </mat-panel-title>
+        <mat-panel-description>
+          {{form.value.recipientIds?.length ?? 0}} kiválasztva
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      <app-select-all-list [items]="recipients" displayPropertyName="name" keyPropertyName="recipientId"
+        formControlName="recipientIds"></app-select-all-list>
+    </mat-expansion-panel>
+    <!-- <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          Kategóriák
+        </mat-panel-title>
+        <mat-panel-description>
+          {{form.value.categoryIds?.length ?? 0}} kiválasztva
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      <app-select-all-list [items]="categories" displayPropertyName="fullName" keyPropertyName="categoryId"
+        formControlName="categoryIds"></app-select-all-list>
+    </mat-expansion-panel> -->
+  </mat-accordion>
+</div>
