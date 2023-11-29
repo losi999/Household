@@ -6,8 +6,8 @@
     "cypress-env": "cp cypress.${ENV}.env.json cypress.env.json",
     "start": "export ENV=localhost && yarn cypress-env && cypress open -C cypress.localhost.json",
     "start:LOCAL": "export ENV=LOCAL && yarn cypress-env && cypress open --config-file=cypress.LOCAL.config.ts",
-    "start:DEV": "export ENV=DEV && yarn cypress-env && cypress open -C cypress.DEV.json",
-    "test": "cypress run -C cypress.${ENV}.json",
+    "start:DEV": "export ENV=DEV && yarn cypress-env && cypress open --config-file=cypress.DEV.config.ts",
+    "test": "cypress run --config-file=cypress.${ENV}.config.ts",
     "test:LOCAL": "export ENV=LOCAL && yarn cypress-env && cypress run --config-file=cypress.LOCAL.config.ts"
   },
   "devDependencies": {
