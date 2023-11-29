@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { CategoryHomeComponent } from './category-home/category-home.component';
 import { CategoryListComponent } from './category-list/category-list.component';
 import { CategoryListItemComponent } from './category-list-item/category-list-item.component';
-import { SharedModule } from 'src/app/shared/shared.module';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { CategoryRoutingModule } from 'src/app/category/category-routing.module';
@@ -14,6 +13,9 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatListModule } from '@angular/material/list';
 import { MatRadioModule } from '@angular/material/radio';
 import { CategoryMergeDialogComponent } from './category-merge-dialog/category-merge-dialog.component';
+import { ToolbarComponent } from 'src/app/shared/toolbar/toolbar.component';
+import { AutocompleteModule } from 'src/app/shared/autocomplete/autocomplete.module';
+import { ClearableInputComponent } from 'src/app/shared/clearable-input/clearable-input.component';
 
 @NgModule({
   declarations: [
@@ -26,7 +28,6 @@ import { CategoryMergeDialogComponent } from './category-merge-dialog/category-m
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    SharedModule,
     MatButtonModule,
     MatIconModule,
     CategoryRoutingModule,
@@ -34,6 +35,9 @@ import { CategoryMergeDialogComponent } from './category-merge-dialog/category-m
     MatBottomSheetModule,
     MatDialogModule,
     MatRadioModule,
+    ToolbarComponent,
+    AutocompleteModule,
+    ClearableInputComponent,
   ],
 })
 export class CategoryModule { }

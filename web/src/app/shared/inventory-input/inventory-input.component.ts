@@ -1,13 +1,23 @@
+import { CommonModule } from '@angular/common';
 import { Component, forwardRef, Input, OnDestroy, OnInit } from '@angular/core';
-import { ControlValueAccessor, FormControl, FormGroup, NG_VALUE_ACCESSOR, Validators } from '@angular/forms';
+import { ControlValueAccessor, FormControl, FormGroup, NG_VALUE_ACCESSOR, ReactiveFormsModule, Validators } from '@angular/forms';
 import { unitsOfMeasurement } from '@household/shared/constants';
 import { Product, Transaction } from '@household/shared/types/types';
 import { Subject, takeUntil } from 'rxjs';
+import { AutocompleteModule } from 'src/app/shared/autocomplete/autocomplete.module';
+import { ClearableInputComponent } from 'src/app/shared/clearable-input/clearable-input.component';
 
 @Component({
   selector: 'app-inventory-input',
   templateUrl: './inventory-input.component.html',
   styleUrls: ['./inventory-input.component.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    ClearableInputComponent,
+    AutocompleteModule,
+  ],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,

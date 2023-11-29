@@ -14,9 +14,11 @@ import { AccountTransactionsListComponent } from './account-transactions-list/ac
 import { AccountTransactionsListItemComponent } from './account-transactions-list-item/account-transactions-list-item.component';
 import { OpenAccountFilterPipe } from './pipes/open-account.pipe';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { SharedModule } from 'src/app/shared/shared.module';
 import { AccountFormComponent } from './account-form/account-form.component';
 import { MatDialogModule } from '@angular/material/dialog';
+import { ToolbarComponent } from 'src/app/shared/toolbar/toolbar.component';
+import { AutocompleteModule } from 'src/app/shared/autocomplete/autocomplete.module';
+import { ClearableInputComponent } from 'src/app/shared/clearable-input/clearable-input.component';
 
 @NgModule({
   declarations: [
@@ -39,8 +41,10 @@ import { MatDialogModule } from '@angular/material/dialog';
     MatSlideToggleModule,
     FormsModule,
     AccountRoutingModule,
-    SharedModule,
     MatDialogModule,
+    ToolbarComponent,
+    AutocompleteModule,
+    ClearableInputComponent,
   ],
 })
 export class AccountModule { }

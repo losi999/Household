@@ -1,11 +1,23 @@
+import { CommonModule } from '@angular/common';
 import { Component, forwardRef, OnDestroy, OnInit } from '@angular/core';
-import { ControlValueAccessor, FormGroup, FormControl, NG_VALUE_ACCESSOR, Validators } from '@angular/forms';
+import { ControlValueAccessor, FormGroup, FormControl, NG_VALUE_ACCESSOR, Validators, ReactiveFormsModule } from '@angular/forms';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-datetime-input',
   templateUrl: './datetime-input.component.html',
   styleUrls: ['./datetime-input.component.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatDatepickerModule,
+  ],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,

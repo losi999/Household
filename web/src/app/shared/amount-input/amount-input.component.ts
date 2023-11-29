@@ -1,11 +1,23 @@
+import { CommonModule } from '@angular/common';
 import { Component, forwardRef, Input, OnDestroy, OnInit } from '@angular/core';
-import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, Validators } from '@angular/forms';
+import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-amount-input',
   templateUrl: './amount-input.component.html',
   styleUrls: ['./amount-input.component.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatButtonModule,
+    MatInputModule,
+    MatIconModule,
+  ],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,

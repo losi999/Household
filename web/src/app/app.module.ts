@@ -12,8 +12,8 @@ import { MatNativeDateModule, MAT_DATE_LOCALE } from '@angular/material/core';
 import { AuthInterceptor } from 'src/app/auth/auth.interceptor';
 import { AuthModule } from 'src/app/auth/auth.module';
 import { ProgressInterceptor } from 'src/app/shared/interceptors/progress.interceptor';
-import { SharedModule } from 'src/app/shared/shared.module';
 import { ProductModule } from 'src/app/product/product.module';
+import { ProgressIndicatorComponent } from 'src/app/shared/progress-indicator/progress-indicator.component';
 
 registerLocaleData(localeHu);
 
@@ -21,7 +21,6 @@ registerLocaleData(localeHu);
   declarations: [AppComponent],
   imports: [
     BrowserModule,
-    SharedModule,
     HttpClientModule,
     AppRoutingModule,
     BrowserAnimationsModule,
@@ -29,6 +28,7 @@ registerLocaleData(localeHu);
     TransactionModule,
     ProductModule,
     AuthModule,
+    ProgressIndicatorComponent,
   ],
   providers: [
     {

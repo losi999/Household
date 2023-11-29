@@ -1,12 +1,24 @@
+import { CommonModule } from '@angular/common';
 import { Component, forwardRef, OnDestroy, OnInit } from '@angular/core';
-import { ControlValueAccessor, FormControl, FormGroup, NG_VALUE_ACCESSOR, Validators } from '@angular/forms';
+import { ControlValueAccessor, FormControl, FormGroup, NG_VALUE_ACCESSOR, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatInputModule } from '@angular/material/input';
 import { Transaction } from '@household/shared/types/types';
 import { Subject, takeUntil } from 'rxjs';
+import { ClearableInputComponent } from 'src/app/shared/clearable-input/clearable-input.component';
 
 @Component({
   selector: 'app-invoice-input',
   templateUrl: './invoice-input.component.html',
   styleUrls: ['./invoice-input.component.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatInputModule,
+    MatDatepickerModule,
+    ClearableInputComponent,
+  ],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
