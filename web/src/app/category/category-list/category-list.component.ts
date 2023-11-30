@@ -2,7 +2,7 @@ import { Component, Input } from '@angular/core';
 import { Category } from '@household/shared/types/types';
 
 @Component({
-  selector: 'app-category-list',
+  selector: 'household-category-list',
   templateUrl: './category-list.component.html',
   styleUrls: ['./category-list.component.scss'],
 })

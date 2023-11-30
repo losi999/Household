@@ -8,7 +8,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { ClearableInputComponent } from 'src/app/shared/clearable-input/clearable-input.component';
 
 @Component({
-  selector: 'app-invoice-input',
+  selector: 'household-invoice-input',
   templateUrl: './invoice-input.component.html',
   styleUrls: ['./invoice-input.component.scss'],
   standalone: true,

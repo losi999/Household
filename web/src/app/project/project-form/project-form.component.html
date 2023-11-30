@@ -1,10 +1,10 @@
 <div [formGroup]="form">
   <h1 mat-dialog-title>{{project ? 'Szerkesztés' : 'Új'}}</h1>
   <div mat-dialog-content>
-    <app-clearable-input formControlName="name" label="Név">
-    </app-clearable-input>
-    <app-clearable-input formControlName="description" label="Leírás">
-    </app-clearable-input>
+    <household-clearable-input formControlName="name" label="Név">
+    </household-clearable-input>
+    <household-clearable-input formControlName="description" label="Leírás">
+    </household-clearable-input>
   </div>
   <div mat-dialog-actions>
     <button mat-button cdkFocusInitial (click)="save()">Mentés</button>

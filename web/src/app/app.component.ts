@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { ProgressService } from 'src/app/shared/progress.service';
 
 @Component({
-  selector: 'app-root',
+  selector: 'household-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })

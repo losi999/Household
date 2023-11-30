@@ -6,7 +6,7 @@ import { RecipientService } from 'src/app/recipient/recipient.service';
 import { DialogService } from 'src/app/shared/dialog.service';
 
 @Component({
-  selector: 'app-recipient-list-item',
+  selector: 'household-recipient-list-item',
   templateUrl: './recipient-list-item.component.html',
   styleUrls: ['./recipient-list-item.component.scss'],
 })

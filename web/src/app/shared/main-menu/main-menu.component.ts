@@ -5,7 +5,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { RouterModule } from '@angular/router';
 
 @Component({
-  selector: 'app-main-menu',
+  selector: 'household-main-menu',
   templateUrl: './main-menu.component.html',
   styleUrls: ['./main-menu.component.scss'],
   standalone: true,

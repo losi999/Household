@@ -10,7 +10,7 @@ export type CategoryFormData = {
 };
 
 @Component({
-  selector: 'app-category-form',
+  selector: 'household-category-form',
   templateUrl: './category-form.component.html',
   styleUrls: ['./category-form.component.scss'],
 })

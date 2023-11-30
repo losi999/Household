@@ -5,7 +5,7 @@ import { skip } from 'rxjs/operators';
 import { TransactionService } from 'src/app/transaction/transaction.service';
 
 @Component({
-  selector: 'app-account-transactions-home',
+  selector: 'household-account-transactions-home',
   templateUrl: './account-transactions-home.component.html',
   styleUrls: ['./account-transactions-home.component.scss'],
 })
@@ -34,7 +34,7 @@ export class AccountTransactionsHomeComponent implements OnInit {
       {
         relativeTo: this.activatedRoute,
         queryParams: {
-          page: Number(this.activatedRoute.snapshot.queryParams.page ?? 1) + 1, 
+          page: Number(this.activatedRoute.snapshot.queryParams.page ?? 1) + 1,
         },
         queryParamsHandling: 'merge',
         replaceUrl: true,

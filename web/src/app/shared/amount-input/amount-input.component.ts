@@ -7,7 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
-  selector: 'app-amount-input',
+  selector: 'household-amount-input',
   templateUrl: './amount-input.component.html',
   styleUrls: ['./amount-input.component.scss'],
   standalone: true,

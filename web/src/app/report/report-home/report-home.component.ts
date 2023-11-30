@@ -4,7 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Account, Category, Project, Recipient } from '@household/shared/types/types';
 
 @Component({
-  selector: 'app-report-home',
+  selector: 'household-report-home',
   templateUrl: './report-home.component.html',
   styleUrl: './report-home.component.scss',
 })

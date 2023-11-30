@@ -10,7 +10,7 @@ export type RecipientMergeDialogData = {
 };
 
 @Component({
-  selector: 'app-recipient-merge-dialog',
+  selector: 'household-recipient-merge-dialog',
   templateUrl: './recipient-merge-dialog.component.html',
   styleUrls: ['./recipient-merge-dialog.component.scss'],
 })

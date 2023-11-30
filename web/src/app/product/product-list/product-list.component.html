@@ -1,6 +1,6 @@
 <mat-action-list>
   <ng-container *ngFor="let category of categories">
-    <app-product-list-category-item *ngIf="category.products?.length > 0" [category]="category">
-    </app-product-list-category-item>
+    <household-product-list-category-item *ngIf="category.products?.length > 0" [category]="category">
+    </household-product-list-category-item>
   </ng-container>
 </mat-action-list>

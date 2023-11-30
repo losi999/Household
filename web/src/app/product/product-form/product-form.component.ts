@@ -11,7 +11,7 @@ export type ProductFormData = {
 };
 
 @Component({
-  selector: 'app-product-form',
+  selector: 'household-product-form',
   templateUrl: './product-form.component.html',
   styleUrls: ['./product-form.component.scss'],
 })

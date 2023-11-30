@@ -7,7 +7,7 @@ import { RecipientService } from 'src/app/recipient/recipient.service';
 export type RecipientFormData = Recipient.Response;
 
 @Component({
-  selector: 'app-recipient-form',
+  selector: 'household-recipient-form',
   templateUrl: './recipient-form.component.html',
   styleUrls: ['./recipient-form.component.scss'],
 })

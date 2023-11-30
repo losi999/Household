@@ -89,7 +89,7 @@
           "error",
           {
             "type": "attribute",
-            "prefix": "app",
+            "prefix": "household",
             "style": "camelCase"
           }
         ],
@@ -97,7 +97,7 @@
           "error",
           {
             "type": "element",
-            "prefix": "app",
+            "prefix": "household",
             "style": "kebab-case"
           }
         ]

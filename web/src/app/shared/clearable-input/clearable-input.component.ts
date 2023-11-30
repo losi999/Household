@@ -8,7 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
-  selector: 'app-clearable-input',
+  selector: 'household-clearable-input',
   templateUrl: './clearable-input.component.html',
   styleUrls: ['./clearable-input.component.scss'],
   standalone: true,

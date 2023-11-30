@@ -1,8 +1,8 @@
-<app-toolbar title="Jelentések">
+<household-toolbar title="Jelentések">
   <!-- <button mat-icon-button (click)="create()" type="button">
     <mat-icon>add</mat-icon>
   </button> -->
-</app-toolbar>
+</household-toolbar>
 <div [formGroup]="form">
   <button mat-flat-button color="primary" (click)="onSubmit()">Küldés</button>
   <mat-accordion multi>
@@ -15,8 +15,8 @@
           {{form.value.accountIds?.length ?? 0}} kiválasztva
         </mat-panel-description>
       </mat-expansion-panel-header>
-      <app-select-all-list [items]="accounts" displayPropertyName="name" keyPropertyName="accountId"
-        formControlName="accountIds"></app-select-all-list>
+      <household-select-all-list [items]="accounts" displayPropertyName="name" keyPropertyName="accountId"
+        formControlName="accountIds"></household-select-all-list>
     </mat-expansion-panel>
     <mat-expansion-panel>
       <mat-expansion-panel-header>
@@ -27,8 +27,8 @@
           {{form.value.projectIds?.length ?? 0}} kiválasztva
         </mat-panel-description>
       </mat-expansion-panel-header>
-      <app-select-all-list [items]="projects" displayPropertyName="name" keyPropertyName="projectId"
-        formControlName="projectIds"></app-select-all-list>
+      <household-select-all-list [items]="projects" displayPropertyName="name" keyPropertyName="projectId"
+        formControlName="projectIds"></household-select-all-list>
     </mat-expansion-panel>
     <mat-expansion-panel>
       <mat-expansion-panel-header>
@@ -39,8 +39,8 @@
           {{form.value.recipientIds?.length ?? 0}} kiválasztva
         </mat-panel-description>
       </mat-expansion-panel-header>
-      <app-select-all-list [items]="recipients" displayPropertyName="name" keyPropertyName="recipientId"
-        formControlName="recipientIds"></app-select-all-list>
+      <household-select-all-list [items]="recipients" displayPropertyName="name" keyPropertyName="recipientId"
+        formControlName="recipientIds"></household-select-all-list>
     </mat-expansion-panel>
     <!-- <mat-expansion-panel>
       <mat-expansion-panel-header>
@@ -51,8 +51,8 @@
           {{form.value.categoryIds?.length ?? 0}} kiválasztva
         </mat-panel-description>
       </mat-expansion-panel-header>
-      <app-select-all-list [items]="categories" displayPropertyName="fullName" keyPropertyName="categoryId"
-        formControlName="categoryIds"></app-select-all-list>
+      <household-select-all-list [items]="categories" displayPropertyName="fullName" keyPropertyName="categoryId"
+        formControlName="categoryIds"></household-select-all-list>
     </mat-expansion-panel> -->
   </mat-accordion>
 </div>

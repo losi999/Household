@@ -7,7 +7,7 @@ import { ProductService } from 'src/app/product/product.service';
 import { DialogService } from 'src/app/shared/dialog.service';
 
 @Component({
-  selector: 'app-product-home',
+  selector: 'household-product-home',
   templateUrl: './product-home.component.html',
   styleUrls: ['./product-home.component.scss'],
 })

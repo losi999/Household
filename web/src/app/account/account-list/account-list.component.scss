@@ -3,20 +3,20 @@
   flex-wrap: wrap;
   justify-content: space-evenly;
 
-  & > app-account-list-item {
+  & > household-account-list-item {
     max-width: 33%;
     min-width: 320px;
     flex: 1 1 320px;
   }
 
   @media all and (max-width: 959px) {
-    & > app-account-list-item {
+    & > household-account-list-item {
       max-width: 50%;
     }
   }
 
   @media all and (max-width: 639px) {
-    & > app-account-list-item {
+    & > household-account-list-item {
       max-width: 100%;
     }
   }

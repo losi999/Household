@@ -7,7 +7,7 @@ export type CatalogSubmenuData = string;
 export type CatalogSubmenuResult = 'edit' | 'delete' | 'merge';
 
 @Component({
-  selector: 'app-catalog-submenu',
+  selector: 'household-catalog-submenu',
   templateUrl: './catalog-submenu.component.html',
   styleUrls: ['./catalog-submenu.component.scss'],
   standalone: true,

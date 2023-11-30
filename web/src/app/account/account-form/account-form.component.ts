@@ -12,7 +12,7 @@ type AccountTypeMap = {
 };
 
 @Component({
-  selector: 'app-account-form',
+  selector: 'household-account-form',
   templateUrl: './account-form.component.html',
   styleUrls: ['./account-form.component.scss'],
 })

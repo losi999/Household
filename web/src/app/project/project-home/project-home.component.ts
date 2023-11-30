@@ -6,7 +6,7 @@ import { ProjectService } from 'src/app/project/project.service';
 import { DialogService } from 'src/app/shared/dialog.service';
 
 @Component({
-  selector: 'app-project-home',
+  selector: 'household-project-home',
   templateUrl: './project-home.component.html',
   styleUrls: ['./project-home.component.scss'],
 })

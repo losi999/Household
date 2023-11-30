@@ -4,7 +4,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MainMenuComponent } from 'src/app/shared/main-menu/main-menu.component';
 
 @Component({
-  selector: 'app-toolbar',
+  selector: 'household-toolbar',
   templateUrl: './toolbar.component.html',
   styleUrls: ['./toolbar.component.scss'],
   standalone: true,

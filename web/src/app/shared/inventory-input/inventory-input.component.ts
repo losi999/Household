@@ -8,7 +8,7 @@ import { AutocompleteModule } from 'src/app/shared/autocomplete/autocomplete.mod
 import { ClearableInputComponent } from 'src/app/shared/clearable-input/clearable-input.component';
 
 @Component({
-  selector: 'app-inventory-input',
+  selector: 'household-inventory-input',
   templateUrl: './inventory-input.component.html',
   styleUrls: ['./inventory-input.component.scss'],
   standalone: true,

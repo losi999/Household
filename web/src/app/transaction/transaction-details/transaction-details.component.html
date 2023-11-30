@@ -1,4 +1,4 @@
-<app-toolbar title="Tranzakció">
+<household-toolbar title="Tranzakció">
   <button mat-icon-button [routerLink]="['/accounts', transaction.account.accountId, 'new']" replaceUrl="true">
     <mat-icon>add</mat-icon>
   </button>
@@ -6,7 +6,7 @@
     [routerLink]="['/accounts', transaction.account.accountId, 'transactions', transaction.transactionId, 'edit']">
     <mat-icon>edit</mat-icon>
   </button>
-</app-toolbar>
+</household-toolbar>
 <div>
   {{issuedAt | date: 'yyyy. MM. dd. HH:mm'}}
 </div>

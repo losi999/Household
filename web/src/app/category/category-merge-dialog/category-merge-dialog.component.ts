@@ -10,7 +10,7 @@ export type CategoryMergeDialogData = {
 };
 
 @Component({
-  selector: 'app-category-merge-dialog',
+  selector: 'household-category-merge-dialog',
   templateUrl: './category-merge-dialog.component.html',
   styleUrls: ['./category-merge-dialog.component.scss'],
 })

@@ -7,7 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
-  selector: 'app-datetime-input',
+  selector: 'household-datetime-input',
   templateUrl: './datetime-input.component.html',
   styleUrls: ['./datetime-input.component.scss'],
   standalone: true,

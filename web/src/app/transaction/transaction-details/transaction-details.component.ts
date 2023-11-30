@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Transaction } from '@household/shared/types/types';
 
 @Component({
-  selector: 'app-transaction-details',
+  selector: 'household-transaction-details',
   templateUrl: './transaction-details.component.html',
   styleUrls: ['./transaction-details.component.scss'],
 })

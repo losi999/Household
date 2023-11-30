@@ -10,7 +10,7 @@ export type ProjectMergeDialogData = {
 };
 
 @Component({
-  selector: 'app-project-merge-dialog',
+  selector: 'household-project-merge-dialog',
   templateUrl: './project-merge-dialog.component.html',
   styleUrls: ['./project-merge-dialog.component.scss'],
 })

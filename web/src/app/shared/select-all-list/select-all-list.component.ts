@@ -7,7 +7,7 @@ import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModu
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
-  selector: 'app-select-all-list',
+  selector: 'household-select-all-list',
   standalone: true,
   imports: [
     CommonModule,

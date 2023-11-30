@@ -3,7 +3,7 @@ import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { AuthService } from 'src/app/auth/auth.service';
 
 @Component({
-  selector: 'app-login',
+  selector: 'household-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })

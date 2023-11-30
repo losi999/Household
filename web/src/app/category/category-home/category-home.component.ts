@@ -6,7 +6,7 @@ import { CategoryService } from 'src/app/category/category.service';
 import { DialogService } from 'src/app/shared/dialog.service';
 
 @Component({
-  selector: 'app-category-home',
+  selector: 'household-category-home',
   templateUrl: './category-home.component.html',
   styleUrls: ['./category-home.component.scss'],
 })

@@ -7,7 +7,7 @@ import { ProjectService } from 'src/app/project/project.service';
 export type ProjectFormData = Project.Response;
 
 @Component({
-  selector: 'app-project-form',
+  selector: 'household-project-form',
   templateUrl: './project-form.component.html',
   styleUrls: ['./project-form.component.scss'],
 })

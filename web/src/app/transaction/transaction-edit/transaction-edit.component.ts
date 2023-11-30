@@ -12,7 +12,7 @@ import { DialogService } from 'src/app/shared/dialog.service';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
-  selector: 'app-transaction-edit',
+  selector: 'household-transaction-edit',
   templateUrl: './transaction-edit.component.html',
   styleUrls: ['./transaction-edit.component.scss'],
 })

@@ -3,7 +3,7 @@ import { NG_VALUE_ACCESSOR, ControlValueAccessor, FormControl } from '@angular/f
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
-  selector: 'app-autocomplete-input',
+  selector: 'household-autocomplete-input',
   templateUrl: './autocomplete-input.component.html',
   styleUrls: ['./autocomplete-input.component.scss'],
   providers: [

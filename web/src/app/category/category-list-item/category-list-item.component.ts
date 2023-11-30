@@ -6,7 +6,7 @@ import { CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult } fro
 import { DialogService } from 'src/app/shared/dialog.service';
 
 @Component({
-  selector: 'app-category-list-item',
+  selector: 'household-category-list-item',
   templateUrl: './category-list-item.component.html',
   styleUrls: ['./category-list-item.component.scss'],
 })

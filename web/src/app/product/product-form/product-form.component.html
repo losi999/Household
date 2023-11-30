@@ -1,13 +1,13 @@
 <div [formGroup]="form">
   <h1 mat-dialog-title>{{data.product ? 'Szerkesztés' : 'Új'}}</h1>
   <div mat-dialog-content>
-    <app-autocomplete-input *ngIf="!data.product" [items]="data.categories" label="Kategória"
+    <household-autocomplete-input *ngIf="!data.product" [items]="data.categories" label="Kategória"
       displayPropertyName="fullName" filterPropertyName="name" formControlName="category">
-    </app-autocomplete-input>
-    <app-clearable-input label="Márka" formControlName="brand">
-    </app-clearable-input>
-    <app-clearable-input label="Kiszerelés" formControlName="measurement" type="number">
-    </app-clearable-input>
+    </household-autocomplete-input>
+    <household-clearable-input label="Márka" formControlName="brand">
+    </household-clearable-input>
+    <household-clearable-input label="Kiszerelés" formControlName="measurement" type="number">
+    </household-clearable-input>
     <mat-form-field appearance="fill">
       <mat-label>Mértékegység</mat-label>
       <mat-select name="unitOfMeasurement" formControlName="unitOfMeasurement">
