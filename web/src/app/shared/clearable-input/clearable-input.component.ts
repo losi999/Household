@@ -32,7 +32,7 @@ export class ClearableInputComponent implements OnInit, OnDestroy, ControlValueA
   @Input() label: string;
   @Input() type: 'text' | 'number' = 'text';
 
-  value: FormControl<string | number>;
+  input: FormControl<string | number>;
   changed: (value: string | number) => void;
   touched: () => void;
   isDisabled: boolean;
@@ -40,15 +40,19 @@ export class ClearableInputComponent implements OnInit, OnDestroy, ControlValueA
 
   constructor() { }
 
+  get value() {
+    return this.input.value ?? '';
+  }
+
   ngOnDestroy(): void {
     this.destroyed.next(undefined);
     this.destroyed.complete();
   }
 
   ngOnInit(): void {
-    this.value = new FormControl();
+    this.input = new FormControl();
 
-    this.value.valueChanges.pipe(takeUntil(this.destroyed)).subscribe((value) => {
+    this.input.valueChanges.pipe(takeUntil(this.destroyed)).subscribe((value) => {
       if(value) {
         this.changed?.(value);
       } else {
@@ -58,7 +62,7 @@ export class ClearableInputComponent implements OnInit, OnDestroy, ControlValueA
   }
 
   writeValue(value: any): void {
-    this.value.setValue(value);
+    this.input.setValue(value);
   }
 
   registerOnChange(fn: any): void {
@@ -74,6 +78,6 @@ export class ClearableInputComponent implements OnInit, OnDestroy, ControlValueA
   }
 
   clearValue() {
-    this.value.reset();
+    this.input.reset();
   }
 }

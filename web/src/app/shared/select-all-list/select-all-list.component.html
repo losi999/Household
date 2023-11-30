@@ -1,8 +1,12 @@
-<mat-checkbox indeterminate="false" checked="false"
-  (change)="$event.checked ? list.selectAll() : list.deselectAll()">Összes
-  kijelölése</mat-checkbox>
-<mat-selection-list #list [formControl]="selected">
-  <mat-list-option togglePosition="before" *ngFor="let item of items" [value]="item[keyPropertyName]">
-    {{item[displayPropertyName]}}
-  </mat-list-option>
-</mat-selection-list>
+<household-clearable-input type="text" label="Keresés" [formControl]="filter"></household-clearable-input>
+<button mat-flat-button color="primary" (click)="markAll(true)">Összes kijelölése</button>
+<button mat-flat-button color="warn" (click)="markAll(false)">Kijelölés megszűntetése</button>
+
+<mat-list [formGroup]="selectionList">
+  <mat-list-item *ngFor="let item of shownItems">
+    <mat-checkbox [formControlName]="item[keyPropertyName]">{{item[displayPropertyName]}}</mat-checkbox>
+  </mat-list-item>
+  <mat-list-item (click)="clearFilter()" *ngIf="shownItems.length < items.length">
+    ...{{items.length - shownItems.length}} elrejtve
+  </mat-list-item>
+</mat-list>
