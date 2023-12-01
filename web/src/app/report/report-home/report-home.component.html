@@ -42,17 +42,32 @@
       <household-select-all-list [items]="recipients" displayPropertyName="name" keyPropertyName="recipientId"
         formControlName="recipientIds"></household-select-all-list>
     </mat-expansion-panel>
-    <!-- <mat-expansion-panel>
+    <mat-expansion-panel expanded="true">
       <mat-expansion-panel-header>
         <mat-panel-title>
           Kategóriák
         </mat-panel-title>
         <mat-panel-description>
-          {{form.value.categoryIds?.length ?? 0}} kiválasztva
+          {{form.value.categoryIds?.length ?? 0}} kiválasztva {{categories.length}} kategóriából
         </mat-panel-description>
       </mat-expansion-panel-header>
       <household-select-all-list [items]="categories" displayPropertyName="fullName" keyPropertyName="categoryId"
-        formControlName="categoryIds"></household-select-all-list>
-    </mat-expansion-panel> -->
+        parentPropertyName="parentCategory" formControlName="categoryIds">
+      </household-select-all-list>
+    </mat-expansion-panel>
+    <mat-expansion-panel expanded="true">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          Termékek
+        </mat-panel-title>
+        <mat-panel-description>
+          {{form.value.productIds?.length ?? 0}} kiválasztva {{products.length}} termékből
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      <household-select-all-list [items]="products" displayPropertyName="value" keyPropertyName="key"
+        parentPropertyName="parent" formControlName="productIds">
+      </household-select-all-list>
+    </mat-expansion-panel>
   </mat-accordion>
+
 </div>
