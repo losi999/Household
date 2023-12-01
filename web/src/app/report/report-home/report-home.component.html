@@ -42,7 +42,7 @@
       <household-select-all-list [items]="recipients" displayPropertyName="name" keyPropertyName="recipientId"
         formControlName="recipientIds"></household-select-all-list>
     </mat-expansion-panel>
-    <mat-expansion-panel expanded="true">
+    <mat-expansion-panel>
       <mat-expansion-panel-header>
         <mat-panel-title>
           Kategóriák
@@ -55,7 +55,7 @@
         parentPropertyName="parentCategory" formControlName="categoryIds">
       </household-select-all-list>
     </mat-expansion-panel>
-    <mat-expansion-panel expanded="true">
+    <mat-expansion-panel>
       <mat-expansion-panel-header>
         <mat-panel-title>
           Termékek
@@ -69,5 +69,4 @@
       </household-select-all-list>
     </mat-expansion-panel>
   </mat-accordion>
-
 </div>

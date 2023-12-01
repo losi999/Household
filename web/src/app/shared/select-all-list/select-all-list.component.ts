@@ -1,7 +1,6 @@
 import { Component, Input, OnDestroy, OnInit, forwardRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatListModule } from '@angular/material/list';
 import { ControlValueAccessor, FormControl, FormGroup, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import { ClearableInputComponent } from 'src/app/shared/clearable-input/clearable-input.component';
@@ -11,6 +10,7 @@ import { MatTreeFlatDataSource, MatTreeFlattener, MatTreeModule } from '@angular
 
 type FlatNode = Omit<DataSource, 'children'> & {
   level: number;
+  children: string[];
 };
 
 type DataSource = {
@@ -24,7 +24,6 @@ type DataSource = {
   standalone: true,
   imports: [
     CommonModule,
-    MatListModule,
     MatCheckboxModule,
     MatButtonModule,
     ReactiveFormsModule,
@@ -61,10 +60,46 @@ export class SelectAllListComponent implements OnInit, OnDestroy, ControlValueAc
 
   private destroyed = new Subject();
   private map: {[key: string]: DataSource} = {};
+  private flattener: MatTreeFlattener<DataSource, FlatNode>;
+  private fullTree: DataSource[];
 
   private setDataSource (data: DataSource[]) {
     this.dataSource.data = data;
     this.treeControl.expandAll();
+  }
+
+  private collectChildrenRecursive(children: DataSource[]): string[] {
+    return children.flatMap(c => {
+      return [
+        c.key,
+        ...this.collectChildrenRecursive(c.children),
+      ];
+    });
+  }
+
+  private reduceTree(nodes: DataSource[], inputValue: string) {
+    return nodes.reduce<DataSource[]>((accumulator, currentValue) => {
+      if (currentValue.value.toLowerCase().includes(inputValue)) {
+        return [
+          ...accumulator,
+          currentValue,
+        ];
+      }
+
+      const reducedChildren = this.reduceTree(currentValue.children, inputValue);
+
+      if (reducedChildren.length > 0) {
+        return [
+          ...accumulator,
+          {
+            ...currentValue,
+            children: reducedChildren,
+          },
+        ];
+      }
+
+      return accumulator;
+    }, []);
   }
 
   ngOnInit(): void {
@@ -78,9 +113,9 @@ export class SelectAllListComponent implements OnInit, OnDestroy, ControlValueAc
 
     this.filter.valueChanges.pipe(takeUntil(this.destroyed)).subscribe((value) => {
       const lowercased = value?.toLowerCase() ?? '';
-      console.log(tree);
-      this.setDataSource([tree[0]]);
-      // this.shownItems = this.items.filter(i => i[this.displayPropertyName]?.toLowerCase().includes(lowercased));
+      const filteredTree = this.reduceTree(this.fullTree, lowercased);
+
+      this.setDataSource(filteredTree);
     });
 
     this.selectionList.valueChanges.pipe(takeUntil(this.destroyed)).subscribe((value) => {
@@ -90,7 +125,7 @@ export class SelectAllListComponent implements OnInit, OnDestroy, ControlValueAc
       this.changed?.(selectedItems?.length > 0 ? selectedItems : null);
     });
 
-    const tree = this.items.reduce<DataSource[]>((accumulator, currentValue) => {
+    this.fullTree = this.items.reduce<DataSource[]>((accumulator, currentValue) => {
       const newNodes: DataSource[] = [];
       let parentKey: string;
 
@@ -128,53 +163,59 @@ export class SelectAllListComponent implements OnInit, OnDestroy, ControlValueAc
         ...accumulator,
         ...newNodes,
       ];
-
     }, []);
-
-    console.log(tree);
 
     this.treeControl = new FlatTreeControl(
       (node) => node.level,
       () => true,
     );
 
-    this.dataSource = new MatTreeFlatDataSource(this.treeControl, new MatTreeFlattener(
+    this.flattener = new MatTreeFlattener<DataSource, FlatNode>(
       (node, level) => {
         return {
           key: node.key,
           value: node.value,
           level: level,
+          children: this.collectChildrenRecursive(node.children),
         };
       },
       (node) => node.level,
       () => true,
       (node) => node.children,
-    ));
+    );
 
-    this.setDataSource(tree);
+    this.dataSource = new MatTreeFlatDataSource(this.treeControl, this.flattener);
+
+    this.setDataSource(this.fullTree);
   }
   ngOnDestroy(): void {
     this.destroyed.next(undefined);
     this.destroyed.complete();
   }
 
-  markAll(check: boolean) {
-    // const selectedValues = this.shownItems.reduce((accumulator, currentValue) => {
-    //   return {
-    //     ...accumulator,
-    //     [currentValue[this.keyPropertyName]]: check,
-    //   };
-    // }, {});
+  markAll(check: boolean, node?: FlatNode) {
+    const nodesToCheck = node?.children ?? this.flattener.flattenNodes(this.dataSource.data).map(n => n.key);
 
-    // this.selectionList.patchValue(selectedValues);
+    const selectedValues = nodesToCheck.reduce((accumulator, currentValue) => {
+      if (currentValue) {
+        return {
+          ...accumulator,
+          [currentValue]: check,
+        };
+      }
+      return accumulator;
+    }, {});
+
+    this.selectionList.patchValue(selectedValues);
+
   }
 
   clearFilter() {
     this.filter.reset();
   }
 
-  hasKey(index, node: FlatNode) {
-    return !node.key;
+  hasKey(_index: number, node: FlatNode) {
+    return node.key;
   }
 
   writeValue(): void { }

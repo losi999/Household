@@ -1,23 +1,22 @@
-<!-- <household-clearable-input type="text" label="Keresés" [formControl]="filter"></household-clearable-input> -->
-<!-- <button mat-flat-button color="primary" (click)="markAll(true)">Összes kijelölése</button>
-<button mat-flat-button color="warn" (click)="markAll(false)">Kijelölés megszűntetése</button> -->
+<household-clearable-input type="text" label="Keresés" [formControl]="filter"></household-clearable-input>
+<button mat-flat-button color="primary" (click)="markAll(true)">Összes kijelölése</button>
+<button mat-flat-button color="warn" (click)="markAll(false)">Kijelölés megszűntetése</button>
 
 <mat-tree [dataSource]="dataSource" [treeControl]="treeControl" [formGroup]="selectionList">
   <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding>
-    <mat-checkbox [formControlName]="node.key">
-      {{node.value}}
-    </mat-checkbox>
+    {{node.value}}
+    <ng-container *ngIf="node.children.length > 0">
+      <button mat-flat-button color="primary" (click)="markAll(true, node)">Összes kijelölése</button>
+      <button mat-flat-button color="warn" (click)="markAll(false, node)">Kijelölés megszűntetése</button>
+    </ng-container>
   </mat-tree-node>
   <mat-tree-node *matTreeNodeDef="let node; when: hasKey" matTreeNodePadding>
-    {{node.value}}
+    <mat-checkbox [formControlName]="node.key">
+      {{node.value}}
+      <ng-container *ngIf="node.children.length > 0">
+        <button mat-flat-button color="primary" (click)="markAll(true, node)">Összes kijelölése</button>
+        <button mat-flat-button color="warn" (click)="markAll(false, node)">Kijelölés megszűntetése</button>
+      </ng-container>
+    </mat-checkbox>
   </mat-tree-node>
 </mat-tree>
-
-<!-- <mat-list [formGroup]="selectionList">
-  <mat-list-item *ngFor="let item of shownItems">
-    <mat-checkbox [formControlName]="item[keyPropertyName]">{{item[displayPropertyName]}}</mat-checkbox>
-  </mat-list-item>
-  <mat-list-item (click)="clearFilter()" *ngIf="shownItems.length < items.length">
-    ...{{items.length - shownItems.length}} elrejtve
-  </mat-list-item>
-</mat-list> -->
