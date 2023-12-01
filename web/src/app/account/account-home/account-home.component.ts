@@ -1,8 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Account } from '@household/shared/types/types';
-import { ActivatedRoute } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
-import { AccountService } from 'src/app/account/account.service';
+import { Component } from '@angular/core';
 import { DialogService } from 'src/app/shared/dialog.service';
 
 @Component({
@@ -10,27 +6,11 @@ import { DialogService } from 'src/app/shared/dialog.service';
   templateUrl: './account-home.component.html',
   styleUrls: ['./account-home.component.scss'],
 })
-export class AccountHomeComponent implements OnInit, OnDestroy {
+export class AccountHomeComponent {
   onlyOpenAccounts: boolean;
-  accounts: Account.Response[];
-  private destroyed = new Subject();
 
-  constructor(private activatedRoute: ActivatedRoute, private accountService: AccountService, private dialogService: DialogService) { }
-
-  ngOnDestroy(): void {
-    this.destroyed.next(undefined);
-    this.destroyed.complete();
-  }
-
-  ngOnInit(): void {
-    this.accounts = this.activatedRoute.snapshot.data.accounts;
+  constructor(private dialogService: DialogService) {
     this.onlyOpenAccounts = true;
-
-    this.accountService.collectionUpdated.pipe(takeUntil(this.destroyed)).subscribe(() => {
-      this.accountService.listAccounts().subscribe((accounts) => {
-        this.accounts = accounts;
-      });
-    });
   }
 
   create() {

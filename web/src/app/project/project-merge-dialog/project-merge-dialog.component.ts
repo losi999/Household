@@ -2,12 +2,11 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Project } from '@household/shared/types/types';
+import { Observable } from 'rxjs';
 import { ProjectService } from 'src/app/project/project.service';
+import { Store } from 'src/app/store';
 
-export type ProjectMergeDialogData = {
-  projects: Project.Response[];
-  targetProjectId: Project.Id;
-};
+export type ProjectMergeDialogData = Project.Id;
 
 @Component({
   selector: 'household-project-merge-dialog',
@@ -21,7 +20,12 @@ export class ProjectMergeDialogComponent implements OnInit {
 
   constructor(private dialogRef: MatDialogRef<ProjectMergeDialogComponent, void>,
     private projectService: ProjectService,
-    @Inject(MAT_DIALOG_DATA) public data: ProjectMergeDialogData) { }
+    private store: Store,
+    @Inject(MAT_DIALOG_DATA) public targetProjectId: ProjectMergeDialogData) { }
+
+  get projects(): Observable<Project.Response[]> {
+    return this.store.projects.asObservable();
+  }
 
   ngOnInit(): void {
     this.form = new FormGroup({
@@ -30,7 +34,7 @@ export class ProjectMergeDialogComponent implements OnInit {
   }
 
   save() {
-    this.projectService.mergeProjects(this.data.targetProjectId, this.form.value.sourceProjects);
+    this.projectService.mergeProjects(this.targetProjectId, this.form.value.sourceProjects);
 
     this.dialogRef.close();
   }

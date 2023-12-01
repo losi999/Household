@@ -1,5 +1,8 @@
 import { Component, Input } from '@angular/core';
 import { Account } from '@household/shared/types/types';
+import { Observable } from 'rxjs';
+import { AccountService } from 'src/app/account/account.service';
+import { Store } from 'src/app/store';
 
 @Component({
   selector: 'household-account-list',
@@ -7,9 +10,13 @@ import { Account } from '@household/shared/types/types';
   styleUrls: ['./account-list.component.scss'],
 })
 export class AccountListComponent {
-  @Input() accounts: Account.Response[];
+  @Input() onlyOpenAccounts: boolean;
 
-  constructor() {
+  get accounts(): Observable<Account.Response[]> {
+    return this.store.accounts.asObservable();
+  }
 
+  constructor(private store: Store, accountService: AccountService) {
+    accountService.listAccounts();
   }
 }

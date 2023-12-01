@@ -2,7 +2,7 @@
 <button mat-flat-button color="primary" (click)="markAll(true)">Összes kijelölése</button>
 <button mat-flat-button color="warn" (click)="markAll(false)">Kijelölés megszűntetése</button>
 
-<mat-tree [dataSource]="dataSource" [treeControl]="treeControl" [formGroup]="selectionList">
+<mat-tree *ngIf="items.length > 0" [dataSource]="dataSource" [treeControl]="treeControl" [formGroup]="selectionList">
   <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding>
     {{node.value}}
     <ng-container *ngIf="node.children.length > 0">

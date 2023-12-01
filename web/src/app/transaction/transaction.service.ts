@@ -4,13 +4,14 @@ import { Account, Transaction, Report } from '@household/shared/types/types';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { transactionsPageSize } from 'src/app/constants';
+import { Store } from 'src/app/store';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TransactionService {
 
-  constructor(private httpClient: HttpClient) { }
+  constructor(private httpClient: HttpClient, private store: Store) { }
 
   listTransactionsByAccountId(accountId: Account.Id, pageNumber = 1, pageSize: number = transactionsPageSize): Observable<Transaction.Response[]> {
     return this.httpClient.get<Transaction.Response[]>(`${environment.apiUrl}${environment.transactionStage}v1/accounts/${accountId}/transactions`, {

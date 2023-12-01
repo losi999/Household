@@ -9,14 +9,15 @@ import { RecipientService } from 'src/app/recipient/recipient.service';
 import { ProjectService } from 'src/app/project/project.service';
 import { CategoryService } from 'src/app/category/category.service';
 import { DialogService } from 'src/app/shared/dialog.service';
-import { Subject, takeUntil } from 'rxjs';
+import { Observable, Subject, takeUntil } from 'rxjs';
+import { Store } from 'src/app/store';
 
 @Component({
   selector: 'household-transaction-edit',
   templateUrl: './transaction-edit.component.html',
   styleUrls: ['./transaction-edit.component.scss'],
 })
-export class TransactionEditComponent implements OnInit, OnDestroy {
+export class TransactionEditComponent implements OnInit {
   form: FormGroup<{
     issuedAt: FormControl<Date>;
     amount: FormControl<number>;
@@ -42,16 +43,18 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
   transactionId: Transaction.Id;
   accountId: Account.Id;
   transaction: Transaction.Response;
-  accounts: Account.Response[];
+  get accounts(): Observable<Account.Response[]> {
+    return this.store.accounts.asObservable();
+  }
   transferAccounts: Account.Response[];
-  projects: Project.Response[];
-  recipients: Recipient.Response[];
-  categories: Category.Response[];
-  private destroyed = new Subject();
-
-  ngOnDestroy(): void {
-    this.destroyed.next(undefined);
-    this.destroyed.complete();
+  get projects(): Observable< Project.Response[]> {
+    return this.store.projects.asObservable();
+  }
+  get recipients(): Observable< Recipient.Response[]> {
+    return this.store.recipients.asObservable();
+  }
+  get categories(): Observable< Category.Response[]> {
+    return this.store.categories.asObservable();
   }
 
   get splitsSum(): number {
@@ -82,6 +85,7 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
 
   constructor(
     private activatedRoute: ActivatedRoute,
+    private store: Store,
     private transactionService: TransactionService,
     private recipientService: RecipientService,
     private projectService: ProjectService,
@@ -109,54 +113,22 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
   }
 
   getProducts(categoryId: Category.Id): Product.Response[] {
-    return this.categories.find(c => c.categoryId === categoryId).products;
+    return undefined;
+    // return this.categories.find(c => c.categoryId === categoryId).products;
   }
 
   ngOnInit(): void {
     this.accountId = this.activatedRoute.snapshot.paramMap.get('accountId') as Account.Id;
     this.transactionId = this.activatedRoute.snapshot.paramMap.get('transactionId') as Transaction.Id;
     this.transaction = this.activatedRoute.snapshot.data.transaction;
-    this.accounts = this.activatedRoute.snapshot.data.accounts;
     this.transferAccounts = this.activatedRoute.snapshot.data.accounts;
-    this.projects = this.activatedRoute.snapshot.data.projects;
-    this.recipients = this.activatedRoute.snapshot.data.recipients;
-    this.categories = this.activatedRoute.snapshot.data.categories;
 
-    this.recipientService.collectionUpdated.pipe(takeUntil(this.destroyed)).subscribe({
-      next: (event) => {
-        if (event.action === 'created') {
-          this.recipientService.listRecipients().subscribe((recipients) => {
-            this.recipients = recipients;
-          });
-        }
-      },
-    });
-    this.projectService.collectionUpdated.pipe(takeUntil(this.destroyed)).subscribe({
-      next: (event) => {
-        console.log(event);
-        if (event.action === 'created') {
-          this.projectService.listProjects().subscribe((projects) => {
-            this.projects = projects;
-          });
-        }
-      },
-    });
-    this.categoryService.collectionUpdated.pipe(takeUntil(this.destroyed)).subscribe({
-      next: (event) => {
-        if (event.action === 'created') {
-          this.categoryService.listCategories().subscribe((categories) => {
-            this.categories = categories;
-          });
-        }
-      },
-    });
-
-    const account = this.accounts.find(a => a.accountId === this.accountId);
+    // const account = this.accounts.find(a => a.accountId === this.accountId);
 
     this.form = new FormGroup({
       issuedAt: new FormControl(this.transaction ? new Date(this.transaction.issuedAt) : new Date(), [Validators.required]),
       amount: new FormControl(this.transaction?.amount, [Validators.required]),
-      account: new FormControl(this.transaction?.account ?? account, [Validators.required]),
+      account: new FormControl(this.transaction?.account /*?? account*/, [Validators.required]),
       isTransfer: new FormControl(isTransferTransaction(this.transaction)),
       description: new FormControl(this.transaction?.description),
       transferAccount: new FormControl(isTransferTransaction(this.transaction) ? this.transaction.transferAccount : null),
@@ -209,7 +181,7 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
   }
 
   createCategory() {
-    this.dialogService.openCreateCategoryDialog(this.categories);
+    // this.dialogService.openCreateCategoryDialog(this.categories);
   }
 
   onSubmit() {

@@ -11,7 +11,6 @@ import { DialogService } from 'src/app/shared/dialog.service';
   styleUrls: ['./category-list-item.component.scss'],
 })
 export class CategoryListItemComponent {
-  @Input() categories: Category.Response[];
   @Input() category: Category.Response;
   constructor(
     private categoryService: CategoryService,
@@ -28,11 +27,11 @@ export class CategoryListItemComponent {
   }
 
   edit() {
-    this.dialogService.openEditCategoryDialog(this.category, this.categories);
+    this.dialogService.openEditCategoryDialog(this.category);
   }
 
   merge() {
-    this.dialogService.openMergeCategoriesDialog(this.category, this.categories);
+    this.dialogService.openMergeCategoriesDialog(this.category);
   }
 
   showMenu() {

@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit, forwardRef } from '@angular/core';
+import { Component, Input, OnChanges, OnDestroy, OnInit, forwardRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { ControlValueAccessor, FormControl, FormGroup, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
@@ -40,7 +40,7 @@ type DataSource = {
     },
   ],
 })
-export class SelectAllListComponent implements OnInit, OnDestroy, ControlValueAccessor {
+export class SelectAllListComponent implements OnInit, OnDestroy, OnChanges, ControlValueAccessor {
   @Input() items: any[];
   @Input() displayPropertyName: string;
   @Input() keyPropertyName: string;
@@ -104,12 +104,6 @@ export class SelectAllListComponent implements OnInit, OnDestroy, ControlValueAc
 
   ngOnInit(): void {
     this.filter = new FormControl();
-    this.selectionList = new FormGroup(this.items.reduce((accumulator, currentValue) => {
-      return {
-        ...accumulator,
-        [currentValue[this.keyPropertyName]]: new FormControl(),
-      };
-    }, {}));
 
     this.filter.valueChanges.pipe(takeUntil(this.destroyed)).subscribe((value) => {
       const lowercased = value?.toLowerCase() ?? '';
@@ -117,6 +111,15 @@ export class SelectAllListComponent implements OnInit, OnDestroy, ControlValueAc
 
       this.setDataSource(filteredTree);
     });
+  }
+
+  ngOnChanges(): void {
+    this.selectionList = new FormGroup(this.items.reduce((accumulator, currentValue) => {
+      return {
+        ...accumulator,
+        [currentValue[this.keyPropertyName]]: new FormControl(),
+      };
+    }, {}));
 
     this.selectionList.valueChanges.pipe(takeUntil(this.destroyed)).subscribe((value) => {
       const selectedItems = Object.entries(value).filter((e) => e[1])
@@ -188,6 +191,7 @@ export class SelectAllListComponent implements OnInit, OnDestroy, ControlValueAc
 
     this.setDataSource(this.fullTree);
   }
+
   ngOnDestroy(): void {
     this.destroyed.next(undefined);
     this.destroyed.complete();
@@ -218,7 +222,8 @@ export class SelectAllListComponent implements OnInit, OnDestroy, ControlValueAc
     return node.key;
   }
 
-  writeValue(): void { }
+  writeValue(): void {
+  }
 
   registerOnChange(fn: any): void {
     this.changed = fn;

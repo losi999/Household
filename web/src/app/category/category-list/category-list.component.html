@@ -1,4 +1,4 @@
 <mat-action-list>
-  <household-category-list-item *ngFor="let category of categories" [category]="category"
+  <household-category-list-item *ngFor="let category of categories | async" [category]="category"
     [categories]="categories"></household-category-list-item>
 </mat-action-list>

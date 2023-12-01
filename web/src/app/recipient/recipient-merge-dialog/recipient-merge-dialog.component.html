@@ -2,7 +2,7 @@
   <h1 mat-dialog-title>Egyesítés</h1>
   <div mat-dialog-content>
     <mat-selection-list formControlName="sourceRecipients">
-      <mat-list-option *ngFor="let recipient of data.recipients" [value]="recipient.recipientId">
+      <mat-list-option *ngFor="let recipient of recipients | async" [value]="recipient.recipientId">
         {{recipient.name}}
       </mat-list-option>
     </mat-selection-list>

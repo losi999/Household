@@ -12,7 +12,6 @@ import { DialogService } from 'src/app/shared/dialog.service';
 })
 export class RecipientListItemComponent {
   @Input() recipient: Recipient.Response;
-  @Input() recipients: Recipient.Response[];
   constructor(
     private recipientService: RecipientService,
     private dialogService: DialogService
@@ -33,7 +32,7 @@ export class RecipientListItemComponent {
   }
 
   merge() {
-    this.dialogService.openMergeRecipientsDialog(this.recipient, this.recipients);
+    this.dialogService.openMergeRecipientsDialog(this.recipient);
   }
 
   showMenu() {

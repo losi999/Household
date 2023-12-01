@@ -38,12 +38,9 @@ export class DialogService {
     });
   }
 
-  openMergeProjectsDialog(project: Project.Response, projects: Project.Response[]) {
+  openMergeProjectsDialog(project: Project.Response) {
     this.dialog.open<ProjectMergeDialogComponent, ProjectMergeDialogData, void>(ProjectMergeDialogComponent, {
-      data: {
-        projects: projects.filter(p => p.projectId !== project.projectId),
-        targetProjectId: project.projectId,
-      },
+      data: project.projectId,
     });
   }
 
@@ -66,30 +63,21 @@ export class DialogService {
     });
   }
 
-  openMergeRecipientsDialog(recipient: Recipient.Response, recipients: Recipient.Response[]) {
+  openMergeRecipientsDialog(recipient: Recipient.Response) {
     this.dialog.open<RecipientMergeDialogComponent, RecipientMergeDialogData, void>(RecipientMergeDialogComponent, {
-      data: {
-        recipients: recipients.filter(p => p.recipientId !== recipient.recipientId),
-        targetRecipientId: recipient.recipientId,
-      },
+      data: recipient.recipientId,
     });
   }
 
-  openCreateCategoryDialog(categories: Category.Response[]): void {
+  openCreateCategoryDialog(): void {
     this.dialog.open<CategoryFormComponent, CategoryFormData, void>(CategoryFormComponent, {
-      data: {
-        category: undefined,
-        categories: categories,
-      },
+      data: undefined,
     });
   }
 
-  openEditCategoryDialog(category: Category.Response, categories: Category.Response[]): void {
+  openEditCategoryDialog(category: Category.Response): void {
     this.dialog.open<CategoryFormComponent, CategoryFormData, void>(CategoryFormComponent, {
-      data: {
-        category,
-        categories,
-      },
+      data: category,
     });
   }
 
@@ -102,12 +90,9 @@ export class DialogService {
     });
   }
 
-  openMergeCategoriesDialog(category: Category.Response, categories: Category.Response[]) {
+  openMergeCategoriesDialog(category: Category.Response) {
     this.dialog.open<CategoryMergeDialogComponent, CategoryMergeDialogData, void>(CategoryMergeDialogComponent, {
-      data: {
-        categories: categories.filter(p => p.categoryId !== category.categoryId),
-        targetCategoryId: category.categoryId,
-      },
+      data: category.categoryId,
     });
   }
 

@@ -2,12 +2,11 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Category } from '@household/shared/types/types';
+import { Observable } from 'rxjs';
 import { CategoryService } from 'src/app/category/category.service';
+import { Store } from 'src/app/store';
 
-export type CategoryFormData = {
-  category: Category.Response;
-  categories: Category.Response[];
-};
+export type CategoryFormData = Category.Response;
 
 @Component({
   selector: 'household-category-form',
@@ -20,15 +19,19 @@ export class CategoryFormComponent implements OnInit {
     categoryType: FormControl<Category.CategoryType['categoryType']>;
     parentCategory: FormControl<Category.ResponseBase>
   }>;
+  get categories(): Observable<Category.Response[]> {
+    return this.store.categories.asObservable();
+  }
   constructor(private dialogRef: MatDialogRef<CategoryFormComponent, void>,
     private categoryService: CategoryService,
-    @Inject(MAT_DIALOG_DATA) public data: CategoryFormData) { }
+    private store: Store,
+    @Inject(MAT_DIALOG_DATA) public category: CategoryFormData) { }
 
   ngOnInit(): void {
     this.form = new FormGroup({
-      name: new FormControl(this.data.category?.name, [Validators.required]),
-      categoryType: new FormControl(this.data.category?.categoryType ?? 'regular', [Validators.required]),
-      parentCategory: new FormControl(this.data.category?.parentCategory),
+      name: new FormControl(this.category?.name, [Validators.required]),
+      categoryType: new FormControl(this.category?.categoryType ?? 'regular', [Validators.required]),
+      parentCategory: new FormControl(this.category?.parentCategory),
     });
   }
 
@@ -40,8 +43,8 @@ export class CategoryFormComponent implements OnInit {
         parentCategoryId: this.form.value.parentCategory?.categoryId,
       };
 
-      if (this.data.category) {
-        this.categoryService.updateCategory(this.data.category.categoryId, request);
+      if (this.category) {
+        this.categoryService.updateCategory(this.category.categoryId, request);
       } else {
         this.categoryService.createCategory(request);
       }

@@ -12,7 +12,6 @@ import { DialogService } from 'src/app/shared/dialog.service';
 })
 export class ProjectListItemComponent {
   @Input() project: Project.Response;
-  @Input() projects: Project.Response[];
   constructor(
     private projectService: ProjectService,
     private dialogService: DialogService,
@@ -32,7 +31,7 @@ export class ProjectListItemComponent {
   }
 
   merge() {
-    this.dialogService.openMergeProjectsDialog(this.project, this.projects);
+    this.dialogService.openMergeProjectsDialog(this.project);
   }
 
   showMenu() {

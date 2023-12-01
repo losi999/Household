@@ -1,5 +1,5 @@
 <div [formGroup]="form">
-  <h1 mat-dialog-title>{{data.category ? 'Szerkesztés' : 'Új'}}</h1>
+  <h1 mat-dialog-title>{{category ? 'Szerkesztés' : 'Új'}}</h1>
   <div mat-dialog-content>
     <household-clearable-input formControlName="name" label="Név">
     </household-clearable-input>
@@ -9,7 +9,7 @@
       <mat-radio-button value="inventory">Leltározható </mat-radio-button>
       <mat-radio-button value="invoice">Számla </mat-radio-button>
     </mat-radio-group>
-    <household-autocomplete-input [items]="data.categories" label="Szülő" displayPropertyName="fullName"
+    <household-autocomplete-input [items]="categories | async" label="Szülő" displayPropertyName="fullName"
       filterPropertyName="name" formControlName="parentCategory">
     </household-autocomplete-input>
   </div>

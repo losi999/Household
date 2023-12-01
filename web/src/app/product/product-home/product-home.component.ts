@@ -1,42 +1,28 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Category } from '@household/shared/types/types';
-import { Subject, takeUntil } from 'rxjs';
+import { Observable, Subject, takeUntil } from 'rxjs';
 import { CategoryService } from 'src/app/category/category.service';
 import { ProductService } from 'src/app/product/product.service';
 import { DialogService } from 'src/app/shared/dialog.service';
+import { Store } from 'src/app/store';
 
 @Component({
   selector: 'household-product-home',
   templateUrl: './product-home.component.html',
   styleUrls: ['./product-home.component.scss'],
 })
-export class ProductHomeComponent implements OnInit, OnDestroy {
-  categories: Category.Response[];
-  private destroyed = new Subject();
-
-  constructor(private activatedRoute: ActivatedRoute, private productService: ProductService, private categoryService: CategoryService, private dialogService: DialogService) { }
-
-  ngOnDestroy(): void {
-    this.destroyed.next(undefined);
-    this.destroyed.complete();
+export class ProductHomeComponent {
+  get categories(): Observable<Category.Response[]> {
+    return this.store.categories.asObservable();
   }
 
-  ngOnInit(): void {
-    this.categories = this.activatedRoute.snapshot.data.categories;
-
-    this.productService.collectionUpdated.pipe(takeUntil(this.destroyed)).subscribe(() => {
-
-      this.categoryService.listCategories('inventory').subscribe({
-        next: (categories) => {
-          this.categories = categories;
-        },
-      });
-    });
+  constructor(private store: Store, private productService: ProductService, private categoryService: CategoryService, private dialogService: DialogService) {
+    this.categoryService.listCategories('inventory');
   }
 
   create() {
-    this.dialogService.openCreateProductDialog(this.categories);
+    // this.dialogService.openCreateProductDialog(this.categories);
   }
 }
 

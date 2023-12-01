@@ -1,7 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { Account, Category, Product, Project, Recipient, Report } from '@household/shared/types/types';
+import { Observable } from 'rxjs';
+import { AccountService } from 'src/app/account/account.service';
+import { CategoryService } from 'src/app/category/category.service';
+import { ProjectService } from 'src/app/project/project.service';
+import { RecipientService } from 'src/app/recipient/recipient.service';
+import { Store } from 'src/app/store';
 import { TransactionService } from 'src/app/transaction/transaction.service';
 
 type ProductFlatTree = {
@@ -16,10 +22,18 @@ type ProductFlatTree = {
   styleUrl: './report-home.component.scss',
 })
 export class ReportHomeComponent implements OnInit {
-  accounts: Account.Response[];
-  projects: Project.Response[];
-  recipients: Recipient.Response[];
-  categories: Category.Response[];
+  get accounts(): Observable< Account.Response[]> {
+    return this.store.accounts.asObservable();
+  }
+  get projects(): Observable< Project.Response[]> {
+    return this.store.projects.asObservable();
+  }
+  get recipients(): Observable< Recipient.Response[]> {
+    return this.store.recipients.asObservable();
+  }
+  get categories(): Observable< Category.Response[]> {
+    return this.store.categories.asObservable();
+  }
   products: ProductFlatTree[];
   form: FormGroup<{
     issuedAtFrom: FormControl<Date>;
@@ -31,29 +45,35 @@ export class ReportHomeComponent implements OnInit {
     productIds: FormControl<Product.Id[]>;
   }>;
 
-  constructor(private activatedRoute: ActivatedRoute, private transactionService: TransactionService, private router: Router) { }
+  constructor(private store: Store, private transactionService: TransactionService,
+    accountService: AccountService,
+    categoryService: CategoryService,
+    projectService: ProjectService,
+    recipientService: RecipientService,
+    private router: Router) {
+    accountService.listAccounts();
+    categoryService.listCategories();
+    projectService.listProjects();
+    recipientService.listRecipients();
+  }
 
   ngOnInit(): void {
-    this.accounts = this.activatedRoute.snapshot.data.accounts;
-    this.projects = this.activatedRoute.snapshot.data.projects;
-    this.recipients = this.activatedRoute.snapshot.data.recipients;
-    this.categories = this.activatedRoute.snapshot.data.categories;
-    this.products = this.categories.reduce<ProductFlatTree[]>((accumulator, currentValue) => {
-      if (currentValue.categoryType !== 'inventory' || !currentValue.products?.length) {
-        return accumulator;
-      }
+    // this.products = this.categories.reduce<ProductFlatTree[]>((accumulator, currentValue) => {
+    //   if (currentValue.categoryType !== 'inventory' || !currentValue.products?.length) {
+    //     return accumulator;
+    //   }
 
-      return [
-        ...accumulator,
-        ...currentValue.products?.map<ProductFlatTree>(p => {
-          return {
-            key: p.productId,
-            value: p.fullName,
-            parent: currentValue.fullName,
-          };
-        }) ?? [],
-      ];
-    }, []);
+    //   return [
+    //     ...accumulator,
+    //     ...currentValue.products?.map<ProductFlatTree>(p => {
+    //       return {
+    //         key: p.productId,
+    //         value: p.fullName,
+    //         parent: currentValue.fullName,
+    //       };
+    //     }) ?? [],
+    //   ];
+    // }, []);
 
     this.form = new FormGroup({
       accountIds: new FormControl(),
