@@ -140,6 +140,12 @@ describe('Report request schema', () => {
         ...createReportRequest(),
         issuedAtTo: 'not-date',
       }, 'issuedAtTo', 'date-time');
+
+      tester.validateSchemaFormatExclusiveMinimum({
+        ...createReportRequest(),
+        issuedAtTo: new Date(2022, 10, 1).toISOString(),
+        issuedAtFrom: new Date(2023, 10, 1).toISOString(),
+      }, 'issuedAtTo');
     });
   });
 });

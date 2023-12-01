@@ -24,7 +24,12 @@ const schema: StrictJSONSchema7<Report.Request> = {
     categoryIds,
     productIds,
     issuedAtFrom: issuedAt.properties.issuedAt,
-    issuedAtTo: issuedAt.properties.issuedAt,
+    issuedAtTo: {
+      ...issuedAt.properties.issuedAt,
+      formatExclusiveMinimum: {
+        $data: '1/issuedAtFrom',
+      },
+    } as any,
   },
 };
 

@@ -9,6 +9,26 @@
     <mat-expansion-panel>
       <mat-expansion-panel-header>
         <mat-panel-title>
+          Tranzakciók dátuma
+        </mat-panel-title>
+        <mat-panel-description>
+          <ng-container *ngIf="form.value.issuedAtFrom && form.value.issuedAtTo">
+            {{form.value.issuedAtFrom.toLocaleString()}} és {{form.value.issuedAtTo.toLocaleString()}} között
+          </ng-container>
+          <ng-container *ngIf="form.value.issuedAtFrom">
+            {{form.value.issuedAtFrom.toLocaleString()}} után
+          </ng-container>
+          <ng-container *ngIf="form.value.issuedAtTo">
+            {{form.value.issuedAtTo.toLocaleString()}} előtt
+          </ng-container>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      <household-datetime-input formControlName="issuedAtFrom"></household-datetime-input>
+      <household-datetime-input formControlName="issuedAtTo"></household-datetime-input>
+    </mat-expansion-panel>
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
           Számlák
         </mat-panel-title>
         <mat-panel-description>

@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
-import { Account, Category, Product, Project, Recipient } from '@household/shared/types/types';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Account, Category, Product, Project, Recipient, Report } from '@household/shared/types/types';
+import { TransactionService } from 'src/app/transaction/transaction.service';
 
 type ProductFlatTree = {
   key: Product.Id;
@@ -21,6 +22,8 @@ export class ReportHomeComponent implements OnInit {
   categories: Category.Response[];
   products: ProductFlatTree[];
   form: FormGroup<{
+    issuedAtFrom: FormControl<Date>;
+    issuedAtTo: FormControl<Date>;
     accountIds: FormControl<Account.Id[]>;
     categoryIds: FormControl<Category.Id[]>;
     projectIds: FormControl<Project.Id[]>;
@@ -28,7 +31,7 @@ export class ReportHomeComponent implements OnInit {
     productIds: FormControl<Product.Id[]>;
   }>;
 
-  constructor(private activatedRoute: ActivatedRoute) { }
+  constructor(private activatedRoute: ActivatedRoute, private transactionService: TransactionService, private router: Router) { }
 
   ngOnInit(): void {
     this.accounts = this.activatedRoute.snapshot.data.accounts;
@@ -42,10 +45,6 @@ export class ReportHomeComponent implements OnInit {
 
       return [
         ...accumulator,
-        // {
-        //   key: currentValue.categoryId,
-        //   value: currentValue.fullName,
-        // },
         ...currentValue.products?.map<ProductFlatTree>(p => {
           return {
             key: p.productId,
@@ -62,10 +61,24 @@ export class ReportHomeComponent implements OnInit {
       projectIds: new FormControl(),
       recipientIds: new FormControl(),
       productIds: new FormControl(),
+      issuedAtFrom: new FormControl(),
+      issuedAtTo: new FormControl(new Date()),
     });
   }
 
   onSubmit() {
-    console.log(this.form.value);
+    const request: Report.Request = {
+      accountIds: this.form.value.accountIds ?? undefined,
+      categoryIds: this.form.value.categoryIds ?? undefined,
+      productIds: this.form.value.productIds ?? undefined,
+      projectIds: this.form.value.projectIds ?? undefined,
+      recipientIds: this.form.value.recipientIds ?? undefined,
+      issuedAtFrom: this.form.value.issuedAtFrom?.toISOString(),
+      issuedAtTo: this.form.value.issuedAtTo?.toISOString(),
+    };
+
+    this.transactionService.getTransactionReport(request).subscribe((value) => {
+      console.log(value);
+    });
   }
 }

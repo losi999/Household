@@ -7,6 +7,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { SelectAllListComponent } from 'src/app/shared/select-all-list/select-all-list.component';
 import { MatButtonModule } from '@angular/material/button';
 import { ToolbarComponent } from 'src/app/shared/toolbar/toolbar.component';
+import { DatetimeInputComponent } from 'src/app/shared/datetime-input/datetime-input.component';
 
 @NgModule({
   declarations: [ReportHomeComponent],
@@ -18,6 +19,7 @@ import { ToolbarComponent } from 'src/app/shared/toolbar/toolbar.component';
     MatButtonModule,
     SelectAllListComponent,
     ToolbarComponent,
+    DatetimeInputComponent,
   ],
 })
 export class ReportModule { }

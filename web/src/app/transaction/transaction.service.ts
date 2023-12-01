@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Account, Transaction } from '@household/shared/types/types';
+import { Account, Transaction, Report } from '@household/shared/types/types';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { transactionsPageSize } from 'src/app/constants';
@@ -23,6 +23,10 @@ export class TransactionService {
 
   getTransactionById(transactionId: Transaction.Id, accountId: Account.Id): Observable<Transaction.Response> {
     return this.httpClient.get<Transaction.Response>(`${environment.apiUrl}${environment.transactionStage}v1/accounts/${accountId}/transactions/${transactionId}`);
+  }
+
+  getTransactionReport(body: Report.Request): Observable<Transaction.Report[]> {
+    return this.httpClient.post<Transaction.Report[]>(`${environment.apiUrl}${environment.transactionStage}v1/transactions`, body);
   }
 
   createPaymentTransaction(body: Transaction.PaymentRequest): Observable<Transaction.TransactionId> {
