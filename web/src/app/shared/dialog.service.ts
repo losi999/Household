@@ -96,11 +96,11 @@ export class DialogService {
     });
   }
 
-  openCreateProductDialog(categories: Category.Response[]) {
+  openCreateProductDialog(categoryId?: Category.Id) {
     this.dialog.open<ProductFormComponent, ProductFormData, void>(ProductFormComponent, {
       data: {
         product: undefined,
-        categories,
+        categoryId,
       },
     });
   }
@@ -109,7 +109,7 @@ export class DialogService {
     this.dialog.open<ProductFormComponent, ProductFormData, void>(ProductFormComponent, {
       data: {
         product,
-        categories: undefined,
+        categoryId: undefined,
       },
     });
   }
@@ -123,10 +123,10 @@ export class DialogService {
     });
   }
 
-  openMergeProductsDialog(product: Product.Response, products: Product.Response[]) {
+  openMergeProductsDialog(product: Product.Response, categoryId: Category.Id) {
     this.dialog.open<ProductMergeDialogComponent, ProductMergeDialogData, void>(ProductMergeDialogComponent, {
       data: {
-        products: products.filter(p => p.productId !== product.productId),
+        categoryId,
         targetProductId: product.productId,
       },
     });

@@ -2,7 +2,6 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Category } from '@household/shared/types/types';
-import { Observable } from 'rxjs';
 import { CategoryService } from 'src/app/category/category.service';
 import { Store } from 'src/app/store';
 
@@ -23,8 +22,8 @@ export class CategoryMergeDialogComponent implements OnInit {
     private store: Store,
     @Inject(MAT_DIALOG_DATA) public targetCategoryId: CategoryMergeDialogData) { }
 
-  get categories(): Observable<Category.Response[]> {
-    return this.store.categories.asObservable();
+  get categories(): Category.Response[] {
+    return this.store.categories.value.filter(c => c.categoryId !== this.targetCategoryId);
   }
 
   ngOnInit(): void {

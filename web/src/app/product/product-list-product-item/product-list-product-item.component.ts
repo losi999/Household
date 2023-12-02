@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
-import { Product } from '@household/shared/types/types';
+import { Category, Product } from '@household/shared/types/types';
 import { ProductService } from 'src/app/product/product.service';
 import { CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult } from 'src/app/shared/catalog-submenu/catalog-submenu.component';
 import { DialogService } from 'src/app/shared/dialog.service';
@@ -12,7 +12,7 @@ import { DialogService } from 'src/app/shared/dialog.service';
 })
 export class ProductListProductItemComponent {
   @Input() product: Product.Response;
-  @Input() products: Product.Response[];
+  @Input() categoryId: Category.Id;
   constructor(
     private productService: ProductService,
     private dialogService: DialogService,
@@ -32,7 +32,7 @@ export class ProductListProductItemComponent {
   }
 
   merge() {
-    this.dialogService.openMergeProductsDialog(this.product, this.products);
+    this.dialogService.openMergeProductsDialog(this.product, this.categoryId);
   }
 
   showMenu() {

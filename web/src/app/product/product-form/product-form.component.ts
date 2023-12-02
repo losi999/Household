@@ -4,10 +4,11 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { unitsOfMeasurement } from '@household/shared/constants';
 import { Category, Product } from '@household/shared/types/types';
 import { ProductService } from 'src/app/product/product.service';
+import { Store } from 'src/app/store';
 
 export type ProductFormData = {
-  product: Product.Response
-  categories: Category.Response[];
+  product: Product.Response;
+  categoryId: Category.Id;
 };
 
 @Component({
@@ -24,7 +25,12 @@ export class ProductFormComponent implements OnInit {
   }>;
   get unitsOfMeasurement() { return unitsOfMeasurement; }
 
+  get categories(): Category.Response[] {
+    return this.store.inventoryCategories.value;
+  }
+
   constructor(private dialogRef: MatDialogRef<ProductFormComponent, void>,
+    private store: Store,
     private productService: ProductService,
     @Inject(MAT_DIALOG_DATA) public data: ProductFormData) { }
 
@@ -48,7 +54,7 @@ export class ProductFormComponent implements OnInit {
       if (this.data.product) {
         this.productService.updateProduct(this.data.product.productId, request);
       } else {
-        this.productService.createProduct(this.form.value.category.categoryId, request);
+        this.productService.createProduct(this.form.value.category?.categoryId ?? this.data.categoryId, request);
       }
 
       this.dialogRef.close();

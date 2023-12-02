@@ -2,7 +2,6 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Recipient } from '@household/shared/types/types';
-import { Observable } from 'rxjs';
 import { RecipientService } from 'src/app/recipient/recipient.service';
 import { Store } from 'src/app/store';
 
@@ -23,8 +22,8 @@ export class RecipientMergeDialogComponent implements OnInit {
     private store: Store,
     @Inject(MAT_DIALOG_DATA) public targetRecipientId: RecipientMergeDialogData) { }
 
-  get recipients(): Observable<Recipient.Response[]> {
-    return this.store.recipients.asObservable();
+  get recipients(): Recipient.Response[] {
+    return this.store.recipients.value.filter(r => r.recipientId !== this.targetRecipientId);
   }
 
   ngOnInit(): void {

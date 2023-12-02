@@ -1,6 +1,5 @@
 import { Component, Input } from '@angular/core';
 import { Account } from '@household/shared/types/types';
-import { Observable } from 'rxjs';
 import { AccountService } from 'src/app/account/account.service';
 import { Store } from 'src/app/store';
 
@@ -12,8 +11,8 @@ import { Store } from 'src/app/store';
 export class AccountListComponent {
   @Input() onlyOpenAccounts: boolean;
 
-  get accounts(): Observable<Account.Response[]> {
-    return this.store.accounts.asObservable();
+  get accounts(): Account.Response[] {
+    return this.store.accounts.value;
   }
 
   constructor(private store: Store, accountService: AccountService) {

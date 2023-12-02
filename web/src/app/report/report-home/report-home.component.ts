@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Account, Category, Product, Project, Recipient, Report } from '@household/shared/types/types';
-import { Observable } from 'rxjs';
 import { AccountService } from 'src/app/account/account.service';
 import { CategoryService } from 'src/app/category/category.service';
 import { ProjectService } from 'src/app/project/project.service';
@@ -22,17 +21,17 @@ type ProductFlatTree = {
   styleUrl: './report-home.component.scss',
 })
 export class ReportHomeComponent implements OnInit {
-  get accounts(): Observable< Account.Response[]> {
-    return this.store.accounts.asObservable();
+  get accounts(): Account.Response[] {
+    return this.store.accounts.value;
   }
-  get projects(): Observable< Project.Response[]> {
-    return this.store.projects.asObservable();
+  get projects(): Project.Response[] {
+    return this.store.projects.value;
   }
-  get recipients(): Observable< Recipient.Response[]> {
-    return this.store.recipients.asObservable();
+  get recipients(): Recipient.Response[] {
+    return this.store.recipients.value;
   }
-  get categories(): Observable< Category.Response[]> {
-    return this.store.categories.asObservable();
+  get categories(): Category.Response[] {
+    return this.store.categories.value;
   }
   products: ProductFlatTree[];
   form: FormGroup<{

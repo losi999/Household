@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 import { Recipient } from '@household/shared/types/types';
-import { Observable } from 'rxjs';
 import { RecipientService } from 'src/app/recipient/recipient.service';
 import { Store } from 'src/app/store';
 
@@ -10,8 +9,8 @@ import { Store } from 'src/app/store';
   styleUrls: ['./recipient-list.component.scss'],
 })
 export class RecipientListComponent {
-  get recipients(): Observable<Recipient.Response[]> {
-    return this.store.recipients.asObservable();
+  get recipients(): Recipient.Response[] {
+    return this.store.recipients.value;
   }
 
   constructor(private store: Store, recipientService: RecipientService) {

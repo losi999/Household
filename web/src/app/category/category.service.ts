@@ -26,7 +26,21 @@ export class CategoryService {
       } : undefined,
     }).subscribe({
       next: (value) => {
-        this.store.categories.next(value);
+        switch (categoryType) {
+          case 'inventory': this.store.inventoryCategories.next(value); break;
+          default: this.store.categories.next(value); break;
+        }
+      },
+    });
+  }
+
+  getCategoryById(categoryId: Category.Id): void {
+    this.httpClient.get<Category.Response>(`${environment.apiUrl}${environment.categoryStage}/v1/categories/${categoryId}`).subscribe({
+      next: (value) => {
+        this.store.products.next({
+          ...this.store.products.value,
+          [categoryId]: value.products,
+        });
       },
     });
   }

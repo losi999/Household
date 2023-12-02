@@ -3,6 +3,9 @@
     <household-autocomplete-input [items]="products" label="Termék" displayPropertyName="fullName"
       formControlName="product">
     </household-autocomplete-input>
+    <button mat-mini-fab color="primary" type="button" (click)="createProduct()">
+      <mat-icon>library_add</mat-icon>
+    </button>
   </div>
   <div class="inventory__quantity">
     <household-clearable-input label="Mennyiség" formControlName="quantity" (blur)="touched()" type="number">

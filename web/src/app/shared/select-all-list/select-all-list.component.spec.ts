@@ -8,9 +8,9 @@ describe('SelectAllListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SelectAllListComponent]
+      imports: [SelectAllListComponent],
     })
-    .compileComponents();
+      .compileComponents();
     
     fixture = TestBed.createComponent(SelectAllListComponent);
     component = fixture.componentInstance;

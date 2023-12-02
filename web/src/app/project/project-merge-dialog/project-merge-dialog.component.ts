@@ -2,7 +2,6 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Project } from '@household/shared/types/types';
-import { Observable } from 'rxjs';
 import { ProjectService } from 'src/app/project/project.service';
 import { Store } from 'src/app/store';
 
@@ -23,8 +22,8 @@ export class ProjectMergeDialogComponent implements OnInit {
     private store: Store,
     @Inject(MAT_DIALOG_DATA) public targetProjectId: ProjectMergeDialogData) { }
 
-  get projects(): Observable<Project.Response[]> {
-    return this.store.projects.asObservable();
+  get projects(): Project.Response[] {
+    return this.store.projects.value.filter(p => p.projectId !== this.targetProjectId);
   }
 
   ngOnInit(): void {

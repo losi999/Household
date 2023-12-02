@@ -1,12 +1,13 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { Product } from '@household/shared/types/types';
+import { Category, Product } from '@household/shared/types/types';
 import { ProductService } from 'src/app/product/product.service';
+import { Store } from 'src/app/store';
 
 export type ProductMergeDialogData = {
-  products: Product.Response[];
   targetProductId: Product.Id;
+  categoryId: Category.Id;
 };
 
 @Component({
@@ -18,9 +19,13 @@ export class ProductMergeDialogComponent implements OnInit {
   form: FormGroup<{
     sourceProducts: FormControl<Product.Id[]>
   }>;
+  get products(): Product.Response[] {
+    return this.store.products.value[this.data.categoryId].filter(p => p.productId !== this.data.targetProductId);
+  }
 
   constructor(private dialogRef: MatDialogRef<ProductMergeDialogComponent, void>,
     private productService: ProductService,
+    private store: Store,
     @Inject(MAT_DIALOG_DATA) public data: ProductMergeDialogData) { }
 
   ngOnInit(): void {

@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 import { Category } from '@household/shared/types/types';
-import { Observable } from 'rxjs';
 import { CategoryService } from 'src/app/category/category.service';
 import { Store } from 'src/app/store';
 
@@ -10,8 +9,8 @@ import { Store } from 'src/app/store';
   styleUrls: ['./category-list.component.scss'],
 })
 export class CategoryListComponent {
-  get categories(): Observable<Category.Response[]> {
-    return this.store.categories.asObservable();
+  get categories(): Category.Response[] {
+    return this.store.categories.value;
   }
 
   constructor(private store: Store, categoryService: CategoryService) {

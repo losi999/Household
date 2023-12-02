@@ -2,7 +2,6 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Category } from '@household/shared/types/types';
-import { Observable } from 'rxjs';
 import { CategoryService } from 'src/app/category/category.service';
 import { Store } from 'src/app/store';
 
@@ -19,8 +18,8 @@ export class CategoryFormComponent implements OnInit {
     categoryType: FormControl<Category.CategoryType['categoryType']>;
     parentCategory: FormControl<Category.ResponseBase>
   }>;
-  get categories(): Observable<Category.Response[]> {
-    return this.store.categories.asObservable();
+  get categories(): Category.Response[] {
+    return this.store.categories.value;
   }
   constructor(private dialogRef: MatDialogRef<CategoryFormComponent, void>,
     private categoryService: CategoryService,
