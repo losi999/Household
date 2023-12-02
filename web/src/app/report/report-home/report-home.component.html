@@ -1,7 +1,18 @@
 <household-toolbar title="Jelentések">
-  <!-- <button mat-icon-button (click)="create()" type="button">
-    <mat-icon>add</mat-icon>
-  </button> -->
+  <button mat-icon-button type="button" [matMenuTriggerFor]="filters">
+    <mat-icon>tune</mat-icon>
+  </button>
+  <mat-menu #filters="matMenu" xPosition="before">
+    <button mat-menu-item>Dátum</button>
+    <button mat-menu-item (click)="filterAccounts()">Számlák</button>
+    <button mat-menu-item (click)="filterProjects()">Projektek</button>
+    <button mat-menu-item (click)="filterRecipients()">Partnerek</button>
+    <button mat-menu-item (click)="filterCategories()">Kategóriák</button>
+    <button mat-menu-item (click)="filterProducts()">Termékek</button>
+  </mat-menu>
+  <button mat-icon-button type="button">
+    <mat-icon>save</mat-icon>
+  </button>
 </household-toolbar>
 <div [formGroup]="form">
   <button mat-flat-button color="primary" (click)="onSubmit()">Küldés</button>
@@ -35,10 +46,8 @@
           {{form.value.accountIds?.length ?? 0}} kiválasztva {{accounts.length}} számlából
         </mat-panel-description>
       </mat-expansion-panel-header>
-      <household-select-all-list [items]="accounts" displayPropertyName="name" keyPropertyName="accountId"
-        formControlName="accountIds"></household-select-all-list>
     </mat-expansion-panel>
-    <!--<mat-expansion-panel>
+    <mat-expansion-panel>
       <mat-expansion-panel-header>
         <mat-panel-title>
           Projektek
@@ -47,8 +56,6 @@
           {{form.value.projectIds?.length ?? 0}} kiválasztva {{projects.length}} projektből
         </mat-panel-description>
       </mat-expansion-panel-header>
-      <household-select-all-list [items]="projects" displayPropertyName="name" keyPropertyName="projectId"
-        formControlName="projectIds"></household-select-all-list>
     </mat-expansion-panel>
     <mat-expansion-panel>
       <mat-expansion-panel-header>
@@ -59,8 +66,6 @@
           {{form.value.recipientIds?.length ?? 0}} kiválasztva {{recipients.length}} partnerből
         </mat-panel-description>
       </mat-expansion-panel-header>
-      <household-select-all-list [items]="recipients" displayPropertyName="name" keyPropertyName="recipientId"
-        formControlName="recipientIds"></household-select-all-list>
     </mat-expansion-panel>
     <mat-expansion-panel>
       <mat-expansion-panel-header>
@@ -71,22 +76,16 @@
           {{form.value.categoryIds?.length ?? 0}} kiválasztva {{categories.length}} kategóriából
         </mat-panel-description>
       </mat-expansion-panel-header>
-      <household-select-all-list [items]="categories" displayPropertyName="fullName"
-        keyPropertyName="categoryId" parentPropertyName="parentCategory" formControlName="categoryIds">
-      </household-select-all-list>
-    </mat-expansion-panel> -->
-    <!-- <mat-expansion-panel>
+    </mat-expansion-panel>
+    <mat-expansion-panel>
       <mat-expansion-panel-header>
         <mat-panel-title>
           Termékek
         </mat-panel-title>
         <mat-panel-description>
-          {{form.value.productIds?.length ?? 0}} kiválasztva {{products.length}} termékből
+          {{form.value.productIds?.length ?? 0}} kiválasztva {{products?.length}} termékből
         </mat-panel-description>
       </mat-expansion-panel-header>
-      <household-select-all-list [items]="products" displayPropertyName="value" keyPropertyName="key"
-        parentPropertyName="parent" formControlName="productIds">
-      </household-select-all-list>
-    </mat-expansion-panel> -->
+    </mat-expansion-panel>
   </mat-accordion>
 </div>

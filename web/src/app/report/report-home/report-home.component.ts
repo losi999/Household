@@ -1,15 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Account, Category, Product, Project, Recipient, Report } from '@household/shared/types/types';
+import { Subject, takeUntil } from 'rxjs';
 import { AccountService } from 'src/app/account/account.service';
 import { CategoryService } from 'src/app/category/category.service';
 import { ProjectService } from 'src/app/project/project.service';
 import { RecipientService } from 'src/app/recipient/recipient.service';
+import { DialogService } from 'src/app/shared/dialog.service';
 import { Store } from 'src/app/store';
 import { TransactionService } from 'src/app/transaction/transaction.service';
 
-type ProductFlatTree = {
+export type ProductFlatTree = {
   key: Product.Id;
   value: string;
   parent?: string
@@ -20,7 +22,8 @@ type ProductFlatTree = {
   templateUrl: './report-home.component.html',
   styleUrl: './report-home.component.scss',
 })
-export class ReportHomeComponent implements OnInit {
+export class ReportHomeComponent implements OnInit, OnDestroy {
+  private destroyed = new Subject<void>();
   get accounts(): Account.Response[] {
     return this.store.accounts.value;
   }
@@ -49,30 +52,34 @@ export class ReportHomeComponent implements OnInit {
     categoryService: CategoryService,
     projectService: ProjectService,
     recipientService: RecipientService,
+    private dialogService: DialogService,
     private router: Router) {
     accountService.listAccounts();
     categoryService.listCategories();
     projectService.listProjects();
     recipientService.listRecipients();
   }
+  ngOnDestroy(): void {
+    this.destroyed.next();
+    this.destroyed.complete();
+  }
 
   ngOnInit(): void {
-    // this.products = this.categories.reduce<ProductFlatTree[]>((accumulator, currentValue) => {
-    //   if (currentValue.categoryType !== 'inventory' || !currentValue.products?.length) {
-    //     return accumulator;
-    //   }
+    this.store.inventoryCategories.pipe(takeUntil(this.destroyed)).subscribe((categories) => {
+      this.products = categories.flatMap<ProductFlatTree>(category => {
+        if (!category.products?.length) {
+          return [];
+        }
 
-    //   return [
-    //     ...accumulator,
-    //     ...currentValue.products?.map<ProductFlatTree>(p => {
-    //       return {
-    //         key: p.productId,
-    //         value: p.fullName,
-    //         parent: currentValue.fullName,
-    //       };
-    //     }) ?? [],
-    //   ];
-    // }, []);
+        return category.products?.map<ProductFlatTree>(p => {
+          return {
+            key: p.productId,
+            value: p.fullName,
+            parent: category.fullName,
+          };
+        });
+      });
+    });
 
     this.form = new FormGroup({
       accountIds: new FormControl(),
@@ -100,4 +107,65 @@ export class ReportHomeComponent implements OnInit {
       console.log(value);
     });
   }
+
+  filterAccounts() {
+    const dialogRef = this.dialogService.openAccountFilterDialog(this.accounts);
+
+    dialogRef.afterClosed().subscribe({
+      next: (value) => {
+        this.form.patchValue({
+          accountIds: value,
+        });
+      },
+    });
+  }
+
+  filterRecipients() {
+    const dialogRef = this.dialogService.openRecipientFilterDialog(this.recipients);
+
+    dialogRef.afterClosed().subscribe({
+      next: (value) => {
+        this.form.patchValue({
+          recipientIds: value,
+        });
+      },
+    });
+  }
+
+  filterProjects() {
+    const dialogRef = this.dialogService.openProjectFilterDialog(this.projects);
+
+    dialogRef.afterClosed().subscribe({
+      next: (value) => {
+        this.form.patchValue({
+          projectIds: value,
+        });
+      },
+    });
+  }
+
+  filterCategories() {
+    const dialogRef = this.dialogService.openCategoryFilterDialog(this.categories);
+
+    dialogRef.afterClosed().subscribe({
+      next: (value) => {
+        this.form.patchValue({
+          categoryIds: value,
+        });
+      },
+    });
+  }
+
+  filterProducts() {
+    const dialogRef = this.dialogService.openProductFilterDialog(this.products);
+
+    dialogRef.afterClosed().subscribe({
+      next: (value) => {
+        this.form.patchValue({
+          productIds: value,
+        });
+      },
+    });
+  }
+
 }
