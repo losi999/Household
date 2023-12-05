@@ -43,14 +43,15 @@ describe('POST category/v1/categories', () => {
     });
 
     it('should create category with parent category', () => {
+      const modifiedRequest = {
+        ...request,
+        parentCategoryId: getCategoryId(parentCategoryDocument),
+      };
       cy.saveCategoryDocument(parentCategoryDocument)
         .authenticate(1)
-        .requestCreateCategory({
-          ...request,
-          parentCategoryId: getCategoryId(parentCategoryDocument),
-        })
+        .requestCreateCategory(modifiedRequest)
         .expectCreatedResponse()
-        .validateCategoryDocument(request, parentCategoryDocument);
+        .validateCategoryDocument(modifiedRequest, parentCategoryDocument);
     });
 
     describe('should return error', () => {
@@ -146,7 +147,7 @@ describe('POST category/v1/categories', () => {
           cy.authenticate(1)
             .requestCreateCategory({
               ...request,
-              parentCategoryId: 'not-mongo-id' as Category.IdType,
+              parentCategoryId: 'not-mongo-id' as Category.Id,
             })
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('parentCategoryId', 'body');

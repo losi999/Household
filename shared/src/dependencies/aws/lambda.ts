@@ -1,4 +1,3 @@
-import { config, Lambda } from 'aws-sdk';
+import { Lambda } from '@aws-sdk/client-lambda';
 
-config.logger = console;
-export const lambda = new Lambda();
+export const lambda = new Lambda({});

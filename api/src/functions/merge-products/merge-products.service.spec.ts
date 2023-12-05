@@ -1,35 +1,35 @@
 import { IMergeProductsService, mergeProductsServiceFactory } from '@household/api/functions/merge-products/merge-products.service';
-import { createProductDocument, createCategoryDocument } from '@household/shared/common/test-data-factory';
+import { createCategoryDocument, createProductDocument } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
-import { getCategoryId, getProductId } from '@household/shared/common/utils';
-import { ICategoryService } from '@household/shared/services/category-service';
+import { getProductId } from '@household/shared/common/utils';
 import { IProductService } from '@household/shared/services/product-service';
 
 describe('Merge product service', () => {
   let service: IMergeProductsService;
   let mockProductService: Mock<IProductService>;
-  let mockCategoryService: Mock<ICategoryService>;
 
   beforeEach(() => {
     mockProductService = createMockService('listProductsByIds', 'mergeProducts');
-    mockCategoryService = createMockService('getCategoryByProductIds');
 
-    service = mergeProductsServiceFactory(mockProductService.service, mockCategoryService.service);
+    service = mergeProductsServiceFactory(mockProductService.service);
   });
 
-  const targetProductDocument = createProductDocument();
-  const sourceProductDocument = createProductDocument();
+  const categoryDocument = createCategoryDocument();
+  const targetProductDocument = createProductDocument({
+    category: categoryDocument,
+  });
+  const sourceProductDocument = createProductDocument({
+    category: categoryDocument,
+  });
   const sourceProductId = getProductId(sourceProductDocument);
   const productId = getProductId(targetProductDocument);
   const body = [sourceProductId];
-  const queriedCategoryDocument = createCategoryDocument();
 
   it('should return if products are merged', async () => {
     mockProductService.functions.listProductsByIds.mockResolvedValue([
       targetProductDocument,
       sourceProductDocument,
     ]);
-    mockCategoryService.functions.getCategoryByProductIds.mockResolvedValue(queriedCategoryDocument);
     mockProductService.functions.mergeProducts.mockResolvedValue(undefined);
 
     await service({
@@ -40,16 +40,11 @@ describe('Merge product service', () => {
       productId,
       sourceProductId,
     ]);
-    validateFunctionCall(mockCategoryService.functions.getCategoryByProductIds, [
-      productId,
-      sourceProductId,
-    ]);
     validateFunctionCall(mockProductService.functions.mergeProducts, {
-      categoryId: getCategoryId(queriedCategoryDocument),
       sourceProductIds: body,
       targetProductId: productId,
     });
-    expect.assertions(3);
+    expect.assertions(2);
   });
 
   describe('should throw error', () => {
@@ -62,57 +57,27 @@ describe('Merge product service', () => {
         productId,
       }).catch(validateError('Target product is among the source product Ids', 400));
       validateFunctionCall(mockProductService.functions.listProductsByIds);
-      validateFunctionCall(mockCategoryService.functions.getCategoryByProductIds);
       validateFunctionCall(mockProductService.functions.mergeProducts);
-      expect.assertions(5);
+      expect.assertions(4);
     });
 
     it('if unable to query products', async () => {
       mockProductService.functions.listProductsByIds.mockRejectedValue('This is a mongo error');
-      mockCategoryService.functions.getCategoryByProductIds.mockResolvedValue(queriedCategoryDocument);
 
       await service({
         body,
         productId,
-      }).catch(validateError('Unable to query related data', 500));
+      }).catch(validateError('Error while listing products by ids', 500));
       validateFunctionCall(mockProductService.functions.listProductsByIds, [
         productId,
         sourceProductId,
       ]);
-      validateFunctionCall(mockCategoryService.functions.getCategoryByProductIds, [
-        productId,
-        sourceProductId,
-      ]);
       validateFunctionCall(mockProductService.functions.mergeProducts);
-      expect.assertions(5);
-    });
-
-    it('if unable to query category', async () => {
-      mockProductService.functions.listProductsByIds.mockResolvedValue([
-        targetProductDocument,
-        sourceProductDocument,
-      ]);
-      mockCategoryService.functions.getCategoryByProductIds.mockRejectedValue('This is a mongo error');
-
-      await service({
-        body,
-        productId,
-      }).catch(validateError('Unable to query related data', 500));
-      validateFunctionCall(mockProductService.functions.listProductsByIds, [
-        productId,
-        sourceProductId,
-      ]);
-      validateFunctionCall(mockCategoryService.functions.getCategoryByProductIds, [
-        productId,
-        sourceProductId,
-      ]);
-      validateFunctionCall(mockProductService.functions.mergeProducts);
-      expect.assertions(5);
+      expect.assertions(4);
     });
 
     it('if some of the products not found', async () => {
       mockProductService.functions.listProductsByIds.mockResolvedValue([sourceProductDocument]);
-      mockCategoryService.functions.getCategoryByProductIds.mockResolvedValue(queriedCategoryDocument);
       mockProductService.functions.mergeProducts.mockResolvedValue(undefined);
 
       await service({
@@ -123,35 +88,34 @@ describe('Merge product service', () => {
         productId,
         sourceProductId,
       ]);
-      validateFunctionCall(mockCategoryService.functions.getCategoryByProductIds, [
-        productId,
-        sourceProductId,
-      ]);
       validateFunctionCall(mockProductService.functions.mergeProducts);
-      expect.assertions(5);
+      expect.assertions(4);
     });
 
-    it('if category not found', async () => {
+    it('if products belong to different categories', async () => {
+      const differentCategoryProductdocument = createProductDocument({
+        category: createCategoryDocument(),
+      });
       mockProductService.functions.listProductsByIds.mockResolvedValue([
         targetProductDocument,
         sourceProductDocument,
+        differentCategoryProductdocument,
       ]);
-      mockCategoryService.functions.getCategoryByProductIds.mockResolvedValue(undefined);
 
       await service({
-        body,
+        body: [
+          ...body,
+          getProductId(differentCategoryProductdocument),
+        ],
         productId,
-      }).catch(validateError('No category found', 400));
+      }).catch(validateError('Not all products belong to the same category', 400));
       validateFunctionCall(mockProductService.functions.listProductsByIds, [
         productId,
         sourceProductId,
-      ]);
-      validateFunctionCall(mockCategoryService.functions.getCategoryByProductIds, [
-        productId,
-        sourceProductId,
+        getProductId(differentCategoryProductdocument),
       ]);
       validateFunctionCall(mockProductService.functions.mergeProducts);
-      expect.assertions(5);
+      expect.assertions(4);
     });
 
     it('if unable to merge products', async () => {
@@ -159,7 +123,6 @@ describe('Merge product service', () => {
         targetProductDocument,
         sourceProductDocument,
       ]);
-      mockCategoryService.functions.getCategoryByProductIds.mockResolvedValue(queriedCategoryDocument);
       mockProductService.functions.mergeProducts.mockRejectedValue('This is a mongo error');
 
       await service({
@@ -170,16 +133,11 @@ describe('Merge product service', () => {
         productId,
         sourceProductId,
       ]);
-      validateFunctionCall(mockCategoryService.functions.getCategoryByProductIds, [
-        productId,
-        sourceProductId,
-      ]);
       validateFunctionCall(mockProductService.functions.mergeProducts, {
-        categoryId: getCategoryId(queriedCategoryDocument),
         sourceProductIds: body,
         targetProductId: productId,
       });
-      expect.assertions(5);
+      expect.assertions(4);
     });
   });
 });

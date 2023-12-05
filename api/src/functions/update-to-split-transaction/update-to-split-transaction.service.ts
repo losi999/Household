@@ -1,5 +1,5 @@
 import { httpErrors } from '@household/api/common/error-handlers';
-import { getProductId, toDictionary } from '@household/shared/common/utils';
+import { getCategoryId, toDictionary } from '@household/shared/common/utils';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICategoryService } from '@household/shared/services/category-service';
@@ -12,7 +12,7 @@ import { Transaction } from '@household/shared/types/types';
 export interface IUpdateToSplitTransactionService {
   (ctx: {
     body: Transaction.SplitRequest;
-    transactionId: Transaction.IdType;
+    transactionId: Transaction.Id;
     expiresIn: number;
   }): Promise<void>;
 }
@@ -97,7 +97,7 @@ export const updateToSplitTransactionServiceFactory = (
           productId,
         }, 400);
 
-        httpErrors.product.categoryRelation(!category.products.find(product => getProductId(product) === productId), {
+        httpErrors.product.categoryRelation(getCategoryId(product.category) !== s.categoryId, {
           categoryId: s.categoryId,
           productId,
         });

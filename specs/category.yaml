@@ -1,0 +1,81 @@
+openapi: "3.0.0"
+info:
+  title: Category components
+  version: 1.0.0
+components:
+  schemas:
+    CategoryId:
+      type: object
+      required:
+        - categoryId
+      properties:
+        categoryId:
+          type: string
+    FullName:
+      type: object
+      required:
+        - fullName
+      properties:
+        fullName:
+          type: string
+          minLength: 1
+    ParentCategoryId:
+      type: object
+      properties:
+        parentCategoryId:
+          type: string
+    CategoryType:
+      type: object
+      required:
+        - categoryType
+      properties:
+        categoryType:
+          type: string
+          enum:
+            - regular
+            - inventory
+            - invoice
+    Name:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+    Products:
+      type: object
+      properties:
+        products:
+          type: array
+          items:
+            $ref: "product.yaml#/components/schemas/Response"
+
+    Response.Base:
+      allOf:
+        - $ref: "#/components/schemas/CategoryType"
+        - $ref: "#/components/schemas/Name"
+        - $ref: "#/components/schemas/FullName"
+        - $ref: "#/components/schemas/CategoryId"
+        - $ref: "#/components/schemas/Products"
+
+    ParentCategory:
+      type: object
+      properties:
+        parentCategory:
+          $ref: "#/components/schemas/Response.Base"
+
+    Response:
+      allOf:
+        - $ref: "#/components/schemas/Response.Base"
+        - $ref: "#/components/schemas/ParentCategory"
+
+    Report:
+      allOf:
+        - $ref: "#/components/schemas/CategoryId"
+        - $ref: "#/components/schemas/FullName"
+    Request:
+      allOf:
+        - $ref: "#/components/schemas/CategoryType"
+        - $ref: "#/components/schemas/Name"
+        - $ref: "#/components/schemas/ParentCategoryId"

@@ -1,0 +1,12 @@
+<div>
+  <h1 mat-dialog-title>{{data.title}}</h1>
+  <div mat-dialog-content>
+    <household-select-all-list [items]="data.items" [displayPropertyName]="data.displayPropertyName"
+      [keyPropertyName]="data.keyPropertyName" [parentPropertyName]="data.parentPropertyName"
+      [formControl]="selected"></household-select-all-list>
+  </div>
+  <div mat-dialog-actions>
+    <button mat-button cdkFocusInitial (click)="filter()">Szűrés</button>
+    <button mat-button mat-dialog-close>Mégse</button>
+  </div>
+</div>

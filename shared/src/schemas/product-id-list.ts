@@ -2,7 +2,7 @@ import { StrictJSONSchema7 } from '@household/shared/types/common';
 import { Product } from '@household/shared/types/types';
 import { default as productId } from '@household/shared/schemas/product-id';
 
-const schema: StrictJSONSchema7<Product.IdType[]> = {
+const schema: StrictJSONSchema7<Product.Id[]> = {
   type: 'array',
   minItems: 1,
   items: {

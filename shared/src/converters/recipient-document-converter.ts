@@ -7,6 +7,7 @@ export interface IRecipientDocumentConverter {
   create(body: Recipient.Request, expiresIn: number, generateId?: boolean): Recipient.Document;
   update(data: { document: Restrict<Recipient.Document, 'updatedAt'>; body: Recipient.Request }, expiresIn: number): Recipient.Document;
   toResponse(doc: Recipient.Document): Recipient.Response;
+  toReport(doc: Recipient.Document): Recipient.Report;
   toResponseList(docs: Recipient.Document[]): Recipient.Response[];
 }
 
@@ -35,6 +36,12 @@ export const recipientDocumentConverterFactory = (): IRecipientDocumentConverter
         _id: undefined,
         expiresAt: undefined,
       };
+    },
+    toReport: (doc): Recipient.Report => {
+      return doc ? {
+        recipientId: getRecipientId(doc),
+        name: doc.name,
+      } : undefined;
     },
     toResponseList: docs => docs.map(d => instance.toResponse(d)),
   };

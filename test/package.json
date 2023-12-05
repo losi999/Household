@@ -5,14 +5,14 @@
   "scripts": {
     "cypress-env": "cp cypress.${ENV}.env.json cypress.env.json",
     "start": "export ENV=localhost && yarn cypress-env && cypress open -C cypress.localhost.json",
-    "start:LOCAL": "export ENV=LOCAL && yarn cypress-env && cypress open -C cypress.LOCAL.json",
-    "start:DEV": "export ENV=DEV && yarn cypress-env && cypress open -C cypress.DEV.json",
-    "test": "cypress run -C cypress.${ENV}.json",
-    "test:LOCAL": "export ENV=LOCAL && yarn cypress-env && cypress run -C cypress.LOCAL.json"
+    "start:LOCAL": "export ENV=LOCAL && yarn cypress-env && cypress open --config-file=cypress.LOCAL.config.ts",
+    "start:DEV": "export ENV=DEV && yarn cypress-env && cypress open --config-file=cypress.DEV.config.ts",
+    "test": "cypress run --config-file=cypress.${ENV}.config.ts",
+    "test:LOCAL": "export ENV=LOCAL && yarn cypress-env && cypress run --config-file=cypress.LOCAL.config.ts"
   },
   "devDependencies": {
-    "@cypress/webpack-preprocessor": "5.11.0",
-    "cypress": "9.7.0",
+    "@cypress/webpack-preprocessor": "6.0.0",
+    "cypress": "13.6.0",
     "regenerator-runtime": "^0.13.9",
     "ts-loader": "9.3.0",
     "typescript": "4.7.2",

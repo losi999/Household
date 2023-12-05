@@ -52,5 +52,27 @@ describe('List transactions by transaction handler', () => {
     expect(JSON.parse(response.body)).toEqual(transactions);
     expect.assertions(3);
   });
+
+  it('should respond with success with pagination', async () => {
+    mockListTransactionsByTransactionService.mockResolvedValue(transactions);
+    const pageNumber = 2;
+    const pageSize = 13;
+
+    const response = await handlerFunction({
+      ...handlerEvent,
+      queryStringParameters: {
+        pageNumber: String(pageNumber),
+        pageSize: String(pageSize),
+      },
+    }, undefined, undefined) as AWSLambda.APIGatewayProxyResult;
+    validateFunctionCall(mockListTransactionsByTransactionService, {
+      accountId,
+      pageNumber,
+      pageSize,
+    });
+    expect(response.statusCode).toEqual(200);
+    expect(JSON.parse(response.body)).toEqual(transactions);
+    expect.assertions(3);
+  });
 });
 

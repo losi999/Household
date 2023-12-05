@@ -45,16 +45,16 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
 
     it('should keep existing product', () => {
       const productDocument = productDocumentConverter.create({
-        brand: `tesco-${uuid()}`,
-        measurement: 500,
-        unitOfMeasurement: 'g',
+        body: {
+          brand: `tesco-${uuid()}`,
+          measurement: 500,
+          unitOfMeasurement: 'g',
+        },
+        category: categoryDocument,
       }, Cypress.env('EXPIRES_IN'), true);
 
       cy.saveCategoryDocument(categoryDocument)
-        .saveProductDocument({
-          document: productDocument,
-          categoryId: getCategoryId(categoryDocument),
-        })
+        .saveProductDocument(productDocument)
         .authenticate(1)
         .requestUpdateCategory(getCategoryId(categoryDocument), request)
         .expectCreatedResponse()
@@ -232,7 +232,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
         cy.authenticate(1)
           .requestUpdateCategory(createCategoryId(), {
             ...request,
-            parentCategoryId: 'not-mongo-id' as Category.IdType,
+            parentCategoryId: 'not-mongo-id' as Category.Id,
           })
           .expectBadRequestResponse()
           .expectWrongPropertyPattern('parentCategoryId', 'body');

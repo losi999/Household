@@ -1,24 +1,22 @@
 import { IMongodbService } from '@household/shared/services/mongodb-service';
-import { Category, Product } from '@household/shared/types/types';
-import { ClientSession } from 'mongoose';
+import { Category } from '@household/shared/types/types';
+import { ClientSession, Types } from 'mongoose';
 
 export interface ICategoryService {
   dumpCategories(): Promise<Category.Document[]>;
   saveCategory(doc: Category.Document): Promise<Category.Document>;
-  getCategoryById(categoryId: Category.IdType): Promise<Category.Document>;
-  deleteCategory(categoryId: Category.IdType): Promise<unknown>;
+  getCategoryById(categoryId: Category.Id): Promise<Category.Document>;
+  deleteCategory(categoryId: Category.Id): Promise<unknown>;
   updateCategory(doc: Category.Document, oldFullName: string): Promise<unknown>;
   listCategories(categoryType: Category.CategoryType): Promise<Category.Document[]>;
-  listCategoriesByIds(categoryIds: Category.IdType[]): Promise<Category.Document[]>;
-  getCategoryByProductIds(productIds: Product.IdType[]): Promise<Category.Document>;
+  listCategoriesByIds(categoryIds: Category.Id[]): Promise<Category.Document[]>;
   mergeCategories(ctx: {
-    targetCategoryId: Category.IdType;
-    sourceCategoryIds: Category.IdType[];
+    targetCategoryId: Category.Id;
+    sourceCategoryIds: Category.Id[];
   }): Promise<unknown>;
 }
 
 export const categoryServiceFactory = (mongodbService: IMongodbService): ICategoryService => {
-
   const updateCategoryFullName = (oldName: string, newName: string, session: ClientSession): Promise<unknown> => {
     return mongodbService.categories().updateMany({
       fullName: {
@@ -49,7 +47,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
         return mongodbService.categories().find({}, null, {
           session,
         })
-          .lean()
+          .lean<Category.Document[]>()
           .exec();
       });
     },
@@ -57,25 +55,85 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
       return mongodbService.categories().create(doc);
     },
     getCategoryById: async (categoryId) => {
-      return !categoryId ? null : mongodbService.categories().findById(categoryId)
-        .populate('parentCategory')
-        .lean()
-        .exec();
+      let category: Category.Document;
+      if (categoryId) {
+        [category] = await mongodbService.categories()
+          .aggregate()
+          .match({
+            _id: new Types.ObjectId(categoryId),
+          })
+          .lookup({
+            from: 'categories',
+            localField: 'parentCategory',
+            foreignField: '_id',
+            as: 'parentCategory',
+          })
+          .lookup({
+            from: 'products',
+            localField: '_id',
+            foreignField: 'category',
+            as: 'products',
+            pipeline: [
+              {
+                $sort: {
+                  fullName: 1,
+                },
+              },
+            ],
+          })
+          .addFields({
+            parentCategory: {
+              $cond: {
+                if: {
+                  $eq: [
+                    {
+                      $size: '$parentCategory',
+                    },
+                    0,
+                  ],
+                },
+                then: '$$REMOVE',
+                else: {
+                  $arrayElemAt: [
+                    '$parentCategory',
+                    0,
+                  ],
+                },
+
+              },
+            },
+            products: {
+              $cond: {
+                if: {
+                  $eq: [
+                    {
+                      $size: '$products',
+                    },
+                    0,
+                  ],
+                },
+                then: '$$REMOVE',
+                else: '$products',
+              },
+            },
+          })
+          .exec();
+      }
+
+      return category ?? null;
     },
     deleteCategory: async (categoryId) => {
       return mongodbService.inSession((session) => {
         return session.withTransaction(async () => {
           const toDelete = await mongodbService.categories().findById(categoryId);
           await mongodbService.products().deleteMany({
-            _id: {
-              $in: toDelete.products,
-            },
+            category: categoryId,
           }, {
             session,
           })
             .exec();
 
-          await toDelete.remove({
+          await toDelete.deleteOne({
             session,
           });
 
@@ -127,6 +185,8 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
           } : {
             $unset: {
               category: 1,
+              inventory: 1,
+              invoice: 1,
             },
           }, {
             runValidators: true,
@@ -142,6 +202,8 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
           } : {
             $unset: {
               'splits.$[element].category': 1,
+              'splits.$[element].inventory': 1,
+              'splits.$[element].invoice': 1,
             },
           }, {
             session,
@@ -216,23 +278,78 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
       });
     },
     listCategories: ({ categoryType }) => {
-      console.log(categoryType);
       return mongodbService.inSession((session) => {
-        return mongodbService.categories()
-          .find(categoryType ? {
+        const aggregate = mongodbService.categories()
+          .aggregate()
+          .session(session);
+
+        if (categoryType) {
+          aggregate.match({
             categoryType,
-          } : undefined, null, {
-            session,
+          });
+        }
+
+        aggregate.lookup({
+          from: 'categories',
+          localField: 'parentCategory',
+          foreignField: '_id',
+          as: 'parentCategory',
+        })
+          .lookup({
+            from: 'products',
+            localField: '_id',
+            foreignField: 'category',
+            as: 'products',
+            pipeline: [
+              {
+                $sort: {
+                  fullName: 1,
+                },
+              },
+            ],
           })
-          .populate('parentCategory')
-          .populate('products')
+          .addFields({
+            parentCategory: {
+              $cond: {
+                if: {
+                  $eq: [
+                    {
+                      $size: '$parentCategory',
+                    },
+                    0,
+                  ],
+                },
+                then: '$$REMOVE',
+                else: {
+                  $arrayElemAt: [
+                    '$parentCategory',
+                    0,
+                  ],
+                },
+
+              },
+            },
+            products: {
+              $cond: {
+                if: {
+                  $eq: [
+                    {
+                      $size: '$products',
+                    },
+                    0,
+                  ],
+                },
+                then: '$$REMOVE',
+                else: '$products',
+              },
+            },
+          })
           .collation({
             locale: 'hu',
           })
-          .sort('fullName')
-          .sort('products.brand')
-          .lean()
-          .exec();
+          .sort('fullName');
+
+        return aggregate.exec();
       });
     },
     listCategoriesByIds: (categoryIds) => {
@@ -244,20 +361,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
         }, null, {
           session,
         })
-          .lean()
-          .exec();
-      });
-    },
-    getCategoryByProductIds: (productIds) => {
-      return mongodbService.inSession(async (session) => {
-        return mongodbService.categories().findOne({
-          products: {
-            $all: productIds,
-          },
-        }, null, {
-          session,
-        })
-          .lean()
+          .lean<Category.Document[]>()
           .exec();
       });
     },
@@ -267,6 +371,18 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
           await mongodbService.categories().deleteMany({
             _id: {
               $in: sourceCategoryIds,
+            },
+          }, {
+            session,
+          });
+
+          await mongodbService.products().updateMany({
+            category: {
+              $in: sourceCategoryIds,
+            },
+          }, {
+            $set: {
+              category: targetCategoryId,
             },
           }, {
             session,

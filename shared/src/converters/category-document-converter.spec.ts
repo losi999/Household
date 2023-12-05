@@ -1,4 +1,4 @@
-import { createCategoryDocument, createCategoryRequest, createCategoryResponse, createProductDocument, createProductResponse } from '@household/shared/common/test-data-factory';
+import { createCategoryDocument, createCategoryReport, createCategoryRequest, createCategoryResponse, createProductDocument, createProductResponse } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock } from '@household/shared/common/unit-testing';
 import { addSeconds, getCategoryId } from '@household/shared/common/utils';
 import { categoryDocumentConverterFactory, ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
@@ -32,7 +32,6 @@ describe('Category document converter', () => {
     fullName: name,
     createdAt: now,
     updatedAt: now,
-    products: [createProductDocument()],
   });
   const productResponse = createProductResponse();
   const queriedParentCategory = createCategoryDocument({
@@ -100,7 +99,6 @@ describe('Category document converter', () => {
         parentCategory: queriedParentCategory,
         createdAt: now,
         expiresAt: addSeconds(expiresIn, now),
-        products: document.products,
       }));
     });
 
@@ -116,7 +114,6 @@ describe('Category document converter', () => {
         fullName: name,
         createdAt: now,
         expiresAt: addSeconds(expiresIn, now),
-        products: document.products,
       }));
     });
   });
@@ -125,7 +122,10 @@ describe('Category document converter', () => {
     it('should return response', () => {
       mockProductDocumentConverter.functions.toResponseList.mockReturnValue([productResponse]);
 
-      const result = converter.toResponse(queriedDocument);
+      const result = converter.toResponse({
+        ...queriedDocument,
+        products: [createProductDocument()],
+      });
       expect(result).toEqual(createCategoryResponse({
         categoryId: getCategoryId(queriedDocument),
         name,
@@ -139,7 +139,12 @@ describe('Category document converter', () => {
     it('should return response list', () => {
       mockProductDocumentConverter.functions.toResponseList.mockReturnValue([productResponse]);
 
-      const result = converter.toResponseList([queriedDocument]);
+      const result = converter.toResponseList([
+        {
+          ...queriedDocument,
+          products: [createProductDocument()],
+        },
+      ]);
       expect(result).toEqual([
         createCategoryResponse({
           categoryId: getCategoryId(queriedDocument),
@@ -148,6 +153,16 @@ describe('Category document converter', () => {
           products: [productResponse],
         }),
       ]);
+    });
+  });
+
+  describe('toReport', () => {
+    it('should return response', () => {
+      const result = converter.toReport(queriedDocument);
+      expect(result).toEqual(createCategoryReport({
+        categoryId: getCategoryId(queriedDocument),
+        fullName: name,
+      }));
     });
   });
 });

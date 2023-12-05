@@ -1,7 +1,7 @@
 import { StrictJSONSchema7 } from '@household/shared/types/common';
 import { Account } from '@household/shared/types/types';
 
-const schema: StrictJSONSchema7<Account.Id> = {
+const schema: StrictJSONSchema7<Account.AccountId> = {
   type: 'object',
   additionalProperties: false,
   required: ['accountId'],

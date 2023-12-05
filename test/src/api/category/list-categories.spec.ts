@@ -2,7 +2,6 @@ import { categoryDocumentConverter } from '@household/shared/dependencies/conver
 import { default as schema } from '@household/test/api/schemas/category-response-list';
 import { Category, Product } from '@household/shared/types/types';
 import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
-import { getCategoryId } from '@household/shared/common/utils';
 import { v4 as uuid } from 'uuid';
 
 describe('GET /category/v1/categories', () => {
@@ -30,9 +29,12 @@ describe('GET /category/v1/categories', () => {
     }, Cypress.env('EXPIRES_IN'), true);
 
     productDocument = productDocumentConverter.create({
-      brand: `tesco-${uuid()}`,
-      unitOfMeasurement: 'g',
-      measurement: 300,
+      body: {
+        brand: `tesco-${uuid()}`,
+        unitOfMeasurement: 'g',
+        measurement: 300,
+      },
+      category: categoryDocument1,
     },
     Cypress.env('EXPIRES_IN'), true);
   });
@@ -49,10 +51,7 @@ describe('GET /category/v1/categories', () => {
     it('should get a list of categories', () => {
       cy.saveCategoryDocument(categoryDocument1)
         .saveCategoryDocument(categoryDocument2)
-        .saveProductDocument({
-          document: productDocument,
-          categoryId: getCategoryId(categoryDocument1),
-        })
+        .saveProductDocument(productDocument)
         .authenticate(1)
         .requestGetCategoryList()
         .expectOkResponse()
@@ -60,7 +59,7 @@ describe('GET /category/v1/categories', () => {
         .validateCategoryListResponse([
           categoryDocument1,
           categoryDocument2,
-        ]);
+        ], [productDocument]);
     });
   });
 });

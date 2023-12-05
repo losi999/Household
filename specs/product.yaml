@@ -1,0 +1,55 @@
+openapi: "3.0.0"
+info:
+  title: Product components
+  version: 1.0.0
+components:
+  schemas:
+    ProductId:
+      type: object
+      required:
+        - productId
+      properties:
+        productId:
+          type: string
+    Base:
+      type: object
+      required:
+        - brand
+        - unitOfMeasurement
+        - measurement
+      properties:
+        brand:
+          type: string
+          minLength: 1
+        unitOfMeasurement:
+          type: string
+          enum:
+            - g
+            - kg
+            - ml
+            - l
+            - db
+        measurement:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+    FullName:
+      type: object
+      required:
+        - fullName
+      properties:
+        fullName:
+          type: string
+          minLength: 1
+    Response:
+      allOf:
+        - $ref: "#/components/schemas/Base"
+        - $ref: "#/components/schemas/ProductId"
+        - $ref: "#/components/schemas/FullName"
+    Report:
+      allOf:
+        - $ref: "#/components/schemas/ProductId"
+        - $ref: "#/components/schemas/FullName"
+        - $ref: "transaction.yaml#/components/schemas/Inventory.Quantity"
+    Request:
+      $ref: "#/components/schemas/Base"

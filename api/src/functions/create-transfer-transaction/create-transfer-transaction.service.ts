@@ -9,7 +9,7 @@ export interface ICreateTransferTransactionService {
   (ctx: {
     body: Transaction.TransferRequest;
     expiresIn: number;
-  }): Promise<Transaction.IdType>;
+  }): Promise<Transaction.Id>;
 }
 
 export const createTransferTransactionServiceFactory = (

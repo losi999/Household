@@ -19,7 +19,7 @@ Conditions:
 Globals:
   Function:
     Handler: index.default
-    Runtime: nodejs14.x
+    Runtime: nodejs18.x
     Timeout: 60
     MemorySize: 512
     Tracing: Active

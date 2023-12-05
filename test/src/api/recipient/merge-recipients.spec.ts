@@ -100,11 +100,26 @@ describe('POST recipient/v1/recipients/{recipientId}/merge', () => {
         .requestMergeRecipients(getRecipientId(targetRecipientDocument), [getRecipientId(sourceRecipientDocument)])
         .expectCreatedResponse()
         .validateRecipientDeleted(getRecipientId(sourceRecipientDocument))
-        .validateRecipientReassign(paymentTransactionDocument, getRecipientId(targetRecipientDocument))
-        .validateRecipientReassign(splitTransactionDocument, getRecipientId(targetRecipientDocument), 0);
+        .validatePartiallyReassignedPaymentDocument(paymentTransactionDocument, {
+          recipient: getRecipientId(targetRecipientDocument),
+        })
+        .validatePartiallyReassignedSplitDocument(splitTransactionDocument, 0, {
+          recipient: getRecipientId(targetRecipientDocument),
+        });
     });
 
     describe('should return error', () => {
+      it('if a source precipient does not exist', () => {
+        cy.saveRecipientDocument(targetRecipientDocument)
+          .saveRecipientDocument(sourceRecipientDocument)
+          .authenticate(1)
+          .requestMergeRecipients(getRecipientId(targetRecipientDocument), [
+            getRecipientId(sourceRecipientDocument),
+            createRecipientId(),
+          ])
+          .expectBadRequestResponse()
+          .expectMessage('Some of the recipients are not found');
+      });
       describe('if body', () => {
         it('is not array', () => {
           cy.authenticate(1)
@@ -143,6 +158,13 @@ describe('POST recipient/v1/recipients/{recipientId}/merge', () => {
             .requestMergeRecipients(createRecipientId('not-valid'), [createRecipientId()])
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('recipientId', 'pathParameters');
+        });
+
+        it('does not belong to any recipient', () => {
+          cy.authenticate(1)
+            .requestMergeRecipients(createRecipientId(), [getRecipientId(sourceRecipientDocument)])
+            .expectBadRequestResponse()
+            .expectMessage('Some of the recipients are not found');
         });
       });
     });

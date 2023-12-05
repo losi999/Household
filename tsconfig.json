@@ -1,7 +1,7 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "module": "esnext",
+    "module": "CommonJS",
     "esModuleInterop": true,
     "target": "es2017",
     "lib": [
@@ -26,6 +26,7 @@
   },
   "include": [
     "api/src",
-    "shared/src"
+    "shared/src",
+    "localhost"
   ]
 }

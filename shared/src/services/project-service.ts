@@ -4,14 +4,14 @@ import { Project } from '@household/shared/types/types';
 export interface IProjectService {
   dumpProjects(): Promise<Project.Document[]>;
   saveProject(doc: Project.Document): Promise<Project.Document>;
-  getProjectById(projectId: Project.IdType): Promise<Project.Document>;
-  deleteProject(projectId: Project.IdType): Promise<unknown>;
+  getProjectById(projectId: Project.Id): Promise<Project.Document>;
+  deleteProject(projectId: Project.Id): Promise<unknown>;
   updateProject(doc: Project.Document): Promise<unknown>;
   listProjects(): Promise<Project.Document[]>;
-  listProjectsByIds(projectIds: Project.IdType[]): Promise<Project.Document[]>;
+  listProjectsByIds(projectIds: Project.Id[]): Promise<Project.Document[]>;
   mergeProjects(ctx: {
-    targetProjectId: Project.IdType;
-    sourceProjectIds: Project.IdType[];
+    targetProjectId: Project.Id;
+    sourceProjectIds: Project.Id[];
   }): Promise<unknown>;
 }
 

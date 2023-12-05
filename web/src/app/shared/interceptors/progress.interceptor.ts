@@ -15,13 +15,15 @@ export class ProgressInterceptor implements HttpInterceptor {
   constructor(private progressService: ProgressService) { }
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
-    return next.handle(request).pipe(tap((event) => {
-      if (event instanceof HttpResponse) {
-        this.progressService.processFinished();
-      }
-      else {
-        this.progressService.processStarted();
-      }
+    return next.handle(request).pipe(tap({
+      next: (event) => {
+        if (event instanceof HttpResponse) {
+          this.progressService.processFinished();
+        }
+        else {
+          this.progressService.processStarted();
+        }
+      },
     }));
   }
 }

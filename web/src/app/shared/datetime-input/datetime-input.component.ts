@@ -1,11 +1,23 @@
+import { CommonModule } from '@angular/common';
 import { Component, forwardRef, OnDestroy, OnInit } from '@angular/core';
-import { ControlValueAccessor, FormGroup, FormControl, NG_VALUE_ACCESSOR, Validators } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { ControlValueAccessor, FormGroup, FormControl, NG_VALUE_ACCESSOR, Validators, ReactiveFormsModule } from '@angular/forms';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
-  selector: 'app-datetime-input',
+  selector: 'household-datetime-input',
   templateUrl: './datetime-input.component.html',
   styleUrls: ['./datetime-input.component.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatDatepickerModule,
+  ],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -15,16 +27,21 @@ import { Subscription } from 'rxjs';
   ],
 })
 export class DatetimeInputComponent implements OnInit, OnDestroy, ControlValueAccessor {
-  form: FormGroup;
+  form: FormGroup<{
+    date: FormControl<Date>;
+    hour: FormControl<number>;
+    minute: FormControl<number>;
+  }>;
   changed: (value: Date) => void;
   touched: () => void;
   isDisabled: boolean;
-  subs: Subscription;
+  private destroyed = new Subject();
 
   constructor() { }
 
   ngOnDestroy(): void {
-    this.subs.unsubscribe();
+    this.destroyed.next(undefined);
+    this.destroyed.complete();
   }
 
   ngOnInit(): void {
@@ -42,7 +59,7 @@ export class DatetimeInputComponent implements OnInit, OnDestroy, ControlValueAc
       ]),
     });
 
-    this.subs = this.form.valueChanges.subscribe((value: {
+    this.form.valueChanges.pipe(takeUntil(this.destroyed)).subscribe((value: {
       date: Date;
       hour: number;
       minute: number;

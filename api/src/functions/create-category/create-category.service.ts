@@ -8,7 +8,7 @@ export interface ICreateCategoryService {
   (ctx: {
     body: Category.Request;
     expiresIn: number;
-  }): Promise<Category.IdType>;
+  }): Promise<Category.Id>;
 }
 
 export const createCategoryServiceFactory = (

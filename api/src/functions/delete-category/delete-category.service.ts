@@ -4,7 +4,7 @@ import { Category } from '@household/shared/types/types';
 
 export interface IDeleteCategoryService {
   (ctx: {
-    categoryId: Category.IdType;
+    categoryId: Category.Id;
   }): Promise<void>;
 }
 

@@ -10,6 +10,7 @@ export interface IProjectDocumentConverter {
     body: Project.Request;
   }, expiresIn: number): Project.Document;
   toResponse(doc: Project.Document): Project.Response;
+  toReport(doc: Project.Document): Project.Report;
   toResponseList(docs: Project.Document[]): Project.Response[];
 }
 
@@ -38,6 +39,13 @@ export const projectDocumentConverterFactory = (): IProjectDocumentConverter => 
         expiresAt: undefined,
         projectId: getProjectId(doc),
       };
+    },
+
+    toReport: (doc): Project.Report => {
+      return doc ? {
+        projectId: getProjectId(doc),
+        name: doc.name,
+      } : undefined;
     },
     toResponseList: docs => docs.map(d => instance.toResponse(d)),
   };

@@ -2,62 +2,37 @@ import { Component, Input } from '@angular/core';
 import { Recipient } from '@household/shared/types/types';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult } from 'src/app/shared/catalog-submenu/catalog-submenu.component';
-import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/confirmation-dialog.component';
-import { MatDialog } from '@angular/material/dialog';
 import { RecipientService } from 'src/app/recipient/recipient.service';
-import { RecipientFormComponent, RecipientFormData, RecipientFormResult } from 'src/app/recipient/recipient-form/recipient-form.component';
-import { RecipientMergeDialogComponent, RecipientMergeDialogData, RecipientMergeDialogResult } from 'src/app/recipient/recipient-merge-dialog/recipient-merge-dialog.component';
+import { DialogService } from 'src/app/shared/dialog.service';
 
 @Component({
-  selector: 'app-recipient-list-item',
+  selector: 'household-recipient-list-item',
   templateUrl: './recipient-list-item.component.html',
   styleUrls: ['./recipient-list-item.component.scss'],
 })
 export class RecipientListItemComponent {
   @Input() recipient: Recipient.Response;
-  @Input() recipients: Recipient.Response[];
   constructor(
     private recipientService: RecipientService,
-    private dialog: MatDialog,
+    private dialogService: DialogService
+    ,
     private bottomSheet: MatBottomSheet) { }
 
   delete() {
-    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-      data: {
-        title: 'Törölni akarod ezt a partnert?',
-        content: this.recipient.name,
-      },
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.recipientService.deleteRecipient(this.recipient.recipientId);
-      }
-    });
+    this.dialogService.openDeleteRecipientDialog(this.recipient).afterClosed()
+      .subscribe(shouldDelete => {
+        if (shouldDelete) {
+          this.recipientService.deleteRecipient(this.recipient.recipientId);
+        }
+      });
   }
 
   edit() {
-    const dialogRef = this.dialog.open<RecipientFormComponent, RecipientFormData, RecipientFormResult>(RecipientFormComponent, {
-      data: this.recipient,
-    });
-
-    dialogRef.afterClosed().subscribe((values) => {
-      if (values) {
-        this.recipientService.updateRecipient(this.recipient.recipientId, values);
-      }
-    });
+    this.dialogService.openEditRecipientDialog(this.recipient);
   }
 
   merge() {
-    const dialogRef = this.dialog.open<RecipientMergeDialogComponent, RecipientMergeDialogData, RecipientMergeDialogResult>(RecipientMergeDialogComponent, {
-      data: this.recipients.filter(p => p.recipientId !== this.recipient.recipientId),
-    });
-
-    dialogRef.afterClosed().subscribe((values) => {
-      if (values) {
-        this.recipientService.mergeRecipients(this.recipient.recipientId, values);
-      }
-    });
+    this.dialogService.openMergeRecipientsDialog(this.recipient);
   }
 
   showMenu() {

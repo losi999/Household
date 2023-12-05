@@ -1,4 +1,3 @@
-import { config, S3 } from 'aws-sdk';
+import { S3 } from '@aws-sdk/client-s3';
 
-config.logger = console;
-export const s3 = new S3();
+export const s3 = new S3({});

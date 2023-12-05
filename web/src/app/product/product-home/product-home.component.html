@@ -1,3 +1,6 @@
-<app-toolbar title="Termékek">
-</app-toolbar>
-<app-product-list [categories]="categories"></app-product-list>
+<household-toolbar title="Termékek">
+  <button mat-icon-button (click)="create()" type="button">
+    <mat-icon>add</mat-icon>
+  </button>
+</household-toolbar>
+<household-product-list></household-product-list>

@@ -6,7 +6,7 @@ import { Transaction } from '@household/shared/types/types';
 export default (listTransactions: IListTransactionsService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {
     const body = JSON.parse(event.body);
-    let transactions: Transaction.ReportResponse;
+    let transactions: Transaction.Report[];
     try {
       transactions = await listTransactions(body);
     } catch (error) {

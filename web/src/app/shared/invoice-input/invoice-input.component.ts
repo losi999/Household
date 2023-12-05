@@ -1,12 +1,24 @@
+import { CommonModule } from '@angular/common';
 import { Component, forwardRef, OnDestroy, OnInit } from '@angular/core';
-import { ControlValueAccessor, FormControl, FormGroup, NG_VALUE_ACCESSOR, Validators } from '@angular/forms';
+import { ControlValueAccessor, FormControl, FormGroup, NG_VALUE_ACCESSOR, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatInputModule } from '@angular/material/input';
 import { Transaction } from '@household/shared/types/types';
-import { Subscription } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
+import { ClearableInputComponent } from 'src/app/shared/clearable-input/clearable-input.component';
 
 @Component({
-  selector: 'app-invoice-input',
+  selector: 'household-invoice-input',
   templateUrl: './invoice-input.component.html',
   styleUrls: ['./invoice-input.component.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatInputModule,
+    MatDatepickerModule,
+    ClearableInputComponent,
+  ],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -16,11 +28,15 @@ import { Subscription } from 'rxjs';
   ],
 })
 export class InvoiceInputComponent implements OnInit, OnDestroy, ControlValueAccessor {
-  form: FormGroup;
+  form: FormGroup<{
+    invoiceNumber: FormControl<string>;
+    billingStartDate: FormControl<Date>;
+    billingEndDate: FormControl<Date>;
+  }>;
   changed: (value: Transaction.Invoice<string>['invoice']) => void;
   touched: () => void;
   isDisabled: boolean;
-  subs: Subscription;
+  private destroyed = new Subject();
   constructor() { }
 
   ngOnInit(): void {
@@ -30,7 +46,7 @@ export class InvoiceInputComponent implements OnInit, OnDestroy, ControlValueAcc
       billingEndDate: new FormControl(null, [Validators.required]),
     });
 
-    this.subs = this.form.valueChanges.subscribe((value: Transaction.Invoice<Date>['invoice']) => {
+    this.form.valueChanges.pipe(takeUntil(this.destroyed)).subscribe((value: Transaction.Invoice<Date>['invoice']) => {
       if (this.form.invalid) {
         this.changed?.(undefined);
       } else {
@@ -46,7 +62,8 @@ export class InvoiceInputComponent implements OnInit, OnDestroy, ControlValueAcc
   }
 
   ngOnDestroy(): void {
-    this.subs.unsubscribe();
+    this.destroyed.next(undefined);
+    this.destroyed.complete();
   }
   writeValue(obj: Transaction.Invoice<Date>['invoice']): void {
     if (obj) {

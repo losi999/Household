@@ -1,0 +1,246 @@
+openapi: "3.0.0"
+info:
+  title: Transaction components
+  version: 1.0.0
+components:
+  schemas:
+    TransactionId:
+      type: object
+      required:
+        - transactionId
+      properties:
+        transactionId:
+          type: string
+    IssuedAt:
+      type: object
+      required:
+        - issuedAt
+      properties:
+        issuedAt:
+          type: string
+          format: date-time
+    Base:
+      type: object
+      required:
+        - amount
+      properties:
+        amount:
+          type: number
+        description:
+          type: string
+          minLength: 1
+    Inventory.Quantity:
+      type: object
+      required:
+        - quantity
+      properties:
+        quantity:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+    Inventory.Request:
+      type: object
+      properties:
+        inventory:
+          allOf:
+            - $ref: "#/components/schemas/Inventory.Quantity"
+            - $ref: "product.yaml#/components/schemas/ProductId"
+    Inventory.Response:
+      type: object
+      properties:
+        inventory:
+          allOf:
+            - $ref: "#/components/schemas/Inventory.Quantity"
+            - type: object
+              required:
+                - product
+              properties:
+                product:
+                  $ref: "product.yaml#/components/schemas/Response"
+    Invoice:
+      type: object
+      properties:
+        invoice:
+          type: object
+          required:
+            - billingStartDate
+            - billingEndDate
+          properties:
+            invoiceNumber:
+              type: string
+              minLength: 1
+            billingStartDate:
+              type: string
+              format: date-time
+            billingEndDate:
+              type: string
+              format: date-time
+    TransferAccountId:
+      type: object
+      required:
+        - transferAccountId
+      properties:
+        transferAccountId:
+          type: string
+          minLength: 1
+    TransferAmount:
+      type: object
+      required:
+        - transferAmount
+      properties:
+        transferAmount:
+          type: string
+          minLength: 1
+    Category:
+      type: object
+      properties:
+        category:
+          $ref: "category.yaml#/components/schemas/Response"
+    Project:
+      type: object
+      properties:
+        project:
+          $ref: "project.yaml#/components/schemas/Response"
+    Account:
+      type: object
+      required:
+        - account
+      properties:
+        account:
+          $ref: "account.yaml#/components/schemas/Response"
+    Recipient:
+      type: object
+      properties:
+        recipient:
+          $ref: "recipient.yaml#/components/schemas/Response"
+    TransferAccount:
+      type: object
+      required:
+        - transferAccount
+      properties:
+        transferAccount:
+          $ref: "account.yaml#/components/schemas/Response"
+    PaymentRequest:
+      allOf:
+        - $ref: "account.yaml#/components/schemas/AccountId"
+        - $ref: "category.yaml#/components/schemas/CategoryId"
+        - $ref: "project.yaml#/components/schemas/ProjectId"
+        - $ref: "recipient.yaml#/components/schemas/RecipientId"
+        - $ref: "#/components/schemas/IssuedAt"
+        - $ref: "#/components/schemas/Invoice"
+        - $ref: "#/components/schemas/Inventory.Request"
+        - $ref: "#/components/schemas/Base"
+    TransferRequest:
+      allOf:
+        - $ref: "account.yaml#/components/schemas/AccountId"
+        - $ref: "#/components/schemas/IssuedAt"
+        - $ref: "#/components/schemas/Base"
+        - $ref: "#/components/schemas/TransferAccountId"
+        - $ref: "#/components/schemas/TransferAmount"
+    SplitRequestItem:
+      allOf:
+        - $ref: "category.yaml#/components/schemas/CategoryId"
+        - $ref: "project.yaml#/components/schemas/ProjectId"
+        - $ref: "#/components/schemas/Invoice"
+        - $ref: "#/components/schemas/Inventory.Request"
+        - $ref: "#/components/schemas/Base"
+    SplitRequest:
+      allOf:
+        - $ref: "account.yaml#/components/schemas/AccountId"
+        - $ref: "recipient.yaml#/components/schemas/RecipientId"
+        - $ref: "#/components/schemas/IssuedAt"
+        - $ref: "#/components/schemas/Base"
+        - type: object
+          required:
+            - splits
+          properties:
+            splits:
+              type: array
+              items:
+                $ref: "#/components/schemas/SplitRequestItem"
+    PaymentResponse:
+      allOf:
+        - $ref: "#/components/schemas/TransactionId"
+        - $ref: "#/components/schemas/Base"
+        - $ref: "#/components/schemas/IssuedAt"
+        - $ref: "#/components/schemas/Invoice"
+        - $ref: "#/components/schemas/Inventory.Response"
+        - $ref: "#/components/schemas/Account"
+        - $ref: "#/components/schemas/Category"
+        - $ref: "#/components/schemas/Project"
+        - $ref: "#/components/schemas/Recipient"
+        - type: object
+          required:
+            - transactionType
+          properties:
+            transactionType:
+              type: string
+              enum:
+                - payment
+    TransferResponse:
+      allOf:
+        - $ref: "#/components/schemas/TransactionId"
+        - $ref: "#/components/schemas/Base"
+        - $ref: "#/components/schemas/IssuedAt"
+        - $ref: "#/components/schemas/Account"
+        - $ref: "#/components/schemas/TransferAccount"
+        - $ref: "#/components/schemas/TransferAmount"
+        - type: object
+          required:
+            - transactionType
+          properties:
+            transactionType:
+              type: string
+              enum:
+                - transfer
+    SplitResponseItem:
+      allOf:
+        - $ref: "#/components/schemas/Base"
+        - $ref: "#/components/schemas/Invoice"
+        - $ref: "#/components/schemas/Inventory.Response"
+        - $ref: "#/components/schemas/Project"
+        - $ref: "#/components/schemas/Category"
+    SplitResponse:
+      allOf:
+        - $ref: "#/components/schemas/TransactionId"
+        - $ref: "#/components/schemas/Base"
+        - $ref: "#/components/schemas/IssuedAt"
+        - $ref: "#/components/schemas/Account"
+        - $ref: "#/components/schemas/Recipient"
+        - type: object
+          required:
+            - transactionType
+            - splits
+          properties:
+            transactionType:
+              type: string
+              enum:
+                - split
+            splits:
+              type: array
+              items:
+                $ref: "#/components/schemas/SplitRequestItem"
+    Response:
+      oneOf:
+        - $ref: "#/components/schemas/PaymentResponse"
+        - $ref: "#/components/schemas/SplitResponse"
+        - $ref: "#/components/schemas/TransferResponse"
+    Report:
+      allOf:
+        - $ref: "#/components/schemas/TransactionId"
+        - $ref: "#/components/schemas/Base"
+        - $ref: "#/components/schemas/IssuedAt"
+        - type: object
+          required:
+            - account
+          properties:
+            account:
+              $ref: "account.yaml#/components/schemas/Report"
+            category:
+              $ref: "category.yaml#/components/schemas/Report"
+            project:
+              $ref: "project.yaml#/components/schemas/Report"
+            recipient:
+              $ref: "recipient.yaml#/components/schemas/Response"
+            product:
+              $ref: "product.yaml#/components/schemas/Report"

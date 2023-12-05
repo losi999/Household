@@ -4,7 +4,7 @@ import { createTransactionId } from '@household/shared/common/test-data-factory'
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 
 describe('Transaction id schema', () => {
-  const tester = jsonSchemaTesterFactory<Transaction.Id>(schema);
+  const tester = jsonSchemaTesterFactory<Transaction.TransactionId>(schema);
 
   tester.validateSuccess({
     transactionId: createTransactionId(),

@@ -1,4 +1,4 @@
-import { createProjectDocument, createProjectRequest, createProjectResponse } from '@household/shared/common/test-data-factory';
+import { createProjectDocument, createProjectReport, createProjectRequest, createProjectResponse } from '@household/shared/common/test-data-factory';
 import { addSeconds, getProjectId } from '@household/shared/common/utils';
 import { projectDocumentConverterFactory, IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
 import { advanceTo, clear } from 'jest-date-mock';
@@ -92,6 +92,16 @@ describe('Project document converter', () => {
           name,
         }),
       ]);
+    });
+  });
+
+  describe('toReport', () => {
+    it('should return response', () => {
+      const result = converter.toReport(queriedDocument);
+      expect(result).toEqual(createProjectReport({
+        projectId: getProjectId(queriedDocument),
+        name,
+      }));
     });
   });
 });

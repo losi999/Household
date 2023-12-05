@@ -6,7 +6,7 @@ import { Product } from '@household/shared/types/types';
 export interface IUpdateProductService {
   (ctx: {
     body: Product.Request;
-    productId: Product.IdType;
+    productId: Product.Id;
     expiresIn: number;
   }): Promise<void>;
 }

@@ -4,8 +4,8 @@ import { Category } from '@household/shared/types/types';
 
 export interface IMergeCategoriesService {
   (ctx: {
-    body: Category.IdType[];
-  } & Category.Id): Promise<void>;
+    body: Category.Id[];
+  } & Category.CategoryId): Promise<void>;
 }
 
 export const mergeCategoriesServiceFactory = (

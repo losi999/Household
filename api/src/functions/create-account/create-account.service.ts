@@ -8,7 +8,7 @@ export interface ICreateAccountService {
   (ctx: {
     body: Account.Request;
     expiresIn: number;
-  }): Promise<Account.IdType>;
+  }): Promise<Account.Id>;
 }
 
 export const createAccountServiceFactory = (

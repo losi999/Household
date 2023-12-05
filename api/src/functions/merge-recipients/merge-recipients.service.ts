@@ -4,8 +4,8 @@ import { Recipient } from '@household/shared/types/types';
 
 export interface IMergeRecipientsService {
   (ctx: {
-    body: Recipient.IdType[];
-  } & Recipient.Id): Promise<void>;
+    body: Recipient.Id[];
+  } & Recipient.RecipientId): Promise<void>;
 }
 
 export const mergeRecipientsServiceFactory = (

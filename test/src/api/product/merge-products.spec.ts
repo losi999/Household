@@ -32,15 +32,21 @@ describe('POST product/v1/products/{productId}/merge', () => {
     }, Cypress.env('EXPIRES_IN'), true);
 
     targetProductDocument = productDocumentConverter.create({
-      brand: `target-${uuid()}`,
-      measurement: 100,
-      unitOfMeasurement: 'g',
+      body: {
+        brand: `target-${uuid()}`,
+        measurement: 100,
+        unitOfMeasurement: 'g',
+      },
+      category: categoryDocument,
     }, Cypress.env('EXPIRES_IN'), true);
 
     sourceProductDocument = productDocumentConverter.create({
-      brand: `source-${uuid()}`,
-      measurement: 1,
-      unitOfMeasurement: 'kg',
+      body: {
+        brand: `source-${uuid()}`,
+        measurement: 1,
+        unitOfMeasurement: 'kg',
+      },
+      category: categoryDocument,
     }, Cypress.env('EXPIRES_IN'), true);
 
     paymentTransactionDocument = transactionDocumentConverter.createPaymentDocument({
@@ -120,26 +126,59 @@ describe('POST product/v1/products/{productId}/merge', () => {
     it('should merge products', () => {
       cy.saveAccountDocument(accountDocument)
         .saveCategoryDocument(categoryDocument)
-        .saveProductDocument({
-          document: targetProductDocument,
-          categoryId: getCategoryId(categoryDocument),
-        })
-        .saveProductDocument({
-          document: sourceProductDocument,
-          categoryId: getCategoryId(categoryDocument),
-        })
+        .saveProductDocument(targetProductDocument)
+        .saveProductDocument(sourceProductDocument)
         .saveTransactionDocument(paymentTransactionDocument)
         .saveTransactionDocument(splitTransactionDocument)
         .authenticate(1)
         .requestMergeProducts(getProductId(targetProductDocument), [getProductId(sourceProductDocument)])
         .expectCreatedResponse()
         .validateProductDeleted(getProductId(sourceProductDocument))
-        .validateProductReassign(paymentTransactionDocument, getProductId(targetProductDocument))
-        .validateProductReassign(splitTransactionDocument, getProductId(targetProductDocument), 0)
+        .validatePartiallyReassignedPaymentDocument(paymentTransactionDocument, {
+          product: getProductId(targetProductDocument),
+        })
+        .validatePartiallyReassignedSplitDocument(splitTransactionDocument, 0, {
+          product: getProductId(targetProductDocument),
+        })
         .validateProductRemoval(categoryDocument, [getProductId(sourceProductDocument)]);
     });
 
     describe('should return error', () => {
+
+      it('if products do not belong to the same category', () => {
+        const otherCategory = categoryDocumentConverter.create({
+          body: {
+            categoryType: 'inventory',
+            name: `other category-${uuid()}`,
+            parentCategoryId: undefined,
+          },
+          parentCategory: undefined,
+        }, Cypress.env('EXPIRES_IN'), true);
+        sourceProductDocument.category = otherCategory;
+
+        cy.saveCategoryDocument(categoryDocument)
+          .saveCategoryDocument(otherCategory)
+          .saveProductDocument(targetProductDocument)
+          .saveProductDocument(sourceProductDocument)
+          .authenticate(1)
+          .requestMergeProducts(getProductId(targetProductDocument), [getProductId(sourceProductDocument)])
+          .expectBadRequestResponse()
+          .expectMessage('Not all products belong to the same category');
+      });
+
+      it('if a source product does not exist', () => {
+        cy.saveCategoryDocument(categoryDocument)
+          .saveProductDocument(targetProductDocument)
+          .saveProductDocument(sourceProductDocument)
+          .authenticate(1)
+          .requestMergeProducts(getProductId(targetProductDocument), [
+            getProductId(sourceProductDocument),
+            createProductId(),
+          ])
+          .expectBadRequestResponse()
+          .expectMessage('Some of the products are not found');
+      });
+
       describe('if body', () => {
         it('is not array', () => {
           cy.authenticate(1)
@@ -178,6 +217,13 @@ describe('POST product/v1/products/{productId}/merge', () => {
             .requestMergeProducts(createProductId('not-valid'), [createProductId()])
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('productId', 'pathParameters');
+        });
+
+        it('does not belong to any product', () => {
+          cy.authenticate(1)
+            .requestMergeProducts(createProductId(), [getProductId(sourceProductDocument)])
+            .expectBadRequestResponse()
+            .expectMessage('Some of the products are not found');
         });
       });
     });

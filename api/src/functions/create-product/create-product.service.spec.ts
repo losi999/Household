@@ -40,11 +40,11 @@ describe('Create product service', () => {
     });
     expect(result).toEqual(productId.toString()),
     validateFunctionCall(mockCategoryService.functions.getCategoryById, categoryId);
-    validateFunctionCall(mockProductDocumentConverter.functions.create, body, undefined);
-    validateFunctionCall(mockProductService.functions.saveProduct, {
-      document: convertedProductDocument,
-      categoryId,
-    });
+    validateFunctionCall(mockProductDocumentConverter.functions.create, {
+      body,
+      category: queriedCategory,
+    }, undefined);
+    validateFunctionCall(mockProductService.functions.saveProduct, convertedProductDocument);
     expect.assertions(4);
   });
   describe('should throw error', () => {
@@ -105,11 +105,11 @@ describe('Create product service', () => {
         expiresIn: undefined,
       }).catch(validateError('Error while saving product', 500));
       validateFunctionCall(mockCategoryService.functions.getCategoryById, categoryId);
-      validateFunctionCall(mockProductDocumentConverter.functions.create, body, undefined);
-      validateFunctionCall(mockProductService.functions.saveProduct, {
-        document: convertedProductDocument,
-        categoryId,
-      });
+      validateFunctionCall(mockProductDocumentConverter.functions.create, {
+        body,
+        category: queriedCategory,
+      }, undefined);
+      validateFunctionCall(mockProductService.functions.saveProduct, convertedProductDocument);
       expect.assertions(5);
     });
   });

@@ -1,5 +1,6 @@
-<!-- class="example-headers-align"  -->
-<mat-accordion multi>
-  <app-product-list-category-item *ngFor="let category of categories" [category]="category">
-  </app-product-list-category-item>
-</mat-accordion>
+<mat-action-list>
+  <ng-container *ngFor="let category of categories">
+    <household-product-list-category-item *ngIf="category.products?.length > 0" [category]="category">
+    </household-product-list-category-item>
+  </ng-container>
+</mat-action-list>

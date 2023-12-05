@@ -4,7 +4,7 @@ import { Account } from '@household/shared/types/types';
 
 export interface IDeleteAccountService {
   (ctx: {
-    accountId: Account.IdType;
+    accountId: Account.Id;
   }): Promise<void>;
 }
 

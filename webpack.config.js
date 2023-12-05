@@ -24,7 +24,7 @@ module.exports = {
       awslambda: 'awslambda',
       'dynamodb-doc': 'dynamodb-doc',
     },
-    /^aws-sdk.*/,
+    /^@aws-sdk.*/,
     ...(process.env.ENV !== 'localhost' ? ['mongoose'] : []),
   ],
   node: {

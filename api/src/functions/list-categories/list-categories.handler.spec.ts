@@ -47,4 +47,19 @@ describe('List categories handler', () => {
     expect(JSON.parse(response.body)).toEqual(categories);
     expect.assertions(3);
   });
+
+  it('should respond with success without category type filter', async () => {
+    mockListCategoriesService.mockResolvedValue(categories);
+
+    const response = await handlerFunction({
+      ...handlerEvent,
+      queryStringParameters: undefined,
+    }, undefined, undefined) as AWSLambda.APIGatewayProxyResult;
+    validateFunctionCall(mockListCategoriesService, {
+      categoryType: undefined,
+    });
+    expect(response.statusCode).toEqual(200);
+    expect(JSON.parse(response.body)).toEqual(categories);
+    expect.assertions(3);
+  });
 });

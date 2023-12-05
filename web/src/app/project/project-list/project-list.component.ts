@@ -1,13 +1,19 @@
-import { Component, Input } from '@angular/core';
+import { Component } from '@angular/core';
 import { Project } from '@household/shared/types/types';
+import { ProjectService } from 'src/app/project/project.service';
+import { Store } from 'src/app/store';
 
 @Component({
-  selector: 'app-project-list',
+  selector: 'household-project-list',
   templateUrl: './project-list.component.html',
   styleUrls: ['./project-list.component.scss'],
 })
 export class ProjectListComponent {
-  @Input() projects: Project.Response[];
+  get projects(): Project.Response[] {
+    return this.store.projects.value;
+  }
 
-  constructor() { }
+  constructor(projectService: ProjectService, private store: Store) {
+    projectService.listProjects();
+  }
 }

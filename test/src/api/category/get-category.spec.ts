@@ -1,19 +1,21 @@
 import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
 import { default as schema } from '@household/test/api/schemas/category-response';
-import { Category } from '@household/shared/types/types';
+import { Category, Product } from '@household/shared/types/types';
 import { createCategoryId } from '@household/shared/common/test-data-factory';
 import { getCategoryId } from '@household/shared/common/utils';
 import { v4 as uuid } from 'uuid';
+import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
 
 describe('GET /category/v1/categories/{categoryId}', () => {
   let categoryDocument: Category.Document;
   let childCategoryDocument: Category.Document;
+  let productDocument: Product.Document;
 
   beforeEach(() => {
     categoryDocument = categoryDocumentConverter.create({
       body: {
         name: `category-${uuid()}`,
-        categoryType: 'regular',
+        categoryType: 'inventory',
         parentCategoryId: undefined,
       },
       parentCategory: undefined,
@@ -26,6 +28,15 @@ describe('GET /category/v1/categories/{categoryId}', () => {
         parentCategoryId: getCategoryId(categoryDocument),
       },
       parentCategory: categoryDocument,
+    }, Cypress.env('EXPIRES_IN'), true);
+
+    productDocument = productDocumentConverter.create({
+      body: {
+        brand: `tesco-${uuid()}`,
+        measurement: 200,
+        unitOfMeasurement: 'g',
+      },
+      category: categoryDocument,
     }, Cypress.env('EXPIRES_IN'), true);
   });
 
@@ -40,11 +51,12 @@ describe('GET /category/v1/categories/{categoryId}', () => {
   describe('called as an admin', () => {
     it('should get category by id', () => {
       cy.saveCategoryDocument(categoryDocument)
+        .saveProductDocument(productDocument)
         .authenticate(1)
         .requestGetCategory(getCategoryId(categoryDocument))
         .expectOkResponse()
         .expectValidResponseSchema(schema)
-        .validateCategoryResponse(categoryDocument);
+        .validateCategoryResponse(categoryDocument, undefined, productDocument);
     });
 
     it('with child category should get category by id', () => {

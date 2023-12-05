@@ -5,8 +5,8 @@ import { Account, Transaction } from '@household/shared/types/types';
 
 export interface IGetTransactionService {
   (ctx: {
-    transactionId: Transaction.IdType;
-    accountId: Account.IdType;
+    transactionId: Transaction.Id;
+    accountId: Account.Id;
   }): Promise<Transaction.Response>;
 }
 

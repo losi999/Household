@@ -6,9 +6,8 @@ import { apiRequestValidator } from '@household/api/dependencies/handlers/api-re
 import { productService } from '@household/shared/dependencies/services/product-service';
 import { default as index } from '@household/api/handlers/index.handler';
 import { mergeProductsServiceFactory } from '@household/api/functions/merge-products/merge-products.service';
-import { categoryService } from '@household/shared/dependencies/services/category-service';
 
-const mergeProductsService = mergeProductsServiceFactory(productService, categoryService);
+const mergeProductsService = mergeProductsServiceFactory(productService);
 
 export default index({
   handler: handler(mergeProductsService),

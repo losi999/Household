@@ -4,7 +4,7 @@ import { createRecipientId } from '@household/shared/common/test-data-factory';
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 
 describe('Recipient id schema', () => {
-  const tester = jsonSchemaTesterFactory<Recipient.Id>(schema);
+  const tester = jsonSchemaTesterFactory<Recipient.RecipientId>(schema);
 
   tester.validateSuccess({
     recipientId: createRecipientId(),

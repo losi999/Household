@@ -1,13 +1,5 @@
-<mat-expansion-panel>
-  <mat-expansion-panel-header>
-    <mat-panel-title>
-      {{category.fullName}}
-    </mat-panel-title>
-  </mat-expansion-panel-header>
-  <mat-action-list>
-    <app-product-list-product-item *ngFor="let product of category.products" [product]="product"
-      [products]="category.products">
-    </app-product-list-product-item>
-    <button mat-list-item (click)="newProduct()">Új termék</button>
-  </mat-action-list>
-</mat-expansion-panel>
+<div mat-subheader>{{category.fullName}}</div>
+<household-product-list-product-item *ngFor="let product of category.products" [product]="product"
+  [categoryId]="category.categoryId">
+</household-product-list-product-item>
+<mat-divider></mat-divider>

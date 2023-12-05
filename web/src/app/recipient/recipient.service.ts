@@ -1,29 +1,35 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Recipient } from '@household/shared/types/types';
-import { Observable, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
+import { Store } from 'src/app/store';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class RecipientService {
-  private _refreshList: Subject<void> = new Subject();
+  private refreshList: Subject<void> = new Subject();
 
-  get refreshList(): Observable<void> {
-    return this._refreshList.asObservable();
+  constructor(private httpClient: HttpClient, private store: Store) {
+    this.refreshList.subscribe({
+      next: () => {
+        this.listRecipients();
+      },
+    });
   }
-
-  constructor(private httpClient: HttpClient) { }
-
-  listRecipients(): Observable<Recipient.Response[]> {
-    return this.httpClient.get<Recipient.Response[]>(`${environment.apiUrl}${environment.recipientStage}v1/recipients`);
+  listRecipients(): void {
+    this.httpClient.get<Recipient.Response[]>(`${environment.apiUrl}${environment.recipientStage}v1/recipients`).subscribe({
+      next: (value) => {
+        this.store.recipients.next(value);
+      },
+    });
   }
 
   createRecipient(body: Recipient.Request): void {
-    this.httpClient.post(`${environment.apiUrl}${environment.recipientStage}v1/recipients`, body).subscribe({
+    this.httpClient.post<Recipient.RecipientId>(`${environment.apiUrl}${environment.recipientStage}v1/recipients`, body).subscribe({
       next: () => {
-        this._refreshList.next();
+        this.refreshList.next();
       },
       error: (error) => {
         console.error(error);
@@ -31,10 +37,10 @@ export class RecipientService {
     });
   }
 
-  updateRecipient(recipientId: Recipient.IdType, body: Recipient.Request): void {
+  updateRecipient(recipientId: Recipient.Id, body: Recipient.Request): void {
     this.httpClient.put(`${environment.apiUrl}${environment.recipientStage}v1/recipients/${recipientId}`, body).subscribe({
       next: () => {
-        this._refreshList.next();
+        this.refreshList.next();
       },
       error: (error) => {
         console.error(error);
@@ -42,10 +48,10 @@ export class RecipientService {
     });
   }
 
-  deleteRecipient(recipientId: Recipient.IdType): void {
+  deleteRecipient(recipientId: Recipient.Id): void {
     this.httpClient.delete(`${environment.apiUrl}${environment.recipientStage}v1/recipients/${recipientId}`).subscribe({
       next: () => {
-        this._refreshList.next();
+        this.refreshList.next();
       },
       error: (error) => {
         console.error(error);
@@ -53,10 +59,10 @@ export class RecipientService {
     });
   }
 
-  mergeRecipients(recipientId: Recipient.IdType, body: Recipient.IdType[]): void {
+  mergeRecipients(recipientId: Recipient.Id, body: Recipient.Id[]): void {
     this.httpClient.post(`${environment.apiUrl}${environment.recipientStage}v1/recipients/${recipientId}/merge`, body).subscribe({
       next: () => {
-        this._refreshList.next();
+        this.refreshList.next();
       },
       error: (error) => {
         console.error(error);

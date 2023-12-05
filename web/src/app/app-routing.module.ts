@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { LoginComponent } from 'src/app/auth/login/login.component';
-import { AnonymousGuard } from 'src/app/guards/anonymous.guard';
+import { canMatch, canActivate } from 'src/app/shared/guards';
 
 const routes: Routes = [
   {
@@ -10,7 +10,7 @@ const routes: Routes = [
     data: {
       requireLogin: false,
     },
-    canActivate: [AnonymousGuard],
+    canActivate: [canActivate],
   },
   {
     path: 'projects',
@@ -18,7 +18,7 @@ const routes: Routes = [
     data: {
       requireLogin: true,
     },
-    canLoad: [AnonymousGuard],
+    canMatch: [canMatch],
   },
   {
     path: 'products',
@@ -26,7 +26,7 @@ const routes: Routes = [
     data: {
       requireLogin: true,
     },
-    canLoad: [AnonymousGuard],
+    canMatch: [canMatch],
   },
   {
     path: 'categories',
@@ -34,7 +34,7 @@ const routes: Routes = [
     data: {
       requireLogin: true,
     },
-    canLoad: [AnonymousGuard],
+    canMatch: [canMatch],
   },
   {
     path: 'recipients',
@@ -42,7 +42,15 @@ const routes: Routes = [
     data: {
       requireLogin: true,
     },
-    canLoad: [AnonymousGuard],
+    canMatch: [canMatch],
+  },
+  {
+    path: 'reports',
+    loadChildren: () => import('./report/report.module').then(m => m.ReportModule),
+    data: {
+      requireLogin: true,
+    },
+    canMatch: [canMatch],
   },
   {
     path: '',
@@ -50,7 +58,7 @@ const routes: Routes = [
     data: {
       requireLogin: true,
     },
-    canLoad: [AnonymousGuard],
+    canMatch: [canMatch],
   },
   {
     path: '**',

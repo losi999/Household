@@ -9,7 +9,7 @@ export interface ICreateProductService {
   (ctx: {
     body: Product.Request;
     expiresIn: number;
-  } & Category.Id): Promise<Product.IdType>;
+  } & Category.CategoryId): Promise<Product.Id>;
 }
 
 export const createProductServiceFactory = (
@@ -27,12 +27,12 @@ export const createProductServiceFactory = (
 
     httpErrors.category.notInventoryType(category);
 
-    const document = productDocumentConverter.create(body, expiresIn);
+    const document = productDocumentConverter.create({
+      body,
+      category,
+    }, expiresIn);
 
-    const saved = await productService.saveProduct({
-      document,
-      categoryId,
-    }).catch(httpErrors.product.save(document));
+    const saved = await productService.saveProduct(document).catch(httpErrors.product.save(document));
 
     return getProductId(saved);
   };

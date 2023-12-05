@@ -1,5 +1,5 @@
 import { httpErrors } from '@household/api/common/error-handlers';
-import { getProductId } from '@household/shared/common/utils';
+import { getCategoryId } from '@household/shared/common/utils';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICategoryService } from '@household/shared/services/category-service';
@@ -12,7 +12,7 @@ import { Transaction } from '@household/shared/types/types';
 export interface IUpdateToPaymentTransactionService {
   (ctx: {
     body: Transaction.PaymentRequest;
-    transactionId: Transaction.IdType;
+    transactionId: Transaction.Id;
     expiresIn: number;
   }): Promise<void>;
 }
@@ -79,7 +79,7 @@ export const updateToPaymentTransactionServiceFactory = (
         productId,
       }, 400);
 
-      httpErrors.product.categoryRelation(!category.products.find(product => getProductId(product) === productId), {
+      httpErrors.product.categoryRelation(getCategoryId(product.category) !== categoryId, {
         productId,
         categoryId,
       });

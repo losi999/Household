@@ -1,13 +1,19 @@
-import { Component, Input } from '@angular/core';
+import { Component } from '@angular/core';
 import { Recipient } from '@household/shared/types/types';
+import { RecipientService } from 'src/app/recipient/recipient.service';
+import { Store } from 'src/app/store';
 
 @Component({
-  selector: 'app-recipient-list',
+  selector: 'household-recipient-list',
   templateUrl: './recipient-list.component.html',
   styleUrls: ['./recipient-list.component.scss'],
 })
 export class RecipientListComponent {
-  @Input() recipients: Recipient.Response[];
+  get recipients(): Recipient.Response[] {
+    return this.store.recipients.value;
+  }
 
-  constructor() { }
+  constructor(private store: Store, recipientService: RecipientService) {
+    recipientService.listRecipients();
+  }
 }

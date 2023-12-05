@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { ProjectHomeComponent } from './project-home/project-home.component';
 import { ProjectListComponent } from './project-list/project-list.component';
 import { ProjectListItemComponent } from './project-list-item/project-list-item.component';
-import { SharedModule } from 'src/app/shared/shared.module';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { ProjectRoutingModule } from 'src/app/project/project-routing.module';
@@ -13,6 +12,8 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatListModule } from '@angular/material/list';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ProjectMergeDialogComponent } from './project-merge-dialog/project-merge-dialog.component';
+import { ToolbarComponent } from 'src/app/shared/toolbar/toolbar.component';
+import { ClearableInputComponent } from 'src/app/shared/clearable-input/clearable-input.component';
 
 @NgModule({
   declarations: [
@@ -25,13 +26,14 @@ import { ProjectMergeDialogComponent } from './project-merge-dialog/project-merg
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    SharedModule,
     MatButtonModule,
     MatIconModule,
     ProjectRoutingModule,
     MatListModule,
     MatBottomSheetModule,
     MatDialogModule,
+    ToolbarComponent,
+    ClearableInputComponent,
   ],
 })
 export class ProjectModule { }

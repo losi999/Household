@@ -1,0 +1,22 @@
+<household-clearable-input type="text" label="Keresés" [formControl]="filter"></household-clearable-input>
+<button mat-flat-button color="primary" (click)="markAll(true)">Összes kijelölése</button>
+<button mat-flat-button color="warn" (click)="markAll(false)">Kijelölés megszűntetése</button>
+
+<mat-tree *ngIf="items.length > 0" [dataSource]="dataSource" [treeControl]="treeControl" [formGroup]="selectionList">
+  <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding>
+    {{node.value}}
+    <ng-container *ngIf="node.children.length > 0">
+      <button mat-flat-button color="primary" (click)="markAll(true, node)">Összes kijelölése</button>
+      <button mat-flat-button color="warn" (click)="markAll(false, node)">Kijelölés megszűntetése</button>
+    </ng-container>
+  </mat-tree-node>
+  <mat-tree-node *matTreeNodeDef="let node; when: hasKey" matTreeNodePadding>
+    <mat-checkbox [formControlName]="node.key">
+      {{node.value}}
+      <ng-container *ngIf="node.children.length > 0">
+        <button mat-flat-button color="primary" (click)="markAll(true, node)">Összes kijelölése</button>
+        <button mat-flat-button color="warn" (click)="markAll(false, node)">Kijelölés megszűntetése</button>
+      </ng-container>
+    </mat-checkbox>
+  </mat-tree-node>
+</mat-tree>

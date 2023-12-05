@@ -1,10 +1,14 @@
 <div [formGroup]="form">
   <div class="inventory__product">
-    <app-autocomplete-input [items]="products" label="Termék" displayPropertyName="fullName" formControlName="product">
-    </app-autocomplete-input>
+    <household-autocomplete-input [items]="products" label="Termék" displayPropertyName="fullName"
+      formControlName="product">
+    </household-autocomplete-input>
+    <button mat-mini-fab color="primary" type="button" (click)="createProduct()">
+      <mat-icon>library_add</mat-icon>
+    </button>
   </div>
   <div class="inventory__quantity">
-    <app-clearable-input label="Mennyiség" formControlName="quantity" (blur)="touched()" type="number">
-    </app-clearable-input>
+    <household-clearable-input label="Mennyiség" formControlName="quantity" (blur)="touched()" type="number">
+    </household-clearable-input>
   </div>
 </div>

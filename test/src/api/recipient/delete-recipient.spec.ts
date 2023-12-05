@@ -98,8 +98,8 @@ describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
           .requestDeleteRecipient(getRecipientId(recipientDocument))
           .expectNoContentResponse()
           .validateRecipientDeleted(getRecipientId(recipientDocument))
-          .validateRecipientUnset(paymentTransactionDocument)
-          .validateRecipientUnset(splitTransactionDocument);
+          .validatePartiallyUnsetPaymentDocument(paymentTransactionDocument, 'recipient')
+          .validatePartiallyUnsetSplitDocument(splitTransactionDocument, 0, 'recipient');
       });
     });
 

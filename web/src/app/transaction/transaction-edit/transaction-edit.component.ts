@@ -1,35 +1,65 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
-import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/confirmation-dialog.component';
 import { TransactionService } from 'src/app/transaction/transaction.service';
 import { isInventoryCategory, isInvoiceCategory, isPaymentTransaction, isSplitTransaction, isTransferTransaction } from '@household/shared/common/type-guards';
 import { ProgressService } from 'src/app/shared/progress.service';
+import { RecipientService } from 'src/app/recipient/recipient.service';
+import { ProjectService } from 'src/app/project/project.service';
+import { CategoryService } from 'src/app/category/category.service';
+import { DialogService } from 'src/app/shared/dialog.service';
+import { Subject, takeUntil } from 'rxjs';
+import { Store } from 'src/app/store';
+import { AccountService } from 'src/app/account/account.service';
 
 @Component({
-  selector: 'app-transaction-edit',
+  selector: 'household-transaction-edit',
   templateUrl: './transaction-edit.component.html',
   styleUrls: ['./transaction-edit.component.scss'],
 })
-export class TransactionEditComponent implements OnInit {
-  form: FormGroup;
-  transactionId: Transaction.IdType;
-  accountId: Account.IdType;
+export class TransactionEditComponent implements OnInit, OnDestroy {
+  private destroyed = new Subject();
+  form: FormGroup<{
+    issuedAt: FormControl<Date>;
+    amount: FormControl<number>;
+    account: FormControl<Account.Response>;
+    isTransfer: FormControl<boolean>;
+    description: FormControl<string>;
+    transferAccount: FormControl<Account.Response>;
+    transferAmount: FormControl<number>;
+    project: FormControl<Project.Response>;
+    recipient: FormControl<Recipient.Response>;
+    category: FormControl<Category.Response>;
+    inventory: FormControl<Transaction.Inventory<Product.Response>['inventory']>;
+    invoice: FormControl<Transaction.Invoice<string>['invoice']>;
+    splits: FormArray<FormGroup<{
+      category: FormControl<Category.Response>;
+      amount: FormControl<number>;
+      description: FormControl<string>;
+      project: FormControl<Project.Response>;
+      inventory: FormControl<Transaction.Inventory<Product.Response>['inventory']>;
+      invoice: FormControl<Transaction.Invoice<string>['invoice']>;
+    }>>;
+  }>;
+  transactionId: Transaction.Id;
+  accountId: Account.Id;
   transaction: Transaction.Response;
-  accounts: Account.Response[];
-  transferAccounts: Account.Response[];
-  projects: Project.Response[];
-  recipients: Recipient.Response[];
-  categories: Category.Response[];
-
-  get splitsArray() {
-    return this.form.controls.splits as FormArray;
+  get accounts(): Account.Response[] {
+    return this.store.accounts.value;
+  }
+  get projects(): Project.Response[] {
+    return this.store.projects.value;
+  }
+  get recipients(): Recipient.Response[] {
+    return this.store.recipients.value;
+  }
+  get categories(): Category.Response[] {
+    return this.store.categories.value;
   }
 
   get splitsSum(): number {
-    return this.splits.reduce((accumulator, currentValue) => {
+    return this.form.value.splits.reduce((accumulator, currentValue) => {
       return accumulator + currentValue.amount;
     }, 0);
   }
@@ -38,28 +68,39 @@ export class TransactionEditComponent implements OnInit {
     return this.form.value.amount - this.splitsSum;
   }
 
-  get issuedAt(): Date { return this.form.value.issuedAt; }
-  get amount(): number { return this.form.value.amount; }
-  get account(): Account.Response { return this.form.value.account; }
-  get isTransfer(): boolean { return this.form.value.isTransfer; }
-  get description(): string { return this.form.value.description; }
-  get transferAccount(): Account.Response { return this.form.value.transferAccount; }
-  get transferAmount(): number { return this.form.value.transferAmount; }
-  get project(): Project.Response { return this.form.value.project; }
-  get recipient(): Recipient.Response { return this.form.value.recipient; }
-  get category(): Category.Response { return this.form.value.category; }
-  get invoice(): Transaction.Invoice<string>['invoice'] { return this.form.value.invoice ?? undefined; }
-  get inventory(): Transaction.InventoryItem<Transaction.Product<Product.Response>> { return this.form.value.inventory ?? undefined; }
+  get isTransfer(): boolean {
+    return this.form.value.isTransfer;
+  }
 
-  get splits(): Transaction.SplitResponseItem[] { return this.form.value.splits; }
+  get isPayment(): boolean {
+    return !this.isTransfer && this.form.value.splits?.length === 0;
+  }
+
+  get isSplit(): boolean {
+    return !this.isTransfer && this.form.value.splits?.length > 0;
+  }
+
+  isCategoryType(categoryType: Category.CategoryType['categoryType'], splitIndex?: number): boolean {
+    return (splitIndex >= 0 ? this.form.value.splits[splitIndex].category : this.form.value.category)?.categoryType === categoryType;
+  }
 
   constructor(
     private activatedRoute: ActivatedRoute,
+    private store: Store,
     private transactionService: TransactionService,
+    accountService: AccountService,
+    recipientService: RecipientService,
+    projectService: ProjectService,
+    categoryService: CategoryService,
     private progressService: ProgressService,
     private router: Router,
-    public dialog: MatDialog
-  ) { }
+    private dialogService: DialogService,
+  ) {
+    recipientService.listRecipients();
+    categoryService.listCategories();
+    projectService.listProjects();
+    accountService.listAccounts();
+  }
 
   @HostListener('window:keydown.meta.s', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
@@ -78,25 +119,20 @@ export class TransactionEditComponent implements OnInit {
     });
   }
 
-  getProducts(categoryId: Category.IdType): Product.Response[] {
-    return this.categories.find(c => c.categoryId === categoryId).products;
+  ngOnDestroy(): void {
+    this.destroyed.next(undefined);
+    this.destroyed.complete();
   }
 
   ngOnInit(): void {
-    this.accountId = this.activatedRoute.snapshot.paramMap.get('accountId') as Account.IdType;
-    this.transactionId = this.activatedRoute.snapshot.paramMap.get('transactionId') as Transaction.IdType;
+    this.accountId = this.activatedRoute.snapshot.paramMap.get('accountId') as Account.Id;
+    this.transactionId = this.activatedRoute.snapshot.paramMap.get('transactionId') as Transaction.Id;
     this.transaction = this.activatedRoute.snapshot.data.transaction;
-    this.accounts = this.activatedRoute.snapshot.data.accounts;
-    this.transferAccounts = this.activatedRoute.snapshot.data.accounts;
-    this.projects = this.activatedRoute.snapshot.data.projects;
-    this.recipients = this.activatedRoute.snapshot.data.recipients;
-    this.categories = this.activatedRoute.snapshot.data.categories;
-    const account = this.accounts.find(a => a.accountId === this.accountId);
 
     this.form = new FormGroup({
       issuedAt: new FormControl(this.transaction ? new Date(this.transaction.issuedAt) : new Date(), [Validators.required]),
       amount: new FormControl(this.transaction?.amount, [Validators.required]),
-      account: new FormControl(this.transaction?.account ?? account, [Validators.required]),
+      account: new FormControl(this.transaction?.account, [Validators.required]),
       isTransfer: new FormControl(isTransferTransaction(this.transaction)),
       description: new FormControl(this.transaction?.description),
       transferAccount: new FormControl(isTransferTransaction(this.transaction) ? this.transaction.transferAccount : null),
@@ -108,49 +144,59 @@ export class TransactionEditComponent implements OnInit {
       invoice: new FormControl(isPaymentTransaction(this.transaction) && isInvoiceCategory(this.transaction?.category) ? this.transaction.invoice : null),
       splits: new FormArray(isSplitTransaction(this.transaction) ? this.transaction.splits.map(s => this.createSplitFormGroup(s)) : []),
     });
+
+    this.store.accounts.pipe(takeUntil(this.destroyed)).subscribe((accounts) => {
+      const account = accounts.find(a => a.accountId === this.accountId);
+      this.form.patchValue({
+        account,
+      });
+    });
   }
 
   deleteTransaction() {
-    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-      width: '250px',
-      data: {
-        title: 'Törölni akarod ezt a tranzakciót?',
-      },
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.transactionService.deleteTransaction(this.transactionId).subscribe({
-          next: () => {
-            this.router.navigate([
-              '/accounts',
-              this.account.accountId,
-            ]);
-          },
-          error: (error) => {
-            console.error(error);
-          },
-        });
-      }
-    });
+    this.dialogService.openDeleteTransactionDialog().afterClosed()
+      .subscribe(result => {
+        if (result) {
+          this.transactionService.deleteTransaction(this.transactionId).subscribe({
+            next: () => {
+              this.router.navigate([
+                '/accounts',
+                this.form.value.account.accountId,
+              ]);
+            },
+            error: (error) => {
+              console.error(error);
+            },
+          });
+        }
+      });
   }
 
   deleteSplit(index: number) {
-    this.splitsArray.removeAt(index);
+    this.form.controls.splits.removeAt(index);
   }
 
   addSplit() {
-    this.form.patchValue({
-      isTransfer: false,
-    });
-    this.splitsArray.insert(0, this.createSplitFormGroup());
+    this.form.controls.splits.insert(0, this.createSplitFormGroup());
+  }
+
+  createRecipient() {
+    this.dialogService.openCreateRecipientDialog();
+  }
+
+  createProject() {
+    this.dialogService.openCreateProjectDialog();
+  }
+
+  createCategory() {
+    this.dialogService.openCreateCategoryDialog();
   }
 
   onSubmit() {
-    const next = (response: Transaction.Id) => {
+    const next = (response: Transaction.TransactionId) => {
       this.router.navigate([
         '/accounts',
-        this.account.accountId,
+        this.form.value.account.accountId,
         'transactions',
         this.transactionId ?? response.transactionId,
       ], {
@@ -164,22 +210,22 @@ export class TransactionEditComponent implements OnInit {
       this.progressService.processFinished();
     };
 
-    if (this.form.invalid || this.amount === 0) {
+    if (this.form.invalid || this.form.value.amount === 0) {
       return;
     }
 
     if (this.form.value.isTransfer) {
-      if (this.amount * this.transferAmount >= 0) {
+      if (this.form.value.amount * this.form.value.transferAmount >= 0) {
         return;
       }
 
       const body: Transaction.TransferRequest = {
-        accountId: this.account.accountId,
-        amount: this.amount,
-        description: this.description ?? undefined,
-        issuedAt: this.issuedAt.toISOString(),
-        transferAccountId: this.transferAccount.accountId,
-        transferAmount: this.transferAmount,
+        accountId: this.form.value.account.accountId,
+        amount: this.form.value.amount,
+        description: this.form.value.description ?? undefined,
+        issuedAt: this.form.value.issuedAt.toISOString(),
+        transferAccountId: this.form.value.transferAccount.accountId,
+        transferAmount: this.form.value.transferAmount,
       };
 
       if (this.transactionId) {
@@ -196,12 +242,12 @@ export class TransactionEditComponent implements OnInit {
     } else {
       if (this.form.value.splits.length > 0) {
         const body: Transaction.SplitRequest = {
-          accountId: this.account.accountId,
-          amount: this.amount,
-          description: this.description ?? undefined,
-          issuedAt: this.issuedAt.toISOString(),
-          recipientId: this.recipient?.recipientId,
-          splits: this.splits.map(s => ({
+          accountId: this.form.value.account.accountId,
+          amount: this.form.value.amount,
+          description: this.form.value.description ?? undefined,
+          issuedAt: this.form.value.issuedAt.toISOString(),
+          recipientId: this.form.value.recipient?.recipientId,
+          splits: this.form.value.splits.map(s => ({
             amount: s.amount,
             categoryId: s.category?.categoryId,
             description: s.description ?? undefined,
@@ -227,18 +273,18 @@ export class TransactionEditComponent implements OnInit {
         }
       } else {
         const body: Transaction.PaymentRequest = {
-          accountId: this.account.accountId,
-          amount: this.amount,
-          description: this.description ?? undefined,
-          issuedAt: this.issuedAt.toISOString(),
-          recipientId: this.recipient?.recipientId,
-          projectId: this.project?.projectId,
-          categoryId: this.category?.categoryId,
-          inventory: isInventoryCategory(this.category) && this.inventory ? {
-            productId: this.inventory.product.productId,
-            quantity: this.inventory.quantity,
+          accountId: this.form.value.account.accountId,
+          amount: this.form.value.amount,
+          description: this.form.value.description ?? undefined,
+          issuedAt: this.form.value.issuedAt.toISOString(),
+          recipientId: this.form.value.recipient?.recipientId,
+          projectId: this.form.value.project?.projectId,
+          categoryId: this.form.value.category?.categoryId,
+          inventory: isInventoryCategory(this.form.value.category) && this.form.value.inventory ? {
+            productId: this.form.value.inventory.product.productId,
+            quantity: this.form.value.inventory.quantity,
           } : undefined,
-          invoice: isInvoiceCategory(this.category) ? this.invoice : undefined,
+          invoice: isInvoiceCategory(this.form.value.category) ? this.form.value.invoice : undefined,
         };
 
         if (this.transactionId) {

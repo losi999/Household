@@ -15,6 +15,7 @@ export interface ICategoryDocumentConverter {
     parentCategory: Category.Document;
   }, expiresIn: number): Category.Document;
   toResponse(doc: Category.Document): Category.Response;
+  toReport(doc: Category.Document): Category.Report;
   toResponseList(docs: Category.Document[]): Category.Response[];
 }
 
@@ -27,13 +28,12 @@ export const categoryDocumentConverterFactory = (
         ...body,
         fullName: parentCategory ? `${parentCategory.fullName}:${body.name}` : body.name,
         parentCategory: parentCategory ?? undefined,
-        products: undefined,
         parentCategoryId: undefined,
         _id: generateId ? generateMongoId() : undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
-    update: ({ document: { _id, createdAt, products }, body, parentCategory }, expiresIn): Category.Document => {
+    update: ({ document: { _id, createdAt }, body, parentCategory }, expiresIn): Category.Document => {
       return {
         ...instance.create({
           body,
@@ -41,7 +41,6 @@ export const categoryDocumentConverterFactory = (
         }, expiresIn),
         _id,
         createdAt,
-        products,
       };
     },
     toResponse: (doc): Category.Response => {
@@ -58,6 +57,12 @@ export const categoryDocumentConverterFactory = (
         } : undefined,
         products: doc.products ? productDocumentConverter.toResponseList(doc.products) : undefined,
       };
+    },
+    toReport: (doc): Category.Report => {
+      return doc ? {
+        categoryId: getCategoryId(doc),
+        fullName: doc.fullName,
+      } : undefined;
     },
     toResponseList: docs => docs.map(d => instance.toResponse(d)),
   };

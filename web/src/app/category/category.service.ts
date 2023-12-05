@@ -1,33 +1,54 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Category } from '@household/shared/types/types';
-import { Observable, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
+import { Store } from 'src/app/store';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class CategoryService {
-  private _refreshList: Subject<void> = new Subject();
+  private refreshList: Subject<void> = new Subject();
 
-  get refreshList(): Observable<void> {
-    return this._refreshList.asObservable();
+  constructor(private httpClient: HttpClient, private store: Store) {
+    this.refreshList.subscribe({
+      next: () => {
+        this.listCategories();
+      },
+    });
   }
 
-  constructor(private httpClient: HttpClient) { }
-
-  listCategories(categoryType?: Category.CategoryType['categoryType']): Observable<Category.Response[]> {
-    return this.httpClient.get<Category.Response[]>(`${environment.apiUrl}${environment.categoryStage}v1/categories`, {
+  listCategories(categoryType?: Category.CategoryType['categoryType']): void {
+    this.httpClient.get<Category.Response[]>(`${environment.apiUrl}${environment.categoryStage}v1/categories`, {
       params: categoryType ? {
         categoryType,
       } : undefined,
+    }).subscribe({
+      next: (value) => {
+        switch (categoryType) {
+          case 'inventory': this.store.inventoryCategories.next(value); break;
+          default: this.store.categories.next(value); break;
+        }
+      },
+    });
+  }
+
+  getCategoryById(categoryId: Category.Id): void {
+    this.httpClient.get<Category.Response>(`${environment.apiUrl}${environment.categoryStage}/v1/categories/${categoryId}`).subscribe({
+      next: (value) => {
+        this.store.products.next({
+          ...this.store.products.value,
+          [categoryId]: value.products,
+        });
+      },
     });
   }
 
   createCategory(body: Category.Request): void {
-    this.httpClient.post(`${environment.apiUrl}${environment.categoryStage}v1/categories`, body).subscribe({
+    this.httpClient.post<Category.CategoryId>(`${environment.apiUrl}${environment.categoryStage}v1/categories`, body).subscribe({
       next: () => {
-        this._refreshList.next();
+        this.refreshList.next();
       },
       error: (error) => {
         console.error(error);
@@ -35,10 +56,10 @@ export class CategoryService {
     });
   }
 
-  updateCategory(categoryId: Category.IdType, body: Category.Request): void {
+  updateCategory(categoryId: Category.Id, body: Category.Request): void {
     this.httpClient.put(`${environment.apiUrl}${environment.categoryStage}v1/categories/${categoryId}`, body).subscribe({
       next: () => {
-        this._refreshList.next();
+        this.refreshList.next();
       },
       error: (error) => {
         console.error(error);
@@ -46,10 +67,10 @@ export class CategoryService {
     });
   }
 
-  deleteCategory(categoryId: Category.IdType): void {
+  deleteCategory(categoryId: Category.Id): void {
     this.httpClient.delete(`${environment.apiUrl}${environment.categoryStage}v1/categories/${categoryId}`).subscribe({
       next: () => {
-        this._refreshList.next();
+        this.refreshList.next();
       },
       error: (error) => {
         console.error(error);
@@ -57,10 +78,10 @@ export class CategoryService {
     });
   }
 
-  mergeCategories(categoryId: Category.IdType, body: Category.IdType[]): void {
+  mergeCategories(categoryId: Category.Id, body: Category.Id[]): void {
     this.httpClient.post(`${environment.apiUrl}${environment.categoryStage}v1/categories/${categoryId}/merge`, body).subscribe({
       next: () => {
-        this._refreshList.next();
+        this.refreshList.next();
       },
       error: (error) => {
         console.error(error);

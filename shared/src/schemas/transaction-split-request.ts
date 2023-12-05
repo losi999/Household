@@ -19,10 +19,10 @@ const schema: StrictJSONSchema7<Transaction.SplitRequest> = {
     'splits',
   ],
   properties: {
-    ...base.properties,
-    ...issuedAt.properties,
     ...accountId.properties,
     ...recipientId.properties,
+    ...issuedAt.properties,
+    ...base.properties,
     splits: {
       type: 'array',
       minItems: 1,
@@ -31,11 +31,11 @@ const schema: StrictJSONSchema7<Transaction.SplitRequest> = {
         additionalProperties: false,
         required: [ ...base.required],
         properties: {
-          ...base.properties,
-          inventory,
-          invoice,
           ...categoryId.properties,
           ...projectId.properties,
+          ...invoice.properties,
+          ...inventory.properties,
+          ...base.properties,
         },
       },
     },
