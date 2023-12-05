@@ -44,10 +44,11 @@ describe('Create payment transaction service', () => {
 
   beforeEach(() => {
     queriedAccount = createAccountDocument();
-    queriedProduct = createProductDocument();
     queriedCategory = createCategoryDocument({
       categoryType: 'inventory',
-      products: [queriedProduct],
+    });
+    queriedProduct = createProductDocument({
+      category: queriedCategory,
     });
     queriedProject = createProjectDocument();
     queriedRecipient = createRecipientDocument();
@@ -374,7 +375,7 @@ describe('Create payment transaction service', () => {
       mockCategoryService.functions.getCategoryById.mockResolvedValue(queriedCategory);
       mockProjectService.functions.getProjectById.mockResolvedValue(queriedProject);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
-      mockProductService.functions.getProductById.mockResolvedValue(queriedProduct);
+      mockProductService.functions.getProductById.mockResolvedValue(createProductDocument());
 
       await service({
         body,

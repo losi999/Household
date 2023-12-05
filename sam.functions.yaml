@@ -5,20 +5,20 @@ Parameters:
   LambdaRoleArn:
     Type: String
   Env:
-    Type: String   
+    Type: String
   MongodbConnectionString:
     Type: String
   MongooseLayer:
     Type: String
   DatabaseArchiveBucket:
-    Type: String        
+    Type: String
   TestUserPassword:
     Type: String
     Default: ""
   UserPoolId:
     Type: String
   ClientId:
-    Type: String    
+    Type: String
 
 Conditions:
   ShouldUseLayers: !Not [!Equals [!Ref MongooseLayer, "MongooseLayer"]]
@@ -28,7 +28,7 @@ Conditions:
 Globals:
   Function:
     Handler: index.default
-    Runtime: nodejs14.x
+    Runtime: nodejs18.x
     Timeout: 60
     MemorySize: 512
     Tracing: Active
@@ -64,6 +64,13 @@ Resources:
         Variables:
           INFRASTRUCTURE_STACK: !Ref AWS::StackName
 
+  MigrateCategoryProductRelation:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-MigrateCategoryProductRelation
+      CodeUri: dist/api/migrate-category-product-relation
+      Role: !Ref LambdaRoleArn
+
   CreateTestUsers:
     Type: AWS::Serverless::Function
     Condition: ShouldCreateTestUsers
@@ -76,8 +83,10 @@ Resources:
           USER_POOL_ID: !Ref UserPoolId
           CLIENT_ID: !Ref ClientId
           ADMIN_COUNT: "1"
-          TEST_USER_PASSWORD: !Ref TestUserPassword            
+          TEST_USER_PASSWORD: !Ref TestUserPassword
 
 Outputs:
   PostDeployCreateTestUsers:
     Value: !If [ShouldCreateTestUsers, !GetAtt CreateTestUsers.Arn, ""]
+  PostDeployMigrateCategoryProductRelation:
+    Value: !GetAtt MigrateCategoryProductRelation.Arn

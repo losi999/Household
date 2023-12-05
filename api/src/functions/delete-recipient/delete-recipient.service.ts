@@ -4,7 +4,7 @@ import { Recipient } from '@household/shared/types/types';
 
 export interface IDeleteRecipientService {
   (ctx: {
-    recipientId: Recipient.IdType;
+    recipientId: Recipient.Id;
   }): Promise<void>;
 }
 

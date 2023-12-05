@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { RecipientHomeComponent } from './recipient-home/recipient-home.component';
 import { RecipientListComponent } from './recipient-list/recipient-list.component';
 import { RecipientListItemComponent } from './recipient-list-item/recipient-list-item.component';
-import { SharedModule } from 'src/app/shared/shared.module';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
@@ -13,6 +12,8 @@ import { RecipientFormComponent } from './recipient-form/recipient-form.componen
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatDialogModule } from '@angular/material/dialog';
 import { RecipientMergeDialogComponent } from './recipient-merge-dialog/recipient-merge-dialog.component';
+import { ToolbarComponent } from 'src/app/shared/toolbar/toolbar.component';
+import { ClearableInputComponent } from 'src/app/shared/clearable-input/clearable-input.component';
 
 @NgModule({
   declarations: [
@@ -25,13 +26,14 @@ import { RecipientMergeDialogComponent } from './recipient-merge-dialog/recipien
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    SharedModule,
     MatButtonModule,
     MatIconModule,
     RecipientRoutingModule,
     MatListModule,
     MatBottomSheetModule,
     MatDialogModule,
+    ToolbarComponent,
+    ClearableInputComponent,
   ],
 })
 export class RecipientModule { }

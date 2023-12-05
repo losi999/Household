@@ -18,7 +18,7 @@ const invoiceSchema = new Schema<Transaction.Invoice<Date>['invoice']>({
   _id: false,
 });
 
-const inventorySchema = new Schema<Transaction.InventoryItem<Transaction.Product<Product.Document>>>({
+const inventorySchema = new Schema<Transaction.Inventory<Product.Document>['inventory']>({
   quantity: {
     type: Number,
   },

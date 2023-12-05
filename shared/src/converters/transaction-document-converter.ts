@@ -54,10 +54,10 @@ export interface ITransactionDocumentConverter {
     account: Account.Document;
     transferAccount: Account.Document;
   }, expiresIn: number): Transaction.TransferDocument;
-  toResponse(document: Transaction.Document, mainAccountId?: Account.IdType): Transaction.Response;
-  toResponseList(documents: Transaction.Document[], mainAccountId?: Account.IdType): Transaction.Response[];
-  toReportResponseItem(document: Transaction.PaymentDocument | Transaction.SplitDocument): Transaction.ReportTransactionItem[];
-  toReportResponseItemList(documents: (Transaction.PaymentDocument | Transaction.SplitDocument)[]): Transaction.ReportTransactionItem[];
+  toResponse(document: Transaction.Document, mainAccountId?: Account.Id): Transaction.Response;
+  toResponseList(documents: Transaction.Document[], mainAccountId?: Account.Id): Transaction.Response[];
+  toReport(document: Transaction.PaymentDocument | Transaction.SplitDocument): Transaction.Report[];
+  toReportList(documents: (Transaction.PaymentDocument | Transaction.SplitDocument)[]): Transaction.Report[];
 }
 
 export const transactionDocumentConverterFactory = (
@@ -67,32 +67,36 @@ export const transactionDocumentConverterFactory = (
   recipientDocumentConverter: IRecipientDocumentConverter,
   productDocumentConverter: IProductDocumentConverter,
 ): ITransactionDocumentConverter => {
-  const toResponseInvoice = (doc: Transaction.Invoice<Date>['invoice']): Transaction.Invoice<string>['invoice'] => {
-    return doc ? {
-      invoiceNumber: doc.invoiceNumber,
-      billingEndDate: doc.billingEndDate.toISOString().split('T')[0],
-      billingStartDate: doc.billingStartDate.toISOString().split('T')[0],
+  const toResponseInvoice = ({ invoice }: Transaction.Invoice<Date>): Transaction.Invoice<string> => {
+    return invoice ? {
+      invoice: {
+        invoiceNumber: invoice.invoiceNumber,
+        billingEndDate: invoice.billingEndDate.toISOString().split('T')[0],
+        billingStartDate: invoice.billingStartDate.toISOString().split('T')[0],
+      },
     } : undefined;
   };
 
-  const toDocumentInvoice = (req: Transaction.Invoice<string>['invoice']): Transaction.Invoice<Date>['invoice'] => {
-    return req ? {
-      invoiceNumber: req.invoiceNumber,
-      billingEndDate: new Date(req.billingEndDate),
-      billingStartDate: new Date(req.billingStartDate),
+  const toDocumentInvoice = (invoice: Transaction.Invoice<string>['invoice']): Transaction.Invoice<Date>['invoice'] => {
+    return invoice ? {
+      invoiceNumber: invoice.invoiceNumber,
+      billingEndDate: new Date(invoice.billingEndDate),
+      billingStartDate: new Date(invoice.billingStartDate),
     } : undefined;
   };
 
-  const toResponseInventory = (doc: Transaction.InventoryItem<Transaction.Product<Product.Document>>): Transaction.InventoryItem<Transaction.Product<Product.Response>> => {
-    return doc ? {
-      quantity: doc.quantity,
-      product: productDocumentConverter.toResponse(doc.product),
+  const toResponseInventory = ({ inventory }: Transaction.Inventory<Product.Document>): Transaction.Inventory<Product.Response> => {
+    return inventory ? {
+      inventory: {
+        quantity: inventory.quantity,
+        product: productDocumentConverter.toResponse(inventory.product),
+      },
     } : undefined;
   };
 
-  const toDocumentInventory = (req: Transaction.Quantity, product: Product.Document): Transaction.InventoryItem<Transaction.Product<Product.Document>> => {
-    return req ? {
-      quantity: req.quantity,
+  const toDocumentInventory = (inventory: Transaction.InventoryRequest['inventory'], product: Product.Document): Transaction.Inventory<Product.Document>['inventory'] => {
+    return inventory ? {
+      quantity: inventory.quantity,
       product: product ?? undefined,
     } : undefined;
   };
@@ -110,8 +114,8 @@ export const transactionDocumentConverterFactory = (
       category: doc.category ? categoryDocumentConverter.toResponse(doc.category) : undefined,
       recipient: doc.recipient ? recipientDocumentConverter.toResponse(doc.recipient) : undefined,
       project: doc.project ? projectDocumentConverter.toResponse(doc.project) : undefined,
-      invoice: toResponseInvoice(doc.invoice),
-      inventory: toResponseInventory(doc.inventory),
+      ...toResponseInvoice(doc),
+      ...toResponseInventory(doc),
     };
   };
 
@@ -130,8 +134,8 @@ export const transactionDocumentConverterFactory = (
         return {
           amount: s.amount,
           description: s.description,
-          invoice: toResponseInvoice(s.invoice),
-          inventory: toResponseInventory(s.inventory),
+          ...toResponseInvoice(s),
+          ...toResponseInventory(s),
           category: s.category ? categoryDocumentConverter.toResponse(s.category) : undefined,
           project: s.project ? projectDocumentConverter.toResponse(s.project) : undefined,
         };
@@ -139,7 +143,7 @@ export const transactionDocumentConverterFactory = (
     };
   };
 
-  const toResponseTransfer = (doc: Transaction.TransferDocument, mainAccountId: Account.IdType): Transaction.TransferResponse => {
+  const toResponseTransfer = (doc: Transaction.TransferDocument, mainAccountId: Account.Id): Transaction.TransferResponse => {
     return {
       ...doc,
       createdAt: undefined,
@@ -191,6 +195,8 @@ export const transactionDocumentConverterFactory = (
             project: projects[s.projectId],
             inventory: category?.categoryType === 'inventory' ? toDocumentInventory(s.inventory, products[s.inventory?.productId]) : undefined,
             invoice: category?.categoryType === 'invoice' ? toDocumentInvoice(s.invoice) : undefined,
+            projectId: undefined,
+            categoryId: undefined,
           };
         }),
         accountId: undefined,
@@ -242,34 +248,36 @@ export const transactionDocumentConverterFactory = (
       }
     },
     toResponseList: (docs, mainAccountId) => docs.map(d => instance.toResponse(d, mainAccountId)),
-    toReportResponseItem: (document): Transaction.ReportTransactionItem[] => {
+    toReport: (document): Transaction.Report[] => {
       if (document.transactionType === 'payment') {
         return [
           {
             amount: document.amount,
             transactionId: getTransactionId(document),
-            issuedAt: document.issuedAt,
-            projectName: document.project?.name,
-            categoryName: document.category?.fullName,
-            recipientName: document.recipient?.name,
-            accountName: document.account.name,
+            issuedAt: document.issuedAt.toISOString(),
             description: document.description,
+            account: accountDocumentConverter.toReport(document.account),
+            category: categoryDocumentConverter.toReport(document.category),
+            product: productDocumentConverter.toReport(document.inventory),
+            project: projectDocumentConverter.toReport(document.project),
+            recipient: recipientDocumentConverter.toReport(document.recipient),
           },
         ];
       }
 
       return document.splits.map(s => ({
-        accountName: document.account.name,
-        transactionId: getTransactionId(document),
         amount: s.amount,
-        issuedAt: document.issuedAt,
-        recipientName: document.recipient?.name,
+        transactionId: getTransactionId(document),
+        issuedAt: document.issuedAt.toISOString(),
         description: s.description,
-        projectName: s.project?.name,
-        categoryName: s.category?.fullName,
+        account: accountDocumentConverter.toReport(document.account),
+        recipient: recipientDocumentConverter.toReport(document.recipient),
+        category: categoryDocumentConverter.toReport(s.category),
+        product: productDocumentConverter.toReport(s.inventory),
+        project: projectDocumentConverter.toReport(s.project),
       }));
     },
-    toReportResponseItemList: documents => documents.flatMap(d => instance.toReportResponseItem(d)),
+    toReportList: documents => documents.flatMap(d => instance.toReport(d)),
   };
 
   return instance;

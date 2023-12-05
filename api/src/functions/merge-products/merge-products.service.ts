@@ -1,18 +1,15 @@
 import { httpErrors } from '@household/api/common/error-handlers';
-import { getCategoryId } from '@household/shared/common/utils';
-import { ICategoryService } from '@household/shared/services/category-service';
 import { IProductService } from '@household/shared/services/product-service';
 import { Product } from '@household/shared/types/types';
 
 export interface IMergeProductsService {
   (ctx: {
-    body: Product.IdType[];
-  } & Product.Id): Promise<void>;
+    body: Product.Id[];
+  } & Product.ProductId): Promise<void>;
 }
 
 export const mergeProductsServiceFactory = (
   productService: IProductService,
-  categoryService: ICategoryService,
 ): IMergeProductsService => {
   return async ({ body, productId }) => {
     httpErrors.product.mergeTargetAmongSource(body.includes(productId), {
@@ -25,28 +22,18 @@ export const mergeProductsServiceFactory = (
       ...new Set(body),
     ];
 
-    const[
-      products,
-      category,
-    ] = await Promise.all([
-      productService.listProductsByIds(productIds),
-      categoryService.getCategoryByProductIds(productIds),
-    ]).catch(httpErrors.common.getRelatedData(productIds));
+    const products = await productService.listProductsByIds(productIds).catch(httpErrors.product.listByIds(productIds));
 
     httpErrors.product.multipleNotFound(products.length !== productIds.length, {
       productIds,
     });
 
-    httpErrors.category.notFound(!category, {
-      productIds,
-    }, 400);
+    httpErrors.product.notSameCategory(products);
 
     await productService.mergeProducts({
-      categoryId: getCategoryId(category),
       sourceProductIds: body,
       targetProductId: productId,
     }).catch(httpErrors.product.merge({
-      categoryId: getCategoryId(category),
       sourceProductIds: body,
       targetProductId: productId,
     }));

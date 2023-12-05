@@ -4,7 +4,7 @@ import { Transaction } from '@household/shared/types/types';
 
 export interface IDeleteTransactionService {
   (ctx: {
-    transactionId: Transaction.IdType;
+    transactionId: Transaction.Id;
   }): Promise<void>;
 }
 

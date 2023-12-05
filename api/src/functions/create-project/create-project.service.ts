@@ -8,7 +8,7 @@ export interface ICreateProjectService {
   (ctx: {
     body: Project.Request;
     expiresIn: number;
-  }): Promise<Project.IdType>;
+  }): Promise<Project.Id>;
 }
 
 export const createProjectServiceFactory = (

@@ -7,18 +7,11 @@ export const categoryTypes = [
 ] as const;
 
 export const unitsOfMeasurement = [
+  'cm',
+  'db',
   'g',
   'kg',
-  'ml',
   'l',
-  'db',
-] as const;
-
-export const groupByProperties = [
-  'year',
-  'month',
-  'account',
-  'project',
-  'category',
-  'recipient',
+  'm',
+  'ml',
 ] as const;

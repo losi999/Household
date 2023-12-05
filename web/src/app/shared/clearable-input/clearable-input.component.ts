@@ -1,11 +1,25 @@
+import { CommonModule } from '@angular/common';
 import { Component, forwardRef, Input, OnDestroy, OnInit } from '@angular/core';
-import { ControlValueAccessor, FormControl, FormGroup, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
-  selector: 'app-clearable-input',
+  selector: 'household-clearable-input',
   templateUrl: './clearable-input.component.html',
   styleUrls: ['./clearable-input.component.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatButtonModule,
+    MatInputModule,
+    MatIconModule,
+  ],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -18,24 +32,27 @@ export class ClearableInputComponent implements OnInit, OnDestroy, ControlValueA
   @Input() label: string;
   @Input() type: 'text' | 'number' = 'text';
 
-  form: FormGroup;
-  changed: (value: string) => void;
+  input: FormControl<string | number>;
+  changed: (value: string | number) => void;
   touched: () => void;
   isDisabled: boolean;
-  subs: Subscription;
+  private destroyed = new Subject();
 
   constructor() { }
 
+  get value() {
+    return this.input.value ?? '';
+  }
+
   ngOnDestroy(): void {
-    this.subs.unsubscribe();
+    this.destroyed.next(undefined);
+    this.destroyed.complete();
   }
 
   ngOnInit(): void {
-    this.form = new FormGroup({
-      value: new FormControl(),
-    });
+    this.input = new FormControl();
 
-    this.subs = this.form.controls.value.valueChanges.subscribe((value) => {
+    this.input.valueChanges.pipe(takeUntil(this.destroyed)).subscribe((value) => {
       if(value) {
         this.changed?.(value);
       } else {
@@ -45,9 +62,7 @@ export class ClearableInputComponent implements OnInit, OnDestroy, ControlValueA
   }
 
   writeValue(value: any): void {
-    this.form.setValue({
-      value,
-    });
+    this.input.setValue(value);
   }
 
   registerOnChange(fn: any): void {
@@ -63,6 +78,6 @@ export class ClearableInputComponent implements OnInit, OnDestroy, ControlValueA
   }
 
   clearValue() {
-    this.form.reset();
+    this.input.reset();
   }
 }

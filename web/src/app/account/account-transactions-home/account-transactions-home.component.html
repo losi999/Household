@@ -1,8 +1,8 @@
-<app-toolbar title="Tranzakciók">
+<household-toolbar title="Tranzakciók">
   <button mat-icon-button [routerLink]="['/accounts', accountId, 'new']">
     <mat-icon>add</mat-icon>
   </button>
-</app-toolbar>
+</household-toolbar>
 
-<app-account-transactions-list [transactions]="transactions"></app-account-transactions-list>
+<household-account-transactions-list [transactions]="transactions"></household-account-transactions-list>
 <button mat-raised-button color="primary" (click)="loadMore()">Betöltés</button>

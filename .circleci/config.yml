@@ -4,14 +4,14 @@ orbs:
 jobs:
   install:
     docker:
-      - image: cypress/base:16.14.2
+      - image: cimg/node:18.18
     working_directory: ~/repo
     steps:
       - checkout
       - restore_cache:
           key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "test/yarn.lock"}}-{{checksum "layers/mongoose/nodejs/yarn.lock"}}
       - restore_cache:
-          key: cache-cypress-v1-{{checksum "test/yarn.lock"}}   
+          key: cache-cypress-v1-{{checksum "test/yarn.lock"}}
       - run:
           name: Install API dependencies
           command: yarn
@@ -21,7 +21,7 @@ jobs:
           working_directory: web
       - run:
           name: Installing layer dependencies
-          command: yarn          
+          command: yarn
           working_directory: layers/mongoose/nodejs
       - run:
           name: Install test dependencies
@@ -32,16 +32,16 @@ jobs:
           paths:
             - ~/.cache/yarn
       - save_cache:
-          key: cache-cypress-v1-{{checksum "test/yarn.lock"}} 
+          key: cache-cypress-v1-{{checksum "test/yarn.lock"}}
           paths:
-            - ~/.cache/Cypress           
+            - ~/.cache/Cypress
       - persist_to_workspace:
           root: ~/
           paths:
             - repo
   unit_test:
     docker:
-      - image: circleci/node:16.13.1
+      - image: cimg/node:18.18
     working_directory: ~/repo
     steps:
       - attach_workspace:
@@ -60,25 +60,21 @@ jobs:
           destination: coverage
   lint:
     docker:
-      - image: circleci/node:16.13.1
+      - image: cimg/node:18.18
     working_directory: ~/repo
     steps:
       - attach_workspace:
           at: ~/
 
       - run:
-          name: Running API linter
-          command: yarn lint:api
-
-      - run:
-          name: Running Web linter
-          command: yarn lint:web
+          name: Running linter
+          command: yarn lint
   build:
     parameters:
       env:
         type: string
     docker:
-      - image: circleci/node:16.13.1
+      - image: cimg/node:18.18
     working_directory: ~/repo
     steps:
       - attach_workspace:
@@ -132,19 +128,19 @@ jobs:
   test:
     parameters:
       env:
-        type: string    
+        type: string
     docker:
       - image: cypress/base:16.14.2
     environment:
-      ENV: <<parameters.env>>    
-      CYPRESS_ENV: <<parameters.env>>       
+      ENV: <<parameters.env>>
+      CYPRESS_ENV: <<parameters.env>>
     working_directory: ~/repo
     steps:
       - attach_workspace:
           at: ~/
 
       - restore_cache:
-          key: cache-cypress-v1-{{checksum "test/yarn.lock"}} 
+          key: cache-cypress-v1-{{checksum "test/yarn.lock"}}
 
       - run:
           name: Setting MongoDB connection string
@@ -159,9 +155,8 @@ jobs:
           path: test/cypress/screenshots
           destination: test/cypress/screenshots
 workflows:
-  version: 2.1
   local:
-    jobs:  
+    jobs:
       - install:
           name: install
           filters:
@@ -246,7 +241,7 @@ workflows:
       - api_deploy:
           name: api_deploy_prod
           env: "PROD"
-          cypress_password: "\"''\""
+          cypress_password: '"''''"'
           requires:
             - unit_test
             - lint

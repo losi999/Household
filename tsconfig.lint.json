@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "api/src",
+    "shared/src",
+    "web/src",
+    "test",
+    "localhost"
+  ]
+}

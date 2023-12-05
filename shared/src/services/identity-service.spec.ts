@@ -1,12 +1,12 @@
 import { IIdentityService, identityServiceFactory } from '@household/shared/services/identity-service';
 import { Mock, createMockService, awsResolvedValue } from '@household/shared/common/unit-testing';
-import { CognitoIdentityServiceProvider } from 'aws-sdk';
+import type { CognitoIdentityProvider } from '@aws-sdk/client-cognito-identity-provider';
 
 describe('Notification service', () => {
   let service: IIdentityService;
   const userPoolId = 'UserPoolId';
   const clientId = 'ClientId';
-  let mockCognito: Mock<CognitoIdentityServiceProvider>;
+  let mockCognito: Mock<CognitoIdentityProvider>;
 
   beforeEach(() => {
     mockCognito = createMockService('adminInitiateAuth', 'adminCreateUser', 'adminAddUserToGroup', 'adminSetUserPassword', 'adminGetUser');

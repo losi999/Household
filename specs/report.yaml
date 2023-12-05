@@ -1,0 +1,43 @@
+openapi: "3.0.0"
+info:
+  title: Report components
+  version: 1.0.0
+components:
+  schemas:
+    Filters:
+      type: object
+      minProperties: 1
+      properties:
+        accountIds:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        categoryIds:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        projectIds:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        productIds:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        recipientIds:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        issuedAtFrom:
+          type: string
+          format: date-time
+        issuedAtTo:
+          type: string
+          format: date-time
+    Request:
+      $ref: "#/components/schemas/Filters"

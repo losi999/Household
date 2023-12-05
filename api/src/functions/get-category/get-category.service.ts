@@ -4,7 +4,7 @@ import { ICategoryService } from '@household/shared/services/category-service';
 import { Category } from '@household/shared/types/types';
 
 export interface IGetCategoryService {
-  (ctx: Category.Id): Promise<Category.Response>;
+  (ctx: Category.CategoryId): Promise<Category.Response>;
 }
 
 export const getCategoryServiceFactory = (
@@ -14,6 +14,8 @@ export const getCategoryServiceFactory = (
     const document = await categoryService.getCategoryById(categoryId).catch(httpErrors.category.getById({
       categoryId,
     }));
+
+    console.log(JSON.stringify(document, null, 2));
 
     httpErrors.category.notFound(!document, {
       categoryId,

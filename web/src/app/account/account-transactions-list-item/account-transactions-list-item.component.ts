@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { Transaction } from '@household/shared/types/types';
 
 @Component({
-  selector: 'app-account-transactions-list-item',
+  selector: 'household-account-transactions-list-item',
   templateUrl: './account-transactions-list-item.component.html',
   styleUrls: ['./account-transactions-list-item.component.scss'],
 })

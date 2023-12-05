@@ -5,11 +5,11 @@ import { Aggregate, Types } from 'mongoose';
 export interface IAccountService {
   dumpAccounts(): Promise<Account.Document[]>;
   saveAccount(doc: Account.Document): Promise<Account.Document>;
-  getAccountById(accountId: Account.IdType): Promise<Account.Document>;
-  deleteAccount(accountId: Account.IdType): Promise<unknown>;
+  getAccountById(accountId: Account.Id): Promise<Account.Document>;
+  deleteAccount(accountId: Account.Id): Promise<unknown>;
   updateAccount(doc: Account.Document): Promise<unknown>;
   listAccounts(): Promise<Account.Document[]>;
-  listAccountsByIds(accountIds: Account.IdType[]): Promise<Account.Document[]>;
+  listAccountsByIds(accountIds: Account.Id[]): Promise<Account.Document[]>;
 }
 
 export const accountServiceFactory = (mongodbService: IMongodbService): IAccountService => {
@@ -58,12 +58,15 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
       return mongodbService.accounts().create(doc);
     },
     getAccountById: async (accountId) => {
-      const [account] = await aggregateAccountBalance(mongodbService.accounts().aggregate()
-        .match({
-          _id: new Types.ObjectId(accountId),
-        })).exec();
+      let account: Account.Document;
+      if (accountId) {
+        [account] = await aggregateAccountBalance(mongodbService.accounts().aggregate()
+          .match({
+            _id: new Types.ObjectId(accountId),
+          })).exec();
+      }
 
-      return !accountId ? undefined : account ?? null;
+      return account ?? null;
     },
     deleteAccount: async (accountId) => {
       return mongodbService.inSession((session) => {

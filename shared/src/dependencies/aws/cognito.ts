@@ -1,4 +1,3 @@
-import { CognitoIdentityServiceProvider, config } from 'aws-sdk';
+import { CognitoIdentityProvider } from '@aws-sdk/client-cognito-identity-provider';
 
-config.logger = console;
-export const cognito = new CognitoIdentityServiceProvider();
+export const cognito = new CognitoIdentityProvider({});

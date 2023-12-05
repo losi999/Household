@@ -23,15 +23,6 @@ export const categorySchema = new Schema<Category.Document>({
     type: Schema.Types.ObjectId,
     ref: 'categories',
   },
-  products: {
-    type: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'products',
-      },
-    ],
-    default: undefined,
-  },
   expiresAt: {
     type: Schema.Types.Date,
     index: {

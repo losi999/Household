@@ -12,7 +12,7 @@ Resources:
       LayerName: !Sub Household-${Env}-MongooseLayer
       RetentionPolicy: Delete
       CompatibleRuntimes:
-        - nodejs14.x
+        - nodejs18.x
 
   LambdaRole:
     Type: AWS::IAM::Role

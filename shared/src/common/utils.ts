@@ -1,6 +1,14 @@
-import { groupByProperties } from '@household/shared/constants';
 import { Dictionary } from '@household/shared/types/common';
 import { Account, Category, Internal, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { PopulateOptions } from 'mongoose';
+
+export const populate = (...populateOptions: (string | PopulateOptions)[]): PopulateOptions[] => {
+  return populateOptions.map(p => {
+    return typeof p === 'string' ? {
+      path: p,
+    } : p;
+  });
+};
 
 export const addSeconds = (seconds: number, dateFrom?: Date): Date => {
   if (dateFrom) {
@@ -19,20 +27,9 @@ export const toDictionary = <P>(docs: P[], key: keyof P): Dictionary<P> => {
 };
 
 const getId = (doc: Internal.Id) => doc?._id.toString();
-export const getTransactionId = (doc: Transaction.Document): Transaction.IdType => getId(doc) as Transaction.IdType;
-export const getAccountId = (doc: Account.Document): Account.IdType => getId(doc) as Account.IdType;
-export const getProjectId = (doc: Project.Document): Project.IdType => getId(doc) as Project.IdType;
-export const getRecipientId = (doc: Recipient.Document): Recipient.IdType => getId(doc) as Recipient.IdType;
-export const getProductId = (doc: Product.Document): Product.IdType => getId(doc) as Product.IdType;
-export const getCategoryId = (doc: Category.Document): Category.IdType => getId(doc) as Category.IdType;
-
-export const getGroupValue: {[key in typeof groupByProperties[number]]: (tx: Transaction.ReportTransactionItem) => string} = {
-  year: tx => tx.issuedAt.getFullYear().toString(),
-  month: tx => `${tx.issuedAt.getFullYear()}. ${tx.issuedAt.toLocaleString('hu', {
-    month: 'long',
-  })}`,
-  account: tx => tx.accountName,
-  recipient: tx => tx.recipientName,
-  category: tx => tx.categoryName,
-  project: tx => tx.projectName,
-};
+export const getTransactionId = (doc: Transaction.Document): Transaction.Id => getId(doc) as Transaction.Id;
+export const getAccountId = (doc: Account.Document): Account.Id => getId(doc) as Account.Id;
+export const getProjectId = (doc: Project.Document): Project.Id => getId(doc) as Project.Id;
+export const getRecipientId = (doc: Recipient.Document): Recipient.Id => getId(doc) as Recipient.Id;
+export const getProductId = (doc: Product.Document): Product.Id => getId(doc) as Product.Id;
+export const getCategoryId = (doc: Category.Document): Category.Id => getId(doc) as Category.Id;

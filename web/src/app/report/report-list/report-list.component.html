@@ -1,0 +1,50 @@
+<mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
+  <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding>
+    <a [routerLink]="['/accounts', node.account.accountId, 'transactions', node.transactionId]"
+      class="report-item mat-elevation-z2" href="" target="_blank">
+      <div class="report-item__datetime">
+        <div class="report-item__year">{{node.issuedAt | date:'yyyy'}}</div>
+        <div class="report-item__date">{{node.issuedAt | date:'MM. dd.'}}</div>
+        <div class="report-item__time">{{node.issuedAt | date:'HH:mm'}}</div>
+      </div>
+      <div class="report-item__details">
+        <div class="report-item__account" *ngIf="!groupBy.includes('account')">
+          {{node.account.name}}
+        </div>
+        <div class="report-item__category" *ngIf="!groupBy.includes('category')">
+          {{node.category?.fullName}}
+        </div>
+        <div class="report-item__product" *ngIf="!groupBy.includes('product')">
+          {{node.product?.fullName}}
+        </div>
+        <div class="report-item__project" *ngIf="!groupBy.includes('project')">
+          {{node.project?.name}}
+        </div>
+        <div class="report-item__recipient" *ngIf="!groupBy.includes('recipient')">
+          {{node.recipient?.name}}
+        </div>
+        <div class="report-item__description">
+          {{node.description}}
+        </div>
+      </div>
+      <div class="report-item__amount" [ngClass]="node.amount >= 0 ? 'green' : 'red'">
+        {{node.amount}} {{node.account.currency}}
+      </div>
+    </a>
+    <mat-divider></mat-divider>
+  </mat-tree-node>
+  <mat-tree-node *matTreeNodeDef="let node; when: hasChild" matTreeNodePadding>
+    <button mat-icon-button matTreeNodeToggle>
+      <mat-icon>
+        {{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
+      </mat-icon>
+    </button>
+    <div>
+      <div>
+        {{node.groupName}}
+      </div>
+      <span class="report-item__amount" [ngClass]="node.amount >= 0 ? 'green' : 'red'">{{node.amount}}
+        {{node.currency}}</span>
+    </div>
+  </mat-tree-node>
+</mat-tree>

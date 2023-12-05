@@ -4,7 +4,7 @@ import { Product } from '@household/shared/types/types';
 
 export interface IDeleteProductService {
   (ctx: {
-    productId: Product.IdType;
+    productId: Product.Id;
   }): Promise<void>;
 }
 

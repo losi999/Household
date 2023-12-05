@@ -1,7 +1,7 @@
 <div [formGroup]="form">
   <div class="invoice__invoice-number">
-    <app-clearable-input label="Számlaszám" formControlName="invoiceNumber" (blur)="touched()">
-    </app-clearable-input>
+    <household-clearable-input label="Számlaszám" formControlName="invoiceNumber" (blur)="touched()">
+    </household-clearable-input>
   </div>
   <mat-form-field class="datetime-input__date" appearance="fill">
     <mat-label>Számlázási időszak</mat-label>

@@ -31,7 +31,7 @@ export class AuthInterceptor implements HttpInterceptor {
     if (this.refreshTokenInProgress) {
       return new Observable(observer => {
         this.tokenRefreshed$.subscribe(() => {
-          observer.next();
+          observer.next(undefined);
           observer.complete();
         });
       });
@@ -41,7 +41,7 @@ export class AuthInterceptor implements HttpInterceptor {
     return this.authService.refreshToken().pipe(
       tap(() => {
         this.refreshTokenInProgress = false;
-        this.tokenRefreshedSource.next();
+        this.tokenRefreshedSource.next(undefined);
       }),
       catchError((error) => {
         this.refreshTokenInProgress = false;
@@ -63,7 +63,7 @@ export class AuthInterceptor implements HttpInterceptor {
                 }),
                 catchError((error) => {
                   this.authService.logout();
-                  return throwError(error);
+                  return throwError(error); //TODO
                 }),
               );
             }

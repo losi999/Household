@@ -8,7 +8,7 @@ export interface ICreateRecipientService {
   (ctx: {
     body: Recipient.Request;
     expiresIn: number;
-  }): Promise<Recipient.IdType>;
+  }): Promise<Recipient.Id>;
 }
 
 export const createRecipientServiceFactory = (

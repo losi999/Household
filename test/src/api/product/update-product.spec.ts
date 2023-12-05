@@ -1,5 +1,5 @@
 import { createProductId } from '@household/shared/common/test-data-factory';
-import { getCategoryId, getProductId } from '@household/shared/common/utils';
+import { getProductId } from '@household/shared/common/utils';
 import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
 import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
 import { Category, Product } from '@household/shared/types/types';
@@ -9,7 +9,6 @@ describe('PUT /product/v1/products/{productId}', () => {
   let request: Product.Request;
   let productDocument: Product.Document;
   let categoryDocument: Category.Document;
-  let categoryId: Category.IdType;
 
   beforeEach(() => {
     request = {
@@ -17,12 +16,6 @@ describe('PUT /product/v1/products/{productId}', () => {
       measurement: 1000,
       unitOfMeasurement: 'g',
     };
-
-    productDocument = productDocumentConverter.create({
-      brand: `tesco-${uuid()}`,
-      measurement: 1,
-      unitOfMeasurement: 'kg',
-    }, Cypress.env('EXPIRES_IN'), true);
     categoryDocument = categoryDocumentConverter.create({
       body: {
         categoryType: 'inventory',
@@ -31,7 +24,14 @@ describe('PUT /product/v1/products/{productId}', () => {
       },
       parentCategory: undefined,
     }, Cypress.env('EXPIRES_IN'), true);
-    categoryId = getCategoryId(categoryDocument);
+    productDocument = productDocumentConverter.create({
+      body: {
+        brand: `tesco-${uuid()}`,
+        measurement: 1,
+        unitOfMeasurement: 'kg',
+      },
+      category: categoryDocument,
+    }, Cypress.env('EXPIRES_IN'), true);
   });
 
   describe('called as anonymous', () => {
@@ -46,10 +46,7 @@ describe('PUT /product/v1/products/{productId}', () => {
     describe('should update product', () => {
       it('with complete body', () => {
         cy
-          .saveProductDocument({
-            document: productDocument,
-            categoryId,
-          })
+          .saveProductDocument(productDocument)
           .authenticate(1)
           .requestUpdateProduct(getProductId(productDocument), request)
           .expectCreatedResponse()
@@ -90,16 +87,13 @@ describe('PUT /product/v1/products/{productId}', () => {
         });
 
         it('is already in used by a different product', () => {
-          const duplicateProductDocument = productDocumentConverter.create(request, Cypress.env('EXPIRES_IN'), true);
+          const duplicateProductDocument = productDocumentConverter.create({
+            body: request,
+            category: categoryDocument,
+          }, Cypress.env('EXPIRES_IN'), true);
 
-          cy.saveProductDocument({
-            document: productDocument,
-            categoryId,
-          })
-            .saveProductDocument({
-              document: duplicateProductDocument,
-              categoryId,
-            })
+          cy.saveProductDocument(productDocument)
+            .saveProductDocument(duplicateProductDocument)
             .authenticate(1)
             .requestUpdateProduct(getProductId(productDocument), request)
             .expectBadRequestResponse()

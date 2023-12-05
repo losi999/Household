@@ -1,4 +1,4 @@
-import { S3 } from 'aws-sdk';
+import type { S3 } from '@aws-sdk/client-s3';
 
 export interface IStorageService {
   writeFile(bucket: string, fileName: string, data: object, folder: string): Promise<unknown>;
@@ -12,7 +12,7 @@ export const storageServiceFactory = (s3: S3): IStorageService => {
         Key: `${folder}/${fileName}`,
         Body: JSON.stringify(data),
 
-      }).promise();
+      });
     },
   };
 

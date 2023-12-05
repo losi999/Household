@@ -1,11 +1,23 @@
+import { CommonModule } from '@angular/common';
 import { Component, forwardRef, Input, OnDestroy, OnInit } from '@angular/core';
-import { ControlValueAccessor, FormControl, FormGroup, NG_VALUE_ACCESSOR, Validators } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
-  selector: 'app-amount-input',
+  selector: 'household-amount-input',
   templateUrl: './amount-input.component.html',
   styleUrls: ['./amount-input.component.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatButtonModule,
+    MatInputModule,
+    MatIconModule,
+  ],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -17,32 +29,30 @@ import { Subscription } from 'rxjs';
 export class AmountInputComponent implements OnInit, OnDestroy, ControlValueAccessor {
   @Input() currency: string;
 
-  form: FormGroup;
-  changed: (value: string) => void;
+  amount: FormControl<number>;
+
+  changed: (value: number) => void;
   touched: () => void;
   isDisabled: boolean;
-  subs: Subscription;
+  private destroyed = new Subject();
 
   constructor() { }
 
   ngOnDestroy(): void {
-    this.subs.unsubscribe();
+    this.destroyed.next(undefined);
+    this.destroyed.complete();
   }
 
   ngOnInit(): void {
-    this.form = new FormGroup({
-      amount: new FormControl(null, [Validators.required]),
-    });
+    this.amount = new FormControl(null, [Validators.required]);
 
-    this.subs = this.form.controls.amount.valueChanges.subscribe((value) => {
+    this.amount.valueChanges.pipe(takeUntil(this.destroyed)).subscribe((value) => {
       this.changed?.(value);
     });
   }
 
   writeValue(amount: any): void {
-    this.form.setValue({
-      amount,
-    });
+    this.amount.setValue(amount);
   }
 
   registerOnChange(fn: any): void {
@@ -58,8 +68,6 @@ export class AmountInputComponent implements OnInit, OnDestroy, ControlValueAcce
   }
 
   inverseValue() {
-    this.form.setValue({
-      amount: -1 * this.form.value.amount,
-    });
+    this.amount.setValue(-1 * this.amount.value);
   }
 }

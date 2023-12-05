@@ -5,7 +5,7 @@ import { Account } from '@household/shared/types/types';
 
 export interface IGetAccountService {
   (ctx: {
-    accountId: Account.IdType;
+    accountId: Account.Id;
   }): Promise<Account.Response>;
 }
 

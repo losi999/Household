@@ -1,0 +1,41 @@
+openapi: "3.0.0"
+info:
+  title: Project components
+  version: 1.0.0
+components:
+  schemas:
+    ProjectId:
+      type: object
+      required:
+        - projectId
+      properties:
+        projectId:
+          type: string
+    Name:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+    Description:
+      type: object
+      properties:
+        description:
+          type: string
+          minLength: 1
+    Base:
+      allOf:
+        - $ref: "#/components/schemas/Name"
+        - $ref: "#/components/schemas/Description"
+    Response:
+      allOf:
+        - $ref: "#/components/schemas/ProjectId"
+        - $ref: "#/components/schemas/Base"
+    Report:
+      allOf:
+        - $ref: "#/components/schemas/ProjectId"
+        - $ref: "#/components/schemas/Name"
+    Request:
+      $ref: "#/components/schemas/Base"

@@ -1,14 +1,19 @@
-import { Component, Input } from '@angular/core';
+import { Component } from '@angular/core';
 import { Category } from '@household/shared/types/types';
+import { CategoryService } from 'src/app/category/category.service';
+import { Store } from 'src/app/store';
 
 @Component({
-  selector: 'app-product-list',
+  selector: 'household-product-list',
   templateUrl: './product-list.component.html',
   styleUrls: ['./product-list.component.scss'],
 })
 export class ProductListComponent {
-  @Input() categories: Category.Response[];
+  get categories(): Category.Response[] {
+    return this.store.inventoryCategories.value;
+  }
 
-  constructor() { }
+  constructor(private store: Store, categoryService: CategoryService) {
+    categoryService.listCategories('inventory'); }
 
 }

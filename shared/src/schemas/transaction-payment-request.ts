@@ -18,14 +18,14 @@ const schema: StrictJSONSchema7<Transaction.PaymentRequest> = {
     ...accountId.required,
   ],
   properties: {
-    ...base.properties,
-    ...issuedAt.properties,
-    inventory,
-    invoice,
     ...accountId.properties,
     ...categoryId.properties,
-    ...recipientId.properties,
     ...projectId.properties,
+    ...recipientId.properties,
+    ...issuedAt.properties,
+    ...invoice.properties,
+    ...inventory.properties,
+    ...base.properties,
   },
 };
 

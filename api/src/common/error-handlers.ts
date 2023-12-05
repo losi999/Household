@@ -1,3 +1,4 @@
+import { getCategoryId, getProductId } from '@household/shared/common/utils';
 import { HttpError } from '@household/shared/types/common';
 import { Account, Category, Common, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 
@@ -14,15 +15,15 @@ const httpError = (statusCode: number, message: string): HttpError => ({
 export const httpErrors = {
   transaction: {
     save: (doc: Transaction.Document, statusCode = 500): Catch => (error) => {
-      if (error .code === 11000) {
+      if (error.code === 11000) {
         log('Duplicate transaction name', doc, error);
-        throw httpError(400, 'Duplicate transaction name');
+        throw httpError(400, 'Duplicate transaction name'); // TODO ????
       }
 
       log('Save transaction', doc, error);
       throw httpError(statusCode, 'Error while saving transaction');
     },
-    getById: (ctx: Transaction.Id & Partial<Account.Id>, statusCode = 500): Catch => (error) => {
+    getById: (ctx: Transaction.TransactionId & Partial<Account.AccountId>, statusCode = 500): Catch => (error) => {
       log('Get transaction', ctx, error);
       throw httpError(statusCode, 'Error while getting transaction');
     },
@@ -30,18 +31,18 @@ export const httpErrors = {
       log('List transactions', undefined, error);
       throw httpError(statusCode, 'Error while listing transactions');
     },
-    listByAccountId: (ctx: Account.Id & Common.Pagination<number>, statusCode = 500): Catch => (error) => {
+    listByAccountId: (ctx: Account.AccountId & Common.Pagination<number>, statusCode = 500): Catch => (error) => {
       log('List transactions by account', ctx, error);
       throw httpError(statusCode, 'Error while getting transactions');
     },
-    notFound: (condition: boolean, ctx: Transaction.Id & Partial<Account.Id>, statusCode = 404) => {
+    notFound: (condition: boolean, ctx: Transaction.TransactionId & Partial<Account.AccountId>, statusCode = 404) => {
       if (condition) {
         log('No transaction found', ctx);
         throw httpError(statusCode, 'No transaction found');
       }
     },
     update: (doc: Transaction.Document, statusCode = 500): Catch => (error) => {
-      if (error .code === 11000) {
+      if (error.code === 11000) {
         log('Duplicate transaction name', doc, error);
         throw httpError(400, 'Duplicate transaction name');
       }
@@ -49,7 +50,7 @@ export const httpErrors = {
       log('Update transaction', doc, error);
       throw httpError(statusCode, 'Error while updating transaction');
     },
-    delete: (ctx: Transaction.Id, statusCode = 500): Catch => (error) => {
+    delete: (ctx: Transaction.TransactionId, statusCode = 500): Catch => (error) => {
       log('Delete transaction', ctx, error);
       throw httpError(statusCode, 'Error while deleting transaction');
     },
@@ -59,7 +60,7 @@ export const httpErrors = {
         throw httpError(statusCode, 'Sum of splits must equal to total amount');
       }
     },
-    sameAccountTransfer: (ctx: Account.Id & Transaction.TransferAccountId, statusCode = 400) => {
+    sameAccountTransfer: (ctx: Account.AccountId & Transaction.TransferAccountId, statusCode = 400) => {
       if (ctx.accountId === ctx.transferAccountId) {
         log('Cannot transfer to same account', ctx);
         throw httpError(statusCode, 'Cannot transfer to same account');
@@ -68,7 +69,7 @@ export const httpErrors = {
   },
   project: {
     save: (doc: Project.Document, statusCode = 500): Catch => (error) => {
-      if (error .code === 11000) {
+      if (error.code === 11000) {
         log('Duplicate project name', doc, error);
         throw httpError(400, 'Duplicate project name');
       }
@@ -76,11 +77,11 @@ export const httpErrors = {
       log('Save project', doc, error);
       throw httpError(statusCode, 'Error while saving project');
     },
-    getById: (ctx: Project.Id, statusCode = 500): Catch => (error) => {
+    getById: (ctx: Project.ProjectId, statusCode = 500): Catch => (error) => {
       log('Get project', ctx, error);
       throw httpError(statusCode, 'Error while getting project');
     },
-    listByIds: (ctx: Project.IdType[], statusCode = 500): Catch => (error) => {
+    listByIds: (ctx: Project.Id[], statusCode = 500): Catch => (error) => {
       log('List projects by ids', ctx, error);
       throw httpError(statusCode, 'Error while listing projects by ids');
     },
@@ -88,24 +89,24 @@ export const httpErrors = {
       log('List projects', undefined, error);
       throw httpError(statusCode, 'Error while listing projects');
     },
-    notFound: (condition: boolean, ctx: Project.Id, statusCode = 404) => {
+    notFound: (condition: boolean, ctx: Project.ProjectId, statusCode = 404) => {
       if (condition) {
         log('No project found', ctx);
         throw httpError(statusCode, 'No project found');
       }
     },
-    delete: (ctx: Project.Id, statusCode = 500): Catch => (error) => {
+    delete: (ctx: Project.ProjectId, statusCode = 500): Catch => (error) => {
       log('Delete project', ctx, error);
       throw httpError(statusCode, 'Error while deleting project');
     },
-    multipleNotFound: (condition: boolean, ctx: { projectIds: Project.IdType[] }, statusCode = 400) => {
+    multipleNotFound: (condition: boolean, ctx: { projectIds: Project.Id[] }, statusCode = 400) => {
       if (condition) {
         log('Some of the projects are not found', ctx);
         throw httpError(statusCode, 'Some of the projects are not found');
       }
     },
     update: (doc: Project.Document, statusCode = 500): Catch => (error) => {
-      if (error .code === 11000) {
+      if (error.code === 11000) {
         log('Duplicate project name', doc, error);
         throw httpError(400, 'Duplicate project name');
       }
@@ -113,15 +114,15 @@ export const httpErrors = {
       log('Update project', doc, error);
       throw httpError(statusCode, 'Error while updating project');
     },
-    mergeTargetAmongSource: (condition: boolean, ctx: Project.Id & {source: Project.IdType[]}, statusCode = 400) => {
+    mergeTargetAmongSource: (condition: boolean, ctx: Project.ProjectId & {source: Project.Id[]}, statusCode = 400) => {
       if (condition) {
         log('Target project is among the source project Ids', ctx);
         throw httpError(statusCode, 'Target project is among the source project Ids');
       }
     },
     merge: (ctx: {
-      targetProjectId: Project.IdType;
-      sourceProjectIds: Project.IdType[];
+      targetProjectId: Project.Id;
+      sourceProjectIds: Project.Id[];
     }, statusCode = 500): Catch => (error) => {
       log('Merge projects', ctx, error);
       throw httpError(statusCode, 'Error while merging projects');
@@ -129,7 +130,7 @@ export const httpErrors = {
   },
   account: {
     save: (doc: Account.Document, statusCode = 500): Catch => (error) => {
-      if (error .code === 11000) {
+      if (error.code === 11000) {
         log('Duplicate account name', doc, error);
         throw httpError(400, 'Duplicate account name');
       }
@@ -137,7 +138,7 @@ export const httpErrors = {
       log('Save account', doc, error);
       throw httpError(statusCode, 'Error while saving account');
     },
-    getById: (ctx: Account.Id, statusCode = 500): Catch => (error) => {
+    getById: (ctx: Account.AccountId, statusCode = 500): Catch => (error) => {
       log('Get account', ctx, error);
       throw httpError(statusCode, 'Error while getting account');
     },
@@ -145,14 +146,14 @@ export const httpErrors = {
       log('List accounts', undefined, error);
       throw httpError(statusCode, 'Error while listing accounts');
     },
-    notFound: (condition: boolean, ctx: Account.Id, statusCode = 404) => {
+    notFound: (condition: boolean, ctx: Account.AccountId, statusCode = 404) => {
       if (condition) {
         log('No account found', ctx);
         throw httpError(statusCode, 'No account found');
       }
     },
     update: (doc: Account.Document, statusCode = 500): Catch => (error) => {
-      if (error .code === 11000) {
+      if (error.code === 11000) {
         log('Duplicate account name', doc, error);
         throw httpError(400, 'Duplicate account name');
       }
@@ -160,7 +161,7 @@ export const httpErrors = {
       log('Update account', doc, error);
       throw httpError(statusCode, 'Error while updating account');
     },
-    delete: (ctx: Account.Id, statusCode = 500): Catch => (error) => {
+    delete: (ctx: Account.AccountId, statusCode = 500): Catch => (error) => {
       log('Delete account', ctx, error);
       throw httpError(statusCode, 'Error while deleting account');
     },
@@ -176,7 +177,7 @@ export const httpErrors = {
   },
   category: {
     save: (doc: Category.Document, statusCode = 500): Catch => (error) => {
-      if (error .code === 11000) {
+      if (error.code === 11000) {
         log('Duplicate category name', doc, error);
         throw httpError(400, 'Duplicate category name');
       }
@@ -184,11 +185,11 @@ export const httpErrors = {
       log('Save category', doc, error);
       throw httpError(statusCode, 'Error while saving category');
     },
-    getById: (ctx: Category.Id & Partial<Category.ParentCategoryId>, statusCode = 500): Catch => (error) => {
+    getById: (ctx: Category.CategoryId & Partial<Category.ParentCategoryId>, statusCode = 500): Catch => (error) => {
       log('Get category', ctx, error);
       throw httpError(statusCode, 'Error while getting category');
     },
-    getByProductIds: (ctx: Product.IdType[], statusCode = 500): Catch => (error) => {
+    getByProductIds: (ctx: Product.Id[], statusCode = 500): Catch => (error) => {
       log('Get category by product Ids', ctx, error);
       throw httpError(statusCode, 'Error while getting category by product Ids');
     },
@@ -196,17 +197,17 @@ export const httpErrors = {
       log('List categories', undefined, error);
       throw httpError(statusCode, 'Error while listing categories');
     },
-    listByIds: (ctx: Category.IdType[], statusCode = 500): Catch => (error) => {
+    listByIds: (ctx: Category.Id[], statusCode = 500): Catch => (error) => {
       log('List categories by ids', ctx, error);
       throw httpError(statusCode, 'Error while listing categories by ids');
     },
-    notFound: (condition: boolean, ctx: Category.Id | { productIds: Product.IdType[] }, statusCode = 404) => {
+    notFound: (condition: boolean, ctx: Category.CategoryId | { productIds: Product.Id[] }, statusCode = 404) => {
       if (condition) {
         log('No category found', ctx);
         throw httpError(statusCode, 'No category found');
       }
     },
-    delete: (ctx: Category.Id, statusCode = 500): Catch => (error) => {
+    delete: (ctx: Category.CategoryId, statusCode = 500): Catch => (error) => {
       log('Delete category', ctx, error);
       throw httpError(statusCode, 'Error while deleting category');
     },
@@ -216,7 +217,7 @@ export const httpErrors = {
         throw httpError(statusCode, 'Category must be "inventory" type');
       }
     },
-    multipleNotFound: (condition: boolean, ctx: { categoryIds: Category.IdType[] }, statusCode = 400) => {
+    multipleNotFound: (condition: boolean, ctx: { categoryIds: Category.Id[] }, statusCode = 400) => {
       if (condition) {
         log('Some of the categories are not found', ctx);
         throw httpError(statusCode, 'Some of the categories are not found');
@@ -229,7 +230,7 @@ export const httpErrors = {
       }
     },
     update: (doc: {document: Category.Document, oldFullName: string}, statusCode = 500): Catch => (error) => {
-      if (error .code === 11000) {
+      if (error.code === 11000) {
         log('Duplicate category name', doc, error);
         throw httpError(400, 'Duplicate category name');
       }
@@ -237,15 +238,15 @@ export const httpErrors = {
       log('Update category', doc, error);
       throw httpError(statusCode, 'Error while updating category');
     },
-    mergeTargetAmongSource: (condition: boolean, ctx: Category.Id & {source: Category.IdType[]}, statusCode = 400) => {
+    mergeTargetAmongSource: (condition: boolean, ctx: Category.CategoryId & {source: Category.Id[]}, statusCode = 400) => {
       if (condition) {
         log('Target category is among the source category Ids', ctx);
         throw httpError(statusCode, 'Target category is among the source category Ids');
       }
     },
     merge: (ctx: {
-      targetCategoryId: Category.IdType;
-      sourceCategoryIds: Category.IdType[];
+      targetCategoryId: Category.Id;
+      sourceCategoryIds: Category.Id[];
     }, statusCode = 500): Catch => (error) => {
       log('Merge categories', ctx, error);
       throw httpError(statusCode, 'Error while merging categories');
@@ -253,7 +254,7 @@ export const httpErrors = {
   },
   recipient: {
     save: (doc: Recipient.Document, statusCode = 500): Catch => (error) => {
-      if (error .code === 11000) {
+      if (error.code === 11000) {
         log('Duplicate recipient name', doc, error);
         throw httpError(400, 'Duplicate recipient name');
       }
@@ -261,7 +262,7 @@ export const httpErrors = {
       log('Save recipient', doc, error);
       throw httpError(statusCode, 'Error while saving recipient');
     },
-    getById: (ctx: Recipient.Id, statusCode = 500): Catch => (error) => {
+    getById: (ctx: Recipient.RecipientId, statusCode = 500): Catch => (error) => {
       log('Get recipient', ctx, error);
       throw httpError(statusCode, 'Error while getting recipient');
     },
@@ -269,28 +270,28 @@ export const httpErrors = {
       log('List recipients', undefined, error);
       throw httpError(statusCode, 'Error while listing recipients');
     },
-    listByIds: (ctx: Recipient.IdType[], statusCode = 500): Catch => (error) => {
+    listByIds: (ctx: Recipient.Id[], statusCode = 500): Catch => (error) => {
       log('List recipients by ids', ctx, error);
       throw httpError(statusCode, 'Error while listing recipients by ids');
     },
-    notFound: (condition: boolean, ctx: Recipient.Id, statusCode = 404) => {
+    notFound: (condition: boolean, ctx: Recipient.RecipientId, statusCode = 404) => {
       if (condition) {
         log('No recipient found', ctx);
         throw httpError(statusCode, 'No recipient found');
       }
     },
-    multipleNotFound: (condition: boolean, ctx: { recipientIds: Recipient.IdType[] }, statusCode = 400) => {
+    multipleNotFound: (condition: boolean, ctx: { recipientIds: Recipient.Id[] }, statusCode = 400) => {
       if (condition) {
         log('Some of the recipients are not found', ctx);
         throw httpError(statusCode, 'Some of the recipients are not found');
       }
     },
-    delete: (ctx: Recipient.Id, statusCode = 500): Catch => (error) => {
+    delete: (ctx: Recipient.RecipientId, statusCode = 500): Catch => (error) => {
       log('Delete recipient', ctx, error);
       throw httpError(statusCode, 'Error while deleting recipient');
     },
     update: (document: Recipient.Document, statusCode = 500): Catch => (error) => {
-      if (error .code === 11000) {
+      if (error.code === 11000) {
         log('Duplicate recipient name', document, error);
         throw httpError(400, 'Duplicate recipient name');
       }
@@ -298,15 +299,15 @@ export const httpErrors = {
       log('Update recipient', document, error);
       throw httpError(statusCode, 'Error while updating recipient');
     },
-    mergeTargetAmongSource: (condition: boolean, ctx: Recipient.Id & {source: Recipient.IdType[]}, statusCode = 400) => {
+    mergeTargetAmongSource: (condition: boolean, ctx: Recipient.RecipientId & {source: Recipient.Id[]}, statusCode = 400) => {
       if (condition) {
         log('Target recipient is among the source recipient Ids', ctx);
         throw httpError(statusCode, 'Target recipient is among the source recipient Ids');
       }
     },
     merge: (ctx: {
-      targetRecipientId: Recipient.IdType;
-      sourceRecipientIds: Recipient.IdType[];
+      targetRecipientId: Recipient.Id;
+      sourceRecipientIds: Recipient.Id[];
     }, statusCode = 500): Catch => (error) => {
       log('Merge recipients', ctx, error);
       throw httpError(statusCode, 'Error while merging recipients');
@@ -314,7 +315,7 @@ export const httpErrors = {
   },
   product: {
     save: (doc: Product.Document, statusCode = 500): Catch => (error) => {
-      if (error .code === 11000) {
+      if (error.code === 11000) {
         log('Duplicate product name', doc, error);
         throw httpError(400, 'Duplicate product name');
       }
@@ -322,34 +323,38 @@ export const httpErrors = {
       log('Save product', doc, error);
       throw httpError(statusCode, 'Error while saving product');
     },
-    getById: (ctx: Product.Id, statusCode = 500): Catch => (error) => {
+    getById: (ctx: Product.ProductId, statusCode = 500): Catch => (error) => {
       log('Get product', ctx, error);
       throw httpError(statusCode, 'Error while getting product');
     },
-    notFound: (condition: boolean, ctx: Product.Id, statusCode = 404) => {
+    listByIds: (ctx: Product.Id[], statusCode = 500): Catch => (error) => {
+      log('List products by ids', ctx, error);
+      throw httpError(statusCode, 'Error while listing products by ids');
+    },
+    notFound: (condition: boolean, ctx: Product.ProductId, statusCode = 404) => {
       if (condition) {
         log('No product found', ctx);
         throw httpError(statusCode, 'No product found');
       }
     },
-    multipleNotFound: (condition: boolean, ctx: { productIds: Product.IdType[] }, statusCode = 400) => {
+    multipleNotFound: (condition: boolean, ctx: { productIds: Product.Id[] }, statusCode = 400) => {
       if (condition) {
         log('Some of the products are not found', ctx);
         throw httpError(statusCode, 'Some of the products are not found');
       }
     },
-    delete: (ctx: Product.Id, statusCode = 500): Catch => (error) => {
+    delete: (ctx: Product.ProductId, statusCode = 500): Catch => (error) => {
       log('Delete product', ctx, error);
       throw httpError(statusCode, 'Error while deleting product');
     },
-    categoryRelation: (condition: boolean, ctx: Category.Id & Product.Id, statusCode = 400) => {
+    categoryRelation: (condition: boolean, ctx: Category.CategoryId & Product.ProductId, statusCode = 400) => {
       if (condition) {
         log('Product belongs to different category', ctx);
         throw httpError(statusCode, 'Product belongs to different category');
       }
     },
     update: (document: Product.Document, statusCode = 500): Catch => (error) => {
-      if (error .code === 11000) {
+      if (error.code === 11000) {
         log('Duplicate product name', document, error);
         throw httpError(400, 'Duplicate product name');
       }
@@ -357,16 +362,23 @@ export const httpErrors = {
       log('Update product', document, error);
       throw httpError(statusCode, 'Error while updating product');
     },
-    mergeTargetAmongSource: (condition: boolean, ctx: Product.Id & {source: Product.IdType[]}, statusCode = 400) => {
+    mergeTargetAmongSource: (condition: boolean, ctx: Product.ProductId & {source: Product.Id[]}, statusCode = 400) => {
       if (condition) {
         log('Target product is among the source product Ids', ctx);
         throw httpError(statusCode, 'Target product is among the source product Ids');
       }
     },
+    notSameCategory: (products: Product.Document[], statusCode = 400) => {
+      const categoryId = getCategoryId(products[0].category);
+
+      if (!products.every(p => getCategoryId(p.category) === categoryId)) {
+        log('Not all products belong to the same category', products.map(p => getProductId(p)));
+        throw httpError(statusCode, 'Not all products belong to the same category');
+      }
+    },
     merge: (ctx: {
-      targetProductId: Product.IdType;
-      sourceProductIds: Product.IdType[];
-      categoryId: Category.IdType;
+      targetProductId: Product.Id;
+      sourceProductIds: Product.Id[];
     }, statusCode = 500): Catch => (error) => {
       log('Merge products', ctx, error);
       throw httpError(statusCode, 'Error while merging products');

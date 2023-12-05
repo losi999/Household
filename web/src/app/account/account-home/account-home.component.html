@@ -1,8 +1,8 @@
-<app-toolbar title="Számlák">
+<household-toolbar title="Számlák">
   <button mat-icon-button (click)="create()" type="button">
     <mat-icon>add</mat-icon>
   </button>
-</app-toolbar>
-<mat-slide-toggle color="primary" [(ngModel)]="onlyOpenAccounts">{{onlyOpenAccounts ? 'Csak nyitott számlák' : 'Összes
-  számla'}}</mat-slide-toggle>
-<app-account-list [accounts]="accounts | openAccountFilter: onlyOpenAccounts"></app-account-list>
+</household-toolbar>
+<mat-slide-toggle color="primary" [(ngModel)]="onlyOpenAccounts">{{onlyOpenAccounts ? 'Csak nyitott számlák' :
+  'Összes számla'}}</mat-slide-toggle>
+<household-account-list [onlyOpenAccounts]="onlyOpenAccounts"></household-account-list>

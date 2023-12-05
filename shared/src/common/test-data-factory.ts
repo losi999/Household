@@ -1,32 +1,32 @@
-import { Account, Auth, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Account, Auth, Category, Product, Project, Recipient, Report, Transaction } from '@household/shared/types/types';
 import { Types } from 'mongoose';
 
 type DataFactoryFunction<T> = (input?: Partial<T>) => T;
 
 export const generateMongoId = (): Types.ObjectId => new Types.ObjectId();
 
-export const createAccountId = (id?: string): Account.IdType => {
-  return (id ?? generateMongoId().toString()) as Account.IdType;
+export const createAccountId = (id?: string): Account.Id => {
+  return (id ?? generateMongoId().toString()) as Account.Id;
 };
 
-export const createCategoryId = (id?: string): Category.IdType => {
-  return (id ?? generateMongoId().toString()) as Category.IdType;
+export const createCategoryId = (id?: string): Category.Id => {
+  return (id ?? generateMongoId().toString()) as Category.Id;
 };
 
-export const createProjectId = (id?: string): Project.IdType => {
-  return (id ?? generateMongoId().toString()) as Project.IdType;
+export const createProjectId = (id?: string): Project.Id => {
+  return (id ?? generateMongoId().toString()) as Project.Id;
 };
 
-export const createRecipientId = (id?: string): Recipient.IdType => {
-  return (id ?? generateMongoId().toString()) as Recipient.IdType;
+export const createRecipientId = (id?: string): Recipient.Id => {
+  return (id ?? generateMongoId().toString()) as Recipient.Id;
 };
 
-export const createTransactionId = (id?: string): Transaction.IdType => {
-  return (id ?? generateMongoId().toString()) as Transaction.IdType;
+export const createTransactionId = (id?: string): Transaction.Id => {
+  return (id ?? generateMongoId().toString()) as Transaction.Id;
 };
 
-export const createProductId = (id?: string): Product.IdType => {
-  return (id ?? generateMongoId().toString()) as Product.IdType;
+export const createProductId = (id?: string): Product.Id => {
+  return (id ?? generateMongoId().toString()) as Product.Id;
 };
 
 export const createAccountDocument: DataFactoryFunction<Account.Document> = (doc) => {
@@ -58,7 +58,6 @@ export const createCategoryDocument: DataFactoryFunction<Category.Document> = (d
     parentCategoryId: undefined,
     fullName: 'category name',
     categoryType: 'regular',
-    products: undefined,
     ...doc,
   };
 };
@@ -79,11 +78,12 @@ export const createProductDocument: DataFactoryFunction<Product.Document> = (doc
     unitOfMeasurement: 'g',
     expiresAt: undefined,
     fullName: doc ? `${doc.brand} ${doc.measurement} ${doc.unitOfMeasurement}` : 'product brand 300 g',
+    category: createCategoryDocument(),
     ...doc,
   };
 };
 
-export const createInventoryDocument: DataFactoryFunction<Transaction.InventoryItem<Transaction.Product<Product.Document>>> = (doc) => {
+export const createInventoryDocument: DataFactoryFunction<Transaction.Inventory<Product.Document>['inventory']> = (doc) => {
   return {
     product: createProductDocument(),
     quantity: 100,
@@ -91,7 +91,7 @@ export const createInventoryDocument: DataFactoryFunction<Transaction.InventoryI
   };
 };
 
-export const createInvoiceDocument: DataFactoryFunction<Transaction.InvoiceItem<Date>> = (doc) => {
+export const createInvoiceDocument: DataFactoryFunction<Transaction.Invoice<Date>['invoice']> = (doc) => {
   return {
     invoiceNumber: 'inv123',
     billingEndDate: new Date(2022, 3, 10),
@@ -122,7 +122,7 @@ export const createPaymentTransactionDocument: DataFactoryFunction<Transaction.P
   };
 };
 
-export const createSplitDocumentIem: DataFactoryFunction<Transaction.SplitDocumentItem> = (doc) => {
+export const createSplitDocumentItem: DataFactoryFunction<Transaction.SplitDocumentItem> = (doc) => {
   return {
     amount: 1,
     category: createCategoryDocument(),
@@ -130,6 +130,8 @@ export const createSplitDocumentIem: DataFactoryFunction<Transaction.SplitDocume
     description: 'split description',
     inventory: createInventoryDocument(),
     invoice: createInvoiceDocument(),
+    categoryId: undefined,
+    projectId: undefined,
     ...doc,
   };
 };
@@ -146,7 +148,7 @@ export const createSplitTransactionDocument: DataFactoryFunction<Transaction.Spl
     recipientId: undefined,
     account: createAccountDocument(),
     recipient: createRecipientDocument(),
-    splits: [createSplitDocumentIem()],
+    splits: [createSplitDocumentItem()],
     ...doc,
   };
 };
@@ -208,7 +210,7 @@ export const createProductRequest: DataFactoryFunction<Product.Request> = (req) 
   };
 };
 
-export const createInventoryRequest: DataFactoryFunction<Transaction.InventoryItem<Product.Id>> = (req) => {
+export const createInventoryRequest: DataFactoryFunction<Transaction.InventoryRequest['inventory']> = (req) => {
   return {
     productId: createProductId(),
     quantity: 100,
@@ -216,7 +218,7 @@ export const createInventoryRequest: DataFactoryFunction<Transaction.InventoryIt
   };
 };
 
-export const createInvoiceRequest: DataFactoryFunction<Transaction.InvoiceItem<string>> = (req) => {
+export const createInvoiceRequest: DataFactoryFunction<Transaction.Invoice<string>['invoice']> = (req) => {
   return {
     invoiceNumber: 'inv123',
     billingEndDate: '2022-03-21',
@@ -280,6 +282,19 @@ export const createLoginRequest: DataFactoryFunction<Auth.Login.Request> = (req)
   return {
     email: 'aaa@email.com',
     password: 'password123',
+    ...req,
+  };
+};
+
+export const createReportRequest: DataFactoryFunction<Report.Request> = (req) => {
+  return {
+    accountIds: [createAccountId()],
+    categoryIds: [createCategoryId()],
+    recipientIds: [createRecipientId()],
+    productIds: [createProductId()],
+    projectIds: [createProjectId()],
+    issuedAtFrom: new Date(2023, 1, 1, 0, 0, 0).toISOString(),
+    issuedAtTo: new Date(2023, 12, 1, 0, 0, 0).toISOString(),
     ...req,
   };
 };
@@ -356,7 +371,7 @@ export const createProductResponse: DataFactoryFunction<Product.Response> = (res
   };
 };
 
-export const createInventoryResponse: DataFactoryFunction<Transaction.InventoryItem<Transaction.Product<Product.Response>>> = (resp) => {
+export const createInventoryResponse: DataFactoryFunction<Transaction.Inventory<Product.Response>['inventory']> = (resp) => {
   return {
     product: createProductResponse(),
     quantity: 100,
@@ -364,7 +379,7 @@ export const createInventoryResponse: DataFactoryFunction<Transaction.InventoryI
   };
 };
 
-export const createInvoiceResponse: DataFactoryFunction<Transaction.InvoiceItem<string>> = (resp) => {
+export const createInvoiceResponse: DataFactoryFunction<Transaction.Invoice<string>['invoice']> = (resp) => {
   return {
     invoiceNumber: 'inv123',
     billingEndDate: '2022-03-10',
@@ -439,5 +454,62 @@ export const createTransferTransactionResponse: DataFactoryFunction<Transaction.
     account: createAccountResponse(),
     transferAccount: createAccountResponse(),
     ...resp,
+  };
+};
+
+export const createAccountReport: DataFactoryFunction<Account.Report> = (rep) => {
+  return {
+    accountId: createAccountId(),
+    currency: 'Ft',
+    name: 'acc name',
+    ...rep,
+  };
+};
+
+export const createCategoryReport: DataFactoryFunction<Category.Report> = (rep) => {
+  return {
+    categoryId: createCategoryId(),
+    fullName: 'category:name',
+    ...rep,
+  };
+};
+
+export const createProjectReport: DataFactoryFunction<Project.Report> = (rep) => {
+  return {
+    projectId: createProjectId(),
+    name: 'acc name',
+    ...rep,
+  };
+};
+
+export const createProductReport: DataFactoryFunction<Product.Report> = (rep) => {
+  return {
+    productId: createProductId(),
+    fullName: 'product name 100 g',
+    quantity: 1,
+    ...rep,
+  };
+};
+
+export const createRecipientReport: DataFactoryFunction<Recipient.Report> = (rep) => {
+  return {
+    recipientId: createRecipientId(),
+    name: 'acc name',
+    ...rep,
+  };
+};
+
+export const createTransactionReport: DataFactoryFunction<Transaction.Report> = (rep) => {
+  return {
+    transactionId: createTransactionId(),
+    amount: 100,
+    description: 'description',
+    issuedAt: new Date().toISOString(),
+    account: createAccountReport(),
+    category: createCategoryReport(),
+    product: createProductReport(),
+    project: createProjectReport(),
+    recipient: createRecipientReport(),
+    ...rep,
   };
 };

@@ -78,13 +78,13 @@ describe('POST product/v1/products', () => {
         });
 
         it('is already in used by a different product', () => {
-          const productDocument = productDocumentConverter.create(request, Cypress.env('EXPIRES_IN'), true);
+          const productDocument = productDocumentConverter.create({
+            body: request,
+            category: categoryDocument,
+          }, Cypress.env('EXPIRES_IN'), true);
           const categoryId = getCategoryId(categoryDocument);
 
-          cy.saveProductDocument({
-            document: productDocument,
-            categoryId,
-          })
+          cy.saveProductDocument(productDocument)
             .saveCategoryDocument(categoryDocument)
             .authenticate(1)
             .requestCreateProduct(request, categoryId)

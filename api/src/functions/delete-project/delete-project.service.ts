@@ -4,7 +4,7 @@ import { Project } from '@household/shared/types/types';
 
 export interface IDeleteProjectService {
   (ctx: {
-    projectId: Project.IdType;
+    projectId: Project.Id;
   }): Promise<void>;
 }
 

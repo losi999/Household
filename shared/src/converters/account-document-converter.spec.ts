@@ -1,7 +1,6 @@
-import { createAccountDocument, createAccountRequest, createAccountResponse } from '@household/shared/common/test-data-factory';
+import { createAccountDocument, createAccountReport, createAccountRequest, createAccountResponse } from '@household/shared/common/test-data-factory';
 import { addSeconds, getAccountId } from '@household/shared/common/utils';
 import { accountDocumentConverterFactory, IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
-import { Account } from '@household/shared/types/types';
 import { advanceTo, clear } from 'jest-date-mock';
 
 describe('Account document converter', () => {
@@ -19,7 +18,7 @@ describe('Account document converter', () => {
 
   const name = 'Pénztárca';
   const currency = 'Ft';
-  const accountType: Account.AccountType = 'cash';
+  const accountType = 'cash';
   const expiresIn = 3600;
   const balance = 12000;
   const isOpen = false;
@@ -97,6 +96,17 @@ describe('Account document converter', () => {
         balance,
         currency,
         isOpen,
+        name,
+      }));
+    });
+  });
+
+  describe('toReport', () => {
+    it('should return response', () => {
+      const result = converter.toReport(queriedDocument);
+      expect(result).toEqual(createAccountReport({
+        accountId: getAccountId(queriedDocument),
+        currency,
         name,
       }));
     });

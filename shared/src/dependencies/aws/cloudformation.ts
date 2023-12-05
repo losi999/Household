@@ -1,4 +1,3 @@
-import { config, CloudFormation } from 'aws-sdk';
+import { CloudFormation } from '@aws-sdk/client-cloudformation';
 
-config.logger = console;
-export const cloudFormation = new CloudFormation();
+export const cloudFormation = new CloudFormation({});

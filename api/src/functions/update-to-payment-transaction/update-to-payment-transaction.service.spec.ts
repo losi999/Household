@@ -42,10 +42,11 @@ describe('Update to payment transaction service', () => {
 
   beforeEach(() => {
     queriedAccount = createAccountDocument();
-    queriedProduct = createProductDocument();
     queriedCategory = createCategoryDocument({
       categoryType: 'inventory',
-      products: [queriedProduct],
+    });
+    queriedProduct = createProductDocument({
+      category: queriedCategory,
     });
     queriedProject = createProjectDocument();
     queriedRecipient = createRecipientDocument();

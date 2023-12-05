@@ -4,14 +4,14 @@ import { Recipient } from '@household/shared/types/types';
 export interface IRecipientService {
   dumpRecipients(): Promise<Recipient.Document[]>;
   saveRecipient(doc: Recipient.Document): Promise<Recipient.Document>;
-  getRecipientById(recipientId: Recipient.IdType): Promise<Recipient.Document>;
-  deleteRecipient(recipientId: Recipient.IdType): Promise<unknown>;
+  getRecipientById(recipientId: Recipient.Id): Promise<Recipient.Document>;
+  deleteRecipient(recipientId: Recipient.Id): Promise<unknown>;
   updateRecipient(doc: Recipient.Document): Promise<unknown>;
   listRecipients(): Promise<Recipient.Document[]>;
-  listRecipientsByIds(recipientIds: Recipient.IdType[]): Promise<Recipient.Document[]>;
+  listRecipientsByIds(recipientIds: Recipient.Id[]): Promise<Recipient.Document[]>;
   mergeRecipients(ctx: {
-    targetRecipientId: Recipient.IdType;
-    sourceRecipientIds: Recipient.IdType[];
+    targetRecipientId: Recipient.Id;
+    sourceRecipientIds: Recipient.Id[];
   }): Promise<unknown>;
 }
 

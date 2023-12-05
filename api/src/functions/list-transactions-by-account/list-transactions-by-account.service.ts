@@ -4,7 +4,7 @@ import { ITransactionService } from '@household/shared/services/transaction-serv
 import { Account, Common, Transaction } from '@household/shared/types/types';
 
 export interface IListTransactionsByAccountService {
-  (ctx: Account.Id & Common.Pagination<number>): Promise<Transaction.Response[]>;
+  (ctx: Account.AccountId & Common.Pagination<number>): Promise<Transaction.Response[]>;
 }
 
 export const listTransactionsByAccountServiceFactory = (

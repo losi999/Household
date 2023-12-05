@@ -5,7 +5,7 @@ import { Project } from '@household/shared/types/types';
 
 export interface IGetProjectService {
   (ctx: {
-    projectId: Project.IdType;
+    projectId: Project.Id;
   }): Promise<Project.Response>;
 }
 

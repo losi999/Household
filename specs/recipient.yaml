@@ -1,0 +1,31 @@
+openapi: "3.0.0"
+info:
+  title: Recipient components
+  version: 1.0.0
+components:
+  schemas:
+    RecipientId:
+      type: object
+      required:
+        - recipientId
+      properties:
+        recipientId:
+          type: string
+    Name:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+    Response:
+      allOf:
+        - $ref: "#/components/schemas/RecipientId"
+        - $ref: "#/components/schemas/Name"
+    Report:
+      allOf:
+        - $ref: "#/components/schemas/RecipientId"
+        - $ref: "#/components/schemas/Name"
+    Request:
+      $ref: "#/components/schemas/Name"

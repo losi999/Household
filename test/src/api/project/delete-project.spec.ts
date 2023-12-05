@@ -107,8 +107,8 @@ describe('DELETE /project/v1/projects/{projectId}', () => {
           .requestDeleteProject(getProjectId(projectDocument))
           .expectNoContentResponse()
           .validateProjectDeleted(getProjectId(projectDocument))
-          .validateProjectUnset(paymentTransactionDocument)
-          .validateProjectUnset(splitTransactionDocument, 0);
+          .validatePartiallyUnsetPaymentDocument(paymentTransactionDocument, 'project')
+          .validatePartiallyUnsetSplitDocument(splitTransactionDocument, 0, 'project');
       });
     });
 
