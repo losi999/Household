@@ -13,11 +13,17 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatBadgeModule } from '@angular/material/badge';
 import { ReportFilterDialogComponent } from 'src/app/report/report-filter-dialog/report-filter-dialog.component';
 import { MatDialogModule } from '@angular/material/dialog';
+import { ReportListComponent } from 'src/app/report/report-list/report-list.component';
+import { MatTreeModule } from '@angular/material/tree';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatChipsModule } from '@angular/material/chips';
+import { CdkDrag, CdkDropList } from '@angular/cdk/drag-drop';
 
 @NgModule({
   declarations: [
     ReportHomeComponent,
     ReportFilterDialogComponent,
+    ReportListComponent,
   ],
   imports: [
     CommonModule,
@@ -32,6 +38,11 @@ import { MatDialogModule } from '@angular/material/dialog';
     MatMenuModule,
     MatBadgeModule,
     MatDialogModule,
+    MatTreeModule,
+    MatDividerModule,
+    MatChipsModule,
+    CdkDropList,
+    CdkDrag,
   ],
 })
 export class ReportModule { }

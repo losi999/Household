@@ -77,7 +77,7 @@ export class SelectAllListComponent implements OnInit, OnDestroy, OnChanges, Con
     });
   }
 
-  private reduceTree(nodes: DataSource[], inputValue: string) {
+  private reduceTree(nodes: DataSource[], inputValue: string): DataSource[] {
     return nodes.reduce<DataSource[]>((accumulator, currentValue) => {
       if (currentValue.value.toLowerCase().includes(inputValue)) {
         return [
@@ -222,7 +222,13 @@ export class SelectAllListComponent implements OnInit, OnDestroy, OnChanges, Con
     return node.key;
   }
 
-  writeValue(): void {
+  writeValue(value: any): void {
+    this.selectionList.patchValue(value?.reduce((accumulator, currentValue) => {
+      return {
+        ...accumulator,
+        [currentValue]: true,
+      };
+    }, {}));
   }
 
   registerOnChange(fn: any): void {

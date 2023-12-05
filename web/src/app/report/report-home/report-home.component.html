@@ -1,91 +1,51 @@
 <household-toolbar title="Jelentések">
-  <button mat-icon-button type="button" [matMenuTriggerFor]="filters">
-    <mat-icon>tune</mat-icon>
-  </button>
-  <mat-menu #filters="matMenu" xPosition="before">
-    <button mat-menu-item>Dátum</button>
-    <button mat-menu-item (click)="filterAccounts()">Számlák</button>
-    <button mat-menu-item (click)="filterProjects()">Projektek</button>
-    <button mat-menu-item (click)="filterRecipients()">Partnerek</button>
-    <button mat-menu-item (click)="filterCategories()">Kategóriák</button>
-    <button mat-menu-item (click)="filterProducts()">Termékek</button>
-  </mat-menu>
   <button mat-icon-button type="button">
     <mat-icon>save</mat-icon>
   </button>
 </household-toolbar>
-<div [formGroup]="form">
-  <button mat-flat-button color="primary" (click)="onSubmit()">Küldés</button>
+<div style="padding:24px" [formGroup]="form">
   <mat-accordion multi>
-    <mat-expansion-panel>
+    <mat-expansion-panel expanded="true">
       <mat-expansion-panel-header>
         <mat-panel-title>
-          Tranzakciók dátuma
+          Szűrés
         </mat-panel-title>
-        <mat-panel-description>
-          <ng-container *ngIf="form.value.issuedAtFrom && form.value.issuedAtTo">
-            {{form.value.issuedAtFrom.toLocaleString()}} és {{form.value.issuedAtTo.toLocaleString()}} között
-          </ng-container>
-          <ng-container *ngIf="form.value.issuedAtFrom">
-            {{form.value.issuedAtFrom.toLocaleString()}} után
-          </ng-container>
-          <ng-container *ngIf="form.value.issuedAtTo">
-            {{form.value.issuedAtTo.toLocaleString()}} előtt
-          </ng-container>
-        </mat-panel-description>
       </mat-expansion-panel-header>
       <household-datetime-input formControlName="issuedAtFrom"></household-datetime-input>
       <household-datetime-input formControlName="issuedAtTo"></household-datetime-input>
+      <button mat-button matBadge="{{form.value.accountIds?.length}}" matBadgeColor="warn" (click)="filterAccounts()">
+        <mat-icon>account_balance_wallet</mat-icon>Számlák
+      </button>
+      <button mat-button matBadge="{{form.value.projectIds?.length}}" matBadgeColor="warn" (click)="filterProjects()">
+        <mat-icon>folder</mat-icon>Projektek
+      </button>
+      <button mat-button matBadge="{{form.value.recipientIds?.length}}" matBadgeColor="warn"
+        (click)="filterRecipients()">
+        <mat-icon>store</mat-icon>Partnerek
+      </button>
+      <button mat-button matBadge="{{form.value.categoryIds?.length}}" matBadgeColor="warn"
+        (click)="filterCategories()">
+        <mat-icon>category</mat-icon>Kategóriák
+      </button>
+      <button mat-button matBadge="{{form.value.productIds?.length}}" matBadgeColor="warn" (click)="filterProducts()">
+        <mat-icon>shopping_cart</mat-icon>Termékek
+      </button>
     </mat-expansion-panel>
-    <mat-expansion-panel>
+    <mat-expansion-panel expanded="true">
       <mat-expansion-panel-header>
         <mat-panel-title>
-          Számlák
+          Csoportosítás
         </mat-panel-title>
-        <mat-panel-description>
-          {{form.value.accountIds?.length ?? 0}} kiválasztva {{accounts.length}} számlából
-        </mat-panel-description>
       </mat-expansion-panel-header>
-    </mat-expansion-panel>
-    <mat-expansion-panel>
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          Projektek
-        </mat-panel-title>
-        <mat-panel-description>
-          {{form.value.projectIds?.length ?? 0}} kiválasztva {{projects.length}} projektből
-        </mat-panel-description>
-      </mat-expansion-panel-header>
-    </mat-expansion-panel>
-    <mat-expansion-panel>
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          Partnerek
-        </mat-panel-title>
-        <mat-panel-description>
-          {{form.value.recipientIds?.length ?? 0}} kiválasztva {{recipients.length}} partnerből
-        </mat-panel-description>
-      </mat-expansion-panel-header>
-    </mat-expansion-panel>
-    <mat-expansion-panel>
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          Kategóriák
-        </mat-panel-title>
-        <mat-panel-description>
-          {{form.value.categoryIds?.length ?? 0}} kiválasztva {{categories.length}} kategóriából
-        </mat-panel-description>
-      </mat-expansion-panel-header>
-    </mat-expansion-panel>
-    <mat-expansion-panel>
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          Termékek
-        </mat-panel-title>
-        <mat-panel-description>
-          {{form.value.productIds?.length ?? 0}} kiválasztva {{products?.length}} termékből
-        </mat-panel-description>
-      </mat-expansion-panel-header>
+      <mat-chip-set cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="dropGroup($event)">
+        <mat-chip-option *ngFor="let group of groupCriterias" [selected]="group.isSelected" color="primary"
+          (click)="clickGroup(group)" cdkDrag>{{group.value}}</mat-chip-option>
+      </mat-chip-set>
+
     </mat-expansion-panel>
   </mat-accordion>
+  <!-- <div class="report-home__filter-summary"> -->
+  <button mat-flat-button color="primary" (click)="onSubmit()">Keresés</button>
+  <!-- </div> -->
+  <household-report-list *ngIf="report" [items]="report" [groupBy]="selectedGroups"></household-report-list>
 </div>

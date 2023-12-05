@@ -162,19 +162,19 @@ export class DialogService {
     });
   }
 
-  openAccountFilterDialog(accounts: Account.Response[]): MatDialogRef<ReportFilterDialogComponent, Account.Id[]> {
+  openAccountFilterDialog(accounts: Account.Response[], selectedItems: Account.Id[]): MatDialogRef<ReportFilterDialogComponent, Account.Id[]> {
     return this.dialog.open<ReportFilterDialogComponent, ReportFilterDialogData>(ReportFilterDialogComponent, {
       data: {
         items: accounts,
         title: 'Számlák',
         displayPropertyName: 'name',
         keyPropertyName: 'accountId',
-        parentPropertyName: undefined,
+        selectedItems,
       },
     });
   }
 
-  openProductFilterDialog(products: ProductFlatTree[]): MatDialogRef<ReportFilterDialogComponent, Product.Id[]> {
+  openProductFilterDialog(products: ProductFlatTree[], selectedItems: Product.Id[]): MatDialogRef<ReportFilterDialogComponent, Product.Id[]> {
     return this.dialog.open<ReportFilterDialogComponent, ReportFilterDialogData>(ReportFilterDialogComponent, {
       data: {
         items: products,
@@ -182,11 +182,12 @@ export class DialogService {
         displayPropertyName: 'value',
         keyPropertyName: 'key',
         parentPropertyName: 'parent',
+        selectedItems,
       },
     });
   }
 
-  openCategoryFilterDialog(categories: Category.Response[]): MatDialogRef<ReportFilterDialogComponent, Category.Id[]> {
+  openCategoryFilterDialog(categories: Category.Response[], selectedItems: Category.Id[]): MatDialogRef<ReportFilterDialogComponent, Category.Id[]> {
     return this.dialog.open<ReportFilterDialogComponent, ReportFilterDialogData>(ReportFilterDialogComponent, {
       data: {
         items: categories,
@@ -194,30 +195,31 @@ export class DialogService {
         displayPropertyName: 'fullName',
         keyPropertyName: 'categoryId',
         parentPropertyName: 'parentCategory',
+        selectedItems,
       },
     });
   }
 
-  openProjectFilterDialog(projects: Project.Response[]): MatDialogRef<ReportFilterDialogComponent, Project.Id[]> {
+  openProjectFilterDialog(projects: Project.Response[], selectedItems: Project.Id[]): MatDialogRef<ReportFilterDialogComponent, Project.Id[]> {
     return this.dialog.open<ReportFilterDialogComponent, ReportFilterDialogData>(ReportFilterDialogComponent, {
       data: {
         items: projects,
         title: 'Projektek',
         displayPropertyName: 'name',
         keyPropertyName: 'projectId',
-        parentPropertyName: undefined,
+        selectedItems,
       },
     });
   }
 
-  openRecipientFilterDialog(recipients: Recipient.Response[]): MatDialogRef<ReportFilterDialogComponent, Recipient.Id[]> {
+  openRecipientFilterDialog(recipients: Recipient.Response[], selectedItems: Recipient.Id[]): MatDialogRef<ReportFilterDialogComponent, Recipient.Id[]> {
     return this.dialog.open<ReportFilterDialogComponent, ReportFilterDialogData>(ReportFilterDialogComponent, {
       data: {
         items: recipients,
         title: 'Partnerek',
         displayPropertyName: 'name',
         keyPropertyName: 'recipientId',
-        parentPropertyName: undefined,
+        selectedItems,
       },
     });
   }

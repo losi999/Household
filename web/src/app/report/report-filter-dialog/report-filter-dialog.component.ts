@@ -4,10 +4,11 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 export type ReportFilterDialogData = {
   items: any[];
+  selectedItems: string[];
   title: string;
   displayPropertyName: string;
   keyPropertyName: string;
-  parentPropertyName: string;
+  parentPropertyName?: string;
 };
 export type ReportFilterDialogResult = any[];
 
@@ -24,7 +25,7 @@ export class ReportFilterDialogComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.selected = new FormControl();
+    this.selected = new FormControl(this.data.selectedItems);
   }
 
   filter() {

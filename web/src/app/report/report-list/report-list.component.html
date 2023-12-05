@@ -1,0 +1,31 @@
+<mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
+  <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding>
+    <div>
+      <div>
+        {{node.issuedAt | date: 'yyyy. MM. dd. HH:mm'}}
+      </div>
+      <div>
+        {{node.account.name}}
+      </div>
+      <div>
+        {{node.category?.fullName}}
+      </div>
+      <div>
+        {{node.product?.fullName}}
+      </div>
+      <div>
+        {{node.project?.name}}
+      </div>
+      <div>
+        {{node.recipient?.name}}
+      </div>
+      <div>
+        {{node.amount}} {{node.account.currency}}
+      </div>
+      <mat-divider></mat-divider>
+    </div>
+  </mat-tree-node>
+  <mat-tree-node *matTreeNodeDef="let node; when: hasChild" matTreeNodePadding>
+    {{node.groupName}} 0 {{node.currency}}
+  </mat-tree-node>
+</mat-tree>

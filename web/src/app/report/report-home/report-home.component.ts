@@ -1,12 +1,14 @@
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Account, Category, Product, Project, Recipient, Report } from '@household/shared/types/types';
+import { Account, Category, Product, Project, Recipient, Report, Transaction } from '@household/shared/types/types';
 import { Subject, takeUntil } from 'rxjs';
 import { AccountService } from 'src/app/account/account.service';
 import { CategoryService } from 'src/app/category/category.service';
 import { ProjectService } from 'src/app/project/project.service';
 import { RecipientService } from 'src/app/recipient/recipient.service';
+import { GroupBy } from 'src/app/report/report-list/report-list.component';
 import { DialogService } from 'src/app/shared/dialog.service';
 import { Store } from 'src/app/store';
 import { TransactionService } from 'src/app/transaction/transaction.service';
@@ -15,6 +17,12 @@ export type ProductFlatTree = {
   key: Product.Id;
   value: string;
   parent?: string
+};
+
+type GroupCriteria ={
+  key: GroupBy;
+  value: string;
+  isSelected: boolean
 };
 
 @Component({
@@ -46,6 +54,7 @@ export class ReportHomeComponent implements OnInit, OnDestroy {
     recipientIds: FormControl<Recipient.Id[]>;
     productIds: FormControl<Product.Id[]>;
   }>;
+  report: Transaction.Report[];
 
   constructor(private store: Store, private transactionService: TransactionService,
     accountService: AccountService,
@@ -104,68 +113,141 @@ export class ReportHomeComponent implements OnInit, OnDestroy {
     };
 
     this.transactionService.getTransactionReport(request).subscribe((value) => {
-      console.log(value);
+      this.report = value;
     });
   }
 
   filterAccounts() {
-    const dialogRef = this.dialogService.openAccountFilterDialog(this.accounts);
+    const dialogRef = this.dialogService.openAccountFilterDialog(this.accounts, this.form.value.accountIds);
 
     dialogRef.afterClosed().subscribe({
       next: (value) => {
-        this.form.patchValue({
-          accountIds: value,
-        });
+        if (value !== undefined) {
+          this.form.patchValue({
+            accountIds: value,
+          });
+        }
       },
     });
   }
 
   filterRecipients() {
-    const dialogRef = this.dialogService.openRecipientFilterDialog(this.recipients);
+    const dialogRef = this.dialogService.openRecipientFilterDialog(this.recipients, this.form.value.recipientIds);
 
     dialogRef.afterClosed().subscribe({
       next: (value) => {
-        this.form.patchValue({
-          recipientIds: value,
-        });
+        if (value !== undefined) {
+          this.form.patchValue({
+            recipientIds: value,
+          });
+        }
       },
     });
   }
 
   filterProjects() {
-    const dialogRef = this.dialogService.openProjectFilterDialog(this.projects);
+    const dialogRef = this.dialogService.openProjectFilterDialog(this.projects, this.form.value.projectIds);
 
     dialogRef.afterClosed().subscribe({
       next: (value) => {
-        this.form.patchValue({
-          projectIds: value,
-        });
+        if (value !== undefined) {
+          this.form.patchValue({
+            projectIds: value,
+          });
+        }
       },
     });
   }
 
   filterCategories() {
-    const dialogRef = this.dialogService.openCategoryFilterDialog(this.categories);
+    const dialogRef = this.dialogService.openCategoryFilterDialog(this.categories, this.form.value.categoryIds);
 
     dialogRef.afterClosed().subscribe({
       next: (value) => {
-        this.form.patchValue({
-          categoryIds: value,
-        });
+        if (value !== undefined) {
+          this.form.patchValue({
+            categoryIds: value,
+          });
+        }
       },
     });
   }
 
   filterProducts() {
-    const dialogRef = this.dialogService.openProductFilterDialog(this.products);
+    const dialogRef = this.dialogService.openProductFilterDialog(this.products, this.form.value.productIds);
 
     dialogRef.afterClosed().subscribe({
       next: (value) => {
-        this.form.patchValue({
-          productIds: value,
-        });
+        if (value !== undefined) {
+          this.form.patchValue({
+            productIds: value,
+          });
+        }
       },
     });
   }
 
+  groupCriterias: GroupCriteria[] = [
+    {
+      key: 'year',
+      value: 'Év',
+      isSelected: false,
+    },
+    // {
+    //   key: 'month',
+    //   value: 'Hónap',
+    //   isSelected: false,
+    // },
+    // {
+    //   key: 'day',
+    //   value: 'Nap',
+    //   isSelected: false,
+    // },
+    {
+      key: 'account',
+      value: 'Számla',
+      isSelected: false,
+    },
+    {
+      key: 'project',
+      value: 'Projekt',
+      isSelected: false,
+    },
+    {
+      key: 'recipient',
+      value: 'Partner',
+      isSelected: false,
+    },
+    {
+      key: 'category',
+      value: 'Kategória',
+      isSelected: false,
+    },
+    {
+      key: 'product',
+      value: 'Termék',
+      isSelected: false,
+    },
+  ];
+  selectedGroups = [];
+
+  clickGroup(groupCriteria: GroupCriteria) {
+    groupCriteria.isSelected = !groupCriteria.isSelected;
+    const fromIndex = this.groupCriterias.findIndex(g => g.key === groupCriteria.key);
+    const toIndex = this.groupCriterias.filter(g => g.isSelected).length;
+    if (groupCriteria.isSelected) {
+      moveItemInArray(this.groupCriterias, fromIndex, toIndex - 1);
+    } else {
+      moveItemInArray(this.groupCriterias, fromIndex, toIndex);
+    }
+    this.selectedGroups = this.groupCriterias.filter(g => g.isSelected).map(g => g.key);
+  }
+
+  dropGroup(event: CdkDragDrop<GroupCriteria[]>) {
+    const groupCriteria = this.groupCriterias[event.currentIndex];
+    if (groupCriteria.isSelected) {
+      moveItemInArray(this.groupCriterias, event.previousIndex, event.currentIndex);
+      this.selectedGroups = this.groupCriterias.filter(g => g.isSelected).map(g => g.key);
+    }
+  }
 }
