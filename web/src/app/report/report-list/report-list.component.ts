@@ -5,6 +5,7 @@ import { Transaction } from '@household/shared/types/types';
 
 type GroupNode = {
   groupName: string
+  amount: number;
   currency: string;
   nestedGroups: GroupNode[];
   children: ReportNode[];
@@ -58,13 +59,11 @@ export class ReportListComponent implements OnChanges {
           case 'currency': {
             groupKey += currentValue.account.currency;
             groupName = '';
-          }
-            break;
+          } break;
           case 'project': {
             groupKey += currentValue.project?.projectId ?? 'Nincs projekt';
             groupName = currentValue.project?.name ?? 'Nincs projekt';
-          }
-            break;
+          } break;
           case 'category': {
             groupKey += currentValue.category?.categoryId ?? 'Nincs kategória';
             groupName = currentValue.category?.fullName ?? 'Nincs kategória';
@@ -75,7 +74,7 @@ export class ReportListComponent implements OnChanges {
           } break;
           case 'product': {
             groupKey += currentValue.product?.productId ?? 'Nincs termék';
-            groupName = `${currentValue.category?.fullName} ${currentValue.product?.fullName}` ?? 'Nincs termék';
+            groupName = currentValue.product ? `${currentValue.category.fullName} - ${currentValue.product.fullName}` : 'Nincs termék';
           } break;
           case 'account': {
             groupKey += currentValue.account.accountId;
@@ -90,6 +89,7 @@ export class ReportListComponent implements OnChanges {
             groupName,
             children: [],
             nestedGroups: [],
+            amount: 0,
           };
 
           map[groupKey] = groupNode;
@@ -100,8 +100,8 @@ export class ReportListComponent implements OnChanges {
             accumulator.push(groupNode);
           }
         }
+        groupNode.amount += currentValue.amount;
       }
-
       map[groupKey].children.push(currentValue);
       return accumulator;
     }, []);
@@ -119,6 +119,7 @@ export class ReportListComponent implements OnChanges {
             groupName: node.groupName,
             currency: node.currency,
             isExpandable: true,
+            amount: node.amount,
           };
         }
         return {
@@ -128,7 +129,7 @@ export class ReportListComponent implements OnChanges {
         };
       },
       node => node.level,
-      () => true,
+      (node) => node.isExpandable,
       node => {
         if (isGroupNode(node)) {
           return node.children.length > 0 ? node.children : node.nestedGroups;
@@ -139,7 +140,6 @@ export class ReportListComponent implements OnChanges {
 
     this.dataSource = new MatTreeFlatDataSource(this.treeControl, this.flattener);
     this.dataSource.data = fullTree;
-    this.treeControl.expandAll();
   }
 
   hasChild(_: number, node: FlatNode) {

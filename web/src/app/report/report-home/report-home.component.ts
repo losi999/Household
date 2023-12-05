@@ -188,11 +188,11 @@ export class ReportHomeComponent implements OnInit, OnDestroy {
   }
 
   groupCriterias: GroupCriteria[] = [
-    {
-      key: 'year',
-      value: 'Év',
-      isSelected: false,
-    },
+    // {
+    //   key: 'year',
+    //   value: 'Év',
+    //   isSelected: false,
+    // },
     // {
     //   key: 'month',
     //   value: 'Hónap',

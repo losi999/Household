@@ -5,7 +5,7 @@
 </household-toolbar>
 <div style="padding:24px" [formGroup]="form">
   <mat-accordion multi>
-    <mat-expansion-panel expanded="true">
+    <mat-expansion-panel>
       <mat-expansion-panel-header>
         <mat-panel-title>
           Szűrés
@@ -31,7 +31,7 @@
         <mat-icon>shopping_cart</mat-icon>Termékek
       </button>
     </mat-expansion-panel>
-    <mat-expansion-panel expanded="true">
+    <mat-expansion-panel>
       <mat-expansion-panel-header>
         <mat-panel-title>
           Csoportosítás
@@ -44,8 +44,6 @@
 
     </mat-expansion-panel>
   </mat-accordion>
-  <!-- <div class="report-home__filter-summary"> -->
   <button mat-flat-button color="primary" (click)="onSubmit()">Keresés</button>
-  <!-- </div> -->
   <household-report-list *ngIf="report" [items]="report" [groupBy]="selectedGroups"></household-report-list>
 </div>

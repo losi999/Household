@@ -1,0 +1,55 @@
+.report-item {
+  display: grid;
+  grid-template-columns: 55px 1fr auto;
+  column-gap: 15px;
+  grid-template-areas: "datetime details amount";
+  width: 100%;
+  padding: 10px;
+
+  &__datetime {
+    grid-area: datetime;
+  }
+
+  &__details {
+    grid-area: details;
+    min-width: 0;
+  }
+
+  &__year {
+    font-size: 12px;
+  }
+
+  &__date {
+    font-size: 16px;
+  }
+
+  &__time {
+    font-size: 14px;
+  }
+
+  &__category,
+  &__recipient,
+  &__description,
+  &__project {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  &__account,
+  &__recipient {
+    font-weight: bold;
+  }
+
+  &__description {
+    font-style: italic;
+  }
+
+  &__amount {
+    grid-area: amount;
+    align-self: center;
+    justify-self: end;
+    font-size: 20px;
+    font-weight: bold;
+  }
+}
