@@ -29,8 +29,8 @@ jobs:
       - checkout
       - restore_cache:
           key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "test/yarn.lock"}}-{{checksum "layers/mongoose/nodejs/yarn.lock"}}
-      - restore_cache:
-          key: cache-cypress-v2-{{checksum "test/yarn.lock"}}
+      # - restore_cache:
+      #     key: cache-cypress-v3-{{checksum "test/yarn.lock"}}
       - run:
           name: Install API dependencies
           command: yarn
@@ -42,20 +42,19 @@ jobs:
           name: Installing layer dependencies
           command: yarn
           working_directory: layers/mongoose/nodejs
-      - run:
-          name: Install test dependencies
-          command: yarn
-          working_directory: test
-      - list-files
+      # - run:
+      #     name: Install test dependencies
+      #     command: yarn
+      #     working_directory: test
       - save_cache:
           key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "test/yarn.lock"}}-{{checksum "layers/mongoose/nodejs/yarn.lock"}}
           paths:
             - ~/.cache/yarn
-      - save_cache:
-          key: cache-cypress-v2-{{checksum "test/yarn.lock"}}
-          paths:
-            - ~/.cache/Cypress
-            - /root/.cache/Cypress
+      # - save_cache:
+      #     key: cache-cypress-v3-{{checksum "test/yarn.lock"}}
+      #     paths:
+      #       - ~/.cache/Cypress
+      #       - /root/.cache/Cypress
       - persist_to_workspace:
           root: ~/
           paths:
@@ -161,7 +160,11 @@ jobs:
           at: ~/
 
       - restore_cache:
-          key: cache-cypress-v2-{{checksum "test/yarn.lock"}}
+          key: cache-cypress-v3-{{checksum "test/yarn.lock"}}
+      - run:
+          name: Install test dependencies
+          command: yarn
+          working_directory: test
       - list-files
 
       - run:
@@ -203,13 +206,13 @@ workflows:
 
   dev:
     jobs:
-      - install:
-          name: install
-          filters:
-            branches:
-              only:
-                - development
-                - feature/dev
+      # - install:
+      #     name: install
+      #     filters:
+      #       branches:
+      #         only:
+      #           - development
+      #           - feature/dev
       # - unit_test:
       #     name: unit_test
       #     requires:
@@ -238,9 +241,14 @@ workflows:
       - test:
           name: test_dev
           env: "DEV"
-          requires:
-            # - web_deploy_dev
-            - install
+          filters:
+            branches:
+              only:
+                # - development
+                - feature/dev
+          # requires:
+          #   # - web_deploy_dev
+          #   - install
 
   prod:
     jobs:
