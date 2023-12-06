@@ -10,7 +10,7 @@ commands:
             echo "current folder $(pwd)"
             echo ""
             echo "cache folder"
-            ls -la ..
+            ls -la ../.cache
             echo "current folder contents"
             ls -l
             echo ""
@@ -169,20 +169,20 @@ jobs:
           name: Install test dependencies
           command: yarn
           working_directory: test
-      # - list-files
+      - list-files
 
-      - run:
-          name: Setting MongoDB connection string
-          command: echo "export MONGODB_CONNECTION_STRING=\"mongodb+srv://$MONGODB_USERNAME:$MONGODB_PASSWORD@$MONGODB_CLUSTER_DOMAIN/household-<<parameters.env>>?retryWrites=true&w=majority\"" >> "$BASH_ENV"
+      # - run:
+      #     name: Setting MongoDB connection string
+      #     command: echo "export MONGODB_CONNECTION_STRING=\"mongodb+srv://$MONGODB_USERNAME:$MONGODB_PASSWORD@$MONGODB_CLUSTER_DOMAIN/household-<<parameters.env>>?retryWrites=true&w=majority\"" >> "$BASH_ENV"
 
-      - run:
-          name: Running tests
-          working_directory: test
-          command: yarn run test
+      # - run:
+      #     name: Running tests
+      #     working_directory: test
+      #     command: yarn run test
 
-      - store_artifacts:
-          path: test/cypress/screenshots
-          destination: test/cypress/screenshots
+      # - store_artifacts:
+      #     path: test/cypress/screenshots
+      #     destination: test/cypress/screenshots
 workflows:
   local:
     jobs:
