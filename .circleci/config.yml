@@ -147,7 +147,17 @@ jobs:
             equal: ["LOCAL", <<parameters.env>>]
           steps:
             - run:
-                name: Verify cypress
+                name: Verify cypress1
+                command: yarn verify
+                working_directory: test
+
+      - when:
+          condition:
+            not:
+              equal: ["DEV", <<parameters.env>>]
+          steps:
+            - run:
+                name: Verify cypress2
                 command: yarn verify
                 working_directory: test
 
