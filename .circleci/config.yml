@@ -131,9 +131,6 @@ jobs:
       - restore_cache:
           key: cache-cypress-v4-{{checksum "test/yarn.lock"}}
       - run:
-          name: folder
-          command: ls -la ../.cache
-      - run:
           name: Install test dependencies
           command: yarn
           working_directory: test
@@ -167,7 +164,6 @@ workflows:
               ignore:
                 - development
                 - master
-                - feature/dev
       - unit_test:
           name: unit_test
           requires:
@@ -181,6 +177,11 @@ workflows:
           env: "LOCAL"
           requires:
             - install
+      - test:
+          name: test_local
+          env: "LOCAL"
+          requires:
+            - build_local
 
   dev:
     jobs:
@@ -190,38 +191,36 @@ workflows:
             branches:
               only:
                 - development
-                - feature/dev
-      # - unit_test:
-      #     name: unit_test
-      #     requires:
-      #       - install
-      # - lint:
-      #     name: lint
-      #     requires:
-      #       - install
-      # - build:
-      #     name: build_dev
-      #     env: "DEV"
-      #     requires:
-      #       - install
-      # - api_deploy:
-      #     name: api_deploy_dev
-      #     env: "DEV"
-      #     requires:
-      #       - unit_test
-      #       - lint
-      #       - build_dev
-      # - web_deploy:
-      #     name: web_deploy_dev
-      #     env: "DEV"
-      #     requires:
-      #       - api_deploy_dev
+      - unit_test:
+          name: unit_test
+          requires:
+            - install
+      - lint:
+          name: lint
+          requires:
+            - install
+      - build:
+          name: build_dev
+          env: "DEV"
+          requires:
+            - install
+      - api_deploy:
+          name: api_deploy_dev
+          env: "DEV"
+          requires:
+            - unit_test
+            - lint
+            - build_dev
+      - web_deploy:
+          name: web_deploy_dev
+          env: "DEV"
+          requires:
+            - api_deploy_dev
       - test:
           name: test_dev
           env: "DEV"
           requires:
-            # - web_deploy_dev
-            - install
+            - web_deploy_dev
 
   prod:
     jobs:
