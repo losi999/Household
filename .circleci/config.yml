@@ -42,19 +42,19 @@ jobs:
           name: Installing layer dependencies
           command: yarn
           working_directory: layers/mongoose/nodejs
-      # - run:
-      #     name: Install test dependencies
-      #     command: yarn
-      #     working_directory: test
+      - run:
+          name: Install test dependencies
+          command: yarn
+          working_directory: test
       - save_cache:
           key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "test/yarn.lock"}}-{{checksum "layers/mongoose/nodejs/yarn.lock"}}
           paths:
             - ~/.cache/yarn
-      # - save_cache:
-      #     key: cache-cypress-v3-{{checksum "test/yarn.lock"}}
-      #     paths:
-      #       - ~/.cache/Cypress
-      #       - /root/.cache/Cypress
+      - save_cache:
+          key: cache-cypress-v3-{{checksum "test/yarn.lock"}}
+          paths:
+            - ~/.cache/Cypress
+            - /root/.cache/Cypress
       - persist_to_workspace:
           root: ~/
           paths:
@@ -158,19 +158,21 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
-      - run:
-          name: files
-          command: |
-            pwd
-            ls -la
       - restore_cache:
           key: cache-cypress-v3-{{checksum "test/yarn.lock"}}
+      # - run:
+      #     name: Install test dependencies
+      #     command: yarn
+      #     working_directory: test
+      # - list-files
+      # - save_cache:
+      #     key: cache-cypress-v3-{{checksum "test/yarn.lock"}}
+      #     paths:
+      #       - /root/.cache/Cypress
       - run:
-          name: Install test dependencies
-          command: yarn
+          name: Verify cypress
+          command: yarn verify
           working_directory: test
-      - list-files
-
       # - run:
       #     name: Setting MongoDB connection string
       #     command: echo "export MONGODB_CONNECTION_STRING=\"mongodb+srv://$MONGODB_USERNAME:$MONGODB_PASSWORD@$MONGODB_CLUSTER_DOMAIN/household-<<parameters.env>>?retryWrites=true&w=majority\"" >> "$BASH_ENV"
