@@ -9,9 +9,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "test/yarn.lock"}}-{{checksum "layers/mongoose/nodejs/yarn.lock"}}
-      - restore_cache:
-          key: cache-cypress-v1-{{checksum "test/yarn.lock"}}
+          key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "layers/mongoose/nodejs/yarn.lock"}}
       - run:
           name: Install API dependencies
           command: yarn
@@ -23,18 +21,10 @@ jobs:
           name: Installing layer dependencies
           command: yarn
           working_directory: layers/mongoose/nodejs
-      - run:
-          name: Install test dependencies
-          command: yarn
-          working_directory: test
       - save_cache:
-          key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "test/yarn.lock"}}-{{checksum "layers/mongoose/nodejs/yarn.lock"}}
+          key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "layers/mongoose/nodejs/yarn.lock"}}
           paths:
             - ~/.cache/yarn
-      - save_cache:
-          key: cache-cypress-v1-{{checksum "test/yarn.lock"}}
-          paths:
-            - ~/.cache/Cypress
       - persist_to_workspace:
           root: ~/
           paths:
@@ -138,18 +128,38 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
-
       - restore_cache:
-          key: cache-cypress-v1-{{checksum "test/yarn.lock"}}
-
+          key: cache-cypress-v4-{{checksum "test/yarn.lock"}}
+      - run:
+          name: Install test dependencies
+          command: yarn
+          working_directory: test
+      - save_cache:
+          key: cache-cypress-v4-{{checksum "test/yarn.lock"}}
+          paths:
+            - /root/.cache/Cypress
       - run:
           name: Setting MongoDB connection string
           command: echo "export MONGODB_CONNECTION_STRING=\"mongodb+srv://$MONGODB_USERNAME:$MONGODB_PASSWORD@$MONGODB_CLUSTER_DOMAIN/household-<<parameters.env>>?retryWrites=true&w=majority\"" >> "$BASH_ENV"
 
-      - run:
-          name: Running tests
-          working_directory: test
-          command: yarn run test
+      - when:
+          condition:
+            equal: ["LOCAL", <<parameters.env>>]
+          steps:
+            - run:
+                name: Verify cypress
+                working_directory: test
+                command: yarn verify
+
+      - when:
+          condition:
+            not:
+              equal: ["LOCAL", <<parameters.env>>]
+          steps:
+            - run:
+                name: Running tests
+                working_directory: test
+                command: yarn run test
 
       - store_artifacts:
           path: test/cypress/screenshots
@@ -174,6 +184,11 @@ workflows:
             - install
       - build:
           name: build_local
+          env: "LOCAL"
+          requires:
+            - install
+      - test:
+          name: test_local
           env: "LOCAL"
           requires:
             - install
