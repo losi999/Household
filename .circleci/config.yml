@@ -27,6 +27,7 @@ jobs:
           name: Install test dependencies
           command: yarn
           working_directory: test
+      - list-files
       - save_cache:
           key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "test/yarn.lock"}}-{{checksum "layers/mongoose/nodejs/yarn.lock"}}
           paths:
@@ -137,11 +138,14 @@ jobs:
       CYPRESS_ENV: <<parameters.env>>
     working_directory: ~/repo
     steps:
+      - list-files
       - attach_workspace:
           at: ~/
+      - list-files
 
       - restore_cache:
           key: cache-cypress-v2-{{checksum "test/yarn.lock"}}
+      - list-files
 
       - run:
           name: Setting MongoDB connection string
@@ -165,6 +169,7 @@ workflows:
               ignore:
                 - development
                 - master
+                - feature/dev
       - unit_test:
           name: unit_test
           requires:
@@ -188,36 +193,37 @@ workflows:
               only:
                 - development
                 - feature/dev
-      - unit_test:
-          name: unit_test
-          requires:
-            - install
-      - lint:
-          name: lint
-          requires:
-            - install
-      - build:
-          name: build_dev
-          env: "DEV"
-          requires:
-            - install
-      - api_deploy:
-          name: api_deploy_dev
-          env: "DEV"
-          requires:
-            - unit_test
-            - lint
-            - build_dev
-      - web_deploy:
-          name: web_deploy_dev
-          env: "DEV"
-          requires:
-            - api_deploy_dev
+      # - unit_test:
+      #     name: unit_test
+      #     requires:
+      #       - install
+      # - lint:
+      #     name: lint
+      #     requires:
+      #       - install
+      # - build:
+      #     name: build_dev
+      #     env: "DEV"
+      #     requires:
+      #       - install
+      # - api_deploy:
+      #     name: api_deploy_dev
+      #     env: "DEV"
+      #     requires:
+      #       - unit_test
+      #       - lint
+      #       - build_dev
+      # - web_deploy:
+      #     name: web_deploy_dev
+      #     env: "DEV"
+      #     requires:
+      #       - api_deploy_dev
       - test:
           name: test_dev
           env: "DEV"
           requires:
-            - web_deploy_dev
+            # - web_deploy_dev
+            - install
 
   prod:
     jobs:
