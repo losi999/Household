@@ -131,12 +131,12 @@ jobs:
       - restore_cache:
           key: cache-cypress-v4-{{checksum "test/yarn.lock"}}
       - run:
+          name: folder
+          command: ls -la ../.cache
+      - run:
           name: Install test dependencies
           command: yarn
           working_directory: test
-      - run:
-          name: folder
-          command: ls -la ..
       - save_cache:
           key: cache-cypress-v4-{{checksum "test/yarn.lock"}}
           paths:
