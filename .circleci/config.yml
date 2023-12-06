@@ -1,25 +1,6 @@
 version: 2.1
 orbs:
   sam: circleci/aws-sam-serverless@3.0
-commands:
-  list-files:
-    steps:
-      - run:
-          name: List files
-          command: |
-            echo "current folder $(pwd)"
-            echo ""
-            echo "cache folder"
-            ls -la ../.cache
-            echo "current folder contents"
-            ls -l
-            echo ""
-            echo "web folder"
-            ls -l web
-            echo ""
-            echo "test folder"
-            ls -l test
-            echo ""
 jobs:
   install:
     docker:
@@ -28,9 +9,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "test/yarn.lock"}}-{{checksum "layers/mongoose/nodejs/yarn.lock"}}
-      # - restore_cache:
-      #     key: cache-cypress-v3-{{checksum "test/yarn.lock"}}
+          key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "layers/mongoose/nodejs/yarn.lock"}}
       - run:
           name: Install API dependencies
           command: yarn
@@ -42,19 +21,10 @@ jobs:
           name: Installing layer dependencies
           command: yarn
           working_directory: layers/mongoose/nodejs
-      - run:
-          name: Install test dependencies
-          command: yarn
-          working_directory: test
       - save_cache:
-          key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "test/yarn.lock"}}-{{checksum "layers/mongoose/nodejs/yarn.lock"}}
+          key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "layers/mongoose/nodejs/yarn.lock"}}
           paths:
             - ~/.cache/yarn
-      - save_cache:
-          key: cache-cypress-v3-{{checksum "test/yarn.lock"}}
-          paths:
-            - ~/.cache/Cypress
-            - /root/.cache/Cypress
       - persist_to_workspace:
           root: ~/
           paths:
@@ -160,15 +130,14 @@ jobs:
           at: ~/
       - restore_cache:
           key: cache-cypress-v3-{{checksum "test/yarn.lock"}}
-      # - run:
-      #     name: Install test dependencies
-      #     command: yarn
-      #     working_directory: test
-      # - list-files
-      # - save_cache:
-      #     key: cache-cypress-v3-{{checksum "test/yarn.lock"}}
-      #     paths:
-      #       - /root/.cache/Cypress
+      - run:
+          name: Install test dependencies
+          command: yarn
+          working_directory: test
+      - save_cache:
+          key: cache-cypress-v3-{{checksum "test/yarn.lock"}}
+          paths:
+            - /root/.cache/Cypress
       - run:
           name: Verify cypress
           command: yarn verify
