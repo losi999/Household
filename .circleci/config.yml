@@ -12,14 +12,12 @@ commands:
             echo "current folder contents"
             ls -l
             echo ""
-            echo "api folder"
-            ls -l api
+            echo "web folder"
+            ls -l web
             echo ""
-            echo "frontend folder"
-            ls -l frontend
+            echo "test folder"
+            ls -l test
             echo ""
-            echo "e2e folder"
-            ls -l e2e
 jobs:
   install:
     docker:
