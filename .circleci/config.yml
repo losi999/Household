@@ -9,6 +9,8 @@ commands:
           command: |
             echo "current folder $(pwd)"
             echo ""
+            echo "cache folder"
+            ls -l ../.cache
             echo "current folder contents"
             ls -l
             echo ""
