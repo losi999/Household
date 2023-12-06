@@ -139,12 +139,17 @@ jobs:
           paths:
             - /root/.cache/Cypress
       - run:
-          name: Verify cypress
-          command: yarn verify
-          working_directory: test
-      - run:
           name: Setting MongoDB connection string
           command: echo "export MONGODB_CONNECTION_STRING=\"mongodb+srv://$MONGODB_USERNAME:$MONGODB_PASSWORD@$MONGODB_CLUSTER_DOMAIN/household-<<parameters.env>>?retryWrites=true&w=majority\"" >> "$BASH_ENV"
+
+      - when:
+          condition:
+            equal: ["LOCAL", <<parameters.env>>]
+          steps:
+            - run:
+                name: Verify cypress
+                command: yarn verify
+                working_directory: test
 
       # - run:
       #     name: Running tests
@@ -181,7 +186,7 @@ workflows:
           name: test_local
           env: "LOCAL"
           requires:
-            - build_local
+            - install
 
   dev:
     jobs:
