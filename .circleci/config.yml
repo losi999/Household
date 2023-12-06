@@ -158,14 +158,18 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
-
+      - run:
+          name: files
+          command: |
+            pwd
+            ls -la
       - restore_cache:
           key: cache-cypress-v3-{{checksum "test/yarn.lock"}}
       - run:
           name: Install test dependencies
           command: yarn
           working_directory: test
-      - list-files
+      # - list-files
 
       - run:
           name: Setting MongoDB connection string
