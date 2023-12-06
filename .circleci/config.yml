@@ -210,13 +210,13 @@ workflows:
 
   dev:
     jobs:
-      # - install:
-      #     name: install
-      #     filters:
-      #       branches:
-      #         only:
-      #           - development
-      #           - feature/dev
+      - install:
+          name: install
+          filters:
+            branches:
+              only:
+                - development
+                - feature/dev
       # - unit_test:
       #     name: unit_test
       #     requires:
@@ -245,14 +245,9 @@ workflows:
       - test:
           name: test_dev
           env: "DEV"
-          filters:
-            branches:
-              only:
-                # - development
-                - feature/dev
-          # requires:
-          #   # - web_deploy_dev
-          #   - install
+          requires:
+            # - web_deploy_dev
+            - install
 
   prod:
     jobs:
