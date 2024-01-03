@@ -33,6 +33,9 @@ components:
           type: number
           minimum: 0
           exclusiveMinimum: true
+        barcode:
+          type: string
+          pattern: ^[0-9]+$
     FullName:
       type: object
       required:

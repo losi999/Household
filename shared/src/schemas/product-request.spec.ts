@@ -6,7 +6,15 @@ import { createProductRequest } from '@household/shared/common/test-data-factory
 describe('Product schema', () => {
   const tester = jsonSchemaTesterFactory<Product.Request>(schema);
 
-  tester.validateSuccess(createProductRequest());
+  describe('should accept', () => {
+    tester.validateSuccess(createProductRequest());
+
+    describe('without optional properties', () => {
+      tester.validateSuccess(createProductRequest({
+        barcode: undefined,
+      }));
+    });
+  });
 
   describe('should deny', () => {
     describe('if data', () => {
@@ -58,5 +66,14 @@ describe('Product schema', () => {
       }), 'unitOfMeasurement');
     });
 
+    describe('if data.barcode', () => {
+      tester.validateSchemaType(createProductRequest({
+        barcode: 1234 as any,
+      }), 'barcode', 'string');
+
+      tester.validateSchemaPattern(createProductRequest({
+        barcode: 'not-barcode',
+      }), 'barcode');
+    });
   });
 });

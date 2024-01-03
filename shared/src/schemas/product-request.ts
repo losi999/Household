@@ -23,6 +23,10 @@ const schema: StrictJSONSchema7<Product.Request> = {
       type: 'string',
       enum: [...unitsOfMeasurement],
     },
+    barcode: {
+      type: 'string',
+      pattern: '^[0-9]+$',
+    },
   },
 };
 

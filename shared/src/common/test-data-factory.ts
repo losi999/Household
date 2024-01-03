@@ -76,6 +76,7 @@ export const createProductDocument: DataFactoryFunction<Product.Document> = (doc
     brand: 'product brand',
     measurement: 300,
     unitOfMeasurement: 'g',
+    barcode: '01234423',
     expiresAt: undefined,
     fullName: doc ? `${doc.brand} ${doc.measurement} ${doc.unitOfMeasurement}` : 'product brand 300 g',
     category: createCategoryDocument(),
@@ -206,6 +207,7 @@ export const createProductRequest: DataFactoryFunction<Product.Request> = (req) 
     brand: 'product brand',
     measurement: 300,
     unitOfMeasurement: 'g',
+    barcode: '01010101',
     ...req,
   };
 };
@@ -361,6 +363,7 @@ export const createProductResponse: DataFactoryFunction<Product.Response> = (res
     brand: 'product brand',
     measurement: 300,
     unitOfMeasurement: 'g',
+    barcode: '01010101',
     fullName: resp ? `${resp.brand} ${resp.measurement} ${resp.unitOfMeasurement}` : 'product brand 300 g',
     expiresAt: undefined,
     category: undefined,

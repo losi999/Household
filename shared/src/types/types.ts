@@ -198,6 +198,7 @@ export namespace Product {
     brand: string;
     unitOfMeasurement: typeof unitsOfMeasurement[number];
     measurement: number;
+    barcode: string;
   };
 
   type FullName = {

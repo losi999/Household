@@ -28,7 +28,7 @@
         </div>
       </div>
       <div class="report-item__amount" [ngClass]="node.amount >= 0 ? 'green' : 'red'">
-        {{node.amount}} {{node.account.currency}}
+        {{node.amount | number:'1.0-2':'hu'}} {{node.account.currency}}
       </div>
     </a>
     <mat-divider></mat-divider>
@@ -43,7 +43,8 @@
       <div>
         {{node.groupName}}
       </div>
-      <span class="report-item__amount" [ngClass]="node.amount >= 0 ? 'green' : 'red'">{{node.amount}}
+      <span class="report-item__amount" [ngClass]="node.amount >= 0 ? 'green' : 'red'">{{node.amount |
+        number:'1.0-2':'hu'}}
         {{node.currency}}</span>
     </div>
   </mat-tree-node>

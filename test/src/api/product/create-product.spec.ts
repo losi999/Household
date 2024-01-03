@@ -14,6 +14,7 @@ describe('POST product/v1/products', () => {
       brand: `tesco-${uuid()}`,
       measurement: 300,
       unitOfMeasurement: 'g',
+      barcode: '0123456780',
     };
 
     categoryDocument = categoryDocumentConverter.create({
@@ -42,6 +43,20 @@ describe('POST product/v1/products', () => {
           .requestCreateProduct(request, getCategoryId(categoryDocument))
           .expectCreatedResponse()
           .validateProductDocument(request);
+      });
+
+      describe('without optional property', () => {
+        it('barcode', () => {
+          const modifiedRequest: Product.Request = {
+            ...request,
+            barcode: undefined,
+          };
+          cy.saveCategoryDocument(categoryDocument)
+            .authenticate(1)
+            .requestCreateProduct(modifiedRequest, getCategoryId(categoryDocument))
+            .expectCreatedResponse()
+            .validateProductDocument(modifiedRequest);
+        });
       });
     });
 
@@ -154,6 +169,28 @@ describe('POST product/v1/products', () => {
             }, getCategoryId(categoryDocument))
             .expectBadRequestResponse()
             .expectWrongEnumValue('unitOfMeasurement', 'body');
+        });
+      });
+
+      describe('if barcode', () => {
+        it('is not string', () => {
+          cy.authenticate(1)
+            .requestCreateProduct({
+              ...request,
+              barcode: 1 as any,
+            }, getCategoryId(categoryDocument))
+            .expectBadRequestResponse()
+            .expectWrongPropertyType('barcode', 'string', 'body');
+        });
+
+        it('does not match pattern', () => {
+          cy.authenticate(1)
+            .requestCreateProduct({
+              ...request,
+              barcode: 'not-barcode' as any,
+            }, getCategoryId(categoryDocument))
+            .expectBadRequestResponse()
+            .expectWrongEnumValue('barcode', 'body');
         });
       });
 

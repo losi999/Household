@@ -15,6 +15,7 @@ describe('PUT /product/v1/products/{productId}', () => {
       brand: `new tesco-${uuid()}`,
       measurement: 1000,
       unitOfMeasurement: 'g',
+      barcode: '01234567890',
     };
     categoryDocument = categoryDocumentConverter.create({
       body: {
@@ -29,6 +30,7 @@ describe('PUT /product/v1/products/{productId}', () => {
         brand: `tesco-${uuid()}`,
         measurement: 1,
         unitOfMeasurement: 'kg',
+        barcode: '9876543210',
       },
       category: categoryDocument,
     }, Cypress.env('EXPIRES_IN'), true);
@@ -51,6 +53,21 @@ describe('PUT /product/v1/products/{productId}', () => {
           .requestUpdateProduct(getProductId(productDocument), request)
           .expectCreatedResponse()
           .validateProductDocument(request);
+      });
+
+      describe('without optional property', () => {
+        it('barcode', () => {
+          const modifiedRequest: Product.Request = {
+            ...request,
+            barcode: undefined,
+          };
+          cy
+            .saveProductDocument(productDocument)
+            .authenticate(1)
+            .requestUpdateProduct(getProductId(productDocument), modifiedRequest)
+            .expectCreatedResponse()
+            .validateProductDocument(modifiedRequest);
+        });
       });
     });
 
@@ -162,6 +179,28 @@ describe('PUT /product/v1/products/{productId}', () => {
             })
             .expectBadRequestResponse()
             .expectWrongEnumValue('unitOfMeasurement', 'body');
+        });
+      });
+
+      describe('if barcode', () => {
+        it('is not string', () => {
+          cy.authenticate(1)
+            .requestUpdateProduct(createProductId(), {
+              ...request,
+              barcode: 1 as any,
+            })
+            .expectBadRequestResponse()
+            .expectWrongPropertyType('barcode', 'string', 'body');
+        });
+
+        it('does not match pattern', () => {
+          cy.authenticate(1)
+            .requestUpdateProduct(createProductId(), {
+              ...request,
+              barcode: 'not-barcode' as any,
+            })
+            .expectBadRequestResponse()
+            .expectWrongEnumValue('barcode', 'body');
         });
       });
 

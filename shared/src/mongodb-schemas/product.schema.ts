@@ -14,6 +14,10 @@ export const productSchema = new Schema<Product.Document>({
     type: String,
     minlength: 1,
   },
+  barcode: {
+    type: String,
+    minlength: 1,
+  },
   fullName: {
     type: String,
     required: true,
