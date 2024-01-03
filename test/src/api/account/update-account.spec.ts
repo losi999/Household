@@ -41,7 +41,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
         .validateAccountDocument(request);
     });
 
-    it.only('should update account with an existing name for a different owner', () => {
+    it('should update account with an existing name for a different owner', () => {
       const sameNameAccountDocument = accountDocumentConverter.create({
         ...request,
         owner: 'old owner',
