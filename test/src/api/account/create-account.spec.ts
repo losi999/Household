@@ -10,6 +10,7 @@ describe('POST account/v1/accounts', () => {
       name: `name-${uuid()}`,
       accountType: 'bankAccount',
       currency: 'Ft',
+      owner: 'owner1',
     };
   });
 
@@ -27,6 +28,21 @@ describe('POST account/v1/accounts', () => {
         .requestCreateAccount(request)
         .expectCreatedResponse()
         .validateAccountDocument(request);
+    });
+
+    it('should create account with an existing name for a different owner', () => {
+      const accountDocument = accountDocumentConverter.create(request, Cypress.env('EXPIRES_IN'), true);
+
+      const modifiedRequest = {
+        ...request,
+        owner: 'different owner',
+      };
+
+      cy.saveAccountDocument(accountDocument)
+        .authenticate(1)
+        .requestCreateAccount(modifiedRequest)
+        .expectCreatedResponse()
+        .validateAccountDocument(modifiedRequest);
     });
 
     describe('should return error', () => {
@@ -61,7 +77,7 @@ describe('POST account/v1/accounts', () => {
             .expectTooShortProperty('name', 1, 'body');
         });
 
-        it('is already in used by a different account', () => {
+        it('is already in used by a different account of the same owner', () => {
           const accountDocument = accountDocumentConverter.create(request, Cypress.env('EXPIRES_IN'), true);
 
           cy.saveAccountDocument(accountDocument)
@@ -133,6 +149,38 @@ describe('POST account/v1/accounts', () => {
             })
             .expectBadRequestResponse()
             .expectTooShortProperty('currency', 1, 'body');
+        });
+      });
+
+      describe('if owner', () => {
+        it('is missing from body', () => {
+          cy.authenticate(1)
+            .requestCreateAccount({
+              ...request,
+              owner: undefined,
+            })
+            .expectBadRequestResponse()
+            .expectRequiredProperty('owner', 'body');
+        });
+
+        it('is not string', () => {
+          cy.authenticate(1)
+            .requestCreateAccount({
+              ...request,
+              owner: 1 as any,
+            })
+            .expectBadRequestResponse()
+            .expectWrongPropertyType('owner', 'string', 'body');
+        });
+
+        it('is too short', () => {
+          cy.authenticate(1)
+            .requestCreateAccount({
+              ...request,
+              owner: '',
+            })
+            .expectBadRequestResponse()
+            .expectTooShortProperty('owner', 1, 'body');
         });
       });
     });

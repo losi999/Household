@@ -18,6 +18,7 @@ describe('POST project/v1/projects/{projectId}/merge', () => {
       accountType: 'bankAccount',
       currency: 'Ft',
       name: `account-${uuid()}`,
+      owner: 'owner1',
     }, Cypress.env('EXPIRES_IN'), true);
 
     sourceProjectDocument = projectDocumentConverter.create({

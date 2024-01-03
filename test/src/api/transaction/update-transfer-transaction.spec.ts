@@ -17,12 +17,14 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
       name: `bank-${uuid()}`,
       accountType: 'bankAccount',
       currency: 'Ft',
+      owner: 'owner1',
     }, Cypress.env('EXPIRES_IN'), true);
 
     transferAccountDocument = accountDocumentConverter.create({
       name: `wallett-${uuid()}`,
       accountType: 'cash',
       currency: '$',
+      owner: 'owner1',
     }, Cypress.env('EXPIRES_IN'), true);
 
     originalDocument = transactionDocumentConverter.createPaymentDocument({

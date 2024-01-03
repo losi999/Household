@@ -21,6 +21,7 @@ export class AccountFormComponent implements OnInit {
     name: FormControl<string>;
     accountType: FormControl<AccountTypeMap>;
     currency: FormControl<string>;
+    owner: FormControl<string>;
   }>;
   accountTypes: {
     [id in Account.AccountType['accountType']]: string
@@ -46,6 +47,7 @@ export class AccountFormComponent implements OnInit {
       name: new FormControl(this.account?.name, [Validators.required]),
       accountType: new FormControl(this.account ? accountType : null, [Validators.required]),
       currency: new FormControl(this.account?.currency, [Validators.required]),
+      owner: new FormControl(this.account?.owner),
     });
   }
 
@@ -55,6 +57,7 @@ export class AccountFormComponent implements OnInit {
         name: this.form.value.name,
         accountType: this.form.value.accountType.key,
         currency: this.form.value.currency,
+        owner: this.form.value.owner,
       };
 
       if (this.account) {
