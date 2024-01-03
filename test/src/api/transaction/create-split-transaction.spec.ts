@@ -32,6 +32,7 @@ describe('POST transaction/v1/transactions/split', () => {
       name: `bank-${uuid()}`,
       accountType: 'bankAccount',
       currency: 'Ft',
+      owner: 'owner1',
     }, Cypress.env('EXPIRES_IN'), true);
 
     regularCategoryDocument = categoryDocumentConverter.create({

@@ -60,6 +60,7 @@ describe('DELETE /product/v1/products/{productId}', () => {
           name: `account-${uuid()}`,
           accountType: 'bankAccount',
           currency: 'Ft',
+          owner: 'owner1',
         }, Cypress.env('EXPIRES_IN'), true);
 
         paymentTransactionDocument = transactionDocumentConverter.createPaymentDocument({

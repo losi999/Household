@@ -13,12 +13,14 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
       name: `new name-${uuid()}`,
       accountType: 'bankAccount',
       currency: 'Ft',
+      owner: 'owner 1',
     };
 
     accountDocument = accountDocumentConverter.create({
       name: `old name-${uuid()}`,
       accountType: 'bankAccount',
       currency: 'Ft',
+      owner: 'old owner',
     }, Cypress.env('EXPIRES_IN'), true);
   });
 
@@ -35,6 +37,20 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
       cy.saveAccountDocument(accountDocument)
         .authenticate(1)
         .requestUpdateAccount(getAccountId(accountDocument), request)
+        .expectCreatedResponse()
+        .validateAccountDocument(request);
+    });
+
+    it.only('should update account with an existing name for a different owner', () => {
+      const sameNameAccountDocument = accountDocumentConverter.create({
+        ...request,
+        owner: 'old owner',
+      }, Cypress.env('EXPIRES_IN'), true);
+
+      cy.saveAccountDocument(accountDocument)
+        .saveAccountDocument(sameNameAccountDocument)
+        .authenticate(1)
+        .requestCreateAccount(request)
         .expectCreatedResponse()
         .validateAccountDocument(request);
     });
@@ -70,7 +86,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
             .expectTooShortProperty('name', 1, 'body');
         });
 
-        it('is already in used by a different account', () => {
+        it('is already in used by a different account of the same owner', () => {
           const duplicateAccountDocument = accountDocumentConverter.create(request, Cypress.env('EXPIRES_IN'), true);
 
           cy.saveAccountDocument(accountDocument)
@@ -143,6 +159,38 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
             })
             .expectBadRequestResponse()
             .expectTooShortProperty('currency', 1, 'body');
+        });
+      });
+
+      describe('if owner', () => {
+        it('is missing from body', () => {
+          cy.authenticate(1)
+            .requestUpdateAccount(createAccountId(), {
+              ...request,
+              owner: undefined,
+            })
+            .expectBadRequestResponse()
+            .expectRequiredProperty('owner', 'body');
+        });
+
+        it('is not string', () => {
+          cy.authenticate(1)
+            .requestUpdateAccount(createAccountId(), {
+              ...request,
+              owner: 1 as any,
+            })
+            .expectBadRequestResponse()
+            .expectWrongPropertyType('owner', 'string', 'body');
+        });
+
+        it('is too short', () => {
+          cy.authenticate(1)
+            .requestUpdateAccount(createAccountId(), {
+              ...request,
+              owner: '',
+            })
+            .expectBadRequestResponse()
+            .expectTooShortProperty('owner', 1, 'body');
         });
       });
 

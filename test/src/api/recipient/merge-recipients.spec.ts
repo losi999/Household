@@ -18,6 +18,7 @@ describe('POST recipient/v1/recipients/{recipientId}/merge', () => {
       accountType: 'bankAccount',
       currency: 'Ft',
       name: `account-${uuid()}`,
+      owner: 'owner1',
     }, Cypress.env('EXPIRES_IN'), true);
 
     sourceRecipientDocument = recipientDocumentConverter.create({
