@@ -19,13 +19,13 @@
           </household-amount-input>
         </div>
         <div class="transaction-edit__account">
-          <household-autocomplete-input [items]="accounts" label="Számla" displayPropertyName="name"
+          <household-autocomplete-input [items]="accounts" label="Számla" displayPropertyName="fullName"
             formControlName="account"></household-autocomplete-input>
         </div>
         <mat-slide-toggle color="primary" formControlName="isTransfer">Átvitel másik számlára</mat-slide-toggle>
         <div class="transaction-edit__account" *ngIf="isTransfer">
           <household-autocomplete-input [items]="accounts" label="Átvitel {{amount >= 0 ? 'innen' : 'ide'}}"
-            displayPropertyName="name" formControlName="transferAccount"></household-autocomplete-input>
+            displayPropertyName="fullName" formControlName="transferAccount"></household-autocomplete-input>
         </div>
         <div class="transaction-edit__amount" *ngIf="isTransfer">
           <household-amount-input formControlName="transferAmount" [currency]="form.value.transferAccount?.currency">

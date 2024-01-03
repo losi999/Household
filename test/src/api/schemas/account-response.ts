@@ -11,6 +11,7 @@ const schema: StrictJSONSchema7<Account.Response> = {
     ...account.required,
     'balance',
     'isOpen',
+    'fullName',
   ],
   properties: {
     ...accountId.properties,
@@ -23,6 +24,10 @@ const schema: StrictJSONSchema7<Account.Response> = {
     },
     isOpen: {
       type: 'boolean',
+    },
+    fullName: {
+      type: 'string',
+      minLength: 1,
     },
   },
 };
