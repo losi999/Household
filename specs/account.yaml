@@ -55,6 +55,14 @@ components:
         owner:
           type: string
           minLength: 1
+    FullName:
+      type: object
+      required:
+        - fullName
+      properties:
+        fullName:
+          type: string
+          minLength: 1
     Base:
       allOf:
         - $ref: "#/components/schemas/Name"
@@ -74,6 +82,7 @@ components:
         - $ref: "#/components/schemas/IsOpen"
         - $ref: "#/components/schemas/Base"
         - $ref: "#/components/schemas/Balance"
+        - $ref: "#/components/schemas/FullName"
     Report:
       allOf:
         - $ref: "#/components/schemas/AccountId"

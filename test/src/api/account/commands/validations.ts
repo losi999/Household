@@ -26,6 +26,7 @@ const validateAccountResponse = (response: Account.Response, document: Account.D
   expect(response.owner, 'owner').to.equal(document.owner);
   expect(response.balance, 'balance').to.equal(balance);
   expect(response.isOpen, 'isOpen').to.equal(document.isOpen);
+  expect(response.fullName, 'fullName').to.equal(`${document.name} (${document.owner})`);
 };
 
 const validateAccountListResponse = (responses: Account.Response[], documents: Account.Document[], balances: number[]) => {
