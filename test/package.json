@@ -8,7 +8,8 @@
     "start:LOCAL": "export ENV=LOCAL && yarn cypress-env && cypress open --config-file=cypress.LOCAL.config.ts",
     "start:DEV": "export ENV=DEV && yarn cypress-env && cypress open --config-file=cypress.DEV.config.ts",
     "test": "cypress run --config-file=cypress.${ENV}.config.ts",
-    "test:LOCAL": "export ENV=LOCAL && yarn cypress-env && cypress run --config-file=cypress.LOCAL.config.ts"
+    "test:LOCAL": "export ENV=LOCAL && yarn cypress-env && cypress run --config-file=cypress.LOCAL.config.ts",
+    "verify": "cypress verify"
   },
   "devDependencies": {
     "@cypress/webpack-preprocessor": "6.0.0",

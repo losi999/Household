@@ -96,9 +96,14 @@ export namespace Account {
     accountType: 'bankAccount' | 'cash' | 'creditCard' | 'loan' | 'cafeteria';
   };
 
+  type Owner = {
+    owner: string;
+  };
+
   type Base = Name
   & Currency
-  & AccountType;
+  & AccountType
+  & Owner;
 
   type Balance = {
     balance: number;

@@ -3,6 +3,8 @@
   <div mat-dialog-content>
     <household-clearable-input formControlName="name" label="Név">
     </household-clearable-input>
+    <household-clearable-input formControlName="owner" label="Tulajdonos">
+    </household-clearable-input>
     <household-autocomplete-input [items]="accountTypes | keyvalue" label="Típus" displayPropertyName="value"
       formControlName="accountType">
     </household-autocomplete-input>

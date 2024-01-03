@@ -12,6 +12,7 @@ const validateAccountDocument = (response: Account.AccountId, request: Account.R
       expect(document.name, 'name').to.equal(request.name);
       expect(document.accountType, 'accountType').to.equal(request.accountType);
       expect(document.currency, 'currency').to.equal(request.currency);
+      expect(document.owner, 'owner').to.equal(request.owner);
       expect(document.balance, 'balance').to.equal(0);
       expect(document.isOpen, 'isOpen').to.equal(true);
     });
@@ -22,6 +23,7 @@ const validateAccountResponse = (response: Account.Response, document: Account.D
   expect(response.name, 'name').to.equal(document.name);
   expect(response.accountType, 'accountType').to.equal(document.accountType);
   expect(response.currency, 'currency').to.equal(document.currency);
+  expect(response.owner, 'owner').to.equal(document.owner);
   expect(response.balance, 'balance').to.equal(balance);
   expect(response.isOpen, 'isOpen').to.equal(document.isOpen);
 };

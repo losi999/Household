@@ -47,11 +47,20 @@ components:
             - creditCard
             - loan
             - cafeteria
+    Owner:
+      type: object
+      required:
+        - owner
+      properties:
+        owner:
+          type: string
+          minLength: 1
     Base:
       allOf:
         - $ref: "#/components/schemas/Name"
         - $ref: "#/components/schemas/Currency"
         - $ref: "#/components/schemas/AccountType"
+        - $ref: "#/components/schemas/Owner"
     Balance:
       type: object
       required:
