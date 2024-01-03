@@ -6,7 +6,6 @@ export const accountSchema = new Schema<Account.Document>({
     type: String,
     required: true,
     minlength: 1,
-    unique: true,
   },
   currency: {
     type: String,
@@ -28,6 +27,10 @@ export const accountSchema = new Schema<Account.Document>({
       'cafeteria',
     ],
   },
+  owner: {
+    type: String,
+    required: true,
+  },
   expiresAt: {
     type: Schema.Types.Date,
     index: {
@@ -40,4 +43,11 @@ export const accountSchema = new Schema<Account.Document>({
     createdAt: true,
     updatedAt: true,
   },
+});
+
+accountSchema.index({
+  name: 1,
+  owner: 1,
+}, {
+  unique: true,
 });

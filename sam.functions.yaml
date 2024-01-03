@@ -64,11 +64,11 @@ Resources:
         Variables:
           INFRASTRUCTURE_STACK: !Ref AWS::StackName
 
-  MigrateCategoryProductRelation:
+  SetAccountOwner:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub Household-${Env}-MigrateCategoryProductRelation
-      CodeUri: dist/api/migrate-category-product-relation
+      FunctionName: !Sub Household-${Env}-SetAccountOwner
+      CodeUri: dist/api/set-account-owner
       Role: !Ref LambdaRoleArn
 
   CreateTestUsers:
@@ -88,5 +88,5 @@ Resources:
 Outputs:
   PostDeployCreateTestUsers:
     Value: !If [ShouldCreateTestUsers, !GetAtt CreateTestUsers.Arn, ""]
-  PostDeployMigrateCategoryProductRelation:
-    Value: !GetAtt MigrateCategoryProductRelation.Arn
+  PostDeploySetAccountOwner:
+    Value: !GetAtt SetAccountOwner.Arn

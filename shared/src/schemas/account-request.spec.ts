@@ -59,5 +59,20 @@ describe('Account schema', () => {
       }), 'accountType');
 
     });
+
+    describe('if data.owner', () => {
+      tester.validateSchemaRequired(createAccountRequest({
+        owner: undefined,
+      }), 'owner');
+
+      tester.validateSchemaType(createAccountRequest({
+        owner: 1 as any,
+      }), 'owner', 'string');
+
+      tester.validateSchemaMinLength(createAccountRequest({
+        owner: '',
+      }), 'owner', 1);
+
+    });
   });
 });
