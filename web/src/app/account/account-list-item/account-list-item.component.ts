@@ -1,6 +1,8 @@
 import { Component, Input } from '@angular/core';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { Account } from '@household/shared/types/types';
 import { AccountService } from 'src/app/account/account.service';
+import { BottomSubmenuComponent, BottomSubmenuData } from 'src/app/shared/bottom-submenu/bottom-submenu.component';
 import { DialogService } from 'src/app/shared/dialog.service';
 
 @Component({
@@ -19,7 +21,8 @@ export class AccountListItemComponent {
     }
   }
 
-  constructor(private accountService: AccountService, private dialogService: DialogService) { }
+  constructor(private accountService: AccountService, private dialogService: DialogService,
+    private bottomSheet: MatBottomSheet) { }
 
   delete() {
     this.dialogService.openDeleteAccountDialog(this.account).afterClosed()
@@ -30,10 +33,32 @@ export class AccountListItemComponent {
       });
   }
 
-  open() {
-  }
+  onRightClick(event: PointerEvent) {
+    event.preventDefault();
+    const bottomSheetRef = this.bottomSheet.open<BottomSubmenuComponent, BottomSubmenuData, string>(BottomSubmenuComponent, {
+      data: {
+        title: this.account.fullName,
+        actions: [
+          {
+            icon: 'edit',
+            text: 'Serkesztés',
+            name: 'edit',
+          },
+          {
+            icon: 'delete',
+            text: 'Törlés',
+            name: 'delete',
+          },
+        ],
+      },
+    });
 
-  close() {
+    bottomSheetRef.afterDismissed().subscribe((result) => {
+      switch (result) {
+        case 'delete': this.delete(); break;
+        case 'edit': this.edit(); break;
+      }
+    });
   }
 
   edit() {

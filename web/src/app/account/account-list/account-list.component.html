@@ -1,4 +1,2 @@
-<div class="account-list">
-  <household-account-list-item *ngFor="let account of accounts | openAccountFilter: onlyOpenAccounts"
-    [account]="account"></household-account-list-item>
-</div>
+<household-account-list-item *ngFor="let account of accounts | openAccountFilter: onlyOpenAccounts"
+  [account]="account"></household-account-list-item>
