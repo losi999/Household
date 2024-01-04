@@ -27,7 +27,6 @@ export class Store {
 
     this.accounts.subscribe((accounts) => {
       const grouped = accounts.reduce<{[owner: string]: Account.Response[]}>((accumulator, currentValue) => {
-        console.log(currentValue);
         return {
           ...accumulator,
           [currentValue.owner]: [
@@ -36,8 +35,6 @@ export class Store {
           ],
         };
       }, {});
-      console.log(grouped);
-
       this.accountsByOwner.next(grouped);
     });
 

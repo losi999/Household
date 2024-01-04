@@ -1,0 +1,7 @@
+<h1>{{data.title}}</h1>
+<mat-action-list>
+  <button *ngFor="let action of data.actions" mat-list-item type="button" (click)="onClick(action.name)">
+    <mat-icon matListItemIcon>{{action.icon}}</mat-icon>
+    <div matListItemTitle>{{action.text}}</div>
+  </button>
+</mat-action-list>

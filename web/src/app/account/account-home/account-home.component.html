@@ -5,7 +5,9 @@
 </household-toolbar>
 <mat-slide-toggle color="primary" [(ngModel)]="onlyOpenAccounts">{{onlyOpenAccounts ? 'Csak nyitott számlák' :
   'Összes számla'}}</mat-slide-toggle>
-<div *ngFor="let acc of accountsByOwner | keyvalue">
-  {{acc.key}}
-  <household-account-list [onlyOpenAccounts]="onlyOpenAccounts" [accounts]="acc.value"></household-account-list>
-</div>
+<mat-nav-list>
+  <ng-container *ngFor="let acc of accountsByOwner | keyvalue">
+    <h2>{{acc.key}}</h2>
+    <household-account-list [onlyOpenAccounts]="onlyOpenAccounts" [accounts]="acc.value"></household-account-list>
+  </ng-container>
+</mat-nav-list>
