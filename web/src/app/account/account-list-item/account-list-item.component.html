@@ -1,27 +1,5 @@
-<div class="account-list-item">
-  <mat-card mat-button [matBadge]="notificationCount" matBadgePosition="after" matBadgeColor="warn"
-    matBadgeSize="large">
-    <mat-card-header>
-      <mat-card-title>{{account.name}}</mat-card-title>
-      <mat-card-subtitle>{{balanceTitle}}: {{account.balance | number:'1.0-2':'hu'}}
-        {{account.currency}}</mat-card-subtitle>
-    </mat-card-header>
-    <mat-card-actions align="end">
-      <button mat-icon-button color="primary" [routerLink]="['/accounts', account.accountId]">
-        <mat-icon>format_list_bulleted</mat-icon>
-      </button>
-      <button mat-icon-button color="primary" (click)="edit()">
-        <mat-icon>edit</mat-icon>
-      </button>
-      <button mat-icon-button color="primary" *ngIf="account.isOpen" (click)="close()">
-        <mat-icon>credit_card_off</mat-icon>
-      </button>
-      <button mat-icon-button color="primary" *ngIf="!account.isOpen" (click)="open()">
-        <mat-icon>credit_card</mat-icon>
-      </button>
-      <button mat-icon-button color="warn" (click)="delete()">
-        <mat-icon>delete</mat-icon>
-      </button>
-    </mat-card-actions>
-  </mat-card>
-</div>
+<a mat-list-item [routerLink]="['/accounts', account.accountId]" (contextmenu)="onRightClick($event)">
+  <div matListItemTitle>{{account.name}}</div>
+  <div matListItemLine>{{balanceTitle}}: {{account.balance | number:'1.0-2':'hu'}}
+    {{account.currency}}</div>
+</a>

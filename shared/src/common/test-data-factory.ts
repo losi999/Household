@@ -308,6 +308,7 @@ export const createAccountResponse: DataFactoryFunction<Account.Response> = (res
     currency: 'Ft',
     balance: 123,
     owner: 'owner1',
+    fullName: resp ? `${resp.name} (${resp.owner})` : 'account name (owner1)',
     accountId: createAccountId(),
     expiresAt: undefined,
     createdAt: undefined,

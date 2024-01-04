@@ -17,6 +17,7 @@ describe('Account document converter', () => {
   });
 
   const name = 'Pénztárca';
+  const owner = 'owner1';
   const currency = 'Ft';
   const accountType = 'cash';
   const expiresIn = 3600;
@@ -27,6 +28,7 @@ describe('Account document converter', () => {
     accountType,
     currency,
     name,
+    owner,
   });
   const queriedDocument = createAccountDocument({
     name,
@@ -34,6 +36,7 @@ describe('Account document converter', () => {
     accountType,
     balance,
     isOpen,
+    owner,
     createdAt: now,
     updatedAt: now,
   });
@@ -45,6 +48,7 @@ describe('Account document converter', () => {
         accountType,
         currency,
         name,
+        owner,
         isOpen: true,
         balance: undefined,
         expiresAt: undefined,
@@ -58,6 +62,7 @@ describe('Account document converter', () => {
         accountType,
         currency,
         name,
+        owner,
         isOpen: true,
         balance: undefined,
         expiresAt: addSeconds(expiresIn, now),
@@ -78,6 +83,7 @@ describe('Account document converter', () => {
         accountType,
         currency,
         name,
+        owner,
         isOpen: true,
         balance: undefined,
         _id: queriedDocument._id,
@@ -97,6 +103,7 @@ describe('Account document converter', () => {
         currency,
         isOpen,
         name,
+        owner,
       }));
     });
   });
@@ -123,6 +130,7 @@ describe('Account document converter', () => {
           currency,
           isOpen,
           name,
+          owner,
         }),
       ]);
     });
