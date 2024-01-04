@@ -100,6 +100,10 @@ export namespace Account {
     owner: string;
   };
 
+  type FullName = {
+    fullName: string;
+  };
+
   type Base = Name
   & Currency
   & AccountType
@@ -119,6 +123,7 @@ export namespace Account {
   & IsOpen
   & Balance
   & AccountId
+  & FullName
   & Remove<Internal.Id>
   & Remove<Internal.Timestamps>;
 
