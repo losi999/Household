@@ -48,7 +48,7 @@ export const accountDocumentConverterFactory = (): IAccountDocumentConverter => 
       return {
         accountId: getAccountId(document),
         currency: document.currency,
-        name: document.name,
+        fullName: `${document.name} (${document.owner})`,
       };
     },
     toResponseList: docs => docs.map(document => instance.toResponse(document)),

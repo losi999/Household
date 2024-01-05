@@ -78,7 +78,7 @@ export class ReportListComponent implements OnChanges {
           } break;
           case 'account': {
             groupKey += currentValue.account.accountId;
-            groupName = currentValue.account.name;
+            groupName = currentValue.account.fullName;
           } break;
         }
 

@@ -465,7 +465,7 @@ export const createAccountReport: DataFactoryFunction<Account.Report> = (rep) =>
   return {
     accountId: createAccountId(),
     currency: 'Ft',
-    name: 'acc name',
+    fullName: 'acc name',
     ...rep,
   };
 };
