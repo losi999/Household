@@ -1,5 +1,13 @@
-<a mat-list-item [routerLink]="['/accounts', account.accountId]" (contextmenu)="onRightClick($event)">
+<a mat-list-item [routerLink]="['/accounts', account.accountId]">
   <div matListItemTitle>{{account.name}}</div>
   <div matListItemLine>{{balanceTitle}}: {{account.balance | number:'1.0-2':'hu'}}
     {{account.currency}}</div>
+  <div matListItemMeta>
+    <button mat-icon-button color="primary" (click)="edit($event)">
+      <mat-icon>edit</mat-icon>
+    </button>
+    <button mat-icon-button color="warn" (click)="delete($event)">
+      <mat-icon>delete</mat-icon>
+    </button>
+  </div>
 </a>

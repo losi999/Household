@@ -128,7 +128,7 @@ export namespace Account {
   & Remove<Internal.Timestamps>;
 
   export type Report = AccountId
-  & Name
+  & FullName
   & Currency;
 
   export type Request = Base;

@@ -167,7 +167,7 @@ export class DialogService {
       data: {
         items: accounts,
         title: 'Számlák',
-        displayPropertyName: 'name',
+        displayPropertyName: 'fullName',
         keyPropertyName: 'accountId',
         selectedItems,
       },
