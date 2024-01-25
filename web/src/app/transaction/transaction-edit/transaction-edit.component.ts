@@ -284,7 +284,7 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
             productId: this.form.value.inventory.product.productId,
             quantity: this.form.value.inventory.quantity,
           } : undefined,
-          invoice: isInvoiceCategory(this.form.value.category) ? this.form.value.invoice : undefined,
+          invoice: isInvoiceCategory(this.form.value.category) && this.form.value.invoice ? this.form.value.invoice : undefined,
         };
 
         if (this.transactionId) {
