@@ -22,6 +22,7 @@ export class ProductFormComponent implements OnInit {
     measurement: FormControl<number>,
     unitOfMeasurement: FormControl<typeof unitsOfMeasurement[number]>,
     category: FormControl<Category.Response>,
+    barcode: FormControl<string>,
   }>;
   get unitsOfMeasurement() { return unitsOfMeasurement; }
 
@@ -40,6 +41,7 @@ export class ProductFormComponent implements OnInit {
       measurement: new FormControl(this.data.product?.measurement, [Validators.required]),
       unitOfMeasurement: new FormControl(this.data.product?.unitOfMeasurement, [Validators.required]),
       category: new FormControl(null),
+      barcode: new FormControl(this.data.product?.barcode),
     });
   }
 
@@ -49,6 +51,7 @@ export class ProductFormComponent implements OnInit {
         brand: this.form.value.brand,
         measurement: this.form.value.measurement,
         unitOfMeasurement: this.form.value.unitOfMeasurement,
+        barcode: this.form.value.barcode,
       };
 
       if (this.data.product) {
