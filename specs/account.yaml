@@ -86,7 +86,7 @@ components:
     Report:
       allOf:
         - $ref: "#/components/schemas/AccountId"
-        - $ref: "#/components/schemas/Name"
+        - $ref: "#/components/schemas/FullName"
         - $ref: "#/components/schemas/Currency"
     Request:
       $ref: "#/components/schemas/Base"

@@ -114,7 +114,7 @@ describe('Account document converter', () => {
       expect(result).toEqual(createAccountReport({
         accountId: getAccountId(queriedDocument),
         currency,
-        name,
+        fullName: `${name} (${owner})`,
       }));
     });
   });

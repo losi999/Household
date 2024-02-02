@@ -19,7 +19,6 @@ import { ToolbarComponent } from 'src/app/shared/toolbar/toolbar.component';
 import { AutocompleteModule } from 'src/app/shared/autocomplete/autocomplete.module';
 import { ClearableInputComponent } from 'src/app/shared/clearable-input/clearable-input.component';
 import { MatListModule } from '@angular/material/list';
-import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 
 @NgModule({
   declarations: [
@@ -38,7 +37,6 @@ import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
     MatButtonModule,
     MatIconModule,
     MatBadgeModule,
-    MatBottomSheetModule,
     MatSlideToggleModule,
     MatListModule,
     FormsModule,
