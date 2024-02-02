@@ -24,7 +24,9 @@ export type IMongodbService = {
 };
 
 const createModel = <T extends keyof CollectionMapping>(collectionName: T, schema: Schema<CollectionMapping[T]>): Model<CollectionMapping[T]> => {
-  return model<CollectionMapping[T]>(collectionName, schema);
+  const m = model<CollectionMapping[T]>(collectionName, schema);
+  m.syncIndexes();
+  return m;
 };
 
 export const mongodbServiceFactory = (mongodbConnectionString: string): IMongodbService => {

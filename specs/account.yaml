@@ -47,11 +47,28 @@ components:
             - creditCard
             - loan
             - cafeteria
+    Owner:
+      type: object
+      required:
+        - owner
+      properties:
+        owner:
+          type: string
+          minLength: 1
+    FullName:
+      type: object
+      required:
+        - fullName
+      properties:
+        fullName:
+          type: string
+          minLength: 1
     Base:
       allOf:
         - $ref: "#/components/schemas/Name"
         - $ref: "#/components/schemas/Currency"
         - $ref: "#/components/schemas/AccountType"
+        - $ref: "#/components/schemas/Owner"
     Balance:
       type: object
       required:
@@ -65,10 +82,11 @@ components:
         - $ref: "#/components/schemas/IsOpen"
         - $ref: "#/components/schemas/Base"
         - $ref: "#/components/schemas/Balance"
+        - $ref: "#/components/schemas/FullName"
     Report:
       allOf:
         - $ref: "#/components/schemas/AccountId"
-        - $ref: "#/components/schemas/Name"
+        - $ref: "#/components/schemas/FullName"
         - $ref: "#/components/schemas/Currency"
     Request:
       $ref: "#/components/schemas/Base"

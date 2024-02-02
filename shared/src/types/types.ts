@@ -96,9 +96,18 @@ export namespace Account {
     accountType: 'bankAccount' | 'cash' | 'creditCard' | 'loan' | 'cafeteria';
   };
 
+  type Owner = {
+    owner: string;
+  };
+
+  type FullName = {
+    fullName: string;
+  };
+
   type Base = Name
   & Currency
-  & AccountType;
+  & AccountType
+  & Owner;
 
   type Balance = {
     balance: number;
@@ -114,11 +123,12 @@ export namespace Account {
   & IsOpen
   & Balance
   & AccountId
+  & FullName
   & Remove<Internal.Id>
   & Remove<Internal.Timestamps>;
 
   export type Report = AccountId
-  & Name
+  & FullName
   & Currency;
 
   export type Request = Base;

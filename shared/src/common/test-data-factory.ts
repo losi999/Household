@@ -37,6 +37,7 @@ export const createAccountDocument: DataFactoryFunction<Account.Document> = (doc
     currency: 'Ft',
     expiresAt: undefined,
     isOpen: true,
+    owner: 'owner1',
     ...doc,
   };
 };
@@ -176,6 +177,7 @@ export const createAccountRequest: DataFactoryFunction<Account.Request> = (req) 
     accountType: 'bankAccount',
     name: 'account name',
     currency: 'Ft',
+    owner: 'owner1',
     ...req,
   };
 };
@@ -307,6 +309,8 @@ export const createAccountResponse: DataFactoryFunction<Account.Response> = (res
     name: 'account name',
     currency: 'Ft',
     balance: 123,
+    owner: 'owner1',
+    fullName: resp ? `${resp.name} (${resp.owner})` : 'account name (owner1)',
     accountId: createAccountId(),
     expiresAt: undefined,
     createdAt: undefined,
@@ -464,7 +468,7 @@ export const createAccountReport: DataFactoryFunction<Account.Report> = (rep) =>
   return {
     accountId: createAccountId(),
     currency: 'Ft',
-    name: 'acc name',
+    fullName: 'acc name',
     ...rep,
   };
 };

@@ -17,12 +17,14 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
       name: `account-${uuid()}`,
       accountType: 'bankAccount',
       currency: 'Ft',
+      owner: 'owner1',
     }, Cypress.env('EXPIRES_IN'), true);
 
     transferAccountDocument = accountDocumentConverter.create({
       name: `account2-${uuid()}`,
       accountType: 'bankAccount',
       currency: 'Ft',
+      owner: 'owner1',
     }, Cypress.env('EXPIRES_IN'), true);
 
     paymentTransactionDocument = transactionDocumentConverter.createPaymentDocument({

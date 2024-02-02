@@ -8,6 +8,7 @@ import { BehaviorSubject } from 'rxjs';
 export class Store {
   projects: BehaviorSubject<Project.Response[]>;
   accounts: BehaviorSubject<Account.Response[]>;
+  accountsByOwner: BehaviorSubject<{[owner: string]: Account.Response[]}>;
   recipients: BehaviorSubject<Recipient.Response[]>;
   categories: BehaviorSubject<Category.Response[]>;
   inventoryCategories: BehaviorSubject<Category.Response[]>;
@@ -20,8 +21,22 @@ export class Store {
     this.recipients = new BehaviorSubject([]);
     this.categories = new BehaviorSubject([]);
     this.accounts = new BehaviorSubject([]);
+    this.accountsByOwner = new BehaviorSubject({});
     this.inventoryCategories = new BehaviorSubject([]);
     this.products = new BehaviorSubject({});
+
+    this.accounts.subscribe((accounts) => {
+      const grouped = accounts.reduce<{[owner: string]: Account.Response[]}>((accumulator, currentValue) => {
+        return {
+          ...accumulator,
+          [currentValue.owner]: [
+            ...(accumulator[currentValue.owner] ?? []),
+            currentValue,
+          ],
+        };
+      }, {});
+      this.accountsByOwner.next(grouped);
+    });
 
     this.categories.subscribe((categories) => {
       this.inventoryCategories.next(categories.filter(c => c.categoryType === 'inventory'));

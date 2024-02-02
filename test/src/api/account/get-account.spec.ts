@@ -19,11 +19,13 @@ describe('GET /account/v1/accounts/{accountId}', () => {
       name: `account-${uuid()}`,
       accountType: 'bankAccount',
       currency: 'Ft',
+      owner: 'owner1',
     }, Cypress.env('EXPIRES_IN'), true);
     transferAccountDocument = accountDocumentConverter.create({
       name: `transfer-${uuid()}`,
       accountType: 'bankAccount',
       currency: 'Ft',
+      owner: 'owner1',
     }, Cypress.env('EXPIRES_IN'), true);
 
     paymentTransactionDocument = transactionDocumentConverter.createPaymentDocument({

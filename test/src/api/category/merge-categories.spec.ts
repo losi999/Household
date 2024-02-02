@@ -21,6 +21,7 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
       accountType: 'bankAccount',
       currency: 'Ft',
       name: `acocunt-${uuid()}`,
+      owner: 'owner1',
     }, Cypress.env('EXPIRES_IN'), true);
 
     sourceCategoryDocument = categoryDocumentConverter.create({

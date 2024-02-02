@@ -5,7 +5,6 @@ import { AccountRoutingModule } from 'src/app/account/account-routing.module';
 import { AccountListComponent } from './account-list/account-list.component';
 import { AccountListItemComponent } from './account-list-item/account-list-item.component';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
@@ -19,6 +18,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { ToolbarComponent } from 'src/app/shared/toolbar/toolbar.component';
 import { AutocompleteModule } from 'src/app/shared/autocomplete/autocomplete.module';
 import { ClearableInputComponent } from 'src/app/shared/clearable-input/clearable-input.component';
+import { MatListModule } from '@angular/material/list';
 
 @NgModule({
   declarations: [
@@ -34,11 +34,11 @@ import { ClearableInputComponent } from 'src/app/shared/clearable-input/clearabl
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    MatCardModule,
     MatButtonModule,
     MatIconModule,
     MatBadgeModule,
     MatSlideToggleModule,
+    MatListModule,
     FormsModule,
     AccountRoutingModule,
     MatDialogModule,

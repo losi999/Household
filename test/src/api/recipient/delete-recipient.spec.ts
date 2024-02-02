@@ -42,6 +42,7 @@ describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
           name: `account-${uuid()}`,
           accountType: 'bankAccount',
           currency: 'Ft',
+          owner: 'owner1',
         }, Cypress.env('EXPIRES_IN'), true);
 
         paymentTransactionDocument = transactionDocumentConverter.createPaymentDocument({

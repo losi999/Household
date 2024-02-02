@@ -36,6 +36,7 @@ export const accountDocumentConverterFactory = (): IAccountDocumentConverter => 
       return {
         ...document,
         balance: document.balance ?? null,
+        fullName: `${document.name} (${document.owner})`,
         createdAt: undefined,
         updatedAt: undefined,
         _id: undefined,
@@ -47,7 +48,7 @@ export const accountDocumentConverterFactory = (): IAccountDocumentConverter => 
       return {
         accountId: getAccountId(document),
         currency: document.currency,
-        name: document.name,
+        fullName: `${document.name} (${document.owner})`,
       };
     },
     toResponseList: docs => docs.map(document => instance.toResponse(document)),

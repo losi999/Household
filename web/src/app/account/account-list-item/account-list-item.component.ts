@@ -21,7 +21,9 @@ export class AccountListItemComponent {
 
   constructor(private accountService: AccountService, private dialogService: DialogService) { }
 
-  delete() {
+  delete(e: Event) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
     this.dialogService.openDeleteAccountDialog(this.account).afterClosed()
       .subscribe(shouldDelete => {
         if (shouldDelete) {
@@ -30,13 +32,9 @@ export class AccountListItemComponent {
       });
   }
 
-  open() {
-  }
-
-  close() {
-  }
-
-  edit() {
+  edit(e: Event) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
     this.dialogService.openEditAccountDialog(this.account);
   }
 }

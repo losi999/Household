@@ -170,6 +170,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
           name: `account-${uuid()}`,
           accountType: 'bankAccount',
           currency: 'Ft',
+          owner: 'owner1',
         }, Cypress.env('EXPIRES_IN'), true);
       });
 
