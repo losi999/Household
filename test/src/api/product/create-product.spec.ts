@@ -190,7 +190,7 @@ describe('POST product/v1/products', () => {
               barcode: 'not-barcode' as any,
             }, getCategoryId(categoryDocument))
             .expectBadRequestResponse()
-            .expectWrongEnumValue('barcode', 'body');
+            .expectWrongPropertyPattern('barcode', 'body');
         });
       });
 

@@ -200,7 +200,7 @@ describe('PUT /product/v1/products/{productId}', () => {
               barcode: 'not-barcode' as any,
             })
             .expectBadRequestResponse()
-            .expectWrongEnumValue('barcode', 'body');
+            .expectWrongPropertyPattern('barcode', 'body');
         });
       });
 
