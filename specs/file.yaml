@@ -1,0 +1,25 @@
+openapi: "3.0.0"
+info:
+  title: File components
+  version: 1.0.0
+components:
+  schemas:
+    Type:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum:
+            - otp
+            - erste
+            - revolut
+    Url:
+      type: object
+      required:
+        - url
+      properties:
+        url:
+          type: string
+          format: url

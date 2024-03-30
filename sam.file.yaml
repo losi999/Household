@@ -1,0 +1,112 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: "AWS::Serverless-2016-10-31"
+Description: "Household File API"
+Parameters:
+  LambdaRoleArn:
+    Type: String
+  UserPoolArn:
+    Type: String
+  Env:
+    Type: String
+  MongodbConnectionString:
+    Type: String
+  MongooseLayer:
+    Type: String
+
+Conditions:
+  ShouldUseLayers: !Not [!Equals [!Ref MongooseLayer, "MongooseLayer"]]
+
+Globals:
+  Function:
+    Handler: index.default
+    Runtime: nodejs18.x
+    Timeout: 60
+    MemorySize: 512
+    Tracing: Active
+    Layers:
+      - !If [ShouldUseLayers, !Ref MongooseLayer, !Ref "AWS::NoValue"]
+    Environment:
+      Variables:
+        MONGODB_CONNECTION_STRING: !Ref MongodbConnectionString
+
+Resources:
+  FileApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub Household-${Env}-File
+      StageName: file
+      TracingEnabled: true
+      Cors:
+        AllowMethods: "'*'"
+        AllowHeaders: "'*'"
+        AllowOrigin: "'*'"
+      Auth:
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn: !Ref UserPoolArn
+      GatewayResponses:
+        UNAUTHORIZED:
+          StatusCode: 401
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Headers: "'*'"
+              Access-Control-Allow-Methods: "'*'"
+          ResponseTemplates:
+            application/json: '{ "message": $context.error.messageString }'
+        MISSING_AUTHENTICATION_TOKEN:
+          StatusCode: 404
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Headers: "'*'"
+              Access-Control-Allow-Methods: "'*'"
+          ResponseTemplates:
+            application/json: '{ "message": $context.error.messageString }'
+
+  CreateUploadUrl:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-CreateUploadUrl
+      CodeUri: dist/api/create-upload-url
+      Role: !Ref LambdaRoleArn
+      Environment:
+        Variables:
+          IMPORT_BUCKET: !Ref ImportBucket
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FileApi
+            Path: /v1/files
+            Method: POST
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  ImportBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+
+  FileImporter:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-FileImporter
+      CodeUri: dist/api/file-importer
+      Role: !Ref LambdaRoleArn
+      Events:
+        File:
+          Type: S3
+          Properties:
+            Bucket: !Ref ImportBucket
+            Events:
+              - "s3:ObjectCreated:*"
+  #           Filter:
+  #             S3Key:
+  #               Rules:
+  #                 - Name: prefix
+  #                   Value: "erste/"
+
+Outputs:
+  FileApi:
+    Description: "Household File API"
+    Value: !Sub "${FileApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}"

@@ -6,7 +6,8 @@ import { recipientSchema } from '@household/shared/mongodb-schemas/recipient.sch
 import { categorySchema } from '@household/shared/mongodb-schemas/category.schema';
 import { productSchema } from '@household/shared/mongodb-schemas/product.schema';
 import { transactionSchema } from '@household/shared/mongodb-schemas/transaction.schema';
-import { Recipient, Project, Account, Category, Transaction, Product } from '@household/shared/types/types';
+import { Recipient, Project, Account, Category, Transaction, Product, File } from '@household/shared/types/types';
+import { fileSchema } from '@household/shared/mongodb-schemas/file.schema';
 
 type CollectionMapping = {
   recipients: Recipient.Document;
@@ -15,6 +16,7 @@ type CollectionMapping = {
   accounts: Account.Document;
   categories: Category.Document;
   products: Product.Document;
+  files: File.Document;
 };
 
 export type IMongodbService = {
@@ -47,6 +49,7 @@ export const mongodbServiceFactory = (mongodbConnectionString: string): IMongodb
     accounts: createModel('accounts', accountSchema),
     categories: createModel('categories', categorySchema),
     products: createModel('products', productSchema),
+    files: createModel('files', fileSchema),
   };
 
   return {
@@ -80,6 +83,10 @@ export const mongodbServiceFactory = (mongodbConnectionString: string): IMongodb
     products: () => {
       connectDb();
       return models.products;
+    },
+    files: () => {
+      connectDb();
+      return models.files;
     },
   };
 };

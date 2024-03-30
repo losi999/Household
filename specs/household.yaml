@@ -523,6 +523,20 @@ paths:
       responses:
         204:
           description: Transaction deleted
+  /file/v1/files:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "file.yaml#/components/schemas/Type"
+      responses:
+        201:
+          description: Presigned Url
+          content:
+            application/json:
+              schema:
+                $ref: "file.yaml#/components/schemas/Url"
 
 components:
   parameters:
