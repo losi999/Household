@@ -6,14 +6,14 @@ import { ITransactionDocumentConverter } from '@household/shared/converters/tran
 import { ITransactionService } from '@household/shared/services/transaction-service';
 import { IFileDocumentConverter } from '@household/shared/converters/file-document-converter';
 
-export interface IFileImporterService {
+export interface IBulkTransactionImporterService {
   (ctx: {
     bucketName: string;
     fileName: string;
   }): Promise<void>;
 }
 
-export const fileImporterServiceFactory = (fileService: IFileService, fileDocumentConverter: IFileDocumentConverter, storageService: IStorageService, excelParser: IExcelParserService, transactionDocumentConverter: ITransactionDocumentConverter, transactionService: ITransactionService): IFileImporterService =>
+export const nulkTransactionImporterServiceFactory = (fileService: IFileService, fileDocumentConverter: IFileDocumentConverter, storageService: IStorageService, excelParser: IExcelParserService, transactionDocumentConverter: ITransactionDocumentConverter, transactionService: ITransactionService): IBulkTransactionImporterService =>
   async ({ bucketName, fileName }) => {
     const fileId = fileName.split('/').pop() as File.Id;
 
