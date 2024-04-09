@@ -6,10 +6,6 @@ import { UpdateQuery } from 'mongoose';
 export interface IFileDocumentConverter {
   create(body: File.Request, expiresIn: number, generateId?: boolean): File.Document;
   updateStatus(status: File.ProcessingStatus['processingStatus']): UpdateQuery<File.Document>;
-  // update(data: { document: Restrict<File.Document, 'updatedAt'>; body: File.Request }, expiresIn: number): File.Document;
-  // toResponse(doc: File.Document): File.Response;
-  // toReport(doc: File.Document): File.Report;
-  // toResponseList(docs: File.Document[]): File.Response[];
 }
 
 export const fileDocumentConverterFactory = (): IFileDocumentConverter => {
@@ -28,30 +24,6 @@ export const fileDocumentConverterFactory = (): IFileDocumentConverter => {
         },
       };
     },
-    // update: ({ document: { _id, createdAt }, body }, expiresIn): File.Document => {
-    //   return {
-    //     ...instance.create(body, expiresIn),
-    //     _id,
-    //     createdAt,
-    //   };
-    // },
-    // toResponse: (doc): File.Response => {
-    //   return {
-    //     ...doc,
-    //     fileId: getFileId(doc),
-    //     createdAt: undefined,
-    //     updatedAt: undefined,
-    //     _id: undefined,
-    //     expiresAt: undefined,
-    //   };
-    // },
-    // toReport: (doc): File.Report => {
-    //   return doc ? {
-    //     fileId: getFileId(doc),
-    //     name: doc.name,
-    //   } : undefined;
-    // },
-    // toResponseList: docs => docs.map(d => instance.toResponse(d)),
   };
 
   return instance;

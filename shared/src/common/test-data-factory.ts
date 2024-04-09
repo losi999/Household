@@ -1,5 +1,5 @@
-import { Account, Auth, Category, Product, Project, Recipient, Report, Transaction } from '@household/shared/types/types';
-import { Types } from 'mongoose';
+import { Account, Auth, Category, File, Product, Project, Recipient, Report, Transaction } from '@household/shared/types/types';
+import { Types, UpdateQuery } from 'mongoose';
 
 type DataFactoryFunction<T> = (input?: Partial<T>) => T;
 
@@ -27,6 +27,10 @@ export const createTransactionId = (id?: string): Transaction.Id => {
 
 export const createProductId = (id?: string): Product.Id => {
   return (id ?? generateMongoId().toString()) as Product.Id;
+};
+
+export const createFileId = (id?: string): File.Id => {
+  return (id ?? generateMongoId().toString()) as File.Id;
 };
 
 export const createAccountDocument: DataFactoryFunction<Account.Document> = (doc) => {
@@ -167,6 +171,19 @@ export const createTransferTransactionDocument: DataFactoryFunction<Transaction.
     account: createAccountDocument(),
     transferAccount: createAccountDocument(),
     transferAmount: -1200,
+    ...doc,
+  };
+};
+
+export const createDraftTransactionDocument: DataFactoryFunction<Transaction.DraftDocument> = (doc) => {
+  return {
+    _id: generateMongoId(),
+    transactionType: 'draft',
+    amount: 100,
+    description: 'transaction description',
+    issuedAt: new Date(),
+    expiresAt: undefined,
+    file: createFileDocument(),
     ...doc,
   };
 };
@@ -515,5 +532,32 @@ export const createTransactionReport: DataFactoryFunction<Transaction.Report> = 
     project: createProjectReport(),
     recipient: createRecipientReport(),
     ...rep,
+  };
+};
+
+export const createFileRequest: DataFactoryFunction<File.Request> = (req) => {
+  return {
+    timezone: 'Europe/Budapest',
+    type: 'otp',
+    ...req,
+  };
+};
+
+export const createFileDocument: DataFactoryFunction<File.Document> = (doc) => {
+  return {
+    _id: generateMongoId(),
+    expiresAt: undefined,
+    timezone: 'Europe/Budapest',
+    type: 'otp',
+    ...doc,
+  };
+};
+
+export const createDocumentUpdate: DataFactoryFunction<UpdateQuery<any>> = (update) => {
+  return {
+    $set: {
+      someProperty: 123,
+    },
+    ...update,
   };
 };

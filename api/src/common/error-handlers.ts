@@ -1,6 +1,7 @@
 import { getCategoryId, getProductId } from '@household/shared/common/utils';
 import { HttpError } from '@household/shared/types/common';
-import { Account, Category, Common, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Account, Category, Common, File, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { UpdateQuery } from 'mongoose';
 
 type Catch = (error: any) => never;
 const log = (message: string, ctx: any, error?: any) => {
@@ -22,6 +23,10 @@ export const httpErrors = {
 
       log('Save transaction', doc, error);
       throw httpError(statusCode, 'Error while saving transaction');
+    },
+    saveMultiple: (docs: Transaction.Document[], statusCode = 500): Catch => (error) => {
+      log('Save transactions', docs, error);
+      throw httpError(statusCode, 'Error while saving transactions');
     },
     getById: (ctx: Transaction.TransactionId & Partial<Account.AccountId>, statusCode = 500): Catch => (error) => {
       log('Get transaction', ctx, error);
@@ -382,6 +387,31 @@ export const httpErrors = {
     }, statusCode = 500): Catch => (error) => {
       log('Merge products', ctx, error);
       throw httpError(statusCode, 'Error while merging products');
+    },
+  },
+  file: {
+    save: (doc: File.Document, statusCode = 500): Catch => (error) => {
+      log('Save file', doc, error);
+      throw httpError(statusCode, 'Error while saving file document');
+    },
+    getById: (ctx: File.FileId, statusCode = 500): Catch => (error) => {
+      log('Get file', ctx, error);
+      throw httpError(statusCode, 'Error while getting file document');
+    },
+    readFile: (ctx: {
+      bucketName: string;
+      fileName: string;
+    }, statusCode = 500): Catch => (error) => {
+      log('Read file', ctx, error);
+      throw httpError(statusCode, 'Error while reading file');
+    },
+    getUploadUrl: (ctx: File.Type & File.FileId, statusCode = 500): Catch => (error) => {
+      log('Get upload URL', ctx, error);
+      throw httpError(statusCode, 'Error while getting URL for file upload');
+    },
+    update: (ctx: File.FileId & UpdateQuery<File.Document>, statusCode = 500): Catch => (error) => {
+      log('Update file', ctx, error);
+      throw httpError(statusCode, 'Error while updating file document');
     },
   },
   common: {

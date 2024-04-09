@@ -1,3 +1,4 @@
+import { httpErrors } from '@household/api/common/error-handlers';
 import { getFileId } from '@household/shared/common/utils';
 import { IFileDocumentConverter } from '@household/shared/converters/file-document-converter';
 import { IFileService } from '@household/shared/services/file-service';
@@ -17,10 +18,13 @@ export const createUploadUrlServiceFactory = (fileService: IFileService, fileDoc
   async ({ body, expiresIn }) => {
     const document = fileDocumentConverter.create(body, expiresIn);
 
-    const saved = await fileService.saveFile(document);
+    const saved = await fileService.saveFile(document).catch(httpErrors.file.save(document));
 
     const fileId = getFileId(saved);
-    const url = await storageService.getSignedUrlForUpload(`${document.type}/${fileId}`);
+    const url = await storageService.getSignedUrlForUpload(`${document.type}/${fileId}`).catch(httpErrors.file.getUploadUrl({
+      type: document.type,
+      fileId,
+    }));
 
     return {
       url,
