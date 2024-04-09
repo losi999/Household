@@ -5,7 +5,7 @@ import { FILE_UPLOAD_LINK_EXPIRATION } from '@household/shared/constants';
 export interface IStorageService {
   getSignedUrlForUpload(fileName: string): Promise<string>;
   writeFile(bucket: string, fileName: string, data: object, folder: string): Promise<unknown>;
-  readFile(bucket: string, fileName: string): Promise<string>;
+  readFile(bucket: string, fileName: string): Promise<Uint8Array>;
 }
 
 export const storageServiceFactory = (s3: S3, s3Client: S3Client, s3RequestPresigner: typeof getSignedUrl): IStorageService => {
@@ -32,7 +32,7 @@ export const storageServiceFactory = (s3: S3, s3Client: S3Client, s3RequestPresi
         Bucket: bucket,
         Key: fileName,
       });
-      return resp.Body.transformToString();
+      return resp.Body.transformToByteArray();
     },
   };
 

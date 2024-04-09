@@ -16,18 +16,12 @@ export interface IFileImporterService {
 export const fileImporterServiceFactory = (fileService: IFileService, fileDocumentConverter: IFileDocumentConverter, storageService: IStorageService, excelParser: IExcelParserService, transactionDocumentConverter: ITransactionDocumentConverter, transactionService: ITransactionService): IFileImporterService =>
   async ({ bucketName, fileName }) => {
     const fileId = fileName.split('/').pop() as File.Id;
-    console.log('A');
+
     const document = await fileService.getFileById(fileId);
-    console.log('B');
 
     const file = await storageService.readFile(bucketName, fileName);
-    console.log('C');
 
     const parsed = excelParser.parse(file, document.type, document.timezone);
-
-    console.log('D');
-
-    console.log(parsed);
 
     const drafts = parsed.map(p => transactionDocumentConverter.createDraftDocument({
       body: p,

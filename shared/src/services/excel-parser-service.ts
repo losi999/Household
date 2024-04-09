@@ -3,7 +3,7 @@ import { read as Read, utils as Utils, WorkBook } from 'xlsx';
 import { default as Moment } from 'moment-timezone';
 
 export interface IExcelParserService {
-  parse(fileContent: string, fileType: File.Type['type'], timezone: string): (Transaction.IssuedAt<Date> & Transaction.Base)[];
+  parse(fileContent: Uint8Array, fileType: File.Type['type'], timezone: string): (Transaction.IssuedAt<Date> & Transaction.Base)[];
 }
 
 export const excelParserServiceFactory = (read: typeof Read, utils: typeof Utils, moment: typeof Moment): IExcelParserService => {
@@ -32,14 +32,18 @@ export const excelParserServiceFactory = (read: typeof Read, utils: typeof Utils
   };
 
   const parseErsteExcel = (workbook: WorkBook): (Transaction.IssuedAt<Date> & Transaction.Base)[] => {
-    console.log(workbook);
-    const parsed = utils.sheet_to_json<any>(workbook.Sheets.Sheet1);
+    const parsed = utils.sheet_to_json<any>(workbook.Sheets.Sheet0, {
+      range: 3,
+    });
 
     return parsed.map((p => {
+
+      const date = p['Tranzakció dátuma és ideje'] ? moment(p['Tranzakció dátuma és ideje'], 'YYYY.MM.DD HH:mm:ss').toDate() : moment((p['Dátum'] as Date).toISOString().replace('Z', '')).toDate();
+      console.log(date);
       return {
         amount: p['Összeg'],
         description: `${p['Partner név']} ${p['Közlemény']}`,
-        issuedAt: moment((p['Tranzakció dátuma és ideje'] ?? p['Dátum'] as Date).toISOString().replace('Z', '')).toDate(),
+        issuedAt: date,
       };
     }));
   };
@@ -47,7 +51,7 @@ export const excelParserServiceFactory = (read: typeof Read, utils: typeof Utils
   const instance: IExcelParserService = {
     parse: (fileContent, fileType, timezone) => {
       const excel = read(fileContent, {
-        type: 'string',
+        type: 'array',
         cellDates: true,
       });
 
