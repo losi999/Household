@@ -1,4 +1,4 @@
-import { categoryTypes, unitsOfMeasurement } from '@household/shared/constants';
+import { categoryTypes, fileProcessingStatuses, fileTypes, unitsOfMeasurement } from '@household/shared/constants';
 import { Branding, Remove } from '@household/shared/types/common';
 import { Types } from 'mongoose';
 
@@ -340,6 +340,14 @@ export namespace Transaction {
     splits: SplitRequestItem[];
   };
 
+  export type DraftDocument = Internal.Id
+  & Internal.Timestamps
+  & TransactionType<'draft'>
+  & Base
+  & IssuedAt<Date> & {
+    file: File.Document
+  };
+
   export type PaymentDocument = Internal.Id
   & Internal.Timestamps
   & TransactionType<'payment'>
@@ -388,7 +396,7 @@ export namespace Transaction {
     splits: SplitDocumentItem[];
   };
 
-  export type Document = PaymentDocument | TransferDocument | SplitDocument;
+  export type Document = PaymentDocument | TransferDocument | SplitDocument | DraftDocument;
 
   export type PaymentResponse = TransactionId
   & Base
@@ -489,6 +497,41 @@ export namespace Auth {
 
     export type Response = IdTokenResponse;
   }
+}
+
+export namespace File {
+  export type Id = Branding<string, 'file'>;
+
+  export type FileId = {
+    fileId: Id;
+  };
+
+  export type Type = {
+    type: typeof fileTypes[number];
+  };
+
+  export type Timezone = {
+    timezone: string;
+  };
+
+  export type Url = {
+    url: string;
+  };
+
+  export type ProcessingStatus = {
+    processingStatus: typeof fileProcessingStatuses[number];
+  };
+
+  // export type FileName = {
+  //   fileName: string;
+  // };
+
+  export type Request = Type & Timezone;
+  export type Document = Internal.Id
+  & Internal.Timestamps
+  & Type
+  & Timezone
+  & Partial<ProcessingStatus>;
 }
 
 export namespace Common {

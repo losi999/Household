@@ -6,7 +6,7 @@ import { IProductDocumentConverter } from '@household/shared/converters/product-
 import { IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
 import { Dictionary } from '@household/shared/types/common';
-import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Account, Category, File, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 
 export interface ITransactionDocumentConverter {
   createPaymentDocument(data: {
@@ -30,6 +30,10 @@ export interface ITransactionDocumentConverter {
     account: Account.Document;
     transferAccount: Account.Document;
   }, expiresIn: number, generateId?: boolean): Transaction.TransferDocument;
+  createDraftDocument(data: {
+    body: Transaction.IssuedAt<Date> & Transaction.Base;
+    file: File.Document;
+  }, expiresIn: number, generateId?: boolean): Transaction.DraftDocument;
   updatePaymentDocument(data: {
     document: Transaction.Document;
     body: Transaction.PaymentRequest;
@@ -215,6 +219,15 @@ export const transactionDocumentConverterFactory = (
         _id: generateId ? generateMongoId() : undefined,
         accountId: undefined,
         transferAccountId: undefined,
+        expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
+      };
+    },
+    createDraftDocument: ({ body, file }, expiresIn, generateId): Transaction.DraftDocument => {
+      return {
+        ...body,
+        file,
+        transactionType: 'draft',
+        _id: generateId ? generateMongoId() : undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },

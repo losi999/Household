@@ -6,6 +6,7 @@ import { FilterQuery } from 'mongoose';
 export interface ITransactionService {
   dumpTransactions(): Promise<Transaction.Document[]>;
   saveTransaction(doc: Transaction.Document): Promise<Transaction.Document>;
+  saveTransactions(docs: Transaction.Document[]): Promise<any>;
   getTransactionById(transactionId: Transaction.Id): Promise<Transaction.Document>;
   getTransactionByIdAndAccountId(query: Transaction.TransactionId & Account.AccountId): Promise<Transaction.Document>;
   deleteTransaction(transactionId: Transaction.Id): Promise<unknown>;
@@ -37,6 +38,15 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
     },
     saveTransaction: (doc) => {
       return mongodbService.transactions().create(doc);
+    },
+    saveTransactions: (docs) => {
+      return mongodbService.inSession((session) => {
+        return session.withTransaction(async () => {
+          await mongodbService.transactions().insertMany(docs, {
+            session,
+          });
+        });
+      });
     },
     getTransactionById: (transactionId) => {
       return !transactionId ? undefined : mongodbService.transactions().findById(transactionId)

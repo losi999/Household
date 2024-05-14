@@ -37,6 +37,7 @@ export const transactionSchema = new Schema<Transaction.Document>({
       'payment',
       'transfer',
       'split',
+      'draft',
     ],
   },
   description: {
@@ -85,6 +86,10 @@ export const transactionSchema = new Schema<Transaction.Document>({
   },
   transferAmount: {
     type: Number,
+  },
+  file: {
+    type: Schema.Types.ObjectId,
+    ref: 'files',
   },
   category: {
     type: Schema.Types.ObjectId,

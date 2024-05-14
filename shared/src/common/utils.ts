@@ -1,5 +1,5 @@
 import { Dictionary } from '@household/shared/types/common';
-import { Account, Category, Internal, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Account, Category, File, Internal, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { PopulateOptions } from 'mongoose';
 
 export const populate = (...populateOptions: (string | PopulateOptions)[]): PopulateOptions[] => {
@@ -33,3 +33,4 @@ export const getProjectId = (doc: Project.Document): Project.Id => getId(doc) as
 export const getRecipientId = (doc: Recipient.Document): Recipient.Id => getId(doc) as Recipient.Id;
 export const getProductId = (doc: Product.Document): Product.Id => getId(doc) as Product.Id;
 export const getCategoryId = (doc: Category.Document): Category.Id => getId(doc) as Category.Id;
+export const getFileId = (doc: File.Document): File.Id => getId(doc) as File.Id;
