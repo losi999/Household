@@ -536,7 +536,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "file.yaml#/components/schemas/Url"
+                allOf:
+                  - $ref: "file.yaml#/components/schemas/Url"
+                  - $ref: "file.yaml#/components/schemas/FileId"
 
 components:
   parameters:

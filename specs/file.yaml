@@ -23,3 +23,10 @@ components:
         url:
           type: string
           format: url
+    FileId:
+      type: object
+      required:
+        - fileId
+      properties:
+        fileId:
+          type: string
