@@ -1,5 +1,6 @@
 const path = require('path');
 var entry = require('webpack-glob-entry');
+const nodeExternals = require('webpack-node-externals');
 const entries = entry((filePath) => {
   const parts = filePath.split(/[\/\.]/);
   return parts[parts.length - 3];
@@ -18,15 +19,7 @@ module.exports = {
     ],
   },
   target: 'node',
-  externals: [
-    {
-      // These modules are already installed on the Lambda instance.
-      awslambda: 'awslambda',
-      'dynamodb-doc': 'dynamodb-doc',
-    },
-    /^@aws-sdk.*/,
-    ...(process.env.ENV !== 'localhost' ? ['mongoose'] : []),
-  ],
+  externals: [nodeExternals()],
   node: {
     // Allow these globals.
     __filename: false,

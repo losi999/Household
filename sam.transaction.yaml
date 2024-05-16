@@ -10,11 +10,11 @@ Parameters:
     Type: String
   MongodbConnectionString:
     Type: String
-  MongooseLayer:
+  DependenciesLayer:
     Type: String
 
 Conditions:
-  ShouldUseLayers: !Not [!Equals [!Ref MongooseLayer, "MongooseLayer"]]
+  ShouldUseLayers: !Not [!Equals [!Ref DependenciesLayer, "DependenciesLayer"]]
 
 Globals:
   Function:
@@ -24,7 +24,7 @@ Globals:
     MemorySize: 512
     Tracing: Active
     Layers:
-      - !If [ShouldUseLayers, !Ref MongooseLayer, !Ref "AWS::NoValue"]
+      - !If [ShouldUseLayers, !Ref DependenciesLayer, !Ref "AWS::NoValue"]
     Environment:
       Variables:
         MONGODB_CONNECTION_STRING: !Ref MongodbConnectionString
@@ -49,16 +49,16 @@ Resources:
           StatusCode: 401
           ResponseParameters:
             Headers:
-              Access-Control-Allow-Origin: "'*'"  
+              Access-Control-Allow-Origin: "'*'"
               Access-Control-Allow-Headers: "'*'"
               Access-Control-Allow-Methods: "'*'"
           ResponseTemplates:
-            application/json: '{ "message": $context.error.messageString }'            
+            application/json: '{ "message": $context.error.messageString }'
         MISSING_AUTHENTICATION_TOKEN:
           StatusCode: 404
           ResponseParameters:
             Headers:
-              Access-Control-Allow-Origin: "'*'"  
+              Access-Control-Allow-Origin: "'*'"
               Access-Control-Allow-Headers: "'*'"
               Access-Control-Allow-Methods: "'*'"
           ResponseTemplates:
@@ -110,7 +110,7 @@ Resources:
             Path: /v1/transactions/transfer
             Method: POST
             Auth:
-              Authorizer: CognitoAuthorizer            
+              Authorizer: CognitoAuthorizer
 
   UpdateToPaymentTransaction:
     Type: AWS::Serverless::Function
@@ -142,7 +142,7 @@ Resources:
             Path: /v1/transactions/{transactionId}/split
             Method: PUT
             Auth:
-              Authorizer: CognitoAuthorizer  
+              Authorizer: CognitoAuthorizer
 
   UpdateToTransferTransaction:
     Type: AWS::Serverless::Function
@@ -158,7 +158,7 @@ Resources:
             Path: /v1/transactions/{transactionId}/transfer
             Method: PUT
             Auth:
-              Authorizer: CognitoAuthorizer    
+              Authorizer: CognitoAuthorizer
 
   GetTransaction:
     Type: AWS::Serverless::Function
@@ -206,7 +206,7 @@ Resources:
             Path: /v1/accounts/{accountId}/transactions
             Method: GET
             Auth:
-              Authorizer: CognitoAuthorizer       
+              Authorizer: CognitoAuthorizer
 
   ListTransactions:
     Type: AWS::Serverless::Function
@@ -222,7 +222,7 @@ Resources:
             Path: /v1/transactions
             Method: POST
             Auth:
-              Authorizer: CognitoAuthorizer                
+              Authorizer: CognitoAuthorizer
 
 Outputs:
   TransactionApi:

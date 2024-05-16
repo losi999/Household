@@ -4,6 +4,7 @@ export default <E, R>(params: {
   handler: AWSLambda.Handler<E, R>;
 }): AWSLambda.Handler<E, R> => {
   return async (event, context, callback) => {
+    console.log('handler start');
     context.callbackWaitsForEmptyEventLoop = false;
     let modifiedEvent: E;
     let result: R;

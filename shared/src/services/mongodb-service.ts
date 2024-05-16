@@ -32,11 +32,15 @@ const createModel = <T extends keyof CollectionMapping>(collectionName: T, schem
 };
 
 export const mongodbServiceFactory = (mongodbConnectionString: string): IMongodbService => {
+  console.log('factory', connection?.readyState);
   const connectDb = () => {
+    console.log('connectdb', connection?.readyState);
     if (!connection || connection.readyState === 0) {
+      console.log('pre connnect');
       connect(mongodbConnectionString, {
         autoIndex: true,
       });
+      console.log('post connect', connection?.readyState);
     }
   };
 

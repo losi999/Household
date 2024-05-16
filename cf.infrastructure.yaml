@@ -5,11 +5,11 @@ Parameters:
     Type: String
 
 Resources:
-  MongooseLayer:
+  DependenciesLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
-      ContentUri: layers/mongoose
-      LayerName: !Sub Household-${Env}-MongooseLayer
+      ContentUri: layers/dependencies
+      LayerName: !Sub Household-${Env}-DependenciesLayer
       RetentionPolicy: Delete
       CompatibleRuntimes:
         - nodejs18.x
@@ -77,5 +77,5 @@ Outputs:
     Value: !GetAtt LambdaRole.Arn
   WebsiteBucket:
     Value: !Ref WebsiteBucket
-  MongooseLayer:
-    Value: !Ref MongooseLayer
+  DependenciesLayer:
+    Value: !Ref DependenciesLayer

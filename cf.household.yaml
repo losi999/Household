@@ -28,7 +28,7 @@ Resources:
       TemplateURL: sam.functions.yaml
       Parameters:
         LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
-        MongooseLayer: !GetAtt Infrastructure.Outputs.MongooseLayer
+        DependenciesLayer: !GetAtt Infrastructure.Outputs.DependenciesLayer
         DatabaseArchiveBucket: !GetAtt Data.Outputs.DatabaseArchiveBucket
         Env: !Ref Env
         TestUserPassword: !Ref TestUserPassword
@@ -42,7 +42,7 @@ Resources:
       TemplateURL: sam.file.yaml
       Parameters:
         LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
-        MongooseLayer: !GetAtt Infrastructure.Outputs.MongooseLayer
+        DependenciesLayer: !GetAtt Infrastructure.Outputs.DependenciesLayer
         UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
         MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
@@ -67,7 +67,7 @@ Resources:
       TemplateURL: sam.project.yaml
       Parameters:
         LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
-        MongooseLayer: !GetAtt Infrastructure.Outputs.MongooseLayer
+        DependenciesLayer: !GetAtt Infrastructure.Outputs.DependenciesLayer
         UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
         MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
@@ -78,7 +78,7 @@ Resources:
       TemplateURL: sam.recipient.yaml
       Parameters:
         LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
-        MongooseLayer: !GetAtt Infrastructure.Outputs.MongooseLayer
+        DependenciesLayer: !GetAtt Infrastructure.Outputs.DependenciesLayer
         UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
         MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
@@ -89,7 +89,7 @@ Resources:
       TemplateURL: sam.account.yaml
       Parameters:
         LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
-        MongooseLayer: !GetAtt Infrastructure.Outputs.MongooseLayer
+        DependenciesLayer: !GetAtt Infrastructure.Outputs.DependenciesLayer
         UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
         MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
@@ -100,7 +100,7 @@ Resources:
       TemplateURL: sam.category.yaml
       Parameters:
         LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
-        MongooseLayer: !GetAtt Infrastructure.Outputs.MongooseLayer
+        DependenciesLayer: !GetAtt Infrastructure.Outputs.DependenciesLayer
         UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
         MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
@@ -111,7 +111,7 @@ Resources:
       TemplateURL: sam.product.yaml
       Parameters:
         LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
-        MongooseLayer: !GetAtt Infrastructure.Outputs.MongooseLayer
+        DependenciesLayer: !GetAtt Infrastructure.Outputs.DependenciesLayer
         UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
         MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
@@ -122,7 +122,7 @@ Resources:
       TemplateURL: sam.transaction.yaml
       Parameters:
         LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
-        MongooseLayer: !GetAtt Infrastructure.Outputs.MongooseLayer
+        DependenciesLayer: !GetAtt Infrastructure.Outputs.DependenciesLayer
         UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
         MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"

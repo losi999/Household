@@ -8,7 +8,7 @@ Parameters:
     Type: String
   MongodbConnectionString:
     Type: String
-  MongooseLayer:
+  DependenciesLayer:
     Type: String
   DatabaseArchiveBucket:
     Type: String
@@ -21,7 +21,7 @@ Parameters:
     Type: String
 
 Conditions:
-  ShouldUseLayers: !Not [!Equals [!Ref MongooseLayer, "MongooseLayer"]]
+  ShouldUseLayers: !Not [!Equals [!Ref DependenciesLayer, "DependenciesLayer"]]
   ShouldCreateTestUsers: !Not [!Equals [!Ref TestUserPassword, ""]]
   IsProd: !Equals [!Ref Env, "PROD"]
 
@@ -33,7 +33,7 @@ Globals:
     MemorySize: 512
     Tracing: Active
     Layers:
-      - !If [ShouldUseLayers, !Ref MongooseLayer, !Ref "AWS::NoValue"]
+      - !If [ShouldUseLayers, !Ref DependenciesLayer, !Ref "AWS::NoValue"]
     Environment:
       Variables:
         MONGODB_CONNECTION_STRING: !Ref MongodbConnectionString
