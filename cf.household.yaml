@@ -133,6 +133,7 @@ Resources:
       TemplateURL: sam.user.yaml
       Parameters:
         LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
+        DependenciesLayer: !GetAtt Infrastructure.Outputs.DependenciesLayer
         UserPoolId: !GetAtt Data.Outputs.UserPoolId
         ClientId: !GetAtt Data.Outputs.ClientId
         Env: !Ref Env

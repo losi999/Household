@@ -20,7 +20,7 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
   const instance: IProductService = {
     dumpProducts: () => {
       return mongodbService.inSession((session) => {
-        return mongodbService.products().find({})
+        return mongodbService.products.find({})
           .setOptions({
             session,
             lean: true,
@@ -29,10 +29,10 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
       });
     },
     saveProduct: async (doc) => {
-      return mongodbService.products().create(doc);
+      return mongodbService.products.create(doc);
     },
     getProductById: async (productId) => {
-      return !productId ? null : mongodbService.products().findById(productId)
+      return !productId ? null : mongodbService.products.findById(productId)
         .setOptions({
           lean: true,
         })
@@ -40,7 +40,7 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
     },
     listProductsByIds: (productIds) => {
       return mongodbService.inSession((session) => {
-        return mongodbService.products().find({
+        return mongodbService.products.find({
           _id: {
             $in: productIds,
           },
@@ -57,13 +57,13 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
     deleteProduct: async (productId) => {
       return mongodbService.inSession((session) => {
         return session.withTransaction(async () => {
-          await mongodbService.products().deleteOne({
+          await mongodbService.products.deleteOne({
             _id: productId,
           }, {
             session,
           })
             .exec();
-          await mongodbService.transactions().updateMany({
+          await mongodbService.transactions.updateMany({
             'inventory.product': productId,
           }, {
             $unset: {
@@ -74,7 +74,7 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
             session,
           })
             .exec();
-          await mongodbService.transactions().updateMany({
+          await mongodbService.transactions.updateMany({
             'splits.inventory.product': productId,
           }, {
 
@@ -95,7 +95,7 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
       });
     },
     updateProduct: (doc) => {
-      return mongodbService.products().replaceOne({
+      return mongodbService.products.replaceOne({
         _id: doc._id,
       }, doc, {
         runValidators: true,
@@ -105,7 +105,7 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
     mergeProducts: ({ targetProductId, sourceProductIds }) => {
       return mongodbService.inSession((session) => {
         return session.withTransaction(async () => {
-          await mongodbService.products().deleteMany({
+          await mongodbService.products.deleteMany({
             _id: {
               $in: sourceProductIds,
             },
@@ -113,7 +113,7 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
             session,
           });
 
-          await mongodbService.transactions().updateMany({
+          await mongodbService.transactions.updateMany({
             'inventory.product': {
               $in: sourceProductIds,
             },
@@ -126,7 +126,7 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
             session,
           });
 
-          await mongodbService.transactions().updateMany({
+          await mongodbService.transactions.updateMany({
             'splits.inventory.product': {
               $in: sourceProductIds,
             },
@@ -150,7 +150,7 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
     },
     // listProducts: () => {
     //   return mongodbService.inSession((session) => {
-    //     return mongodbService.products().find({}, null, {
+    //     return mongodbService.products.find({}, null, {
     //       session,
     //     })
     //       .collation({

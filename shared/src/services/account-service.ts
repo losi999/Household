@@ -47,7 +47,7 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
   const instance: IAccountService = {
     dumpAccounts: () => {
       return mongodbService.inSession((session) => {
-        return mongodbService.accounts().find({}, null, {
+        return mongodbService.accounts.find({}, null, {
           session,
         })
           .lean()
@@ -55,12 +55,12 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
       });
     },
     saveAccount: (doc) => {
-      return mongodbService.accounts().create(doc);
+      return mongodbService.accounts.create(doc);
     },
     getAccountById: async (accountId) => {
       let account: Account.Document;
       if (accountId) {
-        [account] = await aggregateAccountBalance(mongodbService.accounts().aggregate()
+        [account] = await aggregateAccountBalance(mongodbService.accounts.aggregate()
           .match({
             _id: new Types.ObjectId(accountId),
           })).exec();
@@ -71,13 +71,13 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
     deleteAccount: async (accountId) => {
       return mongodbService.inSession((session) => {
         return session.withTransaction(async () => {
-          await mongodbService.accounts().deleteOne({
+          await mongodbService.accounts.deleteOne({
             _id: accountId,
           }, {
             session,
           })
             .exec();
-          await mongodbService.transactions().deleteMany({
+          await mongodbService.transactions.deleteMany({
             $or: [
               {
                 account: accountId,
@@ -94,7 +94,7 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
       });
     },
     updateAccount: (doc) => {
-      return mongodbService.accounts().replaceOne({
+      return mongodbService.accounts.replaceOne({
         _id: doc._id,
       }, doc, {
         runValidators: true,
@@ -103,7 +103,7 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
     },
     listAccounts: () => {
       return mongodbService.inSession((session) => {
-        return aggregateAccountBalance(mongodbService.accounts().aggregate(null, {
+        return aggregateAccountBalance(mongodbService.accounts.aggregate(null, {
           session,
         }))
           .collation({
@@ -117,7 +117,7 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
     },
     listAccountsByIds: (accountIds) => {
       return mongodbService.inSession((session) => {
-        return mongodbService.accounts().find({
+        return mongodbService.accounts.find({
           _id: {
             $in: accountIds,
           },

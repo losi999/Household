@@ -1,5 +1,5 @@
-import { ClientSession, connect, model, startSession, connection } from 'mongoose';
-import type { Model, Schema } from 'mongoose';
+import { createConnection, set } from 'mongoose';
+import type { Connection, Model, Schema, ClientSession } from 'mongoose';
 import { projectSchema } from '@household/shared/mongodb-schemas/project.schema';
 import { accountSchema } from '@household/shared/mongodb-schemas/account.schema';
 import { recipientSchema } from '@household/shared/mongodb-schemas/recipient.schema';
@@ -20,33 +20,37 @@ type CollectionMapping = {
 };
 
 export type IMongodbService = {
-  [collection in keyof CollectionMapping]: () => Model<CollectionMapping[collection]>;
+  [collection in keyof CollectionMapping]: Model<CollectionMapping[collection]>;
 } & {
-  inSession<T>(fn: (session: ClientSession) => Promise<T>): Promise<T>
+  inSession<T>(fn: (session: ClientSession) => Promise<T>): Promise<T>;
 };
 
 const createModel = <T extends keyof CollectionMapping>(collectionName: T, schema: Schema<CollectionMapping[T]>): Model<CollectionMapping[T]> => {
-  const m = model<CollectionMapping[T]>(collectionName, schema);
+  const m = connection.model<CollectionMapping[T]>(collectionName, schema);
   m.syncIndexes();
   return m;
 };
 
+let connection: Connection;
+set('debug', true);
+
 export const mongodbServiceFactory = (mongodbConnectionString: string): IMongodbService => {
   console.log('factory', connection?.readyState);
-  const connectDb = () => {
-    console.log('connectdb', connection?.readyState);
-    if (!connection || connection.readyState === 0) {
-      console.log('pre connnect');
-      connect(mongodbConnectionString, {
-        autoIndex: true,
-      });
-      console.log('post connect', connection?.readyState);
-    }
-  };
+  if (!connection || connection.readyState === 0) {
+    console.log('pre create connnect');
+    connection = createConnection(mongodbConnectionString, {
+      autoIndex: true,
+    });
+    console.log('post create connect', connection?.readyState);
+  }
 
-  const models: {
-    [collection in keyof CollectionMapping]: Model<CollectionMapping[collection]>;
-  } = {
+  return {
+    inSession: async (fn) => {
+      const session = await connection.startSession();
+      const result = await fn(session);
+      await session.endSession();
+      return result;
+    },
     recipients: createModel('recipients', recipientSchema),
     projects: createModel('projects', projectSchema),
     transactions: createModel('transactions', transactionSchema),
@@ -54,43 +58,5 @@ export const mongodbServiceFactory = (mongodbConnectionString: string): IMongodb
     categories: createModel('categories', categorySchema),
     products: createModel('products', productSchema),
     files: createModel('files', fileSchema),
-  };
-
-  return {
-    inSession: async (fn) => {
-      connectDb();
-      const session = await startSession();
-      const result = await fn(session);
-      await session.endSession();
-      return result;
-    },
-    recipients: () => {
-      connectDb();
-      return models.recipients;
-    },
-    projects: () => {
-      connectDb();
-      return models.projects;
-    },
-    transactions: () => {
-      connectDb();
-      return models.transactions;
-    },
-    accounts: () => {
-      connectDb();
-      return models.accounts;
-    },
-    categories: () => {
-      connectDb();
-      return models.categories;
-    },
-    products: () => {
-      connectDb();
-      return models.products;
-    },
-    files: () => {
-      connectDb();
-      return models.files;
-    },
   };
 };
