@@ -18,7 +18,7 @@ export interface ICategoryService {
 
 export const categoryServiceFactory = (mongodbService: IMongodbService): ICategoryService => {
   const updateCategoryFullName = (oldName: string, newName: string, session: ClientSession): Promise<unknown> => {
-    return mongodbService.categories().updateMany({
+    return mongodbService.categories.updateMany({
       fullName: {
         $regex: `^${oldName}:`,
       },
@@ -44,7 +44,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
   const instance: ICategoryService = {
     dumpCategories: () => {
       return mongodbService.inSession((session) => {
-        return mongodbService.categories().find({}, null, {
+        return mongodbService.categories.find({}, null, {
           session,
         })
           .lean<Category.Document[]>()
@@ -52,12 +52,12 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
       });
     },
     saveCategory: (doc) => {
-      return mongodbService.categories().create(doc);
+      return mongodbService.categories.create(doc);
     },
     getCategoryById: async (categoryId) => {
       let category: Category.Document;
       if (categoryId) {
-        [category] = await mongodbService.categories()
+        [category] = await mongodbService.categories
           .aggregate()
           .match({
             _id: new Types.ObjectId(categoryId),
@@ -125,8 +125,8 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
     deleteCategory: async (categoryId) => {
       return mongodbService.inSession((session) => {
         return session.withTransaction(async () => {
-          const toDelete = await mongodbService.categories().findById(categoryId);
-          await mongodbService.products().deleteMany({
+          const toDelete = await mongodbService.categories.findById(categoryId);
+          await mongodbService.products.deleteMany({
             category: categoryId,
           }, {
             session,
@@ -137,7 +137,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
             session,
           });
 
-          await mongodbService.categories().updateMany({
+          await mongodbService.categories.updateMany({
             parentCategory: toDelete,
           },
           toDelete.parentCategory ? {
@@ -154,7 +154,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
           })
             .exec();
           // await updateCategoryFullName(deleted.fullName, deleted.fullName.replace(new RegExp(`${deleted.name}$`), ''), session);
-          await mongodbService.categories().updateMany({
+          await mongodbService.categories.updateMany({
             fullName: {
               $regex: `^${toDelete.fullName}`,
             },
@@ -176,7 +176,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
           })
             .exec();
           // TODO
-          await mongodbService.transactions().updateMany({
+          await mongodbService.transactions.updateMany({
             category: toDelete,
           }, toDelete.parentCategory ? {
             $set: {
@@ -193,7 +193,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
             session,
           })
             .exec();
-          await mongodbService.transactions().updateMany({
+          await mongodbService.transactions.updateMany({
             'splits.category': categoryId,
           }, toDelete.parentCategory ? {
             $set: {
@@ -221,7 +221,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
     updateCategory: async (doc, oldFullName) => {
       return mongodbService.inSession((session) => {
         return session.withTransaction(async () => {
-          await mongodbService.categories().replaceOne({
+          await mongodbService.categories.replaceOne({
             _id: doc._id,
           }, doc, {
             runValidators: true,
@@ -229,7 +229,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
           })
             .exec();
           await updateCategoryFullName(oldFullName, doc.fullName, session);
-          await mongodbService.transactions().updateMany({
+          await mongodbService.transactions.updateMany({
             category: doc._id,
           }, doc.categoryType === 'regular' ? {
             $unset: {
@@ -249,7 +249,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
             session,
           })
             .exec();
-          await mongodbService.transactions().updateMany({
+          await mongodbService.transactions.updateMany({
             'splits.category': doc._id,
           }, doc.categoryType === 'regular' ? {
             $unset: {
@@ -279,7 +279,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
     },
     listCategories: ({ categoryType }) => {
       return mongodbService.inSession((session) => {
-        const aggregate = mongodbService.categories()
+        const aggregate = mongodbService.categories
           .aggregate()
           .session(session);
 
@@ -354,7 +354,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
     },
     listCategoriesByIds: (categoryIds) => {
       return mongodbService.inSession((session) => {
-        return mongodbService.categories().find({
+        return mongodbService.categories.find({
           _id: {
             $in: categoryIds,
           },
@@ -368,7 +368,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
     mergeCategories: ({ targetCategoryId, sourceCategoryIds }) => {
       return mongodbService.inSession((session) => {
         return session.withTransaction(async () => {
-          await mongodbService.categories().deleteMany({
+          await mongodbService.categories.deleteMany({
             _id: {
               $in: sourceCategoryIds,
             },
@@ -376,7 +376,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
             session,
           });
 
-          await mongodbService.products().updateMany({
+          await mongodbService.products.updateMany({
             category: {
               $in: sourceCategoryIds,
             },
@@ -388,7 +388,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
             session,
           });
 
-          await mongodbService.transactions().updateMany({
+          await mongodbService.transactions.updateMany({
             category: {
               $in: sourceCategoryIds,
             },
@@ -401,7 +401,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
             session,
           });
 
-          await mongodbService.transactions().updateMany({
+          await mongodbService.transactions.updateMany({
             'splits.category': {
               $in: sourceCategoryIds,
             },

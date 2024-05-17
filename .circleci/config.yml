@@ -9,7 +9,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "layers/mongoose/nodejs/yarn.lock"}}
+          key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}
       - run:
           name: Install API dependencies
           command: yarn
@@ -19,10 +19,9 @@ jobs:
           working_directory: web
       - run:
           name: Installing layer dependencies
-          command: yarn
-          working_directory: layers/mongoose/nodejs
+          command: yarn install --modules-folder layers/dependencies/nodejs/node_modules --prod
       - save_cache:
-          key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "layers/mongoose/nodejs/yarn.lock"}}
+          key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}
           paths:
             - ~/.cache/yarn
       - persist_to_workspace:

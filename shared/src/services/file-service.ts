@@ -16,7 +16,7 @@ export const fileServiceFactory = (mongodbService: IMongodbService): IFileServic
   const instance: IFileService = {
     dumpFiles: () => {
       return mongodbService.inSession((session) => {
-        return mongodbService.files().find({}, null, {
+        return mongodbService.files.find({}, null, {
           session,
         })
           .lean()
@@ -24,17 +24,17 @@ export const fileServiceFactory = (mongodbService: IMongodbService): IFileServic
       });
     },
     saveFile: (doc) => {
-      return mongodbService.files().create(doc);
+      return mongodbService.files.create(doc);
     },
     getFileById: async (fileId) => {
-      return !fileId ? undefined : mongodbService.files().findById(fileId)
+      return !fileId ? undefined : mongodbService.files.findById(fileId)
         .lean()
         .exec();
     },
     // deleteFile: async (fileId) => {
     //   return mongodbService.inSession((session) => {
     //     return session.withTransaction(async () => {
-    //       await mongodbService.files().deleteOne({
+    //       await mongodbService.files.deleteOne({
     //         _id: fileId,
     //       }, {
     //         session,
@@ -57,7 +57,7 @@ export const fileServiceFactory = (mongodbService: IMongodbService): IFileServic
     //   });
     // },
     updateFile: (fileId, updateQuery) => {
-      return mongodbService.files().findByIdAndUpdate(fileId, updateQuery,
+      return mongodbService.files.findByIdAndUpdate(fileId, updateQuery,
         {
           returnDocument: 'after',
           runValidators: true,
@@ -66,7 +66,7 @@ export const fileServiceFactory = (mongodbService: IMongodbService): IFileServic
     },
     // listFiles: () => {
     //   return mongodbService.inSession((session) => {
-    //     return aggregateFileBalance(mongodbService.files().aggregate(null, {
+    //     return aggregateFileBalance(mongodbService.files.aggregate(null, {
     //       session,
     //     }))
     //       .collation({
@@ -80,7 +80,7 @@ export const fileServiceFactory = (mongodbService: IMongodbService): IFileServic
     // },
     // listFilesByIds: (fileIds) => {
     //   return mongodbService.inSession((session) => {
-    //     return mongodbService.files().find({
+    //     return mongodbService.files.find({
     //       _id: {
     //         $in: fileIds,
     //       },

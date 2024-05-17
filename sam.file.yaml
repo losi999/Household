@@ -10,11 +10,11 @@ Parameters:
     Type: String
   MongodbConnectionString:
     Type: String
-  MongooseLayer:
+  DependenciesLayer:
     Type: String
 
 Conditions:
-  ShouldUseLayers: !Not [!Equals [!Ref MongooseLayer, "MongooseLayer"]]
+  ShouldUseLayers: !Not [!Equals [!Ref DependenciesLayer, "DependenciesLayer"]]
 
 Globals:
   Function:
@@ -23,8 +23,10 @@ Globals:
     Timeout: 60
     MemorySize: 512
     Tracing: Active
+    Tags:
+      Application: !Sub Household-${Env}
     Layers:
-      - !If [ShouldUseLayers, !Ref MongooseLayer, !Ref "AWS::NoValue"]
+      - !If [ShouldUseLayers, !Ref DependenciesLayer, !Ref "AWS::NoValue"]
     Environment:
       Variables:
         MONGODB_CONNECTION_STRING: !Ref MongodbConnectionString
