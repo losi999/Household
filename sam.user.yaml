@@ -23,6 +23,8 @@ Globals:
     Timeout: 10
     MemorySize: 512
     Tracing: Active
+    Tags:
+      Application: !Sub Household-${Env}
     Layers:
       - !If [ShouldUseLayers, !Ref DependenciesLayer, !Ref "AWS::NoValue"]
     Environment:
