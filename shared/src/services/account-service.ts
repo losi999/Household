@@ -1,13 +1,13 @@
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { Account } from '@household/shared/types/types';
-import { Aggregate, Types } from 'mongoose';
+import { Aggregate, Types, UpdateQuery } from 'mongoose';
 
 export interface IAccountService {
   dumpAccounts(): Promise<Account.Document[]>;
   saveAccount(doc: Account.Document): Promise<Account.Document>;
   getAccountById(accountId: Account.Id): Promise<Account.Document>;
   deleteAccount(accountId: Account.Id): Promise<unknown>;
-  updateAccount(doc: Account.Document): Promise<unknown>;
+  updateAccount(accountId: Account.Id, updateQuery: UpdateQuery<Account.Document>): Promise<unknown>;
   listAccounts(): Promise<Account.Document[]>;
   listAccountsByIds(accountIds: Account.Id[]): Promise<Account.Document[]>;
 }
@@ -93,13 +93,10 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
         });
       });
     },
-    updateAccount: (doc) => {
-      return mongodbService.accounts.replaceOne({
-        _id: doc._id,
-      }, doc, {
+    updateAccount: async (accountId, updateQuery) => {
+      return mongodbService.accounts.findOneAndUpdate(accountId, updateQuery, {
         runValidators: true,
-      })
-        .exec();
+      });
     },
     listAccounts: () => {
       return mongodbService.inSession((session) => {

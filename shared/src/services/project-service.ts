@@ -1,12 +1,13 @@
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { Project } from '@household/shared/types/types';
+import { UpdateQuery } from 'mongoose';
 
 export interface IProjectService {
   dumpProjects(): Promise<Project.Document[]>;
   saveProject(doc: Project.Document): Promise<Project.Document>;
   getProjectById(projectId: Project.Id): Promise<Project.Document>;
   deleteProject(projectId: Project.Id): Promise<unknown>;
-  updateProject(doc: Project.Document): Promise<unknown>;
+  updateProject(projectId: Project.Id, updateQuery: UpdateQuery<Project.Document>): Promise<unknown>;
   listProjects(): Promise<Project.Document[]>;
   listProjectsByIds(projectIds: Project.Id[]): Promise<Project.Document[]>;
   mergeProjects(ctx: {
@@ -74,13 +75,10 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
         });
       });
     },
-    updateProject: (doc) => {
-      return mongodbService.projects.replaceOne({
-        _id: doc._id,
-      }, doc, {
+    updateProject: async (projectId, updateQuery) => {
+      return mongodbService.projects.findOneAndUpdate(projectId, updateQuery, {
         runValidators: true,
-      })
-        .exec();
+      });
     },
     listProjects: () => {
       return mongodbService.inSession((session) => {

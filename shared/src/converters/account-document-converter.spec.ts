@@ -1,4 +1,4 @@
-import { createAccountDocument, createAccountReport, createAccountRequest, createAccountResponse } from '@household/shared/common/test-data-factory';
+import { createAccountDocument, createAccountReport, createAccountRequest, createAccountResponse, createDocumentUpdate } from '@household/shared/common/test-data-factory';
 import { addSeconds, getAccountId } from '@household/shared/common/utils';
 import { accountDocumentConverterFactory, IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { advanceTo, clear } from 'jest-date-mock';
@@ -73,22 +73,13 @@ describe('Account document converter', () => {
   });
 
   describe('update', () => {
-    const { updatedAt, ...document } = queriedDocument;
     it('should update document', () => {
-      const result = converter.update({
-        body,
-        document,
-      }, expiresIn);
-      expect(result).toEqual(createAccountDocument({
-        accountType,
-        currency,
-        name,
-        owner,
-        isOpen: true,
-        balance: undefined,
-        _id: queriedDocument._id,
-        createdAt: now,
-        expiresAt: addSeconds(expiresIn, now),
+      const result = converter.update(body, expiresIn);
+      expect(result).toEqual(createDocumentUpdate({
+        $set: {
+          ...body,
+          expiresAt: addSeconds(expiresIn, now),
+        },
       }));
     });
   });

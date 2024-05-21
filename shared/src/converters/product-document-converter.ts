@@ -1,17 +1,14 @@
 import { generateMongoId } from '@household/shared/common/test-data-factory';
 import { addSeconds, getProductId } from '@household/shared/common/utils';
-import { Restrict } from '@household/shared/types/common';
 import { Category, Product, Transaction } from '@household/shared/types/types';
+import { UpdateQuery } from 'mongoose';
 
 export interface IProductDocumentConverter {
   create(data: {
     body: Product.Request;
     category: Category.Document
   }, expiresIn: number, generateId?: boolean): Product.Document;
-  update(data: {
-    document: Restrict<Product.Document, 'updatedAt'>;
-    body: Product.Request;
-  }, expiresIn: number): Product.Document;
+  update(body: Product.Request, expiresIn: number): UpdateQuery<Product.Document>;
   toResponse(document: Product.Document): Product.Response;
   toReport(inventory: Transaction.Inventory<Product.Document>['inventory']): Product.Report;
   toResponseList(documents: Product.Document[]): Product.Response[];
@@ -28,14 +25,13 @@ export const productDocumentConverterFactory = (): IProductDocumentConverter => 
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
-    update: ({ document: { _id, createdAt, category }, body }, expiresIn): Product.Document => {
+    update: (body, expiresIn): UpdateQuery<Product.Document> => {
       return {
-        ...instance.create({
-          body,
-          category,
-        }, expiresIn),
-        _id,
-        createdAt,
+        $set: {
+          ...body,
+          fullName: `${body.brand} ${body.measurement} ${body.unitOfMeasurement}`,
+          expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
+        },
       };
     },
     toReport: (inventory): Product.Report => {

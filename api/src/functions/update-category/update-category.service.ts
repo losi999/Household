@@ -34,16 +34,15 @@ export const updateCategoryServiceFactory = (
       parentCategoryId: body.parentCategoryId,
     });
 
-    const { updatedAt, ...document } = queried;
-    const updated = categoryDocumentConverter.update({
-      document,
+    const update = categoryDocumentConverter.update({
       body,
       parentCategory,
     }, expiresIn);
-    const oldFullName = document.fullName;
+    const oldFullName = queried.fullName;
 
-    await categoryService.updateCategory(updated, oldFullName).catch(httpErrors.category.update({
-      document: updated,
+    await categoryService.updateCategory(categoryId, update, oldFullName).catch(httpErrors.category.update({
+      categoryId,
+      update,
       oldFullName,
     }));
   };

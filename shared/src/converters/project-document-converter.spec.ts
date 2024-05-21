@@ -1,4 +1,4 @@
-import { createProjectDocument, createProjectReport, createProjectRequest, createProjectResponse } from '@household/shared/common/test-data-factory';
+import { createDocumentUpdate, createProjectDocument, createProjectReport, createProjectRequest, createProjectResponse } from '@household/shared/common/test-data-factory';
 import { addSeconds, getProjectId } from '@household/shared/common/utils';
 import { projectDocumentConverterFactory, IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
 import { advanceTo, clear } from 'jest-date-mock';
@@ -55,18 +55,13 @@ describe('Project document converter', () => {
   });
 
   describe('update', () => {
-    const { updatedAt, ...document } = queriedDocument;
     it('should update document', () => {
-      const result = converter.update({
-        body,
-        document,
-      }, expiresIn);
-      expect(result).toEqual(createProjectDocument({
-        _id: document._id,
-        description,
-        name,
-        createdAt: now,
-        expiresAt: addSeconds(expiresIn, now),
+      const result = converter.update(body, expiresIn);
+      expect(result).toEqual(createDocumentUpdate({
+        $set: {
+          ...body,
+          expiresAt: addSeconds(expiresIn, now),
+        },
       }));
     });
   });

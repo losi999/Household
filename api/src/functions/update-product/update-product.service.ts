@@ -24,13 +24,11 @@ export const updateProductServiceFactory = (
       productId,
     });
 
-    const { updatedAt, ...document } = queried;
+    const update = productDocumentConverter.update(body, expiresIn);
 
-    const updated = productDocumentConverter.update({
-      document,
-      body,
-    }, expiresIn);
-
-    await productService.updateProduct(updated).catch(httpErrors.product.update(updated));
+    await productService.updateProduct(productId, update).catch(httpErrors.product.update({
+      productId,
+      update,
+    }));
   };
 };

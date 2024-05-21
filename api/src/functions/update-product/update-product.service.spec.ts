@@ -1,5 +1,5 @@
 import { IUpdateProductService, updateProductServiceFactory } from '@household/api/functions/update-product/update-product.service';
-import { createProductRequest, createProductDocument } from '@household/shared/common/test-data-factory';
+import { createProductRequest, createProductDocument, createDocumentUpdate } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getProductId } from '@household/shared/common/utils';
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
@@ -20,14 +20,13 @@ describe('Update product service', () => {
   const body = createProductRequest();
   const queriedDocument = createProductDocument();
   const productId = getProductId(queriedDocument);
-  const updatedDocument = createProductDocument({
+  const updateQuery = createDocumentUpdate({
     brand: 'updated',
   });
-  const { updatedAt, ...toUpdate } = queriedDocument;
 
   it('should return if product is updated', async () => {
     mockProductService.functions.getProductById.mockResolvedValue(queriedDocument);
-    mockProductDocumentConverter.functions.update.mockReturnValue(updatedDocument);
+    mockProductDocumentConverter.functions.update.mockReturnValue(updateQuery);
     mockProductService.functions.updateProduct.mockResolvedValue(undefined);
 
     await service({
@@ -36,11 +35,8 @@ describe('Update product service', () => {
       expiresIn: undefined,
     });
     validateFunctionCall(mockProductService.functions.getProductById, productId);
-    validateFunctionCall(mockProductDocumentConverter.functions.update, {
-      body,
-      document: toUpdate,
-    }, undefined);
-    validateFunctionCall(mockProductService.functions.updateProduct, updatedDocument);
+    validateFunctionCall(mockProductDocumentConverter.functions.update, body, undefined);
+    validateFunctionCall(mockProductService.functions.updateProduct, productId, updateQuery);
     expect.assertions(3);
   });
 
@@ -75,7 +71,7 @@ describe('Update product service', () => {
 
     it('if unable to update product', async () => {
       mockProductService.functions.getProductById.mockResolvedValue(queriedDocument);
-      mockProductDocumentConverter.functions.update.mockReturnValue(updatedDocument);
+      mockProductDocumentConverter.functions.update.mockReturnValue(updateQuery);
       mockProductService.functions.updateProduct.mockRejectedValue('this is a mongo error');
 
       await service({
@@ -84,11 +80,8 @@ describe('Update product service', () => {
         expiresIn: undefined,
       }).catch(validateError('Error while updating product', 500));
       validateFunctionCall(mockProductService.functions.getProductById, productId);
-      validateFunctionCall(mockProductDocumentConverter.functions.update, {
-        body,
-        document: toUpdate,
-      }, undefined);
-      validateFunctionCall(mockProductService.functions.updateProduct, updatedDocument);
+      validateFunctionCall(mockProductDocumentConverter.functions.update, body, undefined);
+      validateFunctionCall(mockProductService.functions.updateProduct, productId, updateQuery);
       expect.assertions(5);
     });
   });

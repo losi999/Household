@@ -1,14 +1,11 @@
 import { generateMongoId } from '@household/shared/common/test-data-factory';
 import { addSeconds, getProjectId } from '@household/shared/common/utils';
-import { Restrict } from '@household/shared/types/common';
 import { Project } from '@household/shared/types/types';
+import { UpdateQuery } from 'mongoose';
 
 export interface IProjectDocumentConverter {
   create(body: Project.Request, expiresIn: number, generateId?: boolean): Project.Document;
-  update(data: {
-    document: Restrict<Project.Document, 'updatedAt'>;
-    body: Project.Request;
-  }, expiresIn: number): Project.Document;
+  update(body: Project.Request, expiresIn: number): UpdateQuery<Project.Document>;
   toResponse(doc: Project.Document): Project.Response;
   toReport(doc: Project.Document): Project.Report;
   toResponseList(docs: Project.Document[]): Project.Response[];
@@ -23,11 +20,12 @@ export const projectDocumentConverterFactory = (): IProjectDocumentConverter => 
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
-    update: ({ document: { _id, createdAt }, body }, expiresIn): Project.Document => {
+    update: (body, expiresIn): UpdateQuery<Project.Document> => {
       return {
-        ...instance.create(body, expiresIn),
-        _id,
-        createdAt,
+        $set: {
+          ...body,
+          expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
+        },
       };
     },
     toResponse: (doc): Project.Response => {

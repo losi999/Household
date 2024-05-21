@@ -1,12 +1,13 @@
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { Recipient } from '@household/shared/types/types';
+import { UpdateQuery } from 'mongoose';
 
 export interface IRecipientService {
   dumpRecipients(): Promise<Recipient.Document[]>;
   saveRecipient(doc: Recipient.Document): Promise<Recipient.Document>;
   getRecipientById(recipientId: Recipient.Id): Promise<Recipient.Document>;
   deleteRecipient(recipientId: Recipient.Id): Promise<unknown>;
-  updateRecipient(doc: Recipient.Document): Promise<unknown>;
+  updateRecipient(recipientId: Recipient.Id, updateQuery: UpdateQuery<Recipient.Document>): Promise<unknown>;
   listRecipients(): Promise<Recipient.Document[]>;
   listRecipientsByIds(recipientIds: Recipient.Id[]): Promise<Recipient.Document[]>;
   mergeRecipients(ctx: {
@@ -57,13 +58,10 @@ export const recipientServiceFactory = (mongodbService: IMongodbService): IRecip
         });
       });
     },
-    updateRecipient: async (doc) => {
-      return mongodbService.recipients.replaceOne({
-        _id: doc._id,
-      }, doc, {
+    updateRecipient: async (recipientId, updateQuery) => {
+      return mongodbService.recipients.findByIdAndUpdate(recipientId, updateQuery, {
         runValidators: true,
-      })
-        .exec();
+      });
     },
     listRecipients: () => {
       return mongodbService.inSession(async(session) => {
