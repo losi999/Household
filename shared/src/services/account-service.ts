@@ -94,7 +94,7 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
       });
     },
     updateAccount: async (accountId, updateQuery) => {
-      return mongodbService.accounts.findOneAndUpdate(accountId, updateQuery, {
+      return mongodbService.accounts.findByIdAndUpdate(accountId, updateQuery, {
         runValidators: true,
       });
     },

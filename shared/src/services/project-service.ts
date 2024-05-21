@@ -76,7 +76,7 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
       });
     },
     updateProject: async (projectId, updateQuery) => {
-      return mongodbService.projects.findOneAndUpdate(projectId, updateQuery, {
+      return mongodbService.projects.findByIdAndUpdate(projectId, updateQuery, {
         runValidators: true,
       });
     },

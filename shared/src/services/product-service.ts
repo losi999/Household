@@ -96,7 +96,7 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
       });
     },
     updateProduct: async (productId, updateQuery) => {
-      return mongodbService.products.findOneAndUpdate(productId, updateQuery, {
+      return mongodbService.products.findByIdAndUpdate(productId, updateQuery, {
         runValidators: true,
       });
     },
