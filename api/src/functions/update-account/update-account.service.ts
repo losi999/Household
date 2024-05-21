@@ -24,13 +24,11 @@ export const updateAccountServiceFactory = (
       accountId,
     });
 
-    const { updatedAt, ...document } = queried;
+    const update = accountDocumentConverter.update(body, expiresIn);
 
-    const updated = accountDocumentConverter.update({
-      document,
-      body,
-    }, expiresIn);
-
-    await accountService.updateAccount(updated).catch(httpErrors.account.update(updated));
+    await accountService.updateAccount(accountId, update).catch(httpErrors.account.update({
+      accountId,
+      update,
+    }));
   };
 };

@@ -24,13 +24,11 @@ export const updateRecipientServiceFactory = (
       recipientId,
     });
 
-    const { updatedAt, ...document } = queried;
+    const update = recipientDocumentConverter.update(body, expiresIn);
 
-    const updated = recipientDocumentConverter.update({
-      document,
-      body,
-    }, expiresIn);
-
-    await recipientService.updateRecipient(updated).catch(httpErrors.recipient.update(updated));
+    await recipientService.updateRecipient(recipientId, update).catch(httpErrors.recipient.update({
+      recipientId,
+      update,
+    }));
   };
 };

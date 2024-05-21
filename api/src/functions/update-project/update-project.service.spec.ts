@@ -1,5 +1,5 @@
 import { IUpdateProjectService, updateProjectServiceFactory } from '@household/api/functions/update-project/update-project.service';
-import { createProjectRequest, createProjectDocument } from '@household/shared/common/test-data-factory';
+import { createProjectRequest, createProjectDocument, createDocumentUpdate } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getProjectId } from '@household/shared/common/utils';
 import { IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
@@ -20,14 +20,13 @@ describe('Update project service', () => {
   const body = createProjectRequest();
   const queriedDocument = createProjectDocument();
   const projectId = getProjectId(queriedDocument);
-  const updatedDocument = createProjectDocument({
+  const updateQuery = createDocumentUpdate({
     name: 'updated',
   });
-  const { updatedAt, ...toUpdate } = queriedDocument;
 
   it('should return if project is updated', async () => {
     mockProjectService.functions.getProjectById.mockResolvedValue(queriedDocument);
-    mockProjectDocumentConverter.functions.update.mockReturnValue(updatedDocument);
+    mockProjectDocumentConverter.functions.update.mockReturnValue(updateQuery);
     mockProjectService.functions.updateProject.mockResolvedValue(undefined);
 
     await service({
@@ -36,11 +35,8 @@ describe('Update project service', () => {
       expiresIn: undefined,
     });
     validateFunctionCall(mockProjectService.functions.getProjectById, projectId);
-    validateFunctionCall(mockProjectDocumentConverter.functions.update, {
-      body,
-      document: toUpdate,
-    }, undefined);
-    validateFunctionCall(mockProjectService.functions.updateProject, updatedDocument);
+    validateFunctionCall(mockProjectDocumentConverter.functions.update, body, undefined);
+    validateFunctionCall(mockProjectService.functions.updateProject, projectId, updateQuery);
     expect.assertions(3);
   });
 
@@ -75,7 +71,7 @@ describe('Update project service', () => {
 
     it('if unable to update project', async () => {
       mockProjectService.functions.getProjectById.mockResolvedValue(queriedDocument);
-      mockProjectDocumentConverter.functions.update.mockReturnValue(updatedDocument);
+      mockProjectDocumentConverter.functions.update.mockReturnValue(updateQuery);
       mockProjectService.functions.updateProject.mockRejectedValue('this is a mongo error');
 
       await service({
@@ -84,11 +80,8 @@ describe('Update project service', () => {
         expiresIn: undefined,
       }).catch(validateError('Error while updating project', 500));
       validateFunctionCall(mockProjectService.functions.getProjectById, projectId);
-      validateFunctionCall(mockProjectDocumentConverter.functions.update, {
-        body,
-        document: toUpdate,
-      }, undefined);
-      validateFunctionCall(mockProjectService.functions.updateProject, updatedDocument);
+      validateFunctionCall(mockProjectDocumentConverter.functions.update, body, undefined);
+      validateFunctionCall(mockProjectService.functions.updateProject, projectId, updateQuery);
       expect.assertions(5);
     });
   });

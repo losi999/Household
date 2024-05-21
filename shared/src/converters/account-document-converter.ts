@@ -1,14 +1,11 @@
 import { generateMongoId } from '@household/shared/common/test-data-factory';
 import { addSeconds, getAccountId } from '@household/shared/common/utils';
-import { Restrict } from '@household/shared/types/common';
 import { Account } from '@household/shared/types/types';
+import { UpdateQuery } from 'mongoose';
 
 export interface IAccountDocumentConverter {
   create(body: Account.Request, expiresIn: number, generateId?: boolean): Account.Document;
-  update(data: {
-    document: Restrict<Account.Document, 'updatedAt'>;
-    body: Account.Request
-  }, expiresIn: number): Account.Document;
+  update(body: Account.Request, expiresIn: number): UpdateQuery<Account.Document>;
   toReport(document: Account.Document): Account.Report;
   toResponse(document: Account.Document): Account.Response;
   toResponseList(docs: Account.Document[]): Account.Response[];
@@ -25,11 +22,12 @@ export const accountDocumentConverterFactory = (): IAccountDocumentConverter => 
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
-    update: ({ document: { _id, createdAt }, body }, expiresIn): Account.Document => {
+    update: (body, expiresIn): UpdateQuery<Account.Document> => {
       return {
-        ...instance.create(body, expiresIn),
-        _id,
-        createdAt,
+        $set: {
+          ...body,
+          expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
+        },
       };
     },
     toResponse: (document): Account.Response => {

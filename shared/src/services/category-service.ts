@@ -1,13 +1,13 @@
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { Category } from '@household/shared/types/types';
-import { ClientSession, Types } from 'mongoose';
+import { ClientSession, Types, UpdateQuery } from 'mongoose';
 
 export interface ICategoryService {
   dumpCategories(): Promise<Category.Document[]>;
   saveCategory(doc: Category.Document): Promise<Category.Document>;
   getCategoryById(categoryId: Category.Id): Promise<Category.Document>;
   deleteCategory(categoryId: Category.Id): Promise<unknown>;
-  updateCategory(doc: Category.Document, oldFullName: string): Promise<unknown>;
+  updateCategory(categoryId: Category.Id, updateQuery: UpdateQuery<Category.Document>, oldFullName: string): Promise<unknown>;
   listCategories(categoryType: Category.CategoryType): Promise<Category.Document[]>;
   listCategoriesByIds(categoryIds: Category.Id[]): Promise<Category.Document[]>;
   mergeCategories(ctx: {
@@ -218,19 +218,19 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
         });
       });
     },
-    updateCategory: async (doc, oldFullName) => {
+    updateCategory: async (categoryId, updateQuery, oldFullName) => {
       return mongodbService.inSession((session) => {
         return session.withTransaction(async () => {
-          await mongodbService.categories.replaceOne({
-            _id: doc._id,
-          }, doc, {
+          const doc = await mongodbService.categories.findByIdAndUpdate(categoryId, updateQuery, {
             runValidators: true,
             session,
+            returnDocument: 'after',
           })
             .exec();
+
           await updateCategoryFullName(oldFullName, doc.fullName, session);
           await mongodbService.transactions.updateMany({
-            category: doc._id,
+            category: categoryId,
           }, doc.categoryType === 'regular' ? {
             $unset: {
               invoice: 1,
@@ -250,7 +250,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
           })
             .exec();
           await mongodbService.transactions.updateMany({
-            'splits.category': doc._id,
+            'splits.category': categoryId,
           }, doc.categoryType === 'regular' ? {
             $unset: {
               'splits.$[element].invoice': 1,
@@ -269,7 +269,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
             runValidators: true,
             arrayFilters: [
               {
-                'element.category': doc._id,
+                'element.category': categoryId,
               },
             ],
           })

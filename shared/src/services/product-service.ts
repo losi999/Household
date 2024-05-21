@@ -1,5 +1,6 @@
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { Product } from '@household/shared/types/types';
+import { UpdateQuery } from 'mongoose';
 
 export interface IProductService {
   dumpProducts(): Promise<Product.Document[]>;
@@ -7,7 +8,7 @@ export interface IProductService {
   getProductById(productId: Product.Id): Promise<Product.Document>;
   listProductsByIds(productIds: Product.Id[]): Promise<Product.Document[]>;
   deleteProduct(productId: Product.Id): Promise<unknown>;
-  updateProduct(doc: Product.Document): Promise<unknown>;
+  updateProduct(productId: Product.Id, updateQuery: UpdateQuery<Product.Document>): Promise<unknown>;
   mergeProducts(ctx: {
     targetProductId: Product.Id;
     sourceProductIds: Product.Id[];
@@ -94,13 +95,10 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
         });
       });
     },
-    updateProduct: (doc) => {
-      return mongodbService.products.replaceOne({
-        _id: doc._id,
-      }, doc, {
+    updateProduct: async (productId, updateQuery) => {
+      return mongodbService.products.findOneAndUpdate(productId, updateQuery, {
         runValidators: true,
-      })
-        .exec();
+      });
     },
     mergeProducts: ({ targetProductId, sourceProductIds }) => {
       return mongodbService.inSession((session) => {
