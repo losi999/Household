@@ -1,4 +1,4 @@
-import { createCategoryDocument, createDocumentUpdate, createInventoryDocument, createProductDocument, createProductReport, createProductRequest, createProductResponse } from '@household/shared/common/test-data-factory';
+import { createCategoryDocument, createDocumentUpdate, createProductDocument, createProductReport, createProductRequest, createProductResponse } from '@household/shared/common/test-data-factory';
 import { addSeconds, getProductId } from '@household/shared/common/utils';
 import { productDocumentConverterFactory, IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
 import { advanceTo, clear } from 'jest-date-mock';
@@ -114,10 +114,10 @@ describe('Product document converter', () => {
       const product = createProductDocument({
         fullName,
       });
-      const result = converter.toReport(createInventoryDocument({
-        product,
+      const result = converter.toReport({
+        document: product,
         quantity,
-      }));
+      });
       expect(result).toEqual(createProductReport({
         productId: getProductId(product),
         fullName,

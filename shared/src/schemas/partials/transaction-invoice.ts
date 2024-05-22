@@ -1,35 +1,32 @@
 import { StrictJSONSchema7 } from '@household/shared/types/common';
 import { Transaction } from '@household/shared/types/types';
 
-const schema: StrictJSONSchema7<Transaction.Invoice<string>> = {
+const schema: StrictJSONSchema7<Transaction.InvoiceDate<string> & Transaction.InvoiceNumber> = {
   type: 'object',
   additionalProperties: false,
-  required: ['invoice'],
+  dependentRequired: {
+    billingStartDate: ['billingEndDate'],
+    billingEndDate: ['billingStartDate'],
+    invoiceNumber: [
+      'billingEndDate',
+      'billingStartDate',
+    ],
+  },
   properties: {
-    invoice: {
-      type: 'object',
-      required: [
-        'billingStartDate',
-        'billingEndDate',
-      ],
-      additionalProperties: false,
-      properties: {
-        invoiceNumber: {
-          type: 'string',
-          minLength: 1,
-        },
-        billingEndDate: {
-          type: 'string',
-          format: 'date',
-          formatExclusiveMinimum: {
-            $data: '1/billingStartDate',
-          },
-        } as any,
-        billingStartDate: {
-          type: 'string',
-          format: 'date',
-        },
+    invoiceNumber: {
+      type: 'string',
+      minLength: 1,
+    },
+    billingEndDate: {
+      type: 'string',
+      format: 'date',
+      formatExclusiveMinimum: {
+        $data: '1/billingStartDate',
       },
+    } as any,
+    billingStartDate: {
+      type: 'string',
+      format: 'date',
     },
   },
 };

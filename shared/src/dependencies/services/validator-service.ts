@@ -1,4 +1,4 @@
-import ajv from 'ajv';
+import ajv from 'ajv/dist/2020';
 import ajvFormats from 'ajv-formats';
 import { validatorServiceFactory } from '@household/shared/services/validator-service';
 

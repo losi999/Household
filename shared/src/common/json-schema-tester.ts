@@ -21,6 +21,15 @@ export const jsonSchemaTesterFactory = <T extends object>(schema: JSONSchema7) =
         expect(result).toContain(`must have required property '${propertyName}'`);
       });
     },
+    validateSchemaDependentRequired: (data: T, propertyName: string, ...dependingPropertyNames: string[]) => {
+      const plural = dependingPropertyNames.length > 1;
+      const dependingPropertyName = dependingPropertyNames.join(', ');
+
+      it(`is present and ${dependingPropertyName} ${plural ? 'are' : 'is'} missing`, () => {
+        const result = validatorService.validate(data, schema);
+        expect(result).toContain(`must have propert${plural ? 'ies' : 'y'} ${dependingPropertyName} when property ${propertyName} is present`);
+      });
+    },
     validateSchemaPattern: (data: T, propertyName: string) => {
       it('does not match pattern', () => {
         const result = validatorService.validate(data, schema);

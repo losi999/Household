@@ -5,7 +5,7 @@ import { ICategoryDocumentConverter } from '@household/shared/converters/categor
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
 import { IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
-import { Dictionary } from '@household/shared/types/common';
+import { Dictionary, Restrict } from '@household/shared/types/common';
 import { Account, Category, File, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 
 export interface ITransactionDocumentConverter {
@@ -71,40 +71,6 @@ export const transactionDocumentConverterFactory = (
   recipientDocumentConverter: IRecipientDocumentConverter,
   productDocumentConverter: IProductDocumentConverter,
 ): ITransactionDocumentConverter => {
-  const toResponseInvoice = ({ invoice }: Transaction.Invoice<Date>): Transaction.Invoice<string> => {
-    return invoice ? {
-      invoice: {
-        invoiceNumber: invoice.invoiceNumber,
-        billingEndDate: invoice.billingEndDate.toISOString().split('T')[0],
-        billingStartDate: invoice.billingStartDate.toISOString().split('T')[0],
-      },
-    } : undefined;
-  };
-
-  const toDocumentInvoice = (invoice: Transaction.Invoice<string>['invoice']): Transaction.Invoice<Date>['invoice'] => {
-    return invoice ? {
-      invoiceNumber: invoice.invoiceNumber,
-      billingEndDate: new Date(invoice.billingEndDate),
-      billingStartDate: new Date(invoice.billingStartDate),
-    } : undefined;
-  };
-
-  const toResponseInventory = ({ inventory }: Transaction.Inventory<Product.Document>): Transaction.Inventory<Product.Response> => {
-    return inventory ? {
-      inventory: {
-        quantity: inventory.quantity,
-        product: productDocumentConverter.toResponse(inventory.product),
-      },
-    } : undefined;
-  };
-
-  const toDocumentInventory = (inventory: Transaction.InventoryRequest['inventory'], product: Product.Document): Transaction.Inventory<Product.Document>['inventory'] => {
-    return inventory ? {
-      quantity: inventory.quantity,
-      product: product ?? undefined,
-    } : undefined;
-  };
-
   const toResponsePayment = (doc: Transaction.PaymentDocument): Transaction.PaymentResponse => {
     return {
       ...doc,
@@ -115,11 +81,12 @@ export const transactionDocumentConverterFactory = (
       _id: undefined,
       expiresAt: undefined,
       account: accountDocumentConverter.toResponse(doc.account),
+      billingEndDate: doc.billingEndDate.toISOString().split('T')[0],
+      billingStartDate: doc.billingStartDate.toISOString().split('T')[0],
+      product: productDocumentConverter.toResponse(doc.product),
       category: doc.category ? categoryDocumentConverter.toResponse(doc.category) : undefined,
       recipient: doc.recipient ? recipientDocumentConverter.toResponse(doc.recipient) : undefined,
       project: doc.project ? projectDocumentConverter.toResponse(doc.project) : undefined,
-      ...toResponseInvoice(doc),
-      ...toResponseInventory(doc),
     };
   };
 
@@ -138,8 +105,11 @@ export const transactionDocumentConverterFactory = (
         return {
           amount: s.amount,
           description: s.description,
-          ...toResponseInvoice(s),
-          ...toResponseInventory(s),
+          invoiceNumber: s.invoiceNumber,
+          quantity: s.quantity,
+          billingEndDate: s.billingEndDate.toISOString().split('T')[0],
+          billingStartDate: s.billingStartDate.toISOString().split('T')[0],
+          product: productDocumentConverter.toResponse(s.product),
           category: s.category ? categoryDocumentConverter.toResponse(s.category) : undefined,
           project: s.project ? projectDocumentConverter.toResponse(s.project) : undefined,
         };
@@ -173,12 +143,16 @@ export const transactionDocumentConverterFactory = (
         project: project ?? undefined,
         issuedAt: new Date(body.issuedAt),
         transactionType: 'payment',
-        inventory: category?.categoryType === 'inventory' ? toDocumentInventory(body.inventory, product) : undefined,
-        invoice: category?.categoryType === 'invoice' ? toDocumentInvoice(body.invoice) : undefined,
+        quantity: category?.categoryType === 'inventory' ? body.quantity : undefined,
+        product: category?.categoryType === 'inventory' ? product : undefined,
+        invoiceNumber: category?.categoryType === 'invoice' ? body.invoiceNumber : undefined,
+        billingEndDate: category?.categoryType === 'invoice' ? new Date(body.billingEndDate) : undefined,
+        billingStartDate: category?.categoryType === 'invoice' ? new Date(body.billingStartDate) : undefined,
         accountId: undefined,
         categoryId: undefined,
         projectId: undefined,
         recipientId: undefined,
+        productId: undefined,
         _id: generateId ? generateMongoId() : undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
@@ -197,10 +171,14 @@ export const transactionDocumentConverterFactory = (
             amount: s.amount,
             description: s.description,
             project: projects[s.projectId],
-            inventory: category?.categoryType === 'inventory' ? toDocumentInventory(s.inventory, products[s.inventory?.productId]) : undefined,
-            invoice: category?.categoryType === 'invoice' ? toDocumentInvoice(s.invoice) : undefined,
+            quantity: category?.categoryType === 'inventory' ? s.quantity : undefined,
+            product: category?.categoryType === 'inventory' ? products[s.productId] : undefined,
+            invoiceNumber: category?.categoryType === 'invoice' ? s.invoiceNumber : undefined,
+            billingEndDate: category?.categoryType === 'invoice' ? new Date(s.billingEndDate) : undefined,
+            billingStartDate: category?.categoryType === 'invoice' ? new Date(s.billingStartDate) : undefined,
             projectId: undefined,
             categoryId: undefined,
+            productId: undefined,
           };
         }),
         accountId: undefined,
@@ -271,7 +249,10 @@ export const transactionDocumentConverterFactory = (
             description: document.description,
             account: accountDocumentConverter.toReport(document.account),
             category: categoryDocumentConverter.toReport(document.category),
-            product: productDocumentConverter.toReport(document.inventory),
+            product: productDocumentConverter.toReport({
+              quantity: document.quantity,
+              document: document.product,
+            }),
             project: projectDocumentConverter.toReport(document.project),
             recipient: recipientDocumentConverter.toReport(document.recipient),
           },
@@ -286,7 +267,10 @@ export const transactionDocumentConverterFactory = (
         account: accountDocumentConverter.toReport(document.account),
         recipient: recipientDocumentConverter.toReport(document.recipient),
         category: categoryDocumentConverter.toReport(s.category),
-        product: productDocumentConverter.toReport(s.inventory),
+        product: productDocumentConverter.toReport({
+          quantity: s.quantity,
+          document: s.product,
+        }),
         project: projectDocumentConverter.toReport(s.project),
       }));
     },

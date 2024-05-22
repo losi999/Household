@@ -1,6 +1,6 @@
 import { default as schema } from '@household/shared/schemas/transaction-payment-request';
 import { Transaction } from '@household/shared/types/types';
-import { createAccountId, createCategoryId, createInventoryRequest, createInvoiceRequest, createPaymentTransactionRequest, createProductId, createProjectId, createRecipientId } from '@household/shared/common/test-data-factory';
+import { createAccountId, createCategoryId, createPaymentTransactionRequest, createProductId, createProjectId, createRecipientId } from '@household/shared/common/test-data-factory';
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 
 describe('Payment transaction schema', () => {
@@ -28,11 +28,18 @@ describe('Payment transaction schema', () => {
       }));
 
       tester.validateSuccess(createPaymentTransactionRequest({
-        inventory: undefined,
+        quantity: undefined,
+        productId: undefined,
       }));
 
       tester.validateSuccess(createPaymentTransactionRequest({
-        invoice: undefined,
+        invoiceNumber: undefined,
+        billingEndDate: undefined,
+        billingStartDate: undefined,
+      }));
+
+      tester.validateSuccess(createPaymentTransactionRequest({
+        invoiceNumber: undefined,
       }));
     });
   });
@@ -65,131 +72,80 @@ describe('Payment transaction schema', () => {
       }), 'description', 1);
     });
 
-    describe('if data.inventory', () => {
-      tester.validateSchemaType(createPaymentTransactionRequest({
-        inventory: 1 as any,
-      }), 'inventory', 'object');
-
-      tester.validateSchemaAdditionalProperties(createPaymentTransactionRequest({
-        inventory: {
-          ...createInventoryRequest(),
-          extra: 1,
-        } as any,
-      }), 'inventory');
-    });
-
-    describe('if data.inventory.quantity', () => {
-      tester.validateSchemaRequired(createPaymentTransactionRequest({
-        inventory: createInventoryRequest({
-          quantity: undefined,
-        }),
-      }), 'quantity');
+    describe('if data.quantity', () => {
+      tester.validateSchemaDependentRequired(createPaymentTransactionRequest({
+        productId: undefined,
+      }), 'quantity', 'productId');
 
       tester.validateSchemaType(createPaymentTransactionRequest({
-        inventory: createInventoryRequest({
-          quantity: '1' as any,
-        }),
-      }), 'inventory/quantity', 'number');
+        quantity: '1' as any,
+      }), 'quantity', 'number');
 
       tester.validateSchemaExclusiveMinimum(createPaymentTransactionRequest({
-        inventory: createInventoryRequest({
-          quantity: 0,
-        }),
-      }), 'inventory/quantity', 0);
+        quantity: 0,
+      }), 'quantity', 0);
     });
 
-    describe('if data.inventory.productId', () => {
-      tester.validateSchemaRequired(createPaymentTransactionRequest({
-        inventory: createInventoryRequest({
-          productId: undefined,
-        }),
-      }), 'productId');
+    describe('if data.productId', () => {
+      tester.validateSchemaDependentRequired(createPaymentTransactionRequest({
+        quantity: undefined,
+      }), 'productId', 'quantity');
 
       tester.validateSchemaType(createPaymentTransactionRequest({
-        inventory: createInventoryRequest({
-          productId: 1 as any,
-        }),
-      }), 'inventory/productId', 'string');
+        productId: 1 as any,
+      }), 'productId', 'string');
 
       tester.validateSchemaPattern(createPaymentTransactionRequest({
-        inventory: createInventoryRequest({
-          productId: createProductId('not-valid'),
-        }),
-      }), 'inventory/productId');
+        productId: createProductId('not-valid'),
+      }), 'productId');
     });
 
-    describe('if data.invoice', () => {
-      tester.validateSchemaType(createPaymentTransactionRequest({
-        invoice: 1 as any,
-      }), 'invoice', 'object');
+    describe('if data.invoiceNumber', () => {
+      tester.validateSchemaDependentRequired(createPaymentTransactionRequest({
+        billingEndDate: undefined,
+        billingStartDate: undefined,
+      }), 'invoiceNumber', 'billingEndDate', 'billingStartDate');
 
-      tester.validateSchemaAdditionalProperties(createPaymentTransactionRequest({
-        invoice: {
-          ...createInvoiceRequest(),
-          extra: 1,
-        } as any,
-      }), 'invoice');
-    });
-
-    describe('if data.invoice.invoiceNumber', () => {
       tester.validateSchemaType(createPaymentTransactionRequest({
-        invoice: createInvoiceRequest({
-          invoiceNumber: 1 as any,
-        }),
-      }), 'invoice/invoiceNumber', 'string');
+        invoiceNumber: 1 as any,
+      }), 'invoiceNumber', 'string');
 
       tester.validateSchemaMinLength(createPaymentTransactionRequest({
-        invoice: createInvoiceRequest({
-          invoiceNumber: '',
-        }),
-      }), 'invoice/invoiceNumber', 1);
+        invoiceNumber: '',
+      }), 'invoiceNumber', 1);
     });
 
-    describe('if data.invoice.billingEndDate', () => {
-      tester.validateSchemaRequired(createPaymentTransactionRequest({
-        invoice: createInvoiceRequest({
-          billingEndDate: undefined,
-        }),
-      }), 'billingEndDate');
+    describe('if data.billingEndDate', () => {
+      tester.validateSchemaDependentRequired(createPaymentTransactionRequest({
+        billingStartDate: undefined,
+      }), 'billingEndDate', 'billingStartDate');
 
       tester.validateSchemaType(createPaymentTransactionRequest({
-        invoice: createInvoiceRequest({
-          billingEndDate: 1 as any,
-        }),
-      }), 'invoice/billingEndDate', 'string');
+        billingEndDate: 1 as any,
+      }), 'billingEndDate', 'string');
 
       tester.validateSchemaFormat(createPaymentTransactionRequest({
-        invoice: createInvoiceRequest({
-          billingEndDate: 'not-date',
-        }),
-      }), 'invoice/billingEndDate', 'date');
+        billingEndDate: 'not-date',
+      }), 'billingEndDate', 'date');
 
       tester.validateSchemaFormatExclusiveMinimum(createPaymentTransactionRequest({
-        invoice: createInvoiceRequest({
-          billingEndDate: '2022-01-01',
-          billingStartDate: '2022-12-31',
-        }),
-      }), 'invoice/billingEndDate');
+        billingEndDate: '2022-01-01',
+        billingStartDate: '2022-12-31',
+      }), 'billingEndDate');
     });
 
-    describe('if data.invoice.billingStartDate', () => {
-      tester.validateSchemaRequired(createPaymentTransactionRequest({
-        invoice: createInvoiceRequest({
-          billingStartDate: undefined,
-        }),
-      }), 'billingStartDate');
+    describe('if data.billingStartDate', () => {
+      tester.validateSchemaDependentRequired(createPaymentTransactionRequest({
+        billingEndDate: undefined,
+      }), 'billingStartDate', 'billingEndDate');
 
       tester.validateSchemaType(createPaymentTransactionRequest({
-        invoice: createInvoiceRequest({
-          billingStartDate: 1 as any,
-        }),
-      }), 'invoice/billingStartDate', 'string');
+        billingStartDate: 1 as any,
+      }), 'billingStartDate', 'string');
 
       tester.validateSchemaFormat(createPaymentTransactionRequest({
-        invoice: createInvoiceRequest({
-          billingStartDate: 'not-date',
-        }),
-      }), 'invoice/billingStartDate', 'date');
+        billingStartDate: 'not-date',
+      }), 'billingStartDate', 'date');
 
     });
 
