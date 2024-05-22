@@ -11,7 +11,7 @@ import { Types } from 'mongoose';
 
     const categoryId = '655f7ebf64f05d1d6e13bea8';
 
-    const res = await mongodbService.transactions().find<Transaction.PaymentDocument | Transaction.SplitDocument>({
+    const res = await mongodbService.transactions.find<Transaction.PaymentDocument | Transaction.SplitDocument>({
       transactionType: {
         $not: {
           $eq: 'transfer',

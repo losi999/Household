@@ -55,11 +55,11 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
             'recipient',
             'account',
             'category',
-            'inventory.product',
+            'product',
             'transferAccount',
             'splits.category',
             'splits.project',
-            'splits.inventory.product'),
+            'splits.product'),
           lean: true,
         })
         .exec();
@@ -81,11 +81,11 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
             'recipient',
             'account',
             'category',
-            'inventory.product',
+            'product',
             'transferAccount',
             'splits.category',
             'splits.project',
-            'splits.inventory.product'),
+            'splits.product'),
           lean: true,
         })
         .exec();
@@ -172,12 +172,12 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
           query.$and.push({
             $or: [
               {
-                'splits.inventory.product': {
+                'splits.product': {
                   $in: productIds,
                 },
               },
               {
-                'inventory.product': {
+                product: {
                   $in: productIds,
                 },
               },
@@ -204,11 +204,11 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
               'recipient',
               'account',
               'category',
-              'inventory.product',
+              'product',
               'transferAccount',
               'splits.category',
               'splits.project',
-              'splits.inventory.product'),
+              'splits.product'),
             lean: true,
             sort: {
               issuedAt: 'asc',
@@ -235,11 +235,11 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
               'recipient',
               'account',
               'category',
-              'inventory.product',
+              'product',
               'transferAccount',
               'splits.category',
               'splits.project',
-              'splits.inventory.product'),
+              'splits.product'),
             lean: true,
             sort: {
               issuedAt: 'desc',
