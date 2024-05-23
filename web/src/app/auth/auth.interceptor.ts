@@ -9,11 +9,12 @@ import {
 import { Observable, Subject, throwError } from 'rxjs';
 import { AuthService } from 'src/app/auth/auth.service';
 import { catchError, switchMap, tap } from 'rxjs/operators';
+import { ProgressService } from 'src/app/shared/progress.service';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
 
-  constructor(private authService: AuthService) { }
+  constructor(private authService: AuthService, private progressService: ProgressService) { }
 
   private addAuthHeaders(request: HttpRequest<unknown>): HttpRequest<unknown> {
     return request.clone({
@@ -45,9 +46,8 @@ export class AuthInterceptor implements HttpInterceptor {
       }),
       catchError((error) => {
         this.refreshTokenInProgress = false;
-        return throwError(error);
+        return throwError(() => error);
       }));
-
   }
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
@@ -57,19 +57,20 @@ export class AuthInterceptor implements HttpInterceptor {
         catchError((error: HttpErrorResponse) => {
           if (error.status === 401) {
             if (error.error.message === 'The incoming token has expired') {
+              this.progressService.processFinished();
               return this.refreshToken().pipe(
                 switchMap(() => {
                   return next.handle(this.addAuthHeaders(request));
                 }),
                 catchError((error) => {
                   this.authService.logout();
-                  return throwError(error); //TODO
+                  return throwError(() => error);
                 }),
               );
             }
             this.authService.logout();
           }
-          return throwError(error);
+          return throwError(() => error);
         }));
     }
     return next.handle(request);

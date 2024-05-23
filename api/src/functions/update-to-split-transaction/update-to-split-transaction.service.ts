@@ -37,7 +37,7 @@ export const updateToSplitTransactionServiceFactory = (
 
     const categoryIds = [...new Set(body.splits.map(s => s.categoryId).filter(s => s))];
     const projectIds = [...new Set(body.splits.map(s => s.projectId).filter(s => s))];
-    const productIds = [...new Set(body.splits.map(s => s.inventory?.productId).filter(s => s))];
+    const productIds = [...new Set(body.splits.map(s => s.productId).filter(s => s))];
 
     const total = body.splits.reduce((accumulator, currentValue) => {
       return accumulator + currentValue.amount;
@@ -89,8 +89,8 @@ export const updateToSplitTransactionServiceFactory = (
 
     body.splits.forEach((s) => {
       const category = categories[s.categoryId];
-      if (category?.categoryType === 'inventory' && s.inventory) {
-        const productId = s.inventory.productId;
+      const productId = s.productId;
+      if (category?.categoryType === 'inventory' && productId) {
         const product = products[productId];
 
         httpErrors.product.notFound(!product && !!productId, {

@@ -31,18 +31,18 @@ export const createSplitTransactionServiceFactory = (
     const projectIds: Project.Id[] = [];
     const productIds: Product.Id[] = [];
 
-    for (const s of body.splits) {
-      total += s.amount;
-      if (s.categoryId && !categoryIds.includes(s.categoryId)) {
-        categoryIds.push(s.categoryId);
+    body.splits.forEach(({ amount, categoryId, productId, projectId }) => {
+      total += amount;
+      if (categoryId && !categoryIds.includes(categoryId)) {
+        categoryIds.push(categoryId);
       }
-      if (s.projectId && !projectIds.includes(s.projectId)) {
-        projectIds.push(s.projectId);
+      if (projectId && !projectIds.includes(projectId)) {
+        projectIds.push(projectId);
       }
-      if (s.inventory?.productId && !productIds.includes(s.inventory.productId)) {
-        productIds.push(s.inventory.productId);
+      if (productId && !productIds.includes(productId)) {
+        productIds.push(productId);
       }
-    }
+    });
 
     httpErrors.transaction.sumOfSplits(total !== body.amount, body);
 
@@ -88,9 +88,8 @@ export const createSplitTransactionServiceFactory = (
     const projects = toDictionary(projectList, '_id');
     const products = toDictionary(productList, '_id');
 
-    body.splits.forEach((s) => {
-      const category = categories[s.categoryId];
-      const productId = s.inventory?.productId;
+    body.splits.forEach(({ categoryId, productId }) => {
+      const category = categories[categoryId];
       if (category?.categoryType === 'inventory' && productId) {
         const product = products[productId];
 
@@ -98,8 +97,8 @@ export const createSplitTransactionServiceFactory = (
           productId,
         }, 400);
 
-        httpErrors.product.categoryRelation(getCategoryId(product.category) !== s.categoryId, {
-          categoryId: s.categoryId,
+        httpErrors.product.categoryRelation(getCategoryId(product.category) !== categoryId, {
+          categoryId: categoryId,
           productId,
         });
       }

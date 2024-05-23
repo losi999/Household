@@ -1,5 +1,5 @@
 import { ICreateSplitTransactionService, createSplitTransactionServiceFactory } from '@household/api/functions/create-split-transaction/create-split-transaction.service';
-import { createAccountDocument, createCategoryDocument, createInventoryRequest, createProductDocument, createProjectDocument, createRecipientDocument, createSplitRequestIem, createSplitTransactionDocument, createSplitTransactionRequest } from '@household/shared/common/test-data-factory';
+import { createAccountDocument, createCategoryDocument, createProductDocument, createProjectDocument, createRecipientDocument, createSplitRequestIem, createSplitTransactionDocument, createSplitTransactionRequest } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getCategoryId, getProductId, getProjectId, getTransactionId, toDictionary } from '@household/shared/common/utils';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
@@ -50,9 +50,7 @@ describe('Create split transaction service', () => {
       createSplitRequestIem({
         categoryId,
         projectId,
-        inventory: createInventoryRequest({
-          productId,
-        }),
+        productId,
       }),
     ],
   });
@@ -99,9 +97,7 @@ describe('Create split transaction service', () => {
           createSplitRequestIem({
             categoryId: undefined,
             projectId,
-            inventory: createInventoryRequest({
-              productId,
-            }),
+            productId,
           }),
         ],
       });
@@ -141,9 +137,7 @@ describe('Create split transaction service', () => {
           createSplitRequestIem({
             categoryId,
             projectId: undefined,
-            inventory: createInventoryRequest({
-              productId,
-            }),
+            productId,
           }),
         ],
       });
@@ -222,7 +216,7 @@ describe('Create split transaction service', () => {
           createSplitRequestIem({
             categoryId: regularCategoryId,
             projectId,
-            inventory: undefined,
+            productId: undefined,
           }),
         ],
       });
@@ -256,13 +250,13 @@ describe('Create split transaction service', () => {
       expect.assertions(8);
     });
 
-    it('if inventory is not set', async () => {
+    it('if productId is not set', async () => {
       const modifiedBody = createSplitTransactionRequest({
         splits: [
           createSplitRequestIem({
             categoryId,
             projectId,
-            inventory: undefined,
+            productId: undefined,
           }),
         ],
       });
@@ -313,33 +307,27 @@ describe('Create split transaction service', () => {
           createSplitRequestIem({
             categoryId,
             projectId,
-            inventory: createInventoryRequest({
-              productId,
-            }),
+            productId,
           }),
           createSplitRequestIem({
             categoryId: categoryId2,
             projectId: undefined,
-            inventory: createInventoryRequest({
-              productId: productId2,
-            }),
+            productId: productId2,
           }),
           createSplitRequestIem({
             categoryId,
             projectId: projectId2,
-            inventory: undefined,
+            productId: undefined,
           }),
           createSplitRequestIem({
             categoryId: undefined,
             projectId,
-            inventory: createInventoryRequest({
-              productId: productId2,
-            }),
+            productId: productId2,
           }),
           createSplitRequestIem({
             categoryId: categoryId2,
             projectId,
-            inventory: undefined,
+            productId: undefined,
           }),
         ],
       });
@@ -641,9 +629,7 @@ describe('Create split transaction service', () => {
           createSplitRequestIem({
             categoryId,
             projectId,
-            inventory: createInventoryRequest({
-              productId: otherProductId,
-            }),
+            productId: otherProductId,
           }),
         ],
       });

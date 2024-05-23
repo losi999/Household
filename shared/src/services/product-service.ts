@@ -65,10 +65,11 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
           })
             .exec();
           await mongodbService.transactions.updateMany({
-            'inventory.product': productId,
+            product: productId,
           }, {
             $unset: {
-              inventory: 1,
+              product: 1,
+              quantity: 1,
             },
           }, {
             runValidators: true,
@@ -76,18 +77,19 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
           })
             .exec();
           await mongodbService.transactions.updateMany({
-            'splits.inventory.product': productId,
+            'splits.product': productId,
           }, {
 
             $unset: {
-              'splits.$[element].inventory': 1,
+              'splits.$[element].product': 1,
+              'splits.$[element].quantity': 1,
             },
           }, {
             session,
             runValidators: true,
             arrayFilters: [
               {
-                'element.inventory.product': productId,
+                'element.product': productId,
               },
             ],
           })
@@ -96,7 +98,7 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
       });
     },
     updateProduct: async (productId, updateQuery) => {
-      return mongodbService.products.findOneAndUpdate(productId, updateQuery, {
+      return mongodbService.products.findByIdAndUpdate(productId, updateQuery, {
         runValidators: true,
       });
     },
@@ -112,12 +114,12 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
           });
 
           await mongodbService.transactions.updateMany({
-            'inventory.product': {
+            product: {
               $in: sourceProductIds,
             },
           }, {
             $set: {
-              'inventory.product': targetProductId,
+              product: targetProductId,
             },
           }, {
             runValidators: true,
@@ -125,19 +127,19 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
           });
 
           await mongodbService.transactions.updateMany({
-            'splits.inventory.product': {
+            'splits.product': {
               $in: sourceProductIds,
             },
           }, {
             $set: {
-              'splits.$[element].inventory.product': targetProductId,
+              'splits.$[element].product': targetProductId,
             },
           }, {
             session,
             runValidators: true,
             arrayFilters: [
               {
-                'element.inventory.product': {
+                'element.product': {
                   $in: sourceProductIds,
                 },
               },

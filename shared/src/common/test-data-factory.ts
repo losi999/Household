@@ -88,37 +88,24 @@ export const createProductDocument: DataFactoryFunction<Product.Document> = (doc
   };
 };
 
-export const createInventoryDocument: DataFactoryFunction<Transaction.Inventory<Product.Document>['inventory']> = (doc) => {
-  return {
-    product: createProductDocument(),
-    quantity: 100,
-    ...doc,
-  };
-};
-
-export const createInvoiceDocument: DataFactoryFunction<Transaction.Invoice<Date>['invoice']> = (doc) => {
-  return {
-    invoiceNumber: 'inv123',
-    billingEndDate: new Date(2022, 3, 10),
-    billingStartDate: new Date(2022, 3, 2),
-    ...doc,
-  };
-};
-
 export const createPaymentTransactionDocument: DataFactoryFunction<Transaction.PaymentDocument> = (doc) => {
   return {
     _id: generateMongoId(),
     transactionType: 'payment',
     amount: 100,
     description: 'transaction description',
-    inventory: createInventoryDocument(),
-    invoice: createInvoiceDocument(),
+    product: createProductDocument(),
+    quantity: 100,
+    invoiceNumber: 'inv123',
+    billingEndDate: new Date(2022, 3, 10),
+    billingStartDate: new Date(2022, 3, 2),
     issuedAt: new Date(),
     expiresAt: undefined,
     accountId: undefined,
     categoryId: undefined,
     projectId: undefined,
     recipientId: undefined,
+    productId: undefined,
     account: createAccountDocument(),
     category: createCategoryDocument(),
     project: createProjectDocument(),
@@ -133,10 +120,14 @@ export const createSplitDocumentItem: DataFactoryFunction<Transaction.SplitDocum
     category: createCategoryDocument(),
     project: createProjectDocument(),
     description: 'split description',
-    inventory: createInventoryDocument(),
-    invoice: createInvoiceDocument(),
+    product: createProductDocument(),
+    quantity: 100,
+    invoiceNumber: 'inv123',
+    billingEndDate: new Date(2022, 3, 10),
+    billingStartDate: new Date(2022, 3, 2),
     categoryId: undefined,
     projectId: undefined,
+    productId: undefined,
     ...doc,
   };
 };
@@ -229,29 +220,15 @@ export const createProductRequest: DataFactoryFunction<Product.Request> = (req) 
   };
 };
 
-export const createInventoryRequest: DataFactoryFunction<Transaction.InventoryRequest['inventory']> = (req) => {
-  return {
-    productId: createProductId(),
-    quantity: 100,
-    ...req,
-  };
-};
-
-export const createInvoiceRequest: DataFactoryFunction<Transaction.Invoice<string>['invoice']> = (req) => {
-  return {
-    invoiceNumber: 'inv123',
-    billingEndDate: '2022-03-21',
-    billingStartDate: '2022-01-01',
-    ...req,
-  };
-};
-
 export const createPaymentTransactionRequest: DataFactoryFunction<Transaction.PaymentRequest> = (req) => {
   return {
     amount: 100,
     description: 'transaction description',
-    inventory: createInventoryRequest(),
-    invoice: createInvoiceRequest(),
+    productId: createProductId(),
+    quantity: 100,
+    invoiceNumber: 'inv123',
+    billingEndDate: '2022-03-21',
+    billingStartDate: '2022-01-01',
     issuedAt: new Date().toISOString(),
     accountId: createAccountId(),
     categoryId: createCategoryId(),
@@ -267,8 +244,11 @@ export const createSplitRequestIem: DataFactoryFunction<Transaction.SplitRequest
     categoryId: createCategoryId(),
     projectId: createProjectId(),
     description: 'split description',
-    inventory: createInventoryRequest(),
-    invoice: createInvoiceRequest(),
+    productId: createProductId(),
+    quantity: 100,
+    invoiceNumber: 'inv123',
+    billingEndDate: '2022-03-21',
+    billingStartDate: '2022-01-01',
     ...req,
   };
 };
@@ -392,31 +372,17 @@ export const createProductResponse: DataFactoryFunction<Product.Response> = (res
   };
 };
 
-export const createInventoryResponse: DataFactoryFunction<Transaction.Inventory<Product.Response>['inventory']> = (resp) => {
-  return {
-    product: createProductResponse(),
-    quantity: 100,
-    ...resp,
-  };
-};
-
-export const createInvoiceResponse: DataFactoryFunction<Transaction.Invoice<string>['invoice']> = (resp) => {
-  return {
-    invoiceNumber: 'inv123',
-    billingEndDate: '2022-03-10',
-    billingStartDate: '2022-03-01',
-    ...resp,
-  };
-};
-
 export const createPaymentTransactionResponse: DataFactoryFunction<Transaction.PaymentResponse> = (resp) => {
   return {
     transactionId: createTransactionId(),
     transactionType: 'payment',
     amount: 100,
     description: 'transaction description',
-    inventory: createInventoryResponse(),
-    invoice: createInvoiceResponse(),
+    product: createProductResponse(),
+    quantity: 100,
+    invoiceNumber: 'inv123',
+    billingEndDate: '2022-03-10',
+    billingStartDate: '2022-03-01',
     issuedAt: new Date().toISOString(),
     expiresAt: undefined,
     createdAt: undefined,
@@ -436,8 +402,11 @@ export const createSplitResponseIem: DataFactoryFunction<Transaction.SplitRespon
     category: createCategoryResponse(),
     project: createProjectResponse(),
     description: 'split description',
-    inventory: createInventoryResponse(),
-    invoice: createInvoiceResponse(),
+    product: createProductResponse(),
+    quantity: 100,
+    invoiceNumber: 'inv123',
+    billingEndDate: '2022-03-10',
+    billingStartDate: '2022-03-01',
     ...resp,
   };
 };

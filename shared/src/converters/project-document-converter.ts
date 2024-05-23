@@ -26,6 +26,9 @@ export const projectDocumentConverterFactory = (): IProjectDocumentConverter => 
           ...body,
           expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
         },
+        $unset: {
+          description: !body.description,
+        },
       };
     },
     toResponse: (doc): Project.Response => {

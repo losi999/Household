@@ -11,6 +11,8 @@ import { ClearableInputComponent } from 'src/app/shared/clearable-input/clearabl
 import { DialogService } from 'src/app/shared/dialog.service';
 import { Store } from 'src/app/store';
 
+type Form = Transaction.Quantity & Transaction.Product<Product.Response>;
+
 @Component({
   selector: 'household-inventory-input',
   templateUrl: './inventory-input.component.html',
@@ -41,7 +43,7 @@ export class InventoryInputComponent implements OnInit, OnDestroy, ControlValueA
   get products(): Product.Response[] {
     return this.store.products.value[this.categoryId];
   }
-  changed: (value: Transaction.Inventory<Product.Response>['inventory']) => void;
+  changed: (value: Form) => void;
   touched: () => void;
   isDisabled: boolean;
   private destroyed = new Subject();
@@ -57,7 +59,7 @@ export class InventoryInputComponent implements OnInit, OnDestroy, ControlValueA
       ]),
     });
 
-    this.form.valueChanges.pipe(takeUntil(this.destroyed)).subscribe((value: Transaction.Inventory<Product.Response>['inventory']) => {
+    this.form.valueChanges.pipe(takeUntil(this.destroyed)).subscribe((value: Form) => {
       if (this.form.invalid) {
         this.changed?.(undefined);
       } else {
@@ -78,7 +80,7 @@ export class InventoryInputComponent implements OnInit, OnDestroy, ControlValueA
     this.dialogService.openCreateProductDialog(this.categoryId);
   }
 
-  writeValue(obj: Transaction.Inventory<Product.Response>['inventory']): void {
+  writeValue(obj: Form): void {
     if (obj) {
       this.form.patchValue(obj);
     }

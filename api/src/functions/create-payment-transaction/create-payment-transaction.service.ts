@@ -26,8 +26,7 @@ export const createPaymentTransactionServiceFactory = (
   transactionDocumentConverter: ITransactionDocumentConverter,
 ): ICreatePaymentTransactionService => {
   return async ({ body, expiresIn }) => {
-    const { accountId, categoryId, projectId, recipientId } = body;
-    const productId = body.inventory?.productId;
+    const { accountId, categoryId, projectId, recipientId, productId } = body;
 
     const [
       account,

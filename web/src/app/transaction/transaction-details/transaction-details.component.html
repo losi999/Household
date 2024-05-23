@@ -35,22 +35,22 @@
         </div>
         <div *ngIf="split.category" [ngSwitch]="split.category.categoryType">
           <ng-container *ngSwitchCase="'inventory'">
-            <div *ngIf="split.inventory">
+            <div *ngIf="split.product && split.quantity">
               <div>
-                Termék: {{split.inventory.product.fullName}}
+                Termék: {{split.product.fullName}}
               </div>
               <div>
-                Mennyiség: {{split.inventory.quantity}}
+                Mennyiség: {{split.quantity}}
               </div>
             </div>
           </ng-container>
           <ng-container *ngSwitchCase="'invoice'">
-            <div *ngIf="split.invoice">
+            <div *ngIf="split.billingStartDate && split.billingEndDate">
               <div>
-                Számlázási időszak: {{split.invoice.billingStartDate}} - {{split.invoice.billingEndDate}}
+                Számlázási időszak: {{split.billingStartDate}} - {{split.billingEndDate}}
               </div>
               <div>
-                Számlaszám: {{split.invoice.invoiceNumber}}
+                Számlaszám: {{split.invoiceNumber}}
               </div>
             </div>
           </ng-container>
@@ -77,22 +77,22 @@
     </div>
     <div *ngIf="transaction.category" [ngSwitch]="transaction.category.categoryType">
       <ng-container *ngSwitchCase="'inventory'">
-        <div *ngIf="transaction.inventory">
+        <div *ngIf="transaction.product && transaction.quantity">
           <div>
-            Termék: {{transaction.inventory.product.fullName}}
+            Termék: {{transaction.product.fullName}}
           </div>
           <div>
-            Mennyiség: {{transaction.inventory.quantity}}
+            Mennyiség: {{transaction.quantity}}
           </div>
         </div>
       </ng-container>
       <ng-container *ngSwitchCase="'invoice'">
-        <div *ngIf="transaction.invoice">
+        <div *ngIf="transaction.billingStartDate && transaction.billingEndDate">
           <div>
-            Számlázási időszak: {{transaction.invoice.billingStartDate}} - {{transaction.invoice.billingEndDate}}
+            Számlázási időszak: {{transaction.billingStartDate}} - {{transaction.billingEndDate}}
           </div>
           <div>
-            Számlaszám: {{transaction.invoice.invoiceNumber}}
+            Számlaszám: {{transaction.invoiceNumber}}
           </div>
         </div>
       </ng-container>

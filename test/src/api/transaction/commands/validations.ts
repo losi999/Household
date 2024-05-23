@@ -1,6 +1,6 @@
 import { Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/test/api/types';
-import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
+import { createDate, getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
 
 type RelatedDocument = 'category' | 'project' | 'recipient' | 'inventory' | 'invoice';
 
@@ -12,7 +12,7 @@ const validateTransactionPaymentDocument = (response: Transaction.TransactionId,
     .should((document: Transaction.PaymentDocument) => {
       expect(getTransactionId(document), 'id').to.equal(id);
       expect(document.amount, 'amount').to.equal(request.amount);
-      expect(new Date(document.issuedAt).toISOString(), 'issuedAt').to.equal(new Date(request.issuedAt).toISOString());
+      expect(document.issuedAt.toISOString(), 'issuedAt').to.equal(createDate(request.issuedAt).toISOString());
       expect(document.transactionType, 'transactionType').to.equal('payment');
       expect(document.description, 'description').to.equal(request.description);
       expect(getAccountId(document.account), 'account').to.equal(request.accountId);
@@ -20,19 +20,22 @@ const validateTransactionPaymentDocument = (response: Transaction.TransactionId,
       expect(getProjectId(document.project), 'project').to.equal(request.projectId);
       expect(getRecipientId(document.recipient), 'recipient').to.equal(request.recipientId);
 
-      if (document.category?.categoryType === 'inventory' && document.inventory) {
-        expect(document.inventory.quantity, 'inventory.quantity').to.equal(request.inventory.quantity);
-        expect(getProductId(document.inventory.product), 'inventory.productId').to.equal(request.inventory.productId);
+      if (document.category?.categoryType === 'inventory') {
+        expect(document.quantity, 'quantity').to.equal(request.quantity);
+        expect(getProductId(document.product), 'productId').to.equal(request.productId);
       } else {
-        expect(document.inventory, 'inventory').to.be.undefined;
+        expect(document.quantity, 'quantity').to.be.undefined;
+        expect(document.product, 'product').to.be.undefined;
       }
 
-      if (document.category?.categoryType === 'invoice' && document.invoice) {
-        expect(document.invoice.invoiceNumber, 'invoice.invoiceNumber').to.equal(request.invoice.invoiceNumber);
-        expect(new Date(document.invoice.billingStartDate).toISOString(), 'invoice.billingStartDate').to.equal(new Date(request.invoice.billingStartDate).toISOString());
-        expect(new Date(document.invoice.billingEndDate).toISOString(), 'invoice.billingEndDate').to.equal(new Date(request.invoice.billingEndDate).toISOString());
+      if (document.category?.categoryType === 'invoice') {
+        expect(document.invoiceNumber, 'invoiceNumber').to.equal(request.invoiceNumber);
+        expect(document.billingStartDate?.toISOString(), 'billingStartDate').to.equal(createDate(request.billingStartDate)?.toISOString());
+        expect(document.billingEndDate?.toISOString(), 'billingEndDate').to.equal(createDate(request.billingEndDate)?.toISOString());
       } else {
-        expect(document.invoice, 'invoice').to.be.undefined;
+        expect(document.invoiceNumber, 'invoiceNumber').to.be.undefined;
+        expect(document.billingStartDate, 'billingStartDate').to.be.undefined;
+        expect(document.billingEndDate, 'billingEndDate').to.be.undefined;
       }
     });
 };
@@ -45,7 +48,7 @@ const validateTransactionSplitDocument = (response: Transaction.TransactionId, r
     .should((document: Transaction.SplitDocument) => {
       expect(getTransactionId(document), 'id').to.equal(id);
       expect(document.amount, 'amount').to.equal(request.amount);
-      expect(new Date(document.issuedAt).toISOString(), 'issuedAt').to.equal(new Date(request.issuedAt).toISOString());
+      expect(document.issuedAt.toISOString(), 'issuedAt').to.equal(createDate(request.issuedAt).toISOString());
       expect(document.transactionType, 'transactionType').to.equal('split');
       expect(document.description, 'description').to.equal(request.description);
       expect(getAccountId(document.account), 'account').to.equal(request.accountId);
@@ -57,19 +60,22 @@ const validateTransactionSplitDocument = (response: Transaction.TransactionId, r
         expect(getProjectId(split.project), `splits[${index}].project`).to.equal(request.splits[index].projectId);
         expect(getCategoryId(split.category), `splits[${index}].category`).to.equal(request.splits[index].categoryId);
 
-        if (split.category?.categoryType === 'inventory' && split.inventory) {
-          expect(split.inventory.quantity, `splits[${index}].inventory.quantity`).to.equal(request.splits[index].inventory.quantity);
-          expect(getProductId(split.inventory.product), `splits[${index}].inventory.productId`).to.equal(request.splits[index].inventory.productId);
+        if (split.category?.categoryType === 'inventory') {
+          expect(split.quantity, `splits[${index}].quantity`).to.equal(request.splits[index].quantity);
+          expect(getProductId(split.product), `splits[${index}].productId`).to.equal(request.splits[index].productId);
         } else {
-          expect(split.inventory, `splits[${index}].inventory`).to.be.undefined;
+          expect(split.quantity, `splits[${index}].quantity`).to.be.undefined;
+          expect(split.product, `splits[${index}].product`).to.be.undefined;
         }
 
-        if (split.category?.categoryType === 'invoice' && split.invoice) {
-          expect(split.invoice.invoiceNumber, `splits[${index}].invoice.invoiceNumber`).to.equal(request.splits[index].invoice.invoiceNumber);
-          expect(new Date(split.invoice.billingStartDate).toISOString(), `splits[${index}].invoice.billingStartDate`).to.equal(new Date(request.splits[index].invoice.billingStartDate).toISOString());
-          expect(new Date(split.invoice.billingEndDate).toISOString(), `splits[${index}].invoice.billingEndDate`).to.equal(new Date(request.splits[index].invoice.billingEndDate).toISOString());
+        if (split.category?.categoryType === 'invoice') {
+          expect(split.invoiceNumber, `splits[${index}].invoiceNumber`).to.equal(request.splits[index].invoiceNumber);
+          expect(split.billingStartDate?.toISOString(), `splits[${index}].billingStartDate`).to.equal(createDate(request.splits[index].billingStartDate)?.toISOString());
+          expect(split.billingEndDate?.toISOString(), `splits[${index}].billingEndDate`).to.equal(createDate(request.splits[index].billingEndDate)?.toISOString());
         } else {
-          expect(split.invoice, `splits[${index}].invoice`).to.be.undefined;
+          expect(split.invoiceNumber, `splits[${index}].invoiceNumber`).to.be.undefined;
+          expect(split.billingStartDate, `splits[${index}].billingStartDate`).to.be.undefined;
+          expect(split.billingEndDate, `splits[${index}].billingEndDate`).to.be.undefined;
         }
       });
     });
@@ -83,7 +89,7 @@ const validateTransactionTransferDocument = (response: Transaction.TransactionId
     .should((document: Transaction.TransferDocument) => {
       expect(getTransactionId(document), 'id').to.equal(id);
       expect(document.amount, 'amount').to.equal(request.amount);
-      expect(new Date(document.issuedAt).toISOString(), 'issuedAt').to.equal(new Date(request.issuedAt).toISOString());
+      expect(document.issuedAt.toISOString(), 'issuedAt').to.equal(createDate(request.issuedAt).toISOString());
       expect(document.transactionType, 'transactionType').to.equal('transfer');
       expect(document.description, 'description').to.equal(request.description);
       expect(getAccountId(document.account), 'account').to.equal(request.accountId);
@@ -94,7 +100,7 @@ const validateTransactionTransferDocument = (response: Transaction.TransactionId
 const validateTransactionPaymentResponse = (response: Transaction.PaymentResponse, document: Transaction.PaymentDocument) => {
   expect(response.transactionId).to.equal(getTransactionId(document));
   expect(response.amount, 'amount').to.equal(document.amount);
-  expect(new Date(response.issuedAt).toISOString(), 'issuedAt').to.equal(new Date(document.issuedAt).toISOString());
+  expect(createDate(response.issuedAt).toISOString(), 'issuedAt').to.equal(document.issuedAt.toISOString());
   expect(response.transactionType, 'transactionType').to.equal('payment');
   expect(response.description, 'description').to.equal(document.description);
   expect(response.account.accountId, 'account.accountId').to.equal(getAccountId(document.account));
@@ -117,28 +123,31 @@ const validateTransactionPaymentResponse = (response: Transaction.PaymentRespons
   expect(response.category?.name, 'category.name').to.equal(document.category?.name);
 
   if (response.category?.categoryType === 'inventory') {
-    expect(response.inventory?.quantity, 'inventory.quantity').to.equal(document.inventory?.quantity);
-    expect(response.inventory?.product.productId, 'inventory.product.productId').to.equal(getProductId(document.inventory?.product));
-    expect(response.inventory?.product.brand, 'inventory.product.brand').to.equal(document.inventory?.product.brand);
-    expect(response.inventory?.product.measurement, 'inventory.product.measurement').to.equal(document.inventory?.product.measurement);
-    expect(response.inventory?.product.unitOfMeasurement, 'inventory.product.unitOfMeasurement').to.equal(document.inventory?.product.unitOfMeasurement);
+    expect(response.quantity, 'quantity').to.equal(document.quantity);
+    expect(response.product?.productId, 'product.productId').to.equal(getProductId(document.product));
+    expect(response.product?.brand, 'product.brand').to.equal(document.product?.brand);
+    expect(response.product?.measurement, 'product.measurement').to.equal(document.product?.measurement);
+    expect(response.product?.unitOfMeasurement, 'product.unitOfMeasurement').to.equal(document.product?.unitOfMeasurement);
   } else {
-    expect(response.inventory, 'inventory').to.be.undefined;
+    expect(response.quantity, 'quantity').to.be.undefined;
+    expect(response.product, 'product').to.be.undefined;
   }
 
   if (response.category?.categoryType === 'invoice') {
-    expect(response.invoice?.invoiceNumber, 'invoice.invoiceNumber').to.equal(document.invoice?.invoiceNumber);
-    expect(new Date(response.invoice?.billingStartDate).toISOString(), 'invoice.billingStartDate').to.equal(new Date(document.invoice?.billingStartDate).toISOString());
-    expect(new Date(response.invoice?.billingEndDate).toISOString(), 'invoice.billingEndDate').to.equal(new Date(document.invoice?.billingEndDate).toISOString());
+    expect(response.invoiceNumber, 'invoiceNumber').to.equal(document.invoiceNumber);
+    expect(createDate(response.billingStartDate)?.toISOString(), 'billingStartDate').to.equal(document.billingStartDate?.toISOString());
+    expect(createDate(response.billingEndDate)?.toISOString(), 'billingEndDate').to.equal(document.billingEndDate?.toISOString());
   } else {
-    expect(response.invoice, 'invoice').to.be.undefined;
+    expect(response.invoiceNumber, 'invoiceNumber').to.be.undefined;
+    expect(response.billingStartDate, 'billingStartDate').to.be.undefined;
+    expect(response.billingEndDate, 'billingEndDate').to.be.undefined;
   }
 };
 
 const validateTransactionTransferResponse = (response: Transaction.TransferResponse, document: Transaction.TransferDocument) => {
   expect(response.transactionId).to.equal(getTransactionId(document));
   expect(response.amount, 'amount').to.equal(document.amount);
-  expect(new Date(response.issuedAt).toISOString(), 'issuedAt').to.equal(new Date(document.issuedAt).toISOString());
+  expect(createDate(response.issuedAt).toISOString(), 'issuedAt').to.equal(document.issuedAt.toISOString());
   expect(response.transactionType, 'transactionType').to.equal('transfer');
   expect(response.description, 'description').to.equal(document.description);
   expect(response.account.accountId, 'account.accountId').to.equal(getAccountId(document.account));
@@ -159,7 +168,7 @@ const validateTransactionTransferResponse = (response: Transaction.TransferRespo
 const validateTransactionSplitResponse = (response: Transaction.SplitResponse, document: Transaction.SplitDocument) => {
   expect(response.transactionId).to.equal(getTransactionId(document));
   expect(response.amount, 'amount').to.equal(document.amount);
-  expect(new Date(response.issuedAt).toISOString(), 'issuedAt').to.equal(new Date(document.issuedAt).toISOString());
+  expect(createDate(response.issuedAt).toISOString(), 'issuedAt').to.equal(document.issuedAt.toISOString());
   expect(response.transactionType, 'transactionType').to.equal('split');
   expect(response.description, 'description').to.equal(document.description);
   expect(response.account.accountId, 'account.accountId').to.equal(getAccountId(document.account));
@@ -183,21 +192,24 @@ const validateTransactionSplitResponse = (response: Transaction.SplitResponse, d
     expect(split.category?.name, `splits[${index}].category.name`).to.equal(document.splits[index].category?.name);
 
     if(split.category?.categoryType === 'inventory') {
-      expect(split.inventory?.quantity, `splits[${index}].inventory.quantity`).to.equal(document.splits[index].inventory?.quantity);
-      expect(split.inventory?.product.productId, `splits[${index}].inventory.product.productId`).to.equal(getProductId(document.splits[index].inventory?.product));
-      expect(split.inventory?.product.brand, `splits[${index}].inventory.product.brand`).to.equal(document.splits[index].inventory?.product.brand);
-      expect(split.inventory?.product.measurement, `splits[${index}].inventory.product.measurement`).to.equal(document.splits[index].inventory?.product.measurement);
-      expect(split.inventory?.product.unitOfMeasurement, `splits[${index}].inventory.product.unitOfMeasurement`).to.equal(document.splits[index].inventory?.product.unitOfMeasurement);
+      expect(split.quantity, `splits[${index}].quantity`).to.equal(document.splits[index].quantity);
+      expect(split.product?.productId, `splits[${index}].product.productId`).to.equal(getProductId(document.splits[index].product));
+      expect(split.product?.brand, `splits[${index}].product.brand`).to.equal(document.splits[index].product?.brand);
+      expect(split.product?.measurement, `splits[${index}].product.measurement`).to.equal(document.splits[index].product?.measurement);
+      expect(split.product?.unitOfMeasurement, `splits[${index}].product.unitOfMeasurement`).to.equal(document.splits[index].product?.unitOfMeasurement);
     } else {
-      expect(split.inventory, `splits[${index}].inventory`).to.be.undefined;
+      expect(split.quantity, `splits[${index}].quantity`).to.be.undefined;
+      expect(split.product, `splits[${index}].product`).to.be.undefined;
     }
 
     if(split.category?.categoryType === 'invoice') {
-      expect(split.invoice?.invoiceNumber, `splits[${index}].invoice.invoiceNumber`).to.equal(document.splits[index].invoice?.invoiceNumber);
-      expect(new Date(split.invoice?.billingStartDate).toISOString(), `isplits[${index}].nvoice.billingStartDate`).to.equal(new Date(document.splits[index].invoice?.billingStartDate).toISOString());
-      expect(new Date(split.invoice?.billingEndDate).toISOString(), `splits[${index}].invoice.billingEndDate`).to.equal(new Date(document.splits[index].invoice?.billingEndDate).toISOString());
+      expect(split.invoiceNumber, `splits[${index}].invoiceNumber`).to.equal(document.splits[index].invoiceNumber);
+      expect(createDate(split.billingStartDate)?.toISOString(), `isplits[${index}].billingStartDate`).to.equal(document.splits[index].billingStartDate?.toISOString());
+      expect(createDate(split.billingEndDate)?.toISOString(), `splits[${index}].billingEndDate`).to.equal(document.splits[index].billingEndDate?.toISOString());
     } else {
-      expect(split.invoice, `splits[${index}].invoice`).to.be.undefined;
+      expect(split.invoiceNumber, `splits[${index}].invoiceNumber`).to.be.undefined;
+      expect(split.billingStartDate, `isplits[${index}].billingStartDate`).to.be.undefined;
+      expect(split.billingEndDate, `splits[${index}].billingEndDate`).to.be.undefined;
     }
   });
 };
@@ -221,10 +233,10 @@ const validateTransactionDeleted = (transactionId: Transaction.Id) => {
     });
 };
 
-const compareTransactionDocuments = (original: Transaction.Document, current: Transaction.Document) => {
+const compareTransactionDocuments = (original: Transaction.PaymentDocument | Transaction.TransferDocument | Transaction.SplitDocument, current: Transaction.PaymentDocument | Transaction.TransferDocument | Transaction.SplitDocument) => {
   expect(getTransactionId(current), 'id').to.equal(getTransactionId(original));
   expect(current.amount, 'amount').to.equal(original.amount);
-  expect(new Date(current.issuedAt).toISOString(), 'issuedAt').to.equal(new Date(original.issuedAt).toISOString());
+  expect(current.issuedAt.toISOString(), 'issuedAt').to.equal(original.issuedAt.toISOString());
   expect(current.transactionType, 'transactionType').to.equal(original.transactionType);
   expect(current.description, 'description').to.equal(original.description);
   expect(getAccountId(current.account), 'account').to.equal(getAccountId(original.account));
@@ -257,18 +269,21 @@ const validatePartiallyUnsetPaymentDocument = (originalDocument: Transaction.Pay
       }
 
       if (relatedDocumentToUnset?.includes('inventory')) {
-        expect(currentDocument.inventory, 'inventory').to.be.undefined;
+        expect(currentDocument.quantity, 'quantity').to.be.undefined;
+        expect(currentDocument.product, 'product').to.be.undefined;
       } else {
-        expect(currentDocument.inventory?.quantity, 'inventory.quantity').to.equal(originalDocument.inventory?.quantity);
-        expect(getProductId(currentDocument.inventory?.product), 'inventory.product').to.equal(getProductId(originalDocument.inventory?.product));
+        expect(currentDocument.quantity, 'quantity').to.equal(originalDocument.quantity);
+        expect(getProductId(currentDocument.product), 'product').to.equal(getProductId(originalDocument.product));
       }
 
       if (relatedDocumentToUnset?.includes('invoice')) {
-        expect(currentDocument.invoice, 'invoice').to.be.undefined;
+        expect(currentDocument.invoiceNumber, 'invoiceNumber').to.be.undefined;
+        expect(currentDocument.billingEndDate, 'billingEndDate').to.be.undefined;
+        expect(currentDocument.billingStartDate, 'billingStartDate').to.be.undefined;
       } else {
-        expect(currentDocument.invoice?.invoiceNumber, 'invoice.invoiceNumber').to.equal(originalDocument.invoice?.invoiceNumber);
-        expect(currentDocument.invoice?.billingEndDate, 'invoice.billingEndDate').to.equal(originalDocument.invoice?.billingEndDate);
-        expect(currentDocument.invoice?.billingStartDate, 'invoice.billingStartDate').to.equal(originalDocument.invoice?.billingStartDate);
+        expect(currentDocument.invoiceNumber, 'invoiceNumber').to.equal(originalDocument.invoiceNumber);
+        expect(currentDocument.billingEndDate?.toISOString(), 'billingEndDate').to.equal(originalDocument.billingEndDate?.toISOString());
+        expect(currentDocument.billingStartDate?.toISOString(), 'billingStartDate').to.equal(originalDocument.billingStartDate?.toISOString());
       }
     });
 };
@@ -301,18 +316,21 @@ const validatePartiallyUnsetSplitDocument = (originalDocument: Transaction.Split
         }
 
         if (relatedDocumentToUnset?.includes('inventory') && index === splitIndex) {
-          expect(split.inventory, `splits.[${index}].inventory`).to.be.undefined;
+          expect(split.quantity, `splits.[${index}].quantity`).to.be.undefined;
+          expect(split.product, `splits.[${index}].product`).to.be.undefined;
         } else {
-          expect(split.inventory?.quantity, `splits.[${index}].inventory.quantity`).to.equal(originalDocument.splits[index].inventory?.quantity);
-          expect(getProductId(split.inventory?.product), `splits.[${index}].inventory.product`).to.equal(getProductId(originalDocument.splits[index].inventory?.product));
+          expect(split.quantity, `splits.[${index}].quantity`).to.equal(originalDocument.splits[index].quantity);
+          expect(getProductId(split.product), `splits.[${index}].product`).to.equal(getProductId(originalDocument.splits[index].product));
         }
 
         if (relatedDocumentToUnset?.includes('invoice') && index === splitIndex) {
-          expect(split.invoice, `splits.[${index}].invoice`).to.be.undefined;
+          expect(split.invoiceNumber, `splits.[${index}].invoiceNumber`).to.be.undefined;
+          expect(split.billingEndDate, `splits.[${index}].billingEndDate`).to.be.undefined;
+          expect(split.billingStartDate, `splits.[${index}].billingStartDate`).to.be.undefined;
         } else {
-          expect(split.invoice?.invoiceNumber, `splits.[${index}].invoice.invoiceNumber`).to.equal(originalDocument.splits[index].invoice?.invoiceNumber);
-          expect(split.invoice?.billingEndDate, `splits.[${index}].invoice.billingEndDate`).to.equal(originalDocument.splits[index].invoice?.billingEndDate);
-          expect(split.invoice?.billingStartDate, `splits.[${index}].invoice.billingStartDate`).to.equal(originalDocument.splits[index].invoice?.billingStartDate);
+          expect(split.invoiceNumber, `splits.[${index}].invoiceNumber`).to.equal(originalDocument.splits[index].invoiceNumber);
+          expect(split.billingEndDate?.toISOString(), `splits.[${index}].billingEndDate`).to.equal(originalDocument.splits[index].billingEndDate?.toISOString);
+          expect(split.billingStartDate?.toISOString, `splits.[${index}].billingStartDate`).to.equal(originalDocument.splits[index].billingStartDate?.toISOString);
         }
       });
     });
@@ -350,14 +368,14 @@ const validatePartiallyReassignedPaymentDocument = (originalDocument: Transactio
       }
 
       if (reassignments.product) {
-        expect(getProductId(currentDocument.inventory.product), 'inventory.product').to.equal(reassignments.product);
+        expect(getProductId(currentDocument.product), 'product').to.equal(reassignments.product);
       } else {
-        expect(getProductId(currentDocument.inventory?.product), 'inventory.product').to.equal(getProductId(originalDocument.inventory?.product));
+        expect(getProductId(currentDocument.product), 'product').to.equal(getProductId(originalDocument.product));
       }
-      expect(currentDocument.inventory?.quantity, 'inventory.quantity').to.equal(originalDocument.inventory?.quantity);
-      expect(currentDocument.invoice?.invoiceNumber, 'invoice.invoiceNumber').to.equal(originalDocument.invoice?.invoiceNumber);
-      expect(currentDocument.invoice?.billingEndDate, 'invoice.billingEndDate').to.equal(originalDocument.invoice?.billingEndDate);
-      expect(currentDocument.invoice?.billingStartDate, 'invoice.billingStartDate').to.equal(originalDocument.invoice?.billingStartDate);
+      expect(currentDocument.quantity, 'quantity').to.equal(originalDocument.quantity);
+      expect(currentDocument.invoiceNumber, 'invoiceNumber').to.equal(originalDocument.invoiceNumber);
+      expect(currentDocument.billingEndDate?.toISOString, 'billingEndDate').to.equal(originalDocument.billingEndDate?.toISOString);
+      expect(currentDocument.billingStartDate?.toISOString, 'billingStartDate').to.equal(originalDocument.billingStartDate?.toISOString);
     });
 };
 
@@ -394,15 +412,15 @@ const validatePartiallyReassignedSplitDocument = (originalDocument: Transaction.
         }
 
         if (reassignments.product && index === splitIndex) {
-          expect(getProductId(split.inventory.product), `splits.[${index}].inventory.product`).to.equal(reassignments.product);
+          expect(getProductId(split.product), `splits.[${index}].product`).to.equal(reassignments.product);
         } else {
-          expect(getProductId(split.inventory?.product), `splits.[${index}].inventory.product`).to.equal(getProductId(originalDocument.splits[index].inventory?.product));
+          expect(getProductId(split.product), `splits.[${index}].product`).to.equal(getProductId(originalDocument.splits[index].product));
         }
-        expect(split.inventory?.quantity, `splits.[${index}].inventory.quantity`).to.equal(originalDocument.splits[index].inventory?.quantity);
+        expect(split.quantity, `splits.[${index}].quantity`).to.equal(originalDocument.splits[index].quantity);
 
-        expect(split.invoice?.invoiceNumber, `splits.[${index}].invoice.invoiceNumber`).to.equal(originalDocument.splits[index].invoice?.invoiceNumber);
-        expect(split.invoice?.billingEndDate, `splits.[${index}].invoice.billingEndDate`).to.equal(originalDocument.splits[index].invoice?.billingEndDate);
-        expect(split.invoice?.billingStartDate, `splits.[${index}].invoice.billingStartDate`).to.equal(originalDocument.splits[index].invoice?.billingStartDate);
+        expect(split.invoiceNumber, `splits.[${index}].invoiceNumber`).to.equal(originalDocument.splits[index].invoiceNumber);
+        expect(split.billingEndDate?.toISOString, `splits.[${index}].billingEndDate`).to.equal(originalDocument.splits[index].billingEndDate?.toISOString);
+        expect(split.billingStartDate?.toISOString, `splits.[${index}].billingStartDate`).to.equal(originalDocument.splits[index].billingStartDate?.toISOString);
       });
     });
 };

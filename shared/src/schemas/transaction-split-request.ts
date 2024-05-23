@@ -30,6 +30,10 @@ const schema: StrictJSONSchema7<Transaction.SplitRequest> = {
         type: 'object',
         additionalProperties: false,
         required: [ ...base.required],
+        dependentRequired: {
+          ...invoice.dependentRequired,
+          ...inventory.dependentRequired,
+        },
         properties: {
           ...categoryId.properties,
           ...projectId.properties,

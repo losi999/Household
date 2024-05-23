@@ -62,6 +62,9 @@ describe('Project document converter', () => {
           ...body,
           expiresAt: addSeconds(expiresIn, now),
         },
+        $unset: {
+          description: false,
+        },
       }));
     });
   });

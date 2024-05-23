@@ -27,6 +27,8 @@ describe('Update category service', () => {
 
   describe('should return', () => {
     it('if parent is given', async () => {
+      const { parentCategoryId, ...cleanedBody } = body;
+
       mockCategoryService.functions.getCategoryById.mockResolvedValueOnce(queriedDocument);
       mockCategoryService.functions.getCategoryById.mockResolvedValueOnce(queriedParentCategory);
       mockCategoryDocumentConverter.functions.update.mockReturnValue(updateQuery);
@@ -40,7 +42,7 @@ describe('Update category service', () => {
       validateNthFunctionCall(mockCategoryService.functions.getCategoryById, 1, categoryId);
       validateNthFunctionCall(mockCategoryService.functions.getCategoryById, 2, body.parentCategoryId);
       validateFunctionCall(mockCategoryDocumentConverter.functions.update, {
-        body,
+        body: cleanedBody,
         parentCategory: queriedParentCategory,
       }, undefined);
       validateFunctionCall(mockCategoryService.functions.updateCategory, categoryId, updateQuery, queriedDocument.fullName);
@@ -51,6 +53,7 @@ describe('Update category service', () => {
       const modifiedBody = createCategoryRequest({
         parentCategoryId: undefined,
       });
+      const { parentCategoryId, ...cleanedBody } = modifiedBody;
       mockCategoryService.functions.getCategoryById.mockResolvedValueOnce(queriedDocument);
       mockCategoryService.functions.getCategoryById.mockResolvedValueOnce(undefined);
       mockCategoryDocumentConverter.functions.update.mockReturnValue(updateQuery);
@@ -64,7 +67,7 @@ describe('Update category service', () => {
       validateNthFunctionCall(mockCategoryService.functions.getCategoryById, 1, categoryId);
       validateNthFunctionCall(mockCategoryService.functions.getCategoryById, 2, undefined);
       validateFunctionCall(mockCategoryDocumentConverter.functions.update, {
-        body: modifiedBody,
+        body: cleanedBody,
         parentCategory: undefined,
       }, undefined);
       validateFunctionCall(mockCategoryService.functions.updateCategory, categoryId, updateQuery, queriedDocument.fullName);
@@ -137,6 +140,8 @@ describe('Update category service', () => {
     });
 
     it('unable to save category', async () => {
+      const { parentCategoryId, ...cleanedBody } = body;
+
       mockCategoryService.functions.getCategoryById.mockResolvedValueOnce(queriedDocument);
       mockCategoryService.functions.getCategoryById.mockResolvedValueOnce(queriedParentCategory);
       mockCategoryDocumentConverter.functions.update.mockReturnValue(updateQuery);
@@ -150,7 +155,7 @@ describe('Update category service', () => {
       validateNthFunctionCall(mockCategoryService.functions.getCategoryById, 1, categoryId);
       validateNthFunctionCall(mockCategoryService.functions.getCategoryById, 2, body.parentCategoryId);
       validateFunctionCall(mockCategoryDocumentConverter.functions.update, {
-        body,
+        body: cleanedBody,
         parentCategory: queriedParentCategory,
       }, undefined);
       validateFunctionCall(mockCategoryService.functions.updateCategory, categoryId, updateQuery, queriedDocument.fullName);

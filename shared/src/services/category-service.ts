@@ -185,8 +185,11 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
           } : {
             $unset: {
               category: 1,
-              inventory: 1,
-              invoice: 1,
+              quantity: 1,
+              product: 1,
+              invoiceNumber: 1,
+              billingEndDate: 1,
+              billingStartDate: 1,
             },
           }, {
             runValidators: true,
@@ -202,8 +205,11 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
           } : {
             $unset: {
               'splits.$[element].category': 1,
-              'splits.$[element].inventory': 1,
-              'splits.$[element].invoice': 1,
+              'splits.$[element].quantity': 1,
+              'splits.$[element].product': 1,
+              'splits.$[element].invoiceNumber': 1,
+              'splits.$[element].billingEndDate': 1,
+              'splits.$[element].billingStartDate': 1,
             },
           }, {
             session,
@@ -233,16 +239,22 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
             category: categoryId,
           }, doc.categoryType === 'regular' ? {
             $unset: {
-              invoice: 1,
-              inventory: 1,
+              quantity: 1,
+              product: 1,
+              invoiceNumber: 1,
+              billingEndDate: 1,
+              billingStartDate: 1,
             },
           } : doc.categoryType === 'inventory' ? {
             $unset: {
-              invoice: 1,
+              invoiceNumber: 1,
+              billingEndDate: 1,
+              billingStartDate: 1,
             },
           } : {
             $unset: {
-              inventory: 1,
+              quantity: 1,
+              product: 1,
             },
           }, {
             runValidators: true,
@@ -253,16 +265,22 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
             'splits.category': categoryId,
           }, doc.categoryType === 'regular' ? {
             $unset: {
-              'splits.$[element].invoice': 1,
-              'splits.$[element].inventory': 1,
+              'splits.$[element].quantity': 1,
+              'splits.$[element].product': 1,
+              'splits.$[element].invoiceNumber': 1,
+              'splits.$[element].billingEndDate': 1,
+              'splits.$[element].billingStartDate': 1,
             },
           } : doc.categoryType === 'inventory' ? {
             $unset: {
-              'splits.$[element].invoice': 1,
+              'splits.$[element].invoiceNumber': 1,
+              'splits.$[element].billingEndDate': 1,
+              'splits.$[element].billingStartDate': 1,
             },
           } : {
             $unset: {
-              'splits.$[element].inventory': 1,
+              'splits.$[element].quantity': 1,
+              'splits.$[element].product': 1,
             },
           }, {
             session,

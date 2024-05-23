@@ -10,7 +10,7 @@ export interface IProductDocumentConverter {
   }, expiresIn: number, generateId?: boolean): Product.Document;
   update(body: Product.Request, expiresIn: number): UpdateQuery<Product.Document>;
   toResponse(document: Product.Document): Product.Response;
-  toReport(inventory: Transaction.Inventory<Product.Document>['inventory']): Product.Report;
+  toReport(data: Transaction.Quantity & { document: Product.Document }): Product.Report;
   toResponseList(documents: Product.Document[]): Product.Response[];
 }
 
@@ -34,12 +34,12 @@ export const productDocumentConverterFactory = (): IProductDocumentConverter => 
         },
       };
     },
-    toReport: (inventory): Product.Report => {
-      return inventory ? {
-        productId: getProductId(inventory.product),
-        fullName: inventory.product.fullName,
-        quantity: inventory.quantity,
-      } : undefined;
+    toReport: ({ document, quantity }): Product.Report => {
+      return {
+        productId: getProductId(document),
+        fullName: document.fullName,
+        quantity,
+      };
     },
     toResponse: (doc): Product.Response => {
       return {

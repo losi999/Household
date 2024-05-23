@@ -1,6 +1,7 @@
 import { generateMongoId } from '@household/shared/common/test-data-factory';
 import { addSeconds, getCategoryId } from '@household/shared/common/utils';
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
+import { Restrict } from '@household/shared/types/common';
 import { Category } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
 
@@ -10,7 +11,7 @@ export interface ICategoryDocumentConverter {
     parentCategory: Category.Document
   }, expiresIn: number, generateId?: boolean): Category.Document;
   update(data: {
-    body: Category.Request;
+    body: Restrict<Category.Request, 'parentCategoryId'>;
     parentCategory: Category.Document;
   }, expiresIn: number): UpdateQuery<Category.Document>;
   toResponse(doc: Category.Document): Category.Response;
@@ -36,7 +37,6 @@ export const categoryDocumentConverterFactory = (
       const update: UpdateQuery<Category.Document> = {
         $set: {
           ...body,
-          parentCategoryId: undefined,
           fullName: parentCategory ? `${parentCategory.fullName}:${body.name}` : body.name,
           expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
         },

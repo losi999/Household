@@ -26,6 +26,10 @@ export const toDictionary = <P>(docs: P[], key: keyof P): Dictionary<P> => {
   }, {});
 };
 
+export const createDate = (date: string): Date => {
+  return date ? new Date(date) : undefined;
+};
+
 const getId = (doc: Internal.Id) => doc?._id.toString();
 export const getTransactionId = (doc: Transaction.Document): Transaction.Id => getId(doc) as Transaction.Id;
 export const getAccountId = (doc: Account.Document): Account.Id => getId(doc) as Account.Id;

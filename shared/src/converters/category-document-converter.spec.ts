@@ -85,9 +85,10 @@ describe('Category document converter', () => {
   });
 
   describe('update', () => {
+    const { parentCategoryId, ...cleanedBody } = body;
     it('should update document with parent category', () => {
       const result = converter.update({
-        body,
+        body: cleanedBody,
         parentCategory: queriedParentCategory,
       }, expiresIn);
       expect(result).toEqual(createDocumentUpdate({
@@ -103,7 +104,7 @@ describe('Category document converter', () => {
 
     it('should update document', () => {
       const result = converter.update({
-        body,
+        body: cleanedBody,
         parentCategory: undefined,
       }, expiresIn);
       expect(result).toEqual(createDocumentUpdate({

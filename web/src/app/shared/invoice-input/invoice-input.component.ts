@@ -7,6 +7,8 @@ import { Transaction } from '@household/shared/types/types';
 import { Subject, takeUntil } from 'rxjs';
 import { ClearableInputComponent } from 'src/app/shared/clearable-input/clearable-input.component';
 
+type Form<D extends Date | string> = Transaction.InvoiceDate<D> & Transaction.InvoiceNumber;
+
 @Component({
   selector: 'household-invoice-input',
   templateUrl: './invoice-input.component.html',
@@ -33,7 +35,7 @@ export class InvoiceInputComponent implements OnInit, OnDestroy, ControlValueAcc
     billingStartDate: FormControl<Date>;
     billingEndDate: FormControl<Date>;
   }>;
-  changed: (value: Transaction.Invoice<string>['invoice']) => void;
+  changed: (value: Form<string>) => void;
   touched: () => void;
   isDisabled: boolean;
   private destroyed = new Subject();
@@ -46,7 +48,7 @@ export class InvoiceInputComponent implements OnInit, OnDestroy, ControlValueAcc
       billingEndDate: new FormControl(null, [Validators.required]),
     });
 
-    this.form.valueChanges.pipe(takeUntil(this.destroyed)).subscribe((value: Transaction.Invoice<Date>['invoice']) => {
+    this.form.valueChanges.pipe(takeUntil(this.destroyed)).subscribe((value: Form<Date>) => {
       if (this.form.invalid) {
         this.changed?.(undefined);
       } else {
@@ -65,7 +67,7 @@ export class InvoiceInputComponent implements OnInit, OnDestroy, ControlValueAcc
     this.destroyed.next(undefined);
     this.destroyed.complete();
   }
-  writeValue(obj: Transaction.Invoice<Date>['invoice']): void {
+  writeValue(obj: Form<Date>): void {
     if (obj) {
       const startDate = new Date(obj.billingStartDate);
       const endDate = new Date(obj.billingEndDate);
