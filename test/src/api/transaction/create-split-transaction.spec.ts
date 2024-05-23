@@ -71,19 +71,6 @@ describe('POST transaction/v1/transactions/split', () => {
       category: inventoryCategoryDocument,
     }, Cypress.env('EXPIRES_IN'), true);
 
-    const inventory: Transaction.InventoryRequest['inventory'] = {
-      quantity: 1,
-      productId: getProductId(productDocument),
-    };
-
-    const invoice: Transaction.Invoice<string>['invoice'] = {
-      billingStartDate: new Date(2022, 6, 1, 0, 0, 0).toISOString()
-        .split('T')[0],
-      billingEndDate: new Date(2022, 6, 25, 0, 0, 0).toISOString()
-        .split('T')[0],
-      invoiceNumber: 'invoice123',
-    };
-
     request = {
       accountId: getAccountId(accountDocument),
       recipientId: getRecipientId(recipientDocument),
@@ -96,24 +83,39 @@ describe('POST transaction/v1/transactions/split', () => {
           description: 'split1',
           categoryId: getCategoryId(regularCategoryDocument),
           projectId: getProjectId(projectDocument),
-          invoice,
-          inventory,
+          billingStartDate: new Date(2022, 6, 1, 0, 0, 0).toISOString()
+            .split('T')[0],
+          billingEndDate: new Date(2022, 6, 25, 0, 0, 0).toISOString()
+            .split('T')[0],
+          invoiceNumber: 'invoice123',
+          quantity: 1,
+          productId: getProductId(productDocument),
         },
         {
           amount: 1,
           description: 'split2',
           categoryId: getCategoryId(inventoryCategoryDocument),
           projectId: getProjectId(projectDocument),
-          invoice,
-          inventory,
+          billingStartDate: new Date(2022, 6, 1, 0, 0, 0).toISOString()
+            .split('T')[0],
+          billingEndDate: new Date(2022, 6, 25, 0, 0, 0).toISOString()
+            .split('T')[0],
+          invoiceNumber: 'invoice123',
+          quantity: 1,
+          productId: getProductId(productDocument),
         },
         {
           amount: 1,
           description: 'split3',
           categoryId: getCategoryId(invoiceCategoryDocument),
           projectId: getProjectId(projectDocument),
-          invoice,
-          inventory,
+          billingStartDate: new Date(2022, 6, 1, 0, 0, 0).toISOString()
+            .split('T')[0],
+          billingEndDate: new Date(2022, 6, 25, 0, 0, 0).toISOString()
+            .split('T')[0],
+          invoiceNumber: 'invoice123',
+          quantity: 1,
+          productId: getProductId(productDocument),
         },
 
       ],
@@ -205,7 +207,8 @@ describe('POST transaction/v1/transactions/split', () => {
             ...request,
             splits: request.splits.map(s => ({
               ...s,
-              inventory: undefined,
+              productId: undefined,
+              quantity: undefined,
             })),
           };
           cy.saveAccountDocument(accountDocument)
@@ -226,7 +229,9 @@ describe('POST transaction/v1/transactions/split', () => {
             ...request,
             splits: request.splits.map(s => ({
               ...s,
-              invoice: undefined,
+              invoiceNumber: undefined,
+              billingEndDate: undefined,
+              billingStartDate: undefined,
             })),
           };
           cy.saveAccountDocument(accountDocument)
@@ -247,10 +252,7 @@ describe('POST transaction/v1/transactions/split', () => {
             ...request,
             splits: request.splits.map(s => ({
               ...s,
-              invoice: {
-                ...s.invoice,
-                invoiceNumber: undefined,
-              },
+              invoiceNumber: undefined,
             })),
           };
           cy.saveAccountDocument(accountDocument)
@@ -601,52 +603,18 @@ describe('POST transaction/v1/transactions/split', () => {
         });
       });
 
-      describe('if splits.inventory', () => {
-        it('is not object', () => {
+      describe('if splits.quantity', () => {
+        it('is present and productId is missing', () => {
           cy.authenticate(1)
             .requestCreateSplitTransaction({
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
-                inventory: '' as any,
+                productId: undefined,
               })),
             })
             .expectBadRequestResponse()
-            .expectWrongPropertyType('inventory', 'object', 'body');
-        });
-
-        it('has additional properties', () => {
-          cy.authenticate(1)
-            .requestCreateSplitTransaction({
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                inventory: {
-                  ...s.inventory,
-                  extra: 1,
-                } as any,
-              })),
-            })
-            .expectBadRequestResponse()
-            .expectAdditionalProperty('inventory', 'body');
-        });
-      });
-
-      describe('if splits.inventory.quantity', () => {
-        it('is missing', () => {
-          cy.authenticate(1)
-            .requestCreateSplitTransaction({
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                inventory: {
-                  ...s.inventory,
-                  quantity: undefined,
-                },
-              })),
-            })
-            .expectBadRequestResponse()
-            .expectRequiredProperty('quantity', 'body');
+            .expectDependentRequiredProperty('quantity', 'body', 'productId');
         });
 
         it('is not number', () => {
@@ -655,10 +623,7 @@ describe('POST transaction/v1/transactions/split', () => {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
-                inventory: {
-                  ...s.inventory,
-                  quantity: '1' as any,
-                },
+                quantity: '1' as any,
               })),
             })
             .expectBadRequestResponse()
@@ -671,10 +636,7 @@ describe('POST transaction/v1/transactions/split', () => {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
-                inventory: {
-                  ...s.inventory,
-                  quantity: 0,
-                },
+                quantity: 0,
               })),
             })
             .expectBadRequestResponse()
@@ -682,21 +644,18 @@ describe('POST transaction/v1/transactions/split', () => {
         });
       });
 
-      describe('if splits.inventory.productId', () => {
-        it('is missing', () => {
+      describe('if splits.productId', () => {
+        it('is present and quantity is missing', () => {
           cy.authenticate(1)
             .requestCreateSplitTransaction({
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
-                inventory: {
-                  ...s.inventory,
-                  productId: undefined,
-                },
+                quantity: undefined,
               })),
             })
             .expectBadRequestResponse()
-            .expectRequiredProperty('productId', 'body');
+            .expectDependentRequiredProperty('productId', 'body', 'quantity');
         });
 
         it('is not string', () => {
@@ -705,10 +664,7 @@ describe('POST transaction/v1/transactions/split', () => {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
-                inventory: {
-                  ...s.inventory,
-                  productId: 1 as any,
-                },
+                productId: 1 as any,
               })),
             })
             .expectBadRequestResponse()
@@ -721,10 +677,7 @@ describe('POST transaction/v1/transactions/split', () => {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
-                inventory: {
-                  ...s.inventory,
-                  productId: createProductId('not-valid'),
-                },
+                productId: createProductId('not-valid'),
               })),
             })
             .expectBadRequestResponse()
@@ -745,48 +698,28 @@ describe('POST transaction/v1/transactions/split', () => {
         });
       });
 
-      describe('if splits.invoice', () => {
-        it('is not object', () => {
+      describe('if splits.invoiceNumber', () => {
+        it('is present and billingEndDate, billingStartDate are missing', () => {
           cy.authenticate(1)
             .requestCreateSplitTransaction({
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
-                invoice: '1' as any,
+                billingEndDate: undefined,
+                billingStartDate: undefined,
               })),
             })
             .expectBadRequestResponse()
-            .expectWrongPropertyType('invoice', 'object', 'body');
+            .expectDependentRequiredProperty('invoiceNumber', 'body', 'billingEndDate', 'billingStartDate');
         });
 
-        it('has additional properties', () => {
-          cy.authenticate(1)
-            .requestCreateSplitTransaction({
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                invoice: {
-                  ...s.invoice,
-                  extra: 1,
-                } as any,
-              })),
-            })
-            .expectBadRequestResponse()
-            .expectAdditionalProperty('invoice', 'body');
-        });
-      });
-
-      describe('if splits.invoice.invoiceNumber', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestCreateSplitTransaction({
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
-                invoice: {
-                  ...s.invoice,
-                  invoiceNumber: 1 as any,
-                },
+                invoiceNumber: 1 as any,
               })),
             })
             .expectBadRequestResponse()
@@ -799,10 +732,7 @@ describe('POST transaction/v1/transactions/split', () => {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
-                invoice: {
-                  ...s.invoice,
-                  invoiceNumber: '',
-                },
+                invoiceNumber: '',
               })),
             })
             .expectBadRequestResponse()
@@ -810,21 +740,18 @@ describe('POST transaction/v1/transactions/split', () => {
         });
       });
 
-      describe('if splits.invoice.billingEndDate', () => {
-        it('is missing', () => {
+      describe('if splits.billingEndDate', () => {
+        it('is present and billingStartDate is missing', () => {
           cy.authenticate(1)
             .requestCreateSplitTransaction({
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
-                invoice: {
-                  ...s.invoice,
-                  billingEndDate: undefined,
-                },
+                billingStartDate: undefined,
               })),
             })
             .expectBadRequestResponse()
-            .expectRequiredProperty('billingEndDate', 'body');
+            .expectDependentRequiredProperty('billingEndDate', 'body', 'billingStartDate');
         });
 
         it('is not string', () => {
@@ -833,10 +760,7 @@ describe('POST transaction/v1/transactions/split', () => {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
-                invoice: {
-                  ...s.invoice,
-                  billingEndDate: 1 as any,
-                },
+                billingEndDate: 1 as any,
               })),
             })
             .expectBadRequestResponse()
@@ -849,10 +773,7 @@ describe('POST transaction/v1/transactions/split', () => {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
-                invoice: {
-                  ...s.invoice,
-                  billingEndDate: 'not-date',
-                },
+                billingEndDate: 'not-date',
               })),
             })
             .expectBadRequestResponse()
@@ -865,11 +786,8 @@ describe('POST transaction/v1/transactions/split', () => {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
-                invoice: {
-                  ...s.invoice,
-                  billingEndDate: '2022-06-01',
-                  billingStartDate: '2022-06-02',
-                },
+                billingEndDate: '2022-06-01',
+                billingStartDate: '2022-06-02',
               })),
             })
             .expectBadRequestResponse()
@@ -877,21 +795,18 @@ describe('POST transaction/v1/transactions/split', () => {
         });
       });
 
-      describe('if splits.invoice.billingStartDate', () => {
-        it('is missing', () => {
+      describe('if splits.billingStartDate', () => {
+        it('is present and billingEndDate is missing', () => {
           cy.authenticate(1)
             .requestCreateSplitTransaction({
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
-                invoice: {
-                  ...s.invoice,
-                  billingStartDate: undefined,
-                },
+                billingEndDate: undefined,
               })),
             })
             .expectBadRequestResponse()
-            .expectRequiredProperty('billingStartDate', 'body');
+            .expectDependentRequiredProperty('billingStartDate', 'body', 'billingEndDate');
         });
 
         it('is not string', () => {
@@ -900,10 +815,7 @@ describe('POST transaction/v1/transactions/split', () => {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
-                invoice: {
-                  ...s.invoice,
-                  billingStartDate: 1 as any,
-                },
+                billingStartDate: 1 as any,
               })),
             })
             .expectBadRequestResponse()
@@ -916,10 +828,7 @@ describe('POST transaction/v1/transactions/split', () => {
               ...request,
               splits: request.splits.map(s => ({
                 ...s,
-                invoice: {
-                  ...s.invoice,
-                  billingStartDate: 'not-date',
-                },
+                billingStartDate: 'not-date',
               })),
             })
             .expectBadRequestResponse()

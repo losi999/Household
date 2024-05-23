@@ -334,15 +334,15 @@ export namespace Transaction {
     splits: SplitRequestItem[];
   };
 
-  export type DraftDocument = Internal.Id
+  export type DraftDocument<D extends Date | string = Date> = Internal.Id
   & Internal.Timestamps
   & TransactionType<'draft'>
   & Base
-  & IssuedAt<Date> & {
+  & IssuedAt<D> & {
     file: File.Document
   };
 
-  export type PaymentDocument = Internal.Id
+  export type PaymentDocument<D extends Date | string = Date> = Internal.Id
   & Internal.Timestamps
   & TransactionType<'payment'>
   & Remove<Account.AccountId>
@@ -354,49 +354,49 @@ export namespace Transaction {
   & Category<Category.Document>
   & Project<Project.Document>
   & Recipient<Recipient.Document>
-  & IssuedAt<Date>
+  & IssuedAt<D>
   & InvoiceNumber
-  & InvoiceDate<Date>
+  & InvoiceDate<D>
   & Quantity
   & Product<Product.Document>
   & Base;
 
-  export type TransferDocument = Internal.Id
+  export type TransferDocument<D extends Date | string = Date> = Internal.Id
   & Internal.Timestamps
   & TransactionType<'transfer'>
   & Remove<Account.AccountId>
   & Account<Account.Document>
-  & IssuedAt<Date>
+  & IssuedAt<D>
   & Remove<TransferAccountId>
   & TransferAccount<Account.Document>
   & TransferAmount
   & Base;
 
-  export type SplitDocumentItem = Project<Project.Document>
+  export type SplitDocumentItem<D extends Date | string = Date> = Project<Project.Document>
   & Category<Category.Document>
   & Remove<Project.ProjectId>
   & Remove<Category.CategoryId>
   & Remove<Product.ProductId>
   & InvoiceNumber
-  & InvoiceDate<Date>
+  & InvoiceDate<D>
   & Quantity
   & Product<Product.Document>
   & Base;
 
-  export type SplitDocument = Internal.Id
+  export type SplitDocument<D extends Date | string = Date> = Internal.Id
   & Internal.Timestamps
   & TransactionType<'split'>
   & Remove<Account.AccountId>
   & Remove<Recipient.RecipientId>
   & Account<Account.Document>
   & Recipient<Recipient.Document>
-  & IssuedAt<Date>
+  & IssuedAt<D>
   & Base
   & {
-    splits: SplitDocumentItem[];
+    splits: SplitDocumentItem<D>[];
   };
 
-  export type Document = PaymentDocument | TransferDocument | SplitDocument | DraftDocument;
+  export type Document<D extends Date | string = Date > = PaymentDocument<D> | TransferDocument<D> | SplitDocument<D> | DraftDocument<D>;
 
   export type PaymentResponse = TransactionId
   & Base

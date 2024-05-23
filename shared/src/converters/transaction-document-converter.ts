@@ -1,5 +1,5 @@
 import { generateMongoId } from '@household/shared/common/test-data-factory';
-import { addSeconds, getAccountId, getTransactionId } from '@household/shared/common/utils';
+import { addSeconds, createDate, getAccountId, getTransactionId } from '@household/shared/common/utils';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
@@ -146,8 +146,8 @@ export const transactionDocumentConverterFactory = (
         quantity: category?.categoryType === 'inventory' ? body.quantity : undefined,
         product: category?.categoryType === 'inventory' ? product : undefined,
         invoiceNumber: category?.categoryType === 'invoice' ? body.invoiceNumber : undefined,
-        billingEndDate: category?.categoryType === 'invoice' ? new Date(body.billingEndDate) : undefined,
-        billingStartDate: category?.categoryType === 'invoice' ? new Date(body.billingStartDate) : undefined,
+        billingEndDate: category?.categoryType === 'invoice' ? createDate(body.billingEndDate) : undefined,
+        billingStartDate: category?.categoryType === 'invoice' ? createDate(body.billingStartDate) : undefined,
         accountId: undefined,
         categoryId: undefined,
         projectId: undefined,
@@ -174,8 +174,8 @@ export const transactionDocumentConverterFactory = (
             quantity: category?.categoryType === 'inventory' ? s.quantity : undefined,
             product: category?.categoryType === 'inventory' ? products[s.productId] : undefined,
             invoiceNumber: category?.categoryType === 'invoice' ? s.invoiceNumber : undefined,
-            billingEndDate: category?.categoryType === 'invoice' ? new Date(s.billingEndDate) : undefined,
-            billingStartDate: category?.categoryType === 'invoice' ? new Date(s.billingStartDate) : undefined,
+            billingEndDate: category?.categoryType === 'invoice' ? createDate(s.billingEndDate) : undefined,
+            billingStartDate: category?.categoryType === 'invoice' ? createDate(s.billingStartDate) : undefined,
             projectId: undefined,
             categoryId: undefined,
             productId: undefined,
