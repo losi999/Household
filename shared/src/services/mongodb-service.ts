@@ -8,6 +8,7 @@ import { productSchema } from '@household/shared/mongodb-schemas/product.schema'
 import { transactionSchema } from '@household/shared/mongodb-schemas/transaction.schema';
 import { Recipient, Project, Account, Category, Transaction, Product, File } from '@household/shared/types/types';
 import { fileSchema } from '@household/shared/mongodb-schemas/file.schema';
+console.log('mongodb service 1');
 
 type CollectionMapping = {
   recipients: Recipient.Document;
@@ -32,7 +33,11 @@ const createModel = <T extends keyof CollectionMapping>(collectionName: T, schem
 };
 
 let connection: Connection;
-set('debug', true);
+console.log('mongodb service 2');
+set('debug', {
+  color: false,
+  shell: true,
+});
 
 export const mongodbServiceFactory = (mongodbConnectionString: string): IMongodbService => {
   console.log('factory', connection?.readyState);
@@ -40,6 +45,36 @@ export const mongodbServiceFactory = (mongodbConnectionString: string): IMongodb
     console.log('pre create connnect');
     connection = createConnection(mongodbConnectionString, {
       autoIndex: true,
+    });
+    connection.on('connecting', (args) => {
+      console.log('connecting', args);
+    });
+    connection.on('connected', (args) => {
+      console.log('connected', args);
+    });
+    connection.on('open', (args) => {
+      console.log('open', args);
+    });
+    connection.on('disconnecting', (args) => {
+      console.log('disconnecting', args);
+    });
+    connection.on('disconnected', (args) => {
+      console.log('disconnected', args);
+    });
+    connection.on('close', (args) => {
+      console.log('close', args);
+    });
+    connection.on('reconnected', (args) => {
+      console.log('reconnected', args);
+    });
+    connection.on('error', (args) => {
+      console.log('error', args);
+    });
+    connection.on('fullsetup', (args) => {
+      console.log('fullsetup', args);
+    });
+    connection.on('all', (args) => {
+      console.log('all', args);
     });
     console.log('post create connect', connection?.readyState);
   }
