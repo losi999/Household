@@ -1,34 +1,5 @@
-import { Product, Transaction } from '@household/shared/types/types';
+import { Transaction } from '@household/shared/types/types';
 import { Schema } from 'mongoose';
-
-const invoiceSchema = new Schema<Transaction.Invoice<Date>['invoice']>({
-  invoiceNumber: {
-    type: String,
-    minlength: 1,
-  },
-  billingEndDate: {
-    type: Date,
-    required: true,
-  },
-  billingStartDate: {
-    type: Date,
-    required: true,
-  },
-}, {
-  _id: false,
-});
-
-const inventorySchema = new Schema<Transaction.Inventory<Product.Document>['inventory']>({
-  quantity: {
-    type: Number,
-  },
-  product: {
-    type: Schema.Types.ObjectId,
-    ref: 'products',
-  },
-}, {
-  _id: false,
-});
 
 export const transactionSchema = new Schema<Transaction.Document>({
   transactionType: {
@@ -37,6 +8,7 @@ export const transactionSchema = new Schema<Transaction.Document>({
       'payment',
       'transfer',
       'split',
+      'draft',
     ],
   },
   description: {
@@ -51,8 +23,23 @@ export const transactionSchema = new Schema<Transaction.Document>({
     type: Schema.Types.Date,
     required: true,
   },
-  inventory: inventorySchema,
-  invoice: invoiceSchema,
+  quantity: {
+    type: Number,
+  },
+  product: {
+    type: Schema.Types.ObjectId,
+    ref: 'products',
+  },
+  invoiceNumber: {
+    type: String,
+    minlength: 1,
+  },
+  billingEndDate: {
+    type: Date,
+  },
+  billingStartDate: {
+    type: Date,
+  },
   splits: {
     type: [
       {
@@ -64,8 +51,23 @@ export const transactionSchema = new Schema<Transaction.Document>({
           type: Number,
           required: true,
         },
-        inventory: inventorySchema,
-        invoice: invoiceSchema,
+        quantity: {
+          type: Number,
+        },
+        product: {
+          type: Schema.Types.ObjectId,
+          ref: 'products',
+        },
+        invoiceNumber: {
+          type: String,
+          minlength: 1,
+        },
+        billingEndDate: {
+          type: Date,
+        },
+        billingStartDate: {
+          type: Date,
+        },
         category: {
           type: Schema.Types.ObjectId,
           ref: 'categories',
@@ -85,6 +87,10 @@ export const transactionSchema = new Schema<Transaction.Document>({
   },
   transferAmount: {
     type: Number,
+  },
+  file: {
+    type: Schema.Types.ObjectId,
+    ref: 'files',
   },
   category: {
     type: Schema.Types.ObjectId,

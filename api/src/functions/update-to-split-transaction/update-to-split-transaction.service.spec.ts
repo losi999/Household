@@ -1,5 +1,5 @@
 import { IUpdateToSplitTransactionService, updateToSplitTransactionServiceFactory } from '@household/api/functions/update-to-split-transaction/update-to-split-transaction.service';
-import { createSplitTransactionRequest, createAccountDocument, createCategoryDocument, createProjectDocument, createRecipientDocument, createSplitTransactionDocument, createSplitRequestIem, createInventoryRequest, createProductDocument } from '@household/shared/common/test-data-factory';
+import { createSplitTransactionRequest, createAccountDocument, createCategoryDocument, createProjectDocument, createRecipientDocument, createSplitTransactionDocument, createSplitRequestIem, createProductDocument } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getCategoryId, getProjectId, getProductId, toDictionary, getTransactionId } from '@household/shared/common/utils';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
@@ -50,9 +50,7 @@ describe('Update to split transaction service', () => {
       createSplitRequestIem({
         categoryId,
         projectId,
-        inventory: createInventoryRequest({
-          productId,
-        }),
+        productId,
       }),
     ],
   });
@@ -105,9 +103,7 @@ describe('Update to split transaction service', () => {
           createSplitRequestIem({
             categoryId: undefined,
             projectId,
-            inventory: createInventoryRequest({
-              productId,
-            }),
+            productId,
           }),
         ],
       });
@@ -150,9 +146,7 @@ describe('Update to split transaction service', () => {
           createSplitRequestIem({
             categoryId,
             projectId: undefined,
-            inventory: createInventoryRequest({
-              productId,
-            }),
+            productId,
           }),
         ],
       });
@@ -237,7 +231,7 @@ describe('Update to split transaction service', () => {
           createSplitRequestIem({
             categoryId: regularCategoryId,
             projectId,
-            inventory: undefined,
+            productId: undefined,
           }),
         ],
       });
@@ -274,13 +268,13 @@ describe('Update to split transaction service', () => {
       expect.assertions(8);
     });
 
-    it('if inventory is not set', async () => {
+    it('if productId is not set', async () => {
       const modifiedBody = createSplitTransactionRequest({
         splits: [
           createSplitRequestIem({
             categoryId,
             projectId,
-            inventory: undefined,
+            productId: undefined,
           }),
         ],
       });
@@ -334,33 +328,27 @@ describe('Update to split transaction service', () => {
           createSplitRequestIem({
             categoryId,
             projectId,
-            inventory: createInventoryRequest({
-              productId,
-            }),
+            productId,
           }),
           createSplitRequestIem({
             categoryId: categoryId2,
             projectId: undefined,
-            inventory: createInventoryRequest({
-              productId: productId2,
-            }),
+            productId: productId2,
           }),
           createSplitRequestIem({
             categoryId,
             projectId: projectId2,
-            inventory: undefined,
+            productId: undefined,
           }),
           createSplitRequestIem({
             categoryId: undefined,
             projectId,
-            inventory: createInventoryRequest({
-              productId: productId2,
-            }),
+            productId: productId2,
           }),
           createSplitRequestIem({
             categoryId: categoryId2,
             projectId,
-            inventory: undefined,
+            productId: undefined,
           }),
         ],
       });
@@ -736,9 +724,7 @@ describe('Update to split transaction service', () => {
           createSplitRequestIem({
             categoryId,
             projectId,
-            inventory: createInventoryRequest({
-              productId: otherProductId,
-            }),
+            productId: otherProductId,
           }),
         ],
       });

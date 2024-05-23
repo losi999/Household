@@ -1,5 +1,5 @@
 import { IUpdateRecipientService, updateRecipientServiceFactory } from '@household/api/functions/update-recipient/update-recipient.service';
-import { createRecipientRequest, createRecipientDocument } from '@household/shared/common/test-data-factory';
+import { createRecipientRequest, createRecipientDocument, createDocumentUpdate } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getRecipientId } from '@household/shared/common/utils';
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
@@ -20,14 +20,13 @@ describe('Update recipient service', () => {
   const body = createRecipientRequest();
   const queriedDocument = createRecipientDocument();
   const recipientId = getRecipientId(queriedDocument);
-  const updatedDocument = createRecipientDocument({
+  const updateQuery = createDocumentUpdate({
     name: 'updated',
   });
-  const { updatedAt, ...toUpdate } = queriedDocument;
 
   it('should return if recipient is updated', async () => {
     mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedDocument);
-    mockRecipientDocumentConverter.functions.update.mockReturnValue(updatedDocument);
+    mockRecipientDocumentConverter.functions.update.mockReturnValue(updateQuery);
     mockRecipientService.functions.updateRecipient.mockResolvedValue(undefined);
 
     await service({
@@ -36,11 +35,8 @@ describe('Update recipient service', () => {
       expiresIn: undefined,
     });
     validateFunctionCall(mockRecipientService.functions.getRecipientById, recipientId);
-    validateFunctionCall(mockRecipientDocumentConverter.functions.update, {
-      body,
-      document: toUpdate,
-    }, undefined);
-    validateFunctionCall(mockRecipientService.functions.updateRecipient, updatedDocument);
+    validateFunctionCall(mockRecipientDocumentConverter.functions.update, body, undefined);
+    validateFunctionCall(mockRecipientService.functions.updateRecipient, recipientId, updateQuery);
     expect.assertions(3);
   });
 
@@ -75,7 +71,7 @@ describe('Update recipient service', () => {
 
     it('if unable to update recipient', async () => {
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedDocument);
-      mockRecipientDocumentConverter.functions.update.mockReturnValue(updatedDocument);
+      mockRecipientDocumentConverter.functions.update.mockReturnValue(updateQuery);
       mockRecipientService.functions.updateRecipient.mockRejectedValue('this is a mongo error');
 
       await service({
@@ -84,11 +80,8 @@ describe('Update recipient service', () => {
         expiresIn: undefined,
       }).catch(validateError('Error while updating recipient', 500));
       validateFunctionCall(mockRecipientService.functions.getRecipientById, recipientId);
-      validateFunctionCall(mockRecipientDocumentConverter.functions.update, {
-        body,
-        document: toUpdate,
-      }, undefined);
-      validateFunctionCall(mockRecipientService.functions.updateRecipient, updatedDocument);
+      validateFunctionCall(mockRecipientDocumentConverter.functions.update, body, undefined);
+      validateFunctionCall(mockRecipientService.functions.updateRecipient, recipientId, updateQuery);
       expect.assertions(5);
     });
   });

@@ -1,4 +1,4 @@
-import { createCategoryDocument, createInventoryDocument, createProductDocument, createProductReport, createProductRequest, createProductResponse } from '@household/shared/common/test-data-factory';
+import { createCategoryDocument, createDocumentUpdate, createProductDocument, createProductReport, createProductRequest, createProductResponse } from '@household/shared/common/test-data-factory';
 import { addSeconds, getProductId } from '@household/shared/common/utils';
 import { productDocumentConverterFactory, IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
 import { advanceTo, clear } from 'jest-date-mock';
@@ -69,20 +69,14 @@ describe('Product document converter', () => {
   });
 
   describe('update', () => {
-    const { updatedAt, ...document } = queriedDocument;
     it('should update document', () => {
-      const result = converter.update({
-        body,
-        document,
-      }, expiresIn);
-      expect(result).toEqual(createProductDocument({
-        _id: document._id,
-        unitOfMeasurement,
-        brand,
-        measurement,
-        category,
-        createdAt: now,
-        expiresAt: addSeconds(expiresIn, now),
+      const result = converter.update(body, expiresIn);
+      expect(result).toEqual(createDocumentUpdate({
+        $set: {
+          ...body,
+          fullName: `${body.brand} ${body.measurement} ${body.unitOfMeasurement}`,
+          expiresAt: addSeconds(expiresIn, now),
+        },
       }));
     });
   });
@@ -120,10 +114,10 @@ describe('Product document converter', () => {
       const product = createProductDocument({
         fullName,
       });
-      const result = converter.toReport(createInventoryDocument({
-        product,
+      const result = converter.toReport({
+        document: product,
         quantity,
-      }));
+      });
       expect(result).toEqual(createProductReport({
         productId: getProductId(product),
         fullName,

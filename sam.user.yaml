@@ -10,6 +10,11 @@ Parameters:
     Type: String
   ClientId:
     Type: String
+  DependenciesLayer:
+    Type: String
+
+Conditions:
+  ShouldUseLayers: !Not [!Equals [!Ref DependenciesLayer, "DependenciesLayer"]]
 
 Globals:
   Function:
@@ -18,6 +23,10 @@ Globals:
     Timeout: 10
     MemorySize: 512
     Tracing: Active
+    Tags:
+      Application: !Sub Household-${Env}
+    Layers:
+      - !If [ShouldUseLayers, !Ref DependenciesLayer, !Ref "AWS::NoValue"]
     Environment:
       Variables:
         USER_POOL_ID: !Ref UserPoolId
@@ -39,16 +48,16 @@ Resources:
           StatusCode: 401
           ResponseParameters:
             Headers:
-              Access-Control-Allow-Origin: "'*'"  
+              Access-Control-Allow-Origin: "'*'"
               Access-Control-Allow-Headers: "'*'"
               Access-Control-Allow-Methods: "'*'"
           ResponseTemplates:
-            application/json: '{ "message": $context.error.messageString }'            
+            application/json: '{ "message": $context.error.messageString }'
         MISSING_AUTHENTICATION_TOKEN:
           StatusCode: 404
           ResponseParameters:
             Headers:
-              Access-Control-Allow-Origin: "'*'"  
+              Access-Control-Allow-Origin: "'*'"
               Access-Control-Allow-Headers: "'*'"
               Access-Control-Allow-Methods: "'*'"
           ResponseTemplates:
@@ -80,7 +89,7 @@ Resources:
           Properties:
             RestApiId: !Ref UserApi
             Path: /v1/refreshToken
-            Method: POST            
+            Method: POST
 
 Outputs:
   UserApi:

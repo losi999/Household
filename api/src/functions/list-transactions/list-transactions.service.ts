@@ -26,7 +26,7 @@ export const listTransactionsServiceFactory = (
     transactions.forEach(t => {
       if (t.transactionType === 'split') {
         t.splits = t.splits.filter(s => {
-          return (!categoryIds || categoryIds.includes(getCategoryId(s.category))) && (!projectIds || projectIds.includes(getProjectId(s.project))) && (!productIds || productIds.includes(getProductId(s.inventory?.product)));
+          return (!categoryIds || categoryIds.includes(getCategoryId(s.category))) && (!projectIds || projectIds.includes(getProjectId(s.project))) && (!productIds || productIds.includes(getProductId(s.product)));
         });
       }
     });

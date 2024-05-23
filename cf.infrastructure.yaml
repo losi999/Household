@@ -5,11 +5,11 @@ Parameters:
     Type: String
 
 Resources:
-  MongooseLayer:
+  DependenciesLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
-      ContentUri: layers/mongoose
-      LayerName: !Sub Household-${Env}-MongooseLayer
+      ContentUri: layers/dependencies
+      LayerName: !Sub Household-${Env}-DependenciesLayer
       RetentionPolicy: Delete
       CompatibleRuntimes:
         - nodejs18.x
@@ -47,6 +47,7 @@ Resources:
                   - lambda:InvokeFunction
                   - sqs:SendMessage
                   - s3:PutObject
+                  - s3:GetObject
                 Resource: "*"
 
   WebsiteBucket:
@@ -66,9 +67,9 @@ Resources:
         Version: 2012-10-17
         Statement:
           - Effect: Allow
-            Principal: '*'
-            Action: 's3:GetObject'
-            Resource: !Sub '${WebsiteBucket.Arn}/*'
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "${WebsiteBucket.Arn}/*"
       Bucket: !Ref WebsiteBucket
 
 Outputs:
@@ -76,6 +77,5 @@ Outputs:
     Value: !GetAtt LambdaRole.Arn
   WebsiteBucket:
     Value: !Ref WebsiteBucket
-  MongooseLayer:
-    Value: !Ref MongooseLayer
-
+  DependenciesLayer:
+    Value: !Ref DependenciesLayer

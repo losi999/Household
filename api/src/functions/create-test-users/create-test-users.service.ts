@@ -16,7 +16,7 @@ export const createTestUsersServiceFactory = (identityService: IIdentityService)
         displayName: `test${index}`,
       });
     } catch (error) {
-      if (error.code !== 'UsernameExistsException') {
+      if (error.name !== 'UsernameExistsException') {
         throw error;
       }
     }

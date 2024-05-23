@@ -17,6 +17,10 @@ const schema: StrictJSONSchema7<Transaction.PaymentRequest> = {
     ...issuedAt.required,
     ...accountId.required,
   ],
+  dependentRequired: {
+    ...invoice.dependentRequired,
+    ...inventory.dependentRequired,
+  },
   properties: {
     ...accountId.properties,
     ...categoryId.properties,

@@ -35,8 +35,7 @@ export const updateToPaymentTransactionServiceFactory = (
       transactionId,
     });
 
-    const { accountId, categoryId, projectId, recipientId } = body;
-    const productId = body.inventory?.productId;
+    const { accountId, categoryId, projectId, recipientId, productId } = body;
 
     const [
       account,

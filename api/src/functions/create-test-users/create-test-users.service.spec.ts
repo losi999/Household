@@ -45,7 +45,7 @@ describe('Create test users service', () => {
     const numberOfAdmins = 2;
 
     mockIdentityService.functions.register.mockRejectedValue({
-      code: 'UsernameExistsException',
+      name: 'UsernameExistsException',
     });
 
     await service({
@@ -61,7 +61,7 @@ describe('Create test users service', () => {
     const message = 'This is a cognito error';
     mockIdentityService.functions.register.mockRejectedValue({
       message,
-      code: 'NOTUsernameExistsException',
+      name: 'NOTUsernameExistsException',
     });
 
     await service({

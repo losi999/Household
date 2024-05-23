@@ -1,4 +1,4 @@
-import { createRecipientDocument, createRecipientReport, createRecipientRequest, createRecipientResponse } from '@household/shared/common/test-data-factory';
+import { createDocumentUpdate, createRecipientDocument, createRecipientReport, createRecipientRequest, createRecipientResponse } from '@household/shared/common/test-data-factory';
 import { addSeconds, getRecipientId } from '@household/shared/common/utils';
 import { recipientDocumentConverterFactory, IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
 import { advanceTo, clear } from 'jest-date-mock';
@@ -50,17 +50,13 @@ describe('Recipient document converter', () => {
   });
 
   describe('update', () => {
-    const { updatedAt, ...document } = queriedDocument;
     it('should update document', () => {
-      const result = converter.update({
-        body,
-        document,
-      }, expiresIn);
-      expect(result).toEqual(createRecipientDocument({
-        _id: document._id,
-        name,
-        createdAt: now,
-        expiresAt: addSeconds(expiresIn, now),
+      const result = converter.update(body, expiresIn);
+      expect(result).toEqual(createDocumentUpdate({
+        $set: {
+          ...body,
+          expiresAt: addSeconds(expiresIn, now),
+        },
       }));
     });
   });

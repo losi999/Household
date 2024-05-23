@@ -13,7 +13,7 @@ import { writeFileSync } from 'fs';
     }} = {};
 
     for (let year = 2014; year <= 2023; year += 1) {
-      const accounts = await mongodbService.accounts().aggregate<Account.Document>()
+      const accounts = await mongodbService.accounts.aggregate<Account.Document>()
         .lookup({
           from: 'transactions',
           localField: '_id',

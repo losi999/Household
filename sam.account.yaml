@@ -10,11 +10,11 @@ Parameters:
     Type: String
   MongodbConnectionString:
     Type: String
-  MongooseLayer:
+  DependenciesLayer:
     Type: String
 
 Conditions:
-  ShouldUseLayers: !Not [!Equals [!Ref MongooseLayer, "MongooseLayer"]]
+  ShouldUseLayers: !Not [!Equals [!Ref DependenciesLayer, "DependenciesLayer"]]
 
 Globals:
   Function:
@@ -23,8 +23,10 @@ Globals:
     Timeout: 60
     MemorySize: 512
     Tracing: Active
+    Tags:
+      Application: !Sub Household-${Env}
     Layers:
-      - !If [ShouldUseLayers, !Ref MongooseLayer, !Ref "AWS::NoValue"]
+      - !If [ShouldUseLayers, !Ref DependenciesLayer, !Ref "AWS::NoValue"]
     Environment:
       Variables:
         MONGODB_CONNECTION_STRING: !Ref MongodbConnectionString
@@ -49,16 +51,16 @@ Resources:
           StatusCode: 401
           ResponseParameters:
             Headers:
-              Access-Control-Allow-Origin: "'*'"  
+              Access-Control-Allow-Origin: "'*'"
               Access-Control-Allow-Headers: "'*'"
               Access-Control-Allow-Methods: "'*'"
           ResponseTemplates:
-            application/json: '{ "message": $context.error.messageString }'            
+            application/json: '{ "message": $context.error.messageString }'
         MISSING_AUTHENTICATION_TOKEN:
           StatusCode: 404
           ResponseParameters:
             Headers:
-              Access-Control-Allow-Origin: "'*'"  
+              Access-Control-Allow-Origin: "'*'"
               Access-Control-Allow-Headers: "'*'"
               Access-Control-Allow-Methods: "'*'"
           ResponseTemplates:
@@ -101,7 +103,7 @@ Resources:
     Properties:
       FunctionName: !Sub Household-${Env}-ListAccounts
       CodeUri: dist/api/list-accounts
-      Role: !Ref LambdaRoleArn      
+      Role: !Ref LambdaRoleArn
       Events:
         API:
           Type: Api

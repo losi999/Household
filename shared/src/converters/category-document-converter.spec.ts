@@ -1,4 +1,4 @@
-import { createCategoryDocument, createCategoryReport, createCategoryRequest, createCategoryResponse, createProductDocument, createProductResponse } from '@household/shared/common/test-data-factory';
+import { createCategoryDocument, createCategoryReport, createCategoryRequest, createCategoryResponse, createDocumentUpdate, createProductDocument, createProductResponse } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock } from '@household/shared/common/unit-testing';
 import { addSeconds, getCategoryId } from '@household/shared/common/utils';
 import { categoryDocumentConverterFactory, ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
@@ -85,35 +85,38 @@ describe('Category document converter', () => {
   });
 
   describe('update', () => {
-    const { updatedAt, ...document } = queriedDocument;
+    const { parentCategoryId, ...cleanedBody } = body;
     it('should update document with parent category', () => {
       const result = converter.update({
-        body,
+        body: cleanedBody,
         parentCategory: queriedParentCategory,
-        document,
       }, expiresIn);
-      expect(result).toEqual(createCategoryDocument({
-        _id: document._id,
-        name,
-        fullName: `${parentCategoryName}:${name}`,
-        parentCategory: queriedParentCategory,
-        createdAt: now,
-        expiresAt: addSeconds(expiresIn, now),
+      expect(result).toEqual(createDocumentUpdate({
+        $set: {
+          ...body,
+          parentCategoryId: undefined,
+          parentCategory: queriedParentCategory,
+          fullName: `${parentCategoryName}:${name}`,
+          expiresAt: addSeconds(expiresIn, now),
+        },
       }));
     });
 
     it('should update document', () => {
       const result = converter.update({
-        body,
+        body: cleanedBody,
         parentCategory: undefined,
-        document,
       }, expiresIn);
-      expect(result).toEqual(createCategoryDocument({
-        _id: document._id,
-        name,
-        fullName: name,
-        createdAt: now,
-        expiresAt: addSeconds(expiresIn, now),
+      expect(result).toEqual(createDocumentUpdate({
+        $set: {
+          ...body,
+          parentCategoryId: undefined,
+          fullName: name,
+          expiresAt: addSeconds(expiresIn, now),
+        },
+        $unset: {
+          parentCategory: 1,
+        },
       }));
     });
   });

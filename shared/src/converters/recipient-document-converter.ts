@@ -1,11 +1,11 @@
 import { generateMongoId } from '@household/shared/common/test-data-factory';
 import { addSeconds, getRecipientId } from '@household/shared/common/utils';
-import { Restrict } from '@household/shared/types/common';
 import { Recipient } from '@household/shared/types/types';
+import { UpdateQuery } from 'mongoose';
 
 export interface IRecipientDocumentConverter {
   create(body: Recipient.Request, expiresIn: number, generateId?: boolean): Recipient.Document;
-  update(data: { document: Restrict<Recipient.Document, 'updatedAt'>; body: Recipient.Request }, expiresIn: number): Recipient.Document;
+  update(body: Recipient.Request, expiresIn: number): UpdateQuery<Recipient.Document>;
   toResponse(doc: Recipient.Document): Recipient.Response;
   toReport(doc: Recipient.Document): Recipient.Report;
   toResponseList(docs: Recipient.Document[]): Recipient.Response[];
@@ -20,11 +20,12 @@ export const recipientDocumentConverterFactory = (): IRecipientDocumentConverter
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
-    update: ({ document: { _id, createdAt }, body }, expiresIn): Recipient.Document => {
+    update: (body, expiresIn): UpdateQuery<Recipient.Document> => {
       return {
-        ...instance.create(body, expiresIn),
-        _id,
-        createdAt,
+        $set: {
+          ...body,
+          expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
+        },
       };
     },
     toResponse: (doc): Recipient.Response => {

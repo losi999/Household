@@ -24,13 +24,11 @@ export const updateProjectServiceFactory = (
       projectId,
     });
 
-    const { updatedAt, ...document } = queried;
+    const update = projectDocumentConverter.update(body, expiresIn);
 
-    const updated = projectDocumentConverter.update({
-      document,
-      body,
-    }, expiresIn);
-
-    await projectService.updateProject(updated).catch(httpErrors.project.update(updated));
+    await projectService.updateProject(projectId, update).catch(httpErrors.project.update({
+      projectId,
+      update,
+    }));
   };
 };

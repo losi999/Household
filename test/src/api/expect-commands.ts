@@ -56,6 +56,10 @@ const expectRequiredProperty = (body: any, propertyName: string, requestPart: st
   expect(body[requestPart]).to.contain(propertyName).to.contain('required');
 };
 
+const expectDependentRequiredProperty = (body: any, propertyName: string, requestPart: string, ...dependingProperties: string[]) => {
+  expect(body[requestPart]).to.contain(`${propertyName} is present`).to.contain(`must have propert${dependingProperties.length > 1 ? 'ies' : 'y'} ${dependingProperties.join(', ')}`);
+};
+
 const expectAdditionalProperty = (body: any, propertyName: string, requestPart: string) => {
   expect(body[requestPart]).to.contain(propertyName).to.contain('additional');
 };
@@ -113,6 +117,7 @@ export const setExpectCommands = () => {
     expectNotFoundResponse,
     expectValidResponseSchema,
     expectRequiredProperty,
+    expectDependentRequiredProperty,
     expectAdditionalProperty,
     expectWrongPropertyType,
     expectWrongPropertyFormat,
@@ -144,6 +149,7 @@ declare global {
       expectValidResponseSchema: CommandFunctionWithPreviousSubject<typeof expectValidResponseSchema>;
       expectAdditionalProperty: CommandFunctionWithPreviousSubject<typeof expectAdditionalProperty>;
       expectRequiredProperty: CommandFunctionWithPreviousSubject<typeof expectRequiredProperty>;
+      expectDependentRequiredProperty: CommandFunctionWithPreviousSubject<typeof expectDependentRequiredProperty>;
       expectWrongPropertyType: CommandFunctionWithPreviousSubject<typeof expectWrongPropertyType>;
       expectWrongPropertyFormat: CommandFunctionWithPreviousSubject<typeof expectWrongPropertyFormat>;
       expectWrongPropertyPattern: CommandFunctionWithPreviousSubject<typeof expectWrongPropertyPattern>;

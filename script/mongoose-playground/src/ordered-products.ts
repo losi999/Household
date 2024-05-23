@@ -8,7 +8,7 @@ import { writeFileSync } from 'fs';
     config();
     const mongodbService = mongodbServiceFactory(process.env.MONGODB_CONNECTION_STRING);
 
-    const categories = await mongodbService.categories()
+    const categories = await mongodbService.categories
       // .aggregate()
       // .match({
       //   categoryType: 'inventory',

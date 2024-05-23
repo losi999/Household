@@ -29,52 +29,35 @@ components:
         description:
           type: string
           minLength: 1
-    Inventory.Quantity:
+    Quantity:
       type: object
       required:
         - quantity
       properties:
         quantity:
+          description: Required if productId is present
           type: number
           minimum: 0
           exclusiveMinimum: true
-    Inventory.Request:
+
+    InvoiceNumber:
       type: object
       properties:
-        inventory:
-          allOf:
-            - $ref: "#/components/schemas/Inventory.Quantity"
-            - $ref: "product.yaml#/components/schemas/ProductId"
-    Inventory.Response:
+        invoiceNumber:
+          type: string
+          minLength: 1
+    InvoiceDate:
       type: object
+      required:
+        - billingStartDate
+        - billingEndDate
       properties:
-        inventory:
-          allOf:
-            - $ref: "#/components/schemas/Inventory.Quantity"
-            - type: object
-              required:
-                - product
-              properties:
-                product:
-                  $ref: "product.yaml#/components/schemas/Response"
-    Invoice:
-      type: object
-      properties:
-        invoice:
-          type: object
-          required:
-            - billingStartDate
-            - billingEndDate
-          properties:
-            invoiceNumber:
-              type: string
-              minLength: 1
-            billingStartDate:
-              type: string
-              format: date-time
-            billingEndDate:
-              type: string
-              format: date-time
+        billingStartDate:
+          type: string
+          format: date-time
+        billingEndDate:
+          type: string
+          format: date-time
     TransferAccountId:
       type: object
       required:
@@ -113,6 +96,11 @@ components:
       properties:
         recipient:
           $ref: "recipient.yaml#/components/schemas/Response"
+    Product:
+      type: object
+      properties:
+        recipient:
+          $ref: "product.yaml#/components/schemas/Response"
     TransferAccount:
       type: object
       required:
@@ -127,8 +115,10 @@ components:
         - $ref: "project.yaml#/components/schemas/ProjectId"
         - $ref: "recipient.yaml#/components/schemas/RecipientId"
         - $ref: "#/components/schemas/IssuedAt"
-        - $ref: "#/components/schemas/Invoice"
-        - $ref: "#/components/schemas/Inventory.Request"
+        - $ref: "#/components/schemas/InvoiceNumber"
+        - $ref: "#/components/schemas/InvoiceDate"
+        - $ref: "#/components/schemas/Quantity"
+        - $ref: "product.yaml#/components/schemas/ProductId"
         - $ref: "#/components/schemas/Base"
     TransferRequest:
       allOf:
@@ -141,8 +131,10 @@ components:
       allOf:
         - $ref: "category.yaml#/components/schemas/CategoryId"
         - $ref: "project.yaml#/components/schemas/ProjectId"
-        - $ref: "#/components/schemas/Invoice"
-        - $ref: "#/components/schemas/Inventory.Request"
+        - $ref: "#/components/schemas/InvoiceNumber"
+        - $ref: "#/components/schemas/InvoiceDate"
+        - $ref: "#/components/schemas/Quantity"
+        - $ref: "product.yaml#/components/schemas/ProductId"
         - $ref: "#/components/schemas/Base"
     SplitRequest:
       allOf:
@@ -163,8 +155,10 @@ components:
         - $ref: "#/components/schemas/TransactionId"
         - $ref: "#/components/schemas/Base"
         - $ref: "#/components/schemas/IssuedAt"
-        - $ref: "#/components/schemas/Invoice"
-        - $ref: "#/components/schemas/Inventory.Response"
+        - $ref: "#/components/schemas/InvoiceDate"
+        - $ref: "#/components/schemas/InvoiceNumber"
+        - $ref: "#/components/schemas/Quantity"
+        - $ref: "#/components/schemas/Product"
         - $ref: "#/components/schemas/Account"
         - $ref: "#/components/schemas/Category"
         - $ref: "#/components/schemas/Project"
@@ -196,8 +190,10 @@ components:
     SplitResponseItem:
       allOf:
         - $ref: "#/components/schemas/Base"
-        - $ref: "#/components/schemas/Invoice"
-        - $ref: "#/components/schemas/Inventory.Response"
+        - $ref: "#/components/schemas/InvoiceNumber"
+        - $ref: "#/components/schemas/InvoiceDate"
+        - $ref: "#/components/schemas/Quantity"
+        - $ref: "#/components/schemas/Product"
         - $ref: "#/components/schemas/Project"
         - $ref: "#/components/schemas/Category"
     SplitResponse:

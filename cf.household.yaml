@@ -4,22 +4,22 @@ Parameters:
     Type: String
   TestUserPassword:
     Type: String
-    Default: ""    
+    Default: ""
 
-Mappings: 
-  EnvMapping: 
-    LOCAL: 
+Mappings:
+  EnvMapping:
+    LOCAL:
       WebsiteDomain: local-household.losi999.hu
       ApiDomain: local-householdapi.losi999.hu
-    DEV: 
+    DEV:
       WebsiteDomain: dev-household.losi999.hu
       ApiDomain: dev-householdapi.losi999.hu
-    CI: 
+    CI:
       WebsiteDomain: ci-household.losi999.hu
       ApiDomain: ci-householdapi.losi999.hu
-    PROD: 
+    PROD:
       WebsiteDomain: household.losi999.hu
-      ApiDomain: householdapi.losi999.hu            
+      ApiDomain: householdapi.losi999.hu
 
 Resources:
   Functions:
@@ -28,12 +28,23 @@ Resources:
       TemplateURL: sam.functions.yaml
       Parameters:
         LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
-        MongooseLayer: !GetAtt Infrastructure.Outputs.MongooseLayer
+        DependenciesLayer: !GetAtt Infrastructure.Outputs.DependenciesLayer
         DatabaseArchiveBucket: !GetAtt Data.Outputs.DatabaseArchiveBucket
         Env: !Ref Env
         TestUserPassword: !Ref TestUserPassword
         UserPoolId: !GetAtt Data.Outputs.UserPoolId
         ClientId: !GetAtt Data.Outputs.ClientId
+        MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
+
+  File:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: sam.file.yaml
+      Parameters:
+        LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
+        DependenciesLayer: !GetAtt Infrastructure.Outputs.DependenciesLayer
+        UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
+        Env: !Ref Env
         MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
 
   Data:
@@ -56,7 +67,7 @@ Resources:
       TemplateURL: sam.project.yaml
       Parameters:
         LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
-        MongooseLayer: !GetAtt Infrastructure.Outputs.MongooseLayer
+        DependenciesLayer: !GetAtt Infrastructure.Outputs.DependenciesLayer
         UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
         MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
@@ -67,7 +78,7 @@ Resources:
       TemplateURL: sam.recipient.yaml
       Parameters:
         LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
-        MongooseLayer: !GetAtt Infrastructure.Outputs.MongooseLayer
+        DependenciesLayer: !GetAtt Infrastructure.Outputs.DependenciesLayer
         UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
         MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
@@ -78,7 +89,7 @@ Resources:
       TemplateURL: sam.account.yaml
       Parameters:
         LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
-        MongooseLayer: !GetAtt Infrastructure.Outputs.MongooseLayer
+        DependenciesLayer: !GetAtt Infrastructure.Outputs.DependenciesLayer
         UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
         MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
@@ -89,7 +100,7 @@ Resources:
       TemplateURL: sam.category.yaml
       Parameters:
         LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
-        MongooseLayer: !GetAtt Infrastructure.Outputs.MongooseLayer
+        DependenciesLayer: !GetAtt Infrastructure.Outputs.DependenciesLayer
         UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
         MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
@@ -100,7 +111,7 @@ Resources:
       TemplateURL: sam.product.yaml
       Parameters:
         LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
-        MongooseLayer: !GetAtt Infrastructure.Outputs.MongooseLayer
+        DependenciesLayer: !GetAtt Infrastructure.Outputs.DependenciesLayer
         UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
         MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
@@ -111,7 +122,7 @@ Resources:
       TemplateURL: sam.transaction.yaml
       Parameters:
         LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
-        MongooseLayer: !GetAtt Infrastructure.Outputs.MongooseLayer
+        DependenciesLayer: !GetAtt Infrastructure.Outputs.DependenciesLayer
         UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
         MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
@@ -122,21 +133,22 @@ Resources:
       TemplateURL: sam.user.yaml
       Parameters:
         LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
+        DependenciesLayer: !GetAtt Infrastructure.Outputs.DependenciesLayer
         UserPoolId: !GetAtt Data.Outputs.UserPoolId
         ClientId: !GetAtt Data.Outputs.ClientId
-        Env: !Ref Env        
+        Env: !Ref Env
 
   Api:
     Type: AWS::CloudFront::Distribution
     Properties:
       DistributionConfig:
         Comment: !Sub "Household ${Env}-API"
-        Aliases: 
+        Aliases:
           - !FindInMap [EnvMapping, !Ref Env, ApiDomain]
         ViewerCertificate:
           AcmCertificateArn: "{{resolve:ssm:DomainCertificateArn:1}}"
           SslSupportMethod: sni-only
-          MinimumProtocolVersion: TLSv1.2_2019          
+          MinimumProtocolVersion: TLSv1.2_2019
         Enabled: true
         PriceClass: PriceClass_100
         DefaultCacheBehavior:
@@ -227,7 +239,7 @@ Resources:
               - PUT
               - PATCH
               - POST
-              - DELETE     
+              - DELETE
           - ForwardedValues:
               QueryString: true
               Headers:
@@ -245,7 +257,7 @@ Resources:
               - PUT
               - PATCH
               - POST
-              - DELETE                   
+              - DELETE
           - ForwardedValues:
               QueryString: true
               Headers:
@@ -263,7 +275,7 @@ Resources:
               - PUT
               - PATCH
               - POST
-              - DELETE           
+              - DELETE
           - ForwardedValues:
               QueryString: true
               Headers:
@@ -281,7 +293,25 @@ Resources:
               - PUT
               - PATCH
               - POST
-              - DELETE                          
+              - DELETE
+          - ForwardedValues:
+              QueryString: true
+              Headers:
+                - Authorization
+            PathPattern: /file/*
+            TargetOriginId: File
+            ViewerProtocolPolicy: redirect-to-https
+            MinTTL: 0
+            MaxTTL: 0
+            DefaultTTL: 0
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+              - PUT
+              - PATCH
+              - POST
+              - DELETE
         Origins:
           - DomainName: !GetAtt Project.Outputs.ProjectApi
             Id: Project
@@ -298,20 +328,23 @@ Resources:
           - DomainName: !GetAtt Category.Outputs.CategoryApi
             Id: Category
             CustomOriginConfig:
-              OriginProtocolPolicy: https-only        
+              OriginProtocolPolicy: https-only
           - DomainName: !GetAtt Product.Outputs.ProductApi
             Id: Product
             CustomOriginConfig:
-              OriginProtocolPolicy: https-only        
+              OriginProtocolPolicy: https-only
           - DomainName: !GetAtt Transaction.Outputs.TransactionApi
             Id: Transaction
             CustomOriginConfig:
-              OriginProtocolPolicy: https-only  
+              OriginProtocolPolicy: https-only
           - DomainName: !GetAtt User.Outputs.UserApi
             Id: User
             CustomOriginConfig:
-              OriginProtocolPolicy: https-only                             
-
+              OriginProtocolPolicy: https-only
+          - DomainName: !GetAtt File.Outputs.FileApi
+            Id: File
+            CustomOriginConfig:
+              OriginProtocolPolicy: https-only
   ApiDNSRecord:
     Type: AWS::Route53::RecordSet
     Properties:
@@ -329,12 +362,12 @@ Resources:
     Properties:
       DistributionConfig:
         Comment: !Sub "Household ${Env}-Web"
-        Aliases: 
+        Aliases:
           - !FindInMap [EnvMapping, !Ref Env, WebsiteDomain]
         ViewerCertificate:
           AcmCertificateArn: "{{resolve:ssm:DomainCertificateArn:1}}"
           SslSupportMethod: sni-only
-          MinimumProtocolVersion: TLSv1.2_2019  
+          MinimumProtocolVersion: TLSv1.2_2019
         Enabled: true
         PriceClass: PriceClass_100
         DefaultCacheBehavior:
@@ -368,12 +401,12 @@ Outputs:
   HouseholdApi:
     Description: "Household API"
     Value: !Sub
-             - "https://${Domain}"
-             - Domain: !FindInMap [EnvMapping, !Ref Env, ApiDomain]
+      - "https://${Domain}"
+      - Domain: !FindInMap [EnvMapping, !Ref Env, ApiDomain]
   HouseholdWeb:
     Description: "Household Web"
     Value: !Sub
-             - "https://${Domain}"
-             - Domain: !FindInMap [EnvMapping, !Ref Env, WebsiteDomain]
+      - "https://${Domain}"
+      - Domain: !FindInMap [EnvMapping, !Ref Env, WebsiteDomain]
   WebsiteBucket:
     Value: !GetAtt Infrastructure.Outputs.WebsiteBucket

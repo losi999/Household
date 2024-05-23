@@ -16,7 +16,7 @@ import mongoose from 'mongoose';
     const issuedAtFrom: string = '2023-11-01T00:00:00.000Z';
     const issuedAtTo: string = '2023-11-30T00:00:00.000Z' ;
 
-    const aggregate = mongodbService.transactions().aggregate()
+    const aggregate = mongodbService.transactions.aggregate()
       .match({
         transactionType: {
           $not: {

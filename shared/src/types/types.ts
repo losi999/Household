@@ -1,4 +1,4 @@
-import { categoryTypes, unitsOfMeasurement } from '@household/shared/constants';
+import { categoryTypes, fileProcessingStatuses, fileTypes, unitsOfMeasurement } from '@household/shared/constants';
 import { Branding, Remove } from '@household/shared/types/common';
 import { Types } from 'mongoose';
 
@@ -210,7 +210,7 @@ export namespace Product {
     measurement: number;
   };
 
-  type FullName = {
+  export type FullName = {
     fullName: string;
   };
 
@@ -231,7 +231,7 @@ export namespace Product {
 
   export type Report = ProductId
   & FullName
-  & Transaction.InventoryQuantity;
+  & Transaction.Quantity;
 
   export type Request = Base;
 }
@@ -256,27 +256,17 @@ export namespace Transaction {
     description: string;
   };
 
-  export type InventoryQuantity = {
+  export type Quantity = {
     quantity: number;
   };
 
-  export type InventoryRequest = {
-    inventory: InventoryQuantity & Product.ProductId
+  export type InvoiceNumber = {
+    invoiceNumber: string;
   };
 
-  export type Inventory<P extends Product.Document | Product.Response> = {
-    inventory: InventoryQuantity
-    & {
-      product: P;
-    };
-  };
-
-  export type Invoice<D extends string | Date> = {
-    invoice: {
-      invoiceNumber: string;
-      billingStartDate: D;
-      billingEndDate: D;
-    };
+  export type InvoiceDate<D extends string | Date> = {
+    billingStartDate: D;
+    billingEndDate: D;
   };
 
   export type TransferAccountId = {
@@ -303,7 +293,7 @@ export namespace Transaction {
     recipient: R;
   };
 
-  type Product<P extends Product.Report> = {
+  export type Product<P extends Product.Document | Product.Response | Product.Report> = {
     product: P;
   };
 
@@ -316,8 +306,10 @@ export namespace Transaction {
   & Project.ProjectId
   & Recipient.RecipientId
   & IssuedAt<string>
-  & Invoice<string>
-  & InventoryRequest
+  & InvoiceNumber
+  & InvoiceDate<string>
+  & Quantity
+  & Product.ProductId
   & Base;
 
   export type TransferRequest = Account.AccountId
@@ -328,8 +320,10 @@ export namespace Transaction {
 
   export type SplitRequestItem = Category.CategoryId
   & Project.ProjectId
-  & Invoice<string>
-  & InventoryRequest
+  & InvoiceNumber
+  & InvoiceDate<string>
+  & Quantity
+  & Product.ProductId
   & Base;
 
   export type SplitRequest = Account.AccountId
@@ -340,61 +334,77 @@ export namespace Transaction {
     splits: SplitRequestItem[];
   };
 
-  export type PaymentDocument = Internal.Id
+  export type DraftDocument<D extends Date | string = Date> = Internal.Id
+  & Internal.Timestamps
+  & TransactionType<'draft'>
+  & Base
+  & IssuedAt<D> & {
+    file: File.Document
+  };
+
+  export type PaymentDocument<D extends Date | string = Date> = Internal.Id
   & Internal.Timestamps
   & TransactionType<'payment'>
   & Remove<Account.AccountId>
   & Remove<Category.CategoryId>
   & Remove<Project.ProjectId>
   & Remove<Recipient.RecipientId>
+  & Remove<Product.ProductId>
   & Account<Account.Document>
   & Category<Category.Document>
   & Project<Project.Document>
   & Recipient<Recipient.Document>
-  & IssuedAt<Date>
-  & Invoice<Date>
-  & Inventory<Product.Document>
+  & IssuedAt<D>
+  & InvoiceNumber
+  & InvoiceDate<D>
+  & Quantity
+  & Product<Product.Document>
   & Base;
 
-  export type TransferDocument = Internal.Id
+  export type TransferDocument<D extends Date | string = Date> = Internal.Id
   & Internal.Timestamps
   & TransactionType<'transfer'>
   & Remove<Account.AccountId>
   & Account<Account.Document>
-  & IssuedAt<Date>
+  & IssuedAt<D>
   & Remove<TransferAccountId>
   & TransferAccount<Account.Document>
   & TransferAmount
   & Base;
 
-  export type SplitDocumentItem = Project<Project.Document>
+  export type SplitDocumentItem<D extends Date | string = Date> = Project<Project.Document>
   & Category<Category.Document>
   & Remove<Project.ProjectId>
   & Remove<Category.CategoryId>
-  & Invoice<Date>
-  & Inventory<Product.Document>
+  & Remove<Product.ProductId>
+  & InvoiceNumber
+  & InvoiceDate<D>
+  & Quantity
+  & Product<Product.Document>
   & Base;
 
-  export type SplitDocument = Internal.Id
+  export type SplitDocument<D extends Date | string = Date> = Internal.Id
   & Internal.Timestamps
   & TransactionType<'split'>
   & Remove<Account.AccountId>
   & Remove<Recipient.RecipientId>
   & Account<Account.Document>
   & Recipient<Recipient.Document>
-  & IssuedAt<Date>
+  & IssuedAt<D>
   & Base
   & {
-    splits: SplitDocumentItem[];
+    splits: SplitDocumentItem<D>[];
   };
 
-  export type Document = PaymentDocument | TransferDocument | SplitDocument;
+  export type Document<D extends Date | string = Date > = PaymentDocument<D> | TransferDocument<D> | SplitDocument<D> | DraftDocument<D>;
 
   export type PaymentResponse = TransactionId
   & Base
   & IssuedAt<string>
-  & Invoice<string>
-  & Inventory<Product.Response>
+  & InvoiceNumber
+  & InvoiceDate<string>
+  & Quantity
+  & Product<Product.Response>
   & Remove<Internal.Id>
   & Remove<Internal.Timestamps>
   & TransactionType<'payment'>
@@ -414,8 +424,10 @@ export namespace Transaction {
   & TransferAmount;
 
   export type SplitResponseItem = Base
-  & Invoice<string>
-  & Inventory<Product.Response>
+  & InvoiceNumber
+  & InvoiceDate<string>
+  & Quantity
+  & Product<Product.Response>
   & Project<Project.Response>
   & Category<Category.Response>;
 
@@ -489,6 +501,41 @@ export namespace Auth {
 
     export type Response = IdTokenResponse;
   }
+}
+
+export namespace File {
+  export type Id = Branding<string, 'file'>;
+
+  export type FileId = {
+    fileId: Id;
+  };
+
+  export type Type = {
+    type: typeof fileTypes[number];
+  };
+
+  export type Timezone = {
+    timezone: string;
+  };
+
+  export type Url = {
+    url: string;
+  };
+
+  export type ProcessingStatus = {
+    processingStatus: typeof fileProcessingStatuses[number];
+  };
+
+  // export type FileName = {
+  //   fileName: string;
+  // };
+
+  export type Request = Type & Timezone;
+  export type Document = Internal.Id
+  & Internal.Timestamps
+  & Type
+  & Timezone
+  & Partial<ProcessingStatus>;
 }
 
 export namespace Common {

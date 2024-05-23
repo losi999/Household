@@ -1,12 +1,13 @@
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { Project } from '@household/shared/types/types';
+import { UpdateQuery } from 'mongoose';
 
 export interface IProjectService {
   dumpProjects(): Promise<Project.Document[]>;
   saveProject(doc: Project.Document): Promise<Project.Document>;
   getProjectById(projectId: Project.Id): Promise<Project.Document>;
   deleteProject(projectId: Project.Id): Promise<unknown>;
-  updateProject(doc: Project.Document): Promise<unknown>;
+  updateProject(projectId: Project.Id, updateQuery: UpdateQuery<Project.Document>): Promise<unknown>;
   listProjects(): Promise<Project.Document[]>;
   listProjectsByIds(projectIds: Project.Id[]): Promise<Project.Document[]>;
   mergeProjects(ctx: {
@@ -19,7 +20,7 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
   return {
     dumpProjects: () => {
       return mongodbService.inSession((session) => {
-        return mongodbService.projects().find({}, null, {
+        return mongodbService.projects.find({}, null, {
           session,
         })
           .lean()
@@ -27,23 +28,23 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
       });
     },
     saveProject: (doc) => {
-      return mongodbService.projects().create(doc);
+      return mongodbService.projects.create(doc);
     },
     getProjectById: async (projectId) => {
-      return !projectId ? undefined : mongodbService.projects().findById(projectId)
+      return !projectId ? undefined : mongodbService.projects.findById(projectId)
         .lean()
         .exec();
     },
     deleteProject: async (projectId) => {
       return mongodbService.inSession((session) => {
         return session.withTransaction(async () => {
-          await mongodbService.projects().deleteOne({
+          await mongodbService.projects.deleteOne({
             _id: projectId,
           }, {
             session,
           })
             .exec();
-          await mongodbService.transactions().updateMany({
+          await mongodbService.transactions.updateMany({
             project: projectId,
           }, {
             $unset: {
@@ -54,7 +55,7 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
             session,
           })
             .exec();
-          await mongodbService.transactions().updateMany({
+          await mongodbService.transactions.updateMany({
             'splits.project': projectId,
           }, {
 
@@ -74,17 +75,14 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
         });
       });
     },
-    updateProject: (doc) => {
-      return mongodbService.projects().replaceOne({
-        _id: doc._id,
-      }, doc, {
+    updateProject: async (projectId, updateQuery) => {
+      return mongodbService.projects.findByIdAndUpdate(projectId, updateQuery, {
         runValidators: true,
-      })
-        .exec();
+      });
     },
     listProjects: () => {
       return mongodbService.inSession((session) => {
-        return mongodbService.projects().find({}, null, {
+        return mongodbService.projects.find({}, null, {
           session,
         })
           .collation({
@@ -97,7 +95,7 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
     },
     listProjectsByIds: (projectIds) => {
       return mongodbService.inSession((session) => {
-        return mongodbService.projects().find({
+        return mongodbService.projects.find({
           _id: {
             $in: projectIds,
           },
@@ -111,7 +109,7 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
     mergeProjects: ({ targetProjectId, sourceProjectIds }) => {
       return mongodbService.inSession((session) => {
         return session.withTransaction(async () => {
-          await mongodbService.projects().deleteMany({
+          await mongodbService.projects.deleteMany({
             _id: {
               $in: sourceProjectIds,
             },
@@ -119,7 +117,7 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
             session,
           });
 
-          await mongodbService.transactions().updateMany({
+          await mongodbService.transactions.updateMany({
             project: {
               $in: sourceProjectIds,
             },
@@ -132,7 +130,7 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
             session,
           });
 
-          await mongodbService.transactions().updateMany({
+          await mongodbService.transactions.updateMany({
             'splits.project': {
               $in: sourceProjectIds,
             },

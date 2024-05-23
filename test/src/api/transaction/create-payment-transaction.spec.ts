@@ -79,17 +79,13 @@ describe('POST transaction/v1/transactions/payment', () => {
       recipientId: getRecipientId(recipientDocument),
       description: 'description',
       issuedAt: new Date(2022, 6, 9, 22, 30, 12).toISOString(),
-      invoice: {
-        billingStartDate: new Date(2022, 6, 1, 0, 0, 0).toISOString()
-          .split('T')[0],
-        billingEndDate: new Date(2022, 6, 25, 0, 0, 0).toISOString()
-          .split('T')[0],
-        invoiceNumber: 'invoice123',
-      },
-      inventory: {
-        productId: getProductId(productDocument),
-        quantity: 1,
-      },
+      billingStartDate: new Date(2022, 6, 1, 0, 0, 0).toISOString()
+        .split('T')[0],
+      billingEndDate: new Date(2022, 6, 25, 0, 0, 0).toISOString()
+        .split('T')[0],
+      invoiceNumber: 'invoice123',
+      productId: getProductId(productDocument),
+      quantity: 1,
     };
   });
 
@@ -166,7 +162,8 @@ describe('POST transaction/v1/transactions/payment', () => {
         it('inventory', () => {
           const modifiedRequest: Transaction.PaymentRequest = {
             ...request,
-            inventory: undefined,
+            productId: undefined,
+            quantity: undefined,
             categoryId: getCategoryId(inventoryCategoryDocument),
           };
 
@@ -184,7 +181,9 @@ describe('POST transaction/v1/transactions/payment', () => {
           const modifiedRequest: Transaction.PaymentRequest = {
             ...request,
             categoryId: getCategoryId(invoiceCategoryDocument),
-            invoice: undefined,
+            invoiceNumber: undefined,
+            billingEndDate: undefined,
+            billingStartDate: undefined,
           };
 
           cy.saveAccountDocument(accountDocument)
@@ -201,10 +200,7 @@ describe('POST transaction/v1/transactions/payment', () => {
           const modifiedRequest: Transaction.PaymentRequest = {
             ...request,
             categoryId: getCategoryId(invoiceCategoryDocument),
-            invoice: {
-              ...request.invoice,
-              invoiceNumber: undefined,
-            },
+            invoiceNumber: undefined,
           };
 
           cy.saveAccountDocument(accountDocument)
@@ -321,53 +317,22 @@ describe('POST transaction/v1/transactions/payment', () => {
         });
       });
 
-      describe('if inventory', () => {
-        it('is not object', () => {
+      describe('if quantity', () => {
+        it('is present and productId is missing', () => {
           cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
-              inventory: '1' as any,
+              productId: undefined,
             })
             .expectBadRequestResponse()
-            .expectWrongPropertyType('inventory', 'object', 'body');
-        });
-
-        it('has additional properties', () => {
-          cy.authenticate(1)
-            .requestCreatePaymentTransaction({
-              ...request,
-              inventory: {
-                ...request.inventory,
-                extra: 1,
-              } as any,
-            })
-            .expectBadRequestResponse()
-            .expectAdditionalProperty('inventory', 'body');
-        });
-      });
-
-      describe('if inventory.quantity', () => {
-        it('is missing', () => {
-          cy.authenticate(1)
-            .requestCreatePaymentTransaction({
-              ...request,
-              inventory: {
-                ...request.inventory,
-                quantity: undefined,
-              },
-            })
-            .expectBadRequestResponse()
-            .expectRequiredProperty('quantity', 'body');
+            .expectDependentRequiredProperty('quantity', 'body', 'productId');
         });
 
         it('is not number', () => {
           cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
-              inventory: {
-                ...request.inventory,
-                quantity: 'a' as any,
-              },
+              quantity: 'a' as any,
             })
             .expectBadRequestResponse()
             .expectWrongPropertyType('quantity', 'number', 'body');
@@ -377,38 +342,29 @@ describe('POST transaction/v1/transactions/payment', () => {
           cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
-              inventory: {
-                ...request.inventory,
-                quantity: 0,
-              },
+              quantity: 0,
             })
             .expectBadRequestResponse()
             .expectTooSmallNumberProperty('quantity', 0, true, 'body');
         });
       });
 
-      describe('if inventory.productId', () => {
-        it('is missing', () => {
+      describe('if productId', () => {
+        it('is present and quantity is missing', () => {
           cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
-              inventory: {
-                ...request.inventory,
-                productId: undefined,
-              },
+              quantity: undefined,
             })
             .expectBadRequestResponse()
-            .expectRequiredProperty('productId', 'body');
+            .expectDependentRequiredProperty('productId', 'body', 'quantity');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
-              inventory: {
-                ...request.inventory,
-                productId: 1 as any,
-              },
+              productId: 1 as any,
             })
             .expectBadRequestResponse()
             .expectWrongPropertyType('productId', 'string', 'body');
@@ -418,10 +374,7 @@ describe('POST transaction/v1/transactions/payment', () => {
           cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
-              inventory: {
-                ...request.inventory,
-                productId: createProductId('not-valid'),
-              },
+              productId: createProductId('not-valid'),
             })
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('productId', 'body');
@@ -444,40 +397,22 @@ describe('POST transaction/v1/transactions/payment', () => {
         });
       });
 
-      describe('if invoice', () => {
-        it('is not object', () => {
+      describe('if invoiceNumber', () => {
+        it('is present and billingEndDate, billingStartDate are missing', () => {
           cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
-              invoice: '1' as any,
+              billingEndDate: undefined,
+              billingStartDate: undefined,
             })
             .expectBadRequestResponse()
-            .expectWrongPropertyType('invoice', 'object', 'body');
+            .expectDependentRequiredProperty('invoiceNumber', 'body', 'billingEndDate', 'billingStartDate');
         });
-
-        it('has additional properties', () => {
-          cy.authenticate(1)
-            .requestCreatePaymentTransaction({
-              ...request,
-              invoice: {
-                ...request.invoice,
-                extra: 1,
-              } as any,
-            })
-            .expectBadRequestResponse()
-            .expectAdditionalProperty('invoice', 'body');
-        });
-      });
-
-      describe('if invoice.invoiceNumber', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
-              invoice: {
-                ...request.invoice,
-                invoiceNumber: 1 as any,
-              },
+              invoiceNumber: 1 as any,
             })
             .expectBadRequestResponse()
             .expectWrongPropertyType('invoiceNumber', 'string', 'body');
@@ -487,38 +422,29 @@ describe('POST transaction/v1/transactions/payment', () => {
           cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
-              invoice: {
-                ...request.invoice,
-                invoiceNumber: '',
-              },
+              invoiceNumber: '',
             })
             .expectBadRequestResponse()
             .expectTooShortProperty('invoiceNumber', 1, 'body');
         });
       });
 
-      describe('if invoice.billingEndDate', () => {
-        it('is missing', () => {
+      describe('if billingEndDate', () => {
+        it('is present and billingStartDate is missing', () => {
           cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
-              invoice: {
-                ...request.invoice,
-                billingEndDate: undefined,
-              },
+              billingStartDate: undefined,
             })
             .expectBadRequestResponse()
-            .expectRequiredProperty('billingEndDate', 'body');
+            .expectDependentRequiredProperty('billingEndDate', 'body', 'billingStartDate');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
-              invoice: {
-                ...request.invoice,
-                billingEndDate: 1 as any,
-              },
+              billingEndDate: 1 as any,
             })
             .expectBadRequestResponse()
             .expectWrongPropertyType('billingEndDate', 'string', 'body');
@@ -528,10 +454,7 @@ describe('POST transaction/v1/transactions/payment', () => {
           cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
-              invoice: {
-                ...request.invoice,
-                billingEndDate: 'not-date',
-              },
+              billingEndDate: 'not-date',
             })
             .expectBadRequestResponse()
             .expectWrongPropertyFormat('billingEndDate', 'date', 'body');
@@ -541,39 +464,30 @@ describe('POST transaction/v1/transactions/payment', () => {
           cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
-              invoice: {
-                ...request.invoice,
-                billingEndDate: '2022-06-01',
-                billingStartDate: '2022-06-03',
-              },
+              billingEndDate: '2022-06-01',
+              billingStartDate: '2022-06-03',
             })
             .expectBadRequestResponse()
             .expectTooEarlyDateProperty('billingEndDate', 'body');
         });
       });
 
-      describe('if invoice.billingStartDate', () => {
-        it('is missing', () => {
+      describe('if billingStartDate', () => {
+        it('is present and billingEndDate is missing', () => {
           cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
-              invoice: {
-                ...request.invoice,
-                billingStartDate: undefined,
-              },
+              billingEndDate: undefined,
             })
             .expectBadRequestResponse()
-            .expectRequiredProperty('billingStartDate', 'body');
+            .expectDependentRequiredProperty('billingStartDate', 'body', 'billingEndDate');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
-              invoice: {
-                ...request.invoice,
-                billingStartDate: 1 as any,
-              },
+              billingStartDate: 1 as any,
             })
             .expectBadRequestResponse()
             .expectWrongPropertyType('billingStartDate', 'string', 'body');
@@ -583,10 +497,7 @@ describe('POST transaction/v1/transactions/payment', () => {
           cy.authenticate(1)
             .requestCreatePaymentTransaction({
               ...request,
-              invoice: {
-                ...request.invoice,
-                billingStartDate: 'not-date',
-              },
+              billingStartDate: 'not-date',
             })
             .expectBadRequestResponse()
             .expectWrongPropertyFormat('billingStartDate', 'date', 'body');

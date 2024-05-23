@@ -50,6 +50,6 @@ components:
       allOf:
         - $ref: "#/components/schemas/ProductId"
         - $ref: "#/components/schemas/FullName"
-        - $ref: "transaction.yaml#/components/schemas/Inventory.Quantity"
+        - $ref: "transaction.yaml#/components/schemas/Quantity"
     Request:
       $ref: "#/components/schemas/Base"
