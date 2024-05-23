@@ -2,6 +2,7 @@ import { createDocumentUpdate, createProjectDocument, createProjectReport, creat
 import { addSeconds, getProjectId } from '@household/shared/common/utils';
 import { projectDocumentConverterFactory, IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
 import { advanceTo, clear } from 'jest-date-mock';
+import { Project } from '@household/shared/types/types';
 
 describe('Project document converter', () => {
   let converter: IProjectDocumentConverter;
@@ -62,8 +63,22 @@ describe('Project document converter', () => {
           ...body,
           expiresAt: addSeconds(expiresIn, now),
         },
+      }));
+    });
+
+    it('should unset description', () => {
+      const modifiedBody: Project.Request = {
+        ...body,
+        description: undefined,
+      };
+      const result = converter.update(modifiedBody, expiresIn);
+      expect(result).toEqual(createDocumentUpdate({
+        $set: {
+          ...modifiedBody,
+          expiresAt: addSeconds(expiresIn, now),
+        },
         $unset: {
-          description: false,
+          description: true,
         },
       }));
     });

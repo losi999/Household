@@ -21,15 +21,20 @@ export const projectDocumentConverterFactory = (): IProjectDocumentConverter => 
       };
     },
     update: (body, expiresIn): UpdateQuery<Project.Document> => {
-      return {
+      const update: UpdateQuery<Project.Document> = {
         $set: {
           ...body,
           expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
         },
-        $unset: {
-          description: !body.description,
-        },
       };
+
+      if (!body.description) {
+        update.$unset = {
+          description: true,
+        };
+      }
+
+      return update;
     },
     toResponse: (doc): Project.Response => {
       return {
