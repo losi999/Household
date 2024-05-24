@@ -456,17 +456,39 @@ export namespace Transaction {
 }
 
 export namespace Report {
-  type Filters = {
-    accountIds: Account.Id[];
-    categoryIds: Category.Id[];
-    projectIds: Project.Id[];
-    productIds: Product.Id[];
-    recipientIds: Recipient.Id[];
-    issuedAtFrom: string;
-    issuedAtTo: string;
+  type FilterBase<T extends string> = {
+    exclude: boolean;
+    filterType: T
   };
 
-  export type Request = Filters;
+  export type IssuedAtFilter = FilterBase<'issuedAt'> & {
+    from: string;
+    to: string;
+  };
+
+  export type AccountFilter = FilterBase<'account'> & {
+    items: Account.Id[];
+  };
+
+  export type CategoryFilter = FilterBase<'category'> & {
+    items: Category.Id[];
+  };
+
+  export type ProjectFilter = FilterBase<'project'> & {
+    items: Project.Id[];
+  };
+
+  export type ProductFilter = FilterBase<'product'> & {
+    items: Product.Id[];
+  };
+
+  export type RecipientFilter =FilterBase<'recipient'> & {
+    items: Recipient.Id[];
+  };
+
+  export type Filter = IssuedAtFilter | AccountFilter | CategoryFilter | ProjectFilter | ProductFilter | RecipientFilter;
+
+  export type Request = Filter[];
 }
 
 export namespace Auth {

@@ -285,15 +285,57 @@ export const createLoginRequest: DataFactoryFunction<Auth.Login.Request> = (req)
   };
 };
 
-export const createReportRequest: DataFactoryFunction<Report.Request> = (req) => {
+export const createReportAccountFilter: DataFactoryFunction<Report.AccountFilter> = (req) => {
   return {
-    accountIds: [createAccountId()],
-    categoryIds: [createCategoryId()],
-    recipientIds: [createRecipientId()],
-    productIds: [createProductId()],
-    projectIds: [createProjectId()],
-    issuedAtFrom: new Date(2023, 1, 1, 0, 0, 0).toISOString(),
-    issuedAtTo: new Date(2023, 12, 1, 0, 0, 0).toISOString(),
+    filterType: 'account',
+    exclude: false,
+    items: [createAccountId()],
+    ...req,
+  };
+};
+
+export const createReportCategoryFilter: DataFactoryFunction<Report.CategoryFilter> = (req) => {
+  return {
+    filterType: 'category',
+    exclude: false,
+    items: [createCategoryId()],
+    ...req,
+  };
+};
+
+export const createReportProjectFilter: DataFactoryFunction<Report.ProjectFilter> = (req) => {
+  return {
+    filterType: 'project',
+    exclude: false,
+    items: [createProjectId()],
+    ...req,
+  };
+};
+
+export const createReportProductFilter: DataFactoryFunction<Report.ProductFilter> = (req) => {
+  return {
+    filterType: 'product',
+    exclude: false,
+    items: [createProductId()],
+    ...req,
+  };
+};
+
+export const createReportRecipientFilter: DataFactoryFunction<Report.RecipientFilter> = (req) => {
+  return {
+    filterType: 'recipient',
+    exclude: false,
+    items: [createRecipientId()],
+    ...req,
+  };
+};
+
+export const createReportIssuedAtFilter: DataFactoryFunction<Report.IssuedAtFilter> = (req) => {
+  return {
+    filterType: 'issuedAt',
+    exclude: false,
+    from: new Date(2023, 1, 1, 0, 0, 0).toISOString(),
+    to: new Date(2024, 1, 1, 0, 0, 0).toISOString(),
     ...req,
   };
 };

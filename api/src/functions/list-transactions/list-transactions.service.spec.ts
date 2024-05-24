@@ -1,19 +1,22 @@
 import { IListTransactionsService, listTransactionsServiceFactory } from '@household/api/functions/list-transactions/list-transactions.service';
 import { createPaymentTransactionDocument, createPaymentTransactionResponse } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { IReportDocumentConverter } from '@household/shared/converters/report-document-converter';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { ITransactionService } from '@household/shared/services/transaction-service';
 
 describe('List transactions service', () => {
   let service: IListTransactionsService;
+  let mockReportDocumentConverter: Mock<IReportDocumentConverter>;
   let mockTransactionService: Mock<ITransactionService>;
   let mockTransactionDocumentConverter: Mock<ITransactionDocumentConverter>;
 
   beforeEach(() => {
+    mockReportDocumentConverter = createMockService('createFilterQuery');
     mockTransactionService = createMockService('listTransactions');
     mockTransactionDocumentConverter = createMockService('toResponseList');
 
-    service = listTransactionsServiceFactory(mockTransactionService.service, mockTransactionDocumentConverter.service);
+    service = listTransactionsServiceFactory(mockReportDocumentConverter.service, mockTransactionService.service, mockTransactionDocumentConverter.service);
   });
 
   const queriedDocument = createPaymentTransactionDocument();

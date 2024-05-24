@@ -323,19 +323,17 @@ describe('Transaction document converter', () => {
         mockRecipientDocumentConverter.functions.toReport.mockReturnValue(recipientReport);
 
         const result = converter.toReport(queriedDocument);
-        expect(result).toEqual([
-          {
-            ...createTransactionReport(),
-            amount,
-            description,
-            transactionId: getTransactionId(queriedDocument),
-            account: accountReport,
-            category: categoryReport,
-            product: productReport,
-            project: projectReport,
-            recipient: recipientReport,
-          },
-        ]);
+        expect(result).toEqual({
+          ...createTransactionReport(),
+          amount,
+          description,
+          transactionId: getTransactionId(queriedDocument),
+          account: accountReport,
+          category: categoryReport,
+          product: productReport,
+          project: projectReport,
+          recipient: recipientReport,
+        });
       });
     });
   });
@@ -634,70 +632,6 @@ describe('Transaction document converter', () => {
         validateFunctionCall(mockCategoryDocumentConverter.functions.toResponse, regularCategory);
         validateFunctionCall(mockRecipientDocumentConverter.functions.toResponse, recipient);
         expect.assertions(5);
-      });
-    });
-
-    describe('toReport', () => {
-      it('should return report', () => {
-        const accountReport = createAccountReport();
-        const categoryReport = createCategoryReport();
-        const projectReport = createProjectReport();
-        const productReport = createProductReport();
-        const recipientReport = createRecipientReport();
-        const document = createSplitTransactionDocument({
-          recipient,
-          account,
-          splits: [
-            createSplitDocumentItem({
-              amount,
-              description,
-              category: regularCategory,
-              product,
-              quantity,
-              project,
-            }),
-            createSplitDocumentItem({
-              amount,
-              description,
-              project: undefined,
-              category: undefined,
-              product: undefined,
-              quantity: undefined,
-            }),
-          ],
-        });
-
-        mockAccountDocumentConverter.functions.toReport.mockReturnValue(accountReport);
-        mockCategoryDocumentConverter.functions.toReport.mockReturnValueOnce(categoryReport);
-        mockProjectDocumentConverter.functions.toReport.mockReturnValueOnce(projectReport);
-        mockProductDocumentConverter.functions.toReport.mockReturnValueOnce(productReport);
-        mockRecipientDocumentConverter.functions.toReport.mockReturnValue(recipientReport);
-
-        const result = converter.toReport(document);
-        expect(result).toEqual([
-          {
-            ...createTransactionReport(),
-            amount,
-            description,
-            transactionId: getTransactionId(document),
-            account: accountReport,
-            recipient: recipientReport,
-            category: categoryReport,
-            product: productReport,
-            project: projectReport,
-          },
-          {
-            ...createTransactionReport(),
-            amount,
-            description,
-            transactionId: getTransactionId(document),
-            account: accountReport,
-            recipient: recipientReport,
-            category: undefined,
-            product: undefined,
-            project: undefined,
-          },
-        ]);
       });
     });
   });

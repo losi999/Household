@@ -1,35 +1,63 @@
-import accountId from '@household/shared/schemas/account-id';
-import categoryIds from '@household/shared/schemas/category-id-list';
-import projectIds from '@household/shared/schemas/project-id-list';
-import recipientIds from '@household/shared/schemas/recipient-id-list';
 import { StrictJSONSchema7 } from '@household/shared/types/common';
 import { Report } from '@household/shared/types/types';
 import { default as issuedAt } from '@household/shared/schemas/partials/transaction-issued-at';
-import productIds from '@household/shared/schemas/product-id-list';
+import { default as mongoId } from '@household/shared/schemas/partials/mongo-id';
 
 const schema: StrictJSONSchema7<Report.Request> = {
-  type: 'object',
-  additionalProperties: false,
-  minProperties: 1,
-  properties: {
-    accountIds: {
-      type: 'array',
-      minItems: 1,
-      items: {
-        ...accountId.properties.accountId,
+  type: 'array',
+  minItems: 1,
+  items: {
+    oneOf: [
+      {
+        type: 'object',
+        additionalProperties: false,
+        required: [
+          'filterType',
+          'items',
+        ],
+        properties: {
+          exclude: {
+            type: 'boolean',
+          },
+          filterType: {
+            type: 'string',
+            enum: [
+              'account',
+              'category',
+              'project',
+              'product',
+              'recipient',
+            ],
+          },
+          items: {
+            type: 'array',
+            minItems: 1,
+            items: mongoId,
+          },
+        },
       },
-    },
-    projectIds,
-    recipientIds,
-    categoryIds,
-    productIds,
-    issuedAtFrom: issuedAt.properties.issuedAt,
-    issuedAtTo: {
-      ...issuedAt.properties.issuedAt,
-      formatExclusiveMinimum: {
-        $data: '1/issuedAtFrom',
+      {
+        type: 'object',
+        additionalProperties: false,
+        required: ['filterType'],
+        properties: {
+          exclude: {
+            type: 'boolean',
+          },
+          filterType: {
+            type: 'string',
+            enum: ['issuedAt'],
+          },
+          from: issuedAt.properties.issuedAt,
+          to: {
+            ...issuedAt.properties.issuedAt,
+            formatExclusiveMinimum: {
+              $data: '1/from',
+            },
+          } as any,
+        },
       },
-    } as any,
+    ],
   },
 };
 

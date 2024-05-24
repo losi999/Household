@@ -1,151 +1,147 @@
 import { default as schema } from '@household/shared/schemas/report-request';
 import { Report } from '@household/shared/types/types';
-import { createAccountId, createCategoryId, createProductId, createProjectId, createRecipientId, createReportRequest } from '@household/shared/common/test-data-factory';
+import { createReportAccountFilter, createReportCategoryFilter, createReportIssuedAtFilter, createReportProductFilter, createReportProjectFilter, createReportRecipientFilter } from '@household/shared/common/test-data-factory';
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 
 describe('Report request schema', () => {
   const tester = jsonSchemaTesterFactory<Report.Request>(schema);
 
-  tester.validateSuccess(createReportRequest());
+  tester.validateSuccess([
+    createReportAccountFilter(),
+    createReportProductFilter(),
+    createReportCategoryFilter(),
+    createReportProjectFilter(),
+    createReportRecipientFilter(),
+    createReportIssuedAtFilter(),
+  ]);
 
   describe('should deny', () => {
     describe('if data', () => {
-      tester.validateSchemaAdditionalProperties({
-        ...createReportRequest(),
+      tester.validateSchemaType({
         extra: 1,
-      } as any, 'data');
+      } as any, 'data', 'array');
 
-      tester.validateSchemaMinProperties({} as any, 'data', 1);
-    });
+      tester.validateSchemaMinItems([], 'data', 1);
 
-    describe('if data.accountIds', () => {
-      tester.validateSchemaType({
-        ...createReportRequest(),
-        accountIds: 1 as any,
-      }, 'accountIds', 'array');
-    });
+      describe('if data[0]', () => {
+        tester.validateSchemaAdditionalProperties([
+          {
+            ...createReportAccountFilter(),
+            extra: 1,
+          } as any,
+        ], 'data/0');
+      });
 
-    describe('if data.accountIds[0]', () => {
+      describe('if data[0].exclude', () => {
+        tester.validateSchemaType([
+          {
+            ...createReportAccountFilter(),
+            exclude: 1 as any,
+          } as any,
+        ], 'exclude', 'boolean');
+      });
 
-      tester.validateSchemaType({
-        ...createReportRequest(),
-        accountIds: [1 as any],
-      }, 'accountIds/0', 'string');
+      describe('if data[0].filterType', () => {
+        tester.validateSchemaRequired([
+          {
+            ...createReportAccountFilter(),
+            filterType: undefined,
+          },
+        ], 'filterType');
 
-      tester.validateSchemaPattern({
-        ...createReportRequest(),
-        accountIds: [createAccountId('not-valid')],
-      }, 'accountIds/0');
-    });
+        tester.validateSchemaType([
+          {
+            ...createReportAccountFilter(),
+            filterType: 1 as any,
+          },
+        ], 'filterType', 'string');
 
-    describe('if data.projectIds', () => {
-      tester.validateSchemaType({
-        ...createReportRequest(),
-        projectIds: 1 as any,
-      }, 'projectIds', 'array');
-    });
+        tester.validateSchemaEnumValue([
+          {
+            ...createReportAccountFilter(),
+            filterType: 'not enum' as any,
+          },
+        ], 'filterType');
+      });
 
-    describe('if data.projectIds[0]', () => {
+      describe('if data[0].items', () => {
+        tester.validateSchemaRequired([
+          {
+            ...createReportAccountFilter(),
+            items: undefined,
+          },
+        ], 'items');
 
-      tester.validateSchemaType({
-        ...createReportRequest(),
-        projectIds: [1 as any],
-      }, 'projectIds/0', 'string');
+        tester.validateSchemaType([
+          {
+            ...createReportAccountFilter(),
+            items: 1 as any,
+          },
+        ], 'items', 'array');
 
-      tester.validateSchemaPattern({
-        ...createReportRequest(),
-        projectIds: [createProjectId('not-valid')],
-      }, 'projectIds/0');
-    });
+        tester.validateSchemaMinItems([
+          {
+            ...createReportAccountFilter(),
+            items: [],
+          },
+        ], 'items', 1);
+      });
 
-    describe('if data.recipientIds', () => {
-      tester.validateSchemaType({
-        ...createReportRequest(),
-        recipientIds: 1 as any,
-      }, 'recipientIds', 'array');
-    });
+      describe('if data[0].items[0]', () => {
+        tester.validateSchemaType([
+          {
+            ...createReportAccountFilter(),
+            items: [1 as any],
+          },
+        ], 'items/0', 'string');
 
-    describe('if data.recipientIds[0]', () => {
+        tester.validateSchemaPattern([
+          {
+            ...createReportAccountFilter(),
+            items: ['not mongo id' as any],
+          },
+        ], 'items/0');
+      });
 
-      tester.validateSchemaType({
-        ...createReportRequest(),
-        recipientIds: [1 as any],
-      }, 'recipientIds/0', 'string');
+      describe('if data[0].from', () => {
+        tester.validateSchemaType([
+          {
+            ...createReportIssuedAtFilter(),
+            from: 1 as any,
+          },
+        ], 'from', 'string');
 
-      tester.validateSchemaPattern({
-        ...createReportRequest(),
-        recipientIds: [createRecipientId('not-valid')],
-      }, 'recipientIds/0');
-    });
+        tester.validateSchemaFormat([
+          {
+            ...createReportIssuedAtFilter(),
+            from: 'not-date',
+          },
+        ], 'from', 'date-time');
+      });
 
-    describe('if data.categoryIds', () => {
-      tester.validateSchemaType({
-        ...createReportRequest(),
-        categoryIds: 1 as any,
-      }, 'categoryIds', 'array');
-    });
+      describe('if data[0].to', () => {
+        tester.validateSchemaType([
+          {
+            ...createReportIssuedAtFilter(),
+            to: 1 as any,
+          },
+        ], 'to', 'string');
 
-    describe('if data.categoryIds[0]', () => {
+        tester.validateSchemaFormat([
+          {
+            ...createReportIssuedAtFilter(),
+            to: 'not-date',
+          },
+        ], 'to', 'date-time');
 
-      tester.validateSchemaType({
-        ...createReportRequest(),
-        categoryIds: [1 as any],
-      }, 'categoryIds/0', 'string');
-
-      tester.validateSchemaPattern({
-        ...createReportRequest(),
-        categoryIds: [createCategoryId('not-valid')],
-      }, 'categoryIds/0');
-    });
-
-    describe('if data.productIds', () => {
-      tester.validateSchemaType({
-        ...createReportRequest(),
-        productIds: 1 as any,
-      }, 'productIds', 'array');
-    });
-
-    describe('if data.productIds[0]', () => {
-
-      tester.validateSchemaType({
-        ...createReportRequest(),
-        productIds: [1 as any],
-      }, 'productIds/0', 'string');
-
-      tester.validateSchemaPattern({
-        ...createReportRequest(),
-        productIds: [createProductId('not-valid')],
-      }, 'productIds/0');
-    });
-
-    describe('if data.issuedAtFrom', () => {
-      tester.validateSchemaType({
-        ...createReportRequest(),
-        issuedAtFrom: 1 as any,
-      }, 'issuedAtFrom', 'string');
-
-      tester.validateSchemaFormat({
-        ...createReportRequest(),
-        issuedAtFrom: 'not-date',
-      }, 'issuedAtFrom', 'date-time');
-    });
-
-    describe('if data.issuedAtTo', () => {
-      tester.validateSchemaType({
-        ...createReportRequest(),
-        issuedAtTo: 1 as any,
-      }, 'issuedAtTo', 'string');
-
-      tester.validateSchemaFormat({
-        ...createReportRequest(),
-        issuedAtTo: 'not-date',
-      }, 'issuedAtTo', 'date-time');
-
-      tester.validateSchemaFormatExclusiveMinimum({
-        ...createReportRequest(),
-        issuedAtTo: new Date(2022, 10, 1).toISOString(),
-        issuedAtFrom: new Date(2023, 10, 1).toISOString(),
-      }, 'issuedAtTo');
+        tester.validateSchemaFormatExclusiveMinimum([
+          {
+            ...createReportIssuedAtFilter(),
+            to: new Date(2022, 10, 1).toISOString(),
+            from: new Date(2023, 10, 1).toISOString(),
+          },
+        ], 'to');
+      });
     });
   });
 });
