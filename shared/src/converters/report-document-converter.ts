@@ -25,9 +25,11 @@ export const reportDocumentConverterFactory = (): IReportDocumentConverter => {
         },
       };
 
-      const dateQueries: FilterQuery<Transaction.Document> = {
+      const includedDateQueries: FilterQuery<Transaction.Document> = {
         $or: [],
       };
+
+      const excludedDateQueries: FilterQuery<Transaction.Document>[] = [];
 
       body.forEach((filter) => {
         switch(filter.filterType) {
@@ -49,24 +51,51 @@ export const reportDocumentConverterFactory = (): IReportDocumentConverter => {
             });
           } break;
           case 'issuedAt': {
-            const query: FilterQuery<Transaction.Document> = {
-              issuedAt: {},
-            };
-            if (filter.from) {
-              query.issuedAt[filter.exclude ? '$lt' : '$gte'] = new Date(filter.from);
-            }
+            if(!filter.exclude) {
+              const query: FilterQuery<Transaction.Document> = {
+                issuedAt: {},
+              };
+              if (filter.from) {
+                query.issuedAt.$gte = new Date(filter.from);
+              }
 
-            if (filter.to) {
-              query.issuedAt[filter.exclude ? '$gt' : '$lte'] = new Date(filter.to);
-            }
+              if (filter.to) {
+                query.issuedAt.$lte = new Date(filter.to);
+              }
 
-            dateQueries.$or.push(query);
+              includedDateQueries.$or.push(query);
+            } else {
+              const query: FilterQuery<Transaction.Document> = {
+                $or: [],
+              };
+
+              if (filter.from) {
+                query.$or.push({
+                  issuedAt: {
+                    $lt: new Date(filter.from),
+                  },
+                });
+              }
+              if(filter.to) {
+                query.$or.push({
+                  issuedAt: {
+                    $gt: new Date(filter.to),
+                  },
+                });
+              }
+
+              excludedDateQueries.push(query);
+            }
           } break;
         }
       });
 
-      if (dateQueries.$or.length > 0) {
-        firstMatch.$match.$and.push(dateQueries);
+      if (includedDateQueries.$or.length > 0) {
+        firstMatch.$match.$and.push(includedDateQueries);
+      }
+
+      if (excludedDateQueries.length > 0) {
+        firstMatch.$match.$and.push(...excludedDateQueries);
       }
 
       return [

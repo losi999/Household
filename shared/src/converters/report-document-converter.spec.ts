@@ -1,7 +1,5 @@
 import { createAccountId, createCategoryId, createProjectId, createRecipientId, createProductId } from '@household/shared/common/test-data-factory';
-import { addSeconds } from '@household/shared/common/utils';
 import { reportDocumentConverterFactory, IReportDocumentConverter } from '@household/shared/converters/report-document-converter';
-import { advanceTo, clear } from 'jest-date-mock';
 import { Types } from 'mongoose';
 
 describe('Report document converter', () => {
@@ -10,22 +8,6 @@ describe('Report document converter', () => {
   beforeEach(() => {
     converter = reportDocumentConverterFactory();
   });
-
-  // afterEach(() => {
-  //   clear();
-  // });
-
-  // const name = 'Bolt';
-  // const expiresIn = 3600;
-
-  // const body = createReportRequest({
-  //   name,
-  // });
-  // const queriedDocument = createReportDocument({
-  //   name,
-  //   createdAt: now,
-  //   updatedAt: now,
-  // });
 
   describe('createFilterQuery', () => {
     it('should create full objects', () => {
@@ -39,12 +21,14 @@ describe('Report document converter', () => {
       const excludedProject = createProjectId();
       const includedRecipient = createRecipientId();
       const excludedRecipient = createRecipientId();
-      const fromDateA = new Date(2024, 1, 1, 0, 0, 0).toISOString();
-      const fromDateB = new Date(2023, 1, 1, 0, 0, 0).toISOString();
-      const fromDateC = new Date(2024, 5, 1, 0, 0, 0).toISOString();
-      const toDateA = new Date(2024, 3, 1, 0, 0, 0).toISOString();
-      const toDateB = new Date(2024, 4, 1, 0, 0, 0).toISOString();
-      const toDateC = new Date(2025, 1, 1, 0, 0, 0).toISOString();
+      const date1 = new Date(2024, 1, 1, 1, 0, 0).toISOString();
+      const date2 = new Date(2024, 1, 1, 2, 0, 0).toISOString();
+      const date3 = new Date(2024, 1, 1, 3, 0, 0).toISOString();
+      const date4 = new Date(2024, 1, 1, 4, 0, 0).toISOString();
+      const date5 = new Date(2024, 1, 1, 5, 0, 0).toISOString();
+      const date6 = new Date(2024, 1, 1, 6, 0, 0).toISOString();
+      const date7 = new Date(2024, 1, 1, 7, 0, 0).toISOString();
+      const date8 = new Date(2024, 1, 1, 8, 0, 0).toISOString();
 
       const result = converter.createFilterQuery([
         {
@@ -100,26 +84,32 @@ describe('Report document converter', () => {
         {
           filterType: 'issuedAt',
           exclude: false,
-          from: fromDateA,
-          to: toDateA,
+          from: date2,
+          to: date7,
         },
         {
           filterType: 'issuedAt',
           exclude: false,
-          from: fromDateB,
+          from: date8,
           to: undefined,
         },
         {
           filterType: 'issuedAt',
           exclude: false,
           from: undefined,
-          to: toDateB,
+          to: date1,
         },
         {
           filterType: 'issuedAt',
           exclude: true,
-          from: fromDateC,
-          to: toDateC,
+          from: date3,
+          to: date4,
+        },
+        {
+          filterType: 'issuedAt',
+          exclude: true,
+          from: date5,
+          to: date6,
         },
       ]);
 
@@ -157,24 +147,46 @@ describe('Report document converter', () => {
                 $or: [
                   {
                     issuedAt: {
-                      $gte: new Date(fromDateA),
-                      $lte: new Date(toDateA),
+                      $gte: new Date(date2),
+                      $lte: new Date(date7),
                     },
                   },
                   {
                     issuedAt: {
-                      $gte: new Date(fromDateB),
+                      $gte: new Date(date8),
                     },
                   },
                   {
                     issuedAt: {
-                      $lte: new Date(toDateB),
+                      $lte: new Date(date1),
+                    },
+                  },
+                ],
+              },
+              {
+                $or: [
+                  {
+                    issuedAt: {
+                      $lt: new Date(date3),
                     },
                   },
                   {
                     issuedAt: {
-                      $lt: new Date(fromDateC),
-                      $gt: new Date(toDateC),
+                      $gt: new Date(date4),
+                    },
+                  },
+                ],
+              },
+              {
+                $or: [
+                  {
+                    issuedAt: {
+                      $lt: new Date(date5),
+                    },
+                  },
+                  {
+                    issuedAt: {
+                      $gt: new Date(date6),
                     },
                   },
                 ],
