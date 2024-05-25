@@ -102,19 +102,19 @@ export class ReportHomeComponent implements OnInit, OnDestroy {
   }
 
   onSubmit() {
-    const request: Report.Request = {
-      accountIds: this.form.value.accountIds ?? undefined,
-      categoryIds: this.form.value.categoryIds ?? undefined,
-      productIds: this.form.value.productIds ?? undefined,
-      projectIds: this.form.value.projectIds ?? undefined,
-      recipientIds: this.form.value.recipientIds ?? undefined,
-      issuedAtFrom: this.form.value.issuedAtFrom?.toISOString(),
-      issuedAtTo: this.form.value.issuedAtTo?.toISOString(),
-    };
+    // const request: Report.Request = {
+    //   accountIds: this.form.value.accountIds ?? undefined,
+    //   categoryIds: this.form.value.categoryIds ?? undefined,
+    //   productIds: this.form.value.productIds ?? undefined,
+    //   projectIds: this.form.value.projectIds ?? undefined,
+    //   recipientIds: this.form.value.recipientIds ?? undefined,
+    //   issuedAtFrom: this.form.value.issuedAtFrom?.toISOString(),
+    //   issuedAtTo: this.form.value.issuedAtTo?.toISOString(),
+    // };
 
-    this.transactionService.getTransactionReport(request).subscribe((value) => {
-      this.report = value;
-    });
+    // this.transactionService.getTransactionReport(request).subscribe((value) => {
+    //   this.report = value;
+    // });
   }
 
   filterAccounts() {
