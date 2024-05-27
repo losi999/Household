@@ -1,7 +1,7 @@
 import { MockBusinessService } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/list-transactions/list-transactions.handler';
 import { IListTransactionsService } from '@household/api/functions/list-transactions/list-transactions.service';
-import { createPaymentTransactionResponse } from '@household/shared/common/test-data-factory';
+import { createTransactionReport } from '@household/shared/common/test-data-factory';
 
 describe('List transactions handler', () => {
   let mockListTransactionsService: MockBusinessService<IListTransactionsService>;
@@ -12,7 +12,7 @@ describe('List transactions handler', () => {
     handlerFunction = handler(mockListTransactionsService);
   });
 
-  const transactions = [createPaymentTransactionResponse()];
+  const transactions = [createTransactionReport()];
   const handlerEvent = {
     body: '{}',
   } as AWSLambda.APIGatewayProxyEvent;
@@ -32,13 +32,13 @@ describe('List transactions handler', () => {
     expect.assertions(3);
   });
 
-  // it('should respond with success', async () => {
-  //   mockListTransactionsService.mockResolvedValue(transactions);
+  it('should respond with success', async () => {
+    mockListTransactionsService.mockResolvedValue(transactions);
 
-  //   const response = await handlerFunction(handlerEvent, undefined, undefined) as AWSLambda.APIGatewayProxyResult;
-  //   expect(mockListTransactionsService).toHaveBeenCalled();
-  //   expect(response.statusCode).toEqual(200);
-  //   expect(JSON.parse(response.body)).toEqual(transactions);
-  //   expect.assertions(3);
-  // });
+    const response = await handlerFunction(handlerEvent, undefined, undefined) as AWSLambda.APIGatewayProxyResult;
+    expect(mockListTransactionsService).toHaveBeenCalled();
+    expect(response.statusCode).toEqual(200);
+    expect(JSON.parse(response.body)).toEqual(transactions);
+    expect.assertions(3);
+  });
 });

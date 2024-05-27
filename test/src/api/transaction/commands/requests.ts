@@ -1,4 +1,4 @@
-import { Account, Common, Transaction } from '@household/shared/types/types';
+import { Account, Common, Transaction, Report } from '@household/shared/types/types';
 import { headerExpiresIn } from '@household/shared/constants';
 import { CommandFunctionWithPreviousSubject } from '@household/test/api/types';
 
@@ -114,6 +114,18 @@ const requestGetTransactionListByAccount = (idToken: string, accountId: Account.
   }) as Cypress.ChainableResponse;
 };
 
+const requestGetTransactionList = (idToken: string, report: Report.Request) => {
+  return cy.request({
+    method: 'POST',
+    url: '/transaction/v1/transactions',
+    body: report,
+    headers: {
+      Authorization: idToken,
+    },
+    failOnStatusCode: false,
+  }) as Cypress.ChainableResponse;
+};
+
 export const setTransactionRequestCommands = () => {
   Cypress.Commands.addAll<any>({
     prevSubject: true,
@@ -127,6 +139,7 @@ export const setTransactionRequestCommands = () => {
     requestDeleteTransaction,
     requestGetTransaction,
     requestGetTransactionListByAccount,
+    requestGetTransactionList,
   });
 };
 
@@ -143,6 +156,7 @@ declare global {
       requestUpdateToSplitTransaction: CommandFunctionWithPreviousSubject<typeof requestUpdateToSplitTransaction>;
       requestDeleteTransaction: CommandFunctionWithPreviousSubject<typeof requestDeleteTransaction>;
       requestGetTransactionListByAccount: CommandFunctionWithPreviousSubject<typeof requestGetTransactionListByAccount>;
+      requestGetTransactionList: CommandFunctionWithPreviousSubject<typeof requestGetTransactionList>;
     }
   }
 }

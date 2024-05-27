@@ -109,6 +109,7 @@ const validateTransactionPaymentResponse = (response: Transaction.PaymentRespons
   expect(response.account.currency, 'account.currency').to.equal(document.account.currency);
   expect(response.account.isOpen, 'account.isOpen').to.equal(document.account.isOpen);
   expect(response.account.name, 'account.name').to.equal(document.account.name);
+  expect(response.account.fullName, 'account.fullName').to.equal(`${document.account.name} (${document.account.owner})`);
 
   expect(response.project?.projectId, 'project.projectId').to.equal(getProjectId(document.project));
   expect(response.project?.name, 'project.name').to.equal(document.project?.name);
@@ -156,12 +157,14 @@ const validateTransactionTransferResponse = (response: Transaction.TransferRespo
   expect(response.account.currency, 'account.currency').to.equal(document.account.currency);
   expect(response.account.isOpen, 'account.isOpen').to.equal(document.account.isOpen);
   expect(response.account.name, 'account.name').to.equal(document.account.name);
+  expect(response.account.fullName, 'account.fullName').to.equal(`${document.account.name} (${document.account.owner})`);
   expect(response.transferAccount.accountId, 'transferAccount.accountId').to.equal(getAccountId(document.transferAccount));
   expect(response.transferAccount.accountType, 'transferAccount.accountType').to.equal(document.transferAccount.accountType);
   expect(response.transferAccount.balance, 'transferAccount.balance').to.equal(document.transferAccount.balance ?? null);
   expect(response.transferAccount.currency, 'transferAccount.currency').to.equal(document.transferAccount.currency);
   expect(response.transferAccount.isOpen, 'transferAccount.isOpen').to.equal(document.transferAccount.isOpen);
   expect(response.transferAccount.name, 'transferAccount.name').to.equal(document.transferAccount.name);
+  expect(response.transferAccount.fullName, 'transferAccount.fullName').to.equal(`${document.transferAccount.name} (${document.transferAccount.owner})`);
 
 };
 
@@ -177,6 +180,7 @@ const validateTransactionSplitResponse = (response: Transaction.SplitResponse, d
   expect(response.account.currency, 'account.currency').to.equal(document.account.currency);
   expect(response.account.isOpen, 'account.isOpen').to.equal(document.account.isOpen);
   expect(response.account.name, 'account.name').to.equal(document.account.name);
+  expect(response.account.fullName, 'account.fullName').to.equal(`${document.account.name} (${document.account.owner})`);
 
   expect(response.recipient?.recipientId, 'recipient.recipientId').to.equal(getRecipientId(document.recipient));
   expect(response.recipient?.name, 'recipient.name').to.equal(document.recipient?.name);
@@ -222,6 +226,77 @@ const validateTransactionListResponse = (responses: Transaction.Response[], docu
       case 'transfer': validateTransactionTransferResponse(response, document as Transaction.TransferDocument); break;
       case 'split': validateTransactionSplitResponse(response, document as Transaction.SplitDocument); break;
     }
+  });
+};
+
+const validateTransactionListReport = (reports: Transaction.Report[], payments: Transaction.PaymentDocument[], splits: [Transaction.SplitDocument, number[]][]) => {
+  const total = payments.length + splits.reduce((accumulator, currentValue) => {
+    return accumulator + currentValue[1].length;
+  }, 0);
+  expect(reports.length, 'number of items').to.equal(total);
+  payments.forEach((document) => {
+    const items = reports.filter(r => r.transactionId === getTransactionId(document));
+
+    expect(items.length, `number of reports for transaction ${getTransactionId(document)}`).to.equal(1);
+    const [report] = items;
+    expect(report.transactionId, 'id').to.equal(getTransactionId(document));
+    expect(report.amount, 'amount').to.equal(document.amount);
+    expect(report.description, 'description').to.equal(document.description);
+    expect(report.issuedAt, 'issuedAt').to.equal(document.issuedAt.toISOString());
+    expect(report.account.accountId, 'account.accountId').to.equal(getAccountId(document.account));
+    expect(report.account.currency, 'account.currency').to.equal(document.account.currency);
+    expect(report.account.fullName, 'account.name').to.equal(`${document.account.name} (${document.account.owner})`);
+
+    expect(report.project?.projectId, 'project.projectId').to.equal(getProjectId(document.project));
+    expect(report.project?.name, 'project.name').to.equal(document.project?.name);
+
+    expect(report.recipient?.recipientId, 'recipient.recipientId').to.equal(getRecipientId(document.recipient));
+    expect(report.recipient?.name, 'recipient.name').to.equal(document.recipient?.name);
+
+    expect(report.category?.categoryId, 'category.categoryId').to.equal(getCategoryId(document.category));
+    expect(report.category?.fullName, 'category.fullName').to.equal(document.category?.fullName);
+
+    expect(report.product?.quantity, 'product.quantity').to.equal(document.quantity);
+    expect(report.product?.productId, 'product.productId').to.equal(getProductId(document.product));
+    expect(report.product?.fullName, 'product.fullName').to.equal(document.product?.fullName);
+  });
+
+  splits.forEach(([
+    document,
+    indices,
+  ]) => {
+    const items = reports.filter(r => r.transactionId === getTransactionId(document));
+
+    expect(items.length, `number of reports for transaction ${getTransactionId(document)}`).to.equal(indices.length);
+    const splits = indices.reduce<Transaction.SplitDocumentItem<Date>[]>((accumulator, currentValue) => {
+      return [
+        ...accumulator,
+        document.splits[currentValue],
+      ];
+    }, []);
+    items.forEach((report) => {
+      expect(report.transactionId, 'id').to.equal(getTransactionId(document));
+      expect(report.amount, 'amount').to.be.oneOf(splits.map(s => s.amount));
+      expect(report.description, 'description').to.equal(document.description);
+      expect(report.issuedAt, 'issuedAt').to.equal(document.issuedAt.toISOString());
+
+      expect(report.account.accountId, 'account.accountId').to.equal(getAccountId(document.account));
+      expect(report.account.currency, 'account.currency').to.equal(document.account.currency);
+      expect(report.account.fullName, 'account.name').to.equal(`${document.account.name} (${document.account.owner})`);
+
+      expect(report.project?.projectId, 'project.projectId').to.be.oneOf(splits.map(s => getProjectId(s.project)));
+      expect(report.project?.name, 'project.name').to.be.oneOf(splits.map(s => s.project?.name));
+
+      expect(report.recipient?.recipientId, 'recipient.recipientId').to.equal(getRecipientId(document.recipient));
+      expect(report.recipient?.name, 'recipient.name').to.equal(document.recipient?.name);
+
+      expect(report.category?.categoryId, 'category.categoryId').to.be.oneOf(splits.map(s => getCategoryId(s.category)));
+      expect(report.category?.fullName, 'category.fullName').to.be.oneOf(splits.map(s => s.category?.fullName));
+
+      expect(report.product?.quantity, 'product.quantity').to.be.oneOf(splits.map(s => s.quantity));
+      expect(report.product?.productId, 'product.productId').to.be.oneOf(splits.map(s => getProductId(s.product)));
+      expect(report.product?.fullName, 'product.fullName').to.be.oneOf(splits.map(s => s.product?.fullName));
+    });
   });
 };
 
@@ -436,6 +511,7 @@ export const setTransactionValidationCommands = () => {
     validateTransactionTransferResponse,
     validateTransactionSplitResponse,
     validateTransactionListResponse,
+    validateTransactionListReport,
   });
 
   Cypress.Commands.addAll({
@@ -465,6 +541,7 @@ declare global {
       validateTransactionTransferResponse: CommandFunctionWithPreviousSubject<typeof validateTransactionTransferResponse>;
       validateTransactionSplitResponse: CommandFunctionWithPreviousSubject<typeof validateTransactionSplitResponse>;
       validateTransactionListResponse: CommandFunctionWithPreviousSubject<typeof validateTransactionListResponse>;
+      validateTransactionListReport: CommandFunctionWithPreviousSubject<typeof validateTransactionListReport>;
     }
   }
 }

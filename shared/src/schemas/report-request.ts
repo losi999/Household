@@ -56,6 +56,14 @@ const schema: StrictJSONSchema7<Report.Request> = {
             },
           } as any,
         },
+        anyOf: [
+          {
+            required: ['from'],
+          },
+          {
+            required: ['to'],
+          },
+        ],
       },
     ],
   },

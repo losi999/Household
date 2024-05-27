@@ -30,6 +30,22 @@ describe('Report request schema', () => {
             extra: 1,
           } as any,
         ], 'data/0');
+
+        tester.validateSchemaRequired([
+          {
+            ...createReportIssuedAtFilter(),
+            from: undefined,
+            to: undefined,
+          },
+        ], 'from');
+
+        tester.validateSchemaRequired([
+          {
+            ...createReportIssuedAtFilter(),
+            from: undefined,
+            to: undefined,
+          },
+        ], 'to');
       });
 
       describe('if data[0].exclude', () => {
