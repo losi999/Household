@@ -288,7 +288,7 @@ export const createLoginRequest: DataFactoryFunction<Auth.Login.Request> = (req)
 export const createReportAccountFilter: DataFactoryFunction<Report.AccountFilter> = (req) => {
   return {
     filterType: 'account',
-    exclude: false,
+    include: true,
     items: [createAccountId()],
     ...req,
   };
@@ -297,7 +297,7 @@ export const createReportAccountFilter: DataFactoryFunction<Report.AccountFilter
 export const createReportCategoryFilter: DataFactoryFunction<Report.CategoryFilter> = (req) => {
   return {
     filterType: 'category',
-    exclude: false,
+    include: true,
     items: [createCategoryId()],
     ...req,
   };
@@ -306,7 +306,7 @@ export const createReportCategoryFilter: DataFactoryFunction<Report.CategoryFilt
 export const createReportProjectFilter: DataFactoryFunction<Report.ProjectFilter> = (req) => {
   return {
     filterType: 'project',
-    exclude: false,
+    include: true,
     items: [createProjectId()],
     ...req,
   };
@@ -315,7 +315,7 @@ export const createReportProjectFilter: DataFactoryFunction<Report.ProjectFilter
 export const createReportProductFilter: DataFactoryFunction<Report.ProductFilter> = (req) => {
   return {
     filterType: 'product',
-    exclude: false,
+    include: true,
     items: [createProductId()],
     ...req,
   };
@@ -324,7 +324,7 @@ export const createReportProductFilter: DataFactoryFunction<Report.ProductFilter
 export const createReportRecipientFilter: DataFactoryFunction<Report.RecipientFilter> = (req) => {
   return {
     filterType: 'recipient',
-    exclude: false,
+    include: true,
     items: [createRecipientId()],
     ...req,
   };
@@ -333,7 +333,7 @@ export const createReportRecipientFilter: DataFactoryFunction<Report.RecipientFi
 export const createReportIssuedAtFilter: DataFactoryFunction<Report.IssuedAtFilter> = (req) => {
   return {
     filterType: 'issuedAt',
-    exclude: false,
+    include: true,
     from: new Date(2023, 1, 1, 0, 0, 0).toISOString(),
     to: new Date(2024, 1, 1, 0, 0, 0).toISOString(),
     ...req,

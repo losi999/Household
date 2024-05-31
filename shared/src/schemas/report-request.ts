@@ -12,11 +12,12 @@ const schema: StrictJSONSchema7<Report.Request> = {
         type: 'object',
         additionalProperties: false,
         required: [
+          'include',
           'filterType',
           'items',
         ],
         properties: {
-          exclude: {
+          include: {
             type: 'boolean',
           },
           filterType: {
@@ -39,9 +40,12 @@ const schema: StrictJSONSchema7<Report.Request> = {
       {
         type: 'object',
         additionalProperties: false,
-        required: ['filterType'],
+        required: [
+          'filterType',
+          'include',
+        ],
         properties: {
-          exclude: {
+          include: {
             type: 'boolean',
           },
           filterType: {

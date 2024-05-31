@@ -1,0 +1,18 @@
+<ng-container [formGroup]="form">
+  <div>
+    <mat-slide-toggle formControlName="include">Tranzakciók az alábbi dátumo{{form.value.include ? 'k közé kerüljenek' : 'n kívülre essenek'}}</mat-slide-toggle>
+  </div>
+  <mat-form-field>
+    <mat-label>Időszak eleje</mat-label>
+    <input matInput [matDatepicker]="pickerFrom" formControlName="from">
+    <mat-datepicker-toggle matIconSuffix [for]="pickerFrom"></mat-datepicker-toggle>
+    <mat-datepicker #pickerFrom></mat-datepicker>
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Időszak vége</mat-label>
+    <input matInput [matDatepicker]="pickerTo" formControlName="to">
+    <mat-datepicker-toggle matIconSuffix [for]="pickerTo"></mat-datepicker-toggle>
+    <mat-datepicker #pickerTo></mat-datepicker>
+  </mat-form-field>
+  <button mat-flat-button color="primary" [disabled]="form.invalid" (click)="addDate()">Hozzáadás</button>
+</ng-container>

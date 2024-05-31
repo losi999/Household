@@ -13,6 +13,12 @@ describe('Report request schema', () => {
     createReportProjectFilter(),
     createReportRecipientFilter(),
     createReportIssuedAtFilter(),
+    createReportIssuedAtFilter({
+      from: undefined,
+    }),
+    createReportIssuedAtFilter({
+      to: undefined,
+    }),
   ]);
 
   describe('should deny', () => {
@@ -48,13 +54,20 @@ describe('Report request schema', () => {
         ], 'to');
       });
 
-      describe('if data[0].exclude', () => {
+      describe('if data[0].include', () => {
+        tester.validateSchemaRequired([
+          {
+            ...createReportAccountFilter(),
+            include: undefined,
+          } as any,
+        ], 'include');
+
         tester.validateSchemaType([
           {
             ...createReportAccountFilter(),
-            exclude: 1 as any,
+            include: 1 as any,
           } as any,
-        ], 'exclude', 'boolean');
+        ], 'include', 'boolean');
       });
 
       describe('if data[0].filterType', () => {

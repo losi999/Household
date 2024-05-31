@@ -37,7 +37,7 @@ export const reportDocumentConverterFactory = (): IReportDocumentConverter => {
           case 'recipient': {
             firstMatch.$match.$and.push({
               [filter.filterType]: {
-                [filter.exclude ? '$nin' : '$in']: filter.items.map(i => new Types.ObjectId(i)),
+                [filter.include ? '$in' : '$nin']: filter.items.map(i => new Types.ObjectId(i)),
               },
             });
           } break;
@@ -46,12 +46,12 @@ export const reportDocumentConverterFactory = (): IReportDocumentConverter => {
           case 'project': {
             secondMatch.$match.$and.push({
               [filter.filterType]: {
-                [filter.exclude ? '$nin' : '$in']: filter.items.map(i => new Types.ObjectId(i)),
+                [filter.include ? '$in' : '$nin']: filter.items.map(i => new Types.ObjectId(i)),
               },
             });
           } break;
           case 'issuedAt': {
-            if(!filter.exclude) {
+            if(filter.include) {
               const query: FilterQuery<Transaction.Document> = {
                 issuedAt: {},
               };

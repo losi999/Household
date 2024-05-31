@@ -467,17 +467,17 @@ describe('POST /transaction/v1/transactions', () => {
             {
               filterType: 'account',
               items: [getAccountId(accountDocument)],
-              exclude: false,
+              include: true,
             },
             {
               filterType: 'recipient',
               items: [getRecipientId(recipientDocument)],
-              exclude: false,
+              include: true,
             },
             {
               filterType: 'project',
               items: [getProjectId(projectDocument)],
-              exclude: false,
+              include: true,
             },
             {
               filterType: 'category',
@@ -486,16 +486,16 @@ describe('POST /transaction/v1/transactions', () => {
                 getCategoryId(invoiceCategoryDocument),
                 getCategoryId(inventoryCategoryDocument),
               ],
-              exclude: false,
+              include: true,
             },
             {
               filterType: 'product',
               items: [getProductId(productDocument)],
-              exclude: false,
+              include: true,
             },
             {
               filterType: 'issuedAt',
-              exclude: false,
+              include: true,
               from: new Date(2024, 5, 25, 13, 59, 0).toISOString(),
               to: new Date(2024, 5, 25, 14, 1, 0).toISOString(),
             },
@@ -515,7 +515,7 @@ describe('POST /transaction/v1/transactions', () => {
             {
               filterType: 'account',
               items: [getAccountId(secondaryAccountDocument)],
-              exclude: false,
+              include: true,
             },
           ])
           .expectOkResponse()
@@ -533,12 +533,12 @@ describe('POST /transaction/v1/transactions', () => {
             {
               filterType: 'recipient',
               items: [getRecipientId(recipientDocument)],
-              exclude: false,
+              include: true,
             },
             {
               filterType: 'account',
               items: [getAccountId(secondaryAccountDocument)],
-              exclude: true,
+              include: false,
             },
           ])
           .expectOkResponse()
@@ -567,12 +567,12 @@ describe('POST /transaction/v1/transactions', () => {
             {
               filterType: 'account',
               items: [getAccountId(accountDocument)],
-              exclude: false,
+              include: true,
             },
             {
               filterType: 'category',
               items: [getCategoryId(regularCategoryDocument)],
-              exclude: false,
+              include: true,
             },
           ])
           .expectOkResponse()
@@ -590,12 +590,12 @@ describe('POST /transaction/v1/transactions', () => {
             {
               filterType: 'account',
               items: [getAccountId(accountDocument)],
-              exclude: false,
+              include: true,
             },
             {
               filterType: 'category',
               items: [getCategoryId(inventoryCategoryDocument)],
-              exclude: true,
+              include: false,
             },
           ])
           .expectOkResponse()
@@ -628,12 +628,12 @@ describe('POST /transaction/v1/transactions', () => {
             {
               filterType: 'account',
               items: [getAccountId(accountDocument)],
-              exclude: false,
+              include: true,
             },
             {
               filterType: 'project',
               items: [getProjectId(projectDocument)],
-              exclude: false,
+              include: true,
             },
           ])
           .expectOkResponse()
@@ -658,12 +658,12 @@ describe('POST /transaction/v1/transactions', () => {
             {
               filterType: 'account',
               items: [getAccountId(accountDocument)],
-              exclude: false,
+              include: true,
             },
             {
               filterType: 'project',
               items: [getProjectId(projectDocument)],
-              exclude: true,
+              include: false,
             },
           ])
           .expectOkResponse()
@@ -701,12 +701,12 @@ describe('POST /transaction/v1/transactions', () => {
             {
               filterType: 'account',
               items: [getAccountId(accountDocument)],
-              exclude: false,
+              include: true,
             },
             {
               filterType: 'recipient',
               items: [getRecipientId(recipientDocument)],
-              exclude: false,
+              include: true,
             },
           ])
           .expectOkResponse()
@@ -735,12 +735,12 @@ describe('POST /transaction/v1/transactions', () => {
             {
               filterType: 'account',
               items: [getAccountId(accountDocument)],
-              exclude: false,
+              include: true,
             },
             {
               filterType: 'recipient',
               items: [getRecipientId(recipientDocument)],
-              exclude: true,
+              include: false,
             },
           ])
           .expectOkResponse()
@@ -771,12 +771,12 @@ describe('POST /transaction/v1/transactions', () => {
             {
               filterType: 'account',
               items: [getAccountId(accountDocument)],
-              exclude: false,
+              include: true,
             },
             {
               filterType: 'product',
               items: [getProductId(productDocument)],
-              exclude: false,
+              include: true,
             },
           ])
           .expectOkResponse()
@@ -804,12 +804,12 @@ describe('POST /transaction/v1/transactions', () => {
             {
               filterType: 'account',
               items: [getAccountId(accountDocument)],
-              exclude: false,
+              include: true,
             },
             {
               filterType: 'product',
               items: [getProductId(productDocument)],
-              exclude: true,
+              include: false,
             },
           ])
           .expectOkResponse()
@@ -846,13 +846,13 @@ describe('POST /transaction/v1/transactions', () => {
             {
               filterType: 'account',
               items: [getAccountId(accountDocument)],
-              exclude: false,
+              include: true,
             },
             {
               filterType: 'issuedAt',
               from: new Date(2024, 5, 25, 14, 5, 0).toISOString(),
               to: undefined,
-              exclude: false,
+              include: true,
             },
           ])
           .expectOkResponse()
@@ -865,13 +865,13 @@ describe('POST /transaction/v1/transactions', () => {
             {
               filterType: 'account',
               items: [getAccountId(accountDocument)],
-              exclude: false,
+              include: true,
             },
             {
               filterType: 'issuedAt',
               to: new Date(2024, 5, 25, 13, 55, 0).toISOString(),
               from: undefined,
-              exclude: false,
+              include: true,
             },
           ])
           .expectOkResponse()
@@ -905,7 +905,7 @@ describe('POST /transaction/v1/transactions', () => {
               {
                 filterType: 'account',
                 items: [createAccountId()],
-                exclude: false,
+                include: true,
                 extra: 1,
               } as any,
             ])
@@ -920,7 +920,7 @@ describe('POST /transaction/v1/transactions', () => {
                 filterType: 'issuedAt',
                 from: undefined,
                 to: undefined,
-                exclude: false,
+                include: true,
               },
             ])
             .expectBadRequestResponse()
@@ -929,18 +929,31 @@ describe('POST /transaction/v1/transactions', () => {
         });
       });
 
-      describe('if body[0].exclude', () => {
+      describe('if body[0].include', () => {
+        it('is missing', () => {
+          cy.authenticate(1)
+            .requestGetTransactionList([
+              {
+                filterType: 'account',
+                items: [createAccountId()],
+                include: undefined,
+              },
+            ])
+            .expectBadRequestResponse()
+            .expectRequiredProperty('include', 'body');
+        });
+
         it('is not boolean', () => {
           cy.authenticate(1)
             .requestGetTransactionList([
               {
                 filterType: 'account',
                 items: [createAccountId()],
-                exclude: 1 as any,
+                include: 1 as any,
               },
             ])
             .expectBadRequestResponse()
-            .expectWrongPropertyType ('exclude', 'boolean', 'body');
+            .expectWrongPropertyType ('include', 'boolean', 'body');
         });
       });
 
@@ -951,7 +964,7 @@ describe('POST /transaction/v1/transactions', () => {
               {
                 filterType: undefined,
                 items: [createAccountId()],
-                exclude: true,
+                include: false,
               },
             ])
             .expectBadRequestResponse()
@@ -963,7 +976,7 @@ describe('POST /transaction/v1/transactions', () => {
               {
                 filterType: 1 as any,
                 items: [createAccountId()],
-                exclude: true,
+                include: false,
               },
             ])
             .expectBadRequestResponse()
@@ -975,7 +988,7 @@ describe('POST /transaction/v1/transactions', () => {
               {
                 filterType: 'not filter type' as any,
                 items: [createAccountId()],
-                exclude: true,
+                include: false,
               },
             ])
             .expectBadRequestResponse()
@@ -990,7 +1003,7 @@ describe('POST /transaction/v1/transactions', () => {
               {
                 filterType: 'account',
                 items: undefined,
-                exclude: true,
+                include: false,
               },
             ])
             .expectBadRequestResponse()
@@ -1002,7 +1015,7 @@ describe('POST /transaction/v1/transactions', () => {
               {
                 filterType: 'account',
                 items: 1 as any,
-                exclude: true,
+                include: false,
               },
             ])
             .expectBadRequestResponse()
@@ -1014,7 +1027,7 @@ describe('POST /transaction/v1/transactions', () => {
               {
                 filterType: 'account',
                 items: [],
-                exclude: true,
+                include: false,
               },
             ])
             .expectBadRequestResponse()
@@ -1029,7 +1042,7 @@ describe('POST /transaction/v1/transactions', () => {
               {
                 filterType: 'account',
                 items: [1 as any],
-                exclude: true,
+                include: false,
               },
             ])
             .expectBadRequestResponse()
@@ -1041,7 +1054,7 @@ describe('POST /transaction/v1/transactions', () => {
               {
                 filterType: 'account',
                 items: ['not mongo id' as any],
-                exclude: true,
+                include: false,
               },
             ])
             .expectBadRequestResponse()
@@ -1055,7 +1068,7 @@ describe('POST /transaction/v1/transactions', () => {
             .requestGetTransactionList([
               {
                 filterType: 'issuedAt',
-                exclude: true,
+                include: false,
                 from: 1 as any,
                 to: undefined,
               },
@@ -1068,7 +1081,7 @@ describe('POST /transaction/v1/transactions', () => {
             .requestGetTransactionList([
               {
                 filterType: 'issuedAt',
-                exclude: true,
+                include: false,
                 from: 'not date',
                 to: undefined,
               },
@@ -1084,7 +1097,7 @@ describe('POST /transaction/v1/transactions', () => {
             .requestGetTransactionList([
               {
                 filterType: 'issuedAt',
-                exclude: true,
+                include: false,
                 to: 1 as any,
                 from: undefined,
               },
@@ -1097,7 +1110,7 @@ describe('POST /transaction/v1/transactions', () => {
             .requestGetTransactionList([
               {
                 filterType: 'issuedAt',
-                exclude: true,
+                include: false,
                 to: 'not date',
                 from: undefined,
               },
@@ -1111,7 +1124,7 @@ describe('POST /transaction/v1/transactions', () => {
             .requestGetTransactionList([
               {
                 filterType: 'issuedAt',
-                exclude: true,
+                include: false,
                 to: new Date(2024, 3, 4, 12, 0, 0).toISOString(),
                 from: new Date(2024, 4, 4, 12, 0, 0).toISOString(),
               },

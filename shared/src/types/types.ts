@@ -457,7 +457,7 @@ export namespace Transaction {
 
 export namespace Report {
   type FilterBase<T extends string> = {
-    exclude: boolean;
+    include: boolean;
     filterType: T
   };
 
@@ -486,7 +486,9 @@ export namespace Report {
     items: Recipient.Id[];
   };
 
-  export type Filter = IssuedAtFilter | AccountFilter | CategoryFilter | ProjectFilter | ProductFilter | RecipientFilter;
+  export type CatalogItemFilter = AccountFilter | CategoryFilter | ProjectFilter | ProductFilter | RecipientFilter;
+
+  export type Filter = IssuedAtFilter | CatalogItemFilter;
 
   export type Request = Filter[];
 }

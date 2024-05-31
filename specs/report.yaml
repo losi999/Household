@@ -10,10 +10,12 @@ components:
       items:
         allOf:
           - type: object
+            required:
+              - include
             properties:
-              exclude:
+              include:
                 type: boolean
-                default: false
+                default: true
           - oneOf:
               - type: object
                 required:

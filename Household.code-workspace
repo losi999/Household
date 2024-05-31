@@ -20,6 +20,7 @@
     },
     "[javascript]": {
       "editor.defaultFormatter": "vscode.typescript-language-features"
-    }
+    },
+    "html.format.wrapLineLength": 0
   }
 }

@@ -27,7 +27,7 @@ describe('List transactions service', () => {
     {
       filterType: 'account',
       items: [createAccountId()],
-      exclude: false,
+      include: true,
     },
   ];
   const firstMatch: PipelineStage.Match = {
