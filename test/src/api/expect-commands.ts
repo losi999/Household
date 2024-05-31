@@ -54,54 +54,67 @@ const expectValidResponseSchema = (body: object, schema: JSONSchema7) => {
 
 const expectRequiredProperty = (body: any, propertyName: string, requestPart: string) => {
   expect(body[requestPart]).to.contain(propertyName).to.contain('required');
+  return body;
 };
 
 const expectDependentRequiredProperty = (body: any, propertyName: string, requestPart: string, ...dependingProperties: string[]) => {
   expect(body[requestPart]).to.contain(`${propertyName} is present`).to.contain(`must have propert${dependingProperties.length > 1 ? 'ies' : 'y'} ${dependingProperties.join(', ')}`);
+  return body;
 };
 
 const expectAdditionalProperty = (body: any, propertyName: string, requestPart: string) => {
   expect(body[requestPart]).to.contain(propertyName).to.contain('additional');
+  return body;
 };
 
 const expectWrongPropertyType = (body: any, propertyName: string, propertyType: string, requestPart: string) => {
   expect(body[requestPart]).to.contain(propertyName).to.contain(propertyType);
+  return body;
 };
 
 const expectWrongPropertyFormat = (body: any, propertyName: string, propertyFormat: string, requestPart: string) => {
   expect(body[requestPart]).to.contain(propertyName).to.contain('format').to.contain(propertyFormat);
+  return body;
 };
 
 const expectWrongPropertyPattern = (body: any, propertyName: string, requestPart: string) => {
   expect(body[requestPart]).to.contain(propertyName).to.contain('pattern');
+  return body;
 };
 
 const expectWrongEnumValue = (body: any, propertyName: string, requestPart: string) => {
   expect(body[requestPart]).to.contain(propertyName).to.contain('allowed values');
+  return body;
 };
 
 const expectTooShortProperty = (body: any, propertyName: string, minLength: number, requestPart: string) => {
   expect(body[requestPart]).to.contain(propertyName).to.contain('fewer').to.contain(minLength);
+  return body;
 };
 
 const expectTooLongProperty = (body: any, propertyName: string, maxLength: number, requestPart: string) => {
   expect(body[requestPart]).to.contain(propertyName).to.contain('longer').to.contain(maxLength);
+  return body;
 };
 
 const expectTooSmallNumberProperty = (body: any, propertyName: string, minimum: number, isExclusive: boolean, requestPart: string) => {
   expect(body[requestPart]).to.contain(propertyName).to.contain(isExclusive ? '>' : '>=').to.contain(minimum);
+  return body;
 };
 
 const expectTooLargeNumberProperty = (body: any, propertyName: string, maximum: number, isExclusive: boolean, requestPart: string) => {
   expect(body[requestPart]).to.contain(propertyName).to.contain(isExclusive ? '<' : '<=').to.contain(maximum);
+  return body;
 };
 
 const expectTooEarlyDateProperty = (body: any, propertyName: string, requestPart: string) => {
   expect(body[requestPart]).to.contain(propertyName).to.contain('>');
+  return body;
 };
 
 const expectTooFewItemsProperty = (body: any, propertyName: string, minItems: number, requestPart: string) => {
   expect(body[requestPart]).to.contain(propertyName).to.contain('fewer').to.contain(minItems);
+  return body;
 };
 
 export const setExpectCommands = () => {

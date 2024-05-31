@@ -1,17 +1,23 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
-import { Router } from '@angular/router';
+import { FormControl, FormGroup, ValidatorFn } from '@angular/forms';
 import { Account, Category, Product, Project, Recipient, Report, Transaction } from '@household/shared/types/types';
 import { Subject, takeUntil } from 'rxjs';
 import { AccountService } from 'src/app/account/account.service';
 import { CategoryService } from 'src/app/category/category.service';
 import { ProjectService } from 'src/app/project/project.service';
 import { RecipientService } from 'src/app/recipient/recipient.service';
+import { ReportCatalogItemFilterValue } from 'src/app/report/report-catalog-item-filter/report-catalog-item-filter.component';
+import { ReportDateRangeFilterValue } from 'src/app/report/report-date-range-filter/report-date-range-filter.component';
 import { GroupBy } from 'src/app/report/report-list/report-list.component';
-import { DialogService } from 'src/app/shared/dialog.service';
 import { Store } from 'src/app/store';
 import { TransactionService } from 'src/app/transaction/transaction.service';
+
+const oneFilterRequiredValidator: ValidatorFn = (control) => {
+  return Object.values(control.value).every(v => !v || Object.keys(v).length === 0) ? {
+    minimumProperties: true,
+  } : null;
+};
 
 export type ProductFlatTree = {
   key: Product.Id;
@@ -46,13 +52,12 @@ export class ReportHomeComponent implements OnInit, OnDestroy {
   }
   products: ProductFlatTree[];
   form: FormGroup<{
-    issuedAtFrom: FormControl<Date>;
-    issuedAtTo: FormControl<Date>;
-    accountIds: FormControl<Account.Id[]>;
-    categoryIds: FormControl<Category.Id[]>;
-    projectIds: FormControl<Project.Id[]>;
-    recipientIds: FormControl<Recipient.Id[]>;
-    productIds: FormControl<Product.Id[]>;
+    issuedAt: FormControl<ReportDateRangeFilterValue[]>;
+    accounts: FormControl<ReportCatalogItemFilterValue<Account.Id>>;
+    projects: FormControl<ReportCatalogItemFilterValue<Project.Id>>;
+    recipients: FormControl<ReportCatalogItemFilterValue<Recipient.Id>>;
+    categories: FormControl<ReportCatalogItemFilterValue<Category.Id>>;
+    products: FormControl<ReportCatalogItemFilterValue<Product.Id>>;
   }>;
   report: Transaction.Report[];
 
@@ -60,9 +65,7 @@ export class ReportHomeComponent implements OnInit, OnDestroy {
     accountService: AccountService,
     categoryService: CategoryService,
     projectService: ProjectService,
-    recipientService: RecipientService,
-    private dialogService: DialogService,
-    private router: Router) {
+    recipientService: RecipientService) {
     accountService.listAccounts();
     categoryService.listCategories();
     projectService.listProjects();
@@ -74,6 +77,15 @@ export class ReportHomeComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.form = new FormGroup({
+      issuedAt: new FormControl([]),
+      accounts: new FormControl(),
+      recipients: new FormControl(),
+      products: new FormControl(),
+      projects: new FormControl(),
+      categories: new FormControl(),
+    }, [oneFilterRequiredValidator]);
+
     this.store.inventoryCategories.pipe(takeUntil(this.destroyed)).subscribe((categories) => {
       this.products = categories.flatMap<ProductFlatTree>(category => {
         if (!category.products?.length) {
@@ -89,102 +101,90 @@ export class ReportHomeComponent implements OnInit, OnDestroy {
         });
       });
     });
+  }
 
-    this.form = new FormGroup({
-      accountIds: new FormControl(),
-      categoryIds: new FormControl(),
-      projectIds: new FormControl(),
-      recipientIds: new FormControl(),
-      productIds: new FormControl(),
-      issuedAtFrom: new FormControl(),
-      issuedAtTo: new FormControl(new Date()),
-    });
+  displayRange(range: ReportDateRangeFilterValue) {
+    if (range.include) {
+      if (range.from && range.to) {
+        return `${range.from.toLocaleDateString()} és ${range.to.toLocaleDateString()} között`;
+      }
+      if (range.from) {
+        return `${range.from.toLocaleDateString()} után`;
+      }
+      if (range.to) {
+        return `${range.to.toLocaleDateString()} előtt`;
+      }
+    } else {
+      if (range.from && range.to) {
+        return `${range.from.toLocaleDateString()} előtt vagy ${range.to.toLocaleDateString()} után`;
+      }
+      if (range.from) {
+        return `${range.from.toLocaleDateString()} előtt`;
+      }
+      if (range.to) {
+        return `${range.to.toLocaleDateString()} után`;
+      }
+    }
+    return new Date(range.to).toLocaleDateString();
+  }
+
+  deleteIssuedAtRange(index: number) {
+    const temp = [...this.form.value.issuedAt];
+    temp.splice(index, 1);
+    this.form.controls.issuedAt.setValue(temp);
+  }
+
+  issuedAtRangeAdded(event: ReportDateRangeFilterValue) {
+    this.form.controls.issuedAt.patchValue([
+      ...this.form.value.issuedAt,
+      event,
+    ]);
   }
 
   onSubmit() {
-    const request: Report.Request = {
-      accountIds: this.form.value.accountIds ?? undefined,
-      categoryIds: this.form.value.categoryIds ?? undefined,
-      productIds: this.form.value.productIds ?? undefined,
-      projectIds: this.form.value.projectIds ?? undefined,
-      recipientIds: this.form.value.recipientIds ?? undefined,
-      issuedAtFrom: this.form.value.issuedAtFrom?.toISOString(),
-      issuedAtTo: this.form.value.issuedAtTo?.toISOString(),
-    };
+    if (this.form.valid) {
+      const request: Report.Request = this.form.value.issuedAt.map(v => ({
+        filterType: 'issuedAt',
+        include: v.include,
+        from: v.from?.toISOString(),
+        to: v.to?.toISOString(),
+      }));
 
-    this.transactionService.getTransactionReport(request).subscribe((value) => {
-      this.report = value;
-    });
-  }
+      if (this.form.value.accounts) {
+        request.push({
+          filterType: 'account',
+          ...this.form.value.accounts,
+        });
+      }
+      if (this.form.value.projects) {
+        request.push({
+          filterType: 'project',
+          ...this.form.value.projects,
+        });
+      }
+      if (this.form.value.recipients) {
+        request.push({
+          filterType: 'recipient',
+          ...this.form.value.recipients,
+        });
+      }
+      if (this.form.value.categories) {
+        request.push({
+          filterType: 'category',
+          ...this.form.value.categories,
+        });
+      }
+      if (this.form.value.products) {
+        request.push({
+          filterType: 'product',
+          ...this.form.value.products,
+        });
+      }
 
-  filterAccounts() {
-    const dialogRef = this.dialogService.openAccountFilterDialog(this.accounts, this.form.value.accountIds);
-
-    dialogRef.afterClosed().subscribe({
-      next: (value) => {
-        if (value !== undefined) {
-          this.form.patchValue({
-            accountIds: value,
-          });
-        }
-      },
-    });
-  }
-
-  filterRecipients() {
-    const dialogRef = this.dialogService.openRecipientFilterDialog(this.recipients, this.form.value.recipientIds);
-
-    dialogRef.afterClosed().subscribe({
-      next: (value) => {
-        if (value !== undefined) {
-          this.form.patchValue({
-            recipientIds: value,
-          });
-        }
-      },
-    });
-  }
-
-  filterProjects() {
-    const dialogRef = this.dialogService.openProjectFilterDialog(this.projects, this.form.value.projectIds);
-
-    dialogRef.afterClosed().subscribe({
-      next: (value) => {
-        if (value !== undefined) {
-          this.form.patchValue({
-            projectIds: value,
-          });
-        }
-      },
-    });
-  }
-
-  filterCategories() {
-    const dialogRef = this.dialogService.openCategoryFilterDialog(this.categories, this.form.value.categoryIds);
-
-    dialogRef.afterClosed().subscribe({
-      next: (value) => {
-        if (value !== undefined) {
-          this.form.patchValue({
-            categoryIds: value,
-          });
-        }
-      },
-    });
-  }
-
-  filterProducts() {
-    const dialogRef = this.dialogService.openProductFilterDialog(this.products, this.form.value.productIds);
-
-    dialogRef.afterClosed().subscribe({
-      next: (value) => {
-        if (value !== undefined) {
-          this.form.patchValue({
-            productIds: value,
-          });
-        }
-      },
-    });
+      this.transactionService.getTransactionReport(request).subscribe((value) => {
+        this.report = value;
+      });
+    }
   }
 
   groupCriterias: GroupCriteria[] = [

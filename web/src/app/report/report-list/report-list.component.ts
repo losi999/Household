@@ -95,7 +95,16 @@ export class ReportListComponent implements OnChanges {
           map[groupKey] = groupNode;
 
           if (parentGroupKey) {
-            map[parentGroupKey].nestedGroups.push(groupNode);
+            const index = map[parentGroupKey].nestedGroups.findIndex(n => groupNode.groupName.localeCompare(n.groupName) < 0);
+            if (index < 0) {
+              map[parentGroupKey].nestedGroups.push(groupNode);
+            } else {
+              map[parentGroupKey].nestedGroups = [
+                ...map[parentGroupKey].nestedGroups.slice(0, index),
+                groupNode,
+                ...map[parentGroupKey].nestedGroups.slice(index),
+              ];
+            }
           } else {
             accumulator.push(groupNode);
           }

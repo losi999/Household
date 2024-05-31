@@ -10,8 +10,6 @@ import { ProjectFormComponent, ProjectFormData } from 'src/app/project/project-f
 import { ProjectMergeDialogComponent, ProjectMergeDialogData } from 'src/app/project/project-merge-dialog/project-merge-dialog.component';
 import { RecipientFormComponent, RecipientFormData } from 'src/app/recipient/recipient-form/recipient-form.component';
 import { RecipientMergeDialogComponent, RecipientMergeDialogData } from 'src/app/recipient/recipient-merge-dialog/recipient-merge-dialog.component';
-import { ReportFilterDialogComponent, ReportFilterDialogData } from 'src/app/report/report-filter-dialog/report-filter-dialog.component';
-import { ProductFlatTree } from 'src/app/report/report-home/report-home.component';
 import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/confirmation-dialog.component';
 
 @Injectable({
@@ -158,68 +156,6 @@ export class DialogService {
       width: '250px',
       data: {
         title: 'Törölni akarod ezt a tranzakciót?',
-      },
-    });
-  }
-
-  openAccountFilterDialog(accounts: Account.Response[], selectedItems: Account.Id[]): MatDialogRef<ReportFilterDialogComponent, Account.Id[]> {
-    return this.dialog.open<ReportFilterDialogComponent, ReportFilterDialogData>(ReportFilterDialogComponent, {
-      data: {
-        items: accounts,
-        title: 'Számlák',
-        displayPropertyName: 'fullName',
-        keyPropertyName: 'accountId',
-        selectedItems,
-      },
-    });
-  }
-
-  openProductFilterDialog(products: ProductFlatTree[], selectedItems: Product.Id[]): MatDialogRef<ReportFilterDialogComponent, Product.Id[]> {
-    return this.dialog.open<ReportFilterDialogComponent, ReportFilterDialogData>(ReportFilterDialogComponent, {
-      data: {
-        items: products,
-        title: 'Termékek',
-        displayPropertyName: 'value',
-        keyPropertyName: 'key',
-        parentPropertyName: 'parent',
-        selectedItems,
-      },
-    });
-  }
-
-  openCategoryFilterDialog(categories: Category.Response[], selectedItems: Category.Id[]): MatDialogRef<ReportFilterDialogComponent, Category.Id[]> {
-    return this.dialog.open<ReportFilterDialogComponent, ReportFilterDialogData>(ReportFilterDialogComponent, {
-      data: {
-        items: categories,
-        title: 'Kategóriák',
-        displayPropertyName: 'fullName',
-        keyPropertyName: 'categoryId',
-        parentPropertyName: 'parentCategory',
-        selectedItems,
-      },
-    });
-  }
-
-  openProjectFilterDialog(projects: Project.Response[], selectedItems: Project.Id[]): MatDialogRef<ReportFilterDialogComponent, Project.Id[]> {
-    return this.dialog.open<ReportFilterDialogComponent, ReportFilterDialogData>(ReportFilterDialogComponent, {
-      data: {
-        items: projects,
-        title: 'Projektek',
-        displayPropertyName: 'name',
-        keyPropertyName: 'projectId',
-        selectedItems,
-      },
-    });
-  }
-
-  openRecipientFilterDialog(recipients: Recipient.Response[], selectedItems: Recipient.Id[]): MatDialogRef<ReportFilterDialogComponent, Recipient.Id[]> {
-    return this.dialog.open<ReportFilterDialogComponent, ReportFilterDialogData>(ReportFilterDialogComponent, {
-      data: {
-        items: recipients,
-        title: 'Partnerek',
-        displayPropertyName: 'name',
-        keyPropertyName: 'recipientId',
-        selectedItems,
       },
     });
   }

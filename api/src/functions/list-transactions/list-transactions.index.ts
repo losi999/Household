@@ -6,8 +6,9 @@ import { listTransactionsServiceFactory } from '@household/api/functions/list-tr
 import { transactionService } from '@household/shared/dependencies/services/transaction-service';
 import { default as index } from '@household/api/handlers/index.handler';
 import { apiRequestValidator } from '@household/api/dependencies/handlers/api-request-validator.handler';
+import { reportDocumentConverter } from '@household/shared/dependencies/converters/report-document-converter';
 
-const listTransactionsService = listTransactionsServiceFactory(transactionService, transactionDocumentConverter);
+const listTransactionsService = listTransactionsServiceFactory(reportDocumentConverter, transactionService, transactionDocumentConverter);
 
 export default index({
   handler: handler(listTransactionsService),

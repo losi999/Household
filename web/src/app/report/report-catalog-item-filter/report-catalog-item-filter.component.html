@@ -1,0 +1,24 @@
+<mat-slide-toggle [formControl]="include">{{include.value ? 'Tartalmazza' : 'Zárja ki'}} a kiválasztott elemeket</mat-slide-toggle>
+
+<household-clearable-input type="text" label="Keresés" [formControl]="filter"></household-clearable-input>
+<button mat-icon-button color="primary" (click)="markAll(true)"><mat-icon>done_all</mat-icon></button>
+<button mat-icon-button color="warn" (click)="markAll(false)"><mat-icon>remove_done</mat-icon></button>
+
+<mat-tree *ngIf="items.length > 0" [dataSource]="dataSource" [treeControl]="treeControl" [formGroup]="selectionList">
+  <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding>
+    {{node.value}}
+    <ng-container *ngIf="node.children.length > 0">
+      <button mat-icon-button color="primary" (click)="markAll(true, node)"><mat-icon>done_all</mat-icon></button>
+      <button mat-icon-button color="warn" (click)="markAll(false, node)"><mat-icon>remove_done</mat-icon></button>
+    </ng-container>
+  </mat-tree-node>
+  <mat-tree-node *matTreeNodeDef="let node; when: hasKey" matTreeNodePadding>
+    <mat-checkbox [formControlName]="node.key">
+      {{node.value}}
+      <ng-container *ngIf="node.children.length > 0">
+        <button mat-icon-button color="primary" (click)="markAll(true, node)"><mat-icon>done_all</mat-icon></button>
+        <button mat-icon-button color="warn" (click)="markAll(false, node)"><mat-icon>remove_done</mat-icon></button>
+      </ng-container>
+    </mat-checkbox>
+  </mat-tree-node>
+</mat-tree>
