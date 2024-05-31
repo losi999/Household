@@ -35,11 +35,11 @@ export const productDocumentConverterFactory = (): IProductDocumentConverter => 
       };
     },
     toReport: ({ document, quantity }): Product.Report => {
-      return {
+      return document ? {
         productId: getProductId(document),
         fullName: document.fullName,
         quantity,
-      };
+      } : undefined;
     },
     toResponse: (doc): Product.Response => {
       return {

@@ -45,6 +45,8 @@ export const mongodbServiceFactory = (mongodbConnectionString: string): IMongodb
     console.log('pre create connnect');
     connection = createConnection(mongodbConnectionString, {
       autoIndex: true,
+      connectTimeoutMS: 480000,
+      serverSelectionTimeoutMS: 480000,
     });
     connection.on('connecting', (args) => {
       console.log('connecting', args);

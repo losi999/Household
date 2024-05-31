@@ -14,6 +14,9 @@ export type StrictJSONSchema7<T> = Omit<JSONSchema7, 'properties' | 'type' | 're
   properties?: JSONSchemaType<T> extends 'object' ? { [prop in keyof T]?: StrictJSONSchema7<T[prop]> } : never;
   items?: T extends any[] ? StrictJSONSchema7<T[0]> : never;
   dependentRequired?: Partial<Record<keyof T, (keyof T)[]>>;
+  formatExclusiveMinimum?: {
+    $data: string
+  }
 };
 
 export type Remove<T> = Record<keyof T, undefined>;

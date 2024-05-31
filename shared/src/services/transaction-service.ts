@@ -1,7 +1,7 @@
 import { populate } from '@household/shared/common/utils';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
-import { Account, Common, Transaction, Recipient, Project, Category, Product } from '@household/shared/types/types';
-import { FilterQuery } from 'mongoose';
+import { Account, Common, Transaction } from '@household/shared/types/types';
+import { PipelineStage } from 'mongoose';
 
 export interface ITransactionService {
   dumpTransactions(): Promise<Transaction.Document[]>;
@@ -11,15 +11,7 @@ export interface ITransactionService {
   getTransactionByIdAndAccountId(query: Transaction.TransactionId & Account.AccountId): Promise<Transaction.Document>;
   deleteTransaction(transactionId: Transaction.Id): Promise<unknown>;
   updateTransaction(doc: Transaction.Document): Promise<unknown>;
-  listTransactions(query: {
-    accountIds: Account.Id[];
-    categoryIds: Category.Id[];
-    projectIds: Project.Id[];
-    recipientIds: Recipient.Id[];
-    productIds: Product.Id[];
-    issuedAtFrom: string;
-    issuedAtTo: string;
-  }): Promise<(Transaction.PaymentDocument | Transaction.SplitDocument)[]>;
+  listTransactions(firstMatch: PipelineStage.Match, secondMatch: PipelineStage.Match): Promise<Transaction.PaymentDocument[]>;
   listTransactionsByAccountId(data: Account.AccountId & Common.Pagination<number>): Promise<Transaction.Document[]>;
 }
 
@@ -104,117 +96,153 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
       })
         .exec();
     },
-    listTransactions: ({ accountIds, categoryIds, projectIds, recipientIds, productIds, issuedAtFrom, issuedAtTo }) => {
+    listTransactions: (firstMatch, secondMatch) => {
       return mongodbService.inSession((session) => {
-        const query: FilterQuery<Transaction.Document> = {
-          transactionType: {
-            $not: {
-              $eq: 'transfer',
+        const pipeline: PipelineStage[] = [
+          firstMatch,
+          {
+            $unwind: {
+              path: '$splits',
+              preserveNullAndEmptyArrays: true,
             },
           },
-          issuedAt: {
-            $lte: new Date(),
+          {
+            $set: {
+              amount: {
+                $ifNull: [
+                  '$splits.amount',
+                  '$amount',
+                ],
+              },
+              category: {
+                $ifNull: [
+                  '$splits.category',
+                  '$category',
+                ],
+              },
+              project: {
+                $ifNull: [
+                  '$splits.project',
+                  '$project',
+                ],
+              },
+              product: {
+                $ifNull: [
+                  '$splits.product',
+                  '$product',
+                ],
+              },
+              quantity: {
+                $ifNull: [
+                  '$splits.quantity',
+                  '$quantity',
+                ],
+              },
+              invoiceNumber: {
+                $ifNull: [
+                  '$splits.invoiceNumber',
+                  '$invoiceNumber',
+                ],
+              },
+              billingStartDate: {
+                $ifNull: [
+                  '$splits.billingStartDate',
+                  '$billingStartDate',
+                ],
+              },
+              billingEndDate: {
+                $ifNull: [
+                  '$splits.billingEndDate',
+                  '$billingEndDate',
+                ],
+              },
+            },
           },
-          $and: [],
-        };
-
-        if (issuedAtFrom) {
-          query.issuedAt.$gte = new Date(issuedAtFrom);
-        }
-
-        if (issuedAtTo) {
-          query.issuedAt.$lte = new Date(issuedAtTo);
-        }
-
-        if (accountIds) {
-          query.$and.push({
-            account: {
-              $in: accountIds,
+          secondMatch,
+          {
+            $project: {
+              splits: 0,
             },
-          });
-        }
-
-        if (categoryIds) {
-          query.$and.push({
-            $or: [
-              {
-                'splits.category': {
-                  $in: categoryIds,
-                },
-              },
-              {
-                category: {
-                  $in: categoryIds,
-                },
-              },
-            ],
-          });
-        }
-
-        if (projectIds) {
-          query.$and.push({
-            $or: [
-              {
-                'splits.project': {
-                  $in: projectIds,
-                },
-              },
-              {
-                project: {
-                  $in: projectIds,
-                },
-              },
-            ],
-          });
-        }
-
-        if (productIds) {
-          query.$and.push({
-            $or: [
-              {
-                'splits.product': {
-                  $in: productIds,
-                },
-              },
-              {
-                product: {
-                  $in: productIds,
-                },
-              },
-            ],
-          });
-        }
-
-        if (recipientIds) {
-          query.$and.push({
-            recipient: {
-              $in: recipientIds,
+          },
+          {
+            $lookup: {
+              from: 'accounts',
+              localField: 'account',
+              foreignField: '_id',
+              as: 'account',
             },
-          });
-        }
-
-        if (query.$and.length === 0) {
-          delete query.$and;
-        }
-
-        return mongodbService.transactions.find<Transaction.PaymentDocument | Transaction.SplitDocument>(query)
-          .setOptions({
-            session,
-            populate: populate('project',
-              'recipient',
-              'account',
-              'category',
-              'product',
-              'transferAccount',
-              'splits.category',
-              'splits.project',
-              'splits.product'),
-            lean: true,
-            sort: {
-              issuedAt: 'asc',
+          },
+          {
+            $unwind: {
+              path: '$account',
+              preserveNullAndEmptyArrays: true,
             },
-          })
-          .exec();
+          },
+          {
+            $lookup: {
+              from: 'categories',
+              localField: 'category',
+              foreignField: '_id',
+              as: 'category',
+            },
+          },
+          {
+            $unwind: {
+              path: '$category',
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $lookup: {
+              from: 'projects',
+              localField: 'project',
+              foreignField: '_id',
+              as: 'project',
+            },
+          },
+          {
+            $unwind: {
+              path: '$project',
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $lookup: {
+              from: 'products',
+              localField: 'product',
+              foreignField: '_id',
+              as: 'product',
+            },
+          },
+          {
+            $unwind: {
+              path: '$product',
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $lookup: {
+              from: 'recipients',
+              localField: 'recipient',
+              foreignField: '_id',
+              as: 'recipient',
+            },
+          },
+          {
+            $unwind: {
+              path: '$recipient',
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+        ];
+
+        if (secondMatch.$match.$and.length === 0) {
+          pipeline.splice(3, 1);
+        }
+        return mongodbService.transactions.aggregate(pipeline, {
+          session,
+        });
+
       });
     },
     listTransactionsByAccountId: ({ accountId, pageSize, pageNumber }) => {

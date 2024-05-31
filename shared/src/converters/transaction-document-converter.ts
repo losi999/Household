@@ -60,8 +60,8 @@ export interface ITransactionDocumentConverter {
   }, expiresIn: number): Transaction.TransferDocument;
   toResponse(document: Transaction.Document, mainAccountId?: Account.Id): Transaction.Response;
   toResponseList(documents: Transaction.Document[], mainAccountId?: Account.Id): Transaction.Response[];
-  toReport(document: Transaction.PaymentDocument | Transaction.SplitDocument): Transaction.Report[];
-  toReportList(documents: (Transaction.PaymentDocument | Transaction.SplitDocument)[]): Transaction.Report[];
+  toReport(document: Transaction.PaymentDocument): Transaction.Report;
+  toReportList(documents: (Transaction.PaymentDocument)[]): Transaction.Report[];
 }
 
 export const transactionDocumentConverterFactory = (
@@ -144,7 +144,7 @@ export const transactionDocumentConverterFactory = (
         issuedAt: new Date(body.issuedAt),
         transactionType: 'payment',
         quantity: category?.categoryType === 'inventory' ? body.quantity : undefined,
-        product: category?.categoryType === 'inventory' ? product : undefined,
+        product: category?.categoryType === 'inventory' ? product ?? undefined : undefined,
         invoiceNumber: category?.categoryType === 'invoice' ? body.invoiceNumber : undefined,
         billingEndDate: category?.categoryType === 'invoice' ? createDate(body.billingEndDate) : undefined,
         billingStartDate: category?.categoryType === 'invoice' ? createDate(body.billingStartDate) : undefined,
@@ -239,42 +239,24 @@ export const transactionDocumentConverterFactory = (
       }
     },
     toResponseList: (docs, mainAccountId) => docs.map(d => instance.toResponse(d, mainAccountId)),
-    toReport: (document): Transaction.Report[] => {
-      if (document.transactionType === 'payment') {
-        return [
-          {
-            amount: document.amount,
-            transactionId: getTransactionId(document),
-            issuedAt: document.issuedAt.toISOString(),
-            description: document.description,
-            account: accountDocumentConverter.toReport(document.account),
-            category: categoryDocumentConverter.toReport(document.category),
-            product: productDocumentConverter.toReport({
-              quantity: document.quantity,
-              document: document.product,
-            }),
-            project: projectDocumentConverter.toReport(document.project),
-            recipient: recipientDocumentConverter.toReport(document.recipient),
-          },
-        ];
-      }
-
-      return document.splits.map(s => ({
-        amount: s.amount,
+    toReport: (document): Transaction.Report => {
+      return {
+        amount: document.amount,
         transactionId: getTransactionId(document),
         issuedAt: document.issuedAt.toISOString(),
-        description: s.description,
+        description: document.description,
         account: accountDocumentConverter.toReport(document.account),
-        recipient: recipientDocumentConverter.toReport(document.recipient),
-        category: categoryDocumentConverter.toReport(s.category),
+        category: categoryDocumentConverter.toReport(document.category),
         product: productDocumentConverter.toReport({
-          quantity: s.quantity,
-          document: s.product,
+          quantity: document.quantity,
+          document: document.product,
         }),
-        project: projectDocumentConverter.toReport(s.project),
-      }));
+        project: projectDocumentConverter.toReport(document.project),
+        recipient: recipientDocumentConverter.toReport(document.recipient),
+      };
+
     },
-    toReportList: documents => documents.flatMap(d => instance.toReport(d)),
+    toReportList: documents => documents.map(d => instance.toReport(d)),
   };
 
   return instance;
