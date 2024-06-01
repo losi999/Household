@@ -85,5 +85,11 @@ describe('Transfer transaction schema', () => {
         transferAccountId: createAccountId('not-valid'),
       }), 'transferAccountId');
     });
+
+    describe('if data.transferAmount', () => {
+      tester.validateSchemaType(createTransferTransactionRequest({
+        transferAmount: '1' as any,
+      }), 'transferAmount', 'number');
+    });
   });
 });

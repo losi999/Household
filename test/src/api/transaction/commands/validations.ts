@@ -92,8 +92,9 @@ const validateTransactionTransferDocument = (response: Transaction.TransactionId
       expect(document.issuedAt.toISOString(), 'issuedAt').to.equal(createDate(request.issuedAt).toISOString());
       expect(document.transactionType, 'transactionType').to.equal('transfer');
       expect(document.description, 'description').to.equal(request.description);
+      expect(document.transferAmount, 'transferAmount').to.equal(request.transferAmount ?? request.amount * -1);
       expect(getAccountId(document.account), 'account').to.equal(request.accountId);
-      expect(getAccountId(document.transferAccount), 'account').to.equal(request.transferAccountId);
+      expect(getAccountId(document.transferAccount), 'transferAccount').to.equal(request.transferAccountId);
     });
 };
 
