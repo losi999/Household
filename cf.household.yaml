@@ -410,3 +410,7 @@ Outputs:
       - Domain: !FindInMap [EnvMapping, !Ref Env, WebsiteDomain]
   WebsiteBucket:
     Value: !GetAtt Infrastructure.Outputs.WebsiteBucket
+  RumAppMonitorId:
+    Value: !GetAtt Infrastructure.Outputs.RumAppMonitorId
+  RumIdentityPoolId:
+    Value: !GetAtt Infrastructure.Outputs.RumIdentityPoolId

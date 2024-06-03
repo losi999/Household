@@ -27,7 +27,8 @@
     "build:web:LOCAL": "yarn build:web -c LOCAL",
     "build:web:CI": "yarn build:web -c CI",
     "deploy:web:LOCAL": "export ENV=LOCAL && aws s3 sync dist/web s3://$(aws cloudformation describe-stacks --stack-name Household-${ENV} --query \"Stacks[0].Outputs[?OutputKey=='WebsiteBucket'].OutputValue\" --output text --profile losonczil) --profile losonczil",
-    "deploy:web:CI": "export ENV=CI && aws s3 sync dist/web s3://$(aws cloudformation describe-stacks --stack-name Household-${ENV} --query \"Stacks[0].Outputs[?OutputKey=='WebsiteBucket'].OutputValue\" --output text --profile ci) --profile ci"
+    "deploy:web:CI": "export ENV=CI && aws s3 sync dist/web s3://$(aws cloudformation describe-stacks --stack-name Household-${ENV} --query \"Stacks[0].Outputs[?OutputKey=='WebsiteBucket'].OutputValue\" --output text --profile ci) --profile ci",
+    "builddeploy:web:LOCAL": "yarn build:web:LOCAL && yarn deploy:web:LOCAL"
   },
   "dependencies": {
     "moment-timezone": "^0.5.45",
