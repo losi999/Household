@@ -44,7 +44,7 @@ export class AmountInputComponent implements OnInit, OnDestroy, ControlValueAcce
   }
 
   ngOnInit(): void {
-    this.amount = new FormControl(null, [Validators.required]);
+    this.amount = new FormControl(null);
 
     this.amount.valueChanges.pipe(takeUntil(this.destroyed)).subscribe((value) => {
       this.changed?.(value);

@@ -14,6 +14,60 @@ Resources:
       CompatibleRuntimes:
         - nodejs18.x
 
+  RumIdentityPool:
+    Type: AWS::Cognito::IdentityPool
+    Properties:
+      AllowUnauthenticatedIdentities: true
+      IdentityPoolName: !Sub Household-${Env}
+
+  RumGuestRoleMapping:
+    Type: AWS::Cognito::IdentityPoolRoleAttachment
+    Properties:
+      IdentityPoolId: !Ref RumIdentityPool
+      Roles:
+        "unauthenticated": !GetAtt RumIdentityPoolRole.Arn
+
+  RumIdentityPoolRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub Household-${Env}-RumIdentityPoolRole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Effect: Allow
+          Action:
+            - sts:AssumeRoleWithWebIdentity
+          Principal:
+            Federated:
+              - cognito-identity.amazonaws.com
+          Condition:
+            StringEquals:
+              cognito-identity.amazonaws.com:aud: !Ref RumIdentityPool
+            ForAnyValue:StringLike:
+              cognito-identity.amazonaws.com:amr: "unauthenticated"
+      Policies:
+        - PolicyName: RumPolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - rum:PutRumEvents
+                Resource: !Sub arn:aws:rum:${AWS::Region}:${AWS::AccountId}:appmonitor/Household-${Env}
+
+  RumAppMonitor:
+    Type: AWS::RUM::AppMonitor
+    Properties:
+      Domain: "*.losi999.hu"
+      Name: !Sub Household-${Env}
+      AppMonitorConfiguration:
+        IdentityPoolId: !Ref RumIdentityPool
+        SessionSampleRate: 1
+        Telemetries:
+          - errors
+          - performance
+          - http
+        AllowCookies: true
+
   LambdaRole:
     Type: AWS::IAM::Role
     Properties:
@@ -79,3 +133,7 @@ Outputs:
     Value: !Ref WebsiteBucket
   DependenciesLayer:
     Value: !Ref DependenciesLayer
+  RumAppMonitorId:
+    Value: !GetAtt RumAppMonitor.Id
+  RumIdentityPoolId:
+    Value: !Ref RumIdentityPool

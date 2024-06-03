@@ -12,7 +12,6 @@ const schema: StrictJSONSchema7<Transaction.TransferRequest> = {
     ...base.required,
     ...issuedAt.required,
     ...accountId.required,
-    ...transferAmount.required,
     'transferAccountId',
   ],
   properties: {

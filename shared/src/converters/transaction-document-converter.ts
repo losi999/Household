@@ -190,6 +190,7 @@ export const transactionDocumentConverterFactory = (
     createTransferDocument: ({ body, account, transferAccount }, expiresIn, generateId): Transaction.TransferDocument => {
       return {
         ...body,
+        transferAmount: body.transferAmount ?? body.amount * -1,
         account: account,
         transferAccount: transferAccount,
         issuedAt: new Date(body.issuedAt),
