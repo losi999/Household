@@ -34,8 +34,11 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
         description: undefined,
         issuedAt: new Date().toISOString(),
         categoryId: undefined,
-        inventory: undefined,
-        invoice: undefined,
+        productId: undefined,
+        billingEndDate: undefined,
+        billingStartDate: undefined,
+        invoiceNumber: undefined,
+        quantity: undefined,
         projectId: undefined,
         recipientId: undefined,
       },
@@ -81,6 +84,20 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
           const modifiedRequest: Transaction.TransferRequest = {
             ...request,
             description: undefined,
+          };
+          cy.saveTransactionDocument(originalDocument)
+            .saveAccountDocument(accountDocument)
+            .saveAccountDocument(transferAccountDocument)
+            .authenticate(1)
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), modifiedRequest)
+            .expectCreatedResponse()
+            .validateTransactionTransferDocument(modifiedRequest);
+        });
+
+        it('transferAmount', () => {
+          const modifiedRequest: Transaction.TransferRequest = {
+            ...request,
+            transferAmount: undefined,
           };
           cy.saveTransactionDocument(originalDocument)
             .saveAccountDocument(accountDocument)
@@ -291,6 +308,18 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
             })
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('transferAccountId', 'body');
+        });
+      });
+
+      describe('if transferAmount', () => {
+        it('is not number', () => {
+          cy.authenticate(1)
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
+              ...request,
+              transferAmount: '1' as any,
+            })
+            .expectBadRequestResponse()
+            .expectWrongPropertyType('transferAmount', 'number', 'body');
         });
       });
     });

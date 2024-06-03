@@ -66,6 +66,19 @@ describe('POST transaction/v1/transactions/transfer', () => {
             .expectCreatedResponse()
             .validateTransactionTransferDocument(modifiedRequest);
         });
+
+        it('transferAmount', () => {
+          const modifiedRequest: Transaction.TransferRequest = {
+            ...request,
+            transferAmount: undefined,
+          };
+          cy.saveAccountDocument(accountDocument)
+            .saveAccountDocument(transferAccountDocument)
+            .authenticate(1)
+            .requestCreateTransferTransaction(modifiedRequest)
+            .expectCreatedResponse()
+            .validateTransactionTransferDocument(modifiedRequest);
+        });
       });
     });
 
@@ -250,6 +263,18 @@ describe('POST transaction/v1/transactions/transfer', () => {
             })
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('transferAccountId', 'body');
+        });
+      });
+
+      describe('if transferAmount', () => {
+        it('is not number', () => {
+          cy.authenticate(1)
+            .requestCreateTransferTransaction({
+              ...request,
+              transferAmount: '1' as any,
+            })
+            .expectBadRequestResponse()
+            .expectWrongPropertyType('transferAmount', 'number', 'body');
         });
       });
     });

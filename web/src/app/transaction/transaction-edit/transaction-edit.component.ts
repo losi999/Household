@@ -229,7 +229,7 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
     }
 
     if (this.form.value.isTransfer) {
-      if (this.form.value.amount * this.form.value.transferAmount >= 0) {
+      if (this.form.value.amount * this.form.value.transferAmount > 0) {
         return;
       }
 
@@ -239,7 +239,7 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
         description: this.form.value.description ?? undefined,
         issuedAt: this.form.value.issuedAt.toISOString(),
         transferAccountId: this.form.value.transferAccount.accountId,
-        transferAmount: this.form.value.transferAmount,
+        transferAmount: this.form.value.transferAmount ?? undefined,
       };
 
       if (this.transactionId) {

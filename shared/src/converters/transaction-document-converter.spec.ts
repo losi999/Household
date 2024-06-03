@@ -681,6 +681,27 @@ describe('Transaction document converter', () => {
         }));
       });
 
+      it('should return document if transferAmount is missing', () => {
+        const result = converter.createTransferDocument({
+          body: {
+            ...body,
+            transferAmount: undefined,
+          },
+          account,
+          transferAccount,
+        }, undefined);
+        expect(result).toEqual(createTransferTransactionDocument({
+          account,
+          transferAccount,
+          transferAmount: amount * -1,
+          amount,
+          description,
+          issuedAt: now,
+          expiresAt: undefined,
+          _id: undefined,
+        }));
+      });
+
       it('should return expiring document', () => {
         const result = converter.createTransferDocument({
           body,

@@ -2,6 +2,23 @@
 <html lang="en">
 
 <head>
+  <script>
+    (function (n, i, v, r, s, c, x, z) { x = window.AwsRumClient = { q: [], n: n, i: i, v: v, r: r, c: c }; window[n] = function (c, p) { x.q.push({ c: c, p: p }); }; z = document.createElement('script'); z.async = true; z.src = s; document.head.insertBefore(z, document.head.getElementsByTagName('script')[0]); })(
+      'cwr',
+      'RUM_APP_MONITOR_ID',
+      '1.0.0',
+      'eu-west-1',
+      'https://client.rum.us-east-1.amazonaws.com/1.16.1/cwr.js',
+      {
+        sessionSampleRate: 1,
+        identityPoolId: 'RUM_IDENTITY_POOL_ID',
+        endpoint: "https://dataplane.rum.eu-west-1.amazonaws.com",
+        telemetries: ["errors", "performance", "http"],
+        allowCookies: true,
+        enableXRay: false
+      }
+    );
+  </script>
   <meta charset="utf-8">
   <title>Household</title>
   <base href="/">
