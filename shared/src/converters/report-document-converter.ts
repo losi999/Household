@@ -21,7 +21,13 @@ export const reportDocumentConverterFactory = (): IReportDocumentConverter => {
       };
       const secondMatch: PipelineStage.Match = {
         $match: {
-          $and: [],
+          $and: [
+            {
+              loan: {
+                $ne: true,
+              },
+            },
+          ],
         },
       };
 

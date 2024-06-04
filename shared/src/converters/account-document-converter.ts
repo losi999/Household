@@ -33,7 +33,8 @@ export const accountDocumentConverterFactory = (): IAccountDocumentConverter => 
     toResponse: (document): Account.Response => {
       return {
         ...document,
-        balance: document.balance ?? null,
+        balance: document.balance ?? undefined,
+        loanBalance: document.loanBalance ?? undefined,
         fullName: `${document.name} (${document.owner})`,
         createdAt: undefined,
         updatedAt: undefined,

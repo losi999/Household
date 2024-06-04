@@ -111,6 +111,7 @@ export namespace Account {
 
   type Balance = {
     balance: number;
+    loanBalance: number;
   };
 
   export type Document = Internal.Id

@@ -108,6 +108,18 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
           },
           {
             $set: {
+              loan: {
+                $ifNull: [
+                  '$splits.loan',
+                  '$loan',
+                ],
+              },
+              description: {
+                $ifNull: [
+                  '$splits.description',
+                  '$description',
+                ],
+              },
               amount: {
                 $ifNull: [
                   '$splits.amount',

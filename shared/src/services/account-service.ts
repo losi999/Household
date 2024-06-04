@@ -13,35 +13,154 @@ export interface IAccountService {
 }
 
 export const accountServiceFactory = (mongodbService: IMongodbService): IAccountService => {
-  const aggregateAccountBalance = (aggregate: Aggregate<any[]>): Aggregate<any[]> => {
-    return aggregate.lookup({
-      from: 'transactions',
-      localField: '_id',
-      foreignField: 'account',
-      as: 'regular',
-    })
-      .lookup({
-        from: 'transactions',
-        localField: '_id',
-        foreignField: 'transferAccount',
-        as: 'inverted',
-      })
-      .addFields({
-        balance: {
-          $sum: [
+  const accountAggregate = (accountId?: Account.Id): Aggregate<any[]> => {
+    return mongodbService.transactions.aggregate([
+      {
+        $unwind: {
+          path: '$splits',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          dupes: [
             {
-              $sum: '$regular.amount',
+              account: '$account',
+              amount: {
+                $ifNull: [
+                  '$splits.amount',
+                  '$amount',
+                ],
+              },
+              loanAmount: {
+                $cond: {
+                  if: {
+                    $and: [
+                      {
+                        $eq: [
+                          {
+                            $ifNull: [
+                              '$splits.loan',
+                              '$loan',
+                            ],
+                          },
+                          true,
+                        ],
+                      },
+                      {
+                        $lte: [
+                          {
+                            $ifNull: [
+                              '$splits.loanAccount',
+                              '$loanAccount',
+                            ],
+                          },
+                          null,
+                        ],
+
+                      },
+                    ],
+                  },
+                  then: {
+                    $multiply: [
+                      {
+                        $ifNull: [
+                          '$splits.amount',
+                          '$amount',
+                        ],
+                      },
+                      -1,
+                    ],
+
+                  },
+                  else: 0,
+                },
+              },
             },
             {
-              $sum: '$inverted.transferAmount',
+              account: '$transferAccount',
+              amount: '$transferAmount',
+            },
+            {
+              account: {
+                $ifNull: [
+                  '$splits.loanAccount',
+                  '$loanAccount',
+                ],
+              },
+              amount: {
+                $multiply: [
+                  {
+                    $ifNull: [
+                      '$splits.amount',
+                      '$amount',
+                    ],
+                  },
+                  -1,
+                ],
+              },
             },
           ],
         },
-      })
-      .project({
-        regular: false,
-        inverted: false,
-      });
+      },
+      {
+        $unwind: {
+          path: '$dupes',
+
+        },
+      },
+      {
+        $project: {
+          account: '$dupes.account',
+          amount: '$dupes.amount',
+          loanAmount: '$dupes.loanAmount',
+        },
+      },
+      {
+        $match: {
+          account: accountId ? new Types.ObjectId(accountId) : {
+            $ne: null,
+          },
+        },
+      },
+      {
+        $group: {
+          _id: '$account',
+          balance: {
+            $sum: '$amount',
+          },
+          loanBalance: {
+            $sum: '$loanAmount',
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: 'accounts',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'account',
+        },
+      },
+      {
+        $replaceRoot: {
+          newRoot: {
+            $mergeObjects: [
+              {
+                balance: '$balance',
+                loanBalance: '$loanBalance',
+              },
+              {
+                $arrayElemAt: [
+                  '$account',
+                  0,
+                ],
+              },
+            ],
+          },
+        },
+      },
+    ]);
   };
 
   const instance: IAccountService = {
@@ -60,10 +179,8 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
     getAccountById: async (accountId) => {
       let account: Account.Document;
       if (accountId) {
-        [account] = await aggregateAccountBalance(mongodbService.accounts.aggregate()
-          .match({
-            _id: new Types.ObjectId(accountId),
-          })).exec();
+        [account] = await accountAggregate(accountId)
+          .exec();
       }
 
       return account ?? null;
@@ -100,9 +217,8 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
     },
     listAccounts: () => {
       return mongodbService.inSession((session) => {
-        return aggregateAccountBalance(mongodbService.accounts.aggregate(null, {
-          session,
-        }))
+        return accountAggregate()
+          .session(session)
           .collation({
             locale: 'hu',
           })
