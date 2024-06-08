@@ -28,5 +28,9 @@
     "api/src",
     "shared/src",
     "localhost"
+  ],
+  "exclude": [
+    "**/*.spec.ts",
+    "**/test-data-factory.ts"
   ]
 }

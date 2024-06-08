@@ -13,37 +13,41 @@ import path from 'path';
   try {
     config();
     const mongodbService = mongodbServiceFactory(process.env.MONGODB_CONNECTION_STRING);
-    const reportDocumentConverter = reportDocumentConverterFactory();
-    const transactionService = transactionServiceFactory(mongodbService);
-    const accountService = accountServiceFactory(mongodbService);
 
-    const revolutAccountId = '665aca435689536dd37d847d';
+    // const reportDocumentConverter = reportDocumentConverterFactory();
+    // const transactionService = transactionServiceFactory(mongodbService);
+    // const accountService = accountServiceFactory(mongodbService);
 
-    const [
-      first,
-      second,
-    ] = reportDocumentConverter.createFilterQuery([
-      {
-        filterType: 'issuedAt',
-        include: true,
-        from: new Date(2024, 4, 1, 0, 0, 0).toISOString(),
-        to: new Date(2024, 4, 31, 23, 59, 59).toISOString(),
-      },
-      {
-        filterType: 'account',
-        include: true,
-        items: [revolutAccountId as any],
-      },
-    ]);
+    // const accounts = await accountService.listAccounts();
+    // console.log(accounts.length);
 
-    const report = await transactionService.listTransactions(first, second);
+    // const revolutAccountId = '665aca435689536dd37d847d';
 
-    writeFileSync(path.join('report', 'transactions.json'), JSON.stringify(report, null, 2), 'utf-8');
-    console.log(report.length);
+    // const [
+    //   first,
+    //   second,
+    // ] = reportDocumentConverter.createFilterQuery([
+    //   {
+    //     filterType: 'issuedAt',
+    //     include: true,
+    //     from: new Date(2024, 4, 1, 0, 0, 0).toISOString(),
+    //     to: new Date(2024, 4, 31, 23, 59, 59).toISOString(),
+    //   },
+    //   {
+    //     filterType: 'account',
+    //     include: true,
+    //     items: [revolutAccountId as any],
+    //   },
+    // ]);
 
-    const accounts = await accountService.listAccounts();
+    // const report = await transactionService.listTransactions(first, second);
 
-    writeFileSync(path.join('report', 'accounts.json'), JSON.stringify(accounts, null, 2), 'utf-8');
+    // writeFileSync(path.join('report', 'transactions.json'), JSON.stringify(report, null, 2), 'utf-8');
+    // console.log(report.length);
+
+    // const accounts = await accountService.listAccounts();
+
+    // writeFileSync(path.join('report', 'accounts.json'), JSON.stringify(accounts, null, 2), 'utf-8');
 
     // const res1 = await mongodbService.accounts.aggregate([
     //   {

@@ -1,5 +1,5 @@
 import { httpErrors } from '@household/api/common/error-handlers';
-import { getAccountId, getTransactionId } from '@household/shared/common/utils';
+import { getAccountId, getTransactionId, pushUnique, toDictionary } from '@household/shared/common/utils';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
@@ -18,11 +18,15 @@ export const createTransferTransactionServiceFactory = (
   transactionDocumentConverter: ITransactionDocumentConverter,
 ): ICreateTransferTransactionService => {
   return async ({ body, expiresIn }) => {
-    const { accountId, transferAccountId } = body;
+    const { accountId, transferAccountId, payments } = body;
 
     httpErrors.transaction.sameAccountTransfer({
       accountId,
       transferAccountId,
+    });
+    const transactionIds: Transaction.Id[] = [];
+    payments?.forEach(({ transactionId }) => {
+      pushUnique(transactionIds, transactionId);
     });
 
     const accounts = await accountService.listAccountsByIds([
@@ -44,11 +48,33 @@ export const createTransferTransactionServiceFactory = (
       accountId: transferAccountId,
     }, 400);
 
-    const document = transactionDocumentConverter.createTransferDocument({
-      body,
-      account,
-      transferAccount,
-    }, expiresIn);
+    const payingAccount = body.amount < 0 ? transferAccount : account;
+
+    const transactionList = await transactionService.listDeferredTransactions({
+      payingAccountIds: [getAccountId(payingAccount)],
+      transactionIds,
+    });
+
+    httpErrors.transaction.multipleNotFound(transactionIds.length !== transactionList.length, {
+      transactionIds,
+    });
+
+    // ne lehessen többet törleszteni, mint amennyi még hátravan
+
+    const transactions = toDictionary(transactionList, '_id');
+
+    const document = (account.accountType === 'loan') === (transferAccount.accountType === 'loan') ?
+      transactionDocumentConverter.createTransferDocument({
+        body,
+        account,
+        transferAccount,
+        transactions,
+      }, expiresIn) :
+      transactionDocumentConverter.createLoanTransferDocument({
+        body,
+        account,
+        transferAccount,
+      }, expiresIn);
 
     const saved = await transactionService.saveTransaction(document).catch(httpErrors.transaction.save(document));
 

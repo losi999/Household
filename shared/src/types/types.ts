@@ -252,8 +252,15 @@ export namespace Transaction {
     transactionType: T;
   };
 
-  export type Base = {
+  type LoanAccountId = {
+    loanAccountId: Account.Id;
+  };
+
+  export type Amount = {
     amount: number;
+  };
+
+  export type Description = {
     description: string;
   };
 
@@ -276,6 +283,10 @@ export namespace Transaction {
 
   export type TransferAmount ={
     transferAmount: number;
+  };
+
+  type RemainingAmount = {
+    remainingamount: number;
   };
 
   export type Category<C extends Category.Document | Category.Response | Category.Report> = {
@@ -302,6 +313,21 @@ export namespace Transaction {
     transferAccount: A;
   };
 
+  type PayingAccount<A extends Account.Document> = {
+    payingAccount: A;
+  };
+
+  type OwnerAccount<A extends Account.Document> = {
+    ownerAccount: A;
+  };
+
+  type Payments = {
+    payments?: {
+      transaction: Transaction.DeferredDocument;
+      amount: number;
+    }[]
+  };
+
   export type PaymentRequest = Account.AccountId
   & Category.CategoryId
   & Project.ProjectId
@@ -311,13 +337,19 @@ export namespace Transaction {
   & InvoiceDate<string>
   & Quantity
   & Product.ProductId
-  & Base;
+  & Amount
+  & Description
+  & LoanAccountId;
 
   export type TransferRequest = Account.AccountId
   & IssuedAt<string>
-  & Base
+  & Amount
+  & Description
   & TransferAccountId
-  & TransferAmount;
+  & TransferAmount
+  & {
+    payments: (TransactionId & Amount)[];
+  };
 
   export type SplitRequestItem = Category.CategoryId
   & Project.ProjectId
@@ -325,12 +357,15 @@ export namespace Transaction {
   & InvoiceDate<string>
   & Quantity
   & Product.ProductId
-  & Base;
+  & Amount
+  & Description
+  & LoanAccountId;
 
   export type SplitRequest = Account.AccountId
   & Recipient.RecipientId
   & IssuedAt<string>
-  & Base
+  & Amount
+  & Description
   & {
     splits: SplitRequestItem[];
   };
@@ -338,10 +373,37 @@ export namespace Transaction {
   export type DraftDocument<D extends Date | string = Date> = Internal.Id
   & Internal.Timestamps
   & TransactionType<'draft'>
-  & Base
+  & Amount
+  & Description
   & IssuedAt<D> & {
     file: File.Document
   };
+
+  type LoanDocument<D extends Date | string = Date> = Internal.Id
+  & Internal.Timestamps
+  & Remove<Account.AccountId>
+  & Remove<Category.CategoryId>
+  & Remove<Project.ProjectId>
+  & Remove<Recipient.RecipientId>
+  & Remove<Product.ProductId>
+  & Remove<LoanAccountId>
+  & Category<Category.Document>
+  & Project<Project.Document>
+  & Recipient<Recipient.Document>
+  & IssuedAt<D>
+  & InvoiceNumber
+  & InvoiceDate<D>
+  & Quantity
+  & Product<Product.Document>
+  & Amount
+  & Description
+  & PayingAccount<Account.Document>
+  & OwnerAccount<Account.Document>;
+
+  export type DeferredDocument<D extends Date | string = Date> = LoanDocument<D>
+  & TransactionType<'deferred'>
+  & Partial<RemainingAmount>;
+  export type ReimbursementDocument<D extends Date | string = Date> = LoanDocument<D> & TransactionType<'reimbursement'>;
 
   export type PaymentDocument<D extends Date | string = Date> = Internal.Id
   & Internal.Timestamps
@@ -360,7 +422,8 @@ export namespace Transaction {
   & InvoiceDate<D>
   & Quantity
   & Product<Product.Document>
-  & Base;
+  & Amount
+  & Description;
 
   export type TransferDocument<D extends Date | string = Date> = Internal.Id
   & Internal.Timestamps
@@ -371,7 +434,20 @@ export namespace Transaction {
   & Remove<TransferAccountId>
   & TransferAccount<Account.Document>
   & TransferAmount
-  & Base;
+  & Amount
+  & Description
+  & Payments;
+
+  export type LoanTransferDocument<D extends Date | string = Date> = Internal.Id
+  & Internal.Timestamps
+  & TransactionType<'loanTransfer'>
+  & Remove<Account.AccountId>
+  & Account<Account.Document>
+  & IssuedAt<D>
+  & Remove<TransferAccountId>
+  & TransferAccount<Account.Document>
+  & Amount
+  & Description;
 
   export type SplitDocumentItem<D extends Date | string = Date> = Project<Project.Document>
   & Category<Category.Document>
@@ -382,7 +458,8 @@ export namespace Transaction {
   & InvoiceDate<D>
   & Quantity
   & Product<Product.Document>
-  & Base;
+  & Amount
+  & Description;
 
   export type SplitDocument<D extends Date | string = Date> = Internal.Id
   & Internal.Timestamps
@@ -392,15 +469,17 @@ export namespace Transaction {
   & Account<Account.Document>
   & Recipient<Recipient.Document>
   & IssuedAt<D>
-  & Base
+  & Amount
+  & Description
   & {
     splits: SplitDocumentItem<D>[];
   };
 
-  export type Document<D extends Date | string = Date > = PaymentDocument<D> | TransferDocument<D> | SplitDocument<D> | DraftDocument<D>;
+  export type Document<D extends Date | string = Date > = PaymentDocument<D> | TransferDocument<D> | SplitDocument<D> | DraftDocument<D> | DeferredDocument<D> | ReimbursementDocument<D> | LoanTransferDocument<D>;
 
   export type PaymentResponse = TransactionId
-  & Base
+  & Amount
+  & Description
   & IssuedAt<string>
   & InvoiceNumber
   & InvoiceDate<string>
@@ -415,7 +494,8 @@ export namespace Transaction {
   & Recipient<Recipient.Response>;
 
   export type TransferResponse = TransactionId
-  & Base
+  & Amount
+  & Description
   & IssuedAt<string>
   & Remove<Internal.Id>
   & Remove<Internal.Timestamps>
@@ -424,7 +504,8 @@ export namespace Transaction {
   & TransferAccount<Account.Response>
   & TransferAmount;
 
-  export type SplitResponseItem = Base
+  export type SplitResponseItem = Amount
+  & Description
   & InvoiceNumber
   & InvoiceDate<string>
   & Quantity
@@ -433,7 +514,8 @@ export namespace Transaction {
   & Category<Category.Response>;
 
   export type SplitResponse = TransactionId
-  & Base
+  & Amount
+  & Description
   & IssuedAt<string>
   & Remove<Internal.Id>
   & Remove<Internal.Timestamps>
@@ -447,7 +529,8 @@ export namespace Transaction {
   export type Response = PaymentResponse | TransferResponse | SplitResponse;
 
   export type Report = TransactionId
-  & Base
+  & Amount
+  & Description
   & IssuedAt<string>
   & Account<Account.Report>
   & Category<Category.Report>

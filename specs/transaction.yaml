@@ -11,6 +11,7 @@ components:
       properties:
         transactionId:
           type: string
+          minLength: 1
     IssuedAt:
       type: object
       required:
@@ -19,13 +20,22 @@ components:
         issuedAt:
           type: string
           format: date-time
-    Base:
+    Loan:
+      type: object
+      properties:
+        loanAccountId:
+          type: string
+          minLength: 1
+    Amount:
       type: object
       required:
         - amount
       properties:
         amount:
           type: number
+    Description:
+      type: object
+      properties:
         description:
           type: string
           minLength: 1
@@ -68,12 +78,26 @@ components:
           minLength: 1
     TransferAmount:
       type: object
-      required:
-        - transferAmount
       properties:
         transferAmount:
           type: string
           minLength: 1
+    Payments:
+      type: object
+      properties:
+        payments:
+          type: array
+          minItems: 1
+          items:
+            allOf:
+              - $ref: "#/components/schemas/Amount"
+              - $ref: "#/components/schemas/TransactionId"
+              - type: object
+                properties:
+                  amount:
+                    exclusiveMinimum: true
+                    minimum: 1
+
     Category:
       type: object
       properties:
@@ -119,14 +143,18 @@ components:
         - $ref: "#/components/schemas/InvoiceDate"
         - $ref: "#/components/schemas/Quantity"
         - $ref: "product.yaml#/components/schemas/ProductId"
-        - $ref: "#/components/schemas/Base"
+        - $ref: "#/components/schemas/Amount"
+        - $ref: "#/components/schemas/Description"
+        - $ref: "#/components/schemas/Loan"
     TransferRequest:
       allOf:
         - $ref: "account.yaml#/components/schemas/AccountId"
         - $ref: "#/components/schemas/IssuedAt"
-        - $ref: "#/components/schemas/Base"
+        - $ref: "#/components/schemas/Amount"
+        - $ref: "#/components/schemas/Description"
         - $ref: "#/components/schemas/TransferAccountId"
         - $ref: "#/components/schemas/TransferAmount"
+        - $ref: "#/components/schemas/Payments"
     SplitRequestItem:
       allOf:
         - $ref: "category.yaml#/components/schemas/CategoryId"
@@ -135,13 +163,16 @@ components:
         - $ref: "#/components/schemas/InvoiceDate"
         - $ref: "#/components/schemas/Quantity"
         - $ref: "product.yaml#/components/schemas/ProductId"
-        - $ref: "#/components/schemas/Base"
+        - $ref: "#/components/schemas/Amount"
+        - $ref: "#/components/schemas/Description"
+        - $ref: "#/components/schemas/Loan"
     SplitRequest:
       allOf:
         - $ref: "account.yaml#/components/schemas/AccountId"
         - $ref: "recipient.yaml#/components/schemas/RecipientId"
         - $ref: "#/components/schemas/IssuedAt"
-        - $ref: "#/components/schemas/Base"
+        - $ref: "#/components/schemas/Amount"
+        - $ref: "#/components/schemas/Description"
         - type: object
           required:
             - splits
@@ -153,7 +184,8 @@ components:
     PaymentResponse:
       allOf:
         - $ref: "#/components/schemas/TransactionId"
-        - $ref: "#/components/schemas/Base"
+        - $ref: "#/components/schemas/Amount"
+        - $ref: "#/components/schemas/Description"
         - $ref: "#/components/schemas/IssuedAt"
         - $ref: "#/components/schemas/InvoiceDate"
         - $ref: "#/components/schemas/InvoiceNumber"
@@ -174,7 +206,8 @@ components:
     TransferResponse:
       allOf:
         - $ref: "#/components/schemas/TransactionId"
-        - $ref: "#/components/schemas/Base"
+        - $ref: "#/components/schemas/Amount"
+        - $ref: "#/components/schemas/Description"
         - $ref: "#/components/schemas/IssuedAt"
         - $ref: "#/components/schemas/Account"
         - $ref: "#/components/schemas/TransferAccount"
@@ -189,7 +222,8 @@ components:
                 - transfer
     SplitResponseItem:
       allOf:
-        - $ref: "#/components/schemas/Base"
+        - $ref: "#/components/schemas/Amount"
+        - $ref: "#/components/schemas/Description"
         - $ref: "#/components/schemas/InvoiceNumber"
         - $ref: "#/components/schemas/InvoiceDate"
         - $ref: "#/components/schemas/Quantity"
@@ -199,7 +233,8 @@ components:
     SplitResponse:
       allOf:
         - $ref: "#/components/schemas/TransactionId"
-        - $ref: "#/components/schemas/Base"
+        - $ref: "#/components/schemas/Amount"
+        - $ref: "#/components/schemas/Description"
         - $ref: "#/components/schemas/IssuedAt"
         - $ref: "#/components/schemas/Account"
         - $ref: "#/components/schemas/Recipient"
@@ -224,7 +259,8 @@ components:
     Report:
       allOf:
         - $ref: "#/components/schemas/TransactionId"
-        - $ref: "#/components/schemas/Base"
+        - $ref: "#/components/schemas/Amount"
+        - $ref: "#/components/schemas/Description"
         - $ref: "#/components/schemas/IssuedAt"
         - type: object
           required:

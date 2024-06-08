@@ -46,6 +46,12 @@ export const httpErrors = {
         throw httpError(statusCode, 'No transaction found');
       }
     },
+    multipleNotFound: (condition: boolean, ctx: { transactionIds: Transaction.Id[] }, statusCode = 400) => {
+      if (condition) {
+        log('Some of the transactions are not found', ctx);
+        throw httpError(statusCode, 'Some of the transactions are not found');
+      }
+    },
     update: (doc: Transaction.Document, statusCode = 500): Catch => (error) => {
       if (error.code === 11000) {
         log('Duplicate transaction name', doc, error);
@@ -169,6 +175,12 @@ export const httpErrors = {
     delete: (ctx: Account.AccountId, statusCode = 500): Catch => (error) => {
       log('Delete account', ctx, error);
       throw httpError(statusCode, 'Error while deleting account');
+    },
+    multipleNotFound: (condition: boolean, ctx: { accountIds: Account.Id[] }, statusCode = 400) => {
+      if (condition) {
+        log('Some of the accounts are not found', ctx);
+        throw httpError(statusCode, 'Some of the accounts are not found');
+      }
     },
     differentCurrency: (account: Account.Document, transferAccount: Account.Document, statusCode = 400) => {
       if(account.currency !== transferAccount.currency) {

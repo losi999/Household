@@ -13,12 +13,9 @@ export const listTransactionsServiceFactory = (
   transactionService: ITransactionService,
   transactionDocumentConverter: ITransactionDocumentConverter): IListTransactionsService => {
   return async (body) => {
-    const [
-      firstMatch,
-      secondMatch,
-    ] = reportDocumentConverter.createFilterQuery(body);
+    const match = reportDocumentConverter.createFilterQuery(body);
 
-    const transactions = await transactionService.listTransactions(firstMatch, secondMatch).catch(httpErrors.transaction.list());
+    const transactions = await transactionService.listTransactions(match).catch(httpErrors.transaction.list());
 
     return transactionDocumentConverter.toReportList(transactions);
   };

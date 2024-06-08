@@ -1,4 +1,4 @@
-import { generateMongoId } from '@household/shared/common/test-data-factory';
+import { generateMongoId } from '@household/shared/common/utils';
 import { addSeconds, createDate, getAccountId, getTransactionId } from '@household/shared/common/utils';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
@@ -9,6 +9,15 @@ import { Dictionary, Restrict } from '@household/shared/types/common';
 import { Account, Category, File, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 
 export interface ITransactionDocumentConverter {
+  createLoanDocument(data: {
+    body: Transaction.PaymentRequest;
+    account: Account.Document;
+    loanAccount: Account.Document;
+    category: Category.Document;
+    recipient: Recipient.Document;
+    project: Project.Document;
+    product: Product.Document;
+  }, expiresIn: number, generateId?: boolean): Transaction.DeferredDocument | Transaction.ReimbursementDocument;
   createPaymentDocument(data: {
     body: Transaction.PaymentRequest;
     account: Account.Document;
@@ -29,9 +38,15 @@ export interface ITransactionDocumentConverter {
     body: Transaction.TransferRequest;
     account: Account.Document;
     transferAccount: Account.Document;
+    transactions: Dictionary<Transaction.DeferredDocument>;
   }, expiresIn: number, generateId?: boolean): Transaction.TransferDocument;
+  createLoanTransferDocument(data: {
+    body: Transaction.TransferRequest;
+    account: Account.Document;
+    transferAccount: Account.Document;
+  }, expiresIn: number, generateId?: boolean): Transaction.LoanTransferDocument;
   createDraftDocument(data: {
-    body: Transaction.IssuedAt<Date> & Transaction.Base;
+    body: Transaction.IssuedAt<Date> & Transaction.Amount & Transaction.Description;
     file: File.Document;
   }, expiresIn: number, generateId?: boolean): Transaction.DraftDocument;
   updatePaymentDocument(data: {
@@ -134,6 +149,36 @@ export const transactionDocumentConverterFactory = (
   };
 
   const instance: ITransactionDocumentConverter = {
+    createLoanDocument: ({ body, account, loanAccount, project, category, recipient, product }, expiresIn, generateId) => {
+      const payingAccount = body.amount < 0 ? account : loanAccount;
+      const ownerAccount = body.amount < 0 ? loanAccount : account;
+      const amount = Math.abs(body.amount) * -1;
+
+      return {
+        ...body,
+        amount,
+        payingAccount,
+        ownerAccount,
+        recipient: recipient ?? undefined,
+        category: category ?? undefined,
+        project: project ?? undefined,
+        issuedAt: new Date(body.issuedAt),
+        transactionType: payingAccount.accountType === 'loan' ? 'reimbursement' : 'deferred',
+        quantity: category?.categoryType === 'inventory' ? body.quantity : undefined,
+        product: category?.categoryType === 'inventory' ? product ?? undefined : undefined,
+        invoiceNumber: category?.categoryType === 'invoice' ? body.invoiceNumber : undefined,
+        billingEndDate: category?.categoryType === 'invoice' ? createDate(body.billingEndDate) : undefined,
+        billingStartDate: category?.categoryType === 'invoice' ? createDate(body.billingStartDate) : undefined,
+        accountId: undefined,
+        categoryId: undefined,
+        projectId: undefined,
+        recipientId: undefined,
+        productId: undefined,
+        loanAccountId: undefined,
+        _id: generateId ? generateMongoId() : undefined,
+        expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
+      };
+    },
     createPaymentDocument: ({ body, account, project, category, recipient, product }, expiresIn, generateId) => {
       return {
         ...body,
@@ -187,14 +232,32 @@ export const transactionDocumentConverterFactory = (
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
-    createTransferDocument: ({ body, account, transferAccount }, expiresIn, generateId): Transaction.TransferDocument => {
+    createTransferDocument: ({ body, account, transferAccount, transactions }, expiresIn, generateId): Transaction.TransferDocument => {
       return {
         ...body,
         transferAmount: body.transferAmount ?? body.amount * -1,
         account: account,
         transferAccount: transferAccount,
+        payments: body.payments?.map(p => ({
+          amount: p.amount,
+          transaction: transactions[p.transactionId],
+        })),
         issuedAt: new Date(body.issuedAt),
         transactionType: 'transfer',
+        _id: generateId ? generateMongoId() : undefined,
+        accountId: undefined,
+        transferAccountId: undefined,
+        expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
+      };
+    },
+    createLoanTransferDocument: ({ body, account, transferAccount }, expiresIn, generateId): Transaction.LoanTransferDocument => {
+      return {
+        amount: body.amount,
+        description: body.description,
+        account: account,
+        transferAccount: transferAccount,
+        issuedAt: new Date(body.issuedAt),
+        transactionType: 'loanTransfer',
         _id: generateId ? generateMongoId() : undefined,
         accountId: undefined,
         transferAccountId: undefined,
@@ -226,7 +289,7 @@ export const transactionDocumentConverterFactory = (
     },
     updateTransferDocument: ({ document, ...restOfData }, expiresIn): Transaction.TransferDocument => {
       return {
-        ...instance.createTransferDocument(restOfData, expiresIn),
+        ...instance.createTransferDocument(restOfData as any, expiresIn),
         _id: document._id,
         createdAt: document.createdAt,
       };

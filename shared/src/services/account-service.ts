@@ -1,6 +1,8 @@
+import { calculateAccountBalance } from '@household/shared/services/aggregates/calculate-account-balance';
+import { getAccountWithBalance } from '@household/shared/services/aggregates/get-account-with-balance';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { Account } from '@household/shared/types/types';
-import { Aggregate, Types, UpdateQuery } from 'mongoose';
+import { UpdateQuery } from 'mongoose';
 
 export interface IAccountService {
   dumpAccounts(): Promise<Account.Document[]>;
@@ -13,155 +15,6 @@ export interface IAccountService {
 }
 
 export const accountServiceFactory = (mongodbService: IMongodbService): IAccountService => {
-  const accountAggregate = (accountId?: Account.Id): Aggregate<any[]> => {
-    return mongodbService.transactions.aggregate([
-      {
-        $unwind: {
-          path: '$splits',
-          preserveNullAndEmptyArrays: true,
-        },
-      },
-      {
-        $project: {
-          dupes: [
-            {
-              account: '$account',
-              amount: {
-                $ifNull: [
-                  '$splits.amount',
-                  '$amount',
-                ],
-              },
-              loanAmount: {
-                $cond: {
-                  if: {
-                    $and: [
-                      {
-                        $eq: [
-                          {
-                            $ifNull: [
-                              '$splits.loan',
-                              '$loan',
-                            ],
-                          },
-                          true,
-                        ],
-                      },
-                      {
-                        $lte: [
-                          {
-                            $ifNull: [
-                              '$splits.loanAccount',
-                              '$loanAccount',
-                            ],
-                          },
-                          null,
-                        ],
-
-                      },
-                    ],
-                  },
-                  then: {
-                    $multiply: [
-                      {
-                        $ifNull: [
-                          '$splits.amount',
-                          '$amount',
-                        ],
-                      },
-                      -1,
-                    ],
-
-                  },
-                  else: 0,
-                },
-              },
-            },
-            {
-              account: '$transferAccount',
-              amount: '$transferAmount',
-            },
-            {
-              account: {
-                $ifNull: [
-                  '$splits.loanAccount',
-                  '$loanAccount',
-                ],
-              },
-              amount: {
-                $multiply: [
-                  {
-                    $ifNull: [
-                      '$splits.amount',
-                      '$amount',
-                    ],
-                  },
-                  -1,
-                ],
-              },
-            },
-          ],
-        },
-      },
-      {
-        $unwind: {
-          path: '$dupes',
-
-        },
-      },
-      {
-        $project: {
-          account: '$dupes.account',
-          amount: '$dupes.amount',
-          loanAmount: '$dupes.loanAmount',
-        },
-      },
-      {
-        $match: {
-          account: accountId ? new Types.ObjectId(accountId) : {
-            $ne: null,
-          },
-        },
-      },
-      {
-        $group: {
-          _id: '$account',
-          balance: {
-            $sum: '$amount',
-          },
-          loanBalance: {
-            $sum: '$loanAmount',
-          },
-        },
-      },
-      {
-        $lookup: {
-          from: 'accounts',
-          localField: '_id',
-          foreignField: '_id',
-          as: 'account',
-        },
-      },
-      {
-        $replaceRoot: {
-          newRoot: {
-            $mergeObjects: [
-              {
-                balance: '$balance',
-                loanBalance: '$loanBalance',
-              },
-              {
-                $arrayElemAt: [
-                  '$account',
-                  0,
-                ],
-              },
-            ],
-          },
-        },
-      },
-    ]);
-  };
 
   const instance: IAccountService = {
     dumpAccounts: () => {
@@ -179,8 +32,14 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
     getAccountById: async (accountId) => {
       let account: Account.Document;
       if (accountId) {
-        [account] = await accountAggregate(accountId)
-          .exec();
+        [account] = await mongodbService.inSession((session) => {
+          return mongodbService.accounts.aggregate(getAccountWithBalance(accountId))
+            .session(session)
+            .collation({
+              locale: 'hu',
+            })
+            .exec();
+        });
       }
 
       return account ?? null;
@@ -217,13 +76,10 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
     },
     listAccounts: () => {
       return mongodbService.inSession((session) => {
-        return accountAggregate()
+        return mongodbService.accounts.aggregate(calculateAccountBalance)
           .session(session)
           .collation({
             locale: 'hu',
-          })
-          .sort({
-            name: 1,
           })
           .exec();
       });

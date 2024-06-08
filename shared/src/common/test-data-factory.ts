@@ -1,9 +1,8 @@
+import { generateMongoId } from '@household/shared/common/utils';
 import { Account, Auth, Category, File, Product, Project, Recipient, Report, Transaction } from '@household/shared/types/types';
-import { Types, UpdateQuery } from 'mongoose';
+import { UpdateQuery } from 'mongoose';
 
 type DataFactoryFunction<T> = (input?: Partial<T>) => T;
-
-export const generateMongoId = (): Types.ObjectId => new Types.ObjectId();
 
 export const createAccountId = (id?: string): Account.Id => {
   return (id ?? generateMongoId().toString()) as Account.Id;

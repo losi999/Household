@@ -1,4 +1,4 @@
-import { generateMongoId } from '@household/shared/common/test-data-factory';
+import { generateMongoId } from '@household/shared/common/utils';
 import { addSeconds, getCategoryId } from '@household/shared/common/utils';
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
 import { Restrict } from '@household/shared/types/common';

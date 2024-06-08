@@ -1,7 +1,9 @@
 import { populate } from '@household/shared/common/utils';
+import { listDeferredTransactions } from '@household/shared/services/aggregates/list deferred transactions by account id';
+import { listTransactionsByAccountId } from '@household/shared/services/aggregates/list transactions by account id';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
-import { Account, Common, Transaction } from '@household/shared/types/types';
-import { PipelineStage } from 'mongoose';
+import { Account, Common, Internal, Transaction } from '@household/shared/types/types';
+import { PipelineStage, Types } from 'mongoose';
 
 export interface ITransactionService {
   dumpTransactions(): Promise<Transaction.Document[]>;
@@ -11,7 +13,8 @@ export interface ITransactionService {
   getTransactionByIdAndAccountId(query: Transaction.TransactionId & Account.AccountId): Promise<Transaction.Document>;
   deleteTransaction(transactionId: Transaction.Id): Promise<unknown>;
   updateTransaction(doc: Transaction.Document): Promise<unknown>;
-  listTransactions(firstMatch: PipelineStage.Match, secondMatch: PipelineStage.Match): Promise<Transaction.PaymentDocument[]>;
+  listTransactions(match: PipelineStage.Match): Promise<Transaction.PaymentDocument[]>;
+  listDeferredTransactions(ctx: {payingAccountIds?: Account.Id[]; transactionIds?: Transaction.Id[]}): Promise<Transaction.DeferredDocument[]>;
   listTransactionsByAccountId(data: Account.AccountId & Common.Pagination<number>): Promise<Transaction.Document[]>;
 }
 
@@ -96,86 +99,10 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
       })
         .exec();
     },
-    listTransactions: (firstMatch, secondMatch) => {
+    listTransactions: (match) => {
       return mongodbService.inSession((session) => {
         const pipeline: PipelineStage[] = [
-          firstMatch,
-          {
-            $unwind: {
-              path: '$splits',
-              preserveNullAndEmptyArrays: true,
-            },
-          },
-          {
-            $set: {
-              loan: {
-                $ifNull: [
-                  '$splits.loan',
-                  '$loan',
-                ],
-              },
-              description: {
-                $ifNull: [
-                  '$splits.description',
-                  '$description',
-                ],
-              },
-              amount: {
-                $ifNull: [
-                  '$splits.amount',
-                  '$amount',
-                ],
-              },
-              category: {
-                $ifNull: [
-                  '$splits.category',
-                  '$category',
-                ],
-              },
-              project: {
-                $ifNull: [
-                  '$splits.project',
-                  '$project',
-                ],
-              },
-              product: {
-                $ifNull: [
-                  '$splits.product',
-                  '$product',
-                ],
-              },
-              quantity: {
-                $ifNull: [
-                  '$splits.quantity',
-                  '$quantity',
-                ],
-              },
-              invoiceNumber: {
-                $ifNull: [
-                  '$splits.invoiceNumber',
-                  '$invoiceNumber',
-                ],
-              },
-              billingStartDate: {
-                $ifNull: [
-                  '$splits.billingStartDate',
-                  '$billingStartDate',
-                ],
-              },
-              billingEndDate: {
-                $ifNull: [
-                  '$splits.billingEndDate',
-                  '$billingEndDate',
-                ],
-              },
-            },
-          },
-          secondMatch,
-          {
-            $project: {
-              splits: 0,
-            },
-          },
+          match,
           {
             $lookup: {
               from: 'accounts',
@@ -248,26 +175,57 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
           },
         ];
 
-        if (secondMatch.$match.$and.length === 0) {
-          pipeline.splice(3, 1);
-        }
+        // if (secondMatch.$match.$and.length === 0) {
+        //   pipeline.splice(3, 1);
+        // }
         return mongodbService.transactions.aggregate(pipeline, {
           session,
         });
 
       });
     },
-    listTransactionsByAccountId: ({ accountId, pageSize, pageNumber }) => {
+    listDeferredTransactions: ({ payingAccountIds, transactionIds }) => {
       return mongodbService.inSession((session) => {
+        return mongodbService.transactions.aggregate<Transaction.DeferredDocument>([
+          {
+            $match: {
+              ...(payingAccountIds?.length > 0 ? {
+                payingAccount: {
+                  $in: payingAccountIds.map(id => new Types.ObjectId(id)),
+                },
+              } : {}),
+              ...(transactionIds?.length > 0 ? {
+                _id: {
+                  $in: transactionIds.map(id => new Types.ObjectId(id)),
+                },
+              } : {}),
+              transactionType: 'deferred',
+            },
+          },
+          ...listDeferredTransactions,
+        ], {
+          session,
+        });
+      });
+    },
+    listTransactionsByAccountId: ({ accountId, pageSize, pageNumber }) => {
+      return mongodbService.inSession(async (session) => {
+        const transactionIds = (await mongodbService.transactions.aggregate<Internal.Id>([
+          ...listTransactionsByAccountId(accountId),
+          {
+            $skip: (pageNumber - 1) * pageSize,
+          },
+          {
+            $limit: pageSize,
+          },
+        ], {
+          session,
+        })).map(d => d._id);
+
         return mongodbService.transactions.find({
-          $or: [
-            {
-              account: accountId,
-            },
-            {
-              transferAccount: accountId,
-            },
-          ],
+          _id: {
+            $in: transactionIds,
+          },
         })
           .setOptions({
             session,
@@ -277,15 +235,12 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
               'category',
               'product',
               'transferAccount',
+              'payingAccount',
+              'ownerAccount',
               'splits.category',
               'splits.project',
               'splits.product'),
             lean: true,
-            sort: {
-              issuedAt: 'desc',
-            },
-            limit: pageSize,
-            skip: (pageNumber - 1) * pageSize,
           })
           .exec();
       });

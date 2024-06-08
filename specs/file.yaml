@@ -30,3 +30,4 @@ components:
       properties:
         fileId:
           type: string
+          minLength: 1

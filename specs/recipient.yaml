@@ -11,6 +11,7 @@ components:
       properties:
         recipientId:
           type: string
+          minLength: 1
     Name:
       type: object
       required:

@@ -1,5 +1,5 @@
 import { httpErrors } from '@household/api/common/error-handlers';
-import { getCategoryId, getTransactionId } from '@household/shared/common/utils';
+import { getAccountId, getCategoryId, getTransactionId } from '@household/shared/common/utils';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICategoryService } from '@household/shared/services/category-service';
@@ -26,16 +26,19 @@ export const createPaymentTransactionServiceFactory = (
   transactionDocumentConverter: ITransactionDocumentConverter,
 ): ICreatePaymentTransactionService => {
   return async ({ body, expiresIn }) => {
-    const { accountId, categoryId, projectId, recipientId, productId } = body;
+    const { accountId, categoryId, projectId, recipientId, productId, loanAccountId } = body;
 
     const [
-      account,
+      accounts,
       category,
       project,
       recipient,
       product,
     ] = await Promise.all([
-      accountService.getAccountById(accountId),
+      accountService.listAccountsByIds([
+        accountId,
+        loanAccountId,
+      ]),
       categoryService.getCategoryById(categoryId),
       projectService.getProjectById(projectId),
       recipientService.getRecipientById(recipientId),
@@ -48,8 +51,15 @@ export const createPaymentTransactionServiceFactory = (
       recipientId,
     }));
 
+    const account = accounts.find(a => getAccountId(a) === accountId);
+    const loanAccount = accounts.find(a => getAccountId(a) === loanAccountId);
+
     httpErrors.account.notFound(!account, {
       accountId,
+    }, 400);
+
+    httpErrors.account.notFound(!loanAccount && !!loanAccountId, {
+      accountId: loanAccountId,
     }, 400);
 
     httpErrors.category.notFound(!category && !!categoryId, {
@@ -75,7 +85,15 @@ export const createPaymentTransactionServiceFactory = (
       });
     }
 
-    const document = transactionDocumentConverter.createPaymentDocument({
+    const document = body.loanAccountId ? transactionDocumentConverter.createLoanDocument({
+      body,
+      account,
+      loanAccount,
+      category,
+      project,
+      recipient,
+      product,
+    }, expiresIn) : transactionDocumentConverter.createPaymentDocument({
       body,
       account,
       category,

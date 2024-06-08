@@ -2,13 +2,13 @@ import { Report, Transaction } from '@household/shared/types/types';
 import { FilterQuery, PipelineStage, Types } from 'mongoose';
 
 export interface IReportDocumentConverter {
-  createFilterQuery(body: Report.Request): [PipelineStage.Match, PipelineStage.Match];
+  createFilterQuery(body: Report.Request): PipelineStage.Match;
 }
 
 export const reportDocumentConverterFactory = (): IReportDocumentConverter => {
   const instance: IReportDocumentConverter = {
     createFilterQuery: (body) => {
-      const firstMatch: PipelineStage.Match = {
+      const match: PipelineStage.Match = {
         $match: {
           $and: [
             {
@@ -16,15 +16,12 @@ export const reportDocumentConverterFactory = (): IReportDocumentConverter => {
                 $ne: 'transfer',
               },
             },
-          ],
-        },
-      };
-      const secondMatch: PipelineStage.Match = {
-        $match: {
-          $and: [
             {
-              loan: {
-                $ne: true,
+              $expr: {
+                $ne: [
+                  '$account',
+                  '$payingAccount',
+                ],
               },
             },
           ],
@@ -40,17 +37,11 @@ export const reportDocumentConverterFactory = (): IReportDocumentConverter => {
       body.forEach((filter) => {
         switch(filter.filterType) {
           case 'account':
-          case 'recipient': {
-            firstMatch.$match.$and.push({
-              [filter.filterType]: {
-                [filter.include ? '$in' : '$nin']: filter.items.map(i => new Types.ObjectId(i)),
-              },
-            });
-          } break;
+          case 'recipient':
           case 'category':
           case 'product':
-          case 'project': {
-            secondMatch.$match.$and.push({
+          case 'project':{
+            match.$match.$and.push({
               [filter.filterType]: {
                 [filter.include ? '$in' : '$nin']: filter.items.map(i => new Types.ObjectId(i)),
               },
@@ -97,17 +88,14 @@ export const reportDocumentConverterFactory = (): IReportDocumentConverter => {
       });
 
       if (includedDateQueries.$or.length > 0) {
-        firstMatch.$match.$and.push(includedDateQueries);
+        match.$match.$and.push(includedDateQueries);
       }
 
       if (excludedDateQueries.length > 0) {
-        firstMatch.$match.$and.push(...excludedDateQueries);
+        match.$match.$and.push(...excludedDateQueries);
       }
 
-      return [
-        firstMatch,
-        secondMatch,
-      ];
+      return match;
     },
   };
 

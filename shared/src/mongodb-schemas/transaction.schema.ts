@@ -9,6 +9,9 @@ export const transactionSchema = new Schema<Transaction.Document>({
       'transfer',
       'split',
       'draft',
+      'deferred',
+      'reimbursement',
+      'loanTransfer',
     ],
   },
   description: {
@@ -39,6 +42,22 @@ export const transactionSchema = new Schema<Transaction.Document>({
   },
   billingStartDate: {
     type: Date,
+  },
+  payments: {
+    type: [
+      {
+        transaction: {
+          type: Schema.Types.ObjectId,
+          ref: 'transactions',
+          required: true,
+        },
+        amount: {
+          type: Number,
+          required: true,
+        },
+      },
+    ],
+    _id: false,
   },
   splits: {
     type: [
@@ -97,6 +116,14 @@ export const transactionSchema = new Schema<Transaction.Document>({
     ref: 'categories',
   },
   account: {
+    type: Schema.Types.ObjectId,
+    ref: 'accounts',
+  },
+  payingAccount: {
+    type: Schema.Types.ObjectId,
+    ref: 'accounts',
+  },
+  ownerAccount: {
     type: Schema.Types.ObjectId,
     ref: 'accounts',
   },

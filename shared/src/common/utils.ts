@@ -1,6 +1,6 @@
 import { Dictionary } from '@household/shared/types/common';
 import { Account, Category, File, Internal, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
-import { PopulateOptions } from 'mongoose';
+import { PopulateOptions, Types } from 'mongoose';
 
 export const populate = (...populateOptions: (string | PopulateOptions)[]): PopulateOptions[] => {
   return populateOptions.map(p => {
@@ -30,6 +30,13 @@ export const createDate = (date: string): Date => {
   return date ? new Date(date) : undefined;
 };
 
+export const pushUnique = <T>(array: T[], item: T) => {
+  if (item && !array.includes(item)) {
+    array.push(item);
+  }
+};
+
+export const generateMongoId = (): Types.ObjectId => new Types.ObjectId();
 const getId = (doc: Internal.Id) => doc?._id.toString();
 export const getTransactionId = (doc: Transaction.Document): Transaction.Id => getId(doc) as Transaction.Id;
 export const getAccountId = (doc: Account.Document): Account.Id => getId(doc) as Account.Id;
