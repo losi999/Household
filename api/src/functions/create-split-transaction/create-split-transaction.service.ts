@@ -33,15 +33,15 @@ export const createSplitTransactionServiceFactory = (
     const productIds: Product.Id[] = [];
     const accountIds: Account.Id[] = [accountId];
 
-    body.splits = body.splits.filter(s => {
-      if (s.loanAccountId) {
-        return false;
-      }
-
-      return true;
-    });
-
     body.splits.forEach(({ amount, categoryId, productId, projectId, loanAccountId }) => {
+      httpErrors.transaction.sameAccountLoan({
+        accountId,
+        loanAccountId,
+      });
+      httpErrors.transaction.positiveSplitAmountLoan({
+        amount,
+        loanAccountId,
+      });
       total += amount;
       pushUnique(categoryIds, categoryId);
       pushUnique(projectIds, projectId);
@@ -73,7 +73,7 @@ export const createSplitTransactionServiceFactory = (
 
     httpErrors.account.multipleNotFound(accountIds.length !== accountList.length, {
       accountIds,
-    }, 400);
+    });
 
     httpErrors.category.multipleNotFound(categoryIds.length !== categoryList.length, {
       categoryIds,
@@ -87,40 +87,38 @@ export const createSplitTransactionServiceFactory = (
       recipientId,
     }, 400);
 
-    const [
-      account,
-      ...loanAccounts
-    ] = accountList;
-
-    const accounts = toDictionary(accountList, '_id');
     const categories = toDictionary(categoryList, '_id');
     const projects = toDictionary(projectList, '_id');
     const products = toDictionary(productList, '_id');
+    const accounts = toDictionary(accountList, '_id');
 
-    body.splits.forEach(({ categoryId, productId }) => {
+    body.splits.forEach((split) => {
+      const { categoryId, productId } = split;
       const category = categories[categoryId];
+      const product = products[productId];
       if (category?.categoryType === 'inventory' && productId) {
-        const product = products[productId];
 
         httpErrors.product.notFound(!product && !!productId, {
           productId,
         }, 400);
 
         httpErrors.product.categoryRelation(getCategoryId(product.category) !== categoryId, {
-          categoryId: categoryId,
+          categoryId,
           productId,
         });
       }
     });
 
-    const document = transactionDocumentConverter.createSplitDocument({
+    const document = transactionDocumentConverter._createSplitDocument({
       body,
-      account,
+      accounts,
       recipient,
       categories,
       projects,
       products,
     }, expiresIn);
+
+    console.log(document);
 
     const saved = await transactionService.saveTransaction(document).catch(httpErrors.transaction.save(document));
 

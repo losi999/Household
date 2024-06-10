@@ -24,7 +24,10 @@ const schema: StrictJSONSchema7<Transaction.SplitRequest> = {
     ...accountId.properties,
     ...recipientId.properties,
     ...issuedAt.properties,
-    ...amount.properties,
+    amount: {
+      ...amount.properties.amount,
+      exclusiveMaximum: 0,
+    },
     ...description.properties,
     splits: {
       type: 'array',

@@ -48,33 +48,62 @@ export const createTransferTransactionServiceFactory = (
       accountId: transferAccountId,
     }, 400);
 
-    const payingAccount = body.amount < 0 ? transferAccount : account;
+    let document: Transaction.TransferDocument | Transaction.LoanTransferDocument;
 
-    const transactionList = await transactionService.listDeferredTransactions({
-      payingAccountIds: [getAccountId(payingAccount)],
-      transactionIds,
-    });
+    if (account.accountType === 'loan' || transferAccount.accountType === 'loan') {
+      if (account.accountType === transferAccount.accountType) {
+        body.payments = undefined;
+        document = transactionDocumentConverter.createTransferDocument({
+          body,
+          account,
+          transferAccount,
+          transactions: undefined,
+        }, expiresIn);
+      } else {
+        document = transactionDocumentConverter.createLoanTransferDocument({
+          body,
+          account,
+          transferAccount,
+        }, expiresIn);
+      }
+    } else {
+      if (body.payments) {
+        const transactionIds: Transaction.Id[] = [];
+        let total = 0;
+        body.payments?.forEach(({ transactionId, amount }) => {
+          total += amount;
+          pushUnique(transactionIds, transactionId);
+        });
 
-    httpErrors.transaction.multipleNotFound(transactionIds.length !== transactionList.length, {
-      transactionIds,
-    });
+        httpErrors.transaction.sumOfPayments(total > Math.abs(body.amount), body);
 
-    // ne lehessen többet törleszteni, mint amennyi még hátravan
+        const payingAccount = body.amount < 0 ? transferAccount : account;
 
-    const transactions = toDictionary(transactionList, '_id');
+        const transactionList = await transactionService.listDeferredTransactions({
+          payingAccountIds: [getAccountId(payingAccount)],
+          transactionIds,
+        });
 
-    const document = (account.accountType === 'loan') === (transferAccount.accountType === 'loan') ?
-      transactionDocumentConverter.createTransferDocument({
-        body,
-        account,
-        transferAccount,
-        transactions,
-      }, expiresIn) :
-      transactionDocumentConverter.createLoanTransferDocument({
-        body,
-        account,
-        transferAccount,
-      }, expiresIn);
+        httpErrors.transaction.multipleNotFound(transactionIds.length !== transactionList.length, {
+          transactionIds,
+        });
+        const transactions = toDictionary(transactionList, '_id');
+
+        document = transactionDocumentConverter.createTransferDocument({
+          body,
+          account,
+          transferAccount,
+          transactions,
+        }, expiresIn);
+      } else {
+        document = transactionDocumentConverter.createTransferDocument({
+          body,
+          account,
+          transferAccount,
+          transactions: undefined,
+        }, expiresIn);
+      }
+    }
 
     const saved = await transactionService.saveTransaction(document).catch(httpErrors.transaction.save(document));
 

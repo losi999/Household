@@ -1,16 +1,36 @@
-var accountId = '665aca435689536dd37d847d'
+//var accountId = '665aca365689536dd37d8468' //bank
+var accountId = '665aca435689536dd37d847d'//revolut
+//var accountId = '665aca665689536dd37d847f' //kölcsön
 //var transactionId = '66606744bb2522096f3356f2'
 
 db.getCollection("transactions").aggregate([
+  {
+    $unwind: {
+      path: '$splits',
+      preserveNullAndEmptyArrays: true,
+    },
+  },
+  {
+    $replaceRoot: {
+      newRoot: {
+        $mergeObjects: [
+          '$$ROOT',
+          '$splits',
+        ],
+      },
+    },
+  },
   {
     $match: {
       //      _id: {
       //        $in: [ObjectId(transactionId)]
       //      },
-      payingAccount: {
+      'accounts.payingAccount': {
         $in: [ObjectId(accountId)]
       },
-      transactionType: 'deferred',
+      transactionType: {
+        $in: ['deferred','deferredSplit']
+      }
     },
   },
   {
@@ -48,33 +68,33 @@ db.getCollection("transactions").aggregate([
     },
   },
   {
-    $unset: ['deferredTransactions'],
+    $unset: ['deferredTransactions', 'splits'],
   },
-    {
+  {
     $lookup: {
       from: 'accounts',
-      localField: 'payingAccount',
+      localField: 'accounts.payingAccount',
       foreignField: '_id',
-      as: 'payingAccount',
+      as: 'accounts.payingAccount',
     },
   },
   {
     $unwind: {
-      path: '$payingAccount',
+      path: '$accounts.payingAccount',
       preserveNullAndEmptyArrays: true,
     },
   },
   {
     $lookup: {
       from: 'accounts',
-      localField: 'ownerAccount',
+      localField: 'accounts.ownerAccount',
       foreignField: '_id',
-      as: 'ownerAccount',
+      as: 'accounts.ownerAccount',
     },
   },
   {
     $unwind: {
-      path: '$ownerAccount',
+      path: '$accounts.ownerAccount',
       preserveNullAndEmptyArrays: true,
     },
   },

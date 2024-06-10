@@ -28,6 +28,11 @@ export const createPaymentTransactionServiceFactory = (
   return async ({ body, expiresIn }) => {
     const { accountId, categoryId, projectId, recipientId, productId, loanAccountId } = body;
 
+    httpErrors.transaction.sameAccountLoan({
+      accountId,
+      loanAccountId,
+    });
+
     const [
       accounts,
       category,
@@ -85,22 +90,40 @@ export const createPaymentTransactionServiceFactory = (
       });
     }
 
-    const document = body.loanAccountId ? transactionDocumentConverter.createLoanDocument({
-      body,
-      account,
-      loanAccount,
-      category,
-      project,
-      recipient,
-      product,
-    }, expiresIn) : transactionDocumentConverter.createPaymentDocument({
-      body,
-      account,
-      category,
-      project,
-      recipient,
-      product,
-    }, expiresIn);
+    let document: Transaction.PaymentDocument | Transaction.DeferredDocument | Transaction.ReimbursementDocument;
+
+    if (!body.loanAccountId) {
+      document = transactionDocumentConverter.createPaymentDocument({
+        body,
+        account,
+        category,
+        project,
+        recipient,
+        product,
+      }, expiresIn);
+    } else {
+      const payingAccount = body.amount < 0 ? account : loanAccount;
+      const ownerAccount = body.amount < 0 ? loanAccount : account;
+
+      document = payingAccount.accountType === 'loan' ? transactionDocumentConverter.createReimbursementDocument({
+        body,
+        payingAccount,
+        ownerAccount,
+        category,
+        project,
+        recipient,
+        product,
+      }, expiresIn) : transactionDocumentConverter.createDeferredDocument({
+        body,
+        payingAccount,
+        ownerAccount,
+        category,
+        project,
+        recipient,
+        product,
+      }, expiresIn);
+
+    }
 
     const saved = await transactionService.saveTransaction(document).catch(httpErrors.transaction.save(document));
 

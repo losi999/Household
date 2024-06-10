@@ -1,7 +1,7 @@
 var pageNumber = 1
 var pageSize = 25
-var accountId = '665aca365689536dd37d8468'
-//var accountId = '665aca435689536dd37d847d'
+//var accountId = '665aca365689536dd37d8468' //bank
+var accountId = '665aca435689536dd37d847d'//revolut
 
 db.getCollection("transactions").aggregate([
   {
@@ -15,53 +15,46 @@ db.getCollection("transactions").aggregate([
       newRoot: {
         $mergeObjects: [
           '$$ROOT',
-          {
-            mainDescription: '$description',
-            mainAmount: '$amount'
-          },
           '$splits',
+          {
+            tx_amount: '$amount',
+            tx_description: '$description',
+            tx_id: '$_id',
+            tx_transactionType: '$transactionType'
+          }
         ],
       },
     },
   },
   {
     $set: {
-      dupes: {
+      tmp_dupes: {
         $filter: {
           input: [
             {
-              _account: '$account',
-              _amount: '$amount',
-              _description: '$description',
-              amount: '$mainAmount',
-              description: '$mainDescription'
+              tmp_account: '$accounts.mainAccount',
             },
             {
-              _account: '$transferAccount',
-              _amount: {
+              tmp_account: '$accounts.transferAccount',
+              amount: {
                 $ifNull: [
                   '$transferAmount',
                   '$amount',
                 ],
               },
-              amount: '$mainAmount'
             },
             {
-              _account: '$ownerAccount',
-              _amount: '$amount',
-              amount: '$mainAmount'
+              tmp_account: '$accounts.ownerAccount',
             },
             {
-              _account: '$payingAccount',
-              _amount: '$amount',
-              amount: '$mainAmount'
+              tmp_account: '$accounts.payingAccount',
             },
           ],
           cond: {
             $ne: [
               {
                 $ifNull: [
-                  '$$this._account',
+                  '$$this.tmp_account',
                   null,
                 ],
               },
@@ -74,7 +67,7 @@ db.getCollection("transactions").aggregate([
   },
   {
     $unwind: {
-      path: '$dupes',
+      path: '$tmp_dupes',
     },
   },
   {
@@ -82,22 +75,20 @@ db.getCollection("transactions").aggregate([
       newRoot: {
         $mergeObjects: [
           '$$ROOT',
-          '$dupes',
+          '$tmp_dupes',
         ],
       },
     },
   },
   {
     $unset: [
-      'dupes',
+      'tmp_dupes',
       'splits',
-      'mainAmount',
-      'mainDescription'
     ],
   },
   {
     $match: {
-      _account: ObjectId(accountId),
+      tmp_account: ObjectId(accountId),
     },
   },
   {
@@ -124,7 +115,7 @@ db.getCollection("transactions").aggregate([
         },
 
       ],
-      as: 'deferredTransactions',
+      as: 'tmp_deferredTransactions',
     }
   },
   {
@@ -134,7 +125,7 @@ db.getCollection("transactions").aggregate([
           if: {
             $eq: [
               '$transactionType',
-              'deferred',
+              'deferred'
             ],
           },
           then: {
@@ -143,17 +134,17 @@ db.getCollection("transactions").aggregate([
                 {
                   case: {
                     $eq: [
-                      '$_account',
-                      '$ownerAccount',
+                      '$tmp_account',
+                      '$accounts.ownerAccount',
                     ],
                   },
                   then: {
                     $multiply: [
                       {
                         $sum: [
-                          '$_amount',
+                          '$amount',
                           {
-                            $sum: '$deferredTransactions.payments.amount',
+                            $sum: '$tmp_deferredTransactions.payments.amount',
                           },
                         ],
                       },
@@ -164,15 +155,15 @@ db.getCollection("transactions").aggregate([
                 {
                   case: {
                     $eq: [
-                      '$_account',
-                      '$payingAccount',
+                      '$tmp_account',
+                      '$accounts.payingAccount',
                     ],
                   },
                   then: {
                     $sum: [
-                      '$_amount',
+                      '$amount',
                       {
-                        $sum: '$deferredTransactions.payments.amount',
+                        $sum: '$tmp_deferredTransactions.payments.amount',
                       },
                     ],
                   },
@@ -187,61 +178,61 @@ db.getCollection("transactions").aggregate([
     },
   },
   {
-    $unset: ['deferredTransactions', '_account']
+    $unset: ['tmp_deferredTransactions', 'tmp_account']
   },
   {
     $lookup: {
       from: 'accounts',
-      localField: 'account',
+      localField: 'accounts.mainAccount',
       foreignField: '_id',
-      as: 'account',
+      as: 'accounts.mainAccount',
     },
   },
   {
     $unwind: {
-      path: '$account',
+      path: '$accounts.mainAccount',
       preserveNullAndEmptyArrays: true,
     },
   },
   {
     $lookup: {
       from: 'accounts',
-      localField: 'payingAccount',
+      localField: 'accounts.payingAccount',
       foreignField: '_id',
-      as: 'payingAccount',
+      as: 'accounts.payingAccount',
     },
   },
   {
     $unwind: {
-      path: '$payingAccount',
+      path: '$accounts.payingAccount',
       preserveNullAndEmptyArrays: true,
     },
   },
   {
     $lookup: {
       from: 'accounts',
-      localField: 'ownerAccount',
+      localField: 'accounts.ownerAccount',
       foreignField: '_id',
-      as: 'ownerAccount',
+      as: 'accounts.ownerAccount',
     },
   },
   {
     $unwind: {
-      path: '$ownerAccount',
+      path: '$accounts.ownerAccount',
       preserveNullAndEmptyArrays: true,
     },
   },
   {
     $lookup: {
       from: 'accounts',
-      localField: 'transferAccount',
+      localField: 'accounts.transferAccount',
       foreignField: '_id',
-      as: 'transferAccount',
+      as: 'accounts.transferAccount',
     },
   },
   {
     $unwind: {
-      path: '$transferAccount',
+      path: '$accounts.transferAccount',
       preserveNullAndEmptyArrays: true,
     },
   },
@@ -303,13 +294,10 @@ db.getCollection("transactions").aggregate([
   },
   {
     $group: {
-      _id: '$_id',
-      transactionType: {
-        $first: '$transactionType'
-      },
-      temp: {
+      _id: '$tx_id',
+      tmp_splits: {
         $push: '$$ROOT'
-      }
+      },
     },
   },
   {
@@ -317,7 +305,7 @@ db.getCollection("transactions").aggregate([
       newRoot: {
         $mergeObjects: ['$$ROOT',
           {
-            $arrayElemAt: ['$temp', 0]
+            $arrayElemAt: ['$tmp_splits', 0]
           },
         ]
       },
@@ -325,38 +313,62 @@ db.getCollection("transactions").aggregate([
   },
   {
     $set: {
+      _id: '$tx_id',
+      transactionType: '$tx_transactionType',
+      description: '$tx_description',
+      amount: '$tx_amount',
+      accounts: {
+        $cond: {
+          if: {
+            $eq: ['$tx_transactionType', 'split']
+          },
+          then: {
+            mainAccount: {
+              $ifNull: ['$accounts.mainAccount', '$accounts.payingAccount']
+            }
+          },
+          else: '$accounts'
+        }
+      },
       category: {
-        $cond: [{ $eq: ['$transactionType', 'split'] }, '$$REMOVE', '$category']
+        $cond: [{ $eq: ['$tx_transactionType', 'split'] }, '$$REMOVE', '$category']
       },
       project: {
-        $cond: [{ $eq: ['$transactionType', 'split'] }, '$$REMOVE', '$project']
+        $cond: [{ $eq: ['$tx_transactionType', 'split'] }, '$$REMOVE', '$project']
       },
       quantity: {
-        $cond: [{ $eq: ['$transactionType', 'split'] }, '$$REMOVE', '$quantity']
+        $cond: [{ $eq: ['$tx_transactionType', 'split'] }, '$$REMOVE', '$quantity']
       },
       product: {
-        $cond: [{ $eq: ['$transactionType', 'split'] }, '$$REMOVE', '$product']
+        $cond: [{ $eq: ['$tx_transactionType', 'split'] }, '$$REMOVE', '$product']
       },
       invoiceNumber: {
-        $cond: [{ $eq: ['$transactionType', 'split'] }, '$$REMOVE', '$invoiceNumber']
+        $cond: [{ $eq: ['$tx_transactionType', 'split'] }, '$$REMOVE', '$invoiceNumber']
       },
       billingStartDate: {
-        $cond: [{ $eq: ['$transactionType', 'split'] }, '$$REMOVE', '$billingStartDate']
+        $cond: [{ $eq: ['$tx_transactionType', 'split'] }, '$$REMOVE', '$billingStartDate']
       },
       billingEndDate: {
-        $cond: [{ $eq: ['$transactionType', 'split'] }, '$$REMOVE', '$billingEndDate']
+        $cond: [{ $eq: ['$tx_transactionType', 'split'] }, '$$REMOVE', '$billingEndDate']
+      },
+      remainingAmount: {
+        $cond: [{ $eq: ['$tx_transactionType', 'split'] }, '$$REMOVE', '$remainingAmount']
       },
       splits: {
         $cond: {
           if: {
-            $eq: ['$transactionType', 'split']
+            $eq: ['$tx_transactionType', 'split']
           },
           then: {
             $map: {
-              input: '$temp',
+              input: '$tmp_splits',
               in: {
-                amount: '$$this._amount',
-                description: '$$this._description',
+                _id: { $cond: [{ $eq: ['$$this.transactionType', 'deferred'] }, '$$this._id', '$$REMOVE'] },
+                transactionType: { $cond: [{ $eq: ['$$this.transactionType', 'deferred'] }, '$$this.transactionType', '$$REMOVE'] },
+                accounts: { $cond: [{ $eq: ['$$this.transactionType', 'deferred'] }, '$$this.accounts', '$$REMOVE'] },
+                remainingAmount: { $cond: [{ $eq: ['$$this.transactionType', 'deferred'] }, '$$this.remainingAmount', '$$REMOVE'] },
+                amount: '$$this.amount',
+                description: '$$this.description',
                 category: '$$this.category',
                 project: '$$this.project',
                 quantity: '$$this.quantity',
@@ -369,12 +381,11 @@ db.getCollection("transactions").aggregate([
           },
           else: '$$REMOVE'
         }
-
       }
     }
   },
   {
-    $unset: ['_amount', '_description', 'temp']
+    $unset: ['tx_amount', 'tx_description', 'tmp_splits', 'tx_id', 'tx_transactionType']
   },
   {
     $sort: {

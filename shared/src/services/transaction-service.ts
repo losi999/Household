@@ -36,8 +36,8 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
     },
     saveTransactions: (docs) => {
       return mongodbService.inSession((session) => {
-        return session.withTransaction(async () => {
-          await mongodbService.transactions.insertMany(docs, {
+        return session.withTransaction(() => {
+          return mongodbService.transactions.insertMany(docs, {
             session,
           });
         });

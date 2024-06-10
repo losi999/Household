@@ -71,10 +71,28 @@ export const httpErrors = {
         throw httpError(statusCode, 'Sum of splits must equal to total amount');
       }
     },
+    sumOfPayments: (condition: boolean, ctx: Transaction.TransferRequest, statusCode = 400) => {
+      if(condition) {
+        log('Sum of payments must be less than total amount', ctx);
+        throw httpError(statusCode, 'Sum of payments must be less than total amount');
+      }
+    },
     sameAccountTransfer: (ctx: Account.AccountId & Transaction.TransferAccountId, statusCode = 400) => {
       if (ctx.accountId === ctx.transferAccountId) {
         log('Cannot transfer to same account', ctx);
         throw httpError(statusCode, 'Cannot transfer to same account');
+      }
+    },
+    sameAccountLoan: (ctx: Account.AccountId & Transaction.LoanAccountId, statusCode = 400) => {
+      if (ctx.accountId === ctx.loanAccountId) {
+        log('Cannot loan to same account', ctx);
+        throw httpError(statusCode, 'Cannot loan to same account');
+      }
+    },
+    positiveSplitAmountLoan: (ctx: Transaction.Amount & Transaction.LoanAccountId, statusCode = 400) => {
+      if (ctx.amount >= 0 && ctx.loanAccountId) {
+        log('Positive amount cannot be loaned in split', ctx);
+        throw httpError(statusCode, 'Positive amount cannot be loaned in split');
       }
     },
   },

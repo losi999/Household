@@ -17,9 +17,6 @@ const aggregate = [
             newRoot: {
               $mergeObjects: [
                 '$$ROOT',
-                {
-                  _description: '$description',
-                },
                 '$splits',
               ],
             },
@@ -31,11 +28,11 @@ const aggregate = [
               $filter: {
                 input: [
                   {
-                    _account: '$account',
+                    _account: '$accounts.mainAccount',
                     _amount: '$amount',
                   },
                   {
-                    _account: '$transferAccount',
+                    _account: '$accounts.transferAccount',
                     _amount: {
                       $ifNull: [
                         '$transferAmount',
@@ -44,11 +41,11 @@ const aggregate = [
                     },
                   },
                   {
-                    _account: '$ownerAccount',
+                    _account: '$accounts.ownerAccount',
                     _amount: '$amount',
                   },
                   {
-                    _account: '$payingAccount',
+                    _account: '$accounts.payingAccount',
                     _amount: '$amount',
                   },
                 ],
@@ -130,9 +127,9 @@ const aggregate = [
             remainingAmount: {
               $cond: {
                 if: {
-                  $eq: [
+                  $in: [
                     '$transactionType',
-                    'deferred',
+                    ['deferred','deferredSplit']
                   ],
                 },
                 then: {
@@ -142,7 +139,7 @@ const aggregate = [
                         case: {
                           $eq: [
                             '$_account',
-                            '$ownerAccount',
+                            '$accounts.ownerAccount',
                           ],
                         },
                         then: {
@@ -163,7 +160,7 @@ const aggregate = [
                         case: {
                           $eq: [
                             '$_account',
-                            '$payingAccount',
+                            '$accounts.payingAccount',
                           ],
                         },
                         then: {
@@ -204,7 +201,7 @@ const aggregate = [
                       {
                         $eq: [
                           '$$this._account',
-                          '$$this.ownerAccount',
+                          '$$this.accounts.ownerAccount',
                         ],
                       },
                       {
@@ -223,7 +220,7 @@ const aggregate = [
                       {
                         $eq: [
                           '$$this._account',
-                          '$$this.payingAccount',
+                          '$$this.accounts.payingAccount',
                         ],
                       },
                       {

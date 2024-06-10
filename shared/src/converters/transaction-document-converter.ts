@@ -9,15 +9,24 @@ import { Dictionary, Restrict } from '@household/shared/types/common';
 import { Account, Category, File, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 
 export interface ITransactionDocumentConverter {
-  createLoanDocument(data: {
+  createDeferredDocument(data: {
     body: Transaction.PaymentRequest;
-    account: Account.Document;
-    loanAccount: Account.Document;
+    payingAccount: Account.Document;
+    ownerAccount: Account.Document;
     category: Category.Document;
     recipient: Recipient.Document;
     project: Project.Document;
     product: Product.Document;
-  }, expiresIn: number, generateId?: boolean): Transaction.DeferredDocument | Transaction.ReimbursementDocument;
+  }, expiresIn: number, generateId?: boolean): Transaction.DeferredDocument;
+  createReimbursementDocument(data: {
+    body: Transaction.PaymentRequest;
+    payingAccount: Account.Document;
+    ownerAccount: Account.Document;
+    category: Category.Document;
+    recipient: Recipient.Document;
+    project: Project.Document;
+    product: Product.Document;
+  }, expiresIn: number, generateId?: boolean): Transaction.ReimbursementDocument;
   createPaymentDocument(data: {
     body: Transaction.PaymentRequest;
     account: Account.Document;
@@ -26,6 +35,14 @@ export interface ITransactionDocumentConverter {
     project: Project.Document;
     product: Product.Document;
   }, expiresIn: number, generateId?: boolean): Transaction.PaymentDocument;
+  _createSplitDocument(data: {
+    body: Transaction.SplitRequest;
+    accounts: Dictionary<Account.Document>;
+    categories: Dictionary<Category.Document>;
+    recipient: Recipient.Document;
+    projects: Dictionary<Project.Document>;
+    products: Dictionary<Product.Document>;
+  }, expiresIn: number, generateId?: boolean): Transaction.SplitDocument;
   createSplitDocument(data: {
     body: Transaction.SplitRequest;
     account: Account.Document;
@@ -73,8 +90,8 @@ export interface ITransactionDocumentConverter {
     account: Account.Document;
     transferAccount: Account.Document;
   }, expiresIn: number): Transaction.TransferDocument;
-  toResponse(document: Transaction.Document, mainAccountId?: Account.Id): Transaction.Response;
-  toResponseList(documents: Transaction.Document[], mainAccountId?: Account.Id): Transaction.Response[];
+  toResponse(document: Transaction.Document, viewingAccountId?: Account.Id): Transaction.Response;
+  toResponseList(documents: Transaction.Document[], viewingAccountId?: Account.Id): Transaction.Response[];
   toReport(document: Transaction.PaymentDocument): Transaction.Report;
   toReportList(documents: (Transaction.PaymentDocument)[]): Transaction.Report[];
 }
@@ -95,7 +112,8 @@ export const transactionDocumentConverterFactory = (
       issuedAt: doc.issuedAt.toISOString(),
       _id: undefined,
       expiresAt: undefined,
-      account: accountDocumentConverter.toResponse(doc.account),
+      accounts: undefined,
+      account: accountDocumentConverter.toResponse(doc.accounts.mainAccount),
       billingEndDate: doc.billingEndDate?.toISOString().split('T')[0],
       billingStartDate: doc.billingStartDate?.toISOString().split('T')[0],
       product: doc.product ? productDocumentConverter.toResponse(doc.product) : undefined,
@@ -114,7 +132,8 @@ export const transactionDocumentConverterFactory = (
       issuedAt: doc.issuedAt.toISOString(),
       _id: undefined,
       expiresAt: undefined,
-      account: accountDocumentConverter.toResponse(doc.account),
+      accounts: undefined,
+      account: accountDocumentConverter.toResponse(doc.accounts.mainAccount),
       recipient: doc.recipient ? recipientDocumentConverter.toResponse(doc.recipient) : undefined,
       splits: doc.splits.map((s) => {
         return {
@@ -132,7 +151,7 @@ export const transactionDocumentConverterFactory = (
     };
   };
 
-  const toResponseTransfer = (doc: Transaction.TransferDocument, mainAccountId: Account.Id): Transaction.TransferResponse => {
+  const toResponseTransfer = (doc: Transaction.TransferDocument, viewingAccountId: Account.Id): Transaction.TransferResponse => {
     return {
       ...doc,
       createdAt: undefined,
@@ -141,29 +160,56 @@ export const transactionDocumentConverterFactory = (
       issuedAt: doc.issuedAt.toISOString(),
       _id: undefined,
       expiresAt: undefined,
-      amount: mainAccountId === getAccountId(doc.transferAccount) ? doc.transferAmount : doc.amount,
-      transferAmount: mainAccountId === getAccountId(doc.transferAccount) ? doc.amount : doc.transferAmount,
-      account: mainAccountId === getAccountId(doc.transferAccount) ? accountDocumentConverter.toResponse(doc.transferAccount) : accountDocumentConverter.toResponse(doc.account),
-      transferAccount: mainAccountId === getAccountId(doc.transferAccount) ? accountDocumentConverter.toResponse(doc.account) : accountDocumentConverter.toResponse(doc.transferAccount),
+      accounts: undefined,
+      amount: viewingAccountId === getAccountId(doc.accounts.transferAccount) ? doc.transferAmount : doc.amount,
+      transferAmount: viewingAccountId === getAccountId(doc.accounts.transferAccount) ? doc.amount : doc.transferAmount,
+      account: viewingAccountId === getAccountId(doc.accounts.transferAccount) ? accountDocumentConverter.toResponse(doc.accounts.transferAccount) : accountDocumentConverter.toResponse(doc.accounts.mainAccount),
+      transferAccount: viewingAccountId === getAccountId(doc.accounts.transferAccount) ? accountDocumentConverter.toResponse(doc.accounts.mainAccount) : accountDocumentConverter.toResponse(doc.accounts.transferAccount),
     };
   };
 
   const instance: ITransactionDocumentConverter = {
-    createLoanDocument: ({ body, account, loanAccount, project, category, recipient, product }, expiresIn, generateId) => {
-      const payingAccount = body.amount < 0 ? account : loanAccount;
-      const ownerAccount = body.amount < 0 ? loanAccount : account;
-      const amount = Math.abs(body.amount) * -1;
-
+    createDeferredDocument: ({ body, payingAccount, ownerAccount, project, category, recipient, product }, expiresIn, generateId): Transaction.DeferredDocument => {
       return {
         ...body,
-        amount,
-        payingAccount,
-        ownerAccount,
+        amount: Math.abs(body.amount) * -1,
+        accounts: {
+          payingAccount,
+          ownerAccount,
+        },
         recipient: recipient ?? undefined,
         category: category ?? undefined,
         project: project ?? undefined,
         issuedAt: new Date(body.issuedAt),
-        transactionType: payingAccount.accountType === 'loan' ? 'reimbursement' : 'deferred',
+        transactionType: 'deferred',
+        quantity: category?.categoryType === 'inventory' ? body.quantity : undefined,
+        product: category?.categoryType === 'inventory' ? product ?? undefined : undefined,
+        invoiceNumber: category?.categoryType === 'invoice' ? body.invoiceNumber : undefined,
+        billingEndDate: category?.categoryType === 'invoice' ? createDate(body.billingEndDate) : undefined,
+        billingStartDate: category?.categoryType === 'invoice' ? createDate(body.billingStartDate) : undefined,
+        accountId: undefined,
+        categoryId: undefined,
+        projectId: undefined,
+        recipientId: undefined,
+        productId: undefined,
+        loanAccountId: undefined,
+        _id: generateId ? generateMongoId() : undefined,
+        expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
+      };
+    },
+    createReimbursementDocument: ({ body, payingAccount, ownerAccount, project, category, recipient, product }, expiresIn, generateId): Transaction.ReimbursementDocument => {
+      return {
+        ...body,
+        amount: Math.abs(body.amount) * -1,
+        accounts: {
+          payingAccount,
+          ownerAccount,
+        },
+        recipient: recipient ?? undefined,
+        category: category ?? undefined,
+        project: project ?? undefined,
+        issuedAt: new Date(body.issuedAt),
+        transactionType: 'reimbursement',
         quantity: category?.categoryType === 'inventory' ? body.quantity : undefined,
         product: category?.categoryType === 'inventory' ? product ?? undefined : undefined,
         invoiceNumber: category?.categoryType === 'invoice' ? body.invoiceNumber : undefined,
@@ -182,7 +228,9 @@ export const transactionDocumentConverterFactory = (
     createPaymentDocument: ({ body, account, project, category, recipient, product }, expiresIn, generateId) => {
       return {
         ...body,
-        account: account ?? undefined,
+        accounts: {
+          mainAccount: account ?? undefined,
+        },
         recipient: recipient ?? undefined,
         category: category ?? undefined,
         project: project ?? undefined,
@@ -202,16 +250,73 @@ export const transactionDocumentConverterFactory = (
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
+    _createSplitDocument: ({ body, accounts, projects, categories, recipient, products }, expiresIn, generateId): Transaction.SplitDocument => {
+
+      return {
+        ...body,
+        accounts: {
+          mainAccount: accounts[body.accountId] ?? undefined,
+        },
+        recipient: recipient ?? undefined,
+        transactionType: 'split',
+        issuedAt: new Date(body.issuedAt),
+        splits: body.splits.map((s) => {
+          const category = categories[s.categoryId];
+
+          if (s.loanAccountId) {
+            return instance.createDeferredDocument({
+              body: {
+                ...s,
+                accountId: body.accountId,
+                issuedAt: body.issuedAt,
+                recipientId: body.recipientId,
+              },
+              category,
+              ownerAccount: accounts[s.loanAccountId],
+              payingAccount: accounts[body.accountId],
+              product: products[s.productId],
+              project: projects[s.projectId],
+              recipient,
+            }, expiresIn, true);
+
+          }
+
+          return {
+            _id: undefined,
+            transactionType: 'split',
+            category: category ?? undefined,
+            amount: s.amount,
+            description: s.description,
+            project: projects[s.projectId],
+            quantity: category?.categoryType === 'inventory' ? s.quantity : undefined,
+            product: category?.categoryType === 'inventory' ? products[s.productId] : undefined,
+            invoiceNumber: category?.categoryType === 'invoice' ? s.invoiceNumber : undefined,
+            billingEndDate: category?.categoryType === 'invoice' ? createDate(s.billingEndDate) : undefined,
+            billingStartDate: category?.categoryType === 'invoice' ? createDate(s.billingStartDate) : undefined,
+            projectId: undefined,
+            categoryId: undefined,
+            productId: undefined,
+          };
+        }),
+        accountId: undefined,
+        recipientId: undefined,
+        _id: generateId ? generateMongoId() : undefined,
+        expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
+      };
+    },
     createSplitDocument: ({ body, account, projects, categories, recipient, products }, expiresIn, generateId): Transaction.SplitDocument => {
       return {
         ...body,
-        account: account ?? undefined,
+        accounts: {
+          mainAccount: account ?? undefined,
+        },
         recipient: recipient ?? undefined,
         transactionType: 'split',
         issuedAt: new Date(body.issuedAt),
         splits: body.splits.map((s) => {
           const category = categories[s.categoryId];
           return {
+            transactionType: 'split',
             category: category ?? undefined,
             amount: s.amount,
             description: s.description,
@@ -236,12 +341,16 @@ export const transactionDocumentConverterFactory = (
       return {
         ...body,
         transferAmount: body.transferAmount ?? body.amount * -1,
-        account: account,
-        transferAccount: transferAccount,
-        payments: body.payments?.map(p => ({
-          amount: p.amount,
-          transaction: transactions[p.transactionId],
-        })),
+        accounts: {
+          mainAccount: account,
+          transferAccount: transferAccount,
+        },
+        payments: body.payments?.map(p => {
+          return {
+            amount: Math.min(p.amount, Math.abs(transactions[p.transactionId].remainingAmount)),
+            transaction: transactions[p.transactionId],
+          };
+        }),
         issuedAt: new Date(body.issuedAt),
         transactionType: 'transfer',
         _id: generateId ? generateMongoId() : undefined,
@@ -254,8 +363,10 @@ export const transactionDocumentConverterFactory = (
       return {
         amount: body.amount,
         description: body.description,
-        account: account,
-        transferAccount: transferAccount,
+        accounts: {
+          mainAccount: account,
+          transferAccount: transferAccount,
+        },
         issuedAt: new Date(body.issuedAt),
         transactionType: 'loanTransfer',
         _id: generateId ? generateMongoId() : undefined,
@@ -294,11 +405,11 @@ export const transactionDocumentConverterFactory = (
         createdAt: document.createdAt,
       };
     },
-    toResponse: (doc, mainAccountId): Transaction.Response => {
+    toResponse: (doc, viewingAccountId): Transaction.Response => {
       switch (doc.transactionType) {
         case 'payment': return toResponsePayment(doc);
         case 'split': return toResponseSplit(doc);
-        case 'transfer': return toResponseTransfer(doc, mainAccountId);
+        case 'transfer': return toResponseTransfer(doc, viewingAccountId);
         default: return undefined;
       }
     },
@@ -309,7 +420,7 @@ export const transactionDocumentConverterFactory = (
         transactionId: getTransactionId(document),
         issuedAt: document.issuedAt.toISOString(),
         description: document.description,
-        account: accountDocumentConverter.toReport(document.account),
+        account: accountDocumentConverter.toReport(document.accounts.mainAccount),
         category: categoryDocumentConverter.toReport(document.category),
         product: productDocumentConverter.toReport({
           quantity: document.quantity,

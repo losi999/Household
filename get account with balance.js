@@ -1,4 +1,4 @@
-var accountId = '665aca365689536dd37d8468'
+var accountId = '665aca435689536dd37d847d'
 db.getCollection("accounts").aggregate([
   {
     $match: {
@@ -37,11 +37,11 @@ db.getCollection("accounts").aggregate([
               $filter: {
                 input: [
                   {
-                    _account: '$account',
+                    _account: '$accounts.mainAccount',
                     _amount: '$amount',
                   },
                   {
-                    _account: '$transferAccount',
+                    _account: '$accounts.transferAccount',
                     _amount: {
                       $ifNull: [
                         '$transferAmount',
@@ -50,11 +50,11 @@ db.getCollection("accounts").aggregate([
                     },
                   },
                   {
-                    _account: '$ownerAccount',
+                    _account: '$accounts.ownerAccount',
                     _amount: '$amount',
                   },
                   {
-                    _account: '$payingAccount',
+                    _account: '$accounts.payingAccount',
                     _amount: '$amount',
                   },
                 ],
@@ -136,9 +136,9 @@ db.getCollection("accounts").aggregate([
             remainingAmount: {
               $cond: {
                 if: {
-                  $eq: [
+                  $in: [
                     '$transactionType',
-                    'deferred',
+                    ['deferred','deferredSplit']
                   ],
                 },
                 then: {
@@ -148,7 +148,7 @@ db.getCollection("accounts").aggregate([
                         case: {
                           $eq: [
                             '$_account',
-                            '$ownerAccount',
+                            '$accounts.ownerAccount',
                           ],
                         },
                         then: {
@@ -169,7 +169,7 @@ db.getCollection("accounts").aggregate([
                         case: {
                           $eq: [
                             '$_account',
-                            '$payingAccount',
+                            '$accounts.payingAccount',
                           ],
                         },
                         then: {
@@ -210,7 +210,7 @@ db.getCollection("accounts").aggregate([
                       {
                         $eq: [
                           '$$this._account',
-                          '$$this.ownerAccount',
+                          '$$this.accounts.ownerAccount',
                         ],
                       },
                       {
@@ -229,7 +229,7 @@ db.getCollection("accounts").aggregate([
                       {
                         $eq: [
                           '$$this._account',
-                          '$$this.payingAccount',
+                          '$$this.accounts.payingAccount',
                         ],
                       },
                       {

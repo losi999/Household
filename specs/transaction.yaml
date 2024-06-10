@@ -96,7 +96,7 @@ components:
                 properties:
                   amount:
                     exclusiveMinimum: true
-                    minimum: 1
+                    minimum: 0
 
     Category:
       type: object
@@ -166,6 +166,11 @@ components:
         - $ref: "#/components/schemas/Amount"
         - $ref: "#/components/schemas/Description"
         - $ref: "#/components/schemas/Loan"
+        - type: object
+          properties:
+            amount:
+              exclusiveMaximum: true
+              minimum: 0
     SplitRequest:
       allOf:
         - $ref: "account.yaml#/components/schemas/AccountId"
