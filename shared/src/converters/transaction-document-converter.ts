@@ -5,7 +5,7 @@ import { ICategoryDocumentConverter } from '@household/shared/converters/categor
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
 import { IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
-import { Dictionary, Restrict } from '@household/shared/types/common';
+import { Dictionary } from '@household/shared/types/common';
 import { Account, Category, File, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 
 export interface ITransactionDocumentConverter {
@@ -35,17 +35,9 @@ export interface ITransactionDocumentConverter {
     project: Project.Document;
     product: Product.Document;
   }, expiresIn: number, generateId?: boolean): Transaction.PaymentDocument;
-  _createSplitDocument(data: {
-    body: Transaction.SplitRequest;
-    accounts: Dictionary<Account.Document>;
-    categories: Dictionary<Category.Document>;
-    recipient: Recipient.Document;
-    projects: Dictionary<Project.Document>;
-    products: Dictionary<Product.Document>;
-  }, expiresIn: number, generateId?: boolean): Transaction.SplitDocument;
   createSplitDocument(data: {
     body: Transaction.SplitRequest;
-    account: Account.Document;
+    accounts: Dictionary<Account.Document>;
     categories: Dictionary<Category.Document>;
     recipient: Recipient.Document;
     projects: Dictionary<Project.Document>;
@@ -66,30 +58,6 @@ export interface ITransactionDocumentConverter {
     body: Transaction.IssuedAt<Date> & Transaction.Amount & Transaction.Description;
     file: File.Document;
   }, expiresIn: number, generateId?: boolean): Transaction.DraftDocument;
-  updatePaymentDocument(data: {
-    document: Transaction.Document;
-    body: Transaction.PaymentRequest;
-    account: Account.Document;
-    category: Category.Document;
-    recipient: Recipient.Document;
-    project: Project.Document;
-    product: Product.Document;
-  }, expiresIn: number,): Transaction.PaymentDocument;
-  updateSplitDocument(data: {
-    document: Transaction.Document;
-    body: Transaction.SplitRequest;
-    account: Account.Document;
-    categories: Dictionary<Category.Document>;
-    recipient: Recipient.Document;
-    projects: Dictionary<Project.Document>;
-    products: Dictionary<Product.Document>;
-  }, expiresIn: number): Transaction.SplitDocument;
-  updateTransferDocument(data: {
-    document: Transaction.Document;
-    body: Transaction.TransferRequest;
-    account: Account.Document;
-    transferAccount: Account.Document;
-  }, expiresIn: number): Transaction.TransferDocument;
   toResponse(document: Transaction.Document, viewingAccountId?: Account.Id): Transaction.Response;
   toResponseList(documents: Transaction.Document[], viewingAccountId?: Account.Id): Transaction.Response[];
   toReport(document: Transaction.PaymentDocument): Transaction.Report;
@@ -228,6 +196,7 @@ export const transactionDocumentConverterFactory = (
     createPaymentDocument: ({ body, account, project, category, recipient, product }, expiresIn, generateId) => {
       return {
         ...body,
+        splits: 123,
         accounts: {
           mainAccount: account ?? undefined,
         },
@@ -250,7 +219,7 @@ export const transactionDocumentConverterFactory = (
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
-    _createSplitDocument: ({ body, accounts, projects, categories, recipient, products }, expiresIn, generateId): Transaction.SplitDocument => {
+    createSplitDocument: ({ body, accounts, projects, categories, recipient, products }, expiresIn, generateId): Transaction.SplitDocument => {
 
       return {
         ...body,
@@ -283,39 +252,6 @@ export const transactionDocumentConverterFactory = (
 
           return {
             _id: undefined,
-            transactionType: 'split',
-            category: category ?? undefined,
-            amount: s.amount,
-            description: s.description,
-            project: projects[s.projectId],
-            quantity: category?.categoryType === 'inventory' ? s.quantity : undefined,
-            product: category?.categoryType === 'inventory' ? products[s.productId] : undefined,
-            invoiceNumber: category?.categoryType === 'invoice' ? s.invoiceNumber : undefined,
-            billingEndDate: category?.categoryType === 'invoice' ? createDate(s.billingEndDate) : undefined,
-            billingStartDate: category?.categoryType === 'invoice' ? createDate(s.billingStartDate) : undefined,
-            projectId: undefined,
-            categoryId: undefined,
-            productId: undefined,
-          };
-        }),
-        accountId: undefined,
-        recipientId: undefined,
-        _id: generateId ? generateMongoId() : undefined,
-        expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
-      };
-    },
-    createSplitDocument: ({ body, account, projects, categories, recipient, products }, expiresIn, generateId): Transaction.SplitDocument => {
-      return {
-        ...body,
-        accounts: {
-          mainAccount: account ?? undefined,
-        },
-        recipient: recipient ?? undefined,
-        transactionType: 'split',
-        issuedAt: new Date(body.issuedAt),
-        splits: body.splits.map((s) => {
-          const category = categories[s.categoryId];
-          return {
             transactionType: 'split',
             category: category ?? undefined,
             amount: s.amount,
@@ -382,27 +318,6 @@ export const transactionDocumentConverterFactory = (
         transactionType: 'draft',
         _id: generateId ? generateMongoId() : undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
-      };
-    },
-    updatePaymentDocument: ({ document, ...restOfData }, expiresIn): Transaction.PaymentDocument => {
-      return {
-        ...instance.createPaymentDocument(restOfData, expiresIn),
-        _id: document._id,
-        createdAt: document.createdAt,
-      };
-    },
-    updateSplitDocument: ({ document, ...restOfData }, expiresIn): Transaction.SplitDocument => {
-      return {
-        ...instance.createSplitDocument(restOfData, expiresIn),
-        _id: document._id,
-        createdAt: document.createdAt,
-      };
-    },
-    updateTransferDocument: ({ document, ...restOfData }, expiresIn): Transaction.TransferDocument => {
-      return {
-        ...instance.createTransferDocument(restOfData as any, expiresIn),
-        _id: document._id,
-        createdAt: document.createdAt,
       };
     },
     toResponse: (doc, viewingAccountId): Transaction.Response => {

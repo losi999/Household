@@ -8,6 +8,12 @@ import { productSchema } from '@household/shared/mongodb-schemas/product.schema'
 import { transactionSchema } from '@household/shared/mongodb-schemas/transaction.schema';
 import { Recipient, Project, Account, Category, Transaction, Product, File } from '@household/shared/types/types';
 import { fileSchema } from '@household/shared/mongodb-schemas/file.schema';
+import { paymentTransactionSchema } from '@household/shared/mongodb-schemas/payment-transaction.schema';
+import { splitTransactionSchema } from '@household/shared/mongodb-schemas/split-transaction.schema';
+import { reimbursementTransactionSchema } from '@household/shared/mongodb-schemas/reimbursement-transaction.schema';
+import { loanTransferTransactionSchema } from '@household/shared/mongodb-schemas/loan-transfer-transaction.schema';
+import { transferTransactionSchema } from '@household/shared/mongodb-schemas/transfer-transaction.schema';
+import { deferredTransactionSchema } from '@household/shared/mongodb-schemas/deferred-transaction.schema';
 console.log('mongodb service 1');
 
 type CollectionMapping = {
@@ -24,12 +30,6 @@ export type IMongodbService = {
   [collection in keyof CollectionMapping]: Model<CollectionMapping[collection]>;
 } & {
   inSession<T>(fn: (session: ClientSession) => Promise<T>): Promise<T>;
-};
-
-const createModel = <T extends keyof CollectionMapping>(collectionName: T, schema: Schema<CollectionMapping[T]>): Model<CollectionMapping[T]> => {
-  const m = connection.model<CollectionMapping[T]>(collectionName, schema);
-  m.syncIndexes();
-  return m;
 };
 
 let connection: Connection;
@@ -81,6 +81,14 @@ export const mongodbServiceFactory = (mongodbConnectionString: string): IMongodb
     console.log('post create connect', connection?.readyState);
   }
 
+  const transactionModel = connection.model('transactions', transactionSchema);
+  transactionModel.discriminator('payment', paymentTransactionSchema);
+  transactionModel.discriminator('split', splitTransactionSchema);
+  transactionModel.discriminator('deferred', deferredTransactionSchema);
+  transactionModel.discriminator('transfer', transferTransactionSchema);
+  transactionModel.discriminator('loanTransfer', loanTransferTransactionSchema);
+  transactionModel.discriminator('reimbursement', reimbursementTransactionSchema);
+
   return {
     inSession: async (fn) => {
       const session = await connection.startSession();
@@ -88,12 +96,12 @@ export const mongodbServiceFactory = (mongodbConnectionString: string): IMongodb
       await session.endSession();
       return result;
     },
-    recipients: createModel('recipients', recipientSchema),
-    projects: createModel('projects', projectSchema),
-    transactions: createModel('transactions', transactionSchema),
-    accounts: createModel('accounts', accountSchema),
-    categories: createModel('categories', categorySchema),
-    products: createModel('products', productSchema),
-    files: createModel('files', fileSchema),
+    recipients: connection.model('recipients', recipientSchema),
+    projects: connection.model('projects', projectSchema),
+    transactions: transactionModel,
+    accounts: connection.model('accounts', accountSchema),
+    categories: connection.model('categories', categorySchema),
+    products: connection.model('products', productSchema),
+    files: connection.model('files', fileSchema),
   };
 };

@@ -109,7 +109,7 @@ export const createSplitTransactionServiceFactory = (
       }
     });
 
-    const document = transactionDocumentConverter._createSplitDocument({
+    const document = transactionDocumentConverter.createSplitDocument({
       body,
       accounts,
       recipient,

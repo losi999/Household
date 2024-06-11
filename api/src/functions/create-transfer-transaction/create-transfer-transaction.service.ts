@@ -24,6 +24,7 @@ export const createTransferTransactionServiceFactory = (
       accountId,
       transferAccountId,
     });
+
     const transactionIds: Transaction.Id[] = [];
     payments?.forEach(({ transactionId }) => {
       pushUnique(transactionIds, transactionId);

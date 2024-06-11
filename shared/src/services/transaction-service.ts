@@ -2,8 +2,9 @@ import { populate } from '@household/shared/common/utils';
 import { listDeferredTransactions } from '@household/shared/services/aggregates/list deferred transactions by account id';
 import { listTransactionsByAccountId } from '@household/shared/services/aggregates/list transactions by account id';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
+import { Restrict } from '@household/shared/types/common';
 import { Account, Common, Internal, Transaction } from '@household/shared/types/types';
-import { PipelineStage, Types } from 'mongoose';
+import { PipelineStage, Types, UpdateQuery } from 'mongoose';
 
 export interface ITransactionService {
   dumpTransactions(): Promise<Transaction.Document[]>;
@@ -12,7 +13,8 @@ export interface ITransactionService {
   getTransactionById(transactionId: Transaction.Id): Promise<Transaction.Document>;
   getTransactionByIdAndAccountId(query: Transaction.TransactionId & Account.AccountId): Promise<Transaction.Document>;
   deleteTransaction(transactionId: Transaction.Id): Promise<unknown>;
-  updateTransaction(doc: Transaction.Document): Promise<unknown>;
+  updateTransaction(transactionId: Transaction.Id, updateQuery: UpdateQuery<Transaction.Document>): Promise<unknown>;
+  replaceTransaction(transactionId: Transaction.Id, doc: Restrict<Transaction.Document, '_id'>): Promise<unknown>;
   listTransactions(match: PipelineStage.Match): Promise<Transaction.PaymentDocument[]>;
   listDeferredTransactions(ctx: {payingAccountIds?: Account.Id[]; transactionIds?: Transaction.Id[]}): Promise<Transaction.DeferredDocument[]>;
   listTransactionsByAccountId(data: Account.AccountId & Common.Pagination<number>): Promise<Transaction.Document[]>;
@@ -91,11 +93,20 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
       })
         .exec();
     },
-    updateTransaction: (doc) => {
-      return mongodbService.transactions.replaceOne({
-        _id: doc._id,
+    updateTransaction: async (transactionId, updateQuery) => {
+      return mongodbService.transactions.findOneAndUpdate({
+        _id: new Types.ObjectId(transactionId),
+        transactionType: updateQuery.$set.transactionType,
+      }, updateQuery, {
+        runValidators: true,
+      });
+    },
+    replaceTransaction: (transactionId, doc) => {
+      return mongodbService.transactions.findOneAndReplace({
+        _id: new Types.ObjectId(transactionId),
       }, doc, {
         runValidators: true,
+        overwriteDiscriminatorKey: true,
       })
         .exec();
     },

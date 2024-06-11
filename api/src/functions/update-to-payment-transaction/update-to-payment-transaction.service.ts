@@ -1,5 +1,5 @@
 import { httpErrors } from '@household/api/common/error-handlers';
-import { getCategoryId } from '@household/shared/common/utils';
+import { getAccountId, getCategoryId } from '@household/shared/common/utils';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICategoryService } from '@household/shared/services/category-service';
@@ -27,38 +27,54 @@ export const updateToPaymentTransactionServiceFactory = (
   transactionDocumentConverter: ITransactionDocumentConverter,
 ): IUpdateToPaymentTransactionService => {
   return async ({ body, transactionId, expiresIn }) => {
-    const document = await transactionService.getTransactionById(transactionId).catch(httpErrors.transaction.getById({
+    const queriedDocument = await transactionService.getTransactionById(transactionId).catch(httpErrors.transaction.getById({
       transactionId,
     }));
 
-    httpErrors.transaction.notFound(!document, {
+    httpErrors.transaction.notFound(!queriedDocument, {
       transactionId,
     });
 
-    const { accountId, categoryId, projectId, recipientId, productId } = body;
+    const { accountId, categoryId, projectId, recipientId, productId, loanAccountId } = body;
+
+    httpErrors.transaction.sameAccountLoan({
+      accountId,
+      loanAccountId,
+    });
 
     const [
-      account,
+      accounts,
       category,
       project,
       recipient,
       product,
     ] = await Promise.all([
-      accountService.getAccountById(accountId),
+      accountService.listAccountsByIds([
+        accountId,
+        loanAccountId,
+      ]),
       categoryService.getCategoryById(categoryId),
       projectService.getProjectById(projectId),
       recipientService.getRecipientById(recipientId),
       productService.getProductById(productId),
     ]).catch(httpErrors.common.getRelatedData({
       accountId,
+      loanAccountId,
       categoryId,
       productId,
       projectId,
       recipientId,
     }));
 
+    const account = accounts.find(a => getAccountId(a) === accountId);
+    const loanAccount = accounts.find(a => getAccountId(a) === loanAccountId);
+
     httpErrors.account.notFound(!account, {
       accountId,
+    }, 400);
+
+    httpErrors.account.notFound(!loanAccount && !!loanAccountId, {
+      accountId: loanAccountId,
     }, 400);
 
     httpErrors.category.notFound(!category && !!categoryId, {
@@ -84,16 +100,40 @@ export const updateToPaymentTransactionServiceFactory = (
       });
     }
 
-    const updated = transactionDocumentConverter.updatePaymentDocument({
-      body,
-      account,
-      project,
-      category,
-      recipient,
-      document,
-      product,
-    }, expiresIn);
+    if (!body.loanAccountId) {
+      const { _id, ...document } = transactionDocumentConverter.createPaymentDocument({
+        body,
+        account,
+        category,
+        project,
+        recipient,
+        product,
+      }, expiresIn);
 
-    await transactionService.updateTransaction(updated).catch(httpErrors.transaction.update(updated));
+      await transactionService.replaceTransaction(transactionId, document);
+    } else {
+      const payingAccount = body.amount < 0 ? account : loanAccount;
+      const ownerAccount = body.amount < 0 ? loanAccount : account;
+
+      const { _id, ...document } = payingAccount.accountType === 'loan' ? transactionDocumentConverter.createReimbursementDocument({
+        body,
+        payingAccount,
+        ownerAccount,
+        category,
+        project,
+        recipient,
+        product,
+      }, expiresIn) : transactionDocumentConverter.createDeferredDocument({
+        body,
+        payingAccount,
+        ownerAccount,
+        category,
+        project,
+        recipient,
+        product,
+      }, expiresIn);
+
+      await transactionService.replaceTransaction(transactionId, document);
+    }
   };
 };

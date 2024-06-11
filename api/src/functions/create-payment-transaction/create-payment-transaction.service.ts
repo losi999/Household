@@ -50,6 +50,7 @@ export const createPaymentTransactionServiceFactory = (
       productService.getProductById(productId),
     ]).catch(httpErrors.common.getRelatedData({
       accountId,
+      loanAccountId,
       categoryId,
       productId,
       projectId,
@@ -122,7 +123,6 @@ export const createPaymentTransactionServiceFactory = (
         recipient,
         product,
       }, expiresIn);
-
     }
 
     const saved = await transactionService.saveTransaction(document).catch(httpErrors.transaction.save(document));
