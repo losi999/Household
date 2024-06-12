@@ -1,6 +1,48 @@
-import { PipelineStage } from 'mongoose';
+import { Account, Transaction } from '@household/shared/types/types';
+import { PipelineStage, Types } from 'mongoose';
 
-export const listDeferredTransactions: PipelineStage[] = [
+export const listDeferredTransactions = (ctx: {
+  payingAccountIds?: Account.Id[];
+  deferredTransactionIds?: Transaction.Id[];
+  excludedTransferTransactionId?: Transaction.Id
+}): PipelineStage[] => [
+  {
+    $unwind: {
+      path: '$splits',
+      preserveNullAndEmptyArrays: true,
+    },
+  },
+  {
+    $replaceRoot: {
+      newRoot: {
+        $mergeObjects: [
+          '$$ROOT',
+          '$splits',
+          {
+            tx_amount: '$amount',
+            tx_description: '$description',
+            tx_id: '$_id',
+            tx_transactionType: '$transactionType',
+          },
+        ],
+      },
+    },
+  },
+  {
+    $match: {
+      ...(ctx.payingAccountIds.length > 0 ? {
+        'accounts.payingAccount': {
+          $in: ctx.payingAccountIds.map(id => new Types.ObjectId(id)),
+        },
+      } : {}),
+      ...(ctx.deferredTransactionIds.length > 0 ? {
+        _id: {
+          $in: ctx.deferredTransactionIds.map(id => new Types.ObjectId(id)),
+        },
+      } : {}),
+      transactionType: 'deferred',
+    },
+  },
   {
     $lookup: {
       from: 'transactions',
@@ -8,6 +50,15 @@ export const listDeferredTransactions: PipelineStage[] = [
         transactionId: '$_id',
       },
       pipeline: [
+        ...(ctx.excludedTransferTransactionId ? [
+          {
+            $match: {
+              _id: {
+                $ne: new Types.ObjectId(ctx.excludedTransferTransactionId),
+              },
+            },
+          },
+        ] : []),
         {
           $unwind: {
             path: '$payments',
@@ -23,9 +74,8 @@ export const listDeferredTransactions: PipelineStage[] = [
             },
           },
         },
-
       ],
-      as: 'deferredTransaction',
+      as: 'tmp_deferredTransactions',
     },
   },
   {
@@ -34,40 +84,47 @@ export const listDeferredTransactions: PipelineStage[] = [
         $add: [
           '$amount',
           {
-            $sum: '$deferredTransaction.payments.amount',
+            $sum: '$tmp_deferredTransactions.payments.amount',
           },
         ],
       },
     },
   },
   {
-    $unset: ['deferredTransaction'],
+    $unset: [
+      'tmp_deferredTransactions',
+      'splits',
+      'tx_amount',
+      'tx_description',
+      'tx_id',
+      'tx_transactionType',
+    ],
   },
   {
     $lookup: {
       from: 'accounts',
-      localField: 'payingAccount',
+      localField: 'accounts.payingAccount',
       foreignField: '_id',
-      as: 'payingAccount',
+      as: 'accounts.payingAccount',
     },
   },
   {
     $unwind: {
-      path: '$payingAccount',
+      path: '$accounts.payingAccount',
       preserveNullAndEmptyArrays: true,
     },
   },
   {
     $lookup: {
       from: 'accounts',
-      localField: 'ownerAccount',
+      localField: 'accounts.ownerAccount',
       foreignField: '_id',
-      as: 'ownerAccount',
+      as: 'accounts.ownerAccount',
     },
   },
   {
     $unwind: {
-      path: '$ownerAccount',
+      path: '$accounts.ownerAccount',
       preserveNullAndEmptyArrays: true,
     },
   },

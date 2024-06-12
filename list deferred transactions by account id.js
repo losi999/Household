@@ -1,7 +1,7 @@
 //var accountId = '665aca365689536dd37d8468' //bank
 var accountId = '665aca435689536dd37d847d'//revolut
 //var accountId = '665aca665689536dd37d847f' //kölcsön
-//var transactionId = '66606744bb2522096f3356f2'
+//var transactionId = '6661ad409aa7a24ca46db310'
 
 db.getCollection("transactions").aggregate([
   {
@@ -16,21 +16,22 @@ db.getCollection("transactions").aggregate([
         $mergeObjects: [
           '$$ROOT',
           '$splits',
+          {
+            tx_amount: '$amount',
+            tx_description: '$description',
+            tx_id: '$_id',
+            tx_transactionType: '$transactionType'
+          }
         ],
       },
     },
   },
   {
     $match: {
-      //      _id: {
-      //        $in: [ObjectId(transactionId)]
-      //      },
       'accounts.payingAccount': {
         $in: [ObjectId(accountId)]
       },
-      transactionType: {
-        $in: ['deferred','deferredSplit']
-      }
+      transactionType: 'deferred'
     },
   },
   {
@@ -40,6 +41,13 @@ db.getCollection("transactions").aggregate([
         transactionId: '$_id',
       },
       pipeline: [
+//        {
+//          $match: {
+//            _id: {
+//              $ne: ObjectId(transactionId)
+//            }
+//          }
+//        },
         {
           $unwind: {
             path: '$payments',
@@ -55,20 +63,19 @@ db.getCollection("transactions").aggregate([
             },
           },
         },
-
       ],
-      as: 'deferredTransactions',
-    },
+      as: 'tmp_deferredTransactions',
+    }
   },
   {
     $set: {
       remainingAmount: {
-        $add: ['$amount', { $sum: '$deferredTransactions.payments.amount' }]
+        $add: ['$amount', { $sum: '$tmp_deferredTransactions.payments.amount' }]
       },
     },
   },
   {
-    $unset: ['deferredTransactions', 'splits'],
+    $unset: ['tmp_deferredTransactions', 'splits', 'tx_amount', 'tx_description', 'tx_id', 'tx_transactionType'],
   },
   {
     $lookup: {

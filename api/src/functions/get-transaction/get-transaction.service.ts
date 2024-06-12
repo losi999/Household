@@ -15,18 +15,16 @@ export const getTransactionServiceFactory = (
   transactionDocumentConverter: ITransactionDocumentConverter): IGetTransactionService => {
   return async ({ transactionId, accountId }) => {
 
-    const document = await transactionService.getTransactionByIdAndAccountId({
+    const document = await transactionService.getTransactionById(transactionId).catch(httpErrors.transaction.getById({
       transactionId,
-      accountId,
-    }).catch(httpErrors.transaction.getById({
-      transactionId,
-      accountId,
     }));
 
     httpErrors.transaction.notFound(!document, {
       transactionId,
       accountId,
     });
+
+    console.log('doc', JSON.stringify(document, null, 2));
 
     return transactionDocumentConverter.toResponse(document, accountId);
   };

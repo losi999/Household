@@ -1,6 +1,6 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { getCategoryId, pushUnique, toDictionary } from '@household/shared/common/utils';
-import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
+import { ISplitTransactionDocumentConverter } from '@household/shared/converters/split-transaction-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICategoryService } from '@household/shared/services/category-service';
 import { IProductService } from '@household/shared/services/product-service';
@@ -24,7 +24,7 @@ export const updateToSplitTransactionServiceFactory = (
   recipientService: IRecipientService,
   productService: IProductService,
   transactionService: ITransactionService,
-  transactionDocumentConverter: ITransactionDocumentConverter,
+  splitTransactionDocumentConverter: ISplitTransactionDocumentConverter,
 ): IUpdateToSplitTransactionService => {
   return async ({ body, transactionId, expiresIn }) => {
     const queriedDocument = await transactionService.getTransactionById(transactionId).catch(httpErrors.transaction.getById({
@@ -118,7 +118,7 @@ export const updateToSplitTransactionServiceFactory = (
       }
     });
 
-    const { _id, ...document } = transactionDocumentConverter.createSplitDocument({
+    const { _id, ...document } = splitTransactionDocumentConverter.create({
       body,
       accounts,
       recipient,

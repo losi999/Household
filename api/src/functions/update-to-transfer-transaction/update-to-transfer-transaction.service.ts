@@ -1,6 +1,7 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { getAccountId, pushUnique, toDictionary } from '@household/shared/common/utils';
-import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
+import { ILoanTransferTransactionDocumentConverter } from '@household/shared/converters/loan-transfer-transaction-document-converter';
+import { ITransferTransactionDocumentConverter } from '@household/shared/converters/transfer-transaction-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
 import { Transaction } from '@household/shared/types/types';
@@ -16,7 +17,8 @@ export interface IUpdateToTransferTransactionService {
 export const updateToTransferTransactionServiceFactory = (
   accountService: IAccountService,
   transactionService: ITransactionService,
-  transactionDocumentConverter: ITransactionDocumentConverter,
+  transferTransactionDocumentConverter: ITransferTransactionDocumentConverter,
+  loanTransferDocumentDonverter: ILoanTransferTransactionDocumentConverter,
 ): IUpdateToTransferTransactionService => {
   return async ({ body, transactionId, expiresIn }) => {
     const { accountId, transferAccountId, payments } = body;
@@ -61,7 +63,7 @@ export const updateToTransferTransactionServiceFactory = (
     if (account.accountType === 'loan' || transferAccount.accountType === 'loan') {
       if (account.accountType === transferAccount.accountType) {
         body.payments = undefined;
-        const { _id, ...document } = transactionDocumentConverter.createTransferDocument({
+        const { _id, ...document } = transferTransactionDocumentConverter.create({
           body,
           account,
           transferAccount,
@@ -70,7 +72,7 @@ export const updateToTransferTransactionServiceFactory = (
 
         await transactionService.replaceTransaction(transactionId, document);
       } else {
-        const { _id, ...document } = transactionDocumentConverter.createLoanTransferDocument({
+        const { _id, ...document } = loanTransferDocumentDonverter.create({
           body,
           account,
           transferAccount,
@@ -80,28 +82,25 @@ export const updateToTransferTransactionServiceFactory = (
       }
     } else {
       if (body.payments) {
-        const transactionIds: Transaction.Id[] = [];
-        let total = 0;
-        body.payments?.forEach(({ transactionId, amount }) => {
-          total += amount;
-          pushUnique(transactionIds, transactionId);
+        const deferredTransactionIds: Transaction.Id[] = [];
+        body.payments?.forEach(({ transactionId }) => {
+          pushUnique(deferredTransactionIds, transactionId);
         });
-
-        httpErrors.transaction.sumOfPayments(total > Math.abs(body.amount), body);
 
         const payingAccount = body.amount < 0 ? transferAccount : account;
 
         const transactionList = await transactionService.listDeferredTransactions({
           payingAccountIds: [getAccountId(payingAccount)],
-          transactionIds,
+          deferredTransactionIds,
+          excludedTransferTransactionId: transactionId,
         });
 
-        httpErrors.transaction.multipleNotFound(transactionIds.length !== transactionList.length, {
-          transactionIds,
+        httpErrors.transaction.multipleNotFound(deferredTransactionIds.length !== transactionList.length, {
+          transactionIds: deferredTransactionIds,
         });
         const transactions = toDictionary(transactionList, '_id');
 
-        const { _id, ...document } = transactionDocumentConverter.createTransferDocument({
+        const { _id, ...document } = transferTransactionDocumentConverter.create({
           body,
           account,
           transferAccount,
@@ -110,7 +109,7 @@ export const updateToTransferTransactionServiceFactory = (
 
         await transactionService.replaceTransaction(transactionId, document);
       } else {
-        const { _id, ...document } = transactionDocumentConverter.createTransferDocument({
+        const { _id, ...document } = transferTransactionDocumentConverter.create({
           body,
           account,
           transferAccount,

@@ -113,7 +113,6 @@ db.getCollection("transactions").aggregate([
             },
           },
         },
-
       ],
       as: 'tmp_deferredTransactions',
     }

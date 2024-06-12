@@ -19,25 +19,27 @@ export const calculateAccountBalance: PipelineStage[] = [
             newRoot: {
               $mergeObjects: [
                 '$$ROOT',
-                {
-                  mainDescription: '$description',
-                },
                 '$splits',
+                {
+                  tx_amount: '$amount',
+                  tx_description: '$description',
+                  tx_id: '$_id',
+                  tx_transactionType: '$transactionType',
+                },
               ],
             },
           },
         },
         {
           $set: {
-            dupes: {
+            tmp_dupes: {
               $filter: {
                 input: [
                   {
-                    account: '$account',
-                    amount: '$amount',
+                    tmp_account: '$accounts.mainAccount',
                   },
                   {
-                    account: '$transferAccount',
+                    tmp_account: '$accounts.transferAccount',
                     amount: {
                       $ifNull: [
                         '$transferAmount',
@@ -46,19 +48,17 @@ export const calculateAccountBalance: PipelineStage[] = [
                     },
                   },
                   {
-                    account: '$ownerAccount',
-                    amount: '$amount',
+                    tmp_account: '$accounts.ownerAccount',
                   },
                   {
-                    account: '$payingAccount',
-                    amount: '$amount',
+                    tmp_account: '$accounts.payingAccount',
                   },
                 ],
                 cond: {
                   $ne: [
                     {
                       $ifNull: [
-                        '$$this.account',
+                        '$$this.tmp_account',
                         null,
                       ],
                     },
@@ -71,7 +71,7 @@ export const calculateAccountBalance: PipelineStage[] = [
         },
         {
           $unwind: {
-            path: '$dupes',
+            path: '$tmp_dupes',
           },
         },
         {
@@ -79,14 +79,14 @@ export const calculateAccountBalance: PipelineStage[] = [
             newRoot: {
               $mergeObjects: [
                 '$$ROOT',
-                '$dupes',
+                '$tmp_dupes',
               ],
             },
           },
         },
         {
           $unset: [
-            'dupes',
+            'tmp_dupes',
             'splits',
           ],
         },
@@ -95,7 +95,7 @@ export const calculateAccountBalance: PipelineStage[] = [
             $expr: {
               $eq: [
                 '$$accountId',
-                '$account',
+                '$tmp_account',
               ],
             },
           },
@@ -122,9 +122,8 @@ export const calculateAccountBalance: PipelineStage[] = [
                   },
                 },
               },
-
             ],
-            as: 'deferredTransaction',
+            as: 'tmp_deferredTransactions',
           },
         },
         {
@@ -143,8 +142,8 @@ export const calculateAccountBalance: PipelineStage[] = [
                       {
                         case: {
                           $eq: [
-                            '$account',
-                            '$ownerAccount',
+                            '$tmp_account',
+                            '$accounts.ownerAccount',
                           ],
                         },
                         then: {
@@ -153,7 +152,7 @@ export const calculateAccountBalance: PipelineStage[] = [
                               $sum: [
                                 '$amount',
                                 {
-                                  $sum: '$deferredTransaction.payments.amount',
+                                  $sum: '$tmp_deferredTransactions.payments.amount',
                                 },
                               ],
                             },
@@ -164,38 +163,37 @@ export const calculateAccountBalance: PipelineStage[] = [
                       {
                         case: {
                           $eq: [
-                            '$account',
-                            '$payingAccount',
+                            '$tmp_account',
+                            '$accounts.payingAccount',
                           ],
                         },
                         then: {
                           $sum: [
                             '$amount',
                             {
-                              $sum: '$deferredTransaction.payments.amount',
+                              $sum: '$tmp_deferredTransactions.payments.amount',
                             },
                           ],
                         },
                       },
                     ],
-                    default: 0,
+                    default: '$$REMOVE',
                   },
                 },
-                else: 0,
-
+                else: '$$REMOVE',
               },
             },
           },
         },
       ],
-      as: 'tx',
+      as: 'tmp_tx',
     },
   },
   {
     $set: {
       balance: {
         $reduce: {
-          input: '$tx',
+          input: '$tmp_tx',
           initialValue: 0,
           in: {
             $switch: {
@@ -205,8 +203,8 @@ export const calculateAccountBalance: PipelineStage[] = [
                     $and: [
                       {
                         $eq: [
-                          '$$this.account',
-                          '$$this.ownerAccount',
+                          '$$this.tmp_account',
+                          '$$this.accounts.ownerAccount',
                         ],
                       },
                       {
@@ -224,8 +222,8 @@ export const calculateAccountBalance: PipelineStage[] = [
                     $and: [
                       {
                         $eq: [
-                          '$$this.account',
-                          '$$this.payingAccount',
+                          '$$this.tmp_account',
+                          '$$this.accounts.payingAccount',
                         ],
                       },
                       {
@@ -264,14 +262,14 @@ export const calculateAccountBalance: PipelineStage[] = [
           },
           then: 0,
           else: {
-            $sum: '$tx.remainingAmount',
+            $sum: '$tmp_tx.remainingAmount',
           },
         },
       },
     },
   },
   {
-    $unset: ['tx'],
+    $unset: ['tmp_tx'],
   },
   {
     $sort: {

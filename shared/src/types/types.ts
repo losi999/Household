@@ -319,6 +319,14 @@ export namespace Transaction {
     transferAccount: A;
   };
 
+  type PayingAccount<A extends Account.Response> = {
+    payingAccount: A;
+  };
+
+  type OwnerAccount<A extends Account.Response> = {
+    ownerAccount: A;
+  };
+
   type Payments = {
     payments?: {
       transaction: Transaction.DeferredDocument;
@@ -491,6 +499,43 @@ export namespace Transaction {
   & Project<Project.Response>
   & Recipient<Recipient.Response>;
 
+  export type DeferredResponse = TransactionId
+  & Amount
+  & Description
+  & IssuedAt<string>
+  & InvoiceNumber
+  & InvoiceDate<string>
+  & Quantity
+  & Product<Product.Response>
+  & Remove<Internal.Id>
+  & Remove<Internal.Timestamps>
+  & Remove<Accounts<any>>
+  & TransactionType<'deferred'>
+  & PayingAccount<Account.Response>
+  & OwnerAccount<Account.Response>
+  & Category<Category.Response>
+  & Project<Project.Response>
+  & Recipient<Recipient.Response>
+  & RemainingAmount;
+
+  export type ReimbursementResponse = TransactionId
+  & Amount
+  & Description
+  & IssuedAt<string>
+  & InvoiceNumber
+  & InvoiceDate<string>
+  & Quantity
+  & Product<Product.Response>
+  & Remove<Internal.Id>
+  & Remove<Internal.Timestamps>
+  & Remove<Accounts<any>>
+  & TransactionType<'reimbursement'>
+  & PayingAccount<Account.Response>
+  & OwnerAccount<Account.Response>
+  & Category<Category.Response>
+  & Project<Project.Response>
+  & Recipient<Recipient.Response>;
+
   export type TransferResponse = TransactionId
   & Amount
   & Description
@@ -502,6 +547,17 @@ export namespace Transaction {
   & Account<Account.Response>
   & TransferAccount<Account.Response>
   & TransferAmount;
+
+  export type LoanTransferResponse = TransactionId
+  & Amount
+  & Description
+  & IssuedAt<string>
+  & Remove<Internal.Id>
+  & Remove<Internal.Timestamps>
+  & Remove<Accounts<any>>
+  & TransactionType<'loanTransfer'>
+  & Account<Account.Response>
+  & TransferAccount<Account.Response>;
 
   export type SplitResponseItem = Amount
   & Description
@@ -523,10 +579,10 @@ export namespace Transaction {
   & Account<Account.Response>
   & Recipient<Recipient.Response>
   & {
-    splits: SplitResponseItem[];
+    splits: (SplitResponseItem | DeferredResponse)[];
   };
 
-  export type Response = PaymentResponse | TransferResponse | SplitResponse;
+  export type Response = PaymentResponse | TransferResponse | SplitResponse | LoanTransferResponse | DeferredResponse | ReimbursementResponse;
 
   export type Report = TransactionId
   & Amount

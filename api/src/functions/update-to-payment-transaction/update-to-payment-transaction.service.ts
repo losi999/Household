@@ -1,6 +1,8 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { getAccountId, getCategoryId } from '@household/shared/common/utils';
-import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
+import { IDeferredTransactionDocumentConverter } from '@household/shared/converters/deferred-transaction-document-converter';
+import { IPaymentTransactionDocumentConverter } from '@household/shared/converters/payment-transaction-document-converter';
+import { IReimbursementTransactionDocumentConverter } from '@household/shared/converters/reimbursement-transaction-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICategoryService } from '@household/shared/services/category-service';
 import { IProductService } from '@household/shared/services/product-service';
@@ -24,7 +26,9 @@ export const updateToPaymentTransactionServiceFactory = (
   recipientService: IRecipientService,
   productService: IProductService,
   transactionService: ITransactionService,
-  transactionDocumentConverter: ITransactionDocumentConverter,
+  paymentTransactionDocumentConverter: IPaymentTransactionDocumentConverter,
+  reimbursementTransactionDocumentConverter: IReimbursementTransactionDocumentConverter,
+  deferredTransactionDocumentConverter: IDeferredTransactionDocumentConverter,
 ): IUpdateToPaymentTransactionService => {
   return async ({ body, transactionId, expiresIn }) => {
     const queriedDocument = await transactionService.getTransactionById(transactionId).catch(httpErrors.transaction.getById({
@@ -101,7 +105,7 @@ export const updateToPaymentTransactionServiceFactory = (
     }
 
     if (!body.loanAccountId) {
-      const { _id, ...document } = transactionDocumentConverter.createPaymentDocument({
+      const { _id, ...document } = paymentTransactionDocumentConverter.create({
         body,
         account,
         category,
@@ -115,7 +119,7 @@ export const updateToPaymentTransactionServiceFactory = (
       const payingAccount = body.amount < 0 ? account : loanAccount;
       const ownerAccount = body.amount < 0 ? loanAccount : account;
 
-      const { _id, ...document } = payingAccount.accountType === 'loan' ? transactionDocumentConverter.createReimbursementDocument({
+      const { _id, ...document } = payingAccount.accountType === 'loan' ? reimbursementTransactionDocumentConverter.create({
         body,
         payingAccount,
         ownerAccount,
@@ -123,7 +127,7 @@ export const updateToPaymentTransactionServiceFactory = (
         project,
         recipient,
         product,
-      }, expiresIn) : transactionDocumentConverter.createDeferredDocument({
+      }, expiresIn) : deferredTransactionDocumentConverter.create({
         body,
         payingAccount,
         ownerAccount,

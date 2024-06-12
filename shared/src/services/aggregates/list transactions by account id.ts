@@ -12,53 +12,46 @@ export const listTransactionsByAccountId = (accountId: string): PipelineStage[] 
       newRoot: {
         $mergeObjects: [
           '$$ROOT',
-          {
-            mainDescription: '$description',
-            mainAmount: '$amount',
-          },
           '$splits',
+          {
+            tx_amount: '$amount',
+            tx_description: '$description',
+            tx_id: '$_id',
+            tx_transactionType: '$transactionType',
+          },
         ],
       },
     },
   },
   {
     $set: {
-      dupes: {
+      tmp_dupes: {
         $filter: {
           input: [
             {
-              _account: '$account',
-              _amount: '$amount',
-              _description: '$description',
-              amount: '$mainAmount',
-              description: '$mainDescription',
+              tmp_account: '$accounts.mainAccount',
             },
             {
-              _account: '$transferAccount',
-              _amount: {
+              tmp_account: '$accounts.transferAccount',
+              amount: {
                 $ifNull: [
                   '$transferAmount',
                   '$amount',
                 ],
               },
-              amount: '$mainAmount',
             },
             {
-              _account: '$ownerAccount',
-              _amount: '$amount',
-              amount: '$mainAmount',
+              tmp_account: '$accounts.ownerAccount',
             },
             {
-              _account: '$payingAccount',
-              _amount: '$amount',
-              amount: '$mainAmount',
+              tmp_account: '$accounts.payingAccount',
             },
           ],
           cond: {
             $ne: [
               {
                 $ifNull: [
-                  '$$this._account',
+                  '$$this.tmp_account',
                   null,
                 ],
               },
@@ -71,7 +64,7 @@ export const listTransactionsByAccountId = (accountId: string): PipelineStage[] 
   },
   {
     $unwind: {
-      path: '$dupes',
+      path: '$tmp_dupes',
     },
   },
   {
@@ -79,22 +72,20 @@ export const listTransactionsByAccountId = (accountId: string): PipelineStage[] 
       newRoot: {
         $mergeObjects: [
           '$$ROOT',
-          '$dupes',
+          '$tmp_dupes',
         ],
       },
     },
   },
   {
     $unset: [
-      'dupes',
+      'tmp_dupes',
       'splits',
-      'mainAmount',
-      'mainDescription',
     ],
   },
   {
     $match: {
-      _account: new Types.ObjectId(accountId),
+      tmp_account: new Types.ObjectId(accountId),
     },
   },
   {
@@ -121,7 +112,7 @@ export const listTransactionsByAccountId = (accountId: string): PipelineStage[] 
         },
 
       ],
-      as: 'deferredTransactions',
+      as: 'tmp_deferredTransactions',
     },
   },
   {
@@ -140,17 +131,17 @@ export const listTransactionsByAccountId = (accountId: string): PipelineStage[] 
                 {
                   case: {
                     $eq: [
-                      '$_account',
-                      '$ownerAccount',
+                      '$tmp_account',
+                      '$accounts.ownerAccount',
                     ],
                   },
                   then: {
                     $multiply: [
                       {
                         $sum: [
-                          '$_amount',
+                          '$amount',
                           {
-                            $sum: '$deferredTransactions.payments.amount',
+                            $sum: '$tmp_deferredTransactions.payments.amount',
                           },
                         ],
                       },
@@ -161,15 +152,15 @@ export const listTransactionsByAccountId = (accountId: string): PipelineStage[] 
                 {
                   case: {
                     $eq: [
-                      '$_account',
-                      '$payingAccount',
+                      '$tmp_account',
+                      '$accounts.payingAccount',
                     ],
                   },
                   then: {
                     $sum: [
-                      '$_amount',
+                      '$amount',
                       {
-                        $sum: '$deferredTransactions.payments.amount',
+                        $sum: '$tmp_deferredTransactions.payments.amount',
                       },
                     ],
                   },
@@ -185,63 +176,63 @@ export const listTransactionsByAccountId = (accountId: string): PipelineStage[] 
   },
   {
     $unset: [
-      'deferredTransactions',
-      '_account',
+      'tmp_deferredTransactions',
+      'tmp_account',
     ],
   },
   {
     $lookup: {
       from: 'accounts',
-      localField: 'account',
+      localField: 'accounts.mainAccount',
       foreignField: '_id',
-      as: 'account',
+      as: 'accounts.mainAccount',
     },
   },
   {
     $unwind: {
-      path: '$account',
+      path: '$accounts.mainAccount',
       preserveNullAndEmptyArrays: true,
     },
   },
   {
     $lookup: {
       from: 'accounts',
-      localField: 'payingAccount',
+      localField: 'accounts.payingAccount',
       foreignField: '_id',
-      as: 'payingAccount',
+      as: 'accounts.payingAccount',
     },
   },
   {
     $unwind: {
-      path: '$payingAccount',
+      path: '$accounts.payingAccount',
       preserveNullAndEmptyArrays: true,
     },
   },
   {
     $lookup: {
       from: 'accounts',
-      localField: 'ownerAccount',
+      localField: 'accounts.ownerAccount',
       foreignField: '_id',
-      as: 'ownerAccount',
+      as: 'accounts.ownerAccount',
     },
   },
   {
     $unwind: {
-      path: '$ownerAccount',
+      path: '$accounts.ownerAccount',
       preserveNullAndEmptyArrays: true,
     },
   },
   {
     $lookup: {
       from: 'accounts',
-      localField: 'transferAccount',
+      localField: 'accounts.transferAccount',
       foreignField: '_id',
-      as: 'transferAccount',
+      as: 'accounts.transferAccount',
     },
   },
   {
     $unwind: {
-      path: '$transferAccount',
+      path: '$accounts.transferAccount',
       preserveNullAndEmptyArrays: true,
     },
   },
@@ -303,11 +294,8 @@ export const listTransactionsByAccountId = (accountId: string): PipelineStage[] 
   },
   {
     $group: {
-      _id: '$_id',
-      transactionType: {
-        $first: '$transactionType',
-      },
-      temp: {
+      _id: '$tx_id',
+      tmp_splits: {
         $push: '$$ROOT',
       },
     },
@@ -319,7 +307,7 @@ export const listTransactionsByAccountId = (accountId: string): PipelineStage[] 
           '$$ROOT',
           {
             $arrayElemAt: [
-              '$temp',
+              '$tmp_splits',
               0,
             ],
           },
@@ -329,11 +317,34 @@ export const listTransactionsByAccountId = (accountId: string): PipelineStage[] 
   },
   {
     $set: {
+      _id: '$tx_id',
+      transactionType: '$tx_transactionType',
+      description: '$tx_description',
+      amount: '$tx_amount',
+      accounts: {
+        $cond: {
+          if: {
+            $eq: [
+              '$tx_transactionType',
+              'split',
+            ],
+          },
+          then: {
+            mainAccount: {
+              $ifNull: [
+                '$accounts.mainAccount',
+                '$accounts.payingAccount',
+              ],
+            },
+          },
+          else: '$accounts',
+        },
+      },
       category: {
         $cond: [
           {
             $eq: [
-              '$transactionType',
+              '$tx_transactionType',
               'split',
             ],
           },
@@ -345,7 +356,7 @@ export const listTransactionsByAccountId = (accountId: string): PipelineStage[] 
         $cond: [
           {
             $eq: [
-              '$transactionType',
+              '$tx_transactionType',
               'split',
             ],
           },
@@ -357,7 +368,7 @@ export const listTransactionsByAccountId = (accountId: string): PipelineStage[] 
         $cond: [
           {
             $eq: [
-              '$transactionType',
+              '$tx_transactionType',
               'split',
             ],
           },
@@ -369,7 +380,7 @@ export const listTransactionsByAccountId = (accountId: string): PipelineStage[] 
         $cond: [
           {
             $eq: [
-              '$transactionType',
+              '$tx_transactionType',
               'split',
             ],
           },
@@ -381,7 +392,7 @@ export const listTransactionsByAccountId = (accountId: string): PipelineStage[] 
         $cond: [
           {
             $eq: [
-              '$transactionType',
+              '$tx_transactionType',
               'split',
             ],
           },
@@ -393,7 +404,7 @@ export const listTransactionsByAccountId = (accountId: string): PipelineStage[] 
         $cond: [
           {
             $eq: [
-              '$transactionType',
+              '$tx_transactionType',
               'split',
             ],
           },
@@ -405,7 +416,7 @@ export const listTransactionsByAccountId = (accountId: string): PipelineStage[] 
         $cond: [
           {
             $eq: [
-              '$transactionType',
+              '$tx_transactionType',
               'split',
             ],
           },
@@ -413,20 +424,80 @@ export const listTransactionsByAccountId = (accountId: string): PipelineStage[] 
           '$billingEndDate',
         ],
       },
+      remainingAmount: {
+        $cond: [
+          {
+            $eq: [
+              '$tx_transactionType',
+              'split',
+            ],
+          },
+          '$$REMOVE',
+          '$remainingAmount',
+        ],
+      },
       splits: {
         $cond: {
           if: {
             $eq: [
-              '$transactionType',
+              '$tx_transactionType',
               'split',
             ],
           },
           then: {
             $map: {
-              input: '$temp',
+              input: '$tmp_splits',
               in: {
-                amount: '$$this._amount',
-                description: '$$this._description',
+                _id: {
+                  $cond: [
+                    {
+                      $eq: [
+                        '$$this.transactionType',
+                        'deferred',
+                      ],
+                    },
+                    '$$this._id',
+                    '$$REMOVE',
+                  ],
+                },
+                transactionType: {
+                  $cond: [
+                    {
+                      $eq: [
+                        '$$this.transactionType',
+                        'deferred',
+                      ],
+                    },
+                    '$$this.transactionType',
+                    '$$REMOVE',
+                  ],
+                },
+                accounts: {
+                  $cond: [
+                    {
+                      $eq: [
+                        '$$this.transactionType',
+                        'deferred',
+                      ],
+                    },
+                    '$$this.accounts',
+                    '$$REMOVE',
+                  ],
+                },
+                remainingAmount: {
+                  $cond: [
+                    {
+                      $eq: [
+                        '$$this.transactionType',
+                        'deferred',
+                      ],
+                    },
+                    '$$this.remainingAmount',
+                    '$$REMOVE',
+                  ],
+                },
+                amount: '$$this.amount',
+                description: '$$this.description',
                 category: '$$this.category',
                 project: '$$this.project',
                 quantity: '$$this.quantity',
@@ -439,15 +510,16 @@ export const listTransactionsByAccountId = (accountId: string): PipelineStage[] 
           },
           else: '$$REMOVE',
         },
-
       },
     },
   },
   {
     $unset: [
-      '_amount',
-      '_description',
-      'temp',
+      'tx_amount',
+      'tx_description',
+      'tmp_splits',
+      'tx_id',
+      'tx_transactionType',
     ],
   },
   {

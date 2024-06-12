@@ -1,6 +1,6 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { getCategoryId, getTransactionId, pushUnique, toDictionary } from '@household/shared/common/utils';
-import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
+import { ISplitTransactionDocumentConverter } from '@household/shared/converters/split-transaction-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICategoryService } from '@household/shared/services/category-service';
 import { IProductService } from '@household/shared/services/product-service';
@@ -23,7 +23,7 @@ export const createSplitTransactionServiceFactory = (
   recipientService: IRecipientService,
   productService: IProductService,
   transactionService: ITransactionService,
-  transactionDocumentConverter: ITransactionDocumentConverter,
+  splitTransactionDocumentConverter: ISplitTransactionDocumentConverter,
 ): ICreateSplitTransactionService => {
   return async ({ body, expiresIn }) => {
     const { accountId, recipientId } = body;
@@ -109,7 +109,7 @@ export const createSplitTransactionServiceFactory = (
       }
     });
 
-    const document = transactionDocumentConverter.createSplitDocument({
+    const document = splitTransactionDocumentConverter.create({
       body,
       accounts,
       recipient,

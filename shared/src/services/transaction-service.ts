@@ -16,7 +16,11 @@ export interface ITransactionService {
   updateTransaction(transactionId: Transaction.Id, updateQuery: UpdateQuery<Transaction.Document>): Promise<unknown>;
   replaceTransaction(transactionId: Transaction.Id, doc: Restrict<Transaction.Document, '_id'>): Promise<unknown>;
   listTransactions(match: PipelineStage.Match): Promise<Transaction.PaymentDocument[]>;
-  listDeferredTransactions(ctx: {payingAccountIds?: Account.Id[]; transactionIds?: Transaction.Id[]}): Promise<Transaction.DeferredDocument[]>;
+  listDeferredTransactions(ctx: {
+    payingAccountIds?: Account.Id[];
+    deferredTransactionIds?: Transaction.Id[];
+    excludedTransferTransactionId?: Transaction.Id
+  }): Promise<Transaction.DeferredDocument[]>;
   listTransactionsByAccountId(data: Account.AccountId & Common.Pagination<number>): Promise<Transaction.Document[]>;
 }
 
@@ -50,10 +54,15 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
         .setOptions({
           populate: populate('project',
             'recipient',
-            'account',
+            'accounts.mainAccount',
+            'accounts.transferAccount',
+            'accounts.payingAccount',
+            'accounts.ownerAccount',
             'category',
             'product',
-            'transferAccount',
+            'splits',
+            'aplits.accounts.payingAccount',
+            'aplits.accounts.ownerAccount',
             'splits.category',
             'splits.project',
             'splits.product'),
@@ -66,20 +75,29 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
         _id: transactionId,
         $or: [
           {
-            account: accountId,
+            'accounts.mainAccount': accountId,
           },
           {
-            transferAccount: accountId,
+            'accounts.transferAccount': accountId,
+          },
+          {
+            'accounts.payingAccount': accountId,
+          },
+          {
+            'accounts.ownerAccount': accountId,
           },
         ],
       })
         .setOptions({
           populate: populate('project',
             'recipient',
-            'account',
+            'accounts.mainAccount',
+            'accounts.transferAccount',
+            'accounts.payingAccount',
+            'accounts.ownerAccount',
             'category',
             'product',
-            'transferAccount',
+            'splits',
             'splits.category',
             'splits.project',
             'splits.product'),
@@ -195,33 +213,21 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
 
       });
     },
-    listDeferredTransactions: ({ payingAccountIds, transactionIds }) => {
+    listDeferredTransactions: ({ payingAccountIds, deferredTransactionIds, excludedTransferTransactionId }) => {
       return mongodbService.inSession((session) => {
-        return mongodbService.transactions.aggregate<Transaction.DeferredDocument>([
-          {
-            $match: {
-              ...(payingAccountIds?.length > 0 ? {
-                payingAccount: {
-                  $in: payingAccountIds.map(id => new Types.ObjectId(id)),
-                },
-              } : {}),
-              ...(transactionIds?.length > 0 ? {
-                _id: {
-                  $in: transactionIds.map(id => new Types.ObjectId(id)),
-                },
-              } : {}),
-              transactionType: 'deferred',
-            },
-          },
-          ...listDeferredTransactions,
-        ], {
-          session,
-        });
+        return mongodbService.transactions.aggregate<Transaction.DeferredDocument>(
+          listDeferredTransactions({
+            payingAccountIds,
+            excludedTransferTransactionId,
+            deferredTransactionIds,
+          }), {
+            session,
+          });
       });
     },
     listTransactionsByAccountId: ({ accountId, pageSize, pageNumber }) => {
       return mongodbService.inSession(async (session) => {
-        const transactionIds = (await mongodbService.transactions.aggregate<Internal.Id>([
+        return mongodbService.transactions.aggregate([
           ...listTransactionsByAccountId(accountId),
           {
             $skip: (pageNumber - 1) * pageSize,
@@ -231,29 +237,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
           },
         ], {
           session,
-        })).map(d => d._id);
-
-        return mongodbService.transactions.find({
-          _id: {
-            $in: transactionIds,
-          },
-        })
-          .setOptions({
-            session,
-            populate: populate('project',
-              'recipient',
-              'account',
-              'category',
-              'product',
-              'transferAccount',
-              'payingAccount',
-              'ownerAccount',
-              'splits.category',
-              'splits.project',
-              'splits.product'),
-            lean: true,
-          })
-          .exec();
+        });
       });
     },
   };

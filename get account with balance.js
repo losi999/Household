@@ -23,26 +23,28 @@ db.getCollection("accounts").aggregate([
             newRoot: {
               $mergeObjects: [
                 '$$ROOT',
-                {
-                  _description: '$description',
-                },
                 '$splits',
+                {
+                  tx_amount: '$amount',
+                  tx_description: '$description',
+                  tx_id: '$_id',
+                  tx_transactionType: '$transactionType'
+                }
               ],
             },
           },
         },
         {
           $set: {
-            dupes: {
+            tmp_dupes: {
               $filter: {
                 input: [
                   {
-                    _account: '$accounts.mainAccount',
-                    _amount: '$amount',
+                    tmp_account: '$accounts.mainAccount',
                   },
                   {
-                    _account: '$accounts.transferAccount',
-                    _amount: {
+                    tmp_account: '$accounts.transferAccount',
+                    amount: {
                       $ifNull: [
                         '$transferAmount',
                         '$amount',
@@ -50,19 +52,17 @@ db.getCollection("accounts").aggregate([
                     },
                   },
                   {
-                    _account: '$accounts.ownerAccount',
-                    _amount: '$amount',
+                    tmp_account: '$accounts.ownerAccount',
                   },
                   {
-                    _account: '$accounts.payingAccount',
-                    _amount: '$amount',
+                    tmp_account: '$accounts.payingAccount',
                   },
                 ],
                 cond: {
                   $ne: [
                     {
                       $ifNull: [
-                        '$$this._account',
+                        '$$this.tmp_account',
                         null,
                       ],
                     },
@@ -75,7 +75,7 @@ db.getCollection("accounts").aggregate([
         },
         {
           $unwind: {
-            path: '$dupes',
+            path: '$tmp_dupes',
           },
         },
         {
@@ -83,14 +83,14 @@ db.getCollection("accounts").aggregate([
             newRoot: {
               $mergeObjects: [
                 '$$ROOT',
-                '$dupes',
+                '$tmp_dupes',
               ],
             },
           },
         },
         {
           $unset: [
-            'dupes',
+            'tmp_dupes',
             'splits',
           ],
         },
@@ -99,7 +99,7 @@ db.getCollection("accounts").aggregate([
             $expr: {
               $eq: [
                 '$$accountId',
-                '$_account',
+                '$tmp_account',
               ],
             },
           },
@@ -126,9 +126,8 @@ db.getCollection("accounts").aggregate([
                   },
                 },
               },
-
             ],
-            as: 'deferredTransactions',
+            as: 'tmp_deferredTransactions',
           },
         },
         {
@@ -136,9 +135,9 @@ db.getCollection("accounts").aggregate([
             remainingAmount: {
               $cond: {
                 if: {
-                  $in: [
+                  $eq: [
                     '$transactionType',
-                    ['deferred','deferredSplit']
+                    'deferred'
                   ],
                 },
                 then: {
@@ -147,7 +146,7 @@ db.getCollection("accounts").aggregate([
                       {
                         case: {
                           $eq: [
-                            '$_account',
+                            '$tmp_account',
                             '$accounts.ownerAccount',
                           ],
                         },
@@ -155,9 +154,9 @@ db.getCollection("accounts").aggregate([
                           $multiply: [
                             {
                               $sum: [
-                                '$_amount',
+                                '$amount',
                                 {
-                                  $sum: '$deferredTransactions.payments.amount',
+                                  $sum: '$tmp_deferredTransactions.payments.amount',
                                 },
                               ],
                             },
@@ -168,15 +167,15 @@ db.getCollection("accounts").aggregate([
                       {
                         case: {
                           $eq: [
-                            '$_account',
+                            '$tmp_account',
                             '$accounts.payingAccount',
                           ],
                         },
                         then: {
                           $sum: [
-                            '$_amount',
+                            '$amount',
                             {
-                              $sum: '$deferredTransactions.payments.amount',
+                              $sum: '$tmp_deferredTransactions.payments.amount',
                             },
                           ],
                         },
@@ -186,20 +185,19 @@ db.getCollection("accounts").aggregate([
                   },
                 },
                 else: '$$REMOVE',
-
               },
             },
           },
         },
       ],
-      as: 'tx',
+      as: 'tmp_tx',
     },
   },
   {
     $set: {
       balance: {
         $reduce: {
-          input: '$tx',
+          input: '$tmp_tx',
           initialValue: 0,
           in: {
             $switch: {
@@ -209,7 +207,7 @@ db.getCollection("accounts").aggregate([
                     $and: [
                       {
                         $eq: [
-                          '$$this._account',
+                          '$$this.tmp_account',
                           '$$this.accounts.ownerAccount',
                         ],
                       },
@@ -228,7 +226,7 @@ db.getCollection("accounts").aggregate([
                     $and: [
                       {
                         $eq: [
-                          '$$this._account',
+                          '$$this.tmp_account',
                           '$$this.accounts.payingAccount',
                         ],
                       },
@@ -243,7 +241,7 @@ db.getCollection("accounts").aggregate([
                   then: {
                     $subtract: [
                       '$$value',
-                      '$$this._amount',
+                      '$$this.amount',
                     ],
                   },
                 },
@@ -251,7 +249,7 @@ db.getCollection("accounts").aggregate([
               default: {
                 $sum: [
                   '$$value',
-                  '$$this._amount',
+                  '$$this.amount',
                 ],
               },
             },
@@ -268,18 +266,13 @@ db.getCollection("accounts").aggregate([
           },
           then: 0,
           else: {
-            $sum: '$tx.remainingAmount',
+            $sum: '$tmp_tx.remainingAmount',
           },
         },
       },
     },
   },
   {
-    $unset: ['tx'],
-  },
-  {
-    $sort: {
-      name: 1,
-    },
+    $unset: ['tmp_tx'],
   },
 ])

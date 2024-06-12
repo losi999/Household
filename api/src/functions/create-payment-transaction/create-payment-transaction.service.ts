@@ -1,6 +1,8 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { getAccountId, getCategoryId, getTransactionId } from '@household/shared/common/utils';
-import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
+import { IDeferredTransactionDocumentConverter } from '@household/shared/converters/deferred-transaction-document-converter';
+import { IPaymentTransactionDocumentConverter } from '@household/shared/converters/payment-transaction-document-converter';
+import { IReimbursementTransactionDocumentConverter } from '@household/shared/converters/reimbursement-transaction-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICategoryService } from '@household/shared/services/category-service';
 import { IProductService } from '@household/shared/services/product-service';
@@ -23,7 +25,9 @@ export const createPaymentTransactionServiceFactory = (
   recipientService: IRecipientService,
   productService: IProductService,
   transactionService: ITransactionService,
-  transactionDocumentConverter: ITransactionDocumentConverter,
+  paymentTransactionDocumentConverter: IPaymentTransactionDocumentConverter,
+  reimbursementTransactionDocumentConverter: IReimbursementTransactionDocumentConverter,
+  deferredTransactionDocumentConverter: IDeferredTransactionDocumentConverter,
 ): ICreatePaymentTransactionService => {
   return async ({ body, expiresIn }) => {
     const { accountId, categoryId, projectId, recipientId, productId, loanAccountId } = body;
@@ -94,7 +98,7 @@ export const createPaymentTransactionServiceFactory = (
     let document: Transaction.PaymentDocument | Transaction.DeferredDocument | Transaction.ReimbursementDocument;
 
     if (!body.loanAccountId) {
-      document = transactionDocumentConverter.createPaymentDocument({
+      document = paymentTransactionDocumentConverter.create({
         body,
         account,
         category,
@@ -106,7 +110,7 @@ export const createPaymentTransactionServiceFactory = (
       const payingAccount = body.amount < 0 ? account : loanAccount;
       const ownerAccount = body.amount < 0 ? loanAccount : account;
 
-      document = payingAccount.accountType === 'loan' ? transactionDocumentConverter.createReimbursementDocument({
+      document = payingAccount.accountType === 'loan' ? reimbursementTransactionDocumentConverter.create({
         body,
         payingAccount,
         ownerAccount,
@@ -114,7 +118,7 @@ export const createPaymentTransactionServiceFactory = (
         project,
         recipient,
         product,
-      }, expiresIn) : transactionDocumentConverter.createDeferredDocument({
+      }, expiresIn) : deferredTransactionDocumentConverter.create({
         body,
         payingAccount,
         ownerAccount,
