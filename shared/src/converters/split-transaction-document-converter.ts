@@ -33,52 +33,66 @@ export const splitTransactionDocumentConverterFactory = (
 
   const instance: ISplitTransactionDocumentConverter = {
     create: ({ body, accounts, projects, categories, recipient, products }, expiresIn, generateId): Transaction.SplitDocument => {
+      const { splits, deferredSplits } = body.splits.reduce<Transaction.Splits>((accumulator, s) => {
+        const category = categories[s.categoryId];
+
+        if (s.loanAccountId) {
+          return {
+            ...accumulator,
+            deferredSplits: [
+              ...accumulator.deferredSplits ?? [],
+              deferredTransactionDocumentConverter.create({
+                body: {
+                  ...s,
+                  accountId: body.accountId,
+                  issuedAt: undefined,
+                  recipientId: undefined,
+                },
+                category,
+                ownerAccount: accounts[s.loanAccountId],
+                payingAccount: accounts[body.accountId],
+                product: products[s.productId],
+                project: projects[s.projectId],
+                recipient,
+              }, expiresIn, generateId),
+            ],
+          };
+
+        }
+        return {
+          ...accumulator,
+          splits: [
+            ...accumulator.splits ?? [],
+            {
+              _id: generateId ? generateMongoId() : undefined,
+              category: category ?? undefined,
+              amount: s.amount,
+              description: s.description,
+              project: projects[s.projectId],
+              quantity: category?.categoryType === 'inventory' ? s.quantity : undefined,
+              product: category?.categoryType === 'inventory' ? products[s.productId] : undefined,
+              invoiceNumber: category?.categoryType === 'invoice' ? s.invoiceNumber : undefined,
+              billingEndDate: category?.categoryType === 'invoice' ? createDate(s.billingEndDate) : undefined,
+              billingStartDate: category?.categoryType === 'invoice' ? createDate(s.billingStartDate) : undefined,
+              projectId: undefined,
+              categoryId: undefined,
+              productId: undefined,
+            },
+          ],
+        };
+      }, {
+        splits: undefined,
+        deferredSplits: undefined,
+      });
+
       return {
         ...body,
-        accounts: {
-          mainAccount: accounts[body.accountId] ?? undefined,
-        },
+        account: accounts[body.accountId],
         recipient: recipient ?? undefined,
         transactionType: 'split',
         issuedAt: new Date(body.issuedAt),
-        splits: body.splits.map((s) => {
-          const category = categories[s.categoryId];
-
-          if (s.loanAccountId) {
-            return deferredTransactionDocumentConverter.create({
-              body: {
-                ...s,
-                accountId: body.accountId,
-                issuedAt: body.issuedAt,
-                recipientId: body.recipientId,
-              },
-              category,
-              ownerAccount: accounts[s.loanAccountId],
-              payingAccount: accounts[body.accountId],
-              product: products[s.productId],
-              project: projects[s.projectId],
-              recipient,
-            }, expiresIn, true);
-
-          }
-
-          return {
-            _id: undefined,
-            transactionType: 'split',
-            category: category ?? undefined,
-            amount: s.amount,
-            description: s.description,
-            project: projects[s.projectId],
-            quantity: category?.categoryType === 'inventory' ? s.quantity : undefined,
-            product: category?.categoryType === 'inventory' ? products[s.productId] : undefined,
-            invoiceNumber: category?.categoryType === 'invoice' ? s.invoiceNumber : undefined,
-            billingEndDate: category?.categoryType === 'invoice' ? createDate(s.billingEndDate) : undefined,
-            billingStartDate: category?.categoryType === 'invoice' ? createDate(s.billingStartDate) : undefined,
-            projectId: undefined,
-            categoryId: undefined,
-            productId: undefined,
-          };
-        }),
+        splits,
+        deferredSplits,
         accountId: undefined,
         recipientId: undefined,
         _id: generateId ? generateMongoId() : undefined,
@@ -94,25 +108,20 @@ export const splitTransactionDocumentConverterFactory = (
         issuedAt: doc.issuedAt.toISOString(),
         _id: undefined,
         expiresAt: undefined,
-        accounts: undefined,
-        account: accountDocumentConverter.toResponse(doc.accounts.mainAccount),
+        account: accountDocumentConverter.toResponse(doc.account),
         recipient: doc.recipient ? recipientDocumentConverter.toResponse(doc.recipient) : undefined,
-        splits: doc.splits.map((s) => {
-          switch (s.transactionType) {
-            case 'deferred': return deferredTransactionDocumentConverter.toResponse(s);
-            case 'split': return {
-              amount: s.amount,
-              description: s.description,
-              invoiceNumber: s.invoiceNumber,
-              quantity: s.quantity,
-              billingEndDate: s.billingEndDate?.toISOString().split('T')[0],
-              billingStartDate: s.billingStartDate?.toISOString().split('T')[0],
-              product: s.product ? productDocumentConverter.toResponse(s.product) : undefined,
-              category: s.category ? categoryDocumentConverter.toResponse(s.category) : undefined,
-              project: s.project ? projectDocumentConverter.toResponse(s.project) : undefined,
-            };
-          }
-        }),
+        splits: doc.splits?.map(s => ({
+          amount: s.amount,
+          description: s.description,
+          invoiceNumber: s.invoiceNumber,
+          quantity: s.quantity,
+          billingEndDate: s.billingEndDate?.toISOString().split('T')[0],
+          billingStartDate: s.billingStartDate?.toISOString().split('T')[0],
+          product: s.product ? productDocumentConverter.toResponse(s.product) : undefined,
+          category: s.category ? categoryDocumentConverter.toResponse(s.category) : undefined,
+          project: s.project ? projectDocumentConverter.toResponse(s.project) : undefined,
+        })),
+        deferredSplits: doc.deferredSplits?.map(s => deferredTransactionDocumentConverter.toResponse(s)),
       };
     },
     toResponseList: (docs) => docs.map(d => instance.toResponse(d)),

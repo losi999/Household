@@ -52,7 +52,7 @@ export const transactionDocumentConverterFactory = (
         transactionId: getTransactionId(document),
         issuedAt: document.issuedAt.toISOString(),
         description: document.description,
-        account: accountDocumentConverter.toReport(document.accounts.mainAccount),
+        account: accountDocumentConverter.toReport(document.account),
         category: categoryDocumentConverter.toReport(document.category),
         product: productDocumentConverter.toReport({
           quantity: document.quantity,

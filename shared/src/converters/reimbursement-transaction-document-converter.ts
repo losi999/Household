@@ -32,11 +32,8 @@ export const reimbursementTransactionDocumentConverterFactory = (
     create: ({ body, payingAccount, ownerAccount, project, category, recipient, product }, expiresIn, generateId): Transaction.ReimbursementDocument => {
       return {
         ...body,
-        amount: Math.abs(body.amount) * -1,
-        accounts: {
-          payingAccount,
-          ownerAccount,
-        },
+        payingAccount,
+        ownerAccount,
         recipient: recipient ?? undefined,
         category: category ?? undefined,
         project: project ?? undefined,
@@ -66,9 +63,8 @@ export const reimbursementTransactionDocumentConverterFactory = (
         issuedAt: doc.issuedAt.toISOString(),
         _id: undefined,
         expiresAt: undefined,
-        accounts: undefined,
-        payingAccount: accountDocumentConverter.toResponse(doc.accounts.payingAccount),
-        ownerAccount: accountDocumentConverter.toResponse(doc.accounts.ownerAccount),
+        payingAccount: accountDocumentConverter.toResponse(doc.payingAccount),
+        ownerAccount: accountDocumentConverter.toResponse(doc.ownerAccount),
         billingEndDate: doc.billingEndDate?.toISOString().split('T')[0],
         billingStartDate: doc.billingStartDate?.toISOString().split('T')[0],
         product: doc.product ? productDocumentConverter.toResponse(doc.product) : undefined,

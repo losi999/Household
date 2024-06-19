@@ -14,8 +14,23 @@ export const getAccountWithBalance = (accountId: string): PipelineStage[] => [
       },
       pipeline: [
         {
+          $set: {
+            tmp_splits: {
+              $concatArrays: [
+                '$splits',
+                {
+                  $ifNull: [
+                    '$deferredSplits',
+                    [],
+                  ],
+                },
+              ],
+            },
+          },
+        },
+        {
           $unwind: {
-            path: '$splits',
+            path: '$tmp_splits',
             preserveNullAndEmptyArrays: true,
           },
         },
@@ -24,7 +39,7 @@ export const getAccountWithBalance = (accountId: string): PipelineStage[] => [
             newRoot: {
               $mergeObjects: [
                 '$$ROOT',
-                '$splits',
+                '$tmp_splits',
                 {
                   tx_amount: '$amount',
                   tx_description: '$description',
@@ -41,10 +56,21 @@ export const getAccountWithBalance = (accountId: string): PipelineStage[] => [
               $filter: {
                 input: [
                   {
-                    tmp_account: '$accounts.mainAccount',
+                    tmp_account: {
+                      $cond: {
+                        if: {
+                          $ne: [
+                            '$transactionType',
+                            'deferred',
+                          ],
+                        },
+                        then: '$account',
+                        else: null,
+                      },
+                    },
                   },
                   {
-                    tmp_account: '$accounts.transferAccount',
+                    tmp_account: '$transferAccount',
                     amount: {
                       $ifNull: [
                         '$transferAmount',
@@ -53,10 +79,10 @@ export const getAccountWithBalance = (accountId: string): PipelineStage[] => [
                     },
                   },
                   {
-                    tmp_account: '$accounts.ownerAccount',
+                    tmp_account: '$ownerAccount',
                   },
                   {
-                    tmp_account: '$accounts.payingAccount',
+                    tmp_account: '$payingAccount',
                   },
                 ],
                 cond: {
@@ -92,7 +118,9 @@ export const getAccountWithBalance = (accountId: string): PipelineStage[] => [
         {
           $unset: [
             'tmp_dupes',
+            'tmp_splits',
             'splits',
+            'deferredSplits',
           ],
         },
         {
@@ -148,7 +176,7 @@ export const getAccountWithBalance = (accountId: string): PipelineStage[] => [
                         case: {
                           $eq: [
                             '$tmp_account',
-                            '$accounts.ownerAccount',
+                            '$ownerAccount',
                           ],
                         },
                         then: {
@@ -169,7 +197,7 @@ export const getAccountWithBalance = (accountId: string): PipelineStage[] => [
                         case: {
                           $eq: [
                             '$tmp_account',
-                            '$accounts.payingAccount',
+                            '$payingAccount',
                           ],
                         },
                         then: {
@@ -209,7 +237,7 @@ export const getAccountWithBalance = (accountId: string): PipelineStage[] => [
                       {
                         $eq: [
                           '$$this.tmp_account',
-                          '$$this.accounts.ownerAccount',
+                          '$$this.ownerAccount',
                         ],
                       },
                       {
@@ -228,7 +256,7 @@ export const getAccountWithBalance = (accountId: string): PipelineStage[] => [
                       {
                         $eq: [
                           '$$this.tmp_account',
-                          '$$this.accounts.payingAccount',
+                          '$$this.payingAccount',
                         ],
                       },
                       {

@@ -17,10 +17,10 @@ const schema: StrictJSONSchema7<Account.Response> = {
     ...accountId.properties,
     ...account.properties,
     balance: {
-      type: [
-        'number',
-        'null',
-      ],
+      type: 'number',
+    },
+    loanBalance: {
+      type: 'number',
     },
     isOpen: {
       type: 'boolean',

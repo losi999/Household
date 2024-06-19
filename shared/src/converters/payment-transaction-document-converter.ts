@@ -28,13 +28,10 @@ export const paymentTransactionDocumentConverterFactory = (
   productDocumentConverter: IProductDocumentConverter,
 ): IPaymentTransactionDocumentConverter => {
   const instance: IPaymentTransactionDocumentConverter = {
-    create: ({ body, account, project, category, recipient, product }, expiresIn, generateId) => {
+    create: ({ body, account, project, category, recipient, product }, expiresIn, generateId): Transaction.PaymentDocument => {
       return {
         ...body,
-        splits: 123,
-        accounts: {
-          mainAccount: account ?? undefined,
-        },
+        account,
         recipient: recipient ?? undefined,
         category: category ?? undefined,
         project: project ?? undefined,
@@ -63,8 +60,7 @@ export const paymentTransactionDocumentConverterFactory = (
         issuedAt: doc.issuedAt.toISOString(),
         _id: undefined,
         expiresAt: undefined,
-        accounts: undefined,
-        account: accountDocumentConverter.toResponse(doc.accounts.mainAccount),
+        account: accountDocumentConverter.toResponse(doc.account),
         billingEndDate: doc.billingEndDate?.toISOString().split('T')[0],
         billingStartDate: doc.billingStartDate?.toISOString().split('T')[0],
         product: doc.product ? productDocumentConverter.toResponse(doc.product) : undefined,

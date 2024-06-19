@@ -5,8 +5,17 @@ var accountId = '665aca435689536dd37d847d'//revolut
 
 db.getCollection("transactions").aggregate([
   {
+    $set: {
+      tmp_splits: {
+        $concatArrays: ['$splits', {
+          $ifNull: ['$deferredSplits', []]
+        }]
+      }
+    }
+  },
+  {
     $unwind: {
-      path: '$splits',
+      path: '$tmp_splits',
       preserveNullAndEmptyArrays: true,
     },
   },
@@ -15,7 +24,7 @@ db.getCollection("transactions").aggregate([
       newRoot: {
         $mergeObjects: [
           '$$ROOT',
-          '$splits',
+          '$tmp_splits',
           {
             tx_amount: '$amount',
             tx_description: '$description',
@@ -28,7 +37,7 @@ db.getCollection("transactions").aggregate([
   },
   {
     $match: {
-      'accounts.payingAccount': {
+      'payingAccount': {
         $in: [ObjectId(accountId)]
       },
       transactionType: 'deferred'
@@ -41,13 +50,13 @@ db.getCollection("transactions").aggregate([
         transactionId: '$_id',
       },
       pipeline: [
-//        {
-//          $match: {
-//            _id: {
-//              $ne: ObjectId(transactionId)
-//            }
-//          }
-//        },
+        //        {
+        //          $match: {
+        //            _id: {
+        //              $ne: ObjectId(transactionId)
+        //            }
+        //          }
+        //        },
         {
           $unwind: {
             path: '$payments',
@@ -75,33 +84,43 @@ db.getCollection("transactions").aggregate([
     },
   },
   {
-    $unset: ['tmp_deferredTransactions', 'splits', 'tx_amount', 'tx_description', 'tx_id', 'tx_transactionType'],
+    $unset: [
+      'tmp_deferredTransactions',
+      'deferredSplits',
+      'account',
+      'splits',
+      'tx_amount',
+      'tx_description',
+      'tx_id',
+      'tx_transactionType',
+      'tmp_splits'
+    ],
   },
   {
     $lookup: {
       from: 'accounts',
-      localField: 'accounts.payingAccount',
+      localField: 'payingAccount',
       foreignField: '_id',
-      as: 'accounts.payingAccount',
+      as: 'payingAccount',
     },
   },
   {
     $unwind: {
-      path: '$accounts.payingAccount',
+      path: '$payingAccount',
       preserveNullAndEmptyArrays: true,
     },
   },
   {
     $lookup: {
       from: 'accounts',
-      localField: 'accounts.ownerAccount',
+      localField: 'ownerAccount',
       foreignField: '_id',
-      as: 'accounts.ownerAccount',
+      as: 'ownerAccount',
     },
   },
   {
     $unwind: {
-      path: '$accounts.ownerAccount',
+      path: '$ownerAccount',
       preserveNullAndEmptyArrays: true,
     },
   },

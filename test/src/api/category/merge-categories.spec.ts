@@ -1,175 +1,282 @@
-import { createCategoryId } from '@household/shared/common/test-data-factory';
-import { getAccountId, getCategoryId, getProductId, toDictionary } from '@household/shared/common/utils';
-import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
-import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
-import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
-import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
+import { getCategoryId, getProductId } from '@household/shared/common/utils';
+import { categoryTypes } from '@household/shared/constants';
 import { Account, Category, Product, Transaction } from '@household/shared/types/types';
-import { v4 as uuid } from 'uuid';
+import { accountDataFactory } from '@household/test/api/account/data-factory';
+import { categoryDataFactory } from '@household/test/api/category/data-factory';
+import { productDataFactory } from '@household/test/api/product/data-factory';
+import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred-data-factory';
+import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment-data-factory';
+import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement-data-factory';
+import { splitTransactionDataFactory } from '@household/test/api/transaction/split-data-factory';
 
 describe('POST category/v1/categories/{categoryId}/merge', () => {
   let accountDocument: Account.Document;
   let sourceCategoryDocument: Category.Document;
   let targetCategoryDocument: Category.Document;
-  let paymentTransactionDocument: Transaction.PaymentDocument;
-  let splitTransactionDocument: Transaction.SplitDocument;
-  let productOfSourceCategoryDocument: Product.Document;
-  let productOfTargetCategoryDocument: Product.Document;
 
   beforeEach(() => {
-    accountDocument = accountDocumentConverter.create({
-      accountType: 'bankAccount',
-      currency: 'Ft',
-      name: `acocunt-${uuid()}`,
-      owner: 'owner1',
-    }, Cypress.env('EXPIRES_IN'), true);
-
-    sourceCategoryDocument = categoryDocumentConverter.create({
-      body: {
-        categoryType: 'regular',
-        name: `source-${uuid()}`,
-        parentCategoryId: undefined,
-      },
-      parentCategory: undefined,
-    }, Cypress.env('EXPIRES_IN'), true);
-
-    targetCategoryDocument = categoryDocumentConverter.create({
-      body: {
-        categoryType: 'regular',
-        name: `target-${uuid()}`,
-        parentCategoryId: undefined,
-      },
-      parentCategory: undefined,
-    }, Cypress.env('EXPIRES_IN'), true);
-
-    productOfSourceCategoryDocument = productDocumentConverter.create({
-      body: {
-        brand: `sourceprod-${uuid()}`,
-        measurement: 100,
-        unitOfMeasurement: 'g',
-      },
-      category: sourceCategoryDocument,
-    }, Cypress.env('EXPIRES_IN'), true);
-
-    productOfTargetCategoryDocument = productDocumentConverter.create({
-      body: {
-        brand: `targetprod-${uuid()}`,
-        measurement: 100,
-        unitOfMeasurement: 'g',
-      },
-      category: targetCategoryDocument,
-    }, Cypress.env('EXPIRES_IN'), true);
-
-    paymentTransactionDocument = transactionDocumentConverter.createPaymentDocument({
-      body: {
-        accountId: getAccountId(accountDocument),
-        amount: 100,
-        categoryId: getCategoryId(sourceCategoryDocument),
-        description: 'desc',
-        inventory: undefined,
-        issuedAt: new Date().toISOString(),
-        projectId: undefined,
-        recipientId: undefined,
-        invoice: undefined,
-      },
-      account: accountDocument,
-      category: sourceCategoryDocument,
-      product: undefined,
-      recipient: undefined,
-      project: undefined,
-    }, Cypress.env('EXPIRES_IN'), true);
-
-    splitTransactionDocument = transactionDocumentConverter.createSplitDocument({
-      body: {
-        accountId: getAccountId(accountDocument),
-        amount: 100,
-        description: 'desc',
-        issuedAt: new Date().toISOString(),
-        recipientId: undefined,
-        splits: [
-          {
-            amount: 50,
-            categoryId: getCategoryId(sourceCategoryDocument),
-            description: 'desc',
-            inventory: undefined,
-            projectId: undefined,
-            invoice: undefined,
-          },
-          {
-            amount: 50,
-            categoryId: getCategoryId(targetCategoryDocument),
-            description: 'desc',
-            inventory: undefined,
-            projectId: undefined,
-            invoice: undefined,
-          },
-        ],
-      },
-      account: accountDocument,
-      categories: toDictionary([
-        sourceCategoryDocument,
-        targetCategoryDocument,
-      ], '_id'),
-      products: undefined,
-      recipient: undefined,
-      projects: {},
-    }, Cypress.env('EXPIRES_IN'), true);
+    accountDocument = accountDataFactory.document();
   });
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
-        .requestMergeCategories(createCategoryId(), [createCategoryId()])
+        .requestMergeCategories(categoryDataFactory.id(), [categoryDataFactory.id()])
         .expectUnauthorizedResponse();
     });
   });
 
   describe('called as an admin', () => {
-    it.only('should merge categories', () => {
-      cy.saveAccountDocument(accountDocument)
-        .saveCategoryDocument(sourceCategoryDocument)
-        .saveCategoryDocument(targetCategoryDocument)
-        .saveProductDocument(productOfSourceCategoryDocument)
-        .saveProductDocument(productOfTargetCategoryDocument)
-        .saveTransactionDocument(paymentTransactionDocument)
-        .saveTransactionDocument(splitTransactionDocument)
-        .authenticate(1)
-        .requestMergeCategories(getCategoryId(targetCategoryDocument), [getCategoryId(sourceCategoryDocument)])
-        .expectCreatedResponse()
-        .validateCategoryDeleted(getCategoryId(sourceCategoryDocument))
-        .validateProductReassigned(getProductId(productOfSourceCategoryDocument), getCategoryId(targetCategoryDocument))
-        .validatePartiallyReassignedPaymentDocument(paymentTransactionDocument, {
-          category: getCategoryId(targetCategoryDocument),
-        })
-        .validatePartiallyReassignedSplitDocument(splitTransactionDocument, 0, {
-          category: getCategoryId(targetCategoryDocument),
+    describe('should merge', () => {
+      let loanAccountDocument: Account.Document;
+      let unrelatedCategoryDocument: Category.Document;
+      let productOfSourceCategoryDocument: Product.Document;
+      let productOfTargetCategoryDocument: Product.Document;
+      let unrelatedProductDocument: Product.Document;
+      let paymentTransactionDocument: Transaction.PaymentDocument;
+      let deferredTransactionDocument: Transaction.DeferredDocument;
+      let reimbursementTransactionDocument: Transaction.ReimbursementDocument;
+      let splitTransactionDocument: Transaction.SplitDocument;
+      let unrelatedPaymentTransactionDocument: Transaction.PaymentDocument;
+      let unrelatedDeferredTransactionDocument: Transaction.DeferredDocument;
+      let unrelatedReimbursementTransactionDocument: Transaction.ReimbursementDocument;
+
+      beforeEach(() => {
+        loanAccountDocument = accountDataFactory.document({
+          accountType: 'loan',
         });
+      });
+
+      categoryTypes.forEach((categoryType) => {
+        it(`${categoryType} categories`, () => {
+          sourceCategoryDocument = categoryDataFactory.document({
+            body: {
+              categoryType,
+            },
+          });
+          targetCategoryDocument = categoryDataFactory.document({
+            body: {
+              categoryType,
+            },
+          });
+
+          unrelatedCategoryDocument = categoryDataFactory.document({
+            body: {
+              categoryType,
+            },
+          });
+
+          if (categoryType === 'inventory') {
+            productOfSourceCategoryDocument = productDataFactory.document({
+              category: sourceCategoryDocument,
+            });
+            productOfTargetCategoryDocument = productDataFactory.document({
+              category: targetCategoryDocument,
+            });
+
+            unrelatedProductDocument = productDataFactory.document({
+              category: unrelatedCategoryDocument,
+            });
+          }
+
+          paymentTransactionDocument = paymentTransactionDataFactory.document({
+            account: accountDocument,
+            category: sourceCategoryDocument,
+            product: productOfSourceCategoryDocument,
+          });
+
+          deferredTransactionDocument = deferredTransactionDataFactory.document({
+            account: accountDocument,
+            category: sourceCategoryDocument,
+            loanAccount: loanAccountDocument,
+            product: productOfSourceCategoryDocument,
+          });
+
+          reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+            account: loanAccountDocument,
+            category: sourceCategoryDocument,
+            loanAccount: accountDocument,
+            product: productOfSourceCategoryDocument,
+          });
+
+          unrelatedPaymentTransactionDocument = paymentTransactionDataFactory.document({
+            account: accountDocument,
+            category: unrelatedCategoryDocument,
+            product: unrelatedProductDocument,
+          });
+
+          unrelatedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+            account: accountDocument,
+            category: unrelatedCategoryDocument,
+            product: unrelatedProductDocument,
+            loanAccount: loanAccountDocument,
+          });
+
+          unrelatedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+            account: loanAccountDocument,
+            category: unrelatedCategoryDocument,
+            product: unrelatedProductDocument,
+            loanAccount: accountDocument,
+          });
+
+          splitTransactionDocument = splitTransactionDataFactory.document({
+            account: accountDocument,
+            splits: [
+              {
+                category: sourceCategoryDocument,
+                product: productOfSourceCategoryDocument,
+              },
+              {
+                category: sourceCategoryDocument,
+                product: productOfSourceCategoryDocument,
+                loanAccount: loanAccountDocument,
+              },
+              {
+                category: unrelatedCategoryDocument,
+                product: unrelatedProductDocument,
+              },
+              {
+                category: unrelatedCategoryDocument,
+                loanAccount: loanAccountDocument,
+                product: unrelatedProductDocument,
+              },
+            ],
+          });
+
+          let chain: Cypress.Chainable = cy.saveAccountDocuments([
+            accountDocument,
+            loanAccountDocument,
+          ])
+            .saveCategoryDocuments([
+              sourceCategoryDocument,
+              targetCategoryDocument,
+              unrelatedCategoryDocument,
+            ]);
+          if (categoryType === 'inventory') {
+            chain = chain.saveProductDocuments([
+              productOfSourceCategoryDocument,
+              productOfTargetCategoryDocument,
+              unrelatedProductDocument,
+            ]);
+          }
+
+          chain = chain.saveTransactionDocuments([
+            paymentTransactionDocument,
+            splitTransactionDocument,
+            deferredTransactionDocument,
+            reimbursementTransactionDocument,
+            unrelatedPaymentTransactionDocument,
+            unrelatedDeferredTransactionDocument,
+            unrelatedReimbursementTransactionDocument,
+          ])
+            .authenticate(1)
+            .requestMergeCategories(getCategoryId(targetCategoryDocument), [getCategoryId(sourceCategoryDocument)])
+            .expectCreatedResponse()
+            .validateCategoryDeleted(getCategoryId(sourceCategoryDocument));
+
+          if (categoryType === 'inventory') {
+            chain = chain.validateProductReassigned(getProductId(productOfSourceCategoryDocument), getCategoryId(targetCategoryDocument));
+          }
+          chain.validateRelatedChangesInPaymentDocument(paymentTransactionDocument, {
+            category: {
+              from: sourceCategoryDocument,
+              to: targetCategoryDocument,
+            },
+          })
+            .validateRelatedChangesInPaymentDocument(unrelatedPaymentTransactionDocument, {
+              category: {
+                from: sourceCategoryDocument,
+                to: targetCategoryDocument,
+              },
+            })
+            .validateRelatedChangesInDeferredDocument(deferredTransactionDocument, {
+              category: {
+                from: sourceCategoryDocument,
+                to: targetCategoryDocument,
+              },
+            })
+            .validateRelatedChangesInDeferredDocument(unrelatedDeferredTransactionDocument, {
+              category: {
+                from: sourceCategoryDocument,
+                to: targetCategoryDocument,
+              },
+            })
+            .validateRelatedChangesInReimbursementDocument(reimbursementTransactionDocument, {
+              category: {
+                from: sourceCategoryDocument,
+                to: targetCategoryDocument,
+              },
+            })
+            .validateRelatedChangesInReimbursementDocument(unrelatedReimbursementTransactionDocument, {
+              category: {
+                from: sourceCategoryDocument,
+                to: targetCategoryDocument,
+              },
+            })
+            .validateRelatedChangesInSplitDocument(splitTransactionDocument, {
+              category: {
+                from: sourceCategoryDocument,
+                to: targetCategoryDocument,
+              },
+            });
+        });
+      });
     });
 
     describe('should return error', () => {
+      beforeEach(() => {
+        sourceCategoryDocument = categoryDataFactory.document();
+        targetCategoryDocument = categoryDataFactory.document({
+          body: {
+            categoryType: sourceCategoryDocument.categoryType,
+          },
+        });
+      });
       it('if a source category does not exist', () => {
-        cy.saveCategoryDocument(sourceCategoryDocument)
-          .saveCategoryDocument(targetCategoryDocument)
+        cy.saveCategoryDocuments([
+          sourceCategoryDocument,
+          targetCategoryDocument,
+        ])
           .authenticate(1)
           .requestMergeCategories(getCategoryId(targetCategoryDocument), [
             getCategoryId(sourceCategoryDocument),
-            createCategoryId(),
+            categoryDataFactory.id(),
           ])
           .expectBadRequestResponse()
           .expectMessage('Some of the categories are not found');
       });
 
+      it('if a source category type is different than the others', () => {
+        const otherTypeCategoryDocument = categoryDataFactory.document({
+          body: {
+            categoryType: sourceCategoryDocument.categoryType === 'regular' ? 'inventory' : 'regular',
+          },
+        });
+        cy.saveCategoryDocuments([
+          sourceCategoryDocument,
+          targetCategoryDocument,
+          otherTypeCategoryDocument,
+        ])
+          .authenticate(1)
+          .requestMergeCategories(getCategoryId(targetCategoryDocument), [
+            getCategoryId(sourceCategoryDocument),
+            getCategoryId(otherTypeCategoryDocument),
+          ])
+          .expectBadRequestResponse()
+          .expectMessage('All categories must be of same type');
+      });
+
       describe('if body', () => {
         it('is not array', () => {
           cy.authenticate(1)
-            .requestMergeCategories(createCategoryId(), {} as any)
+            .requestMergeCategories(categoryDataFactory.id(), {} as any)
             .expectBadRequestResponse()
             .expectWrongPropertyType('data', 'array', 'body');
         });
 
         it('has too few items', () => {
           cy.authenticate(1)
-            .requestMergeCategories(createCategoryId(), [])
+            .requestMergeCategories(categoryDataFactory.id(), [])
             .expectBadRequestResponse()
             .expectTooFewItemsProperty('data', 1, 'body');
         });
@@ -178,14 +285,14 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
       describe('if body[0]', () => {
         it('is not string', () => {
           cy.authenticate(1)
-            .requestMergeCategories(createCategoryId(), [1] as any)
+            .requestMergeCategories(categoryDataFactory.id(), [1] as any)
             .expectBadRequestResponse()
             .expectWrongPropertyType('data', 'string', 'body');
         });
 
         it('is not a valid mongo id', () => {
           cy.authenticate(1)
-            .requestMergeCategories(createCategoryId(), [createCategoryId('not-valid')])
+            .requestMergeCategories(categoryDataFactory.id(), [categoryDataFactory.id('not-valid')])
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('data', 'body');
         });
@@ -194,14 +301,14 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
       describe('is categoryId', () => {
         it('is not a valid mongo id', () => {
           cy.authenticate(1)
-            .requestMergeCategories(createCategoryId('not-valid'), [createCategoryId()])
+            .requestMergeCategories(categoryDataFactory.id('not-valid'), [categoryDataFactory.id()])
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('categoryId', 'pathParameters');
         });
 
         it('does not belong to any category', () => {
           cy.authenticate(1)
-            .requestMergeCategories(createCategoryId(), [getCategoryId(sourceCategoryDocument)])
+            .requestMergeCategories(categoryDataFactory.id(), [getCategoryId(sourceCategoryDocument)])
             .expectBadRequestResponse()
             .expectMessage('Some of the categories are not found');
         });

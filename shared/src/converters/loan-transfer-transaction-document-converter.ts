@@ -20,10 +20,8 @@ export const loanTransferTransactionDocumentConverterFactory = (
     create: ({ body, account, transferAccount }, expiresIn, generateId): Transaction.LoanTransferDocument => {
       return {
         ...body,
-        accounts: {
-          mainAccount: account,
-          transferAccount: transferAccount,
-        },
+        account,
+        transferAccount,
         issuedAt: new Date(body.issuedAt),
         transactionType: 'loanTransfer',
         _id: generateId ? generateMongoId() : undefined,
@@ -41,10 +39,9 @@ export const loanTransferTransactionDocumentConverterFactory = (
         issuedAt: doc.issuedAt.toISOString(),
         _id: undefined,
         expiresAt: undefined,
-        accounts: undefined,
         amount: doc.amount,
-        account: viewingAccountId === getAccountId(doc.accounts.transferAccount) ? accountDocumentConverter.toResponse(doc.accounts.transferAccount) : accountDocumentConverter.toResponse(doc.accounts.mainAccount),
-        transferAccount: viewingAccountId === getAccountId(doc.accounts.transferAccount) ? accountDocumentConverter.toResponse(doc.accounts.mainAccount) : accountDocumentConverter.toResponse(doc.accounts.transferAccount),
+        account: viewingAccountId === getAccountId(doc.transferAccount) ? accountDocumentConverter.toResponse(doc.transferAccount) : accountDocumentConverter.toResponse(doc.account),
+        transferAccount: viewingAccountId === getAccountId(doc.transferAccount) ? accountDocumentConverter.toResponse(doc.account) : accountDocumentConverter.toResponse(doc.transferAccount),
       };
     },
     toResponseList: (docs, mainAccountId) => docs.map(d => instance.toResponse(d, mainAccountId)),

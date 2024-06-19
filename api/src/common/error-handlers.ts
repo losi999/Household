@@ -89,6 +89,12 @@ export const httpErrors = {
         throw httpError(statusCode, 'Cannot loan to same account');
       }
     },
+    invalidLoanAccountType: (ctx: Account.Document, statusCode = 400) => {
+      if (ctx.accountType === 'loan') {
+        log('Account type cannot be loan', ctx);
+        throw httpError(statusCode, 'Account type cannot be loan');
+      }
+    },
     positiveSplitAmountLoan: (ctx: Transaction.Amount & Transaction.LoanAccountId, statusCode = 400) => {
       if (ctx.amount >= 0 && ctx.loanAccountId) {
         log('Positive amount cannot be loaned in split', ctx);
@@ -250,6 +256,13 @@ export const httpErrors = {
       if(ctx.categoryType !== 'inventory') {
         log('Category must be "inventory" type', ctx);
         throw httpError(statusCode, 'Category must be "inventory" type');
+      }
+    },
+    notSameType: (ctx: Category.Document[], statusCode = 400) => {
+      const categoryType = ctx.shift().categoryType;
+      if (ctx.some(c => c.categoryType !== categoryType)) {
+        log('All categories must be of same type', ctx);
+        throw httpError(statusCode, 'All categories must be of same type');
       }
     },
     multipleNotFound: (condition: boolean, ctx: { categoryIds: Category.Id[] }, statusCode = 400) => {

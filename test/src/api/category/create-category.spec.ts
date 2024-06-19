@@ -1,28 +1,15 @@
-import { createCategoryId } from '@household/shared/common/test-data-factory';
 import { getCategoryId } from '@household/shared/common/utils';
-import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
 import { Category } from '@household/shared/types/types';
-import { v4 as uuid } from 'uuid';
+import { categoryDataFactory } from '@household/test/api/category/data-factory';
 
 describe('POST category/v1/categories', () => {
   let request: Category.Request;
   let parentCategoryDocument: Category.Document;
 
   beforeEach(() => {
-    request = {
-      name: `name-${uuid()}`,
-      categoryType: 'regular',
-      parentCategoryId: undefined,
-    };
+    request = categoryDataFactory.request();
 
-    parentCategoryDocument = categoryDocumentConverter.create({
-      body: {
-        name: `parent-${uuid()}`,
-        categoryType: 'regular',
-        parentCategoryId: undefined,
-      },
-      parentCategory: undefined,
-    }, Cypress.env('EXPIRES_IN'), true);
+    parentCategoryDocument = categoryDataFactory.document();
   });
 
   describe('called as anonymous', () => {
@@ -34,7 +21,6 @@ describe('POST category/v1/categories', () => {
   });
 
   describe('called as an admin', () => {
-
     it('should create category', () => {
       cy.authenticate(1)
         .requestCreateCategory(request)
@@ -43,54 +29,50 @@ describe('POST category/v1/categories', () => {
     });
 
     it('should create category with parent category', () => {
-      const modifiedRequest = {
-        ...request,
+      request = categoryDataFactory.request({
         parentCategoryId: getCategoryId(parentCategoryDocument),
-      };
+      });
+
       cy.saveCategoryDocument(parentCategoryDocument)
         .authenticate(1)
-        .requestCreateCategory(modifiedRequest)
+        .requestCreateCategory(request)
         .expectCreatedResponse()
-        .validateCategoryDocument(modifiedRequest, parentCategoryDocument);
+        .validateCategoryDocument(request, parentCategoryDocument);
     });
 
     describe('should return error', () => {
       describe('if name', () => {
         it('is missing from body', () => {
           cy.authenticate(1)
-            .requestCreateCategory({
-              ...request,
+            .requestCreateCategory(categoryDataFactory.request({
               name: undefined,
-            })
+            }))
             .expectBadRequestResponse()
             .expectRequiredProperty('name', 'body');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestCreateCategory({
-              ...request,
-              name: 1 as any,
-            })
+            .requestCreateCategory(categoryDataFactory.request({
+              name: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('name', 'string', 'body');
         });
 
         it('is too short', () => {
           cy.authenticate(1)
-            .requestCreateCategory({
-              ...request,
+            .requestCreateCategory(categoryDataFactory.request({
               name: '',
-            })
+            }))
             .expectBadRequestResponse()
             .expectTooShortProperty('name', 1, 'body');
         });
 
         it('is already in used by a different category', () => {
-          const categoryDocument = categoryDocumentConverter.create({
+          const categoryDocument = categoryDataFactory.document({
             body: request,
-            parentCategory: undefined,
-          }, Cypress.env('EXPIRES_IN'), true);
+          });
 
           cy.saveCategoryDocument(categoryDocument)
             .authenticate(1)
@@ -103,30 +85,28 @@ describe('POST category/v1/categories', () => {
       describe('if categoryType', () => {
         it('is missing from body', () => {
           cy.authenticate(1)
-            .requestCreateCategory({
-              ...request,
+            .requestCreateCategory(categoryDataFactory.request({
               categoryType: undefined,
-            })
+            }))
             .expectBadRequestResponse()
             .expectRequiredProperty('categoryType', 'body');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestCreateCategory({
-              ...request,
-              categoryType: 1 as any,
-            })
+            .requestCreateCategory(categoryDataFactory.request({
+              categoryType: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('categoryType', 'string', 'body');
         });
 
         it('is not a valid enum value', () => {
           cy.authenticate(1)
-            .requestCreateCategory({
-              ...request,
-              categoryType: 'not-category-type' as any,
-            })
+            .requestCreateCategory(
+              categoryDataFactory.request({
+                categoryType: 'not-category-type',
+              }))
             .expectBadRequestResponse()
             .expectWrongEnumValue('categoryType', 'body');
         });
@@ -135,30 +115,30 @@ describe('POST category/v1/categories', () => {
       describe('if parentCategoryId', () => {
         it('is not string', () => {
           cy.authenticate(1)
-            .requestCreateCategory({
-              ...request,
-              parentCategoryId: 1 as any,
-            })
+            .requestCreateCategory(
+              categoryDataFactory.request({
+                parentCategoryId: 1,
+              }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('parentCategoryId', 'string', 'body');
         });
 
         it('does not match pattern', () => {
           cy.authenticate(1)
-            .requestCreateCategory({
-              ...request,
-              parentCategoryId: 'not-mongo-id' as Category.Id,
-            })
+            .requestCreateCategory(
+              categoryDataFactory.request({
+                parentCategoryId: 'not-mongo-id',
+              }))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('parentCategoryId', 'body');
         });
 
         it('does not belong to any category', () => {
           cy.authenticate(1)
-            .requestCreateCategory({
-              ...request,
-              parentCategoryId: createCategoryId(),
-            })
+            .requestCreateCategory(
+              categoryDataFactory.request({
+                parentCategoryId: categoryDataFactory.id(),
+              }))
             .expectBadRequestResponse()
             .expectMessage('Parent category not found');
         });

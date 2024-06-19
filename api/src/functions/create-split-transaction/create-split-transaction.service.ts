@@ -109,6 +109,8 @@ export const createSplitTransactionServiceFactory = (
       }
     });
 
+    httpErrors.transaction.invalidLoanAccountType(accounts[body.accountId]);
+
     const document = splitTransactionDocumentConverter.create({
       body,
       accounts,

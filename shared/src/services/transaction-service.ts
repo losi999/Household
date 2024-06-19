@@ -54,18 +54,21 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
         .setOptions({
           populate: populate('project',
             'recipient',
-            'accounts.mainAccount',
-            'accounts.transferAccount',
-            'accounts.payingAccount',
-            'accounts.ownerAccount',
+            'account',
+            'transferAccount',
+            'payingAccount',
+            'ownerAccount',
             'category',
             'product',
             'splits',
-            'aplits.accounts.payingAccount',
-            'aplits.accounts.ownerAccount',
+            'deferredSplits.payingAccount',
+            'deferredSplits.ownerAccount',
             'splits.category',
             'splits.project',
-            'splits.product'),
+            'splits.product',
+            'deferredSplits.category',
+            'deferredSplits.project',
+            'deferredSplits.product'),
           lean: true,
         })
         .exec();
@@ -75,26 +78,26 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
         _id: transactionId,
         $or: [
           {
-            'accounts.mainAccount': accountId,
+            account: accountId,
           },
           {
-            'accounts.transferAccount': accountId,
+            transferAccount: accountId,
           },
           {
-            'accounts.payingAccount': accountId,
+            payingAccount: accountId,
           },
           {
-            'accounts.ownerAccount': accountId,
+            ownerAccount: accountId,
           },
         ],
       })
         .setOptions({
           populate: populate('project',
             'recipient',
-            'accounts.mainAccount',
-            'accounts.transferAccount',
-            'accounts.payingAccount',
-            'accounts.ownerAccount',
+            'account',
+            'transferAccount',
+            'payingAccount',
+            'ownerAccount',
             'category',
             'product',
             'splits',

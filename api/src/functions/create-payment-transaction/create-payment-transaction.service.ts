@@ -98,6 +98,8 @@ export const createPaymentTransactionServiceFactory = (
     let document: Transaction.PaymentDocument | Transaction.DeferredDocument | Transaction.ReimbursementDocument;
 
     if (!body.loanAccountId) {
+      httpErrors.transaction.invalidLoanAccountType(account);
+
       document = paymentTransactionDocumentConverter.create({
         body,
         account,
@@ -107,21 +109,18 @@ export const createPaymentTransactionServiceFactory = (
         product,
       }, expiresIn);
     } else {
-      const payingAccount = body.amount < 0 ? account : loanAccount;
-      const ownerAccount = body.amount < 0 ? loanAccount : account;
-
-      document = payingAccount.accountType === 'loan' ? reimbursementTransactionDocumentConverter.create({
+      document = account.accountType === 'loan' ? reimbursementTransactionDocumentConverter.create({
         body,
-        payingAccount,
-        ownerAccount,
+        payingAccount: account,
+        ownerAccount: loanAccount,
         category,
         project,
         recipient,
         product,
       }, expiresIn) : deferredTransactionDocumentConverter.create({
         body,
-        payingAccount,
-        ownerAccount,
+        payingAccount: account,
+        ownerAccount: loanAccount,
         category,
         project,
         recipient,

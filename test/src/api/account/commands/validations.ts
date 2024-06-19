@@ -1,5 +1,6 @@
 import { getAccountId } from '@household/shared/common/utils';
 import { Account } from '@household/shared/types/types';
+import { internalPropertyNames } from '@household/test/api/constants';
 import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/test/api/types';
 
 const validateAccountDocument = (response: Account.AccountId, request: Account.Request) => {
@@ -8,32 +9,40 @@ const validateAccountDocument = (response: Account.AccountId, request: Account.R
   cy.log('Get account document', id)
     .getAccountDocumentById(id)
     .should((document) => {
+      const { name, accountType, currency, owner, balance, isOpen, loanBalance, ...internal } = document;
+
       expect(getAccountId(document), '_id').to.equal(id);
-      expect(document.name, 'name').to.equal(request.name);
-      expect(document.accountType, 'accountType').to.equal(request.accountType);
-      expect(document.currency, 'currency').to.equal(request.currency);
-      expect(document.owner, 'owner').to.equal(request.owner);
-      expect(document.balance, 'balance').to.equal(0);
-      expect(document.isOpen, 'isOpen').to.equal(true);
+      expect(name, 'name').to.equal(request.name);
+      expect(accountType, 'accountType').to.equal(request.accountType);
+      expect(currency, 'currency').to.equal(request.currency);
+      expect(owner, 'owner').to.equal(request.owner);
+      expect(balance, 'balance').to.equal(0);
+      expect(loanBalance, 'loanBalance').to.equal(0);
+      expect(isOpen, 'isOpen').to.equal(true);
+      Object.keys(internal).forEach(key => expect(key, `${key} is an internal property`).to.be.oneOf(internalPropertyNames));
     });
 };
 
-const validateAccountResponse = (response: Account.Response, document: Account.Document, balance: number) => {
-  expect(response.accountId, 'accountId').to.equal(getAccountId(document));
-  expect(response.name, 'name').to.equal(document.name);
-  expect(response.accountType, 'accountType').to.equal(document.accountType);
-  expect(response.currency, 'currency').to.equal(document.currency);
-  expect(response.owner, 'owner').to.equal(document.owner);
-  expect(response.balance, 'balance').to.equal(balance);
-  expect(response.isOpen, 'isOpen').to.equal(document.isOpen);
-  expect(response.fullName, 'fullName').to.equal(`${document.name} (${document.owner})`);
+const validateAccountResponse = (response: Account.Response, document: Account.Document, expectedBalance: number, expectedLoanBalance: number) => {
+  const { accountId, name, accountType, currency, owner, balance, isOpen, fullName, loanBalance, ...internal } = response;
+
+  expect(accountId, 'accountId').to.equal(getAccountId(document));
+  expect(name, 'name').to.equal(document.name);
+  expect(accountType, 'accountType').to.equal(document.accountType);
+  expect(currency, 'currency').to.equal(document.currency);
+  expect(owner, 'owner').to.equal(document.owner);
+  expect(balance, 'balance').to.equal(expectedBalance);
+  expect(loanBalance, 'loanBalance').to.equal(expectedLoanBalance);
+  expect(isOpen, 'isOpen').to.equal(document.isOpen);
+  expect(fullName, 'fullName').to.equal(`${document.name} (${document.owner})`);
 };
 
-const validateAccountListResponse = (responses: Account.Response[], documents: Account.Document[], balances: number[]) => {
+const validateAccountListResponse = (responses: Account.Response[], documents: Account.Document[], balances: number[], loanBalances: number[]) => {
   documents.forEach((document, index) => {
     const response = responses.find(r => r.accountId === getAccountId(document));
     const balance = balances[index];
-    validateAccountResponse(response, document, balance);
+    const loanBalance = loanBalances[index];
+    validateAccountResponse(response, document, balance, loanBalance);
   });
 };
 

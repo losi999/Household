@@ -105,6 +105,8 @@ export const updateToPaymentTransactionServiceFactory = (
     }
 
     if (!body.loanAccountId) {
+      httpErrors.transaction.invalidLoanAccountType(account);
+
       const { _id, ...document } = paymentTransactionDocumentConverter.create({
         body,
         account,

@@ -23,13 +23,12 @@ export const transferTransactionDocumentConverterFactory = (
       return {
         ...body,
         transferAmount: body.transferAmount ?? body.amount * -1,
-        accounts: {
-          mainAccount: account,
-          transferAccount: transferAccount,
-        },
+        account,
+        transferAccount,
         payments: body.payments?.map(p => {
+          const transaction = transactions[p.transactionId];
           return {
-            amount: Math.min(p.amount, Math.abs(transactions[p.transactionId].remainingAmount)),
+            amount: Math.min(p.amount, Math.abs(transaction.remainingAmount ?? transaction.amount)),
             transaction: transactions[p.transactionId],
           };
         }),
@@ -50,11 +49,10 @@ export const transferTransactionDocumentConverterFactory = (
         issuedAt: doc.issuedAt.toISOString(),
         _id: undefined,
         expiresAt: undefined,
-        accounts: undefined,
-        amount: viewingAccountId === getAccountId(doc.accounts.transferAccount) ? doc.transferAmount : doc.amount,
-        transferAmount: viewingAccountId === getAccountId(doc.accounts.transferAccount) ? doc.amount : doc.transferAmount,
-        account: viewingAccountId === getAccountId(doc.accounts.transferAccount) ? accountDocumentConverter.toResponse(doc.accounts.transferAccount) : accountDocumentConverter.toResponse(doc.accounts.mainAccount),
-        transferAccount: viewingAccountId === getAccountId(doc.accounts.transferAccount) ? accountDocumentConverter.toResponse(doc.accounts.mainAccount) : accountDocumentConverter.toResponse(doc.accounts.transferAccount),
+        amount: viewingAccountId === getAccountId(doc.transferAccount) ? doc.transferAmount : doc.amount,
+        transferAmount: viewingAccountId === getAccountId(doc.transferAccount) ? doc.amount : doc.transferAmount,
+        account: viewingAccountId === getAccountId(doc.transferAccount) ? accountDocumentConverter.toResponse(doc.transferAccount) : accountDocumentConverter.toResponse(doc.account),
+        transferAccount: viewingAccountId === getAccountId(doc.transferAccount) ? accountDocumentConverter.toResponse(doc.account) : accountDocumentConverter.toResponse(doc.transferAccount),
       };
     },
     toResponseList: (docs, mainAccountId) => docs.map(d => instance.toResponse(d, mainAccountId)),

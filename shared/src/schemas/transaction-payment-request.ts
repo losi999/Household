@@ -35,6 +35,15 @@ const schema: StrictJSONSchema7<Transaction.PaymentRequest> = {
     ...description.properties,
     loanAccountId: mongoId,
   },
+  dependentSchemas: {
+    loanAccountId: {
+      properties: {
+        amount: {
+          exclusiveMaximum: 0,
+        },
+      },
+    },
+  },
 };
 
 export default schema;

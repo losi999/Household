@@ -30,7 +30,8 @@
     "localhost"
   ],
   "exclude": [
-    "**/*.spec.ts",
-    "**/test-data-factory.ts"
+    "api/**/*.spec.ts",
+    "shared/**/*.spec.ts",
+    "shared/**/test-data-factory.ts"
   ]
 }

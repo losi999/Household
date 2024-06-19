@@ -7,6 +7,7 @@ import { UpdateQuery } from 'mongoose';
 export interface IAccountService {
   dumpAccounts(): Promise<Account.Document[]>;
   saveAccount(doc: Account.Document): Promise<Account.Document>;
+  saveAccounts(docs: Account.Document[]): Promise<unknown>;
   getAccountById(accountId: Account.Id): Promise<Account.Document>;
   deleteAccount(accountId: Account.Id): Promise<unknown>;
   updateAccount(accountId: Account.Id, updateQuery: UpdateQuery<Account.Document>): Promise<unknown>;
@@ -28,6 +29,15 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
     },
     saveAccount: (doc) => {
       return mongodbService.accounts.create(doc);
+    },
+    saveAccounts: (docs) => {
+      return mongodbService.inSession((session) => {
+        return session.withTransaction(() => {
+          return mongodbService.accounts.insertMany(docs, {
+            session,
+          });
+        });
+      });
     },
     getAccountById: async (accountId) => {
       let account: Account.Document;
@@ -61,11 +71,88 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
               {
                 transferAccount: accountId,
               },
+              {
+                payingAccount: accountId,
+              },
+              {
+                transactionType: 'reimbursement',
+                ownerAccount: accountId,
+              },
             ],
           }, {
             session,
           })
             .exec();
+
+          await mongodbService.transactions.updateMany({
+            transactionType: 'deferred',
+            ownerAccount: accountId,
+          }, [
+            {
+              $set: {
+                transactionType: 'payment',
+                account: '$payingAccount',
+              },
+            },
+            {
+              $unset: [
+                'ownerAccount',
+                'payingAccount',
+              ],
+            },
+          ], {
+            session,
+          });
+
+          return mongodbService.transactions.updateMany({
+            'deferredSplits.ownerAccount': accountId,
+          }, [
+            {
+              $set: {
+                splits: {
+                  $concatArrays: [
+                    '$splits',
+                    {
+                      $filter: {
+                        input: '$deferredSplits',
+                        cond: {
+                          $eq: [
+                            '$$this.ownerAccount',
+                            {
+                              $toObjectId: accountId,
+                            },
+                          ],
+                        },
+                      },
+                    },
+                  ],
+                },
+                deferredSplits: {
+                  $filter: {
+                    input: '$deferredSplits',
+                    cond: {
+                      $ne: [
+                        '$$this.ownerAccount',
+                        {
+                          $toObjectId: accountId,
+                        },
+                      ],
+                    },
+                  },
+                },
+              },
+            },
+            {
+              $unset: [
+                'splits.payingAccount',
+                'splits.transactionType',
+                'splits.ownerAccount',
+              ],
+            },
+          ],
+          {
+            session,
+          });
         });
       });
     },

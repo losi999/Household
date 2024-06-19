@@ -1,15 +1,11 @@
-import { projectDocumentConverter } from '@household/shared/dependencies/converters/project-document-converter';
 import { Project } from '@household/shared/types/types';
-import { v4 as uuid } from 'uuid';
+import { projectDataFactory } from './data-factory';
 
 describe('POST project/v1/projects', () => {
   let request: Project.Request;
 
   beforeEach(() => {
-    request = {
-      name: `name-${uuid()}`,
-      description: 'description',
-    };
+    request = projectDataFactory.request();
   });
 
   describe('called as anonymous', () => {
@@ -31,14 +27,14 @@ describe('POST project/v1/projects', () => {
 
       describe('without optional property in body', () => {
         it('description', () => {
-          const modifiedRequest: Project.Request = {
-            ...request,
+          request = projectDataFactory.request({
             description: undefined,
-          };
+          });
+
           cy.authenticate(1)
-            .requestCreateProject(modifiedRequest)
+            .requestCreateProject(request)
             .expectCreatedResponse()
-            .validateProjectDocument(modifiedRequest);
+            .validateProjectDocument(request);
         });
       });
     });
@@ -47,36 +43,33 @@ describe('POST project/v1/projects', () => {
       describe('if name', () => {
         it('is missing from body', () => {
           cy.authenticate(1)
-            .requestCreateProject({
-              ...request,
+            .requestCreateProject(projectDataFactory.request({
               name: undefined,
-            })
+            }))
             .expectBadRequestResponse()
             .expectRequiredProperty('name', 'body');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestCreateProject({
-              ...request,
-              name: 1 as any,
-            })
+            .requestCreateProject(projectDataFactory.request({
+              name: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('name', 'string', 'body');
         });
 
         it('is too short', () => {
           cy.authenticate(1)
-            .requestCreateProject({
-              ...request,
+            .requestCreateProject(projectDataFactory.request({
               name: '',
-            })
+            }))
             .expectBadRequestResponse()
             .expectTooShortProperty('name', 1, 'body');
         });
 
         it('is already in used by a different project', () => {
-          const projectDocument = projectDocumentConverter.create(request, Cypress.env('EXPIRES_IN'), true);
+          const projectDocument = projectDataFactory.document(request);
 
           cy.saveProjectDocument(projectDocument)
             .authenticate(1)
@@ -89,20 +82,18 @@ describe('POST project/v1/projects', () => {
       describe('if description', () => {
         it('is not string', () => {
           cy.authenticate(1)
-            .requestCreateProject({
-              ...request,
-              description: 1 as any,
-            })
+            .requestCreateProject(projectDataFactory.request({
+              description: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('description', 'string', 'body');
         });
 
         it('is too short', () => {
           cy.authenticate(1)
-            .requestCreateProject({
-              ...request,
+            .requestCreateProject(projectDataFactory.request({
               description: '',
-            })
+            }))
             .expectBadRequestResponse()
             .expectTooShortProperty('description', 1, 'body');
         });

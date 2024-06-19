@@ -13,8 +13,17 @@ db.getCollection("accounts").aggregate([
       },
       pipeline: [
         {
+          $set: {
+            tmp_splits: {
+              $concatArrays: ['$splits', {
+                $ifNull: ['$deferredSplits', []]
+              }]
+            }
+          }
+        },
+        {
           $unwind: {
-            path: '$splits',
+            path: '$tmp_splits',
             preserveNullAndEmptyArrays: true,
           },
         },
@@ -23,7 +32,7 @@ db.getCollection("accounts").aggregate([
             newRoot: {
               $mergeObjects: [
                 '$$ROOT',
-                '$splits',
+                '$tmp_splits',
                 {
                   tx_amount: '$amount',
                   tx_description: '$description',
@@ -40,10 +49,18 @@ db.getCollection("accounts").aggregate([
               $filter: {
                 input: [
                   {
-                    tmp_account: '$accounts.mainAccount',
+                    tmp_account: {
+                      $cond: {
+                        if: {
+                          $ne: ['$transactionType', 'deferred']
+                        },
+                        then: '$account',
+                        else: null
+                      }
+                    },
                   },
                   {
-                    tmp_account: '$accounts.transferAccount',
+                    tmp_account: '$transferAccount',
                     amount: {
                       $ifNull: [
                         '$transferAmount',
@@ -52,10 +69,10 @@ db.getCollection("accounts").aggregate([
                     },
                   },
                   {
-                    tmp_account: '$accounts.ownerAccount',
+                    tmp_account: '$ownerAccount',
                   },
                   {
-                    tmp_account: '$accounts.payingAccount',
+                    tmp_account: '$payingAccount',
                   },
                 ],
                 cond: {
@@ -91,7 +108,9 @@ db.getCollection("accounts").aggregate([
         {
           $unset: [
             'tmp_dupes',
+            'tmp_splits',
             'splits',
+            'deferredSplits'
           ],
         },
         {
@@ -147,7 +166,7 @@ db.getCollection("accounts").aggregate([
                         case: {
                           $eq: [
                             '$tmp_account',
-                            '$accounts.ownerAccount',
+                            '$ownerAccount',
                           ],
                         },
                         then: {
@@ -168,7 +187,7 @@ db.getCollection("accounts").aggregate([
                         case: {
                           $eq: [
                             '$tmp_account',
-                            '$accounts.payingAccount',
+                            '$payingAccount',
                           ],
                         },
                         then: {
@@ -208,7 +227,7 @@ db.getCollection("accounts").aggregate([
                       {
                         $eq: [
                           '$$this.tmp_account',
-                          '$$this.accounts.ownerAccount',
+                          '$$this.ownerAccount',
                         ],
                       },
                       {
@@ -227,7 +246,7 @@ db.getCollection("accounts").aggregate([
                       {
                         $eq: [
                           '$$this.tmp_account',
-                          '$$this.accounts.payingAccount',
+                          '$$this.payingAccount',
                         ],
                       },
                       {

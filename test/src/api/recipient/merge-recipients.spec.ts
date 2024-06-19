@@ -1,85 +1,82 @@
 import { createRecipientId } from '@household/shared/common/test-data-factory';
-import { getAccountId, getRecipientId } from '@household/shared/common/utils';
-import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
-import { recipientDocumentConverter } from '@household/shared/dependencies/converters/recipient-document-converter';
-import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
+import { getRecipientId } from '@household/shared/common/utils';
 import { Account, Recipient, Transaction } from '@household/shared/types/types';
-import { v4 as uuid } from 'uuid';
+import { accountDataFactory } from '@household/test/api/account/data-factory';
+import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
+import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred-data-factory';
+import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment-data-factory';
+import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement-data-factory';
+import { splitTransactionDataFactory } from '@household/test/api/transaction/split-data-factory';
 
 describe('POST recipient/v1/recipients/{recipientId}/merge', () => {
   let accountDocument: Account.Document;
+  let loanAccountDocument: Account.Document;
   let sourceRecipientDocument: Recipient.Document;
   let targetRecipientDocument: Recipient.Document;
+  let unrelatedRecipientDocument: Recipient.Document;
   let paymentTransactionDocument: Transaction.PaymentDocument;
+  let deferredTransactionDocument: Transaction.DeferredDocument;
+  let reimbursementTransactionDocument: Transaction.ReimbursementDocument;
+  let unrelatedPaymentTransactionDocument: Transaction.PaymentDocument;
+  let unrelatedDeferredTransactionDocument: Transaction.DeferredDocument;
+  let unrelatedReimbursementTransactionDocument: Transaction.ReimbursementDocument;
   let splitTransactionDocument: Transaction.SplitDocument;
+  let unrelatedSplitTransactionDocument: Transaction.SplitDocument;
 
   beforeEach(() => {
-    accountDocument = accountDocumentConverter.create({
-      accountType: 'bankAccount',
-      currency: 'Ft',
-      name: `account-${uuid()}`,
-      owner: 'owner1',
-    }, Cypress.env('EXPIRES_IN'), true);
+    accountDocument = accountDataFactory.document();
+    loanAccountDocument = accountDataFactory.document({
+      accountType: 'loan',
+    });
 
-    sourceRecipientDocument = recipientDocumentConverter.create({
-      name: `source-${uuid()}`,
-    }, Cypress.env('EXPIRES_IN'), true);
+    sourceRecipientDocument = recipientDataFactory.document();
+    targetRecipientDocument = recipientDataFactory.document();
+    unrelatedRecipientDocument = recipientDataFactory.document();
 
-    targetRecipientDocument = recipientDocumentConverter.create({
-      name: `target-${uuid()}`,
-    }, Cypress.env('EXPIRES_IN'), true);
-
-    paymentTransactionDocument = transactionDocumentConverter.createPaymentDocument({
-      body: {
-        accountId: getAccountId(accountDocument),
-        amount: 100,
-        recipientId: getRecipientId(sourceRecipientDocument),
-        description: 'desc',
-        inventory: undefined,
-        issuedAt: new Date().toISOString(),
-        categoryId: undefined,
-        projectId: undefined,
-        invoice: undefined,
-      },
+    paymentTransactionDocument = paymentTransactionDataFactory.document({
       account: accountDocument,
       recipient: sourceRecipientDocument,
-      product: undefined,
-      project: undefined,
-      category: undefined,
-    }, Cypress.env('EXPIRES_IN'), true);
+    });
 
-    splitTransactionDocument = transactionDocumentConverter.createSplitDocument({
-      body: {
-        accountId: getAccountId(accountDocument),
-        amount: 100,
-        description: 'desc',
-        issuedAt: new Date().toISOString(),
-        recipientId: getRecipientId(sourceRecipientDocument),
-        splits: [
-          {
-            amount: 50,
-            projectId: undefined,
-            description: 'desc',
-            inventory: undefined,
-            categoryId: undefined,
-            invoice: undefined,
-          },
-          {
-            amount: 50,
-            projectId: undefined,
-            description: 'desc',
-            inventory: undefined,
-            categoryId: undefined,
-            invoice: undefined,
-          },
-        ],
-      },
+    deferredTransactionDocument = deferredTransactionDataFactory.document({
       account: accountDocument,
-      projects: {},
-      products: undefined,
       recipient: sourceRecipientDocument,
-      categories: {},
-    }, Cypress.env('EXPIRES_IN'), true);
+      loanAccount: loanAccountDocument,
+    });
+
+    reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+      account: loanAccountDocument,
+      recipient: sourceRecipientDocument,
+      loanAccount: accountDocument,
+    });
+
+    splitTransactionDocument = splitTransactionDataFactory.document({
+      account: accountDocument,
+      recipient: sourceRecipientDocument,
+    });
+
+    unrelatedPaymentTransactionDocument = paymentTransactionDataFactory.document({
+      account: accountDocument,
+      recipient: unrelatedRecipientDocument,
+    });
+
+    unrelatedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+      account: accountDocument,
+      recipient: unrelatedRecipientDocument,
+      loanAccount: loanAccountDocument,
+    });
+
+    unrelatedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+      account: loanAccountDocument,
+      recipient: unrelatedRecipientDocument,
+      loanAccount: accountDocument,
+    });
+
+    unrelatedSplitTransactionDocument = splitTransactionDataFactory.document({
+      account: accountDocument,
+      recipient: unrelatedRecipientDocument,
+    });
+
   });
 
   describe('called as anonymous', () => {
@@ -92,20 +89,76 @@ describe('POST recipient/v1/recipients/{recipientId}/merge', () => {
 
   describe('called as an admin', () => {
     it('should merge recipients', () => {
-      cy.saveAccountDocument(accountDocument)
-        .saveRecipientDocument(sourceRecipientDocument)
-        .saveRecipientDocument(targetRecipientDocument)
-        .saveTransactionDocument(paymentTransactionDocument)
-        .saveTransactionDocument(splitTransactionDocument)
+      cy.saveAccountDocuments([
+        accountDocument,
+        loanAccountDocument,
+      ])
+        .saveRecipientDocuments([
+          sourceRecipientDocument,
+          targetRecipientDocument,
+          unrelatedRecipientDocument,
+        ])
+        .saveTransactionDocuments([
+          paymentTransactionDocument,
+          splitTransactionDocument,
+          deferredTransactionDocument,
+          reimbursementTransactionDocument,
+          unrelatedPaymentTransactionDocument,
+          unrelatedDeferredTransactionDocument,
+          unrelatedReimbursementTransactionDocument,
+          unrelatedSplitTransactionDocument,
+        ])
         .authenticate(1)
         .requestMergeRecipients(getRecipientId(targetRecipientDocument), [getRecipientId(sourceRecipientDocument)])
         .expectCreatedResponse()
         .validateRecipientDeleted(getRecipientId(sourceRecipientDocument))
-        .validatePartiallyReassignedPaymentDocument(paymentTransactionDocument, {
-          recipient: getRecipientId(targetRecipientDocument),
+        .validateRelatedChangesInPaymentDocument(paymentTransactionDocument, {
+          recipient: {
+            from: getRecipientId(sourceRecipientDocument),
+            to: getRecipientId(targetRecipientDocument),
+          },
         })
-        .validatePartiallyReassignedSplitDocument(splitTransactionDocument, 0, {
-          recipient: getRecipientId(targetRecipientDocument),
+        .validateRelatedChangesInPaymentDocument(unrelatedPaymentTransactionDocument, {
+          recipient: {
+            from: getRecipientId(sourceRecipientDocument),
+            to: getRecipientId(targetRecipientDocument),
+          },
+        })
+        .validateRelatedChangesInDeferredDocument(deferredTransactionDocument, {
+          recipient: {
+            from: getRecipientId(sourceRecipientDocument),
+            to: getRecipientId(targetRecipientDocument),
+          },
+        })
+        .validateRelatedChangesInDeferredDocument(unrelatedDeferredTransactionDocument, {
+          recipient: {
+            from: getRecipientId(sourceRecipientDocument),
+            to: getRecipientId(targetRecipientDocument),
+          },
+        })
+        .validateRelatedChangesInReimbursementDocument(reimbursementTransactionDocument, {
+          recipient: {
+            from: getRecipientId(sourceRecipientDocument),
+            to: getRecipientId(targetRecipientDocument),
+          },
+        })
+        .validateRelatedChangesInReimbursementDocument(unrelatedReimbursementTransactionDocument, {
+          recipient: {
+            from: getRecipientId(sourceRecipientDocument),
+            to: getRecipientId(targetRecipientDocument),
+          },
+        })
+        .validateRelatedChangesInSplitDocument(splitTransactionDocument, {
+          recipient: {
+            from: getRecipientId(sourceRecipientDocument),
+            to: getRecipientId(targetRecipientDocument),
+          },
+        })
+        .validateRelatedChangesInSplitDocument(unrelatedSplitTransactionDocument, {
+          recipient: {
+            from: getRecipientId(sourceRecipientDocument),
+            to: getRecipientId(targetRecipientDocument),
+          },
         });
     });
 

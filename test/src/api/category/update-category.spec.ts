@@ -1,35 +1,22 @@
-import { createCategoryId } from '@household/shared/common/test-data-factory';
 import { getCategoryId } from '@household/shared/common/utils';
-import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
-import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
 import { Category } from '@household/shared/types/types';
-import { v4 as uuid } from 'uuid';
+import { categoryDataFactory } from '@household/test/api/category/data-factory';
+import { productDataFactory } from '@household/test/api/product/data-factory';
 
 describe('PUT /category/v1/categories/{categoryId}', () => {
   let categoryDocument: Category.Document;
   let request: Category.Request;
 
   beforeEach(() => {
-    request = {
-      name: `new name-${uuid()}`,
-      categoryType: 'regular',
-      parentCategoryId: undefined,
-    };
+    request = categoryDataFactory.request();
 
-    categoryDocument = categoryDocumentConverter.create({
-      body: {
-        name: `old name-${uuid()}`,
-        categoryType: 'regular',
-        parentCategoryId: undefined,
-      },
-      parentCategory: undefined,
-    }, Cypress.env('EXPIRES_IN'), true);
+    categoryDocument = categoryDataFactory.document();
   });
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
-        .requestUpdateCategory(createCategoryId(), request)
+        .requestUpdateCategory(categoryDataFactory.id(), request)
         .expectUnauthorizedResponse();
     });
   });
@@ -44,14 +31,15 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
     });
 
     it('should keep existing product', () => {
-      const productDocument = productDocumentConverter.create({
+      categoryDocument = categoryDataFactory.document({
         body: {
-          brand: `tesco-${uuid()}`,
-          measurement: 500,
-          unitOfMeasurement: 'g',
+          categoryType: 'inventory',
         },
+      });
+
+      const productDocument = productDataFactory.document({
         category: categoryDocument,
-      }, Cypress.env('EXPIRES_IN'), true);
+      });
 
       cy.saveCategoryDocument(categoryDocument)
         .saveProductDocument(productDocument)
@@ -67,36 +55,21 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
       let otherParentCategory: Category.Document;
 
       beforeEach(() => {
-        childCategory = categoryDocumentConverter.create({
-          body: {
-            name: `child-${uuid()}`,
-            categoryType: 'regular',
-            parentCategoryId: getCategoryId(categoryDocument),
-          },
+        childCategory = categoryDataFactory.document({
           parentCategory: categoryDocument,
-        }, Cypress.env('EXPIRES_IN'), true);
+        });
 
-        grandChildCategory = categoryDocumentConverter.create({
-          body: {
-            name: `child of child-${uuid()}`,
-            categoryType: 'regular',
-            parentCategoryId: getCategoryId(childCategory),
-          },
+        grandChildCategory = categoryDataFactory.document({
           parentCategory: childCategory,
-        }, Cypress.env('EXPIRES_IN'), true);
+        });
 
-        otherParentCategory = categoryDocumentConverter.create({
-          body: {
-            name: `parent-${uuid()}`,
-            categoryType: 'regular',
-            parentCategoryId: undefined,
-          },
-          parentCategory: undefined,
-        }, Cypress.env('EXPIRES_IN'), true);
+        otherParentCategory = categoryDataFactory.document();
       });
 
       it('to a different parent category', () => {
-        request.parentCategoryId = getCategoryId(otherParentCategory);
+        request = categoryDataFactory.request({
+          parentCategoryId: getCategoryId(otherParentCategory),
+        });
 
         cy.saveCategoryDocument(categoryDocument)
           .saveCategoryDocument(childCategory)
@@ -110,7 +83,9 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
       });
 
       it('to root from previously set parent', () => {
-        request.parentCategoryId = undefined;
+        request = categoryDataFactory.request({
+          parentCategoryId: undefined,
+        });
 
         cy.saveCategoryDocument(categoryDocument)
           .saveCategoryDocument(childCategory)
@@ -123,7 +98,9 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
       });
 
       it('to a parent from previously unset value', () => {
-        request.parentCategoryId = getCategoryId(otherParentCategory);
+        request = categoryDataFactory.request({
+          parentCategoryId: getCategoryId(otherParentCategory),
+        });
 
         cy.saveCategoryDocument(categoryDocument)
           .saveCategoryDocument(childCategory)
@@ -142,39 +119,38 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
     describe('if name', () => {
       it('is missing from body', () => {
         cy.authenticate(1)
-          .requestUpdateCategory(createCategoryId(), {
-            ...request,
-            name: undefined,
-          })
+          .requestUpdateCategory(categoryDataFactory.id(),
+            categoryDataFactory.request({
+              name: undefined,
+            }))
           .expectBadRequestResponse()
           .expectRequiredProperty('name', 'body');
       });
 
       it('is not string', () => {
         cy.authenticate(1)
-          .requestUpdateCategory(createCategoryId(), {
-            ...request,
-            name: 1 as any,
-          })
+          .requestUpdateCategory(categoryDataFactory.id(),
+            categoryDataFactory.request({
+              name: 1,
+            }))
           .expectBadRequestResponse()
           .expectWrongPropertyType('name', 'string', 'body');
       });
 
       it('is too short', () => {
         cy.authenticate(1)
-          .requestUpdateCategory(createCategoryId(), {
-            ...request,
-            name: '',
-          })
+          .requestUpdateCategory(categoryDataFactory.id(),
+            categoryDataFactory.request({
+              name: '',
+            }))
           .expectBadRequestResponse()
           .expectTooShortProperty('name', 1, 'body');
       });
 
       it('is already in used by a different category', () => {
-        const duplicateCategoryDocument = categoryDocumentConverter.create({
+        const duplicateCategoryDocument = categoryDataFactory.document({
           body: request,
-          parentCategory: undefined,
-        }, Cypress.env('EXPIRES_IN'), true);
+        });
 
         cy.saveCategoryDocument(duplicateCategoryDocument)
           .saveCategoryDocument(categoryDocument)
@@ -188,30 +164,30 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
     describe('if categoryType', () => {
       it('is missing from body', () => {
         cy.authenticate(1)
-          .requestUpdateCategory(createCategoryId(), {
-            ...request,
-            categoryType: undefined,
-          })
+          .requestUpdateCategory(categoryDataFactory.id(),
+            categoryDataFactory.request({
+              categoryType: undefined,
+            }))
           .expectBadRequestResponse()
           .expectRequiredProperty('categoryType', 'body');
       });
 
       it('is not string', () => {
         cy.authenticate(1)
-          .requestUpdateCategory(createCategoryId(), {
-            ...request,
-            categoryType: 1 as any,
-          })
+          .requestUpdateCategory(categoryDataFactory.id(),
+            categoryDataFactory.request({
+              categoryType: 1,
+            }))
           .expectBadRequestResponse()
           .expectWrongPropertyType('categoryType', 'string', 'body');
       });
 
       it('is not a valid enum value', () => {
         cy.authenticate(1)
-          .requestUpdateCategory(createCategoryId(), {
-            ...request,
-            categoryType: 'not-category-type' as any,
-          })
+          .requestUpdateCategory(categoryDataFactory.id(),
+            categoryDataFactory.request({
+              categoryType: 'not-category-type',
+            }))
           .expectBadRequestResponse()
           .expectWrongEnumValue('categoryType', 'body');
       });
@@ -220,20 +196,20 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
     describe('if parentCategoryId', () => {
       it('is not string', () => {
         cy.authenticate(1)
-          .requestUpdateCategory(createCategoryId(), {
-            ...request,
-            parentCategoryId: 1 as any,
-          })
+          .requestUpdateCategory(categoryDataFactory.id(),
+            categoryDataFactory.request({
+              parentCategoryId: 1,
+            }))
           .expectBadRequestResponse()
           .expectWrongPropertyType('parentCategoryId', 'string', 'body');
       });
 
       it('does not match pattern', () => {
         cy.authenticate(1)
-          .requestUpdateCategory(createCategoryId(), {
-            ...request,
-            parentCategoryId: 'not-mongo-id' as Category.Id,
-          })
+          .requestUpdateCategory(categoryDataFactory.id(),
+            categoryDataFactory.request({
+              parentCategoryId: 'not-mongo-id',
+            }))
           .expectBadRequestResponse()
           .expectWrongPropertyPattern('parentCategoryId', 'body');
       });
@@ -241,10 +217,10 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
       it('does not belong to any category', () => {
         cy.saveCategoryDocument(categoryDocument)
           .authenticate(1)
-          .requestUpdateCategory(getCategoryId(categoryDocument), {
-            ...request,
-            parentCategoryId: createCategoryId(),
-          })
+          .requestUpdateCategory(getCategoryId(categoryDocument),
+            categoryDataFactory.request({
+              parentCategoryId: categoryDataFactory.id(),
+            }))
           .expectBadRequestResponse();
       });
     });
@@ -252,14 +228,14 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
     describe('if categoryId', () => {
       it('is not mongo id', () => {
         cy.authenticate(1)
-          .requestUpdateCategory(createCategoryId('not-valid'), request)
+          .requestUpdateCategory(categoryDataFactory.id('not-valid'), request)
           .expectBadRequestResponse()
           .expectWrongPropertyPattern('categoryId', 'pathParameters');
       });
 
       it('does not belong to any category', () => {
         cy.authenticate(1)
-          .requestUpdateCategory(createCategoryId(), request)
+          .requestUpdateCategory(categoryDataFactory.id(), request)
           .expectNotFoundResponse();
       });
     });

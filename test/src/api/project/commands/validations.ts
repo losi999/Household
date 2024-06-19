@@ -1,6 +1,7 @@
 import { Project } from '@household/shared/types/types';
 import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/test/api/types';
 import { getProjectId } from '@household/shared/common/utils';
+import { internalPropertyNames } from '@household/test/api/constants';
 
 const validateProjectDocument = (response: Project.ProjectId, request: Project.Request) => {
   const id = response?.projectId;
@@ -8,16 +9,22 @@ const validateProjectDocument = (response: Project.ProjectId, request: Project.R
   cy.log('Get project document', id)
     .getProjectDocumentById(id)
     .should((document) => {
+      const { name, description, ...internal } = document;
+
       expect(getProjectId(document), 'id').to.equal(id);
-      expect(document.name, 'name').to.equal(request.name);
-      expect(document.description, 'description').to.equal(request.description);
+      expect(name, 'name').to.equal(request.name);
+      expect(description, 'description').to.equal(request.description);
+      Object.keys(internal).forEach(key => expect(key, `${key} is an internal property`).to.be.oneOf(internalPropertyNames));
     });
 };
 
 const validateProjectResponse = (response: Project.Response, document: Project.Document) => {
-  expect(response.projectId, 'projectId').to.equal(getProjectId(document));
-  expect(response.name, 'name').to.equal(document.name);
-  expect(response.description, 'description').to.equal(document.description);
+  const { projectId, name, description, ...internal } = response;
+
+  expect(projectId, 'projectId').to.equal(getProjectId(document));
+  expect(name, 'name').to.equal(document.name);
+  expect(description, 'description').to.equal(document.description);
+  expect(Object.keys(internal).length, 'remaining properties in response').to.equal(0);
 };
 
 const validateProjectListResponse = (responses: Project.Response[], documents: Project.Document[]) => {

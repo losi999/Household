@@ -1,10 +1,8 @@
-import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
 import { default as schema } from '@household/test/api/schemas/category-response';
 import { Category, Product } from '@household/shared/types/types';
-import { createCategoryId } from '@household/shared/common/test-data-factory';
 import { getCategoryId } from '@household/shared/common/utils';
-import { v4 as uuid } from 'uuid';
-import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
+import { categoryDataFactory } from '@household/test/api/category/data-factory';
+import { productDataFactory } from '@household/test/api/product/data-factory';
 
 describe('GET /category/v1/categories/{categoryId}', () => {
   let categoryDocument: Category.Document;
@@ -12,38 +10,24 @@ describe('GET /category/v1/categories/{categoryId}', () => {
   let productDocument: Product.Document;
 
   beforeEach(() => {
-    categoryDocument = categoryDocumentConverter.create({
+    categoryDocument = categoryDataFactory.document({
       body: {
-        name: `category-${uuid()}`,
         categoryType: 'inventory',
-        parentCategoryId: undefined,
       },
-      parentCategory: undefined,
-    }, Cypress.env('EXPIRES_IN'), true);
-
-    childCategoryDocument = categoryDocumentConverter.create({
-      body: {
-        name: `child-${uuid()}`,
-        categoryType: 'regular',
-        parentCategoryId: getCategoryId(categoryDocument),
-      },
+    });
+    childCategoryDocument = categoryDataFactory.document({
       parentCategory: categoryDocument,
-    }, Cypress.env('EXPIRES_IN'), true);
+    });
 
-    productDocument = productDocumentConverter.create({
-      body: {
-        brand: `tesco-${uuid()}`,
-        measurement: 200,
-        unitOfMeasurement: 'g',
-      },
+    productDocument = productDataFactory.document({
       category: categoryDocument,
-    }, Cypress.env('EXPIRES_IN'), true);
+    });
   });
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
-        .requestGetCategory(createCategoryId())
+        .requestGetCategory(categoryDataFactory.id())
         .expectUnauthorizedResponse();
     });
   });
@@ -72,14 +56,14 @@ describe('GET /category/v1/categories/{categoryId}', () => {
     describe('should return error if categoryId', () => {
       it('is not mongo id', () => {
         cy.authenticate(1)
-          .requestGetCategory(createCategoryId('not-valid'))
+          .requestGetCategory(categoryDataFactory.id('not-valid'))
           .expectBadRequestResponse()
           .expectWrongPropertyPattern('categoryId', 'pathParameters');
       });
 
       it('does not belong to any category', () => {
         cy.authenticate(1)
-          .requestGetCategory(createCategoryId())
+          .requestGetCategory(categoryDataFactory.id())
           .expectNotFoundResponse();
       });
     });

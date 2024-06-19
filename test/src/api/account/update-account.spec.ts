@@ -1,33 +1,21 @@
-import { createAccountId } from '@household/shared/common/test-data-factory';
 import { getAccountId } from '@household/shared/common/utils';
-import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
 import { Account } from '@household/shared/types/types';
-import { v4 as uuid } from 'uuid';
+import { accountDataFactory } from '@household/test/api/account/data-factory';
 
 describe('PUT /account/v1/accounts/{accountId}', () => {
   let request: Account.Request;
   let accountDocument: Account.Document;
 
   beforeEach(() => {
-    request = {
-      name: `new name-${uuid()}`,
-      accountType: 'bankAccount',
-      currency: 'Ft',
-      owner: 'owner 1',
-    };
+    request = accountDataFactory.request();
 
-    accountDocument = accountDocumentConverter.create({
-      name: `old name-${uuid()}`,
-      accountType: 'bankAccount',
-      currency: 'Ft',
-      owner: 'old owner',
-    }, Cypress.env('EXPIRES_IN'), true);
+    accountDocument = accountDataFactory.document();
   });
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
-        .requestUpdateAccount(createAccountId(), request)
+        .requestUpdateAccount(accountDataFactory.id(), request)
         .expectUnauthorizedResponse();
     });
   });
@@ -42,13 +30,15 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
     });
 
     it('should update account with an existing name for a different owner', () => {
-      const sameNameAccountDocument = accountDocumentConverter.create({
+      const sameNameAccountDocument = accountDataFactory.document({
         ...request,
-        owner: 'old owner',
-      }, Cypress.env('EXPIRES_IN'), true);
+        owner: 'different owner',
+      });
 
-      cy.saveAccountDocument(accountDocument)
-        .saveAccountDocument(sameNameAccountDocument)
+      cy.saveAccountDocuments([
+        accountDocument,
+        sameNameAccountDocument,
+      ])
         .authenticate(1)
         .requestCreateAccount(request)
         .expectCreatedResponse()
@@ -58,36 +48,33 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
       describe('if name', () => {
         it('is missing from body', () => {
           cy.authenticate(1)
-            .requestUpdateAccount(createAccountId(), {
-              ...request,
+            .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
               name: undefined,
-            })
+            }))
             .expectBadRequestResponse()
             .expectRequiredProperty('name', 'body');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateAccount(createAccountId(), {
-              ...request,
-              name: 1 as any,
-            })
+            .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
+              name: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('name', 'string', 'body');
         });
 
         it('is too short', () => {
           cy.authenticate(1)
-            .requestUpdateAccount(createAccountId(), {
-              ...request,
+            .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
               name: '',
-            })
+            }))
             .expectBadRequestResponse()
             .expectTooShortProperty('name', 1, 'body');
         });
 
         it('is already in used by a different account of the same owner', () => {
-          const duplicateAccountDocument = accountDocumentConverter.create(request, Cypress.env('EXPIRES_IN'), true);
+          const duplicateAccountDocument = accountDataFactory.document(request);
 
           cy.saveAccountDocument(accountDocument)
             .saveAccountDocument(duplicateAccountDocument)
@@ -101,30 +88,27 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
       describe('if accountType', () => {
         it('is missing from body', () => {
           cy.authenticate(1)
-            .requestUpdateAccount(createAccountId(), {
-              ...request,
+            .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
               accountType: undefined,
-            })
+            }))
             .expectBadRequestResponse()
             .expectRequiredProperty('accountType', 'body');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateAccount(createAccountId(), {
-              ...request,
-              accountType: 1 as any,
-            })
+            .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
+              accountType: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('accountType', 'string', 'body');
         });
 
         it('is not a valid enum value', () => {
           cy.authenticate(1)
-            .requestUpdateAccount(createAccountId(), {
-              ...request,
-              accountType: 'not-account-type' as any,
-            })
+            .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
+              accountType: 'not-account-type',
+            }))
             .expectBadRequestResponse()
             .expectWrongEnumValue('accountType', 'body');
         });
@@ -133,30 +117,27 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
       describe('if currency', () => {
         it('is missing from body', () => {
           cy.authenticate(1)
-            .requestUpdateAccount(createAccountId(), {
-              ...request,
+            .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
               currency: undefined,
-            })
+            }))
             .expectBadRequestResponse()
             .expectRequiredProperty('currency', 'body');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateAccount(createAccountId(), {
-              ...request,
-              currency: 1 as any,
-            })
+            .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
+              currency: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('currency', 'string', 'body');
         });
 
         it('is too short', () => {
           cy.authenticate(1)
-            .requestUpdateAccount(createAccountId(), {
-              ...request,
+            .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
               currency: '',
-            })
+            }))
             .expectBadRequestResponse()
             .expectTooShortProperty('currency', 1, 'body');
         });
@@ -165,30 +146,27 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
       describe('if owner', () => {
         it('is missing from body', () => {
           cy.authenticate(1)
-            .requestUpdateAccount(createAccountId(), {
-              ...request,
+            .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
               owner: undefined,
-            })
+            }))
             .expectBadRequestResponse()
             .expectRequiredProperty('owner', 'body');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateAccount(createAccountId(), {
-              ...request,
-              owner: 1 as any,
-            })
+            .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
+              owner: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('owner', 'string', 'body');
         });
 
         it('is too short', () => {
           cy.authenticate(1)
-            .requestUpdateAccount(createAccountId(), {
-              ...request,
+            .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
               owner: '',
-            })
+            }))
             .expectBadRequestResponse()
             .expectTooShortProperty('owner', 1, 'body');
         });
@@ -197,14 +175,14 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
       describe('if accountId', () => {
         it('is not mongo id', () => {
           cy.authenticate(1)
-            .requestUpdateAccount(createAccountId('not-valid'), request)
+            .requestUpdateAccount(accountDataFactory.id('not-valid'), request)
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('accountId', 'pathParameters');
         });
 
         it('does not belong to any account', () => {
           cy.authenticate(1)
-            .requestUpdateAccount(createAccountId(), request)
+            .requestUpdateAccount(accountDataFactory.id(), request)
             .expectNotFoundResponse();
         });
       });

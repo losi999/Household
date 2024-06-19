@@ -1,19 +1,14 @@
-import { recipientDocumentConverter } from '@household/shared/dependencies/converters/recipient-document-converter';
 import { default as schema } from '@household/test/api/schemas/recipient-response-list';
 import { Recipient } from '@household/shared/types/types';
-import { v4 as uuid } from 'uuid';
+import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
 
 describe('GET /recipient/v1/recipients', () => {
   let recipientDocument1: Recipient.Document;
   let recipientDocument2: Recipient.Document;
 
   beforeEach(() => {
-    recipientDocument1 = recipientDocumentConverter.create({
-      name: `recipient 1-${uuid()}`,
-    }, Cypress.env('EXPIRES_IN'), true);
-    recipientDocument2 = recipientDocumentConverter.create({
-      name: `recipient 2-${uuid()}`,
-    }, Cypress.env('EXPIRES_IN'), true);
+    recipientDocument1 = recipientDataFactory.document();
+    recipientDocument2 = recipientDataFactory.document();
   });
 
   describe('called as anonymous', () => {

@@ -7,8 +7,17 @@ const aggregate = [
       },
       pipeline: [
         {
+          $set: {
+            tmp_splits: {
+              $concatArrays: ['$splits', {
+                $ifNull: ['$deferredSplits', []]
+              }]
+            }
+          }
+        },
+        {
           $unwind: {
-            path: '$splits',
+            path: '$tmp_splits',
             preserveNullAndEmptyArrays: true,
           },
         },
@@ -17,7 +26,7 @@ const aggregate = [
             newRoot: {
               $mergeObjects: [
                 '$$ROOT',
-                '$splits',
+                '$tmp_splits',
                 {
                   tx_amount: '$amount',
                   tx_description: '$description',
@@ -34,10 +43,18 @@ const aggregate = [
               $filter: {
                 input: [
                   {
-                    tmp_account: '$accounts.mainAccount',
+                    tmp_account: {
+                      $cond: {
+                        if: {
+                          $ne: ['$transactionType', 'deferred']
+                        },
+                        then: '$account',
+                        else: null
+                      }
+                    },
                   },
                   {
-                    tmp_account: '$accounts.transferAccount',
+                    tmp_account: '$transferAccount',
                     amount: {
                       $ifNull: [
                         '$transferAmount',
@@ -46,10 +63,10 @@ const aggregate = [
                     },
                   },
                   {
-                    tmp_account: '$accounts.ownerAccount',
+                    tmp_account: '$ownerAccount',
                   },
                   {
-                    tmp_account: '$accounts.payingAccount',
+                    tmp_account: '$payingAccount',
                   },
                 ],
                 cond: {
@@ -85,7 +102,9 @@ const aggregate = [
         {
           $unset: [
             'tmp_dupes',
+            'tmp_splits',
             'splits',
+            'deferredSplits'
           ],
         },
         {
@@ -141,7 +160,7 @@ const aggregate = [
                         case: {
                           $eq: [
                             '$tmp_account',
-                            '$accounts.ownerAccount',
+                            '$ownerAccount',
                           ],
                         },
                         then: {
@@ -162,7 +181,7 @@ const aggregate = [
                         case: {
                           $eq: [
                             '$tmp_account',
-                            '$accounts.payingAccount',
+                            '$payingAccount',
                           ],
                         },
                         then: {
@@ -202,7 +221,7 @@ const aggregate = [
                       {
                         $eq: [
                           '$$this.tmp_account',
-                          '$$this.accounts.ownerAccount',
+                          '$$this.ownerAccount',
                         ],
                       },
                       {
@@ -221,7 +240,7 @@ const aggregate = [
                       {
                         $eq: [
                           '$$this.tmp_account',
-                          '$$this.accounts.payingAccount',
+                          '$$this.payingAccount',
                         ],
                       },
                       {

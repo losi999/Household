@@ -1,23 +1,19 @@
-import { recipientDocumentConverter } from '@household/shared/dependencies/converters/recipient-document-converter';
 import { default as schema } from '@household/test/api/schemas/recipient-response';
 import { Recipient } from '@household/shared/types/types';
-import { createRecipientId } from '@household/shared/common/test-data-factory';
 import { getRecipientId } from '@household/shared/common/utils';
-import { v4 as uuid } from 'uuid';
+import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
 
 describe('GET /recipient/v1/recipients/{recipientId}', () => {
   let recipientDocument: Recipient.Document;
 
   beforeEach(() => {
-    recipientDocument = recipientDocumentConverter.create({
-      name: `recipient-${uuid()}`,
-    }, Cypress.env('EXPIRES_IN'), true);
+    recipientDocument = recipientDataFactory.document();
   });
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
-        .requestGetRecipient(createRecipientId())
+        .requestGetRecipient(recipientDataFactory.id())
         .expectUnauthorizedResponse();
     });
   });
@@ -35,14 +31,14 @@ describe('GET /recipient/v1/recipients/{recipientId}', () => {
     describe('should return error if recipientId', () => {
       it('is not mongo id', () => {
         cy.authenticate(1)
-          .requestGetRecipient(createRecipientId('not-valid'))
+          .requestGetRecipient(recipientDataFactory.id('not-valid'))
           .expectBadRequestResponse()
           .expectWrongPropertyPattern('recipientId', 'pathParameters');
       });
 
       it('does not belong to any recipient', () => {
         cy.authenticate(1)
-          .requestGetRecipient(createRecipientId())
+          .requestGetRecipient(recipientDataFactory.id())
           .expectNotFoundResponse();
       });
     });

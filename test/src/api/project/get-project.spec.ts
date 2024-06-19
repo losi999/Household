@@ -1,24 +1,19 @@
-import { projectDocumentConverter } from '@household/shared/dependencies/converters/project-document-converter';
 import { default as schema } from '@household/test/api/schemas/project-response';
 import { Project } from '@household/shared/types/types';
-import { createProjectId } from '@household/shared/common/test-data-factory';
 import { getProjectId } from '@household/shared/common/utils';
-import { v4 as uuid } from 'uuid';
+import { projectDataFactory } from './data-factory';
 
 describe('GET /project/v1/projects/{projectId}', () => {
   let projectDocument: Project.Document;
 
   beforeEach(() => {
-    projectDocument = projectDocumentConverter.create({
-      name: `project-${uuid()}`,
-      description: 'desc',
-    }, Cypress.env('EXPIRES_IN'), true);
+    projectDocument = projectDataFactory.document();
   });
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
-        .requestGetProject(createProjectId())
+        .requestGetProject(projectDataFactory.id())
         .expectUnauthorizedResponse();
     });
   });
@@ -36,14 +31,14 @@ describe('GET /project/v1/projects/{projectId}', () => {
     describe('should return error if projectId', () => {
       it('is not mongo id', () => {
         cy.authenticate(1)
-          .requestGetProject(createProjectId('not-valid'))
+          .requestGetProject(projectDataFactory.id('not-valid'))
           .expectBadRequestResponse()
           .expectWrongPropertyPattern('projectId', 'pathParameters');
       });
 
       it('does not belong to any project', () => {
         cy.authenticate(1)
-          .requestGetProject(createProjectId())
+          .requestGetProject(projectDataFactory.id())
           .expectNotFoundResponse();
       });
     });

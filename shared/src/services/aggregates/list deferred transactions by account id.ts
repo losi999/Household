@@ -7,8 +7,23 @@ export const listDeferredTransactions = (ctx: {
   excludedTransferTransactionId?: Transaction.Id
 }): PipelineStage[] => [
   {
+    $set: {
+      tmp_splits: {
+        $concatArrays: [
+          '$splits',
+          {
+            $ifNull: [
+              '$deferredSplits',
+              [],
+            ],
+          },
+        ],
+      },
+    },
+  },
+  {
     $unwind: {
-      path: '$splits',
+      path: '$tmp_splits',
       preserveNullAndEmptyArrays: true,
     },
   },
@@ -17,7 +32,7 @@ export const listDeferredTransactions = (ctx: {
       newRoot: {
         $mergeObjects: [
           '$$ROOT',
-          '$splits',
+          '$tmp_splits',
           {
             tx_amount: '$amount',
             tx_description: '$description',
@@ -93,38 +108,41 @@ export const listDeferredTransactions = (ctx: {
   {
     $unset: [
       'tmp_deferredTransactions',
+      'deferredSplits',
+      'account',
       'splits',
       'tx_amount',
       'tx_description',
       'tx_id',
       'tx_transactionType',
+      'tmp_splits',
     ],
   },
   {
     $lookup: {
       from: 'accounts',
-      localField: 'accounts.payingAccount',
+      localField: 'payingAccount',
       foreignField: '_id',
-      as: 'accounts.payingAccount',
+      as: 'payingAccount',
     },
   },
   {
     $unwind: {
-      path: '$accounts.payingAccount',
+      path: '$payingAccount',
       preserveNullAndEmptyArrays: true,
     },
   },
   {
     $lookup: {
       from: 'accounts',
-      localField: 'accounts.ownerAccount',
+      localField: 'ownerAccount',
       foreignField: '_id',
-      as: 'accounts.ownerAccount',
+      as: 'ownerAccount',
     },
   },
   {
     $unwind: {
-      path: '$accounts.ownerAccount',
+      path: '$ownerAccount',
       preserveNullAndEmptyArrays: true,
     },
   },
