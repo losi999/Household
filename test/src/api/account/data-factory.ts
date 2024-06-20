@@ -13,7 +13,7 @@ export const accountDataFactory = (() => {
         'creditCard',
         'cafeteria',
       ]),
-      name: faker.finance.accountName(),
+      name: `${faker.finance.accountName()} ${faker.finance.accountNumber()}`,
       currency: faker.finance.currencySymbol(),
       owner: faker.person.firstName(),
       ...req,

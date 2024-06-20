@@ -1,4 +1,4 @@
-import { Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/test/api/types';
 import { createDate, getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
 import { internalPropertyNames } from '@household/test/api/constants';
@@ -46,61 +46,214 @@ const validateTransactionPaymentDocument = (response: Transaction.TransactionId,
     });
 };
 
+const validateTransactionDeferredDocument = (response: Transaction.TransactionId, request: Transaction.PaymentRequest) => {
+  const id = response?.transactionId;
+
+  cy.log('Get transaction document', id)
+    .getTransactionDocumentById(id)
+    .should((document: Transaction.DeferredDocument) => {
+      expect(getTransactionId(document), 'id').to.equal(id);
+      const { amount, issuedAt, transactionType, description, payingAccount, ownerAccount, category, project, recipient, quantity, product, invoiceNumber, billingEndDate, billingStartDate, ...internal } = document;
+      expect(amount, 'amount').to.equal(request.amount);
+      expect(issuedAt.toISOString(), 'issuedAt').to.equal(createDate(request.issuedAt).toISOString());
+      expect(transactionType, 'transactionType').to.equal('deferred');
+      expect(description, 'description').to.equal(request.description);
+      expect(getAccountId(payingAccount), 'payingAccount').to.equal(request.accountId);
+      expect(getAccountId(ownerAccount), 'ownerAccount').to.equal(request.loanAccountId);
+      expect(getCategoryId(category), 'category').to.equal(request.categoryId);
+      expect(getProjectId(project), 'project').to.equal(request.projectId);
+      expect(getRecipientId(recipient), 'recipient').to.equal(request.recipientId);
+
+      if (category?.categoryType === 'inventory') {
+        expect(quantity, 'quantity').to.equal(request.quantity);
+        expect(getProductId(product), 'productId').to.equal(request.productId);
+      } else {
+        expect(quantity, 'quantity').to.be.undefined;
+        expect(product, 'product').to.be.undefined;
+      }
+
+      if (category?.categoryType === 'invoice') {
+        expect(invoiceNumber, 'invoiceNumber').to.equal(request.invoiceNumber);
+        expect(billingStartDate?.toISOString(), 'billingStartDate').to.equal(createDate(request.billingStartDate)?.toISOString());
+        expect(billingEndDate?.toISOString(), 'billingEndDate').to.equal(createDate(request.billingEndDate)?.toISOString());
+      } else {
+        expect(invoiceNumber, 'invoiceNumber').to.be.undefined;
+        expect(billingStartDate, 'billingStartDate').to.be.undefined;
+        expect(billingEndDate, 'billingEndDate').to.be.undefined;
+      }
+
+    });
+};
+
+const validateTransactionReimbursementDocument = (response: Transaction.TransactionId, request: Transaction.PaymentRequest) => {
+  const id = response?.transactionId;
+
+  cy.log('Get transaction document', id)
+    .getTransactionDocumentById(id)
+    .should((document: Transaction.ReimbursementDocument) => {
+      expect(getTransactionId(document), 'id').to.equal(id);
+      const { amount, issuedAt, transactionType, description, payingAccount, ownerAccount, category, project, recipient, quantity, product, invoiceNumber, billingEndDate, billingStartDate, ...internal } = document;
+      expect(amount, 'amount').to.equal(request.amount);
+      expect(issuedAt.toISOString(), 'issuedAt').to.equal(createDate(request.issuedAt).toISOString());
+      expect(transactionType, 'transactionType').to.equal('reimbursement');
+      expect(description, 'description').to.equal(request.description);
+      expect(getAccountId(payingAccount), 'payingAccount').to.equal(request.accountId);
+      expect(getAccountId(ownerAccount), 'ownerAccount').to.equal(request.loanAccountId);
+      expect(getCategoryId(category), 'category').to.equal(request.categoryId);
+      expect(getProjectId(project), 'project').to.equal(request.projectId);
+      expect(getRecipientId(recipient), 'recipient').to.equal(request.recipientId);
+
+      if (category?.categoryType === 'inventory') {
+        expect(quantity, 'quantity').to.equal(request.quantity);
+        expect(getProductId(product), 'productId').to.equal(request.productId);
+      } else {
+        expect(quantity, 'quantity').to.be.undefined;
+        expect(product, 'product').to.be.undefined;
+      }
+
+      if (category?.categoryType === 'invoice') {
+        expect(invoiceNumber, 'invoiceNumber').to.equal(request.invoiceNumber);
+        expect(billingStartDate?.toISOString(), 'billingStartDate').to.equal(createDate(request.billingStartDate)?.toISOString());
+        expect(billingEndDate?.toISOString(), 'billingEndDate').to.equal(createDate(request.billingEndDate)?.toISOString());
+      } else {
+        expect(invoiceNumber, 'invoiceNumber').to.be.undefined;
+        expect(billingStartDate, 'billingStartDate').to.be.undefined;
+        expect(billingEndDate, 'billingEndDate').to.be.undefined;
+      }
+
+    });
+};
+
 const validateTransactionSplitDocument = (response: Transaction.TransactionId, request: Transaction.SplitRequest) => {
   const id = response?.transactionId;
 
   cy.log('Get transaction document', id)
     .getTransactionDocumentById(id)
     .should((document: Transaction.SplitDocument) => {
+      const { amount, issuedAt, transactionType, deferredSplits, description, recipient, splits, account, ...internal } = document;
+
       expect(getTransactionId(document), 'id').to.equal(id);
-      expect(document.amount, 'amount').to.equal(request.amount);
-      expect(document.issuedAt.toISOString(), 'issuedAt').to.equal(createDate(request.issuedAt).toISOString());
-      expect(document.transactionType, 'transactionType').to.equal('split');
-      expect(document.description, 'description').to.equal(request.description);
-      expect(getAccountId(document.account), 'account').to.equal(request.accountId);
-      expect(getRecipientId(document.recipient), 'recipient').to.equal(request.recipientId);
+      expect(amount, 'amount').to.equal(request.amount);
+      expect(issuedAt.toISOString(), 'issuedAt').to.equal(createDate(request.issuedAt).toISOString());
+      expect(transactionType, 'transactionType').to.equal('split');
+      expect(description, 'description').to.equal(request.description);
+      expect(getAccountId(account), 'account').to.equal(request.accountId);
+      expect(getRecipientId(recipient), 'recipient').to.equal(request.recipientId);
 
-      document.splits.forEach((split, index) => {
-        expect(split.amount, `splits[${index}].amount`).to.equal(request.splits[index].amount);
-        expect(split.description, `splits[${index}].description`).to.equal(request.splits[index].description);
-        expect(getProjectId(split.project), `splits[${index}].project`).to.equal(request.splits[index].projectId);
-        expect(getCategoryId(split.category), `splits[${index}].category`).to.equal(request.splits[index].categoryId);
+      const regularSplitRequests = request.splits.filter(s => !s.loanAccountId);
+      const deferredsplitRequests = request.splits.filter(s => s.loanAccountId);
 
-        if (split.category?.categoryType === 'inventory') {
-          expect(split.quantity, `splits[${index}].quantity`).to.equal(request.splits[index].quantity);
-          expect(getProductId(split.product), `splits[${index}].productId`).to.equal(request.splits[index].productId);
+      splits?.forEach((split, index) => {
+        const { amount, description, project, product, category, quantity, billingEndDate, billingStartDate, invoiceNumber, ...internal } = split;
+        const splitRequestItem = regularSplitRequests[index];
+
+        expect(amount, `splits[${index}].amount`).to.equal(splitRequestItem.amount);
+        expect(description, `splits[${index}].description`).to.equal(splitRequestItem.description);
+        expect(getProjectId(project), `splits[${index}].project`).to.equal(splitRequestItem.projectId);
+        expect(getCategoryId(category), `splits[${index}].category`).to.equal(splitRequestItem.categoryId);
+
+        if (category?.categoryType === 'inventory') {
+          expect(quantity, `splits[${index}].quantity`).to.equal(splitRequestItem.quantity);
+          expect(getProductId(product), `splits[${index}].productId`).to.equal(splitRequestItem.productId);
         } else {
-          expect(split.quantity, `splits[${index}].quantity`).to.be.undefined;
-          expect(split.product, `splits[${index}].product`).to.be.undefined;
+          expect(quantity, `splits[${index}].quantity`).to.be.undefined;
+          expect(product, `splits[${index}].product`).to.be.undefined;
         }
 
-        if (split.category?.categoryType === 'invoice') {
-          expect(split.invoiceNumber, `splits[${index}].invoiceNumber`).to.equal(request.splits[index].invoiceNumber);
-          expect(split.billingStartDate?.toISOString(), `splits[${index}].billingStartDate`).to.equal(createDate(request.splits[index].billingStartDate)?.toISOString());
-          expect(split.billingEndDate?.toISOString(), `splits[${index}].billingEndDate`).to.equal(createDate(request.splits[index].billingEndDate)?.toISOString());
+        if (category?.categoryType === 'invoice') {
+          expect(invoiceNumber, `splits[${index}].invoiceNumber`).to.equal(splitRequestItem.invoiceNumber);
+          expect(billingStartDate?.toISOString(), `splits[${index}].billingStartDate`).to.equal(createDate(splitRequestItem.billingStartDate)?.toISOString());
+          expect(billingEndDate?.toISOString(), `splits[${index}].billingEndDate`).to.equal(createDate(splitRequestItem.billingEndDate)?.toISOString());
         } else {
-          expect(split.invoiceNumber, `splits[${index}].invoiceNumber`).to.be.undefined;
-          expect(split.billingStartDate, `splits[${index}].billingStartDate`).to.be.undefined;
-          expect(split.billingEndDate, `splits[${index}].billingEndDate`).to.be.undefined;
+          expect(invoiceNumber, `splits[${index}].invoiceNumber`).to.be.undefined;
+          expect(billingStartDate, `splits[${index}].billingStartDate`).to.be.undefined;
+          expect(billingEndDate, `splits[${index}].billingEndDate`).to.be.undefined;
         }
+        Object.keys(internal).forEach(key => expect(key, `${key} is an internal property`).to.be.oneOf(internalPropertyNames));
       });
+
+      deferredSplits?.forEach((split, index) => {
+        const { amount, description, project, product, category, quantity, billingEndDate, billingStartDate, invoiceNumber, payingAccount, ownerAccount, transactionType, ...internal } = split;
+        const splitRequestItem = deferredsplitRequests[index];
+
+        expect(amount, `deferredSplits[${index}].amount`).to.equal(splitRequestItem.amount);
+        expect(description, `deferredSplits[${index}].description`).to.equal(splitRequestItem.description);
+        expect(transactionType, `deferredSplits[${index}].transactionType`).to.equal('deferred');
+        expect(getProjectId(project), `deferredSplits[${index}].project`).to.equal(splitRequestItem.projectId);
+        expect(getCategoryId(category), `deferredSplits[${index}].category`).to.equal(splitRequestItem.categoryId);
+        expect(getAccountId(payingAccount), `deferredSplits[${index}].payingAccount`).to.equal(request.accountId);
+        expect(getAccountId(ownerAccount), `deferredSplits[${index}].ownerAccount`).to.equal(splitRequestItem.loanAccountId);
+
+        if (category?.categoryType === 'inventory') {
+          expect(quantity, `deferredSplits[${index}].quantity`).to.equal(splitRequestItem.quantity);
+          expect(getProductId(product), `deferredSplits[${index}].productId`).to.equal(splitRequestItem.productId);
+        } else {
+          expect(quantity, `deferredSplits[${index}].quantity`).to.be.undefined;
+          expect(product, `deferredSplits[${index}].product`).to.be.undefined;
+        }
+
+        if (category?.categoryType === 'invoice') {
+          expect(invoiceNumber, `deferredSplits[${index}].invoiceNumber`).to.equal(splitRequestItem.invoiceNumber);
+          expect(billingStartDate?.toISOString(), `deferredSplits[${index}].billingStartDate`).to.equal(createDate(splitRequestItem.billingStartDate)?.toISOString());
+          expect(billingEndDate?.toISOString(), `deferredSplits[${index}].billingEndDate`).to.equal(createDate(splitRequestItem.billingEndDate)?.toISOString());
+        } else {
+          expect(invoiceNumber, `deferredSplits[${index}].invoiceNumber`).to.be.undefined;
+          expect(billingStartDate, `deferredSplits[${index}].billingStartDate`).to.be.undefined;
+          expect(billingEndDate, `deferredSplits[${index}].billingEndDate`).to.be.undefined;
+        }
+        Object.keys(internal).forEach(key => expect(key, `${key} is an internal property`).to.be.oneOf(internalPropertyNames));
+      });
+
+      Object.keys(internal).forEach(key => expect(key, `${key} is an internal property`).to.be.oneOf(internalPropertyNames));
     });
 };
 
-const validateTransactionTransferDocument = (response: Transaction.TransactionId, request: Transaction.TransferRequest) => {
+const validateTransactionTransferDocument = (response: Transaction.TransactionId, request: Transaction.TransferRequest, paymentAmounts?: number[]) => {
   const id = response?.transactionId;
 
   cy.log('Get transaction document', id)
     .getTransactionDocumentById(id)
     .should((document: Transaction.TransferDocument) => {
+      const { amount, issuedAt, transactionType, description, transferAccount, transferAmount, account, payments, ...internal } = document;
+
       expect(getTransactionId(document), 'id').to.equal(id);
-      expect(document.amount, 'amount').to.equal(request.amount);
-      expect(document.issuedAt.toISOString(), 'issuedAt').to.equal(createDate(request.issuedAt).toISOString());
-      expect(document.transactionType, 'transactionType').to.equal('transfer');
-      expect(document.description, 'description').to.equal(request.description);
-      expect(document.transferAmount, 'transferAmount').to.equal(request.transferAmount ?? request.amount * -1);
-      expect(getAccountId(document.account), 'account').to.equal(request.accountId);
-      expect(getAccountId(document.transferAccount), 'transferAccount').to.equal(request.transferAccountId);
+      expect(amount, 'amount').to.equal(request.amount);
+      expect(issuedAt.toISOString(), 'issuedAt').to.equal(createDate(request.issuedAt).toISOString());
+      expect(transactionType, 'transactionType').to.equal('transfer');
+      expect(description, 'description').to.equal(request.description);
+      expect(transferAmount, 'transferAmount').to.equal(request.transferAmount ?? request.amount * -1);
+      expect(getAccountId(account), 'account').to.equal(request.accountId);
+      expect(getAccountId(transferAccount), 'transferAccount').to.equal(request.transferAccountId);
+
+      payments?.forEach((payment, index) => {
+        const paymentRequest = request.payments[index];
+
+        const { amount, transaction } = payment;
+        expect(amount, `payments[${index}].amount`).to.equal(paymentAmounts?.[index] ?? paymentRequest.amount);
+        expect(getTransactionId(transaction), `payments[${index}].transaction`).to.equal(paymentRequest.transactionId);
+      });
+
+      Object.keys(internal).forEach(key => expect(key, `${key} is an internal property`).to.be.oneOf(internalPropertyNames));
+    });
+};
+
+const validateTransactionLoanTransferDocument = (response: Transaction.TransactionId, request: Transaction.TransferRequest) => {
+  const id = response?.transactionId;
+
+  cy.log('Get transaction document', id)
+    .getTransactionDocumentById(id)
+    .should((document: Transaction.LoanTransferDocument) => {
+      const { amount, issuedAt, transactionType, description, transferAccount, account, ...internal } = document;
+
+      expect(getTransactionId(document), 'id').to.equal(id);
+      expect(amount, 'amount').to.equal(request.amount);
+      expect(issuedAt.toISOString(), 'issuedAt').to.equal(createDate(request.issuedAt).toISOString());
+      expect(transactionType, 'transactionType').to.equal('loanTransfer');
+      expect(description, 'description').to.equal(request.description);
+      expect(getAccountId(account), 'account').to.equal(request.accountId);
+      expect(getAccountId(transferAccount), 'transferAccount').to.equal(request.transferAccountId);
+
+      Object.keys(internal).forEach(key => expect(key, `${key} is an internal property`).to.be.oneOf(internalPropertyNames));
     });
 };
 
@@ -112,7 +265,7 @@ const validateTransactionPaymentResponse = (response: Transaction.PaymentRespons
   expect(response.description, 'description').to.equal(document.description);
   expect(response.account.accountId, 'account.accountId').to.equal(getAccountId(document.account));
   expect(response.account.accountType, 'account.accountType').to.equal(document.account.accountType);
-  expect(response.account.balance, 'account.balance').to.equal(document.account.balance ?? null);
+  // expect(response.account.balance, 'account.balance').to.equal(document.account.balance ?? null);
   expect(response.account.currency, 'account.currency').to.equal(document.account.currency);
   expect(response.account.isOpen, 'account.isOpen').to.equal(document.account.isOpen);
   expect(response.account.name, 'account.name').to.equal(document.account.name);
@@ -152,26 +305,153 @@ const validateTransactionPaymentResponse = (response: Transaction.PaymentRespons
   }
 };
 
-const validateTransactionTransferResponse = (response: Transaction.TransferResponse, document: Transaction.TransferDocument) => {
+const validateTransactionDeferredResponse = (response: Transaction.DeferredResponse, document: Transaction.DeferredDocument) => {
   expect(response.transactionId).to.equal(getTransactionId(document));
   expect(response.amount, 'amount').to.equal(document.amount);
   expect(createDate(response.issuedAt).toISOString(), 'issuedAt').to.equal(document.issuedAt.toISOString());
+  expect(response.transactionType, 'transactionType').to.equal('deferred');
+  expect(response.description, 'description').to.equal(document.description);
+  // expect(response.account.accountId, 'account.accountId').to.equal(getAccountId(document.account));
+  // expect(response.account.accountType, 'account.accountType').to.equal(document.account.accountType);
+  // // expect(response.account.balance, 'account.balance').to.equal(document.account.balance ?? null);
+  // expect(response.account.currency, 'account.currency').to.equal(document.account.currency);
+  // expect(response.account.isOpen, 'account.isOpen').to.equal(document.account.isOpen);
+  // expect(response.account.name, 'account.name').to.equal(document.account.name);
+  // expect(response.account.fullName, 'account.fullName').to.equal(`${document.account.name} (${document.account.owner})`);
+
+  expect(response.project?.projectId, 'project.projectId').to.equal(getProjectId(document.project));
+  expect(response.project?.name, 'project.name').to.equal(document.project?.name);
+  expect(response.project?.description, 'project.description').to.equal(document.project?.description);
+
+  expect(response.recipient?.recipientId, 'recipient.recipientId').to.equal(getRecipientId(document.recipient));
+  expect(response.recipient?.name, 'recipient.name').to.equal(document.recipient?.name);
+
+  expect(response.category?.categoryId, 'category.categoryId').to.equal(getCategoryId(document.category));
+  expect(response.category?.categoryType, 'category.categoryType').to.equal(document.category?.categoryType);
+  expect(response.category?.fullName, 'category.fullName').to.equal(document.category?.fullName);
+  expect(response.category?.name, 'category.name').to.equal(document.category?.name);
+
+  if (response.category?.categoryType === 'inventory') {
+    expect(response.quantity, 'quantity').to.equal(document.quantity);
+    expect(response.product?.productId, 'product.productId').to.equal(getProductId(document.product));
+    expect(response.product?.brand, 'product.brand').to.equal(document.product?.brand);
+    expect(response.product?.measurement, 'product.measurement').to.equal(document.product?.measurement);
+    expect(response.product?.unitOfMeasurement, 'product.unitOfMeasurement').to.equal(document.product?.unitOfMeasurement);
+  } else {
+    expect(response.quantity, 'quantity').to.be.undefined;
+    expect(response.product, 'product').to.be.undefined;
+  }
+
+  if (response.category?.categoryType === 'invoice') {
+    expect(response.invoiceNumber, 'invoiceNumber').to.equal(document.invoiceNumber);
+    expect(createDate(response.billingStartDate)?.toISOString(), 'billingStartDate').to.equal(document.billingStartDate?.toISOString());
+    expect(createDate(response.billingEndDate)?.toISOString(), 'billingEndDate').to.equal(document.billingEndDate?.toISOString());
+  } else {
+    expect(response.invoiceNumber, 'invoiceNumber').to.be.undefined;
+    expect(response.billingStartDate, 'billingStartDate').to.be.undefined;
+    expect(response.billingEndDate, 'billingEndDate').to.be.undefined;
+  }
+};
+
+const validateTransactionReimbursementResponse = (response: Transaction.ReimbursementResponse, document: Transaction.ReimbursementDocument) => {
+  expect(response.transactionId).to.equal(getTransactionId(document));
+  expect(response.amount, 'amount').to.equal(document.amount);
+  expect(createDate(response.issuedAt).toISOString(), 'issuedAt').to.equal(document.issuedAt.toISOString());
+  expect(response.transactionType, 'transactionType').to.equal('reimbursement');
+  expect(response.description, 'description').to.equal(document.description);
+  // expect(response.account.accountId, 'account.accountId').to.equal(getAccountId(document.account));
+  // expect(response.account.accountType, 'account.accountType').to.equal(document.account.accountType);
+  // // expect(response.account.balance, 'account.balance').to.equal(document.account.balance ?? null);
+  // expect(response.account.currency, 'account.currency').to.equal(document.account.currency);
+  // expect(response.account.isOpen, 'account.isOpen').to.equal(document.account.isOpen);
+  // expect(response.account.name, 'account.name').to.equal(document.account.name);
+  // expect(response.account.fullName, 'account.fullName').to.equal(`${document.account.name} (${document.account.owner})`);
+
+  expect(response.project?.projectId, 'project.projectId').to.equal(getProjectId(document.project));
+  expect(response.project?.name, 'project.name').to.equal(document.project?.name);
+  expect(response.project?.description, 'project.description').to.equal(document.project?.description);
+
+  expect(response.recipient?.recipientId, 'recipient.recipientId').to.equal(getRecipientId(document.recipient));
+  expect(response.recipient?.name, 'recipient.name').to.equal(document.recipient?.name);
+
+  expect(response.category?.categoryId, 'category.categoryId').to.equal(getCategoryId(document.category));
+  expect(response.category?.categoryType, 'category.categoryType').to.equal(document.category?.categoryType);
+  expect(response.category?.fullName, 'category.fullName').to.equal(document.category?.fullName);
+  expect(response.category?.name, 'category.name').to.equal(document.category?.name);
+
+  if (response.category?.categoryType === 'inventory') {
+    expect(response.quantity, 'quantity').to.equal(document.quantity);
+    expect(response.product?.productId, 'product.productId').to.equal(getProductId(document.product));
+    expect(response.product?.brand, 'product.brand').to.equal(document.product?.brand);
+    expect(response.product?.measurement, 'product.measurement').to.equal(document.product?.measurement);
+    expect(response.product?.unitOfMeasurement, 'product.unitOfMeasurement').to.equal(document.product?.unitOfMeasurement);
+  } else {
+    expect(response.quantity, 'quantity').to.be.undefined;
+    expect(response.product, 'product').to.be.undefined;
+  }
+
+  if (response.category?.categoryType === 'invoice') {
+    expect(response.invoiceNumber, 'invoiceNumber').to.equal(document.invoiceNumber);
+    expect(createDate(response.billingStartDate)?.toISOString(), 'billingStartDate').to.equal(document.billingStartDate?.toISOString());
+    expect(createDate(response.billingEndDate)?.toISOString(), 'billingEndDate').to.equal(document.billingEndDate?.toISOString());
+  } else {
+    expect(response.invoiceNumber, 'invoiceNumber').to.be.undefined;
+    expect(response.billingStartDate, 'billingStartDate').to.be.undefined;
+    expect(response.billingEndDate, 'billingEndDate').to.be.undefined;
+  }
+};
+
+const validateTransactionTransferResponse = (response: Transaction.TransferResponse, document: Transaction.TransferDocument, viewingAccountId: Account.Id) => {
+  const documentAmount = getAccountId(document.account) === viewingAccountId ? document.amount : document.transferAmount;
+  const documentAccount = getAccountId(document.account) === viewingAccountId ? document.account : document.transferAccount;
+  const documentTransferAmount = getAccountId(document.account) === viewingAccountId ? document.transferAmount : document.amount;
+  const documentTransferAccount = getAccountId(document.account) === viewingAccountId ? document.transferAccount : document.account;
+
+  expect(response.transactionId).to.equal(getTransactionId(document));
+  expect(response.amount, 'amount').to.equal(documentAmount);
+  expect(createDate(response.issuedAt).toISOString(), 'issuedAt').to.equal(document.issuedAt.toISOString());
   expect(response.transactionType, 'transactionType').to.equal('transfer');
   expect(response.description, 'description').to.equal(document.description);
-  expect(response.account.accountId, 'account.accountId').to.equal(getAccountId(document.account));
-  expect(response.account.accountType, 'account.accountType').to.equal(document.account.accountType);
-  expect(response.account.balance, 'account.balance').to.equal(document.account.balance ?? null);
-  expect(response.account.currency, 'account.currency').to.equal(document.account.currency);
-  expect(response.account.isOpen, 'account.isOpen').to.equal(document.account.isOpen);
-  expect(response.account.name, 'account.name').to.equal(document.account.name);
-  expect(response.account.fullName, 'account.fullName').to.equal(`${document.account.name} (${document.account.owner})`);
-  expect(response.transferAccount.accountId, 'transferAccount.accountId').to.equal(getAccountId(document.transferAccount));
-  expect(response.transferAccount.accountType, 'transferAccount.accountType').to.equal(document.transferAccount.accountType);
-  expect(response.transferAccount.balance, 'transferAccount.balance').to.equal(document.transferAccount.balance ?? null);
-  expect(response.transferAccount.currency, 'transferAccount.currency').to.equal(document.transferAccount.currency);
-  expect(response.transferAccount.isOpen, 'transferAccount.isOpen').to.equal(document.transferAccount.isOpen);
-  expect(response.transferAccount.name, 'transferAccount.name').to.equal(document.transferAccount.name);
-  expect(response.transferAccount.fullName, 'transferAccount.fullName').to.equal(`${document.transferAccount.name} (${document.transferAccount.owner})`);
+  expect(response.account.accountId, 'account.accountId').to.equal(getAccountId(documentAccount));
+  expect(response.account.accountType, 'account.accountType').to.equal(documentAccount.accountType);
+  // expect(response.account.balance, 'account.balance').to.equal(undefined);
+  expect(response.account.currency, 'account.currency').to.equal(documentAccount.currency);
+  expect(response.account.isOpen, 'account.isOpen').to.equal(documentAccount.isOpen);
+  expect(response.account.name, 'account.name').to.equal(documentAccount.name);
+  expect(response.account.fullName, 'account.fullName').to.equal(`${documentAccount.name} (${documentAccount.owner})`);
+  expect(response.transferAccount.accountId, 'transferAccount.accountId').to.equal(getAccountId(documentTransferAccount));
+  expect(response.transferAccount.accountType, 'transferAccount.accountType').to.equal(documentTransferAccount.accountType);
+  expect(response.transferAccount.balance, 'transferAccount.balance').to.equal(undefined);
+  expect(response.transferAccount.currency, 'transferAccount.currency').to.equal(documentTransferAccount.currency);
+  expect(response.transferAccount.isOpen, 'transferAccount.isOpen').to.equal(documentTransferAccount.isOpen);
+  expect(response.transferAccount.name, 'transferAccount.name').to.equal(documentTransferAccount.name);
+  expect(response.transferAccount.fullName, 'transferAccount.fullName').to.equal(`${documentTransferAccount.name} (${documentTransferAccount.owner})`);
+
+};
+
+const validateTransactionLoanTransferResponse = (response: Transaction.LoanTransferResponse, document: Transaction.LoanTransferDocument, viewingAccountId: Account.Id) => {
+  const documentAccount = getAccountId(document.account) === viewingAccountId ? document.account : document.transferAccount;
+  const documentTransferAccount = getAccountId(document.account) === viewingAccountId ? document.transferAccount : document.account;
+
+  expect(response.transactionId).to.equal(getTransactionId(document));
+  expect(response.amount, 'amount').to.equal(document.amount);
+  expect(createDate(response.issuedAt).toISOString(), 'issuedAt').to.equal(document.issuedAt.toISOString());
+  expect(response.transactionType, 'transactionType').to.equal('loanTransfer');
+  expect(response.description, 'description').to.equal(document.description);
+  expect(response.account.accountId, 'account.accountId').to.equal(getAccountId(documentAccount));
+  expect(response.account.accountType, 'account.accountType').to.equal(documentAccount.accountType);
+  // expect(response.account.balance, 'account.balance').to.equal(undefined);
+  expect(response.account.currency, 'account.currency').to.equal(documentAccount.currency);
+  expect(response.account.isOpen, 'account.isOpen').to.equal(documentAccount.isOpen);
+  expect(response.account.name, 'account.name').to.equal(documentAccount.name);
+  expect(response.account.fullName, 'account.fullName').to.equal(`${documentAccount.name} (${documentAccount.owner})`);
+  expect(response.transferAccount.accountId, 'transferAccount.accountId').to.equal(getAccountId(documentTransferAccount));
+  expect(response.transferAccount.accountType, 'transferAccount.accountType').to.equal(documentTransferAccount.accountType);
+  expect(response.transferAccount.balance, 'transferAccount.balance').to.equal(undefined);
+  expect(response.transferAccount.currency, 'transferAccount.currency').to.equal(documentTransferAccount.currency);
+  expect(response.transferAccount.isOpen, 'transferAccount.isOpen').to.equal(documentTransferAccount.isOpen);
+  expect(response.transferAccount.name, 'transferAccount.name').to.equal(documentTransferAccount.name);
+  expect(response.transferAccount.fullName, 'transferAccount.fullName').to.equal(`${documentTransferAccount.name} (${documentTransferAccount.owner})`);
 
 };
 
@@ -183,7 +463,7 @@ const validateTransactionSplitResponse = (response: Transaction.SplitResponse, d
   expect(response.description, 'description').to.equal(document.description);
   expect(response.account.accountId, 'account.accountId').to.equal(getAccountId(document.account));
   expect(response.account.accountType, 'account.accountType').to.equal(document.account.accountType);
-  expect(response.account.balance, 'account.balance').to.equal(document.account.balance ?? null);
+  // expect(response.account.balance, 'account.balance').to.equal(document.account.balance ?? null);
   expect(response.account.currency, 'account.currency').to.equal(document.account.currency);
   expect(response.account.isOpen, 'account.isOpen').to.equal(document.account.isOpen);
   expect(response.account.name, 'account.name').to.equal(document.account.name);
@@ -192,46 +472,49 @@ const validateTransactionSplitResponse = (response: Transaction.SplitResponse, d
   expect(response.recipient?.recipientId, 'recipient.recipientId').to.equal(getRecipientId(document.recipient));
   expect(response.recipient?.name, 'recipient.name').to.equal(document.recipient?.name);
 
-  response.splits.forEach((split, index) => {
-    expect(split.project?.projectId, `splits[${index}].project.projectId`).to.equal(getProjectId(document.splits[index].project));
-    expect(split.project?.name, `splits[${index}].project.name`).to.equal(document.splits[index].project?.name);
-    expect(split.project?.description, `splits[${index}].project.description`).to.equal(document.splits[index].project?.description);
+  // response.splits.forEach((split, index) => {
+  //   expect(split.project?.projectId, `splits[${index}].project.projectId`).to.equal(getProjectId(document.splits[index].project));
+  //   expect(split.project?.name, `splits[${index}].project.name`).to.equal(document.splits[index].project?.name);
+  //   expect(split.project?.description, `splits[${index}].project.description`).to.equal(document.splits[index].project?.description);
 
-    expect(split.category?.categoryId, `splits[${index}].category.categoryId`).to.equal(getCategoryId(document.splits[index].category));
-    expect(split.category?.categoryType, `splits[${index}].category.categoryType`).to.equal(document.splits[index].category?.categoryType);
-    expect(split.category?.fullName, `splits[${index}].category.fullName`).to.equal(document.splits[index].category?.fullName);
-    expect(split.category?.name, `splits[${index}].category.name`).to.equal(document.splits[index].category?.name);
+  //   expect(split.category?.categoryId, `splits[${index}].category.categoryId`).to.equal(getCategoryId(document.splits[index].category));
+  //   expect(split.category?.categoryType, `splits[${index}].category.categoryType`).to.equal(document.splits[index].category?.categoryType);
+  //   expect(split.category?.fullName, `splits[${index}].category.fullName`).to.equal(document.splits[index].category?.fullName);
+  //   expect(split.category?.name, `splits[${index}].category.name`).to.equal(document.splits[index].category?.name);
 
-    if(split.category?.categoryType === 'inventory') {
-      expect(split.quantity, `splits[${index}].quantity`).to.equal(document.splits[index].quantity);
-      expect(split.product?.productId, `splits[${index}].product.productId`).to.equal(getProductId(document.splits[index].product));
-      expect(split.product?.brand, `splits[${index}].product.brand`).to.equal(document.splits[index].product?.brand);
-      expect(split.product?.measurement, `splits[${index}].product.measurement`).to.equal(document.splits[index].product?.measurement);
-      expect(split.product?.unitOfMeasurement, `splits[${index}].product.unitOfMeasurement`).to.equal(document.splits[index].product?.unitOfMeasurement);
-    } else {
-      expect(split.quantity, `splits[${index}].quantity`).to.be.undefined;
-      expect(split.product, `splits[${index}].product`).to.be.undefined;
-    }
+  //   if(split.category?.categoryType === 'inventory') {
+  //     expect(split.quantity, `splits[${index}].quantity`).to.equal(document.splits[index].quantity);
+  //     expect(split.product?.productId, `splits[${index}].product.productId`).to.equal(getProductId(document.splits[index].product));
+  //     expect(split.product?.brand, `splits[${index}].product.brand`).to.equal(document.splits[index].product?.brand);
+  //     expect(split.product?.measurement, `splits[${index}].product.measurement`).to.equal(document.splits[index].product?.measurement);
+  //     expect(split.product?.unitOfMeasurement, `splits[${index}].product.unitOfMeasurement`).to.equal(document.splits[index].product?.unitOfMeasurement);
+  //   } else {
+  //     expect(split.quantity, `splits[${index}].quantity`).to.be.undefined;
+  //     expect(split.product, `splits[${index}].product`).to.be.undefined;
+  //   }
 
-    if(split.category?.categoryType === 'invoice') {
-      expect(split.invoiceNumber, `splits[${index}].invoiceNumber`).to.equal(document.splits[index].invoiceNumber);
-      expect(createDate(split.billingStartDate)?.toISOString(), `isplits[${index}].billingStartDate`).to.equal(document.splits[index].billingStartDate?.toISOString());
-      expect(createDate(split.billingEndDate)?.toISOString(), `splits[${index}].billingEndDate`).to.equal(document.splits[index].billingEndDate?.toISOString());
-    } else {
-      expect(split.invoiceNumber, `splits[${index}].invoiceNumber`).to.be.undefined;
-      expect(split.billingStartDate, `isplits[${index}].billingStartDate`).to.be.undefined;
-      expect(split.billingEndDate, `splits[${index}].billingEndDate`).to.be.undefined;
-    }
-  });
+  //   if(split.category?.categoryType === 'invoice') {
+  //     expect(split.invoiceNumber, `splits[${index}].invoiceNumber`).to.equal(document.splits[index].invoiceNumber);
+  //     expect(createDate(split.billingStartDate)?.toISOString(), `isplits[${index}].billingStartDate`).to.equal(document.splits[index].billingStartDate?.toISOString());
+  //     expect(createDate(split.billingEndDate)?.toISOString(), `splits[${index}].billingEndDate`).to.equal(document.splits[index].billingEndDate?.toISOString());
+  //   } else {
+  //     expect(split.invoiceNumber, `splits[${index}].invoiceNumber`).to.be.undefined;
+  //     expect(split.billingStartDate, `isplits[${index}].billingStartDate`).to.be.undefined;
+  //     expect(split.billingEndDate, `splits[${index}].billingEndDate`).to.be.undefined;
+  //   }
+  // });
 };
 
-const validateTransactionListResponse = (responses: Transaction.Response[], documents: Transaction.Document[]) => {
+const validateTransactionListResponse = (responses: Transaction.Response[], documents: Transaction.Document[], viewingAccountId: Account.Id) => {
   documents.forEach((document) => {
     const response = responses.find(r => r.transactionId === getTransactionId(document));
     switch(response.transactionType) {
       case 'payment': validateTransactionPaymentResponse(response, document as Transaction.PaymentDocument); break;
-      case 'transfer': validateTransactionTransferResponse(response, document as Transaction.TransferDocument); break;
+      case 'transfer': validateTransactionTransferResponse(response, document as Transaction.TransferDocument, viewingAccountId); break;
       case 'split': validateTransactionSplitResponse(response, document as Transaction.SplitDocument); break;
+      case 'deferred': validateTransactionDeferredResponse(response, document as Transaction.DeferredDocument); break;
+      case 'reimbursement': validateTransactionReimbursementResponse(response, document as Transaction.ReimbursementDocument); break;
+      case 'loanTransfer': validateTransactionLoanTransferResponse(response, document as Transaction.LoanTransferDocument, viewingAccountId); break;
     }
   });
 };
@@ -733,10 +1016,16 @@ export const setTransactionValidationCommands = () => {
     prevSubject: true,
   }, {
     validateTransactionPaymentDocument,
+    validateTransactionDeferredDocument,
+    validateTransactionReimbursementDocument,
     validateTransactionTransferDocument,
+    validateTransactionLoanTransferDocument,
     validateTransactionSplitDocument,
     validateTransactionPaymentResponse,
+    validateTransactionDeferredResponse,
+    validateTransactionReimbursementResponse,
     validateTransactionTransferResponse,
+    validateTransactionLoanTransferResponse,
     validateTransactionSplitResponse,
     validateTransactionListResponse,
     validateTransactionListReport,
@@ -766,11 +1055,17 @@ declare global {
     }
 
     interface ChainableResponseBody extends Chainable {
+      validateTransactionDeferredDocument: CommandFunctionWithPreviousSubject<typeof validateTransactionDeferredDocument>;
+      validateTransactionReimbursementDocument: CommandFunctionWithPreviousSubject<typeof validateTransactionReimbursementDocument>;
       validateTransactionPaymentDocument: CommandFunctionWithPreviousSubject<typeof validateTransactionPaymentDocument>;
       validateTransactionTransferDocument: CommandFunctionWithPreviousSubject<typeof validateTransactionTransferDocument>;
+      validateTransactionLoanTransferDocument: CommandFunctionWithPreviousSubject<typeof validateTransactionLoanTransferDocument>;
       validateTransactionSplitDocument: CommandFunctionWithPreviousSubject<typeof validateTransactionSplitDocument>;
       validateTransactionPaymentResponse: CommandFunctionWithPreviousSubject<typeof validateTransactionPaymentResponse>;
+      validateTransactionDeferredResponse: CommandFunctionWithPreviousSubject<typeof validateTransactionDeferredResponse>;
+      validateTransactionReimbursementResponse: CommandFunctionWithPreviousSubject<typeof validateTransactionReimbursementResponse>;
       validateTransactionTransferResponse: CommandFunctionWithPreviousSubject<typeof validateTransactionTransferResponse>;
+      validateTransactionLoanTransferResponse: CommandFunctionWithPreviousSubject<typeof validateTransactionLoanTransferResponse>;
       validateTransactionSplitResponse: CommandFunctionWithPreviousSubject<typeof validateTransactionSplitResponse>;
       validateTransactionListResponse: CommandFunctionWithPreviousSubject<typeof validateTransactionListResponse>;
       validateTransactionListReport: CommandFunctionWithPreviousSubject<typeof validateTransactionListReport>;

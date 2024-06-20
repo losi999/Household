@@ -7,12 +7,7 @@ import { createId } from '@household/test/api/utils';
 export const projectDataFactory = (() => {
   const createProjectRequest: DataFactoryFunction<Project.Request> = (req) => {
     return {
-      name: faker.word.words({
-        count: {
-          min: 1,
-          max: 3,
-        },
-      }),
+      name: `${faker.commerce.department()} ${faker.string.uuid()}`,
       description: faker.word.words({
         count: {
           min: 1,

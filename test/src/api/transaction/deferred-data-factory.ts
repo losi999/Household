@@ -2,7 +2,6 @@ import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { deferredTransactionDocumentConverter } from '@household/shared/dependencies/converters/deferred-transaction-document-converter';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment-data-factory';
-import { faker } from '@faker-js/faker';
 
 export const deferredTransactionDataFactory = (() => {
   const createDeferredTransactionDocument = (ctx: {
@@ -21,10 +20,6 @@ export const deferredTransactionDataFactory = (() => {
     return deferredTransactionDocumentConverter.create({
       body: paymentTransactionDataFactory.request({
         ...ctx.body,
-        amount: ctx.body?.amount < 0 ? ctx.body.amount : faker.number.float({
-          min: -10000,
-          max: 0,
-        }),
         accountId: getAccountId(ctx.account),
         loanAccountId: getAccountId(ctx.loanAccount),
         categoryId: getCategoryId(ctx.category),
@@ -42,6 +37,8 @@ export const deferredTransactionDataFactory = (() => {
   };
 
   return {
+    id: paymentTransactionDataFactory.id,
+    request: paymentTransactionDataFactory.request,
     document: createDeferredTransactionDocument,
   };
 })();

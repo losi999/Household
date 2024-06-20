@@ -16,7 +16,7 @@ export interface IUpdateToPaymentTransactionService {
     body: Transaction.PaymentRequest;
     transactionId: Transaction.Id;
     expiresIn: number;
-  }): Promise<void>;
+  }): Promise<unknown>;
 }
 
 export const updateToPaymentTransactionServiceFactory = (
@@ -116,30 +116,34 @@ export const updateToPaymentTransactionServiceFactory = (
         product,
       }, expiresIn);
 
-      await transactionService.replaceTransaction(transactionId, document);
-    } else {
-      const payingAccount = body.amount < 0 ? account : loanAccount;
-      const ownerAccount = body.amount < 0 ? loanAccount : account;
+      return transactionService.replaceTransaction(transactionId, document);
+    }
+    if (account.accountType === 'loan') {
+      httpErrors.transaction.invalidLoanAccountType(loanAccount);
 
-      const { _id, ...document } = payingAccount.accountType === 'loan' ? reimbursementTransactionDocumentConverter.create({
+      const { _id, ...document } = reimbursementTransactionDocumentConverter.create({
         body,
-        payingAccount,
-        ownerAccount,
-        category,
-        project,
-        recipient,
-        product,
-      }, expiresIn) : deferredTransactionDocumentConverter.create({
-        body,
-        payingAccount,
-        ownerAccount,
+        payingAccount: account,
+        ownerAccount: loanAccount,
         category,
         project,
         recipient,
         product,
       }, expiresIn);
 
-      await transactionService.replaceTransaction(transactionId, document);
+      return transactionService.replaceTransaction(transactionId, document);
     }
+
+    const { _id, ...document } = deferredTransactionDocumentConverter.create({
+      body,
+      payingAccount: account,
+      ownerAccount: loanAccount,
+      category,
+      project,
+      recipient,
+      product,
+    }, expiresIn);
+
+    return transactionService.replaceTransaction(transactionId, document);
   };
 };

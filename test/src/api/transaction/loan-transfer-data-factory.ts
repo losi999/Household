@@ -28,6 +28,8 @@ export const loanTransferTransactionDataFactory = (() => {
   };
 
   return {
+    request: transferTransactionDataFactory.request,
     document: createLoanTransferTransactionDocument,
+    id: transferTransactionDataFactory.id,
   };
 })();

@@ -46,7 +46,7 @@ export const listDeferredTransactions = (ctx: {
   {
     $match: {
       ...(ctx.payingAccountIds.length > 0 ? {
-        'accounts.payingAccount': {
+        payingAccount: {
           $in: ctx.payingAccountIds.map(id => new Types.ObjectId(id)),
         },
       } : {}),

@@ -109,23 +109,29 @@ export const createPaymentTransactionServiceFactory = (
         product,
       }, expiresIn);
     } else {
-      document = account.accountType === 'loan' ? reimbursementTransactionDocumentConverter.create({
-        body,
-        payingAccount: account,
-        ownerAccount: loanAccount,
-        category,
-        project,
-        recipient,
-        product,
-      }, expiresIn) : deferredTransactionDocumentConverter.create({
-        body,
-        payingAccount: account,
-        ownerAccount: loanAccount,
-        category,
-        project,
-        recipient,
-        product,
-      }, expiresIn);
+      if (account.accountType === 'loan') {
+        httpErrors.transaction.invalidLoanAccountType(loanAccount);
+
+        document = reimbursementTransactionDocumentConverter.create({
+          body,
+          payingAccount: account,
+          ownerAccount: loanAccount,
+          category,
+          project,
+          recipient,
+          product,
+        }, expiresIn);
+      } else {
+        document = deferredTransactionDocumentConverter.create({
+          body,
+          payingAccount: account,
+          ownerAccount: loanAccount,
+          category,
+          project,
+          recipient,
+          product,
+        }, expiresIn);
+      }
     }
 
     const saved = await transactionService.saveTransaction(document).catch(httpErrors.transaction.save(document));

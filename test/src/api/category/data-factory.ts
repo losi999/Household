@@ -9,7 +9,7 @@ import { categoryTypes } from '@household/shared/constants';
 export const categoryDataFactory = (() => {
   const createCategoryRequest: DataFactoryFunction<Category.Request> = (req) => {
     return {
-      name: faker.company.name(),
+      name: `${faker.company.name()} ${faker.string.uuid()}`,
       categoryType: faker.helpers.arrayElement(categoryTypes),
       parentCategoryId: undefined,
       ...req,

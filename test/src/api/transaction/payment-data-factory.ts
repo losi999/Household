@@ -1,9 +1,10 @@
-import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId } from '@household/shared/common/utils';
+import { addSeconds, getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId } from '@household/shared/common/utils';
 import { paymentTransactionDocumentConverter } from '@household/shared/dependencies/converters/payment-transaction-document-converter';
 import { DataFactoryFunction } from '@household/shared/types/common';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { faker } from '@faker-js/faker';
 import { createId } from '@household/test/api/utils';
+import { accountDataFactory } from '@household/test/api/account/data-factory';
 
 export const paymentTransactionDataFactory = (() => {
   const createPaymentTransactionRequest: DataFactoryFunction<Transaction.PaymentRequest> = (req) => {
@@ -11,13 +12,14 @@ export const paymentTransactionDataFactory = (() => {
     return {
       amount: faker.number.float({
         min: -10000,
-        max: 10000,
+        max: req?.loanAccountId ? 0 : 10000,
       }),
-      billingEndDate: billingEndDate.toISOString(),
+      billingEndDate: billingEndDate.toISOString().split('T')[0],
       billingStartDate: faker.date.recent({
-        refDate: billingEndDate,
+        refDate: addSeconds(-60 * 60 * 24, billingEndDate),
         days: 90,
-      }).toISOString(),
+      }).toISOString()
+        .split('T')[0],
       invoiceNumber: faker.finance.accountNumber(),
       description: faker.word.words({
         count: {
@@ -26,12 +28,12 @@ export const paymentTransactionDataFactory = (() => {
         },
       }),
       issuedAt: faker.date.recent().toISOString(),
-      quantity: faker.number.float({
+      quantity: req?.productId ? faker.number.float({
         max: 20,
-      }),
+      }) : undefined,
       productId: undefined,
       projectId: undefined,
-      accountId: undefined,
+      accountId: accountDataFactory.id(),
       categoryId: undefined,
       loanAccountId: undefined,
       recipientId: undefined,

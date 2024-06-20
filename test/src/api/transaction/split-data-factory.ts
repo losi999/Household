@@ -1,9 +1,10 @@
-import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId } from '@household/shared/common/utils';
+import { addSeconds, getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId } from '@household/shared/common/utils';
 import { splitTransactionDocumentConverter } from '@household/shared/dependencies/converters/split-transaction-document-converter';
-import { DataFactoryFunction, Dictionary } from '@household/shared/types/common';
+import { AnyValueObject, DataFactoryFunction, Dictionary } from '@household/shared/types/common';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { faker } from '@faker-js/faker';
 import { createId } from '@household/test/api/utils';
+import { accountDataFactory } from '@household/test/api/account/data-factory';
 
 export const splitTransactionDataFactory = (() => {
   const createSplitRequestItem: DataFactoryFunction<Transaction.SplitRequestItem> = (req) => {
@@ -11,7 +12,7 @@ export const splitTransactionDataFactory = (() => {
     return {
       amount: faker.number.float({
         min: -10000,
-        max: 0,
+        max: req?.loanAccountId ? 0 : 10,
       }),
       description: faker.word.words({
         count: {
@@ -19,15 +20,16 @@ export const splitTransactionDataFactory = (() => {
           max: 5,
         },
       }),
-      billingEndDate: billingEndDate.toISOString(),
+      billingEndDate: billingEndDate.toISOString().split('T')[0],
       billingStartDate: faker.date.recent({
-        refDate: billingEndDate,
+        refDate: addSeconds(-60 * 60 * 24, billingEndDate),
         days: 90,
-      }).toISOString(),
+      }).toISOString()
+        .split('T')[0],
       invoiceNumber: faker.finance.accountNumber(),
-      quantity: faker.number.float({
+      quantity: req?.productId ? faker.number.float({
         max: 20,
-      }),
+      }) : undefined,
       productId: undefined,
       projectId: undefined,
       categoryId: undefined,
@@ -36,9 +38,8 @@ export const splitTransactionDataFactory = (() => {
     };
   };
 
-  const createSplitTransactionRequest = (req?: Partial<Omit<Transaction.SplitRequest, 'splits'>>, ...splitsReq: Partial<Transaction.SplitRequestItem>[]): Transaction.SplitRequest => {
+  const createSplitTransactionRequest = (req?: Partial<Transaction.SplitRequest> | Partial<AnyValueObject<Transaction.SplitRequest>>, ...splitsReq: (Partial<Transaction.SplitRequestItem> | Partial<AnyValueObject<Transaction.SplitRequestItem>>)[]): Transaction.SplitRequest => {
     const splits = splitsReq?.length > 0 ? splitsReq.map(s => createSplitRequestItem(s)) : [createSplitRequestItem()];
-
     return {
       amount: splits.reduce((accumulator, currentValue) => {
         return accumulator + currentValue.amount;
@@ -50,10 +51,10 @@ export const splitTransactionDataFactory = (() => {
         },
       }),
       issuedAt: faker.date.recent().toISOString(),
-      accountId: undefined,
+      accountId: accountDataFactory.id(),
       recipientId: undefined,
-      splits,
       ...req,
+      splits,
     };
   };
 

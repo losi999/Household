@@ -7,7 +7,7 @@ import { createId } from '@household/test/api/utils';
 export const recipientDataFactory = (() => {
   const createRecipientRequest: DataFactoryFunction<Recipient.Request> = (req) => {
     return {
-      name: faker.company.name(),
+      name: `${faker.company.name()} ${faker.string.uuid()}`,
       ...req,
     };
   };

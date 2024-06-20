@@ -17,12 +17,13 @@ export const loanTransferTransactionDocumentConverterFactory = (
   accountDocumentConverter: IAccountDocumentConverter,
 ): ILoanTransferTransactionDocumentConverter => {
   const instance: ILoanTransferTransactionDocumentConverter = {
-    create: ({ body, account, transferAccount }, expiresIn, generateId): Transaction.LoanTransferDocument => {
+    create: ({ body: { amount, description, issuedAt }, account, transferAccount }, expiresIn, generateId): Transaction.LoanTransferDocument => {
       return {
-        ...body,
+        amount,
+        description,
         account,
         transferAccount,
-        issuedAt: new Date(body.issuedAt),
+        issuedAt: new Date(issuedAt),
         transactionType: 'loanTransfer',
         _id: generateId ? generateMongoId() : undefined,
         accountId: undefined,
