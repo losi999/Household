@@ -48,6 +48,9 @@ const schema: StrictJSONSchema7<Transaction.SplitRequest> = {
           ...amount.properties,
           ...description.properties,
           loanAccountId: mongoId,
+          isSettled: {
+            type: 'boolean',
+          },
         },
       },
     },

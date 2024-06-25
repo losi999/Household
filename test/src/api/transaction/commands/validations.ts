@@ -54,12 +54,13 @@ const validateTransactionDeferredDocument = (response: Transaction.TransactionId
     .getTransactionDocumentById(id)
     .should((document: Transaction.DeferredDocument) => {
       expect(getTransactionId(document), 'id').to.equal(id);
-      const { amount, issuedAt, transactionType, description, payingAccount, ownerAccount, category, project, recipient, quantity, product, invoiceNumber, billingEndDate, billingStartDate, ...internal } = document;
+      const { amount, issuedAt, transactionType, description, payingAccount, ownerAccount, category, project, recipient, quantity, product, invoiceNumber, billingEndDate, billingStartDate, isSettled, ...internal } = document;
 
       expect(amount, 'amount').to.equal(request.amount);
       expect(issuedAt.toISOString(), 'issuedAt').to.equal(createDate(request.issuedAt).toISOString());
       expect(transactionType, 'transactionType').to.equal('deferred');
       expect(description, 'description').to.equal(request.description);
+      expect(isSettled, 'isSettled').to.equal(request.isSettled ?? false);
       expect(getAccountId(payingAccount), 'payingAccount').to.equal(request.accountId);
       expect(getAccountId(ownerAccount), 'ownerAccount').to.equal(request.loanAccountId);
       expect(getCategoryId(category), 'category').to.equal(request.categoryId);
@@ -175,11 +176,12 @@ const validateTransactionSplitDocument = (response: Transaction.TransactionId, r
       });
 
       deferredSplits?.forEach((split, index) => {
-        const { amount, description, project, product, category, quantity, billingEndDate, billingStartDate, invoiceNumber, payingAccount, ownerAccount, transactionType, ...internal } = split;
+        const { amount, description, project, product, category, quantity, billingEndDate, billingStartDate, invoiceNumber, payingAccount, ownerAccount, transactionType, isSettled, ...internal } = split;
         const splitRequestItem = deferredsplitRequests[index];
 
         expect(amount, `deferredSplits[${index}].amount`).to.equal(splitRequestItem.amount);
         expect(description, `deferredSplits[${index}].description`).to.equal(splitRequestItem.description);
+        expect(isSettled, `deferredSplits[${index}].isSettled`).to.equal(splitRequestItem.isSettled ?? false);
         expect(transactionType, `deferredSplits[${index}].transactionType`).to.equal('deferred');
         expect(getProjectId(project), `deferredSplits[${index}].project`).to.equal(splitRequestItem.projectId);
         expect(getCategoryId(category), `deferredSplits[${index}].category`).to.equal(splitRequestItem.categoryId);
@@ -270,11 +272,10 @@ const validateTransactionPaymentResponse = (response: Transaction.PaymentRespons
   expect(description, 'description').to.equal(document.description);
 
   {
-    const { accountId, accountType, balance, currency, fullName, isOpen, loanBalance, name, owner, ...empty } = account;
+    const { accountId, accountType, balance, currency, fullName, isOpen, name, owner, ...empty } = account;
     expect(accountId, 'account.accountId').to.equal(getAccountId(document.account));
     expect(accountType, 'account.accountType').to.equal(document.account.accountType);
     expect(balance, 'account.balance').to.equal(document.account.balance ?? null);
-    expect(loanBalance, 'account.loanBalance').to.equal(document.account.loanBalance ?? null);
     expect(currency, 'account.currency').to.equal(document.account.currency);
     expect(isOpen, 'account.isOpen').to.equal(document.account.isOpen);
     expect(name, 'account.name').to.equal(document.account.name);
@@ -341,21 +342,23 @@ const validateTransactionPaymentResponse = (response: Transaction.PaymentRespons
 };
 
 const validateTransactionDeferredResponse = (response: Transaction.DeferredResponse, document: Transaction.DeferredDocument, viewingAccountId: Account.Id, paymentAmount?: number) => {
-  const { transactionId, amount, issuedAt, transactionType, description, payingAccount, ownerAccount, project, product, recipient, category, billingEndDate, billingStartDate, invoiceNumber, quantity, remainingAmount, ...empty } = response;
+  const { transactionId, amount, issuedAt, transactionType, description, payingAccount, ownerAccount, project, product, recipient, category, billingEndDate, billingStartDate, invoiceNumber, quantity, remainingAmount, isSettled, ...empty } = response;
+
+  const expectedRemainingAmount = viewingAccountId === ownerAccount.accountId ? Math.abs(document.amount) - (paymentAmount ?? 0) : (Math.abs(document.amount) - (paymentAmount ?? 0)) * -1;
 
   expect(transactionId).to.equal(getTransactionId(document));
   expect(amount, 'amount').to.equal(document.amount);
   expect(createDate(issuedAt).toISOString(), 'issuedAt').to.equal(document.issuedAt.toISOString());
   expect(transactionType, 'transactionType').to.equal('deferred');
   expect(description, 'description').to.equal(document.description);
-  expect(remainingAmount, 'remainingAmount').to.equal(viewingAccountId === ownerAccount.accountId ? Math.abs(document.amount) - (paymentAmount ?? 0) : (Math.abs(document.amount) - (paymentAmount ?? 0)) * -1);
+  expect(isSettled, 'isSettled').to.equal(document.isSettled ?? false);
+  expect(remainingAmount, 'remainingAmount').to.equal(document.isSettled ? 0 : expectedRemainingAmount);
 
   {
-    const { accountId, accountType, balance, currency, fullName, isOpen, loanBalance, name, owner, ...empty } = payingAccount;
+    const { accountId, accountType, balance, currency, fullName, isOpen, name, owner, ...empty } = payingAccount;
     expect(accountId, 'payingAccount.accountId').to.equal(getAccountId(document.payingAccount));
     expect(accountType, 'payingAccount.accountType').to.equal(document.payingAccount.accountType);
     expect(balance, 'payingAccount.balance').to.equal(document.payingAccount.balance ?? null);
-    expect(loanBalance, 'payingAccount.loanBalance').to.equal(document.payingAccount.loanBalance ?? null);
     expect(currency, 'payingAccount.currency').to.equal(document.payingAccount.currency);
     expect(isOpen, 'payingAccount.isOpen').to.equal(document.payingAccount.isOpen);
     expect(name, 'payingAccount.name').to.equal(document.payingAccount.name);
@@ -365,11 +368,10 @@ const validateTransactionDeferredResponse = (response: Transaction.DeferredRespo
   }
 
   {
-    const { accountId, accountType, balance, currency, fullName, isOpen, loanBalance, name, owner, ...empty } = ownerAccount;
+    const { accountId, accountType, balance, currency, fullName, isOpen, name, owner, ...empty } = ownerAccount;
     expect(accountId, 'ownerAccount.accountId').to.equal(getAccountId(document.ownerAccount));
     expect(accountType, 'ownerAccount.accountType').to.equal(document.ownerAccount.accountType);
     expect(balance, 'ownerAccount.balance').to.equal(document.ownerAccount.balance ?? null);
-    expect(loanBalance, 'ownerAccount.loanBalance').to.equal(document.ownerAccount.loanBalance ?? null);
     expect(currency, 'ownerAccount.currency').to.equal(document.ownerAccount.currency);
     expect(isOpen, 'ownerAccount.isOpen').to.equal(document.ownerAccount.isOpen);
     expect(name, 'ownerAccount.name').to.equal(document.ownerAccount.name);
@@ -445,11 +447,10 @@ const validateTransactionReimbursementResponse = (response: Transaction.Reimburs
   expect(response.description, 'description').to.equal(document.description);
 
   {
-    const { accountId, accountType, balance, currency, fullName, isOpen, loanBalance, name, owner, ...empty } = payingAccount;
+    const { accountId, accountType, balance, currency, fullName, isOpen, name, owner, ...empty } = payingAccount;
     expect(accountId, 'payingAccount.accountId').to.equal(getAccountId(document.payingAccount));
     expect(accountType, 'payingAccount.accountType').to.equal(document.payingAccount.accountType);
     expect(balance, 'payingAccount.balance').to.equal(document.payingAccount.balance ?? null);
-    expect(loanBalance, 'payingAccount.loanBalance').to.equal(document.payingAccount.loanBalance ?? null);
     expect(currency, 'payingAccount.currency').to.equal(document.payingAccount.currency);
     expect(isOpen, 'payingAccount.isOpen').to.equal(document.payingAccount.isOpen);
     expect(name, 'payingAccount.name').to.equal(document.payingAccount.name);
@@ -459,11 +460,10 @@ const validateTransactionReimbursementResponse = (response: Transaction.Reimburs
   }
 
   {
-    const { accountId, accountType, balance, currency, fullName, isOpen, loanBalance, name, owner, ...empty } = ownerAccount;
+    const { accountId, accountType, balance, currency, fullName, isOpen, name, owner, ...empty } = ownerAccount;
     expect(accountId, 'ownerAccount.accountId').to.equal(getAccountId(document.ownerAccount));
     expect(accountType, 'ownerAccount.accountType').to.equal(document.ownerAccount.accountType);
     expect(balance, 'ownerAccount.balance').to.equal(document.ownerAccount.balance ?? null);
-    expect(loanBalance, 'ownerAccount.loanBalance').to.equal(document.ownerAccount.loanBalance ?? null);
     expect(currency, 'ownerAccount.currency').to.equal(document.ownerAccount.currency);
     expect(isOpen, 'ownerAccount.isOpen').to.equal(document.ownerAccount.isOpen);
     expect(name, 'ownerAccount.name').to.equal(document.ownerAccount.name);
@@ -535,7 +535,7 @@ const validateTransactionTransferResponse = (response: Transaction.TransferRespo
   const documentTransferAmount = getAccountId(document.account) === viewingAccountId ? document.transferAmount : document.amount;
   const documentTransferAccount = getAccountId(document.account) === viewingAccountId ? document.transferAccount : document.account;
 
-  const { transactionId, amount, issuedAt, transactionType, description, account, transferAccount, transferAmount, ...empty } = response;
+  const { transactionId, amount, issuedAt, transactionType, description, account, transferAccount, transferAmount, payments, ...empty } = response;
 
   expect(transactionId).to.equal(getTransactionId(document));
   expect(amount, 'amount').to.equal(documentAmount);
@@ -545,11 +545,10 @@ const validateTransactionTransferResponse = (response: Transaction.TransferRespo
   expect(description, 'description').to.equal(document.description);
 
   {
-    const { accountId, accountType, balance, currency, fullName, isOpen, loanBalance, name, owner } = account;
+    const { accountId, accountType, balance, currency, fullName, isOpen, name, owner } = account;
     expect(accountId, 'account.accountId').to.equal(getAccountId(documentAccount));
     expect(accountType, 'account.accountType').to.equal(documentAccount.accountType);
     expect(balance, 'payingAccount.balance').to.equal(documentAccount.balance ?? null);
-    expect(loanBalance, 'payingAccount.loanBalance').to.equal(documentAccount.loanBalance ?? null);
     expect(currency, 'account.currency').to.equal(documentAccount.currency);
     expect(isOpen, 'account.isOpen').to.equal(documentAccount.isOpen);
     expect(name, 'account.name').to.equal(documentAccount.name);
@@ -559,11 +558,10 @@ const validateTransactionTransferResponse = (response: Transaction.TransferRespo
   }
 
   {
-    const { accountId, accountType, balance, currency, fullName, isOpen, loanBalance, name, owner } = transferAccount;
+    const { accountId, accountType, balance, currency, fullName, isOpen, name, owner } = transferAccount;
     expect(accountId, 'transferAccount.accountId').to.equal(getAccountId(documentTransferAccount));
     expect(accountType, 'transferAccount.accountType').to.equal(documentTransferAccount.accountType);
     expect(balance, 'transferAccount.balance').to.equal(documentTransferAccount.balance ?? null);
-    expect(loanBalance, 'transferAccount.loanBalance').to.equal(documentTransferAccount.loanBalance ?? null);
     expect(currency, 'transferAccount.currency').to.equal(documentTransferAccount.currency);
     expect(isOpen, 'transferAccount.isOpen').to.equal(documentTransferAccount.isOpen);
     expect(name, 'transferAccount.name').to.equal(documentTransferAccount.name);
@@ -571,6 +569,13 @@ const validateTransactionTransferResponse = (response: Transaction.TransferRespo
     expect(fullName, 'transferAccount.fullName').to.equal(`${documentTransferAccount.name} (${documentTransferAccount.owner})`);
     expectEmptyObject(empty);
   }
+  payments?.forEach((p, index) => {
+    const documentItem = document.payments[index];
+    const { amount, transactionId } = p;
+
+    expect(amount, `payments[${index}].amount`).to.equal(documentItem.amount);
+    expect(transactionId, `payments[${index}].transactionId`).to.equal(getTransactionId(documentItem.transaction));
+  });
   expectEmptyObject(empty);
 
 };
@@ -588,11 +593,10 @@ const validateTransactionLoanTransferResponse = (response: Transaction.LoanTrans
   expect(description, 'description').to.equal(document.description);
 
   {
-    const { accountId, accountType, balance, currency, fullName, isOpen, loanBalance, name, owner } = account;
+    const { accountId, accountType, balance, currency, fullName, isOpen, name, owner } = account;
     expect(accountId, 'account.accountId').to.equal(getAccountId(documentAccount));
     expect(accountType, 'account.accountType').to.equal(documentAccount.accountType);
     expect(balance, 'payingAccount.balance').to.equal(documentAccount.balance ?? null);
-    expect(loanBalance, 'payingAccount.loanBalance').to.equal(documentAccount.loanBalance ?? null);
     expect(currency, 'account.currency').to.equal(documentAccount.currency);
     expect(isOpen, 'account.isOpen').to.equal(documentAccount.isOpen);
     expect(name, 'account.name').to.equal(documentAccount.name);
@@ -602,11 +606,10 @@ const validateTransactionLoanTransferResponse = (response: Transaction.LoanTrans
   }
 
   {
-    const { accountId, accountType, balance, currency, fullName, isOpen, loanBalance, name, owner } = transferAccount;
+    const { accountId, accountType, balance, currency, fullName, isOpen, name, owner } = transferAccount;
     expect(accountId, 'transferAccount.accountId').to.equal(getAccountId(documentTransferAccount));
     expect(accountType, 'transferAccount.accountType').to.equal(documentTransferAccount.accountType);
     expect(balance, 'transferAccount.balance').to.equal(documentTransferAccount.balance ?? null);
-    expect(loanBalance, 'transferAccount.loanBalance').to.equal(documentTransferAccount.loanBalance ?? null);
     expect(currency, 'transferAccount.currency').to.equal(documentTransferAccount.currency);
     expect(isOpen, 'transferAccount.isOpen').to.equal(documentTransferAccount.isOpen);
     expect(name, 'transferAccount.name').to.equal(documentTransferAccount.name);
@@ -627,11 +630,10 @@ const validateTransactionSplitResponse = (response: Transaction.SplitResponse, d
   expect(description, 'description').to.equal(document.description);
 
   {
-    const { accountId, accountType, balance, currency, fullName, isOpen, loanBalance, name, owner, ...empty } = account;
+    const { accountId, accountType, balance, currency, fullName, isOpen, name, owner, ...empty } = account;
     expect(accountId, 'account.accountId').to.equal(getAccountId(document.account));
     expect(accountType, 'account.accountType').to.equal(document.account.accountType);
     expect(balance, 'account.balance').to.equal(document.account.balance ?? null);
-    expect(loanBalance, 'payingAccount.loanBalance').to.equal(document.account.loanBalance ?? null);
     expect(currency, 'account.currency').to.equal(document.account.currency);
     expect(isOpen, 'account.isOpen').to.equal(document.account.isOpen);
     expect(name, 'account.name').to.equal(document.account.name);
@@ -707,20 +709,20 @@ const validateTransactionSplitResponse = (response: Transaction.SplitResponse, d
 
   deferredSplits.forEach((split, index) => {
     const documentSplit = document.deferredSplits[index];
-    const { amount, billingEndDate, billingStartDate, category, description, invoiceNumber, product, project, quantity, ownerAccount, payingAccount, transactionType, remainingAmount, transactionId, ...empty } = split;
+    const { amount, billingEndDate, billingStartDate, category, description, invoiceNumber, product, project, quantity, ownerAccount, payingAccount, transactionType, remainingAmount, transactionId, isSettled, ...empty } = split;
 
     expect(transactionId, `deferredSplits[${index}].transactionId`).to.equal(getTransactionId(documentSplit));
     expect(amount, `deferredSplits[${index}].amount`).to.equal(documentSplit.amount);
     expect(transactionType, `deferredSplits[${index}].transactionType`).to.equal('deferred');
-    expect(remainingAmount, `deferredSplits[${index}].remainingAmount`).to.equal(documentSplit.amount + (repayments?.[transactionId] ?? 0));
+    expect(remainingAmount, `deferredSplits[${index}].remainingAmount`).to.equal(documentSplit.isSettled ? 0 : documentSplit.amount + (repayments?.[transactionId] ?? 0));
     expect(description, `deferredSplits[${index}].description`).to.equal(documentSplit.description);
+    expect(isSettled, `deferredSplits[${index}].isSettled`).to.equal(documentSplit.isSettled);
 
     {
-      const { accountId, accountType, balance, currency, fullName, isOpen, loanBalance, name, owner, ...empty } = payingAccount;
+      const { accountId, accountType, balance, currency, fullName, isOpen, name, owner, ...empty } = payingAccount;
       expect(accountId, `deferredSplits[${index}].payingAccount.accountId`).to.equal(getAccountId(documentSplit.payingAccount));
       expect(accountType, `deferredSplits[${index}].payingAccount.accountType`).to.equal(documentSplit.payingAccount.accountType);
       expect(balance, `deferredSplits[${index}].payingAccount.balance`).to.equal(documentSplit.payingAccount.balance ?? null);
-      expect(loanBalance, `deferredSplits[${index}].payingAccount.loanBalance`).to.equal(documentSplit.payingAccount.loanBalance ?? null);
       expect(currency, `deferredSplits[${index}].payingAccount.currency`).to.equal(documentSplit.payingAccount.currency);
       expect(isOpen, `deferredSplits[${index}].payingAccount.isOpen`).to.equal(documentSplit.payingAccount.isOpen);
       expect(name, `deferredSplits[${index}].payingAccount.name`).to.equal(documentSplit.payingAccount.name);
@@ -730,11 +732,10 @@ const validateTransactionSplitResponse = (response: Transaction.SplitResponse, d
     }
 
     {
-      const { accountId, accountType, balance, currency, fullName, isOpen, loanBalance, name, owner, ...empty } = ownerAccount;
+      const { accountId, accountType, balance, currency, fullName, isOpen, name, owner, ...empty } = ownerAccount;
       expect(accountId, `deferredSplits[${index}].ownerAccount.accountId`).to.equal(getAccountId(documentSplit.ownerAccount));
       expect(accountType, `deferredSplits[${index}].ownerAccount.accountType`).to.equal(documentSplit.ownerAccount.accountType);
       expect(balance, `deferredSplits[${index}].ownerAccount.balance`).to.equal(documentSplit.ownerAccount.balance ?? null);
-      expect(loanBalance, `deferredSplits[${index}].ownerAccount.loanBalance`).to.equal(documentSplit.ownerAccount.loanBalance ?? null);
       expect(currency, `deferredSplits[${index}].ownerAccount.currency`).to.equal(documentSplit.ownerAccount.currency);
       expect(isOpen, `deferredSplits[${index}].ownerAccount.isOpen`).to.equal(documentSplit.ownerAccount.isOpen);
       expect(name, `deferredSplits[${index}].ownerAccount.name`).to.equal(documentSplit.ownerAccount.name);
@@ -794,14 +795,14 @@ const validateTransactionSplitResponse = (response: Transaction.SplitResponse, d
   expectEmptyObject(empty);
 };
 
-const validateTransactionListResponse = (responses: Transaction.Response[], documents: Transaction.Document[], viewingAccountId: Account.Id) => {
+const validateTransactionListResponse = (responses: Transaction.Response[], documents: Transaction.Document[], viewingAccountId: Account.Id, repayments: Record<Transaction.Id, number>) => {
   documents.forEach((document) => {
     const response = responses.find(r => r.transactionId === getTransactionId(document));
     switch(response.transactionType) {
       case 'payment': validateTransactionPaymentResponse(response, document as Transaction.PaymentDocument); break;
       case 'transfer': validateTransactionTransferResponse(response, document as Transaction.TransferDocument, viewingAccountId); break;
-      case 'split': validateTransactionSplitResponse(response, document as Transaction.SplitDocument); break;
-      case 'deferred': validateTransactionDeferredResponse(response, document as Transaction.DeferredDocument, viewingAccountId); break;
+      case 'split': validateTransactionSplitResponse(response, document as Transaction.SplitDocument, repayments); break;
+      case 'deferred': validateTransactionDeferredResponse(response, document as Transaction.DeferredDocument, viewingAccountId, repayments[response.transactionId]); break;
       case 'reimbursement': validateTransactionReimbursementResponse(response, document as Transaction.ReimbursementDocument); break;
       case 'loanTransfer': validateTransactionLoanTransferResponse(response, document as Transaction.LoanTransferDocument, viewingAccountId); break;
     }
@@ -949,11 +950,12 @@ const validateConvertedToRegularSplitItemDocument = (originalDocument: Transacti
       });
 
       deferredSplits?.forEach((split, index) => {
-        const { amount, billingEndDate, billingStartDate, category, description, invoiceNumber, product, project, quantity, ownerAccount, payingAccount, transactionType, _id, ...empty } = split;
+        const { amount, billingEndDate, billingStartDate, category, description, invoiceNumber, product, project, quantity, ownerAccount, payingAccount, transactionType, isSettled, _id, ...empty } = split;
         const originalSplitItem = originalDocument.deferredSplits.find(s => s._id.toString() === _id.toString());
 
         expect(getTransactionId(split), `deferredSplits.[${index}].id`).to.equal(getTransactionId(originalSplitItem));
         expect(amount, `deferredSplits.[${index}].amount`).to.equal(originalSplitItem.amount);
+        expect(isSettled, `deferredSplits.[${index}].isSettled`).to.equal(originalSplitItem.isSettled);
         expect(description, `deferredSplits.[${index}].description`).to.equal(originalSplitItem.description);
         expect(transactionType, `deferredSplits.[${index}].transactionType`).to.equal(originalSplitItem.transactionType);
         expect(getAccountId(ownerAccount), `deferredSplits.[${index}].ownerAccount`).to.equal(getAccountId(originalSplitItem.ownerAccount));
@@ -1048,9 +1050,10 @@ const validateRelatedChangesInSplitDocument = (originalDocument: Transaction.Spl
       });
 
       deferredSplits?.forEach((split, index) => {
-        const { amount, billingEndDate, billingStartDate, category, description, invoiceNumber, product, project, quantity, _id, ownerAccount, payingAccount, transactionType, ...internal } = split;
+        const { amount, billingEndDate, billingStartDate, category, description, invoiceNumber, product, project, quantity, _id, ownerAccount, payingAccount, transactionType, isSettled, ...internal } = split;
         expect(getTransactionId(split), `deferredSplits.[${index}].id`).to.equal(getTransactionId(originalDocument.deferredSplits[index]));
         expect(amount, `deferredSplits.[${index}].amount`).to.equal(originalDocument.deferredSplits[index].amount);
+        expect(isSettled, `deferredSplits.[${index}].isSettled`).to.equal(originalDocument.deferredSplits[index].isSettled ?? false);
         expect(description, `deferredSplits.[${index}].description`).to.equal(originalDocument.deferredSplits[index].description);
         expect(transactionType, `deferredSplits.[${index}].transactionType`).to.equal(originalDocument.deferredSplits[index].transactionType);
         expect(getAccountId(ownerAccount), `deferredSplits.[${index}].ownerAccount`).to.equal(getAccountId(originalDocument.deferredSplits[index].ownerAccount));
@@ -1179,10 +1182,11 @@ const validateRelatedChangesInDeferredDocument = (originalDocument: Transaction.
   cy.log('Get transaction document', transactionId)
     .getTransactionDocumentById(transactionId)
     .should((currentDocument: Transaction.DeferredDocument) => {
-      const { recipient, project, category, quantity, product, invoiceNumber, billingEndDate, billingStartDate, payingAccount, ownerAccount, amount, description, issuedAt, transactionType, ...internal } = currentDocument;
+      const { recipient, project, category, quantity, product, invoiceNumber, billingEndDate, billingStartDate, payingAccount, ownerAccount, amount, description, issuedAt, transactionType, isSettled, ...internal } = currentDocument;
 
       expect(getTransactionId(currentDocument), 'id').to.equal(getTransactionId(originalDocument));
       expect(amount, 'amount').to.equal(originalDocument.amount);
+      expect(isSettled, 'isSettled').to.equal(originalDocument.isSettled ?? false);
       expect(issuedAt.toISOString(), 'issuedAt').to.equal(originalDocument.issuedAt.toISOString());
       expect(transactionType, 'transactionType').to.equal(originalDocument.transactionType);
       expect(description, 'description').to.equal(originalDocument.description);

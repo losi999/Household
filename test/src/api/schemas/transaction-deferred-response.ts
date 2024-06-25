@@ -58,6 +58,9 @@ const schema: StrictJSONSchema7<Transaction.DeferredResponse> = {
     remainingAmount: {
       type: 'number',
     },
+    isSettled: {
+      type: 'boolean',
+    },
   },
 };
 

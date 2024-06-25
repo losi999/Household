@@ -118,7 +118,6 @@ describe('GET /account/v1/accounts', () => {
   describe('called as an admin', () => {
     it('should get a list of accounts', () => {
       const expectedBalance1 = paymentTransactionDocument.amount + transferTransactionDocument.amount + invertedTransferTransactionDocument.transferAmount + splitTransactionDocument.amount + loanTransferTransactionDocument.amount + invertedLoanTransferTransactionDocument.amount + payingDeferredTransactionDocument.amount + repayingTransferTransactionDocument.amount + invertedRepayingTransferTransactionDocument.transferAmount + payingDeferredToLoanTransactionDocument.amount;
-      const expectedLoanBalance1 = payingDeferredTransactionDocument.amount - owningDeferredTransactionDocument.amount - deferredSplitTransactionDocument.deferredSplits[0].amount - repayingTransferTransactionDocument.payments[0].amount + invertedRepayingTransferTransactionDocument.payments[0].amount + payingDeferredToLoanTransactionDocument.amount;
 
       const expectedBalance2 = deferredSplitTransactionDocument.deferredSplits[1].amount + loanTransferTransactionDocument.amount + invertedLoanTransferTransactionDocument.amount - owningReimbursementTransactionDocument.amount + payingDeferredToLoanTransactionDocument.amount;
 
@@ -152,9 +151,6 @@ describe('GET /account/v1/accounts', () => {
         ], [
           expectedBalance1,
           expectedBalance2,
-        ], [
-          expectedLoanBalance1,
-          0,
         ]);
     });
   });

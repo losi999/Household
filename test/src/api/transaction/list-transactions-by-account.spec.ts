@@ -1,7 +1,7 @@
 import { default as schema } from '@household/test/api/schemas/transaction-response-list';
 import { Account } from '@household/shared/types/types';
 import { createAccountId } from '@household/shared/common/test-data-factory';
-import { getAccountId } from '@household/shared/common/utils';
+import { getAccountId, getTransactionId } from '@household/shared/common/utils';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { projectDataFactory } from '@household/test/api/project/data-factory';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
@@ -182,7 +182,9 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
           payingDeferredTransactionDocument,
           owningDeferredTransactionDocument,
           owningReimbursementTransactionDocument,
-        ], getAccountId(accountDocument));
+        ], getAccountId(accountDocument), {
+          [getTransactionId(payingDeferredTransactionDocument)]: transferTransactionDocument.payments[0].amount,
+        });
     });
 
     describe('should return error', () => {

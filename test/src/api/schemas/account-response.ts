@@ -10,7 +10,6 @@ const schema: StrictJSONSchema7<Account.Response> = {
     ...accountId.required,
     ...account.required,
     'balance',
-    'loanBalance',
     'isOpen',
     'fullName',
   ],
@@ -18,12 +17,6 @@ const schema: StrictJSONSchema7<Account.Response> = {
     ...accountId.properties,
     ...account.properties,
     balance: {
-      type: [
-        'number',
-        'null',
-      ],
-    },
-    loanBalance: {
       type: [
         'number',
         'null',

@@ -49,6 +49,10 @@ export const transferTransactionDocumentConverterFactory = (
         issuedAt: doc.issuedAt.toISOString(),
         _id: undefined,
         expiresAt: undefined,
+        payments: doc.payments?.map(p => ({
+          amount: p.amount,
+          transactionId: getTransactionId(p.transaction),
+        })),
         amount: viewingAccountId === getAccountId(doc.transferAccount) ? doc.transferAmount : doc.amount,
         transferAmount: viewingAccountId === getAccountId(doc.transferAccount) ? doc.amount : doc.transferAmount,
         account: viewingAccountId === getAccountId(doc.transferAccount) ? accountDocumentConverter.toResponse(doc.transferAccount) : accountDocumentConverter.toResponse(doc.account),

@@ -151,6 +151,12 @@ db.getCollection("transactions").aggregate([
               branches: [
                 {
                   case: {
+                    $eq: ['$isSettled', true]
+                  },
+                  then: 0
+                },
+                {
+                  case: {
                     $eq: [
                       '$tmp_account',
                       '$ownerAccount',
@@ -412,6 +418,7 @@ db.getCollection("transactions").aggregate([
                 payingAccount: '$$this.payingAccount',
                 ownerAccount: '$$this.ownerAccount',
                 remainingAmount: '$$this.remainingAmount',
+                isSettled: '$$this.isSettled',
                 amount: '$$this.amount',
                 description: '$$this.description',
                 category: '$$this.category',

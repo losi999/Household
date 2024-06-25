@@ -79,7 +79,12 @@ db.getCollection("transactions").aggregate([
   {
     $set: {
       remainingAmount: {
-        $add: ['$amount', { $sum: '$tmp_deferredTransactions.payments.amount' }]
+        $cond: {
+          if: { $eq: ['$isSettled', true] },
+          then: 0,
+          else: { $add: ['$amount', { $sum: '$tmp_deferredTransactions.payments.amount' }] }
+        }
+
       },
     },
   },

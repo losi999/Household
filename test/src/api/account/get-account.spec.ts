@@ -141,13 +141,12 @@ describe('GET /account/v1/accounts/{accountId}', () => {
     });
     it('should get account by id', () => {
       const expectedBalance = paymentTransactionDocument.amount + transferTransactionDocument.amount + invertedTransferTransactionDocument.transferAmount + splitTransactionDocument.amount + loanTransferTransactionDocument.amount + invertedLoanTransferTransactionDocument.amount + payingDeferredTransactionDocument.amount + repayingTransferTransactionDocument.amount + invertedRepayingTransferTransactionDocument.transferAmount + payingDeferredToLoanTransactionDocument.amount;
-      const expectedLoanBalance = payingDeferredTransactionDocument.amount - owningDeferredTransactionDocument.amount - deferredSplitTransactionDocument.deferredSplits[0].amount - repayingTransferTransactionDocument.payments[0].amount + invertedRepayingTransferTransactionDocument.payments[0].amount + payingDeferredToLoanTransactionDocument.amount;
 
       cy.authenticate(1)
         .requestGetAccount(getAccountId(accountDocument))
         .expectOkResponse()
         .expectValidResponseSchema(schema)
-        .validateAccountResponse(accountDocument, expectedBalance, expectedLoanBalance);
+        .validateAccountResponse(accountDocument, expectedBalance);
     });
 
     it('should get loan account by id', () => {
@@ -157,7 +156,7 @@ describe('GET /account/v1/accounts/{accountId}', () => {
         .requestGetAccount(getAccountId(loanAccountDocument))
         .expectOkResponse()
         .expectValidResponseSchema(schema)
-        .validateAccountResponse(loanAccountDocument, expectedBalance, 0);
+        .validateAccountResponse(loanAccountDocument, expectedBalance);
     });
 
     describe('should return error if accountId', () => {

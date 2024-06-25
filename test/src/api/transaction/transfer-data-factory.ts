@@ -7,7 +7,7 @@ import { transferTransactionDocumentConverter } from '@household/shared/dependen
 
 export const transferTransactionDataFactory = (() => {
   const createTransferTransactionRequest: DataFactoryFunction<Transaction.TransferRequest> = (req) => {
-    const amount = faker.number.float({
+    const amount = req?.amount ?? faker.number.float({
       min: -10000,
       max: 10000,
     });

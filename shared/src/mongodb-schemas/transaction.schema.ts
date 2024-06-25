@@ -1,5 +1,5 @@
 import { Transaction } from '@household/shared/types/types';
-import { Schema } from 'mongoose';
+import { Schema, SchemaDefinition, SchemaDefinitionType } from 'mongoose';
 
 const splitItemSchema = new Schema<Transaction.SplitDocumentItem>({
   amount: {
@@ -41,6 +41,10 @@ const deferredSplitSchema = new Schema<Transaction.DeferredDocument>({
   transactionType: {
     type: String,
     enum: ['deferred'],
+  },
+  isSettled: {
+    type: Boolean,
+    default: false,
   },
   payingAccount: {
     type: Schema.Types.ObjectId,
@@ -86,7 +90,7 @@ const deferredSplitSchema = new Schema<Transaction.DeferredDocument>({
   },
 });
 
-export const transactionSchema = new Schema<Transaction.Document>({
+const schemaDefinition: SchemaDefinition<SchemaDefinitionType<Transaction.Document>, Transaction.Document> = {
   transactionType: {
     type: String,
     enum: [
@@ -121,6 +125,12 @@ export const transactionSchema = new Schema<Transaction.Document>({
   ownerAccount: {
     type: Schema.Types.ObjectId,
     ref: 'accounts',
+  },
+  isSettled: {
+    type: Boolean,
+    default: function() {
+      return this.transactionType === 'deferred' ? false : undefined;
+    },
   },
   description: {
     type: String,
@@ -186,7 +196,9 @@ export const transactionSchema = new Schema<Transaction.Document>({
   expiresAt: {
     type: Schema.Types.Date,
   },
-}, {
+};
+
+export const transactionSchema = new Schema<Transaction.Document>(schemaDefinition, {
   versionKey: false,
   timestamps: {
     createdAt: true,

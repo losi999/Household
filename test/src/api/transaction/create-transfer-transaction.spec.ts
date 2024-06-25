@@ -77,9 +77,9 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
         });
 
         request = transferTransactionDataFactory.request({
-          accountId: getAccountId(transferAccountDocument),
-          transferAccountId: getAccountId(accountDocument),
-          amount: -2000,
+          accountId: getAccountId(accountDocument),
+          transferAccountId: getAccountId(transferAccountDocument),
+          amount: 2000,
           payments: [
             {
               amount: 1500,
@@ -97,7 +97,6 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
           .requestCreateTransferTransaction(request)
           .expectCreatedResponse()
           .validateTransactionTransferDocument(request);
-
       });
 
       it('with payment amount max out by deferred transaction amount', () => {
@@ -110,9 +109,9 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
         });
 
         request = transferTransactionDataFactory.request({
-          accountId: getAccountId(transferAccountDocument),
-          transferAccountId: getAccountId(accountDocument),
-          amount: -2000,
+          accountId: getAccountId(accountDocument),
+          transferAccountId: getAccountId(transferAccountDocument),
+          amount: 2000,
           payments: [
             {
               amount: 1500,
@@ -130,7 +129,6 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
           .requestCreateTransferTransaction(request)
           .expectCreatedResponse()
           .validateTransactionTransferDocument(request, [Math.abs(deferredTransactionDocument.amount)]);
-
       });
 
       describe('without optional properties', () => {
@@ -169,6 +167,38 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
     });
 
     describe('should return error', () => {
+      it('if sum of payments are bigger than transaction amount', () => {
+        const deferredTransactionDocument = deferredTransactionDataFactory.document({
+          body: {
+            amount: -5000,
+          },
+          account: accountDocument,
+          loanAccount: transferAccountDocument,
+        });
+
+        request = transferTransactionDataFactory.request({
+          accountId: getAccountId(accountDocument),
+          transferAccountId: getAccountId(transferAccountDocument),
+          amount: 2000,
+          payments: [
+            {
+              amount: 3000,
+              transactionId: getTransactionId(deferredTransactionDocument),
+            },
+          ],
+        });
+
+        cy.saveAccountDocuments([
+          accountDocument,
+          transferAccountDocument,
+        ])
+          .saveTransactionDocument(deferredTransactionDocument)
+          .authenticate(1)
+          .requestCreateTransferTransaction(request)
+          .expectBadRequestResponse()
+          .expectMessage('Sum of payments must be less than total amount');
+      });
+
       describe('if body', () => {
         it('has additional properties', () => {
           cy.authenticate(1)

@@ -9,7 +9,7 @@ const validateAccountDocument = (response: Account.AccountId, request: Account.R
   cy.log('Get account document', id)
     .getAccountDocumentById(id)
     .should((document) => {
-      const { name, accountType, currency, owner, balance, isOpen, loanBalance, ...internal } = document;
+      const { name, accountType, currency, owner, balance, isOpen, ...internal } = document;
 
       expect(getAccountId(document), '_id').to.equal(id);
       expect(name, 'name').to.equal(request.name);
@@ -17,14 +17,13 @@ const validateAccountDocument = (response: Account.AccountId, request: Account.R
       expect(currency, 'currency').to.equal(request.currency);
       expect(owner, 'owner').to.equal(request.owner);
       expect(balance, 'balance').to.equal(0);
-      expect(loanBalance, 'loanBalance').to.equal(0);
       expect(isOpen, 'isOpen').to.equal(true);
       expectRemainingProperties(internal);
     });
 };
 
-const validateAccountResponse = (response: Account.Response, document: Account.Document, expectedBalance: number, expectedLoanBalance: number) => {
-  const { accountId, name, accountType, currency, owner, balance, isOpen, fullName, loanBalance, ...empty } = response;
+const validateAccountResponse = (response: Account.Response, document: Account.Document, expectedBalance: number) => {
+  const { accountId, name, accountType, currency, owner, balance, isOpen, fullName, ...empty } = response;
 
   expect(accountId, 'accountId').to.equal(getAccountId(document));
   expect(name, 'name').to.equal(document.name);
@@ -32,18 +31,16 @@ const validateAccountResponse = (response: Account.Response, document: Account.D
   expect(currency, 'currency').to.equal(document.currency);
   expect(owner, 'owner').to.equal(document.owner);
   expect(balance, 'balance').to.equal(expectedBalance);
-  expect(loanBalance, 'loanBalance').to.equal(expectedLoanBalance);
   expect(isOpen, 'isOpen').to.equal(document.isOpen);
   expect(fullName, 'fullName').to.equal(`${document.name} (${document.owner})`);
   expectEmptyObject(empty);
 };
 
-const validateAccountListResponse = (responses: Account.Response[], documents: Account.Document[], balances: number[], loanBalances: number[]) => {
+const validateAccountListResponse = (responses: Account.Response[], documents: Account.Document[], balances: number[]) => {
   documents.forEach((document, index) => {
     const response = responses.find(r => r.accountId === getAccountId(document));
     const balance = balances[index];
-    const loanBalance = loanBalances[index];
-    validateAccountResponse(response, document, balance, loanBalance);
+    validateAccountResponse(response, document, balance);
   });
 };
 

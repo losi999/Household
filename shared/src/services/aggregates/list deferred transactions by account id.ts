@@ -96,12 +96,24 @@ export const listDeferredTransactions = (ctx: {
   {
     $set: {
       remainingAmount: {
-        $add: [
-          '$amount',
-          {
-            $sum: '$tmp_deferredTransactions.payments.amount',
+        $cond: {
+          if: {
+            $eq: [
+              '$isSettled',
+              true,
+            ],
           },
-        ],
+          then: 0,
+          else: {
+            $add: [
+              '$amount',
+              {
+                $sum: '$tmp_deferredTransactions.payments.amount',
+              },
+            ],
+          },
+        },
+
       },
     },
   },

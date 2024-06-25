@@ -27,11 +27,6 @@ export const createTransferTransactionServiceFactory = (
       transferAccountId,
     });
 
-    const transactionIds: Transaction.Id[] = [];
-    payments?.forEach(({ transactionId }) => {
-      pushUnique(transactionIds, transactionId);
-    });
-
     const accounts = await accountService.listAccountsByIds([
       accountId,
       transferAccountId,
@@ -70,11 +65,17 @@ export const createTransferTransactionServiceFactory = (
         }, expiresIn);
       }
     } else {
-      if (body.payments) {
+      if (payments) {
         const deferredTransactionIds: Transaction.Id[] = [];
-        body.payments?.forEach(({ transactionId }) => {
+        let total = 0;
+        payments?.forEach(({ transactionId, amount }) => {
           pushUnique(deferredTransactionIds, transactionId);
+          total += amount;
         });
+
+        const receivingAmount = body.amount > 0 ? body.amount : (body.transferAmount ?? body.amount * -1);
+
+        httpErrors.transaction.sumOfPayments(total > receivingAmount, body);
 
         const payingAccount = body.amount < 0 ? transferAccount : account;
 

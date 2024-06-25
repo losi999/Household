@@ -34,6 +34,9 @@ const schema: StrictJSONSchema7<Transaction.PaymentRequest> = {
     ...amount.properties,
     ...description.properties,
     loanAccountId: mongoId,
+    isSettled: {
+      type: 'boolean',
+    },
   },
   dependentSchemas: {
     loanAccountId: {

@@ -159,6 +159,15 @@ export const listTransactionsByAccountId = (accountId: string): PipelineStage[] 
                 {
                   case: {
                     $eq: [
+                      '$isSettled',
+                      true,
+                    ],
+                  },
+                  then: 0,
+                },
+                {
+                  case: {
+                    $eq: [
                       '$tmp_account',
                       '$ownerAccount',
                     ],
@@ -510,6 +519,7 @@ export const listTransactionsByAccountId = (accountId: string): PipelineStage[] 
                 payingAccount: '$$this.payingAccount',
                 ownerAccount: '$$this.ownerAccount',
                 remainingAmount: '$$this.remainingAmount',
+                isSettled: '$$this.isSettled',
                 amount: '$$this.amount',
                 description: '$$this.description',
                 category: '$$this.category',

@@ -247,6 +247,33 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .validateTransactionDeferredResponse(document, getAccountId(accountDocument), repayingTransferTransactionDocument.payments[0].amount);
     });
 
+    it('should get deferred transaction which has been settled', () => {
+      const document = deferredTransactionDataFactory.document({
+        body: {
+          isSettled: true,
+        },
+        account: accountDocument,
+        category: regularCategoryDocument,
+        project: projectDocument,
+        recipient: recipientDocument,
+        loanAccount: transferAccountDocument,
+      });
+
+      cy.saveAccountDocuments([
+        accountDocument,
+        transferAccountDocument,
+      ])
+        .saveProjectDocument(projectDocument)
+        .saveRecipientDocument(recipientDocument)
+        .saveCategoryDocument(regularCategoryDocument)
+        .saveTransactionDocument(document)
+        .authenticate(1)
+        .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
+        .expectOkResponse()
+        .expectValidResponseSchema(deferredTransactionSchema)
+        .validateTransactionDeferredResponse(document, getAccountId(accountDocument));
+    });
+
     it('should get regular reimbursement transaction', () => {
       const document = reimbursementTransactionDataFactory.document({
         account: loanAccountDocument,
@@ -360,10 +387,14 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
             loanAccount: transferAccountDocument,
             amount: -500,
           },
+          {
+            loanAccount: transferAccountDocument,
+            isSettled: true,
+          },
         ],
       });
 
-      const lastDeferredSplit = document.deferredSplits[document.deferredSplits.length - 1];
+      const lastDeferredSplit = document.deferredSplits[document.deferredSplits.length - 2];
 
       const repayingTransferTransactionDocument = transferTransactionDataFactory.document({
         account: accountDocument,

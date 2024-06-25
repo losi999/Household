@@ -280,20 +280,6 @@ export const calculateAccountBalance: PipelineStage[] = [
           },
         },
       },
-      loanBalance: {
-        $cond: {
-          if: {
-            $eq: [
-              '$accountType',
-              'loan',
-            ],
-          },
-          then: 0,
-          else: {
-            $sum: '$tmp_tx.remainingAmount',
-          },
-        },
-      },
     },
   },
   {

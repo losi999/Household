@@ -111,7 +111,6 @@ export namespace Account {
 
   type Balance = {
     balance: number;
-    loanBalance: number;
   };
 
   export type Document = Internal.Id
@@ -317,8 +316,12 @@ export namespace Transaction {
     payingAccount: A;
   };
 
-  type OwnerAccount<A extends Account.Document |Account.Response> = {
+  type OwnerAccount<A extends Account.Document | Account.Response> = {
     ownerAccount: A;
+  };
+
+  type IsSettled = {
+    isSettled: true | false;
   };
 
   type Payments = {
@@ -339,7 +342,8 @@ export namespace Transaction {
   & Product.ProductId
   & Amount
   & Description
-  & LoanAccountId;
+  & LoanAccountId
+  & IsSettled;
 
   export type TransferRequest = Account.AccountId
   & IssuedAt<string>
@@ -359,7 +363,8 @@ export namespace Transaction {
   & Product.ProductId
   & Amount
   & Description
-  & LoanAccountId;
+  & LoanAccountId
+  & IsSettled;
 
   export type SplitRequest = Account.AccountId
   & Recipient.RecipientId
@@ -402,6 +407,7 @@ export namespace Transaction {
 
   export type DeferredDocument<D extends Date | string = Date> = LoanDocument<D>
   & TransactionType<'deferred'>
+  & IsSettled
   & Partial<RemainingAmount>;
 
   export type ReimbursementDocument<D extends Date | string = Date> = LoanDocument<D> & TransactionType<'reimbursement'>;
@@ -505,6 +511,7 @@ export namespace Transaction {
   & InvoiceNumber
   & InvoiceDate<string>
   & Quantity
+  & IsSettled
   & Product<Product.Response>
   & Remove<Internal.Id>
   & Remove<Internal.Timestamps>
@@ -542,7 +549,10 @@ export namespace Transaction {
   & TransactionType<'transfer'>
   & Account<Account.Response>
   & TransferAccount<Account.Response>
-  & TransferAmount;
+  & TransferAmount
+  & {
+    payments: (TransactionId & Amount)[];
+  };
 
   export type LoanTransferResponse = TransactionId
   & Amount

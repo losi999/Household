@@ -104,6 +104,9 @@ const schema: StrictJSONSchema7<Transaction.SplitResponse> = {
           remainingAmount: {
             type: 'number',
           },
+          isSettled: {
+            type: 'boolean',
+          },
         },
       },
     },

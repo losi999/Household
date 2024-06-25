@@ -5,11 +5,11 @@ var accountId = '665aca365689536dd37d8468' //bank
 var transactionId = '66606744bb2522096f3356f1'
 
 db.getCollection("transactions").aggregate([
-{
-  $match: {
-    _id: ObjectId(transactionId)
-  }
-},
+  {
+    $match: {
+      _id: ObjectId(transactionId)
+    }
+  },
   {
     $set: {
       tmp_splits: {
@@ -155,6 +155,12 @@ db.getCollection("transactions").aggregate([
           then: {
             $switch: {
               branches: [
+                {
+                  case: {
+                    $eq: ['$isSettled', true]
+                  },
+                  then: 0
+                },
                 {
                   case: {
                     $eq: [
@@ -418,6 +424,7 @@ db.getCollection("transactions").aggregate([
                 payingAccount: '$$this.payingAccount',
                 ownerAccount: '$$this.ownerAccount',
                 remainingAmount: '$$this.remainingAmount',
+                isSettled: '$$this.isSettled',
                 amount: '$$this.amount',
                 description: '$$this.description',
                 category: '$$this.category',

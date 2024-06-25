@@ -10,6 +10,7 @@ export const paymentTransactionDataFactory = (() => {
   const createPaymentTransactionRequest: DataFactoryFunction<Transaction.PaymentRequest> = (req) => {
     const billingEndDate = faker.date.recent();
     return {
+      isSettled: undefined,
       amount: faker.number.float({
         min: -10000,
         max: req?.loanAccountId ? 0 : 10000,
