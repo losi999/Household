@@ -100,12 +100,31 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
             category: invoiceCategoryDocument,
             loanAccount: loanAccountDocument,
           },
+          {
+            loanAccount: transferAccountDocument,
+          },
         ],
+      });
+
+      const payingDeferredTransactionDocument = deferredTransactionDataFactory.document({
+        account: accountDocument,
+        loanAccount: transferAccountDocument,
+      });
+
+      const owningDeferredTransactionDocument = deferredTransactionDataFactory.document({
+        account: transferAccountDocument,
+        loanAccount: accountDocument,
+      });
+
+      const owningReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+        account: loanAccountDocument,
+        loanAccount: accountDocument,
       });
 
       const transferTransactionDocument = transferTransactionDataFactory.document({
         account: accountDocument,
         transferAccount: transferAccountDocument,
+        transactions: [payingDeferredTransactionDocument],
       });
 
       const invertedTransferTransactionDocument = transferTransactionDataFactory.document({
@@ -120,21 +139,6 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
       const invertedLoanTransferTransactionDocument = loanTransferTransactionDataFactory.document({
         account: loanAccountDocument,
         transferAccount: accountDocument,
-      });
-
-      const payingDeferredTransactionDocument = deferredTransactionDataFactory.document({
-        account: accountDocument,
-        loanAccount: loanAccountDocument,
-      });
-
-      const owningDeferredTransactionDocument = deferredTransactionDataFactory.document({
-        account: transferAccountDocument,
-        loanAccount: accountDocument,
-      });
-
-      const owningReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
-        account: loanAccountDocument,
-        loanAccount: accountDocument,
       });
 
       cy.saveRecipientDocument(recipientDocument)
@@ -167,7 +171,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
           pageSize: 100000,
         })
         .expectOkResponse()
-        // .expectValidResponseSchema(schema)
+        .expectValidResponseSchema(schema)
         .validateTransactionListResponse([
           paymentTransactionDocument,
           splitTransactionDocument,

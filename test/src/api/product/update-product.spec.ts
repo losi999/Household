@@ -1,4 +1,4 @@
-import { getProductId } from '@household/shared/common/utils';
+import { getCategoryId, getProductId } from '@household/shared/common/utils';
 import { Category, Product } from '@household/shared/types/types';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { productDataFactory } from '@household/test/api/product/data-factory';
@@ -38,7 +38,7 @@ describe('PUT /product/v1/products/{productId}', () => {
           .authenticate(1)
           .requestUpdateProduct(getProductId(productDocument), request)
           .expectCreatedResponse()
-          .validateProductDocument(request);
+          .validateProductDocument(request, getCategoryId(categoryDocument));
       });
     });
 

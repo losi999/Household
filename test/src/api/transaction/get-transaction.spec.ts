@@ -1,6 +1,9 @@
-import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Account, Category, Product, Project, Recipient } from '@household/shared/types/types';
 import { default as paymentTransactionSchema } from '@household/test/api/schemas/transaction-payment-response';
+import { default as deferredTransactionSchema } from '@household/test/api/schemas/transaction-deferred-response';
+import { default as reimbursementTransactionSchema } from '@household/test/api/schemas/transaction-reimbursement-response';
 import { default as transferTransactionSchema } from '@household/test/api/schemas/transaction-transfer-response';
+import { default as loanTransferTransactionSchema } from '@household/test/api/schemas/transaction-loan-transfer-response';
 import { default as splitTransactionSchema } from '@household/test/api/schemas/transaction-split-response';
 import { getAccountId, getTransactionId } from '@household/shared/common/utils';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
@@ -58,73 +61,6 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
     productDocument = productDataFactory.document({
       category: inventoryCategoryDocument,
     });
-
-    // splitTransactionDocument = transactionDocumentConverter.createSplitDocument({
-    //   body: {
-    //     accountId: getAccountId(accountDocument),
-    //     amount: 300,
-    //     issuedAt: new Date().toISOString(),
-    //     description: 'split',
-    //     recipientId: getRecipientId(recipientDocument),
-    //     splits: [
-    //       {
-    //         amount: 100,
-    //         description: 'split1',
-    //         categoryId: getCategoryId(regularCategoryDocument),
-    //         quantity: undefined,
-    //         productId: undefined,
-    //         invoiceNumber: undefined,
-    //         billingEndDate: undefined,
-    //         billingStartDate: undefined,
-    //         projectId: getProjectId(projectDocument),
-    //       },
-    //       {
-    //         amount: 100,
-    //         description: 'split2',
-    //         categoryId: getCategoryId(invoiceCategoryDocument),
-    //         quantity: undefined,
-    //         productId: undefined,
-    //         billingEndDate: '2022-02-20',
-    //         billingStartDate: '2022-02-01',
-    //         invoiceNumber: 'invNumber',
-    //         projectId: getProjectId(projectDocument),
-    //       },
-    //       {
-    //         amount: 100,
-    //         description: 'split3',
-    //         categoryId: getCategoryId(inventoryCategoryDocument),
-    //         productId: getProductId(productDocument),
-    //         quantity: 3,
-    //         invoiceNumber: undefined,
-    //         billingEndDate: undefined,
-    //         billingStartDate: undefined,
-    //         projectId: getProjectId(projectDocument),
-    //       },
-    //     ],
-    //   },
-    //   account: accountDocument,
-    //   categories: toDictionary([
-    //     regularCategoryDocument,
-    //     inventoryCategoryDocument,
-    //     invoiceCategoryDocument,
-    //   ], '_id'),
-    //   recipient: recipientDocument,
-    //   projects: toDictionary([projectDocument], '_id'),
-    //   products: toDictionary([productDocument], '_id'),
-    // }, Cypress.env('EXPIRES_IN'), true);
-
-    // transferTransactionDocument = transactionDocumentConverter.createTransferDocument({
-    //   body: {
-    //     accountId: getAccountId(accountDocument),
-    //     amount: 100,
-    //     transferAmount: -10,
-    //     transferAccountId: getAccountId(transferAccountDocument),
-    //     description: 'transfer1',
-    //     issuedAt: new Date().toISOString(),
-    //   },
-    //   account: accountDocument,
-    //   transferAccount: transferAccountDocument,
-    // }, Cypress.env('EXPIRES_IN'), true);
   });
 
   describe('called as anonymous', () => {
@@ -152,7 +88,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .authenticate(1)
         .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
         .expectOkResponse()
-        // .expectValidResponseSchema(paymentTransactionSchema)
+        .expectValidResponseSchema(paymentTransactionSchema)
         .validateTransactionPaymentResponse(document);
     });
 
@@ -174,7 +110,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .authenticate(1)
         .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
         .expectOkResponse()
-        // .expectValidResponseSchema(paymentTransactionSchema)
+        .expectValidResponseSchema(paymentTransactionSchema)
         .validateTransactionPaymentResponse(document);
     });
 
@@ -194,7 +130,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .authenticate(1)
         .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
         .expectOkResponse()
-        // .expectValidResponseSchema(paymentTransactionSchema)
+        .expectValidResponseSchema(paymentTransactionSchema)
         .validateTransactionPaymentResponse(document);
     });
 
@@ -218,8 +154,8 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .authenticate(1)
         .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
         .expectOkResponse()
-        // .expectValidResponseSchema(paymentTransactionSchema)
-        .validateTransactionDeferredResponse(document);
+        .expectValidResponseSchema(deferredTransactionSchema)
+        .validateTransactionDeferredResponse(document, getAccountId(accountDocument));
     });
 
     it('should get inventory deferred transaction', () => {
@@ -244,8 +180,8 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .authenticate(1)
         .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
         .expectOkResponse()
-        // .expectValidResponseSchema(paymentTransactionSchema)
-        .validateTransactionDeferredResponse(document);
+        .expectValidResponseSchema(deferredTransactionSchema)
+        .validateTransactionDeferredResponse(document, getAccountId(accountDocument));
     });
 
     it('should get invoice deferred transaction', () => {
@@ -268,8 +204,47 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .authenticate(1)
         .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
         .expectOkResponse()
-        // .expectValidResponseSchema(paymentTransactionSchema)
-        .validateTransactionDeferredResponse(document);
+        .expectValidResponseSchema(deferredTransactionSchema)
+        .validateTransactionDeferredResponse(document, getAccountId(accountDocument));
+    });
+
+    it('should get deferred transaction which has been repaid', () => {
+      const document = deferredTransactionDataFactory.document({
+        body: {
+          amount: -5000,
+        },
+        account: accountDocument,
+        category: regularCategoryDocument,
+        project: projectDocument,
+        recipient: recipientDocument,
+        loanAccount: transferAccountDocument,
+      });
+
+      const repayingTransferTransactionDocument = transferTransactionDataFactory.document({
+        account: accountDocument,
+        transferAccount: transferAccountDocument,
+        body: {
+          amount: -1500,
+        },
+        transactions: [document],
+      });
+
+      cy.saveAccountDocuments([
+        accountDocument,
+        transferAccountDocument,
+      ])
+        .saveProjectDocument(projectDocument)
+        .saveRecipientDocument(recipientDocument)
+        .saveCategoryDocument(regularCategoryDocument)
+        .saveTransactionDocuments([
+          document,
+          repayingTransferTransactionDocument,
+        ])
+        .authenticate(1)
+        .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
+        .expectOkResponse()
+        .expectValidResponseSchema(deferredTransactionSchema)
+        .validateTransactionDeferredResponse(document, getAccountId(accountDocument), repayingTransferTransactionDocument.payments[0].amount);
     });
 
     it('should get regular reimbursement transaction', () => {
@@ -292,7 +267,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .authenticate(1)
         .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
         .expectOkResponse()
-        // .expectValidResponseSchema(paymentTransactionSchema)
+        .expectValidResponseSchema(reimbursementTransactionSchema)
         .validateTransactionReimbursementResponse(document);
     });
 
@@ -318,7 +293,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .authenticate(1)
         .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
         .expectOkResponse()
-        // .expectValidResponseSchema(paymentTransactionSchema)
+        .expectValidResponseSchema(reimbursementTransactionSchema)
         .validateTransactionReimbursementResponse(document);
     });
 
@@ -342,7 +317,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .authenticate(1)
         .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
         .expectOkResponse()
-        // .expectValidResponseSchema(paymentTransactionSchema)
+        .expectValidResponseSchema(reimbursementTransactionSchema)
         .validateTransactionReimbursementResponse(document);
     });
 
@@ -381,13 +356,28 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
             category: invoiceCategoryDocument,
             loanAccount: loanAccountDocument,
           },
-
+          {
+            loanAccount: transferAccountDocument,
+            amount: -500,
+          },
         ],
+      });
+
+      const lastDeferredSplit = document.deferredSplits[document.deferredSplits.length - 1];
+
+      const repayingTransferTransactionDocument = transferTransactionDataFactory.document({
+        account: accountDocument,
+        transferAccount: transferAccountDocument,
+        body: {
+          amount: -1500,
+        },
+        transactions: [lastDeferredSplit],
       });
 
       cy.saveAccountDocuments([
         accountDocument,
         loanAccountDocument,
+        transferAccountDocument,
       ])
         .saveProjectDocument(projectDocument)
         .saveRecipientDocument(recipientDocument)
@@ -397,12 +387,17 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
           inventoryCategoryDocument,
         ])
         .saveProductDocument(productDocument)
-        .saveTransactionDocument(document)
+        .saveTransactionDocuments([
+          document,
+          repayingTransferTransactionDocument,
+        ])
         .authenticate(1)
         .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
         .expectOkResponse()
-        // .expectValidResponseSchema(splitTransactionSchema)
-        .validateTransactionSplitResponse(document);
+        .expectValidResponseSchema(splitTransactionSchema)
+        .validateTransactionSplitResponse(document, {
+          [getTransactionId(lastDeferredSplit)]: repayingTransferTransactionDocument.payments[0].amount,
+        });
     });
 
     it('should get transfer transaction', () => {
@@ -419,7 +414,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .authenticate(1)
         .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
         .expectOkResponse()
-        // .expectValidResponseSchema(transferTransactionSchema)
+        .expectValidResponseSchema(transferTransactionSchema)
         .validateTransactionTransferResponse(document, getAccountId(accountDocument));
     });
 
@@ -437,7 +432,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .authenticate(1)
         .requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document))
         .expectOkResponse()
-        // .expectValidResponseSchema(transferTransactionSchema)
+        .expectValidResponseSchema(loanTransferTransactionSchema)
         .validateTransactionLoanTransferResponse(document, getAccountId(loanAccountDocument));
     });
 

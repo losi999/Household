@@ -1,7 +1,7 @@
 import { getAccountId } from '@household/shared/common/utils';
 import { Account } from '@household/shared/types/types';
-import { internalPropertyNames } from '@household/test/api/constants';
 import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/test/api/types';
+import { expectEmptyObject, expectRemainingProperties } from '@household/test/api/utils';
 
 const validateAccountDocument = (response: Account.AccountId, request: Account.Request) => {
   const id = response?.accountId;
@@ -19,12 +19,12 @@ const validateAccountDocument = (response: Account.AccountId, request: Account.R
       expect(balance, 'balance').to.equal(0);
       expect(loanBalance, 'loanBalance').to.equal(0);
       expect(isOpen, 'isOpen').to.equal(true);
-      Object.keys(internal).forEach(key => expect(key, `${key} is an internal property`).to.be.oneOf(internalPropertyNames));
+      expectRemainingProperties(internal);
     });
 };
 
 const validateAccountResponse = (response: Account.Response, document: Account.Document, expectedBalance: number, expectedLoanBalance: number) => {
-  const { accountId, name, accountType, currency, owner, balance, isOpen, fullName, loanBalance, ...internal } = response;
+  const { accountId, name, accountType, currency, owner, balance, isOpen, fullName, loanBalance, ...empty } = response;
 
   expect(accountId, 'accountId').to.equal(getAccountId(document));
   expect(name, 'name').to.equal(document.name);
@@ -35,6 +35,7 @@ const validateAccountResponse = (response: Account.Response, document: Account.D
   expect(loanBalance, 'loanBalance').to.equal(expectedLoanBalance);
   expect(isOpen, 'isOpen').to.equal(document.isOpen);
   expect(fullName, 'fullName').to.equal(`${document.name} (${document.owner})`);
+  expectEmptyObject(empty);
 };
 
 const validateAccountListResponse = (responses: Account.Response[], documents: Account.Document[], balances: number[], loanBalances: number[]) => {

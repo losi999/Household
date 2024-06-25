@@ -13,14 +13,15 @@ import { default as productId } from '@household/shared/schemas/product-id';
 import { default as invoice } from '@household/shared/schemas/partials/transaction-invoice';
 import { default as quantity } from '@household/shared/schemas/partials/transaction-quantity';
 
-const schema: StrictJSONSchema7<Transaction.PaymentResponse> = {
+const schema: StrictJSONSchema7<Transaction.DeferredResponse> = {
   type: 'object',
   additionalProperties: false,
   required: [
     ...transactionId.required,
     ...amount.required,
     ...issuedAt.required,
-    'account',
+    'payingAccount',
+    'ownerAccount',
     'transactionType',
   ],
   dependentRequired: {
@@ -35,12 +36,13 @@ const schema: StrictJSONSchema7<Transaction.PaymentResponse> = {
     ...issuedAt.properties,
     transactionType: {
       type: 'string',
-      const: 'payment',
+      const: 'deferred',
     },
     ...quantity.properties,
     product,
     ...invoice.properties,
-    account,
+    payingAccount: account,
+    ownerAccount: account,
     recipient,
     category: {
       ...category,
@@ -53,6 +55,9 @@ const schema: StrictJSONSchema7<Transaction.PaymentResponse> = {
       },
     },
     project,
+    remainingAmount: {
+      type: 'number',
+    },
   },
 };
 

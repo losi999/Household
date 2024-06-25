@@ -1,4 +1,4 @@
-import { getCategoryId, getProductId } from '@household/shared/common/utils';
+import { getCategoryId } from '@household/shared/common/utils';
 import { categoryTypes } from '@household/shared/constants';
 import { Account, Category, Product, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
@@ -175,7 +175,7 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
             .validateCategoryDeleted(getCategoryId(sourceCategoryDocument));
 
           if (categoryType === 'inventory') {
-            chain = chain.validateProductReassigned(getProductId(productOfSourceCategoryDocument), getCategoryId(targetCategoryDocument));
+            chain = chain.validateProductReassigned(productOfSourceCategoryDocument, getCategoryId(targetCategoryDocument));
           }
           chain.validateRelatedChangesInPaymentDocument(paymentTransactionDocument, {
             category: {

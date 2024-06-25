@@ -1,7 +1,7 @@
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/test/api/types';
 import { createDate, getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
-import { internalPropertyNames } from '@household/test/api/constants';
+import { expectEmptyObject, expectRemainingProperties } from '@household/test/api/utils';
 
 type Reassignment<T> = {
   from: T;
@@ -16,6 +16,7 @@ const validateTransactionPaymentDocument = (response: Transaction.TransactionId,
     .should((document: Transaction.PaymentDocument) => {
       expect(getTransactionId(document), 'id').to.equal(id);
       const { amount, issuedAt, transactionType, description, account, category, project, recipient, quantity, product, invoiceNumber, billingEndDate, billingStartDate, ...internal } = document;
+
       expect(amount, 'amount').to.equal(request.amount);
       expect(issuedAt.toISOString(), 'issuedAt').to.equal(createDate(request.issuedAt).toISOString());
       expect(transactionType, 'transactionType').to.equal('payment');
@@ -42,7 +43,7 @@ const validateTransactionPaymentDocument = (response: Transaction.TransactionId,
         expect(billingStartDate, 'billingStartDate').to.be.undefined;
         expect(billingEndDate, 'billingEndDate').to.be.undefined;
       }
-
+      expectRemainingProperties(internal);
     });
 };
 
@@ -54,6 +55,7 @@ const validateTransactionDeferredDocument = (response: Transaction.TransactionId
     .should((document: Transaction.DeferredDocument) => {
       expect(getTransactionId(document), 'id').to.equal(id);
       const { amount, issuedAt, transactionType, description, payingAccount, ownerAccount, category, project, recipient, quantity, product, invoiceNumber, billingEndDate, billingStartDate, ...internal } = document;
+
       expect(amount, 'amount').to.equal(request.amount);
       expect(issuedAt.toISOString(), 'issuedAt').to.equal(createDate(request.issuedAt).toISOString());
       expect(transactionType, 'transactionType').to.equal('deferred');
@@ -81,7 +83,7 @@ const validateTransactionDeferredDocument = (response: Transaction.TransactionId
         expect(billingStartDate, 'billingStartDate').to.be.undefined;
         expect(billingEndDate, 'billingEndDate').to.be.undefined;
       }
-
+      expectRemainingProperties(internal);
     });
 };
 
@@ -120,7 +122,7 @@ const validateTransactionReimbursementDocument = (response: Transaction.Transact
         expect(billingStartDate, 'billingStartDate').to.be.undefined;
         expect(billingEndDate, 'billingEndDate').to.be.undefined;
       }
-
+      expectRemainingProperties(internal);
     });
 };
 
@@ -169,7 +171,7 @@ const validateTransactionSplitDocument = (response: Transaction.TransactionId, r
           expect(billingStartDate, `splits[${index}].billingStartDate`).to.be.undefined;
           expect(billingEndDate, `splits[${index}].billingEndDate`).to.be.undefined;
         }
-        Object.keys(internal).forEach(key => expect(key, `${key} is an internal property`).to.be.oneOf(internalPropertyNames));
+        expectRemainingProperties(internal);
       });
 
       deferredSplits?.forEach((split, index) => {
@@ -201,10 +203,10 @@ const validateTransactionSplitDocument = (response: Transaction.TransactionId, r
           expect(billingStartDate, `deferredSplits[${index}].billingStartDate`).to.be.undefined;
           expect(billingEndDate, `deferredSplits[${index}].billingEndDate`).to.be.undefined;
         }
-        Object.keys(internal).forEach(key => expect(key, `${key} is an internal property`).to.be.oneOf(internalPropertyNames));
+        expectRemainingProperties(internal);
       });
 
-      Object.keys(internal).forEach(key => expect(key, `${key} is an internal property`).to.be.oneOf(internalPropertyNames));
+      expectRemainingProperties(internal);
     });
 };
 
@@ -228,12 +230,13 @@ const validateTransactionTransferDocument = (response: Transaction.TransactionId
       payments?.forEach((payment, index) => {
         const paymentRequest = request.payments[index];
 
-        const { amount, transaction } = payment;
+        const { amount, transaction, ...internal } = payment;
         expect(amount, `payments[${index}].amount`).to.equal(paymentAmounts?.[index] ?? paymentRequest.amount);
         expect(getTransactionId(transaction), `payments[${index}].transaction`).to.equal(paymentRequest.transactionId);
+        expectRemainingProperties(internal);
       });
 
-      Object.keys(internal).forEach(key => expect(key, `${key} is an internal property`).to.be.oneOf(internalPropertyNames));
+      expectRemainingProperties(internal);
     });
 };
 
@@ -253,152 +256,277 @@ const validateTransactionLoanTransferDocument = (response: Transaction.Transacti
       expect(getAccountId(account), 'account').to.equal(request.accountId);
       expect(getAccountId(transferAccount), 'transferAccount').to.equal(request.transferAccountId);
 
-      Object.keys(internal).forEach(key => expect(key, `${key} is an internal property`).to.be.oneOf(internalPropertyNames));
+      expectRemainingProperties(internal);
     });
 };
 
 const validateTransactionPaymentResponse = (response: Transaction.PaymentResponse, document: Transaction.PaymentDocument) => {
-  expect(response.transactionId).to.equal(getTransactionId(document));
-  expect(response.amount, 'amount').to.equal(document.amount);
-  expect(createDate(response.issuedAt).toISOString(), 'issuedAt').to.equal(document.issuedAt.toISOString());
-  expect(response.transactionType, 'transactionType').to.equal('payment');
-  expect(response.description, 'description').to.equal(document.description);
-  expect(response.account.accountId, 'account.accountId').to.equal(getAccountId(document.account));
-  expect(response.account.accountType, 'account.accountType').to.equal(document.account.accountType);
-  // expect(response.account.balance, 'account.balance').to.equal(document.account.balance ?? null);
-  expect(response.account.currency, 'account.currency').to.equal(document.account.currency);
-  expect(response.account.isOpen, 'account.isOpen').to.equal(document.account.isOpen);
-  expect(response.account.name, 'account.name').to.equal(document.account.name);
-  expect(response.account.fullName, 'account.fullName').to.equal(`${document.account.name} (${document.account.owner})`);
+  const { transactionId, amount, issuedAt, transactionType, description, account, project, product, recipient, category, billingEndDate, billingStartDate, invoiceNumber, quantity, ...empty } = response;
 
-  expect(response.project?.projectId, 'project.projectId').to.equal(getProjectId(document.project));
-  expect(response.project?.name, 'project.name').to.equal(document.project?.name);
-  expect(response.project?.description, 'project.description').to.equal(document.project?.description);
+  expect(transactionId).to.equal(getTransactionId(document));
+  expect(amount, 'amount').to.equal(document.amount);
+  expect(createDate(issuedAt).toISOString(), 'issuedAt').to.equal(document.issuedAt.toISOString());
+  expect(transactionType, 'transactionType').to.equal('payment');
+  expect(description, 'description').to.equal(document.description);
 
-  expect(response.recipient?.recipientId, 'recipient.recipientId').to.equal(getRecipientId(document.recipient));
-  expect(response.recipient?.name, 'recipient.name').to.equal(document.recipient?.name);
-
-  expect(response.category?.categoryId, 'category.categoryId').to.equal(getCategoryId(document.category));
-  expect(response.category?.categoryType, 'category.categoryType').to.equal(document.category?.categoryType);
-  expect(response.category?.fullName, 'category.fullName').to.equal(document.category?.fullName);
-  expect(response.category?.name, 'category.name').to.equal(document.category?.name);
-
-  if (response.category?.categoryType === 'inventory') {
-    expect(response.quantity, 'quantity').to.equal(document.quantity);
-    expect(response.product?.productId, 'product.productId').to.equal(getProductId(document.product));
-    expect(response.product?.brand, 'product.brand').to.equal(document.product?.brand);
-    expect(response.product?.measurement, 'product.measurement').to.equal(document.product?.measurement);
-    expect(response.product?.unitOfMeasurement, 'product.unitOfMeasurement').to.equal(document.product?.unitOfMeasurement);
-  } else {
-    expect(response.quantity, 'quantity').to.be.undefined;
-    expect(response.product, 'product').to.be.undefined;
+  {
+    const { accountId, accountType, balance, currency, fullName, isOpen, loanBalance, name, owner, ...empty } = account;
+    expect(accountId, 'account.accountId').to.equal(getAccountId(document.account));
+    expect(accountType, 'account.accountType').to.equal(document.account.accountType);
+    expect(balance, 'account.balance').to.equal(document.account.balance ?? null);
+    expect(loanBalance, 'account.loanBalance').to.equal(document.account.loanBalance ?? null);
+    expect(currency, 'account.currency').to.equal(document.account.currency);
+    expect(isOpen, 'account.isOpen').to.equal(document.account.isOpen);
+    expect(name, 'account.name').to.equal(document.account.name);
+    expect(owner, 'account.owner').to.equal(document.account.owner);
+    expect(fullName, 'account.fullName').to.equal(`${document.account.name} (${document.account.owner})`);
+    expectEmptyObject(empty);
   }
 
-  if (response.category?.categoryType === 'invoice') {
-    expect(response.invoiceNumber, 'invoiceNumber').to.equal(document.invoiceNumber);
-    expect(createDate(response.billingStartDate)?.toISOString(), 'billingStartDate').to.equal(document.billingStartDate?.toISOString());
-    expect(createDate(response.billingEndDate)?.toISOString(), 'billingEndDate').to.equal(document.billingEndDate?.toISOString());
+  if (project) {
+    const { projectId, name, description, ...empty } = project;
+    expect(projectId, 'project.projectId').to.equal(getProjectId(document.project));
+    expect(name, 'project.name').to.equal(document.project.name);
+    expect(description, 'project.description').to.equal(document.project.description);
+    expectEmptyObject(empty);
   } else {
-    expect(response.invoiceNumber, 'invoiceNumber').to.be.undefined;
-    expect(response.billingStartDate, 'billingStartDate').to.be.undefined;
-    expect(response.billingEndDate, 'billingEndDate').to.be.undefined;
+    expect(project, 'project').to.be.undefined;
   }
+
+  if (recipient) {
+    const { recipientId, name, ...empty } = recipient;
+    expect(recipientId, 'recipient.recipientId').to.equal(getRecipientId(document.recipient));
+    expect(name, 'recipient.name').to.equal(document.recipient.name);
+    expectEmptyObject(empty);
+  } else {
+    expect(recipient, 'recipient').to.be.undefined;
+  }
+
+  if (category) {
+    const { categoryId, name, categoryType, fullName, ...empty } = category;
+    expect(categoryId, 'category.categoryId').to.equal(getCategoryId(document.category));
+    expect(categoryType, 'category.categoryType').to.equal(document.category.categoryType);
+    expect(fullName, 'category.fullName').to.equal(document.category.fullName);
+    expect(name, 'category.name').to.equal(document.category.name);
+    expectEmptyObject(empty);
+  } else {
+    expect(category, 'category').to.be.undefined;
+  }
+
+  if (category?.categoryType === 'inventory' && product) {
+    const { productId, brand, measurement, unitOfMeasurement, fullName, ...empty } = product;
+
+    expect(quantity, 'quantity').to.equal(document.quantity);
+    expect(productId, 'product.productId').to.equal(getProductId(document.product));
+    expect(brand, 'product.brand').to.equal(document.product.brand);
+    expect(measurement, 'product.measurement').to.equal(document.product.measurement);
+    expect(unitOfMeasurement, 'product.unitOfMeasurement').to.equal(document.product.unitOfMeasurement);
+    expect(fullName, 'product.fullName').to.equal(document.product.fullName);
+    expectEmptyObject(empty);
+  } else {
+    expect(quantity, 'quantity').to.be.undefined;
+    expect(product, 'product').to.be.undefined;
+  }
+
+  if (category?.categoryType === 'invoice') {
+    expect(invoiceNumber, 'invoiceNumber').to.equal(document.invoiceNumber);
+    expect(createDate(billingStartDate)?.toISOString(), 'billingStartDate').to.equal(document.billingStartDate?.toISOString());
+    expect(createDate(billingEndDate)?.toISOString(), 'billingEndDate').to.equal(document.billingEndDate?.toISOString());
+  } else {
+    expect(invoiceNumber, 'invoiceNumber').to.be.undefined;
+    expect(billingStartDate, 'billingStartDate').to.be.undefined;
+    expect(billingEndDate, 'billingEndDate').to.be.undefined;
+  }
+  expectEmptyObject(empty);
 };
 
-const validateTransactionDeferredResponse = (response: Transaction.DeferredResponse, document: Transaction.DeferredDocument) => {
-  expect(response.transactionId).to.equal(getTransactionId(document));
-  expect(response.amount, 'amount').to.equal(document.amount);
-  expect(createDate(response.issuedAt).toISOString(), 'issuedAt').to.equal(document.issuedAt.toISOString());
-  expect(response.transactionType, 'transactionType').to.equal('deferred');
-  expect(response.description, 'description').to.equal(document.description);
-  // expect(response.account.accountId, 'account.accountId').to.equal(getAccountId(document.account));
-  // expect(response.account.accountType, 'account.accountType').to.equal(document.account.accountType);
-  // // expect(response.account.balance, 'account.balance').to.equal(document.account.balance ?? null);
-  // expect(response.account.currency, 'account.currency').to.equal(document.account.currency);
-  // expect(response.account.isOpen, 'account.isOpen').to.equal(document.account.isOpen);
-  // expect(response.account.name, 'account.name').to.equal(document.account.name);
-  // expect(response.account.fullName, 'account.fullName').to.equal(`${document.account.name} (${document.account.owner})`);
+const validateTransactionDeferredResponse = (response: Transaction.DeferredResponse, document: Transaction.DeferredDocument, viewingAccountId: Account.Id, paymentAmount?: number) => {
+  const { transactionId, amount, issuedAt, transactionType, description, payingAccount, ownerAccount, project, product, recipient, category, billingEndDate, billingStartDate, invoiceNumber, quantity, remainingAmount, ...empty } = response;
 
-  expect(response.project?.projectId, 'project.projectId').to.equal(getProjectId(document.project));
-  expect(response.project?.name, 'project.name').to.equal(document.project?.name);
-  expect(response.project?.description, 'project.description').to.equal(document.project?.description);
+  expect(transactionId).to.equal(getTransactionId(document));
+  expect(amount, 'amount').to.equal(document.amount);
+  expect(createDate(issuedAt).toISOString(), 'issuedAt').to.equal(document.issuedAt.toISOString());
+  expect(transactionType, 'transactionType').to.equal('deferred');
+  expect(description, 'description').to.equal(document.description);
+  expect(remainingAmount, 'remainingAmount').to.equal(viewingAccountId === ownerAccount.accountId ? Math.abs(document.amount) - (paymentAmount ?? 0) : (Math.abs(document.amount) - (paymentAmount ?? 0)) * -1);
 
-  expect(response.recipient?.recipientId, 'recipient.recipientId').to.equal(getRecipientId(document.recipient));
-  expect(response.recipient?.name, 'recipient.name').to.equal(document.recipient?.name);
-
-  expect(response.category?.categoryId, 'category.categoryId').to.equal(getCategoryId(document.category));
-  expect(response.category?.categoryType, 'category.categoryType').to.equal(document.category?.categoryType);
-  expect(response.category?.fullName, 'category.fullName').to.equal(document.category?.fullName);
-  expect(response.category?.name, 'category.name').to.equal(document.category?.name);
-
-  if (response.category?.categoryType === 'inventory') {
-    expect(response.quantity, 'quantity').to.equal(document.quantity);
-    expect(response.product?.productId, 'product.productId').to.equal(getProductId(document.product));
-    expect(response.product?.brand, 'product.brand').to.equal(document.product?.brand);
-    expect(response.product?.measurement, 'product.measurement').to.equal(document.product?.measurement);
-    expect(response.product?.unitOfMeasurement, 'product.unitOfMeasurement').to.equal(document.product?.unitOfMeasurement);
-  } else {
-    expect(response.quantity, 'quantity').to.be.undefined;
-    expect(response.product, 'product').to.be.undefined;
+  {
+    const { accountId, accountType, balance, currency, fullName, isOpen, loanBalance, name, owner, ...empty } = payingAccount;
+    expect(accountId, 'payingAccount.accountId').to.equal(getAccountId(document.payingAccount));
+    expect(accountType, 'payingAccount.accountType').to.equal(document.payingAccount.accountType);
+    expect(balance, 'payingAccount.balance').to.equal(document.payingAccount.balance ?? null);
+    expect(loanBalance, 'payingAccount.loanBalance').to.equal(document.payingAccount.loanBalance ?? null);
+    expect(currency, 'payingAccount.currency').to.equal(document.payingAccount.currency);
+    expect(isOpen, 'payingAccount.isOpen').to.equal(document.payingAccount.isOpen);
+    expect(name, 'payingAccount.name').to.equal(document.payingAccount.name);
+    expect(owner, 'payingAccount.owner').to.equal(document.payingAccount.owner);
+    expect(fullName, 'payingAccount.fullName').to.equal(`${document.payingAccount.name} (${document.payingAccount.owner})`);
+    expectEmptyObject(empty);
   }
 
-  if (response.category?.categoryType === 'invoice') {
-    expect(response.invoiceNumber, 'invoiceNumber').to.equal(document.invoiceNumber);
-    expect(createDate(response.billingStartDate)?.toISOString(), 'billingStartDate').to.equal(document.billingStartDate?.toISOString());
-    expect(createDate(response.billingEndDate)?.toISOString(), 'billingEndDate').to.equal(document.billingEndDate?.toISOString());
-  } else {
-    expect(response.invoiceNumber, 'invoiceNumber').to.be.undefined;
-    expect(response.billingStartDate, 'billingStartDate').to.be.undefined;
-    expect(response.billingEndDate, 'billingEndDate').to.be.undefined;
+  {
+    const { accountId, accountType, balance, currency, fullName, isOpen, loanBalance, name, owner, ...empty } = ownerAccount;
+    expect(accountId, 'ownerAccount.accountId').to.equal(getAccountId(document.ownerAccount));
+    expect(accountType, 'ownerAccount.accountType').to.equal(document.ownerAccount.accountType);
+    expect(balance, 'ownerAccount.balance').to.equal(document.ownerAccount.balance ?? null);
+    expect(loanBalance, 'ownerAccount.loanBalance').to.equal(document.ownerAccount.loanBalance ?? null);
+    expect(currency, 'ownerAccount.currency').to.equal(document.ownerAccount.currency);
+    expect(isOpen, 'ownerAccount.isOpen').to.equal(document.ownerAccount.isOpen);
+    expect(name, 'ownerAccount.name').to.equal(document.ownerAccount.name);
+    expect(owner, 'ownerAccount.owner').to.equal(document.ownerAccount.owner);
+    expect(fullName, 'ownerAccount.fullName').to.equal(`${document.ownerAccount.name} (${document.ownerAccount.owner})`);
+    expectEmptyObject(empty);
   }
+
+  if (project) {
+    const { projectId, name, description, ...empty } = project;
+    expect(projectId, 'project.projectId').to.equal(getProjectId(document.project));
+    expect(name, 'project.name').to.equal(document.project.name);
+    expect(description, 'project.description').to.equal(document.project.description);
+    expectEmptyObject(empty);
+  } else {
+    expect(project, 'project').to.be.undefined;
+  }
+
+  if (recipient) {
+    const { recipientId, name, ...empty } = recipient;
+    expect(recipientId, 'recipient.recipientId').to.equal(getRecipientId(document.recipient));
+    expect(name, 'recipient.name').to.equal(document.recipient.name);
+    expectEmptyObject(empty);
+  } else {
+    expect(recipient, 'recipient').to.be.undefined;
+  }
+
+  if (category) {
+    const { categoryId, name, categoryType, fullName, ...empty } = category;
+    expect(categoryId, 'category.categoryId').to.equal(getCategoryId(document.category));
+    expect(categoryType, 'category.categoryType').to.equal(document.category.categoryType);
+    expect(fullName, 'category.fullName').to.equal(document.category.fullName);
+    expect(name, 'category.name').to.equal(document.category.name);
+    expectEmptyObject(empty);
+  } else {
+    expect(category, 'category').to.be.undefined;
+  }
+
+  if (category?.categoryType === 'inventory' && product) {
+    const { productId, brand, measurement, unitOfMeasurement, fullName, ...empty } = product;
+
+    expect(quantity, 'quantity').to.equal(document.quantity);
+    expect(productId, 'product.productId').to.equal(getProductId(document.product));
+    expect(brand, 'product.brand').to.equal(document.product.brand);
+    expect(measurement, 'product.measurement').to.equal(document.product.measurement);
+    expect(unitOfMeasurement, 'product.unitOfMeasurement').to.equal(document.product.unitOfMeasurement);
+    expect(fullName, 'product.fullName').to.equal(document.product.fullName);
+    expectEmptyObject(empty);
+  } else {
+    expect(quantity, 'quantity').to.be.undefined;
+    expect(product, 'product').to.be.undefined;
+  }
+
+  if (category?.categoryType === 'invoice') {
+    expect(invoiceNumber, 'invoiceNumber').to.equal(document.invoiceNumber);
+    expect(createDate(billingStartDate)?.toISOString(), 'billingStartDate').to.equal(document.billingStartDate?.toISOString());
+    expect(createDate(billingEndDate)?.toISOString(), 'billingEndDate').to.equal(document.billingEndDate?.toISOString());
+  } else {
+    expect(invoiceNumber, 'invoiceNumber').to.be.undefined;
+    expect(billingStartDate, 'billingStartDate').to.be.undefined;
+    expect(billingEndDate, 'billingEndDate').to.be.undefined;
+  }
+  expectEmptyObject(empty);
 };
 
 const validateTransactionReimbursementResponse = (response: Transaction.ReimbursementResponse, document: Transaction.ReimbursementDocument) => {
+  const { transactionId, amount, issuedAt, transactionType, description, payingAccount, ownerAccount, project, product, recipient, category, billingEndDate, billingStartDate, invoiceNumber, quantity, ...empty } = response;
+
   expect(response.transactionId).to.equal(getTransactionId(document));
   expect(response.amount, 'amount').to.equal(document.amount);
   expect(createDate(response.issuedAt).toISOString(), 'issuedAt').to.equal(document.issuedAt.toISOString());
   expect(response.transactionType, 'transactionType').to.equal('reimbursement');
   expect(response.description, 'description').to.equal(document.description);
-  // expect(response.account.accountId, 'account.accountId').to.equal(getAccountId(document.account));
-  // expect(response.account.accountType, 'account.accountType').to.equal(document.account.accountType);
-  // // expect(response.account.balance, 'account.balance').to.equal(document.account.balance ?? null);
-  // expect(response.account.currency, 'account.currency').to.equal(document.account.currency);
-  // expect(response.account.isOpen, 'account.isOpen').to.equal(document.account.isOpen);
-  // expect(response.account.name, 'account.name').to.equal(document.account.name);
-  // expect(response.account.fullName, 'account.fullName').to.equal(`${document.account.name} (${document.account.owner})`);
 
-  expect(response.project?.projectId, 'project.projectId').to.equal(getProjectId(document.project));
-  expect(response.project?.name, 'project.name').to.equal(document.project?.name);
-  expect(response.project?.description, 'project.description').to.equal(document.project?.description);
-
-  expect(response.recipient?.recipientId, 'recipient.recipientId').to.equal(getRecipientId(document.recipient));
-  expect(response.recipient?.name, 'recipient.name').to.equal(document.recipient?.name);
-
-  expect(response.category?.categoryId, 'category.categoryId').to.equal(getCategoryId(document.category));
-  expect(response.category?.categoryType, 'category.categoryType').to.equal(document.category?.categoryType);
-  expect(response.category?.fullName, 'category.fullName').to.equal(document.category?.fullName);
-  expect(response.category?.name, 'category.name').to.equal(document.category?.name);
-
-  if (response.category?.categoryType === 'inventory') {
-    expect(response.quantity, 'quantity').to.equal(document.quantity);
-    expect(response.product?.productId, 'product.productId').to.equal(getProductId(document.product));
-    expect(response.product?.brand, 'product.brand').to.equal(document.product?.brand);
-    expect(response.product?.measurement, 'product.measurement').to.equal(document.product?.measurement);
-    expect(response.product?.unitOfMeasurement, 'product.unitOfMeasurement').to.equal(document.product?.unitOfMeasurement);
-  } else {
-    expect(response.quantity, 'quantity').to.be.undefined;
-    expect(response.product, 'product').to.be.undefined;
+  {
+    const { accountId, accountType, balance, currency, fullName, isOpen, loanBalance, name, owner, ...empty } = payingAccount;
+    expect(accountId, 'payingAccount.accountId').to.equal(getAccountId(document.payingAccount));
+    expect(accountType, 'payingAccount.accountType').to.equal(document.payingAccount.accountType);
+    expect(balance, 'payingAccount.balance').to.equal(document.payingAccount.balance ?? null);
+    expect(loanBalance, 'payingAccount.loanBalance').to.equal(document.payingAccount.loanBalance ?? null);
+    expect(currency, 'payingAccount.currency').to.equal(document.payingAccount.currency);
+    expect(isOpen, 'payingAccount.isOpen').to.equal(document.payingAccount.isOpen);
+    expect(name, 'payingAccount.name').to.equal(document.payingAccount.name);
+    expect(owner, 'payingAccount.owner').to.equal(document.payingAccount.owner);
+    expect(fullName, 'payingAccount.fullName').to.equal(`${document.payingAccount.name} (${document.payingAccount.owner})`);
+    expectEmptyObject(empty);
   }
 
-  if (response.category?.categoryType === 'invoice') {
-    expect(response.invoiceNumber, 'invoiceNumber').to.equal(document.invoiceNumber);
-    expect(createDate(response.billingStartDate)?.toISOString(), 'billingStartDate').to.equal(document.billingStartDate?.toISOString());
-    expect(createDate(response.billingEndDate)?.toISOString(), 'billingEndDate').to.equal(document.billingEndDate?.toISOString());
-  } else {
-    expect(response.invoiceNumber, 'invoiceNumber').to.be.undefined;
-    expect(response.billingStartDate, 'billingStartDate').to.be.undefined;
-    expect(response.billingEndDate, 'billingEndDate').to.be.undefined;
+  {
+    const { accountId, accountType, balance, currency, fullName, isOpen, loanBalance, name, owner, ...empty } = ownerAccount;
+    expect(accountId, 'ownerAccount.accountId').to.equal(getAccountId(document.ownerAccount));
+    expect(accountType, 'ownerAccount.accountType').to.equal(document.ownerAccount.accountType);
+    expect(balance, 'ownerAccount.balance').to.equal(document.ownerAccount.balance ?? null);
+    expect(loanBalance, 'ownerAccount.loanBalance').to.equal(document.ownerAccount.loanBalance ?? null);
+    expect(currency, 'ownerAccount.currency').to.equal(document.ownerAccount.currency);
+    expect(isOpen, 'ownerAccount.isOpen').to.equal(document.ownerAccount.isOpen);
+    expect(name, 'ownerAccount.name').to.equal(document.ownerAccount.name);
+    expect(owner, 'ownerAccount.owner').to.equal(document.ownerAccount.owner);
+    expect(fullName, 'ownerAccount.fullName').to.equal(`${document.ownerAccount.name} (${document.ownerAccount.owner})`);
+    expectEmptyObject(empty);
   }
+
+  if (project) {
+    const { projectId, name, description, ...empty } = project;
+    expect(projectId, 'project.projectId').to.equal(getProjectId(document.project));
+    expect(name, 'project.name').to.equal(document.project.name);
+    expect(description, 'project.description').to.equal(document.project.description);
+    expectEmptyObject(empty);
+  } else {
+    expect(project, 'project').to.be.undefined;
+  }
+
+  if (recipient) {
+    const { recipientId, name, ...empty } = recipient;
+    expect(recipientId, 'recipient.recipientId').to.equal(getRecipientId(document.recipient));
+    expect(name, 'recipient.name').to.equal(document.recipient.name);
+    expectEmptyObject(empty);
+  } else {
+    expect(recipient, 'recipient').to.be.undefined;
+  }
+
+  if (category) {
+    const { categoryId, name, categoryType, fullName, ...empty } = category;
+    expect(categoryId, 'category.categoryId').to.equal(getCategoryId(document.category));
+    expect(categoryType, 'category.categoryType').to.equal(document.category.categoryType);
+    expect(fullName, 'category.fullName').to.equal(document.category.fullName);
+    expect(name, 'category.name').to.equal(document.category.name);
+    expectEmptyObject(empty);
+  } else {
+    expect(category, 'category').to.be.undefined;
+  }
+
+  if (category?.categoryType === 'inventory' && product) {
+    const { productId, brand, measurement, unitOfMeasurement, fullName, ...empty } = product;
+
+    expect(quantity, 'quantity').to.equal(document.quantity);
+    expect(productId, 'product.productId').to.equal(getProductId(document.product));
+    expect(brand, 'product.brand').to.equal(document.product.brand);
+    expect(measurement, 'product.measurement').to.equal(document.product.measurement);
+    expect(unitOfMeasurement, 'product.unitOfMeasurement').to.equal(document.product.unitOfMeasurement);
+    expect(fullName, 'product.fullName').to.equal(document.product.fullName);
+    expectEmptyObject(empty);
+  } else {
+    expect(quantity, 'quantity').to.be.undefined;
+    expect(product, 'product').to.be.undefined;
+  }
+
+  if (category?.categoryType === 'invoice') {
+    expect(invoiceNumber, 'invoiceNumber').to.equal(document.invoiceNumber);
+    expect(createDate(billingStartDate)?.toISOString(), 'billingStartDate').to.equal(document.billingStartDate?.toISOString());
+    expect(createDate(billingEndDate)?.toISOString(), 'billingEndDate').to.equal(document.billingEndDate?.toISOString());
+  } else {
+    expect(invoiceNumber, 'invoiceNumber').to.be.undefined;
+    expect(billingStartDate, 'billingStartDate').to.be.undefined;
+    expect(billingEndDate, 'billingEndDate').to.be.undefined;
+  }
+  expectEmptyObject(empty);
 };
 
 const validateTransactionTransferResponse = (response: Transaction.TransferResponse, document: Transaction.TransferDocument, viewingAccountId: Account.Id) => {
@@ -407,25 +535,43 @@ const validateTransactionTransferResponse = (response: Transaction.TransferRespo
   const documentTransferAmount = getAccountId(document.account) === viewingAccountId ? document.transferAmount : document.amount;
   const documentTransferAccount = getAccountId(document.account) === viewingAccountId ? document.transferAccount : document.account;
 
-  expect(response.transactionId).to.equal(getTransactionId(document));
-  expect(response.amount, 'amount').to.equal(documentAmount);
-  expect(createDate(response.issuedAt).toISOString(), 'issuedAt').to.equal(document.issuedAt.toISOString());
-  expect(response.transactionType, 'transactionType').to.equal('transfer');
-  expect(response.description, 'description').to.equal(document.description);
-  expect(response.account.accountId, 'account.accountId').to.equal(getAccountId(documentAccount));
-  expect(response.account.accountType, 'account.accountType').to.equal(documentAccount.accountType);
-  // expect(response.account.balance, 'account.balance').to.equal(undefined);
-  expect(response.account.currency, 'account.currency').to.equal(documentAccount.currency);
-  expect(response.account.isOpen, 'account.isOpen').to.equal(documentAccount.isOpen);
-  expect(response.account.name, 'account.name').to.equal(documentAccount.name);
-  expect(response.account.fullName, 'account.fullName').to.equal(`${documentAccount.name} (${documentAccount.owner})`);
-  expect(response.transferAccount.accountId, 'transferAccount.accountId').to.equal(getAccountId(documentTransferAccount));
-  expect(response.transferAccount.accountType, 'transferAccount.accountType').to.equal(documentTransferAccount.accountType);
-  expect(response.transferAccount.balance, 'transferAccount.balance').to.equal(undefined);
-  expect(response.transferAccount.currency, 'transferAccount.currency').to.equal(documentTransferAccount.currency);
-  expect(response.transferAccount.isOpen, 'transferAccount.isOpen').to.equal(documentTransferAccount.isOpen);
-  expect(response.transferAccount.name, 'transferAccount.name').to.equal(documentTransferAccount.name);
-  expect(response.transferAccount.fullName, 'transferAccount.fullName').to.equal(`${documentTransferAccount.name} (${documentTransferAccount.owner})`);
+  const { transactionId, amount, issuedAt, transactionType, description, account, transferAccount, transferAmount, ...empty } = response;
+
+  expect(transactionId).to.equal(getTransactionId(document));
+  expect(amount, 'amount').to.equal(documentAmount);
+  expect(transferAmount, 'transferAmount').to.equal(documentTransferAmount);
+  expect(createDate(issuedAt).toISOString(), 'issuedAt').to.equal(document.issuedAt.toISOString());
+  expect(transactionType, 'transactionType').to.equal('transfer');
+  expect(description, 'description').to.equal(document.description);
+
+  {
+    const { accountId, accountType, balance, currency, fullName, isOpen, loanBalance, name, owner } = account;
+    expect(accountId, 'account.accountId').to.equal(getAccountId(documentAccount));
+    expect(accountType, 'account.accountType').to.equal(documentAccount.accountType);
+    expect(balance, 'payingAccount.balance').to.equal(documentAccount.balance ?? null);
+    expect(loanBalance, 'payingAccount.loanBalance').to.equal(documentAccount.loanBalance ?? null);
+    expect(currency, 'account.currency').to.equal(documentAccount.currency);
+    expect(isOpen, 'account.isOpen').to.equal(documentAccount.isOpen);
+    expect(name, 'account.name').to.equal(documentAccount.name);
+    expect(owner, 'payingAccount.owner').to.equal(documentAccount.owner);
+    expect(fullName, 'account.fullName').to.equal(`${documentAccount.name} (${documentAccount.owner})`);
+    expectEmptyObject(empty);
+  }
+
+  {
+    const { accountId, accountType, balance, currency, fullName, isOpen, loanBalance, name, owner } = transferAccount;
+    expect(accountId, 'transferAccount.accountId').to.equal(getAccountId(documentTransferAccount));
+    expect(accountType, 'transferAccount.accountType').to.equal(documentTransferAccount.accountType);
+    expect(balance, 'transferAccount.balance').to.equal(documentTransferAccount.balance ?? null);
+    expect(loanBalance, 'transferAccount.loanBalance').to.equal(documentTransferAccount.loanBalance ?? null);
+    expect(currency, 'transferAccount.currency').to.equal(documentTransferAccount.currency);
+    expect(isOpen, 'transferAccount.isOpen').to.equal(documentTransferAccount.isOpen);
+    expect(name, 'transferAccount.name').to.equal(documentTransferAccount.name);
+    expect(owner, 'transferAccount.owner').to.equal(documentTransferAccount.owner);
+    expect(fullName, 'transferAccount.fullName').to.equal(`${documentTransferAccount.name} (${documentTransferAccount.owner})`);
+    expectEmptyObject(empty);
+  }
+  expectEmptyObject(empty);
 
 };
 
@@ -433,76 +579,219 @@ const validateTransactionLoanTransferResponse = (response: Transaction.LoanTrans
   const documentAccount = getAccountId(document.account) === viewingAccountId ? document.account : document.transferAccount;
   const documentTransferAccount = getAccountId(document.account) === viewingAccountId ? document.transferAccount : document.account;
 
-  expect(response.transactionId).to.equal(getTransactionId(document));
-  expect(response.amount, 'amount').to.equal(document.amount);
-  expect(createDate(response.issuedAt).toISOString(), 'issuedAt').to.equal(document.issuedAt.toISOString());
-  expect(response.transactionType, 'transactionType').to.equal('loanTransfer');
-  expect(response.description, 'description').to.equal(document.description);
-  expect(response.account.accountId, 'account.accountId').to.equal(getAccountId(documentAccount));
-  expect(response.account.accountType, 'account.accountType').to.equal(documentAccount.accountType);
-  // expect(response.account.balance, 'account.balance').to.equal(undefined);
-  expect(response.account.currency, 'account.currency').to.equal(documentAccount.currency);
-  expect(response.account.isOpen, 'account.isOpen').to.equal(documentAccount.isOpen);
-  expect(response.account.name, 'account.name').to.equal(documentAccount.name);
-  expect(response.account.fullName, 'account.fullName').to.equal(`${documentAccount.name} (${documentAccount.owner})`);
-  expect(response.transferAccount.accountId, 'transferAccount.accountId').to.equal(getAccountId(documentTransferAccount));
-  expect(response.transferAccount.accountType, 'transferAccount.accountType').to.equal(documentTransferAccount.accountType);
-  expect(response.transferAccount.balance, 'transferAccount.balance').to.equal(undefined);
-  expect(response.transferAccount.currency, 'transferAccount.currency').to.equal(documentTransferAccount.currency);
-  expect(response.transferAccount.isOpen, 'transferAccount.isOpen').to.equal(documentTransferAccount.isOpen);
-  expect(response.transferAccount.name, 'transferAccount.name').to.equal(documentTransferAccount.name);
-  expect(response.transferAccount.fullName, 'transferAccount.fullName').to.equal(`${documentTransferAccount.name} (${documentTransferAccount.owner})`);
+  const { transactionId, amount, issuedAt, transactionType, description, account, transferAccount, ...empty } = response;
 
+  expect(transactionId).to.equal(getTransactionId(document));
+  expect(amount, 'amount').to.equal(document.amount);
+  expect(createDate(issuedAt).toISOString(), 'issuedAt').to.equal(document.issuedAt.toISOString());
+  expect(transactionType, 'transactionType').to.equal('loanTransfer');
+  expect(description, 'description').to.equal(document.description);
+
+  {
+    const { accountId, accountType, balance, currency, fullName, isOpen, loanBalance, name, owner } = account;
+    expect(accountId, 'account.accountId').to.equal(getAccountId(documentAccount));
+    expect(accountType, 'account.accountType').to.equal(documentAccount.accountType);
+    expect(balance, 'payingAccount.balance').to.equal(documentAccount.balance ?? null);
+    expect(loanBalance, 'payingAccount.loanBalance').to.equal(documentAccount.loanBalance ?? null);
+    expect(currency, 'account.currency').to.equal(documentAccount.currency);
+    expect(isOpen, 'account.isOpen').to.equal(documentAccount.isOpen);
+    expect(name, 'account.name').to.equal(documentAccount.name);
+    expect(owner, 'payingAccount.owner').to.equal(documentAccount.owner);
+    expect(fullName, 'account.fullName').to.equal(`${documentAccount.name} (${documentAccount.owner})`);
+    expectEmptyObject(empty);
+  }
+
+  {
+    const { accountId, accountType, balance, currency, fullName, isOpen, loanBalance, name, owner } = transferAccount;
+    expect(accountId, 'transferAccount.accountId').to.equal(getAccountId(documentTransferAccount));
+    expect(accountType, 'transferAccount.accountType').to.equal(documentTransferAccount.accountType);
+    expect(balance, 'transferAccount.balance').to.equal(documentTransferAccount.balance ?? null);
+    expect(loanBalance, 'transferAccount.loanBalance').to.equal(documentTransferAccount.loanBalance ?? null);
+    expect(currency, 'transferAccount.currency').to.equal(documentTransferAccount.currency);
+    expect(isOpen, 'transferAccount.isOpen').to.equal(documentTransferAccount.isOpen);
+    expect(name, 'transferAccount.name').to.equal(documentTransferAccount.name);
+    expect(owner, 'transferAccount.owner').to.equal(documentTransferAccount.owner);
+    expect(fullName, 'transferAccount.fullName').to.equal(`${documentTransferAccount.name} (${documentTransferAccount.owner})`);
+    expectEmptyObject(empty);
+  }
+  expectEmptyObject(empty);
 };
 
-const validateTransactionSplitResponse = (response: Transaction.SplitResponse, document: Transaction.SplitDocument) => {
-  expect(response.transactionId).to.equal(getTransactionId(document));
-  expect(response.amount, 'amount').to.equal(document.amount);
-  expect(createDate(response.issuedAt).toISOString(), 'issuedAt').to.equal(document.issuedAt.toISOString());
-  expect(response.transactionType, 'transactionType').to.equal('split');
-  expect(response.description, 'description').to.equal(document.description);
-  expect(response.account.accountId, 'account.accountId').to.equal(getAccountId(document.account));
-  expect(response.account.accountType, 'account.accountType').to.equal(document.account.accountType);
-  // expect(response.account.balance, 'account.balance').to.equal(document.account.balance ?? null);
-  expect(response.account.currency, 'account.currency').to.equal(document.account.currency);
-  expect(response.account.isOpen, 'account.isOpen').to.equal(document.account.isOpen);
-  expect(response.account.name, 'account.name').to.equal(document.account.name);
-  expect(response.account.fullName, 'account.fullName').to.equal(`${document.account.name} (${document.account.owner})`);
+const validateTransactionSplitResponse = (response: Transaction.SplitResponse, document: Transaction.SplitDocument, repayments?: Record<Transaction.Id, number>) => {
 
-  expect(response.recipient?.recipientId, 'recipient.recipientId').to.equal(getRecipientId(document.recipient));
-  expect(response.recipient?.name, 'recipient.name').to.equal(document.recipient?.name);
+  const { transactionId, amount, issuedAt, transactionType, description, account, deferredSplits, splits, recipient, ...empty } = response;
+  expect(transactionId).to.equal(getTransactionId(document));
+  expect(amount, 'amount').to.equal(document.amount);
+  expect(createDate(issuedAt).toISOString(), 'issuedAt').to.equal(document.issuedAt.toISOString());
+  expect(transactionType, 'transactionType').to.equal('split');
+  expect(description, 'description').to.equal(document.description);
 
-  // response.splits.forEach((split, index) => {
-  //   expect(split.project?.projectId, `splits[${index}].project.projectId`).to.equal(getProjectId(document.splits[index].project));
-  //   expect(split.project?.name, `splits[${index}].project.name`).to.equal(document.splits[index].project?.name);
-  //   expect(split.project?.description, `splits[${index}].project.description`).to.equal(document.splits[index].project?.description);
+  {
+    const { accountId, accountType, balance, currency, fullName, isOpen, loanBalance, name, owner, ...empty } = account;
+    expect(accountId, 'account.accountId').to.equal(getAccountId(document.account));
+    expect(accountType, 'account.accountType').to.equal(document.account.accountType);
+    expect(balance, 'account.balance').to.equal(document.account.balance ?? null);
+    expect(loanBalance, 'payingAccount.loanBalance').to.equal(document.account.loanBalance ?? null);
+    expect(currency, 'account.currency').to.equal(document.account.currency);
+    expect(isOpen, 'account.isOpen').to.equal(document.account.isOpen);
+    expect(name, 'account.name').to.equal(document.account.name);
+    expect(owner, 'payingAccount.owner').to.equal(document.account.owner);
+    expect(fullName, 'account.fullName').to.equal(`${document.account.name} (${document.account.owner})`);
+    expectEmptyObject(empty);
+  }
 
-  //   expect(split.category?.categoryId, `splits[${index}].category.categoryId`).to.equal(getCategoryId(document.splits[index].category));
-  //   expect(split.category?.categoryType, `splits[${index}].category.categoryType`).to.equal(document.splits[index].category?.categoryType);
-  //   expect(split.category?.fullName, `splits[${index}].category.fullName`).to.equal(document.splits[index].category?.fullName);
-  //   expect(split.category?.name, `splits[${index}].category.name`).to.equal(document.splits[index].category?.name);
+  if (recipient) {
+    const { recipientId, name, ...empty } = recipient;
+    expect(recipientId, 'recipient.recipientId').to.equal(getRecipientId(document.recipient));
+    expect(name, 'recipient.name').to.equal(document.recipient?.name);
+    expectEmptyObject(empty);
+  } else {
+    expect(recipient, 'recipient').to.be.undefined;
+  }
 
-  //   if(split.category?.categoryType === 'inventory') {
-  //     expect(split.quantity, `splits[${index}].quantity`).to.equal(document.splits[index].quantity);
-  //     expect(split.product?.productId, `splits[${index}].product.productId`).to.equal(getProductId(document.splits[index].product));
-  //     expect(split.product?.brand, `splits[${index}].product.brand`).to.equal(document.splits[index].product?.brand);
-  //     expect(split.product?.measurement, `splits[${index}].product.measurement`).to.equal(document.splits[index].product?.measurement);
-  //     expect(split.product?.unitOfMeasurement, `splits[${index}].product.unitOfMeasurement`).to.equal(document.splits[index].product?.unitOfMeasurement);
-  //   } else {
-  //     expect(split.quantity, `splits[${index}].quantity`).to.be.undefined;
-  //     expect(split.product, `splits[${index}].product`).to.be.undefined;
-  //   }
+  splits.forEach((split, index) => {
+    const documentSplit = document.splits[index];
+    const { amount, billingEndDate, billingStartDate, category, description, invoiceNumber, product, project, quantity, ...empty } = split;
 
-  //   if(split.category?.categoryType === 'invoice') {
-  //     expect(split.invoiceNumber, `splits[${index}].invoiceNumber`).to.equal(document.splits[index].invoiceNumber);
-  //     expect(createDate(split.billingStartDate)?.toISOString(), `isplits[${index}].billingStartDate`).to.equal(document.splits[index].billingStartDate?.toISOString());
-  //     expect(createDate(split.billingEndDate)?.toISOString(), `splits[${index}].billingEndDate`).to.equal(document.splits[index].billingEndDate?.toISOString());
-  //   } else {
-  //     expect(split.invoiceNumber, `splits[${index}].invoiceNumber`).to.be.undefined;
-  //     expect(split.billingStartDate, `isplits[${index}].billingStartDate`).to.be.undefined;
-  //     expect(split.billingEndDate, `splits[${index}].billingEndDate`).to.be.undefined;
-  //   }
-  // });
+    expect(amount, `splits[${index}].amount`).to.equal(documentSplit.amount);
+    expect(description, `splits[${index}].description`).to.equal(documentSplit.description);
+
+    if (project) {
+      const { projectId, name, description, ...empty } = project;
+      expect(projectId, `splits[${index}].project.projectId`).to.equal(getProjectId(documentSplit.project));
+      expect(name, `splits[${index}].project.name`).to.equal(documentSplit.project?.name);
+      expect(description, `splits[${index}].project.description`).to.equal(documentSplit.project?.description);
+      expectEmptyObject(empty);
+    } else {
+      expect(project, `splits[${index}].project`).to.be.undefined;
+    }
+
+    if (category) {
+      const { categoryId, name, categoryType, fullName, ...empty } = category;
+
+      expect(categoryId, `splits[${index}].category.categoryId`).to.equal(getCategoryId(documentSplit.category));
+      expect(categoryType, `splits[${index}].category.categoryType`).to.equal(documentSplit.category?.categoryType);
+      expect(fullName, `splits[${index}].category.fullName`).to.equal(documentSplit.category?.fullName);
+      expect(name, `splits[${index}].category.name`).to.equal(documentSplit.category?.name);
+      expectEmptyObject(empty);
+    } else {
+      expect(category, `splits[${index}].category`).to.be.undefined;
+    }
+
+    if(category?.categoryType === 'inventory' && product) {
+      const { productId, brand, measurement, unitOfMeasurement, fullName, ...empty } = product;
+
+      expect(quantity, `splits[${index}].quantity`).to.equal(documentSplit.quantity);
+      expect(productId, `splits[${index}].product.productId`).to.equal(getProductId(documentSplit.product));
+      expect(brand, `splits[${index}].product.brand`).to.equal(documentSplit.product?.brand);
+      expect(measurement, `splits[${index}].product.measurement`).to.equal(documentSplit.product?.measurement);
+      expect(unitOfMeasurement, `splits[${index}].product.unitOfMeasurement`).to.equal(documentSplit.product?.unitOfMeasurement);
+      expect(fullName, `splits[${index}].product.fullName`).to.equal(documentSplit.product?.fullName);
+      expectEmptyObject(empty);
+    } else {
+      expect(quantity, `splits[${index}].quantity`).to.be.undefined;
+      expect(product, `splits[${index}].product`).to.be.undefined;
+    }
+
+    if(category?.categoryType === 'invoice') {
+      expect(invoiceNumber, `splits[${index}].invoiceNumber`).to.equal(documentSplit.invoiceNumber);
+      expect(createDate(billingStartDate)?.toISOString(), `splits[${index}].billingStartDate`).to.equal(documentSplit.billingStartDate?.toISOString());
+      expect(createDate(billingEndDate)?.toISOString(), `splits[${index}].billingEndDate`).to.equal(documentSplit.billingEndDate?.toISOString());
+    } else {
+      expect(invoiceNumber, `splits[${index}].invoiceNumber`).to.be.undefined;
+      expect(billingStartDate, `isplits[${index}].billingStartDate`).to.be.undefined;
+      expect(billingEndDate, `splits[${index}].billingEndDate`).to.be.undefined;
+    }
+    expectEmptyObject(empty);
+  });
+
+  deferredSplits.forEach((split, index) => {
+    const documentSplit = document.deferredSplits[index];
+    const { amount, billingEndDate, billingStartDate, category, description, invoiceNumber, product, project, quantity, ownerAccount, payingAccount, transactionType, remainingAmount, transactionId, ...empty } = split;
+
+    expect(transactionId, `deferredSplits[${index}].transactionId`).to.equal(getTransactionId(documentSplit));
+    expect(amount, `deferredSplits[${index}].amount`).to.equal(documentSplit.amount);
+    expect(transactionType, `deferredSplits[${index}].transactionType`).to.equal('deferred');
+    expect(remainingAmount, `deferredSplits[${index}].remainingAmount`).to.equal(documentSplit.amount + (repayments?.[transactionId] ?? 0));
+    expect(description, `deferredSplits[${index}].description`).to.equal(documentSplit.description);
+
+    {
+      const { accountId, accountType, balance, currency, fullName, isOpen, loanBalance, name, owner, ...empty } = payingAccount;
+      expect(accountId, `deferredSplits[${index}].payingAccount.accountId`).to.equal(getAccountId(documentSplit.payingAccount));
+      expect(accountType, `deferredSplits[${index}].payingAccount.accountType`).to.equal(documentSplit.payingAccount.accountType);
+      expect(balance, `deferredSplits[${index}].payingAccount.balance`).to.equal(documentSplit.payingAccount.balance ?? null);
+      expect(loanBalance, `deferredSplits[${index}].payingAccount.loanBalance`).to.equal(documentSplit.payingAccount.loanBalance ?? null);
+      expect(currency, `deferredSplits[${index}].payingAccount.currency`).to.equal(documentSplit.payingAccount.currency);
+      expect(isOpen, `deferredSplits[${index}].payingAccount.isOpen`).to.equal(documentSplit.payingAccount.isOpen);
+      expect(name, `deferredSplits[${index}].payingAccount.name`).to.equal(documentSplit.payingAccount.name);
+      expect(owner, `deferredSplits[${index}].payingAccount.owner`).to.equal(documentSplit.payingAccount.owner);
+      expect(fullName, `deferredSplits[${index}].payingAccount.fullName`).to.equal(`${documentSplit.payingAccount.name} (${documentSplit.payingAccount.owner})`);
+      expectEmptyObject(empty);
+    }
+
+    {
+      const { accountId, accountType, balance, currency, fullName, isOpen, loanBalance, name, owner, ...empty } = ownerAccount;
+      expect(accountId, `deferredSplits[${index}].ownerAccount.accountId`).to.equal(getAccountId(documentSplit.ownerAccount));
+      expect(accountType, `deferredSplits[${index}].ownerAccount.accountType`).to.equal(documentSplit.ownerAccount.accountType);
+      expect(balance, `deferredSplits[${index}].ownerAccount.balance`).to.equal(documentSplit.ownerAccount.balance ?? null);
+      expect(loanBalance, `deferredSplits[${index}].ownerAccount.loanBalance`).to.equal(documentSplit.ownerAccount.loanBalance ?? null);
+      expect(currency, `deferredSplits[${index}].ownerAccount.currency`).to.equal(documentSplit.ownerAccount.currency);
+      expect(isOpen, `deferredSplits[${index}].ownerAccount.isOpen`).to.equal(documentSplit.ownerAccount.isOpen);
+      expect(name, `deferredSplits[${index}].ownerAccount.name`).to.equal(documentSplit.ownerAccount.name);
+      expect(owner, `deferredSplits[${index}].ownerAccount.owner`).to.equal(documentSplit.ownerAccount.owner);
+      expect(fullName, `deferredSplits[${index}].ownerAccount.fullName`).to.equal(`${documentSplit.ownerAccount.name} (${documentSplit.ownerAccount.owner})`);
+      expectEmptyObject(empty);
+    }
+
+    if (project) {
+      const { projectId, name, description, ...empty } = project;
+      expect(projectId, `deferredSplits[${index}].project.projectId`).to.equal(getProjectId(documentSplit.project));
+      expect(name, `deferredSplits[${index}].project.name`).to.equal(documentSplit.project?.name);
+      expect(description, `deferredSplits[${index}].project.description`).to.equal(documentSplit.project?.description);
+      expectEmptyObject(empty);
+    } else {
+      expect(project, `deferredSplits[${index}].project`).to.be.undefined;
+    }
+
+    if (category) {
+      const { categoryId, name, categoryType, fullName, ...empty } = category;
+
+      expect(categoryId, `deferredSplits[${index}].category.categoryId`).to.equal(getCategoryId(documentSplit.category));
+      expect(categoryType, `deferredSplits[${index}].category.categoryType`).to.equal(documentSplit.category?.categoryType);
+      expect(fullName, `deferredSplits[${index}].category.fullName`).to.equal(documentSplit.category?.fullName);
+      expect(name, `deferredSplits[${index}].category.name`).to.equal(documentSplit.category?.name);
+      expectEmptyObject(empty);
+    } else {
+      expect(category, `deferredSplits[${index}].category`).to.be.undefined;
+    }
+
+    if (category?.categoryType === 'inventory' && product) {
+      const { productId, brand, measurement, unitOfMeasurement, fullName, ...empty } = product;
+
+      expect(quantity, `deferredSplits[${index}].quantity`).to.equal(documentSplit.quantity);
+      expect(productId, `deferredSplits[${index}].product.productId`).to.equal(getProductId(documentSplit.product));
+      expect(brand, `deferredSplits[${index}].product.brand`).to.equal(documentSplit.product?.brand);
+      expect(measurement, `deferredSplits[${index}].product.measurement`).to.equal(documentSplit.product?.measurement);
+      expect(unitOfMeasurement, `deferredSplits[${index}].product.unitOfMeasurement`).to.equal(documentSplit.product?.unitOfMeasurement);
+      expect(fullName, `deferredSplits[${index}].product.fullName`).to.equal(documentSplit.product?.fullName);
+      expectEmptyObject(empty);
+    } else {
+      expect(quantity, `deferredSplits[${index}].quantity`).to.be.undefined;
+      expect(product, `deferredSplits[${index}].product`).to.be.undefined;
+    }
+
+    if (category?.categoryType === 'invoice') {
+      expect(invoiceNumber, `deferredSplits[${index}].invoiceNumber`).to.equal(documentSplit.invoiceNumber);
+      expect(createDate(billingStartDate)?.toISOString(), `deferredSplits[${index}].billingStartDate`).to.equal(documentSplit.billingStartDate?.toISOString());
+      expect(createDate(billingEndDate)?.toISOString(), `deferredSplits[${index}].billingEndDate`).to.equal(documentSplit.billingEndDate?.toISOString());
+    } else {
+      expect(invoiceNumber, `deferredSplits[${index}].invoiceNumber`).to.be.undefined;
+      expect(billingStartDate, `ideferredSplits[${index}].billingStartDate`).to.be.undefined;
+      expect(billingEndDate, `deferredSplits[${index}].billingEndDate`).to.be.undefined;
+    }
+    expectEmptyObject(empty);
+  });
+  expectEmptyObject(empty);
 };
 
 const validateTransactionListResponse = (responses: Transaction.Response[], documents: Transaction.Document[], viewingAccountId: Account.Id) => {
@@ -512,7 +801,7 @@ const validateTransactionListResponse = (responses: Transaction.Response[], docu
       case 'payment': validateTransactionPaymentResponse(response, document as Transaction.PaymentDocument); break;
       case 'transfer': validateTransactionTransferResponse(response, document as Transaction.TransferDocument, viewingAccountId); break;
       case 'split': validateTransactionSplitResponse(response, document as Transaction.SplitDocument); break;
-      case 'deferred': validateTransactionDeferredResponse(response, document as Transaction.DeferredDocument); break;
+      case 'deferred': validateTransactionDeferredResponse(response, document as Transaction.DeferredDocument, viewingAccountId); break;
       case 'reimbursement': validateTransactionReimbursementResponse(response, document as Transaction.ReimbursementDocument); break;
       case 'loanTransfer': validateTransactionLoanTransferResponse(response, document as Transaction.LoanTransferDocument, viewingAccountId); break;
     }
@@ -620,7 +909,7 @@ const validateConvertedToPaymentDocument = (originalDocument: Transaction.Deferr
       expect(billingStartDate?.toISOString(), 'billingStartDate').to.equal(originalDocument.billingStartDate?.toISOString());
       expect(getProductId(product), 'product').to.equal(getProductId(originalDocument.product));
       expect(quantity, 'quantity').to.equal(originalDocument.quantity);
-      Object.keys(internal).forEach(key => expect(key, `${key} is an internal property`).to.be.oneOf(internalPropertyNames));
+      expectRemainingProperties(internal);
     });
 };
 
@@ -631,6 +920,7 @@ const validateConvertedToRegularSplitItemDocument = (originalDocument: Transacti
     .getTransactionDocumentById(transactionId)
     .should((currentDocument: Transaction.SplitDocument) => {
       const { account, amount, deferredSplits, description, issuedAt, recipient, splits, transactionType, ...internal } = currentDocument;
+
       expect(getTransactionId(currentDocument), 'id').to.equal(getTransactionId(originalDocument));
       expect(amount, 'amount').to.equal(originalDocument.amount);
       expect(issuedAt.toISOString(), 'issuedAt').to.equal(originalDocument.issuedAt.toISOString());
@@ -640,7 +930,7 @@ const validateConvertedToRegularSplitItemDocument = (originalDocument: Transacti
       expect(getRecipientId(recipient), 'recipient').to.equal(getRecipientId(originalDocument.recipient));
 
       splits?.forEach((split, index) => {
-        const { amount, billingEndDate, billingStartDate, category, description, invoiceNumber, product, project, quantity, _id, ...internal } = split;
+        const { amount, billingEndDate, billingStartDate, category, description, invoiceNumber, product, project, quantity, _id, ...empty } = split;
         const originalSplitItem = originalDocument.splits.find(s => s._id.toString() === _id.toString()) ?? originalDocument.deferredSplits.find(s => s._id.toString() === _id.toString());
 
         expect(_id.toString(), `splits.[${index}].id`).to.equal(originalSplitItem._id.toString());
@@ -655,11 +945,11 @@ const validateConvertedToRegularSplitItemDocument = (originalDocument: Transacti
         expect(quantity, `splits.[${index}].quantity`).to.equal(originalSplitItem.quantity);
         expect(getProductId(product), `splits.[${index}].product`).to.equal(getProductId(originalSplitItem.product));
 
-        expect(internal, 'remaining properties').to.deep.equal({});
+        expectEmptyObject(empty);
       });
 
       deferredSplits?.forEach((split, index) => {
-        const { amount, billingEndDate, billingStartDate, category, description, invoiceNumber, product, project, quantity, ownerAccount, payingAccount, transactionType, _id, ...internal } = split;
+        const { amount, billingEndDate, billingStartDate, category, description, invoiceNumber, product, project, quantity, ownerAccount, payingAccount, transactionType, _id, ...empty } = split;
         const originalSplitItem = originalDocument.deferredSplits.find(s => s._id.toString() === _id.toString());
 
         expect(getTransactionId(split), `deferredSplits.[${index}].id`).to.equal(getTransactionId(originalSplitItem));
@@ -677,9 +967,9 @@ const validateConvertedToRegularSplitItemDocument = (originalDocument: Transacti
         expect(quantity, `deferredSplits.[${index}].quantity`).to.equal(originalSplitItem.quantity);
         expect(getProductId(product), `deferredSplits.[${index}].product`).to.equal(getProductId(originalSplitItem.product));
 
-        expect(internal, 'remaining properties').to.deep.equal({});
+        expectEmptyObject(empty);
       });
-      Object.keys(internal).forEach(key => expect(key, `${key} is an internal property`).to.be.oneOf(internalPropertyNames));
+      expectRemainingProperties(internal);
     });
 };
 
@@ -695,6 +985,7 @@ const validateRelatedChangesInSplitDocument = (originalDocument: Transaction.Spl
     .getTransactionDocumentById(transactionId)
     .should((currentDocument: Transaction.SplitDocument) => {
       const { account, amount, deferredSplits, description, issuedAt, recipient, splits, transactionType, ...internal } = currentDocument;
+
       expect(getTransactionId(currentDocument), 'id').to.equal(getTransactionId(originalDocument));
       expect(amount, 'amount').to.equal(originalDocument.amount);
       expect(issuedAt.toISOString(), 'issuedAt').to.equal(originalDocument.issuedAt.toISOString());
@@ -753,7 +1044,7 @@ const validateRelatedChangesInSplitDocument = (originalDocument: Transaction.Spl
             expect(getProductId(product), `splits.[${index}].product`).to.equal(getProductId(originalDocument.splits[index].product));
           }
         }
-        expect(internal, 'remaining properties').to.deep.equal({});
+        expectRemainingProperties(internal);
       });
 
       deferredSplits?.forEach((split, index) => {
@@ -804,10 +1095,10 @@ const validateRelatedChangesInSplitDocument = (originalDocument: Transaction.Spl
             expect(getProductId(product), `deferredSplits.[${index}].product`).to.equal(getProductId(originalDocument.deferredSplits[index].product));
           }
         }
-        expect(internal, 'remaining properties').to.deep.equal({});
+        expectRemainingProperties(internal);
       });
 
-      Object.keys(internal).forEach(key => expect(key, `${key} is an internal property`).to.be.oneOf(internalPropertyNames));
+      expectRemainingProperties(internal);
     });
 };
 
@@ -873,7 +1164,7 @@ const validateRelatedChangesInPaymentDocument = (originalDocument: Transaction.P
           expect(quantity, 'quantity').to.equal(originalDocument.quantity);
         }
       }
-      Object.keys(internal).forEach(key => expect(key, `${key} is an internal property`).to.be.oneOf(internalPropertyNames));
+      expectRemainingProperties(internal);
     });
 };
 
@@ -940,7 +1231,7 @@ const validateRelatedChangesInDeferredDocument = (originalDocument: Transaction.
           expect(quantity, 'quantity').to.equal(originalDocument.quantity);
         }
       }
-      Object.keys(internal).forEach(key => expect(key, `${key} is an internal property`).to.be.oneOf(internalPropertyNames));
+      expectRemainingProperties(internal);
     });
 };
 
@@ -1007,7 +1298,7 @@ const validateRelatedChangesInReimbursementDocument = (originalDocument: Transac
           expect(quantity, 'quantity').to.equal(originalDocument.quantity);
         }
       }
-      Object.keys(internal).forEach(key => expect(key, `${key} is an internal property`).to.be.oneOf(internalPropertyNames));
+      expectRemainingProperties(internal);
     });
 };
 

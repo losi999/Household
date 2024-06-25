@@ -51,7 +51,7 @@ export const transferTransactionDataFactory = (() => {
           transactionId: t._id,
           amount: faker.number.float({
             min: 1,
-            max: 1000,
+            max: 500,
           }),
         })) : undefined,
       }),

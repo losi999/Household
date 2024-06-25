@@ -1,9 +1,10 @@
 import { populate } from '@household/shared/common/utils';
+import { getTransactionByIdAndAccountId } from '@household/shared/services/aggregates/get transaction by id and account id';
 import { listDeferredTransactions } from '@household/shared/services/aggregates/list deferred transactions by account id';
 import { listTransactionsByAccountId } from '@household/shared/services/aggregates/list transactions by account id';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { Restrict } from '@household/shared/types/common';
-import { Account, Common, Internal, Transaction } from '@household/shared/types/types';
+import { Account, Common, Transaction } from '@household/shared/types/types';
 import { PipelineStage, Types, UpdateQuery } from 'mongoose';
 
 export interface ITransactionService {
@@ -74,39 +75,9 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
         .exec();
     },
     getTransactionByIdAndAccountId: async ({ transactionId, accountId }) => {
-      return !transactionId ? undefined : mongodbService.transactions.findOne({
-        _id: transactionId,
-        $or: [
-          {
-            account: accountId,
-          },
-          {
-            transferAccount: accountId,
-          },
-          {
-            payingAccount: accountId,
-          },
-          {
-            ownerAccount: accountId,
-          },
-        ],
-      })
-        .setOptions({
-          populate: populate('project',
-            'recipient',
-            'account',
-            'transferAccount',
-            'payingAccount',
-            'ownerAccount',
-            'category',
-            'product',
-            'splits',
-            'splits.category',
-            'splits.project',
-            'splits.product'),
-          lean: true,
-        })
-        .exec();
+      return !transactionId ? undefined : (await mongodbService.transactions.aggregate<Transaction.Document>(
+        getTransactionByIdAndAccountId(transactionId, accountId),
+      ))[0];
     },
     deleteTransaction: (transactionId) => {
       return mongodbService.transactions.deleteOne({

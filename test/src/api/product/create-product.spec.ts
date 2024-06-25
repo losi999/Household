@@ -32,7 +32,7 @@ describe('POST product/v1/products', () => {
           .authenticate(1)
           .requestCreateProduct(request, getCategoryId(categoryDocument))
           .expectCreatedResponse()
-          .validateProductDocument(request);
+          .validateProductDocument(request, getCategoryId(categoryDocument));
       });
     });
 

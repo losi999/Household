@@ -15,8 +15,12 @@ export const getTransactionServiceFactory = (
   transactionDocumentConverter: ITransactionDocumentConverter): IGetTransactionService => {
   return async ({ transactionId, accountId }) => {
 
-    const document = await transactionService.getTransactionById(transactionId).catch(httpErrors.transaction.getById({
+    const document = await transactionService.getTransactionByIdAndAccountId({
+      accountId,
       transactionId,
+    }).catch(httpErrors.transaction.getById({
+      transactionId,
+      accountId,
     }));
 
     httpErrors.transaction.notFound(!document, {
