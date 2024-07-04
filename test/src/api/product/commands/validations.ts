@@ -1,6 +1,6 @@
 import { Category, Product } from '@household/shared/types/types';
 import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/test/api/types';
-import { getCategoryId, getProductId } from '@household/shared/common/utils';
+import { getProductId } from '@household/shared/common/utils';
 import { expectRemainingProperties } from '@household/test/api/utils';
 
 const validateProductDocument = (response: Product.ProductId, request: Product.Request, categoryId: Category.Id) => {

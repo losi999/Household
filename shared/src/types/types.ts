@@ -247,7 +247,7 @@ export namespace Transaction {
     issuedAt: D;
   };
 
-  type TransactionType<T extends string = never> = {
+  export type TransactionType<T extends string = never> = {
     transactionType: T;
   };
 

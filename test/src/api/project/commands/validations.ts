@@ -18,19 +18,21 @@ const validateProjectDocument = (response: Project.ProjectId, request: Project.R
     });
 };
 
-const validateProjectResponse = (response: Project.Response, document: Project.Document) => {
+const validateProjectResponse = (nestedPath: string = '') => (response: Project.Response, document: Project.Document) => {
   const { projectId, name, description, ...internal } = response;
 
-  expect(projectId, 'projectId').to.equal(getProjectId(document));
-  expect(name, 'name').to.equal(document.name);
-  expect(description, 'description').to.equal(document.description);
-  expectEmptyObject(internal);
+  expect(projectId, `${nestedPath}projectId`).to.equal(getProjectId(document));
+  expect(name, `${nestedPath}name`).to.equal(document.name);
+  expect(description, `${nestedPath}description`).to.equal(document.description);
+  expectEmptyObject(internal, nestedPath);
 };
 
+const validateNestedProjectResponse = (nestedPath: string, ...rest: Parameters<ReturnType<typeof validateProjectResponse>>) => validateProjectResponse(nestedPath)(...rest);
+
 const validateProjectListResponse = (responses: Project.Response[], documents: Project.Document[]) => {
-  documents.forEach((document) => {
+  documents.forEach((document, index) => {
     const response = responses.find(r => r.projectId === getProjectId(document));
-    validateProjectResponse(response, document);
+    cy.validateNestedProjectResponse(`[${index}].`, response, document);
   });
 };
 
@@ -47,12 +49,13 @@ export const setProjectValidationCommands = () => {
     prevSubject: true,
   }, {
     validateProjectDocument,
-    validateProjectResponse,
+    validateProjectResponse: validateProjectResponse(),
     validateProjectListResponse,
   });
 
   Cypress.Commands.addAll({
     validateProjectDeleted,
+    validateNestedProjectResponse,
   });
 };
 
@@ -60,11 +63,12 @@ declare global {
   namespace Cypress {
     interface Chainable {
       validateProjectDeleted: CommandFunction<typeof validateProjectDeleted>;
+      validateNestedProjectResponse: CommandFunction<typeof validateNestedProjectResponse>;
     }
 
     interface ChainableResponseBody extends Chainable {
       validateProjectDocument: CommandFunctionWithPreviousSubject<typeof validateProjectDocument>;
-      validateProjectResponse: CommandFunctionWithPreviousSubject<typeof validateProjectResponse>;
+      validateProjectResponse: CommandFunctionWithPreviousSubject<ReturnType<typeof validateProjectResponse>>;
       validateProjectListResponse: CommandFunctionWithPreviousSubject<typeof validateProjectListResponse>;
     }
   }

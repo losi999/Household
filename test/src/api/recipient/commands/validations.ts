@@ -17,18 +17,20 @@ const validateRecipientDocument = (response: Recipient.RecipientId, request: Rec
     });
 };
 
-const validateRecipientResponse = (response: Recipient.Response, document: Recipient.Document) => {
-  const { recipientId, name, ...rest } = response;
+const validateRecipientResponse = (nestedPath: string = '') => (response: Recipient.Response, document: Recipient.Document) => {
+  const { recipientId, name, ...empty } = response;
 
-  expect(recipientId, 'recipientId').to.equal(getRecipientId(document));
-  expect(name, 'name').to.equal(document.name);
-  expectEmptyObject(rest);
+  expect(recipientId, `${nestedPath}recipientId`).to.equal(getRecipientId(document));
+  expect(name, `${nestedPath}name`).to.equal(document.name);
+  expectEmptyObject(empty, nestedPath);
 };
 
+const validateNestedRecipientResponse = (nestedPath: string, ...rest: Parameters<ReturnType<typeof validateRecipientResponse>>) => validateRecipientResponse(nestedPath)(...rest);
+
 const validateRecipientListResponse = (responses: Recipient.Response[], documents: Recipient.Document[]) => {
-  documents.forEach((document) => {
+  documents.forEach((document, index) => {
     const response = responses.find(r => r.recipientId === getRecipientId(document));
-    validateRecipientResponse(response, document);
+    cy.validateNestedRecipientResponse(`[${index}].`, response, document);
   });
 };
 
@@ -45,12 +47,13 @@ export const setRecipientValidationCommands = () => {
     prevSubject: true,
   }, {
     validateRecipientDocument,
-    validateRecipientResponse,
+    validateRecipientResponse: validateRecipientResponse(),
     validateRecipientListResponse,
   });
 
   Cypress.Commands.addAll({
     validateRecipientDeleted,
+    validateNestedRecipientResponse,
   });
 };
 
@@ -58,11 +61,12 @@ declare global {
   namespace Cypress {
     interface Chainable {
       validateRecipientDeleted: CommandFunction<typeof validateRecipientDeleted>;
+      validateNestedRecipientResponse: CommandFunction<typeof validateNestedRecipientResponse>;
     }
 
     interface ChainableResponseBody extends Chainable {
       validateRecipientDocument: CommandFunctionWithPreviousSubject<typeof validateRecipientDocument>;
-      validateRecipientResponse: CommandFunctionWithPreviousSubject<typeof validateRecipientResponse>;
+      validateRecipientResponse: CommandFunctionWithPreviousSubject<ReturnType<typeof validateRecipientResponse>>;
       validateRecipientListResponse: CommandFunctionWithPreviousSubject<typeof validateRecipientListResponse>;
     }
   }

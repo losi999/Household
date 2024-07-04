@@ -23,43 +23,45 @@ const validateCategoryDocument = (response: Category.CategoryId, request: Catego
     });
 };
 
-const validateCategoryResponse = (response: Category.Response, document: Category.Document, parent?: Category.Document, productDocument?: Product.Document) => {
+const validateCategoryResponse = (nestedPath: string = '') => (response: Category.Response, document: Category.Document, parent?: Category.Document, productDocument?: Product.Document) => {
   const { categoryId, name, categoryType, fullName, parentCategory, products, ...empty } = response;
-  expect(categoryId, 'categoryId').to.equal(getCategoryId(document));
-  expect(name, 'name').to.equal(document.name);
-  expect(categoryType, 'categoryType').to.equal(document.categoryType);
-  expect(fullName, 'fullName').to.equal(document.fullName);
+  expect(categoryId, `${nestedPath}categoryId`).to.equal(getCategoryId(document));
+  expect(name, `${nestedPath}name`).to.equal(document.name);
+  expect(categoryType, `${nestedPath}categoryType`).to.equal(document.categoryType);
+  expect(fullName, `${nestedPath}fullName`).to.equal(document.fullName);
   if (parent) {
     const { name, fullName, categoryType, categoryId, ...empty } = parentCategory;
 
-    expect(name, 'parentCategory.name').to.equal(parent?.name);
-    expect(fullName, 'parentCategory.fullName').to.equal(parent?.fullName);
-    expect(categoryType, 'parentCategory.categoryType').to.equal(parent?.categoryType);
-    expect(categoryId, 'parentCategory.categoryId').to.equal(getCategoryId(parent));
-    expectEmptyObject(empty);
+    expect(name, `${nestedPath}parentCategory.name`).to.equal(parent?.name);
+    expect(fullName, `${nestedPath}parentCategory.fullName`).to.equal(parent?.fullName);
+    expect(categoryType, `${nestedPath}parentCategory.categoryType`).to.equal(parent?.categoryType);
+    expect(categoryId, `${nestedPath}parentCategory.categoryId`).to.equal(getCategoryId(parent));
+    expectEmptyObject(empty, `${nestedPath}parentCategory`);
   } else {
-    expect(parentCategory, 'parentCategory').to.be.undefined;
+    expect(parentCategory, `${nestedPath}parentCategory`).to.be.undefined;
   }
   if (productDocument) {
-    expect(products.length, 'products count').to.equal(1);
+    expect(products.length, `${nestedPath}products count`).to.equal(1);
     const { productId, brand, fullName, measurement, unitOfMeasurement, ...empty } = products[0];
 
-    expect(productId, 'products[0].productId').to.equal(getProductId(productDocument));
-    expect(brand, 'products[0].brand').to.equal(productDocument.brand);
-    expect(fullName, 'products[0].fullName').to.equal(productDocument.fullName);
-    expect(measurement, 'products[0].measurement').to.equal(productDocument.measurement);
-    expect(unitOfMeasurement, 'products[0].unitOfMeasurement').to.equal(productDocument.unitOfMeasurement);
-    expectEmptyObject(empty);
+    expect(productId, `${nestedPath}products[0].productId`).to.equal(getProductId(productDocument));
+    expect(brand, `${nestedPath}products[0].brand`).to.equal(productDocument.brand);
+    expect(fullName, `${nestedPath}products[0].fullName`).to.equal(productDocument.fullName);
+    expect(measurement, `${nestedPath}products[0].measurement`).to.equal(productDocument.measurement);
+    expect(unitOfMeasurement, `${nestedPath}products[0].unitOfMeasurement`).to.equal(productDocument.unitOfMeasurement);
+    expectEmptyObject(empty, `${nestedPath}products`);
   } else {
-    expect(products, 'products').to.be.undefined;
+    expect(products, `${nestedPath}products`).to.be.undefined;
   }
-  expectEmptyObject(empty);
+  expectEmptyObject(empty, nestedPath);
 };
+
+const validateNestedCategoryResponse = (nestedPath: string, ...rest: Parameters<ReturnType<typeof validateCategoryResponse>>) => validateCategoryResponse(nestedPath)(...rest);
 
 const validateCategoryListResponse = (responses: Category.Response[], documents: Category.Document[], products?: Product.Document[]) => {
   documents.forEach((document, index) => {
     const response = responses.find(r => r.categoryId === getCategoryId(document));
-    validateCategoryResponse(response, document, undefined, products?.[index]);
+    cy.validateNestedCategoryResponse(`[${index}].`, response, document, undefined, products?.[index]);
   });
 };
 
@@ -127,7 +129,7 @@ export const setCategoryValidationCommands = () => {
     prevSubject: true,
   }, {
     validateCategoryDocument,
-    validateCategoryResponse,
+    validateCategoryResponse: validateCategoryResponse(),
     validateCategoryListResponse,
   });
 
@@ -135,6 +137,7 @@ export const setCategoryValidationCommands = () => {
     validateCategoryDeleted,
     validateCategoryParentReassign,
     validateProductRemoval,
+    validateNestedCategoryResponse,
   });
 };
 
@@ -144,11 +147,12 @@ declare global {
       validateCategoryDeleted: CommandFunction<typeof validateCategoryDeleted>;
       validateCategoryParentReassign: CommandFunction<typeof validateCategoryParentReassign>;
       validateProductRemoval: CommandFunction<typeof validateProductRemoval>;
+      validateNestedCategoryResponse: CommandFunction<typeof validateNestedCategoryResponse>;
     }
 
     interface ChainableResponseBody extends Chainable {
       validateCategoryDocument: CommandFunctionWithPreviousSubject<typeof validateCategoryDocument>;
-      validateCategoryResponse: CommandFunctionWithPreviousSubject<typeof validateCategoryResponse>;
+      validateCategoryResponse: CommandFunctionWithPreviousSubject<ReturnType<typeof validateCategoryResponse>>;
       validateCategoryListResponse: CommandFunctionWithPreviousSubject<typeof validateCategoryListResponse>;
     }
   }
