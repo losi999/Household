@@ -1,8 +1,5 @@
+import { flattenSplit, duplicateByAccounts, calculateRemainingAmount, rebuildSplits, populateAggregate } from '@household/shared/common/aggregate-helpers';
 import { populate } from '@household/shared/common/utils';
-import { getTransactionByIdAndAccountId } from '@household/shared/services/aggregates/get transaction by id and account id';
-import { listDeferredTransactions } from '@household/shared/services/aggregates/list deferred transactions by account id';
-import { listTransactionsByAccountId } from '@household/shared/services/aggregates/list transactions by account id';
-import { transactionsReport } from '@household/shared/services/aggregates/transactions report';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { Restrict } from '@household/shared/types/common';
 import { Account, Common, Transaction } from '@household/shared/types/types';
@@ -77,7 +74,49 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
     },
     getTransactionByIdAndAccountId: async ({ transactionId, accountId }) => {
       return !transactionId ? undefined : (await mongodbService.transactions.aggregate<Transaction.Document>(
-        getTransactionByIdAndAccountId(transactionId, accountId),
+        [
+          {
+            $match: {
+              _id: new Types.ObjectId(transactionId),
+            },
+          },
+          ...flattenSplit({
+            tx_amount: '$amount',
+            tx_description: '$description',
+            tx_id: '$_id',
+            tx_transactionType: '$transactionType',
+          }),
+          ...duplicateByAccounts(),
+          {
+            $unset: [
+              'tmp_dupes',
+              'tmp_splits',
+              'splits',
+              'deferredSplits',
+            ],
+          },
+          {
+            $match: {
+              tmp_account: new Types.ObjectId(accountId),
+            },
+          },
+          ...calculateRemainingAmount(),
+          {
+            $unset: [
+              'tmp_deferredTransactions',
+              'tmp_account',
+            ],
+          },
+          ...populateAggregate('account', 'accounts'),
+          ...populateAggregate('payingAccount', 'accounts'),
+          ...populateAggregate('ownerAccount', 'accounts'),
+          ...populateAggregate('transferAccount', 'accounts'),
+          ...populateAggregate('category', 'categories'),
+          ...populateAggregate('project', 'projects'),
+          ...populateAggregate('product', 'products'),
+          ...populateAggregate('recipient', 'recipients'),
+          ...rebuildSplits(),
+        ],
       ))[0];
     },
     deleteTransaction: (transactionId) => {
@@ -105,20 +144,211 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
     },
     listTransactions: (match) => {
       return mongodbService.inSession((session) => {
-        return mongodbService.transactions.aggregate(transactionsReport(match), {
-          session,
-        });
+        return mongodbService.transactions.aggregate(
+          [
+            {
+              $match: {
+                transactionType: {
+                  $nin: [
+                    'transfer',
+                    'loanTransfer',
+                  ],
+                },
+              },
+            },
+            ...flattenSplit({
+              _id: '$_id',
+              splitId: '$tmp_splits._id',
+            }),
+            {
+              $set: {
+                tmp_dupes: {
+                  $filter: {
+                    input: [
+                      {
+                        account: {
+                          $cond: {
+                            if: {
+                              $ne: [
+                                '$transactionType',
+                                'deferred',
+                              ],
+                            },
+                            then: '$account',
+                            else: null,
+                          },
+                        },
+                      },
+                      {
+                        account: '$transferAccount',
+                        amount: {
+                          $ifNull: [
+                            '$transferAmount',
+                            '$amount',
+                          ],
+                        },
+                      },
+                      {
+                        account: '$ownerAccount',
+                      },
+                    ],
+                    cond: {
+                      $ne: [
+                        {
+                          $ifNull: [
+                            '$$this.account',
+                            null,
+                          ],
+                        },
+                        null,
+                      ],
+                    },
+                  },
+                },
+              },
+            },
+            {
+              $unwind: {
+                path: '$tmp_dupes',
+              },
+            },
+            {
+              $replaceRoot: {
+                newRoot: {
+                  $mergeObjects: [
+                    '$$ROOT',
+                    '$tmp_dupes',
+                  ],
+                },
+              },
+            },
+            {
+              $unset: [
+                'tmp_dupes',
+                'tmp_splits',
+                'splits',
+                'deferredSplits',
+                'payingAccount',
+                'ownerAccount',
+                'isSettled',
+              ],
+            },
+            match,
+            ...populateAggregate('account', 'accounts'),
+            ...populateAggregate('category', 'categories'),
+            ...populateAggregate('project', 'projects'),
+            ...populateAggregate('product', 'products'),
+            ...populateAggregate('recipient', 'recipients'),
+          ], {
+            session,
+          });
 
       });
     },
     listDeferredTransactions: ({ payingAccountIds, deferredTransactionIds, excludedTransferTransactionId }) => {
       return mongodbService.inSession((session) => {
         return mongodbService.transactions.aggregate<Transaction.DeferredDocument>(
-          listDeferredTransactions({
-            payingAccountIds,
-            excludedTransferTransactionId,
-            deferredTransactionIds,
-          }), {
+          [
+            ...flattenSplit({
+              tx_amount: '$amount',
+              tx_description: '$description',
+              tx_id: '$_id',
+              tx_transactionType: '$transactionType',
+            }),
+            {
+              $match: {
+                ...(payingAccountIds.length > 0 ? {
+                  payingAccount: {
+                    $in: payingAccountIds.map(id => new Types.ObjectId(id)),
+                  },
+                } : {}),
+                ...(deferredTransactionIds.length > 0 ? {
+                  _id: {
+                    $in: deferredTransactionIds.map(id => new Types.ObjectId(id)),
+                  },
+                } : {}),
+                transactionType: 'deferred',
+              },
+            },
+            {
+              $lookup: {
+                from: 'transactions',
+                let: {
+                  transactionId: '$_id',
+                },
+                pipeline: [
+                  ...(excludedTransferTransactionId ? [
+                    {
+                      $match: {
+                        _id: {
+                          $ne: new Types.ObjectId(excludedTransferTransactionId),
+                        },
+                      },
+                    },
+                  ] : []),
+                  {
+                    $unwind: {
+                      path: '$payments',
+                    },
+                  },
+                  {
+                    $match: {
+                      $expr: {
+                        $eq: [
+                          '$$transactionId',
+                          '$payments.transaction',
+                        ],
+                      },
+                    },
+                  },
+                ],
+                as: 'tmp_deferredTransactions',
+              },
+            },
+            {
+              $set: {
+                remainingAmount: {
+                  $cond: {
+                    if: {
+                      $eq: [
+                        '$isSettled',
+                        true,
+                      ],
+                    },
+                    then: 0,
+                    else: {
+                      $add: [
+                        '$amount',
+                        {
+                          $sum: '$tmp_deferredTransactions.payments.amount',
+                        },
+                      ],
+                    },
+                  },
+
+                },
+              },
+            },
+            {
+              $unset: [
+                'tmp_deferredTransactions',
+                'deferredSplits',
+                'account',
+                'splits',
+                'tx_amount',
+                'tx_description',
+                'tx_id',
+                'tx_transactionType',
+                'tmp_splits',
+              ],
+            },
+            ...populateAggregate('payingAccount', 'accounts'),
+            ...populateAggregate('ownerAccount', 'accounts'),
+            ...populateAggregate('category', 'categories'),
+            ...populateAggregate('project', 'projects'),
+            ...populateAggregate('product', 'products'),
+            ...populateAggregate('recipient', 'recipients'),
+          ], {
             session,
           });
       });
@@ -126,7 +356,47 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
     listTransactionsByAccountId: ({ accountId, pageSize, pageNumber }) => {
       return mongodbService.inSession(async (session) => {
         return mongodbService.transactions.aggregate([
-          ...listTransactionsByAccountId(accountId),
+          ...flattenSplit({
+            tx_amount: '$amount',
+            tx_description: '$description',
+            tx_id: '$_id',
+            tx_transactionType: '$transactionType',
+          }),
+          ...duplicateByAccounts(),
+          {
+            $unset: [
+              'tmp_dupes',
+              'tmp_splits',
+              'splits',
+              'deferredSplits',
+            ],
+          },
+          {
+            $match: {
+              tmp_account: new Types.ObjectId(accountId),
+            },
+          },
+          ...calculateRemainingAmount(),
+          {
+            $unset: [
+              'tmp_deferredTransactions',
+              'tmp_account',
+            ],
+          },
+          ...populateAggregate('account', 'accounts'),
+          ...populateAggregate('payingAccount', 'accounts'),
+          ...populateAggregate('ownerAccount', 'accounts'),
+          ...populateAggregate('transferAccount', 'accounts'),
+          ...populateAggregate('category', 'categories'),
+          ...populateAggregate('project', 'projects'),
+          ...populateAggregate('product', 'products'),
+          ...populateAggregate('recipient', 'recipients'),
+          ...rebuildSplits(),
+          {
+            $sort: {
+              issuedAt: -1,
+            },
+          },
           {
             $skip: (pageNumber - 1) * pageSize,
           },

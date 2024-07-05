@@ -1,11 +1,23 @@
-import { PipelineStage, Types } from 'mongoose';
+import { PipelineStage } from 'mongoose';
 
-export const getTransactionByIdAndAccountId = (transactionId: string, accountId: string): PipelineStage[] => [
+export const populateAggregate = (localField: string, from: string): [PipelineStage.Lookup, PipelineStage.Unwind] => [
   {
-    $match: {
-      _id: new Types.ObjectId(transactionId),
+    $lookup: {
+      from,
+      localField,
+      foreignField: '_id',
+      as: localField,
     },
   },
+  {
+    $unwind: {
+      path: `$${localField}`,
+      preserveNullAndEmptyArrays: true,
+    },
+  },
+];
+
+export const flattenSplit = (additionalPropeties: Record<string, string>): [PipelineStage.Set, PipelineStage.Unwind, PipelineStage.ReplaceRoot] => [
   {
     $set: {
       tmp_splits: {
@@ -38,16 +50,14 @@ export const getTransactionByIdAndAccountId = (transactionId: string, accountId:
         $mergeObjects: [
           '$$ROOT',
           '$tmp_splits',
-          {
-            tx_amount: '$amount',
-            tx_description: '$description',
-            tx_id: '$_id',
-            tx_transactionType: '$transactionType',
-          },
+          additionalPropeties,
         ],
       },
     },
   },
+];
+
+export const duplicateByAccounts = (): [PipelineStage.Set, PipelineStage.Unwind, PipelineStage.ReplaceRoot] => [
   {
     $set: {
       tmp_dupes: {
@@ -113,231 +123,116 @@ export const getTransactionByIdAndAccountId = (transactionId: string, accountId:
       },
     },
   },
-  {
-    $unset: [
-      'tmp_dupes',
-      'tmp_splits',
-      'splits',
-      'deferredSplits',
-    ],
-  },
-  {
-    $match: {
-      tmp_account: new Types.ObjectId(accountId),
-    },
-  },
+];
+
+export const calculateAccountBalances = (): [PipelineStage.Lookup, PipelineStage.Set, PipelineStage.Unset] => [
   {
     $lookup: {
       from: 'transactions',
       let: {
-        transactionId: '$_id',
+        accountId: '$_id',
       },
       pipeline: [
+        ...flattenSplit({
+          tx_amount: '$amount',
+          tx_description: '$description',
+          tx_id: '$_id',
+          tx_transactionType: '$transactionType',
+        }),
+        ...duplicateByAccounts(),
         {
-          $unwind: {
-            path: '$payments',
-          },
+          $unset: [
+            'tmp_dupes',
+            'tmp_splits',
+            'splits',
+            'deferredSplits',
+          ],
         },
         {
           $match: {
             $expr: {
               $eq: [
-                '$$transactionId',
-                '$payments.transaction',
+                '$$accountId',
+                '$tmp_account',
               ],
             },
           },
         },
       ],
-      as: 'tmp_deferredTransactions',
+      as: 'tmp_tx',
     },
   },
   {
     $set: {
-      remainingAmount: {
-        $cond: {
-          if: {
-            $eq: [
-              '$transactionType',
-              'deferred',
-            ],
-          },
-          then: {
+      balance: {
+        $reduce: {
+          input: '$tmp_tx',
+          initialValue: 0,
+          in: {
             $switch: {
               branches: [
                 {
                   case: {
-                    $eq: [
-                      '$isSettled',
-                      true,
-                    ],
-                  },
-                  then: 0,
-                },
-                {
-                  case: {
-                    $eq: [
-                      '$tmp_account',
-                      '$ownerAccount',
-                    ],
-                  },
-                  then: {
-                    $multiply: [
+                    $and: [
                       {
-                        $sum: [
-                          '$amount',
-                          {
-                            $sum: '$tmp_deferredTransactions.payments.amount',
-                          },
+                        $eq: [
+                          '$$this.tmp_account',
+                          '$$this.ownerAccount',
                         ],
                       },
-                      -1,
+                      {
+                        $ne: [
+                          '$accountType',
+                          'loan',
+                        ],
+                      },
                     ],
                   },
+                  then: '$$value',
                 },
                 {
                   case: {
-                    $eq: [
-                      '$tmp_account',
-                      '$payingAccount',
+                    $and: [
+                      {
+                        $eq: [
+                          '$$this.tmp_account',
+                          '$$this.payingAccount',
+                        ],
+                      },
+                      {
+                        $eq: [
+                          '$accountType',
+                          'loan',
+                        ],
+                      },
                     ],
                   },
                   then: {
-                    $sum: [
-                      '$amount',
-                      {
-                        $sum: '$tmp_deferredTransactions.payments.amount',
-                      },
+                    $subtract: [
+                      '$$value',
+                      '$$this.amount',
                     ],
                   },
                 },
               ],
-              default: '$$REMOVE',
+              default: {
+                $sum: [
+                  '$$value',
+                  '$$this.amount',
+                ],
+              },
             },
           },
-          else: '$$REMOVE',
         },
       },
     },
   },
   {
-    $unset: [
-      'tmp_deferredTransactions',
-      'tmp_account',
-    ],
+    $unset: ['tmp_tx'],
   },
-  {
-    $lookup: {
-      from: 'accounts',
-      localField: 'account',
-      foreignField: '_id',
-      as: 'account',
-    },
-  },
-  {
-    $unwind: {
-      path: '$account',
-      preserveNullAndEmptyArrays: true,
-    },
-  },
-  {
-    $lookup: {
-      from: 'accounts',
-      localField: 'payingAccount',
-      foreignField: '_id',
-      as: 'payingAccount',
-    },
-  },
-  {
-    $unwind: {
-      path: '$payingAccount',
-      preserveNullAndEmptyArrays: true,
-    },
-  },
-  {
-    $lookup: {
-      from: 'accounts',
-      localField: 'ownerAccount',
-      foreignField: '_id',
-      as: 'ownerAccount',
-    },
-  },
-  {
-    $unwind: {
-      path: '$ownerAccount',
-      preserveNullAndEmptyArrays: true,
-    },
-  },
-  {
-    $lookup: {
-      from: 'accounts',
-      localField: 'transferAccount',
-      foreignField: '_id',
-      as: 'transferAccount',
-    },
-  },
-  {
-    $unwind: {
-      path: '$transferAccount',
-      preserveNullAndEmptyArrays: true,
-    },
-  },
-  {
-    $lookup: {
-      from: 'categories',
-      localField: 'category',
-      foreignField: '_id',
-      as: 'category',
-    },
-  },
-  {
-    $unwind: {
-      path: '$category',
-      preserveNullAndEmptyArrays: true,
-    },
-  },
-  {
-    $lookup: {
-      from: 'projects',
-      localField: 'project',
-      foreignField: '_id',
-      as: 'project',
-    },
-  },
-  {
-    $unwind: {
-      path: '$project',
-      preserveNullAndEmptyArrays: true,
-    },
-  },
-  {
-    $lookup: {
-      from: 'products',
-      localField: 'product',
-      foreignField: '_id',
-      as: 'product',
-    },
-  },
-  {
-    $unwind: {
-      path: '$product',
-      preserveNullAndEmptyArrays: true,
-    },
-  },
-  {
-    $lookup: {
-      from: 'recipients',
-      localField: 'recipient',
-      foreignField: '_id',
-      as: 'recipient',
-    },
-  },
-  {
-    $unwind: {
-      path: '$recipient',
-      preserveNullAndEmptyArrays: true,
-    },
-  },
+];
+
+export const rebuildSplits = (): [PipelineStage.Group, PipelineStage.ReplaceRoot, PipelineStage.Set, PipelineStage.Unset] => [
   {
     $group: {
       _id: '$tx_id',
@@ -545,6 +440,7 @@ export const getTransactionByIdAndAccountId = (transactionId: string, accountId:
         },
       },
     },
+
   },
   {
     $unset: [
@@ -557,3 +453,99 @@ export const getTransactionByIdAndAccountId = (transactionId: string, accountId:
   },
 ];
 
+export const calculateRemainingAmount = (): [PipelineStage.Lookup, PipelineStage.Set] => [
+  {
+    $lookup: {
+      from: 'transactions',
+      let: {
+        transactionId: '$_id',
+      },
+      pipeline: [
+        {
+          $unwind: {
+            path: '$payments',
+          },
+        },
+        {
+          $match: {
+            $expr: {
+              $eq: [
+                '$$transactionId',
+                '$payments.transaction',
+              ],
+            },
+          },
+        },
+      ],
+      as: 'tmp_deferredTransactions',
+    },
+  },
+  {
+    $set: {
+      remainingAmount: {
+        $cond: {
+          if: {
+            $eq: [
+              '$transactionType',
+              'deferred',
+            ],
+          },
+          then: {
+            $switch: {
+              branches: [
+                {
+                  case: {
+                    $eq: [
+                      '$isSettled',
+                      true,
+                    ],
+                  },
+                  then: 0,
+                },
+                {
+                  case: {
+                    $eq: [
+                      '$tmp_account',
+                      '$ownerAccount',
+                    ],
+                  },
+                  then: {
+                    $multiply: [
+                      {
+                        $sum: [
+                          '$amount',
+                          {
+                            $sum: '$tmp_deferredTransactions.payments.amount',
+                          },
+                        ],
+                      },
+                      -1,
+                    ],
+                  },
+                },
+                {
+                  case: {
+                    $eq: [
+                      '$tmp_account',
+                      '$payingAccount',
+                    ],
+                  },
+                  then: {
+                    $sum: [
+                      '$amount',
+                      {
+                        $sum: '$tmp_deferredTransactions.payments.amount',
+                      },
+                    ],
+                  },
+                },
+              ],
+              default: '$$REMOVE',
+            },
+          },
+          else: '$$REMOVE',
+        },
+      },
+    },
+  },
+];

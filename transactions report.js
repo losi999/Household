@@ -36,6 +36,7 @@ db.getCollection("transactions").aggregate([
           '$tmp_splits',
           {
             _id: '$_id',
+            splitId: '$tmp_splits._id'
           }
         ],
       },

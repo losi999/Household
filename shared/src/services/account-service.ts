@@ -1,8 +1,7 @@
-import { calculateAccountBalance } from '@household/shared/services/aggregates/calculate-account-balance';
-import { getAccountWithBalance } from '@household/shared/services/aggregates/get-account-with-balance';
+import { calculateAccountBalances } from '@household/shared/common/aggregate-helpers';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { Account } from '@household/shared/types/types';
-import { UpdateQuery } from 'mongoose';
+import { Types, UpdateQuery } from 'mongoose';
 
 export interface IAccountService {
   dumpAccounts(): Promise<Account.Document[]>;
@@ -43,7 +42,19 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
       let account: Account.Document;
       if (accountId) {
         [account] = await mongodbService.inSession((session) => {
-          return mongodbService.accounts.aggregate(getAccountWithBalance(accountId))
+          return mongodbService.accounts.aggregate([
+            {
+              $match: {
+                _id: new Types.ObjectId(accountId),
+              },
+            },
+            ...calculateAccountBalances(),
+            {
+              $sort: {
+                name: 1,
+              },
+            },
+          ])
             .session(session)
             .collation({
               locale: 'hu',
@@ -165,7 +176,14 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
     },
     listAccounts: () => {
       return mongodbService.inSession((session) => {
-        return mongodbService.accounts.aggregate(calculateAccountBalance)
+        return mongodbService.accounts.aggregate([
+          ...calculateAccountBalances(),
+          {
+            $sort: {
+              name: 1,
+            },
+          },
+        ])
           .session(session)
           .collation({
             locale: 'hu',
