@@ -146,7 +146,7 @@ describe('GET /account/v1/accounts/{accountId}', () => {
         .requestGetAccount(getAccountId(accountDocument))
         .expectOkResponse()
         .expectValidResponseSchema(schema)
-        .validateAccountResponse(accountDocument, expectedBalance);
+        .validateAccountResponse(accountDocument, expectedBalance, 2);
     });
 
     it('should get loan account by id', () => {
@@ -156,7 +156,7 @@ describe('GET /account/v1/accounts/{accountId}', () => {
         .requestGetAccount(getAccountId(loanAccountDocument))
         .expectOkResponse()
         .expectValidResponseSchema(schema)
-        .validateAccountResponse(loanAccountDocument, expectedBalance);
+        .validateAccountResponse(loanAccountDocument, expectedBalance, 0);
     });
 
     describe('should return error if accountId', () => {

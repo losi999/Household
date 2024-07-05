@@ -74,8 +74,11 @@ components:
       type: object
       required:
         - balance
+        - deferredCount
       properties:
         balance:
+          type: number
+        deferredCount:
           type: number
     Response:
       allOf:

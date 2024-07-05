@@ -34,6 +34,7 @@ export const accountDocumentConverterFactory = (): IAccountDocumentConverter => 
       return {
         ...document,
         balance: document.balance ?? null,
+        deferredCount: document.deferredCount ?? null,
         fullName: `${document.name} (${document.owner})`,
         createdAt: undefined,
         updatedAt: undefined,

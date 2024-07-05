@@ -125,97 +125,35 @@ db.getCollection("accounts").aggregate([
             },
           },
         },
-        {
-          $lookup: {
-            from: 'transactions',
-            let: {
-              transactionId: '$_id',
-            },
-            pipeline: [
-              {
-                $unwind: {
-                  path: '$payments',
-                },
-              },
-              {
-                $match: {
-                  $expr: {
-                    $eq: [
-                      '$$transactionId',
-                      '$payments.transaction',
-                    ],
-                  },
-                },
-              },
-            ],
-            as: 'tmp_deferredTransactions',
-          },
-        },
-        {
-          $set: {
-            remainingAmount: {
-              $cond: {
-                if: {
-                  $eq: [
-                    '$transactionType',
-                    'deferred'
-                  ],
-                },
-                then: {
-                  $switch: {
-                    branches: [
-                      {
-                        case: {
-                          $eq: [
-                            '$tmp_account',
-                            '$ownerAccount',
-                          ],
-                        },
-                        then: {
-                          $multiply: [
-                            {
-                              $sum: [
-                                '$amount',
-                                {
-                                  $sum: '$tmp_deferredTransactions.payments.amount',
-                                },
-                              ],
-                            },
-                            -1,
-                          ],
-                        },
-                      },
-                      {
-                        case: {
-                          $eq: [
-                            '$tmp_account',
-                            '$payingAccount',
-                          ],
-                        },
-                        then: {
-                          $sum: [
-                            '$amount',
-                            {
-                              $sum: '$tmp_deferredTransactions.payments.amount',
-                            },
-                          ],
-                        },
-                      },
-                    ],
-                    default: '$$REMOVE',
-                  },
-                },
-                else: '$$REMOVE',
-              },
-            },
-          },
-        },
       ],
       as: 'tmp_tx',
     },
   },
   {
     $set: {
+      deferredCount: {
+        $cond: {
+          if: {
+            $eq: ['$accountType', 'loan']
+          },
+          then: 0,
+          else: {
+            $size: {
+              $filter: {
+                input: '$tmp_tx',
+                cond: {
+                  $and: [{
+                    $eq: ['$$this.transactionType', 'deferred']
+                  }, {
+                    $eq: ['$$this.tmp_account', '$$this.ownerAccount']
+                  }]
+
+                }
+              }
+            }
+          }
+        }
+      },
       balance: {
         $reduce: {
           input: '$tmp_tx',

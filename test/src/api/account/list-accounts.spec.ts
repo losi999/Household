@@ -146,12 +146,18 @@ describe('GET /account/v1/accounts', () => {
         .expectOkResponse()
         .expectValidResponseSchema(schema)
         .validateAccountListResponse([
-          accountDocument,
-          loanAccountDocument,
-        ], [
-          expectedBalance1,
-          expectedBalance2,
-        ]);
+          [
+            accountDocument,
+            expectedBalance1,
+            2,
+          ],
+          [
+            loanAccountDocument,
+            expectedBalance2,
+            0,
+          ],
+        ],
+        );
     });
   });
 });

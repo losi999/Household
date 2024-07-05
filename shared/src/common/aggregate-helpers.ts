@@ -164,6 +164,41 @@ export const calculateAccountBalances = (): [PipelineStage.Lookup, PipelineStage
   },
   {
     $set: {
+      deferredCount: {
+        $cond: {
+          if: {
+            $eq: [
+              '$accountType',
+              'loan',
+            ],
+          },
+          then: 0,
+          else: {
+            $size: {
+              $filter: {
+                input: '$tmp_tx',
+                cond: {
+                  $and: [
+                    {
+                      $eq: [
+                        '$$this.transactionType',
+                        'deferred',
+                      ],
+                    },
+                    {
+                      $eq: [
+                        '$$this.tmp_account',
+                        '$$this.ownerAccount',
+                      ],
+                    },
+                  ],
+
+                },
+              },
+            },
+          },
+        },
+      },
       balance: {
         $reduce: {
           input: '$tmp_tx',

@@ -111,6 +111,7 @@ export namespace Account {
 
   type Balance = {
     balance: number;
+    deferredCount: number;
   };
 
   export type Document = Internal.Id

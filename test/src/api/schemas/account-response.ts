@@ -22,6 +22,12 @@ const schema: StrictJSONSchema7<Account.Response> = {
         'null',
       ],
     },
+    deferredCount: {
+      type: [
+        'number',
+        'null',
+      ],
+    },
     isOpen: {
       type: 'boolean',
     },
