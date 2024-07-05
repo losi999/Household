@@ -5,7 +5,12 @@ export const listTransactionsByAccountId = (accountId: string): PipelineStage[] 
     $set: {
       tmp_splits: {
         $concatArrays: [
-          '$splits',
+          {
+            $ifNull: [
+              '$splits',
+              [],
+            ],
+          },
           {
             $ifNull: [
               '$deferredSplits',

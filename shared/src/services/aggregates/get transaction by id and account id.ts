@@ -10,7 +10,12 @@ export const getTransactionByIdAndAccountId = (transactionId: string, accountId:
     $set: {
       tmp_splits: {
         $concatArrays: [
-          '$splits',
+          {
+            $ifNull: [
+              '$splits',
+              [],
+            ],
+          },
           {
             $ifNull: [
               '$deferredSplits',

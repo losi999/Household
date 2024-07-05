@@ -1,9 +1,16 @@
+var pageNumber = 1
+var pageSize = 25
 //var accountId = '665aca365689536dd37d8468' //bank
 var accountId = '665aca435689536dd37d847d'//revolut
-//var accountId = '665aca665689536dd37d847f' //kölcsön
-//var transactionId = '6661ad409aa7a24ca46db310'
 
 db.getCollection("transactions").aggregate([
+  {
+    $match: {
+      transactionType: {
+        $nin: ['transfer', 'loanTransfer']
+      }
+    }
+  },
   {
     $set: {
       tmp_splits: {
@@ -28,106 +35,106 @@ db.getCollection("transactions").aggregate([
           '$$ROOT',
           '$tmp_splits',
           {
-            tx_amount: '$amount',
-            tx_description: '$description',
-            tx_id: '$_id',
-            tx_transactionType: '$transactionType'
+            _id: '$_id',
           }
         ],
       },
     },
   },
   {
-    $match: {
-      'payingAccount': {
-        $in: [ObjectId(accountId)]
+    $set: {
+      tmp_dupes: {
+        $filter: {
+          input: [
+            {
+              account: {
+                $cond: {
+                  if: {
+                    $ne: ['$transactionType', 'deferred']
+                  },
+                  then: '$account',
+                  else: null
+                }
+              },
+            },
+            {
+              account: '$transferAccount',
+              amount: {
+                $ifNull: [
+                  '$transferAmount',
+                  '$amount',
+                ],
+              },
+            },
+            {
+              account: '$ownerAccount',
+            },
+          ],
+          cond: {
+            $ne: [
+              {
+                $ifNull: [
+                  '$$this.account',
+                  null,
+                ],
+              },
+              null,
+            ],
+          },
+        },
       },
-      transactionType: 'deferred'
     },
   },
   {
-    $lookup: {
-      from: 'transactions',
-      let: {
-        transactionId: '$_id',
-      },
-      pipeline: [
-        //        {
-        //          $match: {
-        //            _id: {
-        //              $ne: ObjectId(transactionId)
-        //            }
-        //          }
-        //        },
-        {
-          $unwind: {
-            path: '$payments',
-          },
-        },
-        {
-          $match: {
-            $expr: {
-              $eq: [
-                '$$transactionId',
-                '$payments.transaction',
-              ],
-            },
-          },
-        },
-      ],
-      as: 'tmp_deferredTransactions',
-    }
+    $unwind: {
+      path: '$tmp_dupes',
+    },
   },
   {
-    $set: {
-      remainingAmount: {
-        $cond: {
-          if: { $eq: ['$isSettled', true] },
-          then: 0,
-          else: { $add: ['$amount', { $sum: '$tmp_deferredTransactions.payments.amount' }] }
-        }
-
+    $replaceRoot: {
+      newRoot: {
+        $mergeObjects: [
+          '$$ROOT',
+          '$tmp_dupes',
+        ],
       },
     },
   },
   {
     $unset: [
-      'tmp_deferredTransactions',
-      'deferredSplits',
-      'account',
+      'tmp_dupes',
+      'tmp_splits',
       'splits',
-      'tx_amount',
-      'tx_description',
-      'tx_id',
-      'tx_transactionType',
-      'tmp_splits'
+      'deferredSplits',
+      'payingAccount',
+      'ownerAccount',
+      'isSettled',
     ],
   },
   {
+    $match: {
+      $and: [
+        {
+          account: {
+            $in: [
+              ObjectId('665aca365689536dd37d8468')
+            ]
+          }
+        }
+      ]
+    },
+  },
+  {
     $lookup: {
       from: 'accounts',
-      localField: 'payingAccount',
+      localField: 'account',
       foreignField: '_id',
-      as: 'payingAccount',
+      as: 'account',
     },
   },
   {
     $unwind: {
-      path: '$payingAccount',
-      preserveNullAndEmptyArrays: true,
-    },
-  },
-  {
-    $lookup: {
-      from: 'accounts',
-      localField: 'ownerAccount',
-      foreignField: '_id',
-      as: 'ownerAccount',
-    },
-  },
-  {
-    $unwind: {
-      path: '$ownerAccount',
+      path: '$account',
       preserveNullAndEmptyArrays: true,
     },
   },
@@ -187,4 +194,16 @@ db.getCollection("transactions").aggregate([
       preserveNullAndEmptyArrays: true,
     },
   },
+  //  {
+  //    $sort: {
+  //      issuedAt: -1,
+  //    },
+  //  },
+  //  {
+  //    $skip: (pageNumber - 1) * pageSize,
+  //  },
+  //  {
+  //    $limit: pageSize,
+  //  },
 ])
+

@@ -15,8 +15,8 @@ import { Account, Transaction } from '@household/shared/types/types';
 export interface ITransactionDocumentConverter {
   toResponse(document: Transaction.Document, viewingAccountId?: Account.Id): Transaction.Response;
   toResponseList(documents: Transaction.Document[], viewingAccountId?: Account.Id): Transaction.Response[];
-  toReport(document: Transaction.PaymentDocument): Transaction.Report;
-  toReportList(documents: (Transaction.PaymentDocument)[]): Transaction.Report[];
+  toReport(document: Transaction.ReportDocument): Transaction.Report;
+  toReportList(documents: (Transaction.ReportDocument)[]): Transaction.Report[];
 }
 
 export const transactionDocumentConverterFactory = (
@@ -60,6 +60,7 @@ export const transactionDocumentConverterFactory = (
         }),
         project: projectDocumentConverter.toReport(document.project),
         recipient: recipientDocumentConverter.toReport(document.recipient),
+        splitId: document.splitId,
       };
 
     },

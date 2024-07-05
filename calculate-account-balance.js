@@ -9,7 +9,9 @@ const aggregate = [
         {
           $set: {
             tmp_splits: {
-              $concatArrays: ['$splits', {
+              $concatArrays: [{
+                $ifNull: ['$splits', []]
+              }, {
                 $ifNull: ['$deferredSplits', []]
               }]
             }

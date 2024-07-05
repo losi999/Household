@@ -1,4 +1,4 @@
-import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Account, Category, Internal, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/test/api/types';
 import { createDate, getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
 import { expectEmptyObject, expectRemainingProperties } from '@household/test/api/utils';
@@ -645,74 +645,66 @@ const validateTransactionListResponse = (responses: Transaction.Response[], docu
   });
 };
 
-const validateTransactionListReport = (reports: Transaction.Report[], payments: Transaction.PaymentDocument[], splits: [Transaction.SplitDocument, number[]][]) => {
-  const total = payments.length + splits.reduce((accumulator, currentValue) => {
-    return accumulator + currentValue[1].length;
-  }, 0);
+const validateTransactionListReport = (reports: Transaction.Report[], documents: (Transaction.PaymentDocument | Transaction.DeferredDocument | Transaction.ReimbursementDocument | Transaction.ReportDocument)[]) => {
+  const total = documents?.length ?? 0;
   expect(reports.length, 'number of items').to.equal(total);
-  payments.forEach((document) => {
-    const items = reports.filter(r => r.transactionId === getTransactionId(document));
+  reports.forEach((report, index) => {
+    const document = documents.find(d => report.transactionId === getTransactionId(d) && report.splitId === (d as Transaction.ReportDocument).splitId);
 
-    expect(items.length, `number of reports for transaction ${getTransactionId(document)}`).to.equal(1);
-    const [report] = items;
-    expect(report.transactionId, 'id').to.equal(getTransactionId(document));
-    expect(report.amount, 'amount').to.equal(document.amount);
-    expect(report.description, 'description').to.equal(document.description);
-    expect(report.issuedAt, 'issuedAt').to.equal(document.issuedAt.toISOString());
-    expect(report.account.accountId, 'account.accountId').to.equal(getAccountId(document.account));
-    expect(report.account.currency, 'account.currency').to.equal(document.account.currency);
-    expect(report.account.fullName, 'account.name').to.equal(`${document.account.name} (${document.account.owner})`);
+    const { account, amount, category, description, issuedAt, product, project, recipient, splitId, transactionId, ...empty } = report;
 
-    expect(report.project?.projectId, 'project.projectId').to.equal(getProjectId(document.project));
-    expect(report.project?.name, 'project.name').to.equal(document.project?.name);
+    expect(transactionId, `[${index}].transactionId`).to.equal(document._id.toString());
+    expect(splitId, `[${index}].splitId`).to.equal((document as Transaction.ReportDocument).splitId);
+    expect(amount, `[${index}].amount`).to.equal(document.amount);
+    expect(description, `[${index}].description`).to.equal(document.description);
+    expect(issuedAt, `[${index}].issuedAt`).to.equal(document.issuedAt.toISOString());
+    expectEmptyObject(empty, `[${index}]`);
 
-    expect(report.recipient?.recipientId, 'recipient.recipientId').to.equal(getRecipientId(document.recipient));
-    expect(report.recipient?.name, 'recipient.name').to.equal(document.recipient?.name);
+    const documentAccount = document.transactionType === 'deferred' || document.transactionType === 'reimbursement' ? document.ownerAccount : document.account;
+    {
+      const { accountId, currency, fullName, ...empty } = account;
+      expect(accountId, `[${index}].account.accountId`).to.equal(getAccountId(documentAccount));
+      expect(currency, `[${index}].account.currency`).to.equal(documentAccount.currency);
+      expect(fullName, `[${index}].account.name`).to.equal(`${documentAccount.name} (${documentAccount.owner})`);
+      expectEmptyObject(empty, `[${index}].account`);
+    }
 
-    expect(report.category?.categoryId, 'category.categoryId').to.equal(getCategoryId(document.category));
-    expect(report.category?.fullName, 'category.fullName').to.equal(document.category?.fullName);
+    if (category) {
+      const { categoryId, fullName, ...empty } = category;
+      expect(categoryId, `[${index}].category.categoryId`).to.equal(getCategoryId(document.category));
+      expect(fullName, `[${index}].category.fullName`).to.equal(document.category?.fullName);
+      expectEmptyObject(empty, `[${index}]`);
+    } else {
+      expect(category, `[${index}].category`).to.be.undefined;
+    }
 
-    expect(report.product?.quantity, 'product.quantity').to.equal(document.quantity);
-    expect(report.product?.productId, 'product.productId').to.equal(getProductId(document.product));
-    expect(report.product?.fullName, 'product.fullName').to.equal(document.product?.fullName);
-  });
+    if (product) {
+      const { productId, quantity, fullName, ...empty } = product;
+      expect(quantity, `[${index}].product.quantity`).to.equal(document.quantity);
+      expect(productId, `[${index}].product.productId`).to.equal(getProductId(document.product));
+      expect(fullName, `[${index}].product.fullName`).to.equal(document.product?.fullName);
+      expectEmptyObject(empty, `[${index}]`);
+    } else {
+      expect(product, `[${index}].product`).to.be.undefined;
+    }
 
-  splits.forEach(([
-    document,
-    indices,
-  ]) => {
-    const items = reports.filter(r => r.transactionId === getTransactionId(document));
+    if (project) {
+      const { name, projectId, ...empty } = project;
+      expect(projectId, `[${index}].project.projectId`).to.equal(getProjectId(document.project));
+      expect(name, `[${index}].project.name`).to.equal(document.project?.name);
+      expectEmptyObject(empty, `[${index}]`);
+    }else {
+      expect(project, `[${index}].project`).to.be.undefined;
+    }
 
-    expect(items.length, `number of reports for transaction ${getTransactionId(document)}`).to.equal(indices.length);
-    const splits = indices.reduce<Transaction.SplitDocumentItem<Date>[]>((accumulator, currentValue) => {
-      return [
-        ...accumulator,
-        document.splits[currentValue],
-      ];
-    }, []);
-    items.forEach((report) => {
-      expect(report.transactionId, 'id').to.equal(getTransactionId(document));
-      expect(report.amount, 'amount').to.be.oneOf(splits.map(s => s.amount));
-      expect(report.description, 'description').to.equal(document.description);
-      expect(report.issuedAt, 'issuedAt').to.equal(document.issuedAt.toISOString());
-
-      expect(report.account.accountId, 'account.accountId').to.equal(getAccountId(document.account));
-      expect(report.account.currency, 'account.currency').to.equal(document.account.currency);
-      expect(report.account.fullName, 'account.name').to.equal(`${document.account.name} (${document.account.owner})`);
-
-      expect(report.project?.projectId, 'project.projectId').to.be.oneOf(splits.map(s => getProjectId(s.project)));
-      expect(report.project?.name, 'project.name').to.be.oneOf(splits.map(s => s.project?.name));
-
-      expect(report.recipient?.recipientId, 'recipient.recipientId').to.equal(getRecipientId(document.recipient));
-      expect(report.recipient?.name, 'recipient.name').to.equal(document.recipient?.name);
-
-      expect(report.category?.categoryId, 'category.categoryId').to.be.oneOf(splits.map(s => getCategoryId(s.category)));
-      expect(report.category?.fullName, 'category.fullName').to.be.oneOf(splits.map(s => s.category?.fullName));
-
-      expect(report.product?.quantity, 'product.quantity').to.be.oneOf(splits.map(s => s.quantity));
-      expect(report.product?.productId, 'product.productId').to.be.oneOf(splits.map(s => getProductId(s.product)));
-      expect(report.product?.fullName, 'product.fullName').to.be.oneOf(splits.map(s => s.product?.fullName));
-    });
+    if (recipient) {
+      const { name, recipientId, ...empty } = recipient;
+      expect(recipientId, `[${index}].recipient.recipientId`).to.equal(getRecipientId(document.recipient));
+      expect(name, `[${index}].recipient.name`).to.equal(document.recipient?.name);
+      expectEmptyObject(empty, `[${index}]`);
+    }else {
+      expect(recipient, `[${index}].recipient`).to.be.undefined;
+    }
   });
 };
 

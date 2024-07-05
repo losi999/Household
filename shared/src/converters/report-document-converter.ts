@@ -10,21 +10,7 @@ export const reportDocumentConverterFactory = (): IReportDocumentConverter => {
     createFilterQuery: (body) => {
       const match: PipelineStage.Match = {
         $match: {
-          $and: [
-            {
-              transactionType: {
-                $ne: 'transfer',
-              },
-            },
-            {
-              $expr: {
-                $ne: [
-                  '$account',
-                  '$payingAccount',
-                ],
-              },
-            },
-          ],
+          $and: [],
         },
       };
 

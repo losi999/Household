@@ -1,5 +1,6 @@
 import { default as transactionId } from '@household/shared/schemas/transaction-id';
-import { default as base } from '@household/shared/schemas/partials/transaction-base';
+import { default as amount } from '@household/shared/schemas/partials/transaction-amount';
+import { default as description } from '@household/shared/schemas/partials/transaction-description';
 import { default as issuedAt } from '@household/shared/schemas/partials/transaction-issued-at';
 import { default as account } from '@household/test/api/schemas/account-response';
 import { default as category } from '@household/test/api/schemas/category-response';
@@ -17,14 +18,16 @@ const schema: StrictJSONSchema7<Transaction.Report[]> = {
     additionalProperties: false,
     required: [
       ...transactionId.required,
-      ...base.required,
+      ...amount.required,
       ...issuedAt.required,
       'account',
     ],
     properties: {
       ...transactionId.properties,
-      ...base.properties,
+      ...amount.properties,
+      ...description.properties,
       ...issuedAt.properties,
+      splitId: transactionId.properties.transactionId,
       account: {
         type: 'object',
         additionalProperties: false,

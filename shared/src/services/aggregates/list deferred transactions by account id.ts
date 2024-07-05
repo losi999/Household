@@ -10,7 +10,12 @@ export const listDeferredTransactions = (ctx: {
     $set: {
       tmp_splits: {
         $concatArrays: [
-          '$splits',
+          {
+            $ifNull: [
+              '$splits',
+              [],
+            ],
+          },
           {
             $ifNull: [
               '$deferredSplits',

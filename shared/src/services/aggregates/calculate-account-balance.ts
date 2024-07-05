@@ -12,7 +12,12 @@ export const calculateAccountBalance: PipelineStage[] = [
           $set: {
             tmp_splits: {
               $concatArrays: [
-                '$splits',
+                {
+                  $ifNull: [
+                    '$splits',
+                    [],
+                  ],
+                },
                 {
                   $ifNull: [
                     '$deferredSplits',

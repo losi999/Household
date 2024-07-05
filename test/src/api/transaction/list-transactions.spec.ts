@@ -1,1140 +1,1121 @@
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
-import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
-import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
-import { projectDocumentConverter } from '@household/shared/dependencies/converters/project-document-converter';
-import { recipientDocumentConverter } from '@household/shared/dependencies/converters/recipient-document-converter';
-import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
-import { v4 as uuid } from 'uuid';
-import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
-import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, toDictionary } from '@household/shared/common/utils';
+import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId } from '@household/shared/common/utils';
 import { default as schema } from '@household/test/api/schemas/transaction-report-list';
 import { createAccountId } from '@household/shared/common/test-data-factory';
-
-// const createPaymentDocument = (data: {
-//   account: Account.Document;
-//   category?: Category.Document;
-//   project?: Project.Document;
-//   recipient?: Recipient.Document;
-//   product?: Product.Document;
-// } & Partial<Omit<Transaction.PaymentRequest, 'productId' | 'categoryId' | 'accountId' | 'recipientId' | 'projectId'>>,
-// ): Transaction.PaymentDocument => {
-//   const { account, project, product, recipient, category, ...request } = data;
-
-//   return transactionDocumentConverter.createPaymentDocument({
-//     body: {
-//       accountId: getAccountId(account),
-//       amount: 100,
-//       categoryId: getCategoryId(category),
-//       recipientId: getRecipientId(recipient),
-//       projectId: getProjectId(project),
-//       quantity: undefined,
-//       productId: getProductId(product),
-//       issuedAt: new Date(2024, 5, 25, 14, 0, 0).toISOString(),
-//       invoiceNumber: undefined,
-//       billingEndDate: undefined,
-//       billingStartDate: undefined,
-//       description: uuid(),
-//       ...request,
-//     },
-//     account: account,
-//     category: category,
-//     product: product,
-//     project: project,
-//     recipient: recipient,
-//   }, Cypress.env('EXPIRES_IN'), true);
-// };
+import { accountDataFactory } from '@household/test/api/account/data-factory';
+import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
+import { projectDataFactory } from '@household/test/api/project/data-factory';
+import { categoryDataFactory } from '@household/test/api/category/data-factory';
+import { productDataFactory } from '@household/test/api/product/data-factory';
+import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment-data-factory';
+import { splitTransactionDataFactory } from '@household/test/api/transaction/split-data-factory';
+import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer-data-factory';
+import { loanTransferTransactionDataFactory } from '@household/test/api/transaction/loan-transfer-data-factory';
+import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred-data-factory';
+import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement-data-factory';
+import { flattenSplitTransactionDocument } from '@household/test/api/utils';
 
 describe('POST /transaction/v1/transactions', () => {
-  it('TODO');
-  // describe('called as anonymous', () => {
-  //   it('should return unauthorized', () => {
-  //     cy.unauthenticate()
-  //       .requestGetTransactionList([])
-  //       .expectUnauthorizedResponse();
-  //   });
-  // });
+  describe('called as anonymous', () => {
+    it('should return unauthorized', () => {
+      cy.unauthenticate()
+        .requestGetTransactionList([])
+        .expectUnauthorizedResponse();
+    });
+  });
 
-  // describe('called as an admin', () => {
-  //   describe('should get a list of transaction reports', () => {
-  //     let accountDocument: Account.Document;
-  //     let secondaryAccountDocument: Account.Document;
-  //     let projectDocument: Project.Document;
-  //     let secondaryProjectDocument: Project.Document;
-  //     let recipientDocument: Recipient.Document;
-  //     let secondaryRecipientDocument: Recipient.Document;
-  //     let regularCategoryDocument: Category.Document;
-  //     let inventoryCategoryDocument: Category.Document;
-  //     let invoiceCategoryDocument: Category.Document;
-  //     let secondaryCategoryDocumen: Category.Document;
-  //     let productDocument: Product.Document;
-  //     let secondaryProductDocument: Product.Document;
-  //     let fullPaymentTransactionDocument: Transaction.PaymentDocument;
-  //     let accountTransactionDocument: Transaction.PaymentDocument;
-  //     let secondaryAccountTransactionDocument: Transaction.PaymentDocument;
-  //     let projectTransactionDocument: Transaction.PaymentDocument;
-  //     let secondaryProjectTransactionDocument: Transaction.PaymentDocument;
-  //     let recipientTransactionDocument: Transaction.PaymentDocument;
-  //     let secondaryRecipientTransactionDocument: Transaction.PaymentDocument;
-  //     let regularCategoryTransactionDocument: Transaction.PaymentDocument;
-  //     let inventoryCategoryTransactionDocument: Transaction.PaymentDocument;
-  //     let invoiceCategoryTransactionDocument: Transaction.PaymentDocument;
-  //     let secondaryCategoryTransactionDocument: Transaction.PaymentDocument;
-  //     let productTransactionDocument: Transaction.PaymentDocument;
-  //     let secondaryProductTransactionDocument: Transaction.PaymentDocument;
-  //     let earlyTransactionDocument: Transaction.PaymentDocument;
-  //     let lateTransactionDocument: Transaction.PaymentDocument;
-  //     let fullSplitTransactionDocument: Transaction.SplitDocument;
-  //     let secondaryAccountSplitTransactionDocument: Transaction.SplitDocument;
-  //     let secondaryRecipientSplitTransactionDocument: Transaction.SplitDocument;
-  //     let transferTransactionDocument: Transaction.TransferDocument;
+  describe('called as an admin', () => {
+    describe('should get a list of transaction reports', () => {
+      let accountDocument: Account.Document;
+      let secondaryAccountDocument: Account.Document;
+      let loanAccountDocument: Account.Document;
+      let projectDocument: Project.Document;
+      let secondaryProjectDocument: Project.Document;
+      let recipientDocument: Recipient.Document;
+      let secondaryRecipientDocument: Recipient.Document;
+      let regularCategoryDocument: Category.Document;
+      let inventoryCategoryDocument: Category.Document;
+      let invoiceCategoryDocument: Category.Document;
+      let secondaryCategoryDocument: Category.Document;
+      let productDocument: Product.Document;
+      let secondaryProductDocument: Product.Document;
 
-  //     before(() => {
-  //       accountDocument = accountDocumentConverter.create({
-  //         name: `account-${uuid()}`,
-  //         accountType: 'bankAccount',
-  //         currency: 'Ft',
-  //         owner: 'owner1',
-  //       }, Cypress.env('EXPIRES_IN'), true);
+      let splitTransactionDocument: Transaction.SplitDocument;
+      let includedPaymentTransactionDocument: Transaction.PaymentDocument;
+      let includedDeferredTransactionDocument: Transaction.DeferredDocument;
+      let includedReimbursementTransactionDocument: Transaction.ReimbursementDocument;
+      let excludedPaymentTransactionDocument: Transaction.PaymentDocument;
+      let excludedDeferredTransactionDocument: Transaction.DeferredDocument;
+      let excludedReimbursementTransactionDocument: Transaction.ReimbursementDocument;
+      let deferredSplitTransactionDocument: Transaction.SplitDocument;
+      let transferTransactionDocument: Transaction.TransferDocument;
+      let loanTransferTransactionDocument: Transaction.LoanTransferDocument;
 
-  //       secondaryAccountDocument = accountDocumentConverter.create({
-  //         name: `excluded-account-${uuid()}`,
-  //         accountType: 'bankAccount',
-  //         currency: 'Ft',
-  //         owner: 'owner1',
-  //       }, Cypress.env('EXPIRES_IN'), true);
+      beforeEach(() => {
+        accountDocument = accountDataFactory.document();
+        secondaryAccountDocument = accountDataFactory.document();
+        loanAccountDocument = accountDataFactory.document({
+          accountType: 'loan',
+        });
 
-  //       projectDocument = projectDocumentConverter.create({
-  //         name: `project-${uuid()}`,
-  //         description: 'decription',
-  //       }, Cypress.env('EXPIRES_IN'), true);
+        recipientDocument = recipientDataFactory.document();
+        secondaryRecipientDocument = recipientDataFactory.document();
 
-  //       secondaryProjectDocument = projectDocumentConverter.create({
-  //         name: `excluded-project-${uuid()}`,
-  //         description: 'decription',
-  //       }, Cypress.env('EXPIRES_IN'), true);
+        projectDocument = projectDataFactory.document();
+        secondaryProjectDocument = projectDataFactory.document();
 
-  //       recipientDocument = recipientDocumentConverter.create({
-  //         name: `recipient-${uuid()}`,
-  //       }, Cypress.env('EXPIRES_IN'), true);
+        regularCategoryDocument = categoryDataFactory.document({
+          body: {
+            categoryType: 'regular',
+          },
+        });
 
-  //       secondaryRecipientDocument = recipientDocumentConverter.create({
-  //         name: `excluded-recipient-${uuid()}`,
-  //       }, Cypress.env('EXPIRES_IN'), true);
+        invoiceCategoryDocument = categoryDataFactory.document({
+          body: {
+            categoryType: 'invoice',
+          },
+        });
 
-  //       regularCategoryDocument = categoryDocumentConverter.create({
-  //         body: {
-  //           name: `regular-category-${uuid()}`,
-  //           categoryType: 'regular',
-  //           parentCategoryId: undefined,
-  //         },
-  //         parentCategory: undefined,
-  //       }, Cypress.env('EXPIRES_IN'), true);
+        inventoryCategoryDocument = categoryDataFactory.document({
+          body: {
+            categoryType: 'inventory',
+          },
+        });
 
-  //       inventoryCategoryDocument = categoryDocumentConverter.create({
-  //         body: {
-  //           name: `inventory-category-${uuid()}`,
-  //           categoryType: 'inventory',
-  //           parentCategoryId: undefined,
-  //         },
-  //         parentCategory: undefined,
-  //       }, Cypress.env('EXPIRES_IN'), true);
+        secondaryCategoryDocument = categoryDataFactory.document();
 
-  //       invoiceCategoryDocument = categoryDocumentConverter.create({
-  //         body: {
-  //           name: `invoice-category-${uuid()}`,
-  //           categoryType: 'invoice',
-  //           parentCategoryId: undefined,
-  //         },
-  //         parentCategory: undefined,
-  //       }, Cypress.env('EXPIRES_IN'), true);
+        productDocument = productDataFactory.document({
+          category: inventoryCategoryDocument,
+        });
+        secondaryProductDocument = productDataFactory.document({
+          category: inventoryCategoryDocument,
+        });
 
-  //       secondaryCategoryDocumen = categoryDocumentConverter.create({
-  //         body: {
-  //           name: `excluded-category-${uuid()}`,
-  //           categoryType: 'regular',
-  //           parentCategoryId: undefined,
-  //         },
-  //         parentCategory: undefined,
-  //       }, Cypress.env('EXPIRES_IN'), true);
+        transferTransactionDocument = transferTransactionDataFactory.document({
+          account: accountDocument,
+          transferAccount: secondaryAccountDocument,
+        });
 
-  //       productDocument = productDocumentConverter.create({
-  //         body: {
-  //           brand: `brand-${uuid()}`,
-  //           measurement: 500,
-  //           unitOfMeasurement: 'g',
-  //         },
-  //         category: inventoryCategoryDocument,
-  //       }, Cypress.env('EXPIRES_IN'), true);
+        loanTransferTransactionDocument = loanTransferTransactionDataFactory.document({
+          account: accountDocument,
+          transferAccount: loanAccountDocument,
+        });
 
-  //       secondaryProductDocument = productDocumentConverter.create({
-  //         body: {
-  //           brand: `excluded-brand-${uuid()}`,
-  //           measurement: 500,
-  //           unitOfMeasurement: 'g',
-  //         },
-  //         category: inventoryCategoryDocument,
-  //       }, Cypress.env('EXPIRES_IN'), true);
+        cy.saveRecipientDocuments([
+          recipientDocument,
+          secondaryRecipientDocument,
+        ])
+          .saveAccountDocuments([
+            accountDocument,
+            secondaryAccountDocument,
+            loanAccountDocument,
+          ])
+          .saveCategoryDocuments([
+            regularCategoryDocument,
+            invoiceCategoryDocument,
+            inventoryCategoryDocument,
+            secondaryCategoryDocument,
+          ])
+          .saveProjectDocuments([
+            projectDocument,
+            secondaryProjectDocument,
+          ])
+          .saveProductDocuments([
+            productDocument,
+            secondaryProductDocument,
+          ])
+          .saveTransactionDocuments([
+            transferTransactionDocument,
+            loanTransferTransactionDocument,
+          ]);
+      });
 
-  //       fullPaymentTransactionDocument = createPaymentDocument({
-  //         account: accountDocument,
-  //         category: inventoryCategoryDocument,
-  //         recipient: recipientDocument,
-  //         project: projectDocument,
-  //         quantity: 1,
-  //         product: productDocument,
-  //       });
+      describe('filtered by account', () => {
+        beforeEach(() => {
+          includedPaymentTransactionDocument = paymentTransactionDataFactory.document({
+            account: accountDocument,
+            recipient: recipientDocument,
+          });
 
-  //       accountTransactionDocument = createPaymentDocument({
-  //         account: accountDocument,
-  //       });
+          splitTransactionDocument = splitTransactionDataFactory.document({
+            account: accountDocument,
+            recipient: recipientDocument,
+            splits: [
+              {},
+              {},
+            ],
+          });
 
-  //       secondaryAccountTransactionDocument = createPaymentDocument({
-  //         account: secondaryAccountDocument,
-  //       });
+          includedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+            loanAccount: accountDocument,
+            account: secondaryAccountDocument,
+            recipient: recipientDocument,
+          });
 
-  //       projectTransactionDocument = createPaymentDocument({
-  //         account: accountDocument,
-  //         project: projectDocument,
-  //       });
+          includedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+            account: loanAccountDocument,
+            loanAccount: accountDocument,
+            recipient: recipientDocument,
+          });
 
-  //       secondaryProjectTransactionDocument = createPaymentDocument({
-  //         account: accountDocument,
-  //         project: secondaryProjectDocument,
-  //       });
+          excludedPaymentTransactionDocument = paymentTransactionDataFactory.document({
+            account: secondaryAccountDocument,
+            recipient: recipientDocument,
+          });
 
-  //       recipientTransactionDocument = createPaymentDocument({
-  //         account: accountDocument,
-  //         recipient: recipientDocument,
-  //       });
+          excludedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+            loanAccount: secondaryAccountDocument,
+            account: accountDocument,
+            recipient: recipientDocument,
+          });
 
-  //       secondaryRecipientTransactionDocument = createPaymentDocument({
-  //         account: accountDocument,
-  //         recipient: secondaryRecipientDocument,
-  //       });
+          excludedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+            account: loanAccountDocument,
+            loanAccount: secondaryAccountDocument,
+            recipient: recipientDocument,
+          });
 
-  //       regularCategoryTransactionDocument = createPaymentDocument({
-  //         account: accountDocument,
-  //         category: regularCategoryDocument,
-  //       });
+          deferredSplitTransactionDocument = splitTransactionDataFactory.document({
+            account: secondaryAccountDocument,
+            recipient: recipientDocument,
+            splits: [
+              {},
+              {
+                loanAccount: accountDocument,
+              },
+            ],
+          });
 
-  //       inventoryCategoryTransactionDocument = createPaymentDocument({
-  //         account: accountDocument,
-  //         category: inventoryCategoryDocument,
-  //       });
+          cy.saveTransactionDocuments([
+            includedPaymentTransactionDocument,
+            splitTransactionDocument,
+            includedDeferredTransactionDocument,
+            includedReimbursementTransactionDocument,
+            excludedPaymentTransactionDocument,
+            excludedDeferredTransactionDocument,
+            excludedReimbursementTransactionDocument,
+            deferredSplitTransactionDocument,
+          ]);
+        });
+        it('to include', () => {
+          cy.authenticate(1)
+            .requestGetTransactionList([
+              {
+                filterType: 'account',
+                items: [getAccountId(accountDocument)],
+                include: true,
+              },
+            ])
+            .expectOkResponse()
+            .expectValidResponseSchema(schema)
+            .validateTransactionListReport([
+              includedPaymentTransactionDocument,
+              includedDeferredTransactionDocument,
+              includedReimbursementTransactionDocument,
+              ...flattenSplitTransactionDocument(splitTransactionDocument, splitTransactionDocument.splits[0], splitTransactionDocument.splits[1]),
+              ...flattenSplitTransactionDocument(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]),
+            ]);
+        });
 
-  //       invoiceCategoryTransactionDocument = createPaymentDocument({
-  //         account: accountDocument,
-  //         category: invoiceCategoryDocument,
-  //       });
+        it('to exclude', () => {
+          cy.authenticate(1)
+            .requestGetTransactionList([
+              {
+                filterType: 'recipient',
+                items: [getRecipientId(recipientDocument)],
+                include: true,
+              },
+              {
+                filterType: 'account',
+                items: [getAccountId(accountDocument)],
+                include: false,
+              },
+            ])
+            .expectOkResponse()
+            .expectValidResponseSchema(schema)
+            .validateTransactionListReport([
+              excludedPaymentTransactionDocument,
+              excludedDeferredTransactionDocument,
+              excludedReimbursementTransactionDocument,
+              ...flattenSplitTransactionDocument(deferredSplitTransactionDocument, deferredSplitTransactionDocument.splits[0]),
+            ]);
 
-  //       secondaryCategoryTransactionDocument = createPaymentDocument({
-  //         account: accountDocument,
-  //         category: secondaryCategoryDocumen,
-  //       });
+        });
+      });
 
-  //       productTransactionDocument = createPaymentDocument({
-  //         account: accountDocument,
-  //         category: inventoryCategoryDocument,
-  //         product: productDocument,
-  //         quantity: 1,
-  //       });
+      describe('filtered by recipient', () => {
+        beforeEach(() => {
+          includedPaymentTransactionDocument = paymentTransactionDataFactory.document({
+            account: accountDocument,
+            recipient: recipientDocument,
+          });
 
-  //       secondaryProductTransactionDocument = createPaymentDocument({
-  //         account: accountDocument,
-  //         category: inventoryCategoryDocument,
-  //         product: secondaryProductDocument,
-  //         quantity: 1,
-  //       });
+          splitTransactionDocument = splitTransactionDataFactory.document({
+            account: accountDocument,
+            recipient: recipientDocument,
+            splits: [
+              {},
+              {},
+            ],
+          });
 
-  //       earlyTransactionDocument = createPaymentDocument({
-  //         account: accountDocument,
-  //         issuedAt: new Date(2024, 5, 25, 13, 50, 0).toISOString(),
-  //       });
+          includedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+            loanAccount: accountDocument,
+            account: secondaryAccountDocument,
+            recipient: recipientDocument,
+          });
 
-  //       lateTransactionDocument = createPaymentDocument({
-  //         account: accountDocument,
-  //         issuedAt: new Date(2024, 5, 25, 14, 10, 0).toISOString(),
-  //       });
+          includedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+            account: loanAccountDocument,
+            loanAccount: accountDocument,
+            recipient: recipientDocument,
+          });
 
-  //       fullSplitTransactionDocument = transactionDocumentConverter.createSplitDocument({
-  //         body: {
-  //           accountId: getAccountId(accountDocument),
-  //           amount: 28,
-  //           recipientId: getRecipientId(recipientDocument),
-  //           description: undefined,
-  //           issuedAt: new Date(2024, 5, 25, 14, 0, 0).toISOString(),
-  //           splits: [
-  //             {
-  //               amount: 1,
-  //               categoryId: getCategoryId(inventoryCategoryDocument),
-  //               invoiceNumber: undefined,
-  //               billingEndDate: undefined,
-  //               billingStartDate: undefined,
-  //               quantity: 2,
-  //               productId: getProductId(productDocument),
-  //               projectId: getProjectId(projectDocument),
-  //               description: uuid(),
-  //             },
-  //             {
-  //               amount: 2,
-  //               categoryId: getCategoryId(regularCategoryDocument),
-  //               invoiceNumber: undefined,
-  //               billingEndDate: undefined,
-  //               billingStartDate: undefined,
-  //               quantity: undefined,
-  //               productId: undefined,
-  //               projectId: undefined,
-  //               description: uuid(),
-  //             },
-  //             {
-  //               amount: 3,
-  //               categoryId: getCategoryId(inventoryCategoryDocument),
-  //               invoiceNumber: undefined,
-  //               billingEndDate: undefined,
-  //               billingStartDate: undefined,
-  //               quantity: undefined,
-  //               productId: undefined,
-  //               projectId: undefined,
-  //               description: uuid(),
-  //             },
-  //             {
-  //               amount: 4,
-  //               categoryId: getCategoryId(invoiceCategoryDocument),
-  //               invoiceNumber: '1234',
-  //               billingEndDate: '2022-02-20',
-  //               billingStartDate: '2022-02-01',
-  //               quantity: undefined,
-  //               productId: undefined,
-  //               projectId: undefined,
-  //               description: uuid(),
-  //             },
-  //             {
-  //               amount: 5,
-  //               categoryId: getCategoryId(secondaryCategoryDocumen),
-  //               invoiceNumber: undefined,
-  //               billingEndDate: undefined,
-  //               billingStartDate: undefined,
-  //               quantity: undefined,
-  //               productId: undefined,
-  //               projectId: undefined,
-  //               description: uuid(),
-  //             },
-  //             {
-  //               amount: 6,
-  //               categoryId: getCategoryId(inventoryCategoryDocument),
-  //               invoiceNumber: undefined,
-  //               billingEndDate: undefined,
-  //               billingStartDate: undefined,
-  //               quantity: 2,
-  //               productId: getProductId(productDocument),
-  //               projectId: undefined,
-  //               description: uuid(),
-  //             },
-  //             {
-  //               amount: 7,
-  //               categoryId: getCategoryId(inventoryCategoryDocument),
-  //               invoiceNumber: undefined,
-  //               billingEndDate: undefined,
-  //               billingStartDate: undefined,
-  //               quantity: 2,
-  //               productId: getProductId(secondaryProductDocument),
-  //               projectId: undefined,
-  //               description: uuid(),
-  //             },
-  //           ],
-  //         },
-  //         account: accountDocument,
-  //         categories: toDictionary([
-  //           regularCategoryDocument,
-  //           inventoryCategoryDocument,
-  //           invoiceCategoryDocument,
-  //           secondaryCategoryDocumen,
-  //         ], '_id'),
-  //         projects: toDictionary([
-  //           projectDocument,
-  //           secondaryProjectDocument,
-  //         ], '_id'),
-  //         products: toDictionary([
-  //           productDocument,
-  //           secondaryProductDocument,
-  //         ], '_id'),
-  //         recipient: recipientDocument,
-  //       }, Cypress.env('EXPIRES_IN'), true);
+          excludedPaymentTransactionDocument = paymentTransactionDataFactory.document({
+            account: accountDocument,
+            recipient: secondaryRecipientDocument,
+          });
 
-  //       secondaryAccountSplitTransactionDocument = transactionDocumentConverter.createSplitDocument({
-  //         body: {
-  //           accountId: getAccountId(secondaryAccountDocument),
-  //           amount: 100,
-  //           recipientId: getRecipientId(recipientDocument),
-  //           description: undefined,
-  //           issuedAt: new Date(2024, 5, 25, 14, 0, 0).toISOString(),
-  //           splits: [
-  //             {
-  //               amount: 100,
-  //               categoryId: getCategoryId(inventoryCategoryDocument),
-  //               invoiceNumber: undefined,
-  //               billingEndDate: undefined,
-  //               billingStartDate: undefined,
-  //               quantity: 2,
-  //               productId: getProductId(productDocument),
-  //               projectId: getProjectId(projectDocument),
-  //               description: uuid(),
-  //             },
-  //           ],
-  //         },
-  //         account: secondaryAccountDocument,
-  //         categories: toDictionary([inventoryCategoryDocument], '_id'),
-  //         projects: toDictionary([projectDocument], '_id'),
-  //         products: toDictionary([productDocument], '_id'),
-  //         recipient: recipientDocument,
-  //       }, Cypress.env('EXPIRES_IN'), true);
+          excludedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+            loanAccount: accountDocument,
+            account: secondaryAccountDocument,
+            recipient: secondaryRecipientDocument,
+          });
 
-  //       secondaryRecipientSplitTransactionDocument = transactionDocumentConverter.createSplitDocument({
-  //         body: {
-  //           accountId: getAccountId(accountDocument),
-  //           amount: 100,
-  //           recipientId: getRecipientId(secondaryRecipientDocument),
-  //           description: undefined,
-  //           issuedAt: new Date(2024, 5, 25, 14, 0, 0).toISOString(),
-  //           splits: [
-  //             {
-  //               amount: 100,
-  //               categoryId: getCategoryId(inventoryCategoryDocument),
-  //               invoiceNumber: undefined,
-  //               billingEndDate: undefined,
-  //               billingStartDate: undefined,
-  //               quantity: 2,
-  //               productId: getProductId(productDocument),
-  //               projectId: getProjectId(projectDocument),
-  //               description: uuid(),
-  //             },
-  //           ],
-  //         },
-  //         account: accountDocument,
-  //         categories: toDictionary([inventoryCategoryDocument], '_id'),
-  //         projects: toDictionary([projectDocument], '_id'),
-  //         products: toDictionary([productDocument], '_id'),
-  //         recipient: secondaryRecipientDocument,
-  //       }, Cypress.env('EXPIRES_IN'), true);
+          excludedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+            account: loanAccountDocument,
+            loanAccount: accountDocument,
+            recipient: secondaryRecipientDocument,
+          });
 
-  //       transferTransactionDocument = transactionDocumentConverter.createTransferDocument({
-  //         body: {
-  //           accountId: getAccountId(accountDocument),
-  //           transferAccountId: getAccountId(secondaryAccountDocument),
-  //           amount: 100,
-  //           transferAmount: -100,
-  //           description: 'transfer',
-  //           issuedAt: new Date(2024, 5, 25, 14, 0, 0).toISOString(),
-  //         },
-  //         account: accountDocument,
-  //         transferAccount: secondaryAccountDocument,
-  //       }, Cypress.env('EXPIRES_IN'), true);
+          deferredSplitTransactionDocument = splitTransactionDataFactory.document({
+            account: accountDocument,
+            recipient: recipientDocument,
+            splits: [
+              {
+                loanAccount: secondaryAccountDocument,
+              },
+            ],
+          });
 
-  //       cy.saveRecipientDocument(recipientDocument)
-  //         .saveRecipientDocument(secondaryRecipientDocument)
-  //         .saveAccountDocument(accountDocument)
-  //         .saveAccountDocument(secondaryAccountDocument)
-  //         .saveCategoryDocument(regularCategoryDocument)
-  //         .saveCategoryDocument(invoiceCategoryDocument)
-  //         .saveCategoryDocument(inventoryCategoryDocument)
-  //         .saveCategoryDocument(secondaryCategoryDocumen)
-  //         .saveProjectDocument(projectDocument)
-  //         .saveProjectDocument(secondaryProjectDocument)
-  //         .saveProductDocument(productDocument)
-  //         .saveProductDocument(secondaryProductDocument)
-  //         .saveTransactionDocument(fullPaymentTransactionDocument)
-  //         .saveTransactionDocument(accountTransactionDocument)
-  //         .saveTransactionDocument(secondaryAccountTransactionDocument)
-  //         .saveTransactionDocument(projectTransactionDocument)
-  //         .saveTransactionDocument(secondaryProjectTransactionDocument)
-  //         .saveTransactionDocument(recipientTransactionDocument)
-  //         .saveTransactionDocument(secondaryRecipientTransactionDocument)
-  //         .saveTransactionDocument(regularCategoryTransactionDocument)
-  //         .saveTransactionDocument(inventoryCategoryTransactionDocument)
-  //         .saveTransactionDocument(invoiceCategoryTransactionDocument)
-  //         .saveTransactionDocument(secondaryCategoryTransactionDocument)
-  //         .saveTransactionDocument(productTransactionDocument)
-  //         .saveTransactionDocument(secondaryProductTransactionDocument)
-  //         .saveTransactionDocument(earlyTransactionDocument)
-  //         .saveTransactionDocument(lateTransactionDocument)
-  //         .saveTransactionDocument(fullSplitTransactionDocument)
-  //         .saveTransactionDocument(secondaryAccountSplitTransactionDocument)
-  //         .saveTransactionDocument(secondaryRecipientSplitTransactionDocument)
-  //         .saveTransactionDocument(transferTransactionDocument);
-  //     });
-  //     it('queried by every property', () => {
-  //       cy.authenticate(1)
-  //         .requestGetTransactionList([
-  //           {
-  //             filterType: 'account',
-  //             items: [getAccountId(accountDocument)],
-  //             include: true,
-  //           },
-  //           {
-  //             filterType: 'recipient',
-  //             items: [getRecipientId(recipientDocument)],
-  //             include: true,
-  //           },
-  //           {
-  //             filterType: 'project',
-  //             items: [getProjectId(projectDocument)],
-  //             include: true,
-  //           },
-  //           {
-  //             filterType: 'category',
-  //             items: [
-  //               getCategoryId(regularCategoryDocument),
-  //               getCategoryId(invoiceCategoryDocument),
-  //               getCategoryId(inventoryCategoryDocument),
-  //             ],
-  //             include: true,
-  //           },
-  //           {
-  //             filterType: 'product',
-  //             items: [getProductId(productDocument)],
-  //             include: true,
-  //           },
-  //           {
-  //             filterType: 'issuedAt',
-  //             include: true,
-  //             from: new Date(2024, 5, 25, 13, 59, 0).toISOString(),
-  //             to: new Date(2024, 5, 25, 14, 1, 0).toISOString(),
-  //           },
-  //         ])
-  //         .expectOkResponse()
-  //         .expectValidResponseSchema(schema)
-  //         .validateTransactionListReport([fullPaymentTransactionDocument], [
-  //           [
-  //             fullSplitTransactionDocument,
-  //             [0],
-  //           ],
-  //         ]);
-  //     });
-  //     it('by including an account', () => {
-  //       cy.authenticate(1)
-  //         .requestGetTransactionList([
-  //           {
-  //             filterType: 'account',
-  //             items: [getAccountId(secondaryAccountDocument)],
-  //             include: true,
-  //           },
-  //         ])
-  //         .expectOkResponse()
-  //         .expectValidResponseSchema(schema)
-  //         .validateTransactionListReport([secondaryAccountTransactionDocument], [
-  //           [
-  //             secondaryAccountSplitTransactionDocument,
-  //             [0],
-  //           ],
-  //         ]);
-  //     });
-  //     it('by excluding an account', () => {
-  //       cy.authenticate(1)
-  //         .requestGetTransactionList([
-  //           {
-  //             filterType: 'recipient',
-  //             items: [getRecipientId(recipientDocument)],
-  //             include: true,
-  //           },
-  //           {
-  //             filterType: 'account',
-  //             items: [getAccountId(secondaryAccountDocument)],
-  //             include: false,
-  //           },
-  //         ])
-  //         .expectOkResponse()
-  //         .expectValidResponseSchema(schema)
-  //         .validateTransactionListReport([
-  //           fullPaymentTransactionDocument,
-  //           recipientTransactionDocument,
-  //         ], [
-  //           [
-  //             fullSplitTransactionDocument,
-  //             [
-  //               0,
-  //               1,
-  //               2,
-  //               3,
-  //               4,
-  //               5,
-  //               6,
-  //             ],
-  //           ],
-  //         ]);
-  //     });
-  //     it('by including a category', () => {
-  //       cy.authenticate(1)
-  //         .requestGetTransactionList([
-  //           {
-  //             filterType: 'account',
-  //             items: [getAccountId(accountDocument)],
-  //             include: true,
-  //           },
-  //           {
-  //             filterType: 'category',
-  //             items: [getCategoryId(regularCategoryDocument)],
-  //             include: true,
-  //           },
-  //         ])
-  //         .expectOkResponse()
-  //         .expectValidResponseSchema(schema)
-  //         .validateTransactionListReport([regularCategoryTransactionDocument], [
-  //           [
-  //             fullSplitTransactionDocument,
-  //             [1],
-  //           ],
-  //         ]);
-  //     });
-  //     it('by excluding a category', () => {
-  //       cy.authenticate(1)
-  //         .requestGetTransactionList([
-  //           {
-  //             filterType: 'account',
-  //             items: [getAccountId(accountDocument)],
-  //             include: true,
-  //           },
-  //           {
-  //             filterType: 'category',
-  //             items: [getCategoryId(inventoryCategoryDocument)],
-  //             include: false,
-  //           },
-  //         ])
-  //         .expectOkResponse()
-  //         .expectValidResponseSchema(schema)
-  //         .validateTransactionListReport([
-  //           accountTransactionDocument,
-  //           projectTransactionDocument,
-  //           secondaryProjectTransactionDocument,
-  //           recipientTransactionDocument,
-  //           secondaryRecipientTransactionDocument,
-  //           regularCategoryTransactionDocument,
-  //           invoiceCategoryTransactionDocument,
-  //           secondaryCategoryTransactionDocument,
-  //           earlyTransactionDocument,
-  //           lateTransactionDocument,
-  //         ], [
-  //           [
-  //             fullSplitTransactionDocument,
-  //             [
-  //               1,
-  //               3,
-  //               4,
-  //             ],
-  //           ],
-  //         ]);
-  //     });
-  //     it('by including a project', () => {
-  //       cy.authenticate(1)
-  //         .requestGetTransactionList([
-  //           {
-  //             filterType: 'account',
-  //             items: [getAccountId(accountDocument)],
-  //             include: true,
-  //           },
-  //           {
-  //             filterType: 'project',
-  //             items: [getProjectId(projectDocument)],
-  //             include: true,
-  //           },
-  //         ])
-  //         .expectOkResponse()
-  //         .expectValidResponseSchema(schema)
-  //         .validateTransactionListReport([
-  //           fullPaymentTransactionDocument,
-  //           projectTransactionDocument,
-  //         ], [
-  //           [
-  //             fullSplitTransactionDocument,
-  //             [0],
-  //           ],
-  //           [
-  //             secondaryRecipientSplitTransactionDocument,
-  //             [0],
-  //           ],
-  //         ]);
-  //     });
-  //     it('by excluding a project', () => {
-  //       cy.authenticate(1)
-  //         .requestGetTransactionList([
-  //           {
-  //             filterType: 'account',
-  //             items: [getAccountId(accountDocument)],
-  //             include: true,
-  //           },
-  //           {
-  //             filterType: 'project',
-  //             items: [getProjectId(projectDocument)],
-  //             include: false,
-  //           },
-  //         ])
-  //         .expectOkResponse()
-  //         .expectValidResponseSchema(schema)
-  //         .validateTransactionListReport([
-  //           accountTransactionDocument,
-  //           secondaryProjectTransactionDocument,
-  //           recipientTransactionDocument,
-  //           secondaryRecipientTransactionDocument,
-  //           regularCategoryTransactionDocument,
-  //           inventoryCategoryTransactionDocument,
-  //           invoiceCategoryTransactionDocument,
-  //           secondaryCategoryTransactionDocument,
-  //           productTransactionDocument,
-  //           secondaryProductTransactionDocument,
-  //           earlyTransactionDocument,
-  //           lateTransactionDocument,
-  //         ], [
-  //           [
-  //             fullSplitTransactionDocument,
-  //             [
-  //               1,
-  //               2,
-  //               3,
-  //               4,
-  //               5,
-  //               6,
-  //             ],
-  //           ],
-  //         ]);
-  //     });
-  //     it('by including a recipient', () => {
-  //       cy.authenticate(1)
-  //         .requestGetTransactionList([
-  //           {
-  //             filterType: 'account',
-  //             items: [getAccountId(accountDocument)],
-  //             include: true,
-  //           },
-  //           {
-  //             filterType: 'recipient',
-  //             items: [getRecipientId(recipientDocument)],
-  //             include: true,
-  //           },
-  //         ])
-  //         .expectOkResponse()
-  //         .expectValidResponseSchema(schema)
-  //         .validateTransactionListReport([
-  //           fullPaymentTransactionDocument,
-  //           recipientTransactionDocument,
-  //         ], [
-  //           [
-  //             fullSplitTransactionDocument,
-  //             [
-  //               0,
-  //               1,
-  //               2,
-  //               3,
-  //               4,
-  //               5,
-  //               6,
-  //             ],
-  //           ],
-  //         ]);
-  //     });
-  //     it('by excluding a recipient', () => {
-  //       cy.authenticate(1)
-  //         .requestGetTransactionList([
-  //           {
-  //             filterType: 'account',
-  //             items: [getAccountId(accountDocument)],
-  //             include: true,
-  //           },
-  //           {
-  //             filterType: 'recipient',
-  //             items: [getRecipientId(recipientDocument)],
-  //             include: false,
-  //           },
-  //         ])
-  //         .expectOkResponse()
-  //         .expectValidResponseSchema(schema)
-  //         .validateTransactionListReport([
-  //           accountTransactionDocument,
-  //           projectTransactionDocument,
-  //           secondaryProjectTransactionDocument,
-  //           secondaryRecipientTransactionDocument,
-  //           regularCategoryTransactionDocument,
-  //           inventoryCategoryTransactionDocument,
-  //           invoiceCategoryTransactionDocument,
-  //           secondaryCategoryTransactionDocument,
-  //           productTransactionDocument,
-  //           secondaryProductTransactionDocument,
-  //           earlyTransactionDocument,
-  //           lateTransactionDocument,
-  //         ], [
-  //           [
-  //             secondaryRecipientSplitTransactionDocument,
-  //             [0],
-  //           ],
-  //         ]);
-  //     });
-  //     it('by including a product', () => {
-  //       cy.authenticate(1)
-  //         .requestGetTransactionList([
-  //           {
-  //             filterType: 'account',
-  //             items: [getAccountId(accountDocument)],
-  //             include: true,
-  //           },
-  //           {
-  //             filterType: 'product',
-  //             items: [getProductId(productDocument)],
-  //             include: true,
-  //           },
-  //         ])
-  //         .expectOkResponse()
-  //         .expectValidResponseSchema(schema)
-  //         .validateTransactionListReport([
-  //           fullPaymentTransactionDocument,
-  //           productTransactionDocument,
-  //         ], [
-  //           [
-  //             fullSplitTransactionDocument,
-  //             [
-  //               0,
-  //               5,
-  //             ],
-  //           ],
-  //           [
-  //             secondaryRecipientSplitTransactionDocument,
-  //             [0],
-  //           ],
-  //         ]);
-  //     });
-  //     it('by excluding a product', () => {
-  //       cy.authenticate(1)
-  //         .requestGetTransactionList([
-  //           {
-  //             filterType: 'account',
-  //             items: [getAccountId(accountDocument)],
-  //             include: true,
-  //           },
-  //           {
-  //             filterType: 'product',
-  //             items: [getProductId(productDocument)],
-  //             include: false,
-  //           },
-  //         ])
-  //         .expectOkResponse()
-  //         .expectValidResponseSchema(schema)
-  //         .validateTransactionListReport([
-  //           accountTransactionDocument,
-  //           projectTransactionDocument,
-  //           secondaryProjectTransactionDocument,
-  //           recipientTransactionDocument,
-  //           secondaryRecipientTransactionDocument,
-  //           regularCategoryTransactionDocument,
-  //           inventoryCategoryTransactionDocument,
-  //           invoiceCategoryTransactionDocument,
-  //           secondaryCategoryTransactionDocument,
-  //           secondaryProductTransactionDocument,
-  //           earlyTransactionDocument,
-  //           lateTransactionDocument,
-  //         ], [
-  //           [
-  //             fullSplitTransactionDocument,
-  //             [
-  //               1,
-  //               2,
-  //               3,
-  //               4,
-  //               6,
-  //             ],
-  //           ],
-  //         ]);
-  //     });
-  //     it('filtered starting from given date', () => {
-  //       cy.authenticate(1)
-  //         .requestGetTransactionList([
-  //           {
-  //             filterType: 'account',
-  //             items: [getAccountId(accountDocument)],
-  //             include: true,
-  //           },
-  //           {
-  //             filterType: 'issuedAt',
-  //             from: new Date(2024, 5, 25, 14, 5, 0).toISOString(),
-  //             to: undefined,
-  //             include: true,
-  //           },
-  //         ])
-  //         .expectOkResponse()
-  //         .expectValidResponseSchema(schema)
-  //         .validateTransactionListReport([lateTransactionDocument], []);
-  //     });
-  //     it('filtered ending with given date', () => {
-  //       cy.authenticate(1)
-  //         .requestGetTransactionList([
-  //           {
-  //             filterType: 'account',
-  //             items: [getAccountId(accountDocument)],
-  //             include: true,
-  //           },
-  //           {
-  //             filterType: 'issuedAt',
-  //             to: new Date(2024, 5, 25, 13, 55, 0).toISOString(),
-  //             from: undefined,
-  //             include: true,
-  //           },
-  //         ])
-  //         .expectOkResponse()
-  //         .expectValidResponseSchema(schema)
-  //         .validateTransactionListReport([earlyTransactionDocument], []);
-  //     });
+          cy.saveTransactionDocuments([
+            includedPaymentTransactionDocument,
+            splitTransactionDocument,
+            includedDeferredTransactionDocument,
+            includedReimbursementTransactionDocument,
+            excludedPaymentTransactionDocument,
+            excludedDeferredTransactionDocument,
+            excludedReimbursementTransactionDocument,
+            deferredSplitTransactionDocument,
+          ]);
+        });
+        it('to include', () => {
+          cy.authenticate(1)
+            .requestGetTransactionList([
+              {
+                filterType: 'recipient',
+                items: [getRecipientId(recipientDocument)],
+                include: true,
+              },
+            ])
+            .expectOkResponse()
+            .expectValidResponseSchema(schema)
+            .validateTransactionListReport([
+              includedPaymentTransactionDocument,
+              includedDeferredTransactionDocument,
+              includedReimbursementTransactionDocument,
+              ...flattenSplitTransactionDocument(splitTransactionDocument, splitTransactionDocument.splits[0], splitTransactionDocument.splits[1]),
+              ...flattenSplitTransactionDocument(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]),
+            ]);
+        });
 
-  //   });
+        it('to exclude', () => {
+          cy.authenticate(1)
+            .requestGetTransactionList([
+              {
+                filterType: 'account',
+                items: [getAccountId(accountDocument)],
+                include: true,
+              },
+              {
+                filterType: 'recipient',
+                items: [getRecipientId(recipientDocument)],
+                include: false,
+              },
+            ])
+            .expectOkResponse()
+            .expectValidResponseSchema(schema)
+            .validateTransactionListReport([
+              excludedPaymentTransactionDocument,
+              excludedDeferredTransactionDocument,
+              excludedReimbursementTransactionDocument,
+            ]);
 
-  //   describe('should return error', () => {
-  //     describe('if body', () => {
-  //       it('is not an array', () => {
-  //         cy.authenticate(1)
-  //           .requestGetTransactionList({} as any)
-  //           .expectBadRequestResponse()
-  //           .expectWrongPropertyType('data', 'array', 'body');
-  //       });
+        });
+      });
 
-  //       it('does not have at least one item', () => {
-  //         cy.authenticate(1)
-  //           .requestGetTransactionList([])
-  //           .expectBadRequestResponse()
-  //           .expectTooFewItemsProperty('data', 1, 'body');
-  //       });
-  //     });
+      describe('filtered by project', () => {
+        beforeEach(() => {
+          includedPaymentTransactionDocument = paymentTransactionDataFactory.document({
+            account: accountDocument,
+            project: projectDocument,
+          });
 
-  //     describe('if body[0]', () => {
-  //       it('has additional properties', () => {
-  //         cy.authenticate(1)
-  //           .requestGetTransactionList([
-  //             {
-  //               filterType: 'account',
-  //               items: [createAccountId()],
-  //               include: true,
-  //               extra: 1,
-  //             } as any,
-  //           ])
-  //           .expectBadRequestResponse()
-  //           .expectAdditionalProperty('data', 'body');
-  //       });
+          splitTransactionDocument = splitTransactionDataFactory.document({
+            account: accountDocument,
+            splits: [
+              {
+                project: projectDocument,
+              },
+              {},
+            ],
+          });
 
-  //       it('is missing both "from" and "to" properties', () => {
-  //         cy.authenticate(1)
-  //           .requestGetTransactionList([
-  //             {
-  //               filterType: 'issuedAt',
-  //               from: undefined,
-  //               to: undefined,
-  //               include: true,
-  //             },
-  //           ])
-  //           .expectBadRequestResponse()
-  //           .expectRequiredProperty('from', 'body')
-  //           .expectRequiredProperty('to', 'body');
-  //       });
-  //     });
+          includedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+            loanAccount: accountDocument,
+            account: secondaryAccountDocument,
+            project: projectDocument,
+          });
 
-  //     describe('if body[0].include', () => {
-  //       it('is missing', () => {
-  //         cy.authenticate(1)
-  //           .requestGetTransactionList([
-  //             {
-  //               filterType: 'account',
-  //               items: [createAccountId()],
-  //               include: undefined,
-  //             },
-  //           ])
-  //           .expectBadRequestResponse()
-  //           .expectRequiredProperty('include', 'body');
-  //       });
+          includedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+            account: loanAccountDocument,
+            loanAccount: accountDocument,
+            project: projectDocument,
+          });
 
-  //       it('is not boolean', () => {
-  //         cy.authenticate(1)
-  //           .requestGetTransactionList([
-  //             {
-  //               filterType: 'account',
-  //               items: [createAccountId()],
-  //               include: 1 as any,
-  //             },
-  //           ])
-  //           .expectBadRequestResponse()
-  //           .expectWrongPropertyType ('include', 'boolean', 'body');
-  //       });
-  //     });
+          excludedPaymentTransactionDocument = paymentTransactionDataFactory.document({
+            account: accountDocument,
+            project: secondaryProjectDocument,
+          });
 
-  //     describe('if body[0].filterType', () => {
-  //       it('is missing', () => {
-  //         cy.authenticate(1)
-  //           .requestGetTransactionList([
-  //             {
-  //               filterType: undefined,
-  //               items: [createAccountId()],
-  //               include: false,
-  //             },
-  //           ])
-  //           .expectBadRequestResponse()
-  //           .expectRequiredProperty ('filterType', 'body');
-  //       });
-  //       it('is not string', () => {
-  //         cy.authenticate(1)
-  //           .requestGetTransactionList([
-  //             {
-  //               filterType: 1 as any,
-  //               items: [createAccountId()],
-  //               include: false,
-  //             },
-  //           ])
-  //           .expectBadRequestResponse()
-  //           .expectWrongPropertyType ('filterType', 'string', 'body');
-  //       });
-  //       it('is not a valid enum value', () => {
-  //         cy.authenticate(1)
-  //           .requestGetTransactionList([
-  //             {
-  //               filterType: 'not filter type' as any,
-  //               items: [createAccountId()],
-  //               include: false,
-  //             },
-  //           ])
-  //           .expectBadRequestResponse()
-  //           .expectWrongEnumValue ('filterType', 'body');
-  //       });
-  //     });
+          excludedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+            loanAccount: accountDocument,
+            account: secondaryAccountDocument,
+            project: secondaryProjectDocument,
+          });
 
-  //     describe('if body[0].items', () => {
-  //       it('is missing', () => {
-  //         cy.authenticate(1)
-  //           .requestGetTransactionList([
-  //             {
-  //               filterType: 'account',
-  //               items: undefined,
-  //               include: false,
-  //             },
-  //           ])
-  //           .expectBadRequestResponse()
-  //           .expectRequiredProperty ('items', 'body');
-  //       });
-  //       it('is not an array', () => {
-  //         cy.authenticate(1)
-  //           .requestGetTransactionList([
-  //             {
-  //               filterType: 'account',
-  //               items: 1 as any,
-  //               include: false,
-  //             },
-  //           ])
-  //           .expectBadRequestResponse()
-  //           .expectWrongPropertyType ('items', 'array', 'body');
-  //       });
-  //       it('has less than 1 item', () => {
-  //         cy.authenticate(1)
-  //           .requestGetTransactionList([
-  //             {
-  //               filterType: 'account',
-  //               items: [],
-  //               include: false,
-  //             },
-  //           ])
-  //           .expectBadRequestResponse()
-  //           .expectTooFewItemsProperty ('items', 1, 'body');
-  //       });
-  //     });
+          excludedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+            account: loanAccountDocument,
+            loanAccount: accountDocument,
+            project: secondaryProjectDocument,
+          });
 
-  //     describe('if body[0].items[0]', () => {
-  //       it('is not string', () => {
-  //         cy.authenticate(1)
-  //           .requestGetTransactionList([
-  //             {
-  //               filterType: 'account',
-  //               items: [1 as any],
-  //               include: false,
-  //             },
-  //           ])
-  //           .expectBadRequestResponse()
-  //           .expectWrongPropertyType('items/0', 'string', 'body');
-  //       });
-  //       it('does not match pattern', () => {
-  //         cy.authenticate(1)
-  //           .requestGetTransactionList([
-  //             {
-  //               filterType: 'account',
-  //               items: ['not mongo id' as any],
-  //               include: false,
-  //             },
-  //           ])
-  //           .expectBadRequestResponse()
-  //           .expectWrongPropertyPattern('items/0', 'body');
-  //       });
-  //     });
+          deferredSplitTransactionDocument = splitTransactionDataFactory.document({
+            account: secondaryAccountDocument,
+            splits: [
+              {
+                loanAccount: accountDocument,
+                project: projectDocument,
+              },
+              {
+                loanAccount: accountDocument,
+              },
+            ],
+          });
 
-  //     describe('if body[0].from', () => {
-  //       it('is not string', () => {
-  //         cy.authenticate(1)
-  //           .requestGetTransactionList([
-  //             {
-  //               filterType: 'issuedAt',
-  //               include: false,
-  //               from: 1 as any,
-  //               to: undefined,
-  //             },
-  //           ])
-  //           .expectBadRequestResponse()
-  //           .expectWrongPropertyType('from', 'string', 'body');
-  //       });
-  //       it('is not a date', () => {
-  //         cy.authenticate(1)
-  //           .requestGetTransactionList([
-  //             {
-  //               filterType: 'issuedAt',
-  //               include: false,
-  //               from: 'not date',
-  //               to: undefined,
-  //             },
-  //           ])
-  //           .expectBadRequestResponse()
-  //           .expectWrongPropertyFormat('from', 'date-time', 'body');
-  //       });
-  //     });
+          cy.saveTransactionDocuments([
+            includedPaymentTransactionDocument,
+            splitTransactionDocument,
+            includedDeferredTransactionDocument,
+            includedReimbursementTransactionDocument,
+            excludedPaymentTransactionDocument,
+            excludedDeferredTransactionDocument,
+            excludedReimbursementTransactionDocument,
+            deferredSplitTransactionDocument,
+          ]);
+        });
+        it('to include', () => {
+          cy.authenticate(1)
+            .requestGetTransactionList([
+              {
+                filterType: 'project',
+                items: [getProjectId(projectDocument)],
+                include: true,
+              },
+            ])
+            .expectOkResponse()
+            .expectValidResponseSchema(schema)
+            .validateTransactionListReport([
+              includedPaymentTransactionDocument,
+              includedDeferredTransactionDocument,
+              includedReimbursementTransactionDocument,
+              ...flattenSplitTransactionDocument(splitTransactionDocument, splitTransactionDocument.splits[0]),
+              ...flattenSplitTransactionDocument(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]),
+            ]);
+        });
 
-  //     describe('if body[0].to', () => {
-  //       it('is not string', () => {
-  //         cy.authenticate(1)
-  //           .requestGetTransactionList([
-  //             {
-  //               filterType: 'issuedAt',
-  //               include: false,
-  //               to: 1 as any,
-  //               from: undefined,
-  //             },
-  //           ])
-  //           .expectBadRequestResponse()
-  //           .expectWrongPropertyType('to', 'string', 'body');
-  //       });
-  //       it('is not a date', () => {
-  //         cy.authenticate(1)
-  //           .requestGetTransactionList([
-  //             {
-  //               filterType: 'issuedAt',
-  //               include: false,
-  //               to: 'not date',
-  //               from: undefined,
-  //             },
-  //           ])
-  //           .expectBadRequestResponse()
-  //           .expectWrongPropertyFormat('to', 'date-time', 'body');
-  //       });
+        it('to exclude', () => {
+          cy.authenticate(1)
+            .requestGetTransactionList([
+              {
+                filterType: 'account',
+                items: [getAccountId(accountDocument)],
+                include: true,
+              },
+              {
+                filterType: 'project',
+                items: [getProjectId(projectDocument)],
+                include: false,
+              },
+            ])
+            .expectOkResponse()
+            .expectValidResponseSchema(schema)
+            .validateTransactionListReport([
+              ...flattenSplitTransactionDocument(splitTransactionDocument, splitTransactionDocument.splits[1]),
+              excludedPaymentTransactionDocument,
+              excludedDeferredTransactionDocument,
+              excludedReimbursementTransactionDocument,
+              ...flattenSplitTransactionDocument(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[1]),
+            ]);
 
-  //       it('is earlier than "from"', () => {
-  //         cy.authenticate(1)
-  //           .requestGetTransactionList([
-  //             {
-  //               filterType: 'issuedAt',
-  //               include: false,
-  //               to: new Date(2024, 3, 4, 12, 0, 0).toISOString(),
-  //               from: new Date(2024, 4, 4, 12, 0, 0).toISOString(),
-  //             },
-  //           ])
-  //           .expectBadRequestResponse()
-  //           .expectTooEarlyDateProperty('to', 'body');
-  //       });
-  //     });
+        });
+      });
 
-//   });
-// });
+      describe('filtered by category', () => {
+        beforeEach(() => {
+          includedPaymentTransactionDocument = paymentTransactionDataFactory.document({
+            account: accountDocument,
+            category: regularCategoryDocument,
+          });
+
+          splitTransactionDocument = splitTransactionDataFactory.document({
+            account: accountDocument,
+            splits: [
+              {
+                category: inventoryCategoryDocument,
+              },
+              {
+                category: regularCategoryDocument,
+              },
+              {
+                category: invoiceCategoryDocument,
+              },
+              {},
+            ],
+          });
+
+          includedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+            loanAccount: accountDocument,
+            account: secondaryAccountDocument,
+            category: invoiceCategoryDocument,
+          });
+
+          includedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+            account: loanAccountDocument,
+            loanAccount: accountDocument,
+            category: regularCategoryDocument,
+          });
+
+          excludedPaymentTransactionDocument = paymentTransactionDataFactory.document({
+            account: accountDocument,
+            category: secondaryCategoryDocument,
+          });
+
+          excludedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+            loanAccount: accountDocument,
+            account: secondaryAccountDocument,
+            category: secondaryCategoryDocument,
+          });
+
+          excludedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+            account: loanAccountDocument,
+            loanAccount: accountDocument,
+            category: secondaryCategoryDocument,
+          });
+
+          deferredSplitTransactionDocument = splitTransactionDataFactory.document({
+            account: secondaryAccountDocument,
+            splits: [
+              {
+                loanAccount: accountDocument,
+                category: regularCategoryDocument,
+              },
+              {
+                loanAccount: accountDocument,
+              },
+            ],
+          });
+
+          cy.saveTransactionDocuments([
+            includedPaymentTransactionDocument,
+            splitTransactionDocument,
+            includedDeferredTransactionDocument,
+            includedReimbursementTransactionDocument,
+            excludedPaymentTransactionDocument,
+            excludedDeferredTransactionDocument,
+            excludedReimbursementTransactionDocument,
+            deferredSplitTransactionDocument,
+          ]);
+        });
+        it('to include', () => {
+          cy.authenticate(1)
+            .requestGetTransactionList([
+              {
+                filterType: 'category',
+                items: [
+                  getCategoryId(regularCategoryDocument),
+                  getCategoryId(inventoryCategoryDocument),
+                  getCategoryId(invoiceCategoryDocument),
+                ],
+                include: true,
+              },
+            ])
+            .expectOkResponse()
+            .expectValidResponseSchema(schema)
+            .validateTransactionListReport([
+              includedPaymentTransactionDocument,
+              includedDeferredTransactionDocument,
+              includedReimbursementTransactionDocument,
+              ...flattenSplitTransactionDocument(splitTransactionDocument, splitTransactionDocument.splits[0], splitTransactionDocument.splits[1], splitTransactionDocument.splits[2]),
+              ...flattenSplitTransactionDocument(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]),
+            ]);
+        });
+
+        it('to exclude', () => {
+          cy.authenticate(1)
+            .requestGetTransactionList([
+              {
+                filterType: 'account',
+                items: [getAccountId(accountDocument)],
+                include: true,
+              },
+              {
+                filterType: 'category',
+                items: [
+                  getCategoryId(regularCategoryDocument),
+                  getCategoryId(inventoryCategoryDocument),
+                  getCategoryId(invoiceCategoryDocument),
+                ],
+                include: false,
+              },
+            ])
+            .expectOkResponse()
+            .expectValidResponseSchema(schema)
+            .validateTransactionListReport([
+              ...flattenSplitTransactionDocument(splitTransactionDocument, splitTransactionDocument.splits[3]),
+              excludedPaymentTransactionDocument,
+              excludedDeferredTransactionDocument,
+              excludedReimbursementTransactionDocument,
+              ...flattenSplitTransactionDocument(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[1]),
+            ]);
+
+        });
+      });
+
+      describe('filtered by product', () => {
+        beforeEach(() => {
+          includedPaymentTransactionDocument = paymentTransactionDataFactory.document({
+            account: accountDocument,
+            category: inventoryCategoryDocument,
+            product: productDocument,
+          });
+
+          splitTransactionDocument = splitTransactionDataFactory.document({
+            account: accountDocument,
+            splits: [
+              {
+                category: inventoryCategoryDocument,
+                product: productDocument,
+              },
+              {},
+            ],
+          });
+
+          includedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+            loanAccount: accountDocument,
+            account: secondaryAccountDocument,
+            category: inventoryCategoryDocument,
+            product: productDocument,
+          });
+
+          includedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+            account: loanAccountDocument,
+            loanAccount: accountDocument,
+            category: inventoryCategoryDocument,
+            product: productDocument,
+          });
+
+          excludedPaymentTransactionDocument = paymentTransactionDataFactory.document({
+            account: accountDocument,
+            category: inventoryCategoryDocument,
+            product: secondaryProductDocument,
+          });
+
+          excludedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+            loanAccount: accountDocument,
+            account: secondaryAccountDocument,
+            category: inventoryCategoryDocument,
+            product: secondaryProductDocument,
+          });
+
+          excludedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+            account: loanAccountDocument,
+            loanAccount: accountDocument,
+            category: inventoryCategoryDocument,
+            product: secondaryProductDocument,
+          });
+
+          deferredSplitTransactionDocument = splitTransactionDataFactory.document({
+            account: secondaryAccountDocument,
+            splits: [
+              {
+                loanAccount: accountDocument,
+                category: inventoryCategoryDocument,
+                product: productDocument,
+              },
+              {
+                loanAccount: accountDocument,
+                category: inventoryCategoryDocument,
+                product: secondaryProductDocument,
+              },
+            ],
+          });
+
+          cy.saveTransactionDocuments([
+            includedPaymentTransactionDocument,
+            splitTransactionDocument,
+            includedDeferredTransactionDocument,
+            includedReimbursementTransactionDocument,
+            excludedPaymentTransactionDocument,
+            excludedDeferredTransactionDocument,
+            excludedReimbursementTransactionDocument,
+            deferredSplitTransactionDocument,
+          ]);
+        });
+        it('to include', () => {
+          cy.authenticate(1)
+            .requestGetTransactionList([
+              {
+                filterType: 'product',
+                items: [getProductId(productDocument)],
+                include: true,
+              },
+            ])
+            .expectOkResponse()
+            .expectValidResponseSchema(schema)
+            .validateTransactionListReport([
+              includedPaymentTransactionDocument,
+              includedDeferredTransactionDocument,
+              includedReimbursementTransactionDocument,
+              ...flattenSplitTransactionDocument(splitTransactionDocument, splitTransactionDocument.splits[0]),
+              ...flattenSplitTransactionDocument(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]),
+            ]);
+        });
+
+        it('to exclude', () => {
+          cy.authenticate(1)
+            .requestGetTransactionList([
+              {
+                filterType: 'account',
+                items: [getAccountId(accountDocument)],
+                include: true,
+              },
+              {
+                filterType: 'product',
+                items: [getProductId(productDocument)],
+                include: false,
+              },
+            ])
+            .expectOkResponse()
+            .expectValidResponseSchema(schema)
+            .validateTransactionListReport([
+              ...flattenSplitTransactionDocument(splitTransactionDocument, splitTransactionDocument.splits[1]),
+              excludedPaymentTransactionDocument,
+              excludedDeferredTransactionDocument,
+              excludedReimbursementTransactionDocument,
+              ...flattenSplitTransactionDocument(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[1]),
+            ]);
+
+        });
+      });
+
+      describe('filtered by issuedAt', () => {
+        beforeEach(() => {
+          includedPaymentTransactionDocument = paymentTransactionDataFactory.document({
+            body: {
+              issuedAt: new Date(2024, 7, 5, 12, 0, 0).toISOString(),
+            },
+            account: accountDocument,
+          });
+
+          splitTransactionDocument = splitTransactionDataFactory.document({
+            body: {
+              issuedAt: new Date(2024, 7, 5, 13, 0, 0).toISOString(),
+            },
+            account: accountDocument,
+            splits: [
+              {},
+              {},
+            ],
+          });
+
+          includedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+            body: {
+              issuedAt: new Date(2024, 7, 5, 12, 20, 0).toISOString(),
+            },
+            loanAccount: accountDocument,
+            account: secondaryAccountDocument,
+          });
+
+          includedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+            body: {
+              issuedAt: new Date(2024, 7, 5, 22, 0, 0).toISOString(),
+            },
+            account: loanAccountDocument,
+            loanAccount: accountDocument,
+          });
+
+          excludedPaymentTransactionDocument = paymentTransactionDataFactory.document({
+            body: {
+              issuedAt: new Date(2024, 7, 4, 12, 0, 0).toISOString(),
+            },
+            account: accountDocument,
+          });
+
+          excludedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+            body: {
+              issuedAt: new Date(2024, 7, 3, 12, 0, 0).toISOString(),
+            },
+            loanAccount: accountDocument,
+            account: secondaryAccountDocument,
+          });
+
+          excludedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+            body: {
+              issuedAt: new Date(2024, 7, 6, 12, 0, 0).toISOString(),
+            },
+            account: loanAccountDocument,
+            loanAccount: accountDocument,
+          });
+
+          deferredSplitTransactionDocument = splitTransactionDataFactory.document({
+            body: {
+              issuedAt: new Date(2024, 7, 5, 2, 0, 0).toISOString(),
+            },
+            account: secondaryAccountDocument,
+            splits: [
+              {
+                loanAccount: accountDocument,
+              },
+            ],
+          });
+
+          cy.saveTransactionDocuments([
+            includedPaymentTransactionDocument,
+            splitTransactionDocument,
+            includedDeferredTransactionDocument,
+            includedReimbursementTransactionDocument,
+            excludedPaymentTransactionDocument,
+            excludedDeferredTransactionDocument,
+            excludedReimbursementTransactionDocument,
+            deferredSplitTransactionDocument,
+          ]);
+        });
+        it('to include a range', () => {
+          cy.authenticate(1)
+            .requestGetTransactionList([
+              {
+                filterType: 'account',
+                items: [getAccountId(accountDocument)],
+                include: true,
+              },
+              {
+                filterType: 'issuedAt',
+                from: new Date(2024, 7, 5, 0, 0, 0).toISOString(),
+                to: new Date(2024, 7, 6, 0, 0, 0).toISOString(),
+                include: true,
+              },
+            ])
+            .expectOkResponse()
+            .expectValidResponseSchema(schema)
+            .validateTransactionListReport([
+              includedPaymentTransactionDocument,
+              includedDeferredTransactionDocument,
+              includedReimbursementTransactionDocument,
+              ...flattenSplitTransactionDocument(splitTransactionDocument, splitTransactionDocument.splits[0], splitTransactionDocument.splits[1]),
+              ...flattenSplitTransactionDocument(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]),
+            ]);
+        });
+
+        it('to exclude a range', () => {
+          cy.authenticate(1)
+            .requestGetTransactionList([
+              {
+                filterType: 'account',
+                items: [getAccountId(accountDocument)],
+                include: true,
+              },
+              {
+                filterType: 'issuedAt',
+                from: new Date(2024, 7, 5, 0, 0, 0).toISOString(),
+                to: new Date(2024, 7, 6, 0, 0, 0).toISOString(),
+                include: false,
+              },
+            ])
+            .expectOkResponse()
+            .expectValidResponseSchema(schema)
+            .validateTransactionListReport([
+              excludedPaymentTransactionDocument,
+              excludedDeferredTransactionDocument,
+              excludedReimbursementTransactionDocument,
+            ]);
+
+        });
+      });
+    });
+
+    describe('should return error', () => {
+      describe('if body', () => {
+        it('is not an array', () => {
+          cy.authenticate(1)
+            .requestGetTransactionList({} as any)
+            .expectBadRequestResponse()
+            .expectWrongPropertyType('data', 'array', 'body');
+        });
+
+        it('does not have at least one item', () => {
+          cy.authenticate(1)
+            .requestGetTransactionList([])
+            .expectBadRequestResponse()
+            .expectTooFewItemsProperty('data', 1, 'body');
+        });
+      });
+
+      describe('if body[0]', () => {
+        it('has additional properties', () => {
+          cy.authenticate(1)
+            .requestGetTransactionList([
+              {
+                filterType: 'account',
+                items: [createAccountId()],
+                include: true,
+                extra: 1,
+              } as any,
+            ])
+            .expectBadRequestResponse()
+            .expectAdditionalProperty('data', 'body');
+        });
+
+        it('is missing both "from" and "to" properties', () => {
+          cy.authenticate(1)
+            .requestGetTransactionList([
+              {
+                filterType: 'issuedAt',
+                from: undefined,
+                to: undefined,
+                include: true,
+              },
+            ])
+            .expectBadRequestResponse()
+            .expectRequiredProperty('from', 'body')
+            .expectRequiredProperty('to', 'body');
+        });
+      });
+
+      describe('if body[0].include', () => {
+        it('is missing', () => {
+          cy.authenticate(1)
+            .requestGetTransactionList([
+              {
+                filterType: 'account',
+                items: [createAccountId()],
+                include: undefined,
+              },
+            ])
+            .expectBadRequestResponse()
+            .expectRequiredProperty('include', 'body');
+        });
+
+        it('is not boolean', () => {
+          cy.authenticate(1)
+            .requestGetTransactionList([
+              {
+                filterType: 'account',
+                items: [createAccountId()],
+                include: 1 as any,
+              },
+            ])
+            .expectBadRequestResponse()
+            .expectWrongPropertyType ('include', 'boolean', 'body');
+        });
+      });
+
+      describe('if body[0].filterType', () => {
+        it('is missing', () => {
+          cy.authenticate(1)
+            .requestGetTransactionList([
+              {
+                filterType: undefined,
+                items: [createAccountId()],
+                include: false,
+              },
+            ])
+            .expectBadRequestResponse()
+            .expectRequiredProperty ('filterType', 'body');
+        });
+        it('is not string', () => {
+          cy.authenticate(1)
+            .requestGetTransactionList([
+              {
+                filterType: 1 as any,
+                items: [createAccountId()],
+                include: false,
+              },
+            ])
+            .expectBadRequestResponse()
+            .expectWrongPropertyType ('filterType', 'string', 'body');
+        });
+        it('is not a valid enum value', () => {
+          cy.authenticate(1)
+            .requestGetTransactionList([
+              {
+                filterType: 'not filter type' as any,
+                items: [createAccountId()],
+                include: false,
+              },
+            ])
+            .expectBadRequestResponse()
+            .expectWrongEnumValue ('filterType', 'body');
+        });
+      });
+
+      describe('if body[0].items', () => {
+        it('is missing', () => {
+          cy.authenticate(1)
+            .requestGetTransactionList([
+              {
+                filterType: 'account',
+                items: undefined,
+                include: false,
+              },
+            ])
+            .expectBadRequestResponse()
+            .expectRequiredProperty ('items', 'body');
+        });
+        it('is not an array', () => {
+          cy.authenticate(1)
+            .requestGetTransactionList([
+              {
+                filterType: 'account',
+                items: 1 as any,
+                include: false,
+              },
+            ])
+            .expectBadRequestResponse()
+            .expectWrongPropertyType ('items', 'array', 'body');
+        });
+        it('has less than 1 item', () => {
+          cy.authenticate(1)
+            .requestGetTransactionList([
+              {
+                filterType: 'account',
+                items: [],
+                include: false,
+              },
+            ])
+            .expectBadRequestResponse()
+            .expectTooFewItemsProperty ('items', 1, 'body');
+        });
+      });
+
+      describe('if body[0].items[0]', () => {
+        it('is not string', () => {
+          cy.authenticate(1)
+            .requestGetTransactionList([
+              {
+                filterType: 'account',
+                items: [1 as any],
+                include: false,
+              },
+            ])
+            .expectBadRequestResponse()
+            .expectWrongPropertyType('items/0', 'string', 'body');
+        });
+        it('does not match pattern', () => {
+          cy.authenticate(1)
+            .requestGetTransactionList([
+              {
+                filterType: 'account',
+                items: ['not mongo id' as any],
+                include: false,
+              },
+            ])
+            .expectBadRequestResponse()
+            .expectWrongPropertyPattern('items/0', 'body');
+        });
+      });
+
+      describe('if body[0].from', () => {
+        it('is not string', () => {
+          cy.authenticate(1)
+            .requestGetTransactionList([
+              {
+                filterType: 'issuedAt',
+                include: false,
+                from: 1 as any,
+                to: undefined,
+              },
+            ])
+            .expectBadRequestResponse()
+            .expectWrongPropertyType('from', 'string', 'body');
+        });
+        it('is not a date', () => {
+          cy.authenticate(1)
+            .requestGetTransactionList([
+              {
+                filterType: 'issuedAt',
+                include: false,
+                from: 'not date',
+                to: undefined,
+              },
+            ])
+            .expectBadRequestResponse()
+            .expectWrongPropertyFormat('from', 'date-time', 'body');
+        });
+      });
+
+      describe('if body[0].to', () => {
+        it('is not string', () => {
+          cy.authenticate(1)
+            .requestGetTransactionList([
+              {
+                filterType: 'issuedAt',
+                include: false,
+                to: 1 as any,
+                from: undefined,
+              },
+            ])
+            .expectBadRequestResponse()
+            .expectWrongPropertyType('to', 'string', 'body');
+        });
+        it('is not a date', () => {
+          cy.authenticate(1)
+            .requestGetTransactionList([
+              {
+                filterType: 'issuedAt',
+                include: false,
+                to: 'not date',
+                from: undefined,
+              },
+            ])
+            .expectBadRequestResponse()
+            .expectWrongPropertyFormat('to', 'date-time', 'body');
+        });
+
+        it('is earlier than "from"', () => {
+          cy.authenticate(1)
+            .requestGetTransactionList([
+              {
+                filterType: 'issuedAt',
+                include: false,
+                to: new Date(2024, 3, 4, 12, 0, 0).toISOString(),
+                from: new Date(2024, 4, 4, 12, 0, 0).toISOString(),
+              },
+            ])
+            .expectBadRequestResponse()
+            .expectTooEarlyDateProperty('to', 'body');
+        });
+      });
+    });
+  });
 });

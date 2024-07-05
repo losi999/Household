@@ -7,7 +7,9 @@ db.getCollection("transactions").aggregate([
   {
     $set: {
       tmp_splits: {
-        $concatArrays: ['$splits', {
+        $concatArrays: [{
+          $ifNull: ['$splits', []]
+        }, {
           $ifNull: ['$deferredSplits', []]
         }]
       }

@@ -38,7 +38,7 @@ export const pushUnique = <T>(array: T[], item: T) => {
 
 export const generateMongoId = (): Types.ObjectId => new Types.ObjectId();
 const getId = (doc: Internal.Id) => doc?._id.toString();
-export const getTransactionId = (doc: Transaction.Document): Transaction.Id => getId(doc) as Transaction.Id;
+export const getTransactionId = (doc: Transaction.Document | Transaction.ReportDocument): Transaction.Id => getId(doc) as Transaction.Id;
 export const getAccountId = (doc: Account.Document): Account.Id => getId(doc) as Account.Id;
 export const getProjectId = (doc: Project.Document): Project.Id => getId(doc) as Project.Id;
 export const getRecipientId = (doc: Recipient.Document): Recipient.Id => getId(doc) as Recipient.Id;

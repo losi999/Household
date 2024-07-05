@@ -486,6 +486,23 @@ export namespace Transaction {
   & Description
   & Splits<D>;
 
+  export type ReportDocument = Internal.Id
+  & TransactionType<'split'>
+  & Account<Account.Document>
+  & Category<Category.Document>
+  & Project<Project.Document>
+  & Recipient<Recipient.Document>
+  & IssuedAt<Date>
+  & InvoiceNumber
+  & InvoiceDate<Date>
+  & Quantity
+  & Product<Product.Document>
+  & Amount
+  & Description
+  & {
+    splitId: Transaction.Id;
+  };
+
   export type Document<D extends Date | string = Date > = PaymentDocument<D> | TransferDocument<D> | SplitDocument<D> | DraftDocument<D> | DeferredDocument<D> | ReimbursementDocument<D> | LoanTransferDocument<D>;
 
   export type PaymentResponse = TransactionId
@@ -597,7 +614,10 @@ export namespace Transaction {
   & Category<Category.Report>
   & Project<Project.Report>
   & Recipient<Recipient.Report>
-  & Product<Product.Report>;
+  & Product<Product.Report>
+  & {
+    splitId: Transaction.Id;
+  };
 }
 
 export namespace Report {

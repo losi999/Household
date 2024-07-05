@@ -2,6 +2,7 @@ import { populate } from '@household/shared/common/utils';
 import { getTransactionByIdAndAccountId } from '@household/shared/services/aggregates/get transaction by id and account id';
 import { listDeferredTransactions } from '@household/shared/services/aggregates/list deferred transactions by account id';
 import { listTransactionsByAccountId } from '@household/shared/services/aggregates/list transactions by account id';
+import { transactionsReport } from '@household/shared/services/aggregates/transactions report';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { Restrict } from '@household/shared/types/common';
 import { Account, Common, Transaction } from '@household/shared/types/types';
@@ -16,7 +17,7 @@ export interface ITransactionService {
   deleteTransaction(transactionId: Transaction.Id): Promise<unknown>;
   updateTransaction(transactionId: Transaction.Id, updateQuery: UpdateQuery<Transaction.Document>): Promise<unknown>;
   replaceTransaction(transactionId: Transaction.Id, doc: Restrict<Transaction.Document, '_id'>): Promise<unknown>;
-  listTransactions(match: PipelineStage.Match): Promise<Transaction.PaymentDocument[]>;
+  listTransactions(match: PipelineStage.Match): Promise<Transaction.ReportDocument[]>;
   listDeferredTransactions(ctx: {
     payingAccountIds?: Account.Id[];
     deferredTransactionIds?: Transaction.Id[];
@@ -104,84 +105,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
     },
     listTransactions: (match) => {
       return mongodbService.inSession((session) => {
-        const pipeline: PipelineStage[] = [
-          match,
-          {
-            $lookup: {
-              from: 'accounts',
-              localField: 'account',
-              foreignField: '_id',
-              as: 'account',
-            },
-          },
-          {
-            $unwind: {
-              path: '$account',
-              preserveNullAndEmptyArrays: true,
-            },
-          },
-          {
-            $lookup: {
-              from: 'categories',
-              localField: 'category',
-              foreignField: '_id',
-              as: 'category',
-            },
-          },
-          {
-            $unwind: {
-              path: '$category',
-              preserveNullAndEmptyArrays: true,
-            },
-          },
-          {
-            $lookup: {
-              from: 'projects',
-              localField: 'project',
-              foreignField: '_id',
-              as: 'project',
-            },
-          },
-          {
-            $unwind: {
-              path: '$project',
-              preserveNullAndEmptyArrays: true,
-            },
-          },
-          {
-            $lookup: {
-              from: 'products',
-              localField: 'product',
-              foreignField: '_id',
-              as: 'product',
-            },
-          },
-          {
-            $unwind: {
-              path: '$product',
-              preserveNullAndEmptyArrays: true,
-            },
-          },
-          {
-            $lookup: {
-              from: 'recipients',
-              localField: 'recipient',
-              foreignField: '_id',
-              as: 'recipient',
-            },
-          },
-          {
-            $unwind: {
-              path: '$recipient',
-              preserveNullAndEmptyArrays: true,
-            },
-          },
-        ];
-
-        // if (secondMatch.$match.$and.length === 0) {
-        //   pipeline.splice(3, 1);
-        // }
-        return mongodbService.transactions.aggregate(pipeline, {
+        return mongodbService.transactions.aggregate(transactionsReport(match), {
           session,
         });
 
