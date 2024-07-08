@@ -14,7 +14,7 @@ export interface ITransactionService {
   deleteTransaction(transactionId: Transaction.Id): Promise<unknown>;
   updateTransaction(transactionId: Transaction.Id, updateQuery: UpdateQuery<Transaction.Document>): Promise<unknown>;
   replaceTransaction(transactionId: Transaction.Id, doc: Restrict<Transaction.Document, '_id'>): Promise<unknown>;
-  listTransactions(match: PipelineStage.Match): Promise<Transaction.ReportDocument[]>;
+  listTransactions(match: PipelineStage.Match): Promise<Transaction.RawReport[]>;
   listDeferredTransactions(ctx: {
     payingAccountIds?: Account.Id[];
     deferredTransactionIds?: Transaction.Id[];
@@ -231,6 +231,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
                 'payingAccount',
                 'ownerAccount',
                 'isSettled',
+                'transactionType',
               ],
             },
             match,

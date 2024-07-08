@@ -487,8 +487,7 @@ export namespace Transaction {
   & Description
   & Splits<D>;
 
-  export type ReportDocument = Internal.Id
-  & TransactionType<'split'>
+  export type RawReport = Internal.Id
   & Account<Account.Document>
   & Category<Category.Document>
   & Project<Project.Document>

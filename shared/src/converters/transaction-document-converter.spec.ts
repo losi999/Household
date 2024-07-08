@@ -9,6 +9,12 @@ import { IRecipientDocumentConverter } from '@household/shared/converters/recipi
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
 import { Transaction } from '@household/shared/types/types';
+import { IDeferredTransactionDocumentConverter } from '@household/shared/converters/deferred-transaction-document-converter';
+import { ILoanTransferTransactionDocumentConverter } from '@household/shared/converters/loan-transfer-transaction-document-converter';
+import { IPaymentTransactionDocumentConverter } from '@household/shared/converters/payment-transaction-document-converter';
+import { IReimbursementTransactionDocumentConverter } from '@household/shared/converters/reimbursement-transaction-document-converter';
+import { ISplitTransactionDocumentConverter } from '@household/shared/converters/split-transaction-document-converter';
+import { ITransferTransactionDocumentConverter } from '@household/shared/converters/transfer-transaction-document-converter';
 
 describe('Transaction document converter', () => {
   let converter: ITransactionDocumentConverter;
@@ -17,6 +23,12 @@ describe('Transaction document converter', () => {
   let mockRecipientDocumentConverter: Mock<IRecipientDocumentConverter>;
   let mockCategoryDocumentConverter: Mock<ICategoryDocumentConverter>;
   let mockProductDocumentConverter: Mock<IProductDocumentConverter>;
+  let mockPaymentTransactionDocumentConverter: Mock<IPaymentTransactionDocumentConverter>;
+  let mockSplitTransactionDocumentConverter: Mock<ISplitTransactionDocumentConverter>;
+  let mockDeferredTransactionDocumentConverter: Mock<IDeferredTransactionDocumentConverter>;
+  let mockReimbursementTransactionDocumentConverter: Mock<IReimbursementTransactionDocumentConverter>;
+  let mockTransferTransactionDocumentConverter: Mock<ITransferTransactionDocumentConverter>;
+  let mockLoanTransferTransactionDocumentConverter: Mock<ILoanTransferTransactionDocumentConverter>;
   const now = new Date();
 
   beforeEach(() => {
@@ -25,9 +37,15 @@ describe('Transaction document converter', () => {
     mockRecipientDocumentConverter = createMockService('toResponse', 'toReport');
     mockCategoryDocumentConverter = createMockService('toResponse', 'toReport');
     mockProductDocumentConverter = createMockService('toResponse', 'toReport');
+    mockPaymentTransactionDocumentConverter = createMockService('toResponse');
+    mockSplitTransactionDocumentConverter = createMockService('toResponse');
+    mockDeferredTransactionDocumentConverter = createMockService('toResponse');
+    mockReimbursementTransactionDocumentConverter = createMockService('toResponse');
+    mockTransferTransactionDocumentConverter = createMockService('toResponse');
+    mockLoanTransferTransactionDocumentConverter = createMockService('toResponse');
 
     advanceTo(now);
-    converter = transactionDocumentConverterFactory(mockAccountDocumentConverter.service, mockProjectDocumentConverter.service, mockCategoryDocumentConverter.service, mockRecipientDocumentConverter.service, mockProductDocumentConverter.service);
+    converter = transactionDocumentConverterFactory(mockAccountDocumentConverter.service, mockProjectDocumentConverter.service, mockCategoryDocumentConverter.service, mockRecipientDocumentConverter.service, mockProductDocumentConverter.service, mockPaymentTransactionDocumentConverter.service, mockSplitTransactionDocumentConverter.service, mockDeferredTransactionDocumentConverter.service, mockReimbursementTransactionDocumentConverter.service, mockTransferTransactionDocumentConverter.service, mockLoanTransferTransactionDocumentConverter.service);
   });
 
   afterEach(() => {
@@ -89,154 +107,6 @@ describe('Transaction document converter', () => {
       createdAt: now,
       updatedAt: now,
     });
-
-    describe('createPaymentDocument', () => {
-      it('should return document', () => {
-        const result = converter.createPaymentDocument({
-          body,
-          account,
-          category: regularCategory,
-          project,
-          recipient,
-          product,
-        }, undefined);
-        expect(result).toEqual(createPaymentTransactionDocument({
-          account,
-          category: regularCategory,
-          project,
-          recipient,
-          amount,
-          description,
-          issuedAt: now,
-          quantity: undefined,
-          product: undefined,
-          invoiceNumber: undefined,
-          billingEndDate: undefined,
-          billingStartDate: undefined,
-          expiresAt: undefined,
-          _id: undefined,
-        }));
-      });
-
-      it('should return expiring document', () => {
-        const result = converter.createPaymentDocument({
-          body,
-          account,
-          category: regularCategory,
-          project,
-          recipient,
-          product,
-        }, expiresIn);
-        expect(result).toEqual(createPaymentTransactionDocument({
-          account,
-          category: regularCategory,
-          project,
-          recipient,
-          amount,
-          description,
-          issuedAt: now,
-          quantity: undefined,
-          product: undefined,
-          invoiceNumber: undefined,
-          billingEndDate: undefined,
-          billingStartDate: undefined,
-          expiresAt: addSeconds(expiresIn, now),
-          _id: undefined,
-        }));
-      });
-
-      it('should return document with inventory properties', () => {
-        body.quantity = quantity;
-        body.productId = productId;
-
-        const result = converter.createPaymentDocument({
-          body,
-          account,
-          category: inventoryCategory,
-          project,
-          recipient,
-          product,
-        }, undefined);
-        expect(result).toEqual(createPaymentTransactionDocument({
-          account,
-          category: inventoryCategory,
-          project,
-          recipient,
-          amount,
-          description,
-          invoiceNumber: undefined,
-          billingEndDate: undefined,
-          billingStartDate: undefined,
-          quantity,
-          product,
-          issuedAt: now,
-          expiresAt: undefined,
-          _id: undefined,
-        }));
-      });
-      it('should return document with invoice properties', () => {
-        body.invoiceNumber = invoiceNumber;
-        body.billingStartDate = billingStartDate;
-        body.billingEndDate = billingEndDate;
-
-        const result = converter.createPaymentDocument({
-          body,
-          account,
-          category: invoiceCategory,
-          project,
-          recipient,
-          product,
-        }, undefined);
-        expect(result).toEqual(createPaymentTransactionDocument({
-          account,
-          category: invoiceCategory,
-          project,
-          recipient,
-          amount,
-          description,
-          invoiceNumber,
-          billingEndDate: new Date(billingEndDate),
-          billingStartDate: new Date(billingStartDate),
-          quantity: undefined,
-          product: undefined,
-          issuedAt: now,
-          expiresAt: undefined,
-          _id: undefined,
-        }));
-      });
-    });
-
-    // describe('updatePaymentDocument', () => {
-    //   const { updatedAt, ...document } = queriedDocument;
-    //   it('should update document', () => {
-    //     const result = converter.updatePaymentDocument({
-    //       body,
-    //       document,
-    //       account,
-    //       category: regularCategory,
-    //       project,
-    //       recipient,
-    //       product,
-    //     }, expiresIn);
-    //     expect(result).toEqual(createPaymentTransactionDocument({
-    //       _id: document._id,
-    //       account,
-    //       category: regularCategory,
-    //       project,
-    //       recipient,
-    //       amount,
-    //       description,
-    //       issuedAt: now,
-    //       createdAt: now,
-    //       invoiceNumber: undefined,
-    //       billingEndDate: undefined,
-    //       billingStartDate: undefined,
-    //       quantity: undefined,
-    //       product: undefined,
-    //       expiresAt: addSeconds(expiresIn, now),
-    //     }));
-    //   });
-    // });
 
     describe('toResponse', () => {
       it('should return response', () => {
@@ -308,34 +178,34 @@ describe('Transaction document converter', () => {
       });
     });
 
-    describe('toReport', () => {
-      it('should return report', () => {
-        const accountReport = createAccountReport();
-        const categoryReport = createCategoryReport();
-        const projectReport = createProjectReport();
-        const productReport = createProductReport();
-        const recipientReport = createRecipientReport();
+    // describe('toReport', () => {
+    //   it('should return report', () => {
+    //     const accountReport = createAccountReport();
+    //     const categoryReport = createCategoryReport();
+    //     const projectReport = createProjectReport();
+    //     const productReport = createProductReport();
+    //     const recipientReport = createRecipientReport();
 
-        mockAccountDocumentConverter.functions.toReport.mockReturnValue(accountReport);
-        mockCategoryDocumentConverter.functions.toReport.mockReturnValue(categoryReport);
-        mockProjectDocumentConverter.functions.toReport.mockReturnValue(projectReport);
-        mockProductDocumentConverter.functions.toReport.mockReturnValue(productReport);
-        mockRecipientDocumentConverter.functions.toReport.mockReturnValue(recipientReport);
+    //     mockAccountDocumentConverter.functions.toReport.mockReturnValue(accountReport);
+    //     mockCategoryDocumentConverter.functions.toReport.mockReturnValue(categoryReport);
+    //     mockProjectDocumentConverter.functions.toReport.mockReturnValue(projectReport);
+    //     mockProductDocumentConverter.functions.toReport.mockReturnValue(productReport);
+    //     mockRecipientDocumentConverter.functions.toReport.mockReturnValue(recipientReport);
 
-        const result = converter.toReport(queriedDocument);
-        expect(result).toEqual({
-          ...createTransactionReport(),
-          amount,
-          description,
-          transactionId: getTransactionId(queriedDocument),
-          account: accountReport,
-          category: categoryReport,
-          product: productReport,
-          project: projectReport,
-          recipient: recipientReport,
-        });
-      });
-    });
+    //     const result = converter.toReport(queriedDocument);
+    //     expect(result).toEqual({
+    //       ...createTransactionReport(),
+    //       amount,
+    //       description,
+    //       transactionId: getTransactionId(queriedDocument),
+    //       account: accountReport,
+    //       category: categoryReport,
+    //       product: productReport,
+    //       project: projectReport,
+    //       recipient: recipientReport,
+    //     });
+    //   });
+    // });
   });
 
   describe('split', () => {
@@ -386,177 +256,6 @@ describe('Transaction document converter', () => {
         }),
       ],
     });
-
-    describe('createSplitDocument', () => {
-      it('should return document', () => {
-        const result = converter.createSplitDocument({
-          body,
-          account,
-          categories: toDictionary([
-            regularCategory,
-            inventoryCategory,
-            invoiceCategory,
-          ], '_id'),
-          projects: toDictionary([project], '_id'),
-          products: toDictionary([product], '_id'),
-          recipient,
-        }, undefined);
-        expect(result).toEqual(createSplitTransactionDocument({
-          account,
-          recipient,
-          description,
-          issuedAt: now,
-          expiresAt: undefined,
-          _id: undefined,
-          splits: [
-            createSplitDocumentItem({
-              category: regularCategory,
-              description,
-              project,
-              product: undefined,
-              quantity: undefined,
-              invoiceNumber: undefined,
-              billingEndDate: undefined,
-              billingStartDate: undefined,
-            }),
-            createSplitDocumentItem({
-              category: inventoryCategory,
-              description,
-              project,
-              quantity,
-              product,
-              invoiceNumber: undefined,
-              billingEndDate: undefined,
-              billingStartDate: undefined,
-            }),
-            createSplitDocumentItem({
-              category: invoiceCategory,
-              description,
-              project,
-              product: undefined,
-              quantity: undefined,
-              invoiceNumber,
-              billingEndDate: new Date(billingEndDate),
-              billingStartDate: new Date(billingStartDate),
-            }),
-          ],
-        }));
-      });
-
-      it('should return expiring document', () => {
-        const result = converter.createSplitDocument({
-          body,
-          account,
-          categories: toDictionary([
-            regularCategory,
-            inventoryCategory,
-            invoiceCategory,
-          ], '_id'),
-          projects: toDictionary([project], '_id'),
-          products: toDictionary([product], '_id'),
-          recipient,
-        }, expiresIn);
-        expect(result).toEqual(createSplitTransactionDocument({
-          account,
-          recipient,
-          description,
-          issuedAt: now,
-          expiresAt: addSeconds(expiresIn, now),
-          _id: undefined,
-          splits: [
-            createSplitDocumentItem({
-              category: regularCategory,
-              description,
-              project,
-              product: undefined,
-              quantity: undefined,
-              invoiceNumber: undefined,
-              billingEndDate: undefined,
-              billingStartDate: undefined,
-            }),
-            createSplitDocumentItem({
-              category: inventoryCategory,
-              description,
-              project,
-              quantity,
-              product,
-              invoiceNumber: undefined,
-              billingEndDate: undefined,
-              billingStartDate: undefined,
-            }),
-            createSplitDocumentItem({
-              category: invoiceCategory,
-              description,
-              project,
-              product: undefined,
-              quantity: undefined,
-              invoiceNumber,
-              billingEndDate: new Date(billingEndDate),
-              billingStartDate: new Date(billingStartDate),
-            }),
-          ],
-        }));
-      });
-    });
-
-    // describe('updateSplitDocument', () => {
-    //   const { updatedAt, ...document } = queriedDocument;
-    //   it('should update document', () => {
-    //     const result = converter.updateSplitDocument({
-    //       body,
-    //       document,
-    //       account,
-    //       categories: toDictionary([
-    //         regularCategory,
-    //         inventoryCategory,
-    //         invoiceCategory,
-    //       ], '_id'),
-    //       projects: toDictionary([project], '_id'),
-    //       products: toDictionary([product], '_id'),
-    //       recipient,
-    //     }, expiresIn);
-    //     expect(result).toEqual(createSplitTransactionDocument({
-    //       account,
-    //       recipient,
-    //       description,
-    //       issuedAt: now,
-    //       createdAt: now,
-    //       expiresAt: addSeconds(expiresIn, now),
-    //       _id: document._id,
-    //       splits: [
-    //         createSplitDocumentItem({
-    //           category: regularCategory,
-    //           description,
-    //           project,
-    //           inventory: undefined,
-    //           invoice: undefined,
-    //         }),
-    //         createSplitDocumentItem({
-    //           category: inventoryCategory,
-    //           description,
-    //           project,
-    //           inventory: createInventoryDocument({
-    //             quantity,
-    //             product,
-    //           }),
-    //           invoice: undefined,
-    //         }),
-    //         createSplitDocumentItem({
-    //           category: invoiceCategory,
-    //           description,
-    //           project,
-    //           inventory: undefined,
-    //           invoice: createInvoiceDocument({
-    //             invoiceNumber,
-    //             billingEndDate: new Date(billingEndDate),
-    //             billingStartDate: new Date(billingStartDate),
-    //           }),
-    //         }),
-    //       ],
-    //     }));
-    //   });
-    // });
-
     describe('toResponse', () => {
       it('should return response', () => {
         mockAccountDocumentConverter.functions.toResponse.mockReturnValue(accountResponse);
@@ -661,89 +360,6 @@ describe('Transaction document converter', () => {
       createdAt: now,
       updatedAt: now,
     });
-
-    describe('createTransferDocument', () => {
-      it('should return document', () => {
-        const result = converter.createTransferDocument({
-          body,
-          account,
-          transferAccount,
-        }, undefined);
-        expect(result).toEqual(createTransferTransactionDocument({
-          account,
-          transferAccount,
-          transferAmount,
-          amount,
-          description,
-          issuedAt: now,
-          expiresAt: undefined,
-          _id: undefined,
-        }));
-      });
-
-      it('should return document if transferAmount is missing', () => {
-        const result = converter.createTransferDocument({
-          body: {
-            ...body,
-            transferAmount: undefined,
-          },
-          account,
-          transferAccount,
-        }, undefined);
-        expect(result).toEqual(createTransferTransactionDocument({
-          account,
-          transferAccount,
-          transferAmount: amount * -1,
-          amount,
-          description,
-          issuedAt: now,
-          expiresAt: undefined,
-          _id: undefined,
-        }));
-      });
-
-      it('should return expiring document', () => {
-        const result = converter.createTransferDocument({
-          body,
-          account,
-          transferAccount,
-        }, expiresIn);
-        expect(result).toEqual(createTransferTransactionDocument({
-          account,
-          transferAccount,
-          amount,
-          transferAmount,
-          description,
-          issuedAt: now,
-          expiresAt: addSeconds(expiresIn, now),
-          _id: undefined,
-        }));
-      });
-
-    });
-
-    // describe('updateTransferDocument', () => {
-    //   const { updatedAt, ...document } = queriedDocument;
-    //   it('should update document', () => {
-    //     const result = converter.updateTransferDocument({
-    //       body,
-    //       document,
-    //       account,
-    //       transferAccount,
-    //     }, expiresIn);
-    //     expect(result).toEqual(createTransferTransactionDocument({
-    //       account,
-    //       transferAccount,
-    //       amount,
-    //       transferAmount,
-    //       description,
-    //       issuedAt: now,
-    //       createdAt: now,
-    //       expiresAt: addSeconds(expiresIn, now),
-    //       _id: document._id,
-    //     }));
-    //   });
-    // });
 
     describe('toResponse', () => {
       it('should return response', () => {

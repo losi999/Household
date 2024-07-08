@@ -15,8 +15,8 @@ import { Account, Transaction } from '@household/shared/types/types';
 export interface ITransactionDocumentConverter {
   toResponse(document: Transaction.Document, viewingAccountId?: Account.Id): Transaction.Response;
   toResponseList(documents: Transaction.Document[], viewingAccountId?: Account.Id): Transaction.Response[];
-  toReport(document: Transaction.ReportDocument): Transaction.Report;
-  toReportList(documents: (Transaction.ReportDocument)[]): Transaction.Report[];
+  toReport(document: Transaction.RawReport): Transaction.Report;
+  toReportList(documents: (Transaction.RawReport)[]): Transaction.Report[];
 }
 
 export const transactionDocumentConverterFactory = (

@@ -115,6 +115,7 @@ export const createPaymentTransactionDocument: DataFactoryFunction<Transaction.P
 
 export const createSplitDocumentItem: DataFactoryFunction<Transaction.SplitDocumentItem> = (doc) => {
   return {
+    _id: generateMongoId(),
     amount: 1,
     category: createCategoryDocument(),
     project: createProjectDocument(),
@@ -144,6 +145,7 @@ export const createSplitTransactionDocument: DataFactoryFunction<Transaction.Spl
     account: createAccountDocument(),
     recipient: createRecipientDocument(),
     splits: [createSplitDocumentItem()],
+    deferredSplits: [],
     ...doc,
   };
 };
@@ -233,6 +235,8 @@ export const createPaymentTransactionRequest: DataFactoryFunction<Transaction.Pa
     categoryId: createCategoryId(),
     projectId: createProjectId(),
     recipientId: createRecipientId(),
+    loanAccountId: undefined,
+    isSettled: undefined,
     ...req,
   };
 };
@@ -248,6 +252,8 @@ export const createSplitRequestIem: DataFactoryFunction<Transaction.SplitRequest
     invoiceNumber: 'inv123',
     billingEndDate: '2022-03-21',
     billingStartDate: '2022-01-01',
+    loanAccountId: undefined,
+    isSettled: undefined,
     ...req,
   };
 };
@@ -272,6 +278,7 @@ export const createTransferTransactionRequest: DataFactoryFunction<Transaction.T
     issuedAt: new Date().toISOString(),
     accountId: createAccountId(),
     transferAccountId: createAccountId(),
+    payments: undefined,
     ...req,
   };
 };
@@ -345,7 +352,7 @@ export const createAccountResponse: DataFactoryFunction<Account.Response> = (res
     name: 'account name',
     currency: 'Ft',
     balance: 123,
-    loanBalance: 987,
+    deferredCount: 2,
     owner: 'owner1',
     fullName: resp ? `${resp.name} (${resp.owner})` : 'account name (owner1)',
     accountId: createAccountId(),
@@ -467,6 +474,7 @@ export const createSplitTransactionResponse: DataFactoryFunction<Transaction.Spl
     account: createAccountResponse(),
     recipient: createRecipientResponse(),
     splits: [createSplitResponseIem()],
+    deferredSplits: [],
     ...resp,
   };
 };
@@ -485,6 +493,7 @@ export const createTransferTransactionResponse: DataFactoryFunction<Transaction.
     _id: undefined,
     account: createAccountResponse(),
     transferAccount: createAccountResponse(),
+    payments: undefined,
     ...resp,
   };
 };
@@ -542,6 +551,7 @@ export const createTransactionReport: DataFactoryFunction<Transaction.Report> = 
     product: createProductReport(),
     project: createProjectReport(),
     recipient: createRecipientReport(),
+    splitId: undefined,
     ...rep,
   };
 };

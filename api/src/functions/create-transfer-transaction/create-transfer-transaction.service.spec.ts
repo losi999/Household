@@ -2,7 +2,9 @@ import { ICreateTransferTransactionService, createTransferTransactionServiceFact
 import { createTransferTransactionRequest, createAccountDocument, createTransferTransactionDocument } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getAccountId, getTransactionId } from '@household/shared/common/utils';
+import { ILoanTransferTransactionDocumentConverter } from '@household/shared/converters/loan-transfer-transaction-document-converter';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
+import { ITransferTransactionDocumentConverter } from '@household/shared/converters/transfer-transaction-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
 
@@ -10,14 +12,16 @@ describe('Create transfer transaction service', () => {
   let service: ICreateTransferTransactionService;
   let mockAccountService: Mock<IAccountService>;
   let mockTransactionService: Mock<ITransactionService>;
-  let mockTransactionDocumentConverter: Mock<ITransactionDocumentConverter>;
+  let mockTransferTransactionDocumentConverter: Mock<ITransferTransactionDocumentConverter>;
+  let mockLoanTransferTransactionDocumentConverter: Mock<ILoanTransferTransactionDocumentConverter>;
 
   beforeEach(() => {
     mockAccountService = createMockService('listAccountsByIds');
     mockTransactionService = createMockService('saveTransaction');
-    mockTransactionDocumentConverter = createMockService('createTransferDocument');
+    mockTransferTransactionDocumentConverter = createMockService('create');
+    mockLoanTransferTransactionDocumentConverter = createMockService('create');
 
-    service = createTransferTransactionServiceFactory(mockAccountService.service, mockTransactionService.service, mockTransactionDocumentConverter.service);
+    service = createTransferTransactionServiceFactory(mockAccountService.service, mockTransactionService.service, mockTransferTransactionDocumentConverter.service, mockLoanTransferTransactionDocumentConverter.service);
   });
 
   const queriedAccount = createAccountDocument();
@@ -35,7 +39,7 @@ describe('Create transfer transaction service', () => {
         queriedAccount,
         queriedTransferAccount,
       ]);
-      mockTransactionDocumentConverter.functions.createTransferDocument.mockReturnValue(createdDocument);
+      mockTransferTransactionDocumentConverter.functions.create.mockReturnValue(createdDocument);
       mockTransactionService.functions.saveTransaction.mockResolvedValue(createdDocument);
 
       const result = await service({
@@ -47,10 +51,11 @@ describe('Create transfer transaction service', () => {
         body.accountId,
         body.transferAccountId,
       ]);
-      validateFunctionCall(mockTransactionDocumentConverter.functions.createTransferDocument, {
+      validateFunctionCall(mockTransferTransactionDocumentConverter.functions.create, {
         body,
         account: queriedAccount,
         transferAccount: queriedTransferAccount,
+        transactions: undefined,
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.saveTransaction, createdDocument);
       expect.assertions(4);
@@ -69,7 +74,7 @@ describe('Create transfer transaction service', () => {
         expiresIn: undefined,
       }).catch(validateError('Cannot transfer to same account', 400));
       validateFunctionCall(mockAccountService.functions.listAccountsByIds);
-      validateFunctionCall(mockTransactionDocumentConverter.functions.createTransferDocument);
+      validateFunctionCall(mockTransferTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
       expect.assertions(5);
     });
@@ -85,7 +90,7 @@ describe('Create transfer transaction service', () => {
         body.accountId,
         body.transferAccountId,
       ]);
-      validateFunctionCall(mockTransactionDocumentConverter.functions.createTransferDocument);
+      validateFunctionCall(mockTransferTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
       expect.assertions(5);
     });
@@ -101,7 +106,7 @@ describe('Create transfer transaction service', () => {
         body.accountId,
         body.transferAccountId,
       ]);
-      validateFunctionCall(mockTransactionDocumentConverter.functions.createTransferDocument);
+      validateFunctionCall(mockTransferTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
       expect.assertions(5);
     });
@@ -111,7 +116,7 @@ describe('Create transfer transaction service', () => {
         queriedAccount,
         queriedTransferAccount,
       ]);
-      mockTransactionDocumentConverter.functions.createTransferDocument.mockReturnValue(createdDocument);
+      mockTransferTransactionDocumentConverter.functions.create.mockReturnValue(createdDocument);
       mockTransactionService.functions.saveTransaction.mockRejectedValue('this is a mongo error');
 
       await service({
@@ -122,10 +127,11 @@ describe('Create transfer transaction service', () => {
         body.accountId,
         body.transferAccountId,
       ]);
-      validateFunctionCall(mockTransactionDocumentConverter.functions.createTransferDocument, {
+      validateFunctionCall(mockTransferTransactionDocumentConverter.functions.create, {
         body,
         account: queriedAccount,
         transferAccount: queriedTransferAccount,
+        transactions: undefined,
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.saveTransaction, createdDocument);
       expect.assertions(5);

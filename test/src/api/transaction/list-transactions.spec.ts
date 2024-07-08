@@ -13,7 +13,15 @@ import { transferTransactionDataFactory } from '@household/test/api/transaction/
 import { loanTransferTransactionDataFactory } from '@household/test/api/transaction/loan-transfer-data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement-data-factory';
-import { flattenSplitTransactionDocument } from '@household/test/api/utils';
+import { isDeferredTransaction } from '@household/shared/common/type-guards';
+
+const splitTransactionHelper = (doc: Transaction.SplitDocument, split: Transaction.SplitDocumentItem | Transaction.DeferredDocument):(Transaction.SplitDocument & {split?: Transaction.SplitDocumentItem; deferredSplit?: Transaction.DeferredDocument}) => {
+  return {
+    ...doc,
+    split: isDeferredTransaction(split) ? undefined : split,
+    deferredSplit: isDeferredTransaction(split) ? split : undefined,
+  };
+};
 
 describe('POST /transaction/v1/transactions', () => {
   describe('called as anonymous', () => {
@@ -212,8 +220,9 @@ describe('POST /transaction/v1/transactions', () => {
               includedPaymentTransactionDocument,
               includedDeferredTransactionDocument,
               includedReimbursementTransactionDocument,
-              ...flattenSplitTransactionDocument(splitTransactionDocument, splitTransactionDocument.splits[0], splitTransactionDocument.splits[1]),
-              ...flattenSplitTransactionDocument(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]),
+              splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[0]),
+              splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[1]),
+              splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]),
             ]);
         });
 
@@ -237,7 +246,7 @@ describe('POST /transaction/v1/transactions', () => {
               excludedPaymentTransactionDocument,
               excludedDeferredTransactionDocument,
               excludedReimbursementTransactionDocument,
-              ...flattenSplitTransactionDocument(deferredSplitTransactionDocument, deferredSplitTransactionDocument.splits[0]),
+              splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.splits[0]),
             ]);
 
         });
@@ -324,8 +333,9 @@ describe('POST /transaction/v1/transactions', () => {
               includedPaymentTransactionDocument,
               includedDeferredTransactionDocument,
               includedReimbursementTransactionDocument,
-              ...flattenSplitTransactionDocument(splitTransactionDocument, splitTransactionDocument.splits[0], splitTransactionDocument.splits[1]),
-              ...flattenSplitTransactionDocument(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]),
+              splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[0]),
+              splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[1]),
+              splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]),
             ]);
         });
 
@@ -439,8 +449,8 @@ describe('POST /transaction/v1/transactions', () => {
               includedPaymentTransactionDocument,
               includedDeferredTransactionDocument,
               includedReimbursementTransactionDocument,
-              ...flattenSplitTransactionDocument(splitTransactionDocument, splitTransactionDocument.splits[0]),
-              ...flattenSplitTransactionDocument(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]),
+              splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[0]),
+              splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]),
             ]);
         });
 
@@ -461,11 +471,11 @@ describe('POST /transaction/v1/transactions', () => {
             .expectOkResponse()
             .expectValidResponseSchema(schema)
             .validateTransactionListReport([
-              ...flattenSplitTransactionDocument(splitTransactionDocument, splitTransactionDocument.splits[1]),
               excludedPaymentTransactionDocument,
               excludedDeferredTransactionDocument,
               excludedReimbursementTransactionDocument,
-              ...flattenSplitTransactionDocument(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[1]),
+              splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[1]),
+              splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[1]),
             ]);
 
         });
@@ -566,8 +576,10 @@ describe('POST /transaction/v1/transactions', () => {
               includedPaymentTransactionDocument,
               includedDeferredTransactionDocument,
               includedReimbursementTransactionDocument,
-              ...flattenSplitTransactionDocument(splitTransactionDocument, splitTransactionDocument.splits[0], splitTransactionDocument.splits[1], splitTransactionDocument.splits[2]),
-              ...flattenSplitTransactionDocument(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]),
+              splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[0]),
+              splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[1]),
+              splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[2]),
+              splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]),
             ]);
         });
 
@@ -592,11 +604,11 @@ describe('POST /transaction/v1/transactions', () => {
             .expectOkResponse()
             .expectValidResponseSchema(schema)
             .validateTransactionListReport([
-              ...flattenSplitTransactionDocument(splitTransactionDocument, splitTransactionDocument.splits[3]),
               excludedPaymentTransactionDocument,
               excludedDeferredTransactionDocument,
               excludedReimbursementTransactionDocument,
-              ...flattenSplitTransactionDocument(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[1]),
+              splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[3]),
+              splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[1]),
             ]);
 
         });
@@ -697,8 +709,8 @@ describe('POST /transaction/v1/transactions', () => {
               includedPaymentTransactionDocument,
               includedDeferredTransactionDocument,
               includedReimbursementTransactionDocument,
-              ...flattenSplitTransactionDocument(splitTransactionDocument, splitTransactionDocument.splits[0]),
-              ...flattenSplitTransactionDocument(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]),
+              splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[0]),
+              splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]),
             ]);
         });
 
@@ -719,11 +731,11 @@ describe('POST /transaction/v1/transactions', () => {
             .expectOkResponse()
             .expectValidResponseSchema(schema)
             .validateTransactionListReport([
-              ...flattenSplitTransactionDocument(splitTransactionDocument, splitTransactionDocument.splits[1]),
               excludedPaymentTransactionDocument,
               excludedDeferredTransactionDocument,
               excludedReimbursementTransactionDocument,
-              ...flattenSplitTransactionDocument(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[1]),
+              splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[1]),
+              splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[1]),
             ]);
 
         });
@@ -832,8 +844,9 @@ describe('POST /transaction/v1/transactions', () => {
               includedPaymentTransactionDocument,
               includedDeferredTransactionDocument,
               includedReimbursementTransactionDocument,
-              ...flattenSplitTransactionDocument(splitTransactionDocument, splitTransactionDocument.splits[0], splitTransactionDocument.splits[1]),
-              ...flattenSplitTransactionDocument(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]),
+              splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[0]),
+              splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[1]),
+              splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]),
             ]);
         });
 

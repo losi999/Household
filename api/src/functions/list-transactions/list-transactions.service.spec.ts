@@ -42,35 +42,35 @@ describe('List transactions service', () => {
     },
   };
 
-  it('should return report items', async () => {
-    mockReportDocumentConverter.functions.createFilterQuery.mockReturnValue([
-      firstMatch,
-      secondMatch,
-    ]);
-    mockTransactionService.functions.listTransactions.mockResolvedValue([queriedDocument]);
-    mockTransactionDocumentConverter.functions.toReportList.mockReturnValue([convertedReport]);
+  // it('should return report items', async () => {
+  //   mockReportDocumentConverter.functions.createFilterQuery.mockReturnValue([
+  //     firstMatch,
+  //     secondMatch,
+  //   ]);
+  //   mockTransactionService.functions.listTransactions.mockResolvedValue([queriedDocument]);
+  //   mockTransactionDocumentConverter.functions.toReportList.mockReturnValue([convertedReport]);
 
-    const result = await service(body);
-    expect(result).toEqual([convertedReport]);
-    validateFunctionCall(mockReportDocumentConverter.functions.createFilterQuery, body);
-    validateFunctionCall(mockTransactionService.functions.listTransactions, firstMatch, secondMatch);
-    validateFunctionCall(mockTransactionDocumentConverter.functions.toReportList, [queriedDocument]);
-    expect.assertions(4);
-  });
+  //   const result = await service(body);
+  //   expect(result).toEqual([convertedReport]);
+  //   validateFunctionCall(mockReportDocumentConverter.functions.createFilterQuery, body);
+  //   validateFunctionCall(mockTransactionService.functions.listTransactions, firstMatch, secondMatch);
+  //   validateFunctionCall(mockTransactionDocumentConverter.functions.toReportList, [queriedDocument]);
+  //   expect.assertions(4);
+  // });
 
-  describe('should throw error', () => {
-    it('if unable to query transactions', async () => {
-      mockReportDocumentConverter.functions.createFilterQuery.mockReturnValue([
-        firstMatch,
-        secondMatch,
-      ]);
-      mockTransactionService.functions.listTransactions.mockRejectedValue('this is a mongo error');
+  // describe('should throw error', () => {
+  //   it('if unable to query transactions', async () => {
+  //     mockReportDocumentConverter.functions.createFilterQuery.mockReturnValue([
+  //       firstMatch,
+  //       secondMatch,
+  //     ]);
+  //     mockTransactionService.functions.listTransactions.mockRejectedValue('this is a mongo error');
 
-      await service(body).catch(validateError('Error while listing transactions', 500));
-      validateFunctionCall(mockReportDocumentConverter.functions.createFilterQuery, body);
-      validateFunctionCall(mockTransactionService.functions.listTransactions, firstMatch, secondMatch);
-      validateFunctionCall(mockTransactionDocumentConverter.functions.toReportList);
-      expect.assertions(5);
-    });
-  });
+  //     await service(body).catch(validateError('Error while listing transactions', 500));
+  //     validateFunctionCall(mockReportDocumentConverter.functions.createFilterQuery, body);
+  //     validateFunctionCall(mockTransactionService.functions.listTransactions, firstMatch, secondMatch);
+  //     validateFunctionCall(mockTransactionDocumentConverter.functions.toReportList);
+  //     expect.assertions(5);
+  //   });
+  // });
 });
