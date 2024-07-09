@@ -39,6 +39,7 @@ export const deferredTransactionDocumentConverterFactory = (
         project: project ?? undefined,
         issuedAt: body.issuedAt ? new Date(body.issuedAt) : undefined,
         transactionType: 'deferred',
+        isSettled: body.isSettled ?? false,
         quantity: category?.categoryType === 'inventory' ? body.quantity : undefined,
         product: category?.categoryType === 'inventory' ? product ?? undefined : undefined,
         invoiceNumber: category?.categoryType === 'invoice' ? body.invoiceNumber : undefined,

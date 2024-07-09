@@ -182,7 +182,6 @@ export const createReimbursementTransactionDocument: DataFactoryFunction<Transac
     productId: undefined,
     loanAccountId: undefined,
     payingAccount: createAccountDocument(),
-    account: createAccountDocument(),
     category: createCategoryDocument(),
     project: createProjectDocument(),
     recipient: createRecipientDocument(),
@@ -194,7 +193,7 @@ export const createReimbursementTransactionDocument: DataFactoryFunction<Transac
 export const createSplitDocumentItem: DataFactoryFunction<Transaction.SplitDocumentItem> = (doc) => {
   return {
     _id: generateMongoId(),
-    amount: 1,
+    amount: -1,
     category: createCategoryDocument(),
     project: createProjectDocument(),
     description: 'split description',
@@ -214,7 +213,7 @@ export const createSplitTransactionDocument: DataFactoryFunction<Transaction.Spl
   return {
     _id: generateMongoId(),
     transactionType: 'split',
-    amount: doc?.splits?.length ?? 1,
+    amount: ((doc?.splits?.length ?? 0) + (doc?.deferredSplits?.length ?? 0)) * -1 ?? -1,
     description: 'transaction description',
     issuedAt: new Date(),
     expiresAt: undefined,
@@ -223,7 +222,7 @@ export const createSplitTransactionDocument: DataFactoryFunction<Transaction.Spl
     account: createAccountDocument(),
     recipient: createRecipientDocument(),
     splits: [createSplitDocumentItem()],
-    deferredSplits: [],
+    deferredSplits: undefined,
     ...doc,
   };
 };
@@ -241,6 +240,7 @@ export const createTransferTransactionDocument: DataFactoryFunction<Transaction.
     account: createAccountDocument(),
     transferAccount: createAccountDocument(),
     transferAmount: -1200,
+    payments: undefined,
     ...doc,
   };
 };
@@ -560,8 +560,8 @@ export const createDeferredTransactionResponse: DataFactoryFunction<Transaction.
     category: createCategoryResponse(),
     project: createProjectResponse(),
     recipient: createRecipientResponse(),
-    isSettled: undefined,
-    remainingAmount: 0,
+    isSettled: false,
+    remainingAmount: undefined,
     ...resp,
   };
 };
@@ -591,9 +591,9 @@ export const createReimbursementTransactionResponse: DataFactoryFunction<Transac
   };
 };
 
-export const createSplitResponseIem: DataFactoryFunction<Transaction.SplitResponseItem> = (resp) => {
+export const createSplitResponseItem: DataFactoryFunction<Transaction.SplitResponseItem> = (resp) => {
   return {
-    amount: 1,
+    amount: -1,
     category: createCategoryResponse(),
     project: createProjectResponse(),
     description: 'split description',
@@ -610,7 +610,7 @@ export const createSplitTransactionResponse: DataFactoryFunction<Transaction.Spl
   return {
     transactionId: createTransactionId(),
     transactionType: 'split',
-    amount: resp?.splits?.length ?? 1,
+    amount: ((resp?.splits?.length ?? 0) + (resp?.deferredSplits?.length ?? 0)) * -1 ?? -1,
     description: 'transaction description',
     issuedAt: new Date().toISOString(),
     expiresAt: undefined,
@@ -619,8 +619,8 @@ export const createSplitTransactionResponse: DataFactoryFunction<Transaction.Spl
     _id: undefined,
     account: createAccountResponse(),
     recipient: createRecipientResponse(),
-    splits: [createSplitResponseIem()],
-    deferredSplits: [],
+    splits: [createSplitResponseItem()],
+    deferredSplits: undefined,
     ...resp,
   };
 };
