@@ -22,6 +22,7 @@ describe('Account document converter', () => {
   const accountType = 'cash';
   const expiresIn = 3600;
   const balance = 12000;
+  const deferredCount = 1;
   const isOpen = false;
 
   const body = createAccountRequest({
@@ -35,6 +36,7 @@ describe('Account document converter', () => {
     currency,
     accountType,
     balance,
+    deferredCount,
     isOpen,
     owner,
     createdAt: now,
@@ -51,6 +53,7 @@ describe('Account document converter', () => {
         owner,
         isOpen: true,
         balance: undefined,
+        deferredCount: undefined,
         expiresAt: undefined,
         _id: undefined,
       }));
@@ -65,6 +68,7 @@ describe('Account document converter', () => {
         owner,
         isOpen: true,
         balance: undefined,
+        deferredCount: undefined,
         expiresAt: addSeconds(expiresIn, now),
         _id: undefined,
       }));
@@ -91,6 +95,7 @@ describe('Account document converter', () => {
         accountId: getAccountId(queriedDocument),
         accountType,
         balance,
+        deferredCount,
         currency,
         isOpen,
         name,
@@ -118,6 +123,7 @@ describe('Account document converter', () => {
           accountId: getAccountId(queriedDocument),
           accountType,
           balance,
+          deferredCount,
           currency,
           isOpen,
           name,

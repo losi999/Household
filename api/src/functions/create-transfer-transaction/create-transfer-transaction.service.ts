@@ -82,7 +82,10 @@ export const createTransferTransactionServiceFactory = (
         const transactionList = await transactionService.listDeferredTransactions({
           payingAccountIds: [getAccountId(payingAccount)],
           deferredTransactionIds,
-        });
+        }).catch(httpErrors.common.getRelatedData({
+          payingAccountIds: [getAccountId(payingAccount)],
+          deferredTransactionIds,
+        }));
 
         httpErrors.transaction.multipleNotFound(deferredTransactionIds.length !== transactionList.length, {
           transactionIds: deferredTransactionIds,

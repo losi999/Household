@@ -45,7 +45,7 @@ export const transactionDocumentConverterFactory = (
         default: return undefined;
       }
     },
-    toResponseList: (docs, mainAccountId) => docs.map(d => instance.toResponse(d, mainAccountId)),
+    toResponseList: (docs, viewingAccountId) => docs.map(d => instance.toResponse(d, viewingAccountId)),
     toReport: (document): Transaction.Report => {
       return {
         amount: document.amount,

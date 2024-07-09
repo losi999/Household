@@ -1,11 +1,10 @@
 import { ICreatePaymentTransactionService, createPaymentTransactionServiceFactory } from '@household/api/functions/create-payment-transaction/create-payment-transaction.service';
-import { createAccountDocument, createCategoryDocument, createPaymentTransactionDocument, createPaymentTransactionRequest, createProductDocument, createProductId, createProjectDocument, createRecipientDocument } from '@household/shared/common/test-data-factory';
+import { createAccountDocument, createCategoryDocument, createDeferredTransactionDocument, createPaymentTransactionDocument, createPaymentTransactionRequest, createProductDocument, createProductId, createProjectDocument, createRecipientDocument, createReimbursementTransactionDocument } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
 import { IDeferredTransactionDocumentConverter } from '@household/shared/converters/deferred-transaction-document-converter';
 import { IPaymentTransactionDocumentConverter } from '@household/shared/converters/payment-transaction-document-converter';
 import { IReimbursementTransactionDocumentConverter } from '@household/shared/converters/reimbursement-transaction-document-converter';
-import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICategoryService } from '@household/shared/services/category-service';
 import { IProductService } from '@household/shared/services/product-service';
@@ -27,7 +26,7 @@ describe('Create payment transaction service', () => {
   let mockReimbursementTransactionDocumentConverter: Mock<IReimbursementTransactionDocumentConverter>;
 
   beforeEach(() => {
-    mockAccountService = createMockService('getAccountById');
+    mockAccountService = createMockService('listAccountsByIds');
     mockProjectService = createMockService('getProjectById');
     mockCategoryService = createMockService('getCategoryById');
     mockRecipientService = createMockService('getRecipientById');
@@ -42,15 +41,20 @@ describe('Create payment transaction service', () => {
 
   let body: Transaction.PaymentRequest;
   let queriedAccount: Account.Document;
+  let queriedLoanAccount: Account.Document;
   let queriedCategory: Category.Document;
   let queriedProject: Project.Document;
   let queriedRecipient: Recipient.Document;
   let queriedProduct: Product.Document;
-  const createdDocument = createPaymentTransactionDocument();
-  const transactionId = getTransactionId(createdDocument);
+  const createdPaymentDocument = createPaymentTransactionDocument();
+  const createdDeferredDocument = createDeferredTransactionDocument();
+  const createdReimbursementDocument = createReimbursementTransactionDocument();
 
   beforeEach(() => {
     queriedAccount = createAccountDocument();
+    queriedLoanAccount = createAccountDocument({
+      accountType: 'loan',
+    });
     queriedCategory = createCategoryDocument({
       categoryType: 'inventory',
     });
@@ -70,21 +74,24 @@ describe('Create payment transaction service', () => {
   });
 
   describe('should return new id', () => {
-    it('if every body property is filled', async () => {
-      mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
+    it('of created payment document', async () => {
+      mockAccountService.functions.listAccountsByIds.mockResolvedValue([queriedAccount]);
       mockCategoryService.functions.getCategoryById.mockResolvedValue(queriedCategory);
       mockProjectService.functions.getProjectById.mockResolvedValue(queriedProject);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
       mockProductService.functions.getProductById.mockResolvedValue(queriedProduct);
-      mockPaymentTransactionDocumentConverter.functions.create.mockReturnValue(createdDocument);
-      mockTransactionService.functions.saveTransaction.mockResolvedValue(createdDocument);
+      mockPaymentTransactionDocumentConverter.functions.create.mockReturnValue(createdPaymentDocument);
+      mockTransactionService.functions.saveTransaction.mockResolvedValue(createdPaymentDocument);
 
       const result = await service({
         body,
         expiresIn: undefined,
       });
-      expect(result).toEqual(transactionId);
-      validateFunctionCall(mockAccountService.functions.getAccountById, body.accountId);
+      expect(result).toEqual(getTransactionId(createdPaymentDocument));
+      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+        body.accountId,
+        undefined,
+      ]);
       validateFunctionCall(mockCategoryService.functions.getCategoryById, body.categoryId);
       validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
@@ -97,179 +104,127 @@ describe('Create payment transaction service', () => {
         recipient: queriedRecipient,
         product: queriedProduct,
       }, undefined);
-      validateFunctionCall(mockTransactionService.functions.saveTransaction, createdDocument);
-      expect.assertions(8);
+      validateFunctionCall(mockTransactionService.functions.saveTransaction, createdPaymentDocument);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.create);
+      expect.assertions(10);
     });
 
-    it('if category is not given', async () => {
-      body.categoryId = undefined;
-
-      mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
-      mockCategoryService.functions.getCategoryById.mockResolvedValue(undefined);
+    it('of created deferred document', async () => {
+      body = createPaymentTransactionRequest({
+        ...body,
+        amount: -1023,
+        loanAccountId: getAccountId(queriedLoanAccount),
+      });
+      mockAccountService.functions.listAccountsByIds.mockResolvedValue([
+        queriedAccount,
+        queriedLoanAccount,
+      ]);
+      mockCategoryService.functions.getCategoryById.mockResolvedValue(queriedCategory);
       mockProjectService.functions.getProjectById.mockResolvedValue(queriedProject);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
       mockProductService.functions.getProductById.mockResolvedValue(queriedProduct);
-      mockPaymentTransactionDocumentConverter.functions.create.mockReturnValue(createdDocument);
-      mockTransactionService.functions.saveTransaction.mockResolvedValue(createdDocument);
+      mockDeferredTransactionDocumentConverter.functions.create.mockReturnValue(createdDeferredDocument);
+      mockTransactionService.functions.saveTransaction.mockResolvedValue(createdDeferredDocument);
 
       const result = await service({
         body,
         expiresIn: undefined,
       });
-      expect(result).toEqual(transactionId);
-      validateFunctionCall(mockAccountService.functions.getAccountById, body.accountId);
-      validateFunctionCall(mockCategoryService.functions.getCategoryById, undefined);
+      expect(result).toEqual(getTransactionId(createdDeferredDocument));
+      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+        body.accountId,
+        body.loanAccountId,
+      ]);
+      validateFunctionCall(mockCategoryService.functions.getCategoryById, body.categoryId);
       validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.getProductById, body.productId);
-      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create, {
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create, {
         body,
-        category: undefined,
-        account: queriedAccount,
+        category: queriedCategory,
+        payingAccount: queriedAccount,
+        ownerAccount: queriedLoanAccount,
         project: queriedProject,
         recipient: queriedRecipient,
         product: queriedProduct,
       }, undefined);
-      validateFunctionCall(mockTransactionService.functions.saveTransaction, createdDocument);
-      expect.assertions(8);
+      validateFunctionCall(mockTransactionService.functions.saveTransaction, createdDeferredDocument);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.create);
+      expect.assertions(10);
     });
 
-    it('if project is not given', async () => {
-      body.projectId = undefined,
-
-      mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
+    it('of created reimbursement document', async () => {
+      body = createPaymentTransactionRequest({
+        ...body,
+        amount: -1023,
+        accountId: getAccountId(queriedLoanAccount),
+        loanAccountId: getAccountId(queriedAccount),
+      });
+      mockAccountService.functions.listAccountsByIds.mockResolvedValue([
+        queriedAccount,
+        queriedLoanAccount,
+      ]);
       mockCategoryService.functions.getCategoryById.mockResolvedValue(queriedCategory);
-      mockProjectService.functions.getProjectById.mockResolvedValue(undefined);
+      mockProjectService.functions.getProjectById.mockResolvedValue(queriedProject);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
       mockProductService.functions.getProductById.mockResolvedValue(queriedProduct);
-      mockPaymentTransactionDocumentConverter.functions.create.mockReturnValue(createdDocument);
-      mockTransactionService.functions.saveTransaction.mockResolvedValue(createdDocument);
+      mockReimbursementTransactionDocumentConverter.functions.create.mockReturnValue(createdReimbursementDocument);
+      mockTransactionService.functions.saveTransaction.mockResolvedValue(createdReimbursementDocument);
 
       const result = await service({
         body,
         expiresIn: undefined,
       });
-      expect(result).toEqual(transactionId);
-      validateFunctionCall(mockAccountService.functions.getAccountById, body.accountId);
+      expect(result).toEqual(getTransactionId(createdReimbursementDocument));
+      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+        body.accountId,
+        body.loanAccountId,
+      ]);
       validateFunctionCall(mockCategoryService.functions.getCategoryById, body.categoryId);
-      validateFunctionCall(mockProjectService.functions.getProjectById, undefined);
+      validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.getProductById, body.productId);
-      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create, {
+      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.create, {
         body,
         category: queriedCategory,
-        account: queriedAccount,
-        project: undefined,
+        payingAccount: queriedLoanAccount,
+        ownerAccount: queriedAccount,
+        project: queriedProject,
         recipient: queriedRecipient,
         product: queriedProduct,
       }, undefined);
-      validateFunctionCall(mockTransactionService.functions.saveTransaction, createdDocument);
-      expect.assertions(8);
-    });
-
-    it('if recipient is not given', async () => {
-      body.recipientId = undefined;
-
-      mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
-      mockCategoryService.functions.getCategoryById.mockResolvedValue(queriedCategory);
-      mockProjectService.functions.getProjectById.mockResolvedValue(queriedProject);
-      mockRecipientService.functions.getRecipientById.mockResolvedValue(undefined);
-      mockProductService.functions.getProductById.mockResolvedValue(queriedProduct);
-      mockPaymentTransactionDocumentConverter.functions.create.mockReturnValue(createdDocument);
-      mockTransactionService.functions.saveTransaction.mockResolvedValue(createdDocument);
-
-      const result = await service({
-        body,
-        expiresIn: undefined,
-      });
-      expect(result).toEqual(transactionId);
-      validateFunctionCall(mockAccountService.functions.getAccountById, body.accountId);
-      validateFunctionCall(mockCategoryService.functions.getCategoryById, body.categoryId);
-      validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
-      validateFunctionCall(mockRecipientService.functions.getRecipientById, undefined);
-      validateFunctionCall(mockProductService.functions.getProductById, body.productId);
-      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create, {
-        body,
-        category: queriedCategory,
-        account: queriedAccount,
-        project: queriedProject,
-        recipient: undefined,
-        product: queriedProduct,
-      }, undefined);
-      validateFunctionCall(mockTransactionService.functions.saveTransaction, createdDocument);
-      expect.assertions(8);
-    });
-
-    it('if no product found but category is not "inventory"', async () => {
-      queriedCategory.categoryType = 'invoice';
-
-      mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
-      mockCategoryService.functions.getCategoryById.mockResolvedValue(queriedCategory);
-      mockProjectService.functions.getProjectById.mockResolvedValue(queriedProject);
-      mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
-      mockProductService.functions.getProductById.mockResolvedValue(undefined);
-      mockPaymentTransactionDocumentConverter.functions.create.mockReturnValue(createdDocument);
-      mockTransactionService.functions.saveTransaction.mockResolvedValue(createdDocument);
-
-      const result = await service({
-        body,
-        expiresIn: undefined,
-      });
-      expect(result).toEqual(transactionId);
-      validateFunctionCall(mockAccountService.functions.getAccountById, body.accountId);
-      validateFunctionCall(mockCategoryService.functions.getCategoryById, body.categoryId);
-      validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
-      validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
-      validateFunctionCall(mockProductService.functions.getProductById, body.productId);
-      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create, {
-        body,
-        category: queriedCategory,
-        account: queriedAccount,
-        project: queriedProject,
-        recipient: queriedRecipient,
-        product: undefined,
-      }, undefined);
-      validateFunctionCall(mockTransactionService.functions.saveTransaction, createdDocument);
-      expect.assertions(8);
-    });
-
-    it('if productId is not set', async () => {
-      body.productId = undefined;
-
-      mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
-      mockCategoryService.functions.getCategoryById.mockResolvedValue(queriedCategory);
-      mockProjectService.functions.getProjectById.mockResolvedValue(queriedProject);
-      mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
-      mockProductService.functions.getProductById.mockResolvedValue(undefined);
-      mockPaymentTransactionDocumentConverter.functions.create.mockReturnValue(createdDocument);
-      mockTransactionService.functions.saveTransaction.mockResolvedValue(createdDocument);
-
-      const result = await service({
-        body,
-        expiresIn: undefined,
-      });
-      expect(result).toEqual(transactionId);
-      validateFunctionCall(mockAccountService.functions.getAccountById, body.accountId);
-      validateFunctionCall(mockCategoryService.functions.getCategoryById, body.categoryId);
-      validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
-      validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
-      validateFunctionCall(mockProductService.functions.getProductById, undefined);
-      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create, {
-        body,
-        category: queriedCategory,
-        account: queriedAccount,
-        project: queriedProject,
-        recipient: queriedRecipient,
-        product: undefined,
-      }, undefined);
-      validateFunctionCall(mockTransactionService.functions.saveTransaction, createdDocument);
-      expect.assertions(8);
+      validateFunctionCall(mockTransactionService.functions.saveTransaction, createdReimbursementDocument);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
+      expect.assertions(10);
     });
   });
 
   describe('should throw error', () => {
+    it('if account and loanAccount would be the same', async () => {
+      body = createPaymentTransactionRequest({
+        ...body,
+        loanAccountId: body.accountId,
+      });
+      await service({
+        body,
+        expiresIn: undefined,
+      }).catch(validateError('Cannot loan to same account', 400));
+      validateFunctionCall(mockAccountService.functions.listAccountsByIds);
+      validateFunctionCall(mockCategoryService.functions.getCategoryById);
+      validateFunctionCall(mockProjectService.functions.getProjectById);
+      validateFunctionCall(mockRecipientService.functions.getRecipientById);
+      validateFunctionCall(mockProductService.functions.getProductById);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockTransactionService.functions.saveTransaction);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
+      expect.assertions(11);
+    });
     it('if no account found', async () => {
-      mockAccountService.functions.getAccountById.mockResolvedValue(undefined);
+      mockAccountService.functions.listAccountsByIds.mockResolvedValue([]);
       mockCategoryService.functions.getCategoryById.mockResolvedValue(queriedCategory);
       mockProjectService.functions.getProjectById.mockResolvedValue(queriedProject);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
@@ -279,18 +234,53 @@ describe('Create payment transaction service', () => {
         body,
         expiresIn: undefined,
       }).catch(validateError('No account found', 400));
-      validateFunctionCall(mockAccountService.functions.getAccountById, body.accountId);
+      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+        body.accountId,
+        undefined,
+      ]);
       validateFunctionCall(mockCategoryService.functions.getCategoryById, body.categoryId);
       validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.getProductById, body.productId);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
-      expect.assertions(9);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
+      expect.assertions(11);
+    });
+
+    it('if no loan account found', async () => {
+      body = createPaymentTransactionRequest({
+        ...body,
+        loanAccountId: getAccountId(queriedLoanAccount),
+      });
+      mockAccountService.functions.listAccountsByIds.mockResolvedValue([queriedAccount]);
+      mockCategoryService.functions.getCategoryById.mockResolvedValue(queriedCategory);
+      mockProjectService.functions.getProjectById.mockResolvedValue(queriedProject);
+      mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
+      mockProductService.functions.getProductById.mockResolvedValue(queriedProduct);
+
+      await service({
+        body,
+        expiresIn: undefined,
+      }).catch(validateError('No account found', 400));
+      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+        body.accountId,
+        body.loanAccountId,
+      ]);
+      validateFunctionCall(mockCategoryService.functions.getCategoryById, body.categoryId);
+      validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
+      validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
+      validateFunctionCall(mockProductService.functions.getProductById, body.productId);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockTransactionService.functions.saveTransaction);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
+      expect.assertions(11);
     });
 
     it('if no category found', async () => {
-      mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
+      mockAccountService.functions.listAccountsByIds.mockResolvedValue([queriedAccount]);
       mockCategoryService.functions.getCategoryById.mockResolvedValue(undefined);
       mockProjectService.functions.getProjectById.mockResolvedValue(queriedProject);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
@@ -300,18 +290,23 @@ describe('Create payment transaction service', () => {
         body,
         expiresIn: undefined,
       }).catch(validateError('No category found', 400));
-      validateFunctionCall(mockAccountService.functions.getAccountById, body.accountId);
+      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+        body.accountId,
+        undefined,
+      ]);
       validateFunctionCall(mockCategoryService.functions.getCategoryById, body.categoryId);
       validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.getProductById, body.productId);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
-      expect.assertions(9);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
+      expect.assertions(11);
     });
 
     it('if no project found', async () => {
-      mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
+      mockAccountService.functions.listAccountsByIds.mockResolvedValue([queriedAccount]);
       mockCategoryService.functions.getCategoryById.mockResolvedValue(queriedCategory);
       mockProjectService.functions.getProjectById.mockResolvedValue(undefined);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
@@ -321,18 +316,23 @@ describe('Create payment transaction service', () => {
         body,
         expiresIn: undefined,
       }).catch(validateError('No project found', 400));
-      validateFunctionCall(mockAccountService.functions.getAccountById, body.accountId);
+      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+        body.accountId,
+        undefined,
+      ]);
       validateFunctionCall(mockCategoryService.functions.getCategoryById, body.categoryId);
       validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.getProductById, body.productId);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
-      expect.assertions(9);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
+      expect.assertions(11);
     });
 
     it('if no recipient found', async () => {
-      mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
+      mockAccountService.functions.listAccountsByIds.mockResolvedValue([queriedAccount]);
       mockCategoryService.functions.getCategoryById.mockResolvedValue(queriedCategory);
       mockProjectService.functions.getProjectById.mockResolvedValue(queriedProject);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(undefined);
@@ -342,18 +342,23 @@ describe('Create payment transaction service', () => {
         body,
         expiresIn: undefined,
       }).catch(validateError('No recipient found', 400));
-      validateFunctionCall(mockAccountService.functions.getAccountById, body.accountId);
+      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+        body.accountId,
+        undefined,
+      ]);
       validateFunctionCall(mockCategoryService.functions.getCategoryById, body.categoryId);
       validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.getProductById, body.productId);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
-      expect.assertions(9);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
+      expect.assertions(11);
     });
 
     it('if category is "inventory" and no product found', async () => {
-      mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
+      mockAccountService.functions.listAccountsByIds.mockResolvedValue([queriedAccount]);
       mockCategoryService.functions.getCategoryById.mockResolvedValue(queriedCategory);
       mockProjectService.functions.getProjectById.mockResolvedValue(queriedProject);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
@@ -363,20 +368,25 @@ describe('Create payment transaction service', () => {
         body,
         expiresIn: undefined,
       }).catch(validateError('No product found', 400));
-      validateFunctionCall(mockAccountService.functions.getAccountById, body.accountId);
+      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+        body.accountId,
+        undefined,
+      ]);
       validateFunctionCall(mockCategoryService.functions.getCategoryById, body.categoryId);
       validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.getProductById, body.productId);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
-      expect.assertions(9);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
+      expect.assertions(11);
     });
 
     it('if product belongs to different category', async () => {
       body.productId = createProductId();
 
-      mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
+      mockAccountService.functions.listAccountsByIds.mockResolvedValue([queriedAccount]);
       mockCategoryService.functions.getCategoryById.mockResolvedValue(queriedCategory);
       mockProjectService.functions.getProjectById.mockResolvedValue(queriedProject);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
@@ -386,18 +396,23 @@ describe('Create payment transaction service', () => {
         body,
         expiresIn: undefined,
       }).catch(validateError('Product belongs to different category', 400));
-      validateFunctionCall(mockAccountService.functions.getAccountById, body.accountId);
+      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+        body.accountId,
+        undefined,
+      ]);
       validateFunctionCall(mockCategoryService.functions.getCategoryById, body.categoryId);
       validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.getProductById, body.productId);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
-      expect.assertions(9);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
+      expect.assertions(11);
     });
 
     it('if unable to query account', async () => {
-      mockAccountService.functions.getAccountById.mockRejectedValue('this is a mongo error');
+      mockAccountService.functions.listAccountsByIds.mockRejectedValue('this is a mongo error');
       mockCategoryService.functions.getCategoryById.mockResolvedValue(queriedCategory);
       mockProjectService.functions.getProjectById.mockResolvedValue(queriedProject);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
@@ -407,18 +422,23 @@ describe('Create payment transaction service', () => {
         body,
         expiresIn: undefined,
       }).catch(validateError('Unable to query related data', 500));
-      validateFunctionCall(mockAccountService.functions.getAccountById, body.accountId);
+      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+        body.accountId,
+        undefined,
+      ]);
       validateFunctionCall(mockCategoryService.functions.getCategoryById, body.categoryId);
       validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.getProductById, body.productId);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
-      expect.assertions(9);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
+      expect.assertions(11);
     });
 
     it('if unable to query category', async () => {
-      mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
+      mockAccountService.functions.listAccountsByIds.mockResolvedValue([queriedAccount]);
       mockCategoryService.functions.getCategoryById.mockRejectedValue('this is a mongo error');
       mockProjectService.functions.getProjectById.mockResolvedValue(queriedProject);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
@@ -428,18 +448,23 @@ describe('Create payment transaction service', () => {
         body,
         expiresIn: undefined,
       }).catch(validateError('Unable to query related data', 500));
-      validateFunctionCall(mockAccountService.functions.getAccountById, body.accountId);
+      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+        body.accountId,
+        undefined,
+      ]);
       validateFunctionCall(mockCategoryService.functions.getCategoryById, body.categoryId);
       validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.getProductById, body.productId);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
-      expect.assertions(9);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
+      expect.assertions(11);
     });
 
     it('if unable to query project', async () => {
-      mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
+      mockAccountService.functions.listAccountsByIds.mockResolvedValue([queriedAccount]);
       mockCategoryService.functions.getCategoryById.mockResolvedValue(queriedCategory);
       mockProjectService.functions.getProjectById.mockRejectedValue('this is a mongo error');
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
@@ -449,18 +474,23 @@ describe('Create payment transaction service', () => {
         body,
         expiresIn: undefined,
       }).catch(validateError('Unable to query related data', 500));
-      validateFunctionCall(mockAccountService.functions.getAccountById, body.accountId);
+      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+        body.accountId,
+        undefined,
+      ]);
       validateFunctionCall(mockCategoryService.functions.getCategoryById, body.categoryId);
       validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.getProductById, body.productId);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
-      expect.assertions(9);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
+      expect.assertions(11);
     });
 
     it('if unable to query recipient', async () => {
-      mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
+      mockAccountService.functions.listAccountsByIds.mockResolvedValue([queriedAccount]);
       mockCategoryService.functions.getCategoryById.mockResolvedValue(queriedCategory);
       mockProjectService.functions.getProjectById.mockResolvedValue(queriedProject);
       mockRecipientService.functions.getRecipientById.mockRejectedValue('this is a mongo error');
@@ -470,18 +500,23 @@ describe('Create payment transaction service', () => {
         body,
         expiresIn: undefined,
       }).catch(validateError('Unable to query related data', 500));
-      validateFunctionCall(mockAccountService.functions.getAccountById, body.accountId);
+      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+        body.accountId,
+        undefined,
+      ]);
       validateFunctionCall(mockCategoryService.functions.getCategoryById, body.categoryId);
       validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.getProductById, body.productId);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
-      expect.assertions(9);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
+      expect.assertions(11);
     });
 
     it('if unable to query product', async () => {
-      mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
+      mockAccountService.functions.listAccountsByIds.mockResolvedValue([queriedAccount]);
       mockCategoryService.functions.getCategoryById.mockResolvedValue(queriedCategory);
       mockProjectService.functions.getProjectById.mockResolvedValue(queriedProject);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
@@ -491,30 +526,105 @@ describe('Create payment transaction service', () => {
         body,
         expiresIn: undefined,
       }).catch(validateError('Unable to query related data', 500));
-      validateFunctionCall(mockAccountService.functions.getAccountById, body.accountId);
+      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+        body.accountId,
+        undefined,
+      ]);
       validateFunctionCall(mockCategoryService.functions.getCategoryById, body.categoryId);
       validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.getProductById, body.productId);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
-      expect.assertions(9);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
+      expect.assertions(11);
     });
 
-    it('if unable to save transaction', async () => {
-      mockAccountService.functions.getAccountById.mockResolvedValue(queriedAccount);
+    it('if account is loan type for payment transaction', async () => {
+      body = createPaymentTransactionRequest({
+        ...body,
+        accountId: getAccountId(queriedLoanAccount),
+      });
+      mockAccountService.functions.listAccountsByIds.mockResolvedValue([queriedLoanAccount]);
       mockCategoryService.functions.getCategoryById.mockResolvedValue(queriedCategory);
       mockProjectService.functions.getProjectById.mockResolvedValue(queriedProject);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
       mockProductService.functions.getProductById.mockResolvedValue(queriedProduct);
-      mockPaymentTransactionDocumentConverter.functions.create.mockReturnValue(createdDocument);
+
+      await service({
+        body,
+        expiresIn: undefined,
+      }).catch(validateError('Account type cannot be loan', 400));
+      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+        body.accountId,
+        undefined,
+      ]);
+      validateFunctionCall(mockCategoryService.functions.getCategoryById, body.categoryId);
+      validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
+      validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
+      validateFunctionCall(mockProductService.functions.getProductById, body.productId);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockTransactionService.functions.saveTransaction);
+      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
+      expect.assertions(11);
+    });
+
+    it('if loanAccount is loan type for reimbursement transaction', async () => {
+      const queriedSecondLoanAccount = createAccountDocument({
+        accountType: 'loan',
+      });
+      body = createPaymentTransactionRequest({
+        ...body,
+        loanAccountId: getAccountId(queriedSecondLoanAccount),
+        accountId: getAccountId(queriedLoanAccount),
+      });
+      mockAccountService.functions.listAccountsByIds.mockResolvedValue([
+        queriedLoanAccount,
+        queriedSecondLoanAccount,
+      ]);
+      mockCategoryService.functions.getCategoryById.mockResolvedValue(queriedCategory);
+      mockProjectService.functions.getProjectById.mockResolvedValue(queriedProject);
+      mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
+      mockProductService.functions.getProductById.mockResolvedValue(queriedProduct);
+
+      await service({
+        body,
+        expiresIn: undefined,
+      }).catch(validateError('Account type cannot be loan', 400));
+      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+        body.accountId,
+        body.loanAccountId,
+      ]);
+      validateFunctionCall(mockCategoryService.functions.getCategoryById, body.categoryId);
+      validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
+      validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
+      validateFunctionCall(mockProductService.functions.getProductById, body.productId);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockTransactionService.functions.saveTransaction);
+      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
+      expect.assertions(11);
+    });
+
+    it('if unable to save transaction', async () => {
+      mockAccountService.functions.listAccountsByIds.mockResolvedValue([queriedAccount]);
+      mockCategoryService.functions.getCategoryById.mockResolvedValue(queriedCategory);
+      mockProjectService.functions.getProjectById.mockResolvedValue(queriedProject);
+      mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
+      mockProductService.functions.getProductById.mockResolvedValue(queriedProduct);
+      mockPaymentTransactionDocumentConverter.functions.create.mockReturnValue(createdPaymentDocument);
       mockTransactionService.functions.saveTransaction.mockRejectedValue('this is a mongo error');
 
       await service({
         body,
         expiresIn: undefined,
       }).catch(validateError('Error while saving transaction', 500));
-      validateFunctionCall(mockAccountService.functions.getAccountById, body.accountId);
+      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+        body.accountId,
+        undefined,
+      ]);
       validateFunctionCall(mockCategoryService.functions.getCategoryById, body.categoryId);
       validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
@@ -527,8 +637,10 @@ describe('Create payment transaction service', () => {
         recipient: queriedRecipient,
         product: queriedProduct,
       }, undefined);
-      validateFunctionCall(mockTransactionService.functions.saveTransaction, createdDocument);
-      expect.assertions(9);
+      validateFunctionCall(mockTransactionService.functions.saveTransaction, createdPaymentDocument);
+      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
+      expect.assertions(11);
     });
   });
 });

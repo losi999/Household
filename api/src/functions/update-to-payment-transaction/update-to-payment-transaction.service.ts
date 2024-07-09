@@ -116,7 +116,10 @@ export const updateToPaymentTransactionServiceFactory = (
         product,
       }, expiresIn);
 
-      return transactionService.replaceTransaction(transactionId, document);
+      return transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update({
+        _id,
+        ...document,
+      }));
     }
     if (account.accountType === 'loan') {
       httpErrors.transaction.invalidLoanAccountType(loanAccount);
@@ -131,7 +134,10 @@ export const updateToPaymentTransactionServiceFactory = (
         product,
       }, expiresIn);
 
-      return transactionService.replaceTransaction(transactionId, document);
+      return transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update({
+        _id,
+        ...document,
+      }));
     }
 
     const { _id, ...document } = deferredTransactionDocumentConverter.create({
@@ -144,6 +150,9 @@ export const updateToPaymentTransactionServiceFactory = (
       product,
     }, expiresIn);
 
-    return transactionService.replaceTransaction(transactionId, document);
+    return transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update({
+      _id,
+      ...document,
+    }));
   };
 };

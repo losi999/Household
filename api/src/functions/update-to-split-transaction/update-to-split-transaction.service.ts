@@ -131,6 +131,9 @@ export const updateToSplitTransactionServiceFactory = (
 
     console.log(document);
 
-    await transactionService.replaceTransaction(transactionId, document);
+    await transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update({
+      _id,
+      ...document,
+    }));
   };
 };

@@ -1,6 +1,6 @@
 import { default as schema } from '@household/shared/schemas/transaction-split-request';
 import { Transaction } from '@household/shared/types/types';
-import { createAccountId, createCategoryId, createProductId, createProjectId, createRecipientId, createSplitRequestIem as createSplitRequestItem, createSplitTransactionRequest } from '@household/shared/common/test-data-factory';
+import { createAccountId, createCategoryId, createProductId, createProjectId, createRecipientId, createSplitRequestItem as createSplitRequestItem, createSplitTransactionRequest } from '@household/shared/common/test-data-factory';
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 
 describe('Split transaction schema', () => {

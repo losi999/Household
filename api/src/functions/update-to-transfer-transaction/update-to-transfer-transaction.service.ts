@@ -94,7 +94,10 @@ export const updateToTransferTransactionServiceFactory = (
           payingAccountIds: [getAccountId(payingAccount)],
           deferredTransactionIds,
           excludedTransferTransactionId: transactionId,
-        });
+        }).catch(httpErrors.common.getRelatedData({
+          payingAccountIds: [getAccountId(payingAccount)],
+          deferredTransactionIds,
+        }));
 
         httpErrors.transaction.multipleNotFound(deferredTransactionIds.length !== transactionList.length, {
           transactionIds: deferredTransactionIds,
@@ -108,7 +111,10 @@ export const updateToTransferTransactionServiceFactory = (
           transactions,
         }, expiresIn);
 
-        await transactionService.replaceTransaction(transactionId, document);
+        await transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update({
+          _id,
+          ...document,
+        }));
       } else {
         const { _id, ...document } = transferTransactionDocumentConverter.create({
           body,
@@ -117,7 +123,10 @@ export const updateToTransferTransactionServiceFactory = (
           transactions: undefined,
         }, expiresIn);
 
-        await transactionService.replaceTransaction(transactionId, document);
+        await transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update({
+          _id,
+          ...document,
+        }));
       }
     }
   };

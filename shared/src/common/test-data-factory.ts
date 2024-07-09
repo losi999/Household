@@ -87,6 +87,26 @@ export const createProductDocument: DataFactoryFunction<Product.Document> = (doc
   };
 };
 
+export const createTransactionRawReport: DataFactoryFunction<Transaction.RawReport> = (doc) => {
+  return {
+    _id: generateMongoId(),
+    amount: 100,
+    description: 'transaction description',
+    product: createProductDocument(),
+    quantity: 100,
+    invoiceNumber: 'inv123',
+    billingEndDate: new Date(2022, 3, 10),
+    billingStartDate: new Date(2022, 3, 2),
+    issuedAt: new Date(),
+    account: createAccountDocument(),
+    category: createCategoryDocument(),
+    project: createProjectDocument(),
+    recipient: createRecipientDocument(),
+    splitId: createTransactionId(),
+    ...doc,
+  };
+};
+
 export const createPaymentTransactionDocument: DataFactoryFunction<Transaction.PaymentDocument> = (doc) => {
   return {
     _id: generateMongoId(),
@@ -109,6 +129,64 @@ export const createPaymentTransactionDocument: DataFactoryFunction<Transaction.P
     category: createCategoryDocument(),
     project: createProjectDocument(),
     recipient: createRecipientDocument(),
+    ...doc,
+  };
+};
+
+export const createDeferredTransactionDocument: DataFactoryFunction<Transaction.DeferredDocument> = (doc) => {
+  return {
+    _id: generateMongoId(),
+    transactionType: 'deferred',
+    amount: 100,
+    description: 'transaction description',
+    product: createProductDocument(),
+    quantity: 100,
+    invoiceNumber: 'inv123',
+    billingEndDate: new Date(2022, 3, 10),
+    billingStartDate: new Date(2022, 3, 2),
+    issuedAt: new Date(),
+    expiresAt: undefined,
+    accountId: undefined,
+    categoryId: undefined,
+    projectId: undefined,
+    recipientId: undefined,
+    productId: undefined,
+    loanAccountId: undefined,
+    payingAccount: createAccountDocument(),
+    category: createCategoryDocument(),
+    project: createProjectDocument(),
+    recipient: createRecipientDocument(),
+    ownerAccount: createAccountDocument(),
+    isSettled: false,
+    ...doc,
+  };
+};
+
+export const createReimbursementTransactionDocument: DataFactoryFunction<Transaction.ReimbursementDocument> = (doc) => {
+  return {
+    _id: generateMongoId(),
+    transactionType: 'reimbursement',
+    amount: 100,
+    description: 'transaction description',
+    product: createProductDocument(),
+    quantity: 100,
+    invoiceNumber: 'inv123',
+    billingEndDate: new Date(2022, 3, 10),
+    billingStartDate: new Date(2022, 3, 2),
+    issuedAt: new Date(),
+    expiresAt: undefined,
+    accountId: undefined,
+    categoryId: undefined,
+    projectId: undefined,
+    recipientId: undefined,
+    productId: undefined,
+    loanAccountId: undefined,
+    payingAccount: createAccountDocument(),
+    account: createAccountDocument(),
+    category: createCategoryDocument(),
+    project: createProjectDocument(),
+    recipient: createRecipientDocument(),
+    ownerAccount: createAccountDocument(),
     ...doc,
   };
 };
@@ -163,6 +241,22 @@ export const createTransferTransactionDocument: DataFactoryFunction<Transaction.
     account: createAccountDocument(),
     transferAccount: createAccountDocument(),
     transferAmount: -1200,
+    ...doc,
+  };
+};
+
+export const createLoanTransferTransactionDocument: DataFactoryFunction<Transaction.LoanTransferDocument> = (doc) => {
+  return {
+    _id: generateMongoId(),
+    transactionType: 'loanTransfer',
+    amount: 100,
+    description: 'transaction description',
+    issuedAt: new Date(),
+    expiresAt: undefined,
+    accountId: undefined,
+    transferAccountId: undefined,
+    account: createAccountDocument(),
+    transferAccount: createAccountDocument(),
     ...doc,
   };
 };
@@ -241,9 +335,9 @@ export const createPaymentTransactionRequest: DataFactoryFunction<Transaction.Pa
   };
 };
 
-export const createSplitRequestIem: DataFactoryFunction<Transaction.SplitRequestItem> = (req) => {
+export const createSplitRequestItem: DataFactoryFunction<Transaction.SplitRequestItem> = (req) => {
   return {
-    amount: 1,
+    amount: -1,
     categoryId: createCategoryId(),
     projectId: createProjectId(),
     description: 'split description',
@@ -260,12 +354,12 @@ export const createSplitRequestIem: DataFactoryFunction<Transaction.SplitRequest
 
 export const createSplitTransactionRequest: DataFactoryFunction<Transaction.SplitRequest> = (req) => {
   return {
-    amount: req?.splits?.length ?? 1,
+    amount: req?.splits?.length * -1 || -1,
     description: 'transaction description',
     issuedAt: new Date().toISOString(),
     accountId: createAccountId(),
     recipientId: createRecipientId(),
-    splits: [createSplitRequestIem()],
+    splits: [createSplitRequestItem()],
     ...req,
   };
 };
@@ -445,6 +539,58 @@ export const createPaymentTransactionResponse: DataFactoryFunction<Transaction.P
   };
 };
 
+export const createDeferredTransactionResponse: DataFactoryFunction<Transaction.DeferredResponse> = (resp) => {
+  return {
+    transactionId: createTransactionId(),
+    transactionType: 'deferred',
+    amount: 100,
+    description: 'transaction description',
+    product: createProductResponse(),
+    quantity: 100,
+    invoiceNumber: 'inv123',
+    billingEndDate: '2022-03-10',
+    billingStartDate: '2022-03-01',
+    issuedAt: new Date().toISOString(),
+    expiresAt: undefined,
+    createdAt: undefined,
+    updatedAt: undefined,
+    _id: undefined,
+    ownerAccount: createAccountResponse(),
+    payingAccount: createAccountResponse(),
+    category: createCategoryResponse(),
+    project: createProjectResponse(),
+    recipient: createRecipientResponse(),
+    isSettled: undefined,
+    remainingAmount: 0,
+    ...resp,
+  };
+};
+
+export const createReimbursementTransactionResponse: DataFactoryFunction<Transaction.ReimbursementResponse> = (resp) => {
+  return {
+    transactionId: createTransactionId(),
+    transactionType: 'reimbursement',
+    amount: 100,
+    description: 'transaction description',
+    product: createProductResponse(),
+    quantity: 100,
+    invoiceNumber: 'inv123',
+    billingEndDate: '2022-03-10',
+    billingStartDate: '2022-03-01',
+    issuedAt: new Date().toISOString(),
+    expiresAt: undefined,
+    createdAt: undefined,
+    updatedAt: undefined,
+    _id: undefined,
+    ownerAccount: createAccountResponse(),
+    payingAccount: createAccountResponse(),
+    category: createCategoryResponse(),
+    project: createProjectResponse(),
+    recipient: createRecipientResponse(),
+    ...resp,
+  };
+};
+
 export const createSplitResponseIem: DataFactoryFunction<Transaction.SplitResponseItem> = (resp) => {
   return {
     amount: 1,
@@ -485,6 +631,24 @@ export const createTransferTransactionResponse: DataFactoryFunction<Transaction.
     transactionType: 'transfer',
     amount: 100,
     transferAmount: -1200,
+    description: 'transaction description',
+    issuedAt: new Date().toISOString(),
+    expiresAt: undefined,
+    createdAt: undefined,
+    updatedAt: undefined,
+    _id: undefined,
+    account: createAccountResponse(),
+    transferAccount: createAccountResponse(),
+    payments: undefined,
+    ...resp,
+  };
+};
+
+export const createLoanTransferTransactionResponse: DataFactoryFunction<Transaction.LoanTransferResponse> = (resp) => {
+  return {
+    transactionId: createTransactionId(),
+    transactionType: 'loanTransfer',
+    amount: 100,
     description: 'transaction description',
     issuedAt: new Date().toISOString(),
     expiresAt: undefined,
