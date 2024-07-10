@@ -11,22 +11,22 @@ describe('Refresh token schema', () => {
 
   describe('should deny', () => {
     describe('if data', () => {
-      tester.validateSchemaAdditionalProperties({
+      tester.additionalProperties({
         refreshToken: 'some.refresh.token',
         extra: 1,
       } as any, 'data');
     });
 
     describe('if data.refreshToken', () => {
-      tester.validateSchemaRequired({
+      tester.required({
         refreshToken: undefined,
       }, 'refreshToken');
 
-      tester.validateSchemaType({
+      tester.type({
         refreshToken: 1 as any,
       }, 'refreshToken', 'string');
 
-      tester.validateSchemaMinLength({
+      tester.minLength({
         refreshToken: '',
       }, 'refreshToken', 1);
     });

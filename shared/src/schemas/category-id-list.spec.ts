@@ -10,15 +10,15 @@ describe('Category id list schema', () => {
 
   describe('should deny', () => {
     describe('if data', () => {
-      tester.validateSchemaType(0 as any, 'data', 'array');
+      tester.type(0 as any, 'data', 'array');
 
-      tester.validateSchemaMinItems([], 'data', 1);
+      tester.minItems([], 'data', 1);
     });
 
     describe('if data[0]', () => {
-      tester.validateSchemaType([1 as any], 'data/0', 'string');
+      tester.type([1 as any], 'data/0', 'string');
 
-      tester.validateSchemaPattern([createCategoryId('not-valid')], 'data/0');
+      tester.pattern([createCategoryId('not-valid')], 'data/0');
     });
   });
 });

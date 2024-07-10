@@ -95,12 +95,6 @@ export const httpErrors = {
         throw httpError(statusCode, 'Account type cannot be loan');
       }
     },
-    positiveSplitAmountLoan: (ctx: Transaction.Amount & Transaction.LoanAccountId, statusCode = 400) => {
-      if (ctx.amount >= 0 && ctx.loanAccountId) {
-        log('Positive amount cannot be loaned in split', ctx);
-        throw httpError(statusCode, 'Positive amount cannot be loaned in split');
-      }
-    },
   },
   project: {
     save: (doc: Project.Document, statusCode = 500): Catch => (error) => {

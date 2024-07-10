@@ -190,41 +190,6 @@ describe('Update to split transaction service', () => {
       expect.assertions(10);
     });
 
-    it('if a loan has positive amount', async () => {
-      body = createSplitTransactionRequest({
-        ...body,
-        splits: [
-          createSplitRequestItem({
-            categoryId,
-            projectId,
-            productId,
-            amount: -3,
-          }),
-          createSplitRequestItem({
-            loanAccountId,
-            amount: 1,
-          }),
-        ],
-      });
-
-      mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
-
-      await service({
-        body,
-        transactionId,
-        expiresIn: undefined,
-      }).catch(validateError('Positive amount cannot be loaned in split', 400));
-      validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
-      validateFunctionCall(mockAccountService.functions.listAccountsByIds);
-      validateFunctionCall(mockCategoryService.functions.listCategoriesByIds);
-      validateFunctionCall(mockProjectService.functions.listProjectsByIds);
-      validateFunctionCall(mockRecipientService.functions.getRecipientById);
-      validateFunctionCall(mockProductService.functions.listProductsByIds);
-      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction);
-      expect.assertions(10);
-    });
-
     it('if sum of splits is not equal to total amount', async () => {
       body = createSplitTransactionRequest({
         ...body,

@@ -52,6 +52,15 @@ const schema: StrictJSONSchema7<Transaction.SplitRequest> = {
             type: 'boolean',
           },
         },
+        dependentSchemas: {
+          loanAccountId: {
+            properties: {
+              amount: {
+                exclusiveMaximum: 0,
+              },
+            },
+          },
+        },
       },
     },
   },

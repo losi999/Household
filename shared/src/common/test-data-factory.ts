@@ -377,6 +377,14 @@ export const createTransferTransactionRequest: DataFactoryFunction<Transaction.T
   };
 };
 
+export const createTransferPaymentItemRequest: DataFactoryFunction<Transaction.TransactionId & Transaction.Amount> = (req) => {
+  return {
+    amount: 10,
+    transactionId: createTransactionId(),
+    ...req,
+  };
+};
+
 export const createLoginRequest: DataFactoryFunction<Auth.Login.Request> = (req) => {
   return {
     email: 'aaa@email.com',

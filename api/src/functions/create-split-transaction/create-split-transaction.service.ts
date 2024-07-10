@@ -38,10 +38,6 @@ export const createSplitTransactionServiceFactory = (
         accountId,
         loanAccountId,
       });
-      httpErrors.transaction.positiveSplitAmountLoan({
-        amount,
-        loanAccountId,
-      });
       total += amount;
       pushUnique(categoryIds, categoryId);
       pushUnique(projectIds, projectId);

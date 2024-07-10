@@ -13,7 +13,7 @@ describe('Get transaction schema', () => {
 
   describe('should deny', () => {
     describe('if data', () => {
-      tester.validateSchemaAdditionalProperties({
+      tester.additionalProperties({
         accountId: createAccountId(),
         transactionId: createTransactionId(),
         extra: 1,
@@ -21,34 +21,34 @@ describe('Get transaction schema', () => {
     });
 
     describe('if data.accountId', () => {
-      tester.validateSchemaRequired({
+      tester.required({
         accountId: undefined,
         transactionId: createTransactionId(),
       }, 'accountId');
 
-      tester.validateSchemaType({
+      tester.type({
         accountId: 1 as any,
         transactionId: createTransactionId(),
       }, 'accountId', 'string');
 
-      tester.validateSchemaPattern({
+      tester.pattern({
         accountId: createAccountId('not-valid'),
         transactionId: createTransactionId(),
       }, 'accountId');
     });
 
     describe('if data.transactionId', () => {
-      tester.validateSchemaRequired({
+      tester.required({
         accountId: createAccountId(),
         transactionId: undefined,
       }, 'transactionId');
 
-      tester.validateSchemaType({
+      tester.type({
         accountId: createAccountId(),
         transactionId: 1 as any,
       }, 'transactionId', 'string');
 
-      tester.validateSchemaPattern({
+      tester.pattern({
         accountId: createAccountId(),
         transactionId: createTransactionId('not-valid'),
       }, 'transactionId');

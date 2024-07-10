@@ -7,155 +7,158 @@ describe('Split transaction schema', () => {
   const tester = jsonSchemaTesterFactory<Transaction.SplitRequest>(schema);
 
   describe('should accept', () => {
-    tester.validateSuccess(createSplitTransactionRequest());
+    tester.validateSuccess(createSplitTransactionRequest(), 'without splits.loanAccountId');
 
-    describe('without optional property', () => {
-      tester.validateSuccess(createSplitTransactionRequest({
-        description: undefined,
-      }));
+    tester.validateSuccess(createSplitTransactionRequest({
+      description: undefined,
+    }), 'without description');
 
-      tester.validateSuccess(createSplitTransactionRequest({
-        recipientId: undefined,
-      }));
+    tester.validateSuccess(createSplitTransactionRequest({
+      recipientId: undefined,
+    }), 'without recipientId');
 
-      tester.validateSuccess(createSplitTransactionRequest({
-        splits: [
-          createSplitRequestItem({
-            categoryId: undefined,
-          }),
-        ],
-      }));
+    tester.validateSuccess(createSplitTransactionRequest({
+      splits: [
+        createSplitRequestItem({
+          loanAccountId: createAccountId(),
+          amount: -100,
+          isSettled: false,
+        }),
+      ],
+    }), 'with splits.loanAccountId');
 
-      tester.validateSuccess(createSplitTransactionRequest({
-        splits: [
-          createSplitRequestItem({
-            projectId: undefined,
-          }),
-        ],
-      }));
+    tester.validateSuccess(createSplitTransactionRequest({
+      splits: [
+        createSplitRequestItem({
+          categoryId: undefined,
+        }),
+      ],
+    }), 'without splits.categoryId');
 
-      tester.validateSuccess(createSplitTransactionRequest({
-        splits: [
-          createSplitRequestItem({
-            description: undefined,
-          }),
-        ],
-      }));
+    tester.validateSuccess(createSplitTransactionRequest({
+      splits: [
+        createSplitRequestItem({
+          projectId: undefined,
+        }),
+      ],
+    }), 'without splits.projectId');
 
-      tester.validateSuccess(createSplitTransactionRequest({
-        splits: [
-          createSplitRequestItem({
-            quantity: undefined,
-            productId: undefined,
-          }),
-        ],
-      }));
+    tester.validateSuccess(createSplitTransactionRequest({
+      splits: [
+        createSplitRequestItem({
+          description: undefined,
+        }),
+      ],
+    }), 'without splits.description');
 
-      tester.validateSuccess(createSplitTransactionRequest({
-        splits: [
-          createSplitRequestItem({
-            quantity: undefined,
-            productId: undefined,
-          }),
-        ],
-      }));
+    tester.validateSuccess(createSplitTransactionRequest({
+      splits: [
+        createSplitRequestItem({
+          quantity: undefined,
+          productId: undefined,
+        }),
+      ],
+    }), 'without splits.inventory');
 
-      tester.validateSuccess(createSplitTransactionRequest({
-        splits: [
-          createSplitRequestItem({
-            invoiceNumber: undefined,
-            billingEndDate: undefined,
-            billingStartDate: undefined,
-          }),
-        ],
-      }));
+    tester.validateSuccess(createSplitTransactionRequest({
+      splits: [
+        createSplitRequestItem({
+          invoiceNumber: undefined,
+          billingEndDate: undefined,
+          billingStartDate: undefined,
+        }),
+      ],
+    }), 'without splits.invoice');
 
-      tester.validateSuccess(createSplitTransactionRequest({
-        splits: [
-          createSplitRequestItem({
-            invoiceNumber: undefined,
-          }),
-        ],
-      }));
-    });
+    tester.validateSuccess(createSplitTransactionRequest({
+      splits: [
+        createSplitRequestItem({
+          invoiceNumber: undefined,
+        }),
+      ],
+    }), 'without splits.invoiceNumber');
   });
 
   describe('should deny', () => {
     describe('if data', () => {
-      tester.validateSchemaAdditionalProperties({
+      tester.additionalProperties({
         ...createSplitTransactionRequest(),
         extra: 1,
       } as any, 'data');
     });
 
     describe('if data.amount', () => {
-      tester.validateSchemaRequired(createSplitTransactionRequest({
+      tester.required(createSplitTransactionRequest({
         amount: undefined,
       }), 'amount');
 
-      tester.validateSchemaType(createSplitTransactionRequest({
+      tester.type(createSplitTransactionRequest({
         amount: '1' as any,
       }), 'amount', 'number');
+
+      tester.exclusiveMaximum(createSplitTransactionRequest({
+        amount: 100,
+      }), 'amount', 0);
     });
 
     describe('if data.description', () => {
-      tester.validateSchemaType(createSplitTransactionRequest({
+      tester.type(createSplitTransactionRequest({
         description: 1 as any,
       }), 'description', 'string');
 
-      tester.validateSchemaMinLength(createSplitTransactionRequest({
+      tester.minLength(createSplitTransactionRequest({
         description: '',
       }), 'description', 1);
     });
 
     describe('if data.issuedAt', () => {
-      tester.validateSchemaRequired(createSplitTransactionRequest({
+      tester.required(createSplitTransactionRequest({
         issuedAt: undefined,
       }), 'issuedAt');
 
-      tester.validateSchemaType(createSplitTransactionRequest({
+      tester.type(createSplitTransactionRequest({
         issuedAt: 1 as any,
       }), 'issuedAt', 'string');
 
-      tester.validateSchemaFormat(createSplitTransactionRequest({
+      tester.format(createSplitTransactionRequest({
         issuedAt: 'not-date-time',
       }), 'issuedAt', 'date-time');
     });
 
     describe('if data.accountId', () => {
-      tester.validateSchemaRequired(createSplitTransactionRequest({
+      tester.required(createSplitTransactionRequest({
         accountId: undefined,
       }), 'accountId');
 
-      tester.validateSchemaType(createSplitTransactionRequest({
+      tester.type(createSplitTransactionRequest({
         accountId: 1 as any,
       }), 'accountId', 'string');
 
-      tester.validateSchemaPattern(createSplitTransactionRequest({
+      tester.pattern(createSplitTransactionRequest({
         accountId: createAccountId('not-valid'),
       }), 'accountId');
     });
 
     describe('if data.recipientId', () => {
-      tester.validateSchemaType(createSplitTransactionRequest({
+      tester.type(createSplitTransactionRequest({
         recipientId: 1 as any,
       }), 'recipientId', 'string');
 
-      tester.validateSchemaPattern(createSplitTransactionRequest({
+      tester.pattern(createSplitTransactionRequest({
         recipientId: createRecipientId('not-valid'),
       }), 'recipientId');
     });
 
     describe('if data.splits', () => {
-      tester.validateSchemaRequired(createSplitTransactionRequest({
+      tester.required(createSplitTransactionRequest({
         splits: undefined,
       }), 'splits');
 
-      tester.validateSchemaMinItems(createSplitTransactionRequest({
+      tester.minItems(createSplitTransactionRequest({
         splits: [],
       }), 'splits', 1);
 
-      tester.validateSchemaAdditionalProperties(createSplitTransactionRequest({
+      tester.additionalProperties(createSplitTransactionRequest({
         splits: [
           {
             ...createSplitRequestItem(),
@@ -166,7 +169,7 @@ describe('Split transaction schema', () => {
     });
 
     describe('if data.splits.amount', () => {
-      tester.validateSchemaRequired(createSplitTransactionRequest({
+      tester.required(createSplitTransactionRequest({
         splits: [
           createSplitRequestItem({
             amount: undefined,
@@ -174,17 +177,27 @@ describe('Split transaction schema', () => {
         ],
       }), 'amount');
 
-      tester.validateSchemaType(createSplitTransactionRequest({
+      tester.type(createSplitTransactionRequest({
         splits: [
           createSplitRequestItem({
             amount: '1' as any,
           }),
         ],
       }), 'splits/0/amount', 'number');
+
+      tester.exclusiveMaximum(createSplitTransactionRequest({
+        splits: [
+          createSplitRequestItem({
+            amount: 1,
+            loanAccountId: createAccountId(),
+            isSettled: false,
+          }),
+        ],
+      }), 'splits/0/amount', 0, 'if splits.loanAccountId is set');
     });
 
     describe('if data.splits.description', () => {
-      tester.validateSchemaType(createSplitTransactionRequest({
+      tester.type(createSplitTransactionRequest({
         splits: [
           createSplitRequestItem({
             description: 1 as any,
@@ -192,7 +205,7 @@ describe('Split transaction schema', () => {
         ],
       }), 'splits/0/description', 'string');
 
-      tester.validateSchemaMinLength(createSplitTransactionRequest({
+      tester.minLength(createSplitTransactionRequest({
         splits: [
           createSplitRequestItem({
             description: '',
@@ -202,7 +215,7 @@ describe('Split transaction schema', () => {
     });
 
     describe('if data.splits.quantity', () => {
-      tester.validateSchemaDependentRequired(createSplitTransactionRequest({
+      tester.dependentRequired(createSplitTransactionRequest({
         splits: [
           createSplitRequestItem({
             productId: undefined,
@@ -210,7 +223,7 @@ describe('Split transaction schema', () => {
         ],
       }), 'quantity', 'productId');
 
-      tester.validateSchemaType(createSplitTransactionRequest({
+      tester.type(createSplitTransactionRequest({
         splits: [
           createSplitRequestItem({
             quantity: '1' as any,
@@ -218,7 +231,7 @@ describe('Split transaction schema', () => {
         ],
       }), 'splits/0/quantity', 'number');
 
-      tester.validateSchemaExclusiveMinimum(createSplitTransactionRequest({
+      tester.exclusiveMinimum(createSplitTransactionRequest({
         splits: [
           createSplitRequestItem({
             quantity: 0,
@@ -228,7 +241,7 @@ describe('Split transaction schema', () => {
     });
 
     describe('if data.splits.productId', () => {
-      tester.validateSchemaDependentRequired(createSplitTransactionRequest({
+      tester.dependentRequired(createSplitTransactionRequest({
         splits: [
           createSplitRequestItem({
             quantity: undefined,
@@ -236,7 +249,7 @@ describe('Split transaction schema', () => {
         ],
       }), 'productId', 'quantity');
 
-      tester.validateSchemaType(createSplitTransactionRequest({
+      tester.type(createSplitTransactionRequest({
         splits: [
           createSplitRequestItem({
             productId: 1 as any,
@@ -244,7 +257,7 @@ describe('Split transaction schema', () => {
         ],
       }), 'splits/0/productId', 'string');
 
-      tester.validateSchemaPattern(createSplitTransactionRequest({
+      tester.pattern(createSplitTransactionRequest({
         splits: [
           createSplitRequestItem({
             productId: createProductId('not-valid'),
@@ -254,7 +267,7 @@ describe('Split transaction schema', () => {
     });
 
     describe('if data.splits.invoiceNumber', () => {
-      tester.validateSchemaDependentRequired(createSplitTransactionRequest({
+      tester.dependentRequired(createSplitTransactionRequest({
         splits: [
           createSplitRequestItem({
             billingEndDate: undefined,
@@ -263,7 +276,7 @@ describe('Split transaction schema', () => {
         ],
       }), 'invoiceNumber', 'billingEndDate', 'billingStartDate');
 
-      tester.validateSchemaType(createSplitTransactionRequest({
+      tester.type(createSplitTransactionRequest({
         splits: [
           createSplitRequestItem({
             invoiceNumber: 1 as any,
@@ -271,7 +284,7 @@ describe('Split transaction schema', () => {
         ],
       }), 'splits/0/invoiceNumber', 'string');
 
-      tester.validateSchemaMinLength(createSplitTransactionRequest({
+      tester.minLength(createSplitTransactionRequest({
         splits: [
           createSplitRequestItem({
             invoiceNumber: '',
@@ -281,7 +294,7 @@ describe('Split transaction schema', () => {
     });
 
     describe('if data.splits[0].billingEndDate', () => {
-      tester.validateSchemaDependentRequired(createSplitTransactionRequest({
+      tester.dependentRequired(createSplitTransactionRequest({
         splits: [
           createSplitRequestItem({
             billingStartDate: undefined,
@@ -289,7 +302,7 @@ describe('Split transaction schema', () => {
         ],
       }), 'billingEndDate', 'billingStartDate');
 
-      tester.validateSchemaType(createSplitTransactionRequest({
+      tester.type(createSplitTransactionRequest({
         splits: [
           createSplitRequestItem({
             billingEndDate: 1 as any,
@@ -297,7 +310,7 @@ describe('Split transaction schema', () => {
         ],
       }), 'splits/0/billingEndDate', 'string');
 
-      tester.validateSchemaFormat(createSplitTransactionRequest({
+      tester.format(createSplitTransactionRequest({
         splits: [
           createSplitRequestItem({
             billingEndDate: 'not-date',
@@ -305,7 +318,7 @@ describe('Split transaction schema', () => {
         ],
       }), 'splits/0/billingEndDate', 'date');
 
-      tester.validateSchemaFormatExclusiveMinimum(createSplitTransactionRequest({
+      tester.formatExclusiveMinimum(createSplitTransactionRequest({
         splits: [
           createSplitRequestItem({
             billingEndDate: '2022-01-01',
@@ -316,7 +329,7 @@ describe('Split transaction schema', () => {
     });
 
     describe('if data.splits[0].billingStartDate', () => {
-      tester.validateSchemaDependentRequired(createSplitTransactionRequest({
+      tester.dependentRequired(createSplitTransactionRequest({
         splits: [
           createSplitRequestItem({
             billingEndDate: undefined,
@@ -324,7 +337,7 @@ describe('Split transaction schema', () => {
         ],
       }), 'billingStartDate', 'billingEndDate');
 
-      tester.validateSchemaType(createSplitTransactionRequest({
+      tester.type(createSplitTransactionRequest({
         splits: [
           createSplitRequestItem({
             billingStartDate: 1 as any,
@@ -332,7 +345,7 @@ describe('Split transaction schema', () => {
         ],
       }), 'splits/0/billingStartDate', 'string');
 
-      tester.validateSchemaFormat(createSplitTransactionRequest({
+      tester.format(createSplitTransactionRequest({
         splits: [
           createSplitRequestItem({
             billingStartDate: 'not-date',
@@ -342,7 +355,7 @@ describe('Split transaction schema', () => {
     });
 
     describe('if data.splits[0].categoryId', () => {
-      tester.validateSchemaType(createSplitTransactionRequest({
+      tester.type(createSplitTransactionRequest({
         splits: [
           createSplitRequestItem({
             categoryId: 1 as any,
@@ -350,7 +363,7 @@ describe('Split transaction schema', () => {
         ],
       }), 'splits/0/categoryId', 'string');
 
-      tester.validateSchemaPattern(createSplitTransactionRequest({
+      tester.pattern(createSplitTransactionRequest({
         splits: [
           createSplitRequestItem({
             categoryId: createCategoryId('not-valid'),
@@ -360,7 +373,7 @@ describe('Split transaction schema', () => {
     });
 
     describe('if data.splits[0].projectId', () => {
-      tester.validateSchemaType(createSplitTransactionRequest({
+      tester.type(createSplitTransactionRequest({
         splits: [
           createSplitRequestItem({
             projectId: 1 as any,
@@ -368,7 +381,7 @@ describe('Split transaction schema', () => {
         ],
       }), 'splits/0/projectId', 'string');
 
-      tester.validateSchemaPattern(createSplitTransactionRequest({
+      tester.pattern(createSplitTransactionRequest({
         splits: [
           createSplitRequestItem({
             projectId: createProjectId('not-valid'),

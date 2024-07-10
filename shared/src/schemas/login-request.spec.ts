@@ -10,36 +10,36 @@ describe('Login request schema', () => {
 
   describe('should deny', () => {
     describe('if data', () => {
-      tester.validateSchemaAdditionalProperties({
+      tester.additionalProperties({
         ...createLoginRequest(),
         extra: 1,
       } as any, 'data');
     });
 
     describe('if data.email', () => {
-      tester.validateSchemaRequired(createLoginRequest({
+      tester.required(createLoginRequest({
         email: undefined,
       }), 'email');
 
-      tester.validateSchemaType(createLoginRequest({
+      tester.type(createLoginRequest({
         email: 1 as any,
       }), 'email', 'string');
 
-      tester.validateSchemaFormat(createLoginRequest({
+      tester.format(createLoginRequest({
         email: 'asbd',
       }), 'email', 'email');
     });
 
     describe('if data.password', () => {
-      tester.validateSchemaRequired(createLoginRequest({
+      tester.required(createLoginRequest({
         password: undefined,
       }), 'password');
 
-      tester.validateSchemaType(createLoginRequest({
+      tester.type(createLoginRequest({
         password: 1 as any,
       }), 'password', 'string');
 
-      tester.validateSchemaMinLength(createLoginRequest({
+      tester.minLength(createLoginRequest({
         password: '',
       }), 'password', 6);
     });

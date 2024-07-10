@@ -12,22 +12,22 @@ describe('Recipient id schema', () => {
 
   describe('should deny', () => {
     describe('if data', () => {
-      tester.validateSchemaAdditionalProperties({
+      tester.additionalProperties({
         recipientId: createRecipientId(),
         extra: 1,
       } as any, 'data');
     });
 
     describe('if data.recipientId', () => {
-      tester.validateSchemaRequired({
+      tester.required({
         recipientId: undefined,
       }, 'recipientId');
 
-      tester.validateSchemaType({
+      tester.type({
         recipientId: 1 as any,
       }, 'recipientId', 'string');
 
-      tester.validateSchemaPattern({
+      tester.pattern({
         recipientId: createRecipientId('not-valid'),
       }, 'recipientId');
     });

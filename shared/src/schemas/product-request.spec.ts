@@ -10,50 +10,50 @@ describe('Product schema', () => {
 
   describe('should deny', () => {
     describe('if data', () => {
-      tester.validateSchemaAdditionalProperties({
+      tester.additionalProperties({
         ...createProductRequest(),
         extra: 1,
       } as any, 'data');
     });
 
     describe('if data.brand', () => {
-      tester.validateSchemaRequired(createProductRequest({
+      tester.required(createProductRequest({
         brand: undefined,
       }), 'brand');
 
-      tester.validateSchemaType(createProductRequest({
+      tester.type(createProductRequest({
         brand: 1 as any,
       }), 'brand', 'string');
 
-      tester.validateSchemaMinLength(createProductRequest({
+      tester.minLength(createProductRequest({
         brand: '',
       }), 'brand', 1);
     });
 
     describe('if data.measurement', () => {
-      tester.validateSchemaRequired(createProductRequest({
+      tester.required(createProductRequest({
         measurement: undefined,
       }), 'measurement');
 
-      tester.validateSchemaType(createProductRequest({
+      tester.type(createProductRequest({
         measurement: '1' as any,
       }), 'measurement', 'number');
 
-      tester.validateSchemaExclusiveMinimum(createProductRequest({
+      tester.exclusiveMinimum(createProductRequest({
         measurement: 0,
       }), 'measurement', 0);
     });
 
     describe('if data.unitOfMeasurement', () => {
-      tester.validateSchemaRequired(createProductRequest({
+      tester.required(createProductRequest({
         unitOfMeasurement: undefined,
       }), 'unitOfMeasurement');
 
-      tester.validateSchemaType(createProductRequest({
+      tester.type(createProductRequest({
         unitOfMeasurement: 1 as any,
       }), 'unitOfMeasurement', 'string');
 
-      tester.validateSchemaEnumValue(createProductRequest({
+      tester.enum(createProductRequest({
         unitOfMeasurement: 'not-enum' as any,
       }), 'unitOfMeasurement');
     });
