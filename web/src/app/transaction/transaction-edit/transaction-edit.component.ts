@@ -139,13 +139,13 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
     this.form = new FormGroup({
       issuedAt: new FormControl(this.transaction ? new Date(this.transaction.issuedAt) : new Date(), [Validators.required]),
       amount: new FormControl(this.transaction?.amount, [Validators.required]),
-      account: new FormControl(this.transaction?.account, [Validators.required]),
+      account: new FormControl(null), // this.transaction?.account, [Validators.required]),
       isTransfer: new FormControl(isTransferTransaction(this.transaction)),
       description: new FormControl(this.transaction?.description),
       transferAccount: new FormControl(isTransferTransaction(this.transaction) ? this.transaction.transferAccount : null),
       transferAmount: new FormControl(isTransferTransaction(this.transaction) ? this.transaction.transferAmount : null),
       project: new FormControl(isPaymentTransaction(this.transaction) ? this.transaction.project : null),
-      recipient: new FormControl(!isTransferTransaction(this.transaction) ? this.transaction?.recipient : null),
+      recipient: new FormControl(null), //!isTransferTransaction(this.transaction) ? this.transaction?.recipient : null),
       category: new FormControl(isPaymentTransaction(this.transaction) ? this.transaction.category : null),
       inventory: new FormControl(isPaymentTransaction(this.transaction) && isInventoryCategory(this.transaction?.category) ? {
         quantity: this.transaction.quantity,
@@ -240,6 +240,7 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
         issuedAt: this.form.value.issuedAt.toISOString(),
         transferAccountId: this.form.value.transferAccount.accountId,
         transferAmount: this.form.value.transferAmount ?? undefined,
+        payments: undefined,
       };
 
       if (this.transactionId) {
@@ -271,6 +272,8 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
             invoiceNumber: isInvoiceCategory(s.category) && s.invoice ? s.invoice.invoiceNumber : undefined,
             billingEndDate: isInvoiceCategory(s.category) && s.invoice ? s.invoice.billingEndDate : undefined,
             billingStartDate: isInvoiceCategory(s.category) && s.invoice ? s.invoice.billingStartDate : undefined,
+            loanAccountId: undefined,
+            isSettled: undefined,
           })),
         };
 
@@ -299,6 +302,8 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
           invoiceNumber: isInvoiceCategory(this.form.value.category) && this.form.value.invoice ? this.form.value.invoice.invoiceNumber : undefined,
           billingEndDate: isInvoiceCategory(this.form.value.category) && this.form.value.invoice ? this.form.value.invoice.billingEndDate : undefined,
           billingStartDate: isInvoiceCategory(this.form.value.category) && this.form.value.invoice ? this.form.value.invoice.billingStartDate : undefined,
+          loanAccountId: undefined,
+          isSettled: undefined,
         };
 
         if (this.transactionId) {
