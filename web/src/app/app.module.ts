@@ -1,4 +1,4 @@
-import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
@@ -19,9 +19,9 @@ registerLocaleData(localeHu);
 
 @NgModule({
   declarations: [AppComponent],
+  bootstrap: [AppComponent],
   imports: [
     BrowserModule,
-    HttpClientModule,
     AppRoutingModule,
     BrowserAnimationsModule,
     MatNativeDateModule,
@@ -45,7 +45,7 @@ registerLocaleData(localeHu);
       useClass: ProgressInterceptor,
       multi: true,
     },
+    provideHttpClient(withInterceptorsFromDi()),
   ],
-  bootstrap: [AppComponent],
 })
 export class AppModule { }
