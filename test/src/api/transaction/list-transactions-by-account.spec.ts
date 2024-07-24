@@ -64,7 +64,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
         product: productDocument,
       });
 
-      const splitTransactionDocument = splitTransactionDataFactory.document({
+      const payingSplitTransactionDocument = splitTransactionDataFactory.document({
         account: accountDocument,
         recipient: recipientDocument,
         splits: [
@@ -83,37 +83,72 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
             category: invoiceCategoryDocument,
           },
           {
-            project: projectDocument,
             loanAccount: loanAccountDocument,
           },
           {
-            category: regularCategoryDocument,
             loanAccount: loanAccountDocument,
-          },
-
-          {
-            category: inventoryCategoryDocument,
-            product: productDocument,
-            loanAccount: loanAccountDocument,
+            isSettled: true,
           },
           {
-            category: invoiceCategoryDocument,
             loanAccount: loanAccountDocument,
-          },
-          {
-            loanAccount: transferAccountDocument,
           },
         ],
       });
 
-      const payingDeferredTransactionDocument = deferredTransactionDataFactory.document({
-        account: accountDocument,
-        loanAccount: transferAccountDocument,
+      const owningSplitTransactionDocument = splitTransactionDataFactory.document({
+        account: transferAccountDocument,
+        recipient: recipientDocument,
+        splits: [
+          {
+            project: projectDocument,
+          },
+          {
+            loanAccount: accountDocument,
+          },
+          {
+            loanAccount: accountDocument,
+            isSettled: true,
+          },
+          {
+            loanAccount: accountDocument,
+          },
+        ],
       });
 
-      const owningDeferredTransactionDocument = deferredTransactionDataFactory.document({
+      const payingNotRepayedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+        account: accountDocument,
+        loanAccount: loanAccountDocument,
+      });
+
+      const payingRepayedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+        account: accountDocument,
+        loanAccount: loanAccountDocument,
+      });
+
+      const payingSettledDeferredTransactionDocument = deferredTransactionDataFactory.document({
+        account: accountDocument,
+        loanAccount: loanAccountDocument,
+        body: {
+          isSettled: true,
+        },
+      });
+
+      const owningNotRepayedDeferredTransactionDocument = deferredTransactionDataFactory.document({
         account: transferAccountDocument,
         loanAccount: accountDocument,
+      });
+
+      const owningRepayedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+        account: transferAccountDocument,
+        loanAccount: accountDocument,
+      });
+
+      const owningSettledDeferredTransactionDocument = deferredTransactionDataFactory.document({
+        account: transferAccountDocument,
+        loanAccount: accountDocument,
+        body: {
+          isSettled: true,
+        },
       });
 
       const owningReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
@@ -121,15 +156,22 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
         loanAccount: accountDocument,
       });
 
-      const transferTransactionDocument = transferTransactionDataFactory.document({
+      const payingTransferTransactionDocument = transferTransactionDataFactory.document({
         account: accountDocument,
         transferAccount: transferAccountDocument,
-        transactions: [payingDeferredTransactionDocument],
+        transactions: [
+          owningRepayedDeferredTransactionDocument,
+          owningSplitTransactionDocument.deferredSplits[2],
+        ],
       });
 
-      const invertedTransferTransactionDocument = transferTransactionDataFactory.document({
+      const receivingTransferTransactionDocument = transferTransactionDataFactory.document({
         account: transferAccountDocument,
         transferAccount: accountDocument,
+        transactions: [
+          payingRepayedDeferredTransactionDocument,
+          payingSplitTransactionDocument.deferredSplits[2],
+        ],
       });
       const loanTransferTransactionDocument = loanTransferTransactionDataFactory.document({
         account: accountDocument,
@@ -156,13 +198,18 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
         .saveProductDocument(productDocument)
         .saveTransactionDocuments([
           paymentTransactionDocument,
-          splitTransactionDocument,
-          transferTransactionDocument,
-          invertedTransferTransactionDocument,
+          payingSplitTransactionDocument,
+          owningSplitTransactionDocument,
+          payingTransferTransactionDocument,
+          receivingTransferTransactionDocument,
           loanTransferTransactionDocument,
           invertedLoanTransferTransactionDocument,
-          payingDeferredTransactionDocument,
-          owningDeferredTransactionDocument,
+          payingNotRepayedDeferredTransactionDocument,
+          payingRepayedDeferredTransactionDocument,
+          payingSettledDeferredTransactionDocument,
+          owningNotRepayedDeferredTransactionDocument,
+          owningRepayedDeferredTransactionDocument,
+          owningSettledDeferredTransactionDocument,
           owningReimbursementTransactionDocument,
         ])
         .authenticate(1)
@@ -174,16 +221,24 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
         .expectValidResponseSchema(schema)
         .validateTransactionListResponse([
           paymentTransactionDocument,
-          splitTransactionDocument,
-          transferTransactionDocument,
-          invertedTransferTransactionDocument,
+          payingSplitTransactionDocument,
+          owningSplitTransactionDocument,
+          payingTransferTransactionDocument,
+          receivingTransferTransactionDocument,
           loanTransferTransactionDocument,
           invertedLoanTransferTransactionDocument,
-          payingDeferredTransactionDocument,
-          owningDeferredTransactionDocument,
+          payingNotRepayedDeferredTransactionDocument,
+          payingRepayedDeferredTransactionDocument,
+          payingSettledDeferredTransactionDocument,
+          owningNotRepayedDeferredTransactionDocument,
+          owningRepayedDeferredTransactionDocument,
+          owningSettledDeferredTransactionDocument,
           owningReimbursementTransactionDocument,
         ], getAccountId(accountDocument), {
-          [getTransactionId(payingDeferredTransactionDocument)]: transferTransactionDocument.payments[0].amount,
+          [getTransactionId(owningRepayedDeferredTransactionDocument)]: payingTransferTransactionDocument.payments[0].amount,
+          [getTransactionId(owningSplitTransactionDocument.deferredSplits[2])]: payingTransferTransactionDocument.payments[1].amount,
+          [getTransactionId(payingRepayedDeferredTransactionDocument)]: receivingTransferTransactionDocument.payments[0].amount,
+          [getTransactionId(payingSplitTransactionDocument.deferredSplits[2])]: receivingTransferTransactionDocument.payments[1].amount,
         });
     });
 

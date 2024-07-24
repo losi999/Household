@@ -297,6 +297,42 @@ export const rebuildSplits = (): [PipelineStage.Group, PipelineStage.ReplaceRoot
       transactionType: '$tx_transactionType',
       description: '$tx_description',
       amount: '$tx_amount',
+      payingAccount: {
+        $cond: [
+          {
+            $eq: [
+              '$tx_transactionType',
+              'split',
+            ],
+          },
+          '$$REMOVE',
+          '$payingAccount',
+        ],
+      },
+      isSettled: {
+        $cond: [
+          {
+            $eq: [
+              '$tx_transactionType',
+              'split',
+            ],
+          },
+          '$$REMOVE',
+          '$isSettled',
+        ],
+      },
+      ownerAccount: {
+        $cond: [
+          {
+            $eq: [
+              '$tx_transactionType',
+              'split',
+            ],
+          },
+          '$$REMOVE',
+          '$ownerAccount',
+        ],
+      },
       category: {
         $cond: [
           {

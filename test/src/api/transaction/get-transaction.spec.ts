@@ -208,7 +208,31 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .validateTransactionDeferredResponse(document, getAccountId(accountDocument));
     });
 
-    it('should get deferred transaction which has been repaid', () => {
+    it('should get owning deferred transaction', () => {
+      const document = deferredTransactionDataFactory.document({
+        account: transferAccountDocument,
+        category: regularCategoryDocument,
+        project: projectDocument,
+        recipient: recipientDocument,
+        loanAccount: accountDocument,
+      });
+
+      cy.saveAccountDocuments([
+        accountDocument,
+        transferAccountDocument,
+      ])
+        .saveProjectDocument(projectDocument)
+        .saveRecipientDocument(recipientDocument)
+        .saveCategoryDocument(regularCategoryDocument)
+        .saveTransactionDocument(document)
+        .authenticate(1)
+        .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
+        .expectOkResponse()
+        .expectValidResponseSchema(deferredTransactionSchema)
+        .validateTransactionDeferredResponse(document, getAccountId(accountDocument));
+    });
+
+    it('should get paying deferred transaction which has been repaid', () => {
       const document = deferredTransactionDataFactory.document({
         body: {
           amount: -5000,
@@ -218,6 +242,45 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         project: projectDocument,
         recipient: recipientDocument,
         loanAccount: transferAccountDocument,
+      });
+
+      const repayingTransferTransactionDocument = transferTransactionDataFactory.document({
+        account: transferAccountDocument,
+        transferAccount: accountDocument,
+        body: {
+          amount: -1500,
+        },
+        transactions: [document],
+      });
+
+      cy.saveAccountDocuments([
+        accountDocument,
+        transferAccountDocument,
+      ])
+        .saveProjectDocument(projectDocument)
+        .saveRecipientDocument(recipientDocument)
+        .saveCategoryDocument(regularCategoryDocument)
+        .saveTransactionDocuments([
+          document,
+          repayingTransferTransactionDocument,
+        ])
+        .authenticate(1)
+        .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
+        .expectOkResponse()
+        .expectValidResponseSchema(deferredTransactionSchema)
+        .validateTransactionDeferredResponse(document, getAccountId(accountDocument), repayingTransferTransactionDocument.payments[0].amount);
+    });
+
+    it('should get owning deferred transaction which has been repaid', () => {
+      const document = deferredTransactionDataFactory.document({
+        body: {
+          amount: -5000,
+        },
+        account: transferAccountDocument,
+        category: regularCategoryDocument,
+        project: projectDocument,
+        recipient: recipientDocument,
+        loanAccount: accountDocument,
       });
 
       const repayingTransferTransactionDocument = transferTransactionDataFactory.document({
@@ -247,7 +310,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .validateTransactionDeferredResponse(document, getAccountId(accountDocument), repayingTransferTransactionDocument.payments[0].amount);
     });
 
-    it('should get deferred transaction which has been settled', () => {
+    it('should get paying deferred transaction which has been settled', () => {
       const document = deferredTransactionDataFactory.document({
         body: {
           isSettled: true,
@@ -257,6 +320,33 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         project: projectDocument,
         recipient: recipientDocument,
         loanAccount: transferAccountDocument,
+      });
+
+      cy.saveAccountDocuments([
+        accountDocument,
+        transferAccountDocument,
+      ])
+        .saveProjectDocument(projectDocument)
+        .saveRecipientDocument(recipientDocument)
+        .saveCategoryDocument(regularCategoryDocument)
+        .saveTransactionDocument(document)
+        .authenticate(1)
+        .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
+        .expectOkResponse()
+        .expectValidResponseSchema(deferredTransactionSchema)
+        .validateTransactionDeferredResponse(document, getAccountId(accountDocument));
+    });
+
+    it('should get owning deferred transaction which has been settled', () => {
+      const document = deferredTransactionDataFactory.document({
+        body: {
+          isSettled: true,
+        },
+        account: transferAccountDocument,
+        category: regularCategoryDocument,
+        project: projectDocument,
+        recipient: recipientDocument,
+        loanAccount: accountDocument,
       });
 
       cy.saveAccountDocuments([
@@ -348,7 +438,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .validateTransactionReimbursementResponse(document);
     });
 
-    it('should get split transaction', () => {
+    it('should get paying split transaction', () => {
       const document = splitTransactionDataFactory.document({
         account: accountDocument,
         recipient: recipientDocument,
@@ -397,8 +487,8 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
       const lastDeferredSplit = document.deferredSplits[document.deferredSplits.length - 2];
 
       const repayingTransferTransactionDocument = transferTransactionDataFactory.document({
-        account: accountDocument,
-        transferAccount: transferAccountDocument,
+        account: transferAccountDocument,
+        transferAccount: accountDocument,
         body: {
           amount: -1500,
         },
@@ -426,7 +516,59 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
         .expectOkResponse()
         .expectValidResponseSchema(splitTransactionSchema)
-        .validateTransactionSplitResponse(document, {
+        .validateTransactionSplitResponse(document, getAccountId(accountDocument), {
+          [getTransactionId(lastDeferredSplit)]: repayingTransferTransactionDocument.payments[0].amount,
+        });
+    });
+
+    it('should get owning split transaction', () => {
+      const document = splitTransactionDataFactory.document({
+        account: transferAccountDocument,
+        recipient: recipientDocument,
+        splits: [
+          {
+            project: projectDocument,
+          },
+          {
+            loanAccount: accountDocument,
+          },
+          {
+            loanAccount: accountDocument,
+            isSettled: true,
+          },
+          {
+            loanAccount: accountDocument,
+            amount: -500,
+          },
+        ],
+      });
+
+      const lastDeferredSplit = document.deferredSplits[document.deferredSplits.length - 1];
+
+      const repayingTransferTransactionDocument = transferTransactionDataFactory.document({
+        account: accountDocument,
+        transferAccount: transferAccountDocument,
+        body: {
+          amount: -1500,
+        },
+        transactions: [lastDeferredSplit],
+      });
+
+      cy.saveAccountDocuments([
+        accountDocument,
+        transferAccountDocument,
+      ])
+        .saveProjectDocument(projectDocument)
+        .saveRecipientDocument(recipientDocument)
+        .saveTransactionDocuments([
+          document,
+          repayingTransferTransactionDocument,
+        ])
+        .authenticate(1)
+        .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
+        .expectOkResponse()
+        .expectValidResponseSchema(splitTransactionSchema)
+        .validateTransactionSplitResponse(document, getAccountId(accountDocument), {
           [getTransactionId(lastDeferredSplit)]: repayingTransferTransactionDocument.payments[0].amount,
         });
     });

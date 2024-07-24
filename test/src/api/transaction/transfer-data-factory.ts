@@ -9,14 +9,14 @@ export const transferTransactionDataFactory = (() => {
   const createTransferTransactionRequest: DataFactoryFunction<Transaction.TransferRequest> = (req) => {
     const amount = req?.amount ?? faker.number.float({
       min: -10000,
-      max: 10000,
+      max: 0,
     });
 
     return {
       amount,
       transferAmount: faker.number.float({
-        max: amount < 0 ? 10000 : 0,
-        min: amount > 0 ? -10000 : 0,
+        max: 10000,
+        min: 0,
       }),
       description: faker.word.words({
         count: {

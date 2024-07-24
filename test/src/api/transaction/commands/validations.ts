@@ -285,7 +285,7 @@ const validateInvoiceResponse = (response: Transaction.InvoiceDate<string> & Tra
 const validateCommonResponse = (response: Transaction.TransactionId & Transaction.Amount & Transaction.IssuedAt<string> & Transaction.TransactionType<string> & Transaction.Description, document: Transaction.Document) => {
   const { amount, description, issuedAt, transactionId, transactionType } = response;
 
-  expect(transactionId).to.equal(getTransactionId(document));
+  expect(transactionId, 'transactionId').to.equal(getTransactionId(document));
   expect(amount, 'amount').to.equal(document.amount);
   expect(createDate(issuedAt).toISOString(), 'issuedAt').to.equal(document.issuedAt.toISOString());
   expect(transactionType, 'transactionType').to.equal(document.transactionType);
@@ -516,7 +516,7 @@ const validateTransactionLoanTransferResponse = (response: Transaction.LoanTrans
   expectEmptyObject(empty, 'response');
 };
 
-const validateTransactionSplitResponse = (response: Transaction.SplitResponse, document: Transaction.SplitDocument, repayments?: Record<Transaction.Id, number>) => {
+const validateTransactionSplitResponse = (response: Transaction.SplitResponse, document: Transaction.SplitDocument, viewingAccountId: Account.Id, repayments?: Record<Transaction.Id, number>) => {
 
   const { transactionId, amount, issuedAt, transactionType, description, account, deferredSplits, splits, recipient, ...empty } = response;
 
@@ -583,10 +583,12 @@ const validateTransactionSplitResponse = (response: Transaction.SplitResponse, d
     const documentSplit = document.deferredSplits[index];
     const { amount, billingEndDate, billingStartDate, category, description, invoiceNumber, product, project, quantity, ownerAccount, payingAccount, transactionType, remainingAmount, transactionId, isSettled, ...empty } = split;
 
+    const remainingAmountMultiplier = viewingAccountId === payingAccount.accountId ? 1 : -1;
+
     expect(transactionId, `deferredSplits[${index}].transactionId`).to.equal(getTransactionId(documentSplit));
     expect(amount, `deferredSplits[${index}].amount`).to.equal(documentSplit.amount);
     expect(transactionType, `deferredSplits[${index}].transactionType`).to.equal('deferred');
-    expect(remainingAmount, `deferredSplits[${index}].remainingAmount`).to.equal(documentSplit.isSettled ? 0 : documentSplit.amount + (repayments?.[transactionId] ?? 0));
+    expect(remainingAmount, `deferredSplits[${index}].remainingAmount`).to.equal(documentSplit.isSettled ? 0 : (documentSplit.amount + (repayments?.[transactionId] ?? 0)) * remainingAmountMultiplier);
     expect(description, `deferredSplits[${index}].description`).to.equal(documentSplit.description);
     expect(isSettled, `deferredSplits[${index}].isSettled`).to.equal(documentSplit.isSettled);
 
@@ -632,12 +634,13 @@ const validateTransactionSplitResponse = (response: Transaction.SplitResponse, d
 };
 
 const validateTransactionListResponse = (responses: Transaction.Response[], documents: Transaction.Document[], viewingAccountId: Account.Id, repayments: Record<Transaction.Id, number>) => {
+  expect(responses.length, 'number of items').to.equal(documents.length);
   documents.forEach((document) => {
     const response = responses.find(r => r.transactionId === getTransactionId(document));
     switch(response.transactionType) {
       case 'payment': validateTransactionPaymentResponse(response, document as Transaction.PaymentDocument); break;
       case 'transfer': validateTransactionTransferResponse(response, document as Transaction.TransferDocument, viewingAccountId); break;
-      case 'split': validateTransactionSplitResponse(response, document as Transaction.SplitDocument, repayments); break;
+      case 'split': validateTransactionSplitResponse(response, document as Transaction.SplitDocument, viewingAccountId, repayments); break;
       case 'deferred': validateTransactionDeferredResponse(response, document as Transaction.DeferredDocument, viewingAccountId, repayments[response.transactionId]); break;
       case 'reimbursement': validateTransactionReimbursementResponse(response, document as Transaction.ReimbursementDocument); break;
       case 'loanTransfer': validateTransactionLoanTransferResponse(response, document as Transaction.LoanTransferDocument, viewingAccountId); break;
