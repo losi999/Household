@@ -14,9 +14,13 @@ export class AccountListItemComponent {
 
   get balanceTitle(): string {
     switch (this.account.accountType) {
-      case 'loan': return this.account.balance >= 0 ? 'Kintlévőség' : 'Tartozás';
+      case 'loan': return this.account.balance <= 0 ? 'Kintlévőség' : 'Tartozás';
       default: return 'Egyenleg';
     }
+  }
+
+  get balance(): number {
+    return Math.abs(this.account.balance);
   }
 
   constructor(private accountService: AccountService, private dialogService: DialogService) { }
