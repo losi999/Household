@@ -4,7 +4,7 @@ orbs:
 jobs:
   install:
     docker:
-      - image: cimg/node:18.18
+      - image: cimg/node:22.5
     working_directory: ~/repo
     steps:
       - checkout
