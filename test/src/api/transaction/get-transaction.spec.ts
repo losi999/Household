@@ -364,7 +364,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .validateTransactionDeferredResponse(document, getAccountId(accountDocument));
     });
 
-    it('should get regular reimbursement transaction', () => {
+    it('should get regular owning reimbursement transaction', () => {
       const document = reimbursementTransactionDataFactory.document({
         account: loanAccountDocument,
         category: regularCategoryDocument,
@@ -385,7 +385,31 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
         .expectOkResponse()
         .expectValidResponseSchema(reimbursementTransactionSchema)
-        .validateTransactionReimbursementResponse(document);
+        .validateTransactionReimbursementResponse(document, getAccountId(accountDocument));
+    });
+
+    it.only('should get regular paying reimbursement transaction', () => {
+      const document = reimbursementTransactionDataFactory.document({
+        account: loanAccountDocument,
+        category: regularCategoryDocument,
+        project: projectDocument,
+        recipient: recipientDocument,
+        loanAccount: accountDocument,
+      });
+
+      cy.saveAccountDocuments([
+        accountDocument,
+        loanAccountDocument,
+      ])
+        .saveProjectDocument(projectDocument)
+        .saveRecipientDocument(recipientDocument)
+        .saveCategoryDocument(regularCategoryDocument)
+        .saveTransactionDocument(document)
+        .authenticate(1)
+        .requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document))
+        .expectOkResponse()
+        .expectValidResponseSchema(reimbursementTransactionSchema)
+        .validateTransactionReimbursementResponse(document, getAccountId(loanAccountDocument));
     });
 
     it('should get inventory reimbursement transaction', () => {
@@ -411,7 +435,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
         .expectOkResponse()
         .expectValidResponseSchema(reimbursementTransactionSchema)
-        .validateTransactionReimbursementResponse(document);
+        .validateTransactionReimbursementResponse(document, getAccountId(accountDocument));
     });
 
     it('should get invoice reimbursement transaction', () => {
@@ -435,7 +459,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
         .expectOkResponse()
         .expectValidResponseSchema(reimbursementTransactionSchema)
-        .validateTransactionReimbursementResponse(document);
+        .validateTransactionReimbursementResponse(document, getAccountId(accountDocument));
     });
 
     it('should get paying split transaction', () => {

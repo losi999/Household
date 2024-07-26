@@ -20,7 +20,7 @@ export class AccountListItemComponent {
   }
 
   get balance(): number {
-    return Math.abs(this.account.balance);
+    return this.account.accountType === 'loan' ? Math.abs(this.account.balance) : this.account.balance;
   }
 
   constructor(private accountService: AccountService, private dialogService: DialogService) { }

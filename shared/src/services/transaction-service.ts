@@ -318,11 +318,16 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
                     },
                     then: 0,
                     else: {
-                      $add: [
-                        '$amount',
+                      $multiply: [
                         {
-                          $sum: '$tmp_deferredTransactions.payments.amount',
+                          $sum: [
+                            '$amount',
+                            {
+                              $sum: '$tmp_deferredTransactions.payments.amount',
+                            },
+                          ],
                         },
+                        -1,
                       ],
                     },
                   },

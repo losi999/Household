@@ -29,8 +29,9 @@ export const paymentTransactionDocumentConverterFactory = (
 ): IPaymentTransactionDocumentConverter => {
   const instance: IPaymentTransactionDocumentConverter = {
     create: ({ body, account, project, category, recipient, product }, expiresIn, generateId): Transaction.PaymentDocument => {
+      const { isSettled, ...restOfBody } = body;
       return {
-        ...body,
+        ...restOfBody,
         account,
         recipient: recipient ?? undefined,
         category: category ?? undefined,

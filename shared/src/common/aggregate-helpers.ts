@@ -91,6 +91,23 @@ export const duplicateByAccounts = (): [PipelineStage.Set, PipelineStage.Unwind,
             },
             {
               tmp_account: '$payingAccount',
+              tx_amount: {
+                $cond: {
+                  if: {
+                    $eq: [
+                      '$transactionType',
+                      'reimbursement',
+                    ],
+                  },
+                  then: {
+                    $multiply: [
+                      '$amount',
+                      -1,
+                    ],
+                  },
+                  else: '$amount',
+                },
+              },
             },
           ],
           cond: {
@@ -204,53 +221,25 @@ export const calculateAccountBalances = (): [PipelineStage.Lookup, PipelineStage
           input: '$tmp_tx',
           initialValue: 0,
           in: {
-            $switch: {
-              branches: [
-                {
-                  case: {
-                    $and: [
-                      {
-                        $eq: [
-                          '$$this.tmp_account',
-                          '$$this.ownerAccount',
-                        ],
-                      },
-                      {
-                        $ne: [
-                          '$accountType',
-                          'loan',
-                        ],
-                      },
+            $cond: {
+              if: {
+                $and: [
+                  {
+                    $eq: [
+                      '$$this.tmp_account',
+                      '$$this.ownerAccount',
                     ],
                   },
-                  then: '$$value',
-                },
-                {
-                  case: {
-                    $and: [
-                      {
-                        $eq: [
-                          '$$this.tmp_account',
-                          '$$this.payingAccount',
-                        ],
-                      },
-                      {
-                        $eq: [
-                          '$accountType',
-                          'loan',
-                        ],
-                      },
+                  {
+                    $ne: [
+                      '$accountType',
+                      'loan',
                     ],
                   },
-                  then: {
-                    $subtract: [
-                      '$$value',
-                      '$$this.amount',
-                    ],
-                  },
-                },
-              ],
-              default: {
+                ],
+              },
+              then: '$$value',
+              else: {
                 $sum: [
                   '$$value',
                   '$$this.amount',
@@ -562,46 +551,17 @@ export const calculateRemainingAmount = (): [PipelineStage.Lookup, PipelineStage
             ],
           },
           then: {
-            $switch: {
-              branches: [
-                {
-                  case: {
-                    $eq: [
-                      '$isSettled',
-                      true,
-                    ],
-                  },
-                  then: 0,
-                },
-                {
-                  case: {
-                    $eq: [
-                      '$tmp_account',
-                      '$ownerAccount',
-                    ],
-                  },
-                  then: {
-                    $multiply: [
-                      {
-                        $sum: [
-                          '$amount',
-                          {
-                            $sum: '$tmp_deferredTransactions.payments.amount',
-                          },
-                        ],
-                      },
-                      -1,
-                    ],
-                  },
-                },
-                {
-                  case: {
-                    $eq: [
-                      '$tmp_account',
-                      '$payingAccount',
-                    ],
-                  },
-                  then: {
+            $cond: {
+              if: {
+                $eq: [
+                  '$isSettled',
+                  true,
+                ],
+              },
+              then: 0,
+              else: {
+                $multiply: [
+                  {
                     $sum: [
                       '$amount',
                       {
@@ -609,9 +569,9 @@ export const calculateRemainingAmount = (): [PipelineStage.Lookup, PipelineStage
                       },
                     ],
                   },
-                },
-              ],
-              default: '$$REMOVE',
+                  -1,
+                ],
+              },
             },
           },
           else: '$$REMOVE',

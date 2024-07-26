@@ -407,11 +407,11 @@ const validateTransactionDeferredResponse = (response: Transaction.DeferredRespo
   expectEmptyObject(empty, 'response');
 };
 
-const validateTransactionReimbursementResponse = (response: Transaction.ReimbursementResponse, document: Transaction.ReimbursementDocument) => {
+const validateTransactionReimbursementResponse = (response: Transaction.ReimbursementResponse, document: Transaction.ReimbursementDocument, viewingAccountId: Account.Id) => {
   const { transactionId, amount, issuedAt, transactionType, description, payingAccount, ownerAccount, project, product, recipient, category, billingEndDate, billingStartDate, invoiceNumber, quantity, ...empty } = response;
 
   validateCommonResponse({
-    amount,
+    amount: payingAccount.accountId === viewingAccountId ? amount * -1 : amount,
     description,
     issuedAt,
     transactionId,
@@ -642,7 +642,7 @@ const validateTransactionListResponse = (responses: Transaction.Response[], docu
       case 'transfer': validateTransactionTransferResponse(response, document as Transaction.TransferDocument, viewingAccountId); break;
       case 'split': validateTransactionSplitResponse(response, document as Transaction.SplitDocument, viewingAccountId, repayments); break;
       case 'deferred': validateTransactionDeferredResponse(response, document as Transaction.DeferredDocument, viewingAccountId, repayments[response.transactionId]); break;
-      case 'reimbursement': validateTransactionReimbursementResponse(response, document as Transaction.ReimbursementDocument); break;
+      case 'reimbursement': validateTransactionReimbursementResponse(response, document as Transaction.ReimbursementDocument, viewingAccountId); break;
       case 'loanTransfer': validateTransactionLoanTransferResponse(response, document as Transaction.LoanTransferDocument, viewingAccountId); break;
     }
   });

@@ -1,5 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { Account, Transaction } from '@household/shared/types/types';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Account, Category, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { DialogService } from 'src/app/shared/dialog.service';
+import { TransactionService } from 'src/app/transaction/transaction.service';
 
 @Component({
   selector: 'household-account-transactions-list-item',
@@ -8,46 +11,131 @@ import { Account, Transaction } from '@household/shared/types/types';
 })
 export class AccountTransactionsListItemComponent implements OnInit {
   @Input() transaction: Transaction.Response;
-  date: Date;
-  iconName: string;
-  iconColor: string;
-  account: Account.Response;
-  showYear: boolean;
 
-  constructor() { }
+  accountIcon: 'arrow_left_alt' | 'arrow_right_alt' | 'forward' | 'reply_all';
+  accountIconColor: 'red' | 'green';
+  account: Account.Response;
+  recipient: Recipient.Response;
+  category: Category.Response;
+  project: Project.Response;
+  amount: number;
+  remainingAmount: number;
+
+  constructor(private activatedRoute: ActivatedRoute, private dialogService: DialogService, private transactionService: TransactionService, private router: Router) { }
+
+  get viewingAccount() {
+    switch(this.transaction.transactionType) {
+      case 'payment':
+      case 'transfer':
+      case 'loanTransfer': return this.transaction.account;
+      case 'deferred':
+      case 'reimbursement': return this.transaction.payingAccount.accountId === this.viewingAccountId ? this.transaction.payingAccount : this.transaction.ownerAccount;
+      case 'split': return this.transaction.account.accountId === this.viewingAccountId ? this.transaction.account : this.transaction.deferredSplits[0].ownerAccount;
+    }
+  }
+
+  get date() {
+    return new Date(this.transaction.issuedAt);
+  }
+
+  get showYear() {
+    return this.date.getFullYear() !== (new Date()).getFullYear();
+  }
+
+  get viewingAccountId() {
+    return this.activatedRoute.snapshot.paramMap.get('accountId') as Account.Id;
+  }
+
+  get pathAccountId() {
+    switch(this.transaction.transactionType) {
+      case 'payment':
+      case 'transfer':
+      case 'split':
+      case 'loanTransfer': return this.transaction.account.accountId;
+      case 'deferred': return this.viewingAccountId;
+      case 'reimbursement': return this.transaction.ownerAccount.accountId;
+    }
+  }
 
   ngOnInit(): void {
-    this.date = new Date(this.transaction.issuedAt);
-    this.showYear = this.date.getFullYear() !== (new Date()).getFullYear();
-
     switch (this.transaction.transactionType) {
+      case 'payment': {
+        this.amount = this.transaction.amount;
+        this.category = this.transaction.category;
+        this.project = this.transaction.project;
+        this.recipient = this.transaction.recipient;
+      } break;
       case 'loanTransfer':
       case 'transfer': {
-        this.iconName = 'sync_alt';
-        this.iconColor = 'blue';
-        this.account = this.transaction.account;
-        break;
-      }
-      case 'payment': {
-        this.iconName = this.transaction.amount >= 0 ? 'arrow_upward' : 'arrow_downward';
-        this.iconColor = this.transaction.amount >= 0 ? 'green' : 'red';
-        this.account = this.transaction.account;
-        break;
-      }
-      case 'split': {
-        this.iconName = this.transaction.amount >= 0 ? 'arrow_upward' : 'arrow_downward';
-        this.iconColor = this.transaction.amount >= 0 ? 'green' : 'red';
-        this.account = this.transaction.account;
+        this.account = this.transaction.transferAccount;
+        this.accountIcon = this.transaction.amount >= 0 ? 'arrow_left_alt' : 'arrow_right_alt';
+        this.accountIconColor = this.transaction.amount >= 0 ? 'green' : 'red';
+        this.amount = this.transaction.amount;
       } break;
       case 'deferred': {
-        this.iconName = 'forward';
-        this.iconColor = this.transaction.amount >= 0 ? 'green' : 'red';
-      } break;
+        if (this.transaction.payingAccount.accountId === this.viewingAccountId) {
+          this.account = this.transaction.ownerAccount;
+          this.accountIcon = 'forward';
+          this.accountIconColor = 'green';
+        } else {
+          this.account = this.transaction.payingAccount;
+          this.accountIcon = 'reply_all';
+          this.accountIconColor = 'red';
+        }
+        this.amount = this.transaction.payingAccount.accountId === this.viewingAccountId || this.viewingAccount.accountType === 'loan' ? this.transaction.amount : undefined;
+        this.remainingAmount = this.transaction.remainingAmount;
+        this.category = this.transaction.category;
+        this.project = this.transaction.project;
+        this.recipient = this.transaction.recipient;
+      }break;
       case 'reimbursement': {
-        this.iconName = 'reply_all';
-        this.iconColor = this.transaction.amount >= 0 ? 'green' : 'red';
+        if (this.transaction.payingAccount.accountId === this.viewingAccountId) {
+          this.account = this.transaction.ownerAccount;
+          this.accountIcon = 'forward';
+          this.accountIconColor = 'green';
+        } else {
+          this.account = this.transaction.payingAccount;
+          this.accountIcon = 'reply_all';
+          this.accountIconColor = 'red';
+        }
+        this.amount = this.transaction.payingAccount.accountId === this.viewingAccountId || this.viewingAccount.accountType === 'loan' ? this.transaction.amount : undefined;
+        this.category = this.transaction.category;
+        this.project = this.transaction.project;
+        this.recipient = this.transaction.recipient;
+      } break;
+      case 'split': {
+        if (this.transaction.account.accountId === this.viewingAccountId) {
+          this.amount = this.transaction.amount;
+          this.remainingAmount = this.transaction.deferredSplits?.reduce((accumulator, currentValue) => {
+            return accumulator + currentValue.remainingAmount;
+          }, 0);
+          this.accountIconColor = 'green';
+        } else {
+          this.account = this.transaction.account;
+          this.accountIcon = 'reply_all';
+          this.accountIconColor = 'red';
+          if (this.viewingAccount.accountType === 'loan') {
+            this.amount = this.transaction.deferredSplits.reduce((accumulator, currentValue) => {
+              return accumulator + currentValue.amount;
+            }, 0);
+          } else {
+            this.remainingAmount = this.transaction.deferredSplits?.reduce((accumulator, currentValue) => {
+              return accumulator + currentValue.remainingAmount;
+            }, 0);
+          }
+        }
+        this.recipient = this.transaction.recipient;
       } break;
     }
   }
 
+  delete() {
+    this.dialogService.openDeleteTransactionDialog().afterClosed()
+      .subscribe(shouldDelete => {
+        console.log(shouldDelete);
+        if (shouldDelete) {
+          this.transactionService.deleteTransaction(this.transaction.transactionId);
+        }
+      });
+  }
 }

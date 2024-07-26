@@ -30,8 +30,9 @@ export const reimbursementTransactionDocumentConverterFactory = (
 ): IReimbursementTransactionDocumentConverter => {
   const instance: IReimbursementTransactionDocumentConverter = {
     create: ({ body, payingAccount, ownerAccount, project, category, recipient, product }, expiresIn, generateId): Transaction.ReimbursementDocument => {
+      const { isSettled, ...restOfBody } = body;
       return {
-        ...body,
+        ...restOfBody,
         payingAccount,
         ownerAccount,
         recipient: recipient ?? undefined,
