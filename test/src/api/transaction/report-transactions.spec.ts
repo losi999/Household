@@ -23,11 +23,11 @@ const splitTransactionHelper = (doc: Transaction.SplitDocument, split: Transacti
   };
 };
 
-describe('POST /transaction/v1/transactions', () => {
+describe('POST /transaction/v1/transactionReports', () => {
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
-        .requestGetTransactionList([])
+        .requestGetTransactionReports([])
         .expectUnauthorizedResponse();
     });
   });
@@ -207,7 +207,7 @@ describe('POST /transaction/v1/transactions', () => {
         });
         it('to include', () => {
           cy.authenticate(1)
-            .requestGetTransactionList([
+            .requestGetTransactionReports([
               {
                 filterType: 'account',
                 items: [getAccountId(accountDocument)],
@@ -228,7 +228,7 @@ describe('POST /transaction/v1/transactions', () => {
 
         it('to exclude', () => {
           cy.authenticate(1)
-            .requestGetTransactionList([
+            .requestGetTransactionReports([
               {
                 filterType: 'recipient',
                 items: [getRecipientId(recipientDocument)],
@@ -320,7 +320,7 @@ describe('POST /transaction/v1/transactions', () => {
         });
         it('to include', () => {
           cy.authenticate(1)
-            .requestGetTransactionList([
+            .requestGetTransactionReports([
               {
                 filterType: 'recipient',
                 items: [getRecipientId(recipientDocument)],
@@ -341,7 +341,7 @@ describe('POST /transaction/v1/transactions', () => {
 
         it('to exclude', () => {
           cy.authenticate(1)
-            .requestGetTransactionList([
+            .requestGetTransactionReports([
               {
                 filterType: 'account',
                 items: [getAccountId(accountDocument)],
@@ -436,7 +436,7 @@ describe('POST /transaction/v1/transactions', () => {
         });
         it('to include', () => {
           cy.authenticate(1)
-            .requestGetTransactionList([
+            .requestGetTransactionReports([
               {
                 filterType: 'project',
                 items: [getProjectId(projectDocument)],
@@ -456,7 +456,7 @@ describe('POST /transaction/v1/transactions', () => {
 
         it('to exclude', () => {
           cy.authenticate(1)
-            .requestGetTransactionList([
+            .requestGetTransactionReports([
               {
                 filterType: 'account',
                 items: [getAccountId(accountDocument)],
@@ -559,7 +559,7 @@ describe('POST /transaction/v1/transactions', () => {
         });
         it('to include', () => {
           cy.authenticate(1)
-            .requestGetTransactionList([
+            .requestGetTransactionReports([
               {
                 filterType: 'category',
                 items: [
@@ -585,7 +585,7 @@ describe('POST /transaction/v1/transactions', () => {
 
         it('to exclude', () => {
           cy.authenticate(1)
-            .requestGetTransactionList([
+            .requestGetTransactionReports([
               {
                 filterType: 'account',
                 items: [getAccountId(accountDocument)],
@@ -696,7 +696,7 @@ describe('POST /transaction/v1/transactions', () => {
         });
         it('to include', () => {
           cy.authenticate(1)
-            .requestGetTransactionList([
+            .requestGetTransactionReports([
               {
                 filterType: 'product',
                 items: [getProductId(productDocument)],
@@ -716,7 +716,7 @@ describe('POST /transaction/v1/transactions', () => {
 
         it('to exclude', () => {
           cy.authenticate(1)
-            .requestGetTransactionList([
+            .requestGetTransactionReports([
               {
                 filterType: 'account',
                 items: [getAccountId(accountDocument)],
@@ -825,7 +825,7 @@ describe('POST /transaction/v1/transactions', () => {
         });
         it('to include a range', () => {
           cy.authenticate(1)
-            .requestGetTransactionList([
+            .requestGetTransactionReports([
               {
                 filterType: 'account',
                 items: [getAccountId(accountDocument)],
@@ -852,7 +852,7 @@ describe('POST /transaction/v1/transactions', () => {
 
         it('to exclude a range', () => {
           cy.authenticate(1)
-            .requestGetTransactionList([
+            .requestGetTransactionReports([
               {
                 filterType: 'account',
                 items: [getAccountId(accountDocument)],
@@ -881,14 +881,14 @@ describe('POST /transaction/v1/transactions', () => {
       describe('if body', () => {
         it('is not an array', () => {
           cy.authenticate(1)
-            .requestGetTransactionList({} as any)
+            .requestGetTransactionReports({} as any)
             .expectBadRequestResponse()
             .expectWrongPropertyType('data', 'array', 'body');
         });
 
         it('does not have at least one item', () => {
           cy.authenticate(1)
-            .requestGetTransactionList([])
+            .requestGetTransactionReports([])
             .expectBadRequestResponse()
             .expectTooFewItemsProperty('data', 1, 'body');
         });
@@ -897,7 +897,7 @@ describe('POST /transaction/v1/transactions', () => {
       describe('if body[0]', () => {
         it('has additional properties', () => {
           cy.authenticate(1)
-            .requestGetTransactionList([
+            .requestGetTransactionReports([
               {
                 filterType: 'account',
                 items: [createAccountId()],
@@ -911,7 +911,7 @@ describe('POST /transaction/v1/transactions', () => {
 
         it('is missing both "from" and "to" properties', () => {
           cy.authenticate(1)
-            .requestGetTransactionList([
+            .requestGetTransactionReports([
               {
                 filterType: 'issuedAt',
                 from: undefined,
@@ -928,7 +928,7 @@ describe('POST /transaction/v1/transactions', () => {
       describe('if body[0].include', () => {
         it('is missing', () => {
           cy.authenticate(1)
-            .requestGetTransactionList([
+            .requestGetTransactionReports([
               {
                 filterType: 'account',
                 items: [createAccountId()],
@@ -941,7 +941,7 @@ describe('POST /transaction/v1/transactions', () => {
 
         it('is not boolean', () => {
           cy.authenticate(1)
-            .requestGetTransactionList([
+            .requestGetTransactionReports([
               {
                 filterType: 'account',
                 items: [createAccountId()],
@@ -956,7 +956,7 @@ describe('POST /transaction/v1/transactions', () => {
       describe('if body[0].filterType', () => {
         it('is missing', () => {
           cy.authenticate(1)
-            .requestGetTransactionList([
+            .requestGetTransactionReports([
               {
                 filterType: undefined,
                 items: [createAccountId()],
@@ -968,7 +968,7 @@ describe('POST /transaction/v1/transactions', () => {
         });
         it('is not string', () => {
           cy.authenticate(1)
-            .requestGetTransactionList([
+            .requestGetTransactionReports([
               {
                 filterType: 1 as any,
                 items: [createAccountId()],
@@ -980,7 +980,7 @@ describe('POST /transaction/v1/transactions', () => {
         });
         it('is not a valid enum value', () => {
           cy.authenticate(1)
-            .requestGetTransactionList([
+            .requestGetTransactionReports([
               {
                 filterType: 'not filter type' as any,
                 items: [createAccountId()],
@@ -995,7 +995,7 @@ describe('POST /transaction/v1/transactions', () => {
       describe('if body[0].items', () => {
         it('is missing', () => {
           cy.authenticate(1)
-            .requestGetTransactionList([
+            .requestGetTransactionReports([
               {
                 filterType: 'account',
                 items: undefined,
@@ -1007,7 +1007,7 @@ describe('POST /transaction/v1/transactions', () => {
         });
         it('is not an array', () => {
           cy.authenticate(1)
-            .requestGetTransactionList([
+            .requestGetTransactionReports([
               {
                 filterType: 'account',
                 items: 1 as any,
@@ -1019,7 +1019,7 @@ describe('POST /transaction/v1/transactions', () => {
         });
         it('has less than 1 item', () => {
           cy.authenticate(1)
-            .requestGetTransactionList([
+            .requestGetTransactionReports([
               {
                 filterType: 'account',
                 items: [],
@@ -1034,7 +1034,7 @@ describe('POST /transaction/v1/transactions', () => {
       describe('if body[0].items[0]', () => {
         it('is not string', () => {
           cy.authenticate(1)
-            .requestGetTransactionList([
+            .requestGetTransactionReports([
               {
                 filterType: 'account',
                 items: [1 as any],
@@ -1046,7 +1046,7 @@ describe('POST /transaction/v1/transactions', () => {
         });
         it('does not match pattern', () => {
           cy.authenticate(1)
-            .requestGetTransactionList([
+            .requestGetTransactionReports([
               {
                 filterType: 'account',
                 items: ['not mongo id' as any],
@@ -1061,7 +1061,7 @@ describe('POST /transaction/v1/transactions', () => {
       describe('if body[0].from', () => {
         it('is not string', () => {
           cy.authenticate(1)
-            .requestGetTransactionList([
+            .requestGetTransactionReports([
               {
                 filterType: 'issuedAt',
                 include: false,
@@ -1074,7 +1074,7 @@ describe('POST /transaction/v1/transactions', () => {
         });
         it('is not a date', () => {
           cy.authenticate(1)
-            .requestGetTransactionList([
+            .requestGetTransactionReports([
               {
                 filterType: 'issuedAt',
                 include: false,
@@ -1090,7 +1090,7 @@ describe('POST /transaction/v1/transactions', () => {
       describe('if body[0].to', () => {
         it('is not string', () => {
           cy.authenticate(1)
-            .requestGetTransactionList([
+            .requestGetTransactionReports([
               {
                 filterType: 'issuedAt',
                 include: false,
@@ -1103,7 +1103,7 @@ describe('POST /transaction/v1/transactions', () => {
         });
         it('is not a date', () => {
           cy.authenticate(1)
-            .requestGetTransactionList([
+            .requestGetTransactionReports([
               {
                 filterType: 'issuedAt',
                 include: false,
@@ -1117,7 +1117,7 @@ describe('POST /transaction/v1/transactions', () => {
 
         it('is earlier than "from"', () => {
           cy.authenticate(1)
-            .requestGetTransactionList([
+            .requestGetTransactionReports([
               {
                 filterType: 'issuedAt',
                 include: false,

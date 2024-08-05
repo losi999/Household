@@ -36,6 +36,10 @@ export const pushUnique = <T>(array: T[], item: T) => {
   }
 };
 
+export const parseStringToBoolean = (value: string): boolean => {
+  return value === 'true' ? true : value === 'false' ? false : undefined;
+};
+
 export const generateMongoId = (): Types.ObjectId => new Types.ObjectId();
 const getId = (doc: Internal.Id) => doc?._id.toString();
 export const getTransactionId = (doc: Transaction.Document | Transaction.RawReport): Transaction.Id => getId(doc) as Transaction.Id;

@@ -1,4 +1,4 @@
-import { IListTransactionsService, listTransactionsServiceFactory } from '@household/api/functions/list-transactions/list-transactions.service';
+import { IReportTransactionsService, reportTransactionsServiceFactory } from '@household/api/functions/report-transactions/report-transactions.service';
 import { createAccountId, createTransactionRawReport, createTransactionReport } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IReportDocumentConverter } from '@household/shared/converters/report-document-converter';
@@ -7,8 +7,8 @@ import { ITransactionService } from '@household/shared/services/transaction-serv
 import { Report } from '@household/shared/types/types';
 import { PipelineStage } from 'mongoose';
 
-describe('List transactions service', () => {
-  let service: IListTransactionsService;
+describe('Report transactions service', () => {
+  let service: IReportTransactionsService;
   let mockReportDocumentConverter: Mock<IReportDocumentConverter>;
   let mockTransactionService: Mock<ITransactionService>;
   let mockTransactionDocumentConverter: Mock<ITransactionDocumentConverter>;
@@ -18,7 +18,7 @@ describe('List transactions service', () => {
     mockTransactionService = createMockService('listTransactions');
     mockTransactionDocumentConverter = createMockService('toReportList');
 
-    service = listTransactionsServiceFactory(mockReportDocumentConverter.service, mockTransactionService.service, mockTransactionDocumentConverter.service);
+    service = reportTransactionsServiceFactory(mockReportDocumentConverter.service, mockTransactionService.service, mockTransactionDocumentConverter.service);
   });
 
   const queriedDocument = createTransactionRawReport();

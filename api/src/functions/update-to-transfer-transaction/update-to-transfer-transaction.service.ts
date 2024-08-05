@@ -88,14 +88,10 @@ export const updateToTransferTransactionServiceFactory = (
 
         httpErrors.transaction.sumOfPayments(total > receivingAmount, body);
 
-        const payingAccount = body.amount < 0 ? transferAccount : account;
-
         const transactionList = await transactionService.listDeferredTransactions({
-          payingAccountIds: [getAccountId(payingAccount)],
           deferredTransactionIds,
           excludedTransferTransactionId: transactionId,
         }).catch(httpErrors.common.getRelatedData({
-          payingAccountIds: [getAccountId(payingAccount)],
           deferredTransactionIds,
         }));
 

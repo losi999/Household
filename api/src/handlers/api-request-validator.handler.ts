@@ -6,6 +6,7 @@ type RequestSchemaTypes = {
   body?: JSONSchema7;
   pathParameters?: JSONSchema7;
   queryStringParameters?: JSONSchema7;
+  multiValueQueryStringParameters?: JSONSchema7;
 };
 
 const keys = <O extends object>(obj: O): (keyof O)[] => {

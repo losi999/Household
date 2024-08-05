@@ -2,7 +2,7 @@ var pageNumber = 1
 var pageSize = 25
 var accountId = '665aca365689536dd37d8468' //bank
 //var accountId = '665aca435689536dd37d847d'//revolut
-var transactionId = '66606744bb2522096f3356f1'
+var transactionId = '66a0b64c553c56fd273f66e8'
 
 db.getCollection("transactions").aggregate([
   {
@@ -73,6 +73,23 @@ db.getCollection("transactions").aggregate([
             },
             {
               tmp_account: '$payingAccount',
+              tx_amount: {
+                $cond: {
+                  if: {
+                    $eq: [
+                      '$transactionType',
+                      'reimbursement',
+                    ],
+                  },
+                  then: {
+                    $multiply: [
+                      '$amount',
+                      -1,
+                    ],
+                  },
+                  else: '$amount',
+                },
+              },
             },
           ],
           cond: {
@@ -155,43 +172,17 @@ db.getCollection("transactions").aggregate([
             ],
           },
           then: {
-            $switch: {
-              branches: [
-                {
-                  case: {
-                    $eq: ['$isSettled', true]
-                  },
-                  then: 0
-                },
-                {
-                  case: {
-                    $eq: [
-                      '$tmp_account',
-                      '$ownerAccount',
-                    ],
-                  },
-                  then: {
-                    $multiply: [
-                      {
-                        $sum: [
-                          '$amount',
-                          {
-                            $sum: '$tmp_deferredTransactions.payments.amount',
-                          },
-                        ],
-                      },
-                      -1,
-                    ],
-                  },
-                },
-                {
-                  case: {
-                    $eq: [
-                      '$tmp_account',
-                      '$payingAccount',
-                    ],
-                  },
-                  then: {
+            $cond: {
+              if: {
+                $eq: [
+                  '$isSettled',
+                  true,
+                ],
+              },
+              then: 0,
+              else: {
+                $multiply: [
+                  {
                     $sum: [
                       '$amount',
                       {
@@ -199,9 +190,9 @@ db.getCollection("transactions").aggregate([
                       },
                     ],
                   },
-                },
-              ],
-              default: '$$REMOVE',
+                  -1,
+                ],
+              },
             },
           },
           else: '$$REMOVE',
@@ -349,6 +340,42 @@ db.getCollection("transactions").aggregate([
       transactionType: '$tx_transactionType',
       description: '$tx_description',
       amount: '$tx_amount',
+      payingAccount: {
+        $cond: [
+          {
+            $eq: [
+              '$tx_transactionType',
+              'split',
+            ],
+          },
+          '$$REMOVE',
+          '$payingAccount',
+        ],
+      },
+      isSettled: {
+        $cond: [
+          {
+            $eq: [
+              '$tx_transactionType',
+              'split',
+            ],
+          },
+          '$$REMOVE',
+          '$isSettled',
+        ],
+      },
+      ownerAccount: {
+        $cond: [
+          {
+            $eq: [
+              '$tx_transactionType',
+              'split',
+            ],
+          },
+          '$$REMOVE',
+          '$ownerAccount',
+        ],
+      },
       category: {
         $cond: [{ $eq: ['$tx_transactionType', 'split'] }, '$$REMOVE', '$category']
       },

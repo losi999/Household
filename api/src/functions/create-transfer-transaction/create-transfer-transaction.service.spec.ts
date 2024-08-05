@@ -142,7 +142,6 @@ describe('Create transfer transaction service', () => {
         body.transferAccountId,
       ]);
       validateFunctionCall(mockTransactionService.functions.listDeferredTransactions, {
-        payingAccountIds: [getAccountId(queriedTransferAccount)],
         deferredTransactionIds: [getTransactionId(deferredTransactionDocument)],
       });
       validateFunctionCall(mockTransferTransactionDocumentConverter.functions.create, {
@@ -315,7 +314,6 @@ describe('Create transfer transaction service', () => {
         body.transferAccountId,
       ]);
       validateFunctionCall(mockTransactionService.functions.listDeferredTransactions, {
-        payingAccountIds: [getAccountId(queriedTransferAccount)],
         deferredTransactionIds: [getTransactionId(deferredTransactionDocument)],
       });
       validateFunctionCall(mockTransferTransactionDocumentConverter.functions.create);
@@ -355,7 +353,6 @@ describe('Create transfer transaction service', () => {
         body.transferAccountId,
       ]);
       validateFunctionCall(mockTransactionService.functions.listDeferredTransactions, {
-        payingAccountIds: [getAccountId(queriedTransferAccount)],
         deferredTransactionIds: [getTransactionId(deferredTransactionDocument)],
       });
       validateFunctionCall(mockTransferTransactionDocumentConverter.functions.create);

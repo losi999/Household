@@ -322,7 +322,7 @@ export namespace Transaction {
   };
 
   type IsSettled = {
-    isSettled: true | false;
+    isSettled: boolean;
   };
 
   type Payments = {

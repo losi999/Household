@@ -158,6 +158,7 @@ export const createDeferredTransactionDocument: DataFactoryFunction<Transaction.
     recipient: createRecipientDocument(),
     ownerAccount: createAccountDocument(),
     isSettled: false,
+    remainingAmount: 100,
     ...doc,
   };
 };
@@ -569,7 +570,7 @@ export const createDeferredTransactionResponse: DataFactoryFunction<Transaction.
     project: createProjectResponse(),
     recipient: createRecipientResponse(),
     isSettled: false,
-    remainingAmount: undefined,
+    remainingAmount: 100,
     ...resp,
   };
 };

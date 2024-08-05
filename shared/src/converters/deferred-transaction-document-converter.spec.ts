@@ -118,6 +118,7 @@ describe('Deferred transaction document converter', () => {
         billingStartDate: undefined,
         expiresAt: undefined,
         _id: undefined,
+        remainingAmount: undefined,
       }));
     });
 
@@ -147,6 +148,7 @@ describe('Deferred transaction document converter', () => {
         billingStartDate: undefined,
         expiresAt: addSeconds(expiresIn, now),
         _id: undefined,
+        remainingAmount: undefined,
       }));
     });
 
@@ -179,6 +181,7 @@ describe('Deferred transaction document converter', () => {
         issuedAt: now,
         expiresAt: undefined,
         _id: undefined,
+        remainingAmount: undefined,
       }));
     });
     it('should return document with invoice properties', () => {
@@ -211,6 +214,7 @@ describe('Deferred transaction document converter', () => {
         issuedAt: now,
         expiresAt: undefined,
         _id: undefined,
+        remainingAmount: undefined,
       }));
     });
   });

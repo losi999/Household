@@ -78,10 +78,25 @@ components:
           minLength: 1
     TransferAmount:
       type: object
+      required:
+        - transferAmount
       properties:
         transferAmount:
-          type: string
-          minLength: 1
+          type: number
+    RemainingAmount:
+      type: object
+      required:
+        - remainingAmount
+      properties:
+        remainingAmount:
+          type: number
+    IsSettled:
+      type: object
+      required:
+        - isSettled
+      properties:
+        isSettled:
+          type: boolean
     Payments:
       type: object
       properties:
@@ -114,6 +129,20 @@ components:
         - account
       properties:
         account:
+          $ref: "account.yaml#/components/schemas/Response"
+    PayingAccount:
+      type: object
+      required:
+        - payingAccount
+      properties:
+        payingAccount:
+          $ref: "account.yaml#/components/schemas/Response"
+    OwnerAccount:
+      type: object
+      required:
+        - ownerAccount
+      properties:
+        ownerAccount:
           $ref: "account.yaml#/components/schemas/Response"
     Recipient:
       type: object
@@ -196,7 +225,6 @@ components:
         - $ref: "#/components/schemas/InvoiceNumber"
         - $ref: "#/components/schemas/Quantity"
         - $ref: "#/components/schemas/Product"
-        - $ref: "#/components/schemas/Account"
         - $ref: "#/components/schemas/Category"
         - $ref: "#/components/schemas/Project"
         - $ref: "#/components/schemas/Recipient"
@@ -208,6 +236,31 @@ components:
               type: string
               enum:
                 - payment
+    DeferredResponse:
+      allOf:
+        - $ref: "#/components/schemas/TransactionId"
+        - $ref: "#/components/schemas/Amount"
+        - $ref: "#/components/schemas/Description"
+        - $ref: "#/components/schemas/IssuedAt"
+        - $ref: "#/components/schemas/InvoiceDate"
+        - $ref: "#/components/schemas/InvoiceNumber"
+        - $ref: "#/components/schemas/Quantity"
+        - $ref: "#/components/schemas/Product"
+        - $ref: "#/components/schemas/IsSettled"
+        - $ref: "#/components/schemas/PayingAccount"
+        - $ref: "#/components/schemas/OwnerAccount"
+        - $ref: "#/components/schemas/RemainingAmount"
+        - $ref: "#/components/schemas/Category"
+        - $ref: "#/components/schemas/Project"
+        - $ref: "#/components/schemas/Recipient"
+        - type: object
+          required:
+            - transactionType
+          properties:
+            transactionType:
+              type: string
+              enum:
+                - deferred
     TransferResponse:
       allOf:
         - $ref: "#/components/schemas/TransactionId"

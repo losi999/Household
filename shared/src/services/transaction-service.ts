@@ -15,8 +15,7 @@ export interface ITransactionService {
   updateTransaction(transactionId: Transaction.Id, updateQuery: UpdateQuery<Transaction.Document>): Promise<unknown>;
   replaceTransaction(transactionId: Transaction.Id, doc: Restrict<Transaction.Document, '_id'>): Promise<unknown>;
   listTransactions(match: PipelineStage.Match): Promise<Transaction.RawReport[]>;
-  listDeferredTransactions(ctx: {
-    payingAccountIds?: Account.Id[];
+  listDeferredTransactions(ctx?: {
     deferredTransactionIds?: Transaction.Id[];
     excludedTransferTransactionId?: Transaction.Id
   }): Promise<Transaction.DeferredDocument[]>;
@@ -246,7 +245,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
 
       });
     },
-    listDeferredTransactions: ({ payingAccountIds, deferredTransactionIds, excludedTransferTransactionId }) => {
+    listDeferredTransactions: ({ deferredTransactionIds, excludedTransferTransactionId } = {}) => {
       return mongodbService.inSession((session) => {
         return mongodbService.transactions.aggregate<Transaction.DeferredDocument>(
           [
@@ -258,12 +257,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
             }),
             {
               $match: {
-                ...(payingAccountIds.length > 0 ? {
-                  payingAccount: {
-                    $in: payingAccountIds.map(id => new Types.ObjectId(id)),
-                  },
-                } : {}),
-                ...(deferredTransactionIds.length > 0 ? {
+                ...(deferredTransactionIds?.length > 0 ? {
                   _id: {
                     $in: deferredTransactionIds.map(id => new Types.ObjectId(id)),
                   },

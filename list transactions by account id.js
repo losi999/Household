@@ -1,8 +1,8 @@
 var pageNumber = 1
 var pageSize = 25
-//var accountId = '665aca365689536dd37d8468' //bank
+var accountId = '665aca365689536dd37d8468' //bank
 //var accountId = '665aca435689536dd37d847d'//revolut
-var accountId = '665aca665689536dd37d847f'//kölcsön
+//var accountId = '665aca665689536dd37d847f'//kölcsön
 
 db.getCollection("transactions").aggregate([
   {
