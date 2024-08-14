@@ -347,10 +347,10 @@ const validateTransactionPaymentResponse = (response: Transaction.PaymentRespons
   expectEmptyObject(empty, 'response');
 };
 
-const validateTransactionDeferredResponse = (response: Transaction.DeferredResponse, document: Transaction.DeferredDocument, viewingAccountId: Account.Id, paymentAmount?: number) => {
+const validateTransactionDeferredResponse = (response: Transaction.DeferredResponse, document: Transaction.DeferredDocument, paymentAmount?: number) => {
   const { transactionId, amount, issuedAt, transactionType, description, payingAccount, ownerAccount, project, product, recipient, category, billingEndDate, billingStartDate, invoiceNumber, quantity, remainingAmount, isSettled, ...empty } = response;
 
-  const expectedRemainingAmount = viewingAccountId === ownerAccount.accountId ? Math.abs(document.amount) - (paymentAmount ?? 0) : (Math.abs(document.amount) - (paymentAmount ?? 0)) * -1;
+  const expectedRemainingAmount = Math.abs(document.amount) - (paymentAmount ?? 0);
 
   validateCommonResponse({
     amount,
@@ -407,11 +407,11 @@ const validateTransactionDeferredResponse = (response: Transaction.DeferredRespo
   expectEmptyObject(empty, 'response');
 };
 
-const validateTransactionReimbursementResponse = (response: Transaction.ReimbursementResponse, document: Transaction.ReimbursementDocument, viewingAccountId: Account.Id) => {
+const validateTransactionReimbursementResponse = (response: Transaction.ReimbursementResponse, document: Transaction.ReimbursementDocument) => {
   const { transactionId, amount, issuedAt, transactionType, description, payingAccount, ownerAccount, project, product, recipient, category, billingEndDate, billingStartDate, invoiceNumber, quantity, ...empty } = response;
 
   validateCommonResponse({
-    amount: payingAccount.accountId === viewingAccountId ? amount * -1 : amount,
+    amount,
     description,
     issuedAt,
     transactionId,
@@ -488,10 +488,10 @@ const validateTransactionTransferResponse = (response: Transaction.TransferRespo
 
   payments?.forEach((p, index) => {
     const documentItem = document.payments[index];
-    const { amount, transactionId } = p;
+    const { amount, transaction } = p;
 
     expect(amount, `payments[${index}].amount`).to.equal(documentItem.amount);
-    expect(transactionId, `payments[${index}].transactionId`).to.equal(getTransactionId(documentItem.transaction));
+    expect(transaction.transactionId, `payments[${index}].transactionId`).to.equal(getTransactionId(documentItem.transaction));
   });
   expectEmptyObject(empty, 'response');
 
@@ -516,7 +516,7 @@ const validateTransactionLoanTransferResponse = (response: Transaction.LoanTrans
   expectEmptyObject(empty, 'response');
 };
 
-const validateTransactionSplitResponse = (response: Transaction.SplitResponse, document: Transaction.SplitDocument, viewingAccountId: Account.Id, repayments?: Record<Transaction.Id, number>) => {
+const validateTransactionSplitResponse = (response: Transaction.SplitResponse, document: Transaction.SplitDocument, repayments?: Record<Transaction.Id, number>) => {
 
   const { transactionId, amount, issuedAt, transactionType, description, account, deferredSplits, splits, recipient, ...empty } = response;
 
@@ -583,12 +583,10 @@ const validateTransactionSplitResponse = (response: Transaction.SplitResponse, d
     const documentSplit = document.deferredSplits[index];
     const { amount, billingEndDate, billingStartDate, category, description, invoiceNumber, product, project, quantity, ownerAccount, payingAccount, transactionType, remainingAmount, transactionId, isSettled, ...empty } = split;
 
-    const remainingAmountMultiplier = viewingAccountId === payingAccount.accountId ? 1 : -1;
-
     expect(transactionId, `deferredSplits[${index}].transactionId`).to.equal(getTransactionId(documentSplit));
     expect(amount, `deferredSplits[${index}].amount`).to.equal(documentSplit.amount);
     expect(transactionType, `deferredSplits[${index}].transactionType`).to.equal('deferred');
-    expect(remainingAmount, `deferredSplits[${index}].remainingAmount`).to.equal(documentSplit.isSettled ? 0 : (documentSplit.amount + (repayments?.[transactionId] ?? 0)) * remainingAmountMultiplier);
+    expect(remainingAmount, `deferredSplits[${index}].remainingAmount`).to.equal(documentSplit.isSettled ? 0 : (Math.abs(documentSplit.amount) - (repayments?.[transactionId] ?? 0)));
     expect(description, `deferredSplits[${index}].description`).to.equal(documentSplit.description);
     expect(isSettled, `deferredSplits[${index}].isSettled`).to.equal(documentSplit.isSettled);
 
@@ -640,9 +638,9 @@ const validateTransactionListResponse = (responses: Transaction.Response[], docu
     switch(response.transactionType) {
       case 'payment': validateTransactionPaymentResponse(response, document as Transaction.PaymentDocument); break;
       case 'transfer': validateTransactionTransferResponse(response, document as Transaction.TransferDocument, viewingAccountId); break;
-      case 'split': validateTransactionSplitResponse(response, document as Transaction.SplitDocument, viewingAccountId, repayments); break;
-      case 'deferred': validateTransactionDeferredResponse(response, document as Transaction.DeferredDocument, viewingAccountId, repayments[response.transactionId]); break;
-      case 'reimbursement': validateTransactionReimbursementResponse(response, document as Transaction.ReimbursementDocument, viewingAccountId); break;
+      case 'split': validateTransactionSplitResponse(response, document as Transaction.SplitDocument, repayments); break;
+      case 'deferred': validateTransactionDeferredResponse(response, document as Transaction.DeferredDocument, repayments[response.transactionId]); break;
+      case 'reimbursement': validateTransactionReimbursementResponse(response, document as Transaction.ReimbursementDocument); break;
       case 'loanTransfer': validateTransactionLoanTransferResponse(response, document as Transaction.LoanTransferDocument, viewingAccountId); break;
     }
   });

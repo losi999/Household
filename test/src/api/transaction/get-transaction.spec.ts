@@ -155,7 +155,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
         .expectOkResponse()
         .expectValidResponseSchema(deferredTransactionSchema)
-        .validateTransactionDeferredResponse(document, getAccountId(accountDocument));
+        .validateTransactionDeferredResponse(document);
     });
 
     it('should get inventory deferred transaction', () => {
@@ -181,7 +181,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
         .expectOkResponse()
         .expectValidResponseSchema(deferredTransactionSchema)
-        .validateTransactionDeferredResponse(document, getAccountId(accountDocument));
+        .validateTransactionDeferredResponse(document);
     });
 
     it('should get invoice deferred transaction', () => {
@@ -205,7 +205,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
         .expectOkResponse()
         .expectValidResponseSchema(deferredTransactionSchema)
-        .validateTransactionDeferredResponse(document, getAccountId(accountDocument));
+        .validateTransactionDeferredResponse(document);
     });
 
     it('should get owning deferred transaction', () => {
@@ -229,7 +229,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
         .expectOkResponse()
         .expectValidResponseSchema(deferredTransactionSchema)
-        .validateTransactionDeferredResponse(document, getAccountId(accountDocument));
+        .validateTransactionDeferredResponse(document);
     });
 
     it('should get paying deferred transaction which has been repaid', () => {
@@ -268,7 +268,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
         .expectOkResponse()
         .expectValidResponseSchema(deferredTransactionSchema)
-        .validateTransactionDeferredResponse(document, getAccountId(accountDocument), repayingTransferTransactionDocument.payments[0].amount);
+        .validateTransactionDeferredResponse(document, repayingTransferTransactionDocument.payments[0].amount);
     });
 
     it('should get owning deferred transaction which has been repaid', () => {
@@ -307,7 +307,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
         .expectOkResponse()
         .expectValidResponseSchema(deferredTransactionSchema)
-        .validateTransactionDeferredResponse(document, getAccountId(accountDocument), repayingTransferTransactionDocument.payments[0].amount);
+        .validateTransactionDeferredResponse(document, repayingTransferTransactionDocument.payments[0].amount);
     });
 
     it('should get paying deferred transaction which has been settled', () => {
@@ -334,7 +334,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
         .expectOkResponse()
         .expectValidResponseSchema(deferredTransactionSchema)
-        .validateTransactionDeferredResponse(document, getAccountId(accountDocument));
+        .validateTransactionDeferredResponse(document);
     });
 
     it('should get owning deferred transaction which has been settled', () => {
@@ -361,7 +361,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
         .expectOkResponse()
         .expectValidResponseSchema(deferredTransactionSchema)
-        .validateTransactionDeferredResponse(document, getAccountId(accountDocument));
+        .validateTransactionDeferredResponse(document);
     });
 
     it('should get regular owning reimbursement transaction', () => {
@@ -385,10 +385,10 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
         .expectOkResponse()
         .expectValidResponseSchema(reimbursementTransactionSchema)
-        .validateTransactionReimbursementResponse(document, getAccountId(accountDocument));
+        .validateTransactionReimbursementResponse(document);
     });
 
-    it.only('should get regular paying reimbursement transaction', () => {
+    it('should get regular paying reimbursement transaction', () => {
       const document = reimbursementTransactionDataFactory.document({
         account: loanAccountDocument,
         category: regularCategoryDocument,
@@ -409,7 +409,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document))
         .expectOkResponse()
         .expectValidResponseSchema(reimbursementTransactionSchema)
-        .validateTransactionReimbursementResponse(document, getAccountId(loanAccountDocument));
+        .validateTransactionReimbursementResponse(document);
     });
 
     it('should get inventory reimbursement transaction', () => {
@@ -435,7 +435,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
         .expectOkResponse()
         .expectValidResponseSchema(reimbursementTransactionSchema)
-        .validateTransactionReimbursementResponse(document, getAccountId(accountDocument));
+        .validateTransactionReimbursementResponse(document);
     });
 
     it('should get invoice reimbursement transaction', () => {
@@ -459,7 +459,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
         .expectOkResponse()
         .expectValidResponseSchema(reimbursementTransactionSchema)
-        .validateTransactionReimbursementResponse(document, getAccountId(accountDocument));
+        .validateTransactionReimbursementResponse(document);
     });
 
     it('should get paying split transaction', () => {
@@ -540,7 +540,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
         .expectOkResponse()
         .expectValidResponseSchema(splitTransactionSchema)
-        .validateTransactionSplitResponse(document, getAccountId(accountDocument), {
+        .validateTransactionSplitResponse(document, {
           [getTransactionId(lastDeferredSplit)]: repayingTransferTransactionDocument.payments[0].amount,
         });
     });
@@ -592,7 +592,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
         .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
         .expectOkResponse()
         .expectValidResponseSchema(splitTransactionSchema)
-        .validateTransactionSplitResponse(document, getAccountId(accountDocument), {
+        .validateTransactionSplitResponse(document, {
           [getTransactionId(lastDeferredSplit)]: repayingTransferTransactionDocument.payments[0].amount,
         });
     });

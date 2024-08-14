@@ -91,7 +91,7 @@ export const duplicateByAccounts = (): [PipelineStage.Set, PipelineStage.Unwind,
             },
             {
               tmp_account: '$payingAccount',
-              tx_amount: {
+              amount: {
                 $cond: {
                   if: {
                     $eq: [

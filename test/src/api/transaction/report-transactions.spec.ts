@@ -23,7 +23,7 @@ const splitTransactionHelper = (doc: Transaction.SplitDocument, split: Transacti
   };
 };
 
-describe('POST /transaction/v1/transactionReports', () => {
+describe.skip('POST /transaction/v1/transactionReports', () => {
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()

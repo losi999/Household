@@ -155,7 +155,7 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
       account: new FormControl(null),
       loanAccount: new FormControl(null),
       isSettled: new FormControl(false),
-      isTransfer: new FormControl(true),
+      isTransfer: new FormControl(false),
       description: new FormControl(this.transaction?.description),
       transferAccount: new FormControl(null),
       transferAmount: new FormControl(null),
@@ -225,6 +225,7 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
       } break;
       case 'transfer': {
         this.form.patchValue({
+          isTransfer: true,
           account: this.transaction.account,
           transferAccount: this.transaction.transferAccount,
           transferAmount: this.transaction.transferAmount,
@@ -237,6 +238,7 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
       } break;
       case 'loanTransfer': {
         this.form.patchValue({
+          isTransfer: true,
           account: this.transaction.account,
           transferAccount: this.transaction.transferAccount,
         });

@@ -93,12 +93,12 @@ export class AccountTransactionsListItemComponent implements OnInit {
           this.account = this.transaction.ownerAccount;
           this.accountIcon = 'forward';
           this.accountIconColor = 'green';
+          this.amount = this.transaction.amount * -1;
         } else {
           this.account = this.transaction.payingAccount;
           this.accountIcon = 'reply_all';
           this.accountIconColor = 'red';
         }
-        this.amount = this.transaction.payingAccount.accountId === this.viewingAccountId || this.viewingAccount.accountType === 'loan' ? this.transaction.amount : undefined;
         this.category = this.transaction.category;
         this.project = this.transaction.project;
         this.recipient = this.transaction.recipient;
