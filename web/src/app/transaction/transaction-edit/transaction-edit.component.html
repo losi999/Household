@@ -7,7 +7,7 @@
       <mat-icon>save</mat-icon>
     </button>
   </household-toolbar>
-  <mat-tab-group>
+  <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="start">
     <mat-tab label="Részletek" tabindex="-1">
       <div class="transaction-edit__tab">
         <household-datetime-input formControlName="issuedAt" />
@@ -76,8 +76,49 @@
         </div>
       </div>
     </mat-tab>
-    <mat-tab label="Törlesztések" *ngIf="form.value.isTransfer && (form.value.account?.accountType === 'loan') === (form.value.transferAccount?.accountType === 'loan')" tabindex="-1">
-
+    <mat-tab label="Törlesztések" *ngIf="form.value.isTransfer && form.value.account?.accountType !== 'loan' && form.value.transferAccount?.accountType !== 'loan'" tabindex="-1">
+      <div class="transaction-edit__tab">
+        <mat-list class="transaction-edit__deferred-list" [formGroup]="form.controls.payments">
+          <mat-list-item *ngFor="let p of form.controls.payments.controls | keyvalue">
+            <household-transaction-list-item [transaction]="deferredTransactions[p.key]" [formControlName]="p.key" (delete)="deletePayment(p.key)" />
+          </mat-list-item>
+        </mat-list>
+        <mat-accordion class="deferred-list">
+          <mat-expansion-panel hideToggle *ngFor="let deferred of availableDeferredTransactions">
+            <mat-expansion-panel-header>
+              <mat-panel-title>{{toDate(deferred.issuedAt) | date:'yyyy. MMM dd.'}}</mat-panel-title>
+              <mat-panel-description>{{deferred.payingAccount.fullName}} &nbsp; <mat-icon>forward</mat-icon>&nbsp; {{deferred.ownerAccount.fullName}}</mat-panel-description>
+            </mat-expansion-panel-header>
+            <mat-list>
+              <mat-list-item>
+                <mat-icon matListItemIcon>paid</mat-icon>
+                <div matListItemTitle>{{deferred.remainingAmount}} {{deferred.payingAccount.currency}}</div>
+              </mat-list-item>
+              <mat-list-item *ngIf="deferred.recipient">
+                <mat-icon matListItemIcon>store</mat-icon>
+                <div matListItemTitle>{{deferred.recipient.name}}</div>
+              </mat-list-item>
+              <mat-list-item *ngIf="deferred.category">
+                <mat-icon matListItemIcon>category</mat-icon>
+                <div matListItemTitle>{{deferred.category.fullName}}</div>
+              </mat-list-item>
+              <mat-list-item *ngIf="deferred.project">
+                <mat-icon matListItemIcon>stacks</mat-icon>
+                <div matListItemTitle>{{deferred.project.name}}</div>
+              </mat-list-item>
+              <mat-list-item *ngIf="deferred.description">
+                <mat-icon matListItemIcon>description</mat-icon>
+                <div matListItemTitle>{{deferred.description}}</div>
+              </mat-list-item>
+            </mat-list>
+            <div class="deferred-list__buttons">
+              <button mat-icon-button color="primary" class="transaction-edit-split-item" (click)="addPayment(deferred.transactionId)" type="button">
+                <mat-icon>add</mat-icon>
+              </button>
+            </div>
+          </mat-expansion-panel>
+        </mat-accordion>
+      </div>
     </mat-tab>
   </mat-tab-group>
 </form>

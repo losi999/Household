@@ -5,17 +5,20 @@ import { IAccountDocumentConverter } from '@household/shared/converters/account-
 import { createMockService, Mock, validateNthFunctionCall } from '@household/shared/common/unit-testing';
 import { Transaction } from '@household/shared/types/types';
 import { ITransferTransactionDocumentConverter, transferTransactionDocumentConverterFactory } from '@household/shared/converters/transfer-transaction-document-converter';
+import { IDeferredTransactionDocumentConverter } from '@household/shared/converters/deferred-transaction-document-converter';
 
 describe('Transfer transaction document converter', () => {
   let converter: ITransferTransactionDocumentConverter;
   let mockAccountDocumentConverter: Mock<IAccountDocumentConverter>;
+  let mockDeferredTransactionDocumentConverter: Mock<IDeferredTransactionDocumentConverter>;
   const now = new Date();
 
   beforeEach(() => {
     mockAccountDocumentConverter = createMockService('toResponse');
+    mockDeferredTransactionDocumentConverter = createMockService('toResponse');
 
     advanceTo(now);
-    converter = transferTransactionDocumentConverterFactory(mockAccountDocumentConverter.service);
+    converter = transferTransactionDocumentConverterFactory(mockAccountDocumentConverter.service, mockDeferredTransactionDocumentConverter.service);
   });
 
   afterEach(() => {

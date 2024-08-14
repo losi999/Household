@@ -1,6 +1,7 @@
 import { generateMongoId } from '@household/shared/common/utils';
 import { addSeconds, getAccountId, getTransactionId } from '@household/shared/common/utils';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
+import { IDeferredTransactionDocumentConverter } from '@household/shared/converters/deferred-transaction-document-converter';
 import { Dictionary } from '@household/shared/types/common';
 import { Account, Transaction } from '@household/shared/types/types';
 
@@ -17,6 +18,7 @@ export interface ITransferTransactionDocumentConverter {
 
 export const transferTransactionDocumentConverterFactory = (
   accountDocumentConverter: IAccountDocumentConverter,
+  deferredTransactionDocumentConverter: IDeferredTransactionDocumentConverter,
 ): ITransferTransactionDocumentConverter => {
   const instance: ITransferTransactionDocumentConverter = {
     create: ({ body, account, transferAccount, transactions }, expiresIn, generateId): Transaction.TransferDocument => {
@@ -51,8 +53,8 @@ export const transferTransactionDocumentConverterFactory = (
         expiresAt: undefined,
         payments: doc.payments?.map(p => ({
           amount: p.amount,
-          transactionId: getTransactionId(p.transaction),
-        })),
+          transaction: deferredTransactionDocumentConverter.toResponse(p.transaction),
+        })) ?? undefined,
         amount: viewingAccountId === getAccountId(doc.transferAccount) ? doc.transferAmount : doc.amount,
         transferAmount: viewingAccountId === getAccountId(doc.transferAccount) ? doc.amount : doc.transferAmount,
         account: viewingAccountId === getAccountId(doc.transferAccount) ? accountDocumentConverter.toResponse(doc.transferAccount) : accountDocumentConverter.toResponse(doc.account),

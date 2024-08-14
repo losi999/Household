@@ -348,6 +348,11 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
             ...populateAggregate('project', 'projects'),
             ...populateAggregate('product', 'products'),
             ...populateAggregate('recipient', 'recipients'),
+            {
+              $sort: {
+                issuedAt: -1,
+              },
+            },
           ], {
             session,
           });

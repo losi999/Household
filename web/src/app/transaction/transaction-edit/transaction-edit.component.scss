@@ -25,4 +25,24 @@
   &__split-diff {
     font-size: 18px;
   }
+
+  &__deferred-list .mat-mdc-list-item {
+    height: auto;
+  }
+}
+
+.deferred-list {
+  .mat-mdc-list {
+    min-width: 0;
+    padding: 0;
+
+    .mat-mdc-list-item {
+      height: 26px;
+    }
+  }
+
+  &__buttons {
+    display: flex;
+    justify-content: center;
+  }
 }

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 import { Account } from '@household/shared/types/types';
 import { environment } from 'src/environments/environment';
 import { Store } from 'src/app/store';
@@ -38,8 +38,15 @@ export class AccountService {
     });
   }
 
-  getAccountById(accountId: Account.Id): Observable<Account.Response> {
-    return this.httpClient.get<Account.Response>(`${environment.apiUrl}${environment.accountStage}v1/accounts/${accountId}`);
+  getAccountById(accountId: Account.Id): void {
+    this.httpClient.get<Account.Response>(`${environment.apiUrl}${environment.accountStage}v1/accounts/${accountId}`).subscribe({
+      next: (value) => {
+        this.store.account.next(value);
+      },
+      error: (error) => {
+        console.error(error);
+      },
+    });
   }
 
   updateAccount(accountId: Account.Id, body: Account.Request): void {

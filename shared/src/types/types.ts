@@ -568,7 +568,9 @@ export namespace Transaction {
   & TransferAccount<Account.Response>
   & TransferAmount
   & {
-    payments: (TransactionId & Amount)[];
+    payments: ({
+      transaction: Transaction.DeferredResponse;
+    } & Amount)[];
   };
 
   export type LoanTransferResponse = TransactionId
