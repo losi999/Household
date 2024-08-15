@@ -725,8 +725,8 @@ export const createTransactionReport: DataFactoryFunction<Transaction.Report> = 
     project: createProjectReport(),
     recipient: createRecipientReport(),
     invoiceNumber: 'inv123',
-    billingEndDate: new Date(2022, 3, 10).toISOString(),
-    billingStartDate: new Date(2022, 3, 2).toISOString(),
+    billingEndDate: '2022-03-10',
+    billingStartDate: '2022-03-01',
     splitId: undefined,
     ...rep,
   };
