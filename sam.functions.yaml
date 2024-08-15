@@ -80,15 +80,6 @@ Resources:
           ADMIN_COUNT: "1"
           TEST_USER_PASSWORD: !Ref TestUserPassword
 
-  MigrateTransactions:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: !Sub Household-${Env}-MigrateTransactions
-      CodeUri: dist/api/migrate-transactions
-      Role: !Ref LambdaRoleArn
-
 Outputs:
   PostDeployCreateTestUsers:
     Value: !If [ShouldCreateTestUsers, !GetAtt CreateTestUsers.Arn, ""]
-  PostDeployMigrateTransactions:
-    Value: !GetAtt MigrateTransactions.Arn

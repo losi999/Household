@@ -73,7 +73,12 @@ export class AccountTransactionsListItemComponent implements OnInit {
         this.billingEndDate = this.transaction.billingEndDate;
         this.billingStartDate = this.transaction.billingStartDate;
       } break;
-      case 'loanTransfer':
+      case 'loanTransfer': {
+        this.account = this.transaction.transferAccount;
+        this.accountIcon = this.transaction.amount <= 0 ? 'arrow_left_alt' : 'arrow_right_alt';
+        this.accountIconColor = this.transaction.amount >= 0 ? 'green' : 'red';
+        this.amount = this.transaction.amount;
+      } break;
       case 'transfer': {
         this.account = this.transaction.transferAccount;
         this.accountIcon = this.transaction.amount >= 0 ? 'arrow_left_alt' : 'arrow_right_alt';

@@ -6,6 +6,38 @@ var accountId = '665aca365689536dd37d8468' //bank
 
 db.getCollection("transactions").aggregate([
   {
+    $match: {
+      $or: [
+      {
+        account: ObjectId(accountId),
+      },
+      {
+        transferAccount: ObjectId(accountId),
+      },
+      {
+        payingAccount: ObjectId(accountId),
+      },
+      {
+        ownerAccount: ObjectId(accountId),
+      },
+      {
+        'deferredSplits.ownerAccount': ObjectId(accountId),
+      },
+      ]
+    }
+  },
+  {
+    $sort: {
+      issuedAt: -1,
+    },
+  },
+  {
+    $skip: (pageNumber - 1) * pageSize,
+  },
+  {
+    $limit: pageSize,
+  },
+  {
     $set: {
       tmp_splits: {
         $concatArrays: [{
@@ -469,16 +501,10 @@ db.getCollection("transactions").aggregate([
   {
     $unset: ['tx_amount', 'tx_description', 'tmp_splits', 'tx_id', 'tx_transactionType']
   },
-  {
+    {
     $sort: {
       issuedAt: -1,
     },
-  },
-  {
-    $skip: (pageNumber - 1) * pageSize,
-  },
-  {
-    $limit: pageSize,
   },
 ])
 
