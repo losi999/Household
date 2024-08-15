@@ -365,6 +365,38 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
     listTransactionsByAccountId: ({ accountId, pageSize, pageNumber }) => {
       return mongodbService.inSession(async (session) => {
         return mongodbService.transactions.aggregate([
+          {
+            $match: {
+              $or: [
+                {
+                  account: new Types.ObjectId(accountId),
+                },
+                {
+                  transferAccount: new Types.ObjectId(accountId),
+                },
+                {
+                  payingAccount: new Types.ObjectId(accountId),
+                },
+                {
+                  ownerAccount: new Types.ObjectId(accountId),
+                },
+                {
+                  'deferredSplits.ownerAccount': new Types.ObjectId(accountId),
+                },
+              ],
+            },
+          },
+          {
+            $sort: {
+              issuedAt: -1,
+            },
+          },
+          {
+            $skip: (pageNumber - 1) * pageSize,
+          },
+          {
+            $limit: pageSize,
+          },
           ...flattenSplit({
             tx_amount: '$amount',
             tx_description: '$description',
@@ -405,12 +437,6 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
             $sort: {
               issuedAt: -1,
             },
-          },
-          {
-            $skip: (pageNumber - 1) * pageSize,
-          },
-          {
-            $limit: pageSize,
           },
         ], {
           session,
