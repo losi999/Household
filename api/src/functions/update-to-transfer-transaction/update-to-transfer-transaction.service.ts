@@ -78,15 +78,9 @@ export const updateToTransferTransactionServiceFactory = (
     } else {
       if (payments) {
         const deferredTransactionIds: Transaction.Id[] = [];
-        let total = 0;
-        payments?.forEach(({ transactionId, amount }) => {
+        payments?.forEach(({ transactionId }) => {
           pushUnique(deferredTransactionIds, transactionId);
-          total += amount;
         });
-
-        const receivingAmount = body.amount > 0 ? body.amount : (body.transferAmount ?? body.amount * -1);
-
-        httpErrors.transaction.sumOfPayments(total > receivingAmount, body);
 
         const transactionList = await transactionService.listDeferredTransactions({
           deferredTransactionIds,

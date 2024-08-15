@@ -2,7 +2,6 @@ import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
-import { toDictionary } from '@household/shared/common/utils';
 import { TransactionService } from 'src/app/transaction/transaction.service';
 import { isInventoryCategory, isInvoiceCategory } from '@household/shared/common/type-guards';
 import { ProgressService } from 'src/app/shared/progress.service';
@@ -125,13 +124,13 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
       loanAccount: new FormControl(null),
       isSettled: new FormControl(false),
       inventory: new FormControl({
-        quantity: split.quantity,
-        product: split.product,
+        quantity: split?.quantity,
+        product: split?.product,
       }),
       invoice: new FormControl({
-        invoiceNumber: split.invoiceNumber,
-        billingEndDate: split.billingEndDate,
-        billingStartDate: split.billingStartDate,
+        invoiceNumber: split?.invoiceNumber,
+        billingEndDate: split?.billingEndDate,
+        billingStartDate: split?.billingStartDate,
       }),
     });
   }
@@ -145,7 +144,12 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
     this.store.deferredTransactions.pipe(takeUntil(this.destroyed)).subscribe((transactions) => {
       this.deferredTransactions = {
         ...this.deferredTransactions,
-        ...toDictionary(transactions, 'transactionId'),
+        ...transactions.reduce((accumulator, currentValue) => {
+          return {
+            ...accumulator,
+            [currentValue.transactionId]: currentValue,
+          };
+        }, {}),
       };
     });
 

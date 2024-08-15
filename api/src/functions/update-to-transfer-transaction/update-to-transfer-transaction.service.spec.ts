@@ -314,45 +314,6 @@ describe('Update to transfer transaction service', () => {
       expect.assertions(8);
     });
 
-    it('if sum of payments is larger than total amount', async () => {
-      const deferredTransactionDocument = createDeferredTransactionDocument({
-        payingAccount: queriedTransferAccount,
-      });
-
-      body = createTransferTransactionRequest({
-        ...body,
-        amount: -1000,
-        transferAmount: 1000,
-        payments: [
-          {
-            amount: 10000,
-            transactionId: getTransactionId(deferredTransactionDocument),
-          },
-        ],
-      });
-      mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
-      mockAccountService.functions.listAccountsByIds.mockResolvedValue([
-        queriedAccount,
-        queriedTransferAccount,
-      ]);
-
-      await service({
-        body,
-        transactionId,
-        expiresIn: undefined,
-      }).catch(validateError('Sum of payments must be less than total amount', 400));
-      validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
-      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
-        body.accountId,
-        body.transferAccountId,
-      ]);
-      validateFunctionCall(mockTransactionService.functions.listDeferredTransactions);
-      validateFunctionCall(mockTransferTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction);
-      validateFunctionCall(mockLoanTransferTransactionDocumentConverter.functions.create);
-      expect.assertions(8);
-    });
-
     it('if unable to query deferred transactions', async () => {
       const deferredTransactionDocument = createDeferredTransactionDocument({
         payingAccount: queriedTransferAccount,

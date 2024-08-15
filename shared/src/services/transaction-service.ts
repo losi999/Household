@@ -137,7 +137,6 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
         _id: new Types.ObjectId(transactionId),
       }, doc, {
         runValidators: true,
-        overwriteDiscriminatorKey: true,
       })
         .exec();
     },
