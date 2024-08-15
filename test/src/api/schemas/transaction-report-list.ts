@@ -8,6 +8,7 @@ import { default as recipient } from '@household/test/api/schemas/recipient-resp
 import { default as project } from '@household/test/api/schemas/project-response';
 import { default as product } from '@household/test/api/schemas/product-response';
 import { default as quantity } from '@household/shared/schemas/partials/transaction-quantity';
+import { default as invoice } from '@household/shared/schemas/partials/transaction-invoice';
 import { StrictJSONSchema7 } from '@household/shared/types/common';
 import { Transaction } from '@household/shared/types/types';
 
@@ -27,6 +28,7 @@ const schema: StrictJSONSchema7<Transaction.Report[]> = {
       ...amount.properties,
       ...description.properties,
       ...issuedAt.properties,
+      ...invoice.properties,
       splitId: transactionId.properties.transactionId,
       account: {
         type: 'object',

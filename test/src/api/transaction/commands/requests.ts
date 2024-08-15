@@ -139,7 +139,7 @@ export const setTransactionRequestCommands = () => {
     requestDeleteTransaction,
     requestGetTransaction,
     requestGetTransactionListByAccount,
-    requestGetTransactionList: requestGetTransactionReports,
+    requestGetTransactionReports,
   });
 };
 

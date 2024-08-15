@@ -617,6 +617,8 @@ export namespace Transaction {
   & Project<Project.Report>
   & Recipient<Recipient.Report>
   & Product<Product.Report>
+  & InvoiceNumber
+  & InvoiceDate<string>
   & {
     splitId: Transaction.Id;
   };

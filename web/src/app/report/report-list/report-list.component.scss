@@ -1,6 +1,6 @@
 .report-item {
   display: grid;
-  grid-template-columns: 55px 1fr auto;
+  grid-template-columns: 75px 1fr auto;
   column-gap: 15px;
   grid-template-areas: "datetime details amount";
   width: 100%;
@@ -8,11 +8,25 @@
 
   &__datetime {
     grid-area: datetime;
+    text-align: right;
   }
 
-  &__details {
+  .mat-mdc-list {
     grid-area: details;
     min-width: 0;
+    padding: 0;
+
+    .mat-mdc-list-item {
+      height: 26px;
+    }
+
+    .mat-icon{
+      margin: 0;
+    }
+
+    .mat-mdc-list-item-title {
+      margin-left: 6px;
+    }
   }
 
   &__year {

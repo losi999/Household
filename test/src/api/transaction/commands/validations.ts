@@ -650,7 +650,7 @@ const validateTransactionListReport = (reports: Transaction.Report[], documents:
   const total = documents?.length ?? 0;
   expect(reports.length, 'number of items').to.equal(total);
   reports.forEach((report, index) => {
-    const { account, amount, category, description, issuedAt, product, project, recipient, splitId, transactionId, ...empty } = report;
+    const { account, amount, category, description, issuedAt, product, project, recipient, splitId, transactionId, invoiceNumber, billingEndDate, billingStartDate, ...empty } = report;
     const document = documents.find(d => {
       if (report.transactionId !== getTransactionId(d)) {
         return false;
@@ -669,6 +669,9 @@ const validateTransactionListReport = (reports: Transaction.Report[], documents:
     let documentQuantity: number;
     let documentAmount: number;
     let documentDescription: string;
+    let documentInvoiceNumber: string;
+    let documentBillingStartDate: string;
+    let documentBillingEndDate: string;
     if (document.transactionType === 'split') {
       const split = document.split ?? document.deferredSplit;
       documentCategory = split.category;
@@ -677,6 +680,9 @@ const validateTransactionListReport = (reports: Transaction.Report[], documents:
       documentQuantity = split.quantity;
       documentAmount = split.amount;
       documentDescription = split.description;
+      documentInvoiceNumber = split.invoiceNumber;
+      documentBillingEndDate = split.billingEndDate?.toISOString().split('T')[0];
+      documentBillingStartDate = split.billingStartDate?.toISOString().split('T')[0];
       documentAccount = document.deferredSplit?.ownerAccount ?? document.account;
     } else {
       documentCategory = document.category;
@@ -685,12 +691,18 @@ const validateTransactionListReport = (reports: Transaction.Report[], documents:
       documentQuantity = document.quantity;
       documentAmount = document.amount;
       documentDescription = document.description;
+      documentInvoiceNumber = document.invoiceNumber;
+      documentBillingEndDate = document.billingEndDate?.toISOString().split('T')[0];
+      documentBillingStartDate = document.billingStartDate?.toISOString().split('T')[0];
       documentAccount = document.transactionType === 'payment' ? document.account : document.ownerAccount;
     }
 
     expect(transactionId, `[${index}].transactionId`).to.equal(getTransactionId(document));
     expect(amount, `[${index}].amount`).to.equal(documentAmount);
     expect(description, `[${index}].description`).to.equal(documentDescription);
+    expect(invoiceNumber, `[${index}].invoiceNumber`).to.equal(documentInvoiceNumber);
+    expect(billingEndDate, `[${index}].billingEndDate`).to.equal(documentBillingEndDate);
+    expect(billingStartDate, `[${index}].billingStartDate`).to.equal(documentBillingStartDate);
     expect(issuedAt, `[${index}].issuedAt`).to.equal(document.issuedAt.toISOString());
     expectEmptyObject(empty, `[${index}]`);
 

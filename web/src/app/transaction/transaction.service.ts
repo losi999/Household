@@ -46,7 +46,7 @@ export class TransactionService {
   }
 
   getTransactionReport(body: Report.Request): Observable<Transaction.Report[]> {
-    return this.httpClient.post<Transaction.Report[]>(`${environment.apiUrl}${environment.transactionStage}v1/transactions`, body);
+    return this.httpClient.post<Transaction.Report[]>(`${environment.apiUrl}${environment.transactionStage}v1/transactionReports`, body);
   }
 
   createPaymentTransaction(body: Transaction.PaymentRequest): Observable<Transaction.TransactionId> {

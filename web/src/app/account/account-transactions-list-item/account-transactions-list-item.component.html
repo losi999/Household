@@ -15,15 +15,27 @@
     </mat-list-item>
     <mat-list-item *ngIf="recipient">
       <mat-icon matListItemIcon>store</mat-icon>
-      <div matListItemTitle class="account-transaction-list-item__recipient">{{recipient?.name}}</div>
+      <div matListItemTitle class="account-transaction-list-item__recipient">{{recipient.name}}</div>
     </mat-list-item>
     <mat-list-item *ngIf="category">
       <mat-icon matListItemIcon>category</mat-icon>
-      <div matListItemTitle class="account-transaction-list-item__category">{{category?.fullName}}</div>
+      <div matListItemTitle class="account-transaction-list-item__category">{{category.fullName}}</div>
+    </mat-list-item>
+    <mat-list-item *ngIf="product">
+      <mat-icon matListItemIcon>shopping_cart</mat-icon>
+      <div matListItemTitle class="account-transaction-list-item__product">{{product.fullName}}</div>
+    </mat-list-item>
+    <mat-list-item *ngIf="invoiceNumber">
+      <mat-icon matListItemIcon>receipt</mat-icon>
+      <div matListItemTitle class="account-transaction-list-item__product">{{invoiceNumber}}</div>
+    </mat-list-item>
+    <mat-list-item *ngIf="billingStartDate && billingEndDate">
+      <mat-icon matListItemIcon>calendar_month</mat-icon>
+      <div matListItemTitle class="account-transaction-list-item__product">{{billingStartDate | date:'yyyy MMM dd.'}} - {{billingEndDate | date:'yyyy MMM dd.'}}</div>
     </mat-list-item>
     <mat-list-item *ngIf="project">
       <mat-icon matListItemIcon>stacks</mat-icon>
-      <div matListItemTitle class="account-transaction-list-item__project">{{project?.name}}</div>
+      <div matListItemTitle class="account-transaction-list-item__project">{{project.name}}</div>
     </mat-list-item>
     <mat-list-item *ngIf="transaction.description">
       <mat-icon matListItemIcon>description</mat-icon>

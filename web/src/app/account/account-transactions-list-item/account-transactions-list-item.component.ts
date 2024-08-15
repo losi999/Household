@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Account, Category, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { DialogService } from 'src/app/shared/dialog.service';
 import { TransactionService } from 'src/app/transaction/transaction.service';
 
@@ -18,6 +18,10 @@ export class AccountTransactionsListItemComponent implements OnInit {
   recipient: Recipient.Response;
   category: Category.Response;
   project: Project.Response;
+  product: Product.Response;
+  invoiceNumber: string;
+  billingStartDate: string;
+  billingEndDate: string;
   amount: number;
   remainingAmount: number;
 
@@ -64,6 +68,10 @@ export class AccountTransactionsListItemComponent implements OnInit {
         this.category = this.transaction.category;
         this.project = this.transaction.project;
         this.recipient = this.transaction.recipient;
+        this.product = this.transaction.product;
+        this.invoiceNumber = this.transaction.invoiceNumber;
+        this.billingEndDate = this.transaction.billingEndDate;
+        this.billingStartDate = this.transaction.billingStartDate;
       } break;
       case 'loanTransfer':
       case 'transfer': {
@@ -87,6 +95,10 @@ export class AccountTransactionsListItemComponent implements OnInit {
         this.category = this.transaction.category;
         this.project = this.transaction.project;
         this.recipient = this.transaction.recipient;
+        this.product = this.transaction.product;
+        this.invoiceNumber = this.transaction.invoiceNumber;
+        this.billingEndDate = this.transaction.billingEndDate;
+        this.billingStartDate = this.transaction.billingStartDate;
       }break;
       case 'reimbursement': {
         if (this.transaction.payingAccount.accountId === this.viewingAccountId) {
@@ -102,6 +114,10 @@ export class AccountTransactionsListItemComponent implements OnInit {
         this.category = this.transaction.category;
         this.project = this.transaction.project;
         this.recipient = this.transaction.recipient;
+        this.product = this.transaction.product;
+        this.invoiceNumber = this.transaction.invoiceNumber;
+        this.billingEndDate = this.transaction.billingEndDate;
+        this.billingStartDate = this.transaction.billingStartDate;
       } break;
       case 'split': {
         if (this.transaction.account.accountId === this.viewingAccountId) {
