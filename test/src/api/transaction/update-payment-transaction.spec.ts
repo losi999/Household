@@ -1,15 +1,15 @@
-import { createTransactionId, createAccountId, createCategoryId, createRecipientId, createProjectId, createProductId } from '@household/shared/common/test-data-factory';
-import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
-import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
-import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
-import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
-import { projectDocumentConverter } from '@household/shared/dependencies/converters/project-document-converter';
-import { recipientDocumentConverter } from '@household/shared/dependencies/converters/recipient-document-converter';
-import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
-import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
-import { v4 as uuid } from 'uuid';
 
-describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
+import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
+import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { accountDataFactory } from '@household/test/api/account/data-factory';
+import { categoryDataFactory } from '@household/test/api/category/data-factory';
+import { productDataFactory } from '@household/test/api/product/data-factory';
+import { projectDataFactory } from '@household/test/api/project/data-factory';
+import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
+import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment-data-factory';
+import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer-data-factory';
+
+describe('PUT transaction/v1/transactions/{transactionId}/payment (payment)', () => {
   let request: Transaction.PaymentRequest;
   let originalDocument: Transaction.TransferDocument;
 
@@ -20,95 +20,54 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
   let invoiceCategoryDocument: Category.Document;
   let inventoryCategoryDocument: Category.Document;
   let productDocument: Product.Document;
+  let relatedDocumentIds: Pick<Transaction.PaymentRequest, 'accountId' | 'productId' | 'categoryId' | 'projectId' | 'recipientId'> ;
 
   beforeEach(() => {
-    projectDocument = projectDocumentConverter.create({
-      name: `proj-${uuid()}`,
-      description: 'desc',
-    }, Cypress.env('EXPIRES_IN'), true);
-
-    recipientDocument = recipientDocumentConverter.create({
-      name: `recipient-${uuid()}`,
-    }, Cypress.env('EXPIRES_IN'), true);
-
-    accountDocument = accountDocumentConverter.create({
-      name: `bank-${uuid()}`,
-      accountType: 'bankAccount',
-      currency: 'Ft',
-      owner: 'owner1',
-    }, Cypress.env('EXPIRES_IN'), true);
-
-    regularCategoryDocument = categoryDocumentConverter.create({
+    projectDocument = projectDataFactory.document();
+    recipientDocument = recipientDataFactory.document();
+    accountDocument = accountDataFactory.document();
+    regularCategoryDocument = categoryDataFactory.document({
       body: {
-        name: `regular-${uuid()}`,
         categoryType: 'regular',
-        parentCategoryId: undefined,
       },
-      parentCategory: undefined,
-    }, Cypress.env('EXPIRES_IN'), true);
+    });
 
-    invoiceCategoryDocument = categoryDocumentConverter.create({
+    invoiceCategoryDocument = categoryDataFactory.document({
       body: {
-        name: `invoice-${uuid()}`,
         categoryType: 'invoice',
-        parentCategoryId: undefined,
       },
-      parentCategory: undefined,
-    }, Cypress.env('EXPIRES_IN'), true);
+    });
 
-    inventoryCategoryDocument = categoryDocumentConverter.create({
+    inventoryCategoryDocument = categoryDataFactory.document({
       body: {
-        name: `inventory-${uuid()}`,
         categoryType: 'inventory',
-        parentCategoryId: undefined,
       },
-      parentCategory: undefined,
-    }, Cypress.env('EXPIRES_IN'), true);
+    });
 
-    productDocument = productDocumentConverter.create({
-      body: {
-        brand: `brand-${uuid()}`,
-        measurement: 200,
-        unitOfMeasurement: 'kg',
-      },
+    productDocument = productDataFactory.document({
       category: inventoryCategoryDocument,
-    }, Cypress.env('EXPIRES_IN'), true);
+    });
 
-    originalDocument = transactionDocumentConverter.createTransferDocument({
-      body: {
-        accountId: getAccountId(accountDocument),
-        amount: 100,
-        transferAmount: -10,
-        description: undefined,
-        issuedAt: new Date().toISOString(),
-        transferAccountId: getAccountId(accountDocument),
-      },
+    originalDocument = transferTransactionDataFactory.document({
       account: accountDocument,
       transferAccount: accountDocument,
-    }, Cypress.env('EXPIRES_IN'), true);
+    });
 
-    request = {
-      amount: 100,
+    relatedDocumentIds = {
       accountId: getAccountId(accountDocument),
       categoryId: getCategoryId(regularCategoryDocument),
       projectId: getProjectId(projectDocument),
-      recipientId: getRecipientId(recipientDocument),
-      description: 'new description',
-      issuedAt: new Date(2022, 6, 9, 22, 30, 12).toISOString(),
-      billingStartDate: new Date(2022, 6, 1, 0, 0, 0).toISOString()
-        .split('T')[0],
-      billingEndDate: new Date(2022, 6, 25, 0, 0, 0).toISOString()
-        .split('T')[0],
-      invoiceNumber: 'invoice123',
       productId: getProductId(productDocument),
-      quantity: 1,
+      recipientId: getRecipientId(recipientDocument),
     };
+
+    request = paymentTransactionDataFactory.request(relatedDocumentIds);
   });
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
-        .requestUpdateToPaymentTransaction(createTransactionId(), request)
+        .requestUpdateToPaymentTransaction(paymentTransactionDataFactory.id(), request)
         .expectUnauthorizedResponse();
     });
   });
@@ -129,10 +88,10 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
         });
 
         it('using invoice category', () => {
-          const modifiedRequest: Transaction.PaymentRequest = {
-            ...request,
+          request = paymentTransactionDataFactory.request({
+            ...relatedDocumentIds,
             categoryId: getCategoryId(invoiceCategoryDocument),
-          };
+          });
 
           cy.saveTransactionDocument(originalDocument)
             .saveAccountDocument(accountDocument)
@@ -140,15 +99,15 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), modifiedRequest)
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request)
             .expectCreatedResponse()
-            .validateTransactionPaymentDocument(modifiedRequest);
+            .validateTransactionPaymentDocument(request);
         });
         it('using inventory category', () => {
-          const modifiedRequest: Transaction.PaymentRequest = {
-            ...request,
+          request = paymentTransactionDataFactory.request({
+            ...relatedDocumentIds,
             categoryId: getCategoryId(inventoryCategoryDocument),
-          };
+          });
 
           cy.saveTransactionDocument(originalDocument)
             .saveAccountDocument(accountDocument)
@@ -157,35 +116,35 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
             .saveRecipientDocument(recipientDocument)
             .saveProductDocument(productDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), modifiedRequest)
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request)
             .expectCreatedResponse()
-            .validateTransactionPaymentDocument(modifiedRequest);
+            .validateTransactionPaymentDocument(request);
         });
       });
 
       describe('without optional properties', () => {
         it('description', () => {
-          const modifiedRequest: Transaction.PaymentRequest = {
-            ...request,
+          request = paymentTransactionDataFactory.request({
+            ...relatedDocumentIds,
             description: undefined,
-          };
+          });
           cy.saveTransactionDocument(originalDocument)
             .saveAccountDocument(accountDocument)
             .saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), modifiedRequest)
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request)
             .expectCreatedResponse()
-            .validateTransactionPaymentDocument(modifiedRequest);
+            .validateTransactionPaymentDocument(request);
         });
         it('inventory', () => {
-          const modifiedRequest: Transaction.PaymentRequest = {
-            ...request,
+          request = paymentTransactionDataFactory.request({
+            ...relatedDocumentIds,
             productId: undefined,
             quantity: undefined,
             categoryId: getCategoryId(inventoryCategoryDocument),
-          };
+          });
 
           cy.saveTransactionDocument(originalDocument)
             .saveAccountDocument(accountDocument)
@@ -193,19 +152,19 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), modifiedRequest)
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request)
             .expectCreatedResponse()
-            .validateTransactionPaymentDocument(modifiedRequest);
+            .validateTransactionPaymentDocument(request);
         });
 
         it('invoice', () => {
-          const modifiedRequest: Transaction.PaymentRequest = {
-            ...request,
+          request = paymentTransactionDataFactory.request({
+            ...relatedDocumentIds,
             categoryId: getCategoryId(invoiceCategoryDocument),
             invoiceNumber: undefined,
             billingEndDate: undefined,
             billingStartDate: undefined,
-          };
+          });
 
           cy.saveTransactionDocument(originalDocument)
             .saveAccountDocument(accountDocument)
@@ -213,17 +172,17 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), modifiedRequest)
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request)
             .expectCreatedResponse()
-            .validateTransactionPaymentDocument(modifiedRequest);
+            .validateTransactionPaymentDocument(request);
         });
 
         it('invoice.invoiceNumber', () => {
-          const modifiedRequest: Transaction.PaymentRequest = {
-            ...request,
+          request = paymentTransactionDataFactory.request({
+            ...relatedDocumentIds,
             categoryId: getCategoryId(invoiceCategoryDocument),
             invoiceNumber: undefined,
-          };
+          });
 
           cy.saveTransactionDocument(originalDocument)
             .saveAccountDocument(accountDocument)
@@ -231,57 +190,57 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), modifiedRequest)
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request)
             .expectCreatedResponse()
-            .validateTransactionPaymentDocument(modifiedRequest);
+            .validateTransactionPaymentDocument(request);
         });
 
         it('categoryId', () => {
-          const modifiedRequest: Transaction.PaymentRequest = {
-            ...request,
+          request = paymentTransactionDataFactory.request({
+            ...relatedDocumentIds,
             categoryId: undefined,
-          };
+          });
 
           cy.saveTransactionDocument(originalDocument)
             .saveAccountDocument(accountDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), modifiedRequest)
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request)
             .expectCreatedResponse()
-            .validateTransactionPaymentDocument(modifiedRequest);
+            .validateTransactionPaymentDocument(request);
         });
 
         it('recipientId', () => {
-          const modifiedRequest: Transaction.PaymentRequest = {
-            ...request,
+          request = paymentTransactionDataFactory.request({
+            ...relatedDocumentIds,
             recipientId: undefined,
-          };
+          });
 
           cy.saveTransactionDocument(originalDocument)
             .saveAccountDocument(accountDocument)
             .saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), modifiedRequest)
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request)
             .expectCreatedResponse()
-            .validateTransactionPaymentDocument(modifiedRequest);
+            .validateTransactionPaymentDocument(request);
         });
 
         it('projectId', () => {
-          const modifiedRequest: Transaction.PaymentRequest = {
-            ...request,
+          request = paymentTransactionDataFactory.request({
+            ...relatedDocumentIds,
             projectId: undefined,
-          };
+          });
 
           cy.saveTransactionDocument(originalDocument)
             .saveAccountDocument(accountDocument)
             .saveCategoryDocument(regularCategoryDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), modifiedRequest)
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request)
             .expectCreatedResponse()
-            .validateTransactionPaymentDocument(modifiedRequest);
+            .validateTransactionPaymentDocument(request);
         });
       });
     });
@@ -290,14 +249,14 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
       describe('if transactionId', () => {
         it('is not mongo id', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId('not-valid'), request)
+            .requestUpdateToPaymentTransaction(paymentTransactionDataFactory.id('not-valid'), request)
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('transactionId', 'pathParameters');
         });
 
         it('does not belong to any transaction', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(createTransactionId(), request)
+            .requestUpdateToPaymentTransaction(paymentTransactionDataFactory.id(), request)
             .expectNotFoundResponse();
         });
       });
@@ -305,10 +264,9 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
       describe('if body', () => {
         it('has additional properties', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
               extra: 123,
-            } as any)
+            } as any))
             .expectBadRequestResponse()
             .expectAdditionalProperty('data', 'body');
         });
@@ -317,20 +275,18 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
       describe('if amount', () => {
         it('is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
               amount: undefined,
-            })
+            }))
             .expectBadRequestResponse()
             .expectRequiredProperty('amount', 'body');
         });
 
         it('is not number', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
-              amount: '1' as any,
-            })
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
+              amount: '1',
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('amount', 'number', 'body');
         });
@@ -339,20 +295,18 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
       describe('if description', () => {
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
-              description: 1 as any,
-            })
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
+              description: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('description', 'string', 'body');
         });
 
         it('is too short', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
               description: '',
-            })
+            }))
             .expectBadRequestResponse()
             .expectTooShortProperty('description', 1, 'body');
         });
@@ -361,30 +315,28 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
       describe('if quantity', () => {
         it('is present and productId is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
               productId: undefined,
-            })
+              quantity: 1,
+            }))
             .expectBadRequestResponse()
             .expectDependentRequiredProperty('quantity', 'body', 'productId');
         });
 
         it('is not number', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
-              quantity: 'a' as any,
-            })
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
+              quantity: 'a',
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('quantity', 'number', 'body');
         });
 
         it('is too small', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
               quantity: 0,
-            })
+            }))
             .expectBadRequestResponse()
             .expectTooSmallNumberProperty('quantity', 0, true, 'body');
         });
@@ -393,47 +345,43 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
       describe('if productId', () => {
         it('is present and quantity is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
               quantity: undefined,
-            })
+              productId: productDataFactory.id(),
+            }))
             .expectBadRequestResponse()
             .expectDependentRequiredProperty('productId', 'body', 'quantity');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
-              productId: 1 as any,
-            })
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
+              productId: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('productId', 'string', 'body');
         });
 
         it('is not mongo id format', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
-              productId: createProductId('not-valid'),
-            })
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
+              productId: productDataFactory.id('not-valid'),
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('productId', 'body');
         });
 
         it('does not belong to any product', () => {
-          const modifiedRequest: Transaction.PaymentRequest = {
-            ...request,
-            categoryId: getCategoryId(inventoryCategoryDocument),
-          };
-
           cy.saveTransactionDocument(originalDocument)
             .saveAccountDocument(accountDocument)
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), modifiedRequest)
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
+              ...relatedDocumentIds,
+              categoryId: getCategoryId(inventoryCategoryDocument),
+            }))
             .expectBadRequestResponse()
             .expectMessage('No product found');
         });
@@ -442,31 +390,28 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
       describe('if invoiceNumber', () => {
         it('is present and billingEndDate, billingStartDate are missing', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
               billingEndDate: undefined,
               billingStartDate: undefined,
-            })
+            }))
             .expectBadRequestResponse()
             .expectDependentRequiredProperty('invoiceNumber', 'body', 'billingEndDate', 'billingStartDate');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
-              invoiceNumber: 1 as any,
-            })
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
+              invoiceNumber: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('invoiceNumber', 'string', 'body');
         });
 
         it('is too short', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
               invoiceNumber: '',
-            })
+            }))
             .expectBadRequestResponse()
             .expectTooShortProperty('invoiceNumber', 1, 'body');
         });
@@ -475,41 +420,37 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
       describe('if billingEndDate', () => {
         it('is present and billingStartDate is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
               billingStartDate: undefined,
-            })
+            }))
             .expectBadRequestResponse()
             .expectDependentRequiredProperty('billingEndDate', 'body', 'billingStartDate');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
-              billingEndDate: 1 as any,
-            })
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
+              billingEndDate: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('billingEndDate', 'string', 'body');
         });
 
         it('is not date format', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
               billingEndDate: 'not-date',
-            })
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyFormat('billingEndDate', 'date', 'body');
         });
 
-        it('is earlier than billingStartDate', () => {
+        it('is later than billingStartDate', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
               billingEndDate: '2022-06-01',
               billingStartDate: '2022-06-03',
-            })
+            }))
             .expectBadRequestResponse()
             .expectTooEarlyDateProperty('billingEndDate', 'body');
         });
@@ -518,30 +459,27 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
       describe('if billingStartDate', () => {
         it('is present and billingEndDate is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
               billingEndDate: undefined,
-            })
+            }))
             .expectBadRequestResponse()
             .expectDependentRequiredProperty('billingStartDate', 'body', 'billingEndDate');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
-              billingStartDate: 1 as any,
-            })
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
+              billingStartDate: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('billingStartDate', 'string', 'body');
         });
 
         it('is not date format', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
               billingStartDate: 'not-date',
-            })
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyFormat('billingStartDate', 'date', 'body');
         });
@@ -550,76 +488,87 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
       describe('if issuedAt', () => {
         it('is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
               issuedAt: undefined,
-            })
+            }))
             .expectBadRequestResponse()
             .expectRequiredProperty('issuedAt', 'body');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
-              issuedAt: 1 as any,
-            })
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
+              issuedAt: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('issuedAt', 'string', 'body');
         });
 
         it('is not date-time format', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
               issuedAt: 'not-date-time',
-            })
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyFormat('issuedAt', 'date-time', 'body');
         });
       });
 
       describe('if accountId', () => {
+        it('belongs to a loan type account', () => {
+          const loanAccountDocument = accountDataFactory.document({
+            accountType: 'loan',
+          });
+          cy.saveTransactionDocument(originalDocument)
+            .saveAccountDocument(loanAccountDocument)
+            .saveCategoryDocument(regularCategoryDocument)
+            .saveProjectDocument(projectDocument)
+            .saveRecipientDocument(recipientDocument)
+            .authenticate(1)
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
+              ...relatedDocumentIds,
+              accountId: getAccountId(loanAccountDocument),
+            }))
+            .expectBadRequestResponse()
+            .expectMessage('Account type cannot be loan');
+        });
         it('does not belong to any account', () => {
           cy.saveTransactionDocument(originalDocument)
             .saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
-              accountId: createAccountId(),
-            })
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
+              ...relatedDocumentIds,
+              accountId: accountDataFactory.id(),
+            }))
             .expectBadRequestResponse()
             .expectMessage('No account found');
         });
 
         it('is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
               accountId: undefined,
-            })
+            }))
             .expectBadRequestResponse()
             .expectRequiredProperty('accountId', 'body');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
-              accountId: 1 as any,
-            })
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
+              accountId: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('accountId', 'string', 'body');
         });
 
         it('is not mongo id format', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
-              accountId: createAccountId('not-mongo-id'),
-            })
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
+              accountId: accountDataFactory.id('not-mongo-id'),
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('accountId', 'body');
         });
@@ -632,30 +581,28 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
-              categoryId: createCategoryId(),
-            })
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
+              ...relatedDocumentIds,
+              categoryId: categoryDataFactory.id(),
+            }))
             .expectBadRequestResponse()
             .expectMessage('No category found');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
-              categoryId: 1 as any,
-            })
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
+              categoryId: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('categoryId', 'string', 'body');
         });
 
         it('is not mongo id format', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
-              categoryId: createCategoryId('not-mongo-id'),
-            })
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
+              categoryId: categoryDataFactory.id('not-mongo-id'),
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('categoryId', 'body');
         });
@@ -668,30 +615,28 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
             .saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
-              recipientId: createRecipientId(),
-            })
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
+              ...relatedDocumentIds,
+              recipientId: recipientDataFactory.id(),
+            }))
             .expectBadRequestResponse()
             .expectMessage('No recipient found');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
-              recipientId: 1 as any,
-            })
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
+              recipientId: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('recipientId', 'string', 'body');
         });
 
         it('is not mongo id format', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
-              recipientId: createRecipientId('not-mongo-id'),
-            })
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
+              recipientId: recipientDataFactory.id('not-mongo-id'),
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('recipientId', 'body');
         });
@@ -704,30 +649,28 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment', () => {
             .saveCategoryDocument(regularCategoryDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
-              projectId: createProjectId(),
-            })
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
+              ...relatedDocumentIds,
+              projectId: projectDataFactory.id(),
+            }))
             .expectBadRequestResponse()
             .expectMessage('No project found');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
-              projectId: 1 as any,
-            })
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
+              projectId: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('projectId', 'string', 'body');
         });
 
         it('is not mongo id format', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), {
-              ...request,
-              projectId: createProjectId('not-mongo-id'),
-            })
+            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
+              projectId: projectDataFactory.id('not-mongo-id'),
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('projectId', 'body');
         });

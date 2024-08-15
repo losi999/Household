@@ -1,49 +1,67 @@
 import { Category, Product } from '@household/shared/types/types';
 import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/test/api/types';
 import { getCategoryId, getProductId } from '@household/shared/common/utils';
+import { expectEmptyObject, expectRemainingProperties } from '@household/test/api/utils';
 
-type RelatedDocumentOperation = 'parentReassign' | 'productRemoval';
-
-const validateCategoryDocument = (response: Category.CategoryId, request: Category.Request, parentCategory?: Category.Document, productDocument?: Product.Document) => {
+const validateCategoryDocument = (response: Category.CategoryId, request: Category.Request, parent?: Category.Document, productDocument?: Product.Document) => {
   const id = response?.categoryId;
 
   cy.log('Get category document', id)
     .getCategoryDocumentById(id)
     .should((document) => {
       expect(getCategoryId(document), 'id').to.equal(id);
-      expect(document.name, 'name').to.equal(request.name);
-      expect(document.categoryType, 'categoryType').to.equal(request.categoryType);
-      expect(document.fullName, 'fullName').to.equal(request.parentCategoryId ? `${parentCategory.fullName}:${request.name}` : request.name);
-      expect(getCategoryId(document.parentCategory), 'parentCategory.categoryId').to.equal(request.parentCategoryId);
+      const { categoryType, fullName, name, parentCategory, products, ...internal } = document;
+
+      expect(name, 'name').to.equal(request.name);
+      expect(categoryType, 'categoryType').to.equal(request.categoryType);
+      expect(fullName, 'fullName').to.equal(request.parentCategoryId ? `${parent.fullName}:${request.name}` : request.name);
+      expect(getCategoryId(parentCategory), 'parentCategory.categoryId').to.equal(request.parentCategoryId);
       if (productDocument) {
-        expect(document.products.map(p => getProductId(p)), 'products array').to.contain(getProductId(productDocument));
+        expect(products.map(p => getProductId(p)), 'products array').to.contain(getProductId(productDocument));
       }
+      expectRemainingProperties(internal);
     });
 };
 
-const validateCategoryResponse = (response: Category.Response, document: Category.Document, parentCategory?: Category.Document, productDocument?: Product.Document) => {
-  expect(response.categoryId, 'categoryId').to.equal(getCategoryId(document));
-  expect(response.name, 'name').to.equal(document.name);
-  expect(response.categoryType, 'categoryType').to.equal(document.categoryType);
-  expect(response.fullName, 'fullName').to.equal(document.fullName);
-  expect(response.parentCategory?.name, 'parentCategory.name').to.equal(parentCategory?.name);
-  expect(response.parentCategory?.fullName, 'parentCategory.fullName').to.equal(parentCategory?.fullName);
-  expect(response.parentCategory?.categoryType, 'parentCategory.categoryType').to.equal(parentCategory?.categoryType);
-  expect(response.parentCategory?.categoryId, 'parentCategory.categoryId').to.equal(getCategoryId(parentCategory));
-  if (productDocument) {
-    expect(response.products.length, 'products count').to.equal(1);
-    expect(response.products[0].productId, 'products[0].productId').to.equal(getProductId(productDocument));
-    expect(response.products[0].brand, 'products[0].brand').to.equal(productDocument.brand);
-    expect(response.products[0].fullName, 'products[0].fullName').to.equal(productDocument.fullName);
-    expect(response.products[0].measurement, 'products[0].measurement').to.equal(productDocument.measurement);
-    expect(response.products[0].unitOfMeasurement, 'products[0].unitOfMeasurement').to.equal(productDocument.unitOfMeasurement);
+const validateCategoryResponse = (nestedPath: string = '') => (response: Category.Response, document: Category.Document, parent?: Category.Document, productDocument?: Product.Document) => {
+  const { categoryId, name, categoryType, fullName, parentCategory, products, ...empty } = response;
+  expect(categoryId, `${nestedPath}categoryId`).to.equal(getCategoryId(document));
+  expect(name, `${nestedPath}name`).to.equal(document.name);
+  expect(categoryType, `${nestedPath}categoryType`).to.equal(document.categoryType);
+  expect(fullName, `${nestedPath}fullName`).to.equal(document.fullName);
+  if (parent) {
+    const { name, fullName, categoryType, categoryId, ...empty } = parentCategory;
+
+    expect(name, `${nestedPath}parentCategory.name`).to.equal(parent?.name);
+    expect(fullName, `${nestedPath}parentCategory.fullName`).to.equal(parent?.fullName);
+    expect(categoryType, `${nestedPath}parentCategory.categoryType`).to.equal(parent?.categoryType);
+    expect(categoryId, `${nestedPath}parentCategory.categoryId`).to.equal(getCategoryId(parent));
+    expectEmptyObject(empty, `${nestedPath}parentCategory`);
+  } else {
+    expect(parentCategory, `${nestedPath}parentCategory`).to.be.undefined;
   }
+  if (productDocument) {
+    expect(products.length, `${nestedPath}products count`).to.equal(1);
+    const { productId, brand, fullName, measurement, unitOfMeasurement, ...empty } = products[0];
+
+    expect(productId, `${nestedPath}products[0].productId`).to.equal(getProductId(productDocument));
+    expect(brand, `${nestedPath}products[0].brand`).to.equal(productDocument.brand);
+    expect(fullName, `${nestedPath}products[0].fullName`).to.equal(productDocument.fullName);
+    expect(measurement, `${nestedPath}products[0].measurement`).to.equal(productDocument.measurement);
+    expect(unitOfMeasurement, `${nestedPath}products[0].unitOfMeasurement`).to.equal(productDocument.unitOfMeasurement);
+    expectEmptyObject(empty, `${nestedPath}products`);
+  } else {
+    expect(products, `${nestedPath}products`).to.be.undefined;
+  }
+  expectEmptyObject(empty, nestedPath);
 };
+
+const validateNestedCategoryResponse = (nestedPath: string, ...rest: Parameters<ReturnType<typeof validateCategoryResponse>>) => validateCategoryResponse(nestedPath)(...rest);
 
 const validateCategoryListResponse = (responses: Category.Response[], documents: Category.Document[], products?: Product.Document[]) => {
   documents.forEach((document, index) => {
     const response = responses.find(r => r.categoryId === getCategoryId(document));
-    validateCategoryResponse(response, document, undefined, products?.[index]);
+    cy.validateNestedCategoryResponse(`[${index}].`, response, document, undefined, products?.[index]);
   });
 };
 
@@ -53,21 +71,6 @@ const validateCategoryDeleted = (categoryId: Category.Id) => {
     .should((document) => {
       expect(document, 'document').to.be.null;
     });
-};
-
-const compareCategoryDocuments = (original: Category.Document, updated: Category.Document, operation: RelatedDocumentOperation) => {
-  expect(getCategoryId(original), 'id').to.equal(getCategoryId(updated));
-  expect(updated.name, 'name').to.equal(original.name);
-  expect(updated.categoryType, 'categoryType').to.equal(original.categoryType);
-
-  if (operation !== 'parentReassign') {
-    expect(updated.fullName, 'fullName').to.equal(original.fullName);
-    expect(getCategoryId(updated.parentCategory), 'parentCategory.categoryId').to.equal(getCategoryId(original.parentCategory));
-  }
-
-  if (operation !== 'productRemoval') {
-    expect(updated.products).to.equal(original.products);
-  }
 };
 
 const validateCategoryParentReassign = (originalDocument: Category.Document, parentCategoryId?: Category.Id) => {
@@ -82,14 +85,21 @@ const validateCategoryParentReassign = (originalDocument: Category.Document, par
     .log('Get category document', categoryId)
     .getCategoryDocumentById(categoryId)
     .should((currentDocument) => {
-      compareCategoryDocuments(originalDocument, currentDocument, 'parentReassign');
+      expect(getCategoryId(currentDocument), 'id').to.equal(getCategoryId(originalDocument));
+      const { name, categoryType, products, fullName, parentCategory, ...internal } = currentDocument;
+
+      expect(name, 'name').to.equal(originalDocument.name);
+      expect(categoryType, 'categoryType').to.equal(originalDocument.categoryType);
+      expect(products).to.equal(originalDocument.products);
+
       if (parentCategoryDocument) {
-        expect(currentDocument.fullName, 'fullName').to.equal(`${parentCategoryDocument.fullName}:${currentDocument.name}`);
-        expect(getCategoryId(currentDocument.parentCategory), 'parentCategory').to.equal(getCategoryId(parentCategoryDocument));
+        expect(fullName, 'fullName').to.equal(`${parentCategoryDocument.fullName}:${currentDocument.name}`);
+        expect(getCategoryId(parentCategory), 'parentCategory').to.equal(getCategoryId(parentCategoryDocument));
       } else {
-        expect(currentDocument.fullName, 'fullName').to.equal(currentDocument.name);
-        expect(!!currentDocument.parentCategory, 'parentCategory').to.be.false;
+        expect(fullName, 'fullName').to.equal(currentDocument.name);
+        expect(!!parentCategory, 'parentCategory').to.be.false;
       }
+      expectRemainingProperties(internal);
     });
 };
 
@@ -99,10 +109,18 @@ const validateProductRemoval = (originalDocument: Category.Document, removedProd
   cy.log('Get category document', categoryId)
     .getCategoryDocumentById(categoryId)
     .should((document) => {
-      compareCategoryDocuments(originalDocument, document, 'productRemoval');
+      expect(getCategoryId(document), 'id').to.equal(getCategoryId(originalDocument));
+      const { categoryType, fullName, name, parentCategory, products, ...internal } = document;
+
+      expect(name, 'name').to.equal(originalDocument.name);
+      expect(categoryType, 'categoryType').to.equal(originalDocument.categoryType);
+      expect(fullName, 'fullName').to.equal(originalDocument.fullName);
+      expect(getCategoryId(parentCategory), 'parentCategory.categoryId').to.equal(getCategoryId(originalDocument.parentCategory));
+
       removedProductIds.forEach(productId => {
-        expect(document.products, 'products').to.not.contain(productId);
+        expect(products, 'products').to.not.contain(productId);
       });
+      expectRemainingProperties(internal);
     });
 };
 
@@ -111,7 +129,7 @@ export const setCategoryValidationCommands = () => {
     prevSubject: true,
   }, {
     validateCategoryDocument,
-    validateCategoryResponse,
+    validateCategoryResponse: validateCategoryResponse(),
     validateCategoryListResponse,
   });
 
@@ -119,6 +137,7 @@ export const setCategoryValidationCommands = () => {
     validateCategoryDeleted,
     validateCategoryParentReassign,
     validateProductRemoval,
+    validateNestedCategoryResponse,
   });
 };
 
@@ -128,11 +147,12 @@ declare global {
       validateCategoryDeleted: CommandFunction<typeof validateCategoryDeleted>;
       validateCategoryParentReassign: CommandFunction<typeof validateCategoryParentReassign>;
       validateProductRemoval: CommandFunction<typeof validateProductRemoval>;
+      validateNestedCategoryResponse: CommandFunction<typeof validateNestedCategoryResponse>;
     }
 
     interface ChainableResponseBody extends Chainable {
       validateCategoryDocument: CommandFunctionWithPreviousSubject<typeof validateCategoryDocument>;
-      validateCategoryResponse: CommandFunctionWithPreviousSubject<typeof validateCategoryResponse>;
+      validateCategoryResponse: CommandFunctionWithPreviousSubject<ReturnType<typeof validateCategoryResponse>>;
       validateCategoryListResponse: CommandFunctionWithPreviousSubject<typeof validateCategoryListResponse>;
     }
   }

@@ -5,6 +5,7 @@ import { ClientSession, Types, UpdateQuery } from 'mongoose';
 export interface ICategoryService {
   dumpCategories(): Promise<Category.Document[]>;
   saveCategory(doc: Category.Document): Promise<Category.Document>;
+  saveCategories(docs: Category.Document[]): Promise<unknown>;
   getCategoryById(categoryId: Category.Id): Promise<Category.Document>;
   deleteCategory(categoryId: Category.Id): Promise<unknown>;
   updateCategory(categoryId: Category.Id, updateQuery: UpdateQuery<Category.Document>, oldFullName: string): Promise<unknown>;
@@ -53,6 +54,15 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
     },
     saveCategory: (doc) => {
       return mongodbService.categories.create(doc);
+    },
+    saveCategories: (docs) => {
+      return mongodbService.inSession((session) => {
+        return session.withTransaction(() => {
+          return mongodbService.categories.insertMany(docs, {
+            session,
+          });
+        });
+      });
     },
     getCategoryById: async (categoryId) => {
       let category: Category.Document;
@@ -178,11 +188,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
           // TODO
           await mongodbService.transactions.updateMany({
             category: toDelete,
-          }, toDelete.parentCategory ? {
-            $set: {
-              category: toDelete.parentCategory,
-            },
-          } : {
+          }, {
             $unset: {
               category: 1,
               quantity: 1,
@@ -198,11 +204,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
             .exec();
           await mongodbService.transactions.updateMany({
             'splits.category': categoryId,
-          }, toDelete.parentCategory ? {
-            $set: {
-              'splits.$[element].category': toDelete.parentCategory,
-            },
-          } : {
+          }, {
             $unset: {
               'splits.$[element].category': 1,
               'splits.$[element].quantity': 1,
@@ -210,6 +212,28 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
               'splits.$[element].invoiceNumber': 1,
               'splits.$[element].billingEndDate': 1,
               'splits.$[element].billingStartDate': 1,
+            },
+          }, {
+            session,
+            runValidators: true,
+            arrayFilters: [
+              {
+                'element.category': categoryId,
+              },
+            ],
+          })
+            .exec();
+
+          await mongodbService.transactions.updateMany({
+            'deferredSplits.category': categoryId,
+          }, {
+            $unset: {
+              'deferredSplits.$[element].category': 1,
+              'deferredSplits.$[element].quantity': 1,
+              'deferredSplits.$[element].product': 1,
+              'deferredSplits.$[element].invoiceNumber': 1,
+              'deferredSplits.$[element].billingEndDate': 1,
+              'deferredSplits.$[element].billingStartDate': 1,
             },
           }, {
             session,
@@ -393,7 +417,6 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
           }, {
             session,
           });
-
           await mongodbService.products.updateMany({
             category: {
               $in: sourceCategoryIds,
@@ -426,6 +449,26 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
           }, {
             $set: {
               'splits.$[element].category': targetCategoryId,
+            },
+          }, {
+            session,
+            runValidators: true,
+            arrayFilters: [
+              {
+                'element.category': {
+                  $in: sourceCategoryIds,
+                },
+              },
+            ],
+          });
+
+          await mongodbService.transactions.updateMany({
+            'deferredSplits.category': {
+              $in: sourceCategoryIds,
+            },
+          }, {
+            $set: {
+              'deferredSplits.$[element].category': targetCategoryId,
             },
           }, {
             session,

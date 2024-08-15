@@ -12,22 +12,22 @@ describe('Transaction id schema', () => {
 
   describe('should deny', () => {
     describe('if data', () => {
-      tester.validateSchemaAdditionalProperties({
+      tester.additionalProperties({
         transactionId: createTransactionId(),
         extra: 1,
       } as any, 'data');
     });
 
     describe('if data.transactionId', () => {
-      tester.validateSchemaRequired({
+      tester.required({
         transactionId: undefined,
       }, 'transactionId');
 
-      tester.validateSchemaType({
+      tester.type({
         transactionId: 1 as any,
       }, 'transactionId', 'string');
 
-      tester.validateSchemaPattern({
+      tester.pattern({
         transactionId: createTransactionId('not-valid'),
       }, 'transactionId');
     });

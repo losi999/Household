@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/list-transactions-by-account/list-transactions-by-account.handler';
 import { IListTransactionsByAccountService } from '@household/api/functions/list-transactions-by-account/list-transactions-by-account.service';
-import { createAccountId, createSplitTransactionResponse } from '@household/shared/common/test-data-factory';
+import { createAccountId, createPaymentTransactionResponse } from '@household/shared/common/test-data-factory';
 
 describe('List transactions by transaction handler', () => {
   let mockListTransactionsByTransactionService: MockBusinessService<IListTransactionsByAccountService>;
@@ -13,7 +13,7 @@ describe('List transactions by transaction handler', () => {
   });
 
   const accountId = createAccountId();
-  const transactions = [createSplitTransactionResponse()];
+  const transactions = [createPaymentTransactionResponse()];
   const handlerEvent = {
     pathParameters: {
       accountId,

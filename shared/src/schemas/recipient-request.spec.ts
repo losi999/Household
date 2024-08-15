@@ -9,22 +9,22 @@ describe('Recipient schema', () => {
 
   describe('should deny', () => {
     describe('if data', () => {
-      tester.validateSchemaAdditionalProperties({
+      tester.additionalProperties({
         ...createRecipientRequest(),
         extra: 1,
       } as any, 'data');
     });
 
     describe('if data.name', () => {
-      tester.validateSchemaRequired(createRecipientRequest({
+      tester.required(createRecipientRequest({
         name: undefined,
       }), 'name');
 
-      tester.validateSchemaType(createRecipientRequest({
+      tester.type(createRecipientRequest({
         name: 1 as any,
       }), 'name', 'string');
 
-      tester.validateSchemaMinLength(createRecipientRequest({
+      tester.minLength(createRecipientRequest({
         name: '',
       }), 'name', 1);
     });

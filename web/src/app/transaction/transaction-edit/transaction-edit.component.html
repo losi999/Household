@@ -7,63 +7,39 @@
       <mat-icon>save</mat-icon>
     </button>
   </household-toolbar>
-  <mat-tab-group>
+  <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="start">
     <mat-tab label="Részletek" tabindex="-1">
       <div class="transaction-edit__tab">
-        <div>
-          <household-datetime-input formControlName="issuedAt">
-          </household-datetime-input>
-        </div>
-        <div class="transaction-edit__amount">
-          <household-amount-input formControlName="amount" [currency]="form.value.account?.currency">
-          </household-amount-input>
-        </div>
-        <div class="transaction-edit__account">
-          <household-autocomplete-input [items]="accounts" label="Számla" displayPropertyName="fullName"
-            formControlName="account"></household-autocomplete-input>
-        </div>
+        <household-datetime-input formControlName="issuedAt" />
+
+        <household-amount-input formControlName="amount" [currency]="form.value.account?.currency" />
+
+        <household-autocomplete-input [items]="accounts" label="Számla" displayPropertyName="fullName" formControlName="account" />
+
         <mat-slide-toggle color="primary" formControlName="isTransfer">Átvitel másik számlára</mat-slide-toggle>
-        <div class="transaction-edit__account" *ngIf="isTransfer">
-          <household-autocomplete-input [items]="accounts" label="Átvitel {{amount >= 0 ? 'innen' : 'ide'}}"
-            displayPropertyName="fullName" formControlName="transferAccount"></household-autocomplete-input>
-        </div>
-        <div class="transaction-edit__amount" *ngIf="isTransfer">
-          <household-amount-input formControlName="transferAmount" [currency]="form.value.transferAccount?.currency">
-          </household-amount-input>
-        </div>
-        <div class="transaction-edit__category" *ngIf="isPayment">
-          <household-autocomplete-input [items]="categories" label="Kategória" displayPropertyName="fullName"
-            filterPropertyName="name" formControlName="category"></household-autocomplete-input>
-          <button mat-mini-fab color="primary" type="button" (click)="createCategory()">
-            <mat-icon>library_add</mat-icon>
-          </button>
-        </div>
-        <household-invoice-input *ngIf="isCategoryType('invoice') && isPayment" formControlName="invoice">
-        </household-invoice-input>
-        <household-inventory-input *ngIf="isCategoryType('inventory') && isPayment"
-          [categoryId]="form.value.category.categoryId" formControlName="inventory">
-        </household-inventory-input>
-        <div class="transaction-edit__recipient" *ngIf="!isTransfer">
-          <household-autocomplete-input [items]="recipients" label="Partner" displayPropertyName="name"
-            formControlName="recipient"></household-autocomplete-input>
-          <button mat-mini-fab color="primary" type="button" (click)="createRecipient()">
-            <mat-icon>library_add</mat-icon>
-          </button>
-        </div>
-        <div class="transaction-edit__project" *ngIf="isPayment">
-          <household-autocomplete-input [items]="projects" label="Projekt" displayPropertyName="name"
-            formControlName="project"></household-autocomplete-input>
-          <button mat-mini-fab color="primary" type="button" (click)="createProject()">
-            <mat-icon>library_add</mat-icon>
-          </button>
-        </div>
-        <div class="transaction-edit__description">
-          <household-clearable-input formControlName="description" label="Megjegyzés">
-          </household-clearable-input>
-        </div>
+
+        <household-autocomplete-input *ngIf="form.value.isTransfer" [items]="accounts" [label]="form.value.amount >= 0 ? 'Átvitel innen' : 'Átvitel ide'" displayPropertyName="fullName" formControlName="transferAccount" />
+
+        <household-amount-input *ngIf="form.value.isTransfer && (form.value.account?.accountType === 'loan') === (form.value.transferAccount?.accountType === 'loan')" formControlName="transferAmount" [currency]="form.value.transferAccount?.currency" />
+
+        <household-autocomplete-input *ngIf="!form.value.isTransfer && form.value.splits?.length === 0" [items]="categories" label="Kategória" displayPropertyName="fullName" filterPropertyName="name" formControlName="category" (create)="createCategory()" />
+
+        <household-invoice-input *ngIf="form.value.category?.categoryType === 'invoice'" formControlName="invoice" />
+
+        <household-inventory-input *ngIf="form.value.category?.categoryType === 'inventory'" [categoryId]="form.value.category.categoryId" formControlName="inventory" />
+
+        <household-autocomplete-input *ngIf="!form.value.isTransfer" [items]="recipients" label="Partner" displayPropertyName="name" formControlName="recipient" (create)="createRecipient()" />
+
+        <household-autocomplete-input *ngIf="!form.value.isTransfer && form.value.splits?.length === 0" [items]="projects" label="Projekt" displayPropertyName="name" formControlName="project" (create)="createProject()" />
+
+        <household-clearable-input formControlName="description" label="Megjegyzés" />
+
+        <household-autocomplete-input *ngIf="!form.value.isTransfer && form.value.splits?.length === 0" [items]="accounts" label="Kölcsön számla" displayPropertyName="fullName" formControlName="loanAccount" />
+
+        <mat-slide-toggle *ngIf="form.value.loanAccount" color="primary" formControlName="isSettled">Tartozás rendezve</mat-slide-toggle>
       </div>
     </mat-tab>
-    <mat-tab label="Bontás" *ngIf="!isTransfer" tabindex="-1">
+    <mat-tab label="Bontás" *ngIf="!form.value.isTransfer" tabindex="-1">
       <div class="transaction-edit__tab" formArrayName="splits">
         <p class="transaction-edit__split-amount">
           Összesen: {{form.value.amount}} {{form.value.account?.currency}}
@@ -74,44 +50,74 @@
         <p class="transaction-edit__split_diff" *ngIf="splitsDiff !== 0">
           Hiányzó összeg: {{splitsDiff}} {{form.value.account?.currency}}
         </p>
-        <div *ngFor="let split of form.controls.splits.controls; index as i" [formGroup]="split"
-          class="mat-elevation-z2 transaction-edit-split-item">
+        <div *ngFor="let split of form.controls.splits?.controls" [formGroup]="split" class="mat-elevation-z2 transaction-edit-split-item">
           <div class="transaction-edit-split-item__details">
-            <div class="transaction-edit-split-item__amount">
-              <household-amount-input formControlName="amount" [currency]="form.value.account?.currency">
-              </household-amount-input>
-            </div>
-            <div class="transaction-edit-split-item__category">
-              <household-autocomplete-input [items]="categories" label="Kategória" displayPropertyName="fullName"
-                filterPropertyName="name" formControlName="category"></household-autocomplete-input>
-              <button mat-mini-fab color="primary" type="button" (click)="createCategory()">
-                <mat-icon>library_add</mat-icon>
-              </button>
-            </div>
-            <household-invoice-input *ngIf="isCategoryType('invoice', i)" formControlName="invoice">
-            </household-invoice-input>
-            <household-inventory-input *ngIf="isCategoryType('inventory', i)"
-              [categoryId]="split.value.category.categoryId" formControlName="inventory">
-            </household-inventory-input>
-            <div class="transaction-edit-split-item__project">
-              <household-autocomplete-input [items]="projects" label="Projekt" displayPropertyName="name"
-                formControlName="project"></household-autocomplete-input>
-              <button mat-mini-fab color="primary" type="button" (click)="createProject()">
-                <mat-icon>library_add</mat-icon>
-              </button>
-            </div>
-            <div class="transaction-edit-split-item__description">
-              <household-clearable-input formControlName="description" label="Megjegyzés">
-              </household-clearable-input>
-            </div>
+            <household-amount-input formControlName="amount" [currency]="form.value.account?.currency" />
+
+            <household-autocomplete-input [items]="categories" label="Kategória" displayPropertyName="fullName" filterPropertyName="name" formControlName="category" (create)="createCategory()" />
+
+            <household-invoice-input *ngIf="split.value.category?.categoryType === 'invoice'" formControlName="invoice" />
+
+            <household-inventory-input *ngIf="split.value.category?.categoryType === 'inventory'" [categoryId]="split.value.category.categoryId" formControlName="inventory" />
+
+            <household-autocomplete-input [items]="projects" label="Projekt" displayPropertyName="name" formControlName="project" (create)="createProject()" />
+
+            <household-clearable-input formControlName="description" label="Megjegyzés" />
+
+            <household-autocomplete-input [items]="accounts" label="Kölcsön számla" displayPropertyName="fullName" formControlName="loanAccount" />
+
+            <mat-slide-toggle *ngIf="split.value.loanAccount" color="primary" formControlName="isSettled">Tartozás rendezve</mat-slide-toggle>
           </div>
           <div class="transaction-edit-split-item__delete">
-            <button mat-icon-button color="warn" class="transaction-edit-split-item" (click)="deleteSplit(i)"
-              type="button">
+            <button mat-icon-button color="warn" class="transaction-edit-split-item" (click)="deleteSplit(i)" type="button">
               <mat-icon>delete</mat-icon>
             </button>
           </div>
         </div>
+      </div>
+    </mat-tab>
+    <mat-tab label="Törlesztések" *ngIf="form.value.isTransfer && form.value.account?.accountType !== 'loan' && form.value.transferAccount?.accountType !== 'loan'" tabindex="-1">
+      <div class="transaction-edit__tab">
+        <mat-list class="transaction-edit__deferred-list" [formGroup]="form.controls.payments">
+          <mat-list-item *ngFor="let p of form.controls.payments.controls | keyvalue">
+            <household-transaction-list-item [transaction]="deferredTransactions[p.key]" [formControlName]="p.key" (delete)="deletePayment(p.key)" />
+          </mat-list-item>
+        </mat-list>
+        <mat-accordion class="deferred-list">
+          <mat-expansion-panel hideToggle *ngFor="let deferred of availableDeferredTransactions">
+            <mat-expansion-panel-header>
+              <mat-panel-title>{{toDate(deferred.issuedAt) | date:'yyyy. MMM dd.'}}</mat-panel-title>
+              <mat-panel-description>{{deferred.payingAccount.fullName}} &nbsp; <mat-icon>forward</mat-icon>&nbsp; {{deferred.ownerAccount.fullName}}</mat-panel-description>
+            </mat-expansion-panel-header>
+            <mat-list>
+              <mat-list-item>
+                <mat-icon matListItemIcon>paid</mat-icon>
+                <div matListItemTitle>{{deferred.remainingAmount}} {{deferred.payingAccount.currency}}</div>
+              </mat-list-item>
+              <mat-list-item *ngIf="deferred.recipient">
+                <mat-icon matListItemIcon>store</mat-icon>
+                <div matListItemTitle>{{deferred.recipient.name}}</div>
+              </mat-list-item>
+              <mat-list-item *ngIf="deferred.category">
+                <mat-icon matListItemIcon>category</mat-icon>
+                <div matListItemTitle>{{deferred.category.fullName}}</div>
+              </mat-list-item>
+              <mat-list-item *ngIf="deferred.project">
+                <mat-icon matListItemIcon>stacks</mat-icon>
+                <div matListItemTitle>{{deferred.project.name}}</div>
+              </mat-list-item>
+              <mat-list-item *ngIf="deferred.description">
+                <mat-icon matListItemIcon>description</mat-icon>
+                <div matListItemTitle>{{deferred.description}}</div>
+              </mat-list-item>
+            </mat-list>
+            <div class="deferred-list__buttons">
+              <button mat-icon-button color="primary" class="transaction-edit-split-item" (click)="addPayment(deferred.transactionId)" type="button">
+                <mat-icon>add</mat-icon>
+              </button>
+            </div>
+          </mat-expansion-panel>
+        </mat-accordion>
       </div>
     </mat-tab>
   </mat-tab-group>

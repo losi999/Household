@@ -1,4 +1,4 @@
-import { generateMongoId } from '@household/shared/common/test-data-factory';
+import { generateMongoId } from '@household/shared/common/utils';
 import { addSeconds, getProjectId } from '@household/shared/common/utils';
 import { Project } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';

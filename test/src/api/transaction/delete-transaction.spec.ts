@@ -1,100 +1,64 @@
-import { createTransactionId } from '@household/shared/common/test-data-factory';
-import { getAccountId, getTransactionId } from '@household/shared/common/utils';
-import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
-import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
+import { getTransactionId } from '@household/shared/common/utils';
 import { Account, Transaction } from '@household/shared/types/types';
-import { v4 as uuid } from 'uuid';
+import { accountDataFactory } from '@household/test/api/account/data-factory';
+import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred-data-factory';
+import { loanTransferTransactionDataFactory } from '@household/test/api/transaction/loan-transfer-data-factory';
+import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment-data-factory';
+import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement-data-factory';
+import { splitTransactionDataFactory } from '@household/test/api/transaction/split-data-factory';
+import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer-data-factory';
 
 describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
   let accountDocument: Account.Document;
+  let loanAccountDocument: Account.Document;
   let transferAccountDocument: Account.Document;
   let paymentTransactionDocument: Transaction.PaymentDocument;
   let splitTransactionDocument: Transaction.SplitDocument;
   let transferTransactionDocument: Transaction.TransferDocument;
+  let deferredTransactionDocument: Transaction.DeferredDocument;
+  let reimbursementTransactionDocument: Transaction.ReimbursementDocument;
+  let loanTransferTransactionDocument: Transaction.LoanTransferDocument;
 
   beforeEach(() => {
-    accountDocument = accountDocumentConverter.create({
-      name: `account-${uuid()}`,
-      accountType: 'bankAccount',
-      currency: 'Ft',
-      owner: 'owner1',
-    }, Cypress.env('EXPIRES_IN'), true);
+    accountDocument = accountDataFactory.document();
+    transferAccountDocument = accountDataFactory.document();
+    loanAccountDocument = accountDataFactory.document({
+      accountType: 'loan',
+    });
 
-    transferAccountDocument = accountDocumentConverter.create({
-      name: `account2-${uuid()}`,
-      accountType: 'bankAccount',
-      currency: 'Ft',
-      owner: 'owner1',
-    }, Cypress.env('EXPIRES_IN'), true);
-
-    paymentTransactionDocument = transactionDocumentConverter.createPaymentDocument({
-      body: {
-        accountId: getAccountId(accountDocument),
-        amount: 100,
-        issuedAt: new Date().toISOString(),
-        categoryId: undefined,
-        description: 'payment',
-        quantity: undefined,
-        productId: undefined,
-        invoiceNumber: undefined,
-        billingEndDate: undefined,
-        billingStartDate: undefined,
-        projectId: undefined,
-        recipientId: undefined,
-      },
+    paymentTransactionDocument = paymentTransactionDataFactory.document({
       account: accountDocument,
-      category: undefined,
-      recipient: undefined,
-      project: undefined,
-      product: undefined,
-    }, Cypress.env('EXPIRES_IN'), true);
+    });
 
-    splitTransactionDocument = transactionDocumentConverter.createSplitDocument({
-      body: {
-        accountId: getAccountId(accountDocument),
-        amount: 100,
-        issuedAt: new Date().toISOString(),
-        description: 'split',
-        recipientId: undefined,
-        splits: [
-          {
-            amount: 100,
-            description: 'split',
-            categoryId: undefined,
-            quantity: undefined,
-            productId: undefined,
-            invoiceNumber: undefined,
-            billingEndDate: undefined,
-            billingStartDate: undefined,
-            projectId: undefined,
-          },
-        ],
-      },
+    splitTransactionDocument = splitTransactionDataFactory.document({
       account: accountDocument,
-      categories: {},
-      recipient: undefined,
-      projects: {},
-      products: {},
-    }, Cypress.env('EXPIRES_IN'), true);
+    });
 
-    transferTransactionDocument = transactionDocumentConverter.createTransferDocument({
-      body: {
-        accountId: getAccountId(accountDocument),
-        amount: 100,
-        transferAmount: -10,
-        transferAccountId: getAccountId(transferAccountDocument),
-        description: 'transfer1',
-        issuedAt: new Date().toISOString(),
-      },
+    transferTransactionDocument = transferTransactionDataFactory.document({
       account: accountDocument,
       transferAccount: transferAccountDocument,
-    }, Cypress.env('EXPIRES_IN'), true);
+    });
+
+    deferredTransactionDocument = deferredTransactionDataFactory.document({
+      account: accountDocument,
+      loanAccount: loanAccountDocument,
+    });
+
+    reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+      account: loanAccountDocument,
+      loanAccount: accountDocument,
+    });
+
+    loanTransferTransactionDocument = loanTransferTransactionDataFactory.document({
+      account: accountDocument,
+      transferAccount: loanAccountDocument,
+    });
   });
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
-        .requestDeleteTransaction(createTransactionId())
+        .requestDeleteTransaction(paymentTransactionDataFactory.id())
         .expectUnauthorizedResponse();
     });
   });
@@ -103,7 +67,6 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
 
     it('should delete payment transaction', () => {
       cy.saveAccountDocument(accountDocument)
-        .saveAccountDocument(transferAccountDocument)
         .saveTransactionDocument(paymentTransactionDocument)
         .authenticate(1)
         .requestDeleteTransaction(getTransactionId(paymentTransactionDocument))
@@ -113,7 +76,6 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
 
     it('should delete split transaction', () => {
       cy.saveAccountDocument(accountDocument)
-        .saveAccountDocument(transferAccountDocument)
         .saveTransactionDocument(splitTransactionDocument)
         .authenticate(1)
         .requestDeleteTransaction(getTransactionId(splitTransactionDocument))
@@ -122,8 +84,10 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
     });
 
     it('should delete transfer transaction', () => {
-      cy.saveAccountDocument(accountDocument)
-        .saveAccountDocument(transferAccountDocument)
+      cy.saveAccountDocuments([
+        accountDocument,
+        transferAccountDocument,
+      ])
         .saveTransactionDocument(transferTransactionDocument)
         .authenticate(1)
         .requestDeleteTransaction(getTransactionId(transferTransactionDocument))
@@ -131,11 +95,47 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
         .validateTransactionDeleted(getTransactionId(transferTransactionDocument));
     });
 
+    it('should delete deferred transaction', () => {
+      cy.saveAccountDocuments([
+        accountDocument,
+        loanAccountDocument,
+      ])
+        .saveTransactionDocument(deferredTransactionDocument)
+        .authenticate(1)
+        .requestDeleteTransaction(getTransactionId(deferredTransactionDocument))
+        .expectNoContentResponse()
+        .validateTransactionDeleted(getTransactionId(deferredTransactionDocument));
+    });
+
+    it('should delete reimbursement transaction', () => {
+      cy.saveAccountDocuments([
+        accountDocument,
+        loanAccountDocument,
+      ])
+        .saveTransactionDocument(reimbursementTransactionDocument)
+        .authenticate(1)
+        .requestDeleteTransaction(getTransactionId(reimbursementTransactionDocument))
+        .expectNoContentResponse()
+        .validateTransactionDeleted(getTransactionId(reimbursementTransactionDocument));
+    });
+
+    it('should delete loan transfer transaction', () => {
+      cy.saveAccountDocuments([
+        accountDocument,
+        loanAccountDocument,
+      ])
+        .saveTransactionDocument(loanTransferTransactionDocument)
+        .authenticate(1)
+        .requestDeleteTransaction(getTransactionId(loanTransferTransactionDocument))
+        .expectNoContentResponse()
+        .validateTransactionDeleted(getTransactionId(loanTransferTransactionDocument));
+    });
+
     describe('should return error', () => {
       describe('if transactionId', () => {
         it('is not mongo id', () => {
           cy.authenticate(1)
-            .requestDeleteTransaction(createTransactionId('not-valid'))
+            .requestDeleteTransaction(paymentTransactionDataFactory.id('not-valid'))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('transactionId', 'pathParameters');
         });

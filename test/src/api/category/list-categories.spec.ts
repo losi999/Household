@@ -1,8 +1,7 @@
-import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
 import { default as schema } from '@household/test/api/schemas/category-response-list';
 import { Category, Product } from '@household/shared/types/types';
-import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
-import { v4 as uuid } from 'uuid';
+import { categoryDataFactory } from '@household/test/api/category/data-factory';
+import { productDataFactory } from '@household/test/api/product/data-factory';
 
 describe('GET /category/v1/categories', () => {
   let categoryDocument1: Category.Document;
@@ -10,33 +9,17 @@ describe('GET /category/v1/categories', () => {
   let productDocument: Product.Document;
 
   beforeEach(() => {
-    categoryDocument1 = categoryDocumentConverter.create({
+    categoryDocument1 = categoryDataFactory.document({
       body: {
-        name: `category 1-${uuid()}`,
-        categoryType: 'regular',
-        parentCategoryId: undefined,
-      },
-      parentCategory: undefined,
-    }, Cypress.env('EXPIRES_IN'), true);
-
-    categoryDocument2 = categoryDocumentConverter.create({
-      body: {
-        name: `category 2-${uuid()}`,
         categoryType: 'inventory',
-        parentCategoryId: undefined,
       },
-      parentCategory: undefined,
-    }, Cypress.env('EXPIRES_IN'), true);
+    });
 
-    productDocument = productDocumentConverter.create({
-      body: {
-        brand: `tesco-${uuid()}`,
-        unitOfMeasurement: 'g',
-        measurement: 300,
-      },
+    categoryDocument2 = categoryDataFactory.document();
+
+    productDocument = productDataFactory.document({
       category: categoryDocument1,
-    },
-    Cypress.env('EXPIRES_IN'), true);
+    });
   });
 
   describe('called as anonymous', () => {

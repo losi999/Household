@@ -11,6 +11,7 @@ components:
       properties:
         transactionId:
           type: string
+          minLength: 1
     IssuedAt:
       type: object
       required:
@@ -19,13 +20,22 @@ components:
         issuedAt:
           type: string
           format: date-time
-    Base:
+    Loan:
+      type: object
+      properties:
+        loanAccountId:
+          type: string
+          minLength: 1
+    Amount:
       type: object
       required:
         - amount
       properties:
         amount:
           type: number
+    Description:
+      type: object
+      properties:
         description:
           type: string
           minLength: 1
@@ -72,8 +82,37 @@ components:
         - transferAmount
       properties:
         transferAmount:
-          type: string
-          minLength: 1
+          type: number
+    RemainingAmount:
+      type: object
+      required:
+        - remainingAmount
+      properties:
+        remainingAmount:
+          type: number
+    IsSettled:
+      type: object
+      required:
+        - isSettled
+      properties:
+        isSettled:
+          type: boolean
+    Payments:
+      type: object
+      properties:
+        payments:
+          type: array
+          minItems: 1
+          items:
+            allOf:
+              - $ref: "#/components/schemas/Amount"
+              - $ref: "#/components/schemas/TransactionId"
+              - type: object
+                properties:
+                  amount:
+                    exclusiveMinimum: true
+                    minimum: 0
+
     Category:
       type: object
       properties:
@@ -90,6 +129,20 @@ components:
         - account
       properties:
         account:
+          $ref: "account.yaml#/components/schemas/Response"
+    PayingAccount:
+      type: object
+      required:
+        - payingAccount
+      properties:
+        payingAccount:
+          $ref: "account.yaml#/components/schemas/Response"
+    OwnerAccount:
+      type: object
+      required:
+        - ownerAccount
+      properties:
+        ownerAccount:
           $ref: "account.yaml#/components/schemas/Response"
     Recipient:
       type: object
@@ -119,14 +172,18 @@ components:
         - $ref: "#/components/schemas/InvoiceDate"
         - $ref: "#/components/schemas/Quantity"
         - $ref: "product.yaml#/components/schemas/ProductId"
-        - $ref: "#/components/schemas/Base"
+        - $ref: "#/components/schemas/Amount"
+        - $ref: "#/components/schemas/Description"
+        - $ref: "#/components/schemas/Loan"
     TransferRequest:
       allOf:
         - $ref: "account.yaml#/components/schemas/AccountId"
         - $ref: "#/components/schemas/IssuedAt"
-        - $ref: "#/components/schemas/Base"
+        - $ref: "#/components/schemas/Amount"
+        - $ref: "#/components/schemas/Description"
         - $ref: "#/components/schemas/TransferAccountId"
         - $ref: "#/components/schemas/TransferAmount"
+        - $ref: "#/components/schemas/Payments"
     SplitRequestItem:
       allOf:
         - $ref: "category.yaml#/components/schemas/CategoryId"
@@ -135,13 +192,21 @@ components:
         - $ref: "#/components/schemas/InvoiceDate"
         - $ref: "#/components/schemas/Quantity"
         - $ref: "product.yaml#/components/schemas/ProductId"
-        - $ref: "#/components/schemas/Base"
+        - $ref: "#/components/schemas/Amount"
+        - $ref: "#/components/schemas/Description"
+        - $ref: "#/components/schemas/Loan"
+        - type: object
+          properties:
+            amount:
+              exclusiveMaximum: true
+              minimum: 0
     SplitRequest:
       allOf:
         - $ref: "account.yaml#/components/schemas/AccountId"
         - $ref: "recipient.yaml#/components/schemas/RecipientId"
         - $ref: "#/components/schemas/IssuedAt"
-        - $ref: "#/components/schemas/Base"
+        - $ref: "#/components/schemas/Amount"
+        - $ref: "#/components/schemas/Description"
         - type: object
           required:
             - splits
@@ -153,13 +218,13 @@ components:
     PaymentResponse:
       allOf:
         - $ref: "#/components/schemas/TransactionId"
-        - $ref: "#/components/schemas/Base"
+        - $ref: "#/components/schemas/Amount"
+        - $ref: "#/components/schemas/Description"
         - $ref: "#/components/schemas/IssuedAt"
         - $ref: "#/components/schemas/InvoiceDate"
         - $ref: "#/components/schemas/InvoiceNumber"
         - $ref: "#/components/schemas/Quantity"
         - $ref: "#/components/schemas/Product"
-        - $ref: "#/components/schemas/Account"
         - $ref: "#/components/schemas/Category"
         - $ref: "#/components/schemas/Project"
         - $ref: "#/components/schemas/Recipient"
@@ -171,10 +236,36 @@ components:
               type: string
               enum:
                 - payment
+    DeferredResponse:
+      allOf:
+        - $ref: "#/components/schemas/TransactionId"
+        - $ref: "#/components/schemas/Amount"
+        - $ref: "#/components/schemas/Description"
+        - $ref: "#/components/schemas/IssuedAt"
+        - $ref: "#/components/schemas/InvoiceDate"
+        - $ref: "#/components/schemas/InvoiceNumber"
+        - $ref: "#/components/schemas/Quantity"
+        - $ref: "#/components/schemas/Product"
+        - $ref: "#/components/schemas/IsSettled"
+        - $ref: "#/components/schemas/PayingAccount"
+        - $ref: "#/components/schemas/OwnerAccount"
+        - $ref: "#/components/schemas/RemainingAmount"
+        - $ref: "#/components/schemas/Category"
+        - $ref: "#/components/schemas/Project"
+        - $ref: "#/components/schemas/Recipient"
+        - type: object
+          required:
+            - transactionType
+          properties:
+            transactionType:
+              type: string
+              enum:
+                - deferred
     TransferResponse:
       allOf:
         - $ref: "#/components/schemas/TransactionId"
-        - $ref: "#/components/schemas/Base"
+        - $ref: "#/components/schemas/Amount"
+        - $ref: "#/components/schemas/Description"
         - $ref: "#/components/schemas/IssuedAt"
         - $ref: "#/components/schemas/Account"
         - $ref: "#/components/schemas/TransferAccount"
@@ -189,7 +280,8 @@ components:
                 - transfer
     SplitResponseItem:
       allOf:
-        - $ref: "#/components/schemas/Base"
+        - $ref: "#/components/schemas/Amount"
+        - $ref: "#/components/schemas/Description"
         - $ref: "#/components/schemas/InvoiceNumber"
         - $ref: "#/components/schemas/InvoiceDate"
         - $ref: "#/components/schemas/Quantity"
@@ -199,7 +291,8 @@ components:
     SplitResponse:
       allOf:
         - $ref: "#/components/schemas/TransactionId"
-        - $ref: "#/components/schemas/Base"
+        - $ref: "#/components/schemas/Amount"
+        - $ref: "#/components/schemas/Description"
         - $ref: "#/components/schemas/IssuedAt"
         - $ref: "#/components/schemas/Account"
         - $ref: "#/components/schemas/Recipient"
@@ -224,7 +317,8 @@ components:
     Report:
       allOf:
         - $ref: "#/components/schemas/TransactionId"
-        - $ref: "#/components/schemas/Base"
+        - $ref: "#/components/schemas/Amount"
+        - $ref: "#/components/schemas/Description"
         - $ref: "#/components/schemas/IssuedAt"
         - type: object
           required:

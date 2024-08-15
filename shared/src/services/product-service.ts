@@ -5,6 +5,7 @@ import { UpdateQuery } from 'mongoose';
 export interface IProductService {
   dumpProducts(): Promise<Product.Document[]>;
   saveProduct(doc: Product.Document): Promise<Product.Document>;
+  saveProducts(docs: Product.Document[]): Promise<unknown>;
   getProductById(productId: Product.Id): Promise<Product.Document>;
   listProductsByIds(productIds: Product.Id[]): Promise<Product.Document[]>;
   deleteProduct(productId: Product.Id): Promise<unknown>;
@@ -31,6 +32,15 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
     },
     saveProduct: async (doc) => {
       return mongodbService.products.create(doc);
+    },
+    saveProducts: (docs) => {
+      return mongodbService.inSession((session) => {
+        return session.withTransaction(() => {
+          return mongodbService.products.insertMany(docs, {
+            session,
+          });
+        });
+      });
     },
     getProductById: async (productId) => {
       return !productId ? null : mongodbService.products.findById(productId)
@@ -94,6 +104,24 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
             ],
           })
             .exec();
+          await mongodbService.transactions.updateMany({
+            'deferredSplits.product': productId,
+          }, {
+
+            $unset: {
+              'deferredSplits.$[element].product': 1,
+              'deferredSplits.$[element].quantity': 1,
+            },
+          }, {
+            session,
+            runValidators: true,
+            arrayFilters: [
+              {
+                'element.product': productId,
+              },
+            ],
+          })
+            .exec();
         });
       });
     },
@@ -133,6 +161,26 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
           }, {
             $set: {
               'splits.$[element].product': targetProductId,
+            },
+          }, {
+            session,
+            runValidators: true,
+            arrayFilters: [
+              {
+                'element.product': {
+                  $in: sourceProductIds,
+                },
+              },
+            ],
+          });
+
+          await mongodbService.transactions.updateMany({
+            'deferredSplits.product': {
+              $in: sourceProductIds,
+            },
+          }, {
+            $set: {
+              'deferredSplits.$[element].product': targetProductId,
             },
           }, {
             session,

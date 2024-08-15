@@ -413,7 +413,21 @@ paths:
             application/json:
               schema:
                 $ref: "transaction.yaml#/components/schemas/Response"
-  /transaction/v1/transactions:
+  /transaction/v1/transactions/deferred:
+    get:
+      parameters:
+        - $ref: "#/components/parameters/Query.IsSettled"
+        - $ref: "#/components/parameters/Query.TransactionId"
+      responses:
+        200:
+          description: Transaction response list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "transaction.yaml#/components/schemas/DeferredResponse"
+  /transaction/v1/transactionReports:
     post:
       requestBody:
         content:
@@ -426,7 +440,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "transaction.yaml#/components/schemas/Report"
+                type: array
+                items:
+                  $ref: "transaction.yaml#/components/schemas/Report"
   /transaction/v1/transactions/payment:
     post:
       requestBody:
@@ -578,3 +594,15 @@ components:
       required: true
       schema:
         type: string
+    Query.TransactionId:
+      name: transactionId
+      in: query
+      required: false
+      schema:
+        type: string
+    Query.IsSettled:
+      name: isSettled
+      in: query
+      required: false
+      schema:
+        type: boolean

@@ -1,25 +1,25 @@
 <household-toolbar title="Tranzakció">
-  <button mat-icon-button [routerLink]="['/accounts', transaction.account.accountId, 'new']" replaceUrl="true">
+  <!-- <button mat-icon-button [routerLink]="['/accounts', transaction.account.accountId, 'new']" replaceUrl="true">
     <mat-icon>add</mat-icon>
   </button>
   <button mat-icon-button type="button" replaceUrl="true"
     [routerLink]="['/accounts', transaction.account.accountId, 'transactions', transaction.transactionId, 'edit']">
     <mat-icon>edit</mat-icon>
-  </button>
+  </button> -->
 </household-toolbar>
 <div>
   {{issuedAt | date: 'yyyy. MM. dd. HH:mm'}}
 </div>
 <div>
-  Számla: {{transaction.account.name}}
+  <!-- Számla: {{transaction.account.name}} -->
 </div>
 <div [ngClass]="transaction.amount >= 0 ? 'green' : 'red'">
-  {{transaction.amount | number:'1.0-2':'hu'}} {{transaction.account.currency}}
+  <!-- {{transaction.amount | number:'1.0-2':'hu'}} {{transaction.account.currency}} -->
 </div>
 <div *ngIf="transaction.description">
   Megjegyzés: {{transaction.description}}
 </div>
-<div [ngSwitch]="transaction.transactionType">
+<!-- <div [ngSwitch]="transaction.transactionType">
   <ng-container *ngSwitchCase="'split'">
     <div *ngIf="transaction.recipient">
       Partner: {{transaction.recipient.name}}
@@ -104,4 +104,4 @@
       Projekt: {{transaction.project.name}}
     </div>
   </ng-container>
-</div>
+</div> -->

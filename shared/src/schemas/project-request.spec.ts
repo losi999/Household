@@ -8,41 +8,39 @@ describe('Project schema', () => {
   describe('should accept', () => {
     tester.validateSuccess(createProjectRequest());
 
-    describe('without optional property', () => {
-      tester.validateSuccess(createProjectRequest({
-        description: undefined,
-      }));
-    });
+    tester.validateSuccess(createProjectRequest({
+      description: undefined,
+    }), 'without description');
   });
 
   describe('should deny', () => {
     describe('if data', () => {
-      tester.validateSchemaAdditionalProperties({
+      tester.additionalProperties({
         ...createProjectRequest(),
         extra: 1,
       } as any, 'data');
     });
 
     describe('if data.name', () => {
-      tester.validateSchemaRequired(createProjectRequest({
+      tester.required(createProjectRequest({
         name: undefined,
       }), 'name');
 
-      tester.validateSchemaType(createProjectRequest({
+      tester.type(createProjectRequest({
         name: 1 as any,
       }), 'name', 'string');
 
-      tester.validateSchemaMinLength(createProjectRequest({
+      tester.minLength(createProjectRequest({
         name: '',
       }), 'name', 1);
     });
 
     describe('if data.description', () => {
-      tester.validateSchemaType(createProjectRequest({
+      tester.type(createProjectRequest({
         description: 1 as any,
       }), 'description', 'string');
 
-      tester.validateSchemaMinLength(createProjectRequest({
+      tester.minLength(createProjectRequest({
         description: '',
       }), 'description', 1);
     });

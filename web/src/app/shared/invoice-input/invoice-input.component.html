@@ -1,17 +1,12 @@
 <div [formGroup]="form">
-  <div class="invoice__invoice-number">
-    <household-clearable-input label="Számlaszám" formControlName="invoiceNumber" (blur)="touched()">
-    </household-clearable-input>
-  </div>
-  <mat-form-field class="datetime-input__date" appearance="fill">
+  <mat-form-field appearance="fill">
     <mat-label>Számlázási időszak</mat-label>
-    <input matInput [matDatepicker]="pickerStart" formControlName="billingStartDate" (blur)="touched()">
-    <mat-datepicker-toggle matPrefix [for]="pickerStart" tabindex="-1"></mat-datepicker-toggle>
-    <mat-datepicker #pickerStart></mat-datepicker>
+    <mat-date-range-input [rangePicker]="picker">
+      <input matStartDate formControlName="billingStartDate" placeholder="Kezdete">
+      <input matEndDate formControlName="billingEndDate" placeholder="Vége">
+    </mat-date-range-input>
+    <mat-datepicker-toggle matPrefix [for]="picker" tabindex="-1" />
+    <mat-date-range-picker #picker />
   </mat-form-field>
-  <mat-form-field class="datetime-input__date" appearance="fill">
-    <input matInput [matDatepicker]="pickerSEnd" formControlName="billingEndDate" (blur)="touched()">
-    <mat-datepicker-toggle matPrefix [for]="pickerSEnd" tabindex="-1"></mat-datepicker-toggle>
-    <mat-datepicker #pickerSEnd></mat-datepicker>
-  </mat-form-field>
+  <household-clearable-input label="Számlaszám" formControlName="invoiceNumber" (blur)="touched()" />
 </div>

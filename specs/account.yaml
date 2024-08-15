@@ -11,6 +11,7 @@ components:
       properties:
         accountId:
           type: string
+          minLength: 1
     IsOpen:
       type: object
       required:
@@ -73,8 +74,11 @@ components:
       type: object
       required:
         - balance
+        - deferredCount
       properties:
         balance:
+          type: number
+        deferredCount:
           type: number
     Response:
       allOf:

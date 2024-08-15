@@ -1,8 +1,8 @@
 import { IBulkTransactionImporterService, bulkTransactionImporterServiceFactory } from '@household/api/functions/bulk-transaction-importer/bulk-transaction-importer.service';
 import { createDocumentUpdate, createDraftTransactionDocument, createFileDocument, createFileId } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { IDraftTransactionDocumentConverter } from '@household/shared/converters/draft-transaction-document-converter';
 import { IFileDocumentConverter } from '@household/shared/converters/file-document-converter';
-import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { IExcelParserService } from '@household/shared/services/excel-parser-service';
 import { IFileService } from '@household/shared/services/file-service';
 import { IStorageService } from '@household/shared/services/storage-service';
@@ -14,7 +14,7 @@ describe('Bulk transaction importer service', () => {
   let mockFileDocumentConverter: Mock<IFileDocumentConverter>;
   let mockStorageService: Mock<IStorageService>;
   let mockExcelParser: Mock<IExcelParserService>;
-  let mockTransactionDocumentConverter: Mock<ITransactionDocumentConverter>;
+  let mockDraftTransactionDocumentConverter: Mock<IDraftTransactionDocumentConverter>;
   let mockTransactionService: Mock<ITransactionService>;
 
   beforeEach(() => {
@@ -22,14 +22,14 @@ describe('Bulk transaction importer service', () => {
     mockFileDocumentConverter = createMockService('updateStatus');
     mockStorageService = createMockService('readFile');
     mockExcelParser = createMockService('parse');
-    mockTransactionDocumentConverter = createMockService('createDraftDocument');
+    mockDraftTransactionDocumentConverter = createMockService('create');
     mockTransactionService = createMockService('saveTransactions');
 
     service = bulkTransactionImporterServiceFactory(mockFileService.service,
       mockFileDocumentConverter.service,
       mockStorageService.service,
       mockExcelParser.service,
-      mockTransactionDocumentConverter.service,
+      mockDraftTransactionDocumentConverter.service,
       mockTransactionService.service);
   });
 
@@ -55,7 +55,7 @@ describe('Bulk transaction importer service', () => {
           issuedAt,
         },
       ]);
-      mockTransactionDocumentConverter.functions.createDraftDocument.mockReturnValue(draftTransaction);
+      mockDraftTransactionDocumentConverter.functions.create.mockReturnValue(draftTransaction);
       mockTransactionService.functions.saveTransactions.mockResolvedValue(undefined);
       mockFileDocumentConverter.functions.updateStatus.mockReturnValue(fileDocumentUpdate);
       mockFileService.functions.updateFile.mockResolvedValue(undefined);
@@ -67,7 +67,7 @@ describe('Bulk transaction importer service', () => {
       validateFunctionCall(mockFileService.functions.getFileById, fileId);
       validateFunctionCall(mockStorageService.functions.readFile, bucketName, fileName);
       validateFunctionCall(mockExcelParser.functions.parse, fileContent, queriedFileDocument.type, queriedFileDocument.timezone);
-      validateFunctionCall(mockTransactionDocumentConverter.functions.createDraftDocument, {
+      validateFunctionCall(mockDraftTransactionDocumentConverter.functions.create, {
         body: {
           amount,
           description,
@@ -94,7 +94,7 @@ describe('Bulk transaction importer service', () => {
       validateFunctionCall(mockFileService.functions.getFileById, fileId);
       validateFunctionCall(mockStorageService.functions.readFile);
       validateFunctionCall(mockExcelParser.functions.parse);
-      validateFunctionCall(mockTransactionDocumentConverter.functions.createDraftDocument);
+      validateFunctionCall(mockDraftTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransactions);
       validateFunctionCall(mockFileDocumentConverter.functions.updateStatus);
       validateFunctionCall(mockFileService.functions.updateFile);
@@ -112,7 +112,7 @@ describe('Bulk transaction importer service', () => {
       validateFunctionCall(mockFileService.functions.getFileById, fileId);
       validateFunctionCall(mockStorageService.functions.readFile, bucketName, fileName);
       validateFunctionCall(mockExcelParser.functions.parse);
-      validateFunctionCall(mockTransactionDocumentConverter.functions.createDraftDocument);
+      validateFunctionCall(mockDraftTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransactions);
       validateFunctionCall(mockFileDocumentConverter.functions.updateStatus);
       validateFunctionCall(mockFileService.functions.updateFile);
@@ -129,7 +129,7 @@ describe('Bulk transaction importer service', () => {
           issuedAt,
         },
       ]);
-      mockTransactionDocumentConverter.functions.createDraftDocument.mockReturnValue(draftTransaction);
+      mockDraftTransactionDocumentConverter.functions.create.mockReturnValue(draftTransaction);
       mockTransactionService.functions.saveTransactions.mockRejectedValue('this is a mongo error');
 
       await service({
@@ -139,7 +139,7 @@ describe('Bulk transaction importer service', () => {
       validateFunctionCall(mockFileService.functions.getFileById, fileId);
       validateFunctionCall(mockStorageService.functions.readFile, bucketName, fileName);
       validateFunctionCall(mockExcelParser.functions.parse, fileContent, queriedFileDocument.type, queriedFileDocument.timezone);
-      validateFunctionCall(mockTransactionDocumentConverter.functions.createDraftDocument, {
+      validateFunctionCall(mockDraftTransactionDocumentConverter.functions.create, {
         body: {
           amount,
           description,
@@ -163,7 +163,7 @@ describe('Bulk transaction importer service', () => {
           issuedAt,
         },
       ]);
-      mockTransactionDocumentConverter.functions.createDraftDocument.mockReturnValue(draftTransaction);
+      mockDraftTransactionDocumentConverter.functions.create.mockReturnValue(draftTransaction);
       mockTransactionService.functions.saveTransactions.mockResolvedValue(undefined);
       mockFileDocumentConverter.functions.updateStatus.mockReturnValue(fileDocumentUpdate);
       mockFileService.functions.updateFile.mockRejectedValue('this is a mongo error');
@@ -175,7 +175,7 @@ describe('Bulk transaction importer service', () => {
       validateFunctionCall(mockFileService.functions.getFileById, fileId);
       validateFunctionCall(mockStorageService.functions.readFile, bucketName, fileName);
       validateFunctionCall(mockExcelParser.functions.parse, fileContent, queriedFileDocument.type, queriedFileDocument.timezone);
-      validateFunctionCall(mockTransactionDocumentConverter.functions.createDraftDocument, {
+      validateFunctionCall(mockDraftTransactionDocumentConverter.functions.create, {
         body: {
           amount,
           description,

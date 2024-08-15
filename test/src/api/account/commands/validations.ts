@@ -1,6 +1,7 @@
 import { getAccountId } from '@household/shared/common/utils';
 import { Account } from '@household/shared/types/types';
 import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/test/api/types';
+import { expectEmptyObject, expectRemainingProperties } from '@household/test/api/utils';
 
 const validateAccountDocument = (response: Account.AccountId, request: Account.Request) => {
   const id = response?.accountId;
@@ -8,32 +9,45 @@ const validateAccountDocument = (response: Account.AccountId, request: Account.R
   cy.log('Get account document', id)
     .getAccountDocumentById(id)
     .should((document) => {
+      const { name, accountType, currency, owner, balance, deferredCount, isOpen, ...internal } = document;
+
       expect(getAccountId(document), '_id').to.equal(id);
-      expect(document.name, 'name').to.equal(request.name);
-      expect(document.accountType, 'accountType').to.equal(request.accountType);
-      expect(document.currency, 'currency').to.equal(request.currency);
-      expect(document.owner, 'owner').to.equal(request.owner);
-      expect(document.balance, 'balance').to.equal(0);
-      expect(document.isOpen, 'isOpen').to.equal(true);
+      expect(name, 'name').to.equal(request.name);
+      expect(accountType, 'accountType').to.equal(request.accountType);
+      expect(currency, 'currency').to.equal(request.currency);
+      expect(owner, 'owner').to.equal(request.owner);
+      expect(balance, 'balance').to.equal(0);
+      expect(deferredCount, 'deferredCount').to.equal(0);
+      expect(isOpen, 'isOpen').to.equal(true);
+      expectRemainingProperties(internal);
     });
 };
 
-const validateAccountResponse = (response: Account.Response, document: Account.Document, balance: number) => {
-  expect(response.accountId, 'accountId').to.equal(getAccountId(document));
-  expect(response.name, 'name').to.equal(document.name);
-  expect(response.accountType, 'accountType').to.equal(document.accountType);
-  expect(response.currency, 'currency').to.equal(document.currency);
-  expect(response.owner, 'owner').to.equal(document.owner);
-  expect(response.balance, 'balance').to.equal(balance);
-  expect(response.isOpen, 'isOpen').to.equal(document.isOpen);
-  expect(response.fullName, 'fullName').to.equal(`${document.name} (${document.owner})`);
+const validateAccountResponse = (nestedPath: string = '') => (response: Account.Response, document: Account.Document, expectedBalance: number, expectedDeferredCount: number) => {
+  const { accountId, name, accountType, currency, owner, balance, deferredCount, isOpen, fullName, ...empty } = response;
+
+  expect(accountId, `${nestedPath}accountId`).to.equal(getAccountId(document));
+  expect(name, `${nestedPath}name`).to.equal(document.name);
+  expect(accountType, `${nestedPath}accountType`).to.equal(document.accountType);
+  expect(currency, `${nestedPath}currency`).to.equal(document.currency);
+  expect(owner, `${nestedPath}owner`).to.equal(document.owner);
+  expect(balance, `${nestedPath}balance`).to.equal(expectedBalance);
+  expect(deferredCount, `${nestedPath}deferredCount`).to.equal(expectedDeferredCount);
+  expect(isOpen, `${nestedPath}isOpen`).to.equal(document.isOpen);
+  expect(fullName, `${nestedPath}fullName`).to.equal(`${document.name} (${document.owner})`);
+  expectEmptyObject(empty, nestedPath);
 };
 
-const validateAccountListResponse = (responses: Account.Response[], documents: Account.Document[], balances: number[]) => {
-  documents.forEach((document, index) => {
+const validateNestedAccountResponse = (nestedPath: string, ...rest: Parameters<ReturnType<typeof validateAccountResponse>>) => validateAccountResponse(nestedPath)(...rest);
+
+const validateAccountListResponse = (responses: Account.Response[], documents: [Account.Document, number, number][]) => {
+  documents.forEach(([
+    document,
+    balance,
+    deferredCount,
+  ], index) => {
     const response = responses.find(r => r.accountId === getAccountId(document));
-    const balance = balances[index];
-    validateAccountResponse(response, document, balance);
+    cy.validateNestedAccountResponse(`[${index}].`, response, document, balance, deferredCount);
   });
 };
 
@@ -50,12 +64,13 @@ export const setAccountValidationCommands = () => {
     prevSubject: true,
   }, {
     validateAccountDocument,
-    validateAccountResponse,
+    validateAccountResponse: validateAccountResponse(),
     validateAccountListResponse,
   });
 
   Cypress.Commands.addAll({
     validateAccountDeleted,
+    validateNestedAccountResponse,
   });
 };
 
@@ -63,11 +78,12 @@ declare global {
   namespace Cypress {
     interface Chainable {
       validateAccountDeleted: CommandFunction<typeof validateAccountDeleted>;
+      validateNestedAccountResponse: CommandFunction<typeof validateNestedAccountResponse>;
     }
 
     interface ChainableResponseBody extends Chainable {
       validateAccountDocument: CommandFunctionWithPreviousSubject<typeof validateAccountDocument>;
-      validateAccountResponse: CommandFunctionWithPreviousSubject<typeof validateAccountResponse>;
+      validateAccountResponse: CommandFunctionWithPreviousSubject<ReturnType<typeof validateAccountResponse>>;
       validateAccountListResponse: CommandFunctionWithPreviousSubject<typeof validateAccountListResponse>;
     }
   }

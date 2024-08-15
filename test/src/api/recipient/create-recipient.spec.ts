@@ -1,14 +1,11 @@
-import { recipientDocumentConverter } from '@household/shared/dependencies/converters/recipient-document-converter';
 import { Recipient } from '@household/shared/types/types';
-import { v4 as uuid } from 'uuid';
+import { recipientDataFactory } from './data-factory';
 
 describe('POST recipient/v1/recipients', () => {
   let request: Recipient.Request;
 
   beforeEach(() => {
-    request = {
-      name: `name-${uuid()}`,
-    };
+    request = recipientDataFactory.request();
   });
 
   describe('called as anonymous', () => {
@@ -32,36 +29,33 @@ describe('POST recipient/v1/recipients', () => {
       describe('if name', () => {
         it('is missing from body', () => {
           cy.authenticate(1)
-            .requestCreateRecipient({
-              ...request,
+            .requestCreateRecipient(recipientDataFactory.request({
               name: undefined,
-            })
+            }))
             .expectBadRequestResponse()
             .expectRequiredProperty('name', 'body');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestCreateRecipient({
-              ...request,
+            .requestCreateRecipient(recipientDataFactory.request({
               name: 1 as any,
-            })
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('name', 'string', 'body');
         });
 
         it('is too short', () => {
           cy.authenticate(1)
-            .requestCreateRecipient({
-              ...request,
+            .requestCreateRecipient(recipientDataFactory.request({
               name: '',
-            })
+            }))
             .expectBadRequestResponse()
             .expectTooShortProperty('name', 1, 'body');
         });
 
         it('is already in used by a different recipient', () => {
-          const recipientDocument = recipientDocumentConverter.create(request, Cypress.env('EXPIRES_IN'), true);
+          const recipientDocument = recipientDataFactory.document(request);
 
           cy.saveRecipientDocument(recipientDocument)
             .authenticate(1)

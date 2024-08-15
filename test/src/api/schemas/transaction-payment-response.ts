@@ -6,7 +6,8 @@ import { default as category } from '@household/test/api/schemas/category-respon
 import { default as project } from '@household/test/api/schemas/project-response';
 import { default as product } from '@household/test/api/schemas/product-response';
 import { default as recipient } from '@household/test/api/schemas/recipient-response';
-import { default as base } from '@household/shared/schemas/partials/transaction-base';
+import { default as amount } from '@household/shared/schemas/partials/transaction-amount';
+import { default as description } from '@household/shared/schemas/partials/transaction-description';
 import { default as issuedAt } from '@household/shared/schemas/partials/transaction-issued-at';
 import { default as productId } from '@household/shared/schemas/product-id';
 import { default as invoice } from '@household/shared/schemas/partials/transaction-invoice';
@@ -17,7 +18,7 @@ const schema: StrictJSONSchema7<Transaction.PaymentResponse> = {
   additionalProperties: false,
   required: [
     ...transactionId.required,
-    ...base.required,
+    ...amount.required,
     ...issuedAt.required,
     'account',
     'transactionType',
@@ -29,7 +30,8 @@ const schema: StrictJSONSchema7<Transaction.PaymentResponse> = {
   },
   properties: {
     ...transactionId.properties,
-    ...base.properties,
+    ...amount.properties,
+    ...description.properties,
     ...issuedAt.properties,
     transactionType: {
       type: 'string',

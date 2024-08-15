@@ -1,26 +1,24 @@
-import { createAccountId } from '@household/shared/common/test-data-factory';
 import { getAccountId, getTransactionId } from '@household/shared/common/utils';
-import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
-import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
 import { Account, Transaction } from '@household/shared/types/types';
-import { v4 as uuid } from 'uuid';
+import { accountDataFactory } from '@household/test/api/account/data-factory';
+import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred-data-factory';
+import { loanTransferTransactionDataFactory } from '@household/test/api/transaction/loan-transfer-data-factory';
+import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment-data-factory';
+import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement-data-factory';
+import { splitTransactionDataFactory } from '@household/test/api/transaction/split-data-factory';
+import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer-data-factory';
 
 describe('DELETE /account/v1/accounts/{accountId}', () => {
   let accountDocument: Account.Document;
 
   beforeEach(() => {
-    accountDocument = accountDocumentConverter.create({
-      name: `account-${uuid()}`,
-      accountType: 'bankAccount',
-      currency: 'Ft',
-      owner: 'owner1',
-    }, Cypress.env('EXPIRES_IN'), true);
+    accountDocument = accountDataFactory.document();
   });
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
-        .requestDeleteAccount(createAccountId())
+        .requestDeleteAccount(accountDataFactory.id())
         .expectUnauthorizedResponse();
     });
   });
@@ -35,96 +33,123 @@ describe('DELETE /account/v1/accounts/{accountId}', () => {
     });
 
     describe('related transactions', () => {
+      let loanAccountDocument: Account.Document;
+      let secondaryAccountDocument: Account.Document;
       let paymentTransactionDocument: Transaction.PaymentDocument;
       let splitTransactionDocument: Transaction.SplitDocument;
       let transferTransactionDocument: Transaction.TransferDocument;
       let invertedTransferTransactionDocument: Transaction.TransferDocument;
-      let transferAccountDocument: Account.Document;
+      let repayingTransferTransactionDocument: Transaction.TransferDocument;
+      let invertedRepayingTransferTransactionDocument: Transaction.TransferDocument;
+      let loanTransferTransactionDocument: Transaction.LoanTransferDocument;
+      let invertedLoanTransferTransactionDocument: Transaction.LoanTransferDocument;
+      let payingDeferredTransactionDocument: Transaction.DeferredDocument;
+      let owningDeferredTransactionDocument: Transaction.DeferredDocument;
+      let payingDeferredToLoanTransactionDocument: Transaction.DeferredDocument;
+      let owningReimbursementTransactionDocument: Transaction.ReimbursementDocument;
+      let deferredSplitTransactionDocument: Transaction.SplitDocument;
 
       beforeEach(() => {
-        transferAccountDocument = accountDocumentConverter.create({
-          name: `transfer-${uuid()}`,
-          accountType: 'bankAccount',
-          currency: 'Ft',
-          owner: 'owner1',
-        }, Cypress.env('EXPIRES_IN'), true);
+        secondaryAccountDocument = accountDataFactory.document();
+        loanAccountDocument = accountDataFactory.document({
+          accountType: 'loan',
+        });
 
-        paymentTransactionDocument = transactionDocumentConverter.createPaymentDocument({
-          body: {
-            accountId: getAccountId(accountDocument),
-            amount: 100,
-            description: 'description',
-            issuedAt: new Date(2022, 2, 3).toISOString(),
-            categoryId: undefined,
-            inventory: undefined,
-            invoice: undefined,
-            projectId: undefined,
-            recipientId: undefined,
-          },
+        paymentTransactionDocument = paymentTransactionDataFactory.document({
           account: accountDocument,
-          category: undefined,
-          project: undefined,
-          recipient: undefined,
-          product: undefined,
-        }, Cypress.env('EXPIRES_IN'), true);
+        });
 
-        splitTransactionDocument = transactionDocumentConverter.createSplitDocument({
-          body: {
-            accountId: getAccountId(accountDocument),
-            amount: 100,
-            description: 'description',
-            issuedAt: new Date(2022, 2, 3).toISOString(),
-            recipientId: undefined,
-            splits: [
-              {
-                amount: 100,
-                categoryId: undefined,
-                description: undefined,
-                inventory: undefined,
-                invoice: undefined,
-                projectId: undefined,
-              },
-            ],
-          },
+        splitTransactionDocument = splitTransactionDataFactory.document({
           account: accountDocument,
-          recipient: undefined,
-          categories: {},
-          projects: {},
-          products: {},
-        }, Cypress.env('EXPIRES_IN'), true);
+        });
 
-        transferTransactionDocument = transactionDocumentConverter.createTransferDocument({
-          body: {
-            accountId: getAccountId(accountDocument),
-            amount: 100,
-            transferAmount: -10,
-            description: 'description',
-            issuedAt: new Date(2022, 2, 3).toISOString(),
-            transferAccountId: getAccountId(transferAccountDocument),
-          },
+        deferredSplitTransactionDocument = splitTransactionDataFactory.document({
+          account: secondaryAccountDocument,
+          splits: [
+            {
+              loanAccount: accountDocument,
+            },
+            {
+              loanAccount: loanAccountDocument,
+            },
+            {},
+          ],
+        });
+
+        transferTransactionDocument = transferTransactionDataFactory.document({
           account: accountDocument,
-          transferAccount: transferAccountDocument,
-        }, Cypress.env('EXPIRES_IN'), true);
+          transferAccount: secondaryAccountDocument,
+        });
 
-        invertedTransferTransactionDocument = transactionDocumentConverter.createTransferDocument({
-          body: {
-            accountId: getAccountId(transferAccountDocument),
-            amount: 100,
-            transferAmount: -10,
-            description: 'description',
-            issuedAt: new Date(2022, 2, 3).toISOString(),
-            transferAccountId: getAccountId(accountDocument),
-          },
-          account: transferAccountDocument,
+        invertedTransferTransactionDocument = transferTransactionDataFactory.document({
+          account: secondaryAccountDocument,
           transferAccount: accountDocument,
-        }, Cypress.env('EXPIRES_IN'), true);
+        });
+
+        loanTransferTransactionDocument = loanTransferTransactionDataFactory.document({
+          account: accountDocument,
+          transferAccount: loanAccountDocument,
+        });
+
+        invertedLoanTransferTransactionDocument = loanTransferTransactionDataFactory.document({
+          account: loanAccountDocument,
+          transferAccount: accountDocument,
+        });
+
+        payingDeferredTransactionDocument = deferredTransactionDataFactory.document({
+          account: accountDocument,
+          loanAccount: secondaryAccountDocument,
+        });
+
+        payingDeferredToLoanTransactionDocument = deferredTransactionDataFactory.document({
+          account: accountDocument,
+          loanAccount: loanAccountDocument,
+        });
+
+        owningDeferredTransactionDocument = deferredTransactionDataFactory.document({
+          account: secondaryAccountDocument,
+          loanAccount: accountDocument,
+        });
+
+        owningReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+          account: loanAccountDocument,
+          loanAccount: accountDocument,
+        });
+
+        repayingTransferTransactionDocument = transferTransactionDataFactory.document({
+          account: accountDocument,
+          transferAccount: secondaryAccountDocument,
+          transactions: [owningDeferredTransactionDocument],
+        });
+
+        invertedRepayingTransferTransactionDocument = transferTransactionDataFactory.document({
+          account: secondaryAccountDocument,
+          transferAccount: accountDocument,
+          transactions: [payingDeferredTransactionDocument],
+        });
+
       });
       it('should be deleted if account is deleted', () => {
-        cy.saveAccountDocument(accountDocument)
-          .saveTransactionDocument(paymentTransactionDocument)
-          .saveTransactionDocument(splitTransactionDocument)
-          .saveTransactionDocument(transferTransactionDocument)
-          .saveTransactionDocument(invertedTransferTransactionDocument)
+        cy.saveAccountDocuments([
+          loanAccountDocument,
+          accountDocument,
+          secondaryAccountDocument,
+        ])
+          .saveTransactionDocuments([
+            paymentTransactionDocument,
+            splitTransactionDocument,
+            transferTransactionDocument,
+            invertedTransferTransactionDocument,
+            loanTransferTransactionDocument,
+            invertedLoanTransferTransactionDocument,
+            payingDeferredTransactionDocument,
+            owningDeferredTransactionDocument,
+            payingDeferredToLoanTransactionDocument,
+            owningReimbursementTransactionDocument,
+            deferredSplitTransactionDocument,
+            repayingTransferTransactionDocument,
+            invertedRepayingTransferTransactionDocument,
+          ])
           .authenticate(1)
           .requestDeleteAccount(getAccountId(accountDocument))
           .expectNoContentResponse()
@@ -132,7 +157,16 @@ describe('DELETE /account/v1/accounts/{accountId}', () => {
           .validateTransactionDeleted(getTransactionId(paymentTransactionDocument))
           .validateTransactionDeleted(getTransactionId(splitTransactionDocument))
           .validateTransactionDeleted(getTransactionId(transferTransactionDocument))
-          .validateTransactionDeleted(getTransactionId(invertedTransferTransactionDocument));
+          .validateTransactionDeleted(getTransactionId(invertedTransferTransactionDocument))
+          .validateTransactionDeleted(getTransactionId(loanTransferTransactionDocument))
+          .validateTransactionDeleted(getTransactionId(invertedLoanTransferTransactionDocument))
+          .validateTransactionDeleted(getTransactionId(payingDeferredTransactionDocument))
+          .validateTransactionDeleted(getTransactionId(payingDeferredToLoanTransactionDocument))
+          .validateTransactionDeleted(getTransactionId(owningReimbursementTransactionDocument))
+          .validateTransactionDeleted(getTransactionId(repayingTransferTransactionDocument))
+          .validateTransactionDeleted(getTransactionId(invertedRepayingTransferTransactionDocument))
+          .validateConvertedToPaymentDocument(owningDeferredTransactionDocument)
+          .validateConvertedToRegularSplitItemDocument(deferredSplitTransactionDocument);
       });
     });
 
@@ -140,7 +174,7 @@ describe('DELETE /account/v1/accounts/{accountId}', () => {
       describe('if accountId', () => {
         it('is not mongo id', () => {
           cy.authenticate(1)
-            .requestDeleteAccount(createAccountId('not-valid'))
+            .requestDeleteAccount(accountDataFactory.id('not-valid'))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('accountId', 'pathParameters');
         });

@@ -1,5 +1,5 @@
-import { IListTransactionsService, listTransactionsServiceFactory } from '@household/api/functions/list-transactions/list-transactions.service';
-import { createAccountId, createPaymentTransactionDocument, createTransactionReport } from '@household/shared/common/test-data-factory';
+import { IReportTransactionsService, reportTransactionsServiceFactory } from '@household/api/functions/report-transactions/report-transactions.service';
+import { createAccountId, createTransactionRawReport, createTransactionReport } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IReportDocumentConverter } from '@household/shared/converters/report-document-converter';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
@@ -7,8 +7,8 @@ import { ITransactionService } from '@household/shared/services/transaction-serv
 import { Report } from '@household/shared/types/types';
 import { PipelineStage } from 'mongoose';
 
-describe('List transactions service', () => {
-  let service: IListTransactionsService;
+describe('Report transactions service', () => {
+  let service: IReportTransactionsService;
   let mockReportDocumentConverter: Mock<IReportDocumentConverter>;
   let mockTransactionService: Mock<ITransactionService>;
   let mockTransactionDocumentConverter: Mock<ITransactionDocumentConverter>;
@@ -18,10 +18,10 @@ describe('List transactions service', () => {
     mockTransactionService = createMockService('listTransactions');
     mockTransactionDocumentConverter = createMockService('toReportList');
 
-    service = listTransactionsServiceFactory(mockReportDocumentConverter.service, mockTransactionService.service, mockTransactionDocumentConverter.service);
+    service = reportTransactionsServiceFactory(mockReportDocumentConverter.service, mockTransactionService.service, mockTransactionDocumentConverter.service);
   });
 
-  const queriedDocument = createPaymentTransactionDocument();
+  const queriedDocument = createTransactionRawReport();
   const convertedReport = createTransactionReport();
   const body: Report.Request = [
     {
@@ -30,45 +30,33 @@ describe('List transactions service', () => {
       include: true,
     },
   ];
-  const firstMatch: PipelineStage.Match = {
+  const match: PipelineStage.Match = {
     $match: {
       $and: [],
     },
   };
 
-  const secondMatch: PipelineStage.Match = {
-    $match: {
-      $or: [],
-    },
-  };
-
   it('should return report items', async () => {
-    mockReportDocumentConverter.functions.createFilterQuery.mockReturnValue([
-      firstMatch,
-      secondMatch,
-    ]);
+    mockReportDocumentConverter.functions.createFilterQuery.mockReturnValue(match);
     mockTransactionService.functions.listTransactions.mockResolvedValue([queriedDocument]);
     mockTransactionDocumentConverter.functions.toReportList.mockReturnValue([convertedReport]);
 
     const result = await service(body);
     expect(result).toEqual([convertedReport]);
     validateFunctionCall(mockReportDocumentConverter.functions.createFilterQuery, body);
-    validateFunctionCall(mockTransactionService.functions.listTransactions, firstMatch, secondMatch);
+    validateFunctionCall(mockTransactionService.functions.listTransactions, match);
     validateFunctionCall(mockTransactionDocumentConverter.functions.toReportList, [queriedDocument]);
     expect.assertions(4);
   });
 
   describe('should throw error', () => {
     it('if unable to query transactions', async () => {
-      mockReportDocumentConverter.functions.createFilterQuery.mockReturnValue([
-        firstMatch,
-        secondMatch,
-      ]);
+      mockReportDocumentConverter.functions.createFilterQuery.mockReturnValue(match);
       mockTransactionService.functions.listTransactions.mockRejectedValue('this is a mongo error');
 
       await service(body).catch(validateError('Error while listing transactions', 500));
       validateFunctionCall(mockReportDocumentConverter.functions.createFilterQuery, body);
-      validateFunctionCall(mockTransactionService.functions.listTransactions, firstMatch, secondMatch);
+      validateFunctionCall(mockTransactionService.functions.listTransactions, match);
       validateFunctionCall(mockTransactionDocumentConverter.functions.toReportList);
       expect.assertions(5);
     });

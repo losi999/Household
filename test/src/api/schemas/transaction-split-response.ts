@@ -5,7 +5,8 @@ import { default as account } from '@household/test/api/schemas/account-response
 import { default as category } from '@household/test/api/schemas/category-response';
 import { default as project } from '@household/test/api/schemas/project-response';
 import { default as recipient } from '@household/test/api/schemas/recipient-response';
-import { default as base } from '@household/shared/schemas/partials/transaction-base';
+import { default as amount } from '@household/shared/schemas/partials/transaction-amount';
+import { default as description } from '@household/shared/schemas/partials/transaction-description';
 import { default as issuedAt } from '@household/shared/schemas/partials/transaction-issued-at';
 import { default as product } from '@household/test/api/schemas/product-response';
 import { default as productId } from '@household/shared/schemas/product-id';
@@ -17,15 +18,15 @@ const schema: StrictJSONSchema7<Transaction.SplitResponse> = {
   additionalProperties: false,
   required: [
     ...transactionId.required,
-    ...base.required,
+    ...amount.required,
     ...issuedAt.required,
     'account',
     'transactionType',
-    'splits',
   ],
   properties: {
     ...transactionId.properties,
-    ...base.properties,
+    ...amount.properties,
+    ...description.properties,
     ...issuedAt.properties,
     transactionType: {
       type: 'string',
@@ -35,18 +36,18 @@ const schema: StrictJSONSchema7<Transaction.SplitResponse> = {
     recipient,
     splits: {
       type: 'array',
-      minItems: 1,
       items: {
         type: 'object',
         additionalProperties: false,
-        required: [...base.required],
+        required: [...amount.required],
         dependentRequired: {
           ...invoice.dependentRequired,
           quantity: ['product'],
           product: ['quantity'],
         },
         properties: {
-          ...base.properties,
+          ...amount.properties,
+          ...description.properties,
           category: {
             ...category,
             properties: {
@@ -61,6 +62,51 @@ const schema: StrictJSONSchema7<Transaction.SplitResponse> = {
           ...invoice.properties,
           ...quantity.properties,
           product,
+        },
+      },
+    },
+    deferredSplits: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: [
+          ...amount.required,
+          ...transactionId.required,
+          'transactionType',
+          'payingAccount',
+          'ownerAccount',
+        ],
+        properties: {
+          ...transactionId.properties,
+          transactionType: {
+            type: 'string',
+            const: 'deferred',
+          },
+          payingAccount: account,
+          ownerAccount: account,
+          ...amount.properties,
+          ...description.properties,
+          category: {
+            ...category,
+            properties: {
+              ...category.properties,
+              products: {
+                type: 'array',
+                items: productId,
+              },
+            },
+          },
+          project,
+          ...invoice.properties,
+          ...quantity.properties,
+          product,
+          remainingAmount: {
+            type: 'number',
+          },
+          isSettled: {
+            type: 'boolean',
+          },
         },
       },
     },

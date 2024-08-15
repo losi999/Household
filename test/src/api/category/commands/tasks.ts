@@ -6,6 +6,10 @@ const saveCategoryDocument = (...params: Parameters<ICategoryService['saveCatego
   return cy.task<Category.Document>('saveCategory', ...params);
 };
 
+const saveCategoryDocuments = (...params: Parameters<ICategoryService['saveCategories']>) => {
+  return cy.task<Category.Document>('saveCategories', ...params);
+};
+
 const getCategoryDocumentById = (...params: Parameters<ICategoryService['getCategoryById']>) => {
   return cy.task<Category.Document>('getCategoryById', ...params);
 };
@@ -13,6 +17,7 @@ const getCategoryDocumentById = (...params: Parameters<ICategoryService['getCate
 export const setCategoryTaskCommands = () => {
   Cypress.Commands.addAll({
     saveCategoryDocument,
+    saveCategoryDocuments,
     getCategoryDocumentById,
   });
 };
@@ -21,6 +26,7 @@ declare global {
   namespace Cypress {
     interface Chainable {
       saveCategoryDocument: CommandFunction<typeof saveCategoryDocument>;
+      saveCategoryDocuments: CommandFunction<typeof saveCategoryDocuments>;
       getCategoryDocumentById: CommandFunction<typeof getCategoryDocumentById>;
     }
   }

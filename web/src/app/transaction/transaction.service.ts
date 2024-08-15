@@ -22,12 +22,31 @@ export class TransactionService {
     });
   }
 
+  listDeferredTransactions(params: {
+    isSettled: boolean;
+    // transactionIds: Transaction.Id[];
+  }): void {
+    this.httpClient.get<Transaction.DeferredResponse[]>(`${environment.apiUrl}${environment.transactionStage}v1/transactions/deferred`, {
+      params: {
+        isSettled: params.isSettled,
+        // transactionId: params.transactionIds,
+      },
+    }).subscribe({
+      next: (response) => {
+        this.store.deferredTransactions.next(response);
+      },
+      error: (error) => {
+        console.error(error);
+      },
+    });
+  }
+
   getTransactionById(transactionId: Transaction.Id, accountId: Account.Id): Observable<Transaction.Response> {
     return this.httpClient.get<Transaction.Response>(`${environment.apiUrl}${environment.transactionStage}v1/accounts/${accountId}/transactions/${transactionId}`);
   }
 
   getTransactionReport(body: Report.Request): Observable<Transaction.Report[]> {
-    return this.httpClient.post<Transaction.Report[]>(`${environment.apiUrl}${environment.transactionStage}v1/transactions`, body);
+    return this.httpClient.post<Transaction.Report[]>(`${environment.apiUrl}${environment.transactionStage}v1/transactionReports`, body);
   }
 
   createPaymentTransaction(body: Transaction.PaymentRequest): Observable<Transaction.TransactionId> {

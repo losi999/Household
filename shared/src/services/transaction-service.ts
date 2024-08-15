@@ -1,7 +1,9 @@
+import { flattenSplit, duplicateByAccounts, calculateRemainingAmount, rebuildSplits, populateAggregate } from '@household/shared/common/aggregate-helpers';
 import { populate } from '@household/shared/common/utils';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
+import { Restrict } from '@household/shared/types/common';
 import { Account, Common, Transaction } from '@household/shared/types/types';
-import { PipelineStage } from 'mongoose';
+import { PipelineStage, Types, UpdateQuery } from 'mongoose';
 
 export interface ITransactionService {
   dumpTransactions(): Promise<Transaction.Document[]>;
@@ -10,8 +12,13 @@ export interface ITransactionService {
   getTransactionById(transactionId: Transaction.Id): Promise<Transaction.Document>;
   getTransactionByIdAndAccountId(query: Transaction.TransactionId & Account.AccountId): Promise<Transaction.Document>;
   deleteTransaction(transactionId: Transaction.Id): Promise<unknown>;
-  updateTransaction(doc: Transaction.Document): Promise<unknown>;
-  listTransactions(firstMatch: PipelineStage.Match, secondMatch: PipelineStage.Match): Promise<Transaction.PaymentDocument[]>;
+  updateTransaction(transactionId: Transaction.Id, updateQuery: UpdateQuery<Transaction.Document>): Promise<unknown>;
+  replaceTransaction(transactionId: Transaction.Id, doc: Restrict<Transaction.Document, '_id'>): Promise<unknown>;
+  listTransactions(match: PipelineStage.Match): Promise<Transaction.RawReport[]>;
+  listDeferredTransactions(ctx?: {
+    deferredTransactionIds?: Transaction.Id[];
+    excludedTransferTransactionId?: Transaction.Id
+  }): Promise<Transaction.DeferredDocument[]>;
   listTransactionsByAccountId(data: Account.AccountId & Common.Pagination<number>): Promise<Transaction.Document[]>;
 }
 
@@ -33,8 +40,8 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
     },
     saveTransactions: (docs) => {
       return mongodbService.inSession((session) => {
-        return session.withTransaction(async () => {
-          await mongodbService.transactions.insertMany(docs, {
+        return session.withTransaction(() => {
+          return mongodbService.transactions.insertMany(docs, {
             session,
           });
         });
@@ -46,41 +53,70 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
           populate: populate('project',
             'recipient',
             'account',
+            'transferAccount',
+            'payingAccount',
+            'ownerAccount',
             'category',
             'product',
-            'transferAccount',
             'splits.category',
             'splits.project',
-            'splits.product'),
+            'splits.product',
+            'deferredSplits.payingAccount',
+            'deferredSplits.ownerAccount',
+            'deferredSplits.category',
+            'deferredSplits.project',
+            'deferredSplits.product',
+            'payments.transaction'),
           lean: true,
         })
         .exec();
     },
     getTransactionByIdAndAccountId: async ({ transactionId, accountId }) => {
-      return !transactionId ? undefined : mongodbService.transactions.findOne({
-        _id: transactionId,
-        $or: [
+      return !transactionId ? undefined : (await mongodbService.transactions.aggregate<Transaction.Document>(
+        [
           {
-            account: accountId,
+            $match: {
+              _id: new Types.ObjectId(transactionId),
+            },
+          },
+          ...flattenSplit({
+            tx_amount: '$amount',
+            tx_description: '$description',
+            tx_id: '$_id',
+            tx_transactionType: '$transactionType',
+          }),
+          ...duplicateByAccounts(),
+          {
+            $unset: [
+              'tmp_dupes',
+              'tmp_splits',
+              'splits',
+              'deferredSplits',
+            ],
           },
           {
-            transferAccount: accountId,
+            $match: {
+              tmp_account: new Types.ObjectId(accountId),
+            },
           },
+          ...calculateRemainingAmount(),
+          {
+            $unset: [
+              'tmp_deferredTransactions',
+              'tmp_account',
+            ],
+          },
+          ...populateAggregate('account', 'accounts'),
+          ...populateAggregate('payingAccount', 'accounts'),
+          ...populateAggregate('ownerAccount', 'accounts'),
+          ...populateAggregate('transferAccount', 'accounts'),
+          ...populateAggregate('category', 'categories'),
+          ...populateAggregate('project', 'projects'),
+          ...populateAggregate('product', 'products'),
+          ...populateAggregate('recipient', 'recipients'),
+          ...rebuildSplits(),
         ],
-      })
-        .setOptions({
-          populate: populate('project',
-            'recipient',
-            'account',
-            'category',
-            'product',
-            'transferAccount',
-            'splits.category',
-            'splits.project',
-            'splits.product'),
-          lean: true,
-        })
-        .exec();
+      ))[0];
     },
     deleteTransaction: (transactionId) => {
       return mongodbService.transactions.deleteOne({
@@ -88,194 +124,297 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
       })
         .exec();
     },
-    updateTransaction: (doc) => {
-      return mongodbService.transactions.replaceOne({
-        _id: doc._id,
+    updateTransaction: async (transactionId, updateQuery) => {
+      return mongodbService.transactions.findOneAndUpdate({
+        _id: new Types.ObjectId(transactionId),
+        transactionType: updateQuery.$set.transactionType,
+      }, updateQuery, {
+        runValidators: true,
+      });
+    },
+    replaceTransaction: (transactionId, doc) => {
+      return mongodbService.transactions.findOneAndReplace({
+        _id: new Types.ObjectId(transactionId),
       }, doc, {
         runValidators: true,
       })
         .exec();
     },
-    listTransactions: (firstMatch, secondMatch) => {
+    listTransactions: (match) => {
       return mongodbService.inSession((session) => {
-        const pipeline: PipelineStage[] = [
-          firstMatch,
-          {
-            $unwind: {
-              path: '$splits',
-              preserveNullAndEmptyArrays: true,
-            },
-          },
-          {
-            $set: {
-              amount: {
-                $ifNull: [
-                  '$splits.amount',
-                  '$amount',
-                ],
-              },
-              category: {
-                $ifNull: [
-                  '$splits.category',
-                  '$category',
-                ],
-              },
-              project: {
-                $ifNull: [
-                  '$splits.project',
-                  '$project',
-                ],
-              },
-              product: {
-                $ifNull: [
-                  '$splits.product',
-                  '$product',
-                ],
-              },
-              quantity: {
-                $ifNull: [
-                  '$splits.quantity',
-                  '$quantity',
-                ],
-              },
-              invoiceNumber: {
-                $ifNull: [
-                  '$splits.invoiceNumber',
-                  '$invoiceNumber',
-                ],
-              },
-              billingStartDate: {
-                $ifNull: [
-                  '$splits.billingStartDate',
-                  '$billingStartDate',
-                ],
-              },
-              billingEndDate: {
-                $ifNull: [
-                  '$splits.billingEndDate',
-                  '$billingEndDate',
-                ],
+        return mongodbService.transactions.aggregate(
+          [
+            {
+              $match: {
+                transactionType: {
+                  $nin: [
+                    'transfer',
+                    'loanTransfer',
+                  ],
+                },
               },
             },
-          },
-          secondMatch,
-          {
-            $project: {
-              splits: 0,
+            ...flattenSplit({
+              _id: '$_id',
+              splitId: '$tmp_splits._id',
+            }),
+            {
+              $set: {
+                tmp_dupes: {
+                  $filter: {
+                    input: [
+                      {
+                        account: {
+                          $cond: {
+                            if: {
+                              $ne: [
+                                '$transactionType',
+                                'deferred',
+                              ],
+                            },
+                            then: '$account',
+                            else: null,
+                          },
+                        },
+                      },
+                      {
+                        account: '$transferAccount',
+                        amount: {
+                          $ifNull: [
+                            '$transferAmount',
+                            '$amount',
+                          ],
+                        },
+                      },
+                      {
+                        account: '$ownerAccount',
+                      },
+                    ],
+                    cond: {
+                      $ne: [
+                        {
+                          $ifNull: [
+                            '$$this.account',
+                            null,
+                          ],
+                        },
+                        null,
+                      ],
+                    },
+                  },
+                },
+              },
             },
-          },
-          {
-            $lookup: {
-              from: 'accounts',
-              localField: 'account',
-              foreignField: '_id',
-              as: 'account',
+            {
+              $unwind: {
+                path: '$tmp_dupes',
+              },
             },
-          },
-          {
-            $unwind: {
-              path: '$account',
-              preserveNullAndEmptyArrays: true,
+            {
+              $replaceRoot: {
+                newRoot: {
+                  $mergeObjects: [
+                    '$$ROOT',
+                    '$tmp_dupes',
+                  ],
+                },
+              },
             },
-          },
-          {
-            $lookup: {
-              from: 'categories',
-              localField: 'category',
-              foreignField: '_id',
-              as: 'category',
+            {
+              $unset: [
+                'tmp_dupes',
+                'tmp_splits',
+                'splits',
+                'deferredSplits',
+                'payingAccount',
+                'ownerAccount',
+                'isSettled',
+                'transactionType',
+              ],
             },
-          },
-          {
-            $unwind: {
-              path: '$category',
-              preserveNullAndEmptyArrays: true,
+            match,
+            ...populateAggregate('account', 'accounts'),
+            ...populateAggregate('category', 'categories'),
+            ...populateAggregate('project', 'projects'),
+            ...populateAggregate('product', 'products'),
+            ...populateAggregate('recipient', 'recipients'),
+            {
+              $sort: {
+                issuedAt: -1,
+              },
             },
-          },
-          {
-            $lookup: {
-              from: 'projects',
-              localField: 'project',
-              foreignField: '_id',
-              as: 'project',
-            },
-          },
-          {
-            $unwind: {
-              path: '$project',
-              preserveNullAndEmptyArrays: true,
-            },
-          },
-          {
-            $lookup: {
-              from: 'products',
-              localField: 'product',
-              foreignField: '_id',
-              as: 'product',
-            },
-          },
-          {
-            $unwind: {
-              path: '$product',
-              preserveNullAndEmptyArrays: true,
-            },
-          },
-          {
-            $lookup: {
-              from: 'recipients',
-              localField: 'recipient',
-              foreignField: '_id',
-              as: 'recipient',
-            },
-          },
-          {
-            $unwind: {
-              path: '$recipient',
-              preserveNullAndEmptyArrays: true,
-            },
-          },
-        ];
-
-        if (secondMatch.$match.$and.length === 0) {
-          pipeline.splice(3, 1);
-        }
-        return mongodbService.transactions.aggregate(pipeline, {
-          session,
-        });
+          ], {
+            session,
+          });
 
       });
     },
-    listTransactionsByAccountId: ({ accountId, pageSize, pageNumber }) => {
+    listDeferredTransactions: ({ deferredTransactionIds, excludedTransferTransactionId } = {}) => {
       return mongodbService.inSession((session) => {
-        return mongodbService.transactions.find({
-          $or: [
+        return mongodbService.transactions.aggregate<Transaction.DeferredDocument>(
+          [
+            ...flattenSplit({
+              tx_amount: '$amount',
+              tx_description: '$description',
+              tx_id: '$_id',
+              tx_transactionType: '$transactionType',
+            }),
             {
-              account: accountId,
+              $match: {
+                ...(deferredTransactionIds?.length > 0 ? {
+                  _id: {
+                    $in: deferredTransactionIds.map(id => new Types.ObjectId(id)),
+                  },
+                } : {}),
+                transactionType: 'deferred',
+              },
             },
             {
-              transferAccount: accountId,
+              $lookup: {
+                from: 'transactions',
+                let: {
+                  transactionId: '$_id',
+                },
+                pipeline: [
+                  ...(excludedTransferTransactionId ? [
+                    {
+                      $match: {
+                        _id: {
+                          $ne: new Types.ObjectId(excludedTransferTransactionId),
+                        },
+                      },
+                    },
+                  ] : []),
+                  {
+                    $unwind: {
+                      path: '$payments',
+                    },
+                  },
+                  {
+                    $match: {
+                      $expr: {
+                        $eq: [
+                          '$$transactionId',
+                          '$payments.transaction',
+                        ],
+                      },
+                    },
+                  },
+                ],
+                as: 'tmp_deferredTransactions',
+              },
             },
-          ],
-        })
-          .setOptions({
+            {
+              $set: {
+                remainingAmount: {
+                  $cond: {
+                    if: {
+                      $eq: [
+                        '$isSettled',
+                        true,
+                      ],
+                    },
+                    then: 0,
+                    else: {
+                      $multiply: [
+                        {
+                          $sum: [
+                            '$amount',
+                            {
+                              $sum: '$tmp_deferredTransactions.payments.amount',
+                            },
+                          ],
+                        },
+                        -1,
+                      ],
+                    },
+                  },
+
+                },
+              },
+            },
+            {
+              $unset: [
+                'tmp_deferredTransactions',
+                'deferredSplits',
+                'account',
+                'splits',
+                'tx_amount',
+                'tx_description',
+                'tx_id',
+                'tx_transactionType',
+                'tmp_splits',
+              ],
+            },
+            ...populateAggregate('payingAccount', 'accounts'),
+            ...populateAggregate('ownerAccount', 'accounts'),
+            ...populateAggregate('category', 'categories'),
+            ...populateAggregate('project', 'projects'),
+            ...populateAggregate('product', 'products'),
+            ...populateAggregate('recipient', 'recipients'),
+            {
+              $sort: {
+                issuedAt: -1,
+              },
+            },
+          ], {
             session,
-            populate: populate('project',
-              'recipient',
-              'account',
-              'category',
-              'product',
-              'transferAccount',
-              'splits.category',
-              'splits.project',
-              'splits.product'),
-            lean: true,
-            sort: {
-              issuedAt: 'desc',
+          });
+      });
+    },
+    listTransactionsByAccountId: ({ accountId, pageSize, pageNumber }) => {
+      return mongodbService.inSession(async (session) => {
+        return mongodbService.transactions.aggregate([
+          ...flattenSplit({
+            tx_amount: '$amount',
+            tx_description: '$description',
+            tx_id: '$_id',
+            tx_transactionType: '$transactionType',
+          }),
+          ...duplicateByAccounts(),
+          {
+            $unset: [
+              'tmp_dupes',
+              'tmp_splits',
+              'splits',
+              'deferredSplits',
+            ],
+          },
+          {
+            $match: {
+              tmp_account: new Types.ObjectId(accountId),
             },
-            limit: pageSize,
-            skip: (pageNumber - 1) * pageSize,
-          })
-          .exec();
+          },
+          ...calculateRemainingAmount(),
+          {
+            $unset: [
+              'tmp_deferredTransactions',
+              'tmp_account',
+            ],
+          },
+          ...populateAggregate('account', 'accounts'),
+          ...populateAggregate('payingAccount', 'accounts'),
+          ...populateAggregate('ownerAccount', 'accounts'),
+          ...populateAggregate('transferAccount', 'accounts'),
+          ...populateAggregate('category', 'categories'),
+          ...populateAggregate('project', 'projects'),
+          ...populateAggregate('product', 'products'),
+          ...populateAggregate('recipient', 'recipients'),
+          ...rebuildSplits(),
+          {
+            $sort: {
+              issuedAt: -1,
+            },
+          },
+          {
+            $skip: (pageNumber - 1) * pageSize,
+          },
+          {
+            $limit: pageSize,
+          },
+        ], {
+          session,
+        });
       });
     },
   };

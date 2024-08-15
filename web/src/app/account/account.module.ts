@@ -19,6 +19,7 @@ import { ToolbarComponent } from 'src/app/shared/toolbar/toolbar.component';
 import { AutocompleteModule } from 'src/app/shared/autocomplete/autocomplete.module';
 import { ClearableInputComponent } from 'src/app/shared/clearable-input/clearable-input.component';
 import { MatListModule } from '@angular/material/list';
+import { TransactionModule } from 'src/app/transaction/transaction.module';
 
 @NgModule({
   declarations: [
@@ -45,6 +46,7 @@ import { MatListModule } from '@angular/material/list';
     ToolbarComponent,
     AutocompleteModule,
     ClearableInputComponent,
+    TransactionModule,
   ],
 })
 export class AccountModule { }

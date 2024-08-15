@@ -12,22 +12,22 @@ describe('Project id schema', () => {
 
   describe('should deny', () => {
     describe('if data', () => {
-      tester.validateSchemaAdditionalProperties({
+      tester.additionalProperties({
         projectId: createProjectId(),
         extra: 1,
       } as any, 'data');
     });
 
     describe('if data.projectId', () => {
-      tester.validateSchemaRequired({
+      tester.required({
         projectId: undefined,
       }, 'projectId');
 
-      tester.validateSchemaType({
+      tester.type({
         projectId: 1 as any,
       }, 'projectId', 'string');
 
-      tester.validateSchemaPattern({
+      tester.pattern({
         projectId: createProjectId('not-valid'),
       }, 'projectId');
     });

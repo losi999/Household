@@ -1,4 +1,5 @@
 import { httpErrors } from '@household/api/common/error-handlers';
+import { getTransactionId, toDictionary } from '@household/shared/common/utils';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { ITransactionService } from '@household/shared/services/transaction-service';
 import { Account, Transaction } from '@household/shared/types/types';
@@ -16,8 +17,8 @@ export const getTransactionServiceFactory = (
   return async ({ transactionId, accountId }) => {
 
     const document = await transactionService.getTransactionByIdAndAccountId({
-      transactionId,
       accountId,
+      transactionId,
     }).catch(httpErrors.transaction.getById({
       transactionId,
       accountId,
@@ -27,6 +28,24 @@ export const getTransactionServiceFactory = (
       transactionId,
       accountId,
     });
+
+    if (document.transactionType === 'transfer' && document.payments?.length > 0) {
+      const deferredTransactionIds = document.payments.map(p => getTransactionId(p.transaction));
+
+      const deferredTransactions = await transactionService.listDeferredTransactions({
+        deferredTransactionIds,
+      }).catch(httpErrors.common.getRelatedData({
+        deferredTransactionIds,
+      }));
+
+      const deferredMap = toDictionary(deferredTransactions, '_id');
+
+      document.payments.forEach(p => {
+        p.transaction = deferredMap[getTransactionId(p.transaction)];
+      });
+    }
+
+    console.log('doc', JSON.stringify(document, null, 2));
 
     return transactionDocumentConverter.toResponse(document, accountId);
   };

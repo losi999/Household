@@ -12,22 +12,22 @@ describe('Product id schema', () => {
 
   describe('should deny', () => {
     describe('if data', () => {
-      tester.validateSchemaAdditionalProperties({
+      tester.additionalProperties({
         productId: createProductId(),
         extra: 1,
       } as any, 'data');
     });
 
     describe('if data.productId', () => {
-      tester.validateSchemaRequired({
+      tester.required({
         productId: undefined,
       }, 'productId');
 
-      tester.validateSchemaType({
+      tester.type({
         productId: 1 as any,
       }, 'productId', 'string');
 
-      tester.validateSchemaPattern({
+      tester.pattern({
         productId: createProductId('not-valid'),
       }, 'productId');
     });

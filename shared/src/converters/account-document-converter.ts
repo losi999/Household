@@ -1,4 +1,4 @@
-import { generateMongoId } from '@household/shared/common/test-data-factory';
+import { generateMongoId } from '@household/shared/common/utils';
 import { addSeconds, getAccountId } from '@household/shared/common/utils';
 import { Account } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
@@ -34,6 +34,7 @@ export const accountDocumentConverterFactory = (): IAccountDocumentConverter => 
       return {
         ...document,
         balance: document.balance ?? null,
+        deferredCount: document.deferredCount ?? null,
         fullName: `${document.name} (${document.owner})`,
         createdAt: undefined,
         updatedAt: undefined,

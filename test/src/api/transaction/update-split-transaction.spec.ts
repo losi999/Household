@@ -1,158 +1,92 @@
-import { createAccountId, createCategoryId, createProductId, createProjectId, createRecipientId, createTransactionId } from '@household/shared/common/test-data-factory';
 import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
-import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
-import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
-import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
-import { projectDocumentConverter } from '@household/shared/dependencies/converters/project-document-converter';
-import { recipientDocumentConverter } from '@household/shared/dependencies/converters/recipient-document-converter';
-import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
-import { v4 as uuid } from 'uuid';
+import { accountDataFactory } from '@household/test/api/account/data-factory';
+import { categoryDataFactory } from '@household/test/api/category/data-factory';
+import { productDataFactory } from '@household/test/api/product/data-factory';
+import { projectDataFactory } from '@household/test/api/project/data-factory';
+import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
+import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment-data-factory';
+import { splitTransactionDataFactory } from '@household/test/api/transaction/split-data-factory';
 
-describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
+describe('PUT transaction/v1/transactions/{transactionId}/split (split)', () => {
   let request: Transaction.SplitRequest;
   let originalDocument: Transaction.PaymentDocument;
 
   let projectDocument: Project.Document;
   let recipientDocument: Recipient.Document;
   let accountDocument: Account.Document;
+  let secondaryAccountDocument: Account.Document;
   let regularCategoryDocument: Category.Document;
   let invoiceCategoryDocument: Category.Document;
   let inventoryCategoryDocument: Category.Document;
   let productDocument: Product.Document;
+  let relatedDocumentIds: Pick<Transaction.SplitRequest, 'accountId' | 'recipientId'>;
+  let relatedDocumentItemIds: Pick<Transaction.SplitRequestItem, 'categoryId' | 'productId' | 'projectId'>;
 
   beforeEach(() => {
-    projectDocument = projectDocumentConverter.create({
-      name: `proj-${uuid()}`,
-      description: 'desc',
-    }, Cypress.env('EXPIRES_IN'), true);
+    projectDocument = projectDataFactory.document();
+    recipientDocument = recipientDataFactory.document();
+    accountDocument = accountDataFactory.document();
+    secondaryAccountDocument = accountDataFactory.document();
 
-    recipientDocument = recipientDocumentConverter.create({
-      name: `recipient-${uuid()}`,
-    }, Cypress.env('EXPIRES_IN'), true);
-
-    accountDocument = accountDocumentConverter.create({
-      name: `bank-${uuid()}`,
-      accountType: 'bankAccount',
-      currency: 'Ft',
-      owner: 'owner1',
-    }, Cypress.env('EXPIRES_IN'), true);
-
-    regularCategoryDocument = categoryDocumentConverter.create({
+    regularCategoryDocument = categoryDataFactory.document({
       body: {
-        name: `regular-${uuid()}`,
         categoryType: 'regular',
-        parentCategoryId: undefined,
       },
-      parentCategory: undefined,
-    }, Cypress.env('EXPIRES_IN'), true);
+    });
 
-    invoiceCategoryDocument = categoryDocumentConverter.create({
+    invoiceCategoryDocument = categoryDataFactory.document({
       body: {
-        name: `invoice-${uuid()}`,
         categoryType: 'invoice',
-        parentCategoryId: undefined,
       },
-      parentCategory: undefined,
-    }, Cypress.env('EXPIRES_IN'), true);
+    });
 
-    inventoryCategoryDocument = categoryDocumentConverter.create({
+    inventoryCategoryDocument = categoryDataFactory.document({
       body: {
-        name: `inventory-${uuid()}`,
         categoryType: 'inventory',
-        parentCategoryId: undefined,
       },
-      parentCategory: undefined,
-    }, Cypress.env('EXPIRES_IN'), true);
+    });
 
-    productDocument = productDocumentConverter.create({
-      body: {
-        brand: `brand-${uuid()}`,
-        measurement: 200,
-        unitOfMeasurement: 'kg',
-      },
+    productDocument = productDataFactory.document({
       category: inventoryCategoryDocument,
-    }, Cypress.env('EXPIRES_IN'), true);
+    });
 
-    originalDocument = transactionDocumentConverter.createPaymentDocument({
-      body: {
-        accountId: getAccountId(accountDocument),
-        amount: 100,
-        description: undefined,
-        issuedAt: new Date().toISOString(),
-        categoryId: undefined,
-        billingStartDate: new Date(2022, 6, 1, 0, 0, 0).toISOString()
-          .split('T')[0],
-        billingEndDate: new Date(2022, 6, 25, 0, 0, 0).toISOString()
-          .split('T')[0],
-        invoiceNumber: 'invoice123',
-        quantity: 1,
-        productId: getProductId(productDocument),
-        projectId: undefined,
-        recipientId: undefined,
-      },
-      account: accountDocument,
-      category: undefined,
-      project: undefined,
-      recipient: undefined,
-      product: undefined,
-    }, Cypress.env('EXPIRES_IN'), true);
-
-    request = {
+    relatedDocumentIds = {
       accountId: getAccountId(accountDocument),
       recipientId: getRecipientId(recipientDocument),
-      amount: 3,
-      description: 'description',
-      issuedAt: new Date(2022, 6, 9, 22, 30, 12).toISOString(),
-      splits: [
-        {
-          amount: 1,
-          description: 'split1',
-          categoryId: getCategoryId(regularCategoryDocument),
-          projectId: getProjectId(projectDocument),
-          billingStartDate: new Date(2022, 6, 1, 0, 0, 0).toISOString()
-            .split('T')[0],
-          billingEndDate: new Date(2022, 6, 25, 0, 0, 0).toISOString()
-            .split('T')[0],
-          invoiceNumber: 'invoice123',
-          quantity: 1,
-          productId: getProductId(productDocument),
-        },
-        {
-          amount: 1,
-          description: 'split2',
-          categoryId: getCategoryId(inventoryCategoryDocument),
-          projectId: getProjectId(projectDocument),
-          billingStartDate: new Date(2022, 6, 1, 0, 0, 0).toISOString()
-            .split('T')[0],
-          billingEndDate: new Date(2022, 6, 25, 0, 0, 0).toISOString()
-            .split('T')[0],
-          invoiceNumber: 'invoice123',
-          quantity: 1,
-          productId: getProductId(productDocument),
-        },
-        {
-          amount: 1,
-          description: 'split3',
-          categoryId: getCategoryId(invoiceCategoryDocument),
-          projectId: getProjectId(projectDocument),
-          billingStartDate: new Date(2022, 6, 1, 0, 0, 0).toISOString()
-            .split('T')[0],
-          billingEndDate: new Date(2022, 6, 25, 0, 0, 0).toISOString()
-            .split('T')[0],
-          invoiceNumber: 'invoice123',
-          quantity: 1,
-          productId: getProductId(productDocument),
-        },
-
-      ],
     };
+
+    relatedDocumentItemIds = {
+      categoryId: getCategoryId(regularCategoryDocument),
+      projectId: getProjectId(projectDocument),
+      productId: getProductId(productDocument),
+    };
+
+    originalDocument = paymentTransactionDataFactory.document({
+      account: accountDocument,
+    });
+
+    request = splitTransactionDataFactory.request(relatedDocumentIds, {
+      ...relatedDocumentItemIds,
+      categoryId: getCategoryId(regularCategoryDocument),
+    },
+    {
+      loanAccountId: getAccountId(secondaryAccountDocument),
+    },
+    {
+      ...relatedDocumentItemIds,
+      categoryId: getCategoryId(inventoryCategoryDocument),
+    },
+    {
+      ...relatedDocumentItemIds,
+      categoryId: getCategoryId(invoiceCategoryDocument),
+    });
   });
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
-        .requestUpdateToSplitTransaction(createTransactionId(), request)
+        .requestUpdateToSplitTransaction(splitTransactionDataFactory.id(), request)
         .expectUnauthorizedResponse();
     });
   });
@@ -161,10 +95,15 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
     describe('should update transaction', () => {
       it('with complete body', () => {
         cy.saveTransactionDocument(originalDocument)
-          .saveAccountDocument(accountDocument)
-          .saveCategoryDocument(regularCategoryDocument)
-          .saveCategoryDocument(invoiceCategoryDocument)
-          .saveCategoryDocument(inventoryCategoryDocument)
+          .saveAccountDocuments([
+            accountDocument,
+            secondaryAccountDocument,
+          ])
+          .saveCategoryDocuments([
+            regularCategoryDocument,
+            invoiceCategoryDocument,
+            inventoryCategoryDocument,
+          ])
           .saveProjectDocument(projectDocument)
           .saveRecipientDocument(recipientDocument)
           .saveProductDocument(productDocument)
@@ -175,10 +114,10 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
       });
       describe('without optional properties', () => {
         it('description', () => {
-          const modifiedRequest: Transaction.SplitRequest = {
-            ...request,
+          request = splitTransactionDataFactory.request({
+            ...relatedDocumentIds,
             description: undefined,
-          };
+          });
           cy.saveTransactionDocument(originalDocument)
             .saveAccountDocument(accountDocument)
             .saveCategoryDocument(regularCategoryDocument)
@@ -188,16 +127,16 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
             .saveRecipientDocument(recipientDocument)
             .saveProductDocument(productDocument)
             .authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), modifiedRequest)
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
             .expectCreatedResponse()
-            .validateTransactionSplitDocument(modifiedRequest);
+            .validateTransactionSplitDocument(request);
         });
 
         it('recipientId', () => {
-          const modifiedRequest: Transaction.SplitRequest = {
-            ...request,
+          request = splitTransactionDataFactory.request({
+            ...relatedDocumentIds,
             recipientId: undefined,
-          };
+          });
           cy.saveTransactionDocument(originalDocument)
             .saveAccountDocument(accountDocument)
             .saveCategoryDocument(regularCategoryDocument)
@@ -206,19 +145,16 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
             .saveProjectDocument(projectDocument)
             .saveProductDocument(productDocument)
             .authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), modifiedRequest)
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
             .expectCreatedResponse()
-            .validateTransactionSplitDocument(modifiedRequest);
+            .validateTransactionSplitDocument(request);
         });
 
         it('splits.description', () => {
-          const modifiedRequest: Transaction.SplitRequest = {
-            ...request,
-            splits: request.splits.map(s => ({
-              ...s,
-              description: undefined,
-            })),
-          };
+          request = splitTransactionDataFactory.request(relatedDocumentIds, {
+            ...relatedDocumentItemIds,
+            description: undefined,
+          });
           cy.saveTransactionDocument(originalDocument)
             .saveAccountDocument(accountDocument)
             .saveCategoryDocument(regularCategoryDocument)
@@ -228,20 +164,18 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
             .saveRecipientDocument(recipientDocument)
             .saveProductDocument(productDocument)
             .authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), modifiedRequest)
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
             .expectCreatedResponse()
-            .validateTransactionSplitDocument(modifiedRequest);
+            .validateTransactionSplitDocument(request);
         });
 
         it('splits.inventory', () => {
-          const modifiedRequest: Transaction.SplitRequest = {
-            ...request,
-            splits: request.splits.map(s => ({
-              ...s,
-              productId: undefined,
-              quantity: undefined,
-            })),
-          };
+          request = splitTransactionDataFactory.request(relatedDocumentIds, {
+            ...relatedDocumentItemIds,
+            categoryId: getCategoryId(inventoryCategoryDocument),
+            productId: undefined,
+            quantity: undefined,
+          });
           cy.saveTransactionDocument(originalDocument)
             .saveAccountDocument(accountDocument)
             .saveCategoryDocument(regularCategoryDocument)
@@ -251,21 +185,19 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
             .saveRecipientDocument(recipientDocument)
             .saveProductDocument(productDocument)
             .authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), modifiedRequest)
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
             .expectCreatedResponse()
-            .validateTransactionSplitDocument(modifiedRequest);
+            .validateTransactionSplitDocument(request);
         });
 
         it('splits.invoice', () => {
-          const modifiedRequest: Transaction.SplitRequest = {
-            ...request,
-            splits: request.splits.map(s => ({
-              ...s,
-              invoiceNumber: undefined,
-              billingEndDate: undefined,
-              billingStartDate: undefined,
-            })),
-          };
+          request = splitTransactionDataFactory.request(relatedDocumentIds, {
+            ...relatedDocumentItemIds,
+            categoryId: getCategoryId(invoiceCategoryDocument),
+            invoiceNumber: undefined,
+            billingEndDate: undefined,
+            billingStartDate: undefined,
+          });
           cy.saveTransactionDocument(originalDocument)
             .saveAccountDocument(accountDocument)
             .saveCategoryDocument(regularCategoryDocument)
@@ -275,19 +207,17 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
             .saveRecipientDocument(recipientDocument)
             .saveProductDocument(productDocument)
             .authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), modifiedRequest)
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
             .expectCreatedResponse()
-            .validateTransactionSplitDocument(modifiedRequest);
+            .validateTransactionSplitDocument(request);
         });
 
         it('splits.invoice.invoiceNumber', () => {
-          const modifiedRequest: Transaction.SplitRequest = {
-            ...request,
-            splits: request.splits.map(s => ({
-              ...s,
-              invoiceNumber: undefined,
-            })),
-          };
+          request = splitTransactionDataFactory.request(relatedDocumentIds, {
+            ...relatedDocumentItemIds,
+            categoryId: getCategoryId(invoiceCategoryDocument),
+            invoiceNumber: undefined,
+          });
           cy.saveTransactionDocument(originalDocument)
             .saveAccountDocument(accountDocument)
             .saveCategoryDocument(regularCategoryDocument)
@@ -297,37 +227,31 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
             .saveRecipientDocument(recipientDocument)
             .saveProductDocument(productDocument)
             .authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), modifiedRequest)
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
             .expectCreatedResponse()
-            .validateTransactionSplitDocument(modifiedRequest);
+            .validateTransactionSplitDocument(request);
         });
 
         it('splits.categoryId', () => {
-          const modifiedRequest: Transaction.SplitRequest = {
-            ...request,
-            splits: request.splits.map(s => ({
-              ...s,
-              categoryId: undefined,
-            })),
-          };
+          request = splitTransactionDataFactory.request(relatedDocumentIds, {
+            ...relatedDocumentItemIds,
+            categoryId: undefined,
+          });
           cy.saveTransactionDocument(originalDocument)
             .saveAccountDocument(accountDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), modifiedRequest)
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
             .expectCreatedResponse()
-            .validateTransactionSplitDocument(modifiedRequest);
+            .validateTransactionSplitDocument(request);
         });
 
         it('splits.projectId', () => {
-          const modifiedRequest: Transaction.SplitRequest = {
-            ...request,
-            splits: request.splits.map(s => ({
-              ...s,
-              projectId: undefined,
-            })),
-          };
+          request = splitTransactionDataFactory.request(relatedDocumentIds, {
+            ...relatedDocumentItemIds,
+            projectId: undefined,
+          });
           cy.saveTransactionDocument(originalDocument)
             .saveAccountDocument(accountDocument)
             .saveCategoryDocument(regularCategoryDocument)
@@ -336,9 +260,9 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
             .saveRecipientDocument(recipientDocument)
             .saveProductDocument(productDocument)
             .authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), modifiedRequest)
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
             .expectCreatedResponse()
-            .validateTransactionSplitDocument(modifiedRequest);
+            .validateTransactionSplitDocument(request);
         });
       });
     });
@@ -347,14 +271,14 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
       describe('if transactionId', () => {
         it('is not mongo id', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId('not-valid'), request)
+            .requestUpdateToSplitTransaction(splitTransactionDataFactory.id('not-valid'), request)
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('transactionId', 'pathParameters');
         });
 
         it('does not belong to any transaction', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(createTransactionId(), request)
+            .requestUpdateToSplitTransaction(splitTransactionDataFactory.id(), request)
             .expectNotFoundResponse();
         });
       });
@@ -362,10 +286,9 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
       describe('if body', () => {
         it('has additional properties', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
               extra: 123,
-            } as any)
+            } as any))
             .expectBadRequestResponse()
             .expectAdditionalProperty('data', 'body');
         });
@@ -375,30 +298,27 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
         it('is not the same as sum of splits', () => {
           cy.saveTransactionDocument(originalDocument)
             .authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              amount: 2,
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
+              amount: -2,
+            }))
             .expectBadRequestResponse()
             .expectMessage('Sum of splits must equal to total amount');
         });
 
         it('is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
               amount: undefined,
-            })
+            }))
             .expectBadRequestResponse()
             .expectRequiredProperty('amount', 'body');
         });
 
         it('is not number', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              amount: '1' as any,
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
+              amount: '1',
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('amount', 'number', 'body');
         });
@@ -407,20 +327,18 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
       describe('if description', () => {
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              description: 1 as any,
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
+              description: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('description', 'string', 'body');
         });
 
         it('is too short', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
               description: '',
-            })
+            }))
             .expectBadRequestResponse()
             .expectTooShortProperty('description', 1, 'body');
         });
@@ -429,36 +347,53 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
       describe('if issuedAt', () => {
         it('is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
               issuedAt: undefined,
-            })
+            }))
             .expectBadRequestResponse()
             .expectRequiredProperty('issuedAt', 'body');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              issuedAt: 1 as any,
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
+              issuedAt: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('issuedAt', 'string', 'body');
         });
 
         it('is not date-time format', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
               issuedAt: 'not-date-time',
-            })
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyFormat('issuedAt', 'date-time', 'body');
         });
       });
 
       describe('if accountId', () => {
+        it('belongs to a loan type account', () => {
+          const loanAccountDocument = accountDataFactory.document({
+            accountType: 'loan',
+          });
+          cy.saveTransactionDocument(originalDocument)
+            .saveAccountDocument(loanAccountDocument)
+            .saveCategoryDocument(regularCategoryDocument)
+            .saveCategoryDocument(invoiceCategoryDocument)
+            .saveCategoryDocument(inventoryCategoryDocument)
+            .saveProjectDocument(projectDocument)
+            .saveRecipientDocument(recipientDocument)
+            .authenticate(1)
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
+              ...relatedDocumentIds,
+              accountId: getAccountId(loanAccountDocument),
+            }))
+            .expectBadRequestResponse()
+            .expectMessage('Account type cannot be loan');
+        });
+
         it('does not belong to any account', () => {
           cy.saveTransactionDocument(originalDocument)
             .saveCategoryDocument(regularCategoryDocument)
@@ -467,40 +402,37 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              accountId: createAccountId(),
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
+              ...relatedDocumentIds,
+              accountId: accountDataFactory.id(),
+            }))
             .expectBadRequestResponse()
-            .expectMessage('No account found');
+            .expectMessage('Some of the accounts are not found');
         });
 
         it('is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
               accountId: undefined,
-            })
+            }))
             .expectBadRequestResponse()
             .expectRequiredProperty('accountId', 'body');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              accountId: 1 as any,
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
+              accountId: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('accountId', 'string', 'body');
         });
 
         it('is not mongo id format', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              accountId: createAccountId('not-mongo-id'),
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
+              accountId: accountDataFactory.id('not-mongo-id'),
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('accountId', 'body');
         });
@@ -515,30 +447,28 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              recipientId: createRecipientId(),
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
+              ...relatedDocumentIds,
+              recipientId: recipientDataFactory.id(),
+            }))
             .expectBadRequestResponse()
             .expectMessage('No recipient found');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              recipientId: 1 as any,
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
+              recipientId: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('recipientId', 'string', 'body');
         });
 
         it('is not mongo id format', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              recipientId: createRecipientId('not-mongo-id'),
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
+              recipientId: recipientDataFactory.id('not-mongo-id'),
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('recipientId', 'body');
         });
@@ -546,31 +476,25 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
 
       describe('if splits', () => {
         it('is missing', () => {
+          request.splits = undefined;
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              splits: undefined,
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
             .expectBadRequestResponse()
             .expectRequiredProperty('splits', 'body');
         });
 
         it('is not an array', () => {
+          request.splits = {} as any;
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              splits: 1 as any,
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
             .expectBadRequestResponse()
             .expectWrongPropertyType('splits', 'array', 'body');
         });
 
         it('is empty array', () => {
+          request.splits = [];
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              splits: [],
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
             .expectBadRequestResponse()
             .expectTooFewItemsProperty('splits', 1, 'body');
         });
@@ -578,24 +502,21 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
 
       describe('if splits[0]', () => {
         it('is not object', () => {
+          request.splits = [1] as any;
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              splits: [1] as any,
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
             .expectBadRequestResponse()
             .expectWrongPropertyType('splits', 'object', 'body');
         });
 
         it('has additional properties', () => {
+          request.splits = [
+            {
+              extra: 1,
+            },
+          ] as any;
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                extra: 1,
-              }) as any),
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
             .expectBadRequestResponse()
             .expectAdditionalProperty('splits', 'body');
         });
@@ -604,26 +525,18 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
       describe('if splits.amount', () => {
         it('is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                amount: undefined,
-              })),
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, {
+              amount: undefined,
+            }))
             .expectBadRequestResponse()
             .expectRequiredProperty('amount', 'body');
         });
 
         it('is not number', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                amount: '1' as any,
-              })),
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, {
+              amount: undefined,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType ('amount', 'number', 'body');
         });
@@ -632,26 +545,18 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
       describe('if splits.description', () => {
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                description: 1 as any,
-              })),
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, {
+              description: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('description', 'string', 'body');
         });
 
         it('is too short', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                description: '',
-              })),
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, {
+              description: '',
+            }))
             .expectBadRequestResponse()
             .expectTooShortProperty('description', 1, 'body');
         });
@@ -660,39 +565,27 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
       describe('if splits.quantity', () => {
         it('is present and productId is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                productId: undefined,
-              })),
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, {
+              quantity: 1,
+            }))
             .expectBadRequestResponse()
             .expectDependentRequiredProperty('quantity', 'body', 'productId');
         });
 
         it('is not number', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                quantity: '1' as any,
-              })),
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, {
+              quantity: '1',
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('quantity', 'number', 'body');
         });
 
         it('is too small', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                quantity: 0,
-              })),
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, {
+              quantity: 0,
+            }))
             .expectBadRequestResponse()
             .expectTooSmallNumberProperty('quantity', 0, true, 'body');
         });
@@ -701,39 +594,28 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
       describe('if splits.productId', () => {
         it('is present and quantity is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                quantity: undefined,
-              })),
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, {
+              quantity: undefined,
+              productId: productDataFactory.id(),
+            }))
             .expectBadRequestResponse()
             .expectDependentRequiredProperty('productId', 'body', 'quantity');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                productId: 1 as any,
-              })),
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, {
+              productId: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('productId', 'string', 'body');
         });
 
         it('is not mongo id format', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                productId: createProductId('not-valid'),
-              })),
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, {
+              productId: productDataFactory.id('not-valid'),
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('productId', 'body');
         });
@@ -741,13 +623,15 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
         it('does not belong to any product', () => {
           cy.saveTransactionDocument(originalDocument)
             .saveAccountDocument(accountDocument)
-            .saveCategoryDocument(regularCategoryDocument)
-            .saveCategoryDocument(invoiceCategoryDocument)
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, {
+              ...relatedDocumentItemIds,
+              categoryId: getCategoryId(inventoryCategoryDocument),
+              productId: productDataFactory.id(),
+            }))
             .expectBadRequestResponse()
             .expectMessage('No product found');
         });
@@ -756,40 +640,28 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
       describe('if splits.invoiceNumber', () => {
         it('is present and billingEndDate, billingStartDate are missing', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                billingEndDate: undefined,
-                billingStartDate: undefined,
-              })),
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, {
+              billingEndDate: undefined,
+              billingStartDate: undefined,
+            }))
             .expectBadRequestResponse()
             .expectDependentRequiredProperty('invoiceNumber', 'body', 'billingEndDate', 'billingStartDate');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                invoiceNumber: 1 as any,
-              })),
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, {
+              invoiceNumber: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('invoiceNumber', 'string', 'body');
         });
 
         it('is too short', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                invoiceNumber: '',
-              })),
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, {
+              invoiceNumber: '',
+            }))
             .expectBadRequestResponse()
             .expectTooShortProperty('invoiceNumber', 1, 'body');
         });
@@ -798,53 +670,37 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
       describe('if splits.billingEndDate', () => {
         it('is present and billingStartDate is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                billingStartDate: undefined,
-              })),
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, {
+              billingStartDate: undefined,
+            }))
             .expectBadRequestResponse()
             .expectDependentRequiredProperty('billingEndDate', 'body', 'billingStartDate');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                billingEndDate: 1 as any,
-              })),
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, {
+              billingEndDate: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('billingEndDate', 'string', 'body');
         });
 
         it('is not date format', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                billingEndDate: 'not-date',
-              })),
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, {
+              billingEndDate: 'not-date',
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyFormat('billingEndDate', 'date', 'body');
         });
 
-        it('is earlier than billingStartDate', () => {
+        it('is later than billingStartDate', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                billingEndDate: '2022-06-01',
-                billingStartDate: '2022-06-02',
-              })),
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, {
+              billingEndDate: '2022-06-01',
+              billingStartDate: '2022-06-02',
+            }))
             .expectBadRequestResponse()
             .expectTooEarlyDateProperty('billingEndDate', 'body');
         });
@@ -853,39 +709,27 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
       describe('if splits.billingStartDate', () => {
         it('is present and billingEndDate is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                billingEndDate: undefined,
-              })),
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, {
+              billingEndDate: undefined,
+            }))
             .expectBadRequestResponse()
             .expectDependentRequiredProperty('billingStartDate', 'body', 'billingEndDate');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                billingStartDate: 1 as any,
-              })),
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, {
+              billingStartDate: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('billingStartDate', 'string', 'body');
         });
 
         it('is not date format', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                billingStartDate: 'not-date',
-              })),
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, {
+              billingStartDate: 'not-date',
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyFormat('billingStartDate', 'date', 'body');
         });
@@ -898,39 +742,28 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                categoryId: createCategoryId(),
-              })),
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, {
+              ...relatedDocumentItemIds,
+              categoryId: categoryDataFactory.id(),
+            }))
             .expectBadRequestResponse()
             .expectMessage('Some of the categories are not found');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                categoryId: 1 as any,
-              })),
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, {
+              categoryId: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('categoryId', 'string', 'body');
         });
 
         it('is not mongo id format', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                categoryId: createCategoryId('not-mongo-id'),
-              })),
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, {
+              categoryId: categoryDataFactory.id('not-mongo-id'),
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('categoryId', 'body');
         });
@@ -945,39 +778,28 @@ describe('PUT transaction/v1/transactions/{transactionId}/split', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                projectId: createProjectId(),
-              })),
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, {
+              ...relatedDocumentItemIds,
+              projectId: projectDataFactory.id(),
+            }))
             .expectBadRequestResponse()
             .expectMessage('Some of the projects are not found');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                projectId: 1 as any,
-              })),
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, {
+              projectId: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('projectId', 'string', 'body');
         });
 
         it('is not mongo id format', () => {
           cy.authenticate(1)
-            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), {
-              ...request,
-              splits: request.splits.map(s => ({
-                ...s,
-                projectId: createProjectId('not-mongo-id'),
-              })),
-            })
+            .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, {
+              projectId: projectDataFactory.id('not-mongo-id'),
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('projectId', 'body');
         });

@@ -1,6 +1,7 @@
 import { Recipient } from '@household/shared/types/types';
 import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/test/api/types';
 import { getRecipientId } from '@household/shared/common/utils';
+import { expectEmptyObject, expectRemainingProperties } from '@household/test/api/utils';
 
 const validateRecipientDocument = (response: Recipient.RecipientId, request: Recipient.Request) => {
   const id = response?.recipientId;
@@ -9,19 +10,27 @@ const validateRecipientDocument = (response: Recipient.RecipientId, request: Rec
     .getRecipientDocumentById(id)
     .should((document) => {
       expect(getRecipientId(document), '_id').to.equal(id);
-      expect(document.name, 'name').to.equal(request.name);
+      const { name, ...internal } = document;
+
+      expect(name, 'name').to.equal(request.name);
+      expectRemainingProperties(internal);
     });
 };
 
-const validateRecipientResponse = (response: Recipient.Response, document: Recipient.Document) => {
-  expect(response.recipientId, 'recipientId').to.equal(getRecipientId(document));
-  expect(response.name, 'name').to.equal(document.name);
+const validateRecipientResponse = (nestedPath: string = '') => (response: Recipient.Response, document: Recipient.Document) => {
+  const { recipientId, name, ...empty } = response;
+
+  expect(recipientId, `${nestedPath}recipientId`).to.equal(getRecipientId(document));
+  expect(name, `${nestedPath}name`).to.equal(document.name);
+  expectEmptyObject(empty, nestedPath);
 };
 
+const validateNestedRecipientResponse = (nestedPath: string, ...rest: Parameters<ReturnType<typeof validateRecipientResponse>>) => validateRecipientResponse(nestedPath)(...rest);
+
 const validateRecipientListResponse = (responses: Recipient.Response[], documents: Recipient.Document[]) => {
-  documents.forEach((document) => {
+  documents.forEach((document, index) => {
     const response = responses.find(r => r.recipientId === getRecipientId(document));
-    validateRecipientResponse(response, document);
+    cy.validateNestedRecipientResponse(`[${index}].`, response, document);
   });
 };
 
@@ -38,12 +47,13 @@ export const setRecipientValidationCommands = () => {
     prevSubject: true,
   }, {
     validateRecipientDocument,
-    validateRecipientResponse,
+    validateRecipientResponse: validateRecipientResponse(),
     validateRecipientListResponse,
   });
 
   Cypress.Commands.addAll({
     validateRecipientDeleted,
+    validateNestedRecipientResponse,
   });
 };
 
@@ -51,11 +61,12 @@ declare global {
   namespace Cypress {
     interface Chainable {
       validateRecipientDeleted: CommandFunction<typeof validateRecipientDeleted>;
+      validateNestedRecipientResponse: CommandFunction<typeof validateNestedRecipientResponse>;
     }
 
     interface ChainableResponseBody extends Chainable {
       validateRecipientDocument: CommandFunctionWithPreviousSubject<typeof validateRecipientDocument>;
-      validateRecipientResponse: CommandFunctionWithPreviousSubject<typeof validateRecipientResponse>;
+      validateRecipientResponse: CommandFunctionWithPreviousSubject<ReturnType<typeof validateRecipientResponse>>;
       validateRecipientListResponse: CommandFunctionWithPreviousSubject<typeof validateRecipientListResponse>;
     }
   }

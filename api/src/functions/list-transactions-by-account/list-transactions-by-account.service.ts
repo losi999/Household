@@ -22,6 +22,8 @@ export const listTransactionsByAccountServiceFactory = (
       pageSize,
     }));
 
+    console.log('docs', documents);
+
     return transactionDocumentConverter.toResponseList(documents, accountId);
   };
 };

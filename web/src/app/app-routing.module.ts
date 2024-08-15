@@ -6,6 +6,7 @@ import { canMatch, canActivate } from 'src/app/shared/guards';
 const routes: Routes = [
   {
     path: 'login',
+    title: 'Bejelentkezés',
     component: LoginComponent,
     data: {
       requireLogin: false,
@@ -14,6 +15,7 @@ const routes: Routes = [
   },
   {
     path: 'projects',
+    title: 'Projektek',
     loadChildren: () => import('./project/project.module').then(m => m.ProjectModule),
     data: {
       requireLogin: true,
@@ -22,6 +24,7 @@ const routes: Routes = [
   },
   {
     path: 'products',
+    title: 'Termékek',
     loadChildren: () => import('./product/product.module').then(m => m.ProductModule),
     data: {
       requireLogin: true,
@@ -30,6 +33,7 @@ const routes: Routes = [
   },
   {
     path: 'categories',
+    title: 'Kategóriák',
     loadChildren: () => import('./category/category.module').then(m => m.CategoryModule),
     data: {
       requireLogin: true,
@@ -38,6 +42,7 @@ const routes: Routes = [
   },
   {
     path: 'recipients',
+    title: 'Partnerek',
     loadChildren: () => import('./recipient/recipient.module').then(m => m.RecipientModule),
     data: {
       requireLogin: true,
@@ -46,6 +51,7 @@ const routes: Routes = [
   },
   {
     path: 'reports',
+    title: 'Jelentések',
     loadChildren: () => import('./report/report.module').then(m => m.ReportModule),
     data: {
       requireLogin: true,
@@ -54,6 +60,7 @@ const routes: Routes = [
   },
   {
     path: '',
+    title: 'Számlák',
     loadChildren: () => import('./account/account.module').then(m => m.AccountModule),
     data: {
       requireLogin: true,

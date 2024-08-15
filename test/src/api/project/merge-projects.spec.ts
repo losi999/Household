@@ -1,116 +1,171 @@
-import { createProjectId } from '@household/shared/common/test-data-factory';
-import { getAccountId, getProjectId, toDictionary } from '@household/shared/common/utils';
-import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
-import { projectDocumentConverter } from '@household/shared/dependencies/converters/project-document-converter';
-import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
+import { getProjectId } from '@household/shared/common/utils';
 import { Account, Project, Transaction } from '@household/shared/types/types';
-import { v4 as uuid } from 'uuid';
+import { splitTransactionDataFactory } from '../transaction/split-data-factory';
+import { paymentTransactionDataFactory } from '../transaction/payment-data-factory';
+import { projectDataFactory } from './data-factory';
+import { accountDataFactory } from '../account/data-factory';
+import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred-data-factory';
+import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement-data-factory';
 
 describe('POST project/v1/projects/{projectId}/merge', () => {
   let accountDocument: Account.Document;
+  let loanAccountDocument: Account.Document;
   let sourceProjectDocument: Project.Document;
   let targetProjectDocument: Project.Document;
+  let unrelatedProjectDocument: Project.Document;
   let paymentTransactionDocument: Transaction.PaymentDocument;
+  let deferredTransactionDocument: Transaction.DeferredDocument;
+  let reimbursementTransactionDocument: Transaction.ReimbursementDocument;
+  let unrelatedPaymentTransactionDocument: Transaction.PaymentDocument;
+  let unrelatedDeferredTransactionDocument: Transaction.DeferredDocument;
+  let unrelatedReimbursementTransactionDocument: Transaction.ReimbursementDocument;
   let splitTransactionDocument: Transaction.SplitDocument;
 
   beforeEach(() => {
-    accountDocument = accountDocumentConverter.create({
-      accountType: 'bankAccount',
-      currency: 'Ft',
-      name: `account-${uuid()}`,
-      owner: 'owner1',
-    }, Cypress.env('EXPIRES_IN'), true);
+    accountDocument = accountDataFactory.document();
+    loanAccountDocument = accountDataFactory.document({
+      accountType: 'loan',
+    });
 
-    sourceProjectDocument = projectDocumentConverter.create({
-      name: `source-${uuid()}`,
-      description: 'source',
-    }, Cypress.env('EXPIRES_IN'), true);
+    sourceProjectDocument = projectDataFactory.document();
+    targetProjectDocument = projectDataFactory.document();
+    unrelatedProjectDocument = projectDataFactory.document();
 
-    targetProjectDocument = projectDocumentConverter.create({
-      name: `target-${uuid()}`,
-      description: 'target',
-    }, Cypress.env('EXPIRES_IN'), true);
-
-    paymentTransactionDocument = transactionDocumentConverter.createPaymentDocument({
-      body: {
-        accountId: getAccountId(accountDocument),
-        amount: 100,
-        projectId: getProjectId(sourceProjectDocument),
-        description: 'desc',
-        inventory: undefined,
-        issuedAt: new Date().toISOString(),
-        categoryId: undefined,
-        recipientId: undefined,
-        invoice: undefined,
-      },
+    paymentTransactionDocument = paymentTransactionDataFactory.document({
       account: accountDocument,
       project: sourceProjectDocument,
-      product: undefined,
-      recipient: undefined,
-      category: undefined,
-    }, Cypress.env('EXPIRES_IN'), true);
+    });
 
-    splitTransactionDocument = transactionDocumentConverter.createSplitDocument({
-      body: {
-        accountId: getAccountId(accountDocument),
-        amount: 100,
-        description: 'desc',
-        issuedAt: new Date().toISOString(),
-        recipientId: undefined,
-        splits: [
-          {
-            amount: 50,
-            projectId: getProjectId(sourceProjectDocument),
-            description: 'desc',
-            inventory: undefined,
-            categoryId: undefined,
-            invoice: undefined,
-          },
-          {
-            amount: 50,
-            projectId: getProjectId(targetProjectDocument),
-            description: 'desc',
-            inventory: undefined,
-            categoryId: undefined,
-            invoice: undefined,
-          },
-        ],
-      },
+    deferredTransactionDocument = deferredTransactionDataFactory.document({
       account: accountDocument,
-      projects: toDictionary([
-        sourceProjectDocument,
-        targetProjectDocument,
-      ], '_id'),
-      products: undefined,
-      recipient: undefined,
-      categories: {},
-    }, Cypress.env('EXPIRES_IN'), true);
+      project: sourceProjectDocument,
+      loanAccount: loanAccountDocument,
+    });
+
+    reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+      account: loanAccountDocument,
+      project: sourceProjectDocument,
+      loanAccount: accountDocument,
+    });
+
+    unrelatedPaymentTransactionDocument = paymentTransactionDataFactory.document({
+      account: accountDocument,
+      project: unrelatedProjectDocument,
+    });
+
+    unrelatedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+      account: accountDocument,
+      project: unrelatedProjectDocument,
+      loanAccount: loanAccountDocument,
+    });
+
+    unrelatedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+      account: loanAccountDocument,
+      project: unrelatedProjectDocument,
+      loanAccount: accountDocument,
+    });
+
+    splitTransactionDocument = splitTransactionDataFactory.document({
+      account: accountDocument,
+      splits: [
+        {
+          project: unrelatedProjectDocument,
+        },
+        {
+          project: sourceProjectDocument,
+        },
+        {
+          project: targetProjectDocument,
+        },
+        {
+          project: unrelatedProjectDocument,
+          loanAccount: loanAccountDocument,
+        },
+        {
+          project: sourceProjectDocument,
+          loanAccount: loanAccountDocument,
+        },
+        {
+          project: targetProjectDocument,
+          loanAccount: loanAccountDocument,
+        },
+      ],
+    });
   });
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
-        .requestMergeProjects(createProjectId(), [createProjectId()])
+        .requestMergeProjects(projectDataFactory.id(), [projectDataFactory.id()])
         .expectUnauthorizedResponse();
     });
   });
 
   describe('called as an admin', () => {
     it('should merge projects', () => {
-      cy.saveAccountDocument(accountDocument)
-        .saveProjectDocument(sourceProjectDocument)
-        .saveProjectDocument(targetProjectDocument)
-        .saveTransactionDocument(paymentTransactionDocument)
-        .saveTransactionDocument(splitTransactionDocument)
+      cy.saveAccountDocuments([
+        accountDocument,
+        loanAccountDocument,
+      ])
+        .saveProjectDocuments([
+          sourceProjectDocument,
+          targetProjectDocument,
+          unrelatedProjectDocument,
+        ])
+        .saveTransactionDocuments([
+          paymentTransactionDocument,
+          splitTransactionDocument,
+          deferredTransactionDocument,
+          reimbursementTransactionDocument,
+          unrelatedPaymentTransactionDocument,
+          unrelatedDeferredTransactionDocument,
+          unrelatedReimbursementTransactionDocument,
+        ])
         .authenticate(1)
         .requestMergeProjects(getProjectId(targetProjectDocument), [getProjectId(sourceProjectDocument)])
         .expectCreatedResponse()
         .validateProjectDeleted(getProjectId(sourceProjectDocument))
-        .validatePartiallyReassignedPaymentDocument(paymentTransactionDocument, {
-          project: getProjectId(targetProjectDocument),
+        .validateRelatedChangesInPaymentDocument(paymentTransactionDocument, {
+          project: {
+            from: getProjectId(sourceProjectDocument),
+            to: getProjectId(targetProjectDocument),
+          },
         })
-        .validatePartiallyReassignedSplitDocument(splitTransactionDocument, 0, {
-          project: getProjectId(targetProjectDocument),
+        .validateRelatedChangesInPaymentDocument(unrelatedPaymentTransactionDocument, {
+          project: {
+            from: getProjectId(sourceProjectDocument),
+            to: getProjectId(targetProjectDocument),
+          },
+        })
+        .validateRelatedChangesInDeferredDocument(deferredTransactionDocument, {
+          project: {
+            from: getProjectId(sourceProjectDocument),
+            to: getProjectId(targetProjectDocument),
+          },
+        })
+        .validateRelatedChangesInDeferredDocument(unrelatedDeferredTransactionDocument, {
+          project: {
+            from: getProjectId(sourceProjectDocument),
+            to: getProjectId(targetProjectDocument),
+          },
+        })
+        .validateRelatedChangesInReimbursementDocument(reimbursementTransactionDocument, {
+          project: {
+            from: getProjectId(sourceProjectDocument),
+            to: getProjectId(targetProjectDocument),
+          },
+        })
+        .validateRelatedChangesInReimbursementDocument(unrelatedReimbursementTransactionDocument, {
+          project: {
+            from: getProjectId(sourceProjectDocument),
+            to: getProjectId(targetProjectDocument),
+          },
+        })
+        .validateRelatedChangesInSplitDocument(splitTransactionDocument, {
+          project: {
+            from: getProjectId(sourceProjectDocument),
+            to: getProjectId(targetProjectDocument),
+          },
         });
     });
 
@@ -121,7 +176,7 @@ describe('POST project/v1/projects/{projectId}/merge', () => {
           .authenticate(1)
           .requestMergeProjects(getProjectId(targetProjectDocument), [
             getProjectId(sourceProjectDocument),
-            createProjectId(),
+            projectDataFactory.id(),
           ])
           .expectBadRequestResponse()
           .expectMessage('Some of the projects are not found');
@@ -129,14 +184,14 @@ describe('POST project/v1/projects/{projectId}/merge', () => {
       describe('if body', () => {
         it('is not array', () => {
           cy.authenticate(1)
-            .requestMergeProjects(createProjectId(), {} as any)
+            .requestMergeProjects(projectDataFactory.id(), {} as any)
             .expectBadRequestResponse()
             .expectWrongPropertyType('data', 'array', 'body');
         });
 
         it('has too few items', () => {
           cy.authenticate(1)
-            .requestMergeProjects(createProjectId(), [])
+            .requestMergeProjects(projectDataFactory.id(), [])
             .expectBadRequestResponse()
             .expectTooFewItemsProperty('data', 1, 'body');
         });
@@ -145,14 +200,14 @@ describe('POST project/v1/projects/{projectId}/merge', () => {
       describe('if body[0]', () => {
         it('is not string', () => {
           cy.authenticate(1)
-            .requestMergeProjects(createProjectId(), [1] as any)
+            .requestMergeProjects(projectDataFactory.id(), [1] as any)
             .expectBadRequestResponse()
             .expectWrongPropertyType('data', 'string', 'body');
         });
 
         it('is not a valid mongo id', () => {
           cy.authenticate(1)
-            .requestMergeProjects(createProjectId(), [createProjectId('not-valid')])
+            .requestMergeProjects(projectDataFactory.id(), [projectDataFactory.id('not-valid')])
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('data', 'body');
         });
@@ -161,14 +216,14 @@ describe('POST project/v1/projects/{projectId}/merge', () => {
       describe('is projectId', () => {
         it('is not a valid mongo id', () => {
           cy.authenticate(1)
-            .requestMergeProjects(createProjectId('not-valid'), [createProjectId()])
+            .requestMergeProjects(projectDataFactory.id('not-valid'), [projectDataFactory.id()])
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('projectId', 'pathParameters');
         });
 
         it('does not belong to any project', () => {
           cy.authenticate(1)
-            .requestMergeProjects(createProjectId(), [getProjectId(sourceProjectDocument)])
+            .requestMergeProjects(projectDataFactory.id(), [getProjectId(sourceProjectDocument)])
             .expectBadRequestResponse()
             .expectMessage('Some of the projects are not found');
         });
