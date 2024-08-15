@@ -1,5 +1,8 @@
 import { JSONSchema7 } from 'json-schema';
 
+export type AnyValueObject<T> = Record<keyof T, any>;
+export type DataFactoryFunction<I, O = I> = (input?: Partial<I> | Partial<AnyValueObject<I>>) => O;
+
 type JSONSchemaType<T> =
   T extends undefined ? 'null' :
     T extends string ? 'string' :
@@ -14,6 +17,7 @@ export type StrictJSONSchema7<T> = Omit<JSONSchema7, 'properties' | 'type' | 're
   properties?: JSONSchemaType<T> extends 'object' ? { [prop in keyof T]?: StrictJSONSchema7<T[prop]> } : never;
   items?: T extends any[] ? StrictJSONSchema7<T[0]> : never;
   dependentRequired?: Partial<Record<keyof T, (keyof T)[]>>;
+  dependentSchemas?: JSONSchemaType<T> extends 'object' ? {[prop in keyof T]?: StrictJSONSchema7<T>} : never;
   formatExclusiveMinimum?: {
     $data: string
   }

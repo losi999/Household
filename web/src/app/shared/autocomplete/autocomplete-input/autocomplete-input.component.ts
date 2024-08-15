@@ -1,4 +1,4 @@
-import { Component, forwardRef, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, EventEmitter, forwardRef, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor, FormControl } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -19,6 +19,7 @@ export class AutocompleteInputComponent implements OnInit, OnDestroy, ControlVal
   @Input() filterPropertyName: string;
   @Input() label: string;
   @Input() items: any[];
+  @Output() create = new EventEmitter();
 
   selected: FormControl<any>;
 

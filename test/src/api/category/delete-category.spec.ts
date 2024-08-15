@@ -1,97 +1,19 @@
 import { createCategoryId } from '@household/shared/common/test-data-factory';
-import { getAccountId, getCategoryId, getProductId, toDictionary } from '@household/shared/common/utils';
-import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
-import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
-import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
-import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
+import { getCategoryId, getProductId } from '@household/shared/common/utils';
 import { Account, Category, Transaction } from '@household/shared/types/types';
-import { v4 as uuid } from 'uuid';
-
-const createRelatedTransactions = (accountDocument: Account.Document, categoryDocument: Category.Document): [Transaction.PaymentDocument, Transaction.SplitDocument] => {
-  const paymentTransactionDocument = transactionDocumentConverter.createPaymentDocument({
-    body: {
-      accountId: getAccountId(accountDocument),
-      amount: 100,
-      description: 'description',
-      issuedAt: new Date(2022, 2, 3).toISOString(),
-      categoryId: getCategoryId(categoryDocument),
-      inventory: categoryDocument.categoryType === 'inventory' ? {
-        quantity: 1,
-        productId: undefined,
-      } : undefined,
-      invoice: categoryDocument.categoryType === 'invoice' ? {
-        billingEndDate: new Date(2023, 11, 31).toISOString(),
-        billingStartDate: new Date(2023, 11, 1).toISOString(),
-        invoiceNumber: 'inv number',
-      } : undefined,
-      projectId: undefined,
-      recipientId: undefined,
-    },
-    account: accountDocument,
-    category: categoryDocument,
-    project: undefined,
-    recipient: undefined,
-    product: undefined,
-  }, Cypress.env('EXPIRES_IN'), true);
-
-  const splitTransactionDocument = transactionDocumentConverter.createSplitDocument({
-    body: {
-      accountId: getAccountId(accountDocument),
-      amount: 200,
-      description: 'description',
-      issuedAt: new Date(2022, 2, 3).toISOString(),
-      recipientId: undefined,
-      splits: [
-        {
-          amount: 100,
-          categoryId: getCategoryId(categoryDocument),
-          description: undefined,
-          inventory: categoryDocument.categoryType === 'inventory' ? {
-            quantity: 1,
-            productId: undefined,
-          } : undefined,
-          invoice: categoryDocument.categoryType === 'invoice' ? {
-            billingEndDate: new Date(2023, 11, 31).toISOString(),
-            billingStartDate: new Date(2023, 11, 1).toISOString(),
-            invoiceNumber: 'inv number',
-          } : undefined,
-          projectId: undefined,
-        },
-        {
-          amount: 100,
-          categoryId: undefined,
-          description: undefined,
-          inventory: undefined,
-          invoice: undefined,
-          projectId: undefined,
-        },
-      ],
-    },
-    account: accountDocument,
-    recipient: undefined,
-    categories: toDictionary([categoryDocument], '_id'),
-    projects: {},
-    products: {},
-  }, Cypress.env('EXPIRES_IN'), true);
-
-  return [
-    paymentTransactionDocument,
-    splitTransactionDocument,
-  ];
-};
+import { accountDataFactory } from '@household/test/api/account/data-factory';
+import { categoryDataFactory } from '@household/test/api/category/data-factory';
+import { productDataFactory } from '@household/test/api/product/data-factory';
+import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred-data-factory';
+import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment-data-factory';
+import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement-data-factory';
+import { splitTransactionDataFactory } from '@household/test/api/transaction/split-data-factory';
 
 describe('DELETE /category/v1/categories/{categoryId}', () => {
   let categoryDocument: Category.Document;
 
   beforeEach(() => {
-    categoryDocument = categoryDocumentConverter.create({
-      body: {
-        name: `category-${uuid()}`,
-        categoryType: 'regular',
-        parentCategoryId: undefined,
-      },
-      parentCategory: undefined,
-    }, Cypress.env('EXPIRES_IN'), true);
+    categoryDocument = categoryDataFactory.document();
   });
 
   describe('called as anonymous', () => {
@@ -103,7 +25,6 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
   });
 
   describe('called as an admin', () => {
-
     it('should delete category', () => {
       cy.saveCategoryDocument(categoryDocument)
         .authenticate(1)
@@ -117,29 +38,21 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
       let grandChildCategory: Category.Document;
 
       beforeEach(() => {
-        childCategory = categoryDocumentConverter.create({
-          body: {
-            name: `child-${uuid()}`,
-            categoryType: 'regular',
-            parentCategoryId: getCategoryId(categoryDocument),
-          },
+        childCategory = categoryDataFactory.document({
           parentCategory: categoryDocument,
-        }, Cypress.env('EXPIRES_IN'), true);
+        });
 
-        grandChildCategory = categoryDocumentConverter.create({
-          body: {
-            name: 'child of child',
-            categoryType: 'regular',
-            parentCategoryId: getCategoryId(childCategory),
-          },
+        grandChildCategory = categoryDataFactory.document({
           parentCategory: childCategory,
-        }, Cypress.env('EXPIRES_IN'), true);
+        });
       });
 
       it('to root if did not have parent', () => {
-        cy.saveCategoryDocument(categoryDocument)
-          .saveCategoryDocument(childCategory)
-          .saveCategoryDocument(grandChildCategory)
+        cy.saveCategoryDocuments([
+          categoryDocument,
+          childCategory,
+          grandChildCategory,
+        ])
           .authenticate(1)
           .requestDeleteCategory(getCategoryId(categoryDocument))
           .expectNoContentResponse()
@@ -149,9 +62,11 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
       });
 
       it('to parent if had parent', () => {
-        cy.saveCategoryDocument(categoryDocument)
-          .saveCategoryDocument(childCategory)
-          .saveCategoryDocument(grandChildCategory)
+        cy.saveCategoryDocuments([
+          categoryDocument,
+          childCategory,
+          grandChildCategory,
+        ])
           .authenticate(1)
           .requestDeleteCategory(getCategoryId(childCategory))
           .expectNoContentResponse()
@@ -161,141 +76,422 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
     });
 
     describe('in related transactions', () => {
-      let accountDocument: Account.Document;
+      let unrelatedCategoryDocument: Category.Document;
       let paymentTransactionDocument: Transaction.PaymentDocument;
+      let deferredTransactionDocument: Transaction.DeferredDocument;
+      let reimbursementTransactionDocument: Transaction.ReimbursementDocument;
       let splitTransactionDocument: Transaction.SplitDocument;
+      let unrelatedPaymentTransactionDocument: Transaction.PaymentDocument;
+      let unrelatedDeferredTransactionDocument: Transaction.DeferredDocument;
+      let unrelatedReimbursementTransactionDocument: Transaction.ReimbursementDocument;
+      let accountDocument: Account.Document;
+      let loanAccountDocument: Account.Document;
 
       beforeEach(() => {
-        accountDocument = accountDocumentConverter.create({
-          name: `account-${uuid()}`,
-          accountType: 'bankAccount',
-          currency: 'Ft',
-          owner: 'owner1',
-        }, Cypress.env('EXPIRES_IN'), true);
-      });
-
-      describe('category', () => {
-
-        it('should be unset if category is deleted', () => {
-          [
-            paymentTransactionDocument,
-            splitTransactionDocument,
-          ] = createRelatedTransactions(accountDocument, categoryDocument);
-
-          cy.saveAccountDocument(accountDocument)
-            .saveCategoryDocument(categoryDocument)
-            .saveTransactionDocument(paymentTransactionDocument)
-            .saveTransactionDocument(splitTransactionDocument)
-            .authenticate(1)
-            .requestDeleteCategory(getCategoryId(categoryDocument))
-            .expectNoContentResponse()
-            .validateCategoryDeleted(getCategoryId(categoryDocument))
-            .validatePartiallyUnsetPaymentDocument(paymentTransactionDocument, 'category')
-            .validatePartiallyUnsetSplitDocument(splitTransactionDocument, 0, 'category');
-        });
-
-        it('should be set to parent category if child is deleted', () => {
-          const childCategoryDocument = categoryDocumentConverter.create({
-            body: {
-              categoryType: 'regular',
-              name: `child-${uuid()}`,
-              parentCategoryId: getCategoryId(categoryDocument),
-            },
-            parentCategory: categoryDocument,
-          }, Cypress.env('EXPIRES_IN'), true);
-
-          [
-            paymentTransactionDocument,
-            splitTransactionDocument,
-          ] = createRelatedTransactions(accountDocument, childCategoryDocument);
-
-          cy.saveAccountDocument(accountDocument)
-            .saveCategoryDocument(categoryDocument)
-            .saveCategoryDocument(childCategoryDocument)
-            .saveTransactionDocument(paymentTransactionDocument)
-            .saveTransactionDocument(splitTransactionDocument)
-            .authenticate(1)
-            .requestDeleteCategory(getCategoryId(childCategoryDocument))
-            .expectNoContentResponse()
-            .validateCategoryDeleted(getCategoryId(childCategoryDocument))
-            .validatePartiallyReassignedPaymentDocument(paymentTransactionDocument, {
-              category: getCategoryId(categoryDocument),
-            })
-            .validatePartiallyReassignedSplitDocument(splitTransactionDocument, 0, {
-              category: getCategoryId(categoryDocument),
-            });
+        accountDocument = accountDataFactory.document();
+        loanAccountDocument = accountDataFactory.document({
+          accountType: 'loan',
         });
       });
 
-      describe('inventory', () => {
-        it('should be unset if category is deleted', () => {
-          categoryDocument = categoryDocumentConverter.create({
-            body: {
-              name: `category-${uuid()}`,
-              categoryType: 'inventory',
-              parentCategoryId: undefined,
-            },
-            parentCategory: undefined,
-          }, Cypress.env('EXPIRES_IN'), true);
+      it('category should be unset if category is deleted', () => {
+        unrelatedCategoryDocument = categoryDataFactory.document();
 
-          [
+        unrelatedPaymentTransactionDocument = paymentTransactionDataFactory.document({
+          account: accountDocument,
+          category: unrelatedCategoryDocument,
+        });
+
+        unrelatedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+          account: accountDocument,
+          category: unrelatedCategoryDocument,
+          loanAccount: loanAccountDocument,
+        });
+
+        unrelatedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+          account: loanAccountDocument,
+          category: unrelatedCategoryDocument,
+          loanAccount: accountDocument,
+        });
+
+        paymentTransactionDocument = paymentTransactionDataFactory.document({
+          account: accountDocument,
+          category: categoryDocument,
+        });
+
+        deferredTransactionDocument = deferredTransactionDataFactory.document({
+          account: accountDocument,
+          category: categoryDocument,
+          loanAccount: loanAccountDocument,
+        });
+
+        reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+          account: loanAccountDocument,
+          category: categoryDocument,
+          loanAccount: accountDocument,
+        });
+
+        splitTransactionDocument = splitTransactionDataFactory.document({
+          account: accountDocument,
+          splits: [
+            {
+              category: categoryDocument,
+            },
+            {
+              category: categoryDocument,
+              loanAccount: loanAccountDocument,
+            },
+            {
+              category: unrelatedCategoryDocument,
+            },
+            {
+              category: unrelatedCategoryDocument,
+              loanAccount: loanAccountDocument,
+            },
+          ],
+        });
+
+        cy.saveAccountDocuments([
+          accountDocument,
+          loanAccountDocument,
+        ])
+          .saveCategoryDocuments([
+            categoryDocument,
+            unrelatedCategoryDocument,
+          ])
+          .saveTransactionDocuments([
             paymentTransactionDocument,
             splitTransactionDocument,
-          ] = createRelatedTransactions(accountDocument, categoryDocument);
-
-          cy.saveAccountDocument(accountDocument)
-            .saveCategoryDocument(categoryDocument)
-            .saveTransactionDocument(paymentTransactionDocument)
-            .saveTransactionDocument(splitTransactionDocument)
-            .authenticate(1)
-            .requestDeleteCategory(getCategoryId(categoryDocument))
-            .expectNoContentResponse()
-            .validateCategoryDeleted(getCategoryId(categoryDocument))
-            .validatePartiallyUnsetPaymentDocument(paymentTransactionDocument, 'category', 'inventory')
-            .validatePartiallyUnsetSplitDocument(splitTransactionDocument, 0, 'category', 'inventory');
-        });
+            deferredTransactionDocument,
+            reimbursementTransactionDocument,
+            unrelatedPaymentTransactionDocument,
+            unrelatedDeferredTransactionDocument,
+            unrelatedReimbursementTransactionDocument,
+          ])
+          .authenticate(1)
+          .requestDeleteCategory(getCategoryId(categoryDocument))
+          .expectNoContentResponse()
+          .validateCategoryDeleted(getCategoryId(categoryDocument))
+          .validateRelatedChangesInPaymentDocument(paymentTransactionDocument, {
+            category: {
+              from: categoryDocument,
+            },
+          })
+          .validateRelatedChangesInPaymentDocument(unrelatedPaymentTransactionDocument, {
+            category: {
+              from: categoryDocument,
+            },
+          })
+          .validateRelatedChangesInDeferredDocument(deferredTransactionDocument, {
+            category: {
+              from: categoryDocument,
+            },
+          })
+          .validateRelatedChangesInDeferredDocument(unrelatedDeferredTransactionDocument, {
+            category: {
+              from: categoryDocument,
+            },
+          })
+          .validateRelatedChangesInReimbursementDocument(reimbursementTransactionDocument, {
+            category: {
+              from: categoryDocument,
+            },
+          })
+          .validateRelatedChangesInReimbursementDocument(unrelatedReimbursementTransactionDocument, {
+            category: {
+              from: categoryDocument,
+            },
+          })
+          .validateRelatedChangesInSplitDocument(splitTransactionDocument, {
+            category: {
+              from: categoryDocument,
+            },
+          });
       });
 
-      describe('invoice', () => {
-        it('should be unset if category is deleted', () => {
-          categoryDocument = categoryDocumentConverter.create({
-            body: {
-              name: `category-${uuid()}`,
-              categoryType: 'invoice',
-              parentCategoryId: undefined,
-            },
-            parentCategory: undefined,
-          }, Cypress.env('EXPIRES_IN'), true);
+      it('inventory should be unset if category is deleted', () => {
+        categoryDocument = categoryDataFactory.document({
+          body: {
+            categoryType: 'inventory',
+          },
+        });
 
-          [
+        const productDocument = productDataFactory.document({
+          category: categoryDocument,
+        });
+
+        unrelatedCategoryDocument = categoryDataFactory.document({
+          body: {
+            categoryType: 'inventory',
+          },
+        });
+
+        const unrelatedProductDocument = productDataFactory.document({
+          category: unrelatedCategoryDocument,
+        });
+
+        unrelatedPaymentTransactionDocument = paymentTransactionDataFactory.document({
+          account: accountDocument,
+          category: unrelatedCategoryDocument,
+          product: unrelatedProductDocument,
+        });
+
+        unrelatedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+          account: accountDocument,
+          category: unrelatedCategoryDocument,
+          product: unrelatedProductDocument,
+          loanAccount: loanAccountDocument,
+        });
+
+        unrelatedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+          account: loanAccountDocument,
+          category: unrelatedCategoryDocument,
+          product: unrelatedProductDocument,
+          loanAccount: accountDocument,
+        });
+
+        paymentTransactionDocument = paymentTransactionDataFactory.document({
+          account: accountDocument,
+          category: categoryDocument,
+          product: productDocument,
+        });
+
+        deferredTransactionDocument = deferredTransactionDataFactory.document({
+          account: accountDocument,
+          category: categoryDocument,
+          loanAccount: loanAccountDocument,
+          product: productDocument,
+        });
+
+        reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+          account: loanAccountDocument,
+          category: categoryDocument,
+          loanAccount: accountDocument,
+          product: productDocument,
+        });
+
+        splitTransactionDocument = splitTransactionDataFactory.document({
+          account: accountDocument,
+          splits: [
+            {
+              category: categoryDocument,
+              product: productDocument,
+            },
+            {
+              category: categoryDocument,
+              product: productDocument,
+              loanAccount: loanAccountDocument,
+            },
+            {
+              category: unrelatedCategoryDocument,
+              product: unrelatedProductDocument,
+            },
+            {
+              category: unrelatedCategoryDocument,
+              product: unrelatedProductDocument,
+              loanAccount: loanAccountDocument,
+            },
+          ],
+        });
+
+        cy.saveAccountDocuments([
+          accountDocument,
+          loanAccountDocument,
+        ])
+          .saveCategoryDocuments([
+            categoryDocument,
+            unrelatedCategoryDocument,
+          ])
+          .saveProductDocuments([
+            productDocument,
+            unrelatedProductDocument,
+          ])
+          .saveTransactionDocuments([
             paymentTransactionDocument,
             splitTransactionDocument,
-          ] = createRelatedTransactions(accountDocument, categoryDocument);
+            deferredTransactionDocument,
+            reimbursementTransactionDocument,
+            unrelatedPaymentTransactionDocument,
+            unrelatedDeferredTransactionDocument,
+            unrelatedReimbursementTransactionDocument,
+          ])
+          .authenticate(1)
+          .requestDeleteCategory(getCategoryId(categoryDocument))
+          .expectNoContentResponse()
+          .validateCategoryDeleted(getCategoryId(categoryDocument))
+          .validateRelatedChangesInPaymentDocument(paymentTransactionDocument, {
+            category: {
+              from: categoryDocument,
+            },
+          })
+          .validateRelatedChangesInPaymentDocument(unrelatedPaymentTransactionDocument, {
+            category: {
+              from: categoryDocument,
+            },
+          })
+          .validateRelatedChangesInDeferredDocument(deferredTransactionDocument, {
+            category: {
+              from: categoryDocument,
+            },
+          })
+          .validateRelatedChangesInDeferredDocument(unrelatedDeferredTransactionDocument, {
+            category: {
+              from: categoryDocument,
+            },
+          })
+          .validateRelatedChangesInReimbursementDocument(reimbursementTransactionDocument, {
+            category: {
+              from: categoryDocument,
+            },
+          })
+          .validateRelatedChangesInReimbursementDocument(unrelatedReimbursementTransactionDocument, {
+            category: {
+              from: categoryDocument,
+            },
+          })
+          .validateRelatedChangesInSplitDocument(splitTransactionDocument, {
+            category: {
+              from: categoryDocument,
+            },
+          });
+      });
 
-          cy.saveAccountDocument(accountDocument)
-            .saveCategoryDocument(categoryDocument)
-            .saveTransactionDocument(paymentTransactionDocument)
-            .saveTransactionDocument(splitTransactionDocument)
-            .authenticate(1)
-            .requestDeleteCategory(getCategoryId(categoryDocument))
-            .expectNoContentResponse()
-            .validateCategoryDeleted(getCategoryId(categoryDocument))
-            .validatePartiallyUnsetPaymentDocument(paymentTransactionDocument, 'category', 'invoice')
-            .validatePartiallyUnsetSplitDocument(splitTransactionDocument, 0, 'category', 'invoice');
+      it('invoice should be unset if category is deleted', () => {
+        categoryDocument = categoryDataFactory.document({
+          body: {
+            categoryType: 'invoice',
+          },
         });
+
+        unrelatedCategoryDocument = categoryDataFactory.document({
+          body: {
+            categoryType: 'invoice',
+          },
+        });
+
+        unrelatedPaymentTransactionDocument = paymentTransactionDataFactory.document({
+          account: accountDocument,
+          category: unrelatedCategoryDocument,
+        });
+
+        unrelatedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+          account: accountDocument,
+          category: unrelatedCategoryDocument,
+          loanAccount: loanAccountDocument,
+        });
+
+        unrelatedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+          account: loanAccountDocument,
+          category: unrelatedCategoryDocument,
+          loanAccount: accountDocument,
+        });
+
+        paymentTransactionDocument = paymentTransactionDataFactory.document({
+          account: accountDocument,
+          category: categoryDocument,
+        });
+
+        deferredTransactionDocument = deferredTransactionDataFactory.document({
+          account: accountDocument,
+          category: categoryDocument,
+          loanAccount: loanAccountDocument,
+        });
+
+        reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+          account: loanAccountDocument,
+          category: categoryDocument,
+          loanAccount: accountDocument,
+        });
+
+        splitTransactionDocument = splitTransactionDataFactory.document({
+          account: accountDocument,
+          splits: [
+            {
+              category: categoryDocument,
+            },
+            {
+              category: categoryDocument,
+              loanAccount: loanAccountDocument,
+            },
+            {
+              category: unrelatedCategoryDocument,
+            },
+            {
+              category: unrelatedCategoryDocument,
+              loanAccount: loanAccountDocument,
+            },
+          ],
+        });
+
+        cy.saveAccountDocuments([
+          accountDocument,
+          loanAccountDocument,
+        ])
+          .saveCategoryDocuments([
+            categoryDocument,
+            unrelatedCategoryDocument,
+          ])
+          .saveTransactionDocuments([
+            paymentTransactionDocument,
+            splitTransactionDocument,
+            deferredTransactionDocument,
+            reimbursementTransactionDocument,
+            unrelatedPaymentTransactionDocument,
+            unrelatedDeferredTransactionDocument,
+            unrelatedReimbursementTransactionDocument,
+          ])
+          .authenticate(1)
+          .requestDeleteCategory(getCategoryId(categoryDocument))
+          .expectNoContentResponse()
+          .validateCategoryDeleted(getCategoryId(categoryDocument))
+          .validateRelatedChangesInPaymentDocument(paymentTransactionDocument, {
+            category: {
+              from: categoryDocument,
+            },
+          })
+          .validateRelatedChangesInPaymentDocument(unrelatedPaymentTransactionDocument, {
+            category: {
+              from: categoryDocument,
+            },
+          })
+          .validateRelatedChangesInDeferredDocument(deferredTransactionDocument, {
+            category: {
+              from: categoryDocument,
+            },
+          })
+          .validateRelatedChangesInDeferredDocument(unrelatedDeferredTransactionDocument, {
+            category: {
+              from: categoryDocument,
+            },
+          })
+          .validateRelatedChangesInReimbursementDocument(reimbursementTransactionDocument, {
+            category: {
+              from: categoryDocument,
+            },
+          })
+          .validateRelatedChangesInReimbursementDocument(unrelatedReimbursementTransactionDocument, {
+            category: {
+              from: categoryDocument,
+            },
+          })
+          .validateRelatedChangesInSplitDocument(splitTransactionDocument, {
+            category: {
+              from: categoryDocument,
+            },
+          });
       });
     });
 
     describe('related products', () => {
       it('should be deleted', () => {
-        const productDocument = productDocumentConverter.create({
+        categoryDocument = categoryDataFactory.document({
           body: {
-            brand: `tesco-${uuid()}}`,
-            measurement: 500,
-            unitOfMeasurement: 'g',
+            categoryType: 'inventory',
           },
+        });
+        const productDocument = productDataFactory.document({
           category: categoryDocument,
-        }, Cypress.env('EXPIRES_IN'), true);
+        });
 
         cy.saveCategoryDocument(categoryDocument)
           .saveProductDocument(productDocument)

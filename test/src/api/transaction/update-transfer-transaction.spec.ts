@@ -1,111 +1,180 @@
-import { createTransactionId, createAccountId } from '@household/shared/common/test-data-factory';
 import { getAccountId, getTransactionId } from '@household/shared/common/utils';
-import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
-import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
 import { Account, Transaction } from '@household/shared/types/types';
-import { v4 as uuid } from 'uuid';
+import { accountDataFactory } from '@household/test/api/account/data-factory';
+import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred-data-factory';
+import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment-data-factory';
+import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer-data-factory';
 
-describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
+describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfer)', () => {
   let request: Transaction.TransferRequest;
   let originalDocument: Transaction.PaymentDocument;
 
   let accountDocument: Account.Document;
   let transferAccountDocument: Account.Document;
+  let relatedDocumentIds: Pick<Transaction.TransferRequest, 'accountId' | 'transferAccountId'> ;
 
   beforeEach(() => {
-    accountDocument = accountDocumentConverter.create({
-      name: `bank-${uuid()}`,
-      accountType: 'bankAccount',
-      currency: 'Ft',
-      owner: 'owner1',
-    }, Cypress.env('EXPIRES_IN'), true);
+    accountDocument = accountDataFactory.document();
+    transferAccountDocument = accountDataFactory.document();
 
-    transferAccountDocument = accountDocumentConverter.create({
-      name: `wallett-${uuid()}`,
-      accountType: 'cash',
-      currency: '$',
-      owner: 'owner1',
-    }, Cypress.env('EXPIRES_IN'), true);
-
-    originalDocument = transactionDocumentConverter.createPaymentDocument({
-      body: {
-        accountId: getAccountId(accountDocument),
-        amount: 100,
-        description: undefined,
-        issuedAt: new Date().toISOString(),
-        categoryId: undefined,
-        productId: undefined,
-        billingEndDate: undefined,
-        billingStartDate: undefined,
-        invoiceNumber: undefined,
-        quantity: undefined,
-        projectId: undefined,
-        recipientId: undefined,
-      },
+    originalDocument = paymentTransactionDataFactory.document({
       account: accountDocument,
-      category: undefined,
-      project: undefined,
-      recipient: undefined,
-      product: undefined,
-    }, Cypress.env('EXPIRES_IN'), true);
+    });
 
-    request = {
+    relatedDocumentIds = {
       accountId: getAccountId(accountDocument),
       transferAccountId: getAccountId(transferAccountDocument),
-      amount: 100,
-      transferAmount: -10,
-      description: 'description',
-      issuedAt: new Date(2022, 6, 9, 22, 30, 12).toISOString(),
     };
+
+    request = transferTransactionDataFactory.request(relatedDocumentIds);
+
   });
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
-        .requestUpdateToTransferTransaction(createTransactionId(), request)
+        .requestUpdateToTransferTransaction(transferTransactionDataFactory.id(), request)
         .expectUnauthorizedResponse();
     });
   });
 
   describe('called as an admin', () => {
     describe('should update transaction', () => {
-      it('with complete body', () => {
+      it('between non-loan accounts', () => {
         cy.saveTransactionDocument(originalDocument)
-          .saveAccountDocument(accountDocument)
-          .saveAccountDocument(transferAccountDocument)
+          .saveAccountDocuments([
+            accountDocument,
+            transferAccountDocument,
+          ])
           .authenticate(1)
           .requestUpdateToTransferTransaction(getTransactionId(originalDocument), request)
           .expectCreatedResponse()
           .validateTransactionTransferDocument(request);
       });
 
+      it('between two loan accounts', () => {
+        accountDocument = accountDataFactory.document({
+          accountType: 'loan',
+        });
+
+        transferAccountDocument = accountDataFactory.document({
+          accountType: 'loan',
+        });
+
+        request = transferTransactionDataFactory.request({
+          accountId: getAccountId(accountDocument),
+          transferAccountId: getAccountId(transferAccountDocument),
+        });
+
+        cy.saveTransactionDocument(originalDocument)
+          .saveAccountDocuments([
+            accountDocument,
+            transferAccountDocument,
+          ])
+          .authenticate(1)
+          .requestUpdateToTransferTransaction(getTransactionId(originalDocument), request)
+          .expectCreatedResponse()
+          .validateTransactionTransferDocument(request);
+      });
+
+      it('with payments', () => {
+        const deferredTransactionDocument = deferredTransactionDataFactory.document({
+          body: {
+            amount: -5000,
+          },
+          account: accountDocument,
+          loanAccount: transferAccountDocument,
+        });
+
+        request = transferTransactionDataFactory.request({
+          accountId: getAccountId(accountDocument),
+          transferAccountId: getAccountId(transferAccountDocument),
+          amount: 2000,
+          payments: [
+            {
+              amount: 1500,
+              transactionId: getTransactionId(deferredTransactionDocument),
+            },
+          ],
+        });
+
+        cy.saveAccountDocuments([
+          accountDocument,
+          transferAccountDocument,
+        ])
+          .saveTransactionDocuments([
+            originalDocument,
+            deferredTransactionDocument,
+          ])
+          .authenticate(1)
+          .requestUpdateToTransferTransaction(getTransactionId(originalDocument), request)
+          .expectCreatedResponse()
+          .validateTransactionTransferDocument(request);
+      });
+
+      it('with payment amount max out by deferred transaction amount', () => {
+        const deferredTransactionDocument = deferredTransactionDataFactory.document({
+          body: {
+            amount: -500,
+          },
+          account: accountDocument,
+          loanAccount: transferAccountDocument,
+        });
+
+        request = transferTransactionDataFactory.request({
+          accountId: getAccountId(accountDocument),
+          transferAccountId: getAccountId(transferAccountDocument),
+          amount: 2000,
+          payments: [
+            {
+              amount: 1500,
+              transactionId: getTransactionId(deferredTransactionDocument),
+            },
+          ],
+        });
+
+        cy.saveAccountDocuments([
+          accountDocument,
+          transferAccountDocument,
+        ])
+          .saveTransactionDocuments([
+            originalDocument,
+            deferredTransactionDocument,
+          ])
+          .authenticate(1)
+          .requestUpdateToTransferTransaction(getTransactionId(originalDocument), request)
+          .expectCreatedResponse()
+          .validateTransactionTransferDocument(request, [Math.abs(deferredTransactionDocument.amount)]);
+
+      });
+
       describe('without optional properties', () => {
         it('description', () => {
-          const modifiedRequest: Transaction.TransferRequest = {
-            ...request,
+          request = transferTransactionDataFactory.request({
+            ...relatedDocumentIds,
             description: undefined,
-          };
+          });
           cy.saveTransactionDocument(originalDocument)
             .saveAccountDocument(accountDocument)
             .saveAccountDocument(transferAccountDocument)
             .authenticate(1)
-            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), modifiedRequest)
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), request)
             .expectCreatedResponse()
-            .validateTransactionTransferDocument(modifiedRequest);
+            .validateTransactionTransferDocument(request);
         });
 
         it('transferAmount', () => {
-          const modifiedRequest: Transaction.TransferRequest = {
-            ...request,
+          request = transferTransactionDataFactory.request({
+            ...relatedDocumentIds,
             transferAmount: undefined,
-          };
+          });
           cy.saveTransactionDocument(originalDocument)
             .saveAccountDocument(accountDocument)
             .saveAccountDocument(transferAccountDocument)
             .authenticate(1)
-            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), modifiedRequest)
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), request)
             .expectCreatedResponse()
-            .validateTransactionTransferDocument(modifiedRequest);
+            .validateTransactionTransferDocument(request);
         });
       });
     });
@@ -114,14 +183,14 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
       describe('if transactionId', () => {
         it('is not mongo id', () => {
           cy.authenticate(1)
-            .requestUpdateToTransferTransaction(createTransactionId('not-valid'), request)
+            .requestUpdateToTransferTransaction(transferTransactionDataFactory.id('not-valid'), request)
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('transactionId', 'pathParameters');
         });
 
         it('does not belong to any transaction', () => {
           cy.authenticate(1)
-            .requestUpdateToTransferTransaction(createTransactionId(), request)
+            .requestUpdateToTransferTransaction(transferTransactionDataFactory.id(), request)
             .expectNotFoundResponse();
         });
       });
@@ -129,10 +198,9 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
       describe('if body', () => {
         it('has additional properties', () => {
           cy.authenticate(1)
-            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
-              ...request,
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), transferTransactionDataFactory.request({
               extra: 123,
-            } as any)
+            } as any))
             .expectBadRequestResponse()
             .expectAdditionalProperty('data', 'body');
         });
@@ -141,20 +209,18 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
       describe('if amount', () => {
         it('is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
-              ...request,
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), transferTransactionDataFactory.request({
               amount: undefined,
-            })
+            }))
             .expectBadRequestResponse()
             .expectRequiredProperty('amount', 'body');
         });
 
         it('is not number', () => {
           cy.authenticate(1)
-            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
-              ...request,
-              amount: '1' as any,
-            })
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), transferTransactionDataFactory.request({
+              amount: '1',
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('amount', 'number', 'body');
         });
@@ -163,20 +229,18 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
       describe('if description', () => {
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
-              ...request,
-              description: 1 as any,
-            })
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), transferTransactionDataFactory.request({
+              description: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('description', 'string', 'body');
         });
 
         it('is too short', () => {
           cy.authenticate(1)
-            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
-              ...request,
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), transferTransactionDataFactory.request({
               description: '',
-            })
+            }))
             .expectBadRequestResponse()
             .expectTooShortProperty('description', 1, 'body');
         });
@@ -185,30 +249,27 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
       describe('if issuedAt', () => {
         it('is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
-              ...request,
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), transferTransactionDataFactory.request({
               issuedAt: undefined,
-            })
+            }))
             .expectBadRequestResponse()
             .expectRequiredProperty('issuedAt', 'body');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
-              ...request,
-              issuedAt: 1 as any,
-            })
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), transferTransactionDataFactory.request({
+              issuedAt: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('issuedAt', 'string', 'body');
         });
 
         it('is not date-time format', () => {
           cy.authenticate(1)
-            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
-              ...request,
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), transferTransactionDataFactory.request({
               issuedAt: 'not-date-time',
-            })
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyFormat('issuedAt', 'date-time', 'body');
         });
@@ -219,39 +280,36 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
           cy.saveTransactionDocument(originalDocument)
             .saveAccountDocument(transferAccountDocument)
             .authenticate(1)
-            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
-              ...request,
-              accountId: createAccountId(),
-            })
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), transferTransactionDataFactory.request({
+              ...relatedDocumentIds,
+              accountId: accountDataFactory.id(),
+            }))
             .expectBadRequestResponse()
             .expectMessage('No account found');
         });
         it('is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
-              ...request,
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), transferTransactionDataFactory.request({
               accountId: undefined,
-            })
+            }))
             .expectBadRequestResponse()
             .expectRequiredProperty('accountId', 'body');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
-              ...request,
-              accountId: 1 as any,
-            })
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), transferTransactionDataFactory.request({
+              accountId: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('accountId', 'string', 'body');
         });
 
         it('is not mongo id format', () => {
           cy.authenticate(1)
-            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
-              ...request,
-              accountId: createAccountId('not-mongo-id'),
-            })
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), transferTransactionDataFactory.request({
+              accountId: accountDataFactory.id('not-mongo-id'),
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('accountId', 'body');
         });
@@ -260,10 +318,10 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
       describe('if transferAccountId', () => {
         it('is the same as accountId', () => {
           cy.authenticate(1)
-            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
-              ...request,
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), transferTransactionDataFactory.request({
+              ...relatedDocumentIds,
               transferAccountId: getAccountId(accountDocument),
-            })
+            }))
             .expectBadRequestResponse()
             .expectMessage('Cannot transfer to same account');
         });
@@ -272,40 +330,37 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
           cy.saveTransactionDocument(originalDocument)
             .saveAccountDocument(accountDocument)
             .authenticate(1)
-            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
-              ...request,
-              transferAccountId: createAccountId(),
-            })
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), transferTransactionDataFactory.request({
+              ...relatedDocumentIds,
+              transferAccountId: accountDataFactory.id(),
+            }))
             .expectBadRequestResponse()
             .expectMessage('No account found');
         });
 
         it('is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
-              ...request,
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), transferTransactionDataFactory.request({
               transferAccountId: undefined,
-            })
+            }))
             .expectBadRequestResponse()
             .expectRequiredProperty('transferAccountId', 'body');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
-              ...request,
-              transferAccountId: 1 as any,
-            })
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), transferTransactionDataFactory.request({
+              transferAccountId: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('transferAccountId', 'string', 'body');
         });
 
         it('is not mongo id format', () => {
           cy.authenticate(1)
-            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
-              ...request,
-              transferAccountId: createAccountId('not-mongo-id'),
-            })
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), transferTransactionDataFactory.request({
+              transferAccountId: accountDataFactory.id('not-mongo-id'),
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('transferAccountId', 'body');
         });
@@ -314,10 +369,9 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer', () => {
       describe('if transferAmount', () => {
         it('is not number', () => {
           cy.authenticate(1)
-            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), {
-              ...request,
-              transferAmount: '1' as any,
-            })
+            .requestUpdateToTransferTransaction(getTransactionId(originalDocument), transferTransactionDataFactory.request({
+              transferAmount: '1',
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('transferAmount', 'number', 'body');
         });

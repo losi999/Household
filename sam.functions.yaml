@@ -80,15 +80,15 @@ Resources:
           ADMIN_COUNT: "1"
           TEST_USER_PASSWORD: !Ref TestUserPassword
 
-  MigrateInvoiceInventory:
+  MigrateTransactions:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub Household-${Env}-MigrateInvoiceInventory
-      CodeUri: dist/api/migrate-invoice-inventory
+      FunctionName: !Sub Household-${Env}-MigrateTransactions
+      CodeUri: dist/api/migrate-transactions
       Role: !Ref LambdaRoleArn
 
 Outputs:
   PostDeployCreateTestUsers:
     Value: !If [ShouldCreateTestUsers, !GetAtt CreateTestUsers.Arn, ""]
-  PostDeployMigrateInvoiceInventory:
-    Value: !GetAtt MigrateInvoiceInventory.Arn
+  PostDeployMigrateTransactions:
+    Value: !GetAtt MigrateTransactions.Arn

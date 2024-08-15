@@ -1,29 +1,21 @@
-import { createProjectId } from '@household/shared/common/test-data-factory';
 import { getProjectId } from '@household/shared/common/utils';
-import { projectDocumentConverter } from '@household/shared/dependencies/converters/project-document-converter';
 import { Project } from '@household/shared/types/types';
-import { v4 as uuid } from 'uuid';
+import { projectDataFactory } from './data-factory';
 
 describe('PUT /project/v1/projects/{projectId}', () => {
   let request: Project.Request;
   let projectDocument: Project.Document;
 
   beforeEach(() => {
-    request = {
-      name: `new name-${uuid()}`,
-      description: 'new desc',
-    };
+    request = projectDataFactory.request();
 
-    projectDocument = projectDocumentConverter.create({
-      name: `old name-${uuid()}`,
-      description: 'old desc',
-    }, Cypress.env('EXPIRES_IN'), true);
+    projectDocument = projectDataFactory.document();
   });
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
-        .requestUpdateProject(createProjectId(), request)
+        .requestUpdateProject(projectDataFactory.id(), request)
         .expectUnauthorizedResponse();
     });
   });
@@ -41,15 +33,15 @@ describe('PUT /project/v1/projects/{projectId}', () => {
 
       describe('without optional property in body', () => {
         it('description', () => {
-          const modifiedRequest: Project.Request = {
-            ...request,
+          request = projectDataFactory.request({
             description: undefined,
-          };
+          });
+
           cy.saveProjectDocument(projectDocument)
             .authenticate(1)
-            .requestUpdateProject(getProjectId(projectDocument), modifiedRequest)
+            .requestUpdateProject(getProjectId(projectDocument), request)
             .expectCreatedResponse()
-            .validateProjectDocument(modifiedRequest);
+            .validateProjectDocument(request);
         });
       });
     });
@@ -58,36 +50,33 @@ describe('PUT /project/v1/projects/{projectId}', () => {
       describe('if name', () => {
         it('is missing from body', () => {
           cy.authenticate(1)
-            .requestUpdateProject(createProjectId(), {
-              ...request,
+            .requestUpdateProject(projectDataFactory.id(), projectDataFactory.request({
               name: undefined,
-            })
+            }))
             .expectBadRequestResponse()
             .expectRequiredProperty('name', 'body');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateProject(createProjectId(), {
-              ...request,
-              name: 1 as any,
-            })
+            .requestUpdateProject(projectDataFactory.id(), projectDataFactory.request({
+              name: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('name', 'string', 'body');
         });
 
         it('is too short', () => {
           cy.authenticate(1)
-            .requestUpdateProject(createProjectId(), {
-              ...request,
+            .requestUpdateProject(projectDataFactory.id(), projectDataFactory.request({
               name: '',
-            })
+            }))
             .expectBadRequestResponse()
             .expectTooShortProperty('name', 1, 'body');
         });
 
         it('is already in used by a different project', () => {
-          const duplicateProjectDocument = projectDocumentConverter.create(request, Cypress.env('EXPIRES_IN'), true);
+          const duplicateProjectDocument = projectDataFactory.document(request);
 
           cy.saveProjectDocument(projectDocument)
             .saveProjectDocument(duplicateProjectDocument)
@@ -101,20 +90,18 @@ describe('PUT /project/v1/projects/{projectId}', () => {
       describe('if description', () => {
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateProject(createProjectId(), {
-              ...request,
-              description: 1 as any,
-            })
+            .requestUpdateProject(projectDataFactory.id(), projectDataFactory.request({
+              description: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('description', 'string', 'body');
         });
 
         it('is too short', () => {
           cy.authenticate(1)
-            .requestUpdateProject(createProjectId(), {
-              ...request,
+            .requestUpdateProject(projectDataFactory.id(), projectDataFactory.request({
               description: '',
-            })
+            }))
             .expectBadRequestResponse()
             .expectTooShortProperty('description', 1, 'body');
         });
@@ -123,14 +110,14 @@ describe('PUT /project/v1/projects/{projectId}', () => {
       describe('if projectId', () => {
         it('is not mongo id', () => {
           cy.authenticate(1)
-            .requestUpdateProject(createProjectId('not-valid'), request)
+            .requestUpdateProject(projectDataFactory.id('not-valid'), request)
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('projectId', 'pathParameters');
         });
 
         it('does not belong to any project', () => {
           cy.authenticate(1)
-            .requestUpdateProject(createProjectId(), request)
+            .requestUpdateProject(projectDataFactory.id(), request)
             .expectNotFoundResponse();
         });
       });

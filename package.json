@@ -22,20 +22,21 @@
     "start:web:LOCAL": "cd web && yarn start -c LOCAL",
     "build:api": "rimraf ./dist/api && webpack",
     "build:api:watch": "export ENV=localhost && yarn build:api --watch",
-    "builddeploy:api:LOCAL": "yarn build:api && yarn deploy:api:LOCAL",
     "build:web": "rimraf ./dist/web && cd web && yarn build",
     "build:web:LOCAL": "yarn build:web -c LOCAL",
     "build:web:CI": "yarn build:web -c CI",
     "deploy:web:LOCAL": "export ENV=LOCAL && aws s3 sync dist/web s3://$(aws cloudformation describe-stacks --stack-name Household-${ENV} --query \"Stacks[0].Outputs[?OutputKey=='WebsiteBucket'].OutputValue\" --output text --profile losonczil) --profile losonczil",
     "deploy:web:CI": "export ENV=CI && aws s3 sync dist/web s3://$(aws cloudformation describe-stacks --stack-name Household-${ENV} --query \"Stacks[0].Outputs[?OutputKey=='WebsiteBucket'].OutputValue\" --output text --profile ci) --profile ci",
-    "builddeploy:web:LOCAL": "yarn build:web:LOCAL && yarn deploy:web:LOCAL"
+    "builddeploy:api:LOCAL": "yarn build:api && yarn deploy:api:LOCAL",
+    "builddeploy:web:LOCAL": "yarn build:web:LOCAL && yarn deploy:web:LOCAL",
+    "builddeploy:LOCAL": "yarn builddeploy:api:LOCAL && yarn builddeploy:web:LOCAL"
   },
   "dependencies": {
     "moment-timezone": "^0.5.45",
     "ajv": "8.12.0",
     "ajv-formats": "2.1.1",
     "ajv-keywords": "5.1.0",
-    "mongoose": "7.4.2",
+    "mongoose": "8.4.1",
     "xlsx": "0.18.5"
   },
   "devDependencies": {

@@ -10,66 +10,66 @@ describe('Account schema', () => {
 
   describe('should deny', () => {
     describe('if data', () => {
-      tester.validateSchemaAdditionalProperties({
+      tester.additionalProperties({
         ...createAccountRequest(),
         extra: 1,
       } as any, 'data');
     });
 
     describe('if data.name', () => {
-      tester.validateSchemaRequired(createAccountRequest({
+      tester.required(createAccountRequest({
         name: undefined,
       }), 'name');
 
-      tester.validateSchemaType(createAccountRequest({
+      tester.type(createAccountRequest({
         name: 1 as any,
       }), 'name', 'string');
 
-      tester.validateSchemaMinLength(createAccountRequest({
+      tester.minLength(createAccountRequest({
         name: '',
       }), 'name', 1);
     });
 
     describe('if data.currency', () => {
-      tester.validateSchemaRequired(createAccountRequest({
+      tester.required(createAccountRequest({
         currency: undefined,
       }), 'currency');
 
-      tester.validateSchemaType(createAccountRequest({
+      tester.type(createAccountRequest({
         currency: 1 as any,
       }), 'currency', 'string');
 
-      tester.validateSchemaMinLength(createAccountRequest({
+      tester.minLength(createAccountRequest({
         currency: '',
       }), 'currency', 1);
 
     });
 
     describe('if data.accountType', () => {
-      tester.validateSchemaRequired(createAccountRequest({
+      tester.required(createAccountRequest({
         accountType: undefined,
       }), 'accountType');
 
-      tester.validateSchemaType(createAccountRequest({
+      tester.type(createAccountRequest({
         accountType: 1 as any,
       }), 'accountType', 'string');
 
-      tester.validateSchemaEnumValue(createAccountRequest({
+      tester.enum(createAccountRequest({
         accountType: 'notValid' as any,
       }), 'accountType');
 
     });
 
     describe('if data.owner', () => {
-      tester.validateSchemaRequired(createAccountRequest({
+      tester.required(createAccountRequest({
         owner: undefined,
       }), 'owner');
 
-      tester.validateSchemaType(createAccountRequest({
+      tester.type(createAccountRequest({
         owner: 1 as any,
       }), 'owner', 'string');
 
-      tester.validateSchemaMinLength(createAccountRequest({
+      tester.minLength(createAccountRequest({
         owner: '',
       }), 'owner', 1);
 

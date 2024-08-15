@@ -5,6 +5,7 @@ import { UpdateQuery } from 'mongoose';
 export interface IProjectService {
   dumpProjects(): Promise<Project.Document[]>;
   saveProject(doc: Project.Document): Promise<Project.Document>;
+  saveProjects(docs: Project.Document[]): Promise<unknown>;
   getProjectById(projectId: Project.Id): Promise<Project.Document>;
   deleteProject(projectId: Project.Id): Promise<unknown>;
   updateProject(projectId: Project.Id, updateQuery: UpdateQuery<Project.Document>): Promise<unknown>;
@@ -29,6 +30,15 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
     },
     saveProject: (doc) => {
       return mongodbService.projects.create(doc);
+    },
+    saveProjects: (docs) => {
+      return mongodbService.inSession((session) => {
+        return session.withTransaction(() => {
+          return mongodbService.projects.insertMany(docs, {
+            session,
+          });
+        });
+      });
     },
     getProjectById: async (projectId) => {
       return !projectId ? undefined : mongodbService.projects.findById(projectId)
@@ -61,6 +71,23 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
 
             $unset: {
               'splits.$[element].project': 1,
+            },
+          }, {
+            session,
+            runValidators: true,
+            arrayFilters: [
+              {
+                'element.project': projectId,
+              },
+            ],
+          })
+            .exec();
+          await mongodbService.transactions.updateMany({
+            'deferredSplits.project': projectId,
+          }, {
+
+            $unset: {
+              'deferredSplits.$[element].project': 1,
             },
           }, {
             session,
@@ -137,6 +164,25 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
           }, {
             $set: {
               'splits.$[element].project': targetProjectId,
+            },
+          }, {
+            session,
+            runValidators: true,
+            arrayFilters: [
+              {
+                'element.project': {
+                  $in: sourceProjectIds,
+                },
+              },
+            ],
+          });
+          await mongodbService.transactions.updateMany({
+            'deferredSplits.project': {
+              $in: sourceProjectIds,
+            },
+          }, {
+            $set: {
+              'deferredSplits.$[element].project': targetProjectId,
             },
           }, {
             session,

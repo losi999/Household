@@ -1,4 +1,4 @@
-import { generateMongoId } from '@household/shared/common/test-data-factory';
+import { generateMongoId } from '@household/shared/common/utils';
 import { addSeconds, getProductId } from '@household/shared/common/utils';
 import { Category, Product, Transaction } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';

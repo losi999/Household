@@ -4,21 +4,18 @@ import { ITransactionDocumentConverter } from '@household/shared/converters/tran
 import { ITransactionService } from '@household/shared/services/transaction-service';
 import { Report, Transaction } from '@household/shared/types/types';
 
-export interface IListTransactionsService {
+export interface IReportTransactionsService {
   (ctx: Report.Request): Promise<Transaction.Report[]>;
 }
 
-export const listTransactionsServiceFactory = (
+export const reportTransactionsServiceFactory = (
   reportDocumentConverter: IReportDocumentConverter,
   transactionService: ITransactionService,
-  transactionDocumentConverter: ITransactionDocumentConverter): IListTransactionsService => {
+  transactionDocumentConverter: ITransactionDocumentConverter): IReportTransactionsService => {
   return async (body) => {
-    const [
-      firstMatch,
-      secondMatch,
-    ] = reportDocumentConverter.createFilterQuery(body);
+    const match = reportDocumentConverter.createFilterQuery(body);
 
-    const transactions = await transactionService.listTransactions(firstMatch, secondMatch).catch(httpErrors.transaction.list());
+    const transactions = await transactionService.listTransactions(match).catch(httpErrors.transaction.list());
 
     return transactionDocumentConverter.toReportList(transactions);
   };

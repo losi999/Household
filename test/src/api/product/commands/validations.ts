@@ -1,25 +1,39 @@
 import { Category, Product } from '@household/shared/types/types';
 import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/test/api/types';
 import { getProductId } from '@household/shared/common/utils';
+import { expectRemainingProperties } from '@household/test/api/utils';
 
-const validateProductDocument = (response: Product.ProductId, request: Product.Request) => {
+const validateProductDocument = (response: Product.ProductId, request: Product.Request, categoryId: Category.Id) => {
   const id = response?.productId;
 
   cy.log('Get product document', id)
     .getProductDocumentById(id)
     .should((document) => {
       expect(getProductId(document), 'id').to.equal(id);
-      expect(document.brand, 'brand').to.equal(request.brand);
-      expect(document.measurement, 'measurement').to.equal(request.measurement);
-      expect(document.unitOfMeasurement, 'unitOfMeasurement').to.equal(request.unitOfMeasurement);
+      const { brand, measurement, unitOfMeasurement, fullName, category, ...internal } = document;
+
+      expect(brand, 'brand').to.equal(request.brand);
+      expect(measurement, 'measurement').to.equal(request.measurement);
+      expect(unitOfMeasurement, 'unitOfMeasurement').to.equal(request.unitOfMeasurement);
+      expect(fullName, 'fullName').to.equal(`${request.brand} ${request.measurement} ${request.unitOfMeasurement}`);
+      expect(category, 'category').to.equal(categoryId);
+      expectRemainingProperties(internal);
     });
 };
 
-const validateProductReassigned = (productId: Product.Id, newCategoryId: Category.Id) => {
+const validateProductReassigned = (originalProduct: Product.Document, newCategoryId: Category.Id) => {
+  const productId = getProductId(originalProduct);
   cy.log('Get product document', productId)
     .getProductDocumentById(productId)
     .should((document) => {
-      expect(document.category, 'category').to.equal(newCategoryId);
+      const { brand, category, fullName, measurement, unitOfMeasurement, ...internal } = document;
+
+      expect(brand, 'brand').to.equal(originalProduct.brand);
+      expect(fullName, 'fullName').to.equal(originalProduct.fullName);
+      expect(measurement, 'measurement').to.equal(originalProduct.measurement);
+      expect(unitOfMeasurement, 'unitOfMeasurement').to.equal(originalProduct.unitOfMeasurement);
+      expect(category, 'category').to.equal(newCategoryId);
+      expectRemainingProperties(internal);
     });
 };
 

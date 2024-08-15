@@ -1,10 +1,10 @@
 <div class="amount-input">
   <mat-form-field appearance="fill" class="amount">
     <mat-label>Összeg</mat-label>
-    <input type="number" matInput [formControl]="amount" (blur)="touched()">
+    <input type="number" matInput [formControl]="amount" [max]="max" [min]="min" (blur)="touched()">
     <span matSuffix>{{currency}}</span>
   </mat-form-field>
-  <button mat-icon-button aria-label="Clear" type="button" class="switch" (click)="inverseValue()">
+  <button *ngIf="min < 0 && max > 0" mat-icon-button aria-label="Clear" type="button" class="switch" (click)="inverseValue()">
     <mat-icon>{{amount.value >= 0 ? 'remove' : 'add'}}</mat-icon>
   </button>
 </div>

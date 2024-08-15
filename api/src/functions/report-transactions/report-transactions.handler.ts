@@ -1,14 +1,14 @@
 
 import { errorResponse, okResponse } from '@household/api/common/response-factory';
-import { IListTransactionsService } from '@household/api/functions/list-transactions/list-transactions.service';
+import { IReportTransactionsService } from '@household/api/functions/report-transactions/report-transactions.service';
 import { Transaction } from '@household/shared/types/types';
 
-export default (listTransactions: IListTransactionsService): AWSLambda.APIGatewayProxyHandler => {
+export default (reportTransactions: IReportTransactionsService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {
     const body = JSON.parse(event.body);
     let transactions: Transaction.Report[];
     try {
-      transactions = await listTransactions(body);
+      transactions = await reportTransactions(body);
     } catch (error) {
       console.error(error);
       return errorResponse(error);

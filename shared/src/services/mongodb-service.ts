@@ -1,5 +1,5 @@
 import { createConnection, set } from 'mongoose';
-import type { Connection, Model, Schema, ClientSession } from 'mongoose';
+import type { Connection, Model, ClientSession } from 'mongoose';
 import { projectSchema } from '@household/shared/mongodb-schemas/project.schema';
 import { accountSchema } from '@household/shared/mongodb-schemas/account.schema';
 import { recipientSchema } from '@household/shared/mongodb-schemas/recipient.schema';
@@ -24,12 +24,6 @@ export type IMongodbService = {
   [collection in keyof CollectionMapping]: Model<CollectionMapping[collection]>;
 } & {
   inSession<T>(fn: (session: ClientSession) => Promise<T>): Promise<T>;
-};
-
-const createModel = <T extends keyof CollectionMapping>(collectionName: T, schema: Schema<CollectionMapping[T]>): Model<CollectionMapping[T]> => {
-  const m = connection.model<CollectionMapping[T]>(collectionName, schema);
-  m.syncIndexes();
-  return m;
 };
 
 let connection: Connection;
@@ -88,12 +82,12 @@ export const mongodbServiceFactory = (mongodbConnectionString: string): IMongodb
       await session.endSession();
       return result;
     },
-    recipients: createModel('recipients', recipientSchema),
-    projects: createModel('projects', projectSchema),
-    transactions: createModel('transactions', transactionSchema),
-    accounts: createModel('accounts', accountSchema),
-    categories: createModel('categories', categorySchema),
-    products: createModel('products', productSchema),
-    files: createModel('files', fileSchema),
+    recipients: connection.model('recipients', recipientSchema),
+    projects: connection.model('projects', projectSchema),
+    transactions: connection.model('transactions', transactionSchema),
+    accounts: connection.model('accounts', accountSchema),
+    categories: connection.model('categories', categorySchema),
+    products: connection.model('products', productSchema),
+    files: connection.model('files', fileSchema),
   };
 };

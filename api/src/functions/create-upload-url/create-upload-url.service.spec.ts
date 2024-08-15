@@ -1,6 +1,7 @@
 import { ICreateUploadUrlService, createUploadUrlServiceFactory } from '@household/api/functions/create-upload-url/create-upload-url.service';
-import { createFileDocument, createFileRequest, generateMongoId } from '@household/shared/common/test-data-factory';
+import { createFileDocument, createFileRequest } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { generateMongoId } from '@household/shared/common/utils';
 import { IFileDocumentConverter } from '@household/shared/converters/file-document-converter';
 import { IFileService } from '@household/shared/services/file-service';
 import { IStorageService } from '@household/shared/services/storage-service';

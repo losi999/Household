@@ -1,23 +1,23 @@
-import { createRecipientId } from '@household/shared/common/test-data-factory';
-import { getAccountId, getRecipientId } from '@household/shared/common/utils';
-import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
-import { recipientDocumentConverter } from '@household/shared/dependencies/converters/recipient-document-converter';
-import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
+import { getRecipientId } from '@household/shared/common/utils';
 import { Account, Recipient, Transaction } from '@household/shared/types/types';
-import { v4 as uuid } from 'uuid';
+import { splitTransactionDataFactory } from '../transaction/split-data-factory';
+import { paymentTransactionDataFactory } from '../transaction/payment-data-factory';
+import { recipientDataFactory } from './data-factory';
+import { accountDataFactory } from '../account/data-factory';
+import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred-data-factory';
+import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement-data-factory';
+
 describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
   let recipientDocument: Recipient.Document;
 
   beforeEach(() => {
-    recipientDocument = recipientDocumentConverter.create({
-      name: `recipient-${uuid()}`,
-    }, Cypress.env('EXPIRES_IN'), true);
+    recipientDocument = recipientDataFactory.document();
   });
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
-        .requestDeleteRecipient(createRecipientId())
+        .requestDeleteRecipient(recipientDataFactory.id())
         .expectUnauthorizedResponse();
     });
   });
@@ -33,74 +33,129 @@ describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
     });
 
     describe('in related transactions recipient', () => {
+      let unrelatedRecipientDocument: Recipient.Document;
       let paymentTransactionDocument: Transaction.PaymentDocument;
+      let deferredTransactionDocument: Transaction.DeferredDocument;
+      let reimbursementTransactionDocument: Transaction.ReimbursementDocument;
       let splitTransactionDocument: Transaction.SplitDocument;
+      let unrelatedPaymentTransactionDocument: Transaction.PaymentDocument;
+      let unrelatedDeferredTransactionDocument: Transaction.DeferredDocument;
+      let unrelatedReimbursementTransactionDocument: Transaction.ReimbursementDocument;
+      let unrelatedSplitTransactionDocument: Transaction.SplitDocument;
       let accountDocument: Account.Document;
+      let loanAccountDocument: Account.Document;
 
       beforeEach(() => {
-        accountDocument = accountDocumentConverter.create({
-          name: `account-${uuid()}`,
-          accountType: 'bankAccount',
-          currency: 'Ft',
-          owner: 'owner1',
-        }, Cypress.env('EXPIRES_IN'), true);
+        accountDocument = accountDataFactory.document();
+        loanAccountDocument = accountDataFactory.document({
+          accountType: 'loan',
+        });
 
-        paymentTransactionDocument = transactionDocumentConverter.createPaymentDocument({
-          body: {
-            accountId: getAccountId(accountDocument),
-            amount: 100,
-            description: 'description',
-            issuedAt: new Date(2022, 2, 3).toISOString(),
-            categoryId: undefined,
-            inventory: undefined,
-            invoice: undefined,
-            projectId: undefined,
-            recipientId: getRecipientId(recipientDocument),
-          },
-          account: accountDocument,
-          category: undefined,
-          project: undefined,
-          recipient: recipientDocument,
-          product: undefined,
-        }, Cypress.env('EXPIRES_IN'), true);
+        unrelatedRecipientDocument = recipientDataFactory.document();
 
-        splitTransactionDocument = transactionDocumentConverter.createSplitDocument({
-          body: {
-            accountId: getAccountId(accountDocument),
-            amount: 100,
-            description: 'description',
-            issuedAt: new Date(2022, 2, 3).toISOString(),
-            recipientId: getRecipientId(recipientDocument),
-            splits: [
-              {
-                amount: 100,
-                categoryId: undefined,
-                description: undefined,
-                inventory: undefined,
-                invoice: undefined,
-                projectId: undefined,
-              },
-            ],
-          },
+        paymentTransactionDocument = paymentTransactionDataFactory.document({
           account: accountDocument,
           recipient: recipientDocument,
-          categories: {},
-          projects: {},
-          products: {},
-        }, Cypress.env('EXPIRES_IN'), true);
+        });
+
+        deferredTransactionDocument = deferredTransactionDataFactory.document({
+          account: accountDocument,
+          recipient: recipientDocument,
+          loanAccount: loanAccountDocument,
+        });
+
+        reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+          account: loanAccountDocument,
+          recipient: recipientDocument,
+          loanAccount: accountDocument,
+        });
+
+        unrelatedPaymentTransactionDocument = paymentTransactionDataFactory.document({
+          account: accountDocument,
+          recipient: unrelatedRecipientDocument,
+        });
+
+        unrelatedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+          account: accountDocument,
+          recipient: unrelatedRecipientDocument,
+          loanAccount: loanAccountDocument,
+        });
+
+        unrelatedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+          account: loanAccountDocument,
+          recipient: unrelatedRecipientDocument,
+          loanAccount: accountDocument,
+        });
+
+        splitTransactionDocument = splitTransactionDataFactory.document({
+          account: accountDocument,
+          recipient: recipientDocument,
+        });
+
+        unrelatedSplitTransactionDocument = splitTransactionDataFactory.document({
+          account: accountDocument,
+          recipient: recipientDocument,
+        });
       });
 
       it('should be unset if recipient is deleted', () => {
-        cy.saveAccountDocument(accountDocument)
-          .saveRecipientDocument(recipientDocument)
-          .saveTransactionDocument(paymentTransactionDocument)
-          .saveTransactionDocument(splitTransactionDocument)
+        cy.saveAccountDocuments([
+          accountDocument,
+          loanAccountDocument,
+        ])
+          .saveRecipientDocuments([
+            recipientDocument,
+            unrelatedRecipientDocument,
+          ])
+          .saveTransactionDocuments([
+            paymentTransactionDocument,
+            splitTransactionDocument,
+            deferredTransactionDocument,
+            reimbursementTransactionDocument,
+            unrelatedPaymentTransactionDocument,
+            unrelatedDeferredTransactionDocument,
+            unrelatedReimbursementTransactionDocument,
+            unrelatedSplitTransactionDocument,
+          ])
           .authenticate(1)
           .requestDeleteRecipient(getRecipientId(recipientDocument))
           .expectNoContentResponse()
           .validateRecipientDeleted(getRecipientId(recipientDocument))
-          .validatePartiallyUnsetPaymentDocument(paymentTransactionDocument, 'recipient')
-          .validatePartiallyUnsetSplitDocument(splitTransactionDocument, 0, 'recipient');
+          .validateRelatedChangesInPaymentDocument(paymentTransactionDocument, {
+            recipient: {
+              from: getRecipientId(recipientDocument),
+            },
+          })
+          .validateRelatedChangesInPaymentDocument(unrelatedPaymentTransactionDocument, {
+            recipient: {
+              from: getRecipientId(recipientDocument),
+            },
+          })
+          .validateRelatedChangesInDeferredDocument(deferredTransactionDocument, {
+            recipient: {
+              from: getRecipientId(recipientDocument),
+            },
+          })
+          .validateRelatedChangesInDeferredDocument(unrelatedDeferredTransactionDocument, {
+            recipient: {
+              from: getRecipientId(recipientDocument),
+            },
+          })
+          .validateRelatedChangesInReimbursementDocument(reimbursementTransactionDocument, {
+            recipient: {
+              from: getRecipientId(recipientDocument),
+            },
+          })
+          .validateRelatedChangesInReimbursementDocument(unrelatedReimbursementTransactionDocument, {
+            recipient: {
+              from: getRecipientId(recipientDocument),
+            },
+          })
+          .validateRelatedChangesInSplitDocument(splitTransactionDocument, {
+            recipient: {
+              from: getRecipientId(recipientDocument),
+            },
+          });
       });
     });
 
@@ -108,7 +163,7 @@ describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
       describe('if recipientId', () => {
         it('is not mongo id', () => {
           cy.authenticate(1)
-            .requestDeleteRecipient(createRecipientId('not-valid'))
+            .requestDeleteRecipient(recipientDataFactory.id('not-valid'))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('recipientId', 'pathParameters');
         });

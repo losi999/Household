@@ -23,21 +23,21 @@ describe('Report request schema', () => {
 
   describe('should deny', () => {
     describe('if data', () => {
-      tester.validateSchemaType({
+      tester.type({
         extra: 1,
       } as any, 'data', 'array');
 
-      tester.validateSchemaMinItems([], 'data', 1);
+      tester.minItems([], 'data', 1);
 
       describe('if data[0]', () => {
-        tester.validateSchemaAdditionalProperties([
+        tester.additionalProperties([
           {
             ...createReportAccountFilter(),
             extra: 1,
           } as any,
         ], 'data/0');
 
-        tester.validateSchemaRequired([
+        tester.required([
           {
             ...createReportIssuedAtFilter(),
             from: undefined,
@@ -45,7 +45,7 @@ describe('Report request schema', () => {
           },
         ], 'from');
 
-        tester.validateSchemaRequired([
+        tester.required([
           {
             ...createReportIssuedAtFilter(),
             from: undefined,
@@ -55,14 +55,14 @@ describe('Report request schema', () => {
       });
 
       describe('if data[0].include', () => {
-        tester.validateSchemaRequired([
+        tester.required([
           {
             ...createReportAccountFilter(),
             include: undefined,
           } as any,
         ], 'include');
 
-        tester.validateSchemaType([
+        tester.type([
           {
             ...createReportAccountFilter(),
             include: 1 as any,
@@ -71,21 +71,21 @@ describe('Report request schema', () => {
       });
 
       describe('if data[0].filterType', () => {
-        tester.validateSchemaRequired([
+        tester.required([
           {
             ...createReportAccountFilter(),
             filterType: undefined,
           },
         ], 'filterType');
 
-        tester.validateSchemaType([
+        tester.type([
           {
             ...createReportAccountFilter(),
             filterType: 1 as any,
           },
         ], 'filterType', 'string');
 
-        tester.validateSchemaEnumValue([
+        tester.enum([
           {
             ...createReportAccountFilter(),
             filterType: 'not enum' as any,
@@ -94,21 +94,21 @@ describe('Report request schema', () => {
       });
 
       describe('if data[0].items', () => {
-        tester.validateSchemaRequired([
+        tester.required([
           {
             ...createReportAccountFilter(),
             items: undefined,
           },
         ], 'items');
 
-        tester.validateSchemaType([
+        tester.type([
           {
             ...createReportAccountFilter(),
             items: 1 as any,
           },
         ], 'items', 'array');
 
-        tester.validateSchemaMinItems([
+        tester.minItems([
           {
             ...createReportAccountFilter(),
             items: [],
@@ -117,14 +117,14 @@ describe('Report request schema', () => {
       });
 
       describe('if data[0].items[0]', () => {
-        tester.validateSchemaType([
+        tester.type([
           {
             ...createReportAccountFilter(),
             items: [1 as any],
           },
         ], 'items/0', 'string');
 
-        tester.validateSchemaPattern([
+        tester.pattern([
           {
             ...createReportAccountFilter(),
             items: ['not mongo id' as any],
@@ -133,14 +133,14 @@ describe('Report request schema', () => {
       });
 
       describe('if data[0].from', () => {
-        tester.validateSchemaType([
+        tester.type([
           {
             ...createReportIssuedAtFilter(),
             from: 1 as any,
           },
         ], 'from', 'string');
 
-        tester.validateSchemaFormat([
+        tester.format([
           {
             ...createReportIssuedAtFilter(),
             from: 'not-date',
@@ -149,21 +149,21 @@ describe('Report request schema', () => {
       });
 
       describe('if data[0].to', () => {
-        tester.validateSchemaType([
+        tester.type([
           {
             ...createReportIssuedAtFilter(),
             to: 1 as any,
           },
         ], 'to', 'string');
 
-        tester.validateSchemaFormat([
+        tester.format([
           {
             ...createReportIssuedAtFilter(),
             to: 'not-date',
           },
         ], 'to', 'date-time');
 
-        tester.validateSchemaFormatExclusiveMinimum([
+        tester.formatExclusiveMinimum([
           {
             ...createReportIssuedAtFilter(),
             to: new Date(2022, 10, 1).toISOString(),

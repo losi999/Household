@@ -3,11 +3,11 @@ import { read as Read, utils as Utils, WorkBook } from 'xlsx';
 import { default as Moment } from 'moment-timezone';
 
 export interface IExcelParserService {
-  parse(fileContent: Uint8Array, fileType: File.Type['type'], timezone: string): (Transaction.IssuedAt<Date> & Transaction.Base)[];
+  parse(fileContent: Uint8Array, fileType: File.Type['type'], timezone: string): (Transaction.IssuedAt<Date> & Transaction.Amount & Transaction.Description)[];
 }
 
 export const excelParserServiceFactory = (read: typeof Read, utils: typeof Utils, moment: typeof Moment): IExcelParserService => {
-  const parseOtpExcel = (workbook: WorkBook): (Transaction.IssuedAt<Date> & Transaction.Base)[] => {
+  const parseOtpExcel = (workbook: WorkBook): (Transaction.IssuedAt<Date> & Transaction.Amount & Transaction.Description)[] => {
     const parsed = utils.sheet_to_json<any>(workbook.Sheets.Sheet3);
 
     return parsed.map((p => {
@@ -19,7 +19,7 @@ export const excelParserServiceFactory = (read: typeof Read, utils: typeof Utils
     }));
   };
 
-  const parseRevolutExcel = (workbook: WorkBook): (Transaction.IssuedAt<Date> & Transaction.Base)[] => {
+  const parseRevolutExcel = (workbook: WorkBook): (Transaction.IssuedAt<Date> & Transaction.Amount & Transaction.Description)[] => {
     const parsed = utils.sheet_to_json<any>(workbook.Sheets.Sheet1);
 
     return parsed.map((p => {
@@ -31,7 +31,7 @@ export const excelParserServiceFactory = (read: typeof Read, utils: typeof Utils
     }));
   };
 
-  const parseErsteExcel = (workbook: WorkBook): (Transaction.IssuedAt<Date> & Transaction.Base)[] => {
+  const parseErsteExcel = (workbook: WorkBook): (Transaction.IssuedAt<Date> & Transaction.Amount & Transaction.Description)[] => {
     const parsed = utils.sheet_to_json<any>(workbook.Sheets.Sheet0, {
       range: 3,
     });

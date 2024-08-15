@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, forwardRef, Input, OnDestroy, OnInit } from '@angular/core';
-import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -27,6 +27,8 @@ import { Subject, takeUntil } from 'rxjs';
   ],
 })
 export class AmountInputComponent implements OnInit, OnDestroy, ControlValueAccessor {
+  @Input() max: number = Number.POSITIVE_INFINITY;
+  @Input() min: number = Number.NEGATIVE_INFINITY;
   @Input() currency: string;
 
   amount: FormControl<number>;

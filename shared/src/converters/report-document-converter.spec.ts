@@ -113,15 +113,10 @@ describe('Report document converter', () => {
         },
       ]);
 
-      expect(result).toEqual([
+      expect(result).toEqual(
         {
           $match: {
             $and: [
-              {
-                transactionType: {
-                  $ne: 'transfer',
-                },
-              },
               {
                 account: {
                   $in: [new Types.ObjectId(includedAccount)],
@@ -132,7 +127,36 @@ describe('Report document converter', () => {
                   $nin: [new Types.ObjectId(excludedAccount)],
                 },
               },
-
+              {
+                category: {
+                  $in: [new Types.ObjectId(includedCategory)],
+                },
+              },
+              {
+                category: {
+                  $nin: [new Types.ObjectId(excludedCategory)],
+                },
+              },
+              {
+                project: {
+                  $in: [new Types.ObjectId(includedProject)],
+                },
+              },
+              {
+                project: {
+                  $nin: [new Types.ObjectId(excludedProject)],
+                },
+              },
+              {
+                product: {
+                  $in: [new Types.ObjectId(includedProduct)],
+                },
+              },
+              {
+                product: {
+                  $nin: [new Types.ObjectId(excludedProduct)],
+                },
+              },
               {
                 recipient: {
                   $in: [new Types.ObjectId(includedRecipient)],
@@ -194,108 +218,7 @@ describe('Report document converter', () => {
             ],
           },
         },
-        {
-          $match: {
-            $and: [
-              {
-                category: {
-                  $in: [new Types.ObjectId(includedCategory)],
-                },
-              },
-              {
-                category: {
-                  $nin: [new Types.ObjectId(excludedCategory)],
-                },
-              },
-              {
-                project: {
-                  $in: [new Types.ObjectId(includedProject)],
-                },
-              },
-              {
-                project: {
-                  $nin: [new Types.ObjectId(excludedProject)],
-                },
-              },
-              {
-                product: {
-                  $in: [new Types.ObjectId(includedProduct)],
-                },
-              },
-              {
-                product: {
-                  $nin: [new Types.ObjectId(excludedProduct)],
-                },
-              },
-            ],
-          },
-        },
-      ]);
+      );
     });
   });
-
-  // describe('create', () => {
-  //   it('should return document', () => {
-  //     const result = converter.create(body, undefined);
-  //     expect(result).toEqual(createReportDocument({
-  //       name,
-  //       expiresAt: undefined,
-  //       _id: undefined,
-  //     }));
-  //   });
-
-  //   it('should return expiring document', () => {
-  //     const result = converter.create(body, expiresIn);
-  //     expect(result).toEqual(createReportDocument({
-  //       name,
-  //       expiresAt: addSeconds(expiresIn, now),
-  //       _id: undefined,
-  //     }));
-  //   });
-
-  // });
-
-  // describe('update', () => {
-  //   it('should update document', () => {
-  //     const result = converter.update(body, expiresIn);
-  //     expect(result).toEqual(createDocumentUpdate({
-  //       $set: {
-  //         ...body,
-  //         expiresAt: addSeconds(expiresIn, now),
-  //       },
-  //     }));
-  //   });
-  // });
-
-  // describe('toResponse', () => {
-  //   it('should return response', () => {
-  //     const result = converter.toResponse(queriedDocument);
-  //     expect(result).toEqual(createReportResponse({
-  //       reportId: getReportId(queriedDocument),
-  //       name,
-  //     }));
-  //   });
-  // });
-
-  // describe('toResponseList', () => {
-  //   it('should return response list', () => {
-  //     const result = converter.toResponseList([queriedDocument]);
-  //     expect(result).toEqual([
-  //       createReportResponse({
-  //         reportId: getReportId(queriedDocument),
-  //         name,
-  //       }),
-  //     ]);
-  //   });
-  // });
-
-  // describe('toReport', () => {
-  //   it('should return report', () => {
-  //     const result = converter.toReport(queriedDocument);
-  //     expect(result).toEqual(createReportReport({
-  //       reportId: getReportId(queriedDocument),
-  //       name,
-  //     }));
-  //   });
-  // });
 });

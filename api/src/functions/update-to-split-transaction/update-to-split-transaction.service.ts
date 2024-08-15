@@ -1,13 +1,13 @@
 import { httpErrors } from '@household/api/common/error-handlers';
-import { getCategoryId, toDictionary } from '@household/shared/common/utils';
-import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
+import { getCategoryId, pushUnique, toDictionary } from '@household/shared/common/utils';
+import { ISplitTransactionDocumentConverter } from '@household/shared/converters/split-transaction-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICategoryService } from '@household/shared/services/category-service';
 import { IProductService } from '@household/shared/services/product-service';
 import { IProjectService } from '@household/shared/services/project-service';
 import { IRecipientService } from '@household/shared/services/recipient-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
-import { Transaction } from '@household/shared/types/types';
+import { Account, Category, Product, Project, Transaction } from '@household/shared/types/types';
 
 export interface IUpdateToSplitTransactionService {
   (ctx: {
@@ -24,52 +24,61 @@ export const updateToSplitTransactionServiceFactory = (
   recipientService: IRecipientService,
   productService: IProductService,
   transactionService: ITransactionService,
-  transactionDocumentConverter: ITransactionDocumentConverter,
+  splitTransactionDocumentConverter: ISplitTransactionDocumentConverter,
 ): IUpdateToSplitTransactionService => {
   return async ({ body, transactionId, expiresIn }) => {
-    const document = await transactionService.getTransactionById(transactionId).catch(httpErrors.transaction.getById({
+    const queriedDocument = await transactionService.getTransactionById(transactionId).catch(httpErrors.transaction.getById({
       transactionId,
     }));
 
-    httpErrors.transaction.notFound(!document, {
+    httpErrors.transaction.notFound(!queriedDocument, {
       transactionId,
     });
 
-    const categoryIds = [...new Set(body.splits.map(s => s.categoryId).filter(s => s))];
-    const projectIds = [...new Set(body.splits.map(s => s.projectId).filter(s => s))];
-    const productIds = [...new Set(body.splits.map(s => s.productId).filter(s => s))];
+    const { accountId, recipientId } = body;
+    let total = 0;
+    const categoryIds: Category.Id[] = [];
+    const projectIds: Project.Id[] = [];
+    const productIds: Product.Id[] = [];
+    const accountIds: Account.Id[] = [accountId];
 
-    const total = body.splits.reduce((accumulator, currentValue) => {
-      return accumulator + currentValue.amount;
-    }, 0);
+    body.splits.forEach(({ amount, categoryId, productId, projectId, loanAccountId }) => {
+      httpErrors.transaction.sameAccountLoan({
+        accountId,
+        loanAccountId,
+      });
+      total += amount;
+      pushUnique(categoryIds, categoryId);
+      pushUnique(projectIds, projectId);
+      pushUnique(productIds, productId);
+      pushUnique(accountIds, loanAccountId);
+    });
 
     httpErrors.transaction.sumOfSplits(total !== body.amount, body);
 
-    const { accountId, recipientId } = body;
-
     const [
-      account,
+      accountList,
       categoryList,
       projectList,
       recipient,
       productList,
     ] = await Promise.all([
-      accountService.getAccountById(accountId),
+      accountService.listAccountsByIds(accountIds),
       categoryService.listCategoriesByIds(categoryIds),
       projectService.listProjectsByIds(projectIds),
       recipientService.getRecipientById(recipientId),
       productService.listProductsByIds(productIds),
     ]).catch(httpErrors.common.getRelatedData({
-      accountId,
+      accountIds,
       categoryIds,
       productIds,
       projectIds,
       recipientId,
     }));
 
-    httpErrors.account.notFound(!account, {
-      accountId,
-    }, 400);
+    httpErrors.account.multipleNotFound(accountIds.length !== accountList.length, {
+      accountIds,
+    });
 
     httpErrors.category.multipleNotFound(categoryIds.length !== categoryList.length, {
       categoryIds,
@@ -86,34 +95,41 @@ export const updateToSplitTransactionServiceFactory = (
     const categories = toDictionary(categoryList, '_id');
     const projects = toDictionary(projectList, '_id');
     const products = toDictionary(productList, '_id');
+    const accounts = toDictionary(accountList, '_id');
 
-    body.splits.forEach((s) => {
-      const category = categories[s.categoryId];
-      const productId = s.productId;
+    body.splits.forEach((split) => {
+      const { categoryId, productId } = split;
+      const category = categories[categoryId];
+      const product = products[productId];
       if (category?.categoryType === 'inventory' && productId) {
-        const product = products[productId];
 
         httpErrors.product.notFound(!product && !!productId, {
           productId,
         }, 400);
 
-        httpErrors.product.categoryRelation(getCategoryId(product.category) !== s.categoryId, {
-          categoryId: s.categoryId,
+        httpErrors.product.categoryRelation(getCategoryId(product.category) !== categoryId, {
+          categoryId,
           productId,
         });
       }
     });
 
-    const updated = transactionDocumentConverter.updateSplitDocument({
+    httpErrors.transaction.invalidLoanAccountType(accounts[body.accountId]);
+
+    const { _id, ...document } = splitTransactionDocumentConverter.create({
       body,
-      account,
-      projects,
-      categories,
+      accounts,
       recipient,
+      categories,
+      projects,
       products,
-      document,
     }, expiresIn);
 
-    await transactionService.updateTransaction(updated).catch(httpErrors.transaction.update(updated));
+    console.log(document);
+
+    await transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update({
+      _id,
+      ...document,
+    }));
   };
 };

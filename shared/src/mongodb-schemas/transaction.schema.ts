@@ -1,15 +1,58 @@
 import { Transaction } from '@household/shared/types/types';
-import { Schema } from 'mongoose';
+import { Schema, SchemaDefinition, SchemaDefinitionType } from 'mongoose';
 
-export const transactionSchema = new Schema<Transaction.Document>({
+const splitItemSchema = new Schema<Transaction.SplitDocumentItem>({
+  amount: {
+    type: Number,
+    required: true,
+  },
+  invoiceNumber: {
+    type: String,
+    minlength: 1,
+  },
+  billingEndDate: {
+    type: Date,
+  },
+  billingStartDate: {
+    type: Date,
+  },
+  category: {
+    type: Schema.Types.ObjectId,
+    ref: 'categories',
+  },
+  project: {
+    type: Schema.Types.ObjectId,
+    ref: 'projects',
+  },
+  quantity: {
+    type: Number,
+  },
+  product: {
+    type: Schema.Types.ObjectId,
+    ref: 'products',
+  },
+  description: {
+    type: String,
+    minlength: 1,
+  },
+});
+
+const deferredSplitSchema = new Schema<Transaction.DeferredDocument>({
   transactionType: {
     type: String,
-    enum: [
-      'payment',
-      'transfer',
-      'split',
-      'draft',
-    ],
+    enum: ['deferred'],
+  },
+  isSettled: {
+    type: Boolean,
+    default: false,
+  },
+  payingAccount: {
+    type: Schema.Types.ObjectId,
+    ref: 'accounts',
+  },
+  ownerAccount: {
+    type: Schema.Types.ObjectId,
+    ref: 'accounts',
   },
   description: {
     type: String,
@@ -18,10 +61,7 @@ export const transactionSchema = new Schema<Transaction.Document>({
   amount: {
     type: Number,
     required: true,
-  },
-  issuedAt: {
-    type: Schema.Types.Date,
-    required: true,
+    max: 0,
   },
   quantity: {
     type: Number,
@@ -40,65 +80,82 @@ export const transactionSchema = new Schema<Transaction.Document>({
   billingStartDate: {
     type: Date,
   },
-  splits: {
-    type: [
-      {
-        description: {
-          type: String,
-          minlength: 1,
-        },
-        amount: {
-          type: Number,
-          required: true,
-        },
-        quantity: {
-          type: Number,
-        },
-        product: {
-          type: Schema.Types.ObjectId,
-          ref: 'products',
-        },
-        invoiceNumber: {
-          type: String,
-          minlength: 1,
-        },
-        billingEndDate: {
-          type: Date,
-        },
-        billingStartDate: {
-          type: Date,
-        },
-        category: {
-          type: Schema.Types.ObjectId,
-          ref: 'categories',
-        },
-        project: {
-          type: Schema.Types.ObjectId,
-          ref: 'projects',
-        },
-      },
+  category: {
+    type: Schema.Types.ObjectId,
+    ref: 'categories',
+  },
+  project: {
+    type: Schema.Types.ObjectId,
+    ref: 'projects',
+  },
+});
+
+const schemaDefinition: SchemaDefinition<SchemaDefinitionType<Transaction.Document>, Transaction.Document> = {
+  transactionType: {
+    type: String,
+    enum: [
+      'payment',
+      'split',
+      'transfer',
+      'loanTransfer',
+      'deferred',
+      'reimbursement',
     ],
-    default: undefined,
-    _id: false,
+  },
+  issuedAt: {
+    type: Schema.Types.Date,
+    required: true,
+  },
+  amount: {
+    type: Number,
+    required: true,
+  },
+  account: {
+    type: Schema.Types.ObjectId,
+    ref: 'accounts',
   },
   transferAccount: {
     type: Schema.Types.ObjectId,
     ref: 'accounts',
   },
-  transferAmount: {
+  payingAccount: {
+    type: Schema.Types.ObjectId,
+    ref: 'accounts',
+  },
+  ownerAccount: {
+    type: Schema.Types.ObjectId,
+    ref: 'accounts',
+  },
+  isSettled: {
+    type: Boolean,
+    default: function() {
+      return this.transactionType === 'deferred' ? false : undefined;
+    },
+  },
+  description: {
+    type: String,
+    minlength: 1,
+  },
+  quantity: {
     type: Number,
   },
-  file: {
+  product: {
     type: Schema.Types.ObjectId,
-    ref: 'files',
+    ref: 'products',
+  },
+  invoiceNumber: {
+    type: String,
+    minlength: 1,
+  },
+  billingEndDate: {
+    type: Date,
+  },
+  billingStartDate: {
+    type: Date,
   },
   category: {
     type: Schema.Types.ObjectId,
     ref: 'categories',
-  },
-  account: {
-    type: Schema.Types.ObjectId,
-    ref: 'accounts',
   },
   project: {
     type: Schema.Types.ObjectId,
@@ -108,16 +165,49 @@ export const transactionSchema = new Schema<Transaction.Document>({
     type: Schema.Types.ObjectId,
     ref: 'recipients',
   },
+  payments: {
+    type: [
+      {
+        transaction: {
+          type: Schema.Types.ObjectId,
+          ref: 'transactions',
+          required: true,
+        },
+        amount: {
+          type: Number,
+          required: true,
+        },
+      },
+    ],
+    default: undefined,
+    _id: false,
+  },
+  transferAmount: {
+    type: Number,
+  },
+  splits: {
+    type: [splitItemSchema],
+    default: undefined,
+  },
+  deferredSplits: {
+    type: [deferredSplitSchema],
+    default: undefined,
+  },
   expiresAt: {
     type: Schema.Types.Date,
-    index: {
-      expireAfterSeconds: 0,
-    },
   },
-}, {
+};
+
+export const transactionSchema = new Schema<Transaction.Document>(schemaDefinition, {
   versionKey: false,
   timestamps: {
     createdAt: true,
     updatedAt: true,
   },
+});
+
+transactionSchema.index({
+  expiresAt: 1,
+}, {
+  expireAfterSeconds: 0,
 });

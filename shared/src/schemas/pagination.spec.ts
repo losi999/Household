@@ -12,7 +12,7 @@ describe('Pagination schema', () => {
 
   describe('should deny', () => {
     describe('if data', () => {
-      tester.validateSchemaAdditionalProperties({
+      tester.additionalProperties({
         pageNumber: '1',
         pageSize: '23',
         extra: 1,
@@ -20,34 +20,34 @@ describe('Pagination schema', () => {
     });
 
     describe('if data.pageNumber', () => {
-      tester.validateSchemaRequired({
+      tester.required({
         pageNumber: undefined,
         pageSize: '23',
       }, 'pageNumber');
 
-      tester.validateSchemaType({
+      tester.type({
         pageNumber: 1 as any,
         pageSize: '23',
       }, 'pageNumber', 'string');
 
-      tester.validateSchemaPattern({
+      tester.pattern({
         pageNumber: 'asd',
         pageSize: '23',
       }, 'pageNumber');
     });
 
     describe('if data.pageSize', () => {
-      tester.validateSchemaRequired({
+      tester.required({
         pageNumber: '1',
         pageSize: undefined,
       }, 'pageSize');
 
-      tester.validateSchemaType({
+      tester.type({
         pageNumber: '1',
         pageSize: 23 as any,
       }, 'pageSize', 'string');
 
-      tester.validateSchemaPattern({
+      tester.pattern({
         pageNumber: '1',
         pageSize: 'asd',
       }, 'pageSize');

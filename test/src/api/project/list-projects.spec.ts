@@ -1,21 +1,14 @@
-import { projectDocumentConverter } from '@household/shared/dependencies/converters/project-document-converter';
 import { default as schema } from '@household/test/api/schemas/project-response-list';
 import { Project } from '@household/shared/types/types';
-import { v4 as uuid } from 'uuid';
+import { projectDataFactory } from './data-factory';
 
 describe('GET /project/v1/projects', () => {
   let projectDocument1: Project.Document;
   let projectDocument2: Project.Document;
 
   beforeEach(() => {
-    projectDocument1 = projectDocumentConverter.create({
-      name: `project 1-${uuid()}`,
-      description: 'description 1',
-    }, Cypress.env('EXPIRES_IN'), true);
-    projectDocument2 = projectDocumentConverter.create({
-      name: `project 2-${uuid()}`,
-      description: 'description 2',
-    }, Cypress.env('EXPIRES_IN'), true);
+    projectDocument1 = projectDataFactory.document();
+    projectDocument2 = projectDataFactory.document();
   });
 
   describe('called as anonymous', () => {

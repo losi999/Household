@@ -22,11 +22,13 @@ export const mergeCategoriesServiceFactory = (
       ...new Set(body),
     ];
 
-    const categorys = await categoryService.listCategoriesByIds(categoryIds).catch(httpErrors.category.listByIds(categoryIds));
+    const categories = await categoryService.listCategoriesByIds(categoryIds).catch(httpErrors.category.listByIds(categoryIds));
 
-    httpErrors.category.multipleNotFound(categorys.length !== categoryIds.length, {
+    httpErrors.category.multipleNotFound(categories.length !== categoryIds.length, {
       categoryIds,
     });
+
+    httpErrors.category.notSameType(categories);
 
     await categoryService.mergeCategories({
       sourceCategoryIds: body,

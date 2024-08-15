@@ -1,25 +1,23 @@
-import { createProjectId } from '@household/shared/common/test-data-factory';
-import { getAccountId, getProjectId, toDictionary } from '@household/shared/common/utils';
-import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
-import { projectDocumentConverter } from '@household/shared/dependencies/converters/project-document-converter';
-import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
+import { getProjectId } from '@household/shared/common/utils';
 import { Account, Project, Transaction } from '@household/shared/types/types';
-import { v4 as uuid } from 'uuid';
+import { splitTransactionDataFactory } from '../transaction/split-data-factory';
+import { paymentTransactionDataFactory } from '../transaction/payment-data-factory';
+import { projectDataFactory } from './data-factory';
+import { accountDataFactory } from '../account/data-factory';
+import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred-data-factory';
+import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement-data-factory';
 
 describe('DELETE /project/v1/projects/{projectId}', () => {
   let projectDocument: Project.Document;
 
   beforeEach(() => {
-    projectDocument = projectDocumentConverter.create({
-      name: `project-${uuid()}`,
-      description: 'desc',
-    }, Cypress.env('EXPIRES_IN'), true);
+    projectDocument = projectDataFactory.document();
   });
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
-        .requestDeleteProject(createProjectId())
+        .requestDeleteProject(projectDataFactory.id())
         .expectUnauthorizedResponse();
     });
   });
@@ -35,81 +33,136 @@ describe('DELETE /project/v1/projects/{projectId}', () => {
     });
 
     describe('in related transactions project', () => {
+      let unrelatedProjectDocument: Project.Document;
       let paymentTransactionDocument: Transaction.PaymentDocument;
+      let deferredTransactionDocument: Transaction.DeferredDocument;
+      let reimbursementTransactionDocument: Transaction.ReimbursementDocument;
       let splitTransactionDocument: Transaction.SplitDocument;
+      let unrelatedPaymentTransactionDocument: Transaction.PaymentDocument;
+      let unrelatedDeferredTransactionDocument: Transaction.DeferredDocument;
+      let unrelatedReimbursementTransactionDocument: Transaction.ReimbursementDocument;
       let accountDocument: Account.Document;
+      let loanAccountDocument: Account.Document;
 
       beforeEach(() => {
-        accountDocument = accountDocumentConverter.create({
-          name: `account-${uuid()}`,
-          accountType: 'bankAccount',
-          currency: 'Ft',
-          owner: 'owner1',
-        }, Cypress.env('EXPIRES_IN'), true);
+        accountDocument = accountDataFactory.document();
+        loanAccountDocument = accountDataFactory.document({
+          accountType: 'loan',
+        });
 
-        paymentTransactionDocument = transactionDocumentConverter.createPaymentDocument({
-          body: {
-            accountId: getAccountId(accountDocument),
-            amount: 100,
-            description: 'description',
-            issuedAt: new Date(2022, 2, 3).toISOString(),
-            categoryId: undefined,
-            inventory: undefined,
-            invoice: undefined,
-            projectId: getProjectId(projectDocument),
-            recipientId: undefined,
-          },
+        unrelatedProjectDocument = projectDataFactory.document();
+
+        paymentTransactionDocument = paymentTransactionDataFactory.document({
           account: accountDocument,
-          category: undefined,
           project: projectDocument,
-          recipient: undefined,
-          product: undefined,
-        }, Cypress.env('EXPIRES_IN'), true);
+        });
 
-        splitTransactionDocument = transactionDocumentConverter.createSplitDocument({
-          body: {
-            accountId: getAccountId(accountDocument),
-            amount: 200,
-            description: 'description',
-            issuedAt: new Date(2022, 2, 3).toISOString(),
-            recipientId: undefined,
-            splits: [
-              {
-                amount: 100,
-                categoryId: undefined,
-                description: undefined,
-                inventory: undefined,
-                invoice: undefined,
-                projectId: getProjectId(projectDocument),
-              },
-              {
-                amount: 100,
-                categoryId: undefined,
-                description: undefined,
-                inventory: undefined,
-                invoice: undefined,
-                projectId: undefined,
-              },
-            ],
-          },
+        deferredTransactionDocument = deferredTransactionDataFactory.document({
           account: accountDocument,
-          recipient: undefined,
-          categories: {},
-          projects: toDictionary([projectDocument], '_id'),
-          products: {},
-        }, Cypress.env('EXPIRES_IN'), true);
+          project: projectDocument,
+          loanAccount: loanAccountDocument,
+        });
+
+        reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+          account: loanAccountDocument,
+          project: projectDocument,
+          loanAccount: accountDocument,
+        });
+
+        unrelatedPaymentTransactionDocument = paymentTransactionDataFactory.document({
+          account: accountDocument,
+          project: unrelatedProjectDocument,
+        });
+
+        unrelatedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+          account: accountDocument,
+          project: unrelatedProjectDocument,
+          loanAccount: loanAccountDocument,
+        });
+
+        unrelatedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+          account: loanAccountDocument,
+          project: unrelatedProjectDocument,
+          loanAccount: accountDocument,
+        });
+
+        splitTransactionDocument = splitTransactionDataFactory.document({
+          account: accountDocument,
+          splits: [
+            {
+              project: unrelatedProjectDocument,
+            },
+            {
+              project: projectDocument,
+            },
+            {
+              project: unrelatedProjectDocument,
+              loanAccount: loanAccountDocument,
+            },
+            {
+              project: projectDocument,
+              loanAccount: loanAccountDocument,
+            },
+          ],
+        });
       });
       it('should be unset if project is deleted', () => {
-        cy.saveAccountDocument(accountDocument)
-          .saveProjectDocument(projectDocument)
-          .saveTransactionDocument(paymentTransactionDocument)
-          .saveTransactionDocument(splitTransactionDocument)
+        cy.saveAccountDocuments([
+          accountDocument,
+          loanAccountDocument,
+        ])
+          .saveProjectDocuments([
+            projectDocument,
+            unrelatedProjectDocument,
+          ])
+          .saveTransactionDocuments([
+            paymentTransactionDocument,
+            splitTransactionDocument,
+            deferredTransactionDocument,
+            reimbursementTransactionDocument,
+            unrelatedPaymentTransactionDocument,
+            unrelatedDeferredTransactionDocument,
+            unrelatedReimbursementTransactionDocument,
+          ])
           .authenticate(1)
           .requestDeleteProject(getProjectId(projectDocument))
           .expectNoContentResponse()
           .validateProjectDeleted(getProjectId(projectDocument))
-          .validatePartiallyUnsetPaymentDocument(paymentTransactionDocument, 'project')
-          .validatePartiallyUnsetSplitDocument(splitTransactionDocument, 0, 'project');
+          .validateRelatedChangesInPaymentDocument(paymentTransactionDocument, {
+            project: {
+              from: getProjectId(projectDocument),
+            },
+          })
+          .validateRelatedChangesInPaymentDocument(unrelatedPaymentTransactionDocument, {
+            project: {
+              from: getProjectId(projectDocument),
+            },
+          })
+          .validateRelatedChangesInDeferredDocument(deferredTransactionDocument, {
+            project: {
+              from: getProjectId(projectDocument),
+            },
+          })
+          .validateRelatedChangesInDeferredDocument(unrelatedDeferredTransactionDocument, {
+            project: {
+              from: getProjectId(projectDocument),
+            },
+          })
+          .validateRelatedChangesInReimbursementDocument(reimbursementTransactionDocument, {
+            project: {
+              from: getProjectId(projectDocument),
+            },
+          })
+          .validateRelatedChangesInReimbursementDocument(unrelatedReimbursementTransactionDocument, {
+            project: {
+              from: getProjectId(projectDocument),
+            },
+          })
+          .validateRelatedChangesInSplitDocument(splitTransactionDocument, {
+            project: {
+              from: getProjectId(projectDocument),
+            },
+          });
       });
     });
 
@@ -117,7 +170,7 @@ describe('DELETE /project/v1/projects/{projectId}', () => {
       describe('if projectId', () => {
         it('is not mongo id', () => {
           cy.authenticate(1)
-            .requestDeleteProject(createProjectId('not-valid'))
+            .requestDeleteProject(projectDataFactory.id('not-valid'))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('projectId', 'pathParameters');
         });

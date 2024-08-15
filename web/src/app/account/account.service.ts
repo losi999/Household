@@ -38,6 +38,17 @@ export class AccountService {
     });
   }
 
+  getAccountById(accountId: Account.Id): void {
+    this.httpClient.get<Account.Response>(`${environment.apiUrl}${environment.accountStage}v1/accounts/${accountId}`).subscribe({
+      next: (value) => {
+        this.store.account.next(value);
+      },
+      error: (error) => {
+        console.error(error);
+      },
+    });
+  }
+
   updateAccount(accountId: Account.Id, body: Account.Request): void {
     this.httpClient.put(`${environment.apiUrl}${environment.accountStage}v1/accounts/${accountId}`, body).subscribe({
       next: () => {

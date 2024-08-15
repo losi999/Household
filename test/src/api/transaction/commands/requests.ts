@@ -114,10 +114,10 @@ const requestGetTransactionListByAccount = (idToken: string, accountId: Account.
   }) as Cypress.ChainableResponse;
 };
 
-const requestGetTransactionList = (idToken: string, report: Report.Request) => {
+const requestGetTransactionReports = (idToken: string, report: Report.Request) => {
   return cy.request({
     method: 'POST',
-    url: '/transaction/v1/transactions',
+    url: '/transaction/v1/transactionReports',
     body: report,
     headers: {
       Authorization: idToken,
@@ -139,7 +139,7 @@ export const setTransactionRequestCommands = () => {
     requestDeleteTransaction,
     requestGetTransaction,
     requestGetTransactionListByAccount,
-    requestGetTransactionList,
+    requestGetTransactionReports,
   });
 };
 
@@ -156,7 +156,7 @@ declare global {
       requestUpdateToSplitTransaction: CommandFunctionWithPreviousSubject<typeof requestUpdateToSplitTransaction>;
       requestDeleteTransaction: CommandFunctionWithPreviousSubject<typeof requestDeleteTransaction>;
       requestGetTransactionListByAccount: CommandFunctionWithPreviousSubject<typeof requestGetTransactionListByAccount>;
-      requestGetTransactionList: CommandFunctionWithPreviousSubject<typeof requestGetTransactionList>;
+      requestGetTransactionReports: CommandFunctionWithPreviousSubject<typeof requestGetTransactionReports>;
     }
   }
 }

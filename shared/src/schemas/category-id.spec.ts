@@ -12,22 +12,22 @@ describe('Category id schema', () => {
 
   describe('should deny', () => {
     describe('if data', () => {
-      tester.validateSchemaAdditionalProperties({
+      tester.additionalProperties({
         categoryId: createCategoryId(),
         extra: 1,
       } as any, 'data');
     });
 
     describe('if data.categoryId', () => {
-      tester.validateSchemaRequired({
+      tester.required({
         categoryId: undefined,
       }, 'categoryId');
 
-      tester.validateSchemaType({
+      tester.type({
         categoryId: 1 as any,
       }, 'categoryId', 'string');
 
-      tester.validateSchemaPattern({
+      tester.pattern({
         categoryId: createCategoryId('not-valid'),
       }, 'categoryId');
     });

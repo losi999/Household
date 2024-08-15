@@ -1,6 +1,7 @@
 import { httpErrors } from '@household/api/common/error-handlers';
-import { getAccountId, getTransactionId } from '@household/shared/common/utils';
-import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
+import { getAccountId, getTransactionId, pushUnique, toDictionary } from '@household/shared/common/utils';
+import { ILoanTransferTransactionDocumentConverter } from '@household/shared/converters/loan-transfer-transaction-document-converter';
+import { ITransferTransactionDocumentConverter } from '@household/shared/converters/transfer-transaction-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
 import { Transaction } from '@household/shared/types/types';
@@ -15,10 +16,11 @@ export interface ICreateTransferTransactionService {
 export const createTransferTransactionServiceFactory = (
   accountService: IAccountService,
   transactionService: ITransactionService,
-  transactionDocumentConverter: ITransactionDocumentConverter,
+  transferTransactionDocumentConverter: ITransferTransactionDocumentConverter,
+  loanTransferDocumentDonverter: ILoanTransferTransactionDocumentConverter,
 ): ICreateTransferTransactionService => {
   return async ({ body, expiresIn }) => {
-    const { accountId, transferAccountId } = body;
+    const { accountId, transferAccountId, payments } = body;
 
     httpErrors.transaction.sameAccountTransfer({
       accountId,
@@ -44,11 +46,57 @@ export const createTransferTransactionServiceFactory = (
       accountId: transferAccountId,
     }, 400);
 
-    const document = transactionDocumentConverter.createTransferDocument({
-      body,
-      account,
-      transferAccount,
-    }, expiresIn);
+    let document: Transaction.TransferDocument | Transaction.LoanTransferDocument;
+
+    if (account.accountType === 'loan' || transferAccount.accountType === 'loan') {
+      if (account.accountType === transferAccount.accountType) {
+        body.payments = undefined;
+        document = transferTransactionDocumentConverter.create({
+          body,
+          account,
+          transferAccount,
+          transactions: undefined,
+        }, expiresIn);
+      } else {
+        document = loanTransferDocumentDonverter.create({
+          body,
+          account,
+          transferAccount,
+        }, expiresIn);
+      }
+    } else {
+      if (payments) {
+        const deferredTransactionIds: Transaction.Id[] = [];
+        payments?.forEach(({ transactionId }) => {
+          pushUnique(deferredTransactionIds, transactionId);
+        });
+
+        const transactionList = await transactionService.listDeferredTransactions({
+          deferredTransactionIds,
+        }).catch(httpErrors.common.getRelatedData({
+          deferredTransactionIds,
+        }));
+
+        httpErrors.transaction.multipleNotFound(deferredTransactionIds.length !== transactionList.length, {
+          transactionIds: deferredTransactionIds,
+        });
+        const transactions = toDictionary(transactionList, '_id');
+
+        document = transferTransactionDocumentConverter.create({
+          body,
+          account,
+          transferAccount,
+          transactions,
+        }, expiresIn);
+      } else {
+        document = transferTransactionDocumentConverter.create({
+          body,
+          account,
+          transferAccount,
+          transactions: undefined,
+        }, expiresIn);
+      }
+    }
 
     const saved = await transactionService.saveTransaction(document).catch(httpErrors.transaction.save(document));
 

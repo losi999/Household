@@ -9,123 +9,74 @@ import { Types, startSession } from 'mongoose';
     config();
     const mongodbService = mongodbServiceFactory(process.env.MONGODB_CONNECTION_STRING);
 
-    // const req: Transaction.PaymentRequest = {
-    //   accountId: '62c6b8968dcfa650900c4fb3' as Account.Id,
-    //   amount: 100,
-    //   category: {
-    //     name: 'catnew',
-    //     categoryType: 'inventory',
-    //     parentCategoryId: undefined,
+    const splits = await mongodbService.transactions.find<Transaction.SplitDocument>({
+      transactionType: 'split',
+      splits: {
+        $elemMatch: {
+          _id: {
+            $exists: false,
+          },
+        },
+      },
+    });
+
+    console.log(splits.length);
+
+    await mongodbService.transactions.bulkWrite(splits.map(doc => {
+      doc.splits.forEach(s => {
+        if (!s._id) {
+          s._id = new Types.ObjectId();
+        }
+      });
+
+      return {
+        updateOne: {
+          filter: {
+            _id: doc._id,
+          },
+          update: {
+            splits: doc.splits,
+          },
+        },
+      };
+    }));
+
+    // const accountIds = (await mongodbService.accounts.find({
+    //   accountType: 'loan',
+    // }).exec()).map(a => a._id);
+
+    // await mongodbService.transactions.updateMany({
+    //   transactionType: 'transfer',
+    //   account: {
+    //     $in: accountIds,
     //   },
-    //   description: 'desc',
-    //   inventory: {
-    //     quantity: 123,
-    //     product: {
-    //       brand: 'tesco',
-    //       measurement: 100,
-    //       unitOfMeasurement: 'g',
+    // }, [
+    //   {
+    //     $set: {
+    //       amount: '$transferAmount',
+    //       transactionType: 'loanTransfer',
     //     },
     //   },
-    //   issuedAt: new Date().toISOString(),
-    //   project: {
-    //     name: 'proj123',
-    //     description: 'desc32432',
+    //   {
+    //     $unset: 'transferAmount',
     //   },
-    //   recipient: {
-    //     name: 'reci1234342',
+    // ]);
+
+    // await mongodbService.transactions.updateMany({
+    //   transactionType: 'transfer',
+    //   transferAccount: {
+    //     $in: accountIds,
     //   },
-    //   invoice: undefined,
-    // };
-
-    // const account = await mongodbService.accounts().findById(req.accountId);
-    // console.log('acc', account);
-
-    // const expiresAt = addSeconds(60);
-
-    // await mongodbService.inSession((session) => {
-    //   return session.withTransaction(async () => {
-    //     console.log('withTransaction');
-    //     const productDocument: Product.Document = {
-    //       ...req.inventory.product as Product.Request,
-    //       _id: undefined,
-    //       expiresAt,
-    //       fullName: 'fsdds',
-    //     };
-
-    //     const [product] = await mongodbService.products().create([productDocument], {
-    //       session,
-    //     });
-
-    //     console.log('product saved');
-
-    //     const categoryDocument: Category.Document = {
-    //       ...req.category as Category.Request,
-    //       expiresAt,
-    //       _id: undefined,
-    //       fullName: 'asqweqw',
-    //       products: [product],
-    //       parentCategory: undefined,
-    //       parentCategoryId: undefined,
-    //     };
-    //     const [category] = await mongodbService.categories().create([categoryDocument], {
-    //       session,
-    //     });
-
-    //     console.log('category saved');
-
-    //     const recipientDocument: Recipient.Document = {
-    //       ...req.recipient as Recipient.Request,
-    //       expiresAt,
-    //       _id: undefined,
-    //     };
-
-    //     const [recipient] = await mongodbService.recipients().create([recipientDocument], {
-    //       session,
-    //     });
-
-    //     console.log('recipient saved');
-
-    //     const projectDocument: Project.Document = {
-    //       ...req.project as Project.Request,
-    //       _id: undefined,
-    //       expiresAt,
-    //     };
-
-    //     const [project] = await mongodbService.projects().create([projectDocument], {
-    //       session,
-    //     });
-
-    //     console.log('project saved');
-
-    //     const transactionDocument: Transaction.PaymentDocument = {
-    //       ...req,
-    //       _id: undefined,
-    //       expiresAt,
-    //       issuedAt: new Date(req.issuedAt),
-    //       transactionType: 'payment',
-    //       account,
-    //       project,
-    //       category,
-    //       recipient,
-    //       inventory: {
-    //         ...req.inventory,
-    //         product,
-    //       },
-    //       accountId: undefined,
-    //       invoice: undefined,
-    //     };
-
-    //     const [transaction] = await mongodbService.transactions().create([transactionDocument], {
-    //       session,
-    //     });
-
-    //     console.log('transaction saved', transaction);
-
-    // });
-    // });
-
-    // const res = await mongodbService.transactions().create(req);
-    // console.log(res);
+    // }, [
+    //   {
+    //     $set: {
+    //       transactionType: 'loanTransfer',
+    //     },
+    //   },
+    //   {
+    //     $unset: 'transferAmount',
+    //   },
+    // ]);
 
   } catch (error) {
     console.log('ERR', error);

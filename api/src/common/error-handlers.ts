@@ -46,6 +46,12 @@ export const httpErrors = {
         throw httpError(statusCode, 'No transaction found');
       }
     },
+    multipleNotFound: (condition: boolean, ctx: { transactionIds: Transaction.Id[] }, statusCode = 400) => {
+      if (condition) {
+        log('Some of the transactions are not found', ctx);
+        throw httpError(statusCode, 'Some of the transactions are not found');
+      }
+    },
     update: (doc: Transaction.Document, statusCode = 500): Catch => (error) => {
       if (error.code === 11000) {
         log('Duplicate transaction name', doc, error);
@@ -65,10 +71,28 @@ export const httpErrors = {
         throw httpError(statusCode, 'Sum of splits must equal to total amount');
       }
     },
+    sumOfPayments: (condition: boolean, ctx: Transaction.TransferRequest, statusCode = 400) => {
+      if(condition) {
+        log('Sum of payments must be less than total amount', ctx);
+        throw httpError(statusCode, 'Sum of payments must be less than total amount');
+      }
+    },
     sameAccountTransfer: (ctx: Account.AccountId & Transaction.TransferAccountId, statusCode = 400) => {
       if (ctx.accountId === ctx.transferAccountId) {
         log('Cannot transfer to same account', ctx);
         throw httpError(statusCode, 'Cannot transfer to same account');
+      }
+    },
+    sameAccountLoan: (ctx: Account.AccountId & Transaction.LoanAccountId, statusCode = 400) => {
+      if (ctx.accountId === ctx.loanAccountId) {
+        log('Cannot loan to same account', ctx);
+        throw httpError(statusCode, 'Cannot loan to same account');
+      }
+    },
+    invalidLoanAccountType: (ctx: Account.Document, statusCode = 400) => {
+      if (ctx.accountType === 'loan') {
+        log('Account type cannot be loan', ctx);
+        throw httpError(statusCode, 'Account type cannot be loan');
       }
     },
   },
@@ -170,6 +194,12 @@ export const httpErrors = {
       log('Delete account', ctx, error);
       throw httpError(statusCode, 'Error while deleting account');
     },
+    multipleNotFound: (condition: boolean, ctx: { accountIds: Account.Id[] }, statusCode = 400) => {
+      if (condition) {
+        log('Some of the accounts are not found', ctx);
+        throw httpError(statusCode, 'Some of the accounts are not found');
+      }
+    },
     differentCurrency: (account: Account.Document, transferAccount: Account.Document, statusCode = 400) => {
       if(account.currency !== transferAccount.currency) {
         log('Accounts must be in the same currency', {
@@ -220,6 +250,13 @@ export const httpErrors = {
       if(ctx.categoryType !== 'inventory') {
         log('Category must be "inventory" type', ctx);
         throw httpError(statusCode, 'Category must be "inventory" type');
+      }
+    },
+    notSameType: (ctx: Category.Document[], statusCode = 400) => {
+      const categoryType = ctx.shift().categoryType;
+      if (ctx.some(c => c.categoryType !== categoryType)) {
+        log('All categories must be of same type', ctx);
+        throw httpError(statusCode, 'All categories must be of same type');
       }
     },
     multipleNotFound: (condition: boolean, ctx: { categoryIds: Category.Id[] }, statusCode = 400) => {

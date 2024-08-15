@@ -1,27 +1,21 @@
-import { createRecipientId } from '@household/shared/common/test-data-factory';
 import { getRecipientId } from '@household/shared/common/utils';
-import { recipientDocumentConverter } from '@household/shared/dependencies/converters/recipient-document-converter';
 import { Recipient } from '@household/shared/types/types';
-import { v4 as uuid } from 'uuid';
+import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
 
 describe('PUT /recipient/v1/recipients/{recipientId}', () => {
   let request: Recipient.Request;
   let recipientDocument: Recipient.Document;
 
   beforeEach(() => {
-    request = {
-      name: `new name-${uuid()}`,
-    };
+    request = recipientDataFactory.request();
 
-    recipientDocument = recipientDocumentConverter.create({
-      name: `old name-${uuid()}`,
-    }, Cypress.env('EXPIRES_IN'), true);
+    recipientDocument = recipientDataFactory.document();
   });
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
-        .requestUpdateRecipient(createRecipientId(), request)
+        .requestUpdateRecipient(recipientDataFactory.id(), request)
         .expectUnauthorizedResponse();
     });
   });
@@ -39,36 +33,33 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
       describe('if name', () => {
         it('is missing from body', () => {
           cy.authenticate(1)
-            .requestUpdateRecipient(createRecipientId(), {
-              ...request,
+            .requestUpdateRecipient(recipientDataFactory.id(), recipientDataFactory.request({
               name: undefined,
-            })
+            }))
             .expectBadRequestResponse()
             .expectRequiredProperty('name', 'body');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateRecipient(createRecipientId(), {
-              ...request,
-              name: 1 as any,
-            })
+            .requestUpdateRecipient(recipientDataFactory.id(), recipientDataFactory.request({
+              name: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('name', 'string', 'body');
         });
 
         it('is too short', () => {
           cy.authenticate(1)
-            .requestUpdateRecipient(createRecipientId(), {
-              ...request,
+            .requestUpdateRecipient(recipientDataFactory.id(), recipientDataFactory.request({
               name: '',
-            })
+            }))
             .expectBadRequestResponse()
             .expectTooShortProperty('name', 1, 'body');
         });
 
         it('is already in used by a different recipient', () => {
-          const updatedRecipientDocument = recipientDocumentConverter.create(request, Cypress.env('EXPIRES_IN'), true);
+          const updatedRecipientDocument = recipientDataFactory.document(request);
 
           cy.saveRecipientDocument(recipientDocument)
             .saveRecipientDocument(updatedRecipientDocument)
@@ -82,14 +73,14 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
       describe('if recipientId', () => {
         it('is not mongo id', () => {
           cy.authenticate(1)
-            .requestUpdateRecipient(createRecipientId('not-valid'), request)
+            .requestUpdateRecipient(recipientDataFactory.id('not-valid'), request)
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('recipientId', 'pathParameters');
         });
 
         it('does not belong to any recipient', () => {
           cy.authenticate(1)
-            .requestUpdateRecipient(createRecipientId(), request)
+            .requestUpdateRecipient(recipientDataFactory.id(), request)
             .expectNotFoundResponse();
         });
       });

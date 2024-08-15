@@ -8,203 +8,229 @@ describe('Payment transaction schema', () => {
   const tester = jsonSchemaTesterFactory<Transaction.PaymentRequest>(schema);
 
   describe('should accept', () => {
-    tester.validateSuccess(createPaymentTransactionRequest());
+    tester.validateSuccess(createPaymentTransactionRequest(), 'without loanAccountId');
 
-    describe('without optional property', () => {
-      tester.validateSuccess(createPaymentTransactionRequest({
-        description: undefined,
-      }));
+    tester.validateSuccess(createPaymentTransactionRequest({
+      loanAccountId: createAccountId(),
+      amount: -100,
+      isSettled: false,
+    }), 'with loanAccountId');
 
-      tester.validateSuccess(createPaymentTransactionRequest({
-        categoryId: undefined,
-      }));
+    tester.validateSuccess(createPaymentTransactionRequest({
+      description: undefined,
+    }), 'without description');
 
-      tester.validateSuccess(createPaymentTransactionRequest({
-        recipientId: undefined,
-      }));
+    tester.validateSuccess(createPaymentTransactionRequest({
+      categoryId: undefined,
+    }), 'without categoryId');
 
-      tester.validateSuccess(createPaymentTransactionRequest({
-        projectId: undefined,
-      }));
+    tester.validateSuccess(createPaymentTransactionRequest({
+      recipientId: undefined,
+    }), 'without recipientId');
 
-      tester.validateSuccess(createPaymentTransactionRequest({
-        quantity: undefined,
-        productId: undefined,
-      }));
+    tester.validateSuccess(createPaymentTransactionRequest({
+      projectId: undefined,
+    }), 'without projectId');
 
-      tester.validateSuccess(createPaymentTransactionRequest({
-        invoiceNumber: undefined,
-        billingEndDate: undefined,
-        billingStartDate: undefined,
-      }));
+    tester.validateSuccess(createPaymentTransactionRequest({
+      quantity: undefined,
+      productId: undefined,
+    }), 'without inventory');
 
-      tester.validateSuccess(createPaymentTransactionRequest({
-        invoiceNumber: undefined,
-      }));
-    });
+    tester.validateSuccess(createPaymentTransactionRequest({
+      invoiceNumber: undefined,
+      billingEndDate: undefined,
+      billingStartDate: undefined,
+    }), 'without invoice');
+
+    tester.validateSuccess(createPaymentTransactionRequest({
+      invoiceNumber: undefined,
+    }), 'without invoiceNumber');
   });
 
   describe('should deny', () => {
     describe('if data', () => {
-      tester.validateSchemaAdditionalProperties({
+      tester.additionalProperties({
         ...createPaymentTransactionRequest(),
         extra: 1,
       } as any, 'data');
     });
 
     describe('if data.amount', () => {
-      tester.validateSchemaRequired(createPaymentTransactionRequest({
+      tester.required(createPaymentTransactionRequest({
         amount: undefined,
       }), 'amount');
 
-      tester.validateSchemaType(createPaymentTransactionRequest({
+      tester.type(createPaymentTransactionRequest({
         amount: '1' as any,
       }), 'amount', 'number');
+
+      tester.exclusiveMaximum(createPaymentTransactionRequest({
+        loanAccountId: createAccountId(),
+        amount: 100,
+        isSettled: false,
+      }), 'amount', 0, 'if loanAccountId is set');
     });
 
     describe('if data.description', () => {
-      tester.validateSchemaType(createPaymentTransactionRequest({
+      tester.type(createPaymentTransactionRequest({
         description: 1 as any,
       }), 'description', 'string');
 
-      tester.validateSchemaMinLength(createPaymentTransactionRequest({
+      tester.minLength(createPaymentTransactionRequest({
         description: '',
       }), 'description', 1);
     });
 
     describe('if data.quantity', () => {
-      tester.validateSchemaDependentRequired(createPaymentTransactionRequest({
+      tester.dependentRequired(createPaymentTransactionRequest({
         productId: undefined,
       }), 'quantity', 'productId');
 
-      tester.validateSchemaType(createPaymentTransactionRequest({
+      tester.type(createPaymentTransactionRequest({
         quantity: '1' as any,
       }), 'quantity', 'number');
 
-      tester.validateSchemaExclusiveMinimum(createPaymentTransactionRequest({
+      tester.exclusiveMinimum(createPaymentTransactionRequest({
         quantity: 0,
       }), 'quantity', 0);
     });
 
     describe('if data.productId', () => {
-      tester.validateSchemaDependentRequired(createPaymentTransactionRequest({
+      tester.dependentRequired(createPaymentTransactionRequest({
         quantity: undefined,
       }), 'productId', 'quantity');
 
-      tester.validateSchemaType(createPaymentTransactionRequest({
+      tester.type(createPaymentTransactionRequest({
         productId: 1 as any,
       }), 'productId', 'string');
 
-      tester.validateSchemaPattern(createPaymentTransactionRequest({
+      tester.pattern(createPaymentTransactionRequest({
         productId: createProductId('not-valid'),
       }), 'productId');
     });
 
     describe('if data.invoiceNumber', () => {
-      tester.validateSchemaDependentRequired(createPaymentTransactionRequest({
+      tester.dependentRequired(createPaymentTransactionRequest({
         billingEndDate: undefined,
         billingStartDate: undefined,
       }), 'invoiceNumber', 'billingEndDate', 'billingStartDate');
 
-      tester.validateSchemaType(createPaymentTransactionRequest({
+      tester.type(createPaymentTransactionRequest({
         invoiceNumber: 1 as any,
       }), 'invoiceNumber', 'string');
 
-      tester.validateSchemaMinLength(createPaymentTransactionRequest({
+      tester.minLength(createPaymentTransactionRequest({
         invoiceNumber: '',
       }), 'invoiceNumber', 1);
     });
 
     describe('if data.billingEndDate', () => {
-      tester.validateSchemaDependentRequired(createPaymentTransactionRequest({
+      tester.dependentRequired(createPaymentTransactionRequest({
         billingStartDate: undefined,
       }), 'billingEndDate', 'billingStartDate');
 
-      tester.validateSchemaType(createPaymentTransactionRequest({
+      tester.type(createPaymentTransactionRequest({
         billingEndDate: 1 as any,
       }), 'billingEndDate', 'string');
 
-      tester.validateSchemaFormat(createPaymentTransactionRequest({
+      tester.format(createPaymentTransactionRequest({
         billingEndDate: 'not-date',
       }), 'billingEndDate', 'date');
 
-      tester.validateSchemaFormatExclusiveMinimum(createPaymentTransactionRequest({
+      tester.formatExclusiveMinimum(createPaymentTransactionRequest({
         billingEndDate: '2022-01-01',
         billingStartDate: '2022-12-31',
       }), 'billingEndDate');
     });
 
     describe('if data.billingStartDate', () => {
-      tester.validateSchemaDependentRequired(createPaymentTransactionRequest({
+      tester.dependentRequired(createPaymentTransactionRequest({
         billingEndDate: undefined,
       }), 'billingStartDate', 'billingEndDate');
 
-      tester.validateSchemaType(createPaymentTransactionRequest({
+      tester.type(createPaymentTransactionRequest({
         billingStartDate: 1 as any,
       }), 'billingStartDate', 'string');
 
-      tester.validateSchemaFormat(createPaymentTransactionRequest({
+      tester.format(createPaymentTransactionRequest({
         billingStartDate: 'not-date',
       }), 'billingStartDate', 'date');
 
     });
 
     describe('if data.issuedAt', () => {
-      tester.validateSchemaRequired(createPaymentTransactionRequest({
+      tester.required(createPaymentTransactionRequest({
         issuedAt: undefined,
       }), 'issuedAt');
 
-      tester.validateSchemaType(createPaymentTransactionRequest({
+      tester.type(createPaymentTransactionRequest({
         issuedAt: 1 as any,
       }), 'issuedAt', 'string');
 
-      tester.validateSchemaFormat(createPaymentTransactionRequest({
+      tester.format(createPaymentTransactionRequest({
         issuedAt: 'not-date-time',
       }), 'issuedAt', 'date-time');
     });
 
     describe('if data.accountId', () => {
-      tester.validateSchemaRequired(createPaymentTransactionRequest({
+      tester.required(createPaymentTransactionRequest({
         accountId: undefined,
       }), 'accountId');
 
-      tester.validateSchemaType(createPaymentTransactionRequest({
+      tester.type(createPaymentTransactionRequest({
         accountId: 1 as any,
       }), 'accountId', 'string');
 
-      tester.validateSchemaPattern(createPaymentTransactionRequest({
+      tester.pattern(createPaymentTransactionRequest({
         accountId: createAccountId('not-valid'),
       }), 'accountId');
     });
 
     describe('if data.categoryId', () => {
-      tester.validateSchemaType(createPaymentTransactionRequest({
+      tester.type(createPaymentTransactionRequest({
         categoryId: 1 as any,
       }), 'categoryId', 'string');
 
-      tester.validateSchemaPattern(createPaymentTransactionRequest({
+      tester.pattern(createPaymentTransactionRequest({
         categoryId: createCategoryId('not-valid'),
       }), 'categoryId');
     });
 
     describe('if data.recipientId', () => {
-      tester.validateSchemaType(createPaymentTransactionRequest({
+      tester.type(createPaymentTransactionRequest({
         recipientId: 1 as any,
       }), 'recipientId', 'string');
 
-      tester.validateSchemaPattern(createPaymentTransactionRequest({
+      tester.pattern(createPaymentTransactionRequest({
         recipientId: createRecipientId('not-valid'),
       }), 'recipientId');
     });
 
     describe('if data.projectId', () => {
-      tester.validateSchemaType(createPaymentTransactionRequest({
+      tester.type(createPaymentTransactionRequest({
         projectId: 1 as any,
       }), 'projectId', 'string');
 
-      tester.validateSchemaPattern(createPaymentTransactionRequest({
+      tester.pattern(createPaymentTransactionRequest({
         projectId: createProjectId('not-valid'),
       }), 'projectId');
+    });
+
+    describe('if data.loanAccountId', () => {
+      tester.type(createPaymentTransactionRequest({
+        loanAccountId: 1 as any,
+      }), 'loanAccountId', 'string');
+
+      tester.pattern(createPaymentTransactionRequest({
+        loanAccountId: createAccountId('not-valid'),
+      }), 'loanAccountId');
+    });
+
+    describe('if data.isSettled', () => {
+      tester.type(createPaymentTransactionRequest({
+        isSettled: 1 as any,
+      }), 'isSettled', 'boolean');
     });
   });
 });

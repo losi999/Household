@@ -1,9 +1,7 @@
-import { createProductId } from '@household/shared/common/test-data-factory';
-import { getProductId } from '@household/shared/common/utils';
-import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
-import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
+import { getCategoryId, getProductId } from '@household/shared/common/utils';
 import { Category, Product } from '@household/shared/types/types';
-import { v4 as uuid } from 'uuid';
+import { categoryDataFactory } from '@household/test/api/category/data-factory';
+import { productDataFactory } from '@household/test/api/product/data-factory';
 
 describe('PUT /product/v1/products/{productId}', () => {
   let request: Product.Request;
@@ -11,33 +9,23 @@ describe('PUT /product/v1/products/{productId}', () => {
   let categoryDocument: Category.Document;
 
   beforeEach(() => {
-    request = {
-      brand: `new tesco-${uuid()}`,
-      measurement: 1000,
-      unitOfMeasurement: 'g',
-    };
-    categoryDocument = categoryDocumentConverter.create({
+    request = productDataFactory.request();
+
+    categoryDocument = categoryDataFactory.document({
       body: {
         categoryType: 'inventory',
-        name: `inv cat-${uuid()}`,
-        parentCategoryId: undefined,
       },
-      parentCategory: undefined,
-    }, Cypress.env('EXPIRES_IN'), true);
-    productDocument = productDocumentConverter.create({
-      body: {
-        brand: `tesco-${uuid()}`,
-        measurement: 1,
-        unitOfMeasurement: 'kg',
-      },
+    });
+
+    productDocument = productDataFactory.document({
       category: categoryDocument,
-    }, Cypress.env('EXPIRES_IN'), true);
+    });
   });
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
-        .requestUpdateProduct(createProductId(), request)
+        .requestUpdateProduct(productDataFactory.id(), request)
         .expectUnauthorizedResponse();
     });
   });
@@ -50,7 +38,7 @@ describe('PUT /product/v1/products/{productId}', () => {
           .authenticate(1)
           .requestUpdateProduct(getProductId(productDocument), request)
           .expectCreatedResponse()
-          .validateProductDocument(request);
+          .validateProductDocument(request, getCategoryId(categoryDocument));
       });
     });
 
@@ -58,39 +46,36 @@ describe('PUT /product/v1/products/{productId}', () => {
       describe('if brand', () => {
         it('is missing from body', () => {
           cy.authenticate(1)
-            .requestUpdateProduct(createProductId(), {
-              ...request,
+            .requestUpdateProduct(productDataFactory.id(), productDataFactory.request({
               brand: undefined,
-            })
+            }))
             .expectBadRequestResponse()
             .expectRequiredProperty('brand', 'body');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateProduct(createProductId(), {
-              ...request,
-              brand: 1 as any,
-            })
+            .requestUpdateProduct(productDataFactory.id(), productDataFactory.request({
+              brand: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('brand', 'string', 'body');
         });
 
         it('is too short', () => {
           cy.authenticate(1)
-            .requestUpdateProduct(createProductId(), {
-              ...request,
+            .requestUpdateProduct(productDataFactory.id(), productDataFactory.request({
               brand: '',
-            })
+            }))
             .expectBadRequestResponse()
             .expectTooShortProperty('brand', 1, 'body');
         });
 
         it('is already in used by a different product', () => {
-          const duplicateProductDocument = productDocumentConverter.create({
+          const duplicateProductDocument = productDataFactory.document({
             body: request,
             category: categoryDocument,
-          }, Cypress.env('EXPIRES_IN'), true);
+          });
 
           cy.saveProductDocument(productDocument)
             .saveProductDocument(duplicateProductDocument)
@@ -104,30 +89,27 @@ describe('PUT /product/v1/products/{productId}', () => {
       describe('if measurement', () => {
         it('is missing from body', () => {
           cy.authenticate(1)
-            .requestUpdateProduct(createProductId(), {
-              ...request,
+            .requestUpdateProduct(productDataFactory.id(), productDataFactory.request({
               measurement: undefined,
-            })
+            }))
             .expectBadRequestResponse()
             .expectRequiredProperty('measurement', 'body');
         });
 
         it('is not number', () => {
           cy.authenticate(1)
-            .requestUpdateProduct(createProductId(), {
-              ...request,
-              measurement: '1' as any,
-            })
+            .requestUpdateProduct(productDataFactory.id(), productDataFactory.request({
+              measurement: '1',
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('measurement', 'number', 'body');
         });
 
         it('is too small', () => {
           cy.authenticate(1)
-            .requestUpdateProduct(createProductId(), {
-              ...request,
+            .requestUpdateProduct(productDataFactory.id(), productDataFactory.request({
               measurement: 0,
-            })
+            }))
             .expectBadRequestResponse()
             .expectTooSmallNumberProperty('measurement', 0, true, 'body');
         });
@@ -136,30 +118,27 @@ describe('PUT /product/v1/products/{productId}', () => {
       describe('if unitOfMeasurement', () => {
         it('is missing from body', () => {
           cy.authenticate(1)
-            .requestUpdateProduct(createProductId(), {
-              ...request,
+            .requestUpdateProduct(productDataFactory.id(), productDataFactory.request({
               unitOfMeasurement: undefined,
-            })
+            }))
             .expectBadRequestResponse()
             .expectRequiredProperty('unitOfMeasurement', 'body');
         });
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateProduct(createProductId(), {
-              ...request,
-              unitOfMeasurement: 1 as any,
-            })
+            .requestUpdateProduct(productDataFactory.id(), productDataFactory.request({
+              unitOfMeasurement: 1,
+            }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('unitOfMeasurement', 'string', 'body');
         });
 
         it('is not a valid enum value', () => {
           cy.authenticate(1)
-            .requestUpdateProduct(createProductId(), {
-              ...request,
-              unitOfMeasurement: 'not-valid' as any,
-            })
+            .requestUpdateProduct(productDataFactory.id(), productDataFactory.request({
+              unitOfMeasurement: 'not-valid',
+            }))
             .expectBadRequestResponse()
             .expectWrongEnumValue('unitOfMeasurement', 'body');
         });
@@ -168,14 +147,14 @@ describe('PUT /product/v1/products/{productId}', () => {
       describe('if productId', () => {
         it('is not mongo id', () => {
           cy.authenticate(1)
-            .requestUpdateProduct(createProductId('not-valid'), request)
+            .requestUpdateProduct(productDataFactory.id('not-valid'), request)
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('productId', 'pathParameters');
         });
 
         it('does not belong to any product', () => {
           cy.authenticate(1)
-            .requestUpdateProduct(createProductId(), request)
+            .requestUpdateProduct(productDataFactory.id(), request)
             .expectNotFoundResponse();
         });
       });

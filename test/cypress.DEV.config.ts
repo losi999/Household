@@ -7,7 +7,7 @@ export default defineConfig({
   viewportWidth: 0,
   viewportHeight: 0,
   defaultCommandTimeout: 10000,
-  videoCompression: false,
+  videoCompression: 51,
   e2e: {
     // We've imported your old cypress plugins here.
     // You may want to clean this up later by importing these.

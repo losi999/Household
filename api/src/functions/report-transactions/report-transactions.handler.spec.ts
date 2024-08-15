@@ -1,10 +1,10 @@
 import { MockBusinessService } from '@household/shared/common/unit-testing';
-import { default as handler } from '@household/api/functions/list-transactions/list-transactions.handler';
-import { IListTransactionsService } from '@household/api/functions/list-transactions/list-transactions.service';
+import { default as handler } from '@household/api/functions/report-transactions/report-transactions.handler';
+import { IReportTransactionsService } from '@household/api/functions/report-transactions/report-transactions.service';
 import { createTransactionReport } from '@household/shared/common/test-data-factory';
 
-describe('List transactions handler', () => {
-  let mockListTransactionsService: MockBusinessService<IListTransactionsService>;
+describe('Report transactions handler', () => {
+  let mockListTransactionsService: MockBusinessService<IReportTransactionsService>;
   let handlerFunction: ReturnType<typeof handler>;
 
   beforeEach(() => {

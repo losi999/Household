@@ -1,0 +1,93 @@
+.transaction-list-item {
+  margin: 5px 5px;
+  padding: 0 10px;
+  display: grid;
+  grid-template-columns: 75px 1fr 48px;
+  // grid-template-rows: 130px;
+  column-gap: 15px;
+  grid-template-areas: "datetime details buttons";
+
+  &__datetime {
+    grid-area: datetime;
+    text-align: right;
+  }
+
+  .mat-mdc-list {
+    grid-area: details;
+    min-width: 0;
+    padding: 0;
+
+    .mat-mdc-list-item {
+      height: 26px;
+    }
+
+    .mat-icon{
+      margin: 0;
+    }
+
+    .mat-mdc-list-item-title {
+      margin-left: 6px;
+    }
+  }
+
+  &__year {
+    font-size: 12px;
+  }
+
+  &__date {
+    font-size: 16px;
+  }
+
+  &__time {
+    font-size: 14px;
+  }
+
+  &__category,
+  &__recipient,
+  &__description,
+  &__project {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  &__account,
+  &__recipient {
+    font-weight: bold;
+  }
+
+  &__description {
+    font-style: italic;
+  }
+
+  // &__amount {
+  //   grid-area: amount;
+  //   align-self: center;
+  //   justify-self: end;
+  //   font-size: 20px;
+  //   font-weight: bold;
+  // }
+
+  &__buttons {
+    grid-area: buttons;
+    justify-self: end;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+  }
+
+  @media all and (max-width: 639px) {
+    & {
+      grid-template-columns: 65px 1fr auto;
+      column-gap: 5px;
+    }
+
+    &__date {
+      font-size: 14px;
+    }
+
+    &__amount {
+      font-size: 14px;
+    }
+  }
+}

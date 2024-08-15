@@ -12,6 +12,10 @@ export const isPaymentTransaction = (transaction: Transaction.Response): transac
   return transaction?.transactionType === 'payment';
 };
 
+export const isDeferredTransaction = (transaction: Transaction.Document | Transaction.SplitDocumentItem): transaction is Transaction.DeferredDocument => {
+  return (transaction as Transaction.DeferredDocument).transactionType === 'deferred';
+};
+
 export const isInvoiceCategory = (category: Category.Response): boolean => {
   return category?.categoryType === 'invoice';
 };

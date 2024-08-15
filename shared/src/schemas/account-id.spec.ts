@@ -12,22 +12,22 @@ describe('Account id schema', () => {
 
   describe('should deny', () => {
     describe('if data', () => {
-      tester.validateSchemaAdditionalProperties({
+      tester.additionalProperties({
         accountId: createAccountId(),
         extra: 1,
       } as any, 'data');
     });
 
     describe('if data.accountId', () => {
-      tester.validateSchemaRequired({
+      tester.required({
         accountId: undefined,
       }, 'accountId');
 
-      tester.validateSchemaType({
+      tester.type({
         accountId: 1 as any,
       }, 'accountId', 'string');
 
-      tester.validateSchemaPattern({
+      tester.pattern({
         accountId: createAccountId('not-valid'),
       }, 'accountId');
     });
