@@ -356,6 +356,8 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
         return;
       }
 
+      const payments = Object.entries(this.form.value.payments);
+
       const body: Transaction.TransferRequest = {
         accountId: this.form.value.account.accountId,
         amount: this.form.value.amount,
@@ -363,7 +365,7 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
         issuedAt: this.form.value.issuedAt.toISOString(),
         transferAccountId: this.form.value.transferAccount.accountId,
         transferAmount: this.form.value.transferAmount ?? undefined,
-        payments: Object.entries(this.form.value.payments).map(([
+        payments: payments.length > 0 ? payments.map(([
           transactionId,
           amount,
         ]) => {
@@ -371,7 +373,7 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
             transactionId: transactionId as Transaction.Id,
             amount,
           };
-        }),
+        }) : undefined,
       };
 
       if (this.transactionId) {
