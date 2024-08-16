@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Category } from '@household/shared/types/types';
-import { Subject } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { Store } from 'src/app/store';
 import { environment } from 'src/environments/environment';
 
@@ -17,6 +17,9 @@ export class CategoryService {
         this.listCategories();
       },
     });
+  }
+  listCategories_(): Observable<Category.Response[]> {
+    return this.httpClient.get<Category.Response[]>(`${environment.apiUrl}${environment.categoryStage}v1/categories`);
   }
 
   listCategories(categoryType?: Category.CategoryType['categoryType']): void {

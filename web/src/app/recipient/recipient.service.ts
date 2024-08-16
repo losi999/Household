@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Recipient } from '@household/shared/types/types';
-import { Subject } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { Store } from 'src/app/store';
 import { environment } from 'src/environments/environment';
 
@@ -18,6 +18,10 @@ export class RecipientService {
       },
     });
   }
+  listRecipients_(): Observable<Recipient.Response[]> {
+    return this.httpClient.get<Recipient.Response[]>(`${environment.apiUrl}${environment.recipientStage}v1/recipients`);
+  }
+
   listRecipients(): void {
     this.httpClient.get<Recipient.Response[]>(`${environment.apiUrl}${environment.recipientStage}v1/recipients`).subscribe({
       next: (value) => {

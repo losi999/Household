@@ -14,6 +14,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { ProjectMergeDialogComponent } from './project-merge-dialog/project-merge-dialog.component';
 import { ToolbarComponent } from 'src/app/shared/toolbar/toolbar.component';
 import { ClearableInputComponent } from 'src/app/shared/clearable-input/clearable-input.component';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 
 @NgModule({
   declarations: [
@@ -34,6 +35,7 @@ import { ClearableInputComponent } from 'src/app/shared/clearable-input/clearabl
     MatDialogModule,
     ToolbarComponent,
     ClearableInputComponent,
+    NgxSkeletonLoaderModule,
   ],
 })
 export class ProjectModule { }

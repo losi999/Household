@@ -1,7 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { Category } from '@household/shared/types/types';
-import { CategoryService } from 'src/app/category/category.service';
-import { Store } from 'src/app/store';
 
 @Component({
   selector: 'household-product-list',
@@ -9,11 +7,8 @@ import { Store } from 'src/app/store';
   styleUrls: ['./product-list.component.scss'],
 })
 export class ProductListComponent {
-  get categories(): Category.Response[] {
-    return this.store.inventoryCategories.value;
-  }
+  @Input() categories: Category.Response[];
 
-  constructor(private store: Store, categoryService: CategoryService) {
-    categoryService.listCategories('inventory'); }
+  constructor() {}
 
 }

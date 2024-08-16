@@ -1,3 +1,6 @@
+<ngx-skeleton-loader *ngIf="categories.length === 0" count="10" appearance="line" animation="progress" [theme]="{
+  height: '48px'
+}" />
 <mat-action-list>
   <ng-container *ngFor="let category of categories">
     <household-product-list-category-item *ngIf="category.products?.length > 0" [category]="category">

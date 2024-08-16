@@ -17,6 +17,7 @@ import { ProductMergeDialogComponent } from './product-merge-dialog/product-merg
 import { ToolbarComponent } from 'src/app/shared/toolbar/toolbar.component';
 import { AutocompleteModule } from 'src/app/shared/autocomplete/autocomplete.module';
 import { ClearableInputComponent } from 'src/app/shared/clearable-input/clearable-input.component';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 
 @NgModule({
   declarations: [
@@ -40,6 +41,7 @@ import { ClearableInputComponent } from 'src/app/shared/clearable-input/clearabl
     ToolbarComponent,
     AutocompleteModule,
     ClearableInputComponent,
+    NgxSkeletonLoaderModule,
   ],
 })
 export class ProductModule { }

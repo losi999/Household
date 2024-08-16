@@ -1,7 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { Project } from '@household/shared/types/types';
-import { ProjectService } from 'src/app/project/project.service';
-import { Store } from 'src/app/store';
 
 @Component({
   selector: 'household-project-list',
@@ -9,11 +7,7 @@ import { Store } from 'src/app/store';
   styleUrls: ['./project-list.component.scss'],
 })
 export class ProjectListComponent {
-  get projects(): Project.Response[] {
-    return this.store.projects.value;
-  }
+  @Input() projects: Project.Response[];
 
-  constructor(projectService: ProjectService, private store: Store) {
-    projectService.listProjects();
-  }
+  constructor() { }
 }

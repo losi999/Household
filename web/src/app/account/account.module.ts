@@ -20,6 +20,7 @@ import { AutocompleteModule } from 'src/app/shared/autocomplete/autocomplete.mod
 import { ClearableInputComponent } from 'src/app/shared/clearable-input/clearable-input.component';
 import { MatListModule } from '@angular/material/list';
 import { TransactionModule } from 'src/app/transaction/transaction.module';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 
 @NgModule({
   declarations: [
@@ -47,6 +48,7 @@ import { TransactionModule } from 'src/app/transaction/transaction.module';
     AutocompleteModule,
     ClearableInputComponent,
     TransactionModule,
+    NgxSkeletonLoaderModule,
   ],
 })
 export class AccountModule { }

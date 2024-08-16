@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Subject } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { Account } from '@household/shared/types/types';
 import { environment } from 'src/environments/environment';
 import { Store } from 'src/app/store';
@@ -17,6 +17,10 @@ export class AccountService {
         this.listAccounts();
       },
     });
+  }
+
+  listAccounts_(): Observable<Account.Response[]> {
+    return this.httpClient.get<Account.Response[]>(`${environment.apiUrl}${environment.accountStage}v1/accounts`);
   }
 
   listAccounts(): void {

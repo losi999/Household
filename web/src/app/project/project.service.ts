@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Project } from '@household/shared/types/types';
-import { Subject } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { Store } from 'src/app/store';
 import { environment } from 'src/environments/environment';
 
@@ -17,6 +17,10 @@ export class ProjectService {
         this.listProjects();
       },
     });
+  }
+
+  listProjects_(): Observable<Project.Response[]> {
+    return this.httpClient.get<Project.Response[]>(`${environment.apiUrl}${environment.projectStage}v1/projects`);
   }
 
   listProjects(): void {
