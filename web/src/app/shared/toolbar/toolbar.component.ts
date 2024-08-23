@@ -4,7 +4,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MainMenuComponent } from 'src/app/shared/main-menu/main-menu.component';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { Store } from '@ngrx/store';
-import { selectIsInProgress } from 'src/app/state/progress.selector';
+import { selectIsInProgress } from 'src/app/state/progress/progress.selector';
 
 @Component({
   selector: 'household-toolbar',

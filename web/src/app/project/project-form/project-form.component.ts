@@ -35,7 +35,7 @@ export class ProjectFormComponent implements OnInit {
         description: this.form.value.description ?? undefined,
       };
       if (this.project) {
-        this.store.dispatch(projectApiActions.updateProject({
+        this.store.dispatch(projectApiActions.updateProjectInitiated({
           projectId: this.project.projectId,
           ...request,
         }));

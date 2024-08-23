@@ -2,15 +2,17 @@ import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl, FormGroup, ValidatorFn } from '@angular/forms';
 import { Account, Category, Product, Project, Recipient, Report, Transaction } from '@household/shared/types/types';
+import { Store } from '@ngrx/store';
 import { Subject, takeUntil } from 'rxjs';
 import { AccountService } from 'src/app/account/account.service';
 import { CategoryService } from 'src/app/category/category.service';
-import { ProjectService } from 'src/app/project/project.service';
 import { RecipientService } from 'src/app/recipient/recipient.service';
 import { ReportCatalogItemFilterValue } from 'src/app/report/report-catalog-item-filter/report-catalog-item-filter.component';
 import { ReportDateRangeFilterValue } from 'src/app/report/report-date-range-filter/report-date-range-filter.component';
 import { GroupBy } from 'src/app/report/report-list/report-list.component';
-import { Store } from 'src/app/store';
+import { projectApiActions } from 'src/app/state/project/project.actions';
+import { selectProjects } from 'src/app/state/project/project.selector';
+import { Store as Store_ } from 'src/app/store';
 import { TransactionService } from 'src/app/transaction/transaction.service';
 
 const oneFilterRequiredValidator: ValidatorFn = (control) => {
@@ -39,16 +41,15 @@ type GroupCriteria ={
 export class ReportHomeComponent implements OnInit, OnDestroy {
   private destroyed = new Subject<void>();
   get accounts(): Account.Response[] {
-    return this.store.accounts.value;
+    return this.store_.accounts.value;
   }
-  get projects(): Project.Response[] {
-    return this.store.projects.value;
-  }
+  projects = this.store.select(selectProjects);
+
   get recipients(): Recipient.Response[] {
-    return this.store.recipients.value;
+    return this.store_.recipients.value;
   }
   get categories(): Category.Response[] {
-    return this.store.categories.value;
+    return this.store_.categories.value;
   }
   products: ProductFlatTree[];
   form: FormGroup<{
@@ -61,14 +62,13 @@ export class ReportHomeComponent implements OnInit, OnDestroy {
   }>;
   report: Transaction.Report[];
 
-  constructor(private store: Store, private transactionService: TransactionService,
+  constructor(private store_: Store_, private transactionService: TransactionService,
     accountService: AccountService,
     categoryService: CategoryService,
-    projectService: ProjectService,
+    private store: Store,
     recipientService: RecipientService) {
     accountService.listAccounts();
     categoryService.listCategories();
-    projectService.listProjects();
     recipientService.listRecipients();
   }
   ngOnDestroy(): void {
@@ -77,6 +77,8 @@ export class ReportHomeComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.store.dispatch(projectApiActions.listProjectsInitiated());
+
     this.form = new FormGroup({
       issuedAt: new FormControl([]),
       accounts: new FormControl(),
@@ -86,7 +88,7 @@ export class ReportHomeComponent implements OnInit, OnDestroy {
       categories: new FormControl(),
     }, [oneFilterRequiredValidator]);
 
-    this.store.inventoryCategories.pipe(takeUntil(this.destroyed)).subscribe((categories) => {
+    this.store_.inventoryCategories.pipe(takeUntil(this.destroyed)).subscribe((categories) => {
       this.products = categories.flatMap<ProductFlatTree>(category => {
         if (!category.products?.length) {
           return [];

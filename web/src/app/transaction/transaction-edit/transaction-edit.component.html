@@ -30,7 +30,7 @@
 
         <household-autocomplete-input *ngIf="!form.value.isTransfer" [items]="recipients" label="Partner" displayPropertyName="name" formControlName="recipient" (create)="createRecipient()" />
 
-        <household-autocomplete-input *ngIf="!form.value.isTransfer && form.value.splits?.length === 0" [items]="projects" label="Projekt" displayPropertyName="name" formControlName="project" (create)="createProject()" />
+        <household-autocomplete-input *ngIf="!form.value.isTransfer && form.value.splits?.length === 0" [items]="projects | async" label="Projekt" displayPropertyName="name" formControlName="project" (create)="createProject()" />
 
         <household-clearable-input formControlName="description" label="Megjegyzés" />
 
@@ -60,7 +60,7 @@
 
             <household-inventory-input *ngIf="split.value.category?.categoryType === 'inventory'" [categoryId]="split.value.category.categoryId" formControlName="inventory" />
 
-            <household-autocomplete-input [items]="projects" label="Projekt" displayPropertyName="name" formControlName="project" (create)="createProject()" />
+            <household-autocomplete-input [items]="projects | async" label="Projekt" displayPropertyName="name" formControlName="project" (create)="createProject()" />
 
             <household-clearable-input formControlName="description" label="Megjegyzés" />
 

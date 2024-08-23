@@ -5,13 +5,15 @@ import { Account, Category, Product, Project, Recipient, Transaction } from '@ho
 import { TransactionService } from 'src/app/transaction/transaction.service';
 import { isInventoryCategory, isInvoiceCategory } from '@household/shared/common/type-guards';
 import { RecipientService } from 'src/app/recipient/recipient.service';
-import { ProjectService } from 'src/app/project/project.service';
 import { CategoryService } from 'src/app/category/category.service';
 import { DialogService } from 'src/app/shared/dialog.service';
 import { Subject, takeUntil } from 'rxjs';
-import { Store } from 'src/app/store';
+import { Store as Store_ } from 'src/app/store';
 import { AccountService } from 'src/app/account/account.service';
 import { Dictionary } from '@household/shared/types/common';
+import { Store } from '@ngrx/store';
+import { selectProjects } from 'src/app/state/project/project.selector';
+import { projectApiActions } from 'src/app/state/project/project.actions';
 
 type SplitFormGroup = FormGroup<{
   category: FormControl<Category.Response>;
@@ -57,16 +59,15 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
   deferredTransactions: Dictionary<Transaction.DeferredResponse> = {};
 
   get accounts(): Account.Response[] {
-    return this.store.accounts.value;
+    return this.store_.accounts.value;
   }
-  get projects(): Project.Response[] {
-    return this.store.projects.value;
-  }
+  projects = this.store.select(selectProjects);
+
   get recipients(): Recipient.Response[] {
-    return this.store.recipients.value;
+    return this.store_.recipients.value;
   }
   get categories(): Category.Response[] {
-    return this.store.categories.value;
+    return this.store_.categories.value;
   }
 
   get splitsSum(): number {
@@ -80,16 +81,16 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
   }
 
   get availableDeferredTransactions() {
-    return this.store.deferredTransactions.value.filter(t => !this.form.controls.payments.controls[t.transactionId]);
+    return this.store_.deferredTransactions.value.filter(t => !this.form.controls.payments.controls[t.transactionId]);
   }
 
   constructor(
     activatedRoute: ActivatedRoute,
+    private store_: Store_,
     private store: Store,
     private transactionService: TransactionService,
     accountService: AccountService,
     recipientService: RecipientService,
-    projectService: ProjectService,
     categoryService: CategoryService,
     private router: Router,
     private dialogService: DialogService,
@@ -100,7 +101,6 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
 
     recipientService.listRecipients();
     categoryService.listCategories();
-    projectService.listProjects();
     accountService.listAccounts();
     transactionService.listDeferredTransactions({
       isSettled: false,
@@ -139,7 +139,9 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.store.deferredTransactions.pipe(takeUntil(this.destroyed)).subscribe((transactions) => {
+    this.store.dispatch(projectApiActions.listProjectsInitiated());
+
+    this.store_.deferredTransactions.pipe(takeUntil(this.destroyed)).subscribe((transactions) => {
       this.deferredTransactions = {
         ...this.deferredTransactions,
         ...transactions.reduce((accumulator, currentValue) => {
@@ -267,7 +269,7 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
     }
 
     if (!this.transaction) {
-      this.store.accounts.pipe(takeUntil(this.destroyed)).subscribe((accounts) => {
+      this.store_.accounts.pipe(takeUntil(this.destroyed)).subscribe((accounts) => {
         const account = accounts.find(a => a.accountId === this.accountId);
         this.form.patchValue({
           account,

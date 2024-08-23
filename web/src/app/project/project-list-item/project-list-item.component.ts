@@ -5,7 +5,7 @@ import { Store } from '@ngrx/store';
 import { projectApiActions } from 'src/app/state/project/project.actions';
 import { CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult } from 'src/app/shared/catalog-submenu/catalog-submenu.component';
 import { DialogService } from 'src/app/shared/dialog.service';
-import { selectProjectIsInProgress } from 'src/app/state/progress.selector';
+import { selectProjectIsInProgress } from 'src/app/state/progress/progress.selector';
 import { Observable } from 'rxjs';
 
 @Component({

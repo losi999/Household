@@ -4,7 +4,7 @@ import { Observable, Subject, throwError } from 'rxjs';
 import { AuthService } from 'src/app/auth/auth.service';
 import { catchError, switchMap, tap } from 'rxjs/operators';
 import { Store } from '@ngrx/store';
-import { progressActions } from 'src/app/state/progress.actions';
+import { progressActions } from 'src/app/state/progress/progress.actions';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {

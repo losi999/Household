@@ -1,12 +1,11 @@
 import { Injectable } from '@angular/core';
-import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Account, Category, Product, Recipient, Transaction } from '@household/shared/types/types';
 import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class Store {
-  projects: BehaviorSubject<Project.Response[]>;
   accounts: BehaviorSubject<Account.Response[]>;
   account: BehaviorSubject<Account.Response>;
   accountsByOwner: BehaviorSubject<{[owner: string]: Account.Response[]}>;
@@ -19,7 +18,6 @@ export class Store {
   }>;
 
   constructor() {
-    this.projects = new BehaviorSubject([]);
     this.recipients = new BehaviorSubject([]);
     this.categories = new BehaviorSubject([]);
     this.accounts = new BehaviorSubject([]);

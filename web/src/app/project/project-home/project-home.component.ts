@@ -16,7 +16,7 @@ export class ProjectHomeComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.store.dispatch(projectApiActions.loadProjects());
+    this.store.dispatch(projectApiActions.listProjectsInitiated());
   }
 
   create() {

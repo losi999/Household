@@ -32,7 +32,7 @@ export class ProjectMergeDialogComponent implements OnInit {
   }
 
   save() {
-    this.store.dispatch(projectApiActions.mergeProjects({
+    this.store.dispatch(projectApiActions.mergeProjectsInitiated({
       sourceProjectIds: this.form.value.sourceProjects,
       targetProjectId: this.targetProjectId,
     }));

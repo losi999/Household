@@ -1,6 +1,6 @@
 import { Project } from '@household/shared/types/types';
 import { createFeatureSelector, createSelector } from '@ngrx/store';
-import { ProgressState } from 'src/app/state/progress.reducer';
+import { ProgressState } from 'src/app/state/progress/progress.reducer';
 
 const selectProgress = createFeatureSelector<ProgressState>('progress');
 

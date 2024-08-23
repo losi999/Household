@@ -21,7 +21,7 @@ import { accountReducer } from 'src/app/account/account.reducer';
 import { projectReducer } from 'src/app/state/project/project.reducer';
 import { recipientReducer } from 'src/app/recipient/recipient.reducer';
 import { categoryReducer } from 'src/app/category/category.reducer';
-import { progressReducer } from 'src/app/state/progress.reducer';
+import { progressReducer } from 'src/app/state/progress/progress.reducer';
 import { EffectsModule } from '@ngrx/effects';
 import { ProjectEffects } from 'src/app/state/project/project.effects';
 import { NotificationEffects } from 'src/app/state/notification/notification.effects';
