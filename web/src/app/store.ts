@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Account, Category, Product, Recipient, Transaction } from '@household/shared/types/types';
+import { Account, Category, Product, Transaction } from '@household/shared/types/types';
 import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
@@ -9,7 +9,6 @@ export class Store {
   accounts: BehaviorSubject<Account.Response[]>;
   account: BehaviorSubject<Account.Response>;
   accountsByOwner: BehaviorSubject<{[owner: string]: Account.Response[]}>;
-  recipients: BehaviorSubject<Recipient.Response[]>;
   categories: BehaviorSubject<Category.Response[]>;
   inventoryCategories: BehaviorSubject<Category.Response[]>;
   deferredTransactions: BehaviorSubject<Transaction.DeferredResponse[]>;
@@ -18,7 +17,6 @@ export class Store {
   }>;
 
   constructor() {
-    this.recipients = new BehaviorSubject([]);
     this.categories = new BehaviorSubject([]);
     this.accounts = new BehaviorSubject([]);
     this.accountsByOwner = new BehaviorSubject({});

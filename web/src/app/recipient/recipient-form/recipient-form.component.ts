@@ -2,7 +2,8 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Recipient } from '@household/shared/types/types';
-import { RecipientService } from 'src/app/recipient/recipient.service';
+import { Store } from '@ngrx/store';
+import { recipientApiActions } from 'src/app/state/recipient/recipient.actions';
 
 export type RecipientFormData = Recipient.Response;
 
@@ -16,7 +17,7 @@ export class RecipientFormComponent implements OnInit {
     name: FormControl<string>;
   }>;
   constructor(private dialogRef: MatDialogRef<RecipientFormComponent, void>,
-    private recipientService: RecipientService,
+    private store: Store,
     @Inject(MAT_DIALOG_DATA) public recipient: RecipientFormData) { }
 
   ngOnInit(): void {
@@ -31,9 +32,12 @@ export class RecipientFormComponent implements OnInit {
         name: this.form.value.name,
       };
       if (this.recipient) {
-        this.recipientService.updateRecipient(this.recipient.recipientId, request);
+        this.store.dispatch(recipientApiActions.updateRecipientInitiated({
+          recipientId: this.recipient.recipientId,
+          ...request,
+        }));
       } else {
-        this.recipientService.createRecipient(request);
+        this.store.dispatch(recipientApiActions.createRecipientInitiated(request));
       }
 
       this.dialogRef.close();

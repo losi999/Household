@@ -6,12 +6,13 @@ import { Store } from '@ngrx/store';
 import { Subject, takeUntil } from 'rxjs';
 import { AccountService } from 'src/app/account/account.service';
 import { CategoryService } from 'src/app/category/category.service';
-import { RecipientService } from 'src/app/recipient/recipient.service';
 import { ReportCatalogItemFilterValue } from 'src/app/report/report-catalog-item-filter/report-catalog-item-filter.component';
 import { ReportDateRangeFilterValue } from 'src/app/report/report-date-range-filter/report-date-range-filter.component';
 import { GroupBy } from 'src/app/report/report-list/report-list.component';
 import { projectApiActions } from 'src/app/state/project/project.actions';
 import { selectProjects } from 'src/app/state/project/project.selector';
+import { recipientApiActions } from 'src/app/state/recipient/recipient.actions';
+import { selectRecipients } from 'src/app/state/recipient/recipient.selector';
 import { Store as Store_ } from 'src/app/store';
 import { TransactionService } from 'src/app/transaction/transaction.service';
 
@@ -44,10 +45,8 @@ export class ReportHomeComponent implements OnInit, OnDestroy {
     return this.store_.accounts.value;
   }
   projects = this.store.select(selectProjects);
+  recipients = this.store.select(selectRecipients);
 
-  get recipients(): Recipient.Response[] {
-    return this.store_.recipients.value;
-  }
   get categories(): Category.Response[] {
     return this.store_.categories.value;
   }
@@ -65,11 +64,9 @@ export class ReportHomeComponent implements OnInit, OnDestroy {
   constructor(private store_: Store_, private transactionService: TransactionService,
     accountService: AccountService,
     categoryService: CategoryService,
-    private store: Store,
-    recipientService: RecipientService) {
+    private store: Store) {
     accountService.listAccounts();
     categoryService.listCategories();
-    recipientService.listRecipients();
   }
   ngOnDestroy(): void {
     this.destroyed.next();
@@ -78,6 +75,7 @@ export class ReportHomeComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.store.dispatch(projectApiActions.listProjectsInitiated());
+    this.store.dispatch(recipientApiActions.listRecipientsInitiated());
 
     this.form = new FormGroup({
       issuedAt: new FormControl([]),

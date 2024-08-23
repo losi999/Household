@@ -28,7 +28,7 @@
 
         <household-inventory-input *ngIf="form.value.category?.categoryType === 'inventory'" [categoryId]="form.value.category.categoryId" formControlName="inventory" />
 
-        <household-autocomplete-input *ngIf="!form.value.isTransfer" [items]="recipients" label="Partner" displayPropertyName="name" formControlName="recipient" (create)="createRecipient()" />
+        <household-autocomplete-input *ngIf="!form.value.isTransfer" [items]="recipients | async" label="Partner" displayPropertyName="name" formControlName="recipient" (create)="createRecipient()" />
 
         <household-autocomplete-input *ngIf="!form.value.isTransfer && form.value.splits?.length === 0" [items]="projects | async" label="Projekt" displayPropertyName="name" formControlName="project" (create)="createProject()" />
 

@@ -4,7 +4,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { TransactionService } from 'src/app/transaction/transaction.service';
 import { isInventoryCategory, isInvoiceCategory } from '@household/shared/common/type-guards';
-import { RecipientService } from 'src/app/recipient/recipient.service';
 import { CategoryService } from 'src/app/category/category.service';
 import { DialogService } from 'src/app/shared/dialog.service';
 import { Subject, takeUntil } from 'rxjs';
@@ -14,6 +13,8 @@ import { Dictionary } from '@household/shared/types/common';
 import { Store } from '@ngrx/store';
 import { selectProjects } from 'src/app/state/project/project.selector';
 import { projectApiActions } from 'src/app/state/project/project.actions';
+import { selectRecipients } from 'src/app/state/recipient/recipient.selector';
+import { recipientApiActions } from 'src/app/state/recipient/recipient.actions';
 
 type SplitFormGroup = FormGroup<{
   category: FormControl<Category.Response>;
@@ -63,9 +64,8 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
   }
   projects = this.store.select(selectProjects);
 
-  get recipients(): Recipient.Response[] {
-    return this.store_.recipients.value;
-  }
+  recipients = this.store.select(selectRecipients);
+
   get categories(): Category.Response[] {
     return this.store_.categories.value;
   }
@@ -90,7 +90,6 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
     private store: Store,
     private transactionService: TransactionService,
     accountService: AccountService,
-    recipientService: RecipientService,
     categoryService: CategoryService,
     private router: Router,
     private dialogService: DialogService,
@@ -99,7 +98,6 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
     this.transactionId = activatedRoute.snapshot.paramMap.get('transactionId') as Transaction.Id;
     this.transaction = activatedRoute.snapshot.data.transaction;
 
-    recipientService.listRecipients();
     categoryService.listCategories();
     accountService.listAccounts();
     transactionService.listDeferredTransactions({
@@ -140,6 +138,7 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.store.dispatch(projectApiActions.listProjectsInitiated());
+    this.store.dispatch(recipientApiActions.listRecipientsInitiated());
 
     this.store_.deferredTransactions.pipe(takeUntil(this.destroyed)).subscribe((transactions) => {
       this.deferredTransactions = {

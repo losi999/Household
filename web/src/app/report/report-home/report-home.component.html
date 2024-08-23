@@ -72,7 +72,7 @@
           </ng-container>
         </mat-panel-description>
       </mat-expansion-panel-header>
-      <household-report-catalog-item-filter formControlName="recipients" [items]="recipients" displayPropertyName="name" keyPropertyName="recipientId">
+      <household-report-catalog-item-filter formControlName="recipients" [items]="recipients | async" displayPropertyName="name" keyPropertyName="recipientId">
       </household-report-catalog-item-filter>
     </mat-expansion-panel>
     <mat-expansion-panel>

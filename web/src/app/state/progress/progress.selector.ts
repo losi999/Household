@@ -1,4 +1,4 @@
-import { Project } from '@household/shared/types/types';
+import { Project, Recipient } from '@household/shared/types/types';
 import { createFeatureSelector, createSelector } from '@ngrx/store';
 import { ProgressState } from 'src/app/state/progress/progress.reducer';
 
@@ -13,5 +13,11 @@ export const selectIsInProgress = createSelector(
 export const selectProjectIsInProgress = (projectId: Project.Id) => createSelector(
   selectProgress, ({ projectsToRemove }) => {
     return projectsToRemove.includes(projectId);
+  },
+);
+
+export const selectRecipientIsInProgress = (recipientId: Recipient.Id) => createSelector(
+  selectProgress, ({ recipientsToRemove }) => {
+    return recipientsToRemove.includes(recipientId);
   },
 );

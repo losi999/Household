@@ -19,12 +19,13 @@ import { StoreModule } from '@ngrx/store';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 import { accountReducer } from 'src/app/account/account.reducer';
 import { projectReducer } from 'src/app/state/project/project.reducer';
-import { recipientReducer } from 'src/app/recipient/recipient.reducer';
+import { recipientReducer } from 'src/app/state/recipient/recipient.reducer';
 import { categoryReducer } from 'src/app/category/category.reducer';
 import { progressReducer } from 'src/app/state/progress/progress.reducer';
 import { EffectsModule } from '@ngrx/effects';
 import { ProjectEffects } from 'src/app/state/project/project.effects';
 import { NotificationEffects } from 'src/app/state/notification/notification.effects';
+import { RecipientEffects } from 'src/app/state/recipient/recipient.effects';
 
 registerLocaleData(localeHu);
 
@@ -53,6 +54,7 @@ registerLocaleData(localeHu);
     }),
     EffectsModule.forRoot([
       ProjectEffects,
+      RecipientEffects,
       NotificationEffects,
     ]),
   ],
