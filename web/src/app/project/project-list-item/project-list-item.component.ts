@@ -1,27 +1,39 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { Project } from '@household/shared/types/types';
-import { ProjectService } from 'src/app/project/project.service';
+import { Store } from '@ngrx/store';
+import { projectApiActions } from 'src/app/state/project/project.actions';
 import { CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult } from 'src/app/shared/catalog-submenu/catalog-submenu.component';
 import { DialogService } from 'src/app/shared/dialog.service';
+import { selectProjectIsInProgress } from 'src/app/state/progress.selector';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'household-project-list-item',
   templateUrl: './project-list-item.component.html',
   styleUrls: ['./project-list-item.component.scss'],
 })
-export class ProjectListItemComponent {
+export class ProjectListItemComponent implements OnInit {
   @Input() project: Project.Response;
+
   constructor(
-    private projectService: ProjectService,
     private dialogService: DialogService,
+    private store: Store,
     private bottomSheet: MatBottomSheet) { }
+
+  isDisabled: Observable<boolean>;
+
+  ngOnInit(): void {
+    this.isDisabled = this.store.select(selectProjectIsInProgress(this.project.projectId));
+  }
 
   delete() {
     this.dialogService.openDeleteProjectDialog(this.project).afterClosed()
       .subscribe(shouldDelete => {
         if (shouldDelete) {
-          this.projectService.deleteProject(this.project.projectId);
+          this.store.dispatch(projectApiActions.deleteProjectInitiated({
+            projectId: this.project.projectId,
+          }));
         }
       });
   }

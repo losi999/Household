@@ -2,20 +2,21 @@ import { Injectable } from '@angular/core';
 import { HttpRequest, HttpHandler, HttpEvent, HttpInterceptor, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { ProgressService } from 'src/app/shared/progress.service';
+import { Store } from '@ngrx/store';
+import { progressActions } from 'src/app/state/progress.actions';
 
 @Injectable()
 export class ProgressInterceptor implements HttpInterceptor {
-  constructor(private progressService: ProgressService) { }
+  constructor(private store: Store) { }
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     return next.handle(request).pipe(tap({
       next: (event) => {
         if (event instanceof HttpResponse) {
-          this.progressService.processFinished();
+          this.store.dispatch(progressActions.processFinished());
         }
         else {
-          this.progressService.processStarted();
+          this.store.dispatch(progressActions.processStarted());
         }
       },
     }));

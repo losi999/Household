@@ -2,8 +2,10 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Project } from '@household/shared/types/types';
-import { ProjectService } from 'src/app/project/project.service';
-import { Store } from 'src/app/store';
+import { Store } from '@ngrx/store';
+import { map } from 'rxjs';
+import { projectApiActions } from 'src/app/state/project/project.actions';
+import { selectProjects } from 'src/app/state/project/project.selector';
 
 export type ProjectMergeDialogData = Project.Id;
 
@@ -17,14 +19,11 @@ export class ProjectMergeDialogComponent implements OnInit {
     sourceProjects: FormControl<Project.Id[]>
   }>;
 
+  projects = this.store.select(selectProjects).pipe(map(projects => projects.filter(p => p.projectId !== this.targetProjectId)));
+
   constructor(private dialogRef: MatDialogRef<ProjectMergeDialogComponent, void>,
-    private projectService: ProjectService,
     private store: Store,
     @Inject(MAT_DIALOG_DATA) public targetProjectId: ProjectMergeDialogData) { }
-
-  get projects(): Project.Response[] {
-    return this.store.projects.value.filter(p => p.projectId !== this.targetProjectId);
-  }
 
   ngOnInit(): void {
     this.form = new FormGroup({
@@ -33,7 +32,10 @@ export class ProjectMergeDialogComponent implements OnInit {
   }
 
   save() {
-    this.projectService.mergeProjects(this.targetProjectId, this.form.value.sourceProjects);
+    this.store.dispatch(projectApiActions.mergeProjects({
+      sourceProjectIds: this.form.value.sourceProjects,
+      targetProjectId: this.targetProjectId,
+    }));
 
     this.dialogRef.close();
   }

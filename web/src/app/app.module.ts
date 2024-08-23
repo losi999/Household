@@ -18,9 +18,13 @@ import { CustomDateAdapter } from 'src/app/shared/data-adapter';
 import { StoreModule } from '@ngrx/store';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 import { accountReducer } from 'src/app/account/account.reducer';
-import { projectReducer } from 'src/app/project/project.reducer';
+import { projectReducer } from 'src/app/state/project/project.reducer';
 import { recipientReducer } from 'src/app/recipient/recipient.reducer';
 import { categoryReducer } from 'src/app/category/category.reducer';
+import { progressReducer } from 'src/app/state/progress.reducer';
+import { EffectsModule } from '@ngrx/effects';
+import { ProjectEffects } from 'src/app/state/project/project.effects';
+import { NotificationEffects } from 'src/app/state/notification/notification.effects';
 
 registerLocaleData(localeHu);
 
@@ -41,11 +45,16 @@ registerLocaleData(localeHu);
       projects: projectReducer,
       recipients: recipientReducer,
       categories: categoryReducer,
+      progress: progressReducer,
     }),
     StoreDevtoolsModule.instrument({
       maxAge: 25,
       logOnly: !isDevMode(),
     }),
+    EffectsModule.forRoot([
+      ProjectEffects,
+      NotificationEffects,
+    ]),
   ],
   providers: [
     {
@@ -65,11 +74,11 @@ registerLocaleData(localeHu);
       useClass: AuthInterceptor,
       multi: true,
     },
-    // {
-    //   provide: HTTP_INTERCEPTORS,
-    //   useClass: ProgressInterceptor,
-    //   multi: true,
-    // },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: ProgressInterceptor,
+      multi: true,
+    },
     provideHttpClient(withInterceptorsFromDi()),
   ],
 })

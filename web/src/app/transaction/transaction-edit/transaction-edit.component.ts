@@ -4,7 +4,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { TransactionService } from 'src/app/transaction/transaction.service';
 import { isInventoryCategory, isInvoiceCategory } from '@household/shared/common/type-guards';
-import { ProgressService } from 'src/app/shared/progress.service';
 import { RecipientService } from 'src/app/recipient/recipient.service';
 import { ProjectService } from 'src/app/project/project.service';
 import { CategoryService } from 'src/app/category/category.service';
@@ -92,7 +91,6 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
     recipientService: RecipientService,
     projectService: ProjectService,
     categoryService: CategoryService,
-    private progressService: ProgressService,
     private router: Router,
     private dialogService: DialogService,
   ) {
@@ -344,7 +342,8 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
     const error = (error) => {
       console.error(error);
       alert(JSON.stringify(error, null, 2));
-      this.progressService.processFinished();
+      // TODO
+      // this.progressService.processFinished();
     };
 
     if (this.form.invalid || this.form.value.amount === 0) {

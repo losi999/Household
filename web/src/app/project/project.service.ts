@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Project } from '@household/shared/types/types';
-import { Observable, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 import { Store } from 'src/app/store';
 import { environment } from 'src/environments/environment';
 
@@ -19,7 +19,7 @@ export class ProjectService {
     });
   }
 
-  listProjects_(): Observable<Project.Response[]> {
+  listProjects_() {
     return this.httpClient.get<Project.Response[]>(`${environment.apiUrl}${environment.projectStage}v1/projects`);
   }
 
@@ -29,6 +29,10 @@ export class ProjectService {
         this.store.projects.next(value);
       },
     });
+  }
+
+  createProject_(body: Project.Request) {
+    return this.httpClient.post<Project.ProjectId>(`${environment.apiUrl}${environment.projectStage}v1/projects`, body);
   }
 
   createProject(body: Project.Request): void {
@@ -42,6 +46,10 @@ export class ProjectService {
     });
   }
 
+  updateProject_(projectId: Project.Id, body: Project.Request) {
+    return this.httpClient.put<Project.ProjectId>(`${environment.apiUrl}${environment.projectStage}v1/projects/${projectId}`, body);
+  }
+
   updateProject(projectId: Project.Id, body: Project.Request): void {
     this.httpClient.put(`${environment.apiUrl}${environment.projectStage}v1/projects/${projectId}`, body).subscribe({
       next: () => {
@@ -53,6 +61,10 @@ export class ProjectService {
     });
   }
 
+  deleteProject_(projectId: Project.Id) {
+    return this.httpClient.delete(`${environment.apiUrl}${environment.projectStage}v1/projects/${projectId}s`);
+  }
+
   deleteProject(projectId: Project.Id): void {
     this.httpClient.delete(`${environment.apiUrl}${environment.projectStage}v1/projects/${projectId}`).subscribe({
       next: () => {
@@ -62,6 +74,10 @@ export class ProjectService {
         console.error(error);
       },
     });
+  }
+
+  mergeProjects_(projectId: Project.Id, body: Project.Id[]) {
+    return this.httpClient.post(`${environment.apiUrl}${environment.projectStage}v1/projects/${projectId}/merge`, body);
   }
 
   mergeProjects(projectId: Project.Id, body: Project.Id[]): void {
