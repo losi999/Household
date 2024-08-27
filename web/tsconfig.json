@@ -19,6 +19,9 @@
     "paths": {
       "@household/shared/*": [
         "../shared/src/*"
+      ],
+      "@household/web/*": [
+        "./src/*"
       ]
     },
     "useDefineForClassFields": false

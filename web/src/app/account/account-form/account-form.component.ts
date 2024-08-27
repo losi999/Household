@@ -3,7 +3,7 @@ import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Account } from '@household/shared/types/types';
 import { Store } from '@ngrx/store';
-import { accountApiActions } from 'src/app/state/account/account.actions';
+import { accountApiActions } from '@household/web/state/account/account.actions';
 
 export type AccountFormData = Account.Response;
 

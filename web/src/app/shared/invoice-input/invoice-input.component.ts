@@ -5,7 +5,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatInputModule } from '@angular/material/input';
 import { Transaction } from '@household/shared/types/types';
 import { Subject, takeUntil } from 'rxjs';
-import { ClearableInputComponent } from 'src/app/shared/clearable-input/clearable-input.component';
+import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
 
 type Form<D extends Date | string> = Transaction.InvoiceDate<D> & Transaction.InvoiceNumber;
 

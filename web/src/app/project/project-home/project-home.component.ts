@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { DialogService } from 'src/app/shared/dialog.service';
-import { projectApiActions } from 'src/app/state/project/project.actions';
-import { selectProjects } from 'src/app/state/project/project.selector';
+import { DialogService } from '@household/web/app/shared/dialog.service';
+import { projectApiActions } from '@household/web/state/project/project.actions';
+import { selectProjects } from '@household/web/state/project/project.selector';
 
 @Component({
   selector: 'household-project-home',

@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Account, Transaction } from '@household/shared/types/types';
 import { skip } from 'rxjs/operators';
-import { TransactionService } from 'src/app/transaction/transaction.service';
+import { TransactionService } from '@household/web/app/transaction/transaction.service';
 
 @Component({
   selector: 'household-account-transactions-home',

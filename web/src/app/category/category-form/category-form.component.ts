@@ -3,8 +3,8 @@ import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Category } from '@household/shared/types/types';
 import { Store } from '@ngrx/store';
-import { categoryApiActions } from 'src/app/state/category/category.actions';
-import { selectCategories } from 'src/app/state/category/category.selector';
+import { categoryApiActions } from '@household/web/state/category/category.actions';
+import { selectCategories } from '@household/web/state/category/category.selector';
 
 export type CategoryFormData = Category.Response;
 

@@ -3,10 +3,10 @@ import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { Category } from '@household/shared/types/types';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
-import { CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult } from 'src/app/shared/catalog-submenu/catalog-submenu.component';
-import { DialogService } from 'src/app/shared/dialog.service';
-import { categoryApiActions } from 'src/app/state/category/category.actions';
-import { selectCategoryIsInProgress } from 'src/app/state/progress/progress.selector';
+import { CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult } from '@household/web/app/shared/catalog-submenu/catalog-submenu.component';
+import { DialogService } from '@household/web/app/shared/dialog.service';
+import { categoryApiActions } from '@household/web/state/category/category.actions';
+import { selectCategoryIsInProgress } from '@household/web/state/progress/progress.selector';
 
 @Component({
   selector: 'household-category-list-item',

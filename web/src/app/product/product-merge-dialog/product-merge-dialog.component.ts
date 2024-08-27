@@ -4,8 +4,8 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Category, Product } from '@household/shared/types/types';
 import { Store } from '@ngrx/store';
 import { map } from 'rxjs';
-import { productApiActions } from 'src/app/state/product/product.actions';
-import { selectProductsOfCategory } from 'src/app/state/product/product.selector';
+import { productApiActions } from '@household/web/state/product/product.actions';
+import { selectProductsOfCategory } from '@household/web/state/product/product.selector';
 
 export type ProductMergeDialogData = {
   targetProductId: Product.Id;

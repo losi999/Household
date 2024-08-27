@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { recipientApiActions } from 'src/app/state/recipient/recipient.actions';
-import { selectRecipients } from 'src/app/state/recipient/recipient.selector';
-import { DialogService } from 'src/app/shared/dialog.service';
+import { recipientApiActions } from '@household/web/state/recipient/recipient.actions';
+import { selectRecipients } from '@household/web/state/recipient/recipient.selector';
+import { DialogService } from '@household/web/app/shared/dialog.service';
 
 @Component({
   selector: 'household-recipient-home',

@@ -1,8 +1,8 @@
 import { Component, Input } from '@angular/core';
 import { Account } from '@household/shared/types/types';
 import { Store } from '@ngrx/store';
-import { DialogService } from 'src/app/shared/dialog.service';
-import { accountApiActions } from 'src/app/state/account/account.actions';
+import { DialogService } from '@household/web/app/shared/dialog.service';
+import { accountApiActions } from '@household/web/state/account/account.actions';
 
 @Component({
   selector: 'household-account-list-item',

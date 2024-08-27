@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { DialogService } from 'src/app/shared/dialog.service';
-import { categoryApiActions } from 'src/app/state/category/category.actions';
-import { selectInventoryCategories } from 'src/app/state/category/category.selector';
+import { DialogService } from '@household/web/app/shared/dialog.service';
+import { categoryApiActions } from '@household/web/state/category/category.actions';
+import { selectInventoryCategories } from '@household/web/state/category/category.selector';
 
 @Component({
   selector: 'household-product-home',

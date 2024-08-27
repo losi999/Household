@@ -3,7 +3,7 @@ import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Project } from '@household/shared/types/types';
 import { Store } from '@ngrx/store';
-import { projectApiActions } from 'src/app/state/project/project.actions';
+import { projectApiActions } from '@household/web/state/project/project.actions';
 
 export type ProjectFormData = Project.Response;
 

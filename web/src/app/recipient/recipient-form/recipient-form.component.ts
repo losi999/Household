@@ -3,7 +3,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Recipient } from '@household/shared/types/types';
 import { Store } from '@ngrx/store';
-import { recipientApiActions } from 'src/app/state/recipient/recipient.actions';
+import { recipientApiActions } from '@household/web/state/recipient/recipient.actions';
 
 export type RecipientFormData = Recipient.Response;
 

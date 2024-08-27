@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpRequest, HttpHandler, HttpEvent, HttpInterceptor, HttpErrorResponse } from '@angular/common/http';
 import { Observable, Subject, throwError } from 'rxjs';
-import { AuthService } from 'src/app/auth/auth.service';
+import { AuthService } from '@household/web/services/auth.service';
 import { catchError, switchMap, tap } from 'rxjs/operators';
 import { Store } from '@ngrx/store';
-import { progressActions } from 'src/app/state/progress/progress.actions';
+import { progressActions } from '@household/web/state/progress/progress.actions';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {

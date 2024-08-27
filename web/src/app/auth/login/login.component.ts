@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { AuthService } from 'src/app/auth/auth.service';
+import { AuthService } from '@household/web/services/auth.service';
 
 @Component({
   selector: 'household-login',

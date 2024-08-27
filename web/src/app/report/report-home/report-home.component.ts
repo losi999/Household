@@ -4,18 +4,18 @@ import { FormControl, FormGroup, ValidatorFn } from '@angular/forms';
 import { Account, Category, Product, Project, Recipient, Report, Transaction } from '@household/shared/types/types';
 import { Store } from '@ngrx/store';
 import { Subject } from 'rxjs';
-import { selectAccounts } from 'src/app/state/account/account.selector';
-import { ReportCatalogItemFilterValue } from 'src/app/report/report-catalog-item-filter/report-catalog-item-filter.component';
-import { ReportDateRangeFilterValue } from 'src/app/report/report-date-range-filter/report-date-range-filter.component';
-import { GroupBy } from 'src/app/report/report-list/report-list.component';
-import { categoryApiActions } from 'src/app/state/category/category.actions';
-import { selectCategories } from 'src/app/state/category/category.selector';
-import { projectApiActions } from 'src/app/state/project/project.actions';
-import { selectProjects } from 'src/app/state/project/project.selector';
-import { recipientApiActions } from 'src/app/state/recipient/recipient.actions';
-import { selectRecipients } from 'src/app/state/recipient/recipient.selector';
-import { Store as Store_ } from 'src/app/store';
-import { TransactionService } from 'src/app/transaction/transaction.service';
+import { selectAccounts } from '@household/web/state/account/account.selector';
+import { ReportCatalogItemFilterValue } from '@household/web/app/report/report-catalog-item-filter/report-catalog-item-filter.component';
+import { ReportDateRangeFilterValue } from '@household/web/app/report/report-date-range-filter/report-date-range-filter.component';
+import { GroupBy } from '@household/web/app/report/report-list/report-list.component';
+import { categoryApiActions } from '@household/web/state/category/category.actions';
+import { selectCategories } from '@household/web/state/category/category.selector';
+import { projectApiActions } from '@household/web/state/project/project.actions';
+import { selectProjects } from '@household/web/state/project/project.selector';
+import { recipientApiActions } from '@household/web/state/recipient/recipient.actions';
+import { selectRecipients } from '@household/web/state/recipient/recipient.selector';
+import { Store as Store_ } from '@household/web/app/store';
+import { TransactionService } from '@household/web/app/transaction/transaction.service';
 
 const oneFilterRequiredValidator: ValidatorFn = (control) => {
   return Object.values(control.value).every(v => !v || Object.keys(v).length === 0) ? {

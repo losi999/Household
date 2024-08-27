@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { DialogService } from 'src/app/shared/dialog.service';
-import { accountApiActions } from 'src/app/state/account/account.actions';
-import { selectAccountsByOwner } from 'src/app/state/account/account.selector';
+import { DialogService } from '@household/web/app/shared/dialog.service';
+import { accountApiActions } from '@household/web/state/account/account.actions';
+import { selectAccountsByOwner } from '@household/web/state/account/account.selector';
 
 @Component({
   selector: 'household-account-home',

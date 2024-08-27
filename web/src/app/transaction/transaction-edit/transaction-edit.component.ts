@@ -2,18 +2,18 @@ import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
-import { TransactionService } from 'src/app/transaction/transaction.service';
+import { TransactionService } from '@household/web/app/transaction/transaction.service';
 import { isInventoryCategory, isInvoiceCategory } from '@household/shared/common/type-guards';
-import { DialogService } from 'src/app/shared/dialog.service';
+import { DialogService } from '@household/web/app/shared/dialog.service';
 import { Subject, takeUntil } from 'rxjs';
-import { Store as Store_ } from 'src/app/store';
+import { Store as Store_ } from '@household/web/app/store';
 import { Dictionary } from '@household/shared/types/common';
-import { selectProjects } from 'src/app/state/project/project.selector';
-import { projectApiActions } from 'src/app/state/project/project.actions';
-import { selectRecipients } from 'src/app/state/recipient/recipient.selector';
-import { recipientApiActions } from 'src/app/state/recipient/recipient.actions';
+import { selectProjects } from '@household/web/state/project/project.selector';
+import { projectApiActions } from '@household/web/state/project/project.actions';
+import { selectRecipients } from '@household/web/state/recipient/recipient.selector';
+import { recipientApiActions } from '@household/web/state/recipient/recipient.actions';
 import { Store } from '@ngrx/store';
-import { selectCategories } from 'src/app/state/category/category.selector';
+import { selectCategories } from '@household/web/state/category/category.selector';
 
 type SplitFormGroup = FormGroup<{
   category: FormControl<Category.Response>;

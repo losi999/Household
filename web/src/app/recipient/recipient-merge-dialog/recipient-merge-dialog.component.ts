@@ -4,8 +4,8 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Recipient } from '@household/shared/types/types';
 import { Store } from '@ngrx/store';
 import { map } from 'rxjs';
-import { recipientApiActions } from 'src/app/state/recipient/recipient.actions';
-import { selectRecipients } from 'src/app/state/recipient/recipient.selector';
+import { recipientApiActions } from '@household/web/state/recipient/recipient.actions';
+import { selectRecipients } from '@household/web/state/recipient/recipient.selector';
 
 export type RecipientMergeDialogData = Recipient.Id;
 

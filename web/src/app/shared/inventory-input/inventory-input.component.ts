@@ -7,10 +7,10 @@ import { unitsOfMeasurement } from '@household/shared/constants';
 import { Category, Product, Transaction } from '@household/shared/types/types';
 import { Store } from '@ngrx/store';
 import { Observable, Subject, takeUntil } from 'rxjs';
-import { AutocompleteModule } from 'src/app/shared/autocomplete/autocomplete.module';
-import { ClearableInputComponent } from 'src/app/shared/clearable-input/clearable-input.component';
-import { DialogService } from 'src/app/shared/dialog.service';
-import { selectProductsOfCategory } from 'src/app/state/product/product.selector';
+import { AutocompleteModule } from '@household/web/app/shared/autocomplete/autocomplete.module';
+import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
+import { DialogService } from '@household/web/app/shared/dialog.service';
+import { selectProductsOfCategory } from '@household/web/state/product/product.selector';
 
 type Form = Transaction.Quantity & Transaction.Product<Product.Response>;
 

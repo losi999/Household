@@ -6,14 +6,14 @@ import { RecipientListItemComponent } from './recipient-list-item/recipient-list
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
-import { RecipientRoutingModule } from 'src/app/recipient/recipient-routing.module';
+import { RecipientRoutingModule } from '@household/web/app/recipient/recipient-routing.module';
 import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { RecipientFormComponent } from './recipient-form/recipient-form.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatDialogModule } from '@angular/material/dialog';
 import { RecipientMergeDialogComponent } from './recipient-merge-dialog/recipient-merge-dialog.component';
-import { ToolbarComponent } from 'src/app/shared/toolbar/toolbar.component';
-import { ClearableInputComponent } from 'src/app/shared/clearable-input/clearable-input.component';
+import { ToolbarComponent } from '@household/web/app/shared/toolbar/toolbar.component';
+import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 
 @NgModule({

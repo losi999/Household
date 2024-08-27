@@ -3,7 +3,7 @@ import { HttpRequest, HttpHandler, HttpEvent, HttpInterceptor, HttpResponse } fr
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Store } from '@ngrx/store';
-import { progressActions } from 'src/app/state/progress/progress.actions';
+import { progressActions } from '@household/web/state/progress/progress.actions';
 
 @Injectable()
 export class ProgressInterceptor implements HttpInterceptor {

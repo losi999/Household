@@ -2,10 +2,10 @@ import { Component, Input, OnInit } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { Project } from '@household/shared/types/types';
 import { Store } from '@ngrx/store';
-import { projectApiActions } from 'src/app/state/project/project.actions';
-import { CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult } from 'src/app/shared/catalog-submenu/catalog-submenu.component';
-import { DialogService } from 'src/app/shared/dialog.service';
-import { selectProjectIsInProgress } from 'src/app/state/progress/progress.selector';
+import { projectApiActions } from '@household/web/state/project/project.actions';
+import { CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult } from '@household/web/app/shared/catalog-submenu/catalog-submenu.component';
+import { DialogService } from '@household/web/app/shared/dialog.service';
+import { selectProjectIsInProgress } from '@household/web/state/progress/progress.selector';
 import { Observable } from 'rxjs';
 
 @Component({

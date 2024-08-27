@@ -4,8 +4,8 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { unitsOfMeasurement } from '@household/shared/constants';
 import { Category, Product } from '@household/shared/types/types';
 import { Store } from '@ngrx/store';
-import { selectInventoryCategories } from 'src/app/state/category/category.selector';
-import { productApiActions } from 'src/app/state/product/product.actions';
+import { selectInventoryCategories } from '@household/web/state/category/category.selector';
+import { productApiActions } from '@household/web/state/product/product.actions';
 
 export type ProductFormData = {
   product: Product.Response;

@@ -4,8 +4,8 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Project } from '@household/shared/types/types';
 import { Store } from '@ngrx/store';
 import { map } from 'rxjs';
-import { projectApiActions } from 'src/app/state/project/project.actions';
-import { selectProjects } from 'src/app/state/project/project.selector';
+import { projectApiActions } from '@household/web/state/project/project.actions';
+import { selectProjects } from '@household/web/state/project/project.selector';
 
 export type ProjectMergeDialogData = Project.Id;
 
