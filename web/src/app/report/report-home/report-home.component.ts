@@ -3,12 +3,13 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl, FormGroup, ValidatorFn } from '@angular/forms';
 import { Account, Category, Product, Project, Recipient, Report, Transaction } from '@household/shared/types/types';
 import { Store } from '@ngrx/store';
-import { Subject, takeUntil } from 'rxjs';
-import { AccountService } from 'src/app/account/account.service';
-import { CategoryService } from 'src/app/category/category.service';
+import { Subject } from 'rxjs';
+import { selectAccounts } from 'src/app/state/account/account.selector';
 import { ReportCatalogItemFilterValue } from 'src/app/report/report-catalog-item-filter/report-catalog-item-filter.component';
 import { ReportDateRangeFilterValue } from 'src/app/report/report-date-range-filter/report-date-range-filter.component';
 import { GroupBy } from 'src/app/report/report-list/report-list.component';
+import { categoryApiActions } from 'src/app/state/category/category.actions';
+import { selectCategories } from 'src/app/state/category/category.selector';
 import { projectApiActions } from 'src/app/state/project/project.actions';
 import { selectProjects } from 'src/app/state/project/project.selector';
 import { recipientApiActions } from 'src/app/state/recipient/recipient.actions';
@@ -41,15 +42,11 @@ type GroupCriteria ={
 })
 export class ReportHomeComponent implements OnInit, OnDestroy {
   private destroyed = new Subject<void>();
-  get accounts(): Account.Response[] {
-    return this.store_.accounts.value;
-  }
+  accounts = this.store.select(selectAccounts);
   projects = this.store.select(selectProjects);
   recipients = this.store.select(selectRecipients);
+  categories = this.store.select(selectCategories);
 
-  get categories(): Category.Response[] {
-    return this.store_.categories.value;
-  }
   products: ProductFlatTree[];
   form: FormGroup<{
     issuedAt: FormControl<ReportDateRangeFilterValue[]>;
@@ -62,11 +59,7 @@ export class ReportHomeComponent implements OnInit, OnDestroy {
   report: Transaction.Report[];
 
   constructor(private store_: Store_, private transactionService: TransactionService,
-    accountService: AccountService,
-    categoryService: CategoryService,
     private store: Store) {
-    accountService.listAccounts();
-    categoryService.listCategories();
   }
   ngOnDestroy(): void {
     this.destroyed.next();
@@ -76,6 +69,8 @@ export class ReportHomeComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.store.dispatch(projectApiActions.listProjectsInitiated());
     this.store.dispatch(recipientApiActions.listRecipientsInitiated());
+    this.store.dispatch(categoryApiActions.listCategoriesInitiated());
+    // this.store.dispatch(accountApiActions.retrievedAccountList());
 
     this.form = new FormGroup({
       issuedAt: new FormControl([]),
@@ -86,21 +81,21 @@ export class ReportHomeComponent implements OnInit, OnDestroy {
       categories: new FormControl(),
     }, [oneFilterRequiredValidator]);
 
-    this.store_.inventoryCategories.pipe(takeUntil(this.destroyed)).subscribe((categories) => {
-      this.products = categories.flatMap<ProductFlatTree>(category => {
-        if (!category.products?.length) {
-          return [];
-        }
+    // this.store_.inventoryCategories.pipe(takeUntil(this.destroyed)).subscribe((categories) => {
+    //   this.products = categories.flatMap<ProductFlatTree>(category => {
+    //     if (!category.products?.length) {
+    //       return [];
+    //     }
 
-        return category.products?.map<ProductFlatTree>(p => {
-          return {
-            key: p.productId,
-            value: p.fullName,
-            parent: category.fullName,
-          };
-        });
-      });
-    });
+    //     return category.products?.map<ProductFlatTree>(p => {
+    //       return {
+    //         key: p.productId,
+    //         value: p.fullName,
+    //         parent: category.fullName,
+    //       };
+    //     });
+    //   });
+    // });
   }
 
   displayRange(range: ReportDateRangeFilterValue) {

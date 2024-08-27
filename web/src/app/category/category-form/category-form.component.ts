@@ -2,8 +2,9 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Category } from '@household/shared/types/types';
-import { CategoryService } from 'src/app/category/category.service';
-import { Store } from 'src/app/store';
+import { Store } from '@ngrx/store';
+import { categoryApiActions } from 'src/app/state/category/category.actions';
+import { selectCategories } from 'src/app/state/category/category.selector';
 
 export type CategoryFormData = Category.Response;
 
@@ -18,11 +19,9 @@ export class CategoryFormComponent implements OnInit {
     categoryType: FormControl<Category.CategoryType['categoryType']>;
     parentCategory: FormControl<Category.ResponseBase>
   }>;
-  get categories(): Category.Response[] {
-    return this.store.categories.value;
-  }
+  categories = this.store.select(selectCategories);
+
   constructor(private dialogRef: MatDialogRef<CategoryFormComponent, void>,
-    private categoryService: CategoryService,
     private store: Store,
     @Inject(MAT_DIALOG_DATA) public category: CategoryFormData) { }
 
@@ -43,9 +42,12 @@ export class CategoryFormComponent implements OnInit {
       };
 
       if (this.category) {
-        this.categoryService.updateCategory(this.category.categoryId, request);
+        this.store.dispatch(categoryApiActions.updateCategoryInitiated({
+          categoryId: this.category.categoryId,
+          ...request,
+        }));
       } else {
-        this.categoryService.createCategory(request);
+        this.store.dispatch(categoryApiActions.createCategoryInitiated(request));
       }
 
       this.dialogRef.close();

@@ -17,15 +17,18 @@ import { ProgressIndicatorComponent } from 'src/app/shared/progress-indicator/pr
 import { CustomDateAdapter } from 'src/app/shared/data-adapter';
 import { StoreModule } from '@ngrx/store';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
-import { accountReducer } from 'src/app/account/account.reducer';
+import { accountReducer } from 'src/app/state/account/account.reducer';
 import { projectReducer } from 'src/app/state/project/project.reducer';
 import { recipientReducer } from 'src/app/state/recipient/recipient.reducer';
-import { categoryReducer } from 'src/app/category/category.reducer';
+import { categoryReducer } from 'src/app/state/category/category.reducer';
 import { progressReducer } from 'src/app/state/progress/progress.reducer';
 import { EffectsModule } from '@ngrx/effects';
 import { ProjectEffects } from 'src/app/state/project/project.effects';
 import { NotificationEffects } from 'src/app/state/notification/notification.effects';
 import { RecipientEffects } from 'src/app/state/recipient/recipient.effects';
+import { CategoryEffects } from 'src/app/state/category/category.effects';
+import { ProductEffects } from 'src/app/state/product/product.effects';
+import { AccountEffects } from 'src/app/state/account/account.effects';
 
 registerLocaleData(localeHu);
 
@@ -55,6 +58,9 @@ registerLocaleData(localeHu);
     EffectsModule.forRoot([
       ProjectEffects,
       RecipientEffects,
+      CategoryEffects,
+      ProductEffects,
+      AccountEffects,
       NotificationEffects,
     ]),
   ],

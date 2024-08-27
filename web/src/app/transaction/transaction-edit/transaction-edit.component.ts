@@ -4,17 +4,16 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { TransactionService } from 'src/app/transaction/transaction.service';
 import { isInventoryCategory, isInvoiceCategory } from '@household/shared/common/type-guards';
-import { CategoryService } from 'src/app/category/category.service';
 import { DialogService } from 'src/app/shared/dialog.service';
 import { Subject, takeUntil } from 'rxjs';
 import { Store as Store_ } from 'src/app/store';
-import { AccountService } from 'src/app/account/account.service';
 import { Dictionary } from '@household/shared/types/common';
-import { Store } from '@ngrx/store';
 import { selectProjects } from 'src/app/state/project/project.selector';
 import { projectApiActions } from 'src/app/state/project/project.actions';
 import { selectRecipients } from 'src/app/state/recipient/recipient.selector';
 import { recipientApiActions } from 'src/app/state/recipient/recipient.actions';
+import { Store } from '@ngrx/store';
+import { selectCategories } from 'src/app/state/category/category.selector';
 
 type SplitFormGroup = FormGroup<{
   category: FormControl<Category.Response>;
@@ -60,15 +59,11 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
   deferredTransactions: Dictionary<Transaction.DeferredResponse> = {};
 
   get accounts(): Account.Response[] {
-    return this.store_.accounts.value;
+    return [];//    return this.store_.accounts.value;
   }
   projects = this.store.select(selectProjects);
-
   recipients = this.store.select(selectRecipients);
-
-  get categories(): Category.Response[] {
-    return this.store_.categories.value;
-  }
+  categories = this.store.select(selectCategories);
 
   get splitsSum(): number {
     return this.form.value.splits.reduce((accumulator, currentValue) => {
@@ -89,8 +84,6 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
     private store_: Store_,
     private store: Store,
     private transactionService: TransactionService,
-    accountService: AccountService,
-    categoryService: CategoryService,
     private router: Router,
     private dialogService: DialogService,
   ) {
@@ -98,8 +91,7 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
     this.transactionId = activatedRoute.snapshot.paramMap.get('transactionId') as Transaction.Id;
     this.transaction = activatedRoute.snapshot.data.transaction;
 
-    categoryService.listCategories();
-    accountService.listAccounts();
+    // accountService.listAccounts();
     transactionService.listDeferredTransactions({
       isSettled: false,
     });
@@ -268,12 +260,12 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
     }
 
     if (!this.transaction) {
-      this.store_.accounts.pipe(takeUntil(this.destroyed)).subscribe((accounts) => {
-        const account = accounts.find(a => a.accountId === this.accountId);
-        this.form.patchValue({
-          account,
-        });
-      });
+      // this.store_.accounts.pipe(takeUntil(this.destroyed)).subscribe((accounts) => {
+      //   const account = accounts.find(a => a.accountId === this.accountId);
+      //   this.form.patchValue({
+      //     account,
+      //   });
+      // });
     }
   }
 

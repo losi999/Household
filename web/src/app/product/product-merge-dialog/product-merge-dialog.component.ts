@@ -2,8 +2,10 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Category, Product } from '@household/shared/types/types';
-import { ProductService } from 'src/app/product/product.service';
-import { Store } from 'src/app/store';
+import { Store } from '@ngrx/store';
+import { map } from 'rxjs';
+import { productApiActions } from 'src/app/state/product/product.actions';
+import { selectProductsOfCategory } from 'src/app/state/product/product.selector';
 
 export type ProductMergeDialogData = {
   targetProductId: Product.Id;
@@ -19,12 +21,9 @@ export class ProductMergeDialogComponent implements OnInit {
   form: FormGroup<{
     sourceProducts: FormControl<Product.Id[]>
   }>;
-  get products(): Product.Response[] {
-    return this.store.products.value[this.data.categoryId].filter(p => p.productId !== this.data.targetProductId);
-  }
+  products = this.store.select(selectProductsOfCategory(this.data.categoryId)).pipe(map(products => products.filter(c => c.productId !== this.data.targetProductId)));
 
   constructor(private dialogRef: MatDialogRef<ProductMergeDialogComponent, void>,
-    private productService: ProductService,
     private store: Store,
     @Inject(MAT_DIALOG_DATA) public data: ProductMergeDialogData) { }
 
@@ -35,7 +34,10 @@ export class ProductMergeDialogComponent implements OnInit {
   }
 
   save() {
-    this.productService.mergeProducts(this.data.targetProductId, this.form.value.sourceProducts);
+    this.store.dispatch(productApiActions.mergeProductsInitiated({
+      sourceProductIds: this.form.value.sourceProducts,
+      targetProductId: this.data.targetProductId,
+    }));
 
     this.dialogRef.close();
   }

@@ -2,7 +2,8 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Account } from '@household/shared/types/types';
-import { AccountService } from 'src/app/account/account.service';
+import { Store } from '@ngrx/store';
+import { accountApiActions } from 'src/app/state/account/account.actions';
 
 export type AccountFormData = Account.Response;
 
@@ -34,7 +35,7 @@ export class AccountFormComponent implements OnInit {
     };
 
   constructor(private dialogRef: MatDialogRef<AccountFormComponent, void>,
-    private accountService: AccountService,
+    private store: Store,
     @Inject(MAT_DIALOG_DATA) public account: AccountFormData) { }
 
   ngOnInit(): void {
@@ -61,9 +62,12 @@ export class AccountFormComponent implements OnInit {
       };
 
       if (this.account) {
-        this.accountService.updateAccount(this.account.accountId, request);
+        this.store.dispatch(accountApiActions.updateAccountInitiated({
+          accountId: this.account.accountId,
+          ...request,
+        }));
       } else {
-        this.accountService.createAccount(request);
+        this.store.dispatch(accountApiActions.createAccountInitiated(request));
       }
 
       this.dialogRef.close();

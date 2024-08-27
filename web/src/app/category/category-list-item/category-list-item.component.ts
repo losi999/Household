@@ -1,27 +1,38 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { Category } from '@household/shared/types/types';
-import { CategoryService } from 'src/app/category/category.service';
+import { Store } from '@ngrx/store';
+import { Observable } from 'rxjs';
 import { CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult } from 'src/app/shared/catalog-submenu/catalog-submenu.component';
 import { DialogService } from 'src/app/shared/dialog.service';
+import { categoryApiActions } from 'src/app/state/category/category.actions';
+import { selectCategoryIsInProgress } from 'src/app/state/progress/progress.selector';
 
 @Component({
   selector: 'household-category-list-item',
   templateUrl: './category-list-item.component.html',
   styleUrls: ['./category-list-item.component.scss'],
 })
-export class CategoryListItemComponent {
+export class CategoryListItemComponent implements OnInit {
   @Input() category: Category.Response;
   constructor(
-    private categoryService: CategoryService,
+    private store: Store,
     private dialogService: DialogService,
     private bottomSheet: MatBottomSheet) { }
+
+  isDisabled: Observable<boolean>;
+
+  ngOnInit(): void {
+    this.isDisabled = this.store.select(selectCategoryIsInProgress(this.category.categoryId));
+  }
 
   delete() {
     this.dialogService.openDeleteCategoryDialog(this.category).afterClosed()
       .subscribe(shouldDelete => {
         if (shouldDelete) {
-          this.categoryService.deleteCategory(this.category.categoryId);
+          this.store.dispatch(categoryApiActions.deleteCategoryInitiated({
+            categoryId: this.category.categoryId,
+          }));
         }
       });
   }

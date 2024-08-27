@@ -1,5 +1,6 @@
-import { Project, Recipient } from '@household/shared/types/types';
+import { Category, Project, Recipient } from '@household/shared/types/types';
 import { createReducer, on } from '@ngrx/store';
+import { categoryApiActions } from 'src/app/state/category/category.actions';
 import { progressActions } from 'src/app/state/progress/progress.actions';
 import { projectApiActions } from 'src/app/state/project/project.actions';
 import { recipientApiActions } from 'src/app/state/recipient/recipient.actions';
@@ -7,6 +8,7 @@ import { recipientApiActions } from 'src/app/state/recipient/recipient.actions';
 export type ProgressState = {
   counter: number;
   projectsToRemove: Project.Id[];
+  categoriesToRemove: Category.Id[];
   recipientsToRemove: Recipient.Id[];
 };
 
@@ -14,6 +16,7 @@ export const progressReducer = createReducer<ProgressState>({
   counter: 0,
   projectsToRemove: [],
   recipientsToRemove: [],
+  categoriesToRemove: [],
 },
 on(progressActions.processStarted, (_state) => {
   return {
@@ -86,6 +89,37 @@ on(recipientApiActions.mergeRecipientsCompleted, recipientApiActions.mergeRecipi
   return {
     ..._state,
     recipientsToRemove: _state.recipientsToRemove.filter(p => !sourceRecipientIds.includes(p)),
+  };
+}),
+
+on(categoryApiActions.deleteCategoryInitiated, (_state, { categoryId }) => {
+  return {
+    ..._state,
+    categoriesToRemove: [
+      ..._state.categoriesToRemove,
+      categoryId,
+    ],
+  };
+}),
+on(categoryApiActions.deleteCategoryCompleted, categoryApiActions.deleteCategoryFailed, (_state, { categoryId }) => {
+  return {
+    ..._state,
+    categoriesToRemove: _state.categoriesToRemove.filter(p => p !== categoryId),
+  };
+}),
+on(categoryApiActions.mergeCategoriesInitiated, (_state, { sourceCategoryIds }) => {
+  return {
+    ..._state,
+    categoriesToRemove: [
+      ..._state.categoriesToRemove,
+      ...sourceCategoryIds,
+    ],
+  };
+}),
+on(categoryApiActions.mergeCategoriesCompleted, categoryApiActions.mergeCategoriesFailed, (_state, { sourceCategoryIds }) => {
+  return {
+    ..._state,
+    categoriesToRemove: _state.categoriesToRemove.filter(p => !sourceCategoryIds.includes(p)),
   };
 }),
 );

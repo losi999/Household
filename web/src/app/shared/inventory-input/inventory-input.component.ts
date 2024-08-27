@@ -5,11 +5,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { unitsOfMeasurement } from '@household/shared/constants';
 import { Category, Product, Transaction } from '@household/shared/types/types';
-import { Subject, takeUntil } from 'rxjs';
+import { Store } from '@ngrx/store';
+import { Observable, Subject, takeUntil } from 'rxjs';
 import { AutocompleteModule } from 'src/app/shared/autocomplete/autocomplete.module';
 import { ClearableInputComponent } from 'src/app/shared/clearable-input/clearable-input.component';
 import { DialogService } from 'src/app/shared/dialog.service';
-import { Store } from 'src/app/store';
+import { selectProductsOfCategory } from 'src/app/state/product/product.selector';
 
 type Form = Transaction.Quantity & Transaction.Product<Product.Response>;
 
@@ -40,9 +41,8 @@ export class InventoryInputComponent implements OnInit, OnDestroy, ControlValueA
     quantity: FormControl<number>;
   }>;
   @Input() categoryId: Category.Id;
-  get products(): Product.Response[] {
-    return this.store.products.value[this.categoryId];
-  }
+  products: Observable<Product.Response[]>;
+
   changed: (value: Form) => void;
   touched: () => void;
   isDisabled: boolean;
@@ -51,6 +51,8 @@ export class InventoryInputComponent implements OnInit, OnDestroy, ControlValueA
   constructor(private store: Store, private dialogService: DialogService) { }
 
   ngOnInit(): void {
+    this.products = this.store.select(selectProductsOfCategory(this.categoryId));
+
     this.form = new FormGroup({
       product: new FormControl(null, [Validators.required]),
       quantity: new FormControl(null, [
