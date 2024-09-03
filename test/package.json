@@ -21,7 +21,6 @@
     "test:transaction-transfer": "yarn test --spec \"./src/api/transaction/transfer/**/*\"",
     "test:transaction-loan-transfer": "yarn test --spec \"./src/api/transaction/loan-transfer/**/*\"",
     "test:LOCAL": "export ENV=LOCAL && yarn cypress-env && cypress run --config-file=cypress.LOCAL.config.ts",
-    "test:LOCAL:account": "yarn test:LOCAL --spec \"./src/api/account/**/*\"",
     "verify": "cypress verify"
   },
   "devDependencies": {

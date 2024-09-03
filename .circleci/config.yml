@@ -195,15 +195,8 @@ workflows:
           requires:
             - install
       - test:
-          name: test_local1
-          env: "DEV"
-          testCommand: "account"
-          requires:
-            - install
-      - test:
-          name: test_local2
-          env: "DEV"
-          testCommand: "project"
+          name: test_local
+          env: "LOCAL"
           requires:
             - install
 
@@ -244,6 +237,72 @@ workflows:
           name: test_dev_account
           env: "DEV"
           testCommand: "account"
+          requires:
+            - web_deploy_dev
+      - test:
+          name: test_dev_category
+          env: "DEV"
+          testCommand: "category"
+          requires:
+            - web_deploy_dev
+      - test:
+          name: test_dev_project
+          env: "DEV"
+          testCommand: "project"
+          requires:
+            - web_deploy_dev
+      - test:
+          name: test_dev_product
+          env: "DEV"
+          testCommand: "product"
+          requires:
+            - web_deploy_dev
+      - test:
+          name: test_dev_recipient
+          env: "DEV"
+          testCommand: "recipient"
+          requires:
+            - web_deploy_dev
+      - test:
+          name: test_dev_transaction_common
+          env: "DEV"
+          testCommand: "transaction-common"
+          requires:
+            - web_deploy_dev
+      - test:
+          name: test_dev_transaction_payment
+          env: "DEV"
+          testCommand: "transaction-payment"
+          requires:
+            - web_deploy_dev
+      - test:
+          name: test_dev_transaction_deferred
+          env: "DEV"
+          testCommand: "transaction-deferred"
+          requires:
+            - web_deploy_dev
+      - test:
+          name: test_dev_transaction_split
+          env: "DEV"
+          testCommand: "transaction-split"
+          requires:
+            - web_deploy_dev
+      - test:
+          name: test_dev_transaction_reimbursement
+          env: "DEV"
+          testCommand: "transaction-reimbursement"
+          requires:
+            - web_deploy_dev
+      - test:
+          name: test_dev_transaction_transfer
+          env: "DEV"
+          testCommand: "transaction-transfer"
+          requires:
+            - web_deploy_dev
+      - test:
+          name: test_dev_transaction_loan_transfer
+          env: "DEV"
+          testCommand: "transaction-loan-transfer"
           requires:
             - web_deploy_dev
 
