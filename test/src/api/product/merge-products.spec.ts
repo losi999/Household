@@ -184,8 +184,7 @@ describe('POST product/v1/products/{productId}/merge', () => {
             from: getProductId(sourceProductDocument),
             to: getProductId(targetProductDocument),
           },
-        })
-        .validateProductRemoval(categoryDocument, [getProductId(sourceProductDocument)]);
+        });
     });
 
     describe('should return error', () => {

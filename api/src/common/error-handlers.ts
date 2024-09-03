@@ -388,6 +388,10 @@ export const httpErrors = {
       log('Get product', ctx, error);
       throw httpError(statusCode, 'Error while getting product');
     },
+    list: (statusCode = 500): Catch => (error) => {
+      log('List products', undefined, error);
+      throw httpError(statusCode, 'Error while listing products');
+    },
     listByIds: (ctx: Product.Id[], statusCode = 500): Catch => (error) => {
       log('List products by ids', ctx, error);
       throw httpError(statusCode, 'Error while listing products by ids');

@@ -142,7 +142,7 @@ export namespace Category {
     categoryId: Id;
   };
 
-  type FullName = {
+  export type FullName = {
     fullName: string;
   };
 
@@ -160,10 +160,6 @@ export namespace Category {
 
   type Name = {
     name: string;
-  };
-
-  type Products<T extends Product.Document | Product.Response> = {
-    products: T[];
   };
 
   export type Document = Internal.Id
@@ -229,6 +225,10 @@ export namespace Product {
   & Record<'category', undefined>
   & Remove<Internal.Id>
   & Remove<Internal.Timestamps>;
+
+  export type GroupedResponse = Category.FullName & {
+    products: Response[];
+  };
 
   export type Report = ProductId
   & FullName

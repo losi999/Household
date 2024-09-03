@@ -1,6 +1,6 @@
-import { Category, Product } from '@household/shared/types/types';
+import { Category } from '@household/shared/types/types';
 import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/test/api/types';
-import { getCategoryId, getProductId } from '@household/shared/common/utils';
+import { getCategoryId } from '@household/shared/common/utils';
 import { expectEmptyObject, expectRemainingProperties } from '@household/test/api/utils';
 
 const validateCategoryDocument = (response: Category.CategoryId, request: Category.Request, ...ancestorDocuments: Category.Document[]) => {
@@ -94,27 +94,6 @@ const validateCategoryParentReassign = (originalDocument: Category.Document, par
     });
 };
 
-const validateProductRemoval = (originalDocument: Category.Document, removedProductIds: Product.Id[]) => {
-//   const categoryId = getCategoryId(originalDocument);
-
-  //   cy.log('Get category document', categoryId)
-  //     .getCategoryDocumentById(categoryId)
-  //     .should((document) => {
-  //       expect(getCategoryId(document), 'id').to.equal(getCategoryId(originalDocument));
-  //       const { categoryType, fullName, name, parentCategory, products, ...internal } = document;
-
-  //       expect(name, 'name').to.equal(originalDocument.name);
-  //       expect(categoryType, 'categoryType').to.equal(originalDocument.categoryType);
-  //       expect(fullName, 'fullName').to.equal(originalDocument.fullName);
-  //       expect(getCategoryId(parentCategory), 'parentCategory.categoryId').to.equal(getCategoryId(originalDocument.parentCategory));
-
-//       removedProductIds.forEach(productId => {
-//         expect(products, 'products').to.not.contain(productId);
-//       });
-//       expectRemainingProperties(internal);
-//     });
-};
-
 export const setCategoryValidationCommands = () => {
   Cypress.Commands.addAll<any>({
     prevSubject: true,
@@ -127,7 +106,6 @@ export const setCategoryValidationCommands = () => {
   Cypress.Commands.addAll({
     validateCategoryDeleted,
     validateCategoryParentReassign,
-    validateProductRemoval,
     validateNestedCategoryResponse,
   });
 };
@@ -137,7 +115,6 @@ declare global {
     interface Chainable {
       validateCategoryDeleted: CommandFunction<typeof validateCategoryDeleted>;
       validateCategoryParentReassign: CommandFunction<typeof validateCategoryParentReassign>;
-      validateProductRemoval: CommandFunction<typeof validateProductRemoval>;
       validateNestedCategoryResponse: CommandFunction<typeof validateNestedCategoryResponse>;
     }
 

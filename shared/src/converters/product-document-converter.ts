@@ -1,5 +1,6 @@
 import { generateMongoId } from '@household/shared/common/utils';
 import { addSeconds, getProductId } from '@household/shared/common/utils';
+import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
 import { Category, Product, Transaction } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
 
@@ -9,12 +10,14 @@ export interface IProductDocumentConverter {
     category: Category.Document
   }, expiresIn: number, generateId?: boolean): Product.Document;
   update(body: Product.Request, expiresIn: number): UpdateQuery<Product.Document>;
+  toGroupedRepsonse(category: Category.Document & {products: Product.Document[]}): Product.GroupedResponse;
+  toGroupedRepsonseList(categories: (Category.Document & {products: Product.Document[]})[]): Product.GroupedResponse[];
   toResponse(document: Product.Document): Product.Response;
   toReport(data: Transaction.Quantity & { document: Product.Document }): Product.Report;
   toResponseList(documents: Product.Document[]): Product.Response[];
 }
 
-export const productDocumentConverterFactory = (): IProductDocumentConverter => {
+export const productDocumentConverterFactory = (categoryDocumentConverter: ICategoryDocumentConverter): IProductDocumentConverter => {
   const instance: IProductDocumentConverter = {
     create: ({ body, category }, expiresIn, generateId): Product.Document => {
       return {
@@ -41,6 +44,15 @@ export const productDocumentConverterFactory = (): IProductDocumentConverter => 
         quantity,
       } : undefined;
     },
+    toGroupedRepsonse: (category): Product.GroupedResponse => {
+      return {
+        fullName: categoryDocumentConverter.toResponse(category).fullName,
+        products: instance.toResponseList(category.products),
+      };
+    },
+    toGroupedRepsonseList: docs => docs.map(d => instance.toGroupedRepsonse(d)).toSorted((a, b) => a.fullName.localeCompare(b.fullName, 'hu', {
+      sensitivity: 'base',
+    })),
     toResponse: (doc): Product.Response => {
       return {
         ...doc,

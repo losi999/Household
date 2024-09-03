@@ -98,6 +98,22 @@ Resources:
             Auth:
               Authorizer: CognitoAuthorizer
 
+  ListProducts:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-ListProducts
+      CodeUri: dist/api/list-products
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ProductApi
+            Path: /v1/products
+            Method: GET
+            Auth:
+              Authorizer: CognitoAuthorizer
+
   MergeProducts:
     Type: AWS::Serverless::Function
     Properties:
