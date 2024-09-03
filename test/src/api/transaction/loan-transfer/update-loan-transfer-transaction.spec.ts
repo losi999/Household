@@ -1,8 +1,8 @@
 import { getAccountId, getTransactionId } from '@household/shared/common/utils';
 import { Account, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
-import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment-data-factory';
-import { loanTransferTransactionDataFactory } from '@household/test/api/transaction/loan-transfer-data-factory';
+import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
+import { loanTransferTransactionDataFactory } from '@household/test/api/transaction/loan-transfer/loan-transfer-data-factory';
 
 describe('PUT transaction/v1/transactions/{transactionId}/transfer (loanTransfer)', () => {
   let request: Transaction.TransferRequest;

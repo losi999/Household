@@ -1,7 +1,7 @@
 import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId } from '@household/shared/common/utils';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { reimbursementTransactionDocumentConverter } from '@household/shared/dependencies/converters/reimbursement-transaction-document-converter';
-import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment-data-factory';
+import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 
 export const reimbursementTransactionDataFactory = (() => {
   const createReimbursementTransactionDocument = (ctx: {

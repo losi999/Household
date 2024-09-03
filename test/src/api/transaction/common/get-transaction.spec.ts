@@ -11,12 +11,12 @@ import { recipientDataFactory } from '@household/test/api/recipient/data-factory
 import { projectDataFactory } from '@household/test/api/project/data-factory';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { productDataFactory } from '@household/test/api/product/data-factory';
-import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment-data-factory';
-import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer-data-factory';
-import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred-data-factory';
-import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement-data-factory';
-import { splitTransactionDataFactory } from '@household/test/api/transaction/split-data-factory';
-import { loanTransferTransactionDataFactory } from '@household/test/api/transaction/loan-transfer-data-factory';
+import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
+import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
+import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
+import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
+import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
+import { loanTransferTransactionDataFactory } from '@household/test/api/transaction/loan-transfer/loan-transfer-data-factory';
 
 describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}', () => {
   let accountDocument: Account.Document;

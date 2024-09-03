@@ -124,6 +124,8 @@ jobs:
     parameters:
       env:
         type: string
+      testCommand:
+        type: string
     docker:
       - image: cypress/base:16.14.2
     environment:
@@ -164,7 +166,7 @@ jobs:
             - run:
                 name: Running tests
                 working_directory: test
-                command: yarn run test
+                command: yarn run test:<<parameters.testCommand>>
 
       - store_artifacts:
           path: test/cypress/screenshots
@@ -193,8 +195,15 @@ workflows:
           requires:
             - install
       - test:
-          name: test_local
-          env: "LOCAL"
+          name: test_local1
+          env: "DEV"
+          testCommand: "account"
+          requires:
+            - install
+      - test:
+          name: test_local2
+          env: "DEV"
+          testCommand: "project"
           requires:
             - install
 
@@ -232,8 +241,9 @@ workflows:
           requires:
             - api_deploy_dev
       - test:
-          name: test_dev
+          name: test_dev_account
           env: "DEV"
+          testCommand: "account"
           requires:
             - web_deploy_dev
 
