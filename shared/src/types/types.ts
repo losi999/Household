@@ -170,27 +170,27 @@ export namespace Category {
   & Internal.Timestamps
   & CategoryType
   & Name
-  & FullName
   & Remove<ParentCategoryId>
-  & ParentCategory
-  & Partial<Products<Product.Document>>;
+  & {
+    ancestors: Document[];
+  };
 
   export type Report = CategoryId
   & FullName;
 
   export type ResponseBase = CategoryType
   & Name
-  & FullName
   & CategoryId
-  & Products<Product.Response>
   & Remove<Internal.Id>
   & Remove<Internal.Timestamps>
-  & Remove<ParentCategoryId>
-  & Record<'parentCategory', undefined>;
-
-  export type Response = Omit<ResponseBase, 'parentCategory'>
   & {
-    parentCategory: ResponseBase;
+    ancestors: undefined;
+  };
+
+  export type Response = Omit<ResponseBase, 'ancestors'>
+  & FullName
+  & {
+    ancestors: ResponseBase[];
   };
 
   export type Request = CategoryType

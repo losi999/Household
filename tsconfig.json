@@ -6,7 +6,8 @@
     "target": "es2017",
     "lib": [
       "es2017",
-      "es2019"
+      "es2019",
+      "ES2023.Array",
     ],
     "noImplicitAny": true,
     "noUnusedLocals": false,
@@ -28,5 +29,10 @@
     "api/src",
     "shared/src",
     "localhost"
+  ],
+  "exclude": [
+    "./api/**/*.spec.ts",
+    "./shared/**/*.spec.ts",
+    "shared/src/common/test-data-factory.ts"
   ]
 }

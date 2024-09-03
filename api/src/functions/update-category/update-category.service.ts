@@ -1,4 +1,5 @@
 import { httpErrors } from '@household/api/common/error-handlers';
+import { getCategoryId } from '@household/shared/common/utils';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
 import { ICategoryService } from '@household/shared/services/category-service';
 import { Category } from '@household/shared/types/types';
@@ -34,16 +35,16 @@ export const updateCategoryServiceFactory = (
       parentCategoryId: parentCategoryId,
     });
 
+    httpErrors.category.parentIsAChild(parentCategory, categoryId);
+
     const update = categoryDocumentConverter.update({
       body,
       parentCategory,
     }, expiresIn);
-    const oldFullName = queried.fullName;
 
-    await categoryService.updateCategory(categoryId, update, oldFullName).catch(httpErrors.category.update({
+    await categoryService.updateCategory(categoryId, update).catch(httpErrors.category.update({
       categoryId,
       update,
-      oldFullName,
     }));
   };
 };

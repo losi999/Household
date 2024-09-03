@@ -253,7 +253,7 @@ export const httpErrors = {
       }
     },
     notSameType: (ctx: Category.Document[], statusCode = 400) => {
-      const categoryType = ctx.shift().categoryType;
+      const categoryType = ctx[0].categoryType;
       if (ctx.some(c => c.categoryType !== categoryType)) {
         log('All categories must be of same type', ctx);
         throw httpError(statusCode, 'All categories must be of same type');
@@ -271,7 +271,16 @@ export const httpErrors = {
         throw httpError(statusCode, 'Parent category not found');
       }
     },
-    update: (ctx: Category.CategoryId & {update: UpdateQuery<Category.Document>; oldFullName: string}, statusCode = 500): Catch => (error) => {
+    parentIsAChild: (parentCategory: Category.Document, categoryId: Category.Id, statusCode = 400) => {
+      if (parentCategory?.ancestors.some((category) => getCategoryId(category) === categoryId)) {
+        log('Parent category is already a child of the current category', {
+          categoryId,
+          parentCategory,
+        });
+        throw httpError(statusCode, 'Parent category is already aa child of the current category');
+      }
+    },
+    update: (ctx: Category.CategoryId & {update: UpdateQuery<Category.Document>;}, statusCode = 500): Catch => (error) => {
       if (error.code === 11000) {
         log('Duplicate category name', ctx, error);
         throw httpError(400, 'Duplicate category name');
@@ -280,10 +289,20 @@ export const httpErrors = {
       log('Update category', ctx, error);
       throw httpError(statusCode, 'Error while updating category');
     },
-    mergeTargetAmongSource: (condition: boolean, ctx: Category.CategoryId & {source: Category.Id[]}, statusCode = 400) => {
-      if (condition) {
+    mergeTargetAmongSource: (ctx: Category.CategoryId & {source: Category.Id[]}, statusCode = 400) => {
+      if (ctx.source.includes(ctx.categoryId)) {
         log('Target category is among the source category Ids', ctx);
         throw httpError(statusCode, 'Target category is among the source category Ids');
+      }
+    },
+    mergeSourceIsAnAncestor: (ctx: {
+      target: Category.Document;
+      source: Category.Id[];
+    }, statusCode = 400) => {
+      console.log('CTX', ctx);
+      if (ctx.target.ancestors.some((c) => ctx.source.includes(getCategoryId(c)))) {
+        log('A source category is among the target category ancestors', ctx);
+        throw httpError(statusCode, 'A source category is among the target category ancestors');
       }
     },
     merge: (ctx: {

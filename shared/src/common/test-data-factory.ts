@@ -62,6 +62,7 @@ export const createCategoryDocument: DataFactoryFunction<Category.Document> = (d
     parentCategoryId: undefined,
     fullName: 'category name',
     categoryType: 'regular',
+    ancestors: [],
     ...doc,
   };
 };
