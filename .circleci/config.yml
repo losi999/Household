@@ -197,6 +197,7 @@ workflows:
       - test:
           name: test_local
           env: "LOCAL"
+          testCommand: ""
           requires:
             - install
 
