@@ -10,40 +10,37 @@ import { notificationActions } from '@household/web/state/notification/notificat
 export class ProductEffects {
   constructor(private actions: Actions, private productService: ProductService) {}
 
-  // loadProducts = createEffect(() => {
-  //   return this.actions.pipe(
-  //     ofType(productApiActions.listProductsInitiated),
-  //     exhaustMap(() => {
-  //       return this.productService.listProducts().pipe(
-  //         map((products) => productApiActions.listProductsCompleted({
-  //           products,
-  //         })),
-  //         catchError(() => {
-  //           return of(progressActions.processFinished(),
-  //             notificationActions.showError({
-  //               message: 'Hiba történt',
-  //             }),
-  //           );
-  //         }),
-  //       );
-  //     }),
-  //   );
-  // });
+  loadProducts = createEffect(() => {
+    return this.actions.pipe(
+      ofType(productApiActions.listProductsInitiated),
+      exhaustMap(() => {
+        return this.productService.listProducts().pipe(
+          map((products) => productApiActions.listProductsCompleted({
+            products,
+          })),
+          catchError(() => {
+            return of(progressActions.processFinished(),
+              notificationActions.showError({
+                message: 'Hiba történt',
+              }),
+            );
+          }),
+        );
+      }),
+    );
+  });
 
   createProduct = createEffect(() => {
     return this.actions.pipe(
       ofType(productApiActions.createProductInitiated),
       mergeMap(({ type, categoryId, ...request }) => {
         return this.productService.createProduct(categoryId, request).pipe(
-          map(({ productId }) => productApiActions.createProductCompleted({
-            productId,
-            ...request,
-          })),
+          map(() => productApiActions.listProductsInitiated()),
           catchError((error) => {
             let errorMessage: string;
             switch(error.error?.message) {
               case 'Duplicate product name': {
-                // errorMessage = `Projekt név (${request.name}) már foglalt!`;
+                errorMessage = `Termék (${request.brand} ${request.measurement} ${request.unitOfMeasurement}) már létezik!`;
               } break;
               default: {
                 errorMessage = 'Hiba történt';
@@ -65,17 +62,18 @@ export class ProductEffects {
       ofType(productApiActions.updateProductInitiated),
       groupBy(({ productId }) => productId),
       mergeMap((value) => {
-        return value.pipe(exhaustMap(({ type, productId, ...request }) => {
+        return value.pipe(exhaustMap(({ type, productId, categoryId, ...request }) => {
           return this.productService.updateProduct(productId, request).pipe(
             map(({ productId }) => productApiActions.updateProductCompleted({
               productId,
+              categoryId,
               ...request,
             })),
             catchError((error) => {
               let errorMessage: string;
               switch(error.error?.message) {
                 case 'Duplicate product name': {
-                  // errorMessage = `Projekt név (${request.name}) már foglalt!`;
+                  errorMessage = `Termék (${request.brand} ${request.measurement} ${request.unitOfMeasurement}) már létezik!`;
                 } break;
                 default: {
                   errorMessage = 'Hiba történt';
@@ -97,10 +95,11 @@ export class ProductEffects {
   deleteProduct = createEffect(() => {
     return this.actions.pipe(
       ofType(productApiActions.deleteProductInitiated),
-      mergeMap(({ productId }) => {
+      mergeMap(({ productId, categoryId }) => {
         return this.productService.deleteProduct(productId).pipe(
           map(() => productApiActions.deleteProductCompleted({
             productId,
+            categoryId,
           })),
           catchError(() => {
             return of(productApiActions.deleteProductFailed({
@@ -119,10 +118,11 @@ export class ProductEffects {
   mergeProducts = createEffect(() => {
     return this.actions.pipe(
       ofType(productApiActions.mergeProductsInitiated),
-      exhaustMap(({ sourceProductIds, targetProductId }) => {
+      exhaustMap(({ sourceProductIds, targetProductId, categoryId }) => {
         return this.productService.mergeProducts(targetProductId, sourceProductIds).pipe(
           map(() => productApiActions.mergeProductsCompleted({
             sourceProductIds,
+            categoryId,
           })),
           catchError(() => {
             return of(productApiActions.mergeProductsFailed({

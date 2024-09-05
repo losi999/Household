@@ -45,8 +45,10 @@ export const productDocumentConverterFactory = (categoryDocumentConverter: ICate
       } : undefined;
     },
     toGroupedResponse: (category): Product.GroupedResponse => {
+      const { categoryId, fullName } = categoryDocumentConverter.toResponse(category);
       return {
-        fullName: categoryDocumentConverter.toResponse(category).fullName,
+        categoryId,
+        fullName,
         products: instance.toResponseList(category.products),
       };
     },
@@ -54,13 +56,12 @@ export const productDocumentConverterFactory = (categoryDocumentConverter: ICate
       sensitivity: 'base',
     })),
     toResponse: (doc): Product.Response => {
+      const { brand, fullName, measurement, unitOfMeasurement } = doc;
       return {
-        ...doc,
-        category: undefined,
-        _id: undefined,
-        createdAt: undefined,
-        updatedAt: undefined,
-        expiresAt: undefined,
+        brand,
+        fullName,
+        measurement,
+        unitOfMeasurement,
         productId: getProductId(doc),
       };
     },

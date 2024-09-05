@@ -29,6 +29,7 @@ import { RecipientEffects } from '@household/web/state/recipient/recipient.effec
 import { CategoryEffects } from '@household/web/state/category/category.effects';
 import { ProductEffects } from '@household/web/state/product/product.effects';
 import { AccountEffects } from '@household/web/state/account/account.effects';
+import { productReducer } from '@household/web/state/product/product.reducer';
 
 registerLocaleData(localeHu);
 
@@ -50,6 +51,7 @@ registerLocaleData(localeHu);
       recipients: recipientReducer,
       categories: categoryReducer,
       progress: progressReducer,
+      products: productReducer,
     }),
     StoreDevtoolsModule.instrument({
       maxAge: 25,

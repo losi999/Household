@@ -523,11 +523,6 @@ export const createProductResponse: DataFactoryFunction<Product.Response> = (res
     measurement: 300,
     unitOfMeasurement: 'g',
     fullName: resp ? `${resp.brand} ${resp.measurement} ${resp.unitOfMeasurement}` : 'product brand 300 g',
-    expiresAt: undefined,
-    category: undefined,
-    createdAt: undefined,
-    updatedAt: undefined,
-    _id: undefined,
     ...resp,
   };
 };
@@ -535,6 +530,7 @@ export const createProductResponse: DataFactoryFunction<Product.Response> = (res
 export const createProductGroupedResponse: DataFactoryFunction<Product.GroupedResponse> = (resp) => {
   return {
     fullName: 'category:name',
+    categoryId: createCategoryId(),
     products: [createProductResponse()],
     ...resp,
   };

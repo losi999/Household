@@ -10,6 +10,10 @@ export class ProductService {
 
   constructor(private httpClient: HttpClient) { }
 
+  listProducts() {
+    return this.httpClient.get<Product.GroupedResponse[]>(`${environment.apiUrl}${environment.productStage}v1/products`);
+  }
+
   createProduct(categoryId: Category.Id, body: Product.Request) {
     return this.httpClient.post<Product.ProductId>(`${environment.apiUrl}${environment.productStage}v1/categories/${categoryId}/products`, body);
   }

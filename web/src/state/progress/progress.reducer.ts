@@ -1,15 +1,17 @@
-import { Category, Project, Recipient } from '@household/shared/types/types';
+import { Category, Product, Project, Recipient } from '@household/shared/types/types';
 import { createReducer, on } from '@ngrx/store';
 import { categoryApiActions } from '@household/web/state/category/category.actions';
 import { progressActions } from '@household/web/state/progress/progress.actions';
 import { projectApiActions } from '@household/web/state/project/project.actions';
 import { recipientApiActions } from '@household/web/state/recipient/recipient.actions';
+import { productApiActions } from '@household/web/state/product/product.actions';
 
 export type ProgressState = {
   counter: number;
   projectsToRemove: Project.Id[];
   inProgressCategories: Category.Id[];
   recipientsToRemove: Recipient.Id[];
+  inProgressProducts: Product.Id[];
 };
 
 export const progressReducer = createReducer<ProgressState>({
@@ -17,6 +19,7 @@ export const progressReducer = createReducer<ProgressState>({
   projectsToRemove: [],
   recipientsToRemove: [],
   inProgressCategories: [],
+  inProgressProducts: [],
 },
 on(progressActions.processStarted, (_state) => {
   return {
@@ -138,6 +141,39 @@ on(categoryApiActions.listCategoriesCompleted, (_state) => {
   return {
     ..._state,
     inProgressCategories: [],
+  };
+}),
+
+on(productApiActions.deleteProductInitiated, (_state, { productId }) => {
+  return {
+    ..._state,
+    inProgressProducts: [
+      ..._state.inProgressProducts,
+      productId,
+    ],
+  };
+}),
+on(productApiActions.deleteProductCompleted, productApiActions.deleteProductFailed, (_state, { productId }) => {
+  return {
+    ..._state,
+    inProgressProducts: _state.inProgressProducts.filter(p => p !== productId),
+  };
+}),
+
+on(productApiActions.mergeProductsInitiated, (_state, { sourceProductIds }) => {
+  return {
+    ..._state,
+    inProgressProducts: [
+      ..._state.inProgressProducts,
+      ...sourceProductIds,
+    ],
+  };
+}),
+
+on(productApiActions.mergeProductsCompleted, productApiActions.mergeProductsFailed, (_state, { sourceProductIds }) => {
+  return {
+    ..._state,
+    inProgressProducts: _state.inProgressProducts.filter(p => !sourceProductIds.includes(p)),
   };
 }),
 );

@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { DialogService } from '@household/web/app/shared/dialog.service';
+import { productApiActions } from '@household/web/state/product/product.actions';
+import { selectGroupedProducts } from '@household/web/state/product/product.selector';
 import { categoryApiActions } from '@household/web/state/category/category.actions';
-import { selectInventoryCategories } from '@household/web/state/category/category.selector';
 
 @Component({
   selector: 'household-product-home',
@@ -10,12 +11,13 @@ import { selectInventoryCategories } from '@household/web/state/category/categor
   styleUrls: ['./product-home.component.scss'],
 })
 export class ProductHomeComponent implements OnInit {
-  categories = this.store.select(selectInventoryCategories);
+  groups = this.store.select(selectGroupedProducts);
 
   constructor(private dialogService: DialogService, private store: Store) {
   }
 
   ngOnInit(): void {
+    this.store.dispatch(productApiActions.listProductsInitiated());
     this.store.dispatch(categoryApiActions.listCategoriesInitiated());
   }
 

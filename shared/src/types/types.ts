@@ -222,12 +222,9 @@ export namespace Product {
 
   export type Response = Base
   & ProductId
-  & FullName
-  & Record<'category', undefined>
-  & Remove<Internal.Id>
-  & Remove<Internal.Timestamps>;
+  & FullName;
 
-  export type GroupedResponse = Category.FullName & {
+  export type GroupedResponse = Category.FullName & Category.CategoryId & {
     products: Response[];
   };
 

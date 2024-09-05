@@ -105,11 +105,11 @@ export class DialogService {
     });
   }
 
-  openEditProductDialog(product: Product.Response) {
+  openEditProductDialog(product: Product.Response, categoryId: Category.Id) {
     this.dialog.open<ProductFormComponent, ProductFormData, void>(ProductFormComponent, {
       data: {
         product,
-        categoryId: undefined,
+        categoryId,
       },
     });
   }

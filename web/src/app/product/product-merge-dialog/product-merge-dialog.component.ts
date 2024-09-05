@@ -37,6 +37,7 @@ export class ProductMergeDialogComponent implements OnInit {
     this.store.dispatch(productApiActions.mergeProductsInitiated({
       sourceProductIds: this.form.value.sourceProducts,
       targetProductId: this.data.targetProductId,
+      categoryId: this.data.categoryId,
     }));
 
     this.dialogRef.close();
