@@ -12,8 +12,8 @@ export const mergeRecipientsServiceFactory = (
   recipientService: IRecipientService,
 ): IMergeRecipientsService => {
   return async ({ body, recipientId }) => {
-    httpErrors.recipient.mergeTargetAmongSource(body.includes(recipientId), {
-      recipientId,
+    httpErrors.recipient.mergeTargetAmongSource({
+      target: recipientId,
       source: body,
     });
 
@@ -24,7 +24,8 @@ export const mergeRecipientsServiceFactory = (
 
     const recipients = await recipientService.listRecipientsByIds(recipientIds).catch(httpErrors.recipient.listByIds(recipientIds));
 
-    httpErrors.recipient.multipleNotFound(recipients.length !== recipientIds.length, {
+    httpErrors.recipient.multipleNotFound({
+      recipients,
       recipientIds,
     });
 

@@ -14,7 +14,7 @@ export const mergeCategoriesServiceFactory = (
 ): IMergeCategoriesService => {
   return async ({ body, categoryId }) => {
     httpErrors.category.mergeTargetAmongSource({
-      categoryId,
+      target: categoryId,
       source: body,
     });
 
@@ -25,7 +25,8 @@ export const mergeCategoriesServiceFactory = (
 
     const categories = await categoryService.listCategoriesByIds(categoryIds).catch(httpErrors.category.listByIds(categoryIds));
 
-    httpErrors.category.multipleNotFound(categories.length !== categoryIds.length, {
+    httpErrors.category.multipleNotFound({
+      categories,
       categoryIds,
     });
 

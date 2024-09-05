@@ -26,12 +26,14 @@ export const updateCategoryServiceFactory = (
       parentCategoryId: parentCategoryId,
     }));
 
-    httpErrors.category.notFound(!queried, {
+    httpErrors.category.notFound({
+      category: queried,
       categoryId,
     });
 
-    httpErrors.category.parentNotFound(!parentCategory && !!parentCategoryId, {
+    httpErrors.category.parentNotFound({
       parentCategoryId: parentCategoryId,
+      parentCategory,
     });
 
     httpErrors.category.parentIsAChild(parentCategory, categoryId);

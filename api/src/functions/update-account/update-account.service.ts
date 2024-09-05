@@ -20,7 +20,8 @@ export const updateAccountServiceFactory = (
       accountId,
     }));
 
-    httpErrors.account.notFound(!queried, {
+    httpErrors.account.notFound({
+      account: queried,
       accountId,
     });
 

@@ -13,15 +13,15 @@ export const getRecipientServiceFactory = (
   recipientService: IRecipientService,
   recipientDocumentConverter: IRecipientDocumentConverter): IGetRecipientService => {
   return async ({ recipientId }) => {
-
-    const document = await recipientService.getRecipientById(recipientId).catch(httpErrors.recipient.getById({
+    const recipient = await recipientService.getRecipientById(recipientId).catch(httpErrors.recipient.getById({
       recipientId,
     }));
 
-    httpErrors.recipient.notFound(!document, {
+    httpErrors.recipient.notFound({
       recipientId,
+      recipient,
     });
 
-    return recipientDocumentConverter.toResponse(document);
+    return recipientDocumentConverter.toResponse(recipient);
   };
 };

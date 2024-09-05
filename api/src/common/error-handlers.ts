@@ -40,14 +40,14 @@ export const httpErrors = {
       log('List transactions by account', ctx, error);
       throw httpError(statusCode, 'Error while getting transactions');
     },
-    notFound: (condition: boolean, ctx: Transaction.TransactionId & Partial<Account.AccountId>, statusCode = 404) => {
-      if (condition) {
+    notFound: (ctx: Transaction.TransactionId & Partial<Account.AccountId> & {transaction: Transaction.Document}, statusCode = 404) => {
+      if (ctx.transactionId && !ctx.transaction) {
         log('No transaction found', ctx);
         throw httpError(statusCode, 'No transaction found');
       }
     },
-    multipleNotFound: (condition: boolean, ctx: { transactionIds: Transaction.Id[] }, statusCode = 400) => {
-      if (condition) {
+    multipleNotFound: (ctx: { transactionIds: Transaction.Id[]; transactions: Transaction.Document[] }, statusCode = 400) => {
+      if (ctx.transactionIds.length !== ctx.transactions.length) {
         log('Some of the transactions are not found', ctx);
         throw httpError(statusCode, 'Some of the transactions are not found');
       }
@@ -65,16 +65,10 @@ export const httpErrors = {
       log('Delete transaction', ctx, error);
       throw httpError(statusCode, 'Error while deleting transaction');
     },
-    sumOfSplits: (condition: boolean, ctx: Transaction.SplitRequest, statusCode = 400) => {
-      if(condition) {
+    sumOfSplits: (ctx: {body: Transaction.SplitRequest; total: number;}, statusCode = 400) => {
+      if(ctx.body.amount !== ctx.total) {
         log('Sum of splits must equal to total amount', ctx);
         throw httpError(statusCode, 'Sum of splits must equal to total amount');
-      }
-    },
-    sumOfPayments: (condition: boolean, ctx: Transaction.TransferRequest, statusCode = 400) => {
-      if(condition) {
-        log('Sum of payments must be less than total amount', ctx);
-        throw httpError(statusCode, 'Sum of payments must be less than total amount');
       }
     },
     sameAccountTransfer: (ctx: Account.AccountId & Transaction.TransferAccountId, statusCode = 400) => {
@@ -118,8 +112,8 @@ export const httpErrors = {
       log('List projects', undefined, error);
       throw httpError(statusCode, 'Error while listing projects');
     },
-    notFound: (condition: boolean, ctx: Project.ProjectId, statusCode = 404) => {
-      if (condition) {
+    notFound: (ctx: Project.ProjectId & {project: Project.Document}, statusCode = 404) => {
+      if (ctx.projectId && !ctx.project) {
         log('No project found', ctx);
         throw httpError(statusCode, 'No project found');
       }
@@ -128,8 +122,8 @@ export const httpErrors = {
       log('Delete project', ctx, error);
       throw httpError(statusCode, 'Error while deleting project');
     },
-    multipleNotFound: (condition: boolean, ctx: { projectIds: Project.Id[] }, statusCode = 400) => {
-      if (condition) {
+    multipleNotFound: (ctx: { projectIds: Project.Id[]; projects: Project.Document[] }, statusCode = 400) => {
+      if (ctx.projectIds.length !== ctx.projects.length) {
         log('Some of the projects are not found', ctx);
         throw httpError(statusCode, 'Some of the projects are not found');
       }
@@ -143,8 +137,8 @@ export const httpErrors = {
       log('Update project', ctx, error);
       throw httpError(statusCode, 'Error while updating project');
     },
-    mergeTargetAmongSource: (condition: boolean, ctx: Project.ProjectId & {source: Project.Id[]}, statusCode = 400) => {
-      if (condition) {
+    mergeTargetAmongSource: (ctx: {target: Project.Id; source: Project.Id[]}, statusCode = 400) => {
+      if (ctx.source.includes(ctx.target)) {
         log('Target project is among the source project Ids', ctx);
         throw httpError(statusCode, 'Target project is among the source project Ids');
       }
@@ -175,8 +169,8 @@ export const httpErrors = {
       log('List accounts', undefined, error);
       throw httpError(statusCode, 'Error while listing accounts');
     },
-    notFound: (condition: boolean, ctx: Account.AccountId, statusCode = 404) => {
-      if (condition) {
+    notFound: (ctx: Account.AccountId & {account: Account.Document}, statusCode = 404) => {
+      if (ctx.accountId && !ctx.account) {
         log('No account found', ctx);
         throw httpError(statusCode, 'No account found');
       }
@@ -194,8 +188,8 @@ export const httpErrors = {
       log('Delete account', ctx, error);
       throw httpError(statusCode, 'Error while deleting account');
     },
-    multipleNotFound: (condition: boolean, ctx: { accountIds: Account.Id[] }, statusCode = 400) => {
-      if (condition) {
+    multipleNotFound: (ctx: { accountIds: Account.Id[]; accounts: Account.Document[] }, statusCode = 400) => {
+      if (ctx.accountIds.length !== ctx.accounts.length) {
         log('Some of the accounts are not found', ctx);
         throw httpError(statusCode, 'Some of the accounts are not found');
       }
@@ -236,8 +230,8 @@ export const httpErrors = {
       log('List categories by ids', ctx, error);
       throw httpError(statusCode, 'Error while listing categories by ids');
     },
-    notFound: (condition: boolean, ctx: Category.CategoryId | { productIds: Product.Id[] }, statusCode = 404) => {
-      if (condition) {
+    notFound: (ctx: Category.CategoryId & { category: Category.Document }, statusCode = 404) => {
+      if (ctx.categoryId && !ctx.category) {
         log('No category found', ctx);
         throw httpError(statusCode, 'No category found');
       }
@@ -259,14 +253,14 @@ export const httpErrors = {
         throw httpError(statusCode, 'All categories must be of same type');
       }
     },
-    multipleNotFound: (condition: boolean, ctx: { categoryIds: Category.Id[] }, statusCode = 400) => {
-      if (condition) {
+    multipleNotFound: (ctx: { categoryIds: Category.Id[]; categories: Category.Document[] }, statusCode = 400) => {
+      if (ctx.categories.length !== ctx.categoryIds.length) {
         log('Some of the categories are not found', ctx);
         throw httpError(statusCode, 'Some of the categories are not found');
       }
     },
-    parentNotFound: (condition: boolean, ctx: Category.ParentCategoryId, statusCode = 400) => {
-      if (condition) {
+    parentNotFound: (ctx: Category.ParentCategoryId & {parentCategory: Category.Document}, statusCode = 400) => {
+      if (ctx.parentCategoryId && !ctx.parentCategory) {
         log('Parent category not found', ctx);
         throw httpError(statusCode, 'Parent category not found');
       }
@@ -289,8 +283,8 @@ export const httpErrors = {
       log('Update category', ctx, error);
       throw httpError(statusCode, 'Error while updating category');
     },
-    mergeTargetAmongSource: (ctx: Category.CategoryId & {source: Category.Id[]}, statusCode = 400) => {
-      if (ctx.source.includes(ctx.categoryId)) {
+    mergeTargetAmongSource: (ctx: {target: Category.Id; source: Category.Id[]}, statusCode = 400) => {
+      if (ctx.source.includes(ctx.target)) {
         log('Target category is among the source category Ids', ctx);
         throw httpError(statusCode, 'Target category is among the source category Ids');
       }
@@ -335,14 +329,14 @@ export const httpErrors = {
       log('List recipients by ids', ctx, error);
       throw httpError(statusCode, 'Error while listing recipients by ids');
     },
-    notFound: (condition: boolean, ctx: Recipient.RecipientId, statusCode = 404) => {
-      if (condition) {
+    notFound: (ctx: Recipient.RecipientId & {recipient: Recipient.Document}, statusCode = 404) => {
+      if (ctx.recipientId && !ctx.recipient) {
         log('No recipient found', ctx);
         throw httpError(statusCode, 'No recipient found');
       }
     },
-    multipleNotFound: (condition: boolean, ctx: { recipientIds: Recipient.Id[] }, statusCode = 400) => {
-      if (condition) {
+    multipleNotFound: (ctx: { recipientIds: Recipient.Id[]; recipients: Recipient.Document[] }, statusCode = 400) => {
+      if (ctx.recipientIds.length !== ctx.recipients.length) {
         log('Some of the recipients are not found', ctx);
         throw httpError(statusCode, 'Some of the recipients are not found');
       }
@@ -360,8 +354,8 @@ export const httpErrors = {
       log('Update recipient', ctx, error);
       throw httpError(statusCode, 'Error while updating recipient');
     },
-    mergeTargetAmongSource: (condition: boolean, ctx: Recipient.RecipientId & {source: Recipient.Id[]}, statusCode = 400) => {
-      if (condition) {
+    mergeTargetAmongSource: (ctx: {target: Recipient.Id; source: Recipient.Id[]}, statusCode = 400) => {
+      if (ctx.source.includes(ctx.target)) {
         log('Target recipient is among the source recipient Ids', ctx);
         throw httpError(statusCode, 'Target recipient is among the source recipient Ids');
       }
@@ -396,14 +390,14 @@ export const httpErrors = {
       log('List products by ids', ctx, error);
       throw httpError(statusCode, 'Error while listing products by ids');
     },
-    notFound: (condition: boolean, ctx: Product.ProductId, statusCode = 404) => {
-      if (condition) {
+    notFound: (ctx: Product.ProductId & {product: Product.Document}, statusCode = 404) => {
+      if (ctx.productId && !ctx.product) {
         log('No product found', ctx);
         throw httpError(statusCode, 'No product found');
       }
     },
-    multipleNotFound: (condition: boolean, ctx: { productIds: Product.Id[] }, statusCode = 400) => {
-      if (condition) {
+    multipleNotFound: (ctx: { productIds: Product.Id[]; products: Product.Document[] }, statusCode = 400) => {
+      if (ctx.productIds.length !== ctx.products.length) {
         log('Some of the products are not found', ctx);
         throw httpError(statusCode, 'Some of the products are not found');
       }
@@ -412,8 +406,8 @@ export const httpErrors = {
       log('Delete product', ctx, error);
       throw httpError(statusCode, 'Error while deleting product');
     },
-    categoryRelation: (condition: boolean, ctx: Category.CategoryId & Product.ProductId, statusCode = 400) => {
-      if (condition) {
+    categoryRelation: (ctx: Category.CategoryId & {product: Product.Document}, statusCode = 400) => {
+      if (getCategoryId(ctx.product.category) !== ctx.categoryId) {
         log('Product belongs to different category', ctx);
         throw httpError(statusCode, 'Product belongs to different category');
       }
@@ -427,8 +421,8 @@ export const httpErrors = {
       log('Update product', ctx, error);
       throw httpError(statusCode, 'Error while updating product');
     },
-    mergeTargetAmongSource: (condition: boolean, ctx: Product.ProductId & {source: Product.Id[]}, statusCode = 400) => {
-      if (condition) {
+    mergeTargetAmongSource: (ctx: {target: Product.Id; source: Product.Id[]}, statusCode = 400) => {
+      if (ctx.source.includes(ctx.target)) {
         log('Target product is among the source product Ids', ctx);
         throw httpError(statusCode, 'Target product is among the source product Ids');
       }

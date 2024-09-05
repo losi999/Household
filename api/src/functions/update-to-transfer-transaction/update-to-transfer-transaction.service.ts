@@ -28,11 +28,12 @@ export const updateToTransferTransactionServiceFactory = (
       transferAccountId,
     });
 
-    const document = await transactionService.getTransactionById(transactionId).catch(httpErrors.transaction.getById({
+    const queriedDocument = await transactionService.getTransactionById(transactionId).catch(httpErrors.transaction.getById({
       transactionId,
     }));
 
-    httpErrors.transaction.notFound(!document, {
+    httpErrors.transaction.notFound({
+      transaction: queriedDocument,
       transactionId,
     });
 
@@ -47,12 +48,14 @@ export const updateToTransferTransactionServiceFactory = (
     const account = accounts.find(a => getAccountId(a) === accountId);
     const transferAccount = accounts.find(a => getAccountId(a) === transferAccountId);
 
-    httpErrors.account.notFound(!account, {
+    httpErrors.account.notFound({
+      account,
       accountId,
     }, 400);
 
-    httpErrors.account.notFound(!transferAccount, {
+    httpErrors.account.notFound({
       accountId: transferAccountId,
+      account: transferAccount,
     }, 400);
 
     if (account.accountType === 'loan' || transferAccount.accountType === 'loan') {
@@ -89,8 +92,9 @@ export const updateToTransferTransactionServiceFactory = (
           deferredTransactionIds,
         }));
 
-        httpErrors.transaction.multipleNotFound(deferredTransactionIds.length !== transactionList.length, {
+        httpErrors.transaction.multipleNotFound({
           transactionIds: deferredTransactionIds,
+          transactions: transactionList,
         });
         const transactions = toDictionary(transactionList, '_id');
 
