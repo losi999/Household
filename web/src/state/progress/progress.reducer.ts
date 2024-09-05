@@ -8,7 +8,7 @@ import { recipientApiActions } from '@household/web/state/recipient/recipient.ac
 export type ProgressState = {
   counter: number;
   projectsToRemove: Project.Id[];
-  categoriesToRemove: Category.Id[];
+  inProgressCategories: Category.Id[];
   recipientsToRemove: Recipient.Id[];
 };
 
@@ -16,7 +16,7 @@ export const progressReducer = createReducer<ProgressState>({
   counter: 0,
   projectsToRemove: [],
   recipientsToRemove: [],
-  categoriesToRemove: [],
+  inProgressCategories: [],
 },
 on(progressActions.processStarted, (_state) => {
   return {
@@ -92,34 +92,52 @@ on(recipientApiActions.mergeRecipientsCompleted, recipientApiActions.mergeRecipi
   };
 }),
 
-on(categoryApiActions.deleteCategoryInitiated, (_state, { categoryId }) => {
+on(categoryApiActions.updateCategoryInitiated, (_state, { categoryId }) => {
+
   return {
     ..._state,
-    categoriesToRemove: [
-      ..._state.categoriesToRemove,
+    inProgressCategories: [
+      ..._state.inProgressCategories,
       categoryId,
     ],
   };
 }),
-on(categoryApiActions.deleteCategoryCompleted, categoryApiActions.deleteCategoryFailed, (_state, { categoryId }) => {
+
+on(categoryApiActions.deleteCategoryInitiated, (_state, { categoryId }) => {
   return {
     ..._state,
-    categoriesToRemove: _state.categoriesToRemove.filter(p => p !== categoryId),
+    inProgressCategories: [
+      ..._state.inProgressCategories,
+      categoryId,
+    ],
+  };
+}),
+on(categoryApiActions.deleteCategoryFailed, (_state, { categoryId }) => {
+  return {
+    ..._state,
+    inProgressCategories: _state.inProgressCategories.filter(p => p !== categoryId),
   };
 }),
 on(categoryApiActions.mergeCategoriesInitiated, (_state, { sourceCategoryIds }) => {
   return {
     ..._state,
-    categoriesToRemove: [
-      ..._state.categoriesToRemove,
+    inProgressCategories: [
+      ..._state.inProgressCategories,
       ...sourceCategoryIds,
     ],
   };
 }),
-on(categoryApiActions.mergeCategoriesCompleted, categoryApiActions.mergeCategoriesFailed, (_state, { sourceCategoryIds }) => {
+on(categoryApiActions.mergeCategoriesFailed, (_state, { sourceCategoryIds }) => {
   return {
     ..._state,
-    categoriesToRemove: _state.categoriesToRemove.filter(p => !sourceCategoryIds.includes(p)),
+    inProgressCategories: _state.inProgressCategories.filter(p => !sourceCategoryIds.includes(p)),
+  };
+}),
+
+on(categoryApiActions.listCategoriesCompleted, (_state) => {
+  return {
+    ..._state,
+    inProgressCategories: [],
   };
 }),
 );

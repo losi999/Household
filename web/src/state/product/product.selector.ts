@@ -5,5 +5,6 @@ import { selectInventoryCategories } from '@household/web/state/category/categor
 export const selectProducts = createFeatureSelector<Product.Response[]>('products');
 
 export const selectProductsOfCategory = (categoryId: Category.Id) => createSelector(selectInventoryCategories, (categories) => {
-  return categories.find(c => c.categoryId === categoryId).products;
+  return [];
+  // return categories.find(c => c.categoryId === categoryId).products;
 });

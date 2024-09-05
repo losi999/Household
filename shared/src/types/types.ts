@@ -37,7 +37,9 @@ export namespace Project {
   & Base;
 
   export type Response = Base
-  & ProjectId
+  & ProjectId;
+
+  export type ConvertedResponse = Response
   & Remove<Internal.Id>
   & Remove<Internal.Timestamps>;
 
@@ -175,19 +177,17 @@ export namespace Category {
   export type Report = CategoryId
   & FullName;
 
-  export type ResponseBase = CategoryType
+  export type ResponseAncestor = CategoryType
   & Name
-  & CategoryId
-  & Remove<Internal.Id>
-  & Remove<Internal.Timestamps>
-  & {
-    ancestors: undefined;
-  };
+  & CategoryId;
 
-  export type Response = Omit<ResponseBase, 'ancestors'>
+  export type ResponseParent = ResponseAncestor & FullName;
+
+  export type Response = ResponseAncestor
   & FullName
   & {
-    ancestors: ResponseBase[];
+    ancestors: ResponseAncestor[];
+    parentCategory: ResponseParent;
   };
 
   export type Request = CategoryType

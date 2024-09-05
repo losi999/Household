@@ -19,15 +19,12 @@ export interface ICategoryDocumentConverter {
 }
 
 export const categoryDocumentConverterFactory = (): ICategoryDocumentConverter => {
-  const toResponseBase = (doc: Category.Document): Category.ResponseBase => {
+  const toResponseBase = (doc: Category.Document): Category.ResponseAncestor => {
+    const { categoryType, name } = doc;
     return {
-      ...doc,
+      categoryType,
+      name,
       categoryId: getCategoryId(doc),
-      createdAt: undefined,
-      updatedAt: undefined,
-      _id: undefined,
-      expiresAt: undefined,
-      ancestors: undefined,
     };
   };
 
@@ -59,13 +56,15 @@ export const categoryDocumentConverterFactory = (): ICategoryDocumentConverter =
       return update;
     },
     toResponse: (doc): Category.Response => {
+      const parentFullName = doc.ancestors.map(d => d.name).join(':');
       return {
         ...toResponseBase(doc),
         ancestors: doc.ancestors.map(d => toResponseBase(d)),
-        fullName: [
-          ...doc.ancestors.map(d => d.name),
-          doc.name,
-        ].join(':'),
+        fullName: parentFullName ? `${parentFullName}:${doc.name}` : doc.name,
+        parentCategory: parentFullName ? {
+          ...toResponseBase(doc.ancestors.at(-1)),
+          fullName: parentFullName,
+        } : undefined,
       };
     },
     toReport: (doc): Category.Report => {

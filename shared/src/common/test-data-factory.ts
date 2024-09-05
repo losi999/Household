@@ -467,7 +467,7 @@ export const createAccountResponse: DataFactoryFunction<Account.Response> = (res
   };
 };
 
-export const createProjectResponse: DataFactoryFunction<Project.Response> = (resp) => {
+export const createProjectResponse: DataFactoryFunction<Project.ConvertedResponse> = (resp) => {
   return {
     projectId: createProjectId(),
     name: 'project name',
@@ -479,7 +479,7 @@ export const createProjectResponse: DataFactoryFunction<Project.Response> = (res
     ...resp,
   };
 };
-export const createCategoryResponseBase: DataFactoryFunction<Category.ResponseBase> = (resp) => {
+export const createCategoryResponseBase: DataFactoryFunction<Category.ResponseAncestor> = (resp) => {
   return {
     categoryId: createCategoryId(),
     name: 'category name',
@@ -497,14 +497,9 @@ export const createCategoryResponse: DataFactoryFunction<Category.Response> = (r
   return {
     categoryId: createCategoryId(),
     name: 'category name',
-    expiresAt: undefined,
-    createdAt: undefined,
-    updatedAt: undefined,
-    _id: undefined,
     parentCategory: undefined,
     fullName: 'category name',
     categoryType: 'regular',
-    parentCategoryId: undefined,
     ancestors: [],
     ...resp,
   };

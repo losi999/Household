@@ -22,8 +22,12 @@ export const selectRecipientIsInProgress = (recipientId: Recipient.Id) => create
   },
 );
 
-export const selectCategoryIsInProgress = (categoryId: Category.Id) => createSelector(
-  selectProgress, ({ categoriesToRemove }) => {
-    return categoriesToRemove.includes(categoryId);
+export const selectCategoryIsInProgress = (category: Category.Response) => createSelector(
+  selectProgress, ({ inProgressCategories }) => {
+    const categoryIds = [
+      ...category.ancestors.map(a => a.categoryId),
+      category.categoryId,
+    ];
+    return categoryIds.some(id => inProgressCategories.includes(id));
   },
 );

@@ -86,7 +86,6 @@ export class CategoryEffects {
             }),
           );
         }));
-
       }),
     );
   });
@@ -96,12 +95,7 @@ export class CategoryEffects {
       ofType(categoryApiActions.deleteCategoryInitiated),
       mergeMap(({ categoryId }) => {
         return this.categoryService.deleteCategory(categoryId).pipe(
-          mergeMap(() => [
-            categoryApiActions.deleteCategoryCompleted({
-              categoryId,
-            }),
-            categoryApiActions.listCategoriesInitiated(),
-          ]),
+          map(() => categoryApiActions.listCategoriesInitiated()),
           catchError(() => {
             return of(categoryApiActions.deleteCategoryFailed({
               categoryId,
@@ -121,9 +115,7 @@ export class CategoryEffects {
       ofType(categoryApiActions.mergeCategoriesInitiated),
       exhaustMap(({ sourceCategoryIds, targetCategoryId }) => {
         return this.categoryService.mergeCategories(targetCategoryId, sourceCategoryIds).pipe(
-          map(() => categoryApiActions.mergeCategoriesCompleted({
-            sourceCategoryIds,
-          })),
+          map(() => categoryApiActions.listCategoriesInitiated()),
           catchError(() => {
             return of(categoryApiActions.mergeCategoriesFailed({
               sourceCategoryIds,

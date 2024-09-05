@@ -4,7 +4,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Category } from '@household/shared/types/types';
 import { Store } from '@ngrx/store';
 import { categoryApiActions } from '@household/web/state/category/category.actions';
-import { selectCategories } from '@household/web/state/category/category.selector';
+import { selectCategoriesAsParent, selectCategories } from '@household/web/state/category/category.selector';
 
 export type CategoryFormData = Category.Response;
 
@@ -17,9 +17,9 @@ export class CategoryFormComponent implements OnInit {
   form: FormGroup<{
     name: FormControl<string>;
     categoryType: FormControl<Category.CategoryType['categoryType']>;
-    parentCategory: FormControl<Category.ResponseBase>
+    parentCategory: FormControl<Category.ResponseParent>
   }>;
-  categories = this.store.select(selectCategories);
+  categories = this.store.select(selectCategoriesAsParent(this.category?.categoryId));
 
   constructor(private dialogRef: MatDialogRef<CategoryFormComponent, void>,
     private store: Store,

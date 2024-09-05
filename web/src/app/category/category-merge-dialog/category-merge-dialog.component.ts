@@ -3,9 +3,8 @@ import { FormGroup, FormControl } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Category } from '@household/shared/types/types';
 import { Store } from '@ngrx/store';
-import { map } from 'rxjs';
 import { categoryApiActions } from '@household/web/state/category/category.actions';
-import { selectCategories } from '@household/web/state/category/category.selector';
+import { selectMergableCategories } from '@household/web/state/category/category.selector';
 
 export type CategoryMergeDialogData = Category.Id;
 
@@ -23,7 +22,7 @@ export class CategoryMergeDialogComponent implements OnInit {
     private store: Store,
     @Inject(MAT_DIALOG_DATA) public targetCategoryId: CategoryMergeDialogData) { }
 
-  categories = this.store.select(selectCategories).pipe(map(categories => categories.filter(c => c.categoryId !== this.targetCategoryId)));
+  categories = this.store.select(selectMergableCategories(this.targetCategoryId));
 
   ngOnInit(): void {
     this.form = new FormGroup({

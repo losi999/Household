@@ -6,7 +6,7 @@ import { UpdateQuery } from 'mongoose';
 export interface IProjectDocumentConverter {
   create(body: Project.Request, expiresIn: number, generateId?: boolean): Project.Document;
   update(body: Project.Request, expiresIn: number): UpdateQuery<Project.Document>;
-  toResponse(doc: Project.Document): Project.Response;
+  toResponse(doc: Project.Document): Project.ConvertedResponse;
   toReport(doc: Project.Document): Project.Report;
   toResponseList(docs: Project.Document[]): Project.Response[];
 }
@@ -36,7 +36,7 @@ export const projectDocumentConverterFactory = (): IProjectDocumentConverter => 
 
       return update;
     },
-    toResponse: (doc): Project.Response => {
+    toResponse: (doc): Project.ConvertedResponse => {
       return {
         ...doc,
         createdAt: undefined,

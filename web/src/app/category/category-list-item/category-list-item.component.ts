@@ -23,7 +23,7 @@ export class CategoryListItemComponent implements OnInit {
   isDisabled: Observable<boolean>;
 
   ngOnInit(): void {
-    this.isDisabled = this.store.select(selectCategoryIsInProgress(this.category.categoryId));
+    this.isDisabled = this.store.select(selectCategoryIsInProgress(this.category));
   }
 
   delete() {
