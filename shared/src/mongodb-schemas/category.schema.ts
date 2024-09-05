@@ -13,15 +13,14 @@ export const categorySchema = new Schema<Category.Document>({
     required: true,
     enum: categoryTypes,
   },
-  fullName: {
-    type: String,
-    required: true,
-    minlength: 1,
-    unique: true,
-  },
-  parentCategory: {
-    type: Schema.Types.ObjectId,
-    ref: 'categories',
+  ancestors: {
+    type: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'categories',
+      },
+    ],
+    default: [],
   },
   expiresAt: {
     type: Schema.Types.Date,
@@ -35,4 +34,11 @@ export const categorySchema = new Schema<Category.Document>({
     createdAt: true,
     updatedAt: true,
   },
+});
+
+categorySchema.index({
+  name: 1,
+  ancestors: 1,
+}, {
+  unique: true,
 });

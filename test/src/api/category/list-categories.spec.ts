@@ -1,12 +1,10 @@
 import { default as schema } from '@household/test/api/schemas/category-response-list';
-import { Category, Product } from '@household/shared/types/types';
+import { Category } from '@household/shared/types/types';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
-import { productDataFactory } from '@household/test/api/product/data-factory';
 
 describe('GET /category/v1/categories', () => {
   let categoryDocument1: Category.Document;
   let categoryDocument2: Category.Document;
-  let productDocument: Product.Document;
 
   beforeEach(() => {
     categoryDocument1 = categoryDataFactory.document({
@@ -16,10 +14,6 @@ describe('GET /category/v1/categories', () => {
     });
 
     categoryDocument2 = categoryDataFactory.document();
-
-    productDocument = productDataFactory.document({
-      category: categoryDocument1,
-    });
   });
 
   describe('called as anonymous', () => {
@@ -34,7 +28,6 @@ describe('GET /category/v1/categories', () => {
     it('should get a list of categories', () => {
       cy.saveCategoryDocument(categoryDocument1)
         .saveCategoryDocument(categoryDocument2)
-        .saveProductDocument(productDocument)
         .authenticate(1)
         .requestGetCategoryList()
         .expectOkResponse()
@@ -42,7 +35,7 @@ describe('GET /category/v1/categories', () => {
         .validateCategoryListResponse([
           categoryDocument1,
           categoryDocument2,
-        ], [productDocument]);
+        ]);
     });
   });
 });

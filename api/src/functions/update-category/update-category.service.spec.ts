@@ -45,7 +45,7 @@ describe('Update category service', () => {
         body: cleanedBody,
         parentCategory: queriedParentCategory,
       }, undefined);
-      validateFunctionCall(mockCategoryService.functions.updateCategory, categoryId, updateQuery, queriedDocument.fullName);
+      validateFunctionCall(mockCategoryService.functions.updateCategory, categoryId, updateQuery);
       expect.assertions(4);
     });
 
@@ -70,7 +70,7 @@ describe('Update category service', () => {
         body: cleanedBody,
         parentCategory: undefined,
       }, undefined);
-      validateFunctionCall(mockCategoryService.functions.updateCategory, categoryId, updateQuery, queriedDocument.fullName);
+      validateFunctionCall(mockCategoryService.functions.updateCategory, categoryId, updateQuery);
       expect.assertions(4);
     });
   });
@@ -158,7 +158,7 @@ describe('Update category service', () => {
         body: cleanedBody,
         parentCategory: queriedParentCategory,
       }, undefined);
-      validateFunctionCall(mockCategoryService.functions.updateCategory, categoryId, updateQuery, queriedDocument.fullName);
+      validateFunctionCall(mockCategoryService.functions.updateCategory, categoryId, updateQuery);
       expect.assertions(6);
     });
   });

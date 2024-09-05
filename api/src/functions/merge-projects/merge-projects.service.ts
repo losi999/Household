@@ -12,8 +12,8 @@ export const mergeProjectsServiceFactory = (
   projectService: IProjectService,
 ): IMergeProjectsService => {
   return async ({ body, projectId }) => {
-    httpErrors.project.mergeTargetAmongSource(body.includes(projectId), {
-      projectId,
+    httpErrors.project.mergeTargetAmongSource({
+      target: projectId,
       source: body,
     });
 
@@ -24,7 +24,8 @@ export const mergeProjectsServiceFactory = (
 
     const projects = await projectService.listProjectsByIds(projectIds).catch(httpErrors.project.listByIds(projectIds));
 
-    httpErrors.project.multipleNotFound(projects.length !== projectIds.length, {
+    httpErrors.project.multipleNotFound({
+      projects,
       projectIds,
     });
 

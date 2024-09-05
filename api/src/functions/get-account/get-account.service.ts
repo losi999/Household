@@ -14,14 +14,15 @@ export const getAccountServiceFactory = (
   accountDocumentConverter: IAccountDocumentConverter): IGetAccountService => {
   return async ({ accountId }) => {
 
-    const document = await accountService.getAccountById(accountId).catch(httpErrors.account.getById({
+    const account = await accountService.getAccountById(accountId).catch(httpErrors.account.getById({
       accountId,
     }));
 
-    httpErrors.account.notFound(!document, {
+    httpErrors.account.notFound({
+      account,
       accountId,
     });
 
-    return accountDocumentConverter.toResponse(document);
+    return accountDocumentConverter.toResponse(account);
   };
 };

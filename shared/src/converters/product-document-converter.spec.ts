@@ -1,15 +1,20 @@
-import { createCategoryDocument, createDocumentUpdate, createProductDocument, createProductReport, createProductRequest, createProductResponse } from '@household/shared/common/test-data-factory';
+import { createCategoryDocument, createCategoryResponse, createDocumentUpdate, createProductDocument, createProductGroupedResponse, createProductReport, createProductRequest, createProductResponse } from '@household/shared/common/test-data-factory';
+import { createMockService, Mock } from '@household/shared/common/unit-testing';
 import { addSeconds, getProductId } from '@household/shared/common/utils';
+import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
 import { productDocumentConverterFactory, IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
 import { advanceTo, clear } from 'jest-date-mock';
 
 describe('Product document converter', () => {
   let converter: IProductDocumentConverter;
+  let mockCategoryDocumentConverter: Mock<ICategoryDocumentConverter>;
   const now = new Date();
 
   beforeEach(() => {
+    mockCategoryDocumentConverter = createMockService('toResponse');
+
     advanceTo(now);
-    converter = productDocumentConverterFactory();
+    converter = productDocumentConverterFactory(mockCategoryDocumentConverter.service);
   });
 
   afterEach(() => {
@@ -78,6 +83,64 @@ describe('Product document converter', () => {
           expiresAt: addSeconds(expiresIn, now),
         },
       }));
+    });
+  });
+
+  describe('toGroupedResponse', () => {
+    it('should return response', () => {
+      const categoryDocument = createCategoryDocument({
+        products: [queriedDocument],
+      });
+
+      const categoryResponse = createCategoryResponse({
+        fullName: 'category:full:name',
+      });
+
+      mockCategoryDocumentConverter.functions.toResponse.mockReturnValue(categoryResponse);
+
+      const result = converter.toGroupedResponse(categoryDocument);
+      expect(result).toEqual(
+        createProductGroupedResponse({
+          fullName: categoryResponse.fullName,
+          products: [
+            createProductResponse({
+              productId: getProductId(queriedDocument),
+              unitOfMeasurement,
+              brand,
+              measurement,
+            }),
+          ],
+        }),
+      );
+    });
+  });
+
+  describe('toGroupedResponseList', () => {
+    it('should return response', () => {
+      const categoryDocument = createCategoryDocument({
+        products: [queriedDocument],
+      });
+
+      const categoryResponse = createCategoryResponse({
+        fullName: 'category:full:name',
+      });
+
+      mockCategoryDocumentConverter.functions.toResponse.mockReturnValue(categoryResponse);
+
+      const result = converter.toGroupedResponseList([categoryDocument ]);
+      expect(result).toEqual([
+        createProductGroupedResponse({
+          fullName: categoryResponse.fullName,
+          products: [
+            createProductResponse({
+              productId: getProductId(queriedDocument),
+              unitOfMeasurement,
+              brand,
+              measurement,
+            }),
+          ],
+        }),
+      ]);
     });
   });
 

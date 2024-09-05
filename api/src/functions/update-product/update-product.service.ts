@@ -20,7 +20,8 @@ export const updateProductServiceFactory = (
       productId,
     }));
 
-    httpErrors.product.notFound(!queried, {
+    httpErrors.product.notFound({
+      product: queried,
       productId,
     });
 

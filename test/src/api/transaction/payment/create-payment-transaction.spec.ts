@@ -1,35 +1,27 @@
-
-import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
+import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId } from '@household/shared/common/utils';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { productDataFactory } from '@household/test/api/product/data-factory';
 import { projectDataFactory } from '@household/test/api/project/data-factory';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
-import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred-data-factory';
-import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer-data-factory';
+import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 
-describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', () => {
+describe('POST transaction/v1/transactions/payment (payment)', () => {
   let request: Transaction.PaymentRequest;
-  let originalDocument: Transaction.TransferDocument;
-
   let projectDocument: Project.Document;
   let recipientDocument: Recipient.Document;
   let accountDocument: Account.Document;
-  let secondaryAccountDocument: Account.Document;
   let regularCategoryDocument: Category.Document;
   let invoiceCategoryDocument: Category.Document;
   let inventoryCategoryDocument: Category.Document;
   let productDocument: Product.Document;
-  let relatedDocumentIds: Pick<Transaction.PaymentRequest, 'accountId' | 'productId' | 'categoryId' | 'projectId' | 'recipientId' | 'loanAccountId'> ;
+  let relatedDocumentIds: Pick<Transaction.PaymentRequest, 'accountId' | 'productId' | 'categoryId' | 'projectId' | 'recipientId'> ;
 
   beforeEach(() => {
     projectDocument = projectDataFactory.document();
     recipientDocument = recipientDataFactory.document();
     accountDocument = accountDataFactory.document();
-    secondaryAccountDocument = accountDataFactory.document({
-      accountType: 'loan',
-    });
     regularCategoryDocument = categoryDataFactory.document({
       body: {
         categoryType: 'regular',
@@ -52,133 +44,108 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
       category: inventoryCategoryDocument,
     });
 
-    originalDocument = transferTransactionDataFactory.document({
-      account: accountDocument,
-      transferAccount: accountDocument,
-    });
-
     relatedDocumentIds = {
       accountId: getAccountId(accountDocument),
       categoryId: getCategoryId(regularCategoryDocument),
       projectId: getProjectId(projectDocument),
       productId: getProductId(productDocument),
       recipientId: getRecipientId(recipientDocument),
-      loanAccountId: getAccountId(secondaryAccountDocument),
     };
 
-    request = deferredTransactionDataFactory.request(relatedDocumentIds);
+    request = paymentTransactionDataFactory.request(relatedDocumentIds);
   });
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
       cy.unauthenticate()
-        .requestUpdateToPaymentTransaction(deferredTransactionDataFactory.id(), request)
+        .requestCreatePaymentTransaction(request)
         .expectUnauthorizedResponse();
     });
   });
 
   describe('called as an admin', () => {
-    describe('should update transaction', () => {
+    describe('should create transaction', () => {
       describe('with complete body', () => {
         it('using regular category', () => {
-          cy.saveTransactionDocument(originalDocument)
-            .saveAccountDocuments([
-              accountDocument,
-              secondaryAccountDocument,
-            ])
+          cy.saveAccountDocument(accountDocument)
             .saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request)
+            .requestCreatePaymentTransaction(request)
             .expectCreatedResponse()
-            .validateTransactionDeferredDocument(request);
+            .validateTransactionPaymentDocument(request);
         });
 
         it('using invoice category', () => {
-          request = deferredTransactionDataFactory.request({
+          request = paymentTransactionDataFactory.request({
             ...relatedDocumentIds,
             categoryId: getCategoryId(invoiceCategoryDocument),
           });
 
-          cy.saveTransactionDocument(originalDocument)
-            .saveAccountDocuments([
-              accountDocument,
-              secondaryAccountDocument,
-            ])
+          cy.saveAccountDocument(accountDocument)
             .saveCategoryDocument(invoiceCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request)
+            .requestCreatePaymentTransaction(request)
             .expectCreatedResponse()
-            .validateTransactionDeferredDocument(request);
+            .validateTransactionPaymentDocument(request);
         });
         it('using inventory category', () => {
-          request = deferredTransactionDataFactory.request({
+          request = paymentTransactionDataFactory.request({
             ...relatedDocumentIds,
             categoryId: getCategoryId(inventoryCategoryDocument),
           });
 
-          cy.saveTransactionDocument(originalDocument)
-            .saveAccountDocuments([
-              accountDocument,
-              secondaryAccountDocument,
-            ])
+          cy.saveAccountDocument(accountDocument)
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .saveProductDocument(productDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request)
+            .requestCreatePaymentTransaction(request)
             .expectCreatedResponse()
-            .validateTransactionDeferredDocument(request);
+            .validateTransactionPaymentDocument(request);
         });
       });
 
       describe('without optional properties', () => {
         it('description', () => {
-          request = deferredTransactionDataFactory.request({
+          request = paymentTransactionDataFactory.request({
             ...relatedDocumentIds,
             description: undefined,
           });
-          cy.saveTransactionDocument(originalDocument)
-            .saveAccountDocuments([
-              accountDocument,
-              secondaryAccountDocument,
-            ])
+
+          cy.saveAccountDocument(accountDocument)
             .saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request)
+            .requestCreatePaymentTransaction(request)
             .expectCreatedResponse()
-            .validateTransactionDeferredDocument(request);
+            .validateTransactionPaymentDocument(request);
         });
         it('inventory', () => {
-          request = deferredTransactionDataFactory.request({
+          request = paymentTransactionDataFactory.request({
             ...relatedDocumentIds,
             productId: undefined,
             quantity: undefined,
             categoryId: getCategoryId(inventoryCategoryDocument),
           });
 
-          cy.saveTransactionDocument(originalDocument)
-            .saveAccountDocuments([
-              accountDocument,
-              secondaryAccountDocument,
-            ])
+          cy.saveAccountDocument(accountDocument)
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request)
+            .requestCreatePaymentTransaction(request)
             .expectCreatedResponse()
-            .validateTransactionDeferredDocument(request);
+            .validateTransactionPaymentDocument(request);
         });
 
         it('invoice', () => {
-          request = deferredTransactionDataFactory.request({
+          request = paymentTransactionDataFactory.request({
             ...relatedDocumentIds,
             categoryId: getCategoryId(invoiceCategoryDocument),
             invoiceNumber: undefined,
@@ -186,120 +153,85 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
             billingStartDate: undefined,
           });
 
-          cy.saveTransactionDocument(originalDocument)
-            .saveAccountDocuments([
-              accountDocument,
-              secondaryAccountDocument,
-            ])
+          cy.saveAccountDocument(accountDocument)
             .saveCategoryDocument(invoiceCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request)
+            .requestCreatePaymentTransaction(request)
             .expectCreatedResponse()
-            .validateTransactionDeferredDocument(request);
+            .validateTransactionPaymentDocument(request);
         });
 
         it('invoice.invoiceNumber', () => {
-          request = deferredTransactionDataFactory.request({
+          request = paymentTransactionDataFactory.request({
             ...relatedDocumentIds,
             categoryId: getCategoryId(invoiceCategoryDocument),
             invoiceNumber: undefined,
           });
 
-          cy.saveTransactionDocument(originalDocument)
-            .saveAccountDocuments([
-              accountDocument,
-              secondaryAccountDocument,
-            ])
+          cy.saveAccountDocument(accountDocument)
             .saveCategoryDocument(invoiceCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request)
+            .requestCreatePaymentTransaction(request)
             .expectCreatedResponse()
-            .validateTransactionDeferredDocument(request);
+            .validateTransactionPaymentDocument(request);
         });
 
         it('categoryId', () => {
-          request = deferredTransactionDataFactory.request({
+          request = paymentTransactionDataFactory.request({
             ...relatedDocumentIds,
             categoryId: undefined,
           });
 
-          cy.saveTransactionDocument(originalDocument)
-            .saveAccountDocuments([
-              accountDocument,
-              secondaryAccountDocument,
-            ])
+          cy.saveAccountDocument(accountDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request)
+            .requestCreatePaymentTransaction(request)
             .expectCreatedResponse()
-            .validateTransactionDeferredDocument(request);
+            .validateTransactionPaymentDocument(request);
         });
 
         it('recipientId', () => {
-          request = deferredTransactionDataFactory.request({
+          request = paymentTransactionDataFactory.request({
             ...relatedDocumentIds,
             recipientId: undefined,
           });
 
-          cy.saveTransactionDocument(originalDocument)
-            .saveAccountDocuments([
-              accountDocument,
-              secondaryAccountDocument,
-            ])
+          cy.saveAccountDocument(accountDocument)
             .saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request)
+            .requestCreatePaymentTransaction(request)
             .expectCreatedResponse()
-            .validateTransactionDeferredDocument(request);
+            .validateTransactionPaymentDocument(request);
         });
 
         it('projectId', () => {
-          request = deferredTransactionDataFactory.request({
+          request = paymentTransactionDataFactory.request({
             ...relatedDocumentIds,
             projectId: undefined,
           });
 
-          cy.saveTransactionDocument(originalDocument)
-            .saveAccountDocuments([
-              accountDocument,
-              secondaryAccountDocument,
-            ])
+          cy.saveAccountDocument(accountDocument)
             .saveCategoryDocument(regularCategoryDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request)
+            .requestCreatePaymentTransaction(request)
             .expectCreatedResponse()
-            .validateTransactionDeferredDocument(request);
+            .validateTransactionPaymentDocument(request);
         });
       });
     });
 
     describe('should return error', () => {
-      describe('if transactionId', () => {
-        it('is not mongo id', () => {
-          cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(deferredTransactionDataFactory.id('not-valid'), request)
-            .expectBadRequestResponse()
-            .expectWrongPropertyPattern('transactionId', 'pathParameters');
-        });
-
-        it('does not belong to any transaction', () => {
-          cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(deferredTransactionDataFactory.id(), request)
-            .expectNotFoundResponse();
-        });
-      });
-
       describe('if body', () => {
         it('has additional properties', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               extra: 123,
             } as any))
             .expectBadRequestResponse()
@@ -310,7 +242,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
       describe('if amount', () => {
         it('is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               amount: undefined,
             }))
             .expectBadRequestResponse()
@@ -319,28 +251,18 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
 
         it('is not number', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               amount: '1',
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('amount', 'number', 'body');
-        });
-
-        it('is bigger than 0', () => {
-          cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
-              ...relatedDocumentIds,
-              amount: 1,
-            }))
-            .expectBadRequestResponse()
-            .expectTooLargeNumberProperty('amount', 0, true, 'body');
         });
       });
 
       describe('if description', () => {
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               description: 1,
             }))
             .expectBadRequestResponse()
@@ -349,7 +271,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
 
         it('is too short', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               description: '',
             }))
             .expectBadRequestResponse()
@@ -360,7 +282,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
       describe('if quantity', () => {
         it('is present and productId is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               productId: undefined,
               quantity: 1,
             }))
@@ -370,7 +292,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
 
         it('is not number', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               quantity: 'a',
             }))
             .expectBadRequestResponse()
@@ -379,7 +301,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
 
         it('is too small', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               quantity: 0,
             }))
             .expectBadRequestResponse()
@@ -390,7 +312,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
       describe('if productId', () => {
         it('is present and quantity is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               productId: productDataFactory.id(),
               quantity: undefined,
             }))
@@ -400,7 +322,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               productId: 1,
             }))
             .expectBadRequestResponse()
@@ -409,7 +331,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
 
         it('is not mongo id format', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               productId: productDataFactory.id('not-valid'),
             }))
             .expectBadRequestResponse()
@@ -417,16 +339,12 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
         });
 
         it('does not belong to any product', () => {
-          cy.saveTransactionDocument(originalDocument)
-            .saveAccountDocuments([
-              accountDocument,
-              secondaryAccountDocument,
-            ])
+          cy.saveAccountDocument(accountDocument)
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               ...relatedDocumentIds,
               categoryId: getCategoryId(inventoryCategoryDocument),
             }))
@@ -438,17 +356,16 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
       describe('if invoiceNumber', () => {
         it('is present and billingEndDate, billingStartDate are missing', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               billingEndDate: undefined,
               billingStartDate: undefined,
             }))
             .expectBadRequestResponse()
             .expectDependentRequiredProperty('invoiceNumber', 'body', 'billingEndDate', 'billingStartDate');
         });
-
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               invoiceNumber: 1,
             }))
             .expectBadRequestResponse()
@@ -457,7 +374,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
 
         it('is too short', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               invoiceNumber: '',
             }))
             .expectBadRequestResponse()
@@ -468,7 +385,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
       describe('if billingEndDate', () => {
         it('is present and billingStartDate is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               billingStartDate: undefined,
             }))
             .expectBadRequestResponse()
@@ -477,7 +394,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               billingEndDate: 1,
             }))
             .expectBadRequestResponse()
@@ -486,7 +403,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
 
         it('is not date format', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               billingEndDate: 'not-date',
             }))
             .expectBadRequestResponse()
@@ -495,7 +412,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
 
         it('is later than billingStartDate', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               billingEndDate: '2022-06-01',
               billingStartDate: '2022-06-03',
             }))
@@ -507,7 +424,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
       describe('if billingStartDate', () => {
         it('is present and billingEndDate is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               billingEndDate: undefined,
             }))
             .expectBadRequestResponse()
@@ -516,7 +433,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               billingStartDate: 1,
             }))
             .expectBadRequestResponse()
@@ -525,7 +442,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
 
         it('is not date format', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               billingStartDate: 'not-date',
             }))
             .expectBadRequestResponse()
@@ -536,7 +453,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
       describe('if issuedAt', () => {
         it('is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               issuedAt: undefined,
             }))
             .expectBadRequestResponse()
@@ -545,7 +462,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               issuedAt: 1,
             }))
             .expectBadRequestResponse()
@@ -554,7 +471,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
 
         it('is not date-time format', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               issuedAt: 'not-date-time',
             }))
             .expectBadRequestResponse()
@@ -563,13 +480,29 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
       });
 
       describe('if accountId', () => {
-        it('does not belong to any account', () => {
-          cy.saveTransactionDocument(originalDocument)
+        it('belongs to a loan type account', () => {
+          const loanAccountDocument = accountDataFactory.document({
+            accountType: 'loan',
+          });
+          cy.saveAccountDocument(loanAccountDocument)
             .saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
+              ...relatedDocumentIds,
+              accountId: getAccountId(loanAccountDocument),
+            }))
+            .expectBadRequestResponse()
+            .expectMessage('Account type cannot be loan');
+        });
+
+        it('does not belong to any account', () => {
+          cy.saveCategoryDocument(regularCategoryDocument)
+            .saveProjectDocument(projectDocument)
+            .saveRecipientDocument(recipientDocument)
+            .authenticate(1)
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               ...relatedDocumentIds,
               accountId: accountDataFactory.id(),
             }))
@@ -579,7 +512,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
 
         it('is missing', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               accountId: undefined,
             }))
             .expectBadRequestResponse()
@@ -588,7 +521,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               accountId: 1,
             }))
             .expectBadRequestResponse()
@@ -597,7 +530,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
 
         it('is not mongo id format', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               accountId: accountDataFactory.id('not-mongo-id'),
             }))
             .expectBadRequestResponse()
@@ -605,52 +538,13 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
         });
       });
 
-      describe('if loanAccountId', () => {
-        it('does not belong to any account', () => {
-          cy.saveTransactionDocument(originalDocument)
-            .saveAccountDocument(accountDocument)
-            .saveCategoryDocument(regularCategoryDocument)
-            .saveProjectDocument(projectDocument)
-            .saveRecipientDocument(recipientDocument)
-            .authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
-              ...relatedDocumentIds,
-              loanAccountId: accountDataFactory.id(),
-            }))
-            .expectBadRequestResponse()
-            .expectMessage('No account found');
-        });
-
-        it('is not string', () => {
-          cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
-              loanAccountId: 1,
-            }))
-            .expectBadRequestResponse()
-            .expectWrongPropertyType('loanAccountId', 'string', 'body');
-        });
-
-        it('is not mongo id format', () => {
-          cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
-              loanAccountId: accountDataFactory.id('not-mongo-id'),
-            }))
-            .expectBadRequestResponse()
-            .expectWrongPropertyPattern('loanAccountId', 'body');
-        });
-      });
-
       describe('if categoryId', () => {
         it('does not belong to any category', () => {
-          cy.saveTransactionDocument(originalDocument)
-            .saveAccountDocuments([
-              accountDocument,
-              secondaryAccountDocument,
-            ])
+          cy.saveAccountDocument(accountDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               ...relatedDocumentIds,
               categoryId: categoryDataFactory.id(),
             }))
@@ -660,7 +554,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               categoryId: 1,
             }))
             .expectBadRequestResponse()
@@ -669,7 +563,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
 
         it('is not mongo id format', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               categoryId: categoryDataFactory.id('not-mongo-id'),
             }))
             .expectBadRequestResponse()
@@ -679,15 +573,11 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
 
       describe('if recipientId', () => {
         it('does not belong to any recipient', () => {
-          cy.saveTransactionDocument(originalDocument)
-            .saveAccountDocuments([
-              accountDocument,
-              secondaryAccountDocument,
-            ])
+          cy.saveAccountDocument(accountDocument)
             .saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               ...relatedDocumentIds,
               recipientId: recipientDataFactory.id(),
             }))
@@ -697,7 +587,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               recipientId: 1,
             }))
             .expectBadRequestResponse()
@@ -706,7 +596,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
 
         it('is not mongo id format', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               recipientId: recipientDataFactory.id('not-mongo-id'),
             }))
             .expectBadRequestResponse()
@@ -716,15 +606,11 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
 
       describe('if projectId', () => {
         it('does not belong to any project', () => {
-          cy.saveTransactionDocument(originalDocument)
-            .saveAccountDocuments([
-              accountDocument,
-              secondaryAccountDocument,
-            ])
+          cy.saveAccountDocument(accountDocument)
             .saveCategoryDocument(regularCategoryDocument)
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               ...relatedDocumentIds,
               projectId: projectDataFactory.id(),
             }))
@@ -734,7 +620,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
 
         it('is not string', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               projectId: 1,
             }))
             .expectBadRequestResponse()
@@ -743,7 +629,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
 
         it('is not mongo id format', () => {
           cy.authenticate(1)
-            .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
+            .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
               projectId: projectDataFactory.id('not-mongo-id'),
             }))
             .expectBadRequestResponse()

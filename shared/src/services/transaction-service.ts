@@ -57,6 +57,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
             'payingAccount',
             'ownerAccount',
             'category',
+            'category.ancestors',
             'product',
             'splits.category',
             'splits.project',
@@ -110,7 +111,16 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
           ...populateAggregate('payingAccount', 'accounts'),
           ...populateAggregate('ownerAccount', 'accounts'),
           ...populateAggregate('transferAccount', 'accounts'),
-          ...populateAggregate('category', 'categories'),
+          ...populateAggregate('category', 'categories', [
+            {
+              $lookup: {
+                from: 'categories',
+                localField: 'ancestors',
+                foreignField: '_id',
+                as: 'ancestors',
+              },
+            },
+          ]),
           ...populateAggregate('project', 'projects'),
           ...populateAggregate('product', 'products'),
           ...populateAggregate('recipient', 'recipients'),
@@ -234,7 +244,16 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
             },
             match,
             ...populateAggregate('account', 'accounts'),
-            ...populateAggregate('category', 'categories'),
+            ...populateAggregate('category', 'categories', [
+              {
+                $lookup: {
+                  from: 'categories',
+                  localField: 'ancestors',
+                  foreignField: '_id',
+                  as: 'ancestors',
+                },
+              },
+            ]),
             ...populateAggregate('project', 'projects'),
             ...populateAggregate('product', 'products'),
             ...populateAggregate('recipient', 'recipients'),
@@ -348,7 +367,16 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
             },
             ...populateAggregate('payingAccount', 'accounts'),
             ...populateAggregate('ownerAccount', 'accounts'),
-            ...populateAggregate('category', 'categories'),
+            ...populateAggregate('category', 'categories', [
+              {
+                $lookup: {
+                  from: 'categories',
+                  localField: 'ancestors',
+                  foreignField: '_id',
+                  as: 'ancestors',
+                },
+              },
+            ]),
             ...populateAggregate('project', 'projects'),
             ...populateAggregate('product', 'products'),
             ...populateAggregate('recipient', 'recipients'),
@@ -428,7 +456,16 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
           ...populateAggregate('payingAccount', 'accounts'),
           ...populateAggregate('ownerAccount', 'accounts'),
           ...populateAggregate('transferAccount', 'accounts'),
-          ...populateAggregate('category', 'categories'),
+          ...populateAggregate('category', 'categories', [
+            {
+              $lookup: {
+                from: 'categories',
+                localField: 'ancestors',
+                foreignField: '_id',
+                as: 'ancestors',
+              },
+            },
+          ]),
           ...populateAggregate('project', 'projects'),
           ...populateAggregate('product', 'products'),
           ...populateAggregate('recipient', 'recipients'),

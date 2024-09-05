@@ -3,10 +3,10 @@ import { getRecipientId } from '@household/shared/common/utils';
 import { Account, Recipient, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
-import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred-data-factory';
-import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment-data-factory';
-import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement-data-factory';
-import { splitTransactionDataFactory } from '@household/test/api/transaction/split-data-factory';
+import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
+import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
+import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
+import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 
 describe('POST recipient/v1/recipients/{recipientId}/merge', () => {
   let accountDocument: Account.Document;

@@ -1,6 +1,6 @@
 import { getAccountId } from '@household/shared/common/utils';
 import { Account, Transaction } from '@household/shared/types/types';
-import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer-data-factory';
+import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
 import { loanTransferTransactionDocumentConverter } from '@household/shared/dependencies/converters/loan-transfer-transaction-document-converter';
 
 export const loanTransferTransactionDataFactory = (() => {

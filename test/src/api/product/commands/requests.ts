@@ -51,6 +51,17 @@ const requestMergeProducts = (idToken: string, productId: Product.Id, sourceProd
   }) as Cypress.ChainableResponse;
 };
 
+const requestGetProductList = (idToken: string) => {
+  return cy.request({
+    method: 'GET',
+    url: '/product/v1/products',
+    headers: {
+      Authorization: idToken,
+    },
+    failOnStatusCode: false,
+  }) as Cypress.ChainableResponse;
+};
+
 export const setProductRequestCommands = () => {
   Cypress.Commands.addAll<any>({
     prevSubject: true,
@@ -59,6 +70,7 @@ export const setProductRequestCommands = () => {
     requestUpdateProduct,
     requestDeleteProduct,
     requestMergeProducts,
+    requestGetProductList,
   });
 };
 
@@ -70,6 +82,7 @@ declare global {
       requestMergeProducts: CommandFunctionWithPreviousSubject<typeof requestMergeProducts>;
       requestUpdateProduct: CommandFunctionWithPreviousSubject<typeof requestUpdateProduct>;
       requestDeleteProduct: CommandFunctionWithPreviousSubject<typeof requestDeleteProduct>;
+      requestGetProductList: CommandFunctionWithPreviousSubject<typeof requestGetProductList>;
     }
   }
 }

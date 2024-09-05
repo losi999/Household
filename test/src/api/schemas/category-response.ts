@@ -2,15 +2,16 @@ import { StrictJSONSchema7 } from '@household/shared/types/common';
 import { Category } from '@household/shared/types/types';
 import { default as categoryId } from '@household/shared/schemas/category-id';
 import { default as category } from '@household/shared/schemas/category-request';
-import { default as product } from '@household/test/api/schemas/product-response';
 
 const schema: StrictJSONSchema7<Category.Response> = {
   type: 'object',
   additionalProperties: false,
   required: [
     ...categoryId.required,
-    ...category.required,
+    'name',
+    'categoryType',
     'fullName',
+    'ancestors',
   ],
   properties: {
     ...categoryId.properties,
@@ -20,28 +21,22 @@ const schema: StrictJSONSchema7<Category.Response> = {
       type: 'string',
       minLength: 1,
     },
-    parentCategory: {
-      type: 'object',
-      additionalProperties: false,
-      required: [
-        ...categoryId.required,
-        'name',
-        'fullName',
-        'categoryType',
-      ],
-      properties: {
-        ...categoryId.properties,
-        name: category.properties.name,
-        categoryType: category.properties.categoryType,
-        fullName: {
-          type: 'string',
-          minLength: 1,
+    ancestors: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: [
+          ...categoryId.required,
+          'categoryType',
+          'name',
+        ],
+        properties: {
+          ...categoryId.properties,
+          name: category.properties.name,
+          categoryType: category.properties.categoryType,
         },
       },
-    },
-    products: {
-      type: 'array',
-      items: product,
     },
   },
 };

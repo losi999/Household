@@ -1,7 +1,7 @@
 import { Category, Product } from '@household/shared/types/types';
 import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/test/api/types';
 import { getProductId } from '@household/shared/common/utils';
-import { expectRemainingProperties } from '@household/test/api/utils';
+import { expectEmptyObject, expectRemainingProperties } from '@household/test/api/utils';
 
 const validateProductDocument = (response: Product.ProductId, request: Product.Request, categoryId: Category.Id) => {
   const id = response?.productId;
@@ -45,16 +45,41 @@ const validateProductDeleted = (productId: Product.Id) => {
     });
 };
 
+const validateProductResponse = (nestedPath: string = '') => (response: Product.Response, document: Product.Document) => {
+  const { productId, brand, measurement, unitOfMeasurement, fullName, ...internal } = response;
+
+  expect(productId, `${nestedPath}productId`).to.equal(getProductId(document));
+  expect(brand, `${nestedPath}brand`).to.equal(document.brand);
+  expect(measurement, `${nestedPath}measurement`).to.equal(document.measurement);
+  expect(unitOfMeasurement, `${nestedPath}unitOfMeasurement`).to.equal(document.unitOfMeasurement);
+  expect(fullName, `${nestedPath}fullName`).to.equal(document.fullName);
+  expectEmptyObject(internal, nestedPath);
+};
+
+const validateNestedProductResponse = (nestedPath: string, ...rest: Parameters<ReturnType<typeof validateProductResponse>>) => validateProductResponse(nestedPath)(...rest);
+
+const validateProductListResponse = (responses: Product.GroupedResponse[], documents: (Category.FullName &{products: Product.Document[]})[]) => {
+  documents.forEach(({ fullName, products }) => {
+    const response = responses.find(r => r.fullName === fullName);
+    response.products.forEach((productResponse, index) => {
+      cy.validateNestedProductResponse(`[${index}].`, productResponse, products[index]);
+    });
+  });
+};
+
 export const setProductValidationCommands = () => {
   Cypress.Commands.addAll<any>({
     prevSubject: true,
   }, {
     validateProductDocument,
+    validateProductResponse: validateProductResponse(),
+    validateProductListResponse,
   });
 
   Cypress.Commands.addAll({
     validateProductDeleted,
     validateProductReassigned,
+    validateNestedProductResponse,
   });
 };
 
@@ -63,10 +88,13 @@ declare global {
     interface Chainable {
       validateProductDeleted: CommandFunction<typeof validateProductDeleted>;
       validateProductReassigned: CommandFunction<typeof validateProductReassigned>;
+      validateNestedProductResponse: CommandFunction<typeof validateNestedProductResponse>;
     }
 
     interface ChainableResponseBody extends Chainable {
       validateProductDocument: CommandFunctionWithPreviousSubject<typeof validateProductDocument>;
+      validateProductResponse: CommandFunctionWithPreviousSubject<ReturnType<typeof validateProductResponse>>;
+      validateProductListResponse: CommandFunctionWithPreviousSubject<typeof validateProductListResponse>;
     }
   }
 }

@@ -1,8 +1,8 @@
 import { getAccountId, getTransactionId } from '@household/shared/common/utils';
 import { Account, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
-import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred-data-factory';
-import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer-data-factory';
+import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
+import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
 
 describe('POST transaction/v1/transactions/transfer (transfer)', () => {
   let request: Transaction.TransferRequest;
