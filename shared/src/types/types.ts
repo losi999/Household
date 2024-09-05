@@ -169,6 +169,7 @@ export namespace Category {
   & Remove<ParentCategoryId>
   & {
     ancestors: Document[];
+    products?: Product.Document[];
   };
 
   export type Report = CategoryId

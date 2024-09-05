@@ -14,7 +14,7 @@ export interface IProductService {
     targetProductId: Product.Id;
     sourceProductIds: Product.Id[];
   }): Promise<unknown>;
-  listProducts(): Promise<(Category.Document & {products: Product.Document[]})[]>;
+  listProducts(): Promise<Category.Document[]>;
 }
 
 export const productServiceFactory = (mongodbService: IMongodbService): IProductService => {

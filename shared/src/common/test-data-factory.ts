@@ -58,9 +58,7 @@ export const createCategoryDocument: DataFactoryFunction<Category.Document> = (d
     _id: generateMongoId(),
     name: 'category name',
     expiresAt: undefined,
-    parentCategory: undefined,
     parentCategoryId: undefined,
-    fullName: 'category name',
     categoryType: 'regular',
     ancestors: [],
     ...doc,
@@ -481,6 +479,20 @@ export const createProjectResponse: DataFactoryFunction<Project.Response> = (res
     ...resp,
   };
 };
+export const createCategoryResponseBase: DataFactoryFunction<Category.ResponseBase> = (resp) => {
+  return {
+    categoryId: createCategoryId(),
+    name: 'category name',
+    categoryType: 'regular',
+    expiresAt: undefined,
+    createdAt: undefined,
+    updatedAt: undefined,
+    _id: undefined,
+    ancestors: undefined,
+    ...resp,
+  };
+};
+
 export const createCategoryResponse: DataFactoryFunction<Category.Response> = (resp) => {
   return {
     categoryId: createCategoryId(),
@@ -493,7 +505,7 @@ export const createCategoryResponse: DataFactoryFunction<Category.Response> = (r
     fullName: 'category name',
     categoryType: 'regular',
     parentCategoryId: undefined,
-    products: [createProductResponse()],
+    ancestors: [],
     ...resp,
   };
 };
@@ -521,6 +533,14 @@ export const createProductResponse: DataFactoryFunction<Product.Response> = (res
     createdAt: undefined,
     updatedAt: undefined,
     _id: undefined,
+    ...resp,
+  };
+};
+
+export const createProductGroupedResponse: DataFactoryFunction<Product.GroupedResponse> = (resp) => {
+  return {
+    fullName: 'category:name',
+    products: [createProductResponse()],
     ...resp,
   };
 };

@@ -10,8 +10,8 @@ export interface IProductDocumentConverter {
     category: Category.Document
   }, expiresIn: number, generateId?: boolean): Product.Document;
   update(body: Product.Request, expiresIn: number): UpdateQuery<Product.Document>;
-  toGroupedRepsonse(category: Category.Document & {products: Product.Document[]}): Product.GroupedResponse;
-  toGroupedRepsonseList(categories: (Category.Document & {products: Product.Document[]})[]): Product.GroupedResponse[];
+  toGroupedResponse(category: Category.Document): Product.GroupedResponse;
+  toGroupedResponseList(categories: Category.Document[]): Product.GroupedResponse[];
   toResponse(document: Product.Document): Product.Response;
   toReport(data: Transaction.Quantity & { document: Product.Document }): Product.Report;
   toResponseList(documents: Product.Document[]): Product.Response[];
@@ -44,13 +44,13 @@ export const productDocumentConverterFactory = (categoryDocumentConverter: ICate
         quantity,
       } : undefined;
     },
-    toGroupedRepsonse: (category): Product.GroupedResponse => {
+    toGroupedResponse: (category): Product.GroupedResponse => {
       return {
         fullName: categoryDocumentConverter.toResponse(category).fullName,
         products: instance.toResponseList(category.products),
       };
     },
-    toGroupedRepsonseList: docs => docs.map(d => instance.toGroupedRepsonse(d)).toSorted((a, b) => a.fullName.localeCompare(b.fullName, 'hu', {
+    toGroupedResponseList: docs => docs.map(d => instance.toGroupedResponse(d)).toSorted((a, b) => a.fullName.localeCompare(b.fullName, 'hu', {
       sensitivity: 'base',
     })),
     toResponse: (doc): Product.Response => {

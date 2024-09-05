@@ -1,5 +1,4 @@
 import { httpErrors } from '@household/api/common/error-handlers';
-import { getCategoryId } from '@household/shared/common/utils';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
 import { ICategoryService } from '@household/shared/services/category-service';
 import { Category } from '@household/shared/types/types';

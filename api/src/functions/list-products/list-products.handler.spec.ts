@@ -1,7 +1,7 @@
 import { MockBusinessService } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/list-products/list-products.handler';
 import { IListProductsService } from '@household/api/functions/list-products/list-products.service';
-import { createProductResponse } from '@household/shared/common/test-data-factory';
+import { createProductGroupedResponse } from '@household/shared/common/test-data-factory';
 
 describe('List products handler', () => {
   let mockListProductsService: MockBusinessService<IListProductsService>;
@@ -12,13 +12,13 @@ describe('List products handler', () => {
     handlerFunction = handler(mockListProductsService);
   });
 
-  const products = [createProductResponse()];
+  const products = [createProductGroupedResponse()];
   const handlerEvent = {} as AWSLambda.APIGatewayProxyEvent;
 
   it('should handle business service error', async () => {
     const statusCode = 418;
     const message = 'This is an error';
-    mockListProductsService.mockReductedValue({
+    mockListProductsService.mockRejectedValue({
       statusCode,
       message,
     });

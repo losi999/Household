@@ -14,8 +14,6 @@ export const listProductsServiceFactory = (
 
     const documents = await productService.listProducts().catch(httpErrors.product.list());
 
-    console.log(JSON.stringify(documents, null, 2));
-
-    return productDocumentConverter.toGroupedRepsonseList(documents);
+    return productDocumentConverter.toGroupedResponseList(documents);
   };
 };

@@ -71,7 +71,10 @@ export const categoryDocumentConverterFactory = (): ICategoryDocumentConverter =
     toReport: (doc): Category.Report => {
       return doc ? {
         categoryId: getCategoryId(doc),
-        fullName: undefined, //doc.fullName,
+        fullName: [
+          ...doc.ancestors.map(d => d.name),
+          doc.name,
+        ].join(':'),
       } : undefined;
     },
     toResponseList: docs => docs.map(d => instance.toResponse(d)).toSorted((a, b) => a.fullName.localeCompare(b.fullName, 'hu', {
