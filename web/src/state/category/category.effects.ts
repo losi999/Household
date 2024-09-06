@@ -43,7 +43,7 @@ export class CategoryEffects {
             let errorMessage: string;
             switch(error.error?.message) {
               case 'Duplicate category name': {
-                errorMessage = `Kategória név (${request.name}) már foglalt!`;
+                errorMessage = `Kategória (${request.name}) már létezik!`;
               } break;
               default: {
                 errorMessage = 'Hiba történt';
@@ -72,7 +72,7 @@ export class CategoryEffects {
               let errorMessage: string;
               switch(error.error?.message) {
                 case 'Duplicate category name': {
-                  errorMessage = `Projekt név (${request.name}) már foglalt!`;
+                  errorMessage = `Kategória (${request.name}) már létezik!`;
                 } break;
                 default: {
                   errorMessage = 'Hiba történt';

@@ -43,7 +43,7 @@ export class RecipientEffects {
             let errorMessage: string;
             switch(error.error?.message) {
               case 'Duplicate recipient name': {
-                errorMessage = `Partner név (${request.name}) már foglalt!`;
+                errorMessage = `Partner (${request.name}) már létezik!`;
               } break;
               default: {
                 errorMessage = 'Hiba történt';
@@ -75,7 +75,7 @@ export class RecipientEffects {
               let errorMessage: string;
               switch(error.error?.message) {
                 case 'Duplicate recipient name': {
-                  errorMessage = `Partner név (${request.name}) már foglalt!`;
+                  errorMessage = `Partner (${request.name}) már létezik!`;
                 } break;
                 default: {
                   errorMessage = 'Hiba történt';

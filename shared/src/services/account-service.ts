@@ -180,6 +180,7 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
           ...calculateAccountBalances(),
           {
             $sort: {
+              owner: 1,
               name: 1,
             },
           },

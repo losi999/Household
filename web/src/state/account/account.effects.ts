@@ -43,7 +43,7 @@ export class AccountEffects {
             let errorMessage: string;
             switch(error.error?.message) {
               case 'Duplicate account name': {
-                // errorMessage = `Projekt név (${request.name}) már foglalt!`;
+                errorMessage = `Számla (${request.name}) már létezik!`;
               } break;
               default: {
                 errorMessage = 'Hiba történt';
@@ -75,7 +75,7 @@ export class AccountEffects {
               let errorMessage: string;
               switch(error.error?.message) {
                 case 'Duplicate account name': {
-                  // errorMessage = `Projekt név (${request.name}) már foglalt!`;
+                  errorMessage = `Számla (${request.name}) már létezik!`;
                 } break;
                 default: {
                   errorMessage = 'Hiba történt';

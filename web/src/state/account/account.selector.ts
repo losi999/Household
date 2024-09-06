@@ -15,6 +15,12 @@ export const selectAccountsByOwner = createSelector(
       };
     }, {});
 
-    return grouped;
+    return Object.keys(grouped).toSorted((a, b) => a.localeCompare(b, 'hu', {
+      sensitivity: 'base',
+    }))
+      .map(o => ({
+        owner: o,
+        accounts: grouped[o],
+      }));
   },
 );

@@ -43,7 +43,7 @@ export class ProjectEffects {
             let errorMessage: string;
             switch(error.error?.message) {
               case 'Duplicate project name': {
-                errorMessage = `Projekt név (${request.name}) már foglalt!`;
+                errorMessage = `Projekt (${request.name}) már létezik!`;
               } break;
               default: {
                 errorMessage = 'Hiba történt';
@@ -75,7 +75,7 @@ export class ProjectEffects {
               let errorMessage: string;
               switch(error.error?.message) {
                 case 'Duplicate project name': {
-                  errorMessage = `Projekt név (${request.name}) már foglalt!`;
+                  errorMessage = `Projekt (${request.name}) már létezik!`;
                 } break;
                 default: {
                   errorMessage = 'Hiba történt';

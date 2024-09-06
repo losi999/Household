@@ -9,8 +9,8 @@
   height: '48px'
 }" />
 <mat-nav-list>
-  <ng-container *ngFor="let acc of accountsByOwner | async | keyvalue">
-    <h2>{{acc.key}}</h2>
-    <household-account-list [onlyOpenAccounts]="onlyOpenAccounts" [accounts]="acc.value"></household-account-list>
+  <ng-container *ngFor="let acc of accountsByOwner | async">
+    <h2>{{acc.owner}}</h2>
+    <household-account-list [onlyOpenAccounts]="onlyOpenAccounts" [accounts]="acc.accounts"></household-account-list>
   </ng-container>
 </mat-nav-list>

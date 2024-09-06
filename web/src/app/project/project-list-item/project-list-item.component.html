@@ -1,4 +1,4 @@
 <button mat-list-item (click)="showMenu()" [disabled]="isDisabled | async">
-  <div mat-line>{{project.name}}</div>
-  <div mat-line> {{project.description}} </div>
+  <div matListItemTitle>{{project.name}}</div>
+  <div matListItemLine> {{project.description}} </div>
 </button>

@@ -8,8 +8,9 @@ export const selectCategoriesAsParent = (categoryId: Category.Id) => createSelec
 });
 
 export const selectMergableCategories = (categoryId: Category.Id) => createSelector(selectCategories, (categories) => {
-  const targetCategoryAncestorIds = categories.find(c => c.categoryId === categoryId).ancestors.map(a => a.categoryId);
-  return categories.filter(c => c.categoryId !== categoryId && !targetCategoryAncestorIds.includes(c.categoryId));
+  const targetCategory = categories.find(c => c.categoryId === categoryId);
+  const targetCategoryAncestorIds = targetCategory.ancestors.map(a => a.categoryId);
+  return categories.filter(c => c.categoryId !== categoryId && !targetCategoryAncestorIds.includes(c.categoryId) && c.categoryType === targetCategory.categoryType);
 });
 
 export const selectInventoryCategories = createSelector(selectCategories, (categories) => {
