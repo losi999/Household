@@ -33,7 +33,7 @@ export const transactionDocumentConverterFactory = (
   loanTransferTransactionDocumentConverter: ILoanTransferTransactionDocumentConverter,
 ): ITransactionDocumentConverter => {
   const instance: ITransactionDocumentConverter = {
-    toResponse: (doc, viewingAccountId): Transaction.Response => {
+    toResponse: (doc, viewingAccountId) => {
       switch (doc.transactionType) {
         case 'payment': return paymentTransactionDocumentConverter.toResponse(doc);
         case 'split': return splitTransactionDocumentConverter.toResponse(doc);
@@ -46,7 +46,7 @@ export const transactionDocumentConverterFactory = (
       }
     },
     toResponseList: (docs, viewingAccountId) => docs.map(d => instance.toResponse(d, viewingAccountId)),
-    toReport: (document): Transaction.Report => {
+    toReport: (document) => {
       return {
         amount: document.amount,
         transactionId: getTransactionId(document),

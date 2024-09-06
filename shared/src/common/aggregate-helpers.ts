@@ -1,12 +1,15 @@
 import { PipelineStage } from 'mongoose';
 
-export const populateAggregate = (localField: string, from: string): [PipelineStage.Lookup, PipelineStage.Unwind] => [
+export const populateAggregate = (localField: string, from: string, pipeline?: PipelineStage.Lookup['$lookup']['pipeline']): [PipelineStage.Lookup, PipelineStage.Unwind] => [
   {
     $lookup: {
       from,
       localField,
       foreignField: '_id',
       as: localField,
+      ...(pipeline ? {
+        pipeline,
+      } : {}),
     },
   },
   {

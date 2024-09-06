@@ -46,6 +46,8 @@ components:
           minLength: 1
     Products:
       type: object
+      required:
+        - products
       properties:
         products:
           type: array
@@ -56,20 +58,23 @@ components:
       allOf:
         - $ref: "#/components/schemas/CategoryType"
         - $ref: "#/components/schemas/Name"
-        - $ref: "#/components/schemas/FullName"
         - $ref: "#/components/schemas/CategoryId"
-        - $ref: "#/components/schemas/Products"
 
-    ParentCategory:
+    Ancestors:
       type: object
+      required:
+        - ancestors
       properties:
-        parentCategory:
-          $ref: "#/components/schemas/Response.Base"
+        ancestors:
+          type: array
+          items:
+            $ref: "#/components/schemas/Response.Base"
 
     Response:
       allOf:
         - $ref: "#/components/schemas/Response.Base"
-        - $ref: "#/components/schemas/ParentCategory"
+        - $ref: "#/components/schemas/FullName"
+        - $ref: "#/components/schemas/Ancestors"
 
     Report:
       allOf:

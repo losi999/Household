@@ -15,8 +15,7 @@ export const getTransactionServiceFactory = (
   transactionService: ITransactionService,
   transactionDocumentConverter: ITransactionDocumentConverter): IGetTransactionService => {
   return async ({ transactionId, accountId }) => {
-
-    const document = await transactionService.getTransactionByIdAndAccountId({
+    const transaction = await transactionService.getTransactionByIdAndAccountId({
       accountId,
       transactionId,
     }).catch(httpErrors.transaction.getById({
@@ -24,13 +23,14 @@ export const getTransactionServiceFactory = (
       accountId,
     }));
 
-    httpErrors.transaction.notFound(!document, {
+    httpErrors.transaction.notFound({
       transactionId,
+      transaction,
       accountId,
     });
 
-    if (document.transactionType === 'transfer' && document.payments?.length > 0) {
-      const deferredTransactionIds = document.payments.map(p => getTransactionId(p.transaction));
+    if (transaction.transactionType === 'transfer' && transaction.payments?.length > 0) {
+      const deferredTransactionIds = transaction.payments.map(p => getTransactionId(p.transaction));
 
       const deferredTransactions = await transactionService.listDeferredTransactions({
         deferredTransactionIds,
@@ -40,13 +40,11 @@ export const getTransactionServiceFactory = (
 
       const deferredMap = toDictionary(deferredTransactions, '_id');
 
-      document.payments.forEach(p => {
+      transaction.payments.forEach(p => {
         p.transaction = deferredMap[getTransactionId(p.transaction)];
       });
     }
 
-    console.log('doc', JSON.stringify(document, null, 2));
-
-    return transactionDocumentConverter.toResponse(document, accountId);
+    return transactionDocumentConverter.toResponse(transaction, accountId);
   };
 };

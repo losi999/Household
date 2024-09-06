@@ -5,11 +5,15 @@ import { categoryDataFactory } from '@household/test/api/category/data-factory';
 describe('POST category/v1/categories', () => {
   let request: Category.Request;
   let parentCategoryDocument: Category.Document;
+  let grandparentCategoryDocument: Category.Document;
 
   beforeEach(() => {
     request = categoryDataFactory.request();
 
-    parentCategoryDocument = categoryDataFactory.document();
+    grandparentCategoryDocument = categoryDataFactory.document();
+    parentCategoryDocument = categoryDataFactory.document({
+      parentCategory: grandparentCategoryDocument,
+    });
   });
 
   describe('called as anonymous', () => {
@@ -33,11 +37,14 @@ describe('POST category/v1/categories', () => {
         parentCategoryId: getCategoryId(parentCategoryDocument),
       });
 
-      cy.saveCategoryDocument(parentCategoryDocument)
+      cy.saveCategoryDocuments([
+        grandparentCategoryDocument,
+        parentCategoryDocument,
+      ])
         .authenticate(1)
         .requestCreateCategory(request)
         .expectCreatedResponse()
-        .validateCategoryDocument(request, parentCategoryDocument);
+        .validateCategoryDocument(request, grandparentCategoryDocument, parentCategoryDocument);
     });
 
     describe('should return error', () => {

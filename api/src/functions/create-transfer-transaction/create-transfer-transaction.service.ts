@@ -38,12 +38,14 @@ export const createTransferTransactionServiceFactory = (
     const account = accounts.find(a => getAccountId(a) === accountId);
     const transferAccount = accounts.find(a => getAccountId(a) === transferAccountId);
 
-    httpErrors.account.notFound(!account, {
+    httpErrors.account.notFound({
+      account,
       accountId,
     }, 400);
 
-    httpErrors.account.notFound(!transferAccount, {
+    httpErrors.account.notFound({
       accountId: transferAccountId,
+      account: transferAccount,
     }, 400);
 
     let document: Transaction.TransferDocument | Transaction.LoanTransferDocument;
@@ -77,8 +79,9 @@ export const createTransferTransactionServiceFactory = (
           deferredTransactionIds,
         }));
 
-        httpErrors.transaction.multipleNotFound(deferredTransactionIds.length !== transactionList.length, {
+        httpErrors.transaction.multipleNotFound({
           transactionIds: deferredTransactionIds,
+          transactions: transactionList,
         });
         const transactions = toDictionary(transactionList, '_id');
 

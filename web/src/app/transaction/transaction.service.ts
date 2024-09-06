@@ -2,9 +2,9 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Account, Transaction, Report } from '@household/shared/types/types';
 import { Observable } from 'rxjs';
-import { environment } from 'src/environments/environment';
-import { transactionsPageSize } from 'src/app/constants';
-import { Store } from 'src/app/store';
+import { environment } from '@household/web/environments/environment';
+import { transactionsPageSize } from '@household/web/app/constants';
+import { Store } from '@household/web/app/store';
 
 @Injectable({
   providedIn: 'root',

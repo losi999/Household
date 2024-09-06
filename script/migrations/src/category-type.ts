@@ -6,7 +6,7 @@ import { mongodbServiceFactory } from '@household/shared/services/mongodb-servic
     config();
     const mongodbService = mongodbServiceFactory(process.env.MONGODB_CONNECTION_STRING);
 
-    await mongodbService.categories().updateMany({
+    await mongodbService.categories.updateMany({
       categoryType: undefined,
     }, {
       categoryType: 'regular',

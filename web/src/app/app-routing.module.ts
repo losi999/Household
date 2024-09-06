@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { LoginComponent } from 'src/app/auth/login/login.component';
-import { canMatch, canActivate } from 'src/app/shared/guards';
+import { LoginComponent } from '@household/web/app/auth/login/login.component';
+import { canMatch, canActivate } from '@household/web/app/shared/guards';
 
 const routes: Routes = [
   {

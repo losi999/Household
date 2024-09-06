@@ -1,14 +1,17 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { Account } from '@household/shared/types/types';
-import { AccountService } from 'src/app/account/account.service';
-import { DialogService } from 'src/app/shared/dialog.service';
+import { Store } from '@ngrx/store';
+import { DialogService } from '@household/web/app/shared/dialog.service';
+import { accountApiActions } from '@household/web/state/account/account.actions';
+import { Observable } from 'rxjs';
+import { selectAccountIsInProgress } from '@household/web/state/progress/progress.selector';
 
 @Component({
   selector: 'household-account-list-item',
   templateUrl: './account-list-item.component.html',
   styleUrls: ['./account-list-item.component.scss'],
 })
-export class AccountListItemComponent {
+export class AccountListItemComponent implements OnInit {
   @Input() account: Account.Response;
   notificationCount: number;
 
@@ -23,7 +26,13 @@ export class AccountListItemComponent {
     return this.account.accountType === 'loan' ? Math.abs(this.account.balance) : this.account.balance;
   }
 
-  constructor(private accountService: AccountService, private dialogService: DialogService) { }
+  constructor(private store: Store, private dialogService: DialogService) { }
+
+  isDisabled: Observable<boolean>;
+
+  ngOnInit(): void {
+    this.isDisabled = this.store.select(selectAccountIsInProgress(this.account.accountId));
+  }
 
   delete(e: Event) {
     e.preventDefault();
@@ -31,7 +40,9 @@ export class AccountListItemComponent {
     this.dialogService.openDeleteAccountDialog(this.account).afterClosed()
       .subscribe(shouldDelete => {
         if (shouldDelete) {
-          this.accountService.deleteAccount(this.account.accountId);
+          this.store.dispatch(accountApiActions.deleteAccountInitiated({
+            accountId: this.account.accountId,
+          }));
         }
       });
   }

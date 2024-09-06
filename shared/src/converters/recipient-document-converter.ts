@@ -13,14 +13,14 @@ export interface IRecipientDocumentConverter {
 
 export const recipientDocumentConverterFactory = (): IRecipientDocumentConverter => {
   const instance: IRecipientDocumentConverter = {
-    create: (body, expiresIn, generateId): Recipient.Document => {
+    create: ({ name }, expiresIn, generateId) => {
       return {
-        ...body,
+        name,
         _id: generateId ? generateMongoId() : undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
-    update: (body, expiresIn): UpdateQuery<Recipient.Document> => {
+    update: (body, expiresIn) => {
       return {
         $set: {
           ...body,
@@ -28,17 +28,17 @@ export const recipientDocumentConverterFactory = (): IRecipientDocumentConverter
         },
       };
     },
-    toResponse: (doc): Recipient.Response => {
+    toResponse: ({ name, _id }) => {
       return {
-        ...doc,
-        recipientId: getRecipientId(doc),
+        name,
+        recipientId: getRecipientId(_id),
         createdAt: undefined,
         updatedAt: undefined,
         _id: undefined,
         expiresAt: undefined,
       };
     },
-    toReport: (doc): Recipient.Report => {
+    toReport: (doc) => {
       return doc ? {
         recipientId: getRecipientId(doc),
         name: doc.name,

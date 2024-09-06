@@ -1,14 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpRequest, HttpHandler, HttpEvent, HttpInterceptor, HttpErrorResponse } from '@angular/common/http';
 import { Observable, Subject, throwError } from 'rxjs';
-import { AuthService } from 'src/app/auth/auth.service';
+import { AuthService } from '@household/web/services/auth.service';
 import { catchError, switchMap, tap } from 'rxjs/operators';
-import { ProgressService } from 'src/app/shared/progress.service';
+import { Store } from '@ngrx/store';
+import { progressActions } from '@household/web/state/progress/progress.actions';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
 
-  constructor(private authService: AuthService, private progressService: ProgressService) { }
+  constructor(private authService: AuthService, private store: Store) { }
 
   private addAuthHeaders(request: HttpRequest<unknown>): HttpRequest<unknown> {
     return request.clone({
@@ -51,7 +52,7 @@ export class AuthInterceptor implements HttpInterceptor {
         catchError((error: HttpErrorResponse) => {
           if (error.status === 401) {
             if (error.error.message === 'The incoming token has expired') {
-              this.progressService.processFinished();
+              this.store.dispatch(progressActions.processFinished());
               return this.refreshToken().pipe(
                 switchMap(() => {
                   return next.handle(this.addAuthHeaders(request));

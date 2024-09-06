@@ -21,8 +21,9 @@ export const createProductServiceFactory = (
       categoryId,
     }));
 
-    httpErrors.category.notFound(!category, {
+    httpErrors.category.notFound({
       categoryId,
+      category,
     }, 400);
 
     httpErrors.category.notInventoryType(category);

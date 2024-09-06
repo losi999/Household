@@ -2,7 +2,7 @@
   <h1 mat-dialog-title>Egyesítés</h1>
   <div mat-dialog-content>
     <mat-selection-list formControlName="sourceProjects">
-      <mat-list-option *ngFor="let project of projects" [value]="project.projectId"> {{project.name}} </mat-list-option>
+      <mat-list-option *ngFor="let project of projects | async" [value]="project.projectId"> {{project.name}} </mat-list-option>
     </mat-selection-list>
   </div>
   <div mat-dialog-actions>

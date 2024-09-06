@@ -1,7 +1,6 @@
 import { getCategoryId } from '@household/shared/common/utils';
 import { Category } from '@household/shared/types/types';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
-import { productDataFactory } from '@household/test/api/product/data-factory';
 
 describe('PUT /category/v1/categories/{categoryId}', () => {
   let categoryDocument: Category.Document;
@@ -28,25 +27,6 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
         .requestUpdateCategory(getCategoryId(categoryDocument), request)
         .expectCreatedResponse()
         .validateCategoryDocument(request);
-    });
-
-    it('should keep existing product', () => {
-      categoryDocument = categoryDataFactory.document({
-        body: {
-          categoryType: 'inventory',
-        },
-      });
-
-      const productDocument = productDataFactory.document({
-        category: categoryDocument,
-      });
-
-      cy.saveCategoryDocument(categoryDocument)
-        .saveProductDocument(productDocument)
-        .authenticate(1)
-        .requestUpdateCategory(getCategoryId(categoryDocument), request)
-        .expectCreatedResponse()
-        .validateCategoryDocument(request, undefined, productDocument);
     });
 
     describe('children should be reassigned', () => {
@@ -221,7 +201,26 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
             categoryDataFactory.request({
               parentCategoryId: categoryDataFactory.id(),
             }))
-          .expectBadRequestResponse();
+          .expectBadRequestResponse()
+          .expectMessage('Parent category not found');
+      });
+
+      it('is already a descendent category', () => {
+        const childCategoryDocument = categoryDataFactory.document({
+          parentCategory: categoryDocument,
+        });
+
+        cy.saveCategoryDocuments([
+          categoryDocument,
+          childCategoryDocument,
+        ])
+          .authenticate(1)
+          .requestUpdateCategory(getCategoryId(categoryDocument),
+            categoryDataFactory.request({
+              parentCategoryId: getCategoryId(childCategoryDocument),
+            }))
+          .expectBadRequestResponse()
+          .expectMessage('Parent category is already aa child of the current category');
       });
     });
 

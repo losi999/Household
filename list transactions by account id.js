@@ -292,6 +292,16 @@ db.getCollection("transactions").aggregate([
       localField: 'category',
       foreignField: '_id',
       as: 'category',
+      pipeline: [
+      {
+        $lookup: {
+          from: 'categories',
+          localField: 'ancestors',
+          foreignField: '_id',
+          as: 'ancestors'
+        }
+      }
+      ]
     },
   },
   {

@@ -1,11 +1,11 @@
 import { getProjectId } from '@household/shared/common/utils';
 import { Account, Project, Transaction } from '@household/shared/types/types';
-import { splitTransactionDataFactory } from '../transaction/split-data-factory';
-import { paymentTransactionDataFactory } from '../transaction/payment-data-factory';
+import { splitTransactionDataFactory } from '../transaction/split/split-data-factory';
+import { paymentTransactionDataFactory } from '../transaction/payment/payment-data-factory';
 import { projectDataFactory } from './data-factory';
 import { accountDataFactory } from '../account/data-factory';
-import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred-data-factory';
-import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement-data-factory';
+import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
+import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 
 describe('DELETE /project/v1/projects/{projectId}', () => {
   let projectDocument: Project.Document;

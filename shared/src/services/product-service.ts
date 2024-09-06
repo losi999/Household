@@ -1,5 +1,5 @@
 import { IMongodbService } from '@household/shared/services/mongodb-service';
-import { Product } from '@household/shared/types/types';
+import { Category, Product } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
 
 export interface IProductService {
@@ -14,7 +14,7 @@ export interface IProductService {
     targetProductId: Product.Id;
     sourceProductIds: Product.Id[];
   }): Promise<unknown>;
-  // listProducts(): Promise<Product.Document[]>;
+  listProducts(): Promise<Category.Document[]>;
 }
 
 export const productServiceFactory = (mongodbService: IMongodbService): IProductService => {
@@ -28,6 +28,69 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
             lean: true,
           })
           .exec();
+      });
+    },
+    listProducts: () => {
+      return mongodbService.inSession((session) => {
+        return mongodbService.products.aggregate([
+          {
+            $sort: {
+              fullName: 1,
+            },
+          },
+          {
+            $group: {
+              _id: '$category',
+              products: {
+                $push: '$$ROOT',
+              },
+            },
+          },
+          {
+            $lookup: {
+              from: 'categories',
+              localField: '_id',
+              foreignField: '_id',
+              as: 'category',
+              pipeline: [
+                {
+                  $lookup: {
+                    from: 'categories',
+                    localField: 'ancestors',
+                    foreignField: '_id',
+                    as: 'ancestors',
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: {
+              path: '$category',
+            },
+          },
+          {
+            $replaceRoot: {
+              newRoot: {
+                $mergeObjects: [
+                  '$$ROOT',
+                  '$category',
+                ],
+              },
+            },
+          },
+          {
+            $unset: [
+              'category',
+              'products.category',
+            ],
+          },
+        ], {
+          session,
+          collation: {
+            locale: 'hu',
+          },
+        });
       });
     },
     saveProduct: async (doc) => {

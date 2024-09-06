@@ -2,17 +2,18 @@ import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
-import { TransactionService } from 'src/app/transaction/transaction.service';
+import { TransactionService } from '@household/web/app/transaction/transaction.service';
 import { isInventoryCategory, isInvoiceCategory } from '@household/shared/common/type-guards';
-import { ProgressService } from 'src/app/shared/progress.service';
-import { RecipientService } from 'src/app/recipient/recipient.service';
-import { ProjectService } from 'src/app/project/project.service';
-import { CategoryService } from 'src/app/category/category.service';
-import { DialogService } from 'src/app/shared/dialog.service';
+import { DialogService } from '@household/web/app/shared/dialog.service';
 import { Subject, takeUntil } from 'rxjs';
-import { Store } from 'src/app/store';
-import { AccountService } from 'src/app/account/account.service';
+import { Store as Store_ } from '@household/web/app/store';
 import { Dictionary } from '@household/shared/types/common';
+import { selectProjects } from '@household/web/state/project/project.selector';
+import { projectApiActions } from '@household/web/state/project/project.actions';
+import { selectRecipients } from '@household/web/state/recipient/recipient.selector';
+import { recipientApiActions } from '@household/web/state/recipient/recipient.actions';
+import { Store } from '@ngrx/store';
+import { selectCategories } from '@household/web/state/category/category.selector';
 
 type SplitFormGroup = FormGroup<{
   category: FormControl<Category.Response>;
@@ -58,17 +59,11 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
   deferredTransactions: Dictionary<Transaction.DeferredResponse> = {};
 
   get accounts(): Account.Response[] {
-    return this.store.accounts.value;
+    return [];//    return this.store_.accounts.value;
   }
-  get projects(): Project.Response[] {
-    return this.store.projects.value;
-  }
-  get recipients(): Recipient.Response[] {
-    return this.store.recipients.value;
-  }
-  get categories(): Category.Response[] {
-    return this.store.categories.value;
-  }
+  projects = this.store.select(selectProjects);
+  recipients = this.store.select(selectRecipients);
+  categories = this.store.select(selectCategories);
 
   get splitsSum(): number {
     return this.form.value.splits.reduce((accumulator, currentValue) => {
@@ -81,18 +76,14 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
   }
 
   get availableDeferredTransactions() {
-    return this.store.deferredTransactions.value.filter(t => !this.form.controls.payments.controls[t.transactionId]);
+    return this.store_.deferredTransactions.value.filter(t => !this.form.controls.payments.controls[t.transactionId]);
   }
 
   constructor(
     activatedRoute: ActivatedRoute,
+    private store_: Store_,
     private store: Store,
     private transactionService: TransactionService,
-    accountService: AccountService,
-    recipientService: RecipientService,
-    projectService: ProjectService,
-    categoryService: CategoryService,
-    private progressService: ProgressService,
     private router: Router,
     private dialogService: DialogService,
   ) {
@@ -100,10 +91,7 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
     this.transactionId = activatedRoute.snapshot.paramMap.get('transactionId') as Transaction.Id;
     this.transaction = activatedRoute.snapshot.data.transaction;
 
-    recipientService.listRecipients();
-    categoryService.listCategories();
-    projectService.listProjects();
-    accountService.listAccounts();
+    // accountService.listAccounts();
     transactionService.listDeferredTransactions({
       isSettled: false,
     });
@@ -141,7 +129,10 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.store.deferredTransactions.pipe(takeUntil(this.destroyed)).subscribe((transactions) => {
+    this.store.dispatch(projectApiActions.listProjectsInitiated());
+    this.store.dispatch(recipientApiActions.listRecipientsInitiated());
+
+    this.store_.deferredTransactions.pipe(takeUntil(this.destroyed)).subscribe((transactions) => {
       this.deferredTransactions = {
         ...this.deferredTransactions,
         ...transactions.reduce((accumulator, currentValue) => {
@@ -269,12 +260,12 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
     }
 
     if (!this.transaction) {
-      this.store.accounts.pipe(takeUntil(this.destroyed)).subscribe((accounts) => {
-        const account = accounts.find(a => a.accountId === this.accountId);
-        this.form.patchValue({
-          account,
-        });
-      });
+      // this.store_.accounts.pipe(takeUntil(this.destroyed)).subscribe((accounts) => {
+      //   const account = accounts.find(a => a.accountId === this.accountId);
+      //   this.form.patchValue({
+      //     account,
+      //   });
+      // });
     }
   }
 
@@ -344,7 +335,8 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
     const error = (error) => {
       console.error(error);
       alert(JSON.stringify(error, null, 2));
-      this.progressService.processFinished();
+      // TODO
+      // this.progressService.processFinished();
     };
 
     if (this.form.invalid || this.form.value.amount === 0) {
@@ -356,6 +348,8 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
         return;
       }
 
+      const payments = Object.entries(this.form.value.payments);
+
       const body: Transaction.TransferRequest = {
         accountId: this.form.value.account.accountId,
         amount: this.form.value.amount,
@@ -363,7 +357,7 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
         issuedAt: this.form.value.issuedAt.toISOString(),
         transferAccountId: this.form.value.transferAccount.accountId,
         transferAmount: this.form.value.transferAmount ?? undefined,
-        payments: Object.entries(this.form.value.payments).map(([
+        payments: payments.length > 0 ? payments.map(([
           transactionId,
           amount,
         ]) => {
@@ -371,7 +365,7 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
             transactionId: transactionId as Transaction.Id,
             amount,
           };
-        }),
+        }) : undefined,
       };
 
       if (this.transactionId) {

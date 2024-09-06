@@ -11,16 +11,15 @@ export const getCategoryServiceFactory = (
   categoryService: ICategoryService,
   categoryDocumentConverter: ICategoryDocumentConverter): IGetCategoryService => {
   return async ({ categoryId }) => {
-    const document = await categoryService.getCategoryById(categoryId).catch(httpErrors.category.getById({
+    const category = await categoryService.getCategoryById(categoryId).catch(httpErrors.category.getById({
       categoryId,
     }));
 
-    console.log(JSON.stringify(document, null, 2));
-
-    httpErrors.category.notFound(!document, {
+    httpErrors.category.notFound({
+      category,
       categoryId,
     });
 
-    return categoryDocumentConverter.toResponse(document);
+    return categoryDocumentConverter.toResponse(category);
   };
 };

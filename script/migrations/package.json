@@ -6,7 +6,8 @@
     "prebuild": "rimraf ./dist",
     "build": "webpack",
     "products": "yarn build --entry ./src/products.ts && node ./dist/index.js",
-    "category-type": "yarn build --entry ./src/category-type.ts && node ./dist/index.js"
+    "category-type": "yarn build --entry ./src/category-type.ts && node ./dist/index.js",
+    "category-ancestors": "yarn build --entry ./src/category-ancestors.ts && node ./dist/index.js"
   },
   "author": "",
   "license": "ISC",

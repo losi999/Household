@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { RecipientHomeComponent } from 'src/app/recipient/recipient-home/recipient-home.component';
+import { RecipientHomeComponent } from '@household/web/app/recipient/recipient-home/recipient-home.component';
 
 const routes: Routes = [
   {

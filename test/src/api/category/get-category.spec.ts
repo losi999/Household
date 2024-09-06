@@ -1,13 +1,11 @@
 import { default as schema } from '@household/test/api/schemas/category-response';
-import { Category, Product } from '@household/shared/types/types';
+import { Category } from '@household/shared/types/types';
 import { getCategoryId } from '@household/shared/common/utils';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
-import { productDataFactory } from '@household/test/api/product/data-factory';
 
 describe('GET /category/v1/categories/{categoryId}', () => {
   let categoryDocument: Category.Document;
   let childCategoryDocument: Category.Document;
-  let productDocument: Product.Document;
 
   beforeEach(() => {
     categoryDocument = categoryDataFactory.document({
@@ -17,10 +15,6 @@ describe('GET /category/v1/categories/{categoryId}', () => {
     });
     childCategoryDocument = categoryDataFactory.document({
       parentCategory: categoryDocument,
-    });
-
-    productDocument = productDataFactory.document({
-      category: categoryDocument,
     });
   });
 
@@ -35,12 +29,11 @@ describe('GET /category/v1/categories/{categoryId}', () => {
   describe('called as an admin', () => {
     it('should get category by id', () => {
       cy.saveCategoryDocument(categoryDocument)
-        .saveProductDocument(productDocument)
         .authenticate(1)
         .requestGetCategory(getCategoryId(categoryDocument))
         .expectOkResponse()
         .expectValidResponseSchema(schema)
-        .validateCategoryResponse(categoryDocument, undefined, productDocument);
+        .validateCategoryResponse(categoryDocument);
     });
 
     it('with child category should get category by id', () => {

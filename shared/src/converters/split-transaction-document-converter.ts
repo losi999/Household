@@ -32,7 +32,7 @@ export const splitTransactionDocumentConverterFactory = (
 ): ISplitTransactionDocumentConverter => {
 
   const instance: ISplitTransactionDocumentConverter = {
-    create: ({ body, accounts, projects, categories, recipient, products }, expiresIn, generateId): Transaction.SplitDocument => {
+    create: ({ body, accounts, projects, categories, recipient, products }, expiresIn, generateId) => {
       const { splits, deferredSplits } = body.splits.reduce<Transaction.Splits>((accumulator, s) => {
         const category = categories[s.categoryId];
 
@@ -74,9 +74,6 @@ export const splitTransactionDocumentConverterFactory = (
               invoiceNumber: category?.categoryType === 'invoice' ? s.invoiceNumber : undefined,
               billingEndDate: category?.categoryType === 'invoice' ? createDate(s.billingEndDate) : undefined,
               billingStartDate: category?.categoryType === 'invoice' ? createDate(s.billingStartDate) : undefined,
-              projectId: undefined,
-              categoryId: undefined,
-              productId: undefined,
             },
           ],
         };
@@ -86,31 +83,28 @@ export const splitTransactionDocumentConverterFactory = (
       });
 
       return {
-        ...body,
+        amount: body.amount,
+        description: body.description,
         account: accounts[body.accountId],
         recipient: recipient ?? undefined,
         transactionType: 'split',
         issuedAt: new Date(body.issuedAt),
         splits,
         deferredSplits,
-        accountId: undefined,
-        recipientId: undefined,
         _id: generateId ? generateMongoId() : undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
-    toResponse: (doc): Transaction.SplitResponse => {
+    toResponse: ({ amount, description, transactionType, _id, issuedAt, account, recipient, splits, deferredSplits }) => {
       return {
-        ...doc,
-        createdAt: undefined,
-        updatedAt: undefined,
-        transactionId: getTransactionId(doc),
-        issuedAt: doc.issuedAt.toISOString(),
-        _id: undefined,
-        expiresAt: undefined,
-        account: accountDocumentConverter.toResponse(doc.account),
-        recipient: doc.recipient ? recipientDocumentConverter.toResponse(doc.recipient) : undefined,
-        splits: doc.splits?.map(s => ({
+        amount,
+        description,
+        transactionType,
+        transactionId: getTransactionId(_id),
+        issuedAt: issuedAt.toISOString(),
+        account: accountDocumentConverter.toResponse(account),
+        recipient: recipient ? recipientDocumentConverter.toResponse(recipient) : undefined,
+        splits: splits?.map(s => ({
           amount: s.amount,
           description: s.description,
           invoiceNumber: s.invoiceNumber,
@@ -121,7 +115,7 @@ export const splitTransactionDocumentConverterFactory = (
           category: s.category ? categoryDocumentConverter.toResponse(s.category) : undefined,
           project: s.project ? projectDocumentConverter.toResponse(s.project) : undefined,
         })),
-        deferredSplits: doc.deferredSplits?.map(s => deferredTransactionDocumentConverter.toResponse(s)),
+        deferredSplits: deferredSplits?.map(s => deferredTransactionDocumentConverter.toResponse(s)),
       };
     },
     toResponseList: (docs) => docs.map(d => instance.toResponse(d)),

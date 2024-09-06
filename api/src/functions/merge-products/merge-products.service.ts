@@ -12,8 +12,8 @@ export const mergeProductsServiceFactory = (
   productService: IProductService,
 ): IMergeProductsService => {
   return async ({ body, productId }) => {
-    httpErrors.product.mergeTargetAmongSource(body.includes(productId), {
-      productId,
+    httpErrors.product.mergeTargetAmongSource({
+      target: productId,
       source: body,
     });
 
@@ -24,7 +24,8 @@ export const mergeProductsServiceFactory = (
 
     const products = await productService.listProductsByIds(productIds).catch(httpErrors.product.listByIds(productIds));
 
-    httpErrors.product.multipleNotFound(products.length !== productIds.length, {
+    httpErrors.product.multipleNotFound({
+      products,
       productIds,
     });
 

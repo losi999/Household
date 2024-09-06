@@ -102,6 +102,7 @@ describe('Deferred transaction document converter', () => {
         recipient,
         product,
       }, undefined);
+      console.log(result);
       expect(result).toEqual(createDeferredTransactionDocument({
         payingAccount,
         ownerAccount,

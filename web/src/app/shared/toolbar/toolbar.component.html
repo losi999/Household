@@ -1,6 +1,11 @@
-<mat-toolbar color="primary">
-  <household-main-menu></household-main-menu>
-  <span>{{title}}</span>
-  <span class="spacer"></span>
-  <ng-content></ng-content>
-</mat-toolbar>
+<div class="header">
+  <mat-toolbar color="primary">
+    <div class="wrapper">
+      <household-main-menu></household-main-menu>
+      <span>{{title}}</span>
+      <span class="spacer"></span>
+      <ng-content></ng-content>
+    </div>
+  </mat-toolbar>
+  <mat-progress-bar mode="indeterminate" *ngIf="isInProgress | async"></mat-progress-bar>
+</div>

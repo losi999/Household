@@ -11,13 +11,13 @@ import { TransactionDetailsComponent } from './transaction-details/transaction-d
 import { RouterModule } from '@angular/router';
 import { MatListModule } from '@angular/material/list';
 import { MatSliderModule } from '@angular/material/slider';
-import { DatetimeInputComponent } from 'src/app/shared/datetime-input/datetime-input.component';
-import { InventoryInputComponent } from 'src/app/shared/inventory-input/inventory-input.component';
-import { InvoiceInputComponent } from 'src/app/shared/invoice-input/invoice-input.component';
-import { AmountInputComponent } from 'src/app/shared/amount-input/amount-input.component';
-import { ToolbarComponent } from 'src/app/shared/toolbar/toolbar.component';
-import { AutocompleteModule } from 'src/app/shared/autocomplete/autocomplete.module';
-import { ClearableInputComponent } from 'src/app/shared/clearable-input/clearable-input.component';
+import { DatetimeInputComponent } from '@household/web/app/shared/datetime-input/datetime-input.component';
+import { InventoryInputComponent } from '@household/web/app/shared/inventory-input/inventory-input.component';
+import { InvoiceInputComponent } from '@household/web/app/shared/invoice-input/invoice-input.component';
+import { AmountInputComponent } from '@household/web/app/shared/amount-input/amount-input.component';
+import { ToolbarComponent } from '@household/web/app/shared/toolbar/toolbar.component';
+import { AutocompleteModule } from '@household/web/app/shared/autocomplete/autocomplete.module';
+import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
 import { TransactionListItemComponent } from './transaction-list-item/transaction-list-item.component';
 import { MatExpansionModule } from '@angular/material/expansion';
 

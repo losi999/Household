@@ -28,10 +28,10 @@ export type IMongodbService = {
 
 let connection: Connection;
 console.log('mongodb service 2');
-set('debug', {
+set('debug', (!process.env.ENV || process.env.ENV === 'LOCAL') ? {
   color: false,
   shell: true,
-});
+} : false);
 
 export const mongodbServiceFactory = (mongodbConnectionString: string): IMongodbService => {
   console.log('factory', connection?.readyState);

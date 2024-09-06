@@ -19,8 +19,9 @@ export const createCategoryServiceFactory = (
       categoryId: body.parentCategoryId,
     }));
 
-    httpErrors.category.parentNotFound(!parentCategory && !!body.parentCategoryId, {
+    httpErrors.category.parentNotFound({
       parentCategoryId: body.parentCategoryId,
+      parentCategory,
     });
 
     const document = categoryDocumentConverter.create({

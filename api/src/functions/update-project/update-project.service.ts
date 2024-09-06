@@ -20,7 +20,8 @@ export const updateProjectServiceFactory = (
       projectId,
     }));
 
-    httpErrors.project.notFound(!queried, {
+    httpErrors.project.notFound({
+      project: queried,
       projectId,
     });
 

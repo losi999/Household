@@ -13,7 +13,7 @@ export interface IAccountDocumentConverter {
 
 export const accountDocumentConverterFactory = (): IAccountDocumentConverter => {
   const instance: IAccountDocumentConverter = {
-    create: (body, expiresIn, generateId): Account.Document => {
+    create: (body, expiresIn, generateId) => {
       return {
         ...body,
         isOpen: true,
@@ -30,20 +30,20 @@ export const accountDocumentConverterFactory = (): IAccountDocumentConverter => 
         },
       };
     },
-    toResponse: (document): Account.Response => {
+    toResponse: ({ accountType, currency, owner, name, isOpen, balance, deferredCount, _id }) => {
       return {
-        ...document,
-        balance: document.balance ?? null,
-        deferredCount: document.deferredCount ?? null,
-        fullName: `${document.name} (${document.owner})`,
-        createdAt: undefined,
-        updatedAt: undefined,
-        _id: undefined,
-        expiresAt: undefined,
-        accountId: getAccountId(document),
+        accountType,
+        currency,
+        owner,
+        name,
+        isOpen,
+        balance: balance ?? null,
+        deferredCount: deferredCount ?? null,
+        fullName: `${name} (${owner})`,
+        accountId: getAccountId(_id),
       };
     },
-    toReport: (document): Account.Report => {
+    toReport: (document) => {
       return {
         accountId: getAccountId(document),
         currency: document.currency,

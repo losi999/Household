@@ -13,15 +13,15 @@ export const getProjectServiceFactory = (
   projectService: IProjectService,
   projectDocumentConverter: IProjectDocumentConverter): IGetProjectService => {
   return async ({ projectId }) => {
-
-    const document = await projectService.getProjectById(projectId).catch(httpErrors.project.getById({
+    const project = await projectService.getProjectById(projectId).catch(httpErrors.project.getById({
       projectId,
     }));
 
-    httpErrors.project.notFound(!document, {
+    httpErrors.project.notFound({
+      project,
       projectId,
     });
 
-    return projectDocumentConverter.toResponse(document);
+    return projectDocumentConverter.toResponse(project);
   };
 };
