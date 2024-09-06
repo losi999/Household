@@ -21,6 +21,24 @@ const schema: StrictJSONSchema7<Category.Response> = {
       type: 'string',
       minLength: 1,
     },
+    parentCategory: {
+      type: 'object',
+      required: [
+        ...categoryId.required,
+        'name',
+        'categoryType',
+        'fullName',
+      ],
+      properties: {
+        ...categoryId.properties,
+        name: category.properties.name,
+        categoryType: category.properties.categoryType,
+        fullName: {
+          type: 'string',
+          minLength: 1,
+        },
+      },
+    },
     ancestors: {
       type: 'array',
       items: {

@@ -22,7 +22,7 @@ const validateCategoryDocument = (response: Category.CategoryId, request: Catego
 };
 
 const validateCategoryResponse = (nestedPath: string = '') => (response: Category.Response, document: Category.Document, ...ancestorDocuments: Category.Document[]) => {
-  const { categoryId, name, categoryType, fullName, ancestors, ...empty } = response;
+  const { categoryId, name, categoryType, fullName, ancestors, parentCategory, ...empty } = response;
   expect(categoryId, `${nestedPath}categoryId`).to.equal(getCategoryId(document));
   expect(name, `${nestedPath}name`).to.equal(document.name);
   expect(categoryType, `${nestedPath}categoryType`).to.equal(document.categoryType);
@@ -39,6 +39,18 @@ const validateCategoryResponse = (nestedPath: string = '') => (response: Categor
     expect(categoryId, `${nestedPath}ancestors[${index}].categoryId`).to.equal(getCategoryId(a));
     expectEmptyObject(empty, `${nestedPath}ancestors[${index}]`);
   });
+
+  const parentDocument = ancestorDocuments.at(-1);
+  if (parentDocument) {
+    const { categoryId, categoryType, fullName, name, ...empty } = parentCategory;
+
+    expect(categoryId, `${nestedPath}parentCategory.categoryId`).to.equal(getCategoryId(parentDocument));
+    expect(name, `${nestedPath}parentCategory.name`).to.equal(parentDocument.name);
+    expect(categoryType, `${nestedPath}parentCategory.categoryType`).to.equal(parentDocument.categoryType);
+    expect(fullName, `${nestedPath}parentCategory.fullName`).to.equal(ancestorDocuments.map(a => a.name).join(':'));
+    expectEmptyObject(empty, `${nestedPath}parentCategory`);
+  }
+
   expectEmptyObject(empty, nestedPath);
 };
 

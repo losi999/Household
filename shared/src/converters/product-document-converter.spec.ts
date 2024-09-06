@@ -102,6 +102,7 @@ describe('Product document converter', () => {
       expect(result).toEqual(
         createProductGroupedResponse({
           fullName: categoryResponse.fullName,
+          categoryId: categoryResponse.categoryId,
           products: [
             createProductResponse({
               productId: getProductId(queriedDocument),
@@ -131,6 +132,7 @@ describe('Product document converter', () => {
       expect(result).toEqual([
         createProductGroupedResponse({
           fullName: categoryResponse.fullName,
+          categoryId: categoryResponse.categoryId,
           products: [
             createProductResponse({
               productId: getProductId(queriedDocument),
