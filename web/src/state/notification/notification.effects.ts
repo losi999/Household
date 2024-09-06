@@ -8,9 +8,9 @@ import { NotificationService } from '@household/web/app/shared/notification.serv
 export class NotificationEffects {
   constructor(private actions: Actions, private notificationService: NotificationService) {}
 
-  showError = createEffect(() => {
+  showMessage = createEffect(() => {
     return this.actions.pipe(
-      ofType(notificationActions.showError),
+      ofType(notificationActions.showMessage),
       concatMap(message => {
         const currentSnackBar = this.notificationService.openedSnackBar;
         if (currentSnackBar) {

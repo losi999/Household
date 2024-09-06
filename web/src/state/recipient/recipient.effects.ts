@@ -20,7 +20,7 @@ export class RecipientEffects {
           })),
           catchError(() => {
             return of(progressActions.processFinished(),
-              notificationActions.showError({
+              notificationActions.showMessage({
                 message: 'Hiba történt',
               }),
             );
@@ -50,7 +50,7 @@ export class RecipientEffects {
               }
             }
             return of(progressActions.processFinished(),
-              notificationActions.showError({
+              notificationActions.showMessage({
                 message: errorMessage,
               }),
             );
@@ -82,7 +82,7 @@ export class RecipientEffects {
                 }
               }
               return of(progressActions.processFinished(),
-                notificationActions.showError({
+                notificationActions.showMessage({
                   message: errorMessage,
                 }),
               );
@@ -106,7 +106,7 @@ export class RecipientEffects {
             return of(recipientApiActions.deleteRecipientFailed({
               recipientId,
             }), progressActions.processFinished(),
-            notificationActions.showError({
+            notificationActions.showMessage({
               message: 'Hiba történt',
             }),
             );
@@ -128,7 +128,7 @@ export class RecipientEffects {
             return of(recipientApiActions.mergeRecipientsFailed({
               sourceRecipientIds,
             }), progressActions.processFinished(),
-            notificationActions.showError({
+            notificationActions.showMessage({
               message: 'Hiba történt',
             }),
             );

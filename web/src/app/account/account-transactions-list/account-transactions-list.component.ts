@@ -9,5 +9,6 @@ import { Transaction } from '@household/shared/types/types';
 export class AccountTransactionsListComponent {
   @Input() transactions: Transaction.Response[];
 
-  constructor() { }
+  constructor() {
+  }
 }

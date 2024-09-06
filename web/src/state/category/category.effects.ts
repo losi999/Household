@@ -20,7 +20,7 @@ export class CategoryEffects {
           })),
           catchError(() => {
             return of(progressActions.processFinished(),
-              notificationActions.showError({
+              notificationActions.showMessage({
                 message: 'Hiba történt',
               }),
             );
@@ -50,7 +50,7 @@ export class CategoryEffects {
               }
             }
             return of(progressActions.processFinished(),
-              notificationActions.showError({
+              notificationActions.showMessage({
                 message: errorMessage,
               }),
             );
@@ -79,7 +79,7 @@ export class CategoryEffects {
                 }
               }
               return of(progressActions.processFinished(),
-                notificationActions.showError({
+                notificationActions.showMessage({
                   message: errorMessage,
                 }),
               );
@@ -100,7 +100,7 @@ export class CategoryEffects {
             return of(categoryApiActions.deleteCategoryFailed({
               categoryId,
             }), progressActions.processFinished(),
-            notificationActions.showError({
+            notificationActions.showMessage({
               message: 'Hiba történt',
             }),
             );
@@ -120,7 +120,7 @@ export class CategoryEffects {
             return of(categoryApiActions.mergeCategoriesFailed({
               sourceCategoryIds,
             }), progressActions.processFinished(),
-            notificationActions.showError({
+            notificationActions.showMessage({
               message: 'Hiba történt',
             }),
             );

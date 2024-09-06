@@ -4,5 +4,5 @@
   </button>
 </household-toolbar>
 
-<household-account-transactions-list [transactions]="transactions"></household-account-transactions-list>
-<button mat-raised-button color="primary" (click)="loadMore()">Betöltés</button>
+<household-account-transactions-list [transactions]="transactions | async"></household-account-transactions-list>
+<button mat-raised-button color="primary" (click)="loadMore()" *ngIf="(transactions | async).length === maximumItemCount">Betöltés</button>

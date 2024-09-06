@@ -20,7 +20,7 @@ export class ProjectEffects {
           })),
           catchError(() => {
             return of(progressActions.processFinished(),
-              notificationActions.showError({
+              notificationActions.showMessage({
                 message: 'Hiba történt',
               }),
             );
@@ -50,7 +50,7 @@ export class ProjectEffects {
               }
             }
             return of(progressActions.processFinished(),
-              notificationActions.showError({
+              notificationActions.showMessage({
                 message: errorMessage,
               }),
             );
@@ -82,7 +82,7 @@ export class ProjectEffects {
                 }
               }
               return of(progressActions.processFinished(),
-                notificationActions.showError({
+                notificationActions.showMessage({
                   message: errorMessage,
                 }),
               );
@@ -106,7 +106,7 @@ export class ProjectEffects {
             return of(projectApiActions.deleteProjectFailed({
               projectId,
             }), progressActions.processFinished(),
-            notificationActions.showError({
+            notificationActions.showMessage({
               message: 'Hiba történt',
             }),
             );
@@ -128,7 +128,7 @@ export class ProjectEffects {
             return of(projectApiActions.mergeProjectsFailed({
               sourceProjectIds,
             }), progressActions.processFinished(),
-            notificationActions.showError({
+            notificationActions.showMessage({
               message: 'Hiba történt',
             }),
             );

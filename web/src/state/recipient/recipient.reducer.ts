@@ -1,9 +1,8 @@
-import { Clean } from '@household/shared/types/common';
 import { Recipient } from '@household/shared/types/types';
 import { createReducer, on } from '@ngrx/store';
 import { recipientApiActions } from '@household/web/state/recipient/recipient.actions';
 
-export const recipientReducer = createReducer<Clean<Recipient.Response>[]>([],
+export const recipientReducer = createReducer<Recipient.Response[]>([],
   on(recipientApiActions.listRecipientsCompleted, (_state, { recipients }) => {
     return recipients;
   }),

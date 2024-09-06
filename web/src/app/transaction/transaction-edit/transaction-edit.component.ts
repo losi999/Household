@@ -2,7 +2,7 @@ import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
-import { TransactionService } from '@household/web/app/transaction/transaction.service';
+import { TransactionService } from '@household/web/services/transaction.service';
 import { isInventoryCategory, isInvoiceCategory } from '@household/shared/common/type-guards';
 import { DialogService } from '@household/web/app/shared/dialog.service';
 import { Subject, takeUntil } from 'rxjs';

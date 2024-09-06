@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AccountHomeComponent } from '@household/web/app/account/account-home/account-home.component';
 import { AccountTransactionsHomeComponent } from '@household/web/app/account/account-transactions-home/account-transactions-home.component';
-import { accountTransactionListResolver, transactionResolver } from '@household/web/app/shared/resolvers';
+import { transactionResolver } from '@household/web/app/shared/resolvers';
 import { TransactionDetailsComponent } from '@household/web/app/transaction/transaction-details/transaction-details.component';
 import { TransactionEditComponent } from '@household/web/app/transaction/transaction-edit/transaction-edit.component';
 
@@ -14,9 +14,6 @@ const routes: Routes = [
   {
     path: 'accounts/:accountId',
     component: AccountTransactionsHomeComponent,
-    resolve: {
-      transactions: accountTransactionListResolver,
-    },
   },
   {
     path: 'accounts/:accountId/transactions/:transactionId',

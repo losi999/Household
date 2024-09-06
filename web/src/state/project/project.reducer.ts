@@ -1,9 +1,8 @@
-import { Clean } from '@household/shared/types/common';
 import { Project } from '@household/shared/types/types';
 import { createReducer, on } from '@ngrx/store';
 import { projectApiActions } from '@household/web/state/project/project.actions';
 
-export const projectReducer = createReducer<Clean<Project.Response>[]>([],
+export const projectReducer = createReducer<Project.Response[]>([],
   on(projectApiActions.listProjectsCompleted, (_state, { projects }) => {
     return projects;
   }),

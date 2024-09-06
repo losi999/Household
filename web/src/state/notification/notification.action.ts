@@ -3,6 +3,6 @@ import { createActionGroup, props } from '@ngrx/store';
 export const notificationActions = createActionGroup({
   source: 'Notification',
   events: {
-    'Show error': props<{message: string}>(),
+    'Show message': props<{message: string}>(),
   },
 });

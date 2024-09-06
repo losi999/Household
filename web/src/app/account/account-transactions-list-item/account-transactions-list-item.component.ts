@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { DialogService } from '@household/web/app/shared/dialog.service';
-import { TransactionService } from '@household/web/app/transaction/transaction.service';
+import { TransactionService } from '@household/web/services/transaction.service';
 
 @Component({
   selector: 'household-account-transactions-list-item',

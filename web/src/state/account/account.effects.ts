@@ -20,7 +20,7 @@ export class AccountEffects {
           })),
           catchError(() => {
             return of(progressActions.processFinished(),
-              notificationActions.showError({
+              notificationActions.showMessage({
                 message: 'Hiba történt',
               }),
             );
@@ -50,7 +50,7 @@ export class AccountEffects {
               }
             }
             return of(progressActions.processFinished(),
-              notificationActions.showError({
+              notificationActions.showMessage({
                 message: errorMessage,
               }),
             );
@@ -82,7 +82,7 @@ export class AccountEffects {
                 }
               }
               return of(progressActions.processFinished(),
-                notificationActions.showError({
+                notificationActions.showMessage({
                   message: errorMessage,
                 }),
               );
@@ -105,7 +105,7 @@ export class AccountEffects {
             return of(accountApiActions.deleteAccountFailed({
               accountId,
             }), progressActions.processFinished(),
-            notificationActions.showError({
+            notificationActions.showMessage({
               message: 'Hiba történt',
             }),
             );

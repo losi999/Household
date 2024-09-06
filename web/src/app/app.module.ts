@@ -30,6 +30,8 @@ import { CategoryEffects } from '@household/web/state/category/category.effects'
 import { ProductEffects } from '@household/web/state/product/product.effects';
 import { AccountEffects } from '@household/web/state/account/account.effects';
 import { productReducer } from '@household/web/state/product/product.reducer';
+import { TransactionEffects } from '@household/web/state/transaction/transaction.effects';
+import { transactionReducer } from '@household/web/state/transaction/transaction.reducer';
 
 registerLocaleData(localeHu);
 
@@ -52,6 +54,7 @@ registerLocaleData(localeHu);
       categories: categoryReducer,
       progress: progressReducer,
       products: productReducer,
+      transactions: transactionReducer,
     }),
     StoreDevtoolsModule.instrument({
       maxAge: 25,
@@ -64,6 +67,7 @@ registerLocaleData(localeHu);
       ProductEffects,
       AccountEffects,
       NotificationEffects,
+      TransactionEffects,
     ]),
   ],
   providers: [

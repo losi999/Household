@@ -20,7 +20,7 @@ export class ProductEffects {
           })),
           catchError(() => {
             return of(progressActions.processFinished(),
-              notificationActions.showError({
+              notificationActions.showMessage({
                 message: 'Hiba történt',
               }),
             );
@@ -47,7 +47,7 @@ export class ProductEffects {
               }
             }
             return of(progressActions.processFinished(),
-              notificationActions.showError({
+              notificationActions.showMessage({
                 message: errorMessage,
               }),
             );
@@ -80,7 +80,7 @@ export class ProductEffects {
                 }
               }
               return of(progressActions.processFinished(),
-                notificationActions.showError({
+                notificationActions.showMessage({
                   message: errorMessage,
                 }),
               );
@@ -105,7 +105,7 @@ export class ProductEffects {
             return of(productApiActions.deleteProductFailed({
               productId,
             }), progressActions.processFinished(),
-            notificationActions.showError({
+            notificationActions.showMessage({
               message: 'Hiba történt',
             }),
             );
@@ -128,7 +128,7 @@ export class ProductEffects {
             return of(productApiActions.mergeProductsFailed({
               sourceProductIds,
             }), progressActions.processFinished(),
-            notificationActions.showError({
+            notificationActions.showMessage({
               message: 'Hiba történt',
             }),
             );

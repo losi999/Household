@@ -15,7 +15,7 @@ import { selectProjects } from '@household/web/state/project/project.selector';
 import { recipientApiActions } from '@household/web/state/recipient/recipient.actions';
 import { selectRecipients } from '@household/web/state/recipient/recipient.selector';
 import { Store as Store_ } from '@household/web/app/store';
-import { TransactionService } from '@household/web/app/transaction/transaction.service';
+import { TransactionService } from '@household/web/services/transaction.service';
 
 const oneFilterRequiredValidator: ValidatorFn = (control) => {
   return Object.values(control.value).every(v => !v || Object.keys(v).length === 0) ? {
