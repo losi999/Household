@@ -6,21 +6,22 @@ import { UpdateQuery } from 'mongoose';
 export interface IProjectDocumentConverter {
   create(body: Project.Request, expiresIn: number, generateId?: boolean): Project.Document;
   update(body: Project.Request, expiresIn: number): UpdateQuery<Project.Document>;
-  toResponse(doc: Project.Document): Project.ConvertedResponse;
+  toResponse(doc: Project.Document): Project.Response;
   toReport(doc: Project.Document): Project.Report;
   toResponseList(docs: Project.Document[]): Project.Response[];
 }
 
 export const projectDocumentConverterFactory = (): IProjectDocumentConverter => {
   const instance: IProjectDocumentConverter = {
-    create: (body, expiresIn, generateId): Project.Document => {
+    create: ({ name, description }, expiresIn, generateId) => {
       return {
-        ...body,
+        description,
+        name,
         _id: generateId ? generateMongoId() : undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
-    update: (body, expiresIn): UpdateQuery<Project.Document> => {
+    update: (body, expiresIn) => {
       const update: UpdateQuery<Project.Document> = {
         $set: {
           ...body,
@@ -36,18 +37,15 @@ export const projectDocumentConverterFactory = (): IProjectDocumentConverter => 
 
       return update;
     },
-    toResponse: (doc): Project.ConvertedResponse => {
+    toResponse: ({ description, _id, name }) => {
       return {
-        ...doc,
-        createdAt: undefined,
-        updatedAt: undefined,
-        _id: undefined,
-        expiresAt: undefined,
-        projectId: getProjectId(doc),
+        name,
+        description,
+        projectId: getProjectId(_id),
       };
     },
 
-    toReport: (doc): Project.Report => {
+    toReport: (doc) => {
       return doc ? {
         projectId: getProjectId(doc),
         name: doc.name,

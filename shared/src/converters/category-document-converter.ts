@@ -19,29 +19,28 @@ export interface ICategoryDocumentConverter {
 }
 
 export const categoryDocumentConverterFactory = (): ICategoryDocumentConverter => {
-  const toResponseBase = (doc: Category.Document): Category.ResponseAncestor => {
-    const { categoryType, name } = doc;
+  const toResponseBase = ({ name, categoryType, _id }: Category.Document): Category.ResponseAncestor => {
     return {
       categoryType,
       name,
-      categoryId: getCategoryId(doc),
+      categoryId: getCategoryId(_id),
     };
   };
 
   const instance: ICategoryDocumentConverter = {
-    create: ({ body, parentCategory }, expiresIn, generateId): Category.Document => {
+    create: ({ body: { categoryType, name }, parentCategory }, expiresIn, generateId) => {
       return {
-        ...body,
+        name,
+        categoryType,
         ancestors: parentCategory ? [
           ...parentCategory.ancestors,
           parentCategory,
         ] : [],
-        parentCategoryId: undefined,
         _id: generateId ? generateMongoId() : undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
-    update: ({ body, parentCategory }, expiresIn): UpdateQuery<Category.Document> => {
+    update: ({ body, parentCategory }, expiresIn) => {
       const update: UpdateQuery<Category.Document> = {
         $set: {
           ...body,
@@ -55,7 +54,7 @@ export const categoryDocumentConverterFactory = (): ICategoryDocumentConverter =
 
       return update;
     },
-    toResponse: (doc): Category.Response => {
+    toResponse: (doc) => {
       const parentFullName = doc.ancestors.map(d => d.name).join(':');
       return {
         ...toResponseBase(doc),
@@ -67,7 +66,7 @@ export const categoryDocumentConverterFactory = (): ICategoryDocumentConverter =
         } : undefined,
       };
     },
-    toReport: (doc): Category.Report => {
+    toReport: (doc) => {
       return doc ? {
         categoryId: getCategoryId(doc),
         fullName: [

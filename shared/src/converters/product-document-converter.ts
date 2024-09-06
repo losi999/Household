@@ -19,16 +19,18 @@ export interface IProductDocumentConverter {
 
 export const productDocumentConverterFactory = (categoryDocumentConverter: ICategoryDocumentConverter): IProductDocumentConverter => {
   const instance: IProductDocumentConverter = {
-    create: ({ body, category }, expiresIn, generateId): Product.Document => {
+    create: ({ body: { brand, measurement, unitOfMeasurement }, category }, expiresIn, generateId) => {
       return {
-        ...body,
-        fullName: `${body.brand} ${body.measurement} ${body.unitOfMeasurement}`,
+        brand,
+        measurement,
+        unitOfMeasurement,
+        fullName: `${brand} ${measurement} ${unitOfMeasurement}`,
         category,
         _id: generateId ? generateMongoId() : undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
-    update: (body, expiresIn): UpdateQuery<Product.Document> => {
+    update: (body, expiresIn) => {
       return {
         $set: {
           ...body,
@@ -37,14 +39,14 @@ export const productDocumentConverterFactory = (categoryDocumentConverter: ICate
         },
       };
     },
-    toReport: ({ document, quantity }): Product.Report => {
+    toReport: ({ document, quantity }) => {
       return document ? {
         productId: getProductId(document),
         fullName: document.fullName,
         quantity,
       } : undefined;
     },
-    toGroupedResponse: (category): Product.GroupedResponse => {
+    toGroupedResponse: (category) => {
       const { categoryId, fullName } = categoryDocumentConverter.toResponse(category);
       return {
         categoryId,
@@ -55,14 +57,13 @@ export const productDocumentConverterFactory = (categoryDocumentConverter: ICate
     toGroupedResponseList: docs => docs.map(d => instance.toGroupedResponse(d)).toSorted((a, b) => a.fullName.localeCompare(b.fullName, 'hu', {
       sensitivity: 'base',
     })),
-    toResponse: (doc): Product.Response => {
-      const { brand, fullName, measurement, unitOfMeasurement } = doc;
+    toResponse: ({ brand, fullName, measurement, unitOfMeasurement, _id }) => {
       return {
         brand,
         fullName,
         measurement,
         unitOfMeasurement,
-        productId: getProductId(doc),
+        productId: getProductId(_id),
       };
     },
     toResponseList: docs => docs.map(d => instance.toResponse(d)),

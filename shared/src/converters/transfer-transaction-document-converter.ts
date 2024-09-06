@@ -21,44 +21,40 @@ export const transferTransactionDocumentConverterFactory = (
   deferredTransactionDocumentConverter: IDeferredTransactionDocumentConverter,
 ): ITransferTransactionDocumentConverter => {
   const instance: ITransferTransactionDocumentConverter = {
-    create: ({ body, account, transferAccount, transactions }, expiresIn, generateId): Transaction.TransferDocument => {
+    create: ({ body: { amount, description, transferAmount, payments, issuedAt }, account, transferAccount, transactions }, expiresIn, generateId) => {
       return {
-        ...body,
-        transferAmount: body.transferAmount ?? body.amount * -1,
+        amount,
+        description,
+        transferAmount: transferAmount ?? amount * -1,
         account,
         transferAccount,
-        payments: body.payments?.map(p => {
+        payments: payments?.map(p => {
           const transaction = transactions[p.transactionId];
           return {
             amount: Math.min(p.amount, Math.abs(transaction.remainingAmount ?? transaction.amount)),
             transaction: transactions[p.transactionId],
           };
         }),
-        issuedAt: new Date(body.issuedAt),
+        issuedAt: new Date(issuedAt),
         transactionType: 'transfer',
         _id: generateId ? generateMongoId() : undefined,
-        accountId: undefined,
-        transferAccountId: undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
-    toResponse: (doc, viewingAccountId): Transaction.TransferResponse => {
+    toResponse: ({ description, transactionType, _id, issuedAt, payments, transferAccount, transferAmount, amount, account }, viewingAccountId) => {
       return {
-        ...doc,
-        createdAt: undefined,
-        updatedAt: undefined,
-        transactionId: getTransactionId(doc),
-        issuedAt: doc.issuedAt.toISOString(),
-        _id: undefined,
-        expiresAt: undefined,
-        payments: doc.payments?.map(p => ({
+        description,
+        transactionType,
+        transactionId: getTransactionId(_id),
+        issuedAt: issuedAt.toISOString(),
+        payments: payments?.map(p => ({
           amount: p.amount,
           transaction: deferredTransactionDocumentConverter.toResponse(p.transaction),
         })) ?? undefined,
-        amount: viewingAccountId === getAccountId(doc.transferAccount) ? doc.transferAmount : doc.amount,
-        transferAmount: viewingAccountId === getAccountId(doc.transferAccount) ? doc.amount : doc.transferAmount,
-        account: viewingAccountId === getAccountId(doc.transferAccount) ? accountDocumentConverter.toResponse(doc.transferAccount) : accountDocumentConverter.toResponse(doc.account),
-        transferAccount: viewingAccountId === getAccountId(doc.transferAccount) ? accountDocumentConverter.toResponse(doc.account) : accountDocumentConverter.toResponse(doc.transferAccount),
+        amount: viewingAccountId === getAccountId(transferAccount) ? transferAmount : amount,
+        transferAmount: viewingAccountId === getAccountId(transferAccount) ? amount : transferAmount,
+        account: viewingAccountId === getAccountId(transferAccount) ? accountDocumentConverter.toResponse(transferAccount) : accountDocumentConverter.toResponse(account),
+        transferAccount: viewingAccountId === getAccountId(transferAccount) ? accountDocumentConverter.toResponse(account) : accountDocumentConverter.toResponse(transferAccount),
       };
     },
     toResponseList: (docs, mainAccountId) => docs.map(d => instance.toResponse(d, mainAccountId)),
