@@ -14,7 +14,7 @@ export class TransactionDetailsComponent implements OnInit {
   constructor(private activatedRoute: ActivatedRoute) { }
 
   ngOnInit(): void {
-    this.transaction = this.activatedRoute.snapshot.data.transaction;
-    this.issuedAt = new Date(this.transaction.issuedAt);
+    // this.transaction = this.activatedRoute.snapshot.data.transaction;
+    // this.issuedAt = new Date(this.transaction.issuedAt);
   }
 }

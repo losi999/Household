@@ -1,4 +1,4 @@
-import { Account, Category, Product, Project, Recipient } from '@household/shared/types/types';
+import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { createReducer, on } from '@ngrx/store';
 import { categoryApiActions } from '@household/web/state/category/category.actions';
 import { progressActions } from '@household/web/state/progress/progress.actions';
@@ -6,6 +6,7 @@ import { projectApiActions } from '@household/web/state/project/project.actions'
 import { recipientApiActions } from '@household/web/state/recipient/recipient.actions';
 import { productApiActions } from '@household/web/state/product/product.actions';
 import { accountApiActions } from '@household/web/state/account/account.actions';
+import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
 
 export type ProgressState = {
   counter: number;
@@ -14,6 +15,7 @@ export type ProgressState = {
   inProgressRecipients: Recipient.Id[];
   inProgressProducts: Product.Id[];
   inProgressAccounts: Account.Id[];
+  inProgressTransactions: Transaction.Id[];
 };
 
 export const progressReducer = createReducer<ProgressState>({
@@ -23,6 +25,7 @@ export const progressReducer = createReducer<ProgressState>({
   inProgressCategories: [],
   inProgressProducts: [],
   inProgressAccounts: [],
+  inProgressTransactions: [],
 },
 on(progressActions.processStarted, (_state) => {
   return {
@@ -193,6 +196,23 @@ on(accountApiActions.deleteAccountCompleted, accountApiActions.deleteAccountFail
   return {
     ..._state,
     inProgressAccounts: _state.inProgressAccounts.filter(p => p !== accountId),
+  };
+}),
+
+on(transactionApiActions.deleteTransactionInitiated, (_state, { transactionId }) => {
+  return {
+    ..._state,
+    inProgressTransactions: [
+      ..._state.inProgressTransactions,
+      transactionId,
+    ],
+  };
+}),
+
+on(transactionApiActions.deleteTransactionCompleted, transactionApiActions.deleteTransactionFailed, (_state, { transactionId }) => {
+  return {
+    ..._state,
+    inProgressTransactions: _state.inProgressTransactions.filter(t => t !== transactionId),
   };
 }),
 );

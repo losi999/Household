@@ -9,6 +9,10 @@ export const transactionReducer = createReducer<Transaction.Response[]>([],
   on(transactionApiActions.listTransactionsCompleted, (_state, { transactions, pageNumber }) => {
     return pageNumber === 1 ? transactions : _state.concat(...transactions);
   }),
+
+  on(transactionApiActions.deleteTransactionCompleted, (_state, { transactionId }) => {
+    return _state.filter(t => t.transactionId !== transactionId);
+  }),
   // on(projectApiActions.createProjectCompleted, projectApiActions.updateProjectCompleted, (_state, { projectId, name, description }) => {
 
   //   return _state.filter(p => p.projectId !== projectId)
@@ -23,8 +27,5 @@ export const transactionReducer = createReducer<Transaction.Response[]>([],
   // }),
   // on(projectApiActions.deleteProjectCompleted, (_state, { projectId }) => {
   //   return _state.filter(p => p.projectId !== projectId);
-  // }),
-  // on(projectApiActions.mergeProjectsCompleted, (_state, { sourceProjectIds }) => {
-  //   return _state.filter(p => !sourceProjectIds.includes(p.projectId));
   // }),
 );

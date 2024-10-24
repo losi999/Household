@@ -48,8 +48,8 @@
     <button mat-icon-button color="primary" *ngIf="transaction.transactionType === 'split'">
       <mat-icon>format_list_bulleted</mat-icon>
     </button>
-    <a mat-icon-button color="primary" [routerLink]="['/accounts', pathAccountId, 'transactions', transaction.transactionId, 'edit']" href=""> <mat-icon>edit</mat-icon></a>
-    <button mat-icon-button color="warn" (click)="delete()">
+    <a mat-icon-button color="primary" [routerLink]="['/accounts', pathAccountId, 'transactions', transaction.transactionId, 'edit']" href="" [disabled]="isDisabled | async"> <mat-icon>edit</mat-icon></a>
+    <button mat-icon-button color="warn" (click)="delete()" [disabled]="isDisabled | async">
       <mat-icon>delete</mat-icon>
     </button>
   </div>

@@ -1,8 +1,11 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { DialogService } from '@household/web/app/shared/dialog.service';
-import { TransactionService } from '@household/web/services/transaction.service';
+import { selectTransactionIsInProgress } from '@household/web/state/progress/progress.selector';
+import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
+import { Store } from '@ngrx/store';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'household-account-transactions-list-item',
@@ -24,8 +27,9 @@ export class AccountTransactionsListItemComponent implements OnInit {
   billingEndDate: string;
   amount: number;
   remainingAmount: number;
+  isDisabled: Observable<boolean>;
 
-  constructor(private activatedRoute: ActivatedRoute, private dialogService: DialogService, private transactionService: TransactionService, private router: Router) { }
+  constructor(private activatedRoute: ActivatedRoute, private dialogService: DialogService, private store: Store) { }
 
   get viewingAccount() {
     switch(this.transaction.transactionType) {
@@ -62,6 +66,8 @@ export class AccountTransactionsListItemComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.isDisabled = this.store.select(selectTransactionIsInProgress(this.transaction.transactionId));
+
     switch (this.transaction.transactionType) {
       case 'payment': {
         this.amount = this.transaction.amount;
@@ -155,7 +161,9 @@ export class AccountTransactionsListItemComponent implements OnInit {
       .subscribe(shouldDelete => {
         console.log(shouldDelete);
         if (shouldDelete) {
-          this.transactionService.deleteTransaction(this.transaction.transactionId);
+          this.store.dispatch(transactionApiActions.deleteTransactionInitiated({
+            transactionId: this.transaction.transactionId,
+          }));
         }
       });
   }

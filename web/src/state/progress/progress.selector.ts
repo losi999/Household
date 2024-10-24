@@ -1,4 +1,4 @@
-import { Account, Category, Product, Project, Recipient } from '@household/shared/types/types';
+import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { createFeatureSelector, createSelector } from '@ngrx/store';
 import { ProgressState } from '@household/web/state/progress/progress.reducer';
 
@@ -43,3 +43,8 @@ export const selectCategoryIsInProgress = (category: Category.Response) => creat
     return categoryIds.some(id => inProgressCategories.includes(id));
   },
 );
+
+export const selectTransactionIsInProgress = (transactionId: Transaction.Id) => createSelector(
+  selectProgress, ({ inProgressTransactions }) => {
+    return inProgressTransactions.includes(transactionId);
+  });

@@ -1,14 +1,15 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, exhaustMap, groupBy, map, mergeMap, of } from 'rxjs';
+import { catchError, exhaustMap, groupBy, map, mergeMap, of, tap } from 'rxjs';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
 import { TransactionService } from '@household/web/services/transaction.service';
 import { progressActions } from '@household/web/state/progress/progress.actions';
 import { notificationActions } from '@household/web/state/notification/notification.action';
+import { Router } from '@angular/router';
 
 @Injectable()
 export class TransactionEffects {
-  constructor(private actions: Actions, private transactionService: TransactionService) {}
+  constructor(private actions: Actions, private transactionService: TransactionService, private router: Router) {}
 
   loadTransactions = createEffect(() => {
     return this.actions.pipe(
@@ -38,35 +39,74 @@ export class TransactionEffects {
     );
   });
 
-  //   createTransaction = createEffect(() => {
-  //     return this.actions.pipe(
-  //       ofType(transactionApiActions.createTransactionInitiated),
-  //       mergeMap(({ type, ...request }) => {
-  //         return this.transactionService.createTransaction(request).pipe(
-  //           map(({ transactionId }) => transactionApiActions.createTransactionCompleted({
-  //             transactionId,
-  //             ...request,
-  //           })),
-  //           catchError((error) => {
-  //             let errorMessage: string;
-  //             switch(error.error?.message) {
-  //               case 'Duplicate transaction name': {
-  //                 errorMessage = `Projekt (${request.name}) már létezik!`;
-  //               } break;
-  //               default: {
-  //                 errorMessage = 'Hiba történt';
-  //               }
-  //             }
-  //             return of(progressActions.processFinished(),
-  //               notificationActions.showMessage({
-  //                 message: errorMessage,
-  //               }),
-  //             );
-  //           }),
-  //         );
-  //       }),
-  //     );
-  //   });
+  createPaymentTransaction = createEffect(() => {
+    return this.actions.pipe(
+      ofType(transactionApiActions.createPaymentTransactionInitiated),
+      mergeMap(({ type, ...request }) => {
+        return this.transactionService.createPaymentTransaction(request).pipe(
+          map(({ transactionId }) => transactionApiActions.createPaymentTransactionCompleted({
+            transactionId,
+            ...request,
+          })),
+          catchError((error) => {
+            console.log(error);
+            const errorMessage = 'Hiba történt';
+            return of(progressActions.processFinished(),
+              notificationActions.showMessage({
+                message: errorMessage,
+              }),
+            );
+          }),
+        );
+      }),
+    );
+  });
+
+  createSplitTransaction = createEffect(() => {
+    return this.actions.pipe(
+      ofType(transactionApiActions.createSplitTransactionInitiated),
+      mergeMap(({ type, ...request }) => {
+        return this.transactionService.createSplitTransaction(request).pipe(
+          map(({ transactionId }) => transactionApiActions.createSplitTransactionCompleted({
+            transactionId,
+            ...request,
+          })),
+          catchError((error) => {
+            console.log(error);
+            const errorMessage = 'Hiba történt';
+            return of(progressActions.processFinished(),
+              notificationActions.showMessage({
+                message: errorMessage,
+              }),
+            );
+          }),
+        );
+      }),
+    );
+  });
+
+  createTransferTransaction = createEffect(() => {
+    return this.actions.pipe(
+      ofType(transactionApiActions.createTransferTransactionInitiated),
+      mergeMap(({ type, ...request }) => {
+        return this.transactionService.createTransferTransaction(request).pipe(
+          map(({ transactionId }) => transactionApiActions.createTransferTransactionCompleted({
+            transactionId,
+            ...request,
+          })),
+          catchError((error) => {
+            console.log(error);
+            const errorMessage = 'Hiba történt';
+            return of(progressActions.processFinished(),
+              notificationActions.showMessage({
+                message: errorMessage,
+              }),
+            );
+          }),
+        );
+      }),
+    );
+  });
 
   //   updateTransaction = createEffect(() => {
   //     return this.actions.pipe(
@@ -102,48 +142,26 @@ export class TransactionEffects {
   //     );
   //   });
 
-  //   deleteTransaction = createEffect(() => {
-  //     return this.actions.pipe(
-  //       ofType(transactionApiActions.deleteTransactionInitiated),
-  //       mergeMap(({ transactionId }) => {
-  //         return this.transactionService.deleteTransaction(transactionId).pipe(
-  //           map(() => transactionApiActions.deleteTransactionCompleted({
-  //             transactionId,
-  //           })),
-  //           catchError(() => {
-  //             return of(transactionApiActions.deleteTransactionFailed({
-  //               transactionId,
-  //             }), progressActions.processFinished(),
-  //             notificationActions.showMessage({
-  //               message: 'Hiba történt',
-  //             }),
-  //             );
-  //           }),
-  //         );
-  //       }),
-  //     );
-  //   });
-
-//   mergeTransactions = createEffect(() => {
-//     return this.actions.pipe(
-//       ofType(transactionApiActions.mergeTransactionsInitiated),
-//       exhaustMap(({ sourceTransactionIds, targetTransactionId }) => {
-//         return this.transactionService.mergeTransactions(targetTransactionId, sourceTransactionIds).pipe(
-//           map(() => transactionApiActions.mergeTransactionsCompleted({
-//             sourceTransactionIds,
-//           })),
-//           catchError(() => {
-//             return of(transactionApiActions.mergeTransactionsFailed({
-//               sourceTransactionIds,
-//             }), progressActions.processFinished(),
-//             notificationActions.showMessage({
-//               message: 'Hiba történt',
-//             }),
-//             );
-//           }),
-//         );
-//       }),
-//     );
-//   });
+  deleteTransaction = createEffect(() => {
+    return this.actions.pipe(
+      ofType(transactionApiActions.deleteTransactionInitiated),
+      mergeMap(({ transactionId }) => {
+        return this.transactionService.deleteTransaction(transactionId).pipe(
+          map(() => transactionApiActions.deleteTransactionCompleted({
+            transactionId,
+          })),
+          catchError(() => {
+            return of(transactionApiActions.deleteTransactionFailed({
+              transactionId,
+            }), progressActions.processFinished(),
+            notificationActions.showMessage({
+              message: 'Hiba történt',
+            }),
+            );
+          }),
+        );
+      }),
+    );
+  });
 }
 

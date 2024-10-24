@@ -7,18 +7,19 @@
     <mat-icon>edit</mat-icon>
   </button> -->
 </household-toolbar>
-<div>
+DETAILS
+<!-- <div>
   {{issuedAt | date: 'yyyy. MM. dd. HH:mm'}}
-</div>
-<div>
-  <!-- Számla: {{transaction.account.name}} -->
-</div>
-<div [ngClass]="transaction.amount >= 0 ? 'green' : 'red'">
-  <!-- {{transaction.amount | number:'1.0-2':'hu'}} {{transaction.account.currency}} -->
-</div>
-<div *ngIf="transaction.description">
+</div> -->
+<!-- <div>
+  Számla: {{transaction.account.name}}
+</div> -->
+<!-- <div [ngClass]="transaction.amount >= 0 ? 'green' : 'red'">
+  {{transaction.amount | number:'1.0-2':'hu'}} {{transaction.account.currency}}
+</div> -->
+<!-- <div *ngIf="transaction.description">
   Megjegyzés: {{transaction.description}}
-</div>
+</div> -->
 <!-- <div [ngSwitch]="transaction.transactionType">
   <ng-container *ngSwitchCase="'split'">
     <div *ngIf="transaction.recipient">

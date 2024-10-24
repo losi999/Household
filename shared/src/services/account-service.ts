@@ -49,11 +49,6 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
               },
             },
             ...calculateAccountBalances(),
-            {
-              $sort: {
-                name: 1,
-              },
-            },
           ])
             .session(session)
             .collation({
@@ -180,7 +175,6 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
           ...calculateAccountBalances(),
           {
             $sort: {
-              owner: 1,
               name: 1,
             },
           },

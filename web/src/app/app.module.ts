@@ -32,6 +32,7 @@ import { AccountEffects } from '@household/web/state/account/account.effects';
 import { productReducer } from '@household/web/state/product/product.reducer';
 import { TransactionEffects } from '@household/web/state/transaction/transaction.effects';
 import { transactionReducer } from '@household/web/state/transaction/transaction.reducer';
+import { NavigationEffects } from '@household/web/state/navigation/navigation.effects';
 
 registerLocaleData(localeHu);
 
@@ -68,6 +69,7 @@ registerLocaleData(localeHu);
       AccountEffects,
       NotificationEffects,
       TransactionEffects,
+      NavigationEffects,
     ]),
   ],
   providers: [

@@ -1,7 +1,6 @@
 <div [formGroup]="form">
   <div class="inventory__product">
-    <household-autocomplete-input [items]="products" label="Termék" displayPropertyName="fullName"
-      formControlName="product">
+    <household-autocomplete-input [items]="products | async" label="Termék" displayPropertyName="fullName" formControlName="product">
     </household-autocomplete-input>
     <button mat-mini-fab color="primary" type="button" (click)="createProduct()">
       <mat-icon>library_add</mat-icon>

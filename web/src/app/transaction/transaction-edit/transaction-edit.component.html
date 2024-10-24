@@ -1,9 +1,6 @@
 <form [formGroup]="form" (ngSubmit)="onSubmit()">
   <household-toolbar title="Tranzakció">
-    <button mat-icon-button type="button" *ngIf="transactionId" (click)="deleteTransaction()">
-      <mat-icon>delete</mat-icon>
-    </button>
-    <button mat-icon-button>
+    <button mat-icon-button [disabled]="isInProgress | async">
       <mat-icon>save</mat-icon>
     </button>
   </household-toolbar>
@@ -14,7 +11,7 @@
 
         <household-amount-input formControlName="amount" [currency]="form.value.account?.currency" />
 
-        <household-autocomplete-input [items]="accounts" label="Számla" displayPropertyName="fullName" formControlName="account" />
+        <household-autocomplete-input [items]="accounts | async" label="Számla" displayPropertyName="fullName" formControlName="account" />
 
         <mat-slide-toggle color="primary" formControlName="isTransfer">Átvitel másik számlára</mat-slide-toggle>
 
@@ -22,7 +19,7 @@
 
         <household-amount-input *ngIf="form.value.isTransfer && (form.value.account?.accountType === 'loan') === (form.value.transferAccount?.accountType === 'loan')" formControlName="transferAmount" [currency]="form.value.transferAccount?.currency" />
 
-        <household-autocomplete-input *ngIf="!form.value.isTransfer && form.value.splits?.length === 0" [items]="categories" label="Kategória" displayPropertyName="fullName" filterPropertyName="name" formControlName="category" (create)="createCategory()" />
+        <household-autocomplete-input *ngIf="!form.value.isTransfer && form.value.splits?.length === 0" [items]="categories | async" label="Kategória" displayPropertyName="fullName" filterPropertyName="name" formControlName="category" (create)="createCategory()" />
 
         <household-invoice-input *ngIf="form.value.category?.categoryType === 'invoice'" formControlName="invoice" />
 
@@ -34,7 +31,7 @@
 
         <household-clearable-input formControlName="description" label="Megjegyzés" />
 
-        <household-autocomplete-input *ngIf="!form.value.isTransfer && form.value.splits?.length === 0" [items]="accounts" label="Kölcsön számla" displayPropertyName="fullName" formControlName="loanAccount" />
+        <household-autocomplete-input *ngIf="!form.value.isTransfer && form.value.splits?.length === 0" [items]="accounts | async" label="Kölcsön számla" displayPropertyName="fullName" formControlName="loanAccount" />
 
         <mat-slide-toggle *ngIf="form.value.loanAccount" color="primary" formControlName="isSettled">Tartozás rendezve</mat-slide-toggle>
       </div>
@@ -54,7 +51,7 @@
           <div class="transaction-edit-split-item__details">
             <household-amount-input formControlName="amount" [currency]="form.value.account?.currency" />
 
-            <household-autocomplete-input [items]="categories" label="Kategória" displayPropertyName="fullName" filterPropertyName="name" formControlName="category" (create)="createCategory()" />
+            <household-autocomplete-input [items]="categories | async" label="Kategória" displayPropertyName="fullName" filterPropertyName="name" formControlName="category" (create)="createCategory()" />
 
             <household-invoice-input *ngIf="split.value.category?.categoryType === 'invoice'" formControlName="invoice" />
 
@@ -64,7 +61,7 @@
 
             <household-clearable-input formControlName="description" label="Megjegyzés" />
 
-            <household-autocomplete-input [items]="accounts" label="Kölcsön számla" displayPropertyName="fullName" formControlName="loanAccount" />
+            <household-autocomplete-input [items]="accounts | async" label="Kölcsön számla" displayPropertyName="fullName" formControlName="loanAccount" />
 
             <mat-slide-toggle *ngIf="split.value.loanAccount" color="primary" formControlName="isSettled">Tartozás rendezve</mat-slide-toggle>
           </div>
@@ -76,7 +73,7 @@
         </div>
       </div>
     </mat-tab>
-    <mat-tab label="Törlesztések" *ngIf="form.value.isTransfer && form.value.account?.accountType !== 'loan' && form.value.transferAccount?.accountType !== 'loan'" tabindex="-1">
+    <!-- <mat-tab label="Törlesztések" *ngIf="form.value.isTransfer && form.value.account?.accountType !== 'loan' && form.value.transferAccount?.accountType !== 'loan'" tabindex="-1">
       <div class="transaction-edit__tab">
         <mat-list class="transaction-edit__deferred-list" [formGroup]="form.controls.payments">
           <mat-list-item *ngFor="let p of form.controls.payments.controls | keyvalue">
@@ -119,6 +116,6 @@
           </mat-expansion-panel>
         </mat-accordion>
       </div>
-    </mat-tab>
+    </mat-tab> -->
   </mat-tab-group>
 </form>

@@ -1,11 +1,11 @@
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { TransactionService } from '@household/web/services/transaction.service';
 import { isInventoryCategory, isInvoiceCategory } from '@household/shared/common/type-guards';
 import { DialogService } from '@household/web/app/shared/dialog.service';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, take, takeUntil, tap } from 'rxjs';
 import { Store as Store_ } from '@household/web/app/store';
 import { Dictionary } from '@household/shared/types/common';
 import { selectProjects } from '@household/web/state/project/project.selector';
@@ -14,6 +14,12 @@ import { selectRecipients } from '@household/web/state/recipient/recipient.selec
 import { recipientApiActions } from '@household/web/state/recipient/recipient.actions';
 import { Store } from '@ngrx/store';
 import { selectCategories } from '@household/web/state/category/category.selector';
+import { selectAccounts } from '@household/web/state/account/account.selector';
+import { accountApiActions } from '@household/web/state/account/account.actions';
+import { categoryApiActions } from '@household/web/state/category/category.actions';
+import { productApiActions } from '@household/web/state/product/product.actions';
+import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
+import { selectIsInProgress } from '@household/web/state/progress/progress.selector';
 
 type SplitFormGroup = FormGroup<{
   category: FormControl<Category.Response>;
@@ -56,14 +62,13 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
   transactionId: Transaction.Id;
   accountId: Account.Id;
   transaction: Transaction.Response;
-  deferredTransactions: Dictionary<Transaction.DeferredResponse> = {};
+  // deferredTransactions: Dictionary<Transaction.DeferredResponse> = {};
 
-  get accounts(): Account.Response[] {
-    return [];//    return this.store_.accounts.value;
-  }
+  accounts = this.store.select(selectAccounts);
   projects = this.store.select(selectProjects);
   recipients = this.store.select(selectRecipients);
   categories = this.store.select(selectCategories);
+  isInProgress = this.store.select(selectIsInProgress);
 
   get splitsSum(): number {
     return this.form.value.splits.reduce((accumulator, currentValue) => {
@@ -75,32 +80,32 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
     return this.form.value.amount - this.splitsSum;
   }
 
-  get availableDeferredTransactions() {
-    return this.store_.deferredTransactions.value.filter(t => !this.form.controls.payments.controls[t.transactionId]);
-  }
+  // get availableDeferredTransactions() {
+  //   return this.store_.deferredTransactions.value.filter(t => !this.form.controls.payments.controls[t.transactionId]);
+  // }
 
   constructor(
     activatedRoute: ActivatedRoute,
-    private store_: Store_,
     private store: Store,
-    private transactionService: TransactionService,
-    private router: Router,
     private dialogService: DialogService,
   ) {
     this.accountId = activatedRoute.snapshot.paramMap.get('accountId') as Account.Id;
     this.transactionId = activatedRoute.snapshot.paramMap.get('transactionId') as Transaction.Id;
-    this.transaction = activatedRoute.snapshot.data.transaction;
 
     // accountService.listAccounts();
-    transactionService.listDeferredTransactions({
-      isSettled: false,
-    });
+    // transactionService.listDeferredTransactions({
+    //   isSettled: false,
+    // });
   }
 
   @HostListener('window:keydown.meta.s', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
     event.preventDefault();
-    this.onSubmit();
+    this.isInProgress.pipe(take(1)).subscribe((value) => {
+      if (!value) {
+        this.onSubmit();
+      }
+    });
   }
 
   private createSplitFormGroup(split?: Transaction.SplitResponseItem | Transaction.DeferredResponse): SplitFormGroup {
@@ -129,20 +134,23 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.store.dispatch(accountApiActions.listAccountsInitiated());
+    this.store.dispatch(categoryApiActions.listCategoriesInitiated());
+    this.store.dispatch(productApiActions.listProductsInitiated());
     this.store.dispatch(projectApiActions.listProjectsInitiated());
     this.store.dispatch(recipientApiActions.listRecipientsInitiated());
 
-    this.store_.deferredTransactions.pipe(takeUntil(this.destroyed)).subscribe((transactions) => {
-      this.deferredTransactions = {
-        ...this.deferredTransactions,
-        ...transactions.reduce((accumulator, currentValue) => {
-          return {
-            ...accumulator,
-            [currentValue.transactionId]: currentValue,
-          };
-        }, {}),
-      };
-    });
+    // this.store_.deferredTransactions.pipe(takeUntil(this.destroyed)).subscribe((transactions) => {
+    //   this.deferredTransactions = {
+    //     ...this.deferredTransactions,
+    //     ...transactions.reduce((accumulator, currentValue) => {
+    //       return {
+    //         ...accumulator,
+    //         [currentValue.transactionId]: currentValue,
+    //       };
+    //     }, {}),
+    //   };
+    // });
 
     this.form = new FormGroup({
       issuedAt: new FormControl(this.transaction ? new Date(this.transaction.issuedAt) : new Date(), [Validators.required]),
@@ -226,10 +234,10 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
           transferAmount: this.transaction.transferAmount,
         });
 
-        this.transaction.payments?.forEach((payment) => {
-          this.deferredTransactions[payment.transaction.transactionId] = payment.transaction;
-          this.form.controls.payments.addControl(payment.transaction.transactionId, new FormControl(payment.amount));
-        });
+        // this.transaction.payments?.forEach((payment) => {
+        //   this.deferredTransactions[payment.transaction.transactionId] = payment.transaction;
+        //   this.form.controls.payments.addControl(payment.transaction.transactionId, new FormControl(payment.amount));
+        // });
       } break;
       case 'loanTransfer': {
         this.form.patchValue({
@@ -259,37 +267,19 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
       }
     }
 
-    if (!this.transaction) {
-      // this.store_.accounts.pipe(takeUntil(this.destroyed)).subscribe((accounts) => {
-      //   const account = accounts.find(a => a.accountId === this.accountId);
-      //   this.form.patchValue({
-      //     account,
-      //   });
-      // });
+    if (!this.transactionId) {
+      this.accounts.pipe(takeUntil(this.destroyed)).subscribe((value) => {
+        const account = value.find(a => a.accountId === this.accountId);
+
+        this.form.patchValue({
+          account,
+        });
+      });
     }
   }
 
   toDate(date: string) {
     return new Date(date);
-  }
-
-  deleteTransaction() {
-    this.dialogService.openDeleteTransactionDialog().afterClosed()
-      .subscribe(result => {
-        if (result) {
-          this.transactionService.deleteTransaction(this.transactionId).subscribe({
-            next: () => {
-              this.router.navigate([
-                '/accounts',
-                this.form.value.account.accountId,
-              ]);
-            },
-            error: (error) => {
-              console.error(error);
-            },
-          });
-        }
-      });
   }
 
   deleteSplit(index: number) {
@@ -321,24 +311,6 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
   }
 
   onSubmit() {
-    const next = (response: Transaction.TransactionId) => {
-      this.router.navigate([
-        '/accounts',
-        this.form.value.account.accountId,
-        'transactions',
-        this.transactionId ?? response.transactionId,
-      ], {
-        replaceUrl: true,
-      });
-    };
-
-    const error = (error) => {
-      console.error(error);
-      alert(JSON.stringify(error, null, 2));
-      // TODO
-      // this.progressService.processFinished();
-    };
-
     if (this.form.invalid || this.form.value.amount === 0) {
       return;
     }
@@ -369,15 +341,12 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
       };
 
       if (this.transactionId) {
-        this.transactionService.updateTransferTransaction(this.transactionId, body).subscribe({
-          next,
-          error,
-        });
+      //   this.transactionService.updateTransferTransaction(this.transactionId, body).subscribe({
+      //     next,
+      //     error,
+      //   });
       } else {
-        this.transactionService.createTransferTransaction(body).subscribe({
-          next,
-          error,
-        });
+        this.store.dispatch(transactionApiActions.createTransferTransactionInitiated(body));
       }
     } else if (this.form.value.splits.length > 0) {
       const body: Transaction.SplitRequest = {
@@ -402,15 +371,12 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
       };
 
       if (this.transactionId) {
-        this.transactionService.updateSplitTransaction(this.transactionId, body).subscribe({
-          next,
-          error,
-        });
+      //   this.transactionService.updateSplitTransaction(this.transactionId, body).subscribe({
+      //     next,
+      //     error,
+      //   });
       } else {
-        this.transactionService.createSplitTransaction(body).subscribe({
-          next,
-          error,
-        });
+        this.store.dispatch(transactionApiActions.createSplitTransactionInitiated(body));
       }
     } else {
       const body: Transaction.PaymentRequest = {
@@ -431,15 +397,12 @@ export class TransactionEditComponent implements OnInit, OnDestroy {
       };
 
       if (this.transactionId) {
-        this.transactionService.updatePaymentTransaction(this.transactionId, body).subscribe({
-          next,
-          error,
-        });
+      //   this.transactionService.updatePaymentTransaction(this.transactionId, body).subscribe({
+      //     next,
+      //     error,
+      //   });
       } else {
-        this.transactionService.createPaymentTransaction(body).subscribe({
-          next,
-          error,
-        });
+        this.store.dispatch(transactionApiActions.createPaymentTransactionInitiated(body));
       }
     }
 

@@ -3,6 +3,7 @@
   <div matListItemLine>{{balanceTitle}}: {{balance | number:'1.0-2':'hu'}}
     {{account.currency}}</div>
   <div matListItemMeta>
+    <a mat-icon-button color="primary" [routerLink]="['/accounts', account.accountId, 'new']" href=""> <mat-icon>post_add</mat-icon></a>
     <button mat-icon-button color="primary" (click)="edit($event)" [disabled]="isDisabled | async">
       <mat-icon>edit</mat-icon>
     </button>
