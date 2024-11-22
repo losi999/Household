@@ -11,7 +11,6 @@ import { Subject, takeUntil } from 'rxjs';
   selector: 'household-clearable-input',
   templateUrl: './clearable-input.component.html',
   styleUrls: ['./clearable-input.component.scss'],
-  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,

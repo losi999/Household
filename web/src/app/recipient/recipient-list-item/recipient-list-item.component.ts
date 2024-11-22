@@ -12,6 +12,7 @@ import { selectRecipientIsInProgress } from '@household/web/state/progress/progr
   selector: 'household-recipient-list-item',
   templateUrl: './recipient-list-item.component.html',
   styleUrls: ['./recipient-list-item.component.scss'],
+  standalone: false,
 })
 export class RecipientListItemComponent implements OnInit {
   @Input() recipient: Recipient.Response;

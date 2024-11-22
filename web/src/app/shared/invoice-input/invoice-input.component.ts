@@ -13,7 +13,6 @@ type Form<D extends Date | string> = Transaction.InvoiceDate<D> & Transaction.In
   selector: 'household-invoice-input',
   templateUrl: './invoice-input.component.html',
   styleUrls: ['./invoice-input.component.scss'],
-  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,

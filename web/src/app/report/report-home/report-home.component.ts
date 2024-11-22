@@ -39,6 +39,7 @@ type GroupCriteria ={
   selector: 'household-report-home',
   templateUrl: './report-home.component.html',
   styleUrl: './report-home.component.scss',
+  standalone: false,
 })
 export class ReportHomeComponent implements OnInit, OnDestroy {
   private destroyed = new Subject<void>();

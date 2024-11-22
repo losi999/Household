@@ -13,6 +13,7 @@ export type RecipientMergeDialogData = Recipient.Id;
   selector: 'household-recipient-merge-dialog',
   templateUrl: './recipient-merge-dialog.component.html',
   styleUrls: ['./recipient-merge-dialog.component.scss'],
+  standalone: false,
 })
 export class RecipientMergeDialogComponent implements OnInit {
   form: FormGroup<{

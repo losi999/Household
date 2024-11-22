@@ -12,6 +12,7 @@ import { Observable } from 'rxjs';
   selector: 'household-project-list-item',
   templateUrl: './project-list-item.component.html',
   styleUrls: ['./project-list-item.component.scss'],
+  standalone: false,
 })
 export class ProjectListItemComponent implements OnInit {
   @Input() project: Project.Response;

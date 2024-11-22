@@ -12,6 +12,7 @@ import { selectProductIsInProgress } from '@household/web/state/progress/progres
   selector: 'household-product-list-product-item',
   templateUrl: './product-list-product-item.component.html',
   styleUrls: ['./product-list-product-item.component.scss'],
+  standalone: false,
 })
 export class ProductListProductItemComponent implements OnInit {
   @Input() product: Product.Response;

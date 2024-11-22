@@ -13,6 +13,7 @@ import { Subject, takeUntil } from 'rxjs';
       useExisting: forwardRef(() => AutocompleteInputComponent),
     },
   ],
+  standalone: false,
 })
 export class AutocompleteInputComponent implements OnInit, OnDestroy, ControlValueAccessor {
   @Input() displayPropertyName: string;

@@ -31,6 +31,7 @@ export type ReportCatalogItemFilterValue<I = string> = {
       useExisting: forwardRef(() => ReportCatalogItemFilterComponent),
     },
   ],
+  standalone: false,
 })
 export class ReportCatalogItemFilterComponent implements OnInit, OnDestroy, OnChanges, ControlValueAccessor {
   @Input() items: any[];

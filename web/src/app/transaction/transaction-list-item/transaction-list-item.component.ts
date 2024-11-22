@@ -14,6 +14,7 @@ import { Subject, takeUntil } from 'rxjs';
       useExisting: forwardRef(() => TransactionListItemComponent),
     },
   ],
+  standalone: false,
 })
 export class TransactionListItemComponent implements OnInit, OnDestroy, ControlValueAccessor {
   @Input() transaction: Transaction.DeferredResponse;

@@ -12,6 +12,7 @@ export type CategoryMergeDialogData = Category.Id;
   selector: 'household-category-merge-dialog',
   templateUrl: './category-merge-dialog.component.html',
   styleUrls: ['./category-merge-dialog.component.scss'],
+  standalone: false,
 })
 export class CategoryMergeDialogComponent implements OnInit {
   form: FormGroup<{

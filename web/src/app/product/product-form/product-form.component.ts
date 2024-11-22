@@ -16,6 +16,7 @@ export type ProductFormData = {
   selector: 'household-product-form',
   templateUrl: './product-form.component.html',
   styleUrls: ['./product-form.component.scss'],
+  standalone: false,
 })
 export class ProductFormComponent implements OnInit {
   form: FormGroup<{

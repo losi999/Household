@@ -11,6 +11,7 @@ export type RecipientFormData = Recipient.Response;
   selector: 'household-recipient-form',
   templateUrl: './recipient-form.component.html',
   styleUrls: ['./recipient-form.component.scss'],
+  standalone: false,
 })
 export class RecipientFormComponent implements OnInit {
   form: FormGroup<{

@@ -36,6 +36,7 @@ type SplitFormGroup = FormGroup<{
   selector: 'household-transaction-edit',
   templateUrl: './transaction-edit.component.html',
   styleUrls: ['./transaction-edit.component.scss'],
+  standalone: false,
 })
 export class TransactionEditComponent implements OnInit, OnDestroy {
   private destroyed = new Subject();

@@ -10,7 +10,6 @@ import { Subject, takeUntil } from 'rxjs';
   selector: 'household-amount-input',
   templateUrl: './amount-input.component.html',
   styleUrls: ['./amount-input.component.scss'],
-  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,

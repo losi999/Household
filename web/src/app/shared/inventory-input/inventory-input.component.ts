@@ -18,7 +18,6 @@ type Form = Transaction.Quantity & Transaction.Product<Product.Response>;
   selector: 'household-inventory-input',
   templateUrl: './inventory-input.component.html',
   styleUrls: ['./inventory-input.component.scss'],
-  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,

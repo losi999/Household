@@ -5,6 +5,7 @@ import { Product } from '@household/shared/types/types';
   selector: 'household-product-list',
   templateUrl: './product-list.component.html',
   styleUrls: ['./product-list.component.scss'],
+  standalone: false,
 })
 export class ProductListComponent {
   @Input() groups: Product.GroupedResponse[];

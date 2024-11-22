@@ -8,6 +8,7 @@ import { selectProjects } from '@household/web/state/project/project.selector';
   selector: 'household-project-home',
   templateUrl: './project-home.component.html',
   styleUrls: ['./project-home.component.scss'],
+  standalone: false,
 })
 export class ProjectHomeComponent implements OnInit {
   projects = this.store.select(selectProjects);

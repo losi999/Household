@@ -5,6 +5,7 @@ import { Account } from '@household/shared/types/types';
   selector: 'household-account-list',
   templateUrl: './account-list.component.html',
   styleUrls: ['./account-list.component.scss'],
+  standalone: false,
 })
 export class AccountListComponent {
   @Input() onlyOpenAccounts: boolean;

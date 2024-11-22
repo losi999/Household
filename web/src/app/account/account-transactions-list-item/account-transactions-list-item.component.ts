@@ -11,6 +11,7 @@ import { Observable } from 'rxjs';
   selector: 'household-account-transactions-list-item',
   templateUrl: './account-transactions-list-item.component.html',
   styleUrls: ['./account-transactions-list-item.component.scss'],
+  standalone: false,
 })
 export class AccountTransactionsListItemComponent implements OnInit {
   @Input() transaction: Transaction.Response;

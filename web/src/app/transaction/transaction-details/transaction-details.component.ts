@@ -6,6 +6,7 @@ import { Transaction } from '@household/shared/types/types';
   selector: 'household-transaction-details',
   templateUrl: './transaction-details.component.html',
   styleUrls: ['./transaction-details.component.scss'],
+  standalone: false,
 })
 export class TransactionDetailsComponent implements OnInit {
   transaction: Transaction.Response;

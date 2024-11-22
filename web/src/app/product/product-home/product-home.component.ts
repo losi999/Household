@@ -9,6 +9,7 @@ import { categoryApiActions } from '@household/web/state/category/category.actio
   selector: 'household-product-home',
   templateUrl: './product-home.component.html',
   styleUrls: ['./product-home.component.scss'],
+  standalone: false,
 })
 export class ProductHomeComponent implements OnInit {
   groups = this.store.select(selectGroupedProducts);

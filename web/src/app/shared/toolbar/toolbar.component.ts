@@ -10,7 +10,6 @@ import { selectIsInProgress } from '@household/web/state/progress/progress.selec
   selector: 'household-toolbar',
   templateUrl: './toolbar.component.html',
   styleUrls: ['./toolbar.component.scss'],
-  standalone: true,
   imports: [
     CommonModule,
     MatToolbarModule,

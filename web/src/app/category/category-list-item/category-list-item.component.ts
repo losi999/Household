@@ -12,6 +12,7 @@ import { selectCategoryIsInProgress } from '@household/web/state/progress/progre
   selector: 'household-category-list-item',
   templateUrl: './category-list-item.component.html',
   styleUrls: ['./category-list-item.component.scss'],
+  standalone: false,
 })
 export class CategoryListItemComponent implements OnInit {
   @Input() category: Category.Response;

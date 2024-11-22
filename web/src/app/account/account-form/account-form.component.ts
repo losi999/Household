@@ -16,6 +16,7 @@ type AccountTypeMap = {
   selector: 'household-account-form',
   templateUrl: './account-form.component.html',
   styleUrls: ['./account-form.component.scss'],
+  standalone: false,
 })
 export class AccountFormComponent implements OnInit {
   form: FormGroup<{

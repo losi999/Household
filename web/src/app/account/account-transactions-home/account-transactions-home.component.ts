@@ -11,6 +11,7 @@ import { selectTransactions } from '@household/web/state/transaction/transaction
   selector: 'household-account-transactions-home',
   templateUrl: './account-transactions-home.component.html',
   styleUrls: ['./account-transactions-home.component.scss'],
+  standalone: false,
 })
 export class AccountTransactionsHomeComponent implements OnInit {
   accountId: Account.Id;

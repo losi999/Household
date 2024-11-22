@@ -10,6 +10,7 @@ import { selectAccountIsInProgress } from '@household/web/state/progress/progres
   selector: 'household-account-list-item',
   templateUrl: './account-list-item.component.html',
   styleUrls: ['./account-list-item.component.scss'],
+  standalone: false,
 })
 export class AccountListItemComponent implements OnInit {
   @Input() account: Account.Response;

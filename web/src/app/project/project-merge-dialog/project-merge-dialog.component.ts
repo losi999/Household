@@ -13,6 +13,7 @@ export type ProjectMergeDialogData = Project.Id;
   selector: 'household-project-merge-dialog',
   templateUrl: './project-merge-dialog.component.html',
   styleUrls: ['./project-merge-dialog.component.scss'],
+  standalone: false,
 })
 export class ProjectMergeDialogComponent implements OnInit {
   form: FormGroup<{

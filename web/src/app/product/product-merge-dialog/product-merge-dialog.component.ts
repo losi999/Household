@@ -16,6 +16,7 @@ export type ProductMergeDialogData = {
   selector: 'household-product-merge-dialog',
   templateUrl: './product-merge-dialog.component.html',
   styleUrls: ['./product-merge-dialog.component.scss'],
+  standalone: false,
 })
 export class ProductMergeDialogComponent implements OnInit {
   form: FormGroup<{

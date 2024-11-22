@@ -8,6 +8,7 @@ import { selectCategories } from '@household/web/state/category/category.selecto
   selector: 'household-category-home',
   templateUrl: './category-home.component.html',
   styleUrls: ['./category-home.component.scss'],
+  standalone: false,
 })
 export class CategoryHomeComponent implements OnInit {
   categories = this.store.select(selectCategories);

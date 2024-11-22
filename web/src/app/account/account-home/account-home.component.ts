@@ -8,6 +8,7 @@ import { selectAccountsByOwner } from '@household/web/state/account/account.sele
   selector: 'household-account-home',
   templateUrl: './account-home.component.html',
   styleUrls: ['./account-home.component.scss'],
+  standalone: false,
 })
 export class AccountHomeComponent implements OnInit {
   onlyOpenAccounts: boolean;

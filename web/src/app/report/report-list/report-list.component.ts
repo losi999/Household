@@ -28,6 +28,7 @@ const isGroupNode = (node: GroupNode | ReportNode): node is GroupNode => {
   selector: 'household-report-list',
   templateUrl: './report-list.component.html',
   styleUrl: './report-list.component.scss',
+  standalone: false,
 })
 export class ReportListComponent implements OnChanges {
   @Input() items: Transaction.Report[];

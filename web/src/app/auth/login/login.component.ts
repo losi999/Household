@@ -6,6 +6,7 @@ import { AuthService } from '@household/web/services/auth.service';
   selector: 'household-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
+  standalone: false,
 })
 export class LoginComponent implements OnInit {
   form: FormGroup<{

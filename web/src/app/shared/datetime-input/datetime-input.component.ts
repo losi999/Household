@@ -10,7 +10,6 @@ import { Subject, takeUntil } from 'rxjs';
   selector: 'household-datetime-input',
   templateUrl: './datetime-input.component.html',
   styleUrls: ['./datetime-input.component.scss'],
-  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,

@@ -12,6 +12,7 @@ export type CategoryFormData = Category.Response;
   selector: 'household-category-form',
   templateUrl: './category-form.component.html',
   styleUrls: ['./category-form.component.scss'],
+  standalone: false,
 })
 export class CategoryFormComponent implements OnInit {
   form: FormGroup<{

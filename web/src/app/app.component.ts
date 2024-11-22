@@ -5,6 +5,7 @@ import { MatIconRegistry } from '@angular/material/icon';
   selector: 'household-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
+  standalone: false,
 })
 export class AppComponent implements OnInit {
   title = 'household';

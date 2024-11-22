@@ -8,6 +8,7 @@ import { DialogService } from '@household/web/app/shared/dialog.service';
   selector: 'household-recipient-home',
   templateUrl: './recipient-home.component.html',
   styleUrls: ['./recipient-home.component.scss'],
+  standalone: false,
 })
 export class RecipientHomeComponent implements OnInit {
   recipients = this.store.select(selectRecipients);

@@ -11,6 +11,7 @@ export type ProjectFormData = Project.Response;
   selector: 'household-project-form',
   templateUrl: './project-form.component.html',
   styleUrls: ['./project-form.component.scss'],
+  standalone: false,
 })
 export class ProjectFormComponent implements OnInit {
   form: FormGroup<{
