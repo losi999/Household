@@ -16,11 +16,12 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AccountFormComponent } from './account-form/account-form.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import { ToolbarComponent } from '@household/web/app/shared/toolbar/toolbar.component';
-import { AutocompleteModule } from '@household/web/app/shared/autocomplete/autocomplete.module';
 import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
 import { MatListModule } from '@angular/material/list';
 import { TransactionModule } from '@household/web/app/transaction/transaction.module';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { MatMenuModule } from '@angular/material/menu';
+import { KeyvalueAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/keyvalue-autocomplete-input/keyvalue-autocomplete-input.component';
 
 @NgModule({
   declarations: [
@@ -45,9 +46,10 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
     AccountRoutingModule,
     MatDialogModule,
     ToolbarComponent,
-    AutocompleteModule,
     ClearableInputComponent,
+    KeyvalueAutocompleteInputComponent,
     TransactionModule,
+    MatMenuModule,
     NgxSkeletonLoaderModule,
   ],
 })

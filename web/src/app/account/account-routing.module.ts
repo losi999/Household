@@ -23,7 +23,7 @@ const routes: Routes = [
     component: TransactionEditComponent,
   },
   {
-    path: 'accounts/:accountId/new',
+    path: 'accounts/:accountId/new/:formType',
     component: TransactionEditComponent,
   },
 ];

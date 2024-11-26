@@ -61,8 +61,8 @@ export class AccountTransactionsListItemComponent implements OnInit {
       case 'transfer':
       case 'split':
       case 'loanTransfer': return this.transaction.account.accountId;
-      case 'deferred': return this.viewingAccountId;
-      case 'reimbursement': return this.transaction.ownerAccount.accountId;
+      case 'deferred':
+      case 'reimbursement': return this.transaction.payingAccount.accountId;
     }
   }
 

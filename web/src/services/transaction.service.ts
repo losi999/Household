@@ -4,14 +4,13 @@ import { Account, Transaction, Report } from '@household/shared/types/types';
 import { Observable } from 'rxjs';
 import { environment } from '@household/web/environments/environment';
 import { transactionsPageSize } from '@household/web/app/constants';
-import { Store } from '@household/web/app/store';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TransactionService {
 
-  constructor(private httpClient: HttpClient, private store: Store) { }
+  constructor(private httpClient: HttpClient) { }
 
   listTransactionsByAccountId(accountId: Account.Id, pageNumber = 1, pageSize: number = transactionsPageSize): Observable<Transaction.Response[]> {
     return this.httpClient.get<Transaction.Response[]>(`${environment.apiUrl}${environment.transactionStage}v1/accounts/${accountId}/transactions`, {
@@ -25,18 +24,11 @@ export class TransactionService {
   listDeferredTransactions(params: {
     isSettled: boolean;
     // transactionIds: Transaction.Id[];
-  }): void {
-    this.httpClient.get<Transaction.DeferredResponse[]>(`${environment.apiUrl}${environment.transactionStage}v1/transactions/deferred`, {
+  }): Observable<Transaction.DeferredResponse[]> {
+    return this.httpClient.get<Transaction.DeferredResponse[]>(`${environment.apiUrl}${environment.transactionStage}v1/transactions/deferred`, {
       params: {
         isSettled: params.isSettled,
         // transactionId: params.transactionIds,
-      },
-    }).subscribe({
-      next: (response) => {
-        this.store.deferredTransactions.next(response);
-      },
-      error: (error) => {
-        console.error(error);
       },
     });
   }

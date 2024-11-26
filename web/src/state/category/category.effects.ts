@@ -4,7 +4,7 @@ import { catchError, exhaustMap, groupBy, map, mergeMap, of } from 'rxjs';
 import { categoryApiActions } from '@household/web/state/category/category.actions';
 import { CategoryService } from '@household/web/services/category.service';
 import { progressActions } from '@household/web/state/progress/progress.actions';
-import { notificationActions } from '@household/web/state/notification/notification.action';
+import { notificationActions } from '@household/web/state/notification/notification.actions';
 
 @Injectable()
 export class CategoryEffects {

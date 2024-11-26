@@ -4,7 +4,7 @@ import { catchError, exhaustMap, groupBy, map, mergeMap, of } from 'rxjs';
 import { accountApiActions } from '@household/web/state/account/account.actions';
 import { AccountService } from '@household/web/services/account.service';
 import { progressActions } from '@household/web/state/progress/progress.actions';
-import { notificationActions } from '@household/web/state/notification/notification.action';
+import { notificationActions } from '@household/web/state/notification/notification.actions';
 
 @Injectable()
 export class AccountEffects {

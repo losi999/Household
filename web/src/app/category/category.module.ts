@@ -14,9 +14,9 @@ import { MatListModule } from '@angular/material/list';
 import { MatRadioModule } from '@angular/material/radio';
 import { CategoryMergeDialogComponent } from './category-merge-dialog/category-merge-dialog.component';
 import { ToolbarComponent } from '@household/web/app/shared/toolbar/toolbar.component';
-import { AutocompleteModule } from '@household/web/app/shared/autocomplete/autocomplete.module';
 import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { CategoryAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/category-autocomplete-input/category-autocomplete-input.component';
 
 @NgModule({
   declarations: [
@@ -37,7 +37,7 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
     MatDialogModule,
     MatRadioModule,
     ToolbarComponent,
-    AutocompleteModule,
+    CategoryAutocompleteInputComponent,
     ClearableInputComponent,
     NgxSkeletonLoaderModule,
   ],

@@ -1,0 +1,17 @@
+<form [formGroup]="form">
+  <household-datetime-input formControlName="issuedAt" />
+
+  <household-account-autocomplete-input [label]="isDownwardTransfer ? 'Átvitel innen' : 'Átvitel ide'" [exclude]="form.value.transferAccountId" formControlName="accountId" />
+
+  <household-amount-input [accountId]="form.value.accountId" formControlName="amount" [isPositive]="!isDownwardTransfer" [showInverse]="false" />
+  <div class="transaction-edit__direction-button">
+    <button mat-icon-button type="button" (click)="inverseTransaction()">
+      <mat-icon>{{isDownwardTransfer ? 'stat_minus_3' : 'stat_3'}}</mat-icon>
+    </button>
+  </div>
+  <household-account-autocomplete-input [label]="isDownwardTransfer ? 'Átvitel ide' : 'Átvitel innen'" [exclude]="form.value.accountId" formControlName="transferAccountId" />
+
+  <household-amount-input *ngIf="!isSameCurrency" [accountId]="form.value.transferAccountId" formControlName="transferAmount" [isPositive]="isDownwardTransfer" [showInverse]="false" />
+
+  <household-clearable-input formControlName="description" label="Megjegyzés" />
+</form>

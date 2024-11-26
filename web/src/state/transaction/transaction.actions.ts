@@ -7,6 +7,8 @@ export const transactionApiActions = createActionGroup({
   events: {
     'List transactions initiated': props<Account.AccountId & Common.Pagination<number>>(),
     'List transactions completed': props<Common.Pagination<number> & { transactions: Transaction.Response[] }>(),
+    'List deferred transactions initiated': props<Transaction.IsSettled>(),
+    'List deferred transactions completed': props<{ transactions: Transaction.DeferredResponse[] }>(),
     'Create payment transaction initiated': props<Transaction.PaymentRequest>(),
     'Create payment transaction completed': props<Account.AccountId & Transaction.TransactionId>(),
     'Create split transaction initiated': props<Transaction.SplitRequest>(),
@@ -18,5 +20,7 @@ export const transactionApiActions = createActionGroup({
     'Delete transaction initiated': props<Transaction.TransactionId>(),
     'Delete transaction completed': props<Transaction.TransactionId>(),
     'Delete transaction failed': props<Transaction.TransactionId>(),
+    'Get transaction initiated': props<Account.AccountId & Transaction.TransactionId>(),
+    'Get transaction completed': props<Transaction.Response>(),
   },
 });

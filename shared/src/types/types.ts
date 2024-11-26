@@ -310,7 +310,7 @@ export namespace Transaction {
     ownerAccount: A;
   };
 
-  type IsSettled = {
+  export type IsSettled = {
     isSettled: boolean;
   };
 

@@ -33,6 +33,8 @@ import { productReducer } from '@household/web/state/product/product.reducer';
 import { TransactionEffects } from '@household/web/state/transaction/transaction.effects';
 import { transactionReducer } from '@household/web/state/transaction/transaction.reducer';
 import { NavigationEffects } from '@household/web/state/navigation/navigation.effects';
+import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
+import { DialogEffects } from '@household/web/state/dialog/dialog.effects';
 
 registerLocaleData(localeHu);
 
@@ -70,6 +72,7 @@ registerLocaleData(localeHu);
       NotificationEffects,
       TransactionEffects,
       NavigationEffects,
+      DialogEffects,
     ]),
   ],
   providers: [
@@ -94,6 +97,13 @@ registerLocaleData(localeHu);
       provide: HTTP_INTERCEPTORS,
       useClass: ProgressInterceptor,
       multi: true,
+    },
+    {
+      provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,
+      useValue: {
+        subscriptSizing: 'dynamic',
+        appearance: 'fill',
+      },
     },
     provideHttpClient(withInterceptorsFromDi()),
   ],

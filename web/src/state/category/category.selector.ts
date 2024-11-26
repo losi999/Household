@@ -3,6 +3,10 @@ import { createFeatureSelector, createSelector } from '@ngrx/store';
 
 export const selectCategories = createFeatureSelector<Category.Response[]>('categories');
 
+export const selectCategoryById = (categoryId: Category.Id) => createSelector(selectCategories, (categories) => {
+  return categories.find(a => a.categoryId === categoryId);
+});
+
 export const selectCategoriesAsParent = (categoryId: Category.Id) => createSelector(selectCategories, (categories) => {
   return categories.filter(c => c.categoryId !== categoryId && c.ancestors.every(a => a.categoryId !== categoryId));
 });

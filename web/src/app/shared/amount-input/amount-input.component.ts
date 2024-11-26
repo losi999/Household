@@ -1,10 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component, forwardRef, Input, OnDestroy, OnInit } from '@angular/core';
-import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
+import { Component, DestroyRef, forwardRef, Injector, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ControlValueAccessor, FormControl, FormControlName, FormGroupDirective, NG_VALUE_ACCESSOR, NgControl, ReactiveFormsModule, TouchedChangeEvent, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { Subject, takeUntil } from 'rxjs';
+import { Account } from '@household/shared/types/types';
+import { selectAccountById } from '@household/web/state/account/account.selector';
+import { Store } from '@ngrx/store';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'household-amount-input',
@@ -25,35 +29,59 @@ import { Subject, takeUntil } from 'rxjs';
     },
   ],
 })
-export class AmountInputComponent implements OnInit, OnDestroy, ControlValueAccessor {
+export class AmountInputComponent implements OnInit, OnChanges, ControlValueAccessor {
   @Input() max: number = Number.POSITIVE_INFINITY;
   @Input() min: number = Number.NEGATIVE_INFINITY;
-  @Input() currency: string;
+  @Input() accountId: Account.Id;
+  @Input() showInverse = true;
+
+  account: Observable<Account.Response>;
 
   amount: FormControl<number>;
+  @Input() isPositive = true;
 
   changed: (value: number) => void;
   touched: () => void;
   isDisabled: boolean;
-  private destroyed = new Subject();
 
-  constructor() { }
+  constructor(private destroyRef: DestroyRef, private store: Store, private injector: Injector) {
+    this.amount = new FormControl();
+  }
 
-  ngOnDestroy(): void {
-    this.destroyed.next(undefined);
-    this.destroyed.complete();
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.isPositive) {
+      this.changed?.(this.isPositive ? this.amount.value : this.amount.value * -1);
+    }
+
+    {if (changes.accountId?.currentValue !== changes.accountId?.previousValue) {
+      this.account = this.store.select(selectAccountById(this.accountId));
+    }}
   }
 
   ngOnInit(): void {
-    this.amount = new FormControl(null);
+    const ngControl = this.injector.get(NgControl) as FormControlName;
+    const formControl = this.injector.get(FormGroupDirective).getControl(ngControl);
+    formControl.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
+      if(event instanceof TouchedChangeEvent) {
+        this.amount.markAsTouched();
+      }
+    });
+    const isRequired = formControl.hasValidator(Validators.required);
 
-    this.amount.valueChanges.pipe(takeUntil(this.destroyed)).subscribe((value) => {
-      this.changed?.(value);
+    if (isRequired) {
+      this.amount.setValidators(Validators.required);
+    }
+
+    this.amount.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((value) => {
+      this.changed?.(this.isPositive ? value : value * -1);
     });
   }
 
   writeValue(amount: any): void {
-    this.amount.setValue(amount);
+    if (amount) {
+      this.isPositive = amount >= 0;
+      this.amount.setValue(Math.abs(amount));
+    }
   }
 
   registerOnChange(fn: any): void {
@@ -68,7 +96,11 @@ export class AmountInputComponent implements OnInit, OnDestroy, ControlValueAcce
     this.isDisabled = isDisabled;
   }
 
-  inverseValue() {
-    this.amount.setValue(-1 * this.amount.value);
+  inverseValue(event: MouseEvent) {
+    this.isPositive = !this.isPositive;
+    if (this.amount.value) {
+      this.amount.setValue(this.amount.value);
+    }
+    event.stopPropagation();
   }
 }

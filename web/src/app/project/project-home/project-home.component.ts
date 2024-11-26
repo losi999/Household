@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { DialogService } from '@household/web/app/shared/dialog.service';
 import { projectApiActions } from '@household/web/state/project/project.actions';
 import { selectProjects } from '@household/web/state/project/project.selector';
+import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 
 @Component({
   selector: 'household-project-home',
@@ -13,7 +13,7 @@ import { selectProjects } from '@household/web/state/project/project.selector';
 export class ProjectHomeComponent implements OnInit {
   projects = this.store.select(selectProjects);
 
-  constructor(private dialogService: DialogService, private store: Store) {
+  constructor(private store: Store) {
   }
 
   ngOnInit(): void {
@@ -21,6 +21,6 @@ export class ProjectHomeComponent implements OnInit {
   }
 
   create() {
-    this.dialogService.openCreateProjectDialog();
+    this.store.dispatch(dialogActions.createProject());
   }
 }

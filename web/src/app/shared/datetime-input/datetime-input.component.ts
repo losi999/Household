@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, forwardRef, OnDestroy, OnInit } from '@angular/core';
 import { ControlValueAccessor, FormGroup, FormControl, NG_VALUE_ACCESSOR, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatTimepickerModule } from '@angular/material/timepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { Subject, takeUntil } from 'rxjs';
@@ -16,6 +17,7 @@ import { Subject, takeUntil } from 'rxjs';
     MatFormFieldModule,
     MatInputModule,
     MatDatepickerModule,
+    MatTimepickerModule,
   ],
   providers: [
     {
@@ -28,8 +30,7 @@ import { Subject, takeUntil } from 'rxjs';
 export class DatetimeInputComponent implements OnInit, OnDestroy, ControlValueAccessor {
   form: FormGroup<{
     date: FormControl<Date>;
-    hour: FormControl<number>;
-    minute: FormControl<number>;
+    time: FormControl<Date>;
   }>;
   changed: (value: Date) => void;
   touched: () => void;
@@ -46,27 +47,17 @@ export class DatetimeInputComponent implements OnInit, OnDestroy, ControlValueAc
   ngOnInit(): void {
     this.form = new FormGroup({
       date: new FormControl(null, [Validators.required]),
-      hour: new FormControl(null, [
-        Validators.required,
-        Validators.min(0),
-        Validators.max(23),
-      ]),
-      minute: new FormControl(null, [
-        Validators.required,
-        Validators.min(0),
-        Validators.max(59),
-      ]),
+      time: new FormControl(null, [Validators.required]),
     });
 
     this.form.valueChanges.pipe(takeUntil(this.destroyed)).subscribe((value: {
       date: Date;
-      hour: number;
-      minute: number;
+      time: Date;
     }) => {
       if (this.form.invalid) {
         this.changed?.(null);
       } else {
-        const newDate = new Date(value.date.getFullYear(), value.date.getMonth(), value.date.getDate(), value.hour, value.minute, 0);
+        const newDate = new Date(value.date.getFullYear(), value.date.getMonth(), value.date.getDate(), value.time.getHours(), value.time.getMinutes(), 0);
         this.changed?.(newDate);
       }
     });
@@ -76,8 +67,7 @@ export class DatetimeInputComponent implements OnInit, OnDestroy, ControlValueAc
     if (date) {
       this.form.setValue({
         date,
-        hour: date.getHours(),
-        minute: date.getMinutes(),
+        time: date,
       });
     }
   }

@@ -9,8 +9,7 @@
       <mat-radio-button value="inventory">Leltározható </mat-radio-button>
       <mat-radio-button value="invoice">Számla </mat-radio-button>
     </mat-radio-group>
-    <household-autocomplete-input [items]="categories | async" label="Szülő" displayPropertyName="fullName" filterPropertyName="name" formControlName="parentCategory">
-    </household-autocomplete-input>
+    <household-category-autocomplete-input label="Szülő" formControlName="parentCategoryId" [excludeAsParent]="category?.categoryId" hideNewButton="true" />
   </div>
   <div mat-dialog-actions>
     <button mat-button cdkFocusInitial (click)="save()">Mentés</button>

@@ -15,9 +15,9 @@ import { ProductListProductItemComponent } from './product-list-product-item/pro
 import { MatSelectModule } from '@angular/material/select';
 import { ProductMergeDialogComponent } from './product-merge-dialog/product-merge-dialog.component';
 import { ToolbarComponent } from '@household/web/app/shared/toolbar/toolbar.component';
-import { AutocompleteModule } from '@household/web/app/shared/autocomplete/autocomplete.module';
 import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { CategoryAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/category-autocomplete-input/category-autocomplete-input.component';
 
 @NgModule({
   declarations: [
@@ -39,7 +39,7 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
     MatDialogModule,
     MatListModule,
     ToolbarComponent,
-    AutocompleteModule,
+    CategoryAutocompleteInputComponent,
     ClearableInputComponent,
     NgxSkeletonLoaderModule,
   ],

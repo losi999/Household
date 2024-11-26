@@ -18,7 +18,7 @@ export class CategoryFormComponent implements OnInit {
   form: FormGroup<{
     name: FormControl<string>;
     categoryType: FormControl<Category.CategoryType['categoryType']>;
-    parentCategory: FormControl<Category.ResponseParent>
+    parentCategoryId: FormControl<Category.Id>
   }>;
   categories = this.store.select(selectCategoriesAsParent(this.category?.categoryId));
 
@@ -30,7 +30,7 @@ export class CategoryFormComponent implements OnInit {
     this.form = new FormGroup({
       name: new FormControl(this.category?.name, [Validators.required]),
       categoryType: new FormControl(this.category?.categoryType ?? 'regular', [Validators.required]),
-      parentCategory: new FormControl(this.category?.parentCategory),
+      parentCategoryId: new FormControl(this.category?.parentCategory?.categoryId),
     });
   }
 
@@ -39,7 +39,7 @@ export class CategoryFormComponent implements OnInit {
       const request: Category.Request = {
         name: this.form.value.name,
         categoryType: this.form.value.categoryType,
-        parentCategoryId: this.form.value.parentCategory?.categoryId,
+        parentCategoryId: this.form.value.parentCategoryId,
       };
 
       if (this.category) {

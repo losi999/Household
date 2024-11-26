@@ -1,10 +1,26 @@
-<form [formGroup]="form" (ngSubmit)="onSubmit()">
-  <household-toolbar title="Tranzakció">
-    <button mat-icon-button [disabled]="isInProgress | async">
-      <mat-icon>save</mat-icon>
-    </button>
-  </household-toolbar>
-  <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="start">
+<!-- <form [formGroup]="form" (ngSubmit)="onSubmit()"> -->
+<household-toolbar title="Tranzakció">
+  <button mat-icon-button type="button" [matMenuTriggerFor]="new">
+    <mat-icon>autorenew</mat-icon>
+  </button>
+  <mat-menu #new="matMenu">
+    <button mat-menu-item replaceUrl="true" [routerLink]="['..', 'payment']" *ngIf="formType !== 'payment'">Kiadás</button>
+    <button mat-menu-item replaceUrl="true" [routerLink]="['..', 'income']" *ngIf="formType !== 'income'">Bevétel</button>
+    <button mat-menu-item replaceUrl="true" [routerLink]="['..', 'split']" *ngIf="formType !== 'split'">Bontás</button>
+    <button mat-menu-item replaceUrl="true" [routerLink]="['..', 'loan']" *ngIf="formType !== 'loan'">Kölcsön</button>
+    <button mat-menu-item replaceUrl="true" [routerLink]="['..', 'transfer']" *ngIf="formType !== 'transfer'">Átvitel</button>
+  </mat-menu>
+  <button mat-icon-button [disabled]="isInProgress | async" (click)="onSubmit()">
+    <mat-icon>save</mat-icon>
+  </button>
+</household-toolbar>
+<div class="transaction-edit" [ngSwitch]="formType">
+  <household-transaction-payment-edit *ngIf="formType === 'payment' || formType === 'income'" [submit]="submit" />
+  <household-transaction-split-edit *ngIf="formType === 'split'" />
+  <household-transaction-loan-edit *ngIf="formType === 'loan'" [submit]="submit" />
+  <household-transaction-transfer-edit *ngIf="formType === 'transfer'" [submit]="submit" />
+</div>
+<!-- <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="start">
     <mat-tab label="Részletek" tabindex="-1">
       <div class="transaction-edit__tab">
         <household-datetime-input formControlName="issuedAt" />
@@ -15,7 +31,7 @@
 
         <mat-slide-toggle color="primary" formControlName="isTransfer">Átvitel másik számlára</mat-slide-toggle>
 
-        <household-autocomplete-input *ngIf="form.value.isTransfer" [items]="accounts" [label]="form.value.amount >= 0 ? 'Átvitel innen' : 'Átvitel ide'" displayPropertyName="fullName" formControlName="transferAccount" />
+        <household-autocomplete-input *ngIf="form.value.isTransfer" [items]="accounts | async" [label]="form.value.amount >= 0 ? 'Átvitel innen' : 'Átvitel ide'" displayPropertyName="fullName" formControlName="transferAccount" />
 
         <household-amount-input *ngIf="form.value.isTransfer && (form.value.account?.accountType === 'loan') === (form.value.transferAccount?.accountType === 'loan')" formControlName="transferAmount" [currency]="form.value.transferAccount?.currency" />
 
@@ -73,15 +89,16 @@
         </div>
       </div>
     </mat-tab>
-    <!-- <mat-tab label="Törlesztések" *ngIf="form.value.isTransfer && form.value.account?.accountType !== 'loan' && form.value.transferAccount?.accountType !== 'loan'" tabindex="-1">
+    <mat-tab label="Törlesztések" *ngIf="form.value.isTransfer && form.value.account?.accountType !== 'loan' && form.value.transferAccount?.accountType !== 'loan'" tabindex="-1">
       <div class="transaction-edit__tab">
         <mat-list class="transaction-edit__deferred-list" [formGroup]="form.controls.payments">
           <mat-list-item *ngFor="let p of form.controls.payments.controls | keyvalue">
+            {{p.key}}
             <household-transaction-list-item [transaction]="deferredTransactions[p.key]" [formControlName]="p.key" (delete)="deletePayment(p.key)" />
           </mat-list-item>
         </mat-list>
         <mat-accordion class="deferred-list">
-          <mat-expansion-panel hideToggle *ngFor="let deferred of availableDeferredTransactions">
+          <mat-expansion-panel hideToggle *ngFor="let deferred of availableDeferredTransactions | async">
             <mat-expansion-panel-header>
               <mat-panel-title>{{toDate(deferred.issuedAt) | date:'yyyy. MMM dd.'}}</mat-panel-title>
               <mat-panel-description>{{deferred.payingAccount.fullName}} &nbsp; <mat-icon>forward</mat-icon>&nbsp; {{deferred.ownerAccount.fullName}}</mat-panel-description>
@@ -116,6 +133,6 @@
           </mat-expansion-panel>
         </mat-accordion>
       </div>
-    </mat-tab> -->
-  </mat-tab-group>
-</form>
+    </mat-tab>
+  </mat-tab-group> -->
+<!-- </form> -->

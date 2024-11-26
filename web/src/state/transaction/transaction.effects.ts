@@ -4,7 +4,7 @@ import { catchError, exhaustMap, groupBy, map, mergeMap, of, tap } from 'rxjs';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
 import { TransactionService } from '@household/web/services/transaction.service';
 import { progressActions } from '@household/web/state/progress/progress.actions';
-import { notificationActions } from '@household/web/state/notification/notification.action';
+import { notificationActions } from '@household/web/state/notification/notification.actions';
 import { Router } from '@angular/router';
 
 @Injectable()
@@ -27,6 +27,51 @@ export class TransactionEffects {
             pageNumber,
             pageSize,
           })),
+          catchError(() => {
+            return of(progressActions.processFinished(),
+              notificationActions.showMessage({
+                message: 'Hiba történt',
+              }),
+            );
+          }),
+        );
+      }),
+    );
+  });
+
+  loadDeferredTransactions = createEffect(() => {
+    return this.actions.pipe(
+      ofType(transactionApiActions.listDeferredTransactionsInitiated),
+      exhaustMap(({
+        isSettled,
+      }) => {
+        return this.transactionService.listDeferredTransactions({
+          isSettled,
+        }).pipe(
+          map((transactions) => transactionApiActions.listDeferredTransactionsCompleted({
+            transactions,
+          })),
+          catchError(() => {
+            return of(progressActions.processFinished(),
+              notificationActions.showMessage({
+                message: 'Hiba történt',
+              }),
+            );
+          }),
+        );
+      }),
+    );
+  });
+
+  getTransaction = createEffect(() => {
+    return this.actions.pipe(
+      ofType(transactionApiActions.getTransactionInitiated),
+      exhaustMap(({
+        accountId,
+        transactionId,
+      }) => {
+        return this.transactionService.getTransactionById(transactionId, accountId).pipe(
+          map((transaction) => transactionApiActions.getTransactionCompleted(transaction)),
           catchError(() => {
             return of(progressActions.processFinished(),
               notificationActions.showMessage({

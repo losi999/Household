@@ -2,11 +2,10 @@ import { Component, Input, OnInit } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { Project } from '@household/shared/types/types';
 import { Store } from '@ngrx/store';
-import { projectApiActions } from '@household/web/state/project/project.actions';
 import { CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult } from '@household/web/app/shared/catalog-submenu/catalog-submenu.component';
-import { DialogService } from '@household/web/app/shared/dialog.service';
 import { selectProjectIsInProgress } from '@household/web/state/progress/progress.selector';
 import { Observable } from 'rxjs';
+import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 
 @Component({
   selector: 'household-project-list-item',
@@ -18,7 +17,6 @@ export class ProjectListItemComponent implements OnInit {
   @Input() project: Project.Response;
 
   constructor(
-    private dialogService: DialogService,
     private store: Store,
     private bottomSheet: MatBottomSheet) { }
 
@@ -29,22 +27,15 @@ export class ProjectListItemComponent implements OnInit {
   }
 
   delete() {
-    this.dialogService.openDeleteProjectDialog(this.project).afterClosed()
-      .subscribe(shouldDelete => {
-        if (shouldDelete) {
-          this.store.dispatch(projectApiActions.deleteProjectInitiated({
-            projectId: this.project.projectId,
-          }));
-        }
-      });
+    this.store.dispatch(dialogActions.deleteProject(this.project));
   }
 
   edit() {
-    this.dialogService.openEditProjectDialog(this.project);
+    this.store.dispatch(dialogActions.updateProject(this.project));
   }
 
   merge() {
-    this.dialogService.openMergeProjectsDialog(this.project);
+    this.store.dispatch(dialogActions.mergeProjects(this.project));
   }
 
   showMenu() {

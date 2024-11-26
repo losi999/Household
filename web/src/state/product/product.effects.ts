@@ -4,7 +4,7 @@ import { catchError, exhaustMap, groupBy, map, mergeMap, of } from 'rxjs';
 import { productApiActions } from '@household/web/state/product/product.actions';
 import { ProductService } from '@household/web/services/product.service';
 import { progressActions } from '@household/web/state/progress/progress.actions';
-import { notificationActions } from '@household/web/state/notification/notification.action';
+import { notificationActions } from '@household/web/state/notification/notification.actions';
 
 @Injectable()
 export class ProductEffects {

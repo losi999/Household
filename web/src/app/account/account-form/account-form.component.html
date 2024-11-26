@@ -1,15 +1,10 @@
 <div [formGroup]="form">
   <h1 mat-dialog-title>{{account ? 'Szerkesztés' : 'Új'}}</h1>
   <div mat-dialog-content>
-    <household-clearable-input formControlName="name" label="Név">
-    </household-clearable-input>
-    <household-clearable-input formControlName="owner" label="Tulajdonos">
-    </household-clearable-input>
-    <household-autocomplete-input [items]="accountTypes | keyvalue" label="Típus" displayPropertyName="value"
-      formControlName="accountType">
-    </household-autocomplete-input>
-    <household-clearable-input formControlName="currency" label="Pénznem">
-    </household-clearable-input>
+    <household-clearable-input formControlName="name" label="Név" />
+    <household-clearable-input formControlName="owner" label="Tulajdonos" />
+    <household-keyvalue-autocomplete-input [itemsMap]="accountTypes" label="Típus" formControlName="accountType" />
+    <household-clearable-input formControlName="currency" label="Pénznem" />
   </div>
   <div mat-dialog-actions>
     <button mat-button cdkFocusInitial (click)="save()">Mentés</button>

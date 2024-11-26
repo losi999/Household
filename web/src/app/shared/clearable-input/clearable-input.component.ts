@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, forwardRef, Input, OnDestroy, OnInit } from '@angular/core';
-import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
+import { Component, forwardRef, Injector, Input, OnDestroy, OnInit } from '@angular/core';
+import { ControlValueAccessor, FormControl, FormControlName, FormGroupDirective, NG_VALUE_ACCESSOR, NgControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -37,7 +37,7 @@ export class ClearableInputComponent implements OnInit, OnDestroy, ControlValueA
   isDisabled: boolean;
   private destroyed = new Subject();
 
-  constructor() { }
+  constructor(private injector: Injector) { }
 
   get value() {
     return this.input.value ?? '';
@@ -50,6 +50,14 @@ export class ClearableInputComponent implements OnInit, OnDestroy, ControlValueA
 
   ngOnInit(): void {
     this.input = new FormControl();
+
+    const ngControl = this.injector.get(NgControl) as FormControlName;
+    const formControl = this.injector.get(FormGroupDirective).getControl(ngControl);
+    const isRequired = formControl.hasValidator(Validators.required);
+
+    if (isRequired) {
+      this.input.setValidators(Validators.required);
+    }
 
     this.input.valueChanges.pipe(takeUntil(this.destroyed)).subscribe((value) => {
       if(value) {
@@ -76,7 +84,8 @@ export class ClearableInputComponent implements OnInit, OnDestroy, ControlValueA
     this.isDisabled = isDisabled;
   }
 
-  clearValue() {
+  clearValue(event: MouseEvent) {
     this.input.reset();
+    event.stopPropagation();
   }
 }

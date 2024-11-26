@@ -4,7 +4,8 @@
     <input *ngSwitchCase="'number'" type="number" matInput [formControl]="input" (blur)="touched?.()">
     <input *ngSwitchCase="'text'" type="text" matInput [formControl]="input" (blur)="touched?.()">
   </ng-container>
-  <button matSuffix mat-icon-button aria-label="Clear" type="button" (click)="clearValue?.()" tabindex="-1">
+  <button matSuffix mat-icon-button aria-label="Clear" type="button" (click)="clearValue($event)" tabindex="-1">
     <mat-icon>close</mat-icon>
   </button>
+  <mat-error *ngIf="input.errors?.required">Kötelező</mat-error>
 </mat-form-field>

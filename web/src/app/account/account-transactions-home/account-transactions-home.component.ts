@@ -5,7 +5,7 @@ import { skip } from 'rxjs/operators';
 import { Store } from '@ngrx/store';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
 import { transactionsPageSize } from '@household/web/app/constants';
-import { selectTransactions } from '@household/web/state/transaction/transaction.selector';
+import { selectTransactionList } from '@household/web/state/transaction/transaction.selector';
 
 @Component({
   selector: 'household-account-transactions-home',
@@ -15,7 +15,7 @@ import { selectTransactions } from '@household/web/state/transaction/transaction
 })
 export class AccountTransactionsHomeComponent implements OnInit {
   accountId: Account.Id;
-  transactions = this.store.select(selectTransactions);
+  transactions = this.store.select(selectTransactionList);
   page: number;
 
   constructor(private activatedRoute: ActivatedRoute, private router: Router, private store: Store) {

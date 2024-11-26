@@ -7,11 +7,6 @@ import { accountApiActions } from '@household/web/state/account/account.actions'
 
 export type AccountFormData = Account.Response;
 
-type AccountTypeMap = {
-  key: Account.AccountType['accountType'];
-  value: string;
-};
-
 @Component({
   selector: 'household-account-form',
   templateUrl: './account-form.component.html',
@@ -21,7 +16,7 @@ type AccountTypeMap = {
 export class AccountFormComponent implements OnInit {
   form: FormGroup<{
     name: FormControl<string>;
-    accountType: FormControl<AccountTypeMap>;
+    accountType: FormControl<Account.AccountType['accountType']>;
     currency: FormControl<string>;
     owner: FormControl<string>;
   }>;
@@ -40,16 +35,11 @@ export class AccountFormComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public account: AccountFormData) { }
 
   ngOnInit(): void {
-    const accountType: AccountTypeMap = {
-      key: this.account?.accountType,
-      value: this.accountTypes[this.account?.accountType],
-    };
-
     this.form = new FormGroup({
       name: new FormControl(this.account?.name, [Validators.required]),
-      accountType: new FormControl(this.account ? accountType : null, [Validators.required]),
+      accountType: new FormControl(this.account?.accountType, [Validators.required]),
       currency: new FormControl(this.account?.currency, [Validators.required]),
-      owner: new FormControl(this.account?.owner),
+      owner: new FormControl(this.account?.owner, [Validators.required]),
     });
   }
 
@@ -57,7 +47,7 @@ export class AccountFormComponent implements OnInit {
     if (this.form.valid) {
       const request: Account.Request = {
         name: this.form.value.name,
-        accountType: this.form.value.accountType.key,
+        accountType: this.form.value.accountType,
         currency: this.form.value.currency,
         owner: this.form.value.owner,
       };

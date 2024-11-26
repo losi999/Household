@@ -1,7 +1,16 @@
 <household-toolbar title="Tranzakciók">
-  <button mat-icon-button [routerLink]="['/accounts', accountId, 'new']">
+  <button mat-icon-button type="button" [matMenuTriggerFor]="new">
     <mat-icon>add</mat-icon>
   </button>
+  <mat-menu #new="matMenu">
+    <button mat-menu-item [routerLink]="['new', 'payment']">Kiadás</button>
+    <button mat-menu-item [routerLink]="['new', 'income']">Bevétel</button>
+    <button mat-menu-item [routerLink]="['new', 'split']">Bontás</button>
+    <button mat-menu-item [routerLink]="['new', 'loan']">Kölcsön</button>
+    <button mat-menu-item [routerLink]="['new', 'transfer']">Átvitel</button>
+  </mat-menu>
+
+
 </household-toolbar>
 
 <household-account-transactions-list [transactions]="transactions | async"></household-account-transactions-list>
