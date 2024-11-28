@@ -9,10 +9,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { Category, Product } from '@household/shared/types/types';
 import { AutocompleteFilterPipe } from '@household/web/app/shared/autocomplete/autocomplete-filter.pipe';
+import { ProductAutocompleteFilterPipe } from '@household/web/app/shared/autocomplete/product-autocomplete-filter.pipe';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
-import { selectProductsOfCategory } from '@household/web/state/product/product.selector';
+import { selectGroupedProducts, selectProductById } from '@household/web/state/product/product.selector';
 import { Store } from '@ngrx/store';
-import { Observable } from 'rxjs';
+import { filter, take } from 'rxjs';
 
 @Component({
   selector: 'household-product-autocomplete-input',
@@ -24,6 +25,7 @@ import { Observable } from 'rxjs';
     MatInputModule,
     MatIconModule,
     MatAutocompleteModule,
+    ProductAutocompleteFilterPipe,
     AutocompleteFilterPipe,
   ],
   templateUrl: './product-autocomplete-input.component.html',
@@ -48,7 +50,7 @@ export class ProductAutocompleteInputComponent implements OnInit, ControlValueAc
   touched: () => void;
   isDisabled: boolean;
 
-  products: Observable<Product.Response[]>;
+  products = this.store.select(selectGroupedProducts);
 
   constructor(private destroyRef: DestroyRef, private injector: Injector, private store: Store) {
     this.selected = new FormControl();
@@ -68,20 +70,28 @@ export class ProductAutocompleteInputComponent implements OnInit, ControlValueAc
       this.selected.setValidators(Validators.required);
     }
 
-    this.products = this.store.select(selectProductsOfCategory(this.categoryId));
-
     this.selected.valueChanges.subscribe((value) => {
-      console.log('svc', value);
       this.changed?.(value?.productId);
     });
   }
 
   writeValue(productId: Product.Id): void {
-    console.log('wv', productId);
-    // this.store.select(selectProductById(productId))
-    //   .subscribe((product) => {
-    //     this.selected.setValue(product);
-    //   });
+    if (productId) {
+      this.store.select(selectProductById(productId))
+        .pipe(
+          filter(p => !!p),
+          take(1),
+        )
+        .subscribe((product) => {
+          this.selected.setValue(product, {
+            emitEvent: false,
+          });
+        });
+    } else {
+      this.selected.setValue(null, {
+        emitEvent: false,
+      });
+    }
   }
   registerOnChange(fn: any): void {
     this.changed = fn;
@@ -96,7 +106,6 @@ export class ProductAutocompleteInputComponent implements OnInit, ControlValueAc
   }
 
   displayName = (item: Product.Response) => {
-    console.log('display', item);
     return item?.fullName;
   };
 
@@ -107,7 +116,9 @@ export class ProductAutocompleteInputComponent implements OnInit, ControlValueAc
   }
 
   create(event: MouseEvent) {
-    // this.store.dispatch(dialogActions.createProduct());
+    this.store.dispatch(dialogActions.createProduct({
+      categoryId: this.categoryId,
+    }));
     event.stopPropagation();
   }
 }

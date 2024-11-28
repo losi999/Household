@@ -55,7 +55,7 @@ export class DialogEffects {
     );
   });
 
-  mergeProject = createEffect(() => {
+  mergeProjects = createEffect(() => {
     return this.actions.pipe(
       ofType(dialogActions.mergeProjects),
       exhaustMap(({ type, ...project }) => {
@@ -112,7 +112,7 @@ export class DialogEffects {
     );
   });
 
-  mergeRecipient = createEffect(() => {
+  mergeRecipients = createEffect(() => {
     return this.actions.pipe(
       ofType(dialogActions.mergeRecipients),
       exhaustMap(({ type, ...recipient }) => {
@@ -169,11 +169,24 @@ export class DialogEffects {
     );
   });
 
-  mergeCategory = createEffect(() => {
+  mergeCategories = createEffect(() => {
     return this.actions.pipe(
       ofType(dialogActions.mergeCategories),
       exhaustMap(({ type, ...category }) => {
         this.dialogService.openMergeCategoriesDialog(category);
+        return EMPTY;
+
+      }),
+    );
+  }, {
+    dispatch: false,
+  });
+
+  createProduct = createEffect(() => {
+    return this.actions.pipe(
+      ofType(dialogActions.createProduct),
+      exhaustMap(({ categoryId }) => {
+        this.dialogService.openCreateProductDialog(categoryId);
         return EMPTY;
 
       }),

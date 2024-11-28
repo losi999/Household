@@ -26,6 +26,10 @@ export const toDictionary = <P>(docs: P[], key: keyof P): Dictionary<P> => {
   }, {});
 };
 
+export const toUndefined = (value: any) => {
+  return value ? value : undefined;
+};
+
 export const createDate = (date: string): Date => {
   return date ? new Date(date) : undefined;
 };

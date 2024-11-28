@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, exhaustMap, groupBy, map, mergeMap, of, tap } from 'rxjs';
+import { catchError, exhaustMap, map, mergeMap, of } from 'rxjs';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
 import { TransactionService } from '@household/web/services/transaction.service';
 import { progressActions } from '@household/web/state/progress/progress.actions';

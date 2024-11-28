@@ -160,7 +160,6 @@ export class AccountTransactionsListItemComponent implements OnInit {
   delete() {
     this.dialogService.openDeleteTransactionDialog().afterClosed()
       .subscribe(shouldDelete => {
-        console.log(shouldDelete);
         if (shouldDelete) {
           this.store.dispatch(transactionApiActions.deleteTransactionInitiated({
             transactionId: this.transaction.transactionId,

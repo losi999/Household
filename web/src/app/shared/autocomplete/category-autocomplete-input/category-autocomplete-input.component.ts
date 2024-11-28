@@ -12,7 +12,7 @@ import { AutocompleteFilterPipe } from '@household/web/app/shared/autocomplete/a
 import { selectCategories, selectCategoriesAsParent, selectCategoryById, selectInventoryCategories } from '@household/web/state/category/category.selector';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { Store } from '@ngrx/store';
-import { Observable } from 'rxjs';
+import { filter, Observable, take } from 'rxjs';
 
 @Component({
   selector: 'household-category-autocomplete-input',
@@ -86,11 +86,20 @@ export class CategoryAutocompleteInputComponent implements OnInit, ControlValueA
   writeValue(categoryId: Category.Id): void {
     if (categoryId) {
       this.store.select(selectCategoryById(categoryId))
+        .pipe(
+          filter(c => !!c),
+          take(1),
+        )
         .subscribe((category) => {
-          this.selected.setValue(category);
+          this.selected.setValue(category, {
+            emitEvent: false,
+          });
         });
+    } else {
+      this.selected.setValue(null, {
+        emitEvent: false,
+      });
     }
-
   }
   registerOnChange(fn: any): void {
     this.changed = fn;

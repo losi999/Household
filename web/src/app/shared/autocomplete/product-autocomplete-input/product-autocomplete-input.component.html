@@ -5,9 +5,11 @@
   <mat-label>{{label}}</mat-label>
   <input type="text" #inp matInput [matAutocomplete]="autocomplete" (blur)="touched?.()" [formControl]="selected">
   <mat-autocomplete #autocomplete="matAutocomplete" [displayWith]="displayName">
-    <mat-option *ngFor="let product of products | async | autocompleteFilter: 'fullName' : inp.value" [value]="product">
-      {{product.fullName}}
-    </mat-option>
+    <mat-optgroup *ngFor="let category of products | async | autocompleteFilter: 'categoryId' : categoryId | productAutocompleteFilter: inp.value" [label]="category.fullName">
+      <mat-option *ngFor="let product of category.products" [value]="product">
+        {{product.fullName}}
+      </mat-option>
+    </mat-optgroup>
   </mat-autocomplete>
   <button matSuffix mat-icon-button aria-label="Clear" type="button" (click)="clearValue($event)" tabindex="-1">
     <mat-icon>close</mat-icon>

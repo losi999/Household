@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, forwardRef, Injector, Input, OnDestroy, OnInit } from '@angular/core';
-import { ControlValueAccessor, FormControl, FormControlName, FormGroupDirective, NG_VALUE_ACCESSOR, NgControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, DestroyRef, forwardRef, Injector, Input, OnDestroy, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ControlValueAccessor, FormControl, FormControlName, FormGroupDirective, NG_VALUE_ACCESSOR, NgControl, ReactiveFormsModule, TouchedChangeEvent, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -37,7 +38,7 @@ export class ClearableInputComponent implements OnInit, OnDestroy, ControlValueA
   isDisabled: boolean;
   private destroyed = new Subject();
 
-  constructor(private injector: Injector) { }
+  constructor(private destroyRef: DestroyRef, private injector: Injector) { }
 
   get value() {
     return this.input.value ?? '';
@@ -53,6 +54,11 @@ export class ClearableInputComponent implements OnInit, OnDestroy, ControlValueA
 
     const ngControl = this.injector.get(NgControl) as FormControlName;
     const formControl = this.injector.get(FormGroupDirective).getControl(ngControl);
+    formControl.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
+      if(event instanceof TouchedChangeEvent) {
+        this.input.markAsTouched();
+      }
+    });
     const isRequired = formControl.hasValidator(Validators.required);
 
     if (isRequired) {

@@ -11,7 +11,7 @@ import { Account } from '@household/shared/types/types';
 import { AutocompleteFilterPipe } from '@household/web/app/shared/autocomplete/autocomplete-filter.pipe';
 import { selectAccountById, selectFilteredAccounts } from '@household/web/state/account/account.selector';
 import { Store } from '@ngrx/store';
-import { Observable } from 'rxjs';
+import { filter, Observable, take } from 'rxjs';
 
 @Component({
   selector: 'household-account-autocomplete-input',
@@ -75,10 +75,22 @@ export class AccountAutocompleteInputComponent implements OnInit, OnChanges, Con
   }
 
   writeValue(accountId: Account.Id): void {
-    this.store.select(selectAccountById(accountId))
-      .subscribe((account) => {
-        this.selected.setValue(account);
+    if (accountId) {
+      this.store.select(selectAccountById(accountId))
+        .pipe(
+          filter(p => !!p),
+          take(1),
+        )
+        .subscribe((account) => {
+          this.selected.setValue(account, {
+            emitEvent: false,
+          });
+        });
+    } else {
+      this.selected.setValue(null, {
+        emitEvent: false,
       });
+    }
   }
   registerOnChange(fn: any): void {
     this.changed = fn;

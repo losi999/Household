@@ -4,8 +4,10 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Account, Category, Product, Project, Recipient } from '@household/shared/types/types';
 import { selectCategories } from '@household/web/state/category/category.selector';
+import { selectGroupedProducts } from '@household/web/state/product/product.selector';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
 import { Store } from '@ngrx/store';
+import { toUndefined } from '@household/shared/common/utils';
 import { Observable, withLatestFrom } from 'rxjs';
 
 @Component({
@@ -41,21 +43,23 @@ export class TransactionPaymentEditComponent implements OnInit {
 
     this.submit?.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.form.markAllAsTouched();
+      console.log(this.form);
+      const { accountId, amount, issuedAt, description, categoryId, recipientId, projectId, productId, quantity, billingEndDate, billingStartDate, invoiceNumber } = this.form.getRawValue();
 
       if (this.form.valid) {
         this.store.dispatch(transactionApiActions.createPaymentTransactionInitiated({
-          accountId: this.form.value.accountId,
-          amount: this.form.value.amount,
-          description: this.form.value.description ?? undefined,
-          issuedAt: this.form.value.issuedAt.toISOString(),
-          categoryId: this.form.value.categoryId,
-          recipientId: this.form.value.recipientId,
-          projectId: this.form.value.projectId,
-          productId: this.categoryType === 'inventory' ? this.form.value.productId : undefined,
-          quantity: this.categoryType === 'inventory' ? this.form.value.quantity : undefined,
-          billingEndDate: this.categoryType === 'invoice' ? this.form.value.billingEndDate?.toISOString().split('T')[0] : undefined,
-          billingStartDate: this.categoryType === 'invoice' ? this.form.value.billingStartDate?.toISOString().split('T')[0] : undefined,
-          invoiceNumber: this.categoryType === 'invoice' ? this.form.value.invoiceNumber : undefined,
+          accountId,
+          amount,
+          description: toUndefined(description),
+          issuedAt: issuedAt.toISOString(),
+          categoryId: toUndefined(categoryId),
+          recipientId: toUndefined(recipientId),
+          projectId: toUndefined(projectId),
+          productId: this.categoryType === 'inventory' ? toUndefined(productId) : undefined,
+          quantity: this.categoryType === 'inventory' ? toUndefined(quantity) : undefined,
+          billingEndDate: this.categoryType === 'invoice' ? billingEndDate?.toISOString().split('T')[0] : undefined,
+          billingStartDate: this.categoryType === 'invoice' ? billingStartDate?.toISOString().split('T')[0] : undefined,
+          invoiceNumber: this.categoryType === 'invoice' ? toUndefined(invoiceNumber) : undefined,
           isSettled: false,
           loanAccountId: undefined,
         }));
@@ -77,6 +81,20 @@ export class TransactionPaymentEditComponent implements OnInit {
       invoiceNumber: new FormControl(),
     });
 
+    this.form.controls.productId.valueChanges.pipe(withLatestFrom(this.store.select(selectGroupedProducts))).subscribe(([
+      productId,
+      groupedProducts,
+    ]) => {
+      if (productId) {
+        const categoryId = groupedProducts.find(g => g.products.some(p => p.productId === productId)).categoryId;
+        if (this.form.value.categoryId !== categoryId) {
+          this.form.patchValue({
+            categoryId,
+          });
+        }
+      }
+    });
+
     this.form.controls.categoryId.valueChanges.pipe(
       withLatestFrom(this.store.select(selectCategories)),
     ).subscribe(([
@@ -87,6 +105,9 @@ export class TransactionPaymentEditComponent implements OnInit {
         this.categoryType = categories.find(c => c.categoryId === categoryId)?.categoryType;
       } else {
         this.categoryType = 'regular';
+        this.form.patchValue({
+          productId: null,
+        });
       }
     });
   }

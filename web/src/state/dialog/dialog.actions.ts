@@ -16,5 +16,6 @@ export const dialogActions = createActionGroup({
     'Update category': props<Category.Response>(),
     'Delete category': props<Category.Response>(),
     'Merge categories': props<Category.Response>(),
+    'Create product': props<Category.CategoryId>(),
   },
 });

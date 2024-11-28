@@ -1,1 +1,11 @@
-<p>transaction-split-edit works!</p>
+<form [formGroup]="form">
+  <household-datetime-input formControlName="issuedAt" />
+
+  <household-amount-input [accountId]="form.value.accountId" formControlName="amount" [showInverse]="false" [isPositive]="false" />
+
+  <household-account-autocomplete-input label="Számla" formControlName="accountId" />
+
+  <household-recipient-autocomplete-input label="Partner" formControlName="recipientId" />
+
+  <household-clearable-input formControlName="description" label="Megjegyzés" />
+</form>

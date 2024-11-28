@@ -21,9 +21,9 @@
     <household-clearable-input label="Számlaszám" formControlName="invoiceNumber" />
   </ng-container>
 
-  <ng-container *ngIf="categoryType === 'inventory'">
-    <household-product-autocomplete-input label="Termék" formControlName="productId" [categoryId]="form.value.categoryId" />
+  <household-product-autocomplete-input *ngIf="!form.value.categoryId || categoryType === 'inventory'" label="Termék" formControlName="productId" [categoryId]="form.value.categoryId" />
 
+  <ng-container *ngIf="categoryType === 'inventory'">
     <household-clearable-input label="Mennyiség" formControlName="quantity" type="number" />
   </ng-container>
 

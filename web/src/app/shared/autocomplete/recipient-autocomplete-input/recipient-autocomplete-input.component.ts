@@ -12,6 +12,7 @@ import { AutocompleteFilterPipe } from '@household/web/app/shared/autocomplete/a
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { selectRecipientById, selectRecipients } from '@household/web/state/recipient/recipient.selector';
 import { Store } from '@ngrx/store';
+import { filter, take } from 'rxjs';
 
 @Component({
   selector: 'household-recipient-autocomplete-input',
@@ -71,10 +72,22 @@ export class RecipientAutocompleteInputComponent implements OnInit, ControlValue
   }
 
   writeValue(recipientId: Recipient.Id): void {
-    this.store.select(selectRecipientById(recipientId))
-      .subscribe((recipient) => {
-        this.selected.setValue(recipient);
+    if(recipientId) {
+      this.store.select(selectRecipientById(recipientId))
+        .pipe(
+          filter(p => !!p),
+          take(1),
+        )
+        .subscribe((recipient) => {
+          this.selected.setValue(recipient, {
+            emitEvent: false,
+          });
+        });
+    } else {
+      this.selected.setValue(null, {
+        emitEvent: false,
       });
+    }
   }
   registerOnChange(fn: any): void {
     this.changed = fn;

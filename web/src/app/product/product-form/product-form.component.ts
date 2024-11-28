@@ -51,7 +51,6 @@ export class ProductFormComponent implements OnInit {
       };
 
       if (this.data.product) {
-        console.log(this.data.categoryId);
         this.store.dispatch(productApiActions.updateProductInitiated({
           categoryId: this.data.categoryId,
           productId: this.data.product.productId,
