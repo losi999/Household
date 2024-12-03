@@ -8,9 +8,9 @@ describe('TransactionSplitEditComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [TransactionSplitEditComponent]
+      declarations: [TransactionSplitEditComponent],
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(TransactionSplitEditComponent);
     component = fixture.componentInstance;

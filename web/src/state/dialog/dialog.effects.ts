@@ -6,6 +6,7 @@ import { DialogService } from '@household/web/app/shared/dialog.service';
 import { projectApiActions } from '@household/web/state/project/project.actions';
 import { recipientApiActions } from '@household/web/state/recipient/recipient.actions';
 import { categoryApiActions } from '@household/web/state/category/category.actions';
+import { productApiActions } from '@household/web/state/product/product.actions';
 
 @Injectable()
 export class DialogEffects {
@@ -187,6 +188,51 @@ export class DialogEffects {
       ofType(dialogActions.createProduct),
       exhaustMap(({ categoryId }) => {
         this.dialogService.openCreateProductDialog(categoryId);
+        return EMPTY;
+
+      }),
+    );
+  }, {
+    dispatch: false,
+  });
+
+  updateProduct = createEffect(() => {
+    return this.actions.pipe(
+      ofType(dialogActions.updateProduct),
+      exhaustMap(({ product, categoryId }) => {
+        this.dialogService.openEditProductDialog(product, categoryId);
+        return EMPTY;
+
+      }),
+    );
+  }, {
+    dispatch: false,
+  });
+
+  deleteProduct = createEffect(() => {
+    return this.actions.pipe(
+      ofType(dialogActions.deleteProduct),
+      exhaustMap(({ product, categoryId }) => {
+        return this.dialogService.openDeleteProductDialog(product).afterClosed()
+          .pipe(
+            map((shouldDelete) => {
+              if (shouldDelete) {
+                return productApiActions.deleteProductInitiated({
+                  productId: product.productId,
+                  categoryId,
+                });
+              }
+            }),
+          );
+      }),
+    );
+  });
+
+  mergeProducts = createEffect(() => {
+    return this.actions.pipe(
+      ofType(dialogActions.mergeProducts),
+      exhaustMap(({ product, categoryId }) => {
+        this.dialogService.openMergeProductsDialog(product, categoryId);
         return EMPTY;
 
       }),

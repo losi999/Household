@@ -29,6 +29,7 @@ import { CategoryAutocompleteInputComponent } from '@household/web/app/shared/au
 import { ProductAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/product-autocomplete-input/product-autocomplete-input.component';
 import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
+import { TransactionShortDetailsComponent } from './transaction-short-details/transaction-short-details.component';
 
 @NgModule({
   declarations: [
@@ -39,6 +40,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
     TransactionSplitEditComponent,
     TransactionTransferEditComponent,
     TransactionLoanEditComponent,
+    TransactionShortDetailsComponent,
   ],
   imports: [
     RouterModule,
@@ -62,7 +64,6 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
     ProductAutocompleteInputComponent,
     MatInputModule,
     MatDatepickerModule,
-    ClearableInputComponent,
     ClearableInputComponent,
     MatExpansionModule,
   ],

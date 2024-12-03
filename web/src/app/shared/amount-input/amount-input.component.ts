@@ -73,7 +73,11 @@ export class AmountInputComponent implements OnInit, OnChanges, ControlValueAcce
     }
 
     this.amount.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((value) => {
-      this.changed?.(this.isPositive ? value : value * -1);
+      if (value) {
+        this.changed?.(this.isPositive ? value : value * -1);
+      } else {
+        this.changed?.(null);
+      }
     });
   }
 
@@ -81,6 +85,8 @@ export class AmountInputComponent implements OnInit, OnChanges, ControlValueAcce
     if (amount) {
       this.isPositive = amount >= 0;
       this.amount.setValue(Math.abs(amount));
+    } else {
+      this.amount.setValue(null);
     }
   }
 

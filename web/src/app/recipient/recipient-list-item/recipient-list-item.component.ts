@@ -2,11 +2,10 @@ import { Component, Input, OnInit } from '@angular/core';
 import { Recipient } from '@household/shared/types/types';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult } from '@household/web/app/shared/catalog-submenu/catalog-submenu.component';
-import { DialogService } from '@household/web/app/shared/dialog.service';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
-import { recipientApiActions } from '@household/web/state/recipient/recipient.actions';
 import { selectRecipientIsInProgress } from '@household/web/state/progress/progress.selector';
+import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 
 @Component({
   selector: 'household-recipient-list-item',
@@ -18,7 +17,6 @@ export class RecipientListItemComponent implements OnInit {
   @Input() recipient: Recipient.Response;
   constructor(
     private store: Store,
-    private dialogService: DialogService,
     private bottomSheet: MatBottomSheet) { }
 
   isDisabled: Observable<boolean>;
@@ -28,22 +26,15 @@ export class RecipientListItemComponent implements OnInit {
   }
 
   delete() {
-    this.dialogService.openDeleteRecipientDialog(this.recipient).afterClosed()
-      .subscribe(shouldDelete => {
-        if (shouldDelete) {
-          this.store.dispatch(recipientApiActions.deleteRecipientInitiated({
-            recipientId: this.recipient.recipientId,
-          }));
-        }
-      });
+    this.store.dispatch(dialogActions.deleteRecipient(this.recipient));
   }
 
   edit() {
-    this.dialogService.openEditRecipientDialog(this.recipient);
+    this.store.dispatch(dialogActions.updateRecipient(this.recipient));
   }
 
   merge() {
-    this.dialogService.openMergeRecipientsDialog(this.recipient);
+    this.store.dispatch(dialogActions.mergeRecipients(this.recipient));
   }
 
   showMenu() {

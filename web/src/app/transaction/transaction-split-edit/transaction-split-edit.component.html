@@ -8,4 +8,43 @@
   <household-recipient-autocomplete-input label="Partner" formControlName="recipientId" />
 
   <household-clearable-input formControlName="description" label="Megjegyzés" />
+
+  <household-transaction-short-details *ngFor="let s of splits" [details]="toShortDetails(s)" [currencyAccountId]="form.value.accountId" />
+
+  <div *ngIf="split" [formGroup]="split">
+    <household-amount-input [accountId]="form.value.accountId" formControlName="amount" [isPositive]="false" />
+
+    <household-category-autocomplete-input label="Kategória" formControlName="categoryId" />
+
+    <ng-container *ngIf="categoryType === 'invoice'">
+      <mat-form-field>
+        <mat-label>Számlázási időszak</mat-label>
+        <mat-date-range-input [rangePicker]="picker">
+          <input matStartDate formControlName="billingStartDate" placeholder="Kezdete">
+          <input matEndDate formControlName="billingEndDate" placeholder="Vége">
+        </mat-date-range-input>
+        <mat-datepicker-toggle matPrefix [for]="picker" tabindex="-1" />
+        <mat-date-range-picker #picker />
+      </mat-form-field>
+
+      <household-clearable-input label="Számlaszám" formControlName="invoiceNumber" />
+    </ng-container>
+
+    <household-product-autocomplete-input *ngIf="!split.value.categoryId || categoryType === 'inventory'" label="Termék" formControlName="productId" [categoryId]="split.value.categoryId" />
+
+    <ng-container *ngIf="categoryType === 'inventory'">
+      <household-clearable-input label="Mennyiség" formControlName="quantity" type="number" />
+    </ng-container>
+
+    <household-project-autocomplete-input label="Projekt" formControlName="projectId" />
+
+    <household-clearable-input formControlName="description" label="Megjegyzés" />
+
+    <household-account-autocomplete-input label="Kölcsön számla" [exclude]="form.value.accountId" formControlName="loanAccountId" />
+
+    <mat-slide-toggle color="primary" formControlName="isSettled">Tartozás rendezve</mat-slide-toggle>
+  </div>
+
+  <button mat-flat-button *ngIf="sumOfSplits !== form.value.amount" type="button" (click)="addNewSplit()" [disabled]="!form.value.amount">{{sumOfSplits + split?.value.amount === form.value.amount ? 'Kész' : 'Új bontás'}}</button>
+
 </form>

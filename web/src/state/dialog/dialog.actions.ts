@@ -1,4 +1,4 @@
-import { Category, Project, Recipient } from '@household/shared/types/types';
+import { Category, Product, Project, Recipient } from '@household/shared/types/types';
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
 
 export const dialogActions = createActionGroup({
@@ -17,5 +17,8 @@ export const dialogActions = createActionGroup({
     'Delete category': props<Category.Response>(),
     'Merge categories': props<Category.Response>(),
     'Create product': props<Category.CategoryId>(),
+    'Update product': props<{product: Product.Response} & Category.CategoryId>(),
+    'Delete product': props<{product: Product.Response} & Category.CategoryId>(),
+    'Merge products': props<{product: Product.Response} & Category.CategoryId>(),
   },
 });

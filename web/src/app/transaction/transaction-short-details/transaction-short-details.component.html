@@ -1,0 +1,34 @@
+<mat-list>
+  <mat-list-item *ngIf="details.accountId" [class.red]="details.amount < 0" [class.green]="details.amount >= 0">
+    <mat-icon matListItemIcon>forward</mat-icon>
+    <div matListItemTitle>{{(account |async)?.fullName}}</div>
+  </mat-list-item>
+  <mat-list-item [class.red]="details.amount < 0" [class.green]="details.amount >= 0">
+    <mat-icon matListItemIcon>paid</mat-icon>
+    <div matListItemTitle>{{details.amount}} {{(currencyAccount | async)?.currency}}</div>
+  </mat-list-item>
+  <mat-list-item *ngIf="details.categoryId">
+    <mat-icon matListItemIcon>category</mat-icon>
+    <div matListItemTitle class="category">{{(category | async)?.fullName}}</div>
+  </mat-list-item>
+  <mat-list-item *ngIf="details.productId">
+    <mat-icon matListItemIcon>shopping_cart</mat-icon>
+    <div matListItemTitle class="product">{{(product | async)?.fullName}} {{details.quantity}}</div>
+  </mat-list-item>
+  <mat-list-item *ngIf="details.invoiceNumber">
+    <mat-icon matListItemIcon>receipt</mat-icon>
+    <div matListItemTitle class="product">{{details.invoiceNumber}}</div>
+  </mat-list-item>
+  <mat-list-item *ngIf="details.billingStartDate && details.billingEndDate">
+    <mat-icon matListItemIcon>calendar_month</mat-icon>
+    <div matListItemTitle class="product">{{details.billingStartDate | date:'yyyy MMM dd.'}} - {{details.billingEndDate | date:'yyyy MMM dd.'}}</div>
+  </mat-list-item>
+  <mat-list-item *ngIf="details.projectId">
+    <mat-icon matListItemIcon>stacks</mat-icon>
+    <div matListItemTitle class="project">{{(project | async)?.name}}</div>
+  </mat-list-item>
+  <mat-list-item *ngIf=details.description>
+    <mat-icon matListItemIcon>description</mat-icon>
+    <div matListItemTitle class="description">{{details.description}}</div>
+  </mat-list-item>
+</mat-list>

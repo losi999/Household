@@ -3,10 +3,9 @@ import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { Category, Product } from '@household/shared/types/types';
 import { Store } from '@ngrx/store';
 import { CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult } from '@household/web/app/shared/catalog-submenu/catalog-submenu.component';
-import { DialogService } from '@household/web/app/shared/dialog.service';
-import { productApiActions } from '@household/web/state/product/product.actions';
 import { Observable } from 'rxjs';
 import { selectProductIsInProgress } from '@household/web/state/progress/progress.selector';
+import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 
 @Component({
   selector: 'household-product-list-product-item',
@@ -20,7 +19,6 @@ export class ProductListProductItemComponent implements OnInit {
 
   constructor(
     private store: Store,
-    private dialogService: DialogService,
     private bottomSheet: MatBottomSheet) { }
 
   isDisabled: Observable<boolean>;
@@ -30,23 +28,24 @@ export class ProductListProductItemComponent implements OnInit {
   }
 
   delete() {
-    this.dialogService.openDeleteProductDialog(this.product).afterClosed()
-      .subscribe(shouldDelete => {
-        if (shouldDelete) {
-          this.store.dispatch(productApiActions.deleteProductInitiated({
-            productId: this.product.productId,
-            categoryId: this.categoryId,
-          }));
-        }
-      });
+    this.store.dispatch(dialogActions.deleteProduct({
+      product: this.product,
+      categoryId: this.categoryId,
+    }));
   }
 
   edit() {
-    this.dialogService.openEditProductDialog(this.product, this.categoryId);
+    this.store.dispatch(dialogActions.updateProduct({
+      product: this.product,
+      categoryId: this.categoryId,
+    }));
   }
 
   merge() {
-    this.dialogService.openMergeProductsDialog(this.product, this.categoryId);
+    this.store.dispatch(dialogActions.mergeProducts({
+      product: this.product,
+      categoryId: this.categoryId,
+    }));
   }
 
   showMenu() {

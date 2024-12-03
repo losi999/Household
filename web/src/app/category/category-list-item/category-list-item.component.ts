@@ -4,9 +4,8 @@ import { Category } from '@household/shared/types/types';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 import { CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult } from '@household/web/app/shared/catalog-submenu/catalog-submenu.component';
-import { DialogService } from '@household/web/app/shared/dialog.service';
-import { categoryApiActions } from '@household/web/state/category/category.actions';
 import { selectCategoryIsInProgress } from '@household/web/state/progress/progress.selector';
+import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 
 @Component({
   selector: 'household-category-list-item',
@@ -18,7 +17,6 @@ export class CategoryListItemComponent implements OnInit {
   @Input() category: Category.Response;
   constructor(
     private store: Store,
-    private dialogService: DialogService,
     private bottomSheet: MatBottomSheet) { }
 
   isDisabled: Observable<boolean>;
@@ -28,22 +26,15 @@ export class CategoryListItemComponent implements OnInit {
   }
 
   delete() {
-    this.dialogService.openDeleteCategoryDialog(this.category).afterClosed()
-      .subscribe(shouldDelete => {
-        if (shouldDelete) {
-          this.store.dispatch(categoryApiActions.deleteCategoryInitiated({
-            categoryId: this.category.categoryId,
-          }));
-        }
-      });
+    this.store.dispatch(dialogActions.deleteCategory(this.category));
   }
 
   edit() {
-    this.dialogService.openEditCategoryDialog(this.category);
+    this.store.dispatch(dialogActions.updateCategory(this.category));
   }
 
   merge() {
-    this.dialogService.openMergeCategoriesDialog(this.category);
+    this.store.dispatch(dialogActions.mergeCategories(this.category));
   }
 
   showMenu() {

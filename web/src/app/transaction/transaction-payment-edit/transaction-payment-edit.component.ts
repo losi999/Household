@@ -44,9 +44,10 @@ export class TransactionPaymentEditComponent implements OnInit {
     this.submit?.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.form.markAllAsTouched();
       console.log(this.form);
-      const { accountId, amount, issuedAt, description, categoryId, recipientId, projectId, productId, quantity, billingEndDate, billingStartDate, invoiceNumber } = this.form.getRawValue();
 
       if (this.form.valid) {
+        const { accountId, amount, issuedAt, description, categoryId, recipientId, projectId, productId, quantity, billingEndDate, billingStartDate, invoiceNumber } = this.form.getRawValue();
+
         this.store.dispatch(transactionApiActions.createPaymentTransactionInitiated({
           accountId,
           amount,
@@ -55,11 +56,24 @@ export class TransactionPaymentEditComponent implements OnInit {
           categoryId: toUndefined(categoryId),
           recipientId: toUndefined(recipientId),
           projectId: toUndefined(projectId),
-          productId: this.categoryType === 'inventory' ? toUndefined(productId) : undefined,
-          quantity: this.categoryType === 'inventory' ? toUndefined(quantity) : undefined,
-          billingEndDate: this.categoryType === 'invoice' ? billingEndDate?.toISOString().split('T')[0] : undefined,
-          billingStartDate: this.categoryType === 'invoice' ? billingStartDate?.toISOString().split('T')[0] : undefined,
-          invoiceNumber: this.categoryType === 'invoice' ? toUndefined(invoiceNumber) : undefined,
+          ...(this.categoryType === 'inventory' ? {
+            productId: toUndefined(productId),
+            quantity: toUndefined(quantity),
+          } : {
+            productId: undefined,
+            quantity: undefined,
+          }),
+          ...(this.categoryType === 'invoice') ? {
+            billingStartDate: new Date(billingStartDate.getTime() - billingStartDate.getTimezoneOffset() * 60000).toISOString()
+              .split('T')[0],
+            billingEndDate: new Date(billingEndDate.getTime() - billingEndDate.getTimezoneOffset() * 60000).toISOString()
+              .split('T')[0],
+            invoiceNumber: toUndefined(invoiceNumber),
+          } : {
+            billingEndDate: undefined,
+            billingStartDate: undefined,
+            invoiceNumber: undefined,
+          },
           isSettled: false,
           loanAccountId: undefined,
         }));
