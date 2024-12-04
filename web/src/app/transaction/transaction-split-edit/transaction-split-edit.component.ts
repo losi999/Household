@@ -4,9 +4,12 @@ import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { toUndefined } from '@household/shared/common/utils';
 import { Account, Project, Recipient, Category, Product, Transaction } from '@household/shared/types/types';
+import { takeFirstDefined } from '@household/web/operators/take-first-defined';
+import { toSplitResponse } from '@household/web/operators/to-split-response';
 import { selectCategories } from '@household/web/state/category/category.selector';
 import { selectGroupedProducts } from '@household/web/state/product/product.selector';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
+import { selectTransaction } from '@household/web/state/transaction/transaction.selector';
 import { Store } from '@ngrx/store';
 import { Observable, withLatestFrom } from 'rxjs';
 
@@ -58,24 +61,7 @@ export class TransactionSplitEditComponent implements OnInit {
 
   ngOnInit(): void {
     const accountId = this.activatedRoute.snapshot.paramMap.get('accountId') as Account.Id;
-
-    this.submit?.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
-      console.log(this.form);
-      this.form.markAllAsTouched();
-
-      if (this.form.valid) {
-        const { accountId, amount, issuedAt, description, recipientId } = this.form.getRawValue();
-
-        this.store.dispatch(transactionApiActions.createSplitTransactionInitiated({
-          accountId,
-          amount,
-          description: toUndefined(description),
-          issuedAt: issuedAt.toISOString(),
-          recipientId: toUndefined(recipientId),
-          splits: this.splits,
-        }));
-      }
-    });
+    const transactionId = this.activatedRoute.snapshot.paramMap.get('transactionId') as Transaction.Id;
 
     this.form = new FormGroup({
       issuedAt: new FormControl(new Date(), [Validators.required]),
@@ -83,6 +69,51 @@ export class TransactionSplitEditComponent implements OnInit {
       accountId: new FormControl(accountId, [Validators.required]),
       description: new FormControl(),
       recipientId: new FormControl(),
+    });
+
+    if (transactionId) {
+      this.store.select(selectTransaction).pipe(
+        takeFirstDefined(),
+        toSplitResponse(),
+      )
+        .subscribe((transaction) => {
+
+          this.form.patchValue({
+            amount: transaction.amount,
+            accountId: transaction.account.accountId,
+            description: transaction.description,
+            issuedAt: new Date(transaction.issuedAt),
+            recipientId: transaction.recipient?.recipientId,
+          }, {
+            emitEvent: false,
+          });
+        });
+    }
+
+    this.submit?.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      this.form.markAllAsTouched();
+
+      if (this.form.valid) {
+        const { accountId, amount, issuedAt, description, recipientId } = this.form.getRawValue();
+
+        const request: Transaction.SplitRequest = {
+          accountId,
+          amount,
+          description: toUndefined(description),
+          issuedAt: issuedAt.toISOString(),
+          recipientId: toUndefined(recipientId),
+          splits: this.splits,
+        };
+
+        if (transactionId) {
+          this.store.dispatch(transactionApiActions.updateSplitTransactionInitiated({
+            transactionId,
+            request,
+          }));
+        } else {
+          this.store.dispatch(transactionApiActions.createSplitTransactionInitiated(request));
+        }
+      }
     });
   }
 

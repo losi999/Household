@@ -2,13 +2,16 @@ import { Component, DestroyRef, Input, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { Account, Category, Product, Project, Recipient } from '@household/shared/types/types';
+import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { selectCategories } from '@household/web/state/category/category.selector';
 import { selectGroupedProducts } from '@household/web/state/product/product.selector';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
 import { Store } from '@ngrx/store';
 import { toUndefined } from '@household/shared/common/utils';
 import { Observable, withLatestFrom } from 'rxjs';
+import { selectTransaction } from '@household/web/state/transaction/transaction.selector';
+import { takeFirstDefined } from '@household/web/operators/take-first-defined';
+import { toPaymentResponse } from '@household/web/operators/to-payment-response';
 
 @Component({
   selector: 'household-transaction-payment-edit',
@@ -40,15 +43,57 @@ export class TransactionPaymentEditComponent implements OnInit {
 
   ngOnInit(): void {
     const accountId = this.activatedRoute.snapshot.paramMap.get('accountId') as Account.Id;
+    const transactionId = this.activatedRoute.snapshot.paramMap.get('transactionId') as Transaction.Id;
+
+    this.form = new FormGroup({
+      issuedAt: new FormControl(new Date(), [Validators.required]),
+      amount: new FormControl(null, [Validators.required]),
+      accountId: new FormControl(accountId, [Validators.required]),
+      description: new FormControl(),
+      projectId: new FormControl(),
+      recipientId: new FormControl(),
+      categoryId: new FormControl(),
+      productId: new FormControl(),
+      quantity: new FormControl(),
+      billingStartDate: new FormControl(),
+      billingEndDate: new FormControl(),
+      invoiceNumber: new FormControl(),
+    });
+
+    if (transactionId) {
+      this.store.select(selectTransaction).pipe(
+        takeFirstDefined(),
+        toPaymentResponse(),
+      )
+        .subscribe((transaction) => {
+          this.categoryType = transaction.category?.categoryType ?? 'regular';
+
+          this.form.patchValue({
+            amount: transaction.amount,
+            accountId: transaction.account.accountId,
+            billingEndDate: new Date(transaction.billingEndDate),
+            billingStartDate: new Date(transaction.billingStartDate),
+            categoryId: transaction.category?.categoryId,
+            description: transaction.description,
+            invoiceNumber: transaction.invoiceNumber,
+            issuedAt: new Date(transaction.issuedAt),
+            productId: transaction.product?.productId,
+            projectId: transaction.project?.projectId,
+            quantity: transaction.quantity,
+            recipientId: transaction.recipient?.recipientId,
+          }, {
+            emitEvent: false,
+          });
+        });
+    }
 
     this.submit?.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.form.markAllAsTouched();
-      console.log(this.form);
 
       if (this.form.valid) {
         const { accountId, amount, issuedAt, description, categoryId, recipientId, projectId, productId, quantity, billingEndDate, billingStartDate, invoiceNumber } = this.form.getRawValue();
 
-        this.store.dispatch(transactionApiActions.createPaymentTransactionInitiated({
+        const request: Transaction.PaymentRequest = {
           accountId,
           amount,
           description: toUndefined(description),
@@ -64,10 +109,10 @@ export class TransactionPaymentEditComponent implements OnInit {
             quantity: undefined,
           }),
           ...(this.categoryType === 'invoice') ? {
-            billingStartDate: new Date(billingStartDate.getTime() - billingStartDate.getTimezoneOffset() * 60000).toISOString()
-              .split('T')[0],
-            billingEndDate: new Date(billingEndDate.getTime() - billingEndDate.getTimezoneOffset() * 60000).toISOString()
-              .split('T')[0],
+            billingStartDate: billingStartDate ? new Date(billingStartDate.getTime() - billingStartDate.getTimezoneOffset() * 60000).toISOString()
+              .split('T')[0] : undefined,
+            billingEndDate: billingEndDate ? new Date(billingEndDate.getTime() - billingEndDate.getTimezoneOffset() * 60000).toISOString()
+              .split('T')[0] : undefined,
             invoiceNumber: toUndefined(invoiceNumber),
           } : {
             billingEndDate: undefined,
@@ -76,23 +121,17 @@ export class TransactionPaymentEditComponent implements OnInit {
           },
           isSettled: false,
           loanAccountId: undefined,
-        }));
-      }
-    });
+        };
 
-    this.form = new FormGroup({
-      issuedAt: new FormControl(new Date(), [Validators.required]),
-      amount: new FormControl(null, [Validators.required]),
-      accountId: new FormControl(accountId, [Validators.required]),
-      description: new FormControl(),
-      projectId: new FormControl(),
-      recipientId: new FormControl(),
-      categoryId: new FormControl(),
-      productId: new FormControl(),
-      quantity: new FormControl(),
-      billingStartDate: new FormControl(),
-      billingEndDate: new FormControl(),
-      invoiceNumber: new FormControl(),
+        if (transactionId) {
+          this.store.dispatch(transactionApiActions.updatePaymentTransactionInitiated({
+            transactionId,
+            request,
+          }));
+        } else {
+          this.store.dispatch(transactionApiActions.createPaymentTransactionInitiated(request));
+        }
+      }
     });
 
     this.form.controls.productId.valueChanges.pipe(withLatestFrom(this.store.select(selectGroupedProducts))).subscribe(([

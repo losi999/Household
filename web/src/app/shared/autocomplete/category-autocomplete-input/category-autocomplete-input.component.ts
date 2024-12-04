@@ -9,10 +9,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { Category } from '@household/shared/types/types';
 import { AutocompleteFilterPipe } from '@household/web/app/shared/autocomplete/autocomplete-filter.pipe';
+import { takeFirstDefined } from '@household/web/operators/take-first-defined';
 import { selectCategories, selectCategoriesAsParent, selectCategoryById, selectInventoryCategories } from '@household/web/state/category/category.selector';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { Store } from '@ngrx/store';
-import { filter, Observable, take } from 'rxjs';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'household-category-autocomplete-input',
@@ -86,10 +87,7 @@ export class CategoryAutocompleteInputComponent implements OnInit, ControlValueA
   writeValue(categoryId: Category.Id): void {
     if (categoryId) {
       this.store.select(selectCategoryById(categoryId))
-        .pipe(
-          filter(c => !!c),
-          take(1),
-        )
+        .pipe(takeFirstDefined())
         .subscribe((category) => {
           this.selected.setValue(category, {
             emitEvent: false,

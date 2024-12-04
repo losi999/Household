@@ -16,6 +16,7 @@ on(transactionApiActions.listTransactionsInitiated, (_state, { pageNumber }) => 
   return {
     ..._state,
     transactionList: pageNumber === 1 ? [] : _state.transactionList,
+    selectedTransaction: undefined,
   };
 }),
 on(transactionApiActions.listTransactionsCompleted, (_state, { transactions, pageNumber }) => {
@@ -51,19 +52,4 @@ on(transactionApiActions.getTransactionCompleted, (_state, { type, ...transactio
     selectedTransaction: transaction,
   };
 }),
-  // on(projectApiActions.createProjectCompleted, projectApiActions.updateProjectCompleted, (_state, { projectId, name, description }) => {
-
-  //   return _state.filter(p => p.projectId !== projectId)
-  //     .concat({
-  //       projectId,
-  //       name,
-  //       description,
-  //     })
-  //     .toSorted((a, b) => a.name.localeCompare(b.name, 'hu', {
-  //       sensitivity: 'base',
-  //     }));
-  // }),
-  // on(projectApiActions.deleteProjectCompleted, (_state, { projectId }) => {
-  //   return _state.filter(p => p.projectId !== projectId);
-  // }),
 );

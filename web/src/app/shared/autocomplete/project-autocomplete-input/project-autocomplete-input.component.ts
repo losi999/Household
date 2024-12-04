@@ -9,10 +9,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { Project } from '@household/shared/types/types';
 import { AutocompleteFilterPipe } from '@household/web/app/shared/autocomplete/autocomplete-filter.pipe';
+import { takeFirstDefined } from '@household/web/operators/take-first-defined';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { selectProjects, selectProjectById } from '@household/web/state/project/project.selector';
 import { Store } from '@ngrx/store';
-import { filter, take } from 'rxjs';
 
 @Component({
   selector: 'household-project-autocomplete-input',
@@ -75,10 +75,7 @@ export class ProjectAutocompleteInputComponent implements OnInit, ControlValueAc
     if (projectId) {
 
       this.store.select(selectProjectById(projectId))
-        .pipe(
-          filter(p => !!p),
-          take(1),
-        )
+        .pipe(takeFirstDefined())
         .subscribe((project) => {
           this.selected.setValue(project, {
             emitEvent: false,

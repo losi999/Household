@@ -2,9 +2,12 @@ import { Component, DestroyRef, Input, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { Account } from '@household/shared/types/types';
+import { Account, Transaction } from '@household/shared/types/types';
+import { takeFirstDefined } from '@household/web/operators/take-first-defined';
+import { toTransferResponse } from '@household/web/operators/to-transfer-response';
 import { selectAccounts } from '@household/web/state/account/account.selector';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
+import { selectTransaction } from '@household/web/state/transaction/transaction.selector';
 import { Store } from '@ngrx/store';
 import { combineLatest, Observable, withLatestFrom } from 'rxjs';
 @Component({
@@ -33,6 +36,7 @@ export class TransactionTransferEditComponent implements OnInit {
 
   ngOnInit(): void {
     const accountId = this.activatedRoute.snapshot.paramMap.get('accountId') as Account.Id;
+    const transactionId = this.activatedRoute.snapshot.paramMap.get('transactionId') as Transaction.Id;
 
     this.form = new FormGroup({
       issuedAt: new FormControl(new Date(), [Validators.required]),
@@ -42,6 +46,25 @@ export class TransactionTransferEditComponent implements OnInit {
       transferAccountId: new FormControl(null, [Validators.required]),
       transferAmount: new FormControl(null),
     });
+
+    if (transactionId) {
+      this.store.select(selectTransaction).pipe(
+        takeFirstDefined(),
+        toTransferResponse(),
+      )
+        .subscribe((transaction) => {
+
+          this.form.patchValue({
+            amount: transaction.amount,
+            accountId: transaction.account.accountId,
+            description: transaction.description,
+            issuedAt: new Date(transaction.issuedAt),
+            transferAccountId: transaction.transferAccount?.accountId,
+          }, {
+            emitEvent: false,
+          });
+        });
+    }
 
     combineLatest([
       this.form.controls.accountId.valueChanges,
@@ -75,7 +98,7 @@ export class TransactionTransferEditComponent implements OnInit {
       this.form.markAllAsTouched();
 
       if (this.form.valid) {
-        this.store.dispatch(transactionApiActions.createTransferTransactionInitiated({
+        const request: Transaction.TransferRequest = {
           accountId: this.form.value.accountId,
           amount: this.form.value.amount,
           description: this.form.value.description ?? undefined,
@@ -83,7 +106,16 @@ export class TransactionTransferEditComponent implements OnInit {
           transferAccountId: this.form.value.transferAccountId,
           payments: undefined,
           transferAmount: this.form.value.transferAmount ?? undefined,
-        }));
+        };
+
+        if (transactionId) {
+          this.store.dispatch(transactionApiActions.updateTransferTransactionInitiated({
+            transactionId,
+            request,
+          }));
+        } else {
+          this.store.dispatch(transactionApiActions.createTransferTransactionInitiated(request));
+        }
       }
     });
 

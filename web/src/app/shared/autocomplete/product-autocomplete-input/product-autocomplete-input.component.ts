@@ -10,10 +10,10 @@ import { MatInputModule } from '@angular/material/input';
 import { Category, Product } from '@household/shared/types/types';
 import { AutocompleteFilterPipe } from '@household/web/app/shared/autocomplete/autocomplete-filter.pipe';
 import { ProductAutocompleteFilterPipe } from '@household/web/app/shared/autocomplete/product-autocomplete-filter.pipe';
+import { takeFirstDefined } from '@household/web/operators/take-first-defined';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { selectGroupedProducts, selectProductById } from '@household/web/state/product/product.selector';
 import { Store } from '@ngrx/store';
-import { filter, take } from 'rxjs';
 
 @Component({
   selector: 'household-product-autocomplete-input',
@@ -78,10 +78,7 @@ export class ProductAutocompleteInputComponent implements OnInit, ControlValueAc
   writeValue(productId: Product.Id): void {
     if (productId) {
       this.store.select(selectProductById(productId))
-        .pipe(
-          filter(p => !!p),
-          take(1),
-        )
+        .pipe(takeFirstDefined())
         .subscribe((product) => {
           this.selected.setValue(product, {
             emitEvent: false,

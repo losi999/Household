@@ -9,9 +9,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { Account } from '@household/shared/types/types';
 import { AutocompleteFilterPipe } from '@household/web/app/shared/autocomplete/autocomplete-filter.pipe';
+import { takeFirstDefined } from '@household/web/operators/take-first-defined';
 import { selectAccountById, selectFilteredAccounts } from '@household/web/state/account/account.selector';
 import { Store } from '@ngrx/store';
-import { filter, Observable, take } from 'rxjs';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'household-account-autocomplete-input',
@@ -77,10 +78,7 @@ export class AccountAutocompleteInputComponent implements OnInit, OnChanges, Con
   writeValue(accountId: Account.Id): void {
     if (accountId) {
       this.store.select(selectAccountById(accountId))
-        .pipe(
-          filter(p => !!p),
-          take(1),
-        )
+        .pipe(takeFirstDefined())
         .subscribe((account) => {
           this.selected.setValue(account, {
             emitEvent: false,

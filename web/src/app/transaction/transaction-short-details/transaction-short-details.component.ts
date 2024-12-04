@@ -1,12 +1,13 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Account, Category, Product, Project, Recipient } from '@household/shared/types/types';
+import { takeFirstDefined } from '@household/web/operators/take-first-defined';
 import { selectAccountById } from '@household/web/state/account/account.selector';
 import { selectCategoryById } from '@household/web/state/category/category.selector';
 import { selectProductById } from '@household/web/state/product/product.selector';
 import { selectProjectById } from '@household/web/state/project/project.selector';
 import { selectRecipientById } from '@household/web/state/recipient/recipient.selector';
 import { Store } from '@ngrx/store';
-import { filter, Observable, take } from 'rxjs';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'household-transaction-short-details',
@@ -51,45 +52,27 @@ export class TransactionShortDetailsComponent implements OnInit {
 
   ngOnInit(): void {
     if (this.currencyAccountId) {
-      this.currencyAccount = this.store.select(selectAccountById(this.currencyAccountId)).pipe(
-        filter(x => !!x),
-        take(1),
-      );
+      this.currencyAccount = this.store.select(selectAccountById(this.currencyAccountId)).pipe(takeFirstDefined());
     }
 
     if (this.projectId) {
-      this.project = this.store.select(selectProjectById(this.projectId)).pipe(
-        filter(x => !!x),
-        take(1),
-      );
+      this.project = this.store.select(selectProjectById(this.projectId)).pipe(takeFirstDefined());
     }
 
     if (this.accountId) {
-      this.account = this.store.select(selectAccountById(this.accountId)).pipe(
-        filter(x => !!x),
-        take(1),
-      );
+      this.account = this.store.select(selectAccountById(this.accountId)).pipe(takeFirstDefined());
     }
 
     if (this.categoryId) {
-      this.category = this.store.select(selectCategoryById(this.categoryId)).pipe(
-        filter(x => !!x),
-        take(1),
-      );
+      this.category = this.store.select(selectCategoryById(this.categoryId)).pipe(takeFirstDefined());
     }
 
     if (this.productId) {
-      this.product = this.store.select(selectProductById(this.productId)).pipe(
-        filter(x => !!x),
-        take(1),
-      );
+      this.product = this.store.select(selectProductById(this.productId)).pipe(takeFirstDefined());
     }
 
     if (this.recipientId) {
-      this.recipient = this.store.select(selectRecipientById(this.recipientId)).pipe(
-        filter(x => !!x),
-        take(1),
-      );
+      this.recipient = this.store.select(selectRecipientById(this.recipientId)).pipe(takeFirstDefined());
     }
   }
 }

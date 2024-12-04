@@ -7,7 +7,7 @@
 
   <household-account-autocomplete-input label="Kölcsön számla" [exclude]="form.value.accountId" formControlName="loanAccountId" />
 
-  <mat-slide-toggle color="primary" formControlName="isSettled">Tartozás rendezve</mat-slide-toggle>
+  <mat-slide-toggle *ngIf="(account | async)?.accountType !== 'loan'" color="primary" formControlName="isSettled">Tartozás rendezve</mat-slide-toggle>
 
   <household-category-autocomplete-input label="Kategória" formControlName="categoryId" />
 

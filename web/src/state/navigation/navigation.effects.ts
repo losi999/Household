@@ -10,7 +10,7 @@ export class NavigationEffects {
 
   navigateToTransactionDetails = createEffect(() => {
     return this.actions.pipe(
-      ofType(transactionApiActions.createPaymentTransactionCompleted, transactionApiActions.createSplitTransactionCompleted, transactionApiActions.createTransferTransactionCompleted),
+      ofType(transactionApiActions.createPaymentTransactionCompleted, transactionApiActions.createSplitTransactionCompleted, transactionApiActions.createTransferTransactionCompleted, transactionApiActions.updatePaymentTransactionCompleted, transactionApiActions.updateSplitTransactionCompleted, transactionApiActions.updateTransferTransactionCompleted),
       tap(({ accountId, transactionId }) => {
         this.router.navigate([
           '/accounts',

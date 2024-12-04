@@ -107,12 +107,58 @@ export class TransactionEffects {
     );
   });
 
+  updatetePaymentTransaction = createEffect(() => {
+    return this.actions.pipe(
+      ofType(transactionApiActions.updatePaymentTransactionInitiated),
+      mergeMap(({ transactionId, request }) => {
+        return this.transactionService.updatePaymentTransaction(transactionId, request).pipe(
+          map(({ transactionId }) => transactionApiActions.updatePaymentTransactionCompleted({
+            transactionId,
+            ...request,
+          })),
+          catchError((error) => {
+            console.log(error);
+            const errorMessage = 'Hiba történt';
+            return of(progressActions.processFinished(),
+              notificationActions.showMessage({
+                message: errorMessage,
+              }),
+            );
+          }),
+        );
+      }),
+    );
+  });
+
   createSplitTransaction = createEffect(() => {
     return this.actions.pipe(
       ofType(transactionApiActions.createSplitTransactionInitiated),
       mergeMap(({ type, ...request }) => {
         return this.transactionService.createSplitTransaction(request).pipe(
           map(({ transactionId }) => transactionApiActions.createSplitTransactionCompleted({
+            transactionId,
+            ...request,
+          })),
+          catchError((error) => {
+            console.log(error);
+            const errorMessage = 'Hiba történt';
+            return of(progressActions.processFinished(),
+              notificationActions.showMessage({
+                message: errorMessage,
+              }),
+            );
+          }),
+        );
+      }),
+    );
+  });
+
+  updateSplitTransaction = createEffect(() => {
+    return this.actions.pipe(
+      ofType(transactionApiActions.updateSplitTransactionInitiated),
+      mergeMap(({ transactionId, request }) => {
+        return this.transactionService.updateSplitTransaction(transactionId, request).pipe(
+          map(({ transactionId }) => transactionApiActions.updateSplitTransactionCompleted({
             transactionId,
             ...request,
           })),
@@ -153,39 +199,28 @@ export class TransactionEffects {
     );
   });
 
-  //   updateTransaction = createEffect(() => {
-  //     return this.actions.pipe(
-  //       ofType(transactionApiActions.updateTransactionInitiated),
-  //       groupBy(({ transactionId }) => transactionId),
-  //       mergeMap((value) => {
-  //         return value.pipe(exhaustMap(({ type, transactionId, ...request }) => {
-  //           return this.transactionService.updateTransaction(transactionId, request).pipe(
-  //             map(({ transactionId }) => transactionApiActions.updateTransactionCompleted({
-  //               transactionId,
-  //               ...request,
-  //             })),
-  //             catchError((error) => {
-  //               let errorMessage: string;
-  //               switch(error.error?.message) {
-  //                 case 'Duplicate transaction name': {
-  //                   errorMessage = `Projekt (${request.name}) már létezik!`;
-  //                 } break;
-  //                 default: {
-  //                   errorMessage = 'Hiba történt';
-  //                 }
-  //               }
-  //               return of(progressActions.processFinished(),
-  //                 notificationActions.showMessage({
-  //                   message: errorMessage,
-  //                 }),
-  //               );
-  //             }),
-  //           );
-  //         }));
-
-  //       }),
-  //     );
-  //   });
+  updateTransferTransaction = createEffect(() => {
+    return this.actions.pipe(
+      ofType(transactionApiActions.updateTransferTransactionInitiated),
+      mergeMap(({ transactionId, request }) => {
+        return this.transactionService.updateTransferTransaction(transactionId, request).pipe(
+          map(({ transactionId }) => transactionApiActions.updateTransferTransactionCompleted({
+            transactionId,
+            ...request,
+          })),
+          catchError((error) => {
+            console.log(error);
+            const errorMessage = 'Hiba történt';
+            return of(progressActions.processFinished(),
+              notificationActions.showMessage({
+                message: errorMessage,
+              }),
+            );
+          }),
+        );
+      }),
+    );
+  });
 
   deleteTransaction = createEffect(() => {
     return this.actions.pipe(
