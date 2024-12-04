@@ -9,7 +9,17 @@
 
   <household-clearable-input formControlName="description" label="Megjegyzés" />
 
-  <household-transaction-short-details *ngFor="let s of splits" [details]="toShortDetails(s)" [currencyAccountId]="form.value.accountId" />
+  <div *ngFor="let s of splits; index as i">
+    <household-transaction-short-details [details]=" toShortDetails(s)" [currencyAccountId]="form.value.accountId" />
+    <div style="justify-self: end;">
+      <button mat-icon-button color="primary" type="button" (click)="editSplit(i)">
+        <mat-icon>edit</mat-icon>
+      </button>
+      <button mat-icon-button color="warn" type="button" (click)="deleteSplit(i)">
+        <mat-icon>delete</mat-icon>
+      </button>
+    </div>
+  </div>
 
   <div *ngIf="split" [formGroup]="split">
     <household-amount-input [accountId]="form.value.accountId" formControlName="amount" [isPositive]="false" />
@@ -42,9 +52,10 @@
 
     <household-account-autocomplete-input label="Kölcsön számla" [exclude]="form.value.accountId" formControlName="loanAccountId" />
 
-    <mat-slide-toggle color="primary" formControlName="isSettled">Tartozás rendezve</mat-slide-toggle>
+    <mat-slide-toggle *ngIf="split.value.loanAccountId" color="primary" formControlName="isSettled">Tartozás rendezve</mat-slide-toggle>
   </div>
 
   <button mat-flat-button *ngIf="sumOfSplits !== form.value.amount" type="button" (click)="addNewSplit()" [disabled]="!form.value.amount">{{sumOfSplits + split?.value.amount === form.value.amount ? 'Kész' : 'Új bontás'}}</button>
+  <button mat-flat-button *ngIf="split" color="warn" type="button" (click)="cancelSplit()">Mégse</button>
 
 </form>

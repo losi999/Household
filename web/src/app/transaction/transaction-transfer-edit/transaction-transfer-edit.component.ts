@@ -7,7 +7,6 @@ import { selectAccounts } from '@household/web/state/account/account.selector';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
 import { Store } from '@ngrx/store';
 import { combineLatest, Observable, withLatestFrom } from 'rxjs';
-
 @Component({
   selector: 'household-transaction-transfer-edit',
   templateUrl: './transaction-transfer-edit.component.html',
@@ -38,7 +37,7 @@ export class TransactionTransferEditComponent implements OnInit {
     this.form = new FormGroup({
       issuedAt: new FormControl(new Date(), [Validators.required]),
       amount: new FormControl(null, [Validators.required]),
-      accountId: new FormControl(accountId, [Validators.required]),
+      accountId: new FormControl(null, [Validators.required]),
       description: new FormControl(),
       transferAccountId: new FormControl(null, [Validators.required]),
       transferAmount: new FormControl(null),
@@ -67,6 +66,10 @@ export class TransactionTransferEditComponent implements OnInit {
           this.form.controls.transferAmount.removeValidators(Validators.required);
         }
       });
+
+    this.form.patchValue({
+      accountId,
+    });
 
     this.submit?.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.form.markAllAsTouched();

@@ -43,12 +43,19 @@ export class TransactionSplitEditComponent implements OnInit {
   }>;
   categoryType: Category.CategoryType['categoryType'];
 
-  splits: Transaction.SplitRequestItem[] = [];
-  sumOfSplits: number;
+  private editingSplit: {
+    split: Transaction.SplitRequestItem;
+    index: number;
+  };
 
-  constructor(public activatedRoute: ActivatedRoute, private destroyRef: DestroyRef, private store: Store) {
-
+  splits: Transaction.SplitRequestItem[] = [ ];
+  get sumOfSplits() {
+    return this.splits?.reduce((accumulator, currentValue) => {
+      return accumulator + currentValue.amount;
+    }, 0);
   }
+
+  constructor(public activatedRoute: ActivatedRoute, private destroyRef: DestroyRef, private store: Store) { }
 
   ngOnInit(): void {
     const accountId = this.activatedRoute.snapshot.paramMap.get('accountId') as Account.Id;
@@ -85,7 +92,7 @@ export class TransactionSplitEditComponent implements OnInit {
       if (this.split.valid) {
         const { amount, billingEndDate, billingStartDate, categoryId, description, invoiceNumber, productId, projectId, quantity, isSettled, loanAccountId } = this.split.getRawValue();
 
-        this.splits.push({
+        const newSplitItem: Transaction.SplitRequestItem = {
           amount,
           ...(this.categoryType === 'inventory' ? {
             productId: toUndefined(productId),
@@ -110,11 +117,16 @@ export class TransactionSplitEditComponent implements OnInit {
           isSettled: toUndefined(isSettled),
           loanAccountId: toUndefined(loanAccountId),
           projectId: toUndefined(projectId),
-        });
+        };
 
-        this.sumOfSplits = this.splits.reduce((accumulator, currentValue) => {
-          return accumulator + currentValue.amount;
-        }, 0);
+        if (this.editingSplit) {
+          this.splits.splice(this.editingSplit.index, 0, newSplitItem);
+
+          this.editingSplit = null;
+        } else {
+          this.splits.push(newSplitItem);
+
+        }
 
         if (this.sumOfSplits !== this.form.value.amount) {
           this.split.reset({
@@ -126,10 +138,6 @@ export class TransactionSplitEditComponent implements OnInit {
       }
       return;
     }
-
-    this.sumOfSplits = this.splits.reduce((accumulator, currentValue) => {
-      return accumulator + currentValue.amount;
-    }, 0);
 
     this.split = new FormGroup({
       amount: new FormControl(this.form.value.amount - this.sumOfSplits, [Validators.required]),
@@ -176,6 +184,16 @@ export class TransactionSplitEditComponent implements OnInit {
     });
   }
 
+  cancelSplit() {
+    if (this.editingSplit) {
+      this.splits.splice(this.editingSplit.index, 0, this.editingSplit.split);
+
+      this.editingSplit = null;
+    }
+
+    this.split = null;
+  }
+
   toShortDetails({ amount, billingEndDate, billingStartDate, categoryId, description, invoiceNumber, loanAccountId, productId, projectId, quantity }: Transaction.SplitRequestItem): TransactionShortDetails {
     return {
       amount,
@@ -190,5 +208,34 @@ export class TransactionSplitEditComponent implements OnInit {
       quantity,
       recipientId: undefined,
     };
+  }
+
+  editSplit(index: number) {
+    const split = this.splits.splice(index, 1)[0];
+
+    this.editingSplit = {
+      split,
+      index,
+    };
+
+    const { amount, billingEndDate, billingStartDate, categoryId, description, invoiceNumber, isSettled, loanAccountId, productId, projectId, quantity } = this.editingSplit.split;
+
+    this.split = new FormGroup({
+      amount: new FormControl(amount, [Validators.required]),
+      description: new FormControl(description),
+      projectId: new FormControl(projectId),
+      categoryId: new FormControl(categoryId),
+      productId: new FormControl(productId),
+      quantity: new FormControl(quantity),
+      billingStartDate: new FormControl(new Date(billingStartDate)),
+      billingEndDate: new FormControl(new Date(billingEndDate)),
+      invoiceNumber: new FormControl(invoiceNumber),
+      loanAccountId: new FormControl(loanAccountId),
+      isSettled: new FormControl(isSettled),
+    });
+  }
+
+  deleteSplit(index: number) {
+    this.splits.splice(index, 1);
   }
 }
