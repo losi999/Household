@@ -67,6 +67,9 @@ import { TransactionShortDetailsComponent } from './transaction-short-details/tr
     ClearableInputComponent,
     MatExpansionModule,
   ],
-  exports: [TransactionListItemComponent],
+  exports: [
+    TransactionListItemComponent,
+    TransactionShortDetailsComponent,
+  ],
 })
 export class TransactionModule { }

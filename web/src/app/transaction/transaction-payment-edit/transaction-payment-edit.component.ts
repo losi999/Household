@@ -121,6 +121,7 @@ export class TransactionPaymentEditComponent implements OnInit {
         this.categoryType = 'regular';
         this.form.patchValue({
           productId: null,
+          quantity: 0,
         });
       }
     });

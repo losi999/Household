@@ -4,7 +4,6 @@ import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { toUndefined } from '@household/shared/common/utils';
 import { Account, Project, Recipient, Category, Product, Transaction } from '@household/shared/types/types';
-import { TransactionShortDetails } from '@household/web/app/transaction/transaction-short-details/transaction-short-details.component';
 import { selectCategories } from '@household/web/state/category/category.selector';
 import { selectGroupedProducts } from '@household/web/state/product/product.selector';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
@@ -87,6 +86,53 @@ export class TransactionSplitEditComponent implements OnInit {
     });
   }
 
+  private createSplitForm(split?: Transaction.SplitRequestItem) {
+    this.split = new FormGroup({
+      amount: new FormControl(split?.amount ?? this.form.value.amount - this.sumOfSplits, [Validators.required]),
+      description: new FormControl(split?.description),
+      projectId: new FormControl(split?.projectId),
+      categoryId: new FormControl(split?.categoryId),
+      productId: new FormControl(split?.productId),
+      quantity: new FormControl(split?.quantity),
+      billingStartDate: new FormControl(new Date(split?.billingStartDate)),
+      billingEndDate: new FormControl(new Date(split?.billingEndDate)),
+      invoiceNumber: new FormControl(split?.invoiceNumber),
+      loanAccountId: new FormControl(split?.loanAccountId),
+      isSettled: new FormControl(split?.isSettled),
+    });
+
+    this.split.controls.productId.valueChanges.pipe(withLatestFrom(this.store.select(selectGroupedProducts))).subscribe(([
+      productId,
+      groupedProducts,
+    ]) => {
+      if (productId) {
+        const categoryId = groupedProducts.find(g => g.products.some(p => p.productId === productId)).categoryId;
+        if (this.split.value.categoryId !== categoryId) {
+          this.split.patchValue({
+            categoryId,
+          });
+        }
+      }
+    });
+
+    this.split.controls.categoryId.valueChanges.pipe(
+      withLatestFrom(this.store.select(selectCategories)),
+    ).subscribe(([
+      categoryId,
+      categories,
+    ]) => {
+      if (categoryId) {
+        this.categoryType = categories.find(c => c.categoryId === categoryId)?.categoryType;
+      } else {
+        this.categoryType = 'regular';
+        this.split.patchValue({
+          productId: null,
+          quantity: 0,
+        });
+      }
+    });
+  }
+
   addNewSplit() {
     if (this.split) {
       if (this.split.valid) {
@@ -139,49 +185,7 @@ export class TransactionSplitEditComponent implements OnInit {
       return;
     }
 
-    this.split = new FormGroup({
-      amount: new FormControl(this.form.value.amount - this.sumOfSplits, [Validators.required]),
-      description: new FormControl(),
-      projectId: new FormControl(),
-      categoryId: new FormControl(),
-      productId: new FormControl(),
-      quantity: new FormControl(),
-      billingStartDate: new FormControl(),
-      billingEndDate: new FormControl(),
-      invoiceNumber: new FormControl(),
-      loanAccountId: new FormControl(),
-      isSettled: new FormControl(),
-    });
-
-    this.split.controls.productId.valueChanges.pipe(withLatestFrom(this.store.select(selectGroupedProducts))).subscribe(([
-      productId,
-      groupedProducts,
-    ]) => {
-      if (productId) {
-        const categoryId = groupedProducts.find(g => g.products.some(p => p.productId === productId)).categoryId;
-        if (this.split.value.categoryId !== categoryId) {
-          this.split.patchValue({
-            categoryId,
-          });
-        }
-      }
-    });
-
-    this.split.controls.categoryId.valueChanges.pipe(
-      withLatestFrom(this.store.select(selectCategories)),
-    ).subscribe(([
-      categoryId,
-      categories,
-    ]) => {
-      if (categoryId) {
-        this.categoryType = categories.find(c => c.categoryId === categoryId)?.categoryType;
-      } else {
-        this.categoryType = 'regular';
-        this.split.patchValue({
-          productId: null,
-        });
-      }
-    });
+    this.createSplitForm();
   }
 
   cancelSplit() {
@@ -194,22 +198,6 @@ export class TransactionSplitEditComponent implements OnInit {
     this.split = null;
   }
 
-  toShortDetails({ amount, billingEndDate, billingStartDate, categoryId, description, invoiceNumber, loanAccountId, productId, projectId, quantity }: Transaction.SplitRequestItem): TransactionShortDetails {
-    return {
-      amount,
-      billingEndDate,
-      billingStartDate,
-      categoryId,
-      description,
-      invoiceNumber,
-      accountId: loanAccountId,
-      productId,
-      projectId,
-      quantity,
-      recipientId: undefined,
-    };
-  }
-
   editSplit(index: number) {
     const split = this.splits.splice(index, 1)[0];
 
@@ -218,21 +206,7 @@ export class TransactionSplitEditComponent implements OnInit {
       index,
     };
 
-    const { amount, billingEndDate, billingStartDate, categoryId, description, invoiceNumber, isSettled, loanAccountId, productId, projectId, quantity } = this.editingSplit.split;
-
-    this.split = new FormGroup({
-      amount: new FormControl(amount, [Validators.required]),
-      description: new FormControl(description),
-      projectId: new FormControl(projectId),
-      categoryId: new FormControl(categoryId),
-      productId: new FormControl(productId),
-      quantity: new FormControl(quantity),
-      billingStartDate: new FormControl(new Date(billingStartDate)),
-      billingEndDate: new FormControl(new Date(billingEndDate)),
-      invoiceNumber: new FormControl(invoiceNumber),
-      loanAccountId: new FormControl(loanAccountId),
-      isSettled: new FormControl(isSettled),
-    });
+    this.createSplitForm(this.editingSplit.split);
   }
 
   deleteSplit(index: number) {

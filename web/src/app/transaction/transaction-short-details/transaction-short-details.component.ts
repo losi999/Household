@@ -1,13 +1,12 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Account, Category, Product, Project, Recipient } from '@household/shared/types/types';
 import { selectAccountById } from '@household/web/state/account/account.selector';
 import { selectCategoryById } from '@household/web/state/category/category.selector';
 import { selectProductById } from '@household/web/state/product/product.selector';
 import { selectProjectById } from '@household/web/state/project/project.selector';
+import { selectRecipientById } from '@household/web/state/recipient/recipient.selector';
 import { Store } from '@ngrx/store';
 import { filter, Observable, take } from 'rxjs';
-
-export type TransactionShortDetails = Account.AccountId & Transaction.Amount & Category.CategoryId & Project.ProjectId & Recipient.RecipientId & Transaction.Description & Product.ProductId & Transaction.Quantity & Transaction.InvoiceNumber & Transaction.InvoiceDate<string>;
 
 @Component({
   selector: 'household-transaction-short-details',
@@ -17,40 +16,80 @@ export type TransactionShortDetails = Account.AccountId & Transaction.Amount & C
 })
 export class TransactionShortDetailsComponent implements OnInit {
   @Input() currencyAccountId: Account.Id;
-  @Input() details: TransactionShortDetails;
+  @Input() currency: string;
+
+  @Input() accountIcon: 'arrow_left_alt' | 'arrow_right_alt' | 'forward' | 'reply_all';
+  @Input() accountIconColor: 'red' | 'green';
+
+  @Input() amount: number;
+  @Input() description: string;
+  @Input() quantity: number;
+  @Input() invoiceNumber: string;
+  @Input() billingStartDate: string;
+  @Input() billingEndDate: string;
+
+  @Input() accountId: Account.Id;
+  @Input() categoryId: Category.Id;
+  @Input() projectId: Project.Id;
+  @Input() productId: Product.Id;
+  @Input() recipientId: Recipient.Id;
+
+  @Input() accountName: string;
+  @Input() categoryName: string;
+  @Input() projectName: string;
+  @Input() productName: string;
+  @Input() recipientName: string;
 
   currencyAccount: Observable<Account.Response>;
   project: Observable<Project.Response>;
   account: Observable<Account.Response>;
   category: Observable<Category.Response>;
   product: Observable<Product.Response>;
+  recipient: Observable<Recipient.Response>;
 
   constructor(private store: Store) { }
 
   ngOnInit(): void {
-    this.currencyAccount = this.store.select(selectAccountById(this.currencyAccountId)).pipe(
-      filter(x => !!x),
-      take(1),
-    );
+    if (this.currencyAccountId) {
+      this.currencyAccount = this.store.select(selectAccountById(this.currencyAccountId)).pipe(
+        filter(x => !!x),
+        take(1),
+      );
+    }
 
-    this.project = this.store.select(selectProjectById(this.details.projectId)).pipe(
-      filter(x => !!x),
-      take(1),
-    );
+    if (this.projectId) {
+      this.project = this.store.select(selectProjectById(this.projectId)).pipe(
+        filter(x => !!x),
+        take(1),
+      );
+    }
 
-    this.account = this.store.select(selectAccountById(this.details.accountId)).pipe(
-      filter(x => !!x),
-      take(1),
-    );
+    if (this.accountId) {
+      this.account = this.store.select(selectAccountById(this.accountId)).pipe(
+        filter(x => !!x),
+        take(1),
+      );
+    }
 
-    this.category = this.store.select(selectCategoryById(this.details.categoryId)).pipe(
-      filter(x => !!x),
-      take(1),
-    );
+    if (this.categoryId) {
+      this.category = this.store.select(selectCategoryById(this.categoryId)).pipe(
+        filter(x => !!x),
+        take(1),
+      );
+    }
 
-    this.product = this.store.select(selectProductById(this.details.productId)).pipe(
-      filter(x => !!x),
-      take(1),
-    );
+    if (this.productId) {
+      this.product = this.store.select(selectProductById(this.productId)).pipe(
+        filter(x => !!x),
+        take(1),
+      );
+    }
+
+    if (this.recipientId) {
+      this.recipient = this.store.select(selectRecipientById(this.recipientId)).pipe(
+        filter(x => !!x),
+        take(1),
+      );
+    }
   }
 }

@@ -19,7 +19,7 @@ const routes: Routes = [
     component: TransactionDetailsComponent,
   },
   {
-    path: 'accounts/:accountId/transactions/:transactionId/edit',
+    path: 'accounts/:accountId/transactions/:transactionId/edit/:formType',
     component: TransactionEditComponent,
   },
   {
