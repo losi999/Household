@@ -1,108 +1,16 @@
 <household-toolbar title="Tranzakció">
-  <!-- <button mat-icon-button [routerLink]="['/accounts', transaction.account.accountId, 'new']" replaceUrl="true">
+  <button mat-icon-button type="button" [matMenuTriggerFor]="new">
     <mat-icon>add</mat-icon>
   </button>
-  <button mat-icon-button type="button" replaceUrl="true"
-    [routerLink]="['/accounts', transaction.account.accountId, 'transactions', transaction.transactionId, 'edit']">
+  <mat-menu #new="matMenu">
+    <button mat-menu-item [routerLink]="['../..', 'new', 'payment']">Kiadás</button>
+    <button mat-menu-item [routerLink]="['../..', 'new', 'income']">Bevétel</button>
+    <button mat-menu-item [routerLink]="['../..', 'new', 'split']">Bontás</button>
+    <button mat-menu-item [routerLink]="['../..', 'new', 'loan']">Kölcsön</button>
+    <button mat-menu-item [routerLink]="['../..', 'new', 'transfer']">Átvitel</button>
+  </mat-menu>
+  <button mat-icon-button type="button" [routerLink]="['edit', 'payment']">
     <mat-icon>edit</mat-icon>
-  </button> -->
+  </button>
 </household-toolbar>
-DETAILS
-<!-- <div>
-  {{issuedAt | date: 'yyyy. MM. dd. HH:mm'}}
-</div> -->
-<!-- <div>
-  Számla: {{transaction.account.name}}
-</div> -->
-<!-- <div [ngClass]="transaction.amount >= 0 ? 'green' : 'red'">
-  {{transaction.amount | number:'1.0-2':'hu'}} {{transaction.account.currency}}
-</div> -->
-<!-- <div *ngIf="transaction.description">
-  Megjegyzés: {{transaction.description}}
-</div> -->
-<!-- <div [ngSwitch]="transaction.transactionType">
-  <ng-container *ngSwitchCase="'split'">
-    <div *ngIf="transaction.recipient">
-      Partner: {{transaction.recipient.name}}
-    </div>
-    <mat-list style="margin-top: 25px;">
-      <div *ngFor="let split of transaction.splits">
-        <mat-divider></mat-divider>
-        <div *ngIf="split.category">
-          Kategória: {{split.category.fullName}}
-        </div>
-        <div [ngClass]="split.amount >= 0 ? 'green' : 'red'">
-          {{split.amount | number:'1.0-2':'hu'}} {{transaction.account.currency}}
-        </div>
-        <div *ngIf="split.category" [ngSwitch]="split.category.categoryType">
-          <ng-container *ngSwitchCase="'inventory'">
-            <div *ngIf="split.product && split.quantity">
-              <div>
-                Termék: {{split.product.fullName}}
-              </div>
-              <div>
-                Mennyiség: {{split.quantity}}
-              </div>
-            </div>
-          </ng-container>
-          <ng-container *ngSwitchCase="'invoice'">
-            <div *ngIf="split.billingStartDate && split.billingEndDate">
-              <div>
-                Számlázási időszak: {{split.billingStartDate}} - {{split.billingEndDate}}
-              </div>
-              <div>
-                Számlaszám: {{split.invoiceNumber}}
-              </div>
-            </div>
-          </ng-container>
-        </div>
-        <div *ngIf="split.project">
-          Projekt: {{split.project.name}}
-        </div>
-        <div *ngIf="split.description">
-          Megjegyzés: {{split.description}}
-        </div>
-      </div>
-    </mat-list>
-  </ng-container>
-  <ng-container *ngSwitchCase="'transfer'">
-    <div>Átvitel {{transaction.amount >= 0 ? 'innen' : 'ide'}}:
-      {{transaction.transferAccount.name}}</div>
-    <div [ngClass]="transaction.transferAmount >= 0 ? 'green' : 'red'">
-      Átvitel összeg: {{transaction.transferAmount | number:'1.0-2':'hu'}} {{transaction.transferAccount.currency}}
-    </div>
-  </ng-container>
-  <ng-container *ngSwitchCase="'payment'">
-    <div *ngIf="transaction.category">
-      Kategória: {{transaction.category.fullName}}
-    </div>
-    <div *ngIf="transaction.category" [ngSwitch]="transaction.category.categoryType">
-      <ng-container *ngSwitchCase="'inventory'">
-        <div *ngIf="transaction.product && transaction.quantity">
-          <div>
-            Termék: {{transaction.product.fullName}}
-          </div>
-          <div>
-            Mennyiség: {{transaction.quantity}}
-          </div>
-        </div>
-      </ng-container>
-      <ng-container *ngSwitchCase="'invoice'">
-        <div *ngIf="transaction.billingStartDate && transaction.billingEndDate">
-          <div>
-            Számlázási időszak: {{transaction.billingStartDate}} - {{transaction.billingEndDate}}
-          </div>
-          <div>
-            Számlaszám: {{transaction.invoiceNumber}}
-          </div>
-        </div>
-      </ng-container>
-    </div>
-    <div *ngIf="transaction.recipient">
-      Partner: {{transaction.recipient.name}}
-    </div>
-    <div *ngIf="transaction.project">
-      Projekt: {{transaction.project.name}}
-    </div>
-  </ng-container>
-</div> -->
+<pre>{{transaction | async | json}}</pre>

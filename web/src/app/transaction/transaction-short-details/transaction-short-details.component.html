@@ -16,8 +16,12 @@
     <div matListItemTitle class="category">{{categoryName ?? (category | async)?.fullName}}</div>
   </mat-list-item>
   <mat-list-item *ngIf="productName || productId">
-    <mat-icon matListItemIcon>shopping_cart</mat-icon>
-    <div matListItemTitle class="product">{{productName ?? (product | async)?.fullName}} {{quantity}}</div>
+    <mat-icon matListItemIcon>barcode</mat-icon>
+    <div matListItemTitle class="product">{{productName ?? (product | async)?.fullName}}</div>
+  </mat-list-item>
+  <mat-list-item *ngIf="quantity">
+    <mat-icon matListItemIcon>add_shopping_cart</mat-icon>
+    <div matListItemTitle class="product">{{quantity}}</div>
   </mat-list-item>
   <mat-list-item *ngIf="invoiceNumber">
     <mat-icon matListItemIcon>receipt</mat-icon>

@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { DialogService } from '@household/web/app/shared/dialog.service';
 import { accountApiActions } from '@household/web/state/account/account.actions';
 import { selectAccountsByOwner } from '@household/web/state/account/account.selector';
+import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 
 @Component({
   selector: 'household-account-home',
@@ -14,7 +14,7 @@ export class AccountHomeComponent implements OnInit {
   onlyOpenAccounts: boolean;
   accountsByOwner = this.store.select(selectAccountsByOwner);
 
-  constructor(private dialogService: DialogService, private store: Store) { }
+  constructor(private store: Store) { }
 
   ngOnInit(): void {
     this.onlyOpenAccounts = true;
@@ -23,6 +23,6 @@ export class AccountHomeComponent implements OnInit {
   }
 
   create() {
-    this.dialogService.openCreateAccountDialog();
+    this.store.dispatch(dialogActions.createAccount());
   }
 }

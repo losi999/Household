@@ -7,6 +7,7 @@ import { projectApiActions } from '@household/web/state/project/project.actions'
 import { recipientApiActions } from '@household/web/state/recipient/recipient.actions';
 import { categoryApiActions } from '@household/web/state/category/category.actions';
 import { productApiActions } from '@household/web/state/product/product.actions';
+import { accountApiActions } from '@household/web/state/account/account.actions';
 
 @Injectable()
 export class DialogEffects {
@@ -239,5 +240,49 @@ export class DialogEffects {
     );
   }, {
     dispatch: false,
+  });
+
+  createAccount = createEffect(() => {
+    return this.actions.pipe(
+      ofType(dialogActions.createAccount),
+      exhaustMap(() => {
+        this.dialogService.openCreateAccountDialog();
+        return EMPTY;
+
+      }),
+    );
+  }, {
+    dispatch: false,
+  });
+
+  updateAccount = createEffect(() => {
+    return this.actions.pipe(
+      ofType(dialogActions.updateAccount),
+      exhaustMap(({ type, ...account }) => {
+        this.dialogService.openEditAccountDialog(account);
+        return EMPTY;
+
+      }),
+    );
+  }, {
+    dispatch: false,
+  });
+
+  deleteAccount = createEffect(() => {
+    return this.actions.pipe(
+      ofType(dialogActions.deleteAccount),
+      exhaustMap(({ type, ...account }) => {
+        return this.dialogService.openDeleteAccountDialog(account).afterClosed()
+          .pipe(
+            map((shouldDelete) => {
+              if (shouldDelete) {
+                return accountApiActions.deleteAccountInitiated({
+                  accountId: account.accountId,
+                });
+              }
+            }),
+          );
+      }),
+    );
   });
 }

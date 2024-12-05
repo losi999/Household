@@ -7,9 +7,11 @@ import { Account, Project, Recipient, Category, Product, Transaction } from '@ho
 import { takeFirstDefined } from '@household/web/operators/take-first-defined';
 import { toSplitResponse } from '@household/web/operators/to-split-response';
 import { selectCategories } from '@household/web/state/category/category.selector';
+import { messageActions } from '@household/web/state/message/message.actions';
 import { selectGroupedProducts } from '@household/web/state/product/product.selector';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
 import { selectTransaction } from '@household/web/state/transaction/transaction.selector';
+import { Actions, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { Observable, withLatestFrom } from 'rxjs';
 
@@ -57,7 +59,7 @@ export class TransactionSplitEditComponent implements OnInit {
     }, 0);
   }
 
-  constructor(public activatedRoute: ActivatedRoute, private destroyRef: DestroyRef, private store: Store) { }
+  constructor(public activatedRoute: ActivatedRoute, private destroyRef: DestroyRef, private store: Store, private actions: Actions) { }
 
   ngOnInit(): void {
     const accountId = this.activatedRoute.snapshot.paramMap.get('accountId') as Account.Id;
@@ -90,7 +92,10 @@ export class TransactionSplitEditComponent implements OnInit {
         });
     }
 
-    this.submit?.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+    this.actions.pipe(
+      ofType(messageActions.submitTransactionEditForm),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe(() => {
       this.form.markAllAsTouched();
 
       if (this.form.valid) {

@@ -1,67 +1,31 @@
-.account-transaction-list-item {
+.list-item {
   margin: 5px 5px;
   padding: 0 10px;
   display: grid;
   grid-template-columns: 75px 1fr auto;
-  // grid-template-rows: 130px;
   column-gap: 15px;
-  grid-template-areas: "datetime details amount"
-  "buttons buttons buttons";
+  grid-template-areas:
+    "datetime details amount"
+    "buttons buttons buttons";
 
-  &__datetime {
+  & > .datetime {
     grid-area: datetime;
     text-align: right;
-  }
 
-  .mat-mdc-list {
-    grid-area: details;
-    min-width: 0;
-    padding: 0;
-
-    .mat-mdc-list-item {
-      height: 26px;
+    & > .year {
+      font-size: 12px;
     }
 
-    .mat-icon{
-      margin: 0;
+    & > .date {
+      font-size: 16px;
     }
 
-    .mat-mdc-list-item-title {
-      margin-left: 6px;
+    & > .time {
+      font-size: 14px;
     }
   }
 
-  &__year {
-    font-size: 12px;
-  }
-
-  &__date {
-    font-size: 16px;
-  }
-
-  &__time {
-    font-size: 14px;
-  }
-
-  &__category,
-  &__recipient,
-  &__description,
-  &__project {
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-  }
-
-  &__account,
-  &__recipient {
-    font-weight: bold;
-  }
-
-  &__description {
-    font-style: italic;
-  }
-
-  &__amount {
+  & > .amount {
     grid-area: amount;
     align-self: center;
     justify-self: end;
@@ -69,7 +33,7 @@
     font-weight: bold;
   }
 
-  &__buttons {
+  & > .buttons {
     grid-area: buttons;
     justify-self: end;
   }
@@ -80,11 +44,11 @@
       column-gap: 5px;
     }
 
-    &__date {
+    & > .date {
       font-size: 14px;
     }
 
-    &__amount {
+    & > .amount {
       font-size: 14px;
     }
   }

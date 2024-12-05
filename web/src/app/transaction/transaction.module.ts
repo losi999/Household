@@ -30,6 +30,7 @@ import { ProductAutocompleteInputComponent } from '@household/web/app/shared/aut
 import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { TransactionShortDetailsComponent } from './transaction-short-details/transaction-short-details.component';
+import { LetDirective } from '@ngrx/component';
 
 @NgModule({
   declarations: [
@@ -66,6 +67,7 @@ import { TransactionShortDetailsComponent } from './transaction-short-details/tr
     MatDatepickerModule,
     ClearableInputComponent,
     MatExpansionModule,
+    LetDirective,
   ],
   exports: [
     TransactionListItemComponent,

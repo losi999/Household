@@ -8,9 +8,11 @@ import { takeFirstDefined } from '@household/web/operators/take-first-defined';
 import { toLoanResponse } from '@household/web/operators/to-loan-response';
 import { selectAccountById } from '@household/web/state/account/account.selector';
 import { selectCategories } from '@household/web/state/category/category.selector';
+import { messageActions } from '@household/web/state/message/message.actions';
 import { selectGroupedProducts } from '@household/web/state/product/product.selector';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
 import { selectTransaction } from '@household/web/state/transaction/transaction.selector';
+import { Actions, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { merge, mergeMap, Observable, withLatestFrom } from 'rxjs';
 
@@ -43,7 +45,7 @@ export class TransactionLoanEditComponent implements OnInit {
 
   account: Observable<Account.Response>;
 
-  constructor(public activatedRoute: ActivatedRoute, private destroyRef: DestroyRef, private store: Store) {
+  constructor(public activatedRoute: ActivatedRoute, private destroyRef: DestroyRef, private store: Store, private actions: Actions) {
   }
 
   ngOnInit(): void {
@@ -97,7 +99,10 @@ export class TransactionLoanEditComponent implements OnInit {
         });
     }
 
-    this.submit?.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+    this.actions.pipe(
+      ofType(messageActions.submitTransactionEditForm),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe(() => {
       this.form.markAllAsTouched();
       const { accountId, amount, issuedAt, description, categoryId, recipientId, projectId, productId, quantity, billingEndDate, billingStartDate, invoiceNumber, isSettled, loanAccountId } = this.form.getRawValue();
 

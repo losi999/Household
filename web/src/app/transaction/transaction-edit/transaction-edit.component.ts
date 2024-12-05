@@ -1,7 +1,7 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Account, Transaction } from '@household/shared/types/types';
-import { Subject, take } from 'rxjs';
+import { take } from 'rxjs';
 import { selectProjects } from '@household/web/state/project/project.selector';
 import { projectApiActions } from '@household/web/state/project/project.actions';
 import { selectRecipients } from '@household/web/state/recipient/recipient.selector';
@@ -14,6 +14,7 @@ import { categoryApiActions } from '@household/web/state/category/category.actio
 import { productApiActions } from '@household/web/state/product/product.actions';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
 import { selectIsInProgress } from '@household/web/state/progress/progress.selector';
+import { messageActions } from '@household/web/state/message/message.actions';
 
 @Component({
   selector: 'household-transaction-edit',
@@ -23,7 +24,6 @@ import { selectIsInProgress } from '@household/web/state/progress/progress.selec
 })
 export class TransactionEditComponent implements OnInit {
   formType: string;
-  submit: Subject<void>;
 
   accounts = this.store.select(selectAccounts);
   projects = this.store.select(selectProjects);
@@ -44,8 +44,6 @@ export class TransactionEditComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.submit = new Subject();
-
     const accountId = this.activatedRoute.snapshot.paramMap.get('accountId') as Account.Id;
     const transactionId = this.activatedRoute.snapshot.paramMap.get('transactionId') as Transaction.Id;
 
@@ -69,6 +67,6 @@ export class TransactionEditComponent implements OnInit {
   }
 
   onSubmit() {
-    this.submit.next();
+    this.store.dispatch(messageActions.submitTransactionEditForm());
   }
 }

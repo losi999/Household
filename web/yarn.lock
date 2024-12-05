@@ -1714,6 +1714,13 @@
     "@napi-rs/nice-win32-ia32-msvc" "1.0.1"
     "@napi-rs/nice-win32-x64-msvc" "1.0.1"
 
+"@ngrx/component@^18.1.1":
+  version "18.1.1"
+  resolved "https://registry.yarnpkg.com/@ngrx/component/-/component-18.1.1.tgz#f81879653e836a83f299759cfbea1edd03e892a1"
+  integrity sha512-7Yyw9ocRLNdra4FisyFMFin79PRyosc0r/yC3CrbpmOFxbp4kaTlGM46zlJozy7Yazl4EbxE/HVg7dkv5zsmmg==
+  dependencies:
+    tslib "^2.0.0"
+
 "@ngrx/effects@^18.0.2":
   version "18.1.1"
   resolved "https://registry.yarnpkg.com/@ngrx/effects/-/effects-18.1.1.tgz#df51cc2874e2470bfe073aa3e01f317977d8fd49"

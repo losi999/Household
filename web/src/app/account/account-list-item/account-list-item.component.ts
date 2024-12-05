@@ -1,10 +1,9 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Account } from '@household/shared/types/types';
 import { Store } from '@ngrx/store';
-import { DialogService } from '@household/web/app/shared/dialog.service';
-import { accountApiActions } from '@household/web/state/account/account.actions';
 import { Observable } from 'rxjs';
 import { selectAccountIsInProgress } from '@household/web/state/progress/progress.selector';
+import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 
 @Component({
   selector: 'household-account-list-item',
@@ -16,41 +15,32 @@ export class AccountListItemComponent implements OnInit {
   @Input() account: Account.Response;
   notificationCount: number;
 
-  get balanceTitle(): string {
-    switch (this.account.accountType) {
-      case 'loan': return this.account.balance <= 0 ? 'Kintlévőség' : 'Tartozás';
-      default: return 'Egyenleg';
-    }
-  }
-
-  get balance(): number {
-    return this.account.accountType === 'loan' ? Math.abs(this.account.balance) : this.account.balance;
-  }
-
-  constructor(private store: Store, private dialogService: DialogService) { }
-
+  balanceTitle: string;
+  balance: number;
   isDisabled: Observable<boolean>;
+
+  constructor(private store: Store) { }
 
   ngOnInit(): void {
     this.isDisabled = this.store.select(selectAccountIsInProgress(this.account.accountId));
+    this.balance = this.account.accountType === 'loan' ? Math.abs(this.account.balance) : this.account.balance;
+
+    if (this.account.accountType === 'loan') {
+      this.balanceTitle = this.account.balance <= 0 ? 'Kintlévőség' : 'Tartozás';
+    } else {
+      this.balanceTitle = 'Egyenleg';
+    }
   }
 
   delete(e: Event) {
     e.preventDefault();
     e.stopImmediatePropagation();
-    this.dialogService.openDeleteAccountDialog(this.account).afterClosed()
-      .subscribe(shouldDelete => {
-        if (shouldDelete) {
-          this.store.dispatch(accountApiActions.deleteAccountInitiated({
-            accountId: this.account.accountId,
-          }));
-        }
-      });
+    this.store.dispatch(dialogActions.deleteAccount(this.account));
   }
 
   edit(e: Event) {
     e.preventDefault();
     e.stopImmediatePropagation();
-    this.dialogService.openEditAccountDialog(this.account);
+    this.store.dispatch(dialogActions.updateAccount(this.account));
   }
 }

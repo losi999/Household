@@ -14,8 +14,8 @@
   </button>
 </household-toolbar>
 <div class="transaction-edit" [ngSwitch]="formType">
-  <household-transaction-payment-edit *ngIf="formType === 'payment' || formType === 'income'" [submit]="submit" />
-  <household-transaction-split-edit *ngIf="formType === 'split'" [submit]="submit" />
-  <household-transaction-loan-edit *ngIf="formType === 'loan'" [submit]="submit" />
-  <household-transaction-transfer-edit *ngIf="formType === 'transfer'" [submit]="submit" />
+  <household-transaction-payment-edit *ngIf="formType === 'payment' || formType === 'income'" />
+  <household-transaction-split-edit *ngIf="formType === 'split'" />
+  <household-transaction-loan-edit *ngIf="formType === 'loan'" />
+  <household-transaction-transfer-edit *ngIf="formType === 'transfer'" />
 </div>

@@ -6,8 +6,10 @@ import { Account, Transaction } from '@household/shared/types/types';
 import { takeFirstDefined } from '@household/web/operators/take-first-defined';
 import { toTransferResponse } from '@household/web/operators/to-transfer-response';
 import { selectAccounts } from '@household/web/state/account/account.selector';
+import { messageActions } from '@household/web/state/message/message.actions';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
 import { selectTransaction } from '@household/web/state/transaction/transaction.selector';
+import { Actions, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { combineLatest, Observable, withLatestFrom } from 'rxjs';
 @Component({
@@ -31,7 +33,7 @@ export class TransactionTransferEditComponent implements OnInit {
     transferAmount: FormControl<number>;
   }>;
 
-  constructor(public activatedRoute: ActivatedRoute, private destroyRef: DestroyRef, private store: Store) {
+  constructor(public activatedRoute: ActivatedRoute, private destroyRef: DestroyRef, private store: Store, private actions: Actions) {
   }
 
   ngOnInit(): void {
@@ -94,7 +96,10 @@ export class TransactionTransferEditComponent implements OnInit {
       accountId,
     });
 
-    this.submit?.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+    this.actions.pipe(
+      ofType(messageActions.submitTransactionEditForm),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe(() => {
       this.form.markAllAsTouched();
 
       if (this.form.valid) {

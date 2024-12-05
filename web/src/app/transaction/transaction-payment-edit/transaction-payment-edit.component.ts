@@ -1,4 +1,4 @@
-import { Component, DestroyRef, Input, OnInit } from '@angular/core';
+import { Component, DestroyRef, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -8,10 +8,12 @@ import { selectGroupedProducts } from '@household/web/state/product/product.sele
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
 import { Store } from '@ngrx/store';
 import { toUndefined } from '@household/shared/common/utils';
-import { Observable, withLatestFrom } from 'rxjs';
+import { withLatestFrom } from 'rxjs';
 import { selectTransaction } from '@household/web/state/transaction/transaction.selector';
 import { takeFirstDefined } from '@household/web/operators/take-first-defined';
 import { toPaymentResponse } from '@household/web/operators/to-payment-response';
+import { Actions, ofType } from '@ngrx/effects';
+import { messageActions } from '@household/web/state/message/message.actions';
 
 @Component({
   selector: 'household-transaction-payment-edit',
@@ -20,8 +22,6 @@ import { toPaymentResponse } from '@household/web/operators/to-payment-response'
   standalone: false,
 })
 export class TransactionPaymentEditComponent implements OnInit {
-  @Input() submit: Observable<void>;
-
   form: FormGroup<{
     issuedAt: FormControl<Date>;
     amount: FormControl<number>;
@@ -38,7 +38,7 @@ export class TransactionPaymentEditComponent implements OnInit {
   }>;
   categoryType: Category.CategoryType['categoryType'];
 
-  constructor(public activatedRoute: ActivatedRoute, private destroyRef: DestroyRef, private store: Store) {
+  constructor(public activatedRoute: ActivatedRoute, private destroyRef: DestroyRef, private store: Store, private actions: Actions) {
   }
 
   ngOnInit(): void {
@@ -87,7 +87,10 @@ export class TransactionPaymentEditComponent implements OnInit {
         });
     }
 
-    this.submit?.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+    this.actions.pipe(
+      ofType(messageActions.submitTransactionEditForm),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe(() => {
       this.form.markAllAsTouched();
 
       if (this.form.valid) {

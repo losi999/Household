@@ -9,8 +9,6 @@
     <button mat-menu-item [routerLink]="['new', 'loan']">Kölcsön</button>
     <button mat-menu-item [routerLink]="['new', 'transfer']">Átvitel</button>
   </mat-menu>
-
-
 </household-toolbar>
 
 <household-account-transactions-list [transactions]="transactions | async"></household-account-transactions-list>
