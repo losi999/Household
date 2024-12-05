@@ -1,4 +1,4 @@
-import { Component, DestroyRef, Input, OnInit } from '@angular/core';
+import { Component, DestroyRef, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -8,10 +8,11 @@ import { toTransferResponse } from '@household/web/operators/to-transfer-respons
 import { selectAccounts } from '@household/web/state/account/account.selector';
 import { messageActions } from '@household/web/state/message/message.actions';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
-import { selectTransaction } from '@household/web/state/transaction/transaction.selector';
+import { selectDeferredTransactionList, selectTransaction } from '@household/web/state/transaction/transaction.selector';
 import { Actions, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
-import { combineLatest, Observable, withLatestFrom } from 'rxjs';
+import { combineLatest, filter, map, Observable, withLatestFrom } from 'rxjs';
+
 @Component({
   selector: 'household-transaction-transfer-edit',
   templateUrl: './transaction-transfer-edit.component.html',
@@ -19,8 +20,6 @@ import { combineLatest, Observable, withLatestFrom } from 'rxjs';
   standalone: false,
 })
 export class TransactionTransferEditComponent implements OnInit {
-  @Input() submit: Observable<void>;
-
   isDownwardTransfer = true;
   isSameCurrency = true;
 
@@ -33,12 +32,23 @@ export class TransactionTransferEditComponent implements OnInit {
     transferAmount: FormControl<number>;
   }>;
 
+  paymentAmount: FormControl<number>;
+  payments: (Transaction.Amount & {
+    transaction: Transaction.DeferredResponse;
+  })[];
+
+  availableDeferredTransactions: Observable<Transaction.DeferredResponse[]>;
+
   constructor(public activatedRoute: ActivatedRoute, private destroyRef: DestroyRef, private store: Store, private actions: Actions) {
   }
 
   ngOnInit(): void {
     const accountId = this.activatedRoute.snapshot.paramMap.get('accountId') as Account.Id;
     const transactionId = this.activatedRoute.snapshot.paramMap.get('transactionId') as Transaction.Id;
+
+    this.store.dispatch(transactionApiActions.listDeferredTransactionsInitiated({
+      isSettled: false,
+    }));
 
     this.form = new FormGroup({
       issuedAt: new FormControl(new Date(), [Validators.required]),
@@ -49,23 +59,61 @@ export class TransactionTransferEditComponent implements OnInit {
       transferAmount: new FormControl(null),
     });
 
+    this.paymentAmount = new FormControl(null, [
+      Validators.required,
+      Validators.min(0),
+    ]);
+    this.payments = [];
+
     if (transactionId) {
-      this.store.select(selectTransaction).pipe(
+      const transaction = this.store.select(selectTransaction).pipe(
         takeFirstDefined(),
         toTransferResponse(),
-      )
-        .subscribe((transaction) => {
+      );
 
-          this.form.patchValue({
-            amount: transaction.amount,
-            accountId: transaction.account.accountId,
-            description: transaction.description,
-            issuedAt: new Date(transaction.issuedAt),
-            transferAccountId: transaction.transferAccount?.accountId,
-          }, {
-            emitEvent: false,
-          });
+      this.availableDeferredTransactions = combineLatest([
+        transaction,
+        this.store.select(selectDeferredTransactionList()),
+      ]).pipe(
+        filter(([
+          transaction,
+          deferredTransactions,
+        ]) => !!transaction && !!deferredTransactions),
+        map(([
+          transaction,
+          deferredTransactions,
+        ]) => {
+          const paymentIds = transaction.payments.map(p => p.transaction.transactionId);
+
+          return [
+            ...deferredTransactions.filter(d => !paymentIds.includes(d.transactionId)),
+            ...transaction.payments.map(p => ({
+              ...p.transaction,
+              remainingAmount: p.transaction.remainingAmount + p.amount,
+            })),
+          ];
+        }),
+      );
+
+      transaction.subscribe((transaction) => {
+        this.form.patchValue({
+          amount: transaction.amount,
+          accountId: transaction.account.accountId,
+          description: transaction.description,
+          issuedAt: new Date(transaction.issuedAt),
+          transferAccountId: transaction.transferAccount?.accountId,
+        }, {
+          emitEvent: false,
         });
+
+        this.payments = transaction.payments.map(p => ({
+          ...p,
+          transaction: {
+            ...p.transaction,
+            remainingAmount: p.transaction.remainingAmount + p.amount,
+          },
+        }));
+      });
     }
 
     combineLatest([
@@ -109,7 +157,10 @@ export class TransactionTransferEditComponent implements OnInit {
           description: this.form.value.description ?? undefined,
           issuedAt: this.form.value.issuedAt.toISOString(),
           transferAccountId: this.form.value.transferAccountId,
-          payments: undefined,
+          payments: this.payments.map(p => ({
+            amount: p.amount,
+            transactionId: p.transaction.transactionId,
+          })),
           transferAmount: this.form.value.transferAmount ?? undefined,
         };
 
@@ -128,6 +179,25 @@ export class TransactionTransferEditComponent implements OnInit {
 
   inverseTransaction() {
     this.isDownwardTransfer = !this.isDownwardTransfer;
+  }
+
+  addPayment(transaction: Transaction.DeferredResponse) {
+    if (this.paymentAmount.valid) {
+
+      this.payments = [
+        ...this.payments,
+        {
+          transaction,
+          amount: this.paymentAmount.value,
+        },
+      ];
+
+      this.paymentAmount.reset();
+    }
+  }
+
+  deletePayment(transactionId: Transaction.Id) {
+    this.payments = this.payments.filter(p => p.transaction.transactionId !== transactionId);
   }
 
 }

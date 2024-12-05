@@ -1,23 +1,39 @@
 <mat-list>
-  <mat-list-item *ngIf="accountName || accountId" [ngClass]="accountIconColor">
-    <mat-icon matListItemIcon>{{accountIcon}}</mat-icon>
-    <div matListItemTitle>{{accountName ?? (account |async)?.fullName}}</div>
+  <mat-list-item *ngIf="payingAccount" class="red">
+    <mat-icon matListItemIcon>reply_all</mat-icon>
+    <div matListItemTitle>{{(payingAccount$ | async)?.fullName ?? payingAccount}}</div>
   </mat-list-item>
-  <mat-list-item *ngIf="amount" [ngClass]="accountIconColor">
-    <mat-icon matListItemIcon>paid</mat-icon>
-    <div matListItemTitle>{{amount}} {{currency ?? (currencyAccount | async)?.currency}}</div>
+  <mat-list-item *ngIf="ownerAccount" class="green">
+    <mat-icon matListItemIcon>forward</mat-icon>
+    <div matListItemTitle>{{(ownerAccount$ | async)?.fullName ?? ownerAccount}}</div>
   </mat-list-item>
-  <mat-list-item *ngIf="recipientName || recipientId">
+  <mat-list-item *ngIf="givingAccount" [ngClass]="transferColor">
+    <mat-icon matListItemIcon>arrow_left_alt</mat-icon>
+    <div matListItemTitle>{{(givingAccount$ | async)?.fullName ?? givingAccount}}</div>
+  </mat-list-item>
+  <mat-list-item *ngIf="receivingAccount" [ngClass]="transferColor">
+    <mat-icon matListItemIcon>arrow_right_alt</mat-icon>
+    <div matListItemTitle>{{(receivingAccount$ | async)?.fullName ?? receivingAccount}}</div>
+  </mat-list-item>
+  <mat-list-item *ngIf="amount">
+    <mat-icon matListItemIcon>attach_money</mat-icon>
+    <div matListItemTitle>{{amount}} {{(currencyAccount$ | async)?.currency ?? currency}}</div>
+  </mat-list-item>
+  <mat-list-item *ngIf="remainingAmount" class="red">
+    <mat-icon matListItemIcon>money_off</mat-icon>
+    <div matListItemTitle>{{remainingAmount}} {{(currencyAccount$ | async)?.currency ?? currency}}</div>
+  </mat-list-item>
+  <mat-list-item *ngIf="recipient">
     <mat-icon matListItemIcon>store</mat-icon>
-    <div matListItemTitle class="recipient">{{recipientName ?? (recipient | async)?.name}}</div>
+    <div matListItemTitle class="recipient">{{(recipient$ | async)?.name ?? recipient}}</div>
   </mat-list-item>
-  <mat-list-item *ngIf="categoryName || categoryId">
+  <mat-list-item *ngIf="category">
     <mat-icon matListItemIcon>category</mat-icon>
-    <div matListItemTitle class="category">{{categoryName ?? (category | async)?.fullName}}</div>
+    <div matListItemTitle class="category">{{(category$ | async)?.fullName ?? category}}</div>
   </mat-list-item>
-  <mat-list-item *ngIf="productName || productId">
+  <mat-list-item *ngIf="product">
     <mat-icon matListItemIcon>barcode</mat-icon>
-    <div matListItemTitle class="product">{{productName ?? (product | async)?.fullName}}</div>
+    <div matListItemTitle class="product">{{(product$ | async)?.fullName ?? product}}</div>
   </mat-list-item>
   <mat-list-item *ngIf="quantity">
     <mat-icon matListItemIcon>add_shopping_cart</mat-icon>
@@ -31,9 +47,9 @@
     <mat-icon matListItemIcon>calendar_month</mat-icon>
     <div matListItemTitle class="product">{{billingStartDate | date:'yyyy MMM dd.'}} - {{billingEndDate | date:'yyyy MMM dd.'}}</div>
   </mat-list-item>
-  <mat-list-item *ngIf="projectName || projectId">
+  <mat-list-item *ngIf="project">
     <mat-icon matListItemIcon>stacks</mat-icon>
-    <div matListItemTitle class="project">{{projectName ?? (project | async)?.name}}</div>
+    <div matListItemTitle class="project">{{(project$ | async)?.name ?? project}}</div>
   </mat-list-item>
   <mat-list-item *ngIf=description>
     <mat-icon matListItemIcon>description</mat-icon>

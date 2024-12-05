@@ -31,6 +31,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { TransactionShortDetailsComponent } from './transaction-short-details/transaction-short-details.component';
 import { LetDirective } from '@ngrx/component';
+import { DeferredTransactionFilterPipe } from './deferred-transaction-filter.pipe';
+import { OrderByPipe } from '@household/web/app/shared/order-by.pipe';
 
 @NgModule({
   declarations: [
@@ -42,6 +44,7 @@ import { LetDirective } from '@ngrx/component';
     TransactionTransferEditComponent,
     TransactionLoanEditComponent,
     TransactionShortDetailsComponent,
+    DeferredTransactionFilterPipe,
   ],
   imports: [
     RouterModule,
@@ -68,6 +71,7 @@ import { LetDirective } from '@ngrx/component';
     ClearableInputComponent,
     MatExpansionModule,
     LetDirective,
+    OrderByPipe,
   ],
   exports: [
     TransactionListItemComponent,

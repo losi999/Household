@@ -4,7 +4,7 @@
   <household-account-autocomplete-input [label]="isDownwardTransfer ? 'Átvitel innen' : 'Átvitel ide'" [exclude]="form.value.transferAccountId" formControlName="accountId" />
 
   <household-amount-input [accountId]="form.value.accountId" formControlName="amount" [isPositive]="!isDownwardTransfer" [showInverse]="false" />
-  <div class="transaction-edit__direction-button">
+  <div class="direction-button">
     <button mat-icon-button type="button" (click)="inverseTransaction()">
       <mat-icon>{{isDownwardTransfer ? 'stat_minus_3' : 'stat_3'}}</mat-icon>
     </button>
@@ -14,4 +14,34 @@
   <household-amount-input *ngIf="!isSameCurrency" [accountId]="form.value.transferAccountId" formControlName="transferAmount" [isPositive]="isDownwardTransfer" [showInverse]="false" />
 
   <household-clearable-input formControlName="description" label="Megjegyzés" />
+
+  <div class="list-item" *ngFor="let p of payments | orderBy: 'transaction.issuedAt' : 'desc'">
+    <div class="datetime">
+      <div class="year">{{p.transaction.issuedAt | date:'yyyy'}}</div>
+      <div class="date">{{p.transaction.issuedAt | date:'MMM dd.'}}</div>
+      <div class="time">{{p.transaction.issuedAt | date:'HH:mm'}}</div>
+    </div>
+    <household-transaction-short-details [category]="p.transaction.category?.fullName" [project]="p.transaction.project?.name" [recipient]="p.transaction.recipient?.name" [product]="p.transaction.product?.fullName" [billingStartDate]="p.transaction.billingStartDate" [billingEndDate]="p.transaction.billingEndDate" [description]="p.transaction.description" [invoiceNumber]="p.transaction.invoiceNumber" [quantity]="p.transaction.quantity" [currency]="p.transaction.payingAccount.currency" [amount]="p.amount" [payingAccount]="p.transaction.payingAccount.fullName" [ownerAccount]="p.transaction.ownerAccount.fullName" [remainingAmount]="p.transaction.remainingAmount - p.amount" />
+    <div class="buttons">
+      <button mat-icon-button type="button" color="warn" (click)="deletePayment(p.transaction.transactionId)">
+        <mat-icon>delete</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <mat-accordion class="deferred-list">
+    <mat-expansion-panel hideToggle *ngFor="let deferred of availableDeferredTransactions | async | deferredTransactionFilter: payments | orderBy: 'issuedAt' : 'desc'" #panel (afterCollapse)="paymentAmount.reset()">
+      <mat-expansion-panel-header>
+        <mat-panel-title>{{deferred.issuedAt | date:'yyyy. MMM dd.'}}</mat-panel-title>
+        <mat-panel-description>{{deferred.payingAccount.fullName}} &nbsp; <mat-icon>forward</mat-icon>&nbsp; {{deferred.ownerAccount.fullName}}</mat-panel-description>
+      </mat-expansion-panel-header>
+      <household-transaction-short-details [description]="deferred.description" [category]="deferred.category?.fullName" [recipient]="deferred.recipient?.name" [project]="deferred.project?.name" [product]="deferred.product?.fullName" [quantity]="deferred.quantity" [invoiceNumber]="deferred.invoiceNumber" [billingStartDate]="deferred.billingStartDate" [billingEndDate]="deferred.billingEndDate" [amount]="deferred.remainingAmount" [currency]="deferred.payingAccount.currency" />
+      <household-amount-input *ngIf="panel.expanded" [accountId]="deferred.payingAccount.accountId" [showInverse]="false" [formControl]="paymentAmount" />
+      <div class="buttons">
+        <button mat-icon-button color="primary" class="transaction-edit-split-item" (click)="addPayment(deferred)" type="button">
+          <mat-icon>add</mat-icon>
+        </button>
+      </div>
+    </mat-expansion-panel>
+  </mat-accordion>
 </form>

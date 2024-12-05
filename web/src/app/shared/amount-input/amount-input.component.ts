@@ -59,18 +59,19 @@ export class AmountInputComponent implements OnInit, OnChanges, ControlValueAcce
   }
 
   ngOnInit(): void {
-    const ngControl = this.injector.get(NgControl) as FormControlName;
-    const formControl = this.injector.get(FormGroupDirective).getControl(ngControl);
-    formControl.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
-      if(event instanceof TouchedChangeEvent) {
-        this.amount.markAsTouched();
-      }
-    });
-    const isRequired = formControl.hasValidator(Validators.required);
+    // const ngControl = this.injector.get(NgControl) as FormControlName;
+    // console.log(ngControl);
+    // const formControl = this.injector.get(FormGroupDirective).getControl(ngControl);
+    // formControl.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
+    //   if(event instanceof TouchedChangeEvent) {
+    //     this.amount.markAsTouched();
+    //   }
+    // });
+    // const isRequired = formControl.hasValidator(Validators.required);
 
-    if (isRequired) {
-      this.amount.setValidators(Validators.required);
-    }
+    // if (isRequired) {
+    //   this.amount.setValidators(Validators.required);
+    // }
 
     this.amount.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((value) => {
       if (value) {

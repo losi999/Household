@@ -5,7 +5,7 @@ import { takeFirstDefined } from '@household/web/operators/take-first-defined';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
 import { selectTransaction } from '@household/web/state/transaction/transaction.selector';
 import { Store } from '@ngrx/store';
-import { Observable } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 
 @Component({
   selector: 'household-transaction-details',
@@ -15,6 +15,7 @@ import { Observable } from 'rxjs';
 })
 export class TransactionDetailsComponent implements OnInit {
   transaction: Observable<Transaction.Response>;
+  formType: string;
 
   constructor(private activatedRoute: ActivatedRoute, private store: Store) { }
 
@@ -27,6 +28,17 @@ export class TransactionDetailsComponent implements OnInit {
       transactionId,
     }));
 
-    this.transaction = this.store.select(selectTransaction).pipe(takeFirstDefined());
+    this.transaction = this.store.select(selectTransaction).pipe(
+      takeFirstDefined(),
+      tap((transaction) => {
+        switch(transaction.transactionType) {
+          case 'payment': this.formType = transaction.amount >= 0 ? 'income' : 'payment'; break;
+          case 'deferred':
+          case 'reimbursement': this.formType = 'loan'; break;
+          case 'transfer':
+          case 'loanTransfer': this.formType = 'transfer'; break;
+          case 'split': this.formType = 'split'; break;
+        }
+      }));
   }
 }

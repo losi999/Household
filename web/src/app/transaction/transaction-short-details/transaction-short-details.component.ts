@@ -16,63 +16,73 @@ import { Observable } from 'rxjs';
   styleUrl: './transaction-short-details.component.scss',
 })
 export class TransactionShortDetailsComponent implements OnInit {
-  @Input() currencyAccountId: Account.Id;
-  @Input() currency: string;
-
-  @Input() accountIcon: 'arrow_left_alt' | 'arrow_right_alt' | 'forward' | 'reply_all';
-  @Input() accountIconColor: 'red' | 'green';
+  @Input() currency: Account.Id;
+  @Input() transferColor: 'red' | 'green';
 
   @Input() amount: number;
+  @Input() remainingAmount: number;
   @Input() description: string;
   @Input() quantity: number;
   @Input() invoiceNumber: string;
   @Input() billingStartDate: string;
   @Input() billingEndDate: string;
 
-  @Input() accountId: Account.Id;
-  @Input() categoryId: Category.Id;
-  @Input() projectId: Project.Id;
-  @Input() productId: Product.Id;
-  @Input() recipientId: Recipient.Id;
+  @Input() payingAccount: Account.Id;
+  @Input() ownerAccount: Account.Id;
+  @Input() givingAccount: Account.Id;
+  @Input() receivingAccount: Account.Id;
+  @Input() category: Category.Id;
+  @Input() project: Project.Id;
+  @Input() product: Product.Id;
+  @Input() recipient: Recipient.Id;
 
-  @Input() accountName: string;
-  @Input() categoryName: string;
-  @Input() projectName: string;
-  @Input() productName: string;
-  @Input() recipientName: string;
-
-  currencyAccount: Observable<Account.Response>;
-  project: Observable<Project.Response>;
-  account: Observable<Account.Response>;
-  category: Observable<Category.Response>;
-  product: Observable<Product.Response>;
-  recipient: Observable<Recipient.Response>;
+  currencyAccount$: Observable<Account.Response>;
+  project$: Observable<Project.Response>;
+  payingAccount$: Observable<Account.Response>;
+  ownerAccount$: Observable<Account.Response>;
+  givingAccount$: Observable<Account.Response>;
+  receivingAccount$: Observable<Account.Response>;
+  category$: Observable<Category.Response>;
+  product$: Observable<Product.Response>;
+  recipient$: Observable<Recipient.Response>;
 
   constructor(private store: Store) { }
 
   ngOnInit(): void {
-    if (this.currencyAccountId) {
-      this.currencyAccount = this.store.select(selectAccountById(this.currencyAccountId)).pipe(takeFirstDefined());
+    if (this.currency) {
+      this.currencyAccount$ = this.store.select(selectAccountById(this.currency)).pipe(takeFirstDefined());
     }
 
-    if (this.projectId) {
-      this.project = this.store.select(selectProjectById(this.projectId)).pipe(takeFirstDefined());
+    if (this.project) {
+      this.project$ = this.store.select(selectProjectById(this.project)).pipe(takeFirstDefined());
     }
 
-    if (this.accountId) {
-      this.account = this.store.select(selectAccountById(this.accountId)).pipe(takeFirstDefined());
+    if (this.payingAccount) {
+      this.payingAccount$ = this.store.select(selectAccountById(this.payingAccount)).pipe(takeFirstDefined());
     }
 
-    if (this.categoryId) {
-      this.category = this.store.select(selectCategoryById(this.categoryId)).pipe(takeFirstDefined());
+    if (this.ownerAccount) {
+      this.ownerAccount$ = this.store.select(selectAccountById(this.ownerAccount)).pipe(takeFirstDefined());
     }
 
-    if (this.productId) {
-      this.product = this.store.select(selectProductById(this.productId)).pipe(takeFirstDefined());
+    if (this.givingAccount) {
+      this.givingAccount$ = this.store.select(selectAccountById(this.givingAccount)).pipe(takeFirstDefined());
     }
 
-    if (this.recipientId) {
-      this.recipient = this.store.select(selectRecipientById(this.recipientId)).pipe(takeFirstDefined());
+    if (this.receivingAccount) {
+      this.receivingAccount$ = this.store.select(selectAccountById(this.receivingAccount)).pipe(takeFirstDefined());
+    }
+
+    if (this.category) {
+      this.category$ = this.store.select(selectCategoryById(this.category)).pipe(takeFirstDefined());
+    }
+
+    if (this.product) {
+      this.product$ = this.store.select(selectProductById(this.product)).pipe(takeFirstDefined());
+    }
+
+    if (this.recipient) {
+      this.recipient$ = this.store.select(selectRecipientById(this.recipient)).pipe(takeFirstDefined());
     }
   }
 }

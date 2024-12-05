@@ -1,4 +1,4 @@
-import { Component, DestroyRef, Input, OnInit } from '@angular/core';
+import { Component, DestroyRef, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -23,8 +23,6 @@ import { merge, mergeMap, Observable, withLatestFrom } from 'rxjs';
   standalone: false,
 })
 export class TransactionLoanEditComponent implements OnInit {
-  @Input() submit: Observable<void>;
-
   form: FormGroup<{
     issuedAt: FormControl<Date>;
     amount: FormControl<number>;

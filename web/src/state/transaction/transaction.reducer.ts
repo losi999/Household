@@ -4,13 +4,12 @@ import { transactionApiActions } from '@household/web/state/transaction/transact
 
 export type TransactionState = {
   transactionList: Transaction.Response[];
-  deferredTransactionList: Transaction.DeferredResponse[];
+  deferredTransactionList?: Transaction.DeferredResponse[];
   selectedTransaction?: Transaction.Response;
 };
 
 export const transactionReducer = createReducer<TransactionState>({
   transactionList: [],
-  deferredTransactionList: [],
 },
 on(transactionApiActions.listTransactionsInitiated, (_state, { pageNumber }) => {
   return {
@@ -29,7 +28,6 @@ on(transactionApiActions.listTransactionsCompleted, (_state, { transactions, pag
 on(transactionApiActions.listDeferredTransactionsInitiated, (_state) => {
   return {
     ..._state,
-    deferredTransactionList: [],
   };
 }),
 on(transactionApiActions.listDeferredTransactionsCompleted, (_state, { transactions }) => {
@@ -43,6 +41,13 @@ on(transactionApiActions.deleteTransactionCompleted, (_state, { transactionId })
   return {
     ..._state,
     transactionList: _state.transactionList.filter(t => t.transactionId !== transactionId),
+  };
+}),
+
+on(transactionApiActions.getTransactionInitiated, (_state) => {
+  return {
+    ..._state,
+    selectedTransaction: undefined,
   };
 }),
 

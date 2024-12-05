@@ -16,11 +16,12 @@ import { Observable } from 'rxjs';
 export class AccountTransactionsListItemComponent implements OnInit {
   @Input() transaction: Transaction.Response;
 
-  date: Date;
   showYear: boolean;
-  accountIcon: 'arrow_left_alt' | 'arrow_right_alt' | 'forward' | 'reply_all';
-  accountIconColor: 'red' | 'green';
-  account: Account.Response;
+  transferColor: 'red' | 'green';
+  payingAccount: Account.Response;
+  ownerAccount: Account.Response;
+  givingAccount: Account.Response;
+  receivingAccount: Account.Response;
   recipient: Recipient.Response;
   category: Category.Response;
   project: Project.Response;
@@ -39,8 +40,8 @@ export class AccountTransactionsListItemComponent implements OnInit {
 
   ngOnInit(): void {
     this.isDisabled = this.store.select(selectTransactionIsInProgress(this.transaction.transactionId));
-    this.date = new Date(this.transaction.issuedAt);
-    this.showYear = this.date.getFullYear() !== (new Date()).getFullYear();
+    this.showYear = !this.transaction.issuedAt.startsWith(new Date().getFullYear()
+      .toString());
     const viewingAccountId = this.activatedRoute.snapshot.paramMap.get('accountId') as Account.Id;
 
     switch (this.transaction.transactionType) {
@@ -60,35 +61,33 @@ export class AccountTransactionsListItemComponent implements OnInit {
       case 'loanTransfer': {
         this.formType = 'transfer';
         this.viewingAccount = this.transaction.account;
-        this.account = this.transaction.transferAccount;
-        if (this.viewingAccount.accountType === 'loan') {
-          this.accountIcon = this.transaction.amount <= 0 ? 'arrow_left_alt' : 'arrow_right_alt';
-        } else {
-          this.accountIcon = this.transaction.amount <= 0 ? 'arrow_right_alt' : 'arrow_left_alt';
-        }
-        this.accountIconColor = this.transaction.amount >= 0 ? 'green' : 'red';
+        const isLoan = this.viewingAccount.accountType === 'loan';
+        const isPositive = this.transaction.amount >= 0;
+
+        this.receivingAccount = (isLoan && isPositive) || (!isLoan && !isPositive) ? this.transaction.transferAccount : undefined;
+        this.givingAccount = (isLoan && !isPositive) || (!isLoan && isPositive) ? this.transaction.transferAccount : undefined;
+        this.transferColor = this.transaction.amount >= 0 ? 'green' : 'red';
         this.amount = this.transaction.amount;
       } break;
       case 'transfer': {
         this.formType = 'transfer';
         this.viewingAccount = this.transaction.account;
-        this.account = this.transaction.transferAccount;
-        this.accountIcon = this.transaction.amount >= 0 ? 'arrow_left_alt' : 'arrow_right_alt';
-        this.accountIconColor = this.transaction.amount >= 0 ? 'green' : 'red';
+        if (this.transaction.amount >= 0) {
+          this.givingAccount = this.transaction.transferAccount;
+        } else {
+          this.receivingAccount = this.transaction.transferAccount;
+        }
+        this.transferColor = this.transaction.amount >= 0 ? 'green' : 'red';
         this.amount = this.transaction.amount;
       } break;
       case 'deferred': {
         this.formType = 'loan';
         if (this.transaction.payingAccount.accountId === viewingAccountId) {
           this.viewingAccount = this.transaction.payingAccount;
-          this.account = this.transaction.ownerAccount;
-          this.accountIcon = 'forward';
-          this.accountIconColor = 'green';
+          this.ownerAccount = this.transaction.ownerAccount;
         } else {
           this.viewingAccount = this.transaction.ownerAccount;
-          this.account = this.transaction.payingAccount;
-          this.accountIcon = 'reply_all';
-          this.accountIconColor = 'red';
+          this.payingAccount = this.transaction.payingAccount;
         }
         this.amount = this.transaction.payingAccount.accountId === viewingAccountId || this.viewingAccount.accountType === 'loan' ? this.transaction.amount : undefined;
         this.remainingAmount = this.transaction.remainingAmount;
@@ -105,15 +104,11 @@ export class AccountTransactionsListItemComponent implements OnInit {
         this.formType = 'loan';
         if (this.transaction.payingAccount.accountId === viewingAccountId) {
           this.viewingAccount = this.transaction.payingAccount;
-          this.account = this.transaction.ownerAccount;
-          this.accountIcon = 'forward';
-          this.accountIconColor = 'green';
+          this.ownerAccount = this.transaction.ownerAccount;
           this.amount = this.transaction.amount * -1;
         } else {
           this.viewingAccount = this.transaction.ownerAccount;
-          this.account = this.transaction.payingAccount;
-          this.accountIcon = 'reply_all';
-          this.accountIconColor = 'red';
+          this.payingAccount = this.transaction.payingAccount;
         }
         this.category = this.transaction.category;
         this.project = this.transaction.project;
@@ -132,12 +127,9 @@ export class AccountTransactionsListItemComponent implements OnInit {
           this.remainingAmount = this.transaction.deferredSplits?.reduce((accumulator, currentValue) => {
             return accumulator + currentValue.remainingAmount;
           }, 0);
-          this.accountIconColor = 'green';
         } else {
           this.viewingAccount = this.transaction.deferredSplits[0].ownerAccount;
-          this.account = this.transaction.account;
-          this.accountIcon = 'reply_all';
-          this.accountIconColor = 'red';
+          this.payingAccount = this.transaction.account;
           if (this.viewingAccount.accountType === 'loan') {
             this.amount = this.transaction.deferredSplits.reduce((accumulator, currentValue) => {
               return accumulator + currentValue.amount;

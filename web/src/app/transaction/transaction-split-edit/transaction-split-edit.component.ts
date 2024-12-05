@@ -1,4 +1,4 @@
-import { Component, DestroyRef, Input, OnInit } from '@angular/core';
+import { Component, DestroyRef, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -13,7 +13,7 @@ import { transactionApiActions } from '@household/web/state/transaction/transact
 import { selectTransaction } from '@household/web/state/transaction/transaction.selector';
 import { Actions, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
-import { Observable, withLatestFrom } from 'rxjs';
+import { withLatestFrom } from 'rxjs';
 
 @Component({
   selector: 'household-transaction-split-edit',
@@ -22,8 +22,6 @@ import { Observable, withLatestFrom } from 'rxjs';
   standalone: false,
 })
 export class TransactionSplitEditComponent implements OnInit {
-  @Input() submit: Observable<void>;
-
   form: FormGroup<{
     issuedAt: FormControl<Date>;
     amount: FormControl<number>;

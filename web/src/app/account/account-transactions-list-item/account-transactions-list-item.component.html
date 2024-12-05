@@ -1,10 +1,11 @@
 <div class="list-item mat-elevation-z2">
   <div class="datetime">
-    <div class="year" *ngIf="showYear">{{date | date:'yyyy'}}</div>
-    <div class="date">{{date | date:'MMM dd.'}}</div>
-    <div class="time">{{date | date:'HH:mm'}}</div>
+    <div class="year" *ngIf="showYear">{{this.transaction.issuedAt | date:'yyyy'}}</div>
+    <div class="date">{{this.transaction.issuedAt | date:'MMM dd.'}}</div>
+    <div class="time">{{this.transaction.issuedAt | date:'HH:mm'}}</div>
   </div>
-  <household-transaction-short-details [categoryName]="category?.fullName" [projectName]="project?.name" [recipientName]="recipient?.name" [productName]="product?.fullName" [billingStartDate]="billingStartDate" [billingEndDate]="billingEndDate" [description]="transaction.description" [invoiceNumber]="invoiceNumber" [quantity]="quantity" [amount]="remainingAmount" [currency]="viewingAccount.currency" [accountName]="account?.fullName" [accountIcon]="accountIcon" [accountIconColor]="accountIconColor" />
+  <household-transaction-short-details [category]="category?.fullName" [project]="project?.name" [recipient]="recipient?.name" [product]="product?.fullName" [billingStartDate]="billingStartDate" [billingEndDate]="billingEndDate" [description]="transaction.description" [invoiceNumber]="invoiceNumber" [quantity]="quantity" [amount]="remainingAmount" [currency]="viewingAccount.currency" [payingAccount]="payingAccount?.fullName" [ownerAccount]="ownerAccount?.fullName" [givingAccount]="givingAccount?.fullName" [receivingAccount]="receivingAccount?.fullName" [transferColor]="transferColor" />
+
   <div *ngIf="amount" class="amount" [ngClass]="amount >= 0 ? 'green' : 'red'">{{amount | number:'1.0-2':'hu' }} {{viewingAccount.currency}}
   </div>
   <div class="buttons">

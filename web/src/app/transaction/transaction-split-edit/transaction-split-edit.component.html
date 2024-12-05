@@ -10,7 +10,7 @@
   <household-clearable-input formControlName="description" label="Megjegyzés" />
 
   <div *ngFor="let s of splits; index as i">
-    <household-transaction-short-details [currencyAccountId]="form.value.accountId" [amount]="s.amount" [accountId]="s.loanAccountId" [categoryId]="s.categoryId" [projectId]="s.projectId" [productId]="s.productId" [quantity]="s.quantity" [description]="s.description" [billingStartDate]="s.billingStartDate" [billingEndDate]="s.billingEndDate" [invoiceNumber]="s.invoiceNumber" accountIcon="forward" [accountIconColor]="s.amount >= 0 ? 'green' : 'red'" />
+    <household-transaction-short-details [currency]="form.value.accountId" [amount]="s.amount" [ownerAccount]="s.loanAccountId" [category]="s.categoryId" [project]="s.projectId" [product]="s.productId" [quantity]="s.quantity" [description]="s.description" [billingStartDate]="s.billingStartDate" [billingEndDate]="s.billingEndDate" [invoiceNumber]="s.invoiceNumber" />
     <div class="split-buttons">
       <button mat-icon-button color="primary" type="button" (click)="editSplit(i)">
         <mat-icon>edit</mat-icon>
