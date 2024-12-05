@@ -77,6 +77,36 @@ export class TransactionSplitEditComponent implements OnInit {
         toSplitResponse(),
       )
         .subscribe((transaction) => {
+          console.log(transaction);
+
+          this.splits = [
+            ...transaction.splits.map<Transaction.SplitRequestItem>(s => ({
+              amount: s.amount,
+              billingEndDate: s.billingEndDate,
+              billingStartDate: s.billingStartDate,
+              categoryId: s.category?.categoryId,
+              description: s.description,
+              invoiceNumber: s.invoiceNumber,
+              isSettled: undefined,
+              loanAccountId: undefined,
+              productId: s.product?.productId,
+              projectId: s.project.projectId,
+              quantity: s.quantity,
+            })),
+            ...transaction.deferredSplits.map<Transaction.SplitRequestItem>(s => ({
+              amount: s.amount,
+              billingEndDate: s.billingEndDate,
+              billingStartDate: s.billingStartDate,
+              categoryId: s.category?.categoryId,
+              description: s.description,
+              invoiceNumber: s.invoiceNumber,
+              isSettled: s.isSettled,
+              loanAccountId: s.ownerAccount.accountId,
+              productId: s.product?.productId,
+              projectId: s.project.projectId,
+              quantity: s.quantity,
+            })),
+          ];
 
           this.form.patchValue({
             amount: transaction.amount,
