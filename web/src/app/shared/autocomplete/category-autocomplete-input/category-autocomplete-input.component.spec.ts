@@ -8,9 +8,9 @@ describe('CategoryAutocompleteInputComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CategoryAutocompleteInputComponent]
+      imports: [CategoryAutocompleteInputComponent],
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(CategoryAutocompleteInputComponent);
     component = fixture.componentInstance;

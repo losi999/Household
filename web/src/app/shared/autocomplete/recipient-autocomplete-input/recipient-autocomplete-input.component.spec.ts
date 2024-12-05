@@ -8,9 +8,9 @@ describe('RecipientAutocompleteInputComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [RecipientAutocompleteInputComponent]
+      imports: [RecipientAutocompleteInputComponent],
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(RecipientAutocompleteInputComponent);
     component = fixture.componentInstance;
