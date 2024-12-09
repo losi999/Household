@@ -23,7 +23,7 @@
 
   <household-product-autocomplete-input *ngIf="!form.value.categoryId || categoryType === 'inventory'" label="Termék" formControlName="productId" [categoryId]="form.value.categoryId" />
 
-  <ng-container *ngIf="categoryType === 'inventory'">
+  <ng-container *ngIf="form.value.productId">
     <household-clearable-input label="Mennyiség" formControlName="quantity" type="number" />
   </ng-container>
 

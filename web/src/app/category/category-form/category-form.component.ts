@@ -36,7 +36,6 @@ export class CategoryFormComponent implements OnInit {
   }
 
   save() {
-    console.log(this.form);
     if (this.form.valid) {
       const { categoryType, name, parentCategoryId } = this.form.getRawValue();
 

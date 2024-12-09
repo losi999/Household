@@ -47,10 +47,7 @@ export class TransactionPaymentEditComponent implements OnInit {
 
     this.form = new FormGroup({
       issuedAt: new FormControl(new Date(), [Validators.required]),
-      amount: new FormControl(null, [
-        Validators.required,
-        Validators.min(100),
-      ]),
+      amount: new FormControl(null, [ Validators.required]),
       accountId: new FormControl(accountId, [Validators.required]),
       description: new FormControl(),
       projectId: new FormControl(),
@@ -80,13 +77,17 @@ export class TransactionPaymentEditComponent implements OnInit {
             description: transaction.description,
             invoiceNumber: transaction.invoiceNumber,
             issuedAt: new Date(transaction.issuedAt),
-            productId: transaction.product?.productId,
             projectId: transaction.project?.projectId,
-            quantity: transaction.quantity,
+            productId: transaction.product?.productId,
+            quantity: transaction.product ? transaction.quantity : null,
             recipientId: transaction.recipient?.recipientId,
           }, {
             emitEvent: false,
           });
+
+          if (transaction.product) {
+            this.form.controls.quantity.addValidators(Validators.required);
+          }
         });
     }
 
@@ -153,6 +154,10 @@ export class TransactionPaymentEditComponent implements OnInit {
             categoryId,
           });
         }
+        this.form.controls.quantity.addValidators(Validators.required);
+      } else {
+        this.form.controls.quantity.removeValidators(Validators.required);
+        this.form.controls.quantity.reset();
       }
     });
 

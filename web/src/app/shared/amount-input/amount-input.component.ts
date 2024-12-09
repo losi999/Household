@@ -23,8 +23,6 @@ import { Observable } from 'rxjs';
   ],
 })
 export class AmountInputComponent implements OnInit, OnChanges, ControlValueAccessor {
-  @Input() max: number = Number.POSITIVE_INFINITY;
-  @Input() min: number = Number.NEGATIVE_INFINITY;
   @Input() accountId: Account.Id;
   @Input() signDisabled = false;
 
@@ -60,7 +58,6 @@ export class AmountInputComponent implements OnInit, OnChanges, ControlValueAcce
     } else if (this.ngControl instanceof FormControlDirective) {
       control = this.ngControl.form;
     }
-    console.log(control);
 
     control.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
       if (event instanceof TouchedChangeEvent) {
@@ -73,7 +70,6 @@ export class AmountInputComponent implements OnInit, OnChanges, ControlValueAcce
     }
 
     this.amount.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((value) => {
-      console.log('avc', value);
       if (value < 0) {
         this.isPositive = !this.signDisabled ? false : this.isPositive;
         this.amount.setValue(value * -1);
