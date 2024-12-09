@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, forwardRef, Injector, Input, OnInit } from '@angular/core';
+import { Component, DestroyRef, Injector, Input, OnInit, Self } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ReactiveFormsModule, NG_VALUE_ACCESSOR, ControlValueAccessor, FormControl, FormControlName, FormGroupDirective, NgControl, Validators, TouchedChangeEvent } from '@angular/forms';
+import { ReactiveFormsModule, ControlValueAccessor, FormControl, FormControlName, FormGroupDirective, NgControl, Validators, TouchedChangeEvent, FormControlDirective } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -28,13 +28,6 @@ import { Store } from '@ngrx/store';
   ],
   templateUrl: './project-autocomplete-input.component.html',
   styleUrl: './project-autocomplete-input.component.scss',
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      multi: true,
-      useExisting: forwardRef(() => ProjectAutocompleteInputComponent),
-    },
-  ],
 })
 export class ProjectAutocompleteInputComponent implements OnInit, ControlValueAccessor {
   @Input({
@@ -48,22 +41,27 @@ export class ProjectAutocompleteInputComponent implements OnInit, ControlValueAc
 
   projects = this.store.select(selectProjects);
 
-  constructor(private destroyRef: DestroyRef, private injector: Injector, private store: Store) {
+  constructor(private destroyRef: DestroyRef, private injector: Injector, private store: Store, @Self() public ngControl: NgControl) {
     this.selected = new FormControl();
+    ngControl.valueAccessor = this;
   }
 
   ngOnInit(): void {
-    const ngControl = this.injector.get(NgControl) as FormControlName;
-    const formControl = this.injector.get(FormGroupDirective).getControl(ngControl);
-    formControl.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
-      if(event instanceof TouchedChangeEvent) {
+    let control: FormControl;
+    if (this.ngControl instanceof FormControlName) {
+      control = this.injector.get(FormGroupDirective).getControl(this.ngControl);
+    } else if (this.ngControl instanceof FormControlDirective) {
+      control = this.ngControl.form;
+    }
+
+    control.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
+      if (event instanceof TouchedChangeEvent) {
         this.selected.markAsTouched();
       }
     });
-    const isRequired = formControl.hasValidator(Validators.required);
 
-    if (isRequired) {
-      this.selected.setValidators(Validators.required);
+    if (control.hasValidator(Validators.required)) {
+      this.selected.addValidators(Validators.required);
     }
 
     this.selected.valueChanges.subscribe((value) => {
@@ -73,7 +71,6 @@ export class ProjectAutocompleteInputComponent implements OnInit, ControlValueAc
 
   writeValue(projectId: Project.Id): void {
     if (projectId) {
-
       this.store.select(selectProjectById(projectId))
         .pipe(takeFirstDefined())
         .subscribe((project) => {

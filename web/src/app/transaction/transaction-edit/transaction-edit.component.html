@@ -13,7 +13,7 @@
     <mat-icon>save</mat-icon>
   </button>
 </household-toolbar>
-<div class="transaction-edit" [ngSwitch]="formType">
+<div [ngSwitch]="formType">
   <household-transaction-payment-edit *ngIf="formType === 'payment' || formType === 'income'" />
   <household-transaction-split-edit *ngIf="formType === 'split'" />
   <household-transaction-loan-edit *ngIf="formType === 'loan'" />

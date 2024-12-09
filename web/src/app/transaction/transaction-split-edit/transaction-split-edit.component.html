@@ -1,7 +1,7 @@
 <form [formGroup]="form">
   <household-datetime-input formControlName="issuedAt" />
 
-  <household-amount-input [accountId]="form.value.accountId" formControlName="amount" [showInverse]="false" [isPositive]="false" />
+  <household-amount-input [accountId]="form.value.accountId" formControlName="amount" [signDisabled]="true" [isPositive]="false" />
 
   <household-account-autocomplete-input label="Számla" formControlName="accountId" />
 

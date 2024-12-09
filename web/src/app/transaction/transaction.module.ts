@@ -15,7 +15,6 @@ import { DatetimeInputComponent } from '@household/web/app/shared/datetime-input
 import { AmountInputComponent } from '@household/web/app/shared/amount-input/amount-input.component';
 import { ToolbarComponent } from '@household/web/app/shared/toolbar/toolbar.component';
 import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
-import { TransactionListItemComponent } from './transaction-list-item/transaction-list-item.component';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatMenuModule } from '@angular/material/menu';
 import { TransactionPaymentEditComponent } from './transaction-payment-edit/transaction-payment-edit.component';
@@ -38,7 +37,6 @@ import { OrderByPipe } from '@household/web/app/shared/order-by.pipe';
   declarations: [
     TransactionEditComponent,
     TransactionDetailsComponent,
-    TransactionListItemComponent,
     TransactionPaymentEditComponent,
     TransactionSplitEditComponent,
     TransactionTransferEditComponent,
@@ -73,9 +71,6 @@ import { OrderByPipe } from '@household/web/app/shared/order-by.pipe';
     LetDirective,
     OrderByPipe,
   ],
-  exports: [
-    TransactionListItemComponent,
-    TransactionShortDetailsComponent,
-  ],
+  exports: [TransactionShortDetailsComponent],
 })
 export class TransactionModule { }

@@ -1,4 +1,4 @@
-<div [formGroup]="form">
+<form [formGroup]="form" (ngSubmit)="save()">
   <h1 mat-dialog-title>{{account ? 'Szerkesztés' : 'Új'}}</h1>
   <div mat-dialog-content>
     <household-clearable-input formControlName="name" label="Név" />
@@ -7,7 +7,7 @@
     <household-clearable-input formControlName="currency" label="Pénznem" />
   </div>
   <div mat-dialog-actions>
-    <button mat-button cdkFocusInitial (click)="save()">Mentés</button>
-    <button mat-button mat-dialog-close>Mégse</button>
+    <button mat-button cdkFocusInitial>Mentés</button>
+    <button mat-button mat-dialog-close type="button">Mégse</button>
   </div>
-</div>
+</form>

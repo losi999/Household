@@ -1,9 +1,10 @@
 <mat-form-field>
-  <button mat-icon-button matPrefix type="button" (click)="inverseValue($event)" *ngIf="showInverse">
+  <button mat-icon-button matPrefix type="button" (click)="inverseValue($event)" [disabled]="signDisabled">
     <mat-icon>{{isPositive ? 'add' : 'remove'}}</mat-icon>
   </button>
   <mat-label>Összeg</mat-label>
   <input type="number" matInput [formControl]="amount" min="0" (blur)="touched?.()">
   <span matTextSuffix>{{(account | async)?.currency}}</span>
+  <mat-error *ngIf="amount.errors?.min">Nem lehet negatív szám</mat-error>
   <mat-error *ngIf="amount.errors?.required">Kötelező</mat-error>
 </mat-form-field>

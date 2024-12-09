@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, forwardRef, Injector, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { Component, DestroyRef, Injector, Input, OnChanges, OnInit, Self, SimpleChanges } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ControlValueAccessor, FormControl, FormControlName, FormGroupDirective, NG_VALUE_ACCESSOR, NgControl, ReactiveFormsModule, TouchedChangeEvent, Validators } from '@angular/forms';
+import { ControlValueAccessor, FormControl, FormControlDirective, FormControlName, FormGroupDirective, NgControl, ReactiveFormsModule, TouchedChangeEvent, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -21,19 +21,12 @@ import { Observable } from 'rxjs';
     MatInputModule,
     MatIconModule,
   ],
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      multi: true,
-      useExisting: forwardRef(() => AmountInputComponent),
-    },
-  ],
 })
 export class AmountInputComponent implements OnInit, OnChanges, ControlValueAccessor {
   @Input() max: number = Number.POSITIVE_INFINITY;
   @Input() min: number = Number.NEGATIVE_INFINITY;
   @Input() accountId: Account.Id;
-  @Input() showInverse = true;
+  @Input() signDisabled = false;
 
   account: Observable<Account.Response>;
 
@@ -42,10 +35,12 @@ export class AmountInputComponent implements OnInit, OnChanges, ControlValueAcce
 
   changed: (value: number) => void;
   touched: () => void;
+  validatorChange: () => void;
   isDisabled: boolean;
 
-  constructor(private destroyRef: DestroyRef, private store: Store, private injector: Injector) {
+  constructor(private destroyRef: DestroyRef, private store: Store, private injector: Injector, @Self() public ngControl: NgControl) {
     this.amount = new FormControl();
+    ngControl.valueAccessor = this;
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -59,25 +54,35 @@ export class AmountInputComponent implements OnInit, OnChanges, ControlValueAcce
   }
 
   ngOnInit(): void {
-    // const ngControl = this.injector.get(NgControl) as FormControlName;
-    // console.log(ngControl);
-    // const formControl = this.injector.get(FormGroupDirective).getControl(ngControl);
-    // formControl.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
-    //   if(event instanceof TouchedChangeEvent) {
-    //     this.amount.markAsTouched();
-    //   }
-    // });
-    // const isRequired = formControl.hasValidator(Validators.required);
+    let control: FormControl;
+    if (this.ngControl instanceof FormControlName) {
+      control = this.injector.get(FormGroupDirective).getControl(this.ngControl);
+    } else if (this.ngControl instanceof FormControlDirective) {
+      control = this.ngControl.form;
+    }
+    console.log(control);
 
-    // if (isRequired) {
-    //   this.amount.setValidators(Validators.required);
-    // }
+    control.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
+      if (event instanceof TouchedChangeEvent) {
+        this.amount.markAsTouched();
+      }
+    });
+
+    if (control.hasValidator(Validators.required)) {
+      this.amount.addValidators(Validators.required);
+    }
 
     this.amount.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((value) => {
-      if (value) {
-        this.changed?.(this.isPositive ? value : value * -1);
+      console.log('avc', value);
+      if (value < 0) {
+        this.isPositive = !this.signDisabled ? false : this.isPositive;
+        this.amount.setValue(value * -1);
       } else {
-        this.changed?.(null);
+        if (value) {
+          this.changed?.(this.isPositive ? value : value * -1);
+        } else {
+          this.changed?.(null);
+        }
       }
     });
   }

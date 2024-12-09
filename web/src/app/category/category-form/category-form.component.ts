@@ -4,7 +4,8 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Category } from '@household/shared/types/types';
 import { Store } from '@ngrx/store';
 import { categoryApiActions } from '@household/web/state/category/category.actions';
-import { selectCategoriesAsParent, selectCategories } from '@household/web/state/category/category.selector';
+import { selectCategoriesAsParent } from '@household/web/state/category/category.selector';
+import { toUndefined } from '@household/shared/common/utils';
 
 export type CategoryFormData = Category.Response;
 
@@ -35,11 +36,14 @@ export class CategoryFormComponent implements OnInit {
   }
 
   save() {
+    console.log(this.form);
     if (this.form.valid) {
+      const { categoryType, name, parentCategoryId } = this.form.getRawValue();
+
       const request: Category.Request = {
-        name: this.form.value.name,
-        categoryType: this.form.value.categoryType,
-        parentCategoryId: this.form.value.parentCategoryId,
+        name,
+        categoryType,
+        parentCategoryId: toUndefined(parentCategoryId),
       };
 
       if (this.category) {

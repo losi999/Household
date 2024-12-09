@@ -85,6 +85,12 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
             tx_description: '$description',
             tx_id: '$_id',
             tx_transactionType: '$transactionType',
+            description: {
+              $ifNull: [
+                '$tmp_splits.description',
+                null,
+              ],
+            },
           }),
           ...duplicateByAccounts(),
           {

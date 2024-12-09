@@ -2,7 +2,7 @@
   <mat-label>{{label}}</mat-label>
   <input type="text" #inp matInput [matAutocomplete]="autocomplete" (blur)="touched?.()" [formControl]="selected">
   <mat-autocomplete #autocomplete="matAutocomplete" [displayWith]="displayName">
-    <mat-option *ngFor="let item of itemsMap | keyvalue | autocompleteFilter: 'value' : inp.value" [value]="item">
+    <mat-option *ngFor="let item of itemsMap | keyvalue | autocompleteFilter: 'value' : inp.value" [value]="item.key">
       {{item.value}}
     </mat-option>
   </mat-autocomplete>

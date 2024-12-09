@@ -90,7 +90,7 @@ export class TransactionSplitEditComponent implements OnInit {
               isSettled: undefined,
               loanAccountId: undefined,
               productId: s.product?.productId,
-              projectId: s.project.projectId,
+              projectId: s.project?.projectId,
               quantity: s.quantity,
             })),
             ...transaction.deferredSplits.map<Transaction.SplitRequestItem>(s => ({
@@ -103,7 +103,7 @@ export class TransactionSplitEditComponent implements OnInit {
               isSettled: s.isSettled,
               loanAccountId: s.ownerAccount.accountId,
               productId: s.product?.productId,
-              projectId: s.project.projectId,
+              projectId: s.project?.projectId,
               quantity: s.quantity,
             })),
           ];
@@ -125,6 +125,8 @@ export class TransactionSplitEditComponent implements OnInit {
       takeUntilDestroyed(this.destroyRef),
     ).subscribe(() => {
       this.form.markAllAsTouched();
+      console.log(this.form);
+      console.log(this.splits);
 
       if (this.form.valid) {
         const { accountId, amount, issuedAt, description, recipientId } = this.form.getRawValue();
@@ -138,6 +140,7 @@ export class TransactionSplitEditComponent implements OnInit {
           splits: this.splits,
         };
 
+        console.log(request);
         if (transactionId) {
           this.store.dispatch(transactionApiActions.updateSplitTransactionInitiated({
             transactionId,

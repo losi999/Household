@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, forwardRef, Injector, Input, OnInit } from '@angular/core';
-import { NG_VALUE_ACCESSOR, ControlValueAccessor, FormControl, FormControlName, FormGroupDirective, NgControl, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Component, Injector, Input, OnInit, Self } from '@angular/core';
+import { ControlValueAccessor, FormControl, FormControlName, FormGroupDirective, NgControl, ReactiveFormsModule, FormControlDirective } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -22,13 +22,6 @@ import { AutocompleteFilterPipe } from '@household/web/app/shared/autocomplete/a
   ],
   templateUrl: './keyvalue-autocomplete-input.component.html',
   styleUrl: './keyvalue-autocomplete-input.component.scss',
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      multi: true,
-      useExisting: forwardRef(() => KeyvalueAutocompleteInputComponent),
-    },
-  ],
 })
 export class KeyvalueAutocompleteInputComponent implements OnInit, ControlValueAccessor {
   @Input({
@@ -47,31 +40,19 @@ export class KeyvalueAutocompleteInputComponent implements OnInit, ControlValueA
   touched: () => void;
   isDisabled: boolean;
 
-  constructor(private injector: Injector) {
-    this.selected = new FormControl();
+  constructor(private injector: Injector, @Self() public ngControl: NgControl) {
+    ngControl.valueAccessor = this;
   }
 
   ngOnInit(): void {
-    const ngControl = this.injector.get(NgControl) as FormControlName;
-    const formControl = this.injector.get(FormGroupDirective).getControl(ngControl);
-    const isRequired = formControl.hasValidator(Validators.required);
-
-    if (isRequired) {
-      this.selected.setValidators(Validators.required);
+    if (this.ngControl instanceof FormControlName) {
+      this.selected = this.injector.get(FormGroupDirective).getControl(this.ngControl);
+    } else if (this.ngControl instanceof FormControlDirective) {
+      this.selected = this.ngControl.form;
     }
-
-    this.selected.valueChanges.subscribe((value) => {
-      this.changed?.(value?.key);
-    });
   }
 
-  writeValue(selected: any): void {
-    if (selected) {
-      this.selected.setValue({
-        key: selected,
-        value: this.itemsMap[selected],
-      });
-    }
+  writeValue(): void {
   }
 
   registerOnChange(fn: any): void {
@@ -87,7 +68,7 @@ export class KeyvalueAutocompleteInputComponent implements OnInit, ControlValueA
   }
 
   displayName = (item: any) => {
-    return item?.value;
+    return this.itemsMap[item];
   };
 
   clearValue(event: MouseEvent) {

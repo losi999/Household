@@ -3,7 +3,7 @@
 
   <household-account-autocomplete-input [label]="isDownwardTransfer ? 'Átvitel innen' : 'Átvitel ide'" [exclude]="form.value.transferAccountId" formControlName="accountId" />
 
-  <household-amount-input [accountId]="form.value.accountId" formControlName="amount" [isPositive]="!isDownwardTransfer" [showInverse]="false" />
+  <household-amount-input [accountId]="form.value.accountId" formControlName="amount" [isPositive]="!isDownwardTransfer" [signDisabled]="true" />
   <div class="direction-button">
     <button mat-icon-button type="button" (click)="inverseTransaction()">
       <mat-icon>{{isDownwardTransfer ? 'stat_minus_3' : 'stat_3'}}</mat-icon>
@@ -11,7 +11,7 @@
   </div>
   <household-account-autocomplete-input [label]="isDownwardTransfer ? 'Átvitel ide' : 'Átvitel innen'" [exclude]="form.value.accountId" formControlName="transferAccountId" />
 
-  <household-amount-input *ngIf="!isSameCurrency" [accountId]="form.value.transferAccountId" formControlName="transferAmount" [isPositive]="isDownwardTransfer" [showInverse]="false" />
+  <household-amount-input *ngIf="!isSameCurrency" [accountId]="form.value.transferAccountId" formControlName="transferAmount" [isPositive]="isDownwardTransfer" [signDisabled]="true" />
 
   <household-clearable-input formControlName="description" label="Megjegyzés" />
 
@@ -36,7 +36,7 @@
         <mat-panel-description>{{deferred.payingAccount.fullName}} &nbsp; <mat-icon>forward</mat-icon>&nbsp; {{deferred.ownerAccount.fullName}}</mat-panel-description>
       </mat-expansion-panel-header>
       <household-transaction-short-details [description]="deferred.description" [category]="deferred.category?.fullName" [recipient]="deferred.recipient?.name" [project]="deferred.project?.name" [product]="deferred.product?.fullName" [quantity]="deferred.quantity" [invoiceNumber]="deferred.invoiceNumber" [billingStartDate]="deferred.billingStartDate" [billingEndDate]="deferred.billingEndDate" [amount]="deferred.remainingAmount" [currency]="deferred.payingAccount.currency" />
-      <household-amount-input *ngIf="panel.expanded" [accountId]="deferred.payingAccount.accountId" [showInverse]="false" [formControl]="paymentAmount" />
+      <household-amount-input *ngIf="panel.expanded" [accountId]="deferred.payingAccount.accountId" [signDisabled]="true" [formControl]="paymentAmount" />
       <div class="buttons">
         <button mat-icon-button color="primary" class="transaction-edit-split-item" (click)="addPayment(deferred)" type="button">
           <mat-icon>add</mat-icon>

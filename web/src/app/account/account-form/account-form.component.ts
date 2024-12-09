@@ -20,6 +20,7 @@ export class AccountFormComponent implements OnInit {
     currency: FormControl<string>;
     owner: FormControl<string>;
   }>;
+
   accountTypes: {
     [id in Account.AccountType['accountType']]: string
   } = {

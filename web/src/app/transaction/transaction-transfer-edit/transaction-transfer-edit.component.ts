@@ -37,7 +37,7 @@ export class TransactionTransferEditComponent implements OnInit {
     transaction: Transaction.DeferredResponse;
   })[];
 
-  availableDeferredTransactions: Observable<Transaction.DeferredResponse[]>;
+  availableDeferredTransactions = this.store.select(selectDeferredTransactionList());
 
   constructor(public activatedRoute: ActivatedRoute, private destroyRef: DestroyRef, private store: Store, private actions: Actions) {
   }

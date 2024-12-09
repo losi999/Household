@@ -47,7 +47,10 @@ export class TransactionPaymentEditComponent implements OnInit {
 
     this.form = new FormGroup({
       issuedAt: new FormControl(new Date(), [Validators.required]),
-      amount: new FormControl(null, [Validators.required]),
+      amount: new FormControl(null, [
+        Validators.required,
+        Validators.min(100),
+      ]),
       accountId: new FormControl(accountId, [Validators.required]),
       description: new FormControl(),
       projectId: new FormControl(),
@@ -92,6 +95,8 @@ export class TransactionPaymentEditComponent implements OnInit {
       takeUntilDestroyed(this.destroyRef),
     ).subscribe(() => {
       this.form.markAllAsTouched();
+
+      console.log(this.form);
 
       if (this.form.valid) {
         const { accountId, amount, issuedAt, description, categoryId, recipientId, projectId, productId, quantity, billingEndDate, billingStartDate, invoiceNumber } = this.form.getRawValue();
