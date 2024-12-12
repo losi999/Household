@@ -6,8 +6,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { Account } from '@household/shared/types/types';
-import { selectAccountById } from '@household/web/state/account/account.selector';
-import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 
 @Component({
@@ -23,8 +21,10 @@ import { Observable } from 'rxjs';
   ],
 })
 export class AmountInputComponent implements OnInit, OnChanges, ControlValueAccessor {
-  @Input() accountId: Account.Id;
+  @Input() max = Number.POSITIVE_INFINITY;
   @Input() signDisabled = false;
+  @Input() currency: string;
+  @Input() newBalance: number;
 
   account: Observable<Account.Response>;
 
@@ -36,22 +36,21 @@ export class AmountInputComponent implements OnInit, OnChanges, ControlValueAcce
   validatorChange: () => void;
   isDisabled: boolean;
 
-  constructor(private destroyRef: DestroyRef, private store: Store, private injector: Injector, @Self() public ngControl: NgControl) {
+  constructor(private destroyRef: DestroyRef, private injector: Injector, @Self() public ngControl: NgControl) {
     this.amount = new FormControl();
     ngControl.valueAccessor = this;
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes.isPositive) {
-      this.changed?.(this.isPositive ? this.amount.value : this.amount.value * -1);
+    if (this.amount?.value) {
+      if (changes.isPositive) {
+        this.changed?.(this.isPositive ? this.amount.value : this.amount.value * -1);
+      }
     }
-
-    {if (changes.accountId?.currentValue !== changes.accountId?.previousValue) {
-      this.account = this.store.select(selectAccountById(this.accountId));
-    }}
   }
 
   ngOnInit(): void {
+    this.amount.addValidators(Validators.max(this.max));
     let control: FormControl;
     if (this.ngControl instanceof FormControlName) {
       control = this.injector.get(FormGroupDirective).getControl(this.ngControl);
@@ -74,7 +73,7 @@ export class AmountInputComponent implements OnInit, OnChanges, ControlValueAcce
         this.isPositive = !this.signDisabled ? false : this.isPositive;
         this.amount.setValue(value * -1);
       } else {
-        if (value) {
+        if (this.amount.valid && value) {
           this.changed?.(this.isPositive ? value : value * -1);
         } else {
           this.changed?.(null);

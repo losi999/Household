@@ -1,7 +1,7 @@
 <form [formGroup]="form">
   <household-datetime-input formControlName="issuedAt" />
 
-  <household-amount-input [accountId]="form.value.accountId" formControlName="amount" [isPositive]="(activatedRoute.params | async).formType === 'income'" />
+  <household-amount-input [currency]="currency" formControlName="amount" [isPositive]="(activatedRoute.params | async).formType === 'income'" />
 
   <household-account-autocomplete-input label="Számla" formControlName="accountId" />
 
@@ -23,9 +23,7 @@
 
   <household-product-autocomplete-input *ngIf="!form.value.categoryId || categoryType === 'inventory'" label="Termék" formControlName="productId" [categoryId]="form.value.categoryId" />
 
-  <ng-container *ngIf="form.value.productId">
-    <household-clearable-input label="Mennyiség" formControlName="quantity" type="number" />
-  </ng-container>
+  <household-clearable-input *ngIf="form.value.productId" label="Mennyiség" formControlName="quantity" type="number" />
 
   <household-recipient-autocomplete-input label="Partner" formControlName="recipientId" />
 

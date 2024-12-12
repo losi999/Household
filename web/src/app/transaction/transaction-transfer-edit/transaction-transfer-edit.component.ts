@@ -5,13 +5,13 @@ import { ActivatedRoute } from '@angular/router';
 import { Account, Transaction } from '@household/shared/types/types';
 import { takeFirstDefined } from '@household/web/operators/take-first-defined';
 import { toTransferResponse } from '@household/web/operators/to-transfer-response';
-import { selectAccounts } from '@household/web/state/account/account.selector';
+import { selectAccountById } from '@household/web/state/account/account.selector';
 import { messageActions } from '@household/web/state/message/message.actions';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
 import { selectDeferredTransactionList, selectTransaction } from '@household/web/state/transaction/transaction.selector';
 import { Actions, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
-import { combineLatest, filter, map, Observable, withLatestFrom } from 'rxjs';
+import { combineLatest, filter, map, startWith, switchMap, tap } from 'rxjs';
 
 @Component({
   selector: 'household-transaction-transfer-edit',
@@ -21,7 +21,6 @@ import { combineLatest, filter, map, Observable, withLatestFrom } from 'rxjs';
 })
 export class TransactionTransferEditComponent implements OnInit {
   isDownwardTransfer = true;
-  isSameCurrency = true;
 
   form: FormGroup<{
     issuedAt: FormControl<Date>;
@@ -36,6 +35,9 @@ export class TransactionTransferEditComponent implements OnInit {
   payments: (Transaction.Amount & {
     transaction: Transaction.DeferredResponse;
   })[];
+
+  currency: string;
+  transferCurrency: string;
 
   availableDeferredTransactions = this.store.select(selectDeferredTransactionList());
 
@@ -53,7 +55,7 @@ export class TransactionTransferEditComponent implements OnInit {
     this.form = new FormGroup({
       issuedAt: new FormControl(new Date(), [Validators.required]),
       amount: new FormControl(null, [Validators.required]),
-      accountId: new FormControl(null, [Validators.required]),
+      accountId: new FormControl(accountId, [Validators.required]),
       description: new FormControl(),
       transferAccountId: new FormControl(null, [Validators.required]),
       transferAmount: new FormControl(null),
@@ -63,6 +65,7 @@ export class TransactionTransferEditComponent implements OnInit {
       Validators.required,
       Validators.min(0),
     ]);
+
     this.payments = [];
 
     if (transactionId) {
@@ -102,8 +105,6 @@ export class TransactionTransferEditComponent implements OnInit {
           description: transaction.description,
           issuedAt: new Date(transaction.issuedAt),
           transferAccountId: transaction.transferAccount?.accountId,
-        }, {
-          emitEvent: false,
         });
 
         this.payments = transaction.payments.map(p => ({
@@ -116,39 +117,13 @@ export class TransactionTransferEditComponent implements OnInit {
       });
     }
 
-    combineLatest([
-      this.form.controls.accountId.valueChanges,
-      this.form.controls.transferAccountId.valueChanges,
-    ]).pipe(withLatestFrom(this.store.select(selectAccounts)))
-      .subscribe(([
-        [
-          accountId,
-          transferAccountId,
-        ],
-        accounts,
-      ]) => {
-        const account = accounts.find(a => a.accountId === accountId);
-        const transferAccount = accounts.find(a => a.accountId === transferAccountId);
-
-        this.isSameCurrency = !account || !transferAccount || account.currency === transferAccount.currency;
-        this.form.controls.transferAmount.reset();
-
-        if (!this.isSameCurrency) {
-          this.form.controls.transferAmount.setValidators(Validators.required);
-        } else {
-          this.form.controls.transferAmount.removeValidators(Validators.required);
-        }
-      });
-
-    this.form.patchValue({
-      accountId,
-    });
-
     this.actions.pipe(
       ofType(messageActions.submitTransactionEditForm),
       takeUntilDestroyed(this.destroyRef),
     ).subscribe(() => {
       this.form.markAllAsTouched();
+
+      console.log(this.form);
 
       if (this.form.valid) {
         const request: Transaction.TransferRequest = {
@@ -175,6 +150,35 @@ export class TransactionTransferEditComponent implements OnInit {
       }
     });
 
+    combineLatest([
+      this.form.controls.accountId.valueChanges.pipe(
+        startWith(accountId),
+        switchMap((accountId) => this.store.select(selectAccountById(accountId))),
+        tap((account) => {
+          this.currency = account?.currency;
+        }),
+      ),
+      this.form.controls.transferAccountId.valueChanges.pipe(
+        switchMap((accountId) => this.store.select(selectAccountById(accountId))),
+        tap((account) => {
+          this.transferCurrency = account?.currency;
+        }),
+      ),
+    ]).pipe(
+      takeUntilDestroyed(this.destroyRef),
+    )
+      .subscribe(([
+        account,
+        transferAccount,
+      ]) => {
+        this.form.controls.transferAmount.reset();
+
+        if (account && transferAccount && account.currency !== transferAccount.currency) {
+          this.form.controls.transferAmount.setValidators(Validators.required);
+        } else {
+          this.form.controls.transferAmount.removeValidators(Validators.required);
+        }
+      });
   }
 
   inverseTransaction() {

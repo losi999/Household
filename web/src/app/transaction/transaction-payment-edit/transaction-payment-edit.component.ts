@@ -3,17 +3,18 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
-import { selectCategories } from '@household/web/state/category/category.selector';
-import { selectGroupedProducts } from '@household/web/state/product/product.selector';
+import { selectCategoryById } from '@household/web/state/category/category.selector';
+import { selectCategoryIdOfProductId } from '@household/web/state/product/product.selector';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
 import { Store } from '@ngrx/store';
 import { toUndefined } from '@household/shared/common/utils';
-import { withLatestFrom } from 'rxjs';
+import { startWith, switchMap } from 'rxjs';
 import { selectTransaction } from '@household/web/state/transaction/transaction.selector';
 import { takeFirstDefined } from '@household/web/operators/take-first-defined';
 import { toPaymentResponse } from '@household/web/operators/to-payment-response';
 import { Actions, ofType } from '@ngrx/effects';
 import { messageActions } from '@household/web/state/message/message.actions';
+import { selectAccountById } from '@household/web/state/account/account.selector';
 
 @Component({
   selector: 'household-transaction-payment-edit',
@@ -37,6 +38,7 @@ export class TransactionPaymentEditComponent implements OnInit {
     invoiceNumber: FormControl<string>;
   }>;
   categoryType: Category.CategoryType['categoryType'];
+  currency: string;
 
   constructor(public activatedRoute: ActivatedRoute, private destroyRef: DestroyRef, private store: Store, private actions: Actions) {
   }
@@ -81,13 +83,7 @@ export class TransactionPaymentEditComponent implements OnInit {
             productId: transaction.product?.productId,
             quantity: transaction.product ? transaction.quantity : null,
             recipientId: transaction.recipient?.recipientId,
-          }, {
-            emitEvent: false,
           });
-
-          if (transaction.product) {
-            this.form.controls.quantity.addValidators(Validators.required);
-          }
         });
     }
 
@@ -143,12 +139,20 @@ export class TransactionPaymentEditComponent implements OnInit {
       }
     });
 
-    this.form.controls.productId.valueChanges.pipe(withLatestFrom(this.store.select(selectGroupedProducts))).subscribe(([
-      productId,
-      groupedProducts,
-    ]) => {
-      if (productId) {
-        const categoryId = groupedProducts.find(g => g.products.some(p => p.productId === productId)).categoryId;
+    this.form.controls.accountId.valueChanges.pipe(
+      startWith(accountId),
+      switchMap((accountId) => this.store.select(selectAccountById(accountId))),
+      takeUntilDestroyed(this.destroyRef),
+    )
+      .subscribe((account) => {
+        this.currency = account?.currency;
+      });
+
+    this.form.controls.productId.valueChanges.pipe(
+      switchMap((productId) => this.store.select(selectCategoryIdOfProductId(productId))),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe((categoryId) => {
+      if (categoryId) {
         if (this.form.value.categoryId !== categoryId) {
           this.form.patchValue({
             categoryId,
@@ -162,13 +166,11 @@ export class TransactionPaymentEditComponent implements OnInit {
     });
 
     this.form.controls.categoryId.valueChanges.pipe(
-      withLatestFrom(this.store.select(selectCategories)),
-    ).subscribe(([
-      categoryId,
-      categories,
-    ]) => {
-      if (categoryId) {
-        this.categoryType = categories.find(c => c.categoryId === categoryId)?.categoryType;
+      switchMap((categoryId) => this.store.select(selectCategoryById(categoryId))),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe((category) => {
+      if (category) {
+        this.categoryType = category.categoryType;
       } else {
         this.categoryType = 'regular';
         this.form.patchValue({

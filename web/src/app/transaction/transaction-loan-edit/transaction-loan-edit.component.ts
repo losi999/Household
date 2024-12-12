@@ -7,14 +7,14 @@ import { Account, Project, Recipient, Category, Product, Transaction } from '@ho
 import { takeFirstDefined } from '@household/web/operators/take-first-defined';
 import { toLoanResponse } from '@household/web/operators/to-loan-response';
 import { selectAccountById } from '@household/web/state/account/account.selector';
-import { selectCategories } from '@household/web/state/category/category.selector';
+import { selectCategoryById } from '@household/web/state/category/category.selector';
 import { messageActions } from '@household/web/state/message/message.actions';
-import { selectGroupedProducts } from '@household/web/state/product/product.selector';
+import { selectCategoryIdOfProductId } from '@household/web/state/product/product.selector';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
 import { selectTransaction } from '@household/web/state/transaction/transaction.selector';
 import { Actions, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
-import { merge, mergeMap, Observable, withLatestFrom } from 'rxjs';
+import { startWith, switchMap } from 'rxjs';
 
 @Component({
   selector: 'household-transaction-loan-edit',
@@ -40,8 +40,8 @@ export class TransactionLoanEditComponent implements OnInit {
     invoiceNumber: FormControl<string>;
   }>;
   categoryType: Category.CategoryType['categoryType'];
-
-  account: Observable<Account.Response>;
+  currency: string;
+  isDeferred: boolean;
 
   constructor(public activatedRoute: ActivatedRoute, private destroyRef: DestroyRef, private store: Store, private actions: Actions) {
   }
@@ -88,12 +88,9 @@ export class TransactionLoanEditComponent implements OnInit {
             issuedAt: new Date(transaction.issuedAt),
             productId: transaction.product?.productId,
             projectId: transaction.project?.projectId,
-            quantity: transaction.quantity,
+            quantity: transaction.product ? transaction.quantity : null,
             recipientId: transaction.recipient?.recipientId,
-          }, {
-            emitEvent: false,
           });
-
         });
     }
 
@@ -102,9 +99,12 @@ export class TransactionLoanEditComponent implements OnInit {
       takeUntilDestroyed(this.destroyRef),
     ).subscribe(() => {
       this.form.markAllAsTouched();
-      const { accountId, amount, issuedAt, description, categoryId, recipientId, projectId, productId, quantity, billingEndDate, billingStartDate, invoiceNumber, isSettled, loanAccountId } = this.form.getRawValue();
+
+      console.log(this.form);
 
       if (this.form.valid) {
+        const { accountId, amount, issuedAt, description, categoryId, recipientId, projectId, productId, quantity, billingEndDate, billingStartDate, invoiceNumber, isSettled, loanAccountId } = this.form.getRawValue();
+
         const request: Transaction.PaymentRequest = {
           accountId,
           amount,
@@ -113,11 +113,24 @@ export class TransactionLoanEditComponent implements OnInit {
           categoryId: toUndefined(categoryId),
           recipientId: toUndefined(recipientId),
           projectId: toUndefined(projectId),
-          productId: this.categoryType === 'inventory' ? toUndefined(productId) : undefined,
-          quantity: this.categoryType === 'inventory' ? toUndefined(quantity) : undefined,
-          billingEndDate: this.categoryType === 'invoice' ? billingEndDate?.toISOString().split('T')[0] : undefined,
-          billingStartDate: this.categoryType === 'invoice' ? billingStartDate?.toISOString().split('T')[0] : undefined,
-          invoiceNumber: this.categoryType === 'invoice' ? toUndefined(invoiceNumber) : undefined,
+          ...(this.categoryType === 'inventory' ? {
+            productId: toUndefined(productId),
+            quantity: toUndefined(quantity),
+          } : {
+            productId: undefined,
+            quantity: undefined,
+          }),
+          ...(this.categoryType === 'invoice') ? {
+            billingStartDate: billingStartDate ? new Date(billingStartDate.getTime() - billingStartDate.getTimezoneOffset() * 60000).toISOString()
+              .split('T')[0] : undefined,
+            billingEndDate: billingEndDate ? new Date(billingEndDate.getTime() - billingEndDate.getTimezoneOffset() * 60000).toISOString()
+              .split('T')[0] : undefined,
+            invoiceNumber: toUndefined(invoiceNumber),
+          } : {
+            billingEndDate: undefined,
+            billingStartDate: undefined,
+            invoiceNumber: undefined,
+          },
           isSettled,
           loanAccountId,
         };
@@ -133,35 +146,39 @@ export class TransactionLoanEditComponent implements OnInit {
       }
     });
 
-    this.account = merge(
-      this.store.select(selectAccountById(accountId)).pipe(takeFirstDefined()),
-      this.form.controls.accountId.valueChanges.pipe(
-        mergeMap((accountId) => this.store.select(selectAccountById(accountId))),
-      ),
-    );
+    this.form.controls.accountId.valueChanges.pipe(
+      startWith(accountId),
+      switchMap((accountId) => this.store.select(selectAccountById(accountId))),
+      takeUntilDestroyed(this.destroyRef),
+    )
+      .subscribe((account) => {
+        this.currency = account?.currency;
+        this.isDeferred = account?.accountType !== 'loan';
+      });
 
-    this.form.controls.productId.valueChanges.pipe(withLatestFrom(this.store.select(selectGroupedProducts))).subscribe(([
-      productId,
-      groupedProducts,
-    ]) => {
-      if (productId) {
-        const categoryId = groupedProducts.find(g => g.products.some(p => p.productId === productId)).categoryId;
+    this.form.controls.productId.valueChanges.pipe(
+      switchMap((productId) => this.store.select(selectCategoryIdOfProductId(productId))),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe((categoryId) => {
+      if (categoryId) {
         if (this.form.value.categoryId !== categoryId) {
           this.form.patchValue({
             categoryId,
           });
         }
+        this.form.controls.quantity.addValidators(Validators.required);
+      } else {
+        this.form.controls.quantity.removeValidators(Validators.required);
+        this.form.controls.quantity.reset();
       }
     });
 
     this.form.controls.categoryId.valueChanges.pipe(
-      withLatestFrom(this.store.select(selectCategories)),
-    ).subscribe(([
-      categoryId,
-      categories,
-    ]) => {
-      if (categoryId) {
-        this.categoryType = categories.find(c => c.categoryId === categoryId)?.categoryType;
+      switchMap((categoryId) => this.store.select(selectCategoryById(categoryId))),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe((category) => {
+      if (category) {
+        this.categoryType = category.categoryType;
       } else {
         this.categoryType = 'regular';
         this.form.patchValue({

@@ -1,19 +1,35 @@
-import { Component, DestroyRef, OnInit } from '@angular/core';
+import { Component, DestroyRef, isStandalone, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { FormGroup, FormControl, Validators, ValidatorFn, FormArray } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { toUndefined } from '@household/shared/common/utils';
 import { Account, Project, Recipient, Category, Product, Transaction } from '@household/shared/types/types';
 import { takeFirstDefined } from '@household/web/operators/take-first-defined';
 import { toSplitResponse } from '@household/web/operators/to-split-response';
-import { selectCategories } from '@household/web/state/category/category.selector';
+import { selectAccountById } from '@household/web/state/account/account.selector';
+import { selectCategoryById } from '@household/web/state/category/category.selector';
 import { messageActions } from '@household/web/state/message/message.actions';
-import { selectGroupedProducts } from '@household/web/state/product/product.selector';
+import { selectCategoryIdOfProductId } from '@household/web/state/product/product.selector';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
 import { selectTransaction } from '@household/web/state/transaction/transaction.selector';
 import { Actions, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
-import { withLatestFrom } from 'rxjs';
+import { startWith, switchMap } from 'rxjs';
+
+type SplitFormGroup = FormGroup<{
+  amount: FormControl<number>;
+  description: FormControl<string>;
+  projectId: FormControl<Project.Id>;
+  categoryId: FormControl<Category.Id>;
+  productId: FormControl<Product.Id>;
+  quantity: FormControl<number>;
+  billingStartDate: FormControl<Date>;
+  billingEndDate: FormControl<Date>;
+  invoiceNumber: FormControl<string>;
+  loanAccountId: FormControl<Account.Id>;
+  isSettled: FormControl<boolean>;
+  isSaved: FormControl<boolean>;
+}>;
 
 @Component({
   selector: 'household-transaction-split-edit',
@@ -28,6 +44,7 @@ export class TransactionSplitEditComponent implements OnInit {
     accountId: FormControl<Account.Id>;
     description: FormControl<string>;
     recipientId: FormControl<Recipient.Id>;
+    splits: FormArray<SplitFormGroup>
   }>;
 
   split: FormGroup<{
@@ -44,17 +61,22 @@ export class TransactionSplitEditComponent implements OnInit {
     isSettled: FormControl<boolean>;
   }>;
   categoryType: Category.CategoryType['categoryType'];
+  currency: string;
 
-  private editingSplit: {
-    split: Transaction.SplitRequestItem;
-    index: number;
-  };
+  get sumOfSavedSplits() {
+    return this.form?.value.splits?.reduce((accumulator, currentValue) => {
+      return currentValue.isSaved ? accumulator + currentValue.amount : accumulator;
+    }, 0);
+  }
 
-  splits: Transaction.SplitRequestItem[] = [ ];
   get sumOfSplits() {
-    return this.splits?.reduce((accumulator, currentValue) => {
+    return this.form?.value.splits?.reduce((accumulator, currentValue) => {
       return accumulator + currentValue.amount;
     }, 0);
+  }
+
+  get isAllSplitSaved() {
+    return this.form?.value.splits.every(s => s.isSaved);
   }
 
   constructor(public activatedRoute: ActivatedRoute, private destroyRef: DestroyRef, private store: Store, private actions: Actions) { }
@@ -69,6 +91,21 @@ export class TransactionSplitEditComponent implements OnInit {
       accountId: new FormControl(accountId, [Validators.required]),
       description: new FormControl(),
       recipientId: new FormControl(),
+      splits: new FormArray([], [
+        Validators.required,
+        Validators.minLength(2),
+        (array) => {
+          return array.value.every(s => s.isSaved) ? null : {
+            pendingSplit: true,
+          };
+        },
+        (array) => {
+          const sum = array.value.reduce((accumulator, currentValue) => accumulator + currentValue.amount, 0);
+          return !this.form?.value.amount || sum === this.form.value.amount ? null : {
+            sumOfSplits: true,
+          };
+        },
+      ]),
     });
 
     if (transactionId) {
@@ -79,34 +116,34 @@ export class TransactionSplitEditComponent implements OnInit {
         .subscribe((transaction) => {
           console.log(transaction);
 
-          this.splits = [
-            ...transaction.splits.map<Transaction.SplitRequestItem>(s => ({
-              amount: s.amount,
-              billingEndDate: s.billingEndDate,
-              billingStartDate: s.billingStartDate,
-              categoryId: s.category?.categoryId,
-              description: s.description,
-              invoiceNumber: s.invoiceNumber,
-              isSettled: undefined,
-              loanAccountId: undefined,
-              productId: s.product?.productId,
-              projectId: s.project?.projectId,
-              quantity: s.quantity,
-            })),
-            ...transaction.deferredSplits.map<Transaction.SplitRequestItem>(s => ({
-              amount: s.amount,
-              billingEndDate: s.billingEndDate,
-              billingStartDate: s.billingStartDate,
-              categoryId: s.category?.categoryId,
-              description: s.description,
-              invoiceNumber: s.invoiceNumber,
-              isSettled: s.isSettled,
-              loanAccountId: s.ownerAccount.accountId,
-              productId: s.product?.productId,
-              projectId: s.project?.projectId,
-              quantity: s.quantity,
-            })),
-          ];
+          // this.splits = [
+          //   ...transaction.splits.map<Transaction.SplitRequestItem>(s => ({
+          //     amount: s.amount,
+          //     billingEndDate: s.billingEndDate,
+          //     billingStartDate: s.billingStartDate,
+          //     categoryId: s.category?.categoryId,
+          //     description: s.description,
+          //     invoiceNumber: s.invoiceNumber,
+          //     isSettled: undefined,
+          //     loanAccountId: undefined,
+          //     productId: s.product?.productId,
+          //     projectId: s.project?.projectId,
+          //     quantity: s.quantity,
+          //   })),
+          //   ...transaction.deferredSplits.map<Transaction.SplitRequestItem>(s => ({
+          //     amount: s.amount,
+          //     billingEndDate: s.billingEndDate,
+          //     billingStartDate: s.billingStartDate,
+          //     categoryId: s.category?.categoryId,
+          //     description: s.description,
+          //     invoiceNumber: s.invoiceNumber,
+          //     isSettled: s.isSettled,
+          //     loanAccountId: s.ownerAccount.accountId,
+          //     productId: s.product?.productId,
+          //     projectId: s.project?.projectId,
+          //     quantity: s.quantity,
+          //   })),
+          // ];
 
           this.form.patchValue({
             amount: transaction.amount,
@@ -126,10 +163,9 @@ export class TransactionSplitEditComponent implements OnInit {
     ).subscribe(() => {
       this.form.markAllAsTouched();
       console.log(this.form);
-      console.log(this.splits);
-
+      console.log(this.form.valid);
       if (this.form.valid) {
-        const { accountId, amount, issuedAt, description, recipientId } = this.form.getRawValue();
+        const { accountId, amount, issuedAt, description, recipientId, splits } = this.form.getRawValue();
 
         const request: Transaction.SplitRequest = {
           accountId,
@@ -137,10 +173,25 @@ export class TransactionSplitEditComponent implements OnInit {
           description: toUndefined(description),
           issuedAt: issuedAt.toISOString(),
           recipientId: toUndefined(recipientId),
-          splits: this.splits,
+          splits: splits.map(s => ({
+            amount: s.amount,
+            categoryId: toUndefined(s.categoryId),
+            projectId: toUndefined(s.projectId),
+            loanAccountId: toUndefined(s.loanAccountId),
+            isSettled: s.isSettled,
+            description: s.description,
+            invoiceNumber: s.invoiceNumber,
+            billingEndDate: s.billingEndDate.toISOString(),
+            billingStartDate: s.billingStartDate.toISOString(),
+            productId: s.productId,
+            quantity: s.quantity,
+          })),
+          // splits: this.splits,
         };
 
         console.log(request);
+
+        return;
         if (transactionId) {
           this.store.dispatch(transactionApiActions.updateSplitTransactionInitiated({
             transactionId,
@@ -151,6 +202,25 @@ export class TransactionSplitEditComponent implements OnInit {
         }
       }
     });
+
+    this.form.controls.accountId.valueChanges.pipe(
+      startWith(accountId),
+      switchMap((accountId) => this.store.select(selectAccountById(accountId))),
+      takeUntilDestroyed(this.destroyRef),
+    )
+      .subscribe((account) => {
+        this.currency = account?.currency;
+      });
+  }
+
+  saveSplit(splitGroup: SplitFormGroup) {
+    splitGroup.markAllAsTouched();
+
+    if (splitGroup.valid) {
+      splitGroup.patchValue({
+        isSaved: true,
+      });
+    }
   }
 
   private createSplitForm(split?: Transaction.SplitRequestItem) {
@@ -168,28 +238,29 @@ export class TransactionSplitEditComponent implements OnInit {
       isSettled: new FormControl(split?.isSettled),
     });
 
-    this.split.controls.productId.valueChanges.pipe(withLatestFrom(this.store.select(selectGroupedProducts))).subscribe(([
-      productId,
-      groupedProducts,
-    ]) => {
-      if (productId) {
-        const categoryId = groupedProducts.find(g => g.products.some(p => p.productId === productId)).categoryId;
+    this.split.controls.productId.valueChanges.pipe(
+      switchMap((productId) => this.store.select(selectCategoryIdOfProductId(productId))),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe((categoryId) => {
+      if (categoryId) {
         if (this.split.value.categoryId !== categoryId) {
           this.split.patchValue({
             categoryId,
           });
         }
+        this.split.controls.quantity.addValidators(Validators.required);
+      } else {
+        this.split.controls.quantity.removeValidators(Validators.required);
+        this.split.controls.quantity.reset();
       }
     });
 
     this.split.controls.categoryId.valueChanges.pipe(
-      withLatestFrom(this.store.select(selectCategories)),
-    ).subscribe(([
-      categoryId,
-      categories,
-    ]) => {
-      if (categoryId) {
-        this.categoryType = categories.find(c => c.categoryId === categoryId)?.categoryType;
+      switchMap((categoryId) => this.store.select(selectCategoryById(categoryId))),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe((category) => {
+      if (category) {
+        this.categoryType = category.categoryType;
       } else {
         this.categoryType = 'regular';
         this.split.patchValue({
@@ -201,82 +272,33 @@ export class TransactionSplitEditComponent implements OnInit {
   }
 
   addNewSplit() {
-    if (this.split) {
-      if (this.split.valid) {
-        const { amount, billingEndDate, billingStartDate, categoryId, description, invoiceNumber, productId, projectId, quantity, isSettled, loanAccountId } = this.split.getRawValue();
-
-        const newSplitItem: Transaction.SplitRequestItem = {
-          amount,
-          ...(this.categoryType === 'inventory' ? {
-            productId: toUndefined(productId),
-            quantity: toUndefined(quantity),
-          } : {
-            productId: undefined,
-            quantity: undefined,
-          }),
-          ...(this.categoryType === 'invoice') ? {
-            billingStartDate: new Date(billingStartDate.getTime() - billingStartDate.getTimezoneOffset() * 60000).toISOString()
-              .split('T')[0],
-            billingEndDate: new Date(billingEndDate.getTime() - billingEndDate.getTimezoneOffset() * 60000).toISOString()
-              .split('T')[0],
-            invoiceNumber: toUndefined(invoiceNumber),
-          } : {
-            billingEndDate: undefined,
-            billingStartDate: undefined,
-            invoiceNumber: undefined,
-          },
-          categoryId: toUndefined(categoryId),
-          description: toUndefined(description),
-          isSettled: toUndefined(isSettled),
-          loanAccountId: toUndefined(loanAccountId),
-          projectId: toUndefined(projectId),
-        };
-
-        if (this.editingSplit) {
-          this.splits.splice(this.editingSplit.index, 0, newSplitItem);
-
-          this.editingSplit = null;
-        } else {
-          this.splits.push(newSplitItem);
-
-        }
-
-        if (this.sumOfSplits !== this.form.value.amount) {
-          this.split.reset({
-            amount: this.form.value.amount - this.sumOfSplits,
-          });
-        } else {
-          this.split = undefined;
-        }
-      }
-      return;
-    }
-
-    this.createSplitForm();
+    this.form.controls.splits.push(new FormGroup({
+      amount: new FormControl(this.form.value.amount - this.sumOfSavedSplits, [Validators.required]),
+      description: new FormControl(),
+      projectId: new FormControl(),
+      categoryId: new FormControl(),
+      productId: new FormControl(),
+      quantity: new FormControl(),
+      billingStartDate: new FormControl(),
+      billingEndDate: new FormControl(),
+      invoiceNumber: new FormControl(),
+      loanAccountId: new FormControl(),
+      isSettled: new FormControl(),
+      isSaved: new FormControl(false),
+    }));
   }
 
-  cancelSplit() {
-    if (this.editingSplit) {
-      this.splits.splice(this.editingSplit.index, 0, this.editingSplit.split);
-
-      this.editingSplit = null;
-    }
-
-    this.split = null;
+  cancelSplit(index: number) {
+    this.form.controls.splits.removeAt(index);
   }
 
-  editSplit(index: number) {
-    const split = this.splits.splice(index, 1)[0];
-
-    this.editingSplit = {
-      split,
-      index,
-    };
-
-    this.createSplitForm(this.editingSplit.split);
+  editSplit(splitGroup: SplitFormGroup) {
+    splitGroup.patchValue({
+      isSaved: false,
+    });
   }
 
   deleteSplit(index: number) {
-    this.splits.splice(index, 1);
+    this.form.controls.splits.removeAt(index);
   }
 }

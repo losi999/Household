@@ -1,7 +1,9 @@
 <form [formGroup]="form">
   <household-datetime-input formControlName="issuedAt" />
 
-  <household-amount-input [accountId]="form.value.accountId" formControlName="amount" [signDisabled]="true" [isPositive]="false" />
+  <div *ngIf="form.errors?.sumOfSplits">sum of splits!!!</div>
+
+  <household-amount-input [currency]="currency" formControlName="amount" [signDisabled]="true" [isPositive]="false" />
 
   <household-account-autocomplete-input label="Számla" formControlName="accountId" />
 
@@ -9,20 +11,63 @@
 
   <household-clearable-input formControlName="description" label="Megjegyzés" />
 
-  <div *ngFor="let s of splits; index as i">
-    <household-transaction-short-details [currency]="form.value.accountId" [amount]="s.amount" [ownerAccount]="s.loanAccountId" [category]="s.categoryId" [project]="s.projectId" [product]="s.productId" [quantity]="s.quantity" [description]="s.description" [billingStartDate]="s.billingStartDate" [billingEndDate]="s.billingEndDate" [invoiceNumber]="s.invoiceNumber" />
-    <div class="split-buttons">
-      <button mat-icon-button color="primary" type="button" (click)="editSplit(i)">
-        <mat-icon>edit</mat-icon>
-      </button>
-      <button mat-icon-button color="warn" type="button" (click)="deleteSplit(i)">
-        <mat-icon>delete</mat-icon>
-      </button>
-    </div>
+  <pre> {{form.controls.splits.errors | json}}</pre>
+
+  <div *ngFor="let split of form.controls.splits?.controls; index as i" [formGroup]="split">
+    <ng-container *ngIf="split.value.isSaved">
+      <household-transaction-short-details [currency]="currency" [amount]="split.value.amount" [ownerAccount]="split.value.loanAccountId" [category]="split.value.categoryId" [project]="split.value.projectId" [product]="split.value.productId" [quantity]="split.value.quantity" [description]="split.value.description" [billingStartDate]="split.value.billingStartDate" [billingEndDate]="split.value.billingEndDate" [invoiceNumber]="split.value.invoiceNumber" />
+      <div class="split-buttons">
+        <button mat-icon-button color="primary" type="button" (click)="editSplit(split)">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button mat-icon-button color="warn" type="button" (click)="deleteSplit(i)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
+    </ng-container>
+    <ng-container *ngIf="!split.value.isSaved">
+      <household-amount-input [currency]="currency" formControlName="amount" [isPositive]="false" />
+
+      <household-category-autocomplete-input label="Kategória" formControlName="categoryId" />
+
+      <ng-container *ngIf="categoryType === 'invoice'">
+        <mat-form-field>
+          <mat-label>Számlázási időszak</mat-label>
+          <mat-date-range-input [rangePicker]="picker">
+            <input matStartDate formControlName="billingStartDate" placeholder="Kezdete">
+            <input matEndDate formControlName="billingEndDate" placeholder="Vége">
+          </mat-date-range-input>
+          <mat-datepicker-toggle matPrefix [for]="picker" tabindex="-1" />
+          <mat-date-range-picker #picker />
+        </mat-form-field>
+
+        <household-clearable-input label="Számlaszám" formControlName="invoiceNumber" />
+      </ng-container>
+
+      <household-product-autocomplete-input *ngIf="!split.value.categoryId || categoryType === 'inventory'" label="Termék" formControlName="productId" [categoryId]="split.value.categoryId" />
+
+      <household-clearable-input *ngIf="form.value.productId" label="Mennyiség" formControlName="quantity" type="number" />
+
+      <household-project-autocomplete-input label="Projekt" formControlName="projectId" />
+
+      <household-clearable-input formControlName="description" label="Megjegyzés" />
+
+      <household-account-autocomplete-input label="Kölcsön számla" [exclude]="form.value.accountId" formControlName="loanAccountId" />
+
+      <mat-slide-toggle *ngIf="split.value.loanAccountId" color="primary" formControlName="isSettled">Tartozás rendezve</mat-slide-toggle>
+
+      <button mat-flat-button type="button" [disabled]="!form.value.amount" (click)="saveSplit(split)">Kész</button>
+      <button mat-flat-button type="button" (click)="cancelSplit(i)">Mégse</button>
+    </ng-container>
+  </div>
+  <button mat-flat-button type="button" *ngIf="form.value.amount && isAllSplitSaved" (click)="addNewSplit()">Új bontás</button>
+
+  <!-- <div *ngFor="let s of splits; index as i">
+
   </div>
 
   <div *ngIf="split" [formGroup]="split">
-    <household-amount-input [accountId]="form.value.accountId" formControlName="amount" [isPositive]="false" />
+    <household-amount-input [currency]="currency" formControlName="amount" [isPositive]="false" />
 
     <household-category-autocomplete-input label="Kategória" formControlName="categoryId" />
 
@@ -56,6 +101,6 @@
   </div>
 
   <button mat-flat-button *ngIf="sumOfSplits !== form.value.amount" type="button" (click)="addNewSplit()" [disabled]="!form.value.amount">{{sumOfSplits + split?.value.amount === form.value.amount ? 'Kész' : 'Új bontás'}}</button>
-  <button mat-flat-button *ngIf="split" color="warn" type="button" (click)="cancelSplit()">Mégse</button>
+  <button mat-flat-button *ngIf="split" color="warn" type="button" (click)="cancelSplit()">Mégse</button> -->
 
 </form>
