@@ -6,6 +6,7 @@ import { default as amount } from '@household/shared/schemas/partials/transactio
 import { default as description } from '@household/shared/schemas/partials/transaction-description';
 import { default as issuedAt } from '@household/shared/schemas/partials/transaction-issued-at';
 import { default as accountId } from '@household/shared/schemas/account-id';
+import { default as transactionId } from '@household/shared/schemas/transaction-id';
 import { default as categoryId } from '@household/shared/schemas/category-id';
 import { default as projectId } from '@household/shared/schemas/project-id';
 import { default as recipientId } from '@household/shared/schemas/recipient-id';
@@ -47,6 +48,7 @@ const schema: StrictJSONSchema7<Transaction.SplitRequest> = {
           ...inventory.properties,
           ...amount.properties,
           ...description.properties,
+          ...transactionId.properties,
           loanAccountId: mongoId,
           isSettled: {
             type: 'boolean',

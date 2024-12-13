@@ -1,17 +1,17 @@
 <form [formGroup]="form">
   <household-datetime-input formControlName="issuedAt" />
 
-  <household-amount-input formControlName="amount" [currency]="currency" [isPositive]="false" [signDisabled]="true" />
+  <household-amount-input formControlName="amount" [currency]="form.value.account?.currency" [isPositive]="false" [signDisabled]="true" />
 
-  <household-account-autocomplete-input label="Számla" [exclude]="form.value.loanAccountId" formControlName="accountId" />
+  <household-account-autocomplete-input label="Számla" [exclude]="form.value.loanAccount?.accountId" formControlName="account" />
 
-  <household-account-autocomplete-input label="Kölcsön számla" [exclude]="form.value.accountId" formControlName="loanAccountId" />
+  <household-account-autocomplete-input label="Kölcsön számla" [exclude]="form.value.account?.accountId" formControlName="loanAccount" />
 
-  <mat-slide-toggle *ngIf="isDeferred" color="primary" formControlName="isSettled">Tartozás rendezve</mat-slide-toggle>
+  <mat-slide-toggle *ngIf="form.value.account?.accountType !== 'loan'" color="primary" formControlName="isSettled">Tartozás rendezve</mat-slide-toggle>
 
-  <household-category-autocomplete-input label="Kategória" formControlName="categoryId" />
+  <household-category-autocomplete-input label="Kategória" formControlName="category" />
 
-  <ng-container *ngIf="categoryType === 'invoice'">
+  <ng-container *ngIf="form.value.category?.categoryType === 'invoice'">
     <mat-form-field>
       <mat-label>Számlázási időszak</mat-label>
       <mat-date-range-input [rangePicker]="picker">
@@ -25,13 +25,13 @@
     <household-clearable-input label="Számlaszám" formControlName="invoiceNumber" />
   </ng-container>
 
-  <household-product-autocomplete-input *ngIf="!form.value.categoryId || categoryType === 'inventory'" label="Termék" formControlName="productId" [categoryId]="form.value.categoryId" />
+  <household-product-autocomplete-input *ngIf="!form.value.category || form.value.category?.categoryType === 'inventory'" label="Termék" formControlName="product" [categoryId]="form.value.category?.categoryId" />
 
-  <household-clearable-input *ngIf="form.value.productId" label="Mennyiség" formControlName="quantity" type="number" />
+  <household-clearable-input *ngIf="form.value.product" label="Mennyiség" formControlName="quantity" type="number" />
 
-  <household-recipient-autocomplete-input label="Partner" formControlName="recipientId" />
+  <household-recipient-autocomplete-input label="Partner" formControlName="recipient" />
 
-  <household-project-autocomplete-input label="Projekt" formControlName="projectId" />
+  <household-project-autocomplete-input label="Projekt" formControlName="project" />
 
   <household-clearable-input formControlName="description" label="Megjegyzés" />
 </form>

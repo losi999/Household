@@ -63,6 +63,9 @@ export class TransactionEditComponent implements OnInit {
     this.store.dispatch(productApiActions.listProductsInitiated());
     this.store.dispatch(projectApiActions.listProjectsInitiated());
     this.store.dispatch(recipientApiActions.listRecipientsInitiated());
+    this.store.dispatch(transactionApiActions.listDeferredTransactionsInitiated({
+      isSettled: false,
+    }));
 
   }
 

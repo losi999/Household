@@ -125,7 +125,7 @@ export const updateToSplitTransactionServiceFactory = (
 
     httpErrors.transaction.invalidLoanAccountType(accounts[body.accountId]);
 
-    const { _id, ...document } = splitTransactionDocumentConverter.create({
+    const document = splitTransactionDocumentConverter.create({
       body,
       accounts,
       recipient,
@@ -136,9 +136,6 @@ export const updateToSplitTransactionServiceFactory = (
 
     console.log(document);
 
-    await transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update({
-      _id,
-      ...document,
-    }));
+    await transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update(document));
   };
 };

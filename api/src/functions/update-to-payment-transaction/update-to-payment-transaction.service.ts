@@ -114,7 +114,7 @@ export const updateToPaymentTransactionServiceFactory = (
     if (!body.loanAccountId) {
       httpErrors.transaction.invalidLoanAccountType(account);
 
-      const { _id, ...document } = paymentTransactionDocumentConverter.create({
+      const document = paymentTransactionDocumentConverter.create({
         body,
         account,
         category,
@@ -123,15 +123,12 @@ export const updateToPaymentTransactionServiceFactory = (
         product,
       }, expiresIn);
 
-      return transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update({
-        _id,
-        ...document,
-      }));
+      return transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update(document));
     }
     if (account.accountType === 'loan') {
       httpErrors.transaction.invalidLoanAccountType(loanAccount);
 
-      const { _id, ...document } = reimbursementTransactionDocumentConverter.create({
+      const document = reimbursementTransactionDocumentConverter.create({
         body,
         payingAccount: account,
         ownerAccount: loanAccount,
@@ -141,13 +138,10 @@ export const updateToPaymentTransactionServiceFactory = (
         product,
       }, expiresIn);
 
-      return transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update({
-        _id,
-        ...document,
-      }));
+      return transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update(document));
     }
 
-    const { _id, ...document } = deferredTransactionDocumentConverter.create({
+    const document = deferredTransactionDocumentConverter.create({
       body,
       payingAccount: account,
       ownerAccount: loanAccount,
@@ -157,9 +151,6 @@ export const updateToPaymentTransactionServiceFactory = (
       product,
     }, expiresIn);
 
-    return transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update({
-      _id,
-      ...document,
-    }));
+    return transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update(document));
   };
 };

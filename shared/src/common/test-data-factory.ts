@@ -321,6 +321,7 @@ export const createSplitRequestItem: DataFactoryFunction<Transaction.SplitReques
     billingStartDate: '2022-01-01',
     loanAccountId: undefined,
     isSettled: undefined,
+    transactionId: undefined,
     ...req,
   };
 };

@@ -354,7 +354,8 @@ export namespace Transaction {
   & Amount
   & Description
   & LoanAccountId
-  & IsSettled;
+  & IsSettled
+  & TransactionId;
 
   export type SplitRequest = Account.AccountId
   & Recipient.RecipientId

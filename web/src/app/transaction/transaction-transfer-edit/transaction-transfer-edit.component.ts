@@ -11,7 +11,7 @@ import { transactionApiActions } from '@household/web/state/transaction/transact
 import { selectDeferredTransactionList, selectTransaction } from '@household/web/state/transaction/transaction.selector';
 import { Actions, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
-import { combineLatest, filter, map, startWith, switchMap, tap } from 'rxjs';
+import { combineLatest, filter, map } from 'rxjs';
 
 @Component({
   selector: 'household-transaction-transfer-edit',
@@ -25,9 +25,9 @@ export class TransactionTransferEditComponent implements OnInit {
   form: FormGroup<{
     issuedAt: FormControl<Date>;
     amount: FormControl<number>;
-    accountId: FormControl<Account.Id>;
+    account: FormControl<Account.Response>;
     description: FormControl<string>;
-    transferAccountId: FormControl<Account.Id>;
+    transferAccount: FormControl<Account.Response>;
     transferAmount: FormControl<number>;
   }>;
 
@@ -36,28 +36,20 @@ export class TransactionTransferEditComponent implements OnInit {
     transaction: Transaction.DeferredResponse;
   })[];
 
-  currency: string;
-  transferCurrency: string;
-
   availableDeferredTransactions = this.store.select(selectDeferredTransactionList());
 
-  constructor(public activatedRoute: ActivatedRoute, private destroyRef: DestroyRef, private store: Store, private actions: Actions) {
-  }
+  constructor(public activatedRoute: ActivatedRoute, private destroyRef: DestroyRef, private store: Store, private actions: Actions) { }
 
   ngOnInit(): void {
     const accountId = this.activatedRoute.snapshot.paramMap.get('accountId') as Account.Id;
     const transactionId = this.activatedRoute.snapshot.paramMap.get('transactionId') as Transaction.Id;
 
-    this.store.dispatch(transactionApiActions.listDeferredTransactionsInitiated({
-      isSettled: false,
-    }));
-
     this.form = new FormGroup({
       issuedAt: new FormControl(new Date(), [Validators.required]),
       amount: new FormControl(null, [Validators.required]),
-      accountId: new FormControl(accountId, [Validators.required]),
+      account: new FormControl(null, [Validators.required]),
       description: new FormControl(),
-      transferAccountId: new FormControl(null, [Validators.required]),
+      transferAccount: new FormControl(null, [Validators.required]),
       transferAmount: new FormControl(null),
     });
 
@@ -101,10 +93,10 @@ export class TransactionTransferEditComponent implements OnInit {
       transaction.subscribe((transaction) => {
         this.form.patchValue({
           amount: transaction.amount,
-          accountId: transaction.account.accountId,
+          account: transaction.account,
           description: transaction.description,
           issuedAt: new Date(transaction.issuedAt),
-          transferAccountId: transaction.transferAccount?.accountId,
+          transferAccount: transaction.transferAccount,
         });
 
         this.payments = transaction.payments.map(p => ({
@@ -127,15 +119,15 @@ export class TransactionTransferEditComponent implements OnInit {
 
       if (this.form.valid) {
         const request: Transaction.TransferRequest = {
-          accountId: this.form.value.accountId,
+          accountId: this.form.value.account.accountId,
           amount: this.form.value.amount,
           description: this.form.value.description ?? undefined,
           issuedAt: this.form.value.issuedAt.toISOString(),
-          transferAccountId: this.form.value.transferAccountId,
-          payments: this.payments.map(p => ({
+          transferAccountId: this.form.value.transferAccount.accountId,
+          payments: this.payments.length > 0 ? this.payments.map(p => ({
             amount: p.amount,
             transactionId: p.transaction.transactionId,
-          })),
+          })) : undefined,
           transferAmount: this.form.value.transferAmount ?? undefined,
         };
 
@@ -150,35 +142,28 @@ export class TransactionTransferEditComponent implements OnInit {
       }
     });
 
-    combineLatest([
-      this.form.controls.accountId.valueChanges.pipe(
-        startWith(accountId),
-        switchMap((accountId) => this.store.select(selectAccountById(accountId))),
-        tap((account) => {
-          this.currency = account?.currency;
-        }),
-      ),
-      this.form.controls.transferAccountId.valueChanges.pipe(
-        switchMap((accountId) => this.store.select(selectAccountById(accountId))),
-        tap((account) => {
-          this.transferCurrency = account?.currency;
-        }),
-      ),
-    ]).pipe(
-      takeUntilDestroyed(this.destroyRef),
-    )
-      .subscribe(([
-        account,
-        transferAccount,
-      ]) => {
-        this.form.controls.transferAmount.reset();
-
-        if (account && transferAccount && account.currency !== transferAccount.currency) {
-          this.form.controls.transferAmount.setValidators(Validators.required);
-        } else {
-          this.form.controls.transferAmount.removeValidators(Validators.required);
-        }
+    this.store.select(selectAccountById(accountId)).pipe(takeFirstDefined())
+      .subscribe((account) => {
+        this.form.patchValue({
+          account,
+        });
       });
+
+    combineLatest([
+      this.form.controls.account.valueChanges,
+      this.form.controls.transferAccount.valueChanges,
+    ]).subscribe(([
+      account,
+      transferAccount,
+    ]) => {
+      this.form.controls.transferAmount.reset();
+
+      if (account && transferAccount && account.currency !== transferAccount.currency) {
+        this.form.controls.transferAmount.setValidators(Validators.required);
+      } else {
+        this.form.controls.transferAmount.removeValidators(Validators.required);
+      }
+    });
   }
 
   inverseTransaction() {

@@ -61,22 +61,22 @@ export const updateToTransferTransactionServiceFactory = (
     if (account.accountType === 'loan' || transferAccount.accountType === 'loan') {
       if (account.accountType === transferAccount.accountType) {
         body.payments = undefined;
-        const { _id, ...document } = transferTransactionDocumentConverter.create({
+        const document = transferTransactionDocumentConverter.create({
           body,
           account,
           transferAccount,
           transactions: undefined,
         }, expiresIn);
 
-        await transactionService.replaceTransaction(transactionId, document);
+        await transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update(document));
       } else {
-        const { _id, ...document } = loanTransferDocumentDonverter.create({
+        const document = loanTransferDocumentDonverter.create({
           body,
           account,
           transferAccount,
         }, expiresIn);
 
-        await transactionService.replaceTransaction(transactionId, document);
+        await transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update(document));
       }
     } else {
       if (payments) {
@@ -98,29 +98,23 @@ export const updateToTransferTransactionServiceFactory = (
         });
         const transactions = toDictionary(transactionList, '_id');
 
-        const { _id, ...document } = transferTransactionDocumentConverter.create({
+        const document = transferTransactionDocumentConverter.create({
           body,
           account,
           transferAccount,
           transactions,
         }, expiresIn);
 
-        await transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update({
-          _id,
-          ...document,
-        }));
+        await transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update(document));
       } else {
-        const { _id, ...document } = transferTransactionDocumentConverter.create({
+        const document = transferTransactionDocumentConverter.create({
           body,
           account,
           transferAccount,
           transactions: undefined,
         }, expiresIn);
 
-        await transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update({
-          _id,
-          ...document,
-        }));
+        await transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update(document));
       }
     }
   };

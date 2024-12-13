@@ -12,6 +12,10 @@ export const isPaymentTransaction = (transaction: Transaction.Response): transac
   return transaction?.transactionType === 'payment';
 };
 
+export const isDeferredTransactionResponse = (transaction: any): transaction is Transaction.DeferredResponse => {
+  return (transaction as Transaction.DeferredResponse)?.transactionType === 'deferred';
+};
+
 export const isDeferredTransaction = (transaction: Transaction.Document | Transaction.SplitDocumentItem): transaction is Transaction.DeferredDocument => {
   return (transaction as Transaction.DeferredDocument).transactionType === 'deferred';
 };

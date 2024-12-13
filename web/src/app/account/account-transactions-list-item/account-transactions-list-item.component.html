@@ -4,7 +4,7 @@
     <div class="date">{{this.transaction.issuedAt | date:'MMM dd.'}}</div>
     <div class="time">{{this.transaction.issuedAt | date:'HH:mm'}}</div>
   </div>
-  <household-transaction-short-details [category]="category?.fullName" [project]="project?.name" [recipient]="recipient?.name" [product]="product?.fullName" [billingStartDate]="billingStartDate" [billingEndDate]="billingEndDate" [description]="transaction.description" [invoiceNumber]="invoiceNumber" [quantity]="quantity" [amount]="remainingAmount" [currency]="viewingAccount.currency" [payingAccount]="payingAccount?.fullName" [ownerAccount]="ownerAccount?.fullName" [givingAccount]="givingAccount?.fullName" [receivingAccount]="receivingAccount?.fullName" [transferColor]="transferColor" />
+  <household-transaction-short-details [category]="category" [project]="project" [recipient]="recipient" [product]="product" [billingStartDate]="billingStartDate" [billingEndDate]="billingEndDate" [description]="transaction.description" [invoiceNumber]="invoiceNumber" [quantity]="quantity" [amount]="remainingAmount" [currency]="viewingAccount.currency" [payingAccount]="payingAccount" [ownerAccount]="ownerAccount" [givingAccount]="givingAccount" [receivingAccount]="receivingAccount" [transferColor]="transferColor" />
 
   <div *ngIf="amount" class="amount" [ngClass]="amount >= 0 ? 'green' : 'red'">{{amount | number:'1.0-2':'hu' }} {{viewingAccount.currency}}
   </div>

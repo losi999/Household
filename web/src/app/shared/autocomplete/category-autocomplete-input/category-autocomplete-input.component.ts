@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, Injector, Input, OnInit, Self } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ReactiveFormsModule, ControlValueAccessor, FormControl, NgControl, FormControlName, FormGroupDirective, Validators, TouchedChangeEvent, FormControlDirective } from '@angular/forms';
+import { Component, Injector, Input, OnInit, Self } from '@angular/core';
+import { ReactiveFormsModule, ControlValueAccessor, FormControl, NgControl, FormControlName, FormGroupDirective, FormControlDirective } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -9,8 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { Category } from '@household/shared/types/types';
 import { AutocompleteFilterPipe } from '@household/web/app/shared/autocomplete/autocomplete-filter.pipe';
-import { takeFirstDefined } from '@household/web/operators/take-first-defined';
-import { selectCategories, selectCategoriesAsParent, selectCategoryById, selectInventoryCategories } from '@household/web/state/category/category.selector';
+import { selectCategories, selectCategoriesAsParent, selectInventoryCategories } from '@household/web/state/category/category.selector';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
@@ -45,27 +43,15 @@ export class CategoryAutocompleteInputComponent implements OnInit, ControlValueA
 
   categories: Observable<Category.Response[]>;
 
-  constructor(private destroyRef: DestroyRef, private injector: Injector, private store: Store, @Self() public ngControl: NgControl) {
-    this.selected = new FormControl();
+  constructor(private injector: Injector, private store: Store, @Self() public ngControl: NgControl) {
     ngControl.valueAccessor = this;
   }
 
   ngOnInit(): void {
-    let control: FormControl;
     if (this.ngControl instanceof FormControlName) {
-      control = this.injector.get(FormGroupDirective).getControl(this.ngControl);
+      this.selected = this.injector.get(FormGroupDirective).getControl(this.ngControl);
     } else if (this.ngControl instanceof FormControlDirective) {
-      control = this.ngControl.form;
-    }
-
-    control.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
-      if (event instanceof TouchedChangeEvent) {
-        this.selected.markAsTouched();
-      }
-    });
-
-    if (control.hasValidator(Validators.required)) {
-      this.selected.addValidators(Validators.required);
+      this.selected = this.ngControl.form;
     }
 
     switch(this.type) {
@@ -76,27 +62,10 @@ export class CategoryAutocompleteInputComponent implements OnInit, ControlValueA
         this.categories = this.store.select(selectInventoryCategories);
       } break;
     }
-
-    this.selected.valueChanges.subscribe((value) => {
-      this.changed?.(value?.categoryId);
-    });
   }
 
-  writeValue(categoryId: Category.Id): void {
-    if (categoryId) {
-      this.store.select(selectCategoryById(categoryId))
-        .pipe(takeFirstDefined())
-        .subscribe((category) => {
-          this.selected.setValue(category, {
-            emitEvent: false,
-          });
-        });
-    } else {
-      this.selected.setValue(null, {
-        emitEvent: false,
-      });
-    }
-  }
+  writeValue(): void {}
+
   registerOnChange(fn: any): void {
     this.changed = fn;
   }

@@ -8,6 +8,7 @@ import { IProjectDocumentConverter } from '@household/shared/converters/project-
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
 import { Dictionary } from '@household/shared/types/common';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Types } from 'mongoose';
 
 export interface ISplitTransactionDocumentConverter {
   create(data: {
@@ -41,20 +42,23 @@ export const splitTransactionDocumentConverterFactory = (
             ...accumulator,
             deferredSplits: [
               ...accumulator.deferredSplits ?? [],
-              deferredTransactionDocumentConverter.create({
-                body: {
-                  ...s,
-                  accountId: body.accountId,
-                  issuedAt: undefined,
-                  recipientId: undefined,
-                },
-                category,
-                ownerAccount: accounts[s.loanAccountId],
-                payingAccount: accounts[body.accountId],
-                product: products[s.productId],
-                project: projects[s.projectId],
-                recipient,
-              }, expiresIn, generateId),
+              {
+                ...deferredTransactionDocumentConverter.create({
+                  body: {
+                    ...s,
+                    accountId: body.accountId,
+                    issuedAt: undefined,
+                    recipientId: undefined,
+                  },
+                  category,
+                  ownerAccount: accounts[s.loanAccountId],
+                  payingAccount: accounts[body.accountId],
+                  product: products[s.productId],
+                  project: projects[s.projectId],
+                  recipient,
+                }, expiresIn, generateId),
+                _id: new Types.ObjectId(s.transactionId),
+              },
             ],
           };
 

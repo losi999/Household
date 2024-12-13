@@ -1,39 +1,39 @@
 <mat-list>
   <mat-list-item *ngIf="payingAccount" class="red">
     <mat-icon matListItemIcon>reply_all</mat-icon>
-    <div matListItemTitle>{{(payingAccount$ | async)?.fullName ?? payingAccount}}</div>
+    <div matListItemTitle>{{payingAccount?.fullName}}</div>
   </mat-list-item>
   <mat-list-item *ngIf="ownerAccount" class="green">
     <mat-icon matListItemIcon>forward</mat-icon>
-    <div matListItemTitle>{{(ownerAccount$ | async)?.fullName ?? ownerAccount}}</div>
+    <div matListItemTitle>{{ownerAccount?.fullName}}</div>
   </mat-list-item>
   <mat-list-item *ngIf="givingAccount" [ngClass]="transferColor">
     <mat-icon matListItemIcon>arrow_left_alt</mat-icon>
-    <div matListItemTitle>{{(givingAccount$ | async)?.fullName ?? givingAccount}}</div>
+    <div matListItemTitle>{{givingAccount?.fullName}}</div>
   </mat-list-item>
   <mat-list-item *ngIf="receivingAccount" [ngClass]="transferColor">
     <mat-icon matListItemIcon>arrow_right_alt</mat-icon>
-    <div matListItemTitle>{{(receivingAccount$ | async)?.fullName ?? receivingAccount}}</div>
+    <div matListItemTitle>{{receivingAccount?.fullName}}</div>
   </mat-list-item>
   <mat-list-item *ngIf="amount">
     <mat-icon matListItemIcon>attach_money</mat-icon>
-    <div matListItemTitle>{{amount}} {{(currencyAccount$ | async)?.currency ?? currency}}</div>
+    <div matListItemTitle>{{amount}} {{currency}}</div>
   </mat-list-item>
   <mat-list-item *ngIf="remainingAmount" class="red">
     <mat-icon matListItemIcon>money_off</mat-icon>
-    <div matListItemTitle>{{remainingAmount}} {{(currencyAccount$ | async)?.currency ?? currency}}</div>
+    <div matListItemTitle>{{remainingAmount}} {{currency}}</div>
   </mat-list-item>
   <mat-list-item *ngIf="recipient">
     <mat-icon matListItemIcon>store</mat-icon>
-    <div matListItemTitle class="recipient">{{(recipient$ | async)?.name ?? recipient}}</div>
+    <div matListItemTitle class="recipient">{{recipient?.name}}</div>
   </mat-list-item>
   <mat-list-item *ngIf="category">
     <mat-icon matListItemIcon>category</mat-icon>
-    <div matListItemTitle class="category">{{(category$ | async)?.fullName ?? category}}</div>
+    <div matListItemTitle class="category">{{category?.fullName}}</div>
   </mat-list-item>
   <mat-list-item *ngIf="product">
     <mat-icon matListItemIcon>barcode</mat-icon>
-    <div matListItemTitle class="product">{{(product$ | async)?.fullName ?? product}}</div>
+    <div matListItemTitle class="product">{{product?.fullName}}</div>
   </mat-list-item>
   <mat-list-item *ngIf="quantity">
     <mat-icon matListItemIcon>add_shopping_cart</mat-icon>
@@ -49,7 +49,7 @@
   </mat-list-item>
   <mat-list-item *ngIf="project">
     <mat-icon matListItemIcon>stacks</mat-icon>
-    <div matListItemTitle class="project">{{(project$ | async)?.name ?? project}}</div>
+    <div matListItemTitle class="project">{{project?.name}}</div>
   </mat-list-item>
   <mat-list-item *ngIf=description>
     <mat-icon matListItemIcon>description</mat-icon>
