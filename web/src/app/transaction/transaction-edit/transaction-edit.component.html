@@ -1,5 +1,5 @@
 <household-toolbar title="Tranzakció">
-  <button mat-icon-button type="button" [matMenuTriggerFor]="new">
+  <button mat-icon-button type="button" tabindex="-1" [matMenuTriggerFor]="new">
     <mat-icon>autorenew</mat-icon>
   </button>
   <mat-menu #new="matMenu">
@@ -9,7 +9,7 @@
     <button mat-menu-item replaceUrl="true" [routerLink]="['..', 'loan']" *ngIf="formType !== 'loan'">Kölcsön</button>
     <button mat-menu-item replaceUrl="true" [routerLink]="['..', 'transfer']" *ngIf="formType !== 'transfer'">Átvitel</button>
   </mat-menu>
-  <button mat-icon-button [disabled]="isInProgress | async" (click)="onSubmit()">
+  <button mat-icon-button tabindex="-1" [disabled]="isInProgress | async" (click)="onSubmit()">
     <mat-icon>save</mat-icon>
   </button>
 </household-toolbar>

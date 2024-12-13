@@ -1,16 +1,20 @@
 <household-toolbar title="Tranzakció">
+  <button mat-icon-button type="button" (click)="delete()">
+    <mat-icon>delete</mat-icon>
+  </button>
+  <button mat-icon-button type="button" replaceUrl="true" [routerLink]="['edit', formType]">
+    <mat-icon>edit</mat-icon>
+  </button>
   <button mat-icon-button type="button" [matMenuTriggerFor]="new">
     <mat-icon>add</mat-icon>
   </button>
   <mat-menu #new="matMenu">
-    <button mat-menu-item [routerLink]="['../..', 'new', 'payment']">Kiadás</button>
-    <button mat-menu-item [routerLink]="['../..', 'new', 'income']">Bevétel</button>
-    <button mat-menu-item [routerLink]="['../..', 'new', 'split']">Bontás</button>
-    <button mat-menu-item [routerLink]="['../..', 'new', 'loan']">Kölcsön</button>
-    <button mat-menu-item [routerLink]="['../..', 'new', 'transfer']">Átvitel</button>
+    <button mat-menu-item replaceUrl="true" [routerLink]="['../..', 'new', 'payment']">Kiadás</button>
+    <button mat-menu-item replaceUrl="true" [routerLink]="['../..', 'new', 'income']">Bevétel</button>
+    <button mat-menu-item replaceUrl="true" [routerLink]="['../..', 'new', 'split']">Bontás</button>
+    <button mat-menu-item replaceUrl="true" [routerLink]="['../..', 'new', 'loan']">Kölcsön</button>
+    <button mat-menu-item replaceUrl="true" [routerLink]="['../..', 'new', 'transfer']">Átvitel</button>
   </mat-menu>
-  <button mat-icon-button type="button" [routerLink]="['edit', formType]">
-    <mat-icon>edit</mat-icon>
-  </button>
+
 </household-toolbar>
 <pre>{{transaction | async | json}}</pre>

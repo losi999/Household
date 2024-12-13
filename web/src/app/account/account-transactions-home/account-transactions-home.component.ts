@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Account } from '@household/shared/types/types';
 import { skip } from 'rxjs/operators';
@@ -19,6 +19,31 @@ export class AccountTransactionsHomeComponent implements OnInit {
   page: number;
 
   constructor(private activatedRoute: ActivatedRoute, private router: Router, private store: Store) {
+  }
+
+  @HostListener('window:keydown.meta.i', ['$event'])
+  @HostListener('window:keydown.meta.p', ['$event'])
+  @HostListener('window:keydown.meta.s', ['$event'])
+  @HostListener('window:keydown.meta.x', ['$event'])
+  @HostListener('window:keydown.meta.l', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    event.preventDefault();
+    let formType: string;
+
+    switch(event.key) {
+      case 'i': formType = 'income'; break;
+      case 'p': formType = 'payment'; break;
+      case 's': formType = 'split'; break;
+      case 'x': formType = 'transfer'; break;
+      case 'l': formType = 'loan'; break;
+    }
+
+    this.router.navigate([
+      'new',
+      formType,
+    ], {
+      relativeTo: this.activatedRoute,
+    });
   }
 
   get maximumItemCount(): number {
