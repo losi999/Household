@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Injector, Input, OnInit, Self } from '@angular/core';
+import { Component, Injector, Input, OnInit, Optional, Self } from '@angular/core';
 import { ControlValueAccessor, FormControl, FormControlDirective, FormControlName, FormGroupDirective, NgControl, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -28,8 +28,10 @@ export class ClearableInputComponent implements OnInit, ControlValueAccessor {
   touched: () => void;
   isDisabled: boolean;
 
-  constructor(private injector: Injector, @Self() public ngControl: NgControl) {
-    ngControl.valueAccessor = this;
+  constructor(private injector: Injector, @Self() @Optional() public ngControl: NgControl) {
+    if (ngControl) {
+      ngControl.valueAccessor = this;
+    }
   }
 
   ngOnInit(): void {
@@ -37,6 +39,8 @@ export class ClearableInputComponent implements OnInit, ControlValueAccessor {
       this.input = this.injector.get(FormGroupDirective).getControl(this.ngControl);
     } else if (this.ngControl instanceof FormControlDirective) {
       this.input = this.ngControl.form;
+    } else {
+      this.input = new FormControl();
     }
   }
 

@@ -44,7 +44,7 @@
           </ng-container>
         </mat-panel-description>
       </mat-expansion-panel-header>
-      <household-report-catalog-item-filter formControlName="accounts" [items]="accounts" displayPropertyName="fullName" keyPropertyName="accountId" filterType="account">
+      <household-report-catalog-item-filter formControlName="accounts" [items]="accounts | async" displayPropertyName="fullName" keyPropertyName="accountId" filterType="account">
       </household-report-catalog-item-filter>
     </mat-expansion-panel>
     <mat-expansion-panel>
@@ -72,7 +72,7 @@
           </ng-container>
         </mat-panel-description>
       </mat-expansion-panel-header>
-      <household-report-catalog-item-filter formControlName="recipients" [items]="recipients | async" displayPropertyName="name" keyPropertyName="recipientId">
+      <household-report-catalog-item-filter formControlName="recipients" [items]="recipients | async">
       </household-report-catalog-item-filter>
     </mat-expansion-panel>
     <mat-expansion-panel>
@@ -86,7 +86,7 @@
           </ng-container>
         </mat-panel-description>
       </mat-expansion-panel-header>
-      <household-report-catalog-item-filter formControlName="categories" [items]="categories" displayPropertyName="fullName" keyPropertyName="categoryId" parentPropertyName="parentCategory">
+      <household-report-catalog-item-filter formControlName="categories" [items]="categories | async">
       </household-report-catalog-item-filter>
     </mat-expansion-panel>
     <mat-expansion-panel>
@@ -100,7 +100,7 @@
           </ng-container>
         </mat-panel-description>
       </mat-expansion-panel-header>
-      <household-report-catalog-item-filter formControlName="products" [items]="products" displayPropertyName="value" keyPropertyName="key" parentPropertyName="parent">
+      <household-report-catalog-item-filter formControlName="products" [items]="products | async" displayPropertyName="value" keyPropertyName="key" parentPropertyName="parent">
       </household-report-catalog-item-filter>
     </mat-expansion-panel>
     <mat-expansion-panel expandedHeight="30px" collapsedHeight="300px">
@@ -114,5 +114,5 @@
       </mat-chip-set>
     </mat-expansion-panel>
   </mat-accordion>
-  <household-report-list *ngIf="report" [items]="report" [groupBy]="selectedGroups"></household-report-list>
+  <household-report-list *ngIf="report" [items]="report" [groupBy]="selectedGroups" />
 </div>
