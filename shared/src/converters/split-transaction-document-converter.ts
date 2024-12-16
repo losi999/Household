@@ -57,7 +57,7 @@ export const splitTransactionDocumentConverterFactory = (
                   project: projects[s.projectId],
                   recipient,
                 }, expiresIn, generateId),
-                _id: new Types.ObjectId(s.transactionId),
+                _id: s.transactionId ? new Types.ObjectId(s.transactionId) : undefined,
               },
             ],
           };

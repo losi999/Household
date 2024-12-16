@@ -78,7 +78,6 @@ export class ReportCatalogItemFilterComponent implements OnInit, OnDestroy, OnCh
     this.filter = new FormControl();
 
     this.filter.valueChanges.subscribe((value) => {
-      console.log(value);
       if (!value) {
         this.filteredItems = this.items;
       } else {

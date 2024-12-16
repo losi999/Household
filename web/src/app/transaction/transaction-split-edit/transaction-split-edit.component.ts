@@ -119,8 +119,9 @@ export class TransactionSplitEditComponent implements OnInit {
       takeUntilDestroyed(this.destroyRef),
     ).subscribe(() => {
       this.form.markAllAsTouched();
+
       console.log(this.form);
-      console.log(this.form.valid);
+
       if (this.form.valid) {
         const { account, amount, issuedAt, description, recipient, splits } = this.form.getRawValue();
 
@@ -158,7 +159,6 @@ export class TransactionSplitEditComponent implements OnInit {
             }),
           })),
         };
-        console.log(JSON.stringify(request, null, 2));
 
         if (transactionId) {
           this.store.dispatch(transactionApiActions.updateSplitTransactionInitiated({
