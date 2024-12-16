@@ -1,6 +1,5 @@
-import { Account, Common, Transaction } from '@household/shared/types/types';
+import { Account, Common, Report, Transaction } from '@household/shared/types/types';
 import { createActionGroup, props } from '@ngrx/store';
-import {} from '@ngrx/effects';
 
 export const transactionApiActions = createActionGroup({
   source: 'Transaction API',
@@ -26,5 +25,7 @@ export const transactionApiActions = createActionGroup({
     'Delete transaction failed': props<Transaction.TransactionId>(),
     'Get transaction initiated': props<Account.AccountId & Transaction.TransactionId>(),
     'Get transaction completed': props<Transaction.Response>(),
+    'List transaction report initiated': props<{request: Report.Request}>(),
+    'List transaction report completed': props<{transactions: Transaction.Report[]}>(),
   },
 });

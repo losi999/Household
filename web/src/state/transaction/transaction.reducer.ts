@@ -6,6 +6,7 @@ export type TransactionState = {
   transactionList: Transaction.Response[];
   deferredTransactionList?: Transaction.DeferredResponse[];
   selectedTransaction?: Transaction.Response;
+  report?: Transaction.Report[];
 };
 
 export const transactionReducer = createReducer<TransactionState>({
@@ -22,6 +23,20 @@ on(transactionApiActions.listTransactionsCompleted, (_state, { transactions, pag
   return {
     ..._state,
     transactionList: pageNumber === 1 ? transactions : _state.transactionList.concat(...transactions),
+  };
+}),
+
+on(transactionApiActions.listTransactionReportInitiated, (_state) => {
+  return {
+    ..._state,
+    report: undefined,
+  };
+}),
+
+on(transactionApiActions.listTransactionReportCompleted, (_state, { transactions }) => {
+  return {
+    ..._state,
+    report: transactions,
   };
 }),
 

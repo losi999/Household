@@ -14,10 +14,10 @@ import { projectApiActions } from '@household/web/state/project/project.actions'
 import { selectProjects } from '@household/web/state/project/project.selector';
 import { recipientApiActions } from '@household/web/state/recipient/recipient.actions';
 import { selectRecipients } from '@household/web/state/recipient/recipient.selector';
-import { TransactionService } from '@household/web/services/transaction.service';
 import { accountApiActions } from '@household/web/state/account/account.actions';
 import { selectGroupedProducts } from '@household/web/state/product/product.selector';
 import { productApiActions } from '@household/web/state/product/product.actions';
+import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
 
 const oneFilterRequiredValidator: ValidatorFn = (control) => {
   return Object.values(control.value).every(v => !v || Object.keys(v).length === 0) ? {
@@ -61,8 +61,7 @@ export class ReportHomeComponent implements OnInit, OnDestroy {
   }>;
   report: Transaction.Report[];
 
-  constructor(private transactionService: TransactionService,
-    private store: Store) {
+  constructor(private store: Store) {
   }
   ngOnDestroy(): void {
     this.destroyed.next();
@@ -239,9 +238,9 @@ export class ReportHomeComponent implements OnInit, OnDestroy {
         });
       }
 
-      this.transactionService.getTransactionReport(request).subscribe((value) => {
-        this.report = value;
-      });
+      this.store.dispatch(transactionApiActions.listTransactionReportInitiated({
+        request,
+      }));
     }
   }
 

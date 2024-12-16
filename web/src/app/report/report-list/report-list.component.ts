@@ -1,5 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { Transaction } from '@household/shared/types/types';
+import { selectReport } from '@household/web/state/transaction/transaction.selector';
+import { Store } from '@ngrx/store';
 
 export type GroupBy = 'year' | 'month' | 'day' | 'account' | 'project' | 'recipient' | 'category' | 'product';
 
@@ -17,7 +19,9 @@ export type ReportListTreeNode = {
   standalone: false,
 })
 export class ReportListComponent {
-  @Input() items: Transaction.Report[];
+  items = this.store.select(selectReport);
   @Input() groupBy: GroupBy[];
   childrenAccessor = (node: any) => node?.children ?? [];
+
+  constructor(private store: Store) {}
 }

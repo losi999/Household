@@ -63,6 +63,28 @@ export class TransactionEffects {
     );
   });
 
+  loadTransactionReport = createEffect(() => {
+    return this.actions.pipe(
+      ofType(transactionApiActions.listTransactionReportInitiated),
+      exhaustMap(({
+        request,
+      }) => {
+        return this.transactionService.getTransactionReport(request).pipe(
+          map((transactions) => transactionApiActions.listTransactionReportCompleted({
+            transactions,
+          })),
+          catchError(() => {
+            return of(progressActions.processFinished(),
+              notificationActions.showMessage({
+                message: 'Hiba történt',
+              }),
+            );
+          }),
+        );
+      }),
+    );
+  });
+
   getTransaction = createEffect(() => {
     return this.actions.pipe(
       ofType(transactionApiActions.getTransactionInitiated),
