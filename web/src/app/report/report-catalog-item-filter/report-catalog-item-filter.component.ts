@@ -29,11 +29,6 @@ export type ReportCatalogItemFilterValue<I = string> = {
 })
 export class ReportCatalogItemFilterComponent implements OnInit, OnDestroy, OnChanges, ControlValueAccessor {
   childrenAccessor = (node: Node) => node?.children ?? [];
-
-  hasChild = (_: number, node: Node) => {
-    console.log('hasChild', _, node);
-    return !!node.children && node.children.length > 0;
-  };
   @ViewChild('tree') tree: MatTree<any>;
 
   @Input() items: Node[];
@@ -79,7 +74,6 @@ export class ReportCatalogItemFilterComponent implements OnInit, OnDestroy, OnCh
   };
 
   ngOnInit(): void {
-    console.log('init');
     this.include = new FormControl(true);
     this.filter = new FormControl();
 
@@ -127,7 +121,6 @@ export class ReportCatalogItemFilterComponent implements OnInit, OnDestroy, OnCh
   }
 
   ngOnChanges(): void {
-    console.log('changes');
     this.filteredItems = this.items;
     this.tree?.expandAll();
     this.createSelectionListControls(this.items);
