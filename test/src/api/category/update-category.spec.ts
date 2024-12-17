@@ -220,7 +220,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
               parentCategoryId: getCategoryId(childCategoryDocument),
             }))
           .expectBadRequestResponse()
-          .expectMessage('Parent category is already aa child of the current category');
+          .expectMessage('Parent category is already a child of the current category');
       });
     });
 
