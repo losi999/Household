@@ -97,7 +97,9 @@ describe('Split transaction document converter', () => {
     ],
   });
 
-  const deferredTransaction = createDeferredTransactionDocument();
+  const deferredTransaction = createDeferredTransactionDocument({
+    _id: undefined,
+  });
   const deferredTransactionResponse = createDeferredTransactionResponse();
 
   const queriedDocument = createSplitTransactionDocument({

@@ -1,38 +1,40 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { Recipient } from '@household/shared/types/types';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
-import { CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult } from 'src/app/shared/catalog-submenu/catalog-submenu.component';
-import { RecipientService } from 'src/app/recipient/recipient.service';
-import { DialogService } from 'src/app/shared/dialog.service';
+import { CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult } from '@household/web/app/shared/catalog-submenu/catalog-submenu.component';
+import { Store } from '@ngrx/store';
+import { Observable } from 'rxjs';
+import { selectRecipientIsInProgress } from '@household/web/state/progress/progress.selector';
+import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 
 @Component({
   selector: 'household-recipient-list-item',
   templateUrl: './recipient-list-item.component.html',
   styleUrls: ['./recipient-list-item.component.scss'],
+  standalone: false,
 })
-export class RecipientListItemComponent {
+export class RecipientListItemComponent implements OnInit {
   @Input() recipient: Recipient.Response;
   constructor(
-    private recipientService: RecipientService,
-    private dialogService: DialogService
-    ,
+    private store: Store,
     private bottomSheet: MatBottomSheet) { }
 
+  isDisabled: Observable<boolean>;
+
+  ngOnInit(): void {
+    this.isDisabled = this.store.select(selectRecipientIsInProgress(this.recipient.recipientId));
+  }
+
   delete() {
-    this.dialogService.openDeleteRecipientDialog(this.recipient).afterClosed()
-      .subscribe(shouldDelete => {
-        if (shouldDelete) {
-          this.recipientService.deleteRecipient(this.recipient.recipientId);
-        }
-      });
+    this.store.dispatch(dialogActions.deleteRecipient(this.recipient));
   }
 
   edit() {
-    this.dialogService.openEditRecipientDialog(this.recipient);
+    this.store.dispatch(dialogActions.updateRecipient(this.recipient));
   }
 
   merge() {
-    this.dialogService.openMergeRecipientsDialog(this.recipient);
+    this.store.dispatch(dialogActions.mergeRecipients(this.recipient));
   }
 
   showMenu() {

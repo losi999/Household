@@ -8,7 +8,6 @@ import { RouterModule } from '@angular/router';
   selector: 'household-main-menu',
   templateUrl: './main-menu.component.html',
   styleUrls: ['./main-menu.component.scss'],
-  standalone: true,
   imports: [
     RouterModule,
     MatButtonModule,

@@ -26,24 +26,26 @@ export const updateCategoryServiceFactory = (
       parentCategoryId: parentCategoryId,
     }));
 
-    httpErrors.category.notFound(!queried, {
+    httpErrors.category.notFound({
+      category: queried,
       categoryId,
     });
 
-    httpErrors.category.parentNotFound(!parentCategory && !!parentCategoryId, {
+    httpErrors.category.parentNotFound({
       parentCategoryId: parentCategoryId,
+      parentCategory,
     });
+
+    httpErrors.category.parentIsAChild(parentCategory, categoryId);
 
     const update = categoryDocumentConverter.update({
       body,
       parentCategory,
     }, expiresIn);
-    const oldFullName = queried.fullName;
 
-    await categoryService.updateCategory(categoryId, update, oldFullName).catch(httpErrors.category.update({
+    await categoryService.updateCategory(categoryId, update).catch(httpErrors.category.update({
       categoryId,
       update,
-      oldFullName,
     }));
   };
 };

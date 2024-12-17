@@ -20,7 +20,8 @@ export const updateRecipientServiceFactory = (
       recipientId,
     }));
 
-    httpErrors.recipient.notFound(!queried, {
+    httpErrors.recipient.notFound({
+      recipient: queried,
       recipientId,
     });
 

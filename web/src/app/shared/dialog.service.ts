@@ -1,16 +1,16 @@
 import { Injectable } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Account, Category, Product, Project, Recipient } from '@household/shared/types/types';
-import { AccountFormComponent, AccountFormData } from 'src/app/account/account-form/account-form.component';
-import { CategoryFormComponent, CategoryFormData } from 'src/app/category/category-form/category-form.component';
-import { CategoryMergeDialogComponent, CategoryMergeDialogData } from 'src/app/category/category-merge-dialog/category-merge-dialog.component';
-import { ProductFormComponent, ProductFormData } from 'src/app/product/product-form/product-form.component';
-import { ProductMergeDialogComponent, ProductMergeDialogData } from 'src/app/product/product-merge-dialog/product-merge-dialog.component';
-import { ProjectFormComponent, ProjectFormData } from 'src/app/project/project-form/project-form.component';
-import { ProjectMergeDialogComponent, ProjectMergeDialogData } from 'src/app/project/project-merge-dialog/project-merge-dialog.component';
-import { RecipientFormComponent, RecipientFormData } from 'src/app/recipient/recipient-form/recipient-form.component';
-import { RecipientMergeDialogComponent, RecipientMergeDialogData } from 'src/app/recipient/recipient-merge-dialog/recipient-merge-dialog.component';
-import { ConfirmationDialogComponent } from 'src/app/shared/confirmation-dialog/confirmation-dialog.component';
+import { AccountFormComponent, AccountFormData } from '@household/web/app/account/account-form/account-form.component';
+import { CategoryFormComponent, CategoryFormData } from '@household/web/app/category/category-form/category-form.component';
+import { CategoryMergeDialogComponent, CategoryMergeDialogData } from '@household/web/app/category/category-merge-dialog/category-merge-dialog.component';
+import { ProductFormComponent, ProductFormData } from '@household/web/app/product/product-form/product-form.component';
+import { ProductMergeDialogComponent, ProductMergeDialogData } from '@household/web/app/product/product-merge-dialog/product-merge-dialog.component';
+import { ProjectFormComponent, ProjectFormData } from '@household/web/app/project/project-form/project-form.component';
+import { ProjectMergeDialogComponent, ProjectMergeDialogData } from '@household/web/app/project/project-merge-dialog/project-merge-dialog.component';
+import { RecipientFormComponent, RecipientFormData } from '@household/web/app/recipient/recipient-form/recipient-form.component';
+import { RecipientMergeDialogComponent, RecipientMergeDialogData } from '@household/web/app/recipient/recipient-merge-dialog/recipient-merge-dialog.component';
+import { ConfirmationDialogComponent } from '@household/web/app/shared/confirmation-dialog/confirmation-dialog.component';
 
 @Injectable({
   providedIn: 'root',
@@ -105,11 +105,11 @@ export class DialogService {
     });
   }
 
-  openEditProductDialog(product: Product.Response) {
+  openEditProductDialog(product: Product.Response, categoryId: Category.Id) {
     this.dialog.open<ProductFormComponent, ProductFormData, void>(ProductFormComponent, {
       data: {
         product,
-        categoryId: undefined,
+        categoryId,
       },
     });
   }

@@ -5,8 +5,8 @@
     "samconfig": "cp samconfig.${ENV}.toml samconfig.toml",
     "lint": "eslint api shared web test --ext .ts,.html",
     "lintfix": "yarn lint --fix",
-    "test:api:dev": "jest --maxWorkers=4 --watchAll --silent",
-    "test:api:debug": "jest --maxWorkers=4 --watchAll",
+    "test:api:dev": "jest --maxWorkers=4 --watchAll --silent --no-coverage",
+    "test:api:debug": "jest --maxWorkers=4 --watchAll --no-coverage",
     "test:api": "jest --maxWorkers=4 --silent",
     "deploy:api:LOCAL": "export ENV=LOCAL && yarn samconfig && sam deploy -t cf.household.yaml && yarn postdeploy --profile losonczil",
     "deploy:api:CI": "export ENV=CI && yarn samconfig && sam deploy -t cf.household.yaml && yarn postdeploy --profile ci",
@@ -36,7 +36,7 @@
     "ajv": "8.12.0",
     "ajv-formats": "2.1.1",
     "ajv-keywords": "5.1.0",
-    "mongoose": "8.4.1",
+    "mongoose": "8.6.0",
     "xlsx": "0.18.5"
   },
   "devDependencies": {

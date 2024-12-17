@@ -1,10 +1,12 @@
-<div class="amount-input">
-  <mat-form-field appearance="fill" class="amount">
-    <mat-label>Összeg</mat-label>
-    <input type="number" matInput [formControl]="amount" [max]="max" [min]="min" (blur)="touched()">
-    <span matSuffix>{{currency}}</span>
-  </mat-form-field>
-  <button *ngIf="min < 0 && max > 0" mat-icon-button aria-label="Clear" type="button" class="switch" (click)="inverseValue()">
-    <mat-icon>{{amount.value >= 0 ? 'remove' : 'add'}}</mat-icon>
+<mat-form-field>
+  <button mat-icon-button matPrefix type="button" (click)="inverseValue($event)" [disabled]="signDisabled">
+    <mat-icon>{{isPositive ? 'add' : 'remove'}}</mat-icon>
   </button>
-</div>
+  <mat-label>Összeg</mat-label>
+  <input type="number" matInput [formControl]="amount" min="0" (blur)="touched?.()" (input)="touched?.()">
+  <span matTextSuffix>{{currency}}</span>
+  <mat-hint *ngIf="newBalance">Új egyenleg: {{newBalance}} {{currency}}</mat-hint>
+  <mat-error *ngIf="amount.errors?.min">Nem lehet negatív szám</mat-error>
+  <mat-error *ngIf="amount.errors?.max">Túl sok</mat-error>
+  <mat-error *ngIf="amount.errors?.required">Kötelező</mat-error>
+</mat-form-field>

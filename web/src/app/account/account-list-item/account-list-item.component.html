@@ -1,12 +1,13 @@
-<a mat-list-item [routerLink]="['/accounts', account.accountId]">
+<a mat-list-item [routerLink]="(isDisabled | async) ? null : ['/accounts', account.accountId]">
   <div matListItemTitle>{{account.name}}</div>
   <div matListItemLine>{{balanceTitle}}: {{balance | number:'1.0-2':'hu'}}
     {{account.currency}}</div>
   <div matListItemMeta>
-    <button mat-icon-button color="primary" (click)="edit($event)">
+    <a mat-icon-button color="primary" [routerLink]="['/accounts', account.accountId, 'new', 'payment']" href=""> <mat-icon>post_add</mat-icon></a>
+    <button mat-icon-button color="primary" (click)="edit($event)" [disabled]="isDisabled | async">
       <mat-icon>edit</mat-icon>
     </button>
-    <button mat-icon-button color="warn" (click)="delete($event)">
+    <button mat-icon-button color="warn" (click)="delete($event)" [disabled]="isDisabled | async">
       <mat-icon>delete</mat-icon>
     </button>
   </div>

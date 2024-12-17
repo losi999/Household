@@ -1,55 +1,19 @@
-<div class="account-transaction-list-item mat-elevation-z2">
-  <div class="account-transaction-list-item__datetime">
-    <div class="account-transaction-list-item__year" *ngIf="showYear">{{date | date:'yyyy'}}</div>
-    <div class="account-transaction-list-item__date">{{date | date:'MMM dd.'}}</div>
-    <div class="account-transaction-list-item__time">{{date | date:'HH:mm'}}</div>
+<div class="list-item mat-elevation-z2">
+  <div class="datetime">
+    <div class="year" *ngIf="showYear">{{this.transaction.issuedAt | date:'yyyy'}}</div>
+    <div class="date">{{this.transaction.issuedAt | date:'MMM dd.'}}</div>
+    <div class="time">{{this.transaction.issuedAt | date:'HH:mm'}}</div>
   </div>
-  <mat-list>
-    <mat-list-item *ngIf="account">
-      <mat-icon matListItemIcon [ngClass]="accountIconColor">{{accountIcon}}</mat-icon>
-      <div matListItemTitle [ngClass]="accountIconColor">{{account.fullName}}</div>
-    </mat-list-item>
-    <mat-list-item *ngIf="remainingAmount">
-      <mat-icon matListItemIcon [ngClass]="accountIconColor">paid</mat-icon>
-      <div *ngIf="remainingAmount" matListItemTitle [ngClass]="accountIconColor">{{remainingAmount}} {{viewingAccount.currency}}</div>
-    </mat-list-item>
-    <mat-list-item *ngIf="recipient">
-      <mat-icon matListItemIcon>store</mat-icon>
-      <div matListItemTitle class="account-transaction-list-item__recipient">{{recipient.name}}</div>
-    </mat-list-item>
-    <mat-list-item *ngIf="category">
-      <mat-icon matListItemIcon>category</mat-icon>
-      <div matListItemTitle class="account-transaction-list-item__category">{{category.fullName}}</div>
-    </mat-list-item>
-    <mat-list-item *ngIf="product">
-      <mat-icon matListItemIcon>shopping_cart</mat-icon>
-      <div matListItemTitle class="account-transaction-list-item__product">{{product.fullName}}</div>
-    </mat-list-item>
-    <mat-list-item *ngIf="invoiceNumber">
-      <mat-icon matListItemIcon>receipt</mat-icon>
-      <div matListItemTitle class="account-transaction-list-item__product">{{invoiceNumber}}</div>
-    </mat-list-item>
-    <mat-list-item *ngIf="billingStartDate && billingEndDate">
-      <mat-icon matListItemIcon>calendar_month</mat-icon>
-      <div matListItemTitle class="account-transaction-list-item__product">{{billingStartDate | date:'yyyy MMM dd.'}} - {{billingEndDate | date:'yyyy MMM dd.'}}</div>
-    </mat-list-item>
-    <mat-list-item *ngIf="project">
-      <mat-icon matListItemIcon>stacks</mat-icon>
-      <div matListItemTitle class="account-transaction-list-item__project">{{project.name}}</div>
-    </mat-list-item>
-    <mat-list-item *ngIf="transaction.description">
-      <mat-icon matListItemIcon>description</mat-icon>
-      <div matListItemTitle class="account-transaction-list-item__description">{{transaction.description}}</div>
-    </mat-list-item>
-  </mat-list>
-  <div *ngIf="amount" class="account-transaction-list-item__amount" [ngClass]="amount >= 0 ? 'green' : 'red'">{{amount | number:'1.0-2':'hu' }} {{viewingAccount.currency}}
+  <household-transaction-short-details [category]="category" [project]="project" [recipient]="recipient" [product]="product" [billingStartDate]="billingStartDate" [billingEndDate]="billingEndDate" [description]="transaction.description" [invoiceNumber]="invoiceNumber" [quantity]="quantity" [amount]="remainingAmount" [currency]="viewingAccount.currency" [payingAccount]="payingAccount" [ownerAccount]="ownerAccount" [givingAccount]="givingAccount" [receivingAccount]="receivingAccount" [transferColor]="transferColor" />
+
+  <div *ngIf="amount" class="amount" [ngClass]="amount >= 0 ? 'green' : 'red'">{{amount | number:'1.0-2':'hu' }} {{viewingAccount.currency}}
   </div>
-  <div class="account-transaction-list-item__buttons">
-    <button mat-icon-button color="primary" *ngIf="transaction.transactionType === 'split'">
+  <div class="buttons">
+    <a mat-icon-button color="primary" [routerLink]="['transactions', transaction.transactionId]" href="" [disabled]="isDisabled | async">
       <mat-icon>format_list_bulleted</mat-icon>
-    </button>
-    <a mat-icon-button color="primary" [routerLink]="['/accounts', pathAccountId, 'transactions', transaction.transactionId, 'edit']" href=""> <mat-icon>edit</mat-icon></a>
-    <button mat-icon-button color="warn" (click)="delete()">
+    </a>
+    <a mat-icon-button color="primary" [routerLink]="['transactions', transaction.transactionId, 'edit', formType]" href="" [disabled]="isDisabled | async"> <mat-icon>edit</mat-icon></a>
+    <button mat-icon-button color="warn" (click)="delete()" [disabled]="isDisabled | async">
       <mat-icon>delete</mat-icon>
     </button>
   </div>

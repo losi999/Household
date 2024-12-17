@@ -65,8 +65,6 @@ describe('Update to transfer transaction service', () => {
       mockTransferTransactionDocumentConverter.functions.create.mockReturnValue(updatedTransferDocument);
       mockTransactionService.functions.replaceTransaction.mockResolvedValue(undefined);
 
-      const { _id, ...docToSave } = updatedTransferDocument;
-
       await service({
         body,
         transactionId,
@@ -83,7 +81,7 @@ describe('Update to transfer transaction service', () => {
         transferAccount: queriedLoanAccount2,
         transactions: undefined,
       }, undefined);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction, transactionId, docToSave);
+      validateFunctionCall(mockTransactionService.functions.replaceTransaction, transactionId, updatedTransferDocument);
       validateFunctionCall(mockLoanTransferTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.listDeferredTransactions);
       expect.assertions(6);
@@ -97,8 +95,6 @@ describe('Update to transfer transaction service', () => {
       ]);
       mockTransferTransactionDocumentConverter.functions.create.mockReturnValue(updatedTransferDocument);
       mockTransactionService.functions.replaceTransaction.mockResolvedValue(undefined);
-
-      const { _id, ...docToSave } = updatedTransferDocument;
 
       await service({
         body,
@@ -116,7 +112,7 @@ describe('Update to transfer transaction service', () => {
         transferAccount: queriedTransferAccount,
         transactions: undefined,
       }, undefined);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction, transactionId, docToSave);
+      validateFunctionCall(mockTransactionService.functions.replaceTransaction, transactionId, updatedTransferDocument);
       validateFunctionCall(mockLoanTransferTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.listDeferredTransactions);
       expect.assertions(6);
@@ -148,8 +144,6 @@ describe('Update to transfer transaction service', () => {
       mockTransferTransactionDocumentConverter.functions.create.mockReturnValue(updatedTransferDocument);
       mockTransactionService.functions.replaceTransaction.mockResolvedValue(undefined);
 
-      const { _id, ...docToSave } = updatedTransferDocument;
-
       await service({
         body,
         transactionId,
@@ -170,7 +164,7 @@ describe('Update to transfer transaction service', () => {
         transferAccount: queriedTransferAccount,
         transactions: toDictionary([deferredTransactionDocument], '_id'),
       }, undefined);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction, transactionId, docToSave);
+      validateFunctionCall(mockTransactionService.functions.replaceTransaction, transactionId, updatedTransferDocument);
       validateFunctionCall(mockLoanTransferTransactionDocumentConverter.functions.create);
       expect.assertions(6);
     });
@@ -192,8 +186,6 @@ describe('Update to transfer transaction service', () => {
       mockLoanTransferTransactionDocumentConverter.functions.create.mockReturnValue(updatedLoanTransferDocument);
       mockTransactionService.functions.replaceTransaction.mockResolvedValue(undefined);
 
-      const { _id, ...docToSave } = updatedLoanTransferDocument;
-
       await service({
         body,
         transactionId,
@@ -209,7 +201,7 @@ describe('Update to transfer transaction service', () => {
         account: queriedAccount,
         transferAccount: queriedLoanAccount,
       }, undefined);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction, transactionId, docToSave);
+      validateFunctionCall(mockTransactionService.functions.replaceTransaction, transactionId, updatedLoanTransferDocument);
       validateFunctionCall(mockTransferTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.listDeferredTransactions);
       expect.assertions(6);
@@ -408,7 +400,6 @@ describe('Update to transfer transaction service', () => {
       ]);
       mockTransferTransactionDocumentConverter.functions.create.mockReturnValue(updatedTransferDocument);
       mockTransactionService.functions.replaceTransaction.mockRejectedValue('this is a mongo error');
-      const { _id, ...docToSave } = updatedTransferDocument;
 
       await service({
         body,
@@ -426,7 +417,7 @@ describe('Update to transfer transaction service', () => {
         transferAccount: queriedTransferAccount,
         transactions: undefined,
       }, undefined);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction, transactionId, docToSave);
+      validateFunctionCall(mockTransactionService.functions.replaceTransaction, transactionId, updatedTransferDocument);
       validateFunctionCall(mockLoanTransferTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.listDeferredTransactions);
       expect.assertions(8);

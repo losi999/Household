@@ -1,24 +1,37 @@
 <mat-slide-toggle [formControl]="include">{{include.value ? 'Tartalmazza' : 'Zárja ki'}} a kiválasztott elemeket</mat-slide-toggle>
 
-<household-clearable-input type="text" label="Keresés" [formControl]="filter"></household-clearable-input>
+<household-clearable-input type="text" label="Keresés" [formControl]="filter" />
 <button mat-icon-button color="primary" (click)="markAll(true)"><mat-icon>done_all</mat-icon></button>
 <button mat-icon-button color="warn" (click)="markAll(false)"><mat-icon>remove_done</mat-icon></button>
 
-<mat-tree *ngIf="items.length > 0" [dataSource]="dataSource" [treeControl]="treeControl" [formGroup]="selectionList">
-  <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding>
-    {{node.value}}
-    <ng-container *ngIf="node.children.length > 0">
-      <button mat-icon-button color="primary" (click)="markAll(true, node)"><mat-icon>done_all</mat-icon></button>
-      <button mat-icon-button color="warn" (click)="markAll(false, node)"><mat-icon>remove_done</mat-icon></button>
-    </ng-container>
-  </mat-tree-node>
-  <mat-tree-node *matTreeNodeDef="let node; when: hasKey" matTreeNodePadding>
-    <mat-checkbox [formControlName]="node.key">
-      {{node.value}}
-      <ng-container *ngIf="node.children.length > 0">
+<mat-tree #tree [dataSource]="filteredItems" [childrenAccessor]="childrenAccessor" [formGroup]="selectionList">
+  <mat-nested-tree-node *matTreeNodeDef="let node">
+    <ng-template #mark>
+      <ng-container *ngIf="node.children?.length > 0">
         <button mat-icon-button color="primary" (click)="markAll(true, node)"><mat-icon>done_all</mat-icon></button>
         <button mat-icon-button color="warn" (click)="markAll(false, node)"><mat-icon>remove_done</mat-icon></button>
       </ng-container>
-    </mat-checkbox>
-  </mat-tree-node>
+    </ng-template>
+
+    <ng-template #noCheck>
+      <div>
+        {{node.name}}
+        <ng-container *ngTemplateOutlet="mark" />
+      </div>
+    </ng-template>
+
+    <ng-template #check>
+      <div>
+        <mat-checkbox [formControlName]="node.id">
+          {{node.name}}
+          <ng-container *ngTemplateOutlet="mark" />
+        </mat-checkbox>
+      </div>
+    </ng-template>
+
+    <ng-container *ngTemplateOutlet="node.id ? check : noCheck" />
+    <div role="group" *ngIf="node.children?.length > 0">
+      <ng-container matTreeNodeOutlet />
+    </div>
+  </mat-nested-tree-node>
 </mat-tree>

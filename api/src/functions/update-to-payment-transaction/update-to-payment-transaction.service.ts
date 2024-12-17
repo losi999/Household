@@ -1,5 +1,5 @@
 import { httpErrors } from '@household/api/common/error-handlers';
-import { getAccountId, getCategoryId } from '@household/shared/common/utils';
+import { getAccountId } from '@household/shared/common/utils';
 import { IDeferredTransactionDocumentConverter } from '@household/shared/converters/deferred-transaction-document-converter';
 import { IPaymentTransactionDocumentConverter } from '@household/shared/converters/payment-transaction-document-converter';
 import { IReimbursementTransactionDocumentConverter } from '@household/shared/converters/reimbursement-transaction-document-converter';
@@ -35,7 +35,8 @@ export const updateToPaymentTransactionServiceFactory = (
       transactionId,
     }));
 
-    httpErrors.transaction.notFound(!queriedDocument, {
+    httpErrors.transaction.notFound({
+      transaction: queriedDocument,
       transactionId,
     });
 
@@ -73,33 +74,39 @@ export const updateToPaymentTransactionServiceFactory = (
     const account = accounts.find(a => getAccountId(a) === accountId);
     const loanAccount = accounts.find(a => getAccountId(a) === loanAccountId);
 
-    httpErrors.account.notFound(!account, {
+    httpErrors.account.notFound({
+      account,
       accountId,
     }, 400);
 
-    httpErrors.account.notFound(!loanAccount && !!loanAccountId, {
+    httpErrors.account.notFound({
       accountId: loanAccountId,
+      account: loanAccount,
     }, 400);
 
-    httpErrors.category.notFound(!category && !!categoryId, {
+    httpErrors.category.notFound({
+      category,
       categoryId,
     }, 400);
 
-    httpErrors.project.notFound(!project && !!projectId, {
+    httpErrors.project.notFound({
       projectId,
+      project,
     }, 400);
 
-    httpErrors.recipient.notFound(!recipient && !!recipientId, {
+    httpErrors.recipient.notFound({
       recipientId,
+      recipient,
     }, 400);
 
     if (category?.categoryType === 'inventory' && productId) {
-      httpErrors.product.notFound(!product, {
+      httpErrors.product.notFound({
         productId,
+        product,
       }, 400);
 
-      httpErrors.product.categoryRelation(getCategoryId(product.category) !== categoryId, {
-        productId,
+      httpErrors.product.categoryRelation({
+        product,
         categoryId,
       });
     }
@@ -107,7 +114,7 @@ export const updateToPaymentTransactionServiceFactory = (
     if (!body.loanAccountId) {
       httpErrors.transaction.invalidLoanAccountType(account);
 
-      const { _id, ...document } = paymentTransactionDocumentConverter.create({
+      const document = paymentTransactionDocumentConverter.create({
         body,
         account,
         category,
@@ -116,15 +123,12 @@ export const updateToPaymentTransactionServiceFactory = (
         product,
       }, expiresIn);
 
-      return transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update({
-        _id,
-        ...document,
-      }));
+      return transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update(document));
     }
     if (account.accountType === 'loan') {
       httpErrors.transaction.invalidLoanAccountType(loanAccount);
 
-      const { _id, ...document } = reimbursementTransactionDocumentConverter.create({
+      const document = reimbursementTransactionDocumentConverter.create({
         body,
         payingAccount: account,
         ownerAccount: loanAccount,
@@ -134,13 +138,10 @@ export const updateToPaymentTransactionServiceFactory = (
         product,
       }, expiresIn);
 
-      return transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update({
-        _id,
-        ...document,
-      }));
+      return transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update(document));
     }
 
-    const { _id, ...document } = deferredTransactionDocumentConverter.create({
+    const document = deferredTransactionDocumentConverter.create({
       body,
       payingAccount: account,
       ownerAccount: loanAccount,
@@ -150,9 +151,6 @@ export const updateToPaymentTransactionServiceFactory = (
       product,
     }, expiresIn);
 
-    return transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update({
-      _id,
-      ...document,
-    }));
+    return transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update(document));
   };
 };

@@ -1,13 +1,14 @@
 import { Component, Input } from '@angular/core';
-import { Category } from '@household/shared/types/types';
+import { Product } from '@household/shared/types/types';
 
 @Component({
   selector: 'household-product-list-category-item',
   templateUrl: './product-list-category-item.component.html',
   styleUrls: ['./product-list-category-item.component.scss'],
+  standalone: false,
 })
 export class ProductListCategoryItemComponent {
-  @Input() category: Category.Response;
+  @Input() category: Product.GroupedResponse;
   constructor() { }
 
 }

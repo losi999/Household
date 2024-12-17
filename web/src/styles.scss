@@ -12,7 +12,7 @@ input::-webkit-inner-spin-button {
 }
 
 /* Firefox */
-input[type=number] {
+input[type="number"] {
   -moz-appearance: textfield;
 }
 
@@ -38,17 +38,20 @@ p {
 }
 
 .mat-form-field-infix {
-  width: 100%!important;
+  width: 100% !important;
 }
 
-.green {
-  color: green!important;
+.green,
+.green * {
+  color: green !important;
 }
 
-.red {
-  color: red!important;
+.red,
+.red * {
+  color: red !important;
 }
 
-.blue {
-  color: blue!important;
+.blue,
+.blue * {
+  color: blue !important;
 }

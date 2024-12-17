@@ -91,7 +91,6 @@ describe('Update to split transaction service', () => {
       mockProductService.functions.listProductsByIds.mockResolvedValue([product]);
       mockSplitTransactionDocumentConverter.functions.create.mockReturnValue(updatedDocument);
       mockTransactionService.functions.replaceTransaction.mockResolvedValue(updatedDocument);
-      const { _id, ...docToSave } = updatedDocument;
 
       await service({
         body,
@@ -118,7 +117,7 @@ describe('Update to split transaction service', () => {
         recipient: queriedRecipient,
         products: toDictionary([product], '_id'),
       }, undefined);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction, transactionId, docToSave);
+      validateFunctionCall(mockTransactionService.functions.replaceTransaction, transactionId, updatedDocument);
       expect.assertions(8);
     });
   });
@@ -615,8 +614,6 @@ describe('Update to split transaction service', () => {
       mockSplitTransactionDocumentConverter.functions.create.mockReturnValue(updatedDocument);
       mockTransactionService.functions.replaceTransaction.mockRejectedValue('this is a mongo error');
 
-      const { _id, ...docToSave } = updatedDocument;
-
       await service({
         body,
         transactionId,
@@ -642,7 +639,7 @@ describe('Update to split transaction service', () => {
         recipient: queriedRecipient,
         products: toDictionary([product], '_id'),
       }, undefined);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction, transactionId, docToSave);
+      validateFunctionCall(mockTransactionService.functions.replaceTransaction, transactionId, updatedDocument);
       expect.assertions(10);
     });
   });

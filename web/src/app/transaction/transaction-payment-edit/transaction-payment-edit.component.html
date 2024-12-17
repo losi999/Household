@@ -1,0 +1,33 @@
+<form [formGroup]="form">
+  <household-datetime-input formControlName="issuedAt" />
+
+  <household-amount-input [currency]="form.value.account?.currency" formControlName="amount" [isPositive]="(activatedRoute.params | async).formType === 'income'" />
+
+  <household-account-autocomplete-input label="Számla" formControlName="account" />
+
+  <household-category-autocomplete-input label="Kategória" formControlName="category" />
+
+  <ng-container *ngIf="form.value.category?.categoryType === 'invoice'">
+    <mat-form-field>
+      <mat-label>Számlázási időszak</mat-label>
+      <mat-date-range-input [rangePicker]="picker">
+        <input matStartDate formControlName="billingStartDate" placeholder="Kezdete">
+        <input matEndDate formControlName="billingEndDate" placeholder="Vége">
+      </mat-date-range-input>
+      <mat-datepicker-toggle matPrefix [for]="picker" tabindex="-1" />
+      <mat-date-range-picker #picker />
+    </mat-form-field>
+
+    <household-clearable-input label="Számlaszám" formControlName="invoiceNumber" />
+  </ng-container>
+
+  <household-product-autocomplete-input *ngIf="!form.value.category || form.value.category?.categoryType === 'inventory'" label="Termék" formControlName="product" [categoryId]="form.value.category?.categoryId" />
+
+  <household-clearable-input *ngIf="form.value.product" label="Mennyiség" formControlName="quantity" type="number" />
+
+  <household-recipient-autocomplete-input label="Partner" formControlName="recipient" />
+
+  <household-project-autocomplete-input label="Projekt" formControlName="project" />
+
+  <household-clearable-input formControlName="description" label="Megjegyzés" />
+</form>

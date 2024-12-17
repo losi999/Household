@@ -1,10 +1,9 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { AccountHomeComponent } from 'src/app/account/account-home/account-home.component';
-import { AccountTransactionsHomeComponent } from 'src/app/account/account-transactions-home/account-transactions-home.component';
-import { accountTransactionListResolver, transactionResolver } from 'src/app/shared/resolvers';
-import { TransactionDetailsComponent } from 'src/app/transaction/transaction-details/transaction-details.component';
-import { TransactionEditComponent } from 'src/app/transaction/transaction-edit/transaction-edit.component';
+import { AccountHomeComponent } from '@household/web/app/account/account-home/account-home.component';
+import { AccountTransactionsHomeComponent } from '@household/web/app/account/account-transactions-home/account-transactions-home.component';
+import { TransactionDetailsComponent } from '@household/web/app/transaction/transaction-details/transaction-details.component';
+import { TransactionEditComponent } from '@household/web/app/transaction/transaction-edit/transaction-edit.component';
 
 const routes: Routes = [
   {
@@ -14,26 +13,17 @@ const routes: Routes = [
   {
     path: 'accounts/:accountId',
     component: AccountTransactionsHomeComponent,
-    resolve: {
-      transactions: accountTransactionListResolver,
-    },
   },
   {
     path: 'accounts/:accountId/transactions/:transactionId',
     component: TransactionDetailsComponent,
-    resolve: {
-      transaction: transactionResolver,
-    },
   },
   {
-    path: 'accounts/:accountId/transactions/:transactionId/edit',
+    path: 'accounts/:accountId/transactions/:transactionId/edit/:formType',
     component: TransactionEditComponent,
-    resolve: {
-      transaction: transactionResolver,
-    },
   },
   {
-    path: 'accounts/:accountId/new',
+    path: 'accounts/:accountId/new/:formType',
     component: TransactionEditComponent,
   },
 ];

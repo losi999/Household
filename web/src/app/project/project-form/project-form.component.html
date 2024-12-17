@@ -1,13 +1,11 @@
-<div [formGroup]="form">
+<form [formGroup]="form" (ngSubmit)="save()">
   <h1 mat-dialog-title>{{project ? 'Szerkesztés' : 'Új'}}</h1>
   <div mat-dialog-content>
-    <household-clearable-input formControlName="name" label="Név">
-    </household-clearable-input>
-    <household-clearable-input formControlName="description" label="Leírás">
-    </household-clearable-input>
+    <household-clearable-input formControlName="name" label="Név" />
+    <household-clearable-input formControlName="description" label="Leírás" />
   </div>
   <div mat-dialog-actions>
-    <button mat-button cdkFocusInitial (click)="save()">Mentés</button>
+    <button mat-button cdkFocusInitial>Mentés</button>
     <button mat-button mat-dialog-close>Mégse</button>
   </div>
-</div>
+</form>

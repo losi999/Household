@@ -1,19 +1,13 @@
-import { FlatTreeControl } from '@angular/cdk/tree';
-import { Component, Input, OnChanges, OnDestroy, OnInit, forwardRef } from '@angular/core';
-import { ControlValueAccessor, FormControl, FormGroup, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree';
-import { Subject, takeUntil } from 'rxjs';
+import { Component, Input, OnChanges, OnDestroy, OnInit, ViewChild, forwardRef } from '@angular/core';
+import { ControlValueAccessor, FormControl, FormRecord, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { MatTree } from '@angular/material/tree';
+import { combineLatest, startWith, Subject } from 'rxjs';
 
-type FlatNode = Omit<DataSource, 'children'> & {
-  level: number;
-  children: string[];
-};
-
-type DataSource = {
-  key: string;
-  value: string;
-  children: DataSource[];
-};
+export interface Node {
+  id?: string;
+  name: string;
+  children?: Node[];
+}
 
 export type ReportCatalogItemFilterValue<I = string> = {
   include: boolean;
@@ -31,92 +25,80 @@ export type ReportCatalogItemFilterValue<I = string> = {
       useExisting: forwardRef(() => ReportCatalogItemFilterComponent),
     },
   ],
+  standalone: false,
 })
 export class ReportCatalogItemFilterComponent implements OnInit, OnDestroy, OnChanges, ControlValueAccessor {
-  @Input() items: any[];
-  @Input() displayPropertyName: string;
-  @Input() keyPropertyName: string;
-  @Input() parentPropertyName: string;
+  childrenAccessor = (node: Node) => node?.children ?? [];
+  @ViewChild('tree') tree: MatTree<any>;
+
+  @Input() items: Node[];
+  filteredItems: Node[];
 
   changed: (value: ReportCatalogItemFilterValue) => void;
   touched: () => void;
   isDisabled: boolean;
 
-  filter: FormControl<string>;
   include: FormControl<boolean>;
-  selectionList: FormGroup<{
-    [key: string]: FormControl<boolean>;
-  }>;
-
-  dataSource: MatTreeFlatDataSource<DataSource, FlatNode>;
-  treeControl: FlatTreeControl<FlatNode>;
+  filter: FormControl<string>;
+  selectionList: FormRecord;
 
   private destroyed = new Subject();
-  private map: {[key: string]: DataSource} = {};
-  private flattener: MatTreeFlattener<DataSource, FlatNode>;
-  private fullTree: DataSource[];
-  private value: ReportCatalogItemFilterValue;
 
-  private setDataSource (data: DataSource[]) {
-    this.dataSource.data = data;
-    this.treeControl.expandAll();
+  constructor() {
+    this.selectionList = new FormRecord({});
   }
 
-  private collectChildrenRecursive(children: DataSource[]): string[] {
-    return children.flatMap(c => {
-      return [
-        c.key,
-        ...this.collectChildrenRecursive(c.children),
-      ];
-    });
-  }
-
-  private reduceTree(nodes: DataSource[], inputValue: string): DataSource[] {
-    return nodes.reduce<DataSource[]>((accumulator, currentValue) => {
-      if (currentValue.value.toLowerCase().includes(inputValue)) {
+  filterSelectionList = (items: Node[], inputValue: string) => {
+    return items.reduce<Node[]>((accumulator, currentValue) => {
+      if (currentValue.name.toLowerCase().includes(inputValue)) {
         return [
           ...accumulator,
           currentValue,
         ];
+
       }
+      const filteredChildren = this.filterSelectionList(currentValue.children ?? [], inputValue);
 
-      const reducedChildren = this.reduceTree(currentValue.children, inputValue);
-
-      if (reducedChildren.length > 0) {
+      if (filteredChildren.length > 0) {
         return [
           ...accumulator,
           {
             ...currentValue,
-            children: reducedChildren,
+            children: filteredChildren,
           },
         ];
       }
 
       return accumulator;
     }, []);
-  }
+  };
 
   ngOnInit(): void {
-    this.value = {
-      include: true,
-      items: [],
-    };
-
+    this.include = new FormControl(true);
     this.filter = new FormControl();
 
-    this.filter.valueChanges.pipe(takeUntil(this.destroyed)).subscribe((value) => {
-      const lowercased = value?.toLowerCase() ?? '';
-      const filteredTree = this.reduceTree(this.fullTree, lowercased);
-
-      this.setDataSource(filteredTree);
+    this.filter.valueChanges.subscribe((value) => {
+      if (!value) {
+        this.filteredItems = this.items;
+      } else {
+        this.filteredItems = this.filterSelectionList(this.items, value);
+      }
     });
 
-    this.include = new FormControl(true);
+    combineLatest([
+      this.selectionList.valueChanges,
+      this.include.valueChanges.pipe(startWith(true)),
+    ]).subscribe(([
+      selection,
+      include,
+    ]) => {
+      const selectedItems = Object.entries(selection).filter((e) => e[1])
+        .map(e => e[0]);
 
-    this.include.valueChanges.pipe(takeUntil(this.destroyed)).subscribe((value) => {
-      this.value.include = value;
-
-      this.changed?.(this.value.items?.length > 0 ? this.value : null);
+      this.changed?.(selectedItems.length > 0 ? {
+        include,
+        items: selectedItems,
+      } : null);
     });
   }
 
@@ -125,88 +107,34 @@ export class ReportCatalogItemFilterComponent implements OnInit, OnDestroy, OnCh
     this.destroyed.complete();
   }
 
-  ngOnChanges(): void {
-    this.selectionList = new FormGroup(this.items.reduce((accumulator, currentValue) => {
-      return {
-        ...accumulator,
-        [currentValue[this.keyPropertyName]]: new FormControl(),
-      };
-    }, {}));
+  createSelectionListControls(items: Node[]) {
+    items.forEach((item) => {
+      if (item.id) {
+        this.selectionList.addControl(item.id, new FormControl<boolean>(false), {
+          emitEvent: false,
+        });
+      }
 
-    this.selectionList.valueChanges.pipe(takeUntil(this.destroyed)).subscribe((value) => {
-      const selectedItems = Object.entries(value).filter((e) => e[1])
-        .map(e => e[0]);
-
-      this.value.items = selectedItems;
-
-      this.changed?.(this.value.items?.length > 0 ? this.value : null);
+      this.createSelectionListControls(item.children ?? []);
     });
-    this.fullTree = this.items.reduce<DataSource[]>((accumulator, currentValue) => {
-      const newNodes: DataSource[] = [];
-      let parentKey: string;
-
-      if (typeof currentValue[this.parentPropertyName] === 'string') {
-        const catNode: DataSource = {
-          key: undefined,
-          value: currentValue[this.parentPropertyName],
-          children: [],
-        };
-
-        if (!this.map[catNode.value]) {
-          this.map[catNode.value] = catNode;
-          newNodes.push(catNode);
-        }
-        parentKey = currentValue[this.parentPropertyName];
-      } else {
-        parentKey = currentValue[this.parentPropertyName]?.[this.keyPropertyName];
-      }
-
-      const node: DataSource = {
-        key: currentValue[this.keyPropertyName],
-        value: currentValue[this.displayPropertyName],
-        children: [],
-      };
-
-      this.map[currentValue[this.keyPropertyName]] = node;
-
-      if (currentValue[this.parentPropertyName]) {
-        this.map[parentKey].children.push(node);
-      } else {
-        newNodes.push(node);
-      }
-
-      return [
-        ...accumulator,
-        ...newNodes,
-      ];
-    }, []);
-
-    this.treeControl = new FlatTreeControl(
-      (node) => node.level,
-      () => true,
-    );
-
-    this.flattener = new MatTreeFlattener<DataSource, FlatNode>(
-      (node, level) => {
-        return {
-          key: node.key,
-          value: node.value,
-          level: level,
-          children: this.collectChildrenRecursive(node.children),
-        };
-      },
-      (node) => node.level,
-      () => true,
-      (node) => node.children,
-    );
-
-    this.dataSource = new MatTreeFlatDataSource(this.treeControl, this.flattener);
-
-    this.setDataSource(this.fullTree);
   }
 
-  markAll(check: boolean, node?: FlatNode) {
-    const nodesToCheck = node?.children ?? this.flattener.flattenNodes(this.dataSource.data).map(n => n.key);
+  ngOnChanges(): void {
+    this.filteredItems = this.items;
+    this.tree?.expandAll();
+    this.createSelectionListControls(this.items);
+  }
+
+  collectChildrenNodes(node: Node) {
+    return [
+      node.id,
+      ...node.children?.flatMap(n => this.collectChildrenNodes(n)) ?? [],
+    ];
+  }
+
+  markAll(check: boolean, node?: Node) {
+
+    const nodesToCheck = (node?.children ?? this.filteredItems).flatMap(n => this.collectChildrenNodes(n));
 
     const selectedValues = nodesToCheck.reduce((accumulator, currentValue) => {
       if (currentValue) {
@@ -221,15 +149,7 @@ export class ReportCatalogItemFilterComponent implements OnInit, OnDestroy, OnCh
     this.selectionList.patchValue(selectedValues);
   }
 
-  clearFilter() {
-    this.filter.reset();
-  }
-
-  hasKey(_index: number, node: FlatNode) {
-    return node.key;
-  }
-
-  writeValue(obj: any): void {
+  writeValue(): void {
 
   }
 

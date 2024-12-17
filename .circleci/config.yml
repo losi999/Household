@@ -124,6 +124,8 @@ jobs:
     parameters:
       env:
         type: string
+      testCommand:
+        type: string
     docker:
       - image: cypress/base:16.14.2
     environment:
@@ -164,7 +166,7 @@ jobs:
             - run:
                 name: Running tests
                 working_directory: test
-                command: yarn run test
+                command: yarn run test:<<parameters.testCommand>>
 
       - store_artifacts:
           path: test/cypress/screenshots
@@ -195,6 +197,7 @@ workflows:
       - test:
           name: test_local
           env: "LOCAL"
+          testCommand: ""
           requires:
             - install
 
@@ -232,8 +235,75 @@ workflows:
           requires:
             - api_deploy_dev
       - test:
-          name: test_dev
+          name: test_dev_account
           env: "DEV"
+          testCommand: "account"
+          requires:
+            - web_deploy_dev
+      - test:
+          name: test_dev_category
+          env: "DEV"
+          testCommand: "category"
+          requires:
+            - web_deploy_dev
+      - test:
+          name: test_dev_project
+          env: "DEV"
+          testCommand: "project"
+          requires:
+            - web_deploy_dev
+      - test:
+          name: test_dev_product
+          env: "DEV"
+          testCommand: "product"
+          requires:
+            - web_deploy_dev
+      - test:
+          name: test_dev_recipient
+          env: "DEV"
+          testCommand: "recipient"
+          requires:
+            - web_deploy_dev
+      - test:
+          name: test_dev_transaction_common
+          env: "DEV"
+          testCommand: "transaction-common"
+          requires:
+            - web_deploy_dev
+      - test:
+          name: test_dev_transaction_payment
+          env: "DEV"
+          testCommand: "transaction-payment"
+          requires:
+            - web_deploy_dev
+      - test:
+          name: test_dev_transaction_deferred
+          env: "DEV"
+          testCommand: "transaction-deferred"
+          requires:
+            - web_deploy_dev
+      - test:
+          name: test_dev_transaction_split
+          env: "DEV"
+          testCommand: "transaction-split"
+          requires:
+            - web_deploy_dev
+      - test:
+          name: test_dev_transaction_reimbursement
+          env: "DEV"
+          testCommand: "transaction-reimbursement"
+          requires:
+            - web_deploy_dev
+      - test:
+          name: test_dev_transaction_transfer
+          env: "DEV"
+          testCommand: "transaction-transfer"
+          requires:
+            - web_deploy_dev
+      - test:
+          name: test_dev_transaction_loan_transfer
+          env: "DEV"
+          testCommand: "transaction-loan-transfer"
           requires:
             - web_deploy_dev
 

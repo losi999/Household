@@ -1,12 +1,15 @@
 import { PipelineStage } from 'mongoose';
 
-export const populateAggregate = (localField: string, from: string): [PipelineStage.Lookup, PipelineStage.Unwind] => [
+export const populateAggregate = (localField: string, from: string, pipeline?: PipelineStage.Lookup['$lookup']['pipeline']): [PipelineStage.Lookup, PipelineStage.Unwind] => [
   {
     $lookup: {
       from,
       localField,
       foreignField: '_id',
       as: localField,
+      ...(pipeline ? {
+        pipeline,
+      } : {}),
     },
   },
   {
@@ -17,7 +20,7 @@ export const populateAggregate = (localField: string, from: string): [PipelineSt
   },
 ];
 
-export const flattenSplit = (additionalPropeties: Record<string, string>): [PipelineStage.Set, PipelineStage.Unwind, PipelineStage.ReplaceRoot] => [
+export const flattenSplit = (additionalPropeties: Record<string, any>): [PipelineStage.Set, PipelineStage.Unwind, PipelineStage.ReplaceRoot] => [
   {
     $set: {
       tmp_splits: {
@@ -442,7 +445,18 @@ export const rebuildSplits = (): [PipelineStage.Group, PipelineStage.ReplaceRoot
               in: {
                 _id: '$$this._id',
                 amount: '$$this.amount',
-                description: '$$this.description',
+                description: {
+                  $cond: {
+                    if: {
+                      $ne: [
+                        '$$this.description',
+                        null,
+                      ],
+                    },
+                    then: '$$this.description',
+                    else: '$$REMOVE',
+                  },
+                },
                 category: '$$this.category',
                 project: '$$this.project',
                 quantity: '$$this.quantity',
@@ -485,7 +499,18 @@ export const rebuildSplits = (): [PipelineStage.Group, PipelineStage.ReplaceRoot
                 remainingAmount: '$$this.remainingAmount',
                 isSettled: '$$this.isSettled',
                 amount: '$$this.amount',
-                description: '$$this.description',
+                description: {
+                  $cond: {
+                    if: {
+                      $ne: [
+                        '$$this.description',
+                        null,
+                      ],
+                    },
+                    then: '$$this.description',
+                    else: '$$REMOVE',
+                  },
+                },
                 category: '$$this.category',
                 project: '$$this.project',
                 quantity: '$$this.quantity',

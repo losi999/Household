@@ -1,17 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { Component, forwardRef, Input, OnDestroy, OnInit } from '@angular/core';
-import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
+import { Component, Injector, Input, OnInit, Optional, Self } from '@angular/core';
+import { ControlValueAccessor, FormControl, FormControlDirective, FormControlName, FormGroupDirective, NgControl, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'household-clearable-input',
   templateUrl: './clearable-input.component.html',
   styleUrls: ['./clearable-input.component.scss'],
-  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -20,15 +18,8 @@ import { Subject, takeUntil } from 'rxjs';
     MatInputModule,
     MatIconModule,
   ],
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      multi: true,
-      useExisting: forwardRef(() => ClearableInputComponent),
-    },
-  ],
 })
-export class ClearableInputComponent implements OnInit, OnDestroy, ControlValueAccessor {
+export class ClearableInputComponent implements OnInit, ControlValueAccessor {
   @Input() label: string;
   @Input() type: 'text' | 'number' = 'text';
 
@@ -36,33 +27,24 @@ export class ClearableInputComponent implements OnInit, OnDestroy, ControlValueA
   changed: (value: string | number) => void;
   touched: () => void;
   isDisabled: boolean;
-  private destroyed = new Subject();
 
-  constructor() { }
-
-  get value() {
-    return this.input.value ?? '';
-  }
-
-  ngOnDestroy(): void {
-    this.destroyed.next(undefined);
-    this.destroyed.complete();
+  constructor(private injector: Injector, @Self() @Optional() public ngControl: NgControl) {
+    if (ngControl) {
+      ngControl.valueAccessor = this;
+    }
   }
 
   ngOnInit(): void {
-    this.input = new FormControl();
-
-    this.input.valueChanges.pipe(takeUntil(this.destroyed)).subscribe((value) => {
-      if(value) {
-        this.changed?.(value);
-      } else {
-        this.changed?.(undefined);
-      }
-    });
+    if (this.ngControl instanceof FormControlName) {
+      this.input = this.injector.get(FormGroupDirective).getControl(this.ngControl);
+    } else if (this.ngControl instanceof FormControlDirective) {
+      this.input = this.ngControl.form;
+    } else {
+      this.input = new FormControl();
+    }
   }
 
-  writeValue(value: any): void {
-    this.input.setValue(value);
+  writeValue(): void {
   }
 
   registerOnChange(fn: any): void {
@@ -77,7 +59,9 @@ export class ClearableInputComponent implements OnInit, OnDestroy, ControlValueA
     this.isDisabled = isDisabled;
   }
 
-  clearValue() {
+  clearValue(event: MouseEvent) {
     this.input.reset();
+    this.input.markAsTouched();
+    event.stopPropagation();
   }
 }

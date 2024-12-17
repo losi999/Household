@@ -2,8 +2,10 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Category } from '@household/shared/types/types';
-import { CategoryService } from 'src/app/category/category.service';
-import { Store } from 'src/app/store';
+import { Store } from '@ngrx/store';
+import { categoryApiActions } from '@household/web/state/category/category.actions';
+import { selectCategoriesAsParent } from '@household/web/state/category/category.selector';
+import { toUndefined } from '@household/shared/common/utils';
 
 export type CategoryFormData = Category.Response;
 
@@ -11,18 +13,17 @@ export type CategoryFormData = Category.Response;
   selector: 'household-category-form',
   templateUrl: './category-form.component.html',
   styleUrls: ['./category-form.component.scss'],
+  standalone: false,
 })
 export class CategoryFormComponent implements OnInit {
   form: FormGroup<{
     name: FormControl<string>;
     categoryType: FormControl<Category.CategoryType['categoryType']>;
-    parentCategory: FormControl<Category.ResponseBase>
+    parentCategoryId: FormControl<Category.Id>
   }>;
-  get categories(): Category.Response[] {
-    return this.store.categories.value;
-  }
+  categories = this.store.select(selectCategoriesAsParent(this.category?.categoryId));
+
   constructor(private dialogRef: MatDialogRef<CategoryFormComponent, void>,
-    private categoryService: CategoryService,
     private store: Store,
     @Inject(MAT_DIALOG_DATA) public category: CategoryFormData) { }
 
@@ -30,22 +31,27 @@ export class CategoryFormComponent implements OnInit {
     this.form = new FormGroup({
       name: new FormControl(this.category?.name, [Validators.required]),
       categoryType: new FormControl(this.category?.categoryType ?? 'regular', [Validators.required]),
-      parentCategory: new FormControl(this.category?.parentCategory),
+      parentCategoryId: new FormControl(this.category?.parentCategory?.categoryId),
     });
   }
 
   save() {
     if (this.form.valid) {
+      const { categoryType, name, parentCategoryId } = this.form.getRawValue();
+
       const request: Category.Request = {
-        name: this.form.value.name,
-        categoryType: this.form.value.categoryType,
-        parentCategoryId: this.form.value.parentCategory?.categoryId,
+        name,
+        categoryType,
+        parentCategoryId: toUndefined(parentCategoryId),
       };
 
       if (this.category) {
-        this.categoryService.updateCategory(this.category.categoryId, request);
+        this.store.dispatch(categoryApiActions.updateCategoryInitiated({
+          categoryId: this.category.categoryId,
+          ...request,
+        }));
       } else {
-        this.categoryService.createCategory(request);
+        this.store.dispatch(categoryApiActions.createCategoryInitiated(request));
       }
 
       this.dialogRef.close();

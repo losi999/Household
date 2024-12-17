@@ -5,7 +5,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
   selector: 'household-progress-indicator',
   templateUrl: './progress-indicator.component.html',
   styleUrls: ['./progress-indicator.component.scss'],
-  standalone: true,
   imports: [MatProgressSpinnerModule],
 })
 export class ProgressIndicatorComponent {
