@@ -119,7 +119,7 @@ jobs:
           command: sed -i -e "s/RUM_IDENTITY_POOL_ID/$(aws cloudformation describe-stacks --stack-name Household-<<parameters.env>> --query 'Stacks[0].Outputs[?OutputKey==`RumIdentityPoolId`].OutputValue'  --output text)/g" ./dist/web/browser/index.html
       - deploy:
           name: Web deploy
-          command: aws s3 sync dist/web s3://$(aws cloudformation describe-stacks --stack-name Household-<<parameters.env>> --query "Stacks[0].Outputs[?OutputKey=='WebsiteBucket'].OutputValue" --output text)
+          command: aws s3 sync dist/web/browser s3://$(aws cloudformation describe-stacks --stack-name Household-<<parameters.env>> --query "Stacks[0].Outputs[?OutputKey=='WebsiteBucket'].OutputValue" --output text)
   test:
     parameters:
       env:
