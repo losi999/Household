@@ -38,26 +38,28 @@ export const splitTransactionDocumentConverterFactory = (
         const category = categories[s.categoryId];
 
         if (s.loanAccountId) {
+          const deferredDocument = deferredTransactionDocumentConverter.create({
+            body: {
+              ...s,
+              accountId: body.accountId,
+              issuedAt: undefined,
+              recipientId: undefined,
+            },
+            category,
+            ownerAccount: accounts[s.loanAccountId],
+            payingAccount: accounts[body.accountId],
+            product: products[s.productId],
+            project: projects[s.projectId],
+            recipient,
+          }, expiresIn, generateId);
+
           return {
             ...accumulator,
             deferredSplits: [
               ...accumulator.deferredSplits ?? [],
               {
-                ...deferredTransactionDocumentConverter.create({
-                  body: {
-                    ...s,
-                    accountId: body.accountId,
-                    issuedAt: undefined,
-                    recipientId: undefined,
-                  },
-                  category,
-                  ownerAccount: accounts[s.loanAccountId],
-                  payingAccount: accounts[body.accountId],
-                  product: products[s.productId],
-                  project: projects[s.projectId],
-                  recipient,
-                }, expiresIn, generateId),
-                _id: s.transactionId ? new Types.ObjectId(s.transactionId) : undefined,
+                ...deferredDocument,
+                _id: !deferredDocument._id && s.transactionId ? new Types.ObjectId(s.transactionId) : deferredDocument._id,
               },
             ],
           };

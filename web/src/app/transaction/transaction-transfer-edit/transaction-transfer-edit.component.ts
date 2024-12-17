@@ -78,15 +78,19 @@ export class TransactionTransferEditComponent implements OnInit {
           transaction,
           deferredTransactions,
         ]) => {
-          const paymentIds = transaction.payments.map(p => p.transaction.transactionId);
+          if (transaction.payments?.length > 0) {
+            const paymentIds = transaction.payments.map(p => p.transaction.transactionId);
 
-          return [
-            ...deferredTransactions.filter(d => !paymentIds.includes(d.transactionId)),
-            ...transaction.payments.map(p => ({
-              ...p.transaction,
-              remainingAmount: p.transaction.remainingAmount + p.amount,
-            })),
-          ];
+            return [
+              ...deferredTransactions.filter(d => !paymentIds.includes(d.transactionId)),
+              ...transaction.payments.map(p => ({
+                ...p.transaction,
+                remainingAmount: p.transaction.remainingAmount + p.amount,
+              })),
+            ];
+          }
+
+          return deferredTransactions;
         }),
       );
 
@@ -99,13 +103,13 @@ export class TransactionTransferEditComponent implements OnInit {
           transferAccount: transaction.transferAccount,
         });
 
-        this.payments = transaction.payments.map(p => ({
+        this.payments = transaction.payments?.map(p => ({
           ...p,
           transaction: {
             ...p.transaction,
             remainingAmount: p.transaction.remainingAmount + p.amount,
           },
-        }));
+        })) ?? [];
       });
     }
 

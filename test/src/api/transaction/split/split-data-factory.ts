@@ -35,6 +35,7 @@ export const splitTransactionDataFactory = (() => {
       projectId: undefined,
       categoryId: undefined,
       loanAccountId: undefined,
+      transactionId: undefined,
       ...req,
     };
   };
