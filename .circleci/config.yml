@@ -113,10 +113,10 @@ jobs:
           at: ~/
       - run:
           name: Insert RUM App Monitor Id
-          command: sed -i -e "s/RUM_APP_MONITOR_ID/$(aws cloudformation describe-stacks --stack-name Household-<<parameters.env>> --query 'Stacks[0].Outputs[?OutputKey==`RumAppMonitorId`].OutputValue'  --output text)/g" ./dist/web/index.html
+          command: sed -i -e "s/RUM_APP_MONITOR_ID/$(aws cloudformation describe-stacks --stack-name Household-<<parameters.env>> --query 'Stacks[0].Outputs[?OutputKey==`RumAppMonitorId`].OutputValue'  --output text)/g" ./dist/web/browser/index.html
       - run:
           name: Insert RUM Identity Pool Id
-          command: sed -i -e "s/RUM_IDENTITY_POOL_ID/$(aws cloudformation describe-stacks --stack-name Household-<<parameters.env>> --query 'Stacks[0].Outputs[?OutputKey==`RumIdentityPoolId`].OutputValue'  --output text)/g" ./dist/web/index.html
+          command: sed -i -e "s/RUM_IDENTITY_POOL_ID/$(aws cloudformation describe-stacks --stack-name Household-<<parameters.env>> --query 'Stacks[0].Outputs[?OutputKey==`RumIdentityPoolId`].OutputValue'  --output text)/g" ./dist/web/browser/index.html
       - deploy:
           name: Web deploy
           command: aws s3 sync dist/web s3://$(aws cloudformation describe-stacks --stack-name Household-<<parameters.env>> --query "Stacks[0].Outputs[?OutputKey=='WebsiteBucket'].OutputValue" --output text)
