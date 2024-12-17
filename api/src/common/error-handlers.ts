@@ -271,7 +271,7 @@ export const httpErrors = {
           categoryId,
           parentCategory,
         });
-        throw httpError(statusCode, 'Parent category is already aa child of the current category');
+        throw httpError(statusCode, 'Parent category is already a child of the current category');
       }
     },
     update: (ctx: Category.CategoryId & {update: UpdateQuery<Category.Document>;}, statusCode = 500): Catch => (error) => {
