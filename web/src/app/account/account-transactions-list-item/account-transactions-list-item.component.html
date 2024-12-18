@@ -9,10 +9,10 @@
   <div *ngIf="amount" class="amount" [ngClass]="amount >= 0 ? 'green' : 'red'">{{amount | number:'1.0-2':'hu' }} {{viewingAccount.currency}}
   </div>
   <div class="buttons">
-    <a mat-icon-button color="primary" [routerLink]="['transactions', transaction.transactionId]" href="" [disabled]="isDisabled | async">
+    <a mat-icon-button color="primary" [routerLink]="['transactions', transaction.transactionId]" href="" target="_blank" [disabled]="isDisabled | async">
       <mat-icon>format_list_bulleted</mat-icon>
     </a>
-    <a mat-icon-button color="primary" [routerLink]="['transactions', transaction.transactionId, 'edit', formType]" href="" [disabled]="isDisabled | async"> <mat-icon>edit</mat-icon></a>
+    <a mat-icon-button color="primary" [routerLink]="['transactions', transaction.transactionId, 'edit', formType]" href="" target="_blank" [disabled]="isDisabled | async"> <mat-icon>edit</mat-icon></a>
     <button mat-icon-button color="warn" (click)="delete()" [disabled]="isDisabled | async">
       <mat-icon>delete</mat-icon>
     </button>
