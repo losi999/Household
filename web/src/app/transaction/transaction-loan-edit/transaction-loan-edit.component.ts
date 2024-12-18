@@ -2,7 +2,7 @@ import { Component, DestroyRef, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { toUndefined } from '@household/shared/common/utils';
+import { createDate, toUndefined } from '@household/shared/common/utils';
 import { Account, Project, Recipient, Category, Product, Transaction } from '@household/shared/types/types';
 import { takeFirstDefined } from '@household/web/operators/take-first-defined';
 import { toLoanResponse } from '@household/web/operators/to-loan-response';
@@ -74,8 +74,8 @@ export class TransactionLoanEditComponent implements OnInit {
             account: transaction.payingAccount,
             isSettled: transaction.isSettled,
             loanAccount: transaction.ownerAccount,
-            billingEndDate: new Date(transaction.billingEndDate),
-            billingStartDate: new Date(transaction.billingStartDate),
+            billingEndDate: createDate(transaction.billingEndDate),
+            billingStartDate: createDate(transaction.billingStartDate),
             category: transaction.category,
             description: transaction.description,
             invoiceNumber: transaction.invoiceNumber,

@@ -146,13 +146,6 @@ export class TransactionTransferEditComponent implements OnInit {
       }
     });
 
-    this.store.select(selectAccountById(accountId)).pipe(takeFirstDefined())
-      .subscribe((account) => {
-        this.form.patchValue({
-          account,
-        });
-      });
-
     combineLatest([
       this.form.controls.account.valueChanges,
       this.form.controls.transferAccount.valueChanges,
@@ -160,6 +153,7 @@ export class TransactionTransferEditComponent implements OnInit {
       account,
       transferAccount,
     ]) => {
+      console.log('curr', account?.currency, transferAccount?.currency);
       this.form.controls.transferAmount.reset();
 
       if (account && transferAccount && account.currency !== transferAccount.currency) {
@@ -168,6 +162,13 @@ export class TransactionTransferEditComponent implements OnInit {
         this.form.controls.transferAmount.removeValidators(Validators.required);
       }
     });
+
+    this.store.select(selectAccountById(accountId)).pipe(takeFirstDefined())
+      .subscribe((account) => {
+        this.form.patchValue({
+          account,
+        });
+      });
   }
 
   inverseTransaction() {

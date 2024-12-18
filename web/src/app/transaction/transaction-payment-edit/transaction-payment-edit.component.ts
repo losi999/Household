@@ -6,7 +6,7 @@ import { Account, Category, Product, Project, Recipient, Transaction } from '@ho
 import { selectCategoryOfProductId } from '@household/web/state/product/product.selector';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
 import { Store } from '@ngrx/store';
-import { toUndefined } from '@household/shared/common/utils';
+import { createDate, toUndefined } from '@household/shared/common/utils';
 import { switchMap } from 'rxjs';
 import { selectTransaction } from '@household/web/state/transaction/transaction.selector';
 import { takeFirstDefined } from '@household/web/operators/take-first-defined';
@@ -68,8 +68,8 @@ export class TransactionPaymentEditComponent implements OnInit {
           this.form.patchValue({
             amount: transaction.amount,
             account: transaction.account,
-            billingEndDate: new Date(transaction.billingEndDate),
-            billingStartDate: new Date(transaction.billingStartDate),
+            billingEndDate: createDate(transaction.billingEndDate),
+            billingStartDate: createDate(transaction.billingStartDate),
             category: transaction.category,
             description: transaction.description,
             invoiceNumber: transaction.invoiceNumber,
