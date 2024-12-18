@@ -1,37 +1,40 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { Category } from '@household/shared/types/types';
-import { CategoryService } from 'src/app/category/category.service';
-import { CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult } from 'src/app/shared/catalog-submenu/catalog-submenu.component';
-import { DialogService } from 'src/app/shared/dialog.service';
+import { Store } from '@ngrx/store';
+import { Observable } from 'rxjs';
+import { CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult } from '@household/web/app/shared/catalog-submenu/catalog-submenu.component';
+import { selectCategoryIsInProgress } from '@household/web/state/progress/progress.selector';
+import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 
 @Component({
   selector: 'household-category-list-item',
   templateUrl: './category-list-item.component.html',
   styleUrls: ['./category-list-item.component.scss'],
+  standalone: false,
 })
-export class CategoryListItemComponent {
+export class CategoryListItemComponent implements OnInit {
   @Input() category: Category.Response;
   constructor(
-    private categoryService: CategoryService,
-    private dialogService: DialogService,
+    private store: Store,
     private bottomSheet: MatBottomSheet) { }
 
+  isDisabled: Observable<boolean>;
+
+  ngOnInit(): void {
+    this.isDisabled = this.store.select(selectCategoryIsInProgress(this.category));
+  }
+
   delete() {
-    this.dialogService.openDeleteCategoryDialog(this.category).afterClosed()
-      .subscribe(shouldDelete => {
-        if (shouldDelete) {
-          this.categoryService.deleteCategory(this.category.categoryId);
-        }
-      });
+    this.store.dispatch(dialogActions.deleteCategory(this.category));
   }
 
   edit() {
-    this.dialogService.openEditCategoryDialog(this.category);
+    this.store.dispatch(dialogActions.updateCategory(this.category));
   }
 
   merge() {
-    this.dialogService.openMergeCategoriesDialog(this.category);
+    this.store.dispatch(dialogActions.mergeCategories(this.category));
   }
 
   showMenu() {

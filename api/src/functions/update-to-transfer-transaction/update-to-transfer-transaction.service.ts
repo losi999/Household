@@ -28,11 +28,12 @@ export const updateToTransferTransactionServiceFactory = (
       transferAccountId,
     });
 
-    const document = await transactionService.getTransactionById(transactionId).catch(httpErrors.transaction.getById({
+    const queriedDocument = await transactionService.getTransactionById(transactionId).catch(httpErrors.transaction.getById({
       transactionId,
     }));
 
-    httpErrors.transaction.notFound(!document, {
+    httpErrors.transaction.notFound({
+      transaction: queriedDocument,
       transactionId,
     });
 
@@ -47,33 +48,35 @@ export const updateToTransferTransactionServiceFactory = (
     const account = accounts.find(a => getAccountId(a) === accountId);
     const transferAccount = accounts.find(a => getAccountId(a) === transferAccountId);
 
-    httpErrors.account.notFound(!account, {
+    httpErrors.account.notFound({
+      account,
       accountId,
     }, 400);
 
-    httpErrors.account.notFound(!transferAccount, {
+    httpErrors.account.notFound({
       accountId: transferAccountId,
+      account: transferAccount,
     }, 400);
 
     if (account.accountType === 'loan' || transferAccount.accountType === 'loan') {
       if (account.accountType === transferAccount.accountType) {
         body.payments = undefined;
-        const { _id, ...document } = transferTransactionDocumentConverter.create({
+        const document = transferTransactionDocumentConverter.create({
           body,
           account,
           transferAccount,
           transactions: undefined,
         }, expiresIn);
 
-        await transactionService.replaceTransaction(transactionId, document);
+        await transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update(document));
       } else {
-        const { _id, ...document } = loanTransferDocumentDonverter.create({
+        const document = loanTransferDocumentDonverter.create({
           body,
           account,
           transferAccount,
         }, expiresIn);
 
-        await transactionService.replaceTransaction(transactionId, document);
+        await transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update(document));
       }
     } else {
       if (payments) {
@@ -89,34 +92,29 @@ export const updateToTransferTransactionServiceFactory = (
           deferredTransactionIds,
         }));
 
-        httpErrors.transaction.multipleNotFound(deferredTransactionIds.length !== transactionList.length, {
+        httpErrors.transaction.multipleNotFound({
           transactionIds: deferredTransactionIds,
+          transactions: transactionList,
         });
         const transactions = toDictionary(transactionList, '_id');
 
-        const { _id, ...document } = transferTransactionDocumentConverter.create({
+        const document = transferTransactionDocumentConverter.create({
           body,
           account,
           transferAccount,
           transactions,
         }, expiresIn);
 
-        await transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update({
-          _id,
-          ...document,
-        }));
+        await transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update(document));
       } else {
-        const { _id, ...document } = transferTransactionDocumentConverter.create({
+        const document = transferTransactionDocumentConverter.create({
           body,
           account,
           transferAccount,
           transactions: undefined,
         }, expiresIn);
 
-        await transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update({
-          _id,
-          ...document,
-        }));
+        await transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update(document));
       }
     }
   };

@@ -1,5 +1,5 @@
 import { httpErrors } from '@household/api/common/error-handlers';
-import { getCategoryId, getTransactionId, pushUnique, toDictionary } from '@household/shared/common/utils';
+import { getTransactionId, pushUnique, toDictionary } from '@household/shared/common/utils';
 import { ISplitTransactionDocumentConverter } from '@household/shared/converters/split-transaction-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICategoryService } from '@household/shared/services/category-service';
@@ -45,7 +45,10 @@ export const createSplitTransactionServiceFactory = (
       pushUnique(accountIds, loanAccountId);
     });
 
-    httpErrors.transaction.sumOfSplits(total !== body.amount, body);
+    httpErrors.transaction.sumOfSplits({
+      body,
+      total,
+    });
 
     const [
       accountList,
@@ -67,20 +70,24 @@ export const createSplitTransactionServiceFactory = (
       recipientId,
     }));
 
-    httpErrors.account.multipleNotFound(accountIds.length !== accountList.length, {
+    httpErrors.account.multipleNotFound({
+      accounts: accountList,
       accountIds,
     });
 
-    httpErrors.category.multipleNotFound(categoryIds.length !== categoryList.length, {
+    httpErrors.category.multipleNotFound({
       categoryIds,
+      categories: categoryList,
     });
 
-    httpErrors.project.multipleNotFound(projectIds.length !== projectList.length, {
+    httpErrors.project.multipleNotFound({
+      projects: projectList,
       projectIds,
     });
 
-    httpErrors.recipient.notFound(!recipient && !!recipientId, {
+    httpErrors.recipient.notFound({
       recipientId,
+      recipient,
     }, 400);
 
     const categories = toDictionary(categoryList, '_id');
@@ -94,13 +101,14 @@ export const createSplitTransactionServiceFactory = (
       const product = products[productId];
       if (category?.categoryType === 'inventory' && productId) {
 
-        httpErrors.product.notFound(!product && !!productId, {
+        httpErrors.product.notFound({
           productId,
+          product: product,
         }, 400);
 
-        httpErrors.product.categoryRelation(getCategoryId(product.category) !== categoryId, {
+        httpErrors.product.categoryRelation({
           categoryId,
-          productId,
+          product,
         });
       }
     });

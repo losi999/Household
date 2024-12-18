@@ -92,7 +92,6 @@ describe('Update to payment transaction service', () => {
       mockProductService.functions.getProductById.mockResolvedValue(queriedProduct);
       mockPaymentTransactionDocumentConverter.functions.create.mockReturnValue(updatedPaymentDocument);
       mockTransactionService.functions.replaceTransaction.mockResolvedValue(undefined);
-      const { _id, ...docToSave } = updatedPaymentDocument;
 
       await service({
         body,
@@ -116,7 +115,7 @@ describe('Update to payment transaction service', () => {
         recipient: queriedRecipient,
         product: queriedProduct,
       }, undefined);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction, transactionId, docToSave);
+      validateFunctionCall(mockTransactionService.functions.replaceTransaction, transactionId, updatedPaymentDocument);
       validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.create);
       expect.assertions(10);
@@ -138,7 +137,6 @@ describe('Update to payment transaction service', () => {
       mockProductService.functions.getProductById.mockResolvedValue(queriedProduct);
       mockDeferredTransactionDocumentConverter.functions.create.mockReturnValue(updatedDeferredDocument);
       mockTransactionService.functions.replaceTransaction.mockResolvedValue(undefined);
-      const { _id, ...docToSave } = updatedDeferredDocument;
 
       await service({
         body,
@@ -163,7 +161,7 @@ describe('Update to payment transaction service', () => {
         recipient: queriedRecipient,
         product: queriedProduct,
       }, undefined);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction, transactionId, docToSave);
+      validateFunctionCall(mockTransactionService.functions.replaceTransaction, transactionId, updatedDeferredDocument);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.create);
       expect.assertions(10);
@@ -186,7 +184,6 @@ describe('Update to payment transaction service', () => {
       mockProductService.functions.getProductById.mockResolvedValue(queriedProduct);
       mockReimbursementTransactionDocumentConverter.functions.create.mockReturnValue(updatedReimbursementDocument);
       mockTransactionService.functions.replaceTransaction.mockResolvedValue(undefined);
-      const { _id, ...docToSave } = updatedReimbursementDocument;
 
       await service({
         body,
@@ -211,7 +208,7 @@ describe('Update to payment transaction service', () => {
         recipient: queriedRecipient,
         product: queriedProduct,
       }, undefined);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction, transactionId, docToSave);
+      validateFunctionCall(mockTransactionService.functions.replaceTransaction, transactionId, updatedReimbursementDocument);
       validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
       expect.assertions(10);
@@ -722,7 +719,6 @@ describe('Update to payment transaction service', () => {
       mockProductService.functions.getProductById.mockResolvedValue(queriedProduct);
       mockPaymentTransactionDocumentConverter.functions.create.mockReturnValue(updatedPaymentDocument);
       mockTransactionService.functions.replaceTransaction.mockRejectedValue('this is a mongo error');
-      const { _id, ...docToSave } = updatedPaymentDocument;
 
       await service({
         body,
@@ -746,7 +742,7 @@ describe('Update to payment transaction service', () => {
         recipient: queriedRecipient,
         product: queriedProduct,
       }, undefined);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction, transactionId, docToSave);
+      validateFunctionCall(mockTransactionService.functions.replaceTransaction, transactionId, updatedPaymentDocument);
       validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.create);
       expect.assertions(12);

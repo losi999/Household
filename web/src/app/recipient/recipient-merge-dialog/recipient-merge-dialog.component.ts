@@ -2,8 +2,10 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Recipient } from '@household/shared/types/types';
-import { RecipientService } from 'src/app/recipient/recipient.service';
-import { Store } from 'src/app/store';
+import { Store } from '@ngrx/store';
+import { map } from 'rxjs';
+import { recipientApiActions } from '@household/web/state/recipient/recipient.actions';
+import { selectRecipients } from '@household/web/state/recipient/recipient.selector';
 
 export type RecipientMergeDialogData = Recipient.Id;
 
@@ -11,6 +13,7 @@ export type RecipientMergeDialogData = Recipient.Id;
   selector: 'household-recipient-merge-dialog',
   templateUrl: './recipient-merge-dialog.component.html',
   styleUrls: ['./recipient-merge-dialog.component.scss'],
+  standalone: false,
 })
 export class RecipientMergeDialogComponent implements OnInit {
   form: FormGroup<{
@@ -18,13 +21,10 @@ export class RecipientMergeDialogComponent implements OnInit {
   }>;
 
   constructor(private dialogRef: MatDialogRef<RecipientMergeDialogComponent, void>,
-    private recipientService: RecipientService,
     private store: Store,
     @Inject(MAT_DIALOG_DATA) public targetRecipientId: RecipientMergeDialogData) { }
 
-  get recipients(): Recipient.Response[] {
-    return this.store.recipients.value.filter(r => r.recipientId !== this.targetRecipientId);
-  }
+  recipients = this.store.select(selectRecipients).pipe(map(recipients => recipients.filter(p => p.recipientId !== this.targetRecipientId)));
 
   ngOnInit(): void {
     this.form = new FormGroup({
@@ -33,7 +33,10 @@ export class RecipientMergeDialogComponent implements OnInit {
   }
 
   save() {
-    this.recipientService.mergeRecipients(this.targetRecipientId, this.form.value.sourceRecipients);
+    this.store.dispatch(recipientApiActions.mergeRecipientsInitiated({
+      sourceRecipientIds: this.form.value.sourceRecipients,
+      targetRecipientId: this.targetRecipientId,
+    }));
 
     this.dialogRef.close();
   }

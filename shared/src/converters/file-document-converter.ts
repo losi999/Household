@@ -10,14 +10,14 @@ export interface IFileDocumentConverter {
 
 export const fileDocumentConverterFactory = (): IFileDocumentConverter => {
   const instance: IFileDocumentConverter = {
-    create: (body, expiresIn, generateId): File.Document => {
+    create: (body, expiresIn, generateId) => {
       return {
         ...body,
         _id: generateId ? generateMongoId() : undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
-    updateStatus: (status): UpdateQuery<File.Document> => {
+    updateStatus: (status) => {
       return {
         $set: {
           processingStatus: status,

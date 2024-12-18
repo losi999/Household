@@ -6,7 +6,6 @@ import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 @Component({
   templateUrl: './confirmation-dialog.component.html',
   styleUrls: ['./confirmation-dialog.component.scss'],
-  standalone: true,
   imports: [
     CommonModule,
     MatButtonModule,

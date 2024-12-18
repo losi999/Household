@@ -26,6 +26,10 @@ export const toDictionary = <P>(docs: P[], key: keyof P): Dictionary<P> => {
   }, {});
 };
 
+export const toUndefined = (value: any) => {
+  return value ? value : undefined;
+};
+
 export const createDate = (date: string): Date => {
   return date ? new Date(date) : undefined;
 };
@@ -42,10 +46,10 @@ export const parseStringToBoolean = (value: string): boolean => {
 
 export const generateMongoId = (): Types.ObjectId => new Types.ObjectId();
 const getId = (doc: Internal.Id) => doc?._id.toString();
-export const getTransactionId = (doc: Transaction.Document | Transaction.RawReport): Transaction.Id => getId(doc) as Transaction.Id;
-export const getAccountId = (doc: Account.Document): Account.Id => getId(doc) as Account.Id;
-export const getProjectId = (doc: Project.Document): Project.Id => getId(doc) as Project.Id;
-export const getRecipientId = (doc: Recipient.Document): Recipient.Id => getId(doc) as Recipient.Id;
-export const getProductId = (doc: Product.Document): Product.Id => getId(doc) as Product.Id;
-export const getCategoryId = (doc: Category.Document): Category.Id => getId(doc) as Category.Id;
-export const getFileId = (doc: File.Document): File.Id => getId(doc) as File.Id;
+export const getTransactionId = (doc: Transaction.Document | Transaction.RawReport | Types.ObjectId): Transaction.Id => getId(doc) as Transaction.Id;
+export const getAccountId = (doc: Account.Document | Types.ObjectId): Account.Id => getId(doc) as Account.Id;
+export const getProjectId = (doc: Project.Document | Types.ObjectId): Project.Id => getId(doc) as Project.Id;
+export const getRecipientId = (doc: Recipient.Document | Types.ObjectId): Recipient.Id => getId(doc) as Recipient.Id;
+export const getProductId = (doc: Product.Document | Types.ObjectId): Product.Id => getId(doc) as Product.Id;
+export const getCategoryId = (doc: Category.Document | Types.ObjectId): Category.Id => getId(doc) as Category.Id;
+export const getFileId = (doc: File.Document | Types.ObjectId): File.Id => getId(doc) as File.Id;

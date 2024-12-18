@@ -1,7 +1,6 @@
 import { flattenSplit, duplicateByAccounts, calculateRemainingAmount, rebuildSplits, populateAggregate } from '@household/shared/common/aggregate-helpers';
 import { populate } from '@household/shared/common/utils';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
-import { Restrict } from '@household/shared/types/common';
 import { Account, Common, Transaction } from '@household/shared/types/types';
 import { PipelineStage, Types, UpdateQuery } from 'mongoose';
 
@@ -13,7 +12,7 @@ export interface ITransactionService {
   getTransactionByIdAndAccountId(query: Transaction.TransactionId & Account.AccountId): Promise<Transaction.Document>;
   deleteTransaction(transactionId: Transaction.Id): Promise<unknown>;
   updateTransaction(transactionId: Transaction.Id, updateQuery: UpdateQuery<Transaction.Document>): Promise<unknown>;
-  replaceTransaction(transactionId: Transaction.Id, doc: Restrict<Transaction.Document, '_id'>): Promise<unknown>;
+  replaceTransaction(transactionId: Transaction.Id, doc: Transaction.Document): Promise<unknown>;
   listTransactions(match: PipelineStage.Match): Promise<Transaction.RawReport[]>;
   listDeferredTransactions(ctx?: {
     deferredTransactionIds?: Transaction.Id[];
@@ -57,6 +56,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
             'payingAccount',
             'ownerAccount',
             'category',
+            'category.ancestors',
             'product',
             'splits.category',
             'splits.project',
@@ -84,6 +84,12 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
             tx_description: '$description',
             tx_id: '$_id',
             tx_transactionType: '$transactionType',
+            description: {
+              $ifNull: [
+                '$tmp_splits.description',
+                null,
+              ],
+            },
           }),
           ...duplicateByAccounts(),
           {
@@ -110,7 +116,16 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
           ...populateAggregate('payingAccount', 'accounts'),
           ...populateAggregate('ownerAccount', 'accounts'),
           ...populateAggregate('transferAccount', 'accounts'),
-          ...populateAggregate('category', 'categories'),
+          ...populateAggregate('category', 'categories', [
+            {
+              $lookup: {
+                from: 'categories',
+                localField: 'ancestors',
+                foreignField: '_id',
+                as: 'ancestors',
+              },
+            },
+          ]),
           ...populateAggregate('project', 'projects'),
           ...populateAggregate('product', 'products'),
           ...populateAggregate('recipient', 'recipients'),
@@ -119,10 +134,45 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
       ))[0];
     },
     deleteTransaction: (transactionId) => {
-      return mongodbService.transactions.deleteOne({
-        _id: transactionId,
-      })
-        .exec();
+      return mongodbService.inSession((session) => {
+        return session.withTransaction(async() => {
+          const deleted = await mongodbService.transactions.findByIdAndDelete({
+            _id: transactionId,
+          }, {
+            session,
+
+          });
+
+          let deletedDeferredTransactionIds: Types.ObjectId[];
+
+          if (deleted.transactionType === 'deferred') {
+            deletedDeferredTransactionIds = [deleted._id];
+          }
+
+          if (deleted.transactionType === 'split' && deleted.deferredSplits?.length > 0) {
+            deletedDeferredTransactionIds = deleted.deferredSplits.map(s => s._id);
+          }
+
+          if (deletedDeferredTransactionIds) {
+            await mongodbService.transactions.updateMany({
+              'payments.transaction': {
+                $in: deletedDeferredTransactionIds,
+              },
+            }, {
+              $pull: {
+                payments: {
+                  transaction: {
+                    $in: deletedDeferredTransactionIds,
+                  },
+                },
+              },
+            }, {
+              session,
+            });
+          }
+        });
+      });
+
     },
     updateTransaction: async (transactionId, updateQuery) => {
       return mongodbService.transactions.findOneAndUpdate({
@@ -133,12 +183,58 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
       });
     },
     replaceTransaction: (transactionId, doc) => {
-      return mongodbService.transactions.findOneAndReplace({
-        _id: new Types.ObjectId(transactionId),
-      }, doc, {
-        runValidators: true,
-      })
-        .exec();
+      delete doc._id;
+      return mongodbService.inSession((session) => {
+        return session.withTransaction(async () => {
+          const old = await mongodbService.transactions.findOneAndReplace({
+            _id: new Types.ObjectId(transactionId),
+          }, doc, {
+            session,
+            runValidators: true,
+          });
+
+          let deletedDeferredTransactionIds: Types.ObjectId[];
+
+          if (old.transactionType === 'deferred' && doc.transactionType !== 'deferred') {
+            deletedDeferredTransactionIds = [old._id];
+          }
+
+          if (old.transactionType === 'split' && old.deferredSplits?.length > 0) {
+            if (doc.transactionType === 'split' && doc.deferredSplits?.length > 0) {
+              const newDeferredTransactionIds = doc.deferredSplits.map(s => s._id) ;
+
+              deletedDeferredTransactionIds = old.deferredSplits.reduce((accumulator, currentValue) => {
+                return newDeferredTransactionIds.includes(currentValue._id) ? accumulator : [
+                  ...accumulator,
+                  currentValue._id,
+                ];
+              }, []);
+
+            } else {
+              deletedDeferredTransactionIds = old.deferredSplits.map(s => s._id);
+            }
+          }
+
+          if (deletedDeferredTransactionIds) {
+            await mongodbService.transactions.updateMany({
+              'payments.transaction': {
+                $in: deletedDeferredTransactionIds,
+              },
+            }, {
+              $pull: {
+                payments: {
+                  transaction: {
+                    $in: deletedDeferredTransactionIds,
+                  },
+                },
+              },
+            }, {
+              session,
+            });
+          }
+        });
+      });
+
     },
     listTransactions: (match) => {
       return mongodbService.inSession((session) => {
@@ -234,7 +330,16 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
             },
             match,
             ...populateAggregate('account', 'accounts'),
-            ...populateAggregate('category', 'categories'),
+            ...populateAggregate('category', 'categories', [
+              {
+                $lookup: {
+                  from: 'categories',
+                  localField: 'ancestors',
+                  foreignField: '_id',
+                  as: 'ancestors',
+                },
+              },
+            ]),
             ...populateAggregate('project', 'projects'),
             ...populateAggregate('product', 'products'),
             ...populateAggregate('recipient', 'recipients'),
@@ -348,7 +453,16 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
             },
             ...populateAggregate('payingAccount', 'accounts'),
             ...populateAggregate('ownerAccount', 'accounts'),
-            ...populateAggregate('category', 'categories'),
+            ...populateAggregate('category', 'categories', [
+              {
+                $lookup: {
+                  from: 'categories',
+                  localField: 'ancestors',
+                  foreignField: '_id',
+                  as: 'ancestors',
+                },
+              },
+            ]),
             ...populateAggregate('project', 'projects'),
             ...populateAggregate('product', 'products'),
             ...populateAggregate('recipient', 'recipients'),
@@ -428,7 +542,16 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
           ...populateAggregate('payingAccount', 'accounts'),
           ...populateAggregate('ownerAccount', 'accounts'),
           ...populateAggregate('transferAccount', 'accounts'),
-          ...populateAggregate('category', 'categories'),
+          ...populateAggregate('category', 'categories', [
+            {
+              $lookup: {
+                from: 'categories',
+                localField: 'ancestors',
+                foreignField: '_id',
+                as: 'ancestors',
+              },
+            },
+          ]),
           ...populateAggregate('project', 'projects'),
           ...populateAggregate('product', 'products'),
           ...populateAggregate('recipient', 'recipients'),

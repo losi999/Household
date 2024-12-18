@@ -2,7 +2,7 @@ var pageNumber = 1
 var pageSize = 25
 var accountId = '665aca365689536dd37d8468' //bank
 //var accountId = '665aca435689536dd37d847d'//revolut
-var transactionId = '66a0b64c553c56fd273f66e8'
+var transactionId = '6756e055a0399f72c30fef9e'
 
 db.getCollection("transactions").aggregate([
   {
@@ -37,7 +37,10 @@ db.getCollection("transactions").aggregate([
             tx_amount: '$amount',
             tx_description: '$description',
             tx_id: '$_id',
-            tx_transactionType: '$transactionType'
+            tx_transactionType: '$transactionType',
+            description: {
+              $ifNull: ['$tmp_splits.description', null]
+            }
           }
         ],
       },
@@ -418,7 +421,18 @@ db.getCollection("transactions").aggregate([
               in: {
                 _id: '$$this._id',
                 amount: '$$this.amount',
-                description: '$$this.description',
+                description: {
+                  "$cond": {
+                    "if": {
+                      "$ne": [
+                        "$$this.description",
+                        null
+                      ]
+                    },
+                    "then": '$$this.description',
+                    "else": '$$REMOVE'
+                  }
+                },
                 category: '$$this.category',
                 project: '$$this.project',
                 quantity: '$$this.quantity',
@@ -455,7 +469,18 @@ db.getCollection("transactions").aggregate([
                 remainingAmount: '$$this.remainingAmount',
                 isSettled: '$$this.isSettled',
                 amount: '$$this.amount',
-                description: '$$this.description',
+                description: {
+                  "$cond": {
+                    "if": {
+                      "$ne": [
+                        "$$this.description",
+                        null
+                      ]
+                    },
+                    "then": '$$this.description',
+                    "else": '$$REMOVE'
+                  }
+                },
                 category: '$$this.category',
                 project: '$$this.project',
                 quantity: '$$this.quantity',

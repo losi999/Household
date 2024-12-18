@@ -2,7 +2,8 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Project } from '@household/shared/types/types';
-import { ProjectService } from 'src/app/project/project.service';
+import { Store } from '@ngrx/store';
+import { projectApiActions } from '@household/web/state/project/project.actions';
 
 export type ProjectFormData = Project.Response;
 
@@ -10,6 +11,7 @@ export type ProjectFormData = Project.Response;
   selector: 'household-project-form',
   templateUrl: './project-form.component.html',
   styleUrls: ['./project-form.component.scss'],
+  standalone: false,
 })
 export class ProjectFormComponent implements OnInit {
   form: FormGroup<{
@@ -17,7 +19,7 @@ export class ProjectFormComponent implements OnInit {
     description: FormControl<string>;
   }>;
   constructor(private dialogRef: MatDialogRef<ProjectFormComponent, void>,
-    private projectService: ProjectService,
+    private store: Store,
     @Inject(MAT_DIALOG_DATA) public project: ProjectFormData) { }
 
   ngOnInit(): void {
@@ -34,9 +36,12 @@ export class ProjectFormComponent implements OnInit {
         description: this.form.value.description ?? undefined,
       };
       if (this.project) {
-        this.projectService.updateProject(this.project.projectId, request);
+        this.store.dispatch(projectApiActions.updateProjectInitiated({
+          projectId: this.project.projectId,
+          ...request,
+        }));
       } else {
-        this.projectService.createProject(request);
+        this.store.dispatch(projectApiActions.createProjectInitiated(request));
       }
 
       this.dialogRef.close();

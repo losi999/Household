@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-  sam: circleci/aws-sam-serverless@3.0
+  sam: circleci/aws-sam-serverless@6.0.3
 jobs:
   install:
     docker:
@@ -113,16 +113,18 @@ jobs:
           at: ~/
       - run:
           name: Insert RUM App Monitor Id
-          command: sed -i -e "s/RUM_APP_MONITOR_ID/$(aws cloudformation describe-stacks --stack-name Household-<<parameters.env>> --query 'Stacks[0].Outputs[?OutputKey==`RumAppMonitorId`].OutputValue'  --output text)/g" ./dist/web/index.html
+          command: sed -i -e "s/RUM_APP_MONITOR_ID/$(aws cloudformation describe-stacks --stack-name Household-<<parameters.env>> --query 'Stacks[0].Outputs[?OutputKey==`RumAppMonitorId`].OutputValue'  --output text)/g" ./dist/web/browser/index.html
       - run:
           name: Insert RUM Identity Pool Id
-          command: sed -i -e "s/RUM_IDENTITY_POOL_ID/$(aws cloudformation describe-stacks --stack-name Household-<<parameters.env>> --query 'Stacks[0].Outputs[?OutputKey==`RumIdentityPoolId`].OutputValue'  --output text)/g" ./dist/web/index.html
+          command: sed -i -e "s/RUM_IDENTITY_POOL_ID/$(aws cloudformation describe-stacks --stack-name Household-<<parameters.env>> --query 'Stacks[0].Outputs[?OutputKey==`RumIdentityPoolId`].OutputValue'  --output text)/g" ./dist/web/browser/index.html
       - deploy:
           name: Web deploy
-          command: aws s3 sync dist/web s3://$(aws cloudformation describe-stacks --stack-name Household-<<parameters.env>> --query "Stacks[0].Outputs[?OutputKey=='WebsiteBucket'].OutputValue" --output text)
+          command: aws s3 sync dist/web/browser s3://$(aws cloudformation describe-stacks --stack-name Household-<<parameters.env>> --query "Stacks[0].Outputs[?OutputKey=='WebsiteBucket'].OutputValue" --output text)
   test:
     parameters:
       env:
+        type: string
+      testCommand:
         type: string
     docker:
       - image: cypress/base:16.14.2
@@ -164,7 +166,7 @@ jobs:
             - run:
                 name: Running tests
                 working_directory: test
-                command: yarn run test
+                command: yarn run test:<<parameters.testCommand>>
 
       - store_artifacts:
           path: test/cypress/screenshots
@@ -195,6 +197,7 @@ workflows:
       - test:
           name: test_local
           env: "LOCAL"
+          testCommand: ""
           requires:
             - install
 
@@ -232,8 +235,75 @@ workflows:
           requires:
             - api_deploy_dev
       - test:
-          name: test_dev
+          name: test_dev_account
           env: "DEV"
+          testCommand: "account"
+          requires:
+            - web_deploy_dev
+      - test:
+          name: test_dev_category
+          env: "DEV"
+          testCommand: "category"
+          requires:
+            - web_deploy_dev
+      - test:
+          name: test_dev_project
+          env: "DEV"
+          testCommand: "project"
+          requires:
+            - web_deploy_dev
+      - test:
+          name: test_dev_product
+          env: "DEV"
+          testCommand: "product"
+          requires:
+            - web_deploy_dev
+      - test:
+          name: test_dev_recipient
+          env: "DEV"
+          testCommand: "recipient"
+          requires:
+            - web_deploy_dev
+      - test:
+          name: test_dev_transaction_common
+          env: "DEV"
+          testCommand: "transaction-common"
+          requires:
+            - web_deploy_dev
+      - test:
+          name: test_dev_transaction_payment
+          env: "DEV"
+          testCommand: "transaction-payment"
+          requires:
+            - web_deploy_dev
+      - test:
+          name: test_dev_transaction_deferred
+          env: "DEV"
+          testCommand: "transaction-deferred"
+          requires:
+            - web_deploy_dev
+      - test:
+          name: test_dev_transaction_split
+          env: "DEV"
+          testCommand: "transaction-split"
+          requires:
+            - web_deploy_dev
+      - test:
+          name: test_dev_transaction_reimbursement
+          env: "DEV"
+          testCommand: "transaction-reimbursement"
+          requires:
+            - web_deploy_dev
+      - test:
+          name: test_dev_transaction_transfer
+          env: "DEV"
+          testCommand: "transaction-transfer"
+          requires:
+            - web_deploy_dev
+      - test:
+          name: test_dev_transaction_loan_transfer
+          env: "DEV"
+          testCommand: "transaction-loan-transfer"
           requires:
             - web_deploy_dev
 

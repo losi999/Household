@@ -3,8 +3,9 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { unitsOfMeasurement } from '@household/shared/constants';
 import { Category, Product } from '@household/shared/types/types';
-import { ProductService } from 'src/app/product/product.service';
-import { Store } from 'src/app/store';
+import { Store } from '@ngrx/store';
+import { selectInventoryCategories } from '@household/web/state/category/category.selector';
+import { productApiActions } from '@household/web/state/product/product.actions';
 
 export type ProductFormData = {
   product: Product.Response;
@@ -15,23 +16,21 @@ export type ProductFormData = {
   selector: 'household-product-form',
   templateUrl: './product-form.component.html',
   styleUrls: ['./product-form.component.scss'],
+  standalone: false,
 })
 export class ProductFormComponent implements OnInit {
   form: FormGroup<{
     brand: FormControl<string>,
     measurement: FormControl<number>,
     unitOfMeasurement: FormControl<typeof unitsOfMeasurement[number]>,
-    category: FormControl<Category.Response>,
+    categoryId: FormControl<Category.Id>,
   }>;
   get unitsOfMeasurement() { return unitsOfMeasurement; }
 
-  get categories(): Category.Response[] {
-    return this.store.inventoryCategories.value;
-  }
+  categories = this.store.select(selectInventoryCategories);
 
   constructor(private dialogRef: MatDialogRef<ProductFormComponent, void>,
     private store: Store,
-    private productService: ProductService,
     @Inject(MAT_DIALOG_DATA) public data: ProductFormData) { }
 
   ngOnInit(): void {
@@ -39,7 +38,7 @@ export class ProductFormComponent implements OnInit {
       brand: new FormControl(this.data.product?.brand, [Validators.required]),
       measurement: new FormControl(this.data.product?.measurement, [Validators.required]),
       unitOfMeasurement: new FormControl(this.data.product?.unitOfMeasurement, [Validators.required]),
-      category: new FormControl(null),
+      categoryId: new FormControl(null),
     });
   }
 
@@ -52,9 +51,16 @@ export class ProductFormComponent implements OnInit {
       };
 
       if (this.data.product) {
-        this.productService.updateProduct(this.data.product.productId, request);
+        this.store.dispatch(productApiActions.updateProductInitiated({
+          categoryId: this.data.categoryId,
+          productId: this.data.product.productId,
+          ...request,
+        }));
       } else {
-        this.productService.createProduct(this.form.value.category?.categoryId ?? this.data.categoryId, request);
+        this.store.dispatch(productApiActions.createProductInitiated({
+          categoryId: this.form.value.categoryId ?? this.data.categoryId,
+          ...request,
+        }));
       }
 
       this.dialogRef.close();

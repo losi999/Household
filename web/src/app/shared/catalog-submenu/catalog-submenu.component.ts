@@ -10,7 +10,6 @@ export type CatalogSubmenuResult = 'edit' | 'delete' | 'merge';
   selector: 'household-catalog-submenu',
   templateUrl: './catalog-submenu.component.html',
   styleUrls: ['./catalog-submenu.component.scss'],
-  standalone: true,
   imports: [
     CommonModule,
     MatIconModule,

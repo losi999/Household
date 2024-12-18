@@ -1,63 +1,67 @@
-<mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
+<mat-tree #tree [dataSource]="items | async | reportListTreeBuilder: groupBy" [childrenAccessor]="childrenAccessor">
   <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding>
-    <a [routerLink]="['/accounts', node.account.accountId, 'transactions', node.transactionId]" class="report-item mat-elevation-z2" href="" target="_blank">
-      <div class="report-item__datetime">
-        <div class="report-item__year">{{node.issuedAt | date:'yyyy'}}</div>
-        <div class="report-item__date">{{node.issuedAt | date:'MMM dd.'}}</div>
-        <div class="report-item__time">{{node.issuedAt | date:'HH:mm'}}</div>
-      </div>
-      <mat-list>
-        <mat-list-item class="report-item__account" *ngIf="!groupBy.includes('account')">
-          <mat-icon matListItemIcon>reply_all</mat-icon>
-          <div matListItemTitle>{{node.account.fullName}}</div>
-        </mat-list-item>
-        <mat-list-item *ngIf="!groupBy.includes('recipient') && node.recipient">
-          <mat-icon matListItemIcon>store</mat-icon>
-          <div matListItemTitle class="report-item__recipient">{{node.recipient.name}}</div>
-        </mat-list-item>
-        <mat-list-item *ngIf="!groupBy.includes('category') && node.category">
-          <mat-icon matListItemIcon>category</mat-icon>
-          <div matListItemTitle class="report-item__category">{{node.category.fullName}}</div>
-        </mat-list-item>
-        <mat-list-item *ngIf="!groupBy.includes('product') && node.product">
-          <mat-icon matListItemIcon>shopping_cart</mat-icon>
-          <div matListItemTitle class="report-item__product">{{node.product.fullName}}</div>
-        </mat-list-item>
-        <mat-list-item *ngIf="node.invoiceNumber">
-          <mat-icon matListItemIcon>receipt</mat-icon>
-          <div matListItemTitle class="report-item__product">{{node.invoiceNumber}}</div>
-        </mat-list-item>
-        <mat-list-item *ngIf="node.billingStartDate && node.billingEndDate">
-          <mat-icon matListItemIcon>calendar_month</mat-icon>
-          <div matListItemTitle class="report-item__product">{{node.billingStartDate | date:'yyyy MMM dd.'}} - {{node.billingEndDate | date:'yyyy MMM dd.'}}</div>
-        </mat-list-item>
-        <mat-list-item *ngIf="!groupBy.includes('project') && node.project">
-          <mat-icon matListItemIcon>stacks</mat-icon>
-          <div matListItemTitle class="report-item__project">{{node.project.name}}</div>
-        </mat-list-item>
-        <mat-list-item *ngIf="node.description">
-          <mat-icon matListItemIcon>description</mat-icon>
-          <div matListItemTitle class="report-item__description">{{node.description}}</div>
-        </mat-list-item>
-      </mat-list>
-      <div class="report-item__amount" [ngClass]="node.amount >= 0 ? 'green' : 'red'">
-        {{node.amount}} {{node.account.currency}}
-      </div>
-    </a>
-    <mat-divider></mat-divider>
-  </mat-tree-node>
-  <mat-tree-node *matTreeNodeDef="let node; when: hasChild" matTreeNodePadding>
-    <button mat-icon-button matTreeNodeToggle>
-      <mat-icon>
-        {{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
-      </mat-icon>
-    </button>
-    <div>
+    <ng-template #groupNode>
+      <button mat-icon-button matTreeNodeToggle>
+        <mat-icon>
+          {{tree.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
+        </mat-icon>
+      </button>
       <div>
         {{node.groupName}}
+        <div class="amount" [ngClass]="node.amount >= 0 ? 'green' : 'red'">{{node.amount}}
+          {{node.currency}}</div>
       </div>
-      <span class="report-item__amount" [ngClass]="node.amount >= 0 ? 'green' : 'red'">{{node.amount}}
-        {{node.currency}}</span>
-    </div>
+    </ng-template>
+
+    <ng-container *ngIf="node.transactionId; else groupNode">
+      <a [routerLink]="['/accounts', node.account.accountId, 'transactions', node.transactionId]" class="report-item mat-elevation-z2" href="" target="_blank">
+        <div class="datetime">
+          <div class="year">{{node.issuedAt | date:'yyyy'}}</div>
+          <div class="date">{{node.issuedAt | date:'MMM dd.'}}</div>
+          <div class="time">{{node.issuedAt | date:'HH:mm'}}</div>
+        </div>
+        <mat-list>
+          <mat-list-item class="account" *ngIf="!groupBy.includes('account')">
+            <mat-icon matListItemIcon>reply_all</mat-icon>
+            <div matListItemTitle>{{node.account.fullName}}</div>
+          </mat-list-item>
+          <mat-list-item *ngIf="!groupBy.includes('recipient') && node.recipient">
+            <mat-icon matListItemIcon>store</mat-icon>
+            <div matListItemTitle class="recipient">{{node.recipient.name}}</div>
+          </mat-list-item>
+          <mat-list-item *ngIf="!groupBy.includes('category') && node.category">
+            <mat-icon matListItemIcon>category</mat-icon>
+            <div matListItemTitle class="category">{{node.category.fullName}}</div>
+          </mat-list-item>
+          <mat-list-item *ngIf="!groupBy.includes('product') && node.product">
+            <mat-icon matListItemIcon>barcode</mat-icon>
+            <div matListItemTitle class="product">{{node.product.fullName}}</div>
+          </mat-list-item>
+          <mat-list-item *ngIf="node.product">
+            <mat-icon matListItemIcon>add_shopping_cart</mat-icon>
+            <div matListItemTitle class="product">{{node.product.quantity}}</div>
+          </mat-list-item>
+          <mat-list-item *ngIf="node.invoiceNumber">
+            <mat-icon matListItemIcon>receipt</mat-icon>
+            <div matListItemTitle class="product">{{node.invoiceNumber}}</div>
+          </mat-list-item>
+          <mat-list-item *ngIf="node.billingStartDate && node.billingEndDate">
+            <mat-icon matListItemIcon>calendar_month</mat-icon>
+            <div matListItemTitle class="product">{{node.billingStartDate | date:'yyyy MMM dd.'}} - {{node.billingEndDate | date:'yyyy MMM dd.'}}</div>
+          </mat-list-item>
+          <mat-list-item *ngIf="!groupBy.includes('project') && node.project">
+            <mat-icon matListItemIcon>stacks</mat-icon>
+            <div matListItemTitle class="project">{{node.project.name}}</div>
+          </mat-list-item>
+          <mat-list-item *ngIf="node.description">
+            <mat-icon matListItemIcon>description</mat-icon>
+            <div matListItemTitle class="description">{{node.description}}</div>
+          </mat-list-item>
+        </mat-list>
+        <div class="amount" [ngClass]="node.amount >= 0 ? 'green' : 'red'">
+          {{node.amount}} {{node.account.currency}}
+        </div>
+      </a>
+    </ng-container>
   </mat-tree-node>
 </mat-tree>

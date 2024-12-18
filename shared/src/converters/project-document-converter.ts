@@ -13,14 +13,15 @@ export interface IProjectDocumentConverter {
 
 export const projectDocumentConverterFactory = (): IProjectDocumentConverter => {
   const instance: IProjectDocumentConverter = {
-    create: (body, expiresIn, generateId): Project.Document => {
+    create: ({ name, description }, expiresIn, generateId) => {
       return {
-        ...body,
+        description,
+        name,
         _id: generateId ? generateMongoId() : undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
-    update: (body, expiresIn): UpdateQuery<Project.Document> => {
+    update: (body, expiresIn) => {
       const update: UpdateQuery<Project.Document> = {
         $set: {
           ...body,
@@ -36,18 +37,15 @@ export const projectDocumentConverterFactory = (): IProjectDocumentConverter => 
 
       return update;
     },
-    toResponse: (doc): Project.Response => {
+    toResponse: ({ description, _id, name }) => {
       return {
-        ...doc,
-        createdAt: undefined,
-        updatedAt: undefined,
-        _id: undefined,
-        expiresAt: undefined,
-        projectId: getProjectId(doc),
+        name,
+        description,
+        projectId: getProjectId(_id),
       };
     },
 
-    toReport: (doc): Project.Report => {
+    toReport: (doc) => {
       return doc ? {
         projectId: getProjectId(doc),
         name: doc.name,

@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AccountHomeComponent } from 'src/app/account/account-home/account-home.component';
-import { AccountRoutingModule } from 'src/app/account/account-routing.module';
+import { AccountHomeComponent } from '@household/web/app/account/account-home/account-home.component';
+import { AccountRoutingModule } from '@household/web/app/account/account-routing.module';
 import { AccountListComponent } from './account-list/account-list.component';
 import { AccountListItemComponent } from './account-list-item/account-list-item.component';
 import { MatButtonModule } from '@angular/material/button';
@@ -15,11 +15,13 @@ import { OpenAccountFilterPipe } from './pipes/open-account.pipe';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AccountFormComponent } from './account-form/account-form.component';
 import { MatDialogModule } from '@angular/material/dialog';
-import { ToolbarComponent } from 'src/app/shared/toolbar/toolbar.component';
-import { AutocompleteModule } from 'src/app/shared/autocomplete/autocomplete.module';
-import { ClearableInputComponent } from 'src/app/shared/clearable-input/clearable-input.component';
+import { ToolbarComponent } from '@household/web/app/shared/toolbar/toolbar.component';
+import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
 import { MatListModule } from '@angular/material/list';
-import { TransactionModule } from 'src/app/transaction/transaction.module';
+import { TransactionModule } from '@household/web/app/transaction/transaction.module';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { MatMenuModule } from '@angular/material/menu';
+import { KeyvalueAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/keyvalue-autocomplete-input/keyvalue-autocomplete-input.component';
 
 @NgModule({
   declarations: [
@@ -44,9 +46,11 @@ import { TransactionModule } from 'src/app/transaction/transaction.module';
     AccountRoutingModule,
     MatDialogModule,
     ToolbarComponent,
-    AutocompleteModule,
     ClearableInputComponent,
+    KeyvalueAutocompleteInputComponent,
     TransactionModule,
+    MatMenuModule,
+    NgxSkeletonLoaderModule,
   ],
 })
 export class AccountModule { }

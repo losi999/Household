@@ -15,7 +15,6 @@ export type BottomSubmenuData = {
 
 @Component({
   selector: 'household-bottom-submenu',
-  standalone: true,
   imports: [
     CommonModule,
     MatIconModule,

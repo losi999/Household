@@ -717,7 +717,7 @@ const validateTransactionListReport = (reports: Transaction.Report[], documents:
     if (category) {
       const { categoryId, fullName, ...empty } = category;
       expect(categoryId, `[${index}].category.categoryId`).to.equal(getCategoryId(documentCategory));
-      expect(fullName, `[${index}].category.fullName`).to.equal(documentCategory?.fullName);
+      expect(fullName, `[${index}].category.fullName`).to.equal(documentCategory?.name);
       expectEmptyObject(empty, `[${index}]`);
     } else {
       expect(category, `[${index}].category`).to.be.undefined;

@@ -1,20 +1,27 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
-import { DialogService } from 'src/app/shared/dialog.service';
-import { TransactionService } from 'src/app/transaction/transaction.service';
+import { DialogService } from '@household/web/app/shared/dialog.service';
+import { selectTransactionIsInProgress } from '@household/web/state/progress/progress.selector';
+import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
+import { Store } from '@ngrx/store';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'household-account-transactions-list-item',
   templateUrl: './account-transactions-list-item.component.html',
   styleUrls: ['./account-transactions-list-item.component.scss'],
+  standalone: false,
 })
 export class AccountTransactionsListItemComponent implements OnInit {
   @Input() transaction: Transaction.Response;
 
-  accountIcon: 'arrow_left_alt' | 'arrow_right_alt' | 'forward' | 'reply_all';
-  accountIconColor: 'red' | 'green';
-  account: Account.Response;
+  showYear: boolean;
+  transferColor: 'red' | 'green';
+  payingAccount: Account.Response;
+  ownerAccount: Account.Response;
+  givingAccount: Account.Response;
+  receivingAccount: Account.Response;
   recipient: Recipient.Response;
   category: Category.Response;
   project: Project.Response;
@@ -22,119 +29,107 @@ export class AccountTransactionsListItemComponent implements OnInit {
   invoiceNumber: string;
   billingStartDate: string;
   billingEndDate: string;
+  quantity: number;
   amount: number;
   remainingAmount: number;
+  isDisabled: Observable<boolean>;
+  viewingAccount: Account.Response;
+  formType: 'payment' | 'income' | 'split' | 'loan' | 'transfer';
 
-  constructor(private activatedRoute: ActivatedRoute, private dialogService: DialogService, private transactionService: TransactionService, private router: Router) { }
-
-  get viewingAccount() {
-    switch(this.transaction.transactionType) {
-      case 'payment':
-      case 'transfer':
-      case 'loanTransfer': return this.transaction.account;
-      case 'deferred':
-      case 'reimbursement': return this.transaction.payingAccount.accountId === this.viewingAccountId ? this.transaction.payingAccount : this.transaction.ownerAccount;
-      case 'split': return this.transaction.account.accountId === this.viewingAccountId ? this.transaction.account : this.transaction.deferredSplits[0].ownerAccount;
-    }
-  }
-
-  get date() {
-    return new Date(this.transaction.issuedAt);
-  }
-
-  get showYear() {
-    return this.date.getFullYear() !== (new Date()).getFullYear();
-  }
-
-  get viewingAccountId() {
-    return this.activatedRoute.snapshot.paramMap.get('accountId') as Account.Id;
-  }
-
-  get pathAccountId() {
-    switch(this.transaction.transactionType) {
-      case 'payment':
-      case 'transfer':
-      case 'split':
-      case 'loanTransfer': return this.transaction.account.accountId;
-      case 'deferred': return this.viewingAccountId;
-      case 'reimbursement': return this.transaction.ownerAccount.accountId;
-    }
-  }
+  constructor(private activatedRoute: ActivatedRoute, private dialogService: DialogService, private store: Store) { }
 
   ngOnInit(): void {
+    this.isDisabled = this.store.select(selectTransactionIsInProgress(this.transaction.transactionId));
+    this.showYear = !this.transaction.issuedAt.startsWith(new Date().getFullYear()
+      .toString());
+    const viewingAccountId = this.activatedRoute.snapshot.paramMap.get('accountId') as Account.Id;
+
     switch (this.transaction.transactionType) {
       case 'payment': {
+        this.viewingAccount = this.transaction.account;
+        this.formType = this.transaction.amount >= 0 ? 'income' : 'payment';
         this.amount = this.transaction.amount;
         this.category = this.transaction.category;
         this.project = this.transaction.project;
         this.recipient = this.transaction.recipient;
         this.product = this.transaction.product;
+        this.quantity = this.transaction.quantity;
         this.invoiceNumber = this.transaction.invoiceNumber;
         this.billingEndDate = this.transaction.billingEndDate;
         this.billingStartDate = this.transaction.billingStartDate;
       } break;
       case 'loanTransfer': {
-        this.account = this.transaction.transferAccount;
-        this.accountIcon = this.transaction.amount <= 0 ? 'arrow_left_alt' : 'arrow_right_alt';
-        this.accountIconColor = this.transaction.amount >= 0 ? 'green' : 'red';
+        this.formType = 'transfer';
+        this.viewingAccount = this.transaction.account;
+        const isLoan = this.viewingAccount.accountType === 'loan';
+        const isPositive = this.transaction.amount >= 0;
+
+        this.receivingAccount = (isLoan && isPositive) || (!isLoan && !isPositive) ? this.transaction.transferAccount : undefined;
+        this.givingAccount = (isLoan && !isPositive) || (!isLoan && isPositive) ? this.transaction.transferAccount : undefined;
+        this.transferColor = this.transaction.amount >= 0 ? 'green' : 'red';
         this.amount = this.transaction.amount;
       } break;
       case 'transfer': {
-        this.account = this.transaction.transferAccount;
-        this.accountIcon = this.transaction.amount >= 0 ? 'arrow_left_alt' : 'arrow_right_alt';
-        this.accountIconColor = this.transaction.amount >= 0 ? 'green' : 'red';
+        this.formType = 'transfer';
+        this.viewingAccount = this.transaction.account;
+        if (this.transaction.amount >= 0) {
+          this.givingAccount = this.transaction.transferAccount;
+        } else {
+          this.receivingAccount = this.transaction.transferAccount;
+        }
+        this.transferColor = this.transaction.amount >= 0 ? 'green' : 'red';
         this.amount = this.transaction.amount;
       } break;
       case 'deferred': {
-        if (this.transaction.payingAccount.accountId === this.viewingAccountId) {
-          this.account = this.transaction.ownerAccount;
-          this.accountIcon = 'forward';
-          this.accountIconColor = 'green';
+        this.formType = 'loan';
+        if (this.transaction.payingAccount.accountId === viewingAccountId) {
+          this.viewingAccount = this.transaction.payingAccount;
+          this.ownerAccount = this.transaction.ownerAccount;
         } else {
-          this.account = this.transaction.payingAccount;
-          this.accountIcon = 'reply_all';
-          this.accountIconColor = 'red';
+          this.viewingAccount = this.transaction.ownerAccount;
+          this.payingAccount = this.transaction.payingAccount;
         }
-        this.amount = this.transaction.payingAccount.accountId === this.viewingAccountId || this.viewingAccount.accountType === 'loan' ? this.transaction.amount : undefined;
+        this.amount = this.transaction.payingAccount.accountId === viewingAccountId || this.viewingAccount.accountType === 'loan' ? this.transaction.amount : undefined;
         this.remainingAmount = this.transaction.remainingAmount;
         this.category = this.transaction.category;
         this.project = this.transaction.project;
         this.recipient = this.transaction.recipient;
         this.product = this.transaction.product;
+        this.quantity = this.transaction.quantity;
         this.invoiceNumber = this.transaction.invoiceNumber;
         this.billingEndDate = this.transaction.billingEndDate;
         this.billingStartDate = this.transaction.billingStartDate;
-      }break;
+      } break;
       case 'reimbursement': {
-        if (this.transaction.payingAccount.accountId === this.viewingAccountId) {
-          this.account = this.transaction.ownerAccount;
-          this.accountIcon = 'forward';
-          this.accountIconColor = 'green';
+        this.formType = 'loan';
+        if (this.transaction.payingAccount.accountId === viewingAccountId) {
+          this.viewingAccount = this.transaction.payingAccount;
+          this.ownerAccount = this.transaction.ownerAccount;
           this.amount = this.transaction.amount * -1;
         } else {
-          this.account = this.transaction.payingAccount;
-          this.accountIcon = 'reply_all';
-          this.accountIconColor = 'red';
+          this.viewingAccount = this.transaction.ownerAccount;
+          this.payingAccount = this.transaction.payingAccount;
         }
         this.category = this.transaction.category;
         this.project = this.transaction.project;
         this.recipient = this.transaction.recipient;
         this.product = this.transaction.product;
+        this.quantity = this.transaction.quantity;
         this.invoiceNumber = this.transaction.invoiceNumber;
         this.billingEndDate = this.transaction.billingEndDate;
         this.billingStartDate = this.transaction.billingStartDate;
       } break;
       case 'split': {
-        if (this.transaction.account.accountId === this.viewingAccountId) {
+        this.formType = 'split';
+        if (this.transaction.account.accountId === viewingAccountId) {
+          this.viewingAccount = this.transaction.account;
           this.amount = this.transaction.amount;
           this.remainingAmount = this.transaction.deferredSplits?.reduce((accumulator, currentValue) => {
             return accumulator + currentValue.remainingAmount;
           }, 0);
-          this.accountIconColor = 'green';
         } else {
-          this.account = this.transaction.account;
-          this.accountIcon = 'reply_all';
-          this.accountIconColor = 'red';
+          this.viewingAccount = this.transaction.deferredSplits[0].ownerAccount;
+          this.payingAccount = this.transaction.account;
           if (this.viewingAccount.accountType === 'loan') {
             this.amount = this.transaction.deferredSplits.reduce((accumulator, currentValue) => {
               return accumulator + currentValue.amount;
@@ -153,9 +148,10 @@ export class AccountTransactionsListItemComponent implements OnInit {
   delete() {
     this.dialogService.openDeleteTransactionDialog().afterClosed()
       .subscribe(shouldDelete => {
-        console.log(shouldDelete);
         if (shouldDelete) {
-          this.transactionService.deleteTransaction(this.transaction.transactionId);
+          this.store.dispatch(transactionApiActions.deleteTransactionInitiated({
+            transactionId: this.transaction.transactionId,
+          }));
         }
       });
   }

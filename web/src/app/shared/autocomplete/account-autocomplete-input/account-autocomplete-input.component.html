@@ -1,0 +1,13 @@
+<mat-form-field>
+  <mat-label>{{label}}</mat-label>
+  <input type="text" #inp matInput [matAutocomplete]="autocomplete" (blur)="touched?.()" [formControl]="selected">
+  <mat-autocomplete #autocomplete="matAutocomplete" [displayWith]="displayName">
+    <mat-option *ngFor="let account of accounts | async | autocompleteFilter: 'fullName' : inp.value" [value]="account">
+      {{account.fullName}}
+    </mat-option>
+  </mat-autocomplete>
+  <button matSuffix mat-icon-button aria-label="Clear" type="button" (click)="clearValue($event)" tabindex="-1">
+    <mat-icon>close</mat-icon>
+  </button>
+  <mat-error *ngIf="selected.errors?.required">Kötelező</mat-error>
+</mat-form-field>

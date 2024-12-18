@@ -1,4 +1,5 @@
 import { httpErrors } from '@household/api/common/error-handlers';
+import { getCategoryId } from '@household/shared/common/utils';
 import { ICategoryService } from '@household/shared/services/category-service';
 import { Category } from '@household/shared/types/types';
 
@@ -12,8 +13,8 @@ export const mergeCategoriesServiceFactory = (
   categoryService: ICategoryService,
 ): IMergeCategoriesService => {
   return async ({ body, categoryId }) => {
-    httpErrors.category.mergeTargetAmongSource(body.includes(categoryId), {
-      categoryId,
+    httpErrors.category.mergeTargetAmongSource({
+      target: categoryId,
       source: body,
     });
 
@@ -24,11 +25,19 @@ export const mergeCategoriesServiceFactory = (
 
     const categories = await categoryService.listCategoriesByIds(categoryIds).catch(httpErrors.category.listByIds(categoryIds));
 
-    httpErrors.category.multipleNotFound(categories.length !== categoryIds.length, {
+    httpErrors.category.multipleNotFound({
+      categories,
       categoryIds,
     });
 
     httpErrors.category.notSameType(categories);
+
+    const targetCategory = categories.find(c => getCategoryId(c) === categoryId);
+
+    httpErrors.category.mergeSourceIsAnAncestor({
+      target: targetCategory,
+      source: body,
+    });
 
     await categoryService.mergeCategories({
       sourceCategoryIds: body,

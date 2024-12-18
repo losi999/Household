@@ -1,25 +1,28 @@
-import { Component } from '@angular/core';
-import { AccountService } from 'src/app/account/account.service';
-import { DialogService } from 'src/app/shared/dialog.service';
-import { Store } from 'src/app/store';
+import { Component, OnInit } from '@angular/core';
+import { Store } from '@ngrx/store';
+import { accountApiActions } from '@household/web/state/account/account.actions';
+import { selectAccountsByOwner } from '@household/web/state/account/account.selector';
+import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 
 @Component({
   selector: 'household-account-home',
   templateUrl: './account-home.component.html',
   styleUrls: ['./account-home.component.scss'],
+  standalone: false,
 })
-export class AccountHomeComponent {
+export class AccountHomeComponent implements OnInit {
   onlyOpenAccounts: boolean;
-  get accountsByOwner() {
-    return this.store.accountsByOwner.value;
-  }
+  accountsByOwner = this.store.select(selectAccountsByOwner);
 
-  constructor(private store: Store, private dialogService: DialogService, accountService: AccountService) {
-    accountService.listAccounts();
+  constructor(private store: Store) { }
+
+  ngOnInit(): void {
     this.onlyOpenAccounts = true;
+
+    this.store.dispatch(accountApiActions.listAccountsInitiated());
   }
 
   create() {
-    this.dialogService.openCreateAccountDialog();
+    this.store.dispatch(dialogActions.createAccount());
   }
 }

@@ -4,13 +4,11 @@ import { IListCategoriesService } from '@household/api/functions/list-categories
 import { Category } from '@household/shared/types/types';
 
 export default (listCategories: IListCategoriesService): AWSLambda.APIGatewayProxyHandler => {
-  return async (event) => {
+  return async () => {
     let categories: Category.Response[];
-    const { categoryType } = (event.queryStringParameters ?? {}) as Category.CategoryType;
+
     try {
-      categories = await listCategories({
-        categoryType,
-      });
+      categories = await listCategories();
     } catch (error) {
       console.error(error);
       return errorResponse(error);

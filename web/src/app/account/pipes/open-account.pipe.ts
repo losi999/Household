@@ -3,6 +3,7 @@ import { Account } from '@household/shared/types/types';
 
 @Pipe({
   name: 'openAccountFilter',
+  standalone: false,
 })
 export class OpenAccountFilterPipe implements PipeTransform {
 

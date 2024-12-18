@@ -23,6 +23,7 @@ const dateRangeValidator: ValidatorFn = (control) => {
   selector: 'household-report-date-range-filter',
   templateUrl: './report-date-range-filter.component.html',
   styleUrl: './report-date-range-filter.component.scss',
+  standalone: false,
 })
 export class ReportDateRangeFilterComponent implements OnInit {
   @Output() rangeAdded = new EventEmitter<ReportDateRangeFilterValue>();

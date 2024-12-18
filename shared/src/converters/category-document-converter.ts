@@ -1,6 +1,5 @@
 import { generateMongoId } from '@household/shared/common/utils';
 import { addSeconds, getCategoryId } from '@household/shared/common/utils';
-import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
 import { Restrict } from '@household/shared/types/common';
 import { Category } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
@@ -19,61 +18,66 @@ export interface ICategoryDocumentConverter {
   toResponseList(docs: Category.Document[]): Category.Response[];
 }
 
-export const categoryDocumentConverterFactory = (
-  productDocumentConverter: IProductDocumentConverter,
-): ICategoryDocumentConverter => {
+export const categoryDocumentConverterFactory = (): ICategoryDocumentConverter => {
+  const toResponseBase = ({ name, categoryType, _id }: Category.Document): Category.ResponseAncestor => {
+    return {
+      categoryType,
+      name,
+      categoryId: getCategoryId(_id),
+    };
+  };
+
   const instance: ICategoryDocumentConverter = {
-    create: ({ body, parentCategory }, expiresIn, generateId): Category.Document => {
+    create: ({ body: { categoryType, name }, parentCategory }, expiresIn, generateId) => {
       return {
-        ...body,
-        fullName: parentCategory ? `${parentCategory.fullName}:${body.name}` : body.name,
-        parentCategory: parentCategory ?? undefined,
-        parentCategoryId: undefined,
+        name,
+        categoryType,
+        ancestors: parentCategory ? [
+          ...parentCategory.ancestors,
+          parentCategory,
+        ] : [],
         _id: generateId ? generateMongoId() : undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
-    update: ({ body, parentCategory }, expiresIn): UpdateQuery<Category.Document> => {
+    update: ({ body, parentCategory }, expiresIn) => {
       const update: UpdateQuery<Category.Document> = {
         $set: {
           ...body,
-          fullName: parentCategory ? `${parentCategory.fullName}:${body.name}` : body.name,
+          ancestors: parentCategory ? [
+            ...parentCategory.ancestors,
+            parentCategory,
+          ] : [],
           expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
         },
       };
 
-      if (parentCategory) {
-        update.$set.parentCategory = parentCategory;
-      } else {
-        update.$unset = {
-          parentCategory: 1,
-        };
-      }
-
       return update;
     },
-    toResponse: (doc): Category.Response => {
+    toResponse: (doc) => {
+      const parentFullName = doc.ancestors.map(d => d.name).join(':');
       return {
-        ...doc,
-        createdAt: undefined,
-        updatedAt: undefined,
-        _id: undefined,
-        expiresAt: undefined,
-        categoryId: getCategoryId(doc),
-        parentCategory: doc.parentCategory ? {
-          ...instance.toResponse(doc.parentCategory),
-          parentCategory: undefined,
+        ...toResponseBase(doc),
+        ancestors: doc.ancestors.map(d => toResponseBase(d)),
+        fullName: parentFullName ? `${parentFullName}:${doc.name}` : doc.name,
+        parentCategory: parentFullName ? {
+          ...toResponseBase(doc.ancestors.at(-1)),
+          fullName: parentFullName,
         } : undefined,
-        products: doc.products ? productDocumentConverter.toResponseList(doc.products) : undefined,
       };
     },
-    toReport: (doc): Category.Report => {
+    toReport: (doc) => {
       return doc ? {
         categoryId: getCategoryId(doc),
-        fullName: doc.fullName,
+        fullName: [
+          ...doc.ancestors.map(d => d.name),
+          doc.name,
+        ].join(':'),
       } : undefined;
     },
-    toResponseList: docs => docs.map(d => instance.toResponse(d)),
+    toResponseList: docs => docs.map(d => instance.toResponse(d)).toSorted((a, b) => a.fullName.localeCompare(b.fullName, 'hu', {
+      sensitivity: 'base',
+    })),
   };
 
   return instance;

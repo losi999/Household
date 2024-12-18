@@ -1,3 +1,8 @@
+.amount {
+  font-size: 20px;
+  font-weight: bold;
+}
+
 .report-item {
   display: grid;
   grid-template-columns: 75px 1fr auto;
@@ -6,9 +11,27 @@
   width: 100%;
   padding: 10px;
 
-  &__datetime {
+  & > .datetime {
     grid-area: datetime;
     text-align: right;
+
+    & > .year {
+      font-size: 12px;
+    }
+
+    & > .date {
+      font-size: 16px;
+    }
+
+    & > .time {
+      font-size: 14px;
+    }
+  }
+
+  .amount {
+    grid-area: amount;
+    align-self: center;
+    justify-self: end;
   }
 
   .mat-mdc-list {
@@ -20,50 +43,30 @@
       height: 26px;
     }
 
-    .mat-icon{
+    .mat-icon {
       margin: 0;
     }
 
     .mat-mdc-list-item-title {
       margin-left: 6px;
     }
-  }
 
-  &__year {
-    font-size: 12px;
-  }
+    .category,
+    .recipient,
+    .description,
+    .project {
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+    }
 
-  &__date {
-    font-size: 16px;
-  }
+    .account,
+    .recipient {
+      font-weight: bold;
+    }
 
-  &__time {
-    font-size: 14px;
-  }
-
-  &__category,
-  &__recipient,
-  &__description,
-  &__project {
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-  }
-
-  &__account,
-  &__recipient {
-    font-weight: bold;
-  }
-
-  &__description {
-    font-style: italic;
-  }
-
-  &__amount {
-    grid-area: amount;
-    align-self: center;
-    justify-self: end;
-    font-size: 20px;
-    font-weight: bold;
+    .description {
+      font-style: italic;
+    }
   }
 }
