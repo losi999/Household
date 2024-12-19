@@ -146,7 +146,7 @@ export class TransactionTransferEditComponent implements OnInit {
       }
     });
 
-    combineLatest([
+    /*combineLatest([
       this.form.controls.account.valueChanges,
       this.form.controls.transferAccount.valueChanges,
     ]).subscribe(([
@@ -163,7 +163,7 @@ export class TransactionTransferEditComponent implements OnInit {
         console.log('B');
         this.form.controls.transferAmount.removeValidators(Validators.required);
       }
-    });
+    });*/
 
     this.store.select(selectAccountById(accountId)).pipe(takeFirstDefined())
       .subscribe((account) => {
