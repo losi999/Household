@@ -153,12 +153,14 @@ export class TransactionTransferEditComponent implements OnInit {
       account,
       transferAccount,
     ]) => {
-      console.log('curr', account?.currency, transferAccount?.currency);
+      console.log('curr', account?.currency, transferAccount?.currency, account?.currency !== transferAccount?.currency);
       this.form.controls.transferAmount.reset();
 
       if (account && transferAccount && account.currency !== transferAccount.currency) {
+        console.log('A');
         this.form.controls.transferAmount.setValidators(Validators.required);
       } else {
+        console.log('B');
         this.form.controls.transferAmount.removeValidators(Validators.required);
       }
     });
