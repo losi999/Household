@@ -5,7 +5,6 @@ import { Category } from '@household/shared/types/types';
 import { Store } from '@ngrx/store';
 import { categoryApiActions } from '@household/web/state/category/category.actions';
 import { selectCategoriesAsParent } from '@household/web/state/category/category.selector';
-import { toUndefined } from '@household/shared/common/utils';
 
 export type CategoryFormData = Category.Response;
 
@@ -19,7 +18,7 @@ export class CategoryFormComponent implements OnInit {
   form: FormGroup<{
     name: FormControl<string>;
     categoryType: FormControl<Category.CategoryType['categoryType']>;
-    parentCategoryId: FormControl<Category.Id>
+    parentCategory: FormControl<Category.ResponseParent>
   }>;
   categories = this.store.select(selectCategoriesAsParent(this.category?.categoryId));
 
@@ -31,18 +30,18 @@ export class CategoryFormComponent implements OnInit {
     this.form = new FormGroup({
       name: new FormControl(this.category?.name, [Validators.required]),
       categoryType: new FormControl(this.category?.categoryType ?? 'regular', [Validators.required]),
-      parentCategoryId: new FormControl(this.category?.parentCategory?.categoryId),
+      parentCategory: new FormControl(this.category?.parentCategory),
     });
   }
 
   save() {
     if (this.form.valid) {
-      const { categoryType, name, parentCategoryId } = this.form.getRawValue();
+      const { categoryType, name, parentCategory } = this.form.getRawValue();
 
       const request: Category.Request = {
         name,
         categoryType,
-        parentCategoryId: toUndefined(parentCategoryId),
+        parentCategoryId: parentCategory?.categoryId,
       };
 
       if (this.category) {
