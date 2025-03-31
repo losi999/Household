@@ -95,6 +95,8 @@ export class TransactionTransferEditComponent implements OnInit {
       );
 
       transaction.subscribe((transaction) => {
+        this.isDownwardTransfer = transaction.account.accountType !== 'loan' && transaction.amount < 0;
+
         this.form.patchValue({
           amount: transaction.amount,
           account: transaction.account,
@@ -163,8 +165,10 @@ export class TransactionTransferEditComponent implements OnInit {
       this.form.controls.transferAmount.reset();
 
       if (account && transferAccount && account.currency !== transferAccount.currency) {
+        console.log('A');
         this.form.controls.transferAmount.setValidators(Validators.required);
       } else {
+        console.log('B');
         this.form.controls.transferAmount.removeValidators(Validators.required);
       }
     });
