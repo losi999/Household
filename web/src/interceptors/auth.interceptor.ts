@@ -5,6 +5,7 @@ import { AuthService } from '@household/web/services/auth.service';
 import { catchError, switchMap, tap } from 'rxjs/operators';
 import { Store } from '@ngrx/store';
 import { progressActions } from '@household/web/state/progress/progress.actions';
+import { environment } from '@household/web/environments/environment';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
@@ -46,6 +47,10 @@ export class AuthInterceptor implements HttpInterceptor {
   }
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
+    if (!request.url.includes(environment.apiUrl)) {
+      return next.handle(request);
+    }
+
     if (this.authService.isLoggedIn) {
       const authorizedRequest = this.addAuthHeaders(request);
       return next.handle(authorizedRequest).pipe(

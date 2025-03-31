@@ -3,7 +3,7 @@ import { read as Read, utils as Utils, WorkBook } from 'xlsx';
 import { default as Moment } from 'moment-timezone';
 
 export interface IExcelParserService {
-  parse(fileContent: Uint8Array, fileType: File.Type['type'], timezone: string): (Transaction.IssuedAt<Date> & Transaction.Amount & Transaction.Description)[];
+  parse(fileContent: Uint8Array, fileType: File.Type['fileType'], timezone: string): (Transaction.IssuedAt<Date> & Transaction.Amount & Transaction.Description)[];
 }
 
 export const excelParserServiceFactory = (read: typeof Read, utils: typeof Utils, moment: typeof Moment): IExcelParserService => {
@@ -24,7 +24,7 @@ export const excelParserServiceFactory = (read: typeof Read, utils: typeof Utils
 
     return parsed.map((p => {
       return {
-        amount: p['Amount'],
+        amount: p['Amount'] - p['Fee'],
         description: p['Description'],
         issuedAt: moment((p['Started Date'] as Date).toISOString().replace('Z', '')).toDate(),
       };

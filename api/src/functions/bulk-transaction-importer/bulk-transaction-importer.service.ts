@@ -27,12 +27,12 @@ export const bulkTransactionImporterServiceFactory = (fileService: IFileService,
       fileName,
     }));
 
-    const parsed = excelParser.parse(file, document.type, document.timezone);
+    const parsed = excelParser.parse(file, document.fileType, document.timezone);
 
     const drafts = parsed.map(p => draftTransactionDocumentConverter.create({
       body: p,
       file: document,
-    }, null));
+    }, (document.expiresAt?.getTime() - Date.now()) / 1000));
 
     await transactionService.saveTransactions(drafts).catch(httpErrors.transaction.saveMultiple(drafts));
 

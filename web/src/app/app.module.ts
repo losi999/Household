@@ -35,6 +35,8 @@ import { transactionReducer } from '@household/web/state/transaction/transaction
 import { NavigationEffects } from '@household/web/state/navigation/navigation.effects';
 import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
 import { DialogEffects } from '@household/web/state/dialog/dialog.effects';
+import { FileEffects } from '@household/web/state/file/file.effects';
+import { fileReducer } from '@household/web/state/file/file.reducer';
 
 registerLocaleData(localeHu);
 
@@ -58,6 +60,7 @@ registerLocaleData(localeHu);
       progress: progressReducer,
       products: productReducer,
       transactions: transactionReducer,
+      files: fileReducer,
     }),
     StoreDevtoolsModule.instrument({
       maxAge: 25,
@@ -73,6 +76,7 @@ registerLocaleData(localeHu);
       TransactionEffects,
       NavigationEffects,
       DialogEffects,
+      FileEffects,
     ]),
   ],
   providers: [

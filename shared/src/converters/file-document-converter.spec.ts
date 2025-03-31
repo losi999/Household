@@ -18,11 +18,11 @@ describe('File document converter', () => {
 
   const expiresIn = 3600;
   const timezone = 'Europe/Budapest';
-  const type = 'otp';
+  const fileType = 'otp';
 
   const body = createFileRequest({
     timezone,
-    type,
+    fileType,
   });
 
   describe('create', () => {
@@ -30,7 +30,7 @@ describe('File document converter', () => {
       const result = converter.create(body, undefined);
       expect(result).toEqual(createFileDocument({
         timezone,
-        type,
+        fileType,
         expiresAt: undefined,
         _id: undefined,
       }));
@@ -40,7 +40,7 @@ describe('File document converter', () => {
       const result = converter.create(body, expiresIn);
       expect(result).toEqual(createFileDocument({
         timezone,
-        type,
+        fileType,
         expiresAt: addSeconds(expiresIn, now),
         _id: undefined,
       }));

@@ -5,9 +5,9 @@ import { File } from '@household/shared/types/types';
 const schema: StrictJSONSchema7<File.Request> = {
   type: 'object',
   additionalProperties: false,
-  required: ['type'],
+  required: ['fileType'],
   properties: {
-    type: {
+    fileType: {
       type: 'string',
       enum: [...fileTypes],
     },

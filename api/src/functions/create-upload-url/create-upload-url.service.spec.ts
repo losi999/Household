@@ -45,7 +45,7 @@ describe('Create upload URL service', () => {
       });
       validateFunctionCall(mockFileDocumentConverter.functions.create, fileRequest, undefined);
       validateFunctionCall(mockFileService.functions.saveFile, convertedFileDocument);
-      validateFunctionCall(mockStorageService.functions.getSignedUrlForUpload, `${fileRequest.type}/${savedFileDocument._id}`);
+      validateFunctionCall(mockStorageService.functions.getSignedUrlForUpload, `${fileRequest.fileType}/${savedFileDocument._id}`);
       expect.assertions(3);
     });
   });
@@ -76,7 +76,7 @@ describe('Create upload URL service', () => {
       }).catch(validateError('Error while getting URL for file upload', 500));
       validateFunctionCall(mockFileDocumentConverter.functions.create, fileRequest, undefined);
       validateFunctionCall(mockFileService.functions.saveFile, convertedFileDocument);
-      validateFunctionCall(mockStorageService.functions.getSignedUrlForUpload, `${fileRequest.type}/${savedFileDocument._id}`);
+      validateFunctionCall(mockStorageService.functions.getSignedUrlForUpload, `${fileRequest.fileType}/${savedFileDocument._id}`);
       expect.assertions(5);
     });
   });

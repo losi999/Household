@@ -554,12 +554,31 @@ paths:
         204:
           description: Transaction deleted
   /file/v1/files:
+    get:
+      responses:
+        200:
+          description: List of files
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                    - $ref: "file.yaml#/components/schemas/FileId"
+                    - type: object
+                      properties:
+                        uploadedAt:
+                          type: string
+                          format: date-time
+                        draftCount:
+                          type: integer
+
     post:
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "file.yaml#/components/schemas/Type"
+              $ref: "file.yaml#/components/schemas/FileType"
       responses:
         201:
           description: Presigned Url
@@ -569,6 +588,26 @@ paths:
                 allOf:
                   - $ref: "file.yaml#/components/schemas/Url"
                   - $ref: "file.yaml#/components/schemas/FileId"
+  /file/v1/files/{fileId}:
+    parameters:
+      - $ref: "#/components/parameters/Path.FileId"
+    delete:
+      responses:
+        204:
+          description: File and related drafts are deleted
+  /file/v1/files/{fileId}/transactions:
+    parameters:
+      - $ref: "#/components/parameters/Path.FileId"
+    get:
+      responses:
+        200:
+          description: List of draft transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "transaction.yaml#/components/schemas/DraftResponse"
 
 components:
   parameters:
@@ -604,6 +643,12 @@ components:
         type: string
     Path.TransactionId:
       name: transactionId
+      in: path
+      required: true
+      schema:
+        type: string
+    Path.FileId:
+      name: fileId
       in: path
       required: true
       schema:

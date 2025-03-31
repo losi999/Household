@@ -23,5 +23,6 @@ export const dialogActions = createActionGroup({
     'Create account': emptyProps(),
     'Update account': props<Account.Response>(),
     'Delete account': props<Account.Response>(),
+    'Import file': emptyProps(),
   },
 });

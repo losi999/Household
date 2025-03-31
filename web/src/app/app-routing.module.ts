@@ -59,6 +59,15 @@ const routes: Routes = [
     canMatch: [canMatch],
   },
   {
+    path: 'imports',
+    title: 'Importálás',
+    loadChildren: () => import('./import/import.module').then(m => m.ImportModule),
+    data: {
+      requireLogin: true,
+    },
+    canMatch: [canMatch],
+  },
+  {
     path: '',
     title: 'Számlák',
     loadChildren: () => import('./account/account.module').then(m => m.AccountModule),

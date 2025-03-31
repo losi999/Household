@@ -4,6 +4,7 @@ import { Account, Category, Product, Project, Recipient } from '@household/share
 import { AccountFormComponent, AccountFormData } from '@household/web/app/account/account-form/account-form.component';
 import { CategoryFormComponent, CategoryFormData } from '@household/web/app/category/category-form/category-form.component';
 import { CategoryMergeDialogComponent, CategoryMergeDialogData } from '@household/web/app/category/category-merge-dialog/category-merge-dialog.component';
+import { ImportFileUploadFormComponent } from '@household/web/app/import/import-file-upload-form/import-file-upload-form.component';
 import { ProductFormComponent, ProductFormData } from '@household/web/app/product/product-form/product-form.component';
 import { ProductMergeDialogComponent, ProductMergeDialogData } from '@household/web/app/product/product-merge-dialog/product-merge-dialog.component';
 import { ProjectFormComponent, ProjectFormData } from '@household/web/app/project/project-form/project-form.component';
@@ -158,5 +159,9 @@ export class DialogService {
         title: 'Törölni akarod ezt a tranzakciót?',
       },
     });
+  }
+
+  openImportFileDialog(): void {
+    this.dialog.open<ImportFileUploadFormComponent, void, void>(ImportFileUploadFormComponent);
   }
 }

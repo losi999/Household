@@ -88,6 +88,18 @@ Resources:
   ImportBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
+    Properties:
+      CorsConfiguration:
+        CorsRules:
+          - AllowedOrigins:
+              - "*"
+            AllowedMethods:
+              - "PUT"
+            AllowedHeaders:
+              - "*"
+            ExposedHeaders:
+              - "ETag"
+            MaxAge: 3000
 
   BulkTransactionImporter:
     Type: AWS::Serverless::Function

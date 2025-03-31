@@ -4,12 +4,12 @@ info:
   version: 1.0.0
 components:
   schemas:
-    Type:
+    FileType:
       type: object
       required:
-        - type
+        - fileType
       properties:
-        type:
+        fileType:
           type: string
           enum:
             - otp

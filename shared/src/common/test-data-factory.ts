@@ -680,7 +680,7 @@ export const createTransactionReport: DataFactoryFunction<Transaction.Report> = 
 export const createFileRequest: DataFactoryFunction<File.Request> = (req) => {
   return {
     timezone: 'Europe/Budapest',
-    type: 'otp',
+    fileType: 'otp',
     ...req,
   };
 };
@@ -690,7 +690,7 @@ export const createFileDocument: DataFactoryFunction<File.Document> = (doc) => {
     _id: generateMongoId(),
     expiresAt: undefined,
     timezone: 'Europe/Budapest',
-    type: 'otp',
+    fileType: 'otp',
     ...doc,
   };
 };

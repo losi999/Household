@@ -100,6 +100,7 @@ const schemaDefinition: SchemaDefinition<SchemaDefinitionType<Transaction.Docume
       'loanTransfer',
       'deferred',
       'reimbursement',
+      'draft',
     ],
   },
   issuedAt: {
@@ -195,6 +196,10 @@ const schemaDefinition: SchemaDefinition<SchemaDefinitionType<Transaction.Docume
   },
   expiresAt: {
     type: Schema.Types.Date,
+  },
+  file: {
+    type: Schema.Types.ObjectId,
+    ref: 'files',
   },
 };
 

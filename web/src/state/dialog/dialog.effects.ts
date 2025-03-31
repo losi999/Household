@@ -285,4 +285,16 @@ export class DialogEffects {
       }),
     );
   });
+
+  importFile = createEffect(() => {
+    return this.actions.pipe(
+      ofType(dialogActions.importFile),
+      exhaustMap(() => {
+        this.dialogService.openImportFileDialog();
+        return EMPTY;
+      }),
+    );
+  }, {
+    dispatch: false,
+  });
 }

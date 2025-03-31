@@ -221,6 +221,7 @@ components:
         - $ref: "#/components/schemas/Amount"
         - $ref: "#/components/schemas/Description"
         - $ref: "#/components/schemas/IssuedAt"
+        - $ref: "#/components/schemas/Account"
         - $ref: "#/components/schemas/InvoiceDate"
         - $ref: "#/components/schemas/InvoiceNumber"
         - $ref: "#/components/schemas/Quantity"
@@ -309,6 +310,21 @@ components:
               type: array
               items:
                 $ref: "#/components/schemas/SplitRequestItem"
+    DraftResponse:
+      allOf:
+        - $ref: "#/components/schemas/TransactionId"
+        - $ref: "#/components/schemas/Amount"
+        - $ref: "#/components/schemas/Description"
+        - $ref: "#/components/schemas/IssuedAt"
+        - type: object
+          required:
+            - transactionType
+          properties:
+            transactionType:
+              type: string
+              enum:
+                - draft
+
     Response:
       oneOf:
         - $ref: "#/components/schemas/PaymentResponse"

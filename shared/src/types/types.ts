@@ -662,7 +662,7 @@ export namespace File {
   };
 
   export type Type = {
-    type: typeof fileTypes[number];
+    fileType: typeof fileTypes[number];
   };
 
   export type Timezone = {

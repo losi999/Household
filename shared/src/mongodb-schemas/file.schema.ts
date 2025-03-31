@@ -3,7 +3,7 @@ import { File } from '@household/shared/types/types';
 import { Schema } from 'mongoose';
 
 export const fileSchema = new Schema<File.Document>({
-  type: {
+  fileType: {
     type: String,
     required: true,
     enum: fileTypes,
@@ -22,6 +22,15 @@ export const fileSchema = new Schema<File.Document>({
       expireAfterSeconds: 0,
     },
   },
+  createdAt: {
+    type: Schema.Types.Date,
+    index: {
+      expireAfterSeconds: 120,
+      partialFilterExpression: {
+        processingStatus: 'pending',
+      },
+    },
+  },
 }, {
   versionKey: false,
   timestamps: {
@@ -29,4 +38,3 @@ export const fileSchema = new Schema<File.Document>({
     updatedAt: true,
   },
 });
-
