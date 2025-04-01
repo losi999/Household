@@ -2,6 +2,7 @@ import { getTransactionId } from '@household/shared/common/utils';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
 import { IDeferredTransactionDocumentConverter } from '@household/shared/converters/deferred-transaction-document-converter';
+import { IDraftTransactionDocumentConverter } from '@household/shared/converters/draft-transaction-document-converter';
 import { ILoanTransferTransactionDocumentConverter } from '@household/shared/converters/loan-transfer-transaction-document-converter';
 import { IPaymentTransactionDocumentConverter } from '@household/shared/converters/payment-transaction-document-converter';
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
@@ -31,6 +32,7 @@ export const transactionDocumentConverterFactory = (
   reimbursementTransactionDocumentConverter: IReimbursementTransactionDocumentConverter,
   transferTransactionDocumentConverter: ITransferTransactionDocumentConverter,
   loanTransferTransactionDocumentConverter: ILoanTransferTransactionDocumentConverter,
+  draftTransactionDocumentConverter: IDraftTransactionDocumentConverter,
 ): ITransactionDocumentConverter => {
   const instance: ITransactionDocumentConverter = {
     toResponse: (doc, viewingAccountId) => {
@@ -39,7 +41,7 @@ export const transactionDocumentConverterFactory = (
         case 'split': return splitTransactionDocumentConverter.toResponse(doc);
         case 'transfer': return transferTransactionDocumentConverter.toResponse(doc, viewingAccountId);
         case 'deferred': return deferredTransactionDocumentConverter.toResponse(doc);
-        case 'draft': return undefined;
+        case 'draft': return draftTransactionDocumentConverter.toResponse(doc);
         case 'loanTransfer': return loanTransferTransactionDocumentConverter.toResponse(doc, viewingAccountId);
         case 'reimbursement': return reimbursementTransactionDocumentConverter.toResponse(doc);
         default: return undefined;

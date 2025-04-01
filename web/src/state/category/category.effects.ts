@@ -10,6 +10,13 @@ import { notificationActions } from '@household/web/state/notification/notificat
 export class CategoryEffects {
   constructor(private actions: Actions, private categoryService: CategoryService) {}
 
+  refreshList = createEffect(() => {
+    return this.actions.pipe(
+      ofType(categoryApiActions.updateCategoryCompleted, categoryApiActions.deleteCategoryCompleted, categoryApiActions.mergeCategoriesCompleted),
+      map(() => categoryApiActions.listCategoriesInitiated()),
+    );
+  });
+
   loadCategories = createEffect(() => {
     return this.actions.pipe(
       ofType(categoryApiActions.listCategoriesInitiated),
@@ -67,7 +74,7 @@ export class CategoryEffects {
       mergeMap((value) => {
         return value.pipe(exhaustMap(({ type, categoryId, ...request }) => {
           return this.categoryService.updateCategory(categoryId, request).pipe(
-            map(() => categoryApiActions.listCategoriesInitiated()),
+            map(() => categoryApiActions.updateCategoryCompleted()),
             catchError((error) => {
               let errorMessage: string;
               switch(error.error?.message) {
@@ -95,7 +102,7 @@ export class CategoryEffects {
       ofType(categoryApiActions.deleteCategoryInitiated),
       mergeMap(({ categoryId }) => {
         return this.categoryService.deleteCategory(categoryId).pipe(
-          map(() => categoryApiActions.listCategoriesInitiated()),
+          map(() => categoryApiActions.deleteCategoryCompleted()),
           catchError(() => {
             return of(categoryApiActions.deleteCategoryFailed({
               categoryId,
@@ -115,7 +122,7 @@ export class CategoryEffects {
       ofType(categoryApiActions.mergeCategoriesInitiated),
       exhaustMap(({ sourceCategoryIds, targetCategoryId }) => {
         return this.categoryService.mergeCategories(targetCategoryId, sourceCategoryIds).pipe(
-          map(() => categoryApiActions.listCategoriesInitiated()),
+          map(() => categoryApiActions.mergeCategoriesCompleted()),
           catchError(() => {
             return of(categoryApiActions.mergeCategoriesFailed({
               sourceCategoryIds,

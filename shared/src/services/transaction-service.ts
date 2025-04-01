@@ -1,7 +1,7 @@
 import { flattenSplit, duplicateByAccounts, calculateRemainingAmount, rebuildSplits, populateAggregate } from '@household/shared/common/aggregate-helpers';
 import { populate } from '@household/shared/common/utils';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
-import { Account, Common, Transaction } from '@household/shared/types/types';
+import { Account, Common, File, Transaction } from '@household/shared/types/types';
 import { PipelineStage, Types, UpdateQuery } from 'mongoose';
 
 export interface ITransactionService {
@@ -18,6 +18,7 @@ export interface ITransactionService {
     deferredTransactionIds?: Transaction.Id[];
     excludedTransferTransactionId?: Transaction.Id
   }): Promise<Transaction.DeferredDocument[]>;
+  listDraftTransactionsByFileId(fileId: File.Id): Promise<Transaction.DraftDocument[]>;
   listTransactionsByAccountId(data: Account.AccountId & Common.Pagination<number>): Promise<Transaction.Document[]>;
 }
 
@@ -564,6 +565,18 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
         ], {
           session,
         });
+      });
+    },
+    listDraftTransactionsByFileId: (fileId) => {
+      return mongodbService.inSession(async (session) => {
+        return mongodbService.transactions.find({
+          file: fileId,
+          transactionType: 'draft',
+        }, null, {
+          session,
+        })
+          .lean<Transaction.DraftDocument[]>()
+          .exec();
       });
     },
   };

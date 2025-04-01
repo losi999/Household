@@ -10,21 +10,19 @@ import { IDraftTransactionDocumentConverter } from '@household/shared/converters
 export interface IBulkTransactionImporterService {
   (ctx: {
     bucketName: string;
-    fileName: string;
+    fileId: File.Id;
   }): Promise<void>;
 }
 
 export const bulkTransactionImporterServiceFactory = (fileService: IFileService, fileDocumentConverter: IFileDocumentConverter, storageService: IStorageService, excelParser: IExcelParserService, draftTransactionDocumentConverter: IDraftTransactionDocumentConverter, transactionService: ITransactionService): IBulkTransactionImporterService =>
-  async ({ bucketName, fileName }) => {
-    const fileId = fileName.split('/').pop() as File.Id;
-
+  async ({ bucketName, fileId }) => {
     const document = await fileService.getFileById(fileId).catch(httpErrors.file.getById({
       fileId,
     }));
 
-    const file = await storageService.readFile(bucketName, fileName).catch(httpErrors.file.readFile({
+    const file = await storageService.readFile(bucketName, fileId).catch(httpErrors.file.readFile({
       bucketName,
-      fileName,
+      fileId,
     }));
 
     const parsed = excelParser.parse(file, document.fileType, document.timezone);

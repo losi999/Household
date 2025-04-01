@@ -247,6 +247,17 @@ export const createDraftTransactionDocument: DataFactoryFunction<Transaction.Dra
   };
 };
 
+export const createDraftTransactionResponse: DataFactoryFunction<Transaction.DraftResponse> = (doc) => {
+  return {
+    transactionId: createTransactionId(),
+    transactionType: 'draft',
+    amount: 100,
+    description: 'transaction description',
+    issuedAt: new Date().toISOString(),
+    ...doc,
+  };
+};
+
 export const createAccountRequest: DataFactoryFunction<Account.Request> = (req) => {
   return {
     accountType: 'bankAccount',
@@ -691,6 +702,16 @@ export const createFileDocument: DataFactoryFunction<File.Document> = (doc) => {
     expiresAt: undefined,
     timezone: 'Europe/Budapest',
     fileType: 'otp',
+    ...doc,
+  };
+};
+
+export const createFileResponse: DataFactoryFunction<File.Response> = (doc) => {
+  return {
+    fileId: createFileId(),
+    draftCount: 0,
+    fileType: 'otp',
+    uploadedAt: new Date().toISOString(),
     ...doc,
   };
 };

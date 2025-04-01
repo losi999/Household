@@ -21,7 +21,7 @@ export const createUploadUrlServiceFactory = (fileService: IFileService, fileDoc
     const saved = await fileService.saveFile(document).catch(httpErrors.file.save(document));
 
     const fileId = getFileId(saved);
-    const url = await storageService.getSignedUrlForUpload(`${document.fileType}/${fileId}`).catch(httpErrors.file.getUploadUrl({
+    const url = await storageService.getSignedUrlForUpload(fileId).catch(httpErrors.file.getUploadUrl({
       fileType: document.fileType,
       fileId,
     }));

@@ -35,7 +35,6 @@ describe('Bulk transaction importer service', () => {
 
   const bucketName = 'file-importer-bucket';
   const fileId = createFileId();
-  const fileName = `otp/${fileId}`;
   const queriedFileDocument = createFileDocument();
   const fileContent = new Uint8Array();
   const amount = 100;
@@ -62,10 +61,10 @@ describe('Bulk transaction importer service', () => {
 
       await service({
         bucketName,
-        fileName,
+        fileId,
       });
       validateFunctionCall(mockFileService.functions.getFileById, fileId);
-      validateFunctionCall(mockStorageService.functions.readFile, bucketName, fileName);
+      validateFunctionCall(mockStorageService.functions.readFile, bucketName, fileId);
       validateFunctionCall(mockExcelParser.functions.parse, fileContent, queriedFileDocument.fileType, queriedFileDocument.timezone);
       validateFunctionCall(mockDraftTransactionDocumentConverter.functions.create, {
         body: {
@@ -89,7 +88,7 @@ describe('Bulk transaction importer service', () => {
 
       await service({
         bucketName,
-        fileName,
+        fileId,
       }).catch(validateError('Error while getting file document', 500));
       validateFunctionCall(mockFileService.functions.getFileById, fileId);
       validateFunctionCall(mockStorageService.functions.readFile);
@@ -107,10 +106,10 @@ describe('Bulk transaction importer service', () => {
 
       await service({
         bucketName,
-        fileName,
+        fileId,
       }).catch(validateError('Error while reading file', 500));
       validateFunctionCall(mockFileService.functions.getFileById, fileId);
-      validateFunctionCall(mockStorageService.functions.readFile, bucketName, fileName);
+      validateFunctionCall(mockStorageService.functions.readFile, bucketName, fileId);
       validateFunctionCall(mockExcelParser.functions.parse);
       validateFunctionCall(mockDraftTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransactions);
@@ -134,10 +133,10 @@ describe('Bulk transaction importer service', () => {
 
       await service({
         bucketName,
-        fileName,
+        fileId,
       }).catch(validateError('Error while saving transactions', 500));
       validateFunctionCall(mockFileService.functions.getFileById, fileId);
-      validateFunctionCall(mockStorageService.functions.readFile, bucketName, fileName);
+      validateFunctionCall(mockStorageService.functions.readFile, bucketName, fileId);
       validateFunctionCall(mockExcelParser.functions.parse, fileContent, queriedFileDocument.fileType, queriedFileDocument.timezone);
       validateFunctionCall(mockDraftTransactionDocumentConverter.functions.create, {
         body: {
@@ -170,10 +169,10 @@ describe('Bulk transaction importer service', () => {
 
       await service({
         bucketName,
-        fileName,
+        fileId,
       }).catch(validateError('Error while updating file document', 500));
       validateFunctionCall(mockFileService.functions.getFileById, fileId);
-      validateFunctionCall(mockStorageService.functions.readFile, bucketName, fileName);
+      validateFunctionCall(mockStorageService.functions.readFile, bucketName, fileId);
       validateFunctionCall(mockExcelParser.functions.parse, fileContent, queriedFileDocument.fileType, queriedFileDocument.timezone);
       validateFunctionCall(mockDraftTransactionDocumentConverter.functions.create, {
         body: {

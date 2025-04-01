@@ -564,7 +564,13 @@ export namespace Transaction {
     deferredSplits: DeferredResponse[];
   };
 
-  export type Response = PaymentResponse | TransferResponse | SplitResponse | LoanTransferResponse | DeferredResponse | ReimbursementResponse;
+  export type DraftResponse = TransactionId
+  & Amount
+  & Description
+  & IssuedAt<string>
+  & TransactionType<'draft'>;
+
+  export type Response = PaymentResponse | TransferResponse | SplitResponse | LoanTransferResponse | DeferredResponse | ReimbursementResponse | DraftResponse;
 
   export type Report = TransactionId
   & Amount
@@ -661,7 +667,7 @@ export namespace File {
     fileId: Id;
   };
 
-  export type Type = {
+  export type FileType = {
     fileType: typeof fileTypes[number];
   };
 
@@ -677,16 +683,24 @@ export namespace File {
     processingStatus: typeof fileProcessingStatuses[number];
   };
 
-  // export type FileName = {
-  //   fileName: string;
-  // };
+  export type DraftCount = {
+    draftCount: number;
+  };
 
-  export type Request = Type & Timezone;
+  export type Request = FileType & Timezone;
   export type Document = Internal.Id
   & Internal.Timestamps
-  & Type
+  & FileType
   & Timezone
-  & Partial<ProcessingStatus>;
+  & Partial<ProcessingStatus>
+  & Partial<DraftCount>;
+
+  export type Response = FileId
+  & FileType
+  & DraftCount
+  & {
+    uploadedAt: string;
+  };
 }
 
 export namespace Common {

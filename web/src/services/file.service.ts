@@ -10,10 +10,12 @@ export class FileService {
 
   constructor(private httpClient: HttpClient) { }
 
-  createFileUploadUrl() {
-    return this.httpClient.post<File.FileId & File.Url>(`${environment.apiUrl}file/v1/files`, {
-      fileType: 'otp',
-      timezone: 'Europe/Budapest',
-    });
+  createFileUploadUrl(request: File.Request) {
+    return this.httpClient.post<File.FileId & File.Url>(`${environment.apiUrl}file/v1/files`, request);
   }
+
+  uploadFile(url: string, file: any) {
+    return this.httpClient.put(url, file);
+  }
+
 }

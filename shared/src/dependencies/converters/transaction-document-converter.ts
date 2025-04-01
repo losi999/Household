@@ -2,6 +2,7 @@ import { transactionDocumentConverterFactory } from '@household/shared/converter
 import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
 import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
 import { deferredTransactionDocumentConverter } from '@household/shared/dependencies/converters/deferred-transaction-document-converter';
+import { draftTransactionDocumentConverter } from '@household/shared/dependencies/converters/draft-transaction-document-converter';
 import { loanTransferTransactionDocumentConverter } from '@household/shared/dependencies/converters/loan-transfer-transaction-document-converter';
 import { paymentTransactionDocumentConverter } from '@household/shared/dependencies/converters/payment-transaction-document-converter';
 import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
@@ -11,4 +12,4 @@ import { reimbursementTransactionDocumentConverter } from '@household/shared/dep
 import { splitTransactionDocumentConverter } from '@household/shared/dependencies/converters/split-transaction-document-converter';
 import { transferTransactionDocumentConverter } from '@household/shared/dependencies/converters/transfer-transaction-document-converter';
 
-export const transactionDocumentConverter = transactionDocumentConverterFactory(accountDocumentConverter, projectDocumentConverter, categoryDocumentConverter, recipientDocumentConverter, productDocumentConverter, paymentTransactionDocumentConverter, splitTransactionDocumentConverter, deferredTransactionDocumentConverter, reimbursementTransactionDocumentConverter, transferTransactionDocumentConverter, loanTransferTransactionDocumentConverter);
+export const transactionDocumentConverter = transactionDocumentConverterFactory(accountDocumentConverter, projectDocumentConverter, categoryDocumentConverter, recipientDocumentConverter, productDocumentConverter, paymentTransactionDocumentConverter, splitTransactionDocumentConverter, deferredTransactionDocumentConverter, reimbursementTransactionDocumentConverter, transferTransactionDocumentConverter, loanTransferTransactionDocumentConverter, draftTransactionDocumentConverter);

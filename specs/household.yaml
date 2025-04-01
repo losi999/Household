@@ -5,6 +5,8 @@ info:
 paths:
   /account/v1/accounts:
     get:
+      tags:
+        - account
       responses:
         200:
           description: List of accounts
@@ -15,6 +17,8 @@ paths:
                 items:
                   $ref: "account.yaml#/components/schemas/Response"
     post:
+      tags:
+        - account
       requestBody:
         content:
           application/json:
@@ -31,6 +35,8 @@ paths:
     parameters:
       - $ref: "#/components/parameters/Path.AccountId"
     get:
+      tags:
+        - account
       responses:
         200:
           description: Account details
@@ -39,6 +45,8 @@ paths:
               schema:
                 $ref: "account.yaml#/components/schemas/Response"
     put:
+      tags:
+        - account
       requestBody:
         content:
           application/json:
@@ -52,11 +60,15 @@ paths:
               schema:
                 $ref: "account.yaml#/components/schemas/AccountId"
     delete:
+      tags:
+        - account
       responses:
         204:
           description: Account deleted
   /category/v1/categories:
     get:
+      tags:
+        - category
       responses:
         200:
           description: List of categories
@@ -67,6 +79,8 @@ paths:
                 items:
                   $ref: "category.yaml#/components/schemas/Response"
     post:
+      tags:
+        - category
       requestBody:
         content:
           application/json:
@@ -83,6 +97,8 @@ paths:
     parameters:
       - $ref: "#/components/parameters/Path.CategoryId"
     get:
+      tags:
+        - category
       responses:
         200:
           description: Category details
@@ -91,6 +107,8 @@ paths:
               schema:
                 $ref: "category.yaml#/components/schemas/Response"
     put:
+      tags:
+        - category
       requestBody:
         content:
           application/json:
@@ -104,6 +122,8 @@ paths:
               schema:
                 $ref: "category.yaml#/components/schemas/CategoryId"
     delete:
+      tags:
+        - category
       responses:
         204:
           description: Category deleted
@@ -111,6 +131,8 @@ paths:
     parameters:
       - $ref: "#/components/parameters/Path.CategoryId"
     post:
+      tags:
+        - category
       requestBody:
         content:
           application/json:
@@ -129,6 +151,8 @@ paths:
     parameters:
       - $ref: "#/components/parameters/Path.CategoryId"
     post:
+      tags:
+        - product
       requestBody:
         content:
           application/json:
@@ -143,6 +167,8 @@ paths:
                 $ref: "product.yaml#/components/schemas/ProductId"
   /product/v1/products:
     get:
+      tags:
+        - product
       responses:
         200:
           description: List of products
@@ -159,6 +185,8 @@ paths:
     parameters:
       - $ref: "#/components/parameters/Path.ProductId"
     put:
+      tags:
+        - product
       requestBody:
         content:
           application/json:
@@ -172,6 +200,8 @@ paths:
               schema:
                 $ref: "product.yaml#/components/schemas/ProductId"
     delete:
+      tags:
+        - product
       responses:
         204:
           description: Product deleted
@@ -179,6 +209,8 @@ paths:
     parameters:
       - $ref: "#/components/parameters/Path.ProductId"
     post:
+      tags:
+        - product
       requestBody:
         content:
           application/json:
@@ -196,6 +228,8 @@ paths:
 
   /project/v1/projects:
     get:
+      tags:
+        - project
       responses:
         200:
           description: List of projects
@@ -206,6 +240,8 @@ paths:
                 items:
                   $ref: "project.yaml#/components/schemas/Response"
     post:
+      tags:
+        - project
       requestBody:
         content:
           application/json:
@@ -222,6 +258,8 @@ paths:
     parameters:
       - $ref: "#/components/parameters/Path.ProjectId"
     get:
+      tags:
+        - project
       responses:
         200:
           description: Project details
@@ -230,6 +268,8 @@ paths:
               schema:
                 $ref: "project.yaml#/components/schemas/Response"
     put:
+      tags:
+        - project
       requestBody:
         content:
           application/json:
@@ -243,6 +283,8 @@ paths:
               schema:
                 $ref: "project.yaml#/components/schemas/ProjectId"
     delete:
+      tags:
+        - project
       responses:
         204:
           description: Project deleted
@@ -250,6 +292,8 @@ paths:
     parameters:
       - $ref: "#/components/parameters/Path.ProjectId"
     post:
+      tags:
+        - project
       requestBody:
         content:
           application/json:
@@ -266,6 +310,8 @@ paths:
                 $ref: "project.yaml#/components/schemas/ProjectId"
   /recipient/v1/recipients:
     get:
+      tags:
+        - recipient
       responses:
         200:
           description: List of recipients
@@ -276,6 +322,8 @@ paths:
                 items:
                   $ref: "recipient.yaml#/components/schemas/Response"
     post:
+      tags:
+        - recipient
       requestBody:
         content:
           application/json:
@@ -292,6 +340,8 @@ paths:
     parameters:
       - $ref: "#/components/parameters/Path.RecipientId"
     get:
+      tags:
+        - recipient
       responses:
         200:
           description: Recipient details
@@ -300,6 +350,8 @@ paths:
               schema:
                 $ref: "recipient.yaml#/components/schemas/Response"
     put:
+      tags:
+        - recipient
       requestBody:
         content:
           application/json:
@@ -313,6 +365,8 @@ paths:
               schema:
                 $ref: "recipient.yaml#/components/schemas/RecipientId"
     delete:
+      tags:
+        - recipient
       responses:
         204:
           description: Recipient deleted
@@ -320,6 +374,8 @@ paths:
     parameters:
       - $ref: "#/components/parameters/Path.RecipientId"
     post:
+      tags:
+        - recipient
       requestBody:
         content:
           application/json:
@@ -406,6 +462,8 @@ paths:
     parameters:
       - $ref: "#/components/parameters/Path.AccountId"
     get:
+      tags:
+        - transaction
       responses:
         200:
           description: List of transactions
@@ -420,6 +478,8 @@ paths:
       - $ref: "#/components/parameters/Path.AccountId"
       - $ref: "#/components/parameters/Path.TransactionId"
     get:
+      tags:
+        - transaction
       responses:
         200:
           description: Details of transaction
@@ -429,6 +489,8 @@ paths:
                 $ref: "transaction.yaml#/components/schemas/Response"
   /transaction/v1/transactions/deferred:
     get:
+      tags:
+        - transaction
       parameters:
         - $ref: "#/components/parameters/Query.IsSettled"
         - $ref: "#/components/parameters/Query.TransactionId"
@@ -443,6 +505,8 @@ paths:
                   $ref: "transaction.yaml#/components/schemas/DeferredResponse"
   /transaction/v1/transactionReports:
     post:
+      tags:
+        - transaction
       requestBody:
         content:
           application/json:
@@ -459,6 +523,8 @@ paths:
                   $ref: "transaction.yaml#/components/schemas/Report"
   /transaction/v1/transactions/payment:
     post:
+      tags:
+        - transaction
       requestBody:
         content:
           application/json:
@@ -473,6 +539,8 @@ paths:
                 $ref: "transaction.yaml#/components/schemas/TransactionId"
   /transaction/v1/transactions/split:
     post:
+      tags:
+        - transaction
       requestBody:
         content:
           application/json:
@@ -487,6 +555,8 @@ paths:
                 $ref: "transaction.yaml#/components/schemas/TransactionId"
   /transaction/v1/transactions/transfer:
     post:
+      tags:
+        - transaction
       requestBody:
         content:
           application/json:
@@ -503,6 +573,8 @@ paths:
     parameters:
       - $ref: "#/components/parameters/Path.TransactionId"
     put:
+      tags:
+        - transaction
       requestBody:
         content:
           application/json:
@@ -519,6 +591,8 @@ paths:
     parameters:
       - $ref: "#/components/parameters/Path.TransactionId"
     put:
+      tags:
+        - transaction
       requestBody:
         content:
           application/json:
@@ -535,6 +609,8 @@ paths:
     parameters:
       - $ref: "#/components/parameters/Path.TransactionId"
     put:
+      tags:
+        - transaction
       requestBody:
         content:
           application/json:
@@ -550,11 +626,15 @@ paths:
   # /transaction/v1/transactions:
   /transaction/v1/transactions/{transactionId}:
     delete:
+      tags:
+        - transaction
       responses:
         204:
           description: Transaction deleted
   /file/v1/files:
     get:
+      tags:
+        - file
       responses:
         200:
           description: List of files
@@ -565,7 +645,11 @@ paths:
                 items:
                   allOf:
                     - $ref: "file.yaml#/components/schemas/FileId"
+                    - $ref: "file.yaml#/components/schemas/FileType"
                     - type: object
+                      required:
+                        - uploadedAt
+                        - draftCount
                       properties:
                         uploadedAt:
                           type: string
@@ -574,6 +658,8 @@ paths:
                           type: integer
 
     post:
+      tags:
+        - file
       requestBody:
         content:
           application/json:
@@ -592,13 +678,17 @@ paths:
     parameters:
       - $ref: "#/components/parameters/Path.FileId"
     delete:
+      tags:
+        - file
       responses:
         204:
           description: File and related drafts are deleted
-  /file/v1/files/{fileId}/transactions:
+  /transaction/v1/files/{fileId}/transactions:
     parameters:
       - $ref: "#/components/parameters/Path.FileId"
     get:
+      tags:
+        - transaction
       responses:
         200:
           description: List of draft transactions

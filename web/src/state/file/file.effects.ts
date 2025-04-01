@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, exhaustMap, groupBy, map, mergeMap, of } from 'rxjs';
-import { ProjectService } from '@household/web/services/project.service';
+import { catchError, map, mergeMap, of } from 'rxjs';
 import { progressActions } from '@household/web/state/progress/progress.actions';
 import { notificationActions } from '@household/web/state/notification/notification.actions';
 import { FileService } from '@household/web/services/file.service';
@@ -31,25 +30,36 @@ export class FileEffects {
   //   );
   // });
 
-  createFileUpload = createEffect(() => {
+  createUploadUrl = createEffect(() => {
     return this.actions.pipe(
-      ofType(fileApiActions.createFileUploadURLInitiated),
-      mergeMap(({ type, ...request }) => {
-        return this.fileService.createFileUploadUrl().pipe(
-          map(({ fileId, url }) => fileApiActions.createFileUploadURLCompleted({
-            fileId,
+      ofType(fileApiActions.uploadImportFileInitiated),
+      mergeMap(({ type, file, ...request }) => {
+        return this.fileService.createFileUploadUrl(request).pipe(
+          map(({ url }) => fileApiActions.signedURLObtained({
             url,
+            file,
           })),
-          catchError((error) => {
-            let errorMessage: string;
-            switch(error.error?.message) {
-              // case 'Duplicate project name': {
-              //   errorMessage = `Projekt (${request.name}) már létezik!`;
-              // } break;
-              default: {
-                errorMessage = 'Hiba történt';
-              }
-            }
+          catchError(() => {
+            const errorMessage = 'Hiba történt';
+            return of(progressActions.processFinished(),
+              notificationActions.showMessage({
+                message: errorMessage,
+              }),
+            );
+          }),
+        );
+      }),
+    );
+  });
+
+  uploadFile = createEffect(() => {
+    return this.actions.pipe(
+      ofType(fileApiActions.signedURLObtained),
+      mergeMap(({ file, url }) => {
+        return this.fileService.uploadFile(url, file).pipe(
+          map(() => fileApiActions.uploadImportFileCompleted()),
+          catchError(() => {
+            const errorMessage = 'Hiba történt';
             return of(progressActions.processFinished(),
               notificationActions.showMessage({
                 message: errorMessage,

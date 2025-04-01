@@ -1,14 +1,15 @@
-import { File, Project } from '@household/shared/types/types';
+import { File } from '@household/shared/types/types';
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
 import {} from '@ngrx/effects';
 
 export const fileApiActions = createActionGroup({
   source: 'File API',
   events: {
-    // 'List projects initiated': emptyProps(),
-    // 'List projects completed': props<{projects: Project.Response[]}>(),
-    'Create file upload URL initiated': props<File.Request>(),
-    'Create file upload URL completed': props<File.FileId & File.Url>(),
+    'List files initiated': emptyProps(),
+    'List files completed': props<{files: File.Response[]}>(),
+    'Upload import file initiated': props<File.Request & {file: any}>(),
+    'Upload import file completed': emptyProps(),
+    'Signed URL obtained': props<{url: string, file: any}>(),
     // 'Merge projects initiated': props<{
     //   sourceProjectIds: Project.Id[];
     //   targetProjectId: Project.Id;

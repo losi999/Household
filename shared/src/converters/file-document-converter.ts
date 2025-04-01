@@ -1,4 +1,4 @@
-import { generateMongoId } from '@household/shared/common/utils';
+import { generateMongoId, getFileId } from '@household/shared/common/utils';
 import { addSeconds } from '@household/shared/common/utils';
 import { File } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
@@ -6,6 +6,8 @@ import { UpdateQuery } from 'mongoose';
 export interface IFileDocumentConverter {
   create(body: File.Request, expiresIn: number, generateId?: boolean): File.Document;
   updateStatus(status: File.ProcessingStatus['processingStatus']): UpdateQuery<File.Document>;
+  toResponse(document: File.Document): File.Response;
+  toResponseList(documents: File.Document[]): File.Response[]
 }
 
 export const fileDocumentConverterFactory = (): IFileDocumentConverter => {
@@ -24,6 +26,13 @@ export const fileDocumentConverterFactory = (): IFileDocumentConverter => {
         },
       };
     },
+    toResponse: ({ _id, createdAt, fileType, draftCount }) => ({
+      fileId: getFileId(_id),
+      fileType,
+      uploadedAt: createdAt.toISOString(),
+      draftCount,
+    }),
+    toResponseList: (documents) => documents.map(d => instance.toResponse(d)),
   };
 
   return instance;

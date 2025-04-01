@@ -40,6 +40,10 @@ export const httpErrors = {
       log('List transactions by account', ctx, error);
       throw httpError(statusCode, 'Error while getting transactions');
     },
+    listByFileId: (ctx: File.FileId, statusCode = 500): Catch => (error) => {
+      log('List transactions by file', ctx, error);
+      throw httpError(statusCode, 'Error while getting transactions');
+    },
     notFound: (ctx: Transaction.TransactionId & Partial<Account.AccountId> & {transaction: Transaction.Document}, statusCode = 404) => {
       if (ctx.transactionId && !ctx.transaction) {
         log('No transaction found', ctx);
@@ -444,6 +448,10 @@ export const httpErrors = {
     },
   },
   file: {
+    list: (statusCode = 500): Catch => (error) => {
+      log('List files', undefined, error);
+      throw httpError(statusCode, 'Error while listing files');
+    },
     save: (doc: File.Document, statusCode = 500): Catch => (error) => {
       log('Save file', doc, error);
       throw httpError(statusCode, 'Error while saving file document');
@@ -452,16 +460,24 @@ export const httpErrors = {
       log('Get file', ctx, error);
       throw httpError(statusCode, 'Error while getting file document');
     },
+    delete: (ctx: File.FileId, statusCode = 500): Catch => (error) => {
+      log('Delete file', ctx, error);
+      throw httpError(statusCode, 'Error while deleting file');
+    },
     readFile: (ctx: {
       bucketName: string;
-      fileName: string;
+      fileId: string;
     }, statusCode = 500): Catch => (error) => {
       log('Read file', ctx, error);
       throw httpError(statusCode, 'Error while reading file');
     },
-    getUploadUrl: (ctx: File.Type & File.FileId, statusCode = 500): Catch => (error) => {
+    getUploadUrl: (ctx: File.FileType & File.FileId, statusCode = 500): Catch => (error) => {
       log('Get upload URL', ctx, error);
       throw httpError(statusCode, 'Error while getting URL for file upload');
+    },
+    deleteFile: (ctx: File.FileId, statusCode = 500): Catch => (error) => {
+      log('Delete file from S3', ctx, error);
+      throw httpError(statusCode, '');
     },
     update: (ctx: File.FileId & UpdateQuery<File.Document>, statusCode = 500): Catch => (error) => {
       log('Update file', ctx, error);
