@@ -1,4 +1,4 @@
-import { Account, Category, Product, Project, Recipient } from '@household/shared/types/types';
+import { Account, Category, File, Product, Project, Recipient } from '@household/shared/types/types';
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
 
 export const dialogActions = createActionGroup({
@@ -24,5 +24,6 @@ export const dialogActions = createActionGroup({
     'Update account': props<Account.Response>(),
     'Delete account': props<Account.Response>(),
     'Import file': emptyProps(),
+    'Delete file': props<File.Response>(),
   },
 });

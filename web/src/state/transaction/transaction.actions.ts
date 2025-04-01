@@ -1,4 +1,4 @@
-import { Account, Common, Report, Transaction } from '@household/shared/types/types';
+import { Account, Common, File, Report, Transaction } from '@household/shared/types/types';
 import { createActionGroup, props } from '@ngrx/store';
 
 export const transactionApiActions = createActionGroup({
@@ -8,6 +8,8 @@ export const transactionApiActions = createActionGroup({
     'List transactions completed': props<Common.Pagination<number> & { transactions: Transaction.Response[] }>(),
     'List deferred transactions initiated': props<Transaction.IsSettled>(),
     'List deferred transactions completed': props<{ transactions: Transaction.DeferredResponse[] }>(),
+    'List draft transactions initiated': props<File.FileId>(),
+    'List draft transactions completed': props<{transactions: Transaction.DraftResponse[]}>(),
     'Create payment transaction initiated': props<Transaction.PaymentRequest>(),
     'Create payment transaction completed': props<Account.AccountId & Transaction.TransactionId>(),
     'Create split transaction initiated': props<Transaction.SplitRequest>(),

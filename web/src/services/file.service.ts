@@ -11,11 +11,18 @@ export class FileService {
   constructor(private httpClient: HttpClient) { }
 
   createFileUploadUrl(request: File.Request) {
-    return this.httpClient.post<File.FileId & File.Url>(`${environment.apiUrl}file/v1/files`, request);
+    return this.httpClient.post<File.FileId & File.Url>(`${environment.apiUrl}/file/v1/files`, request);
   }
 
   uploadFile(url: string, file: any) {
     return this.httpClient.put(url, file);
   }
 
+  listFiles() {
+    return this.httpClient.get<File.Response[]>(`${environment.apiUrl}/file/v1/files`);
+  }
+
+  deleteFile(fileId: File.Id) {
+    return this.httpClient.delete(`${environment.apiUrl}/file/v1/files/${fileId}`);
+  }
 }

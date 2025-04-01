@@ -1,19 +1,19 @@
 import { IListTransactionsByFileService, listTransactionsByFileServiceFactory } from '@household/api/functions/list-transactions-by-file/list-transactions-by-file.service';
 import { createDraftTransactionDocument, createDraftTransactionResponse, createFileId } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
-import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
+import { IDraftTransactionDocumentConverter } from '@household/shared/converters/draft-transaction-document-converter';
 import { ITransactionService } from '@household/shared/services/transaction-service';
 
 describe('List transactions by file service', () => {
   let service: IListTransactionsByFileService;
   let mockTransactionService: Mock<ITransactionService>;
-  let mockTransactionDocumentConverter: Mock<ITransactionDocumentConverter>;
+  let mockDraftTransactionDocumentConverter: Mock<IDraftTransactionDocumentConverter>;
 
   beforeEach(() => {
     mockTransactionService = createMockService('listDraftTransactionsByFileId');
-    mockTransactionDocumentConverter = createMockService('toResponseList');
+    mockDraftTransactionDocumentConverter = createMockService('toResponseList');
 
-    service = listTransactionsByFileServiceFactory(mockTransactionService.service, mockTransactionDocumentConverter.service);
+    service = listTransactionsByFileServiceFactory(mockTransactionService.service, mockDraftTransactionDocumentConverter.service);
   });
 
   const fileId = createFileId();
@@ -22,14 +22,14 @@ describe('List transactions by file service', () => {
 
   it('should return documents', async () => {
     mockTransactionService.functions.listDraftTransactionsByFileId.mockResolvedValue([queriedDocument]);
-    mockTransactionDocumentConverter.functions.toResponseList.mockReturnValue([convertedResponse]);
+    mockDraftTransactionDocumentConverter.functions.toResponseList.mockReturnValue([convertedResponse]);
 
     const result = await service({
       fileId,
     });
     expect(result).toEqual([convertedResponse]);
     validateFunctionCall(mockTransactionService.functions.listDraftTransactionsByFileId, fileId);
-    validateFunctionCall(mockTransactionDocumentConverter.functions.toResponseList, [queriedDocument]);
+    validateFunctionCall(mockDraftTransactionDocumentConverter.functions.toResponseList, [queriedDocument]);
     expect.assertions(3);
   });
 
@@ -41,7 +41,7 @@ describe('List transactions by file service', () => {
         fileId,
       }).catch(validateError('Error while getting transactions', 500));
       validateFunctionCall(mockTransactionService.functions.listDraftTransactionsByFileId, fileId);
-      validateFunctionCall(mockTransactionDocumentConverter.functions.toResponseList);
+      validateFunctionCall(mockDraftTransactionDocumentConverter.functions.toResponseList);
       expect.assertions(4);
     });
   });

@@ -1,0 +1,15 @@
+<mat-list-option>
+  <div class="list-item mat-elevation-z1">
+    <div class="datetime">
+      <div class="year" *ngIf="showYear">{{transaction.issuedAt | date:'yyyy'}}</div>
+      <div class="date">{{transaction.issuedAt | date:'MMM dd.'}}</div>
+      <div class="time">{{transaction.issuedAt | date:'HH:mm'}}</div>
+    </div>
+
+    <!-- [category]="category" [project]="project" [recipient]="recipient" [product]="product" [billingStartDate]="billingStartDate" [billingEndDate]="billingEndDate" -->
+    <!-- [invoiceNumber]="invoiceNumber" [quantity]="quantity" [amount]="remainingAmount" [currency]="viewingAccount.currency" [payingAccount]="payingAccount" [ownerAccount]="ownerAccount" [givingAccount]="givingAccount" [receivingAccount]="receivingAccount" [transferColor]="transferColor" -->
+    <household-transaction-short-details class="details" [description]="transaction.description" />
+
+    <div class="amount" [ngClass]="transaction.amount >= 0 ? 'green' : 'red'">{{transaction.amount | number:'1.0-2':'hu' }}</div>
+  </div>
+</mat-list-option>

@@ -1,0 +1,6 @@
+<ngx-skeleton-loader *ngIf="!transactions?.length" count="10" appearance="line" animation="progress" [theme]="{
+  height: '48px'
+}" />
+<mat-selection-list>
+  <household-import-transactions-list-item *ngFor="let transaction of transactions" [transaction]="transaction" />
+</mat-selection-list>

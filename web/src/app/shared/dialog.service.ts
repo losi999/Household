@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { Account, Category, Product, Project, Recipient } from '@household/shared/types/types';
+import { Account, Category, File, Product, Project, Recipient } from '@household/shared/types/types';
 import { AccountFormComponent, AccountFormData } from '@household/web/app/account/account-form/account-form.component';
 import { CategoryFormComponent, CategoryFormData } from '@household/web/app/category/category-form/category-form.component';
 import { CategoryMergeDialogComponent, CategoryMergeDialogData } from '@household/web/app/category/category-merge-dialog/category-merge-dialog.component';
@@ -163,5 +163,14 @@ export class DialogService {
 
   openImportFileDialog(): void {
     this.dialog.open<ImportFileUploadFormComponent, void, void>(ImportFileUploadFormComponent);
+  }
+
+  openDeleteFileDialog(file: File.Response): MatDialogRef<ConfirmationDialogComponent, boolean> {
+    return this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        title: 'Törölni akarod ezt a számlát?',
+        content: file.fileId,
+      },
+    });
   }
 }

@@ -4,14 +4,7 @@
 
 export const environment = {
   production: false,
-  apiUrl: 'https://ci-householdapi.losi999.hu/',
-  accountStage: 'account/',
-  projectStage: 'project/',
-  recipientStage: 'recipient/',
-  transactionStage: 'transaction/',
-  categoryStage: 'category/',
-  productStage: 'product/',
-  authStage: 'user/',
+  apiUrl: 'https://ci-householdapi.losi999.hu',
 };
 
 /*

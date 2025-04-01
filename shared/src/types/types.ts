@@ -570,7 +570,7 @@ export namespace Transaction {
   & IssuedAt<string>
   & TransactionType<'draft'>;
 
-  export type Response = PaymentResponse | TransferResponse | SplitResponse | LoanTransferResponse | DeferredResponse | ReimbursementResponse | DraftResponse;
+  export type Response = PaymentResponse | TransferResponse | SplitResponse | LoanTransferResponse | DeferredResponse | ReimbursementResponse;
 
   export type Report = TransactionId
   & Amount

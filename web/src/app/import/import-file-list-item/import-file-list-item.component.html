@@ -1,0 +1,10 @@
+<a mat-list-item [routerLink]="[file.fileId, 'transactions']" [disabled]="isDisabled | async">
+  <div matListItemTitle>Feltöltés dátuma: {{file.uploadedAt | date: 'yyyy. MMMM dd. HH:mm:ss' }}</div>
+  <div matListItemLine>Fájltípus: {{file.fileType}}</div>
+  <div matListItemLine>Importált elemek száma: {{file.draftCount}}</div>
+  <div matListItemMeta>
+    <button mat-icon-button color="warn" (click)="delete($event)" [disabled]="isDisabled | async">
+      <mat-icon>delete</mat-icon>
+    </button>
+  </div>
+</a>

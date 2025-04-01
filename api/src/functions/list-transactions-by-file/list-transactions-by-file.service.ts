@@ -1,15 +1,15 @@
 import { httpErrors } from '@household/api/common/error-handlers';
-import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
+import { IDraftTransactionDocumentConverter } from '@household/shared/converters/draft-transaction-document-converter';
 import { ITransactionService } from '@household/shared/services/transaction-service';
 import { File, Transaction } from '@household/shared/types/types';
 
 export interface IListTransactionsByFileService {
-  (ctx: File.FileId): Promise<Transaction.Response[]>;
+  (ctx: File.FileId): Promise<Transaction.DraftResponse[]>;
 }
 
 export const listTransactionsByFileServiceFactory = (
   transactionService: ITransactionService,
-  transactionDocumentConverter: ITransactionDocumentConverter): IListTransactionsByFileService => {
+  draftTransactionDocumentConverter: IDraftTransactionDocumentConverter): IListTransactionsByFileService => {
   return async ({ fileId }) => {
     const documents = await transactionService.listDraftTransactionsByFileId(fileId).catch(httpErrors.transaction.listByFileId({
       fileId,
@@ -17,6 +17,6 @@ export const listTransactionsByFileServiceFactory = (
 
     console.log('docs', documents);
 
-    return transactionDocumentConverter.toResponseList(documents);
+    return draftTransactionDocumentConverter.toResponseList(documents);
   };
 };

@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/list-transactions-by-file/list-transactions-by-file.handler';
 import { IListTransactionsByFileService } from '@household/api/functions/list-transactions-by-file/list-transactions-by-file.service';
-import { createFileId, createPaymentTransactionResponse } from '@household/shared/common/test-data-factory';
+import { createDraftTransactionResponse, createFileId } from '@household/shared/common/test-data-factory';
 
 describe('List transactions by transaction handler', () => {
   let mockListTransactionsByTransactionService: MockBusinessService<IListTransactionsByFileService>;
@@ -13,7 +13,7 @@ describe('List transactions by transaction handler', () => {
   });
 
   const fileId = createFileId();
-  const transactions = [createPaymentTransactionResponse()];
+  const transactions = [createDraftTransactionResponse()];
   const handlerEvent = {
     pathParameters: {
       fileId,

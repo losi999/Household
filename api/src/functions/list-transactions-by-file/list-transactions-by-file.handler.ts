@@ -7,7 +7,7 @@ export default (listTransactionsByFile: IListTransactionsByFileService): AWSLamb
   return async (event) => {
     const { fileId } = castPathParameters(event);
 
-    let transactions: Transaction.Response[];
+    let transactions: Transaction.DraftResponse[];
     try {
       transactions = await listTransactionsByFile({
         fileId,

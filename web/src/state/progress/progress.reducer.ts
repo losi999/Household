@@ -1,4 +1,4 @@
-import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Account, Category, File, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { createReducer, on } from '@ngrx/store';
 import { categoryApiActions } from '@household/web/state/category/category.actions';
 import { progressActions } from '@household/web/state/progress/progress.actions';
@@ -7,6 +7,7 @@ import { recipientApiActions } from '@household/web/state/recipient/recipient.ac
 import { productApiActions } from '@household/web/state/product/product.actions';
 import { accountApiActions } from '@household/web/state/account/account.actions';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
+import { fileApiActions } from '@household/web/state/file/file.actions';
 
 export type ProgressState = {
   counter: number;
@@ -16,6 +17,7 @@ export type ProgressState = {
   inProgressProducts: Product.Id[];
   inProgressAccounts: Account.Id[];
   inProgressTransactions: Transaction.Id[];
+  inProgressFiles: File.Id[];
 };
 
 export const progressReducer = createReducer<ProgressState>({
@@ -26,6 +28,7 @@ export const progressReducer = createReducer<ProgressState>({
   inProgressProducts: [],
   inProgressAccounts: [],
   inProgressTransactions: [],
+  inProgressFiles: [],
 },
 on(progressActions.processStarted, (_state) => {
   return {
@@ -213,6 +216,23 @@ on(transactionApiActions.deleteTransactionCompleted, transactionApiActions.delet
   return {
     ..._state,
     inProgressTransactions: _state.inProgressTransactions.filter(t => t !== transactionId),
+  };
+}),
+
+on(fileApiActions.deleteFileInitiated, (_state, { fileId }) => {
+  return {
+    ..._state,
+    inProgressFiles: [
+      ..._state.inProgressFiles,
+      fileId,
+    ],
+  };
+}),
+
+on(fileApiActions.deleteFileCompleted, fileApiActions.deleteFileFailed, (_state, { fileId }) => {
+  return {
+    ..._state,
+    inProgressFiles: _state.inProgressFiles.filter(f => f !== fileId),
   };
 }),
 );

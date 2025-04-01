@@ -1,27 +1,12 @@
-import { Project } from '@household/shared/types/types';
+import { File } from '@household/shared/types/types';
 import { createReducer, on } from '@ngrx/store';
-import { projectApiActions } from '@household/web/state/project/project.actions';
+import { fileApiActions } from '@household/web/state/file/file.actions';
 
-export const fileReducer = createReducer<any[]>([],
-  // on(projectApiActions.listProjectsCompleted, (_state, { projects }) => {
-  //   return projects;
-  // }),
-  // on(projectApiActions.createProjectCompleted, projectApiActions.updateProjectCompleted, (_state, { projectId, name, description }) => {
-
-  //   return _state.filter(p => p.projectId !== projectId)
-  //     .concat({
-  //       projectId,
-  //       name,
-  //       description,
-  //     })
-  //     .toSorted((a, b) => a.name.localeCompare(b.name, 'hu', {
-  //       sensitivity: 'base',
-  //     }));
-  // }),
-  // on(projectApiActions.deleteProjectCompleted, (_state, { projectId }) => {
-  //   return _state.filter(p => p.projectId !== projectId);
-  // }),
-  // on(projectApiActions.mergeProjectsCompleted, (_state, { sourceProjectIds }) => {
-  //   return _state.filter(p => !sourceProjectIds.includes(p.projectId));
-  // }),
+export const fileReducer = createReducer<File.Response[]>([],
+  on(fileApiActions.listFilesCompleted, (_state, { files }) => {
+    return files;
+  }),
+  on(fileApiActions.deleteFileCompleted, (_state, { fileId }) => {
+    return _state.filter(p => p.fileId !== fileId);
+  }),
 );

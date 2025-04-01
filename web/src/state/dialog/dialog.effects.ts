@@ -8,6 +8,7 @@ import { recipientApiActions } from '@household/web/state/recipient/recipient.ac
 import { categoryApiActions } from '@household/web/state/category/category.actions';
 import { productApiActions } from '@household/web/state/product/product.actions';
 import { accountApiActions } from '@household/web/state/account/account.actions';
+import { fileApiActions } from '@household/web/state/file/file.actions';
 
 @Injectable()
 export class DialogEffects {
@@ -278,6 +279,24 @@ export class DialogEffects {
               if (shouldDelete) {
                 return accountApiActions.deleteAccountInitiated({
                   accountId: account.accountId,
+                });
+              }
+            }),
+          );
+      }),
+    );
+  });
+
+  deleteFile = createEffect(() => {
+    return this.actions.pipe(
+      ofType(dialogActions.deleteFile),
+      exhaustMap(({ type, ...file }) => {
+        return this.dialogService.openDeleteFileDialog(file).afterClosed()
+          .pipe(
+            map((shouldDelete) => {
+              if (shouldDelete) {
+                return fileApiActions.deleteFileInitiated({
+                  fileId: file.fileId,
                 });
               }
             }),

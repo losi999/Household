@@ -5,6 +5,7 @@ import { transactionApiActions } from '@household/web/state/transaction/transact
 export type TransactionState = {
   transactionList: Transaction.Response[];
   deferredTransactionList?: Transaction.DeferredResponse[];
+  draftTransactionList?: Transaction.DraftResponse[];
   selectedTransaction?: Transaction.Response;
   report?: Transaction.Report[];
 };
@@ -40,15 +41,23 @@ on(transactionApiActions.listTransactionReportCompleted, (_state, { transactions
   };
 }),
 
-on(transactionApiActions.listDeferredTransactionsInitiated, (_state) => {
-  return {
-    ..._state,
-  };
-}),
 on(transactionApiActions.listDeferredTransactionsCompleted, (_state, { transactions }) => {
   return {
     ..._state,
     deferredTransactionList: transactions,
+  };
+}),
+
+on(transactionApiActions.listDraftTransactionsInitiated, (_state) => {
+  return {
+    ..._state,
+    draftTransactionList: undefined,
+  };
+}),
+on(transactionApiActions.listDraftTransactionsCompleted, (_state, { transactions }) => {
+  return {
+    ..._state,
+    draftTransactionList: transactions,
   };
 }),
 

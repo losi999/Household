@@ -39,6 +39,28 @@ export class TransactionEffects {
     );
   });
 
+  loadDraftTransactions = createEffect(() => {
+    return this.actions.pipe(
+      ofType(transactionApiActions.listDraftTransactionsInitiated),
+      exhaustMap(({
+        fileId,
+      }) => {
+        return this.transactionService.listTransactionsByFileId(fileId).pipe(
+          map((transactions) => transactionApiActions.listDraftTransactionsCompleted({
+            transactions,
+          })),
+          catchError(() => {
+            return of(progressActions.processFinished(),
+              notificationActions.showMessage({
+                message: 'Hiba történt',
+              }),
+            );
+          }),
+        );
+      }),
+    );
+  });
+
   loadDeferredTransactions = createEffect(() => {
     return this.actions.pipe(
       ofType(transactionApiActions.listDeferredTransactionsInitiated),

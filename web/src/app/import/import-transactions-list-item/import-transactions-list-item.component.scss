@@ -1,0 +1,65 @@
+::ng-deep mat-list-option {
+  display: flex !important;
+  flex-direction: row-reverse !important;
+  justify-content: flex-end;
+}
+
+.list-item {
+  margin: 5px 0;
+  padding: 0 10px;
+  display: grid;
+  grid-template-columns: 75px 1fr auto;
+  column-gap: 15px;
+  grid-template-areas:
+    "datetime details amount"
+    "buttons buttons buttons";
+
+  & > .details {
+    min-width: 0;
+  }
+
+  & > .datetime {
+    grid-area: datetime;
+    text-align: right;
+
+    & > .year {
+      font-size: 12px;
+    }
+
+    & > .date {
+      font-size: 16px;
+    }
+
+    & > .time {
+      font-size: 14px;
+    }
+  }
+
+  & > .amount {
+    grid-area: amount;
+    align-self: center;
+    justify-self: end;
+    font-size: 20px;
+    font-weight: bold;
+  }
+
+  & > .buttons {
+    grid-area: buttons;
+    justify-self: end;
+  }
+
+  @media all and (max-width: 639px) {
+    & {
+      grid-template-columns: 65px 1fr auto;
+      column-gap: 5px;
+    }
+
+    & > .date {
+      font-size: 14px;
+    }
+
+    & > .amount {
+      font-size: 14px;
+    }
+  }
+}

@@ -1,8 +1,8 @@
-// import { Project } from '@household/shared/types/types';
-// import { createFeatureSelector, createSelector } from '@ngrx/store';
+import { File } from '@household/shared/types/types';
+import { createFeatureSelector, createSelector } from '@ngrx/store';
 
-// export const selectProjects = createFeatureSelector<Project.Response[]>('projects');
+export const selectFiles = createFeatureSelector<File.Response[]>('files');
 
-// export const selectProjectById = (projectId: Project.Id) => createSelector(selectProjects, (projects) => {
-//   return projects.find(a => a.projectId === projectId);
-// });
+export const selectFileById = (fileId: File.Id) => createSelector(selectFiles, (files) => {
+  return files.find(a => a.fileId === fileId);
+});
