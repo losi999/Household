@@ -569,13 +569,73 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
     },
     listDraftTransactionsByFileId: (fileId) => {
       return mongodbService.inSession(async (session) => {
-        return mongodbService.transactions.find({
-          file: fileId,
-          transactionType: 'draft',
-        }, null, {
-          session,
-        })
-          .lean<Transaction.DraftDocument[]>()
+        return mongodbService.transactions.aggregate()
+          .match({
+            file: new Types.ObjectId(fileId),
+          })
+          .lookup({
+            from: 'transactions',
+            let: {
+              amount: '$amount',
+              issuedAt: '$issuedAt',
+              id: '$_id',
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      {
+                        $eq: [
+                          '$amount',
+                          '$$amount',
+                        ],
+                      },
+                      {
+                        $ne: [
+                          '$transactionType',
+                          'draft',
+                        ],
+                      },
+                      {
+                        $gte: [
+                          '$issuedAt',
+                          {
+                            $subtract: [
+                              '$$issuedAt',
+                              1000 * 60 * 60 * 6,
+                            ],
+                          },
+                        ],
+                      },
+                      {
+                        $lte: [
+                          '$issuedAt',
+                          {
+                            $add: [
+                              '$$issuedAt',
+                              1000 * 60 * 60 * 6,
+                            ],
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                },
+              },
+            ],
+            as: 'potentialDuplicates',
+          })
+          .addFields({
+            potentialDuplicates: {
+              $map: {
+                input: '$potentialDuplicates',
+                as: 'd',
+                in: '$$d._id',
+              },
+            },
+          })
+          .session(session)
           .exec();
       });
     },

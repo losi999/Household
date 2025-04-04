@@ -254,6 +254,7 @@ export const createDraftTransactionResponse: DataFactoryFunction<Transaction.Dra
     amount: 100,
     description: 'transaction description',
     issuedAt: new Date().toISOString(),
+    potentialDuplicates: [],
     ...doc,
   };
 };
