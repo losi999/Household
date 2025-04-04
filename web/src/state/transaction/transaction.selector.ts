@@ -16,10 +16,6 @@ export const selectDeferredTransactionList = (excludedTransactionIds?: Transacti
   return excludedTransactionIds ? deferredTransactionList.filter(t => !excludedTransactionIds.includes(t.transactionId)) : deferredTransactionList;
 });
 
-export const selectDraftTransactionList = createSelector(selectTransactions, ({ draftTransactionList }) => {
-  return draftTransactionList;
-});
-
 export const selectReport = createSelector(selectTransactions, ({ report }) => {
   return report ?? [];
 });

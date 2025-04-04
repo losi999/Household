@@ -20,6 +20,13 @@ import { ImportTransactionsListItemComponent } from './import-transactions-list-
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { TransactionModule } from '@household/web/app/transaction/transaction.module';
 import { MatMenuModule } from '@angular/material/menu';
+import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { AccountAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/account-autocomplete-input/account-autocomplete-input.component';
+import { CategoryAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/category-autocomplete-input/category-autocomplete-input.component';
+import { ProductAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/product-autocomplete-input/product-autocomplete-input.component';
+import { ProjectAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/project-autocomplete-input/project-autocomplete-input.component';
+import { RecipientAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/recipient-autocomplete-input/recipient-autocomplete-input.component';
 
 @NgModule({
   declarations: [
@@ -46,6 +53,13 @@ import { MatMenuModule } from '@angular/material/menu';
     NgxSkeletonLoaderModule,
     TransactionModule,
     MatMenuModule,
+    ClearableInputComponent,
+    MatSlideToggleModule,
+    AccountAutocompleteInputComponent,
+    ProjectAutocompleteInputComponent,
+    RecipientAutocompleteInputComponent,
+    CategoryAutocompleteInputComponent,
+    ProductAutocompleteInputComponent,
   ],
 })
 export class ImportModule { }

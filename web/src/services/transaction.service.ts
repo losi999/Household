@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Account, Transaction, Report, File } from '@household/shared/types/types';
 import { Observable } from 'rxjs';
 import { environment } from '@household/web/environments/environment';
-import { transactionsPageSize } from '@household/web/app/constants';
+import { transactionsPageSize } from '@household/web/constants';
 
 @Injectable({
   providedIn: 'root',

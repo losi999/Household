@@ -33,7 +33,7 @@ export class RecipientAutocompleteInputComponent implements OnInit, ControlValue
   }) label: string;
   selected: FormControl<Recipient.Response>;
 
-  changed: (value: Recipient.Id) => void;
+  changed: (value: Recipient.Response) => void;
   touched: () => void;
   isDisabled: boolean;
 

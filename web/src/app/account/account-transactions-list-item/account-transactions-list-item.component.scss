@@ -8,6 +8,10 @@
     "datetime details amount"
     "buttons buttons buttons";
 
+  & > .details {
+    min-width: 0;
+  }
+
   & > .datetime {
     grid-area: datetime;
     text-align: right;

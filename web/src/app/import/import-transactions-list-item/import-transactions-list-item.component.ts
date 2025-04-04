@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Transaction } from '@household/shared/types/types';
 import { selectFileIsInProgress, selectTransactionIsInProgress } from '@household/web/state/progress/progress.selector';
+import { ImportedTransaction } from '@household/web/types/common';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 
@@ -12,7 +13,7 @@ import { Observable } from 'rxjs';
   styleUrl: './import-transactions-list-item.component.scss',
 })
 export class ImportTransactionsListItemComponent implements OnInit {
-  @Input() transaction: Transaction.DraftResponse;
+  @Input() transaction: ImportedTransaction;
 
   isDisabled: Observable<boolean>;
   showYear: boolean;

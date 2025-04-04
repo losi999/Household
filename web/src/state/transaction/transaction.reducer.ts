@@ -5,7 +5,6 @@ import { transactionApiActions } from '@household/web/state/transaction/transact
 export type TransactionState = {
   transactionList: Transaction.Response[];
   deferredTransactionList?: Transaction.DeferredResponse[];
-  draftTransactionList?: Transaction.DraftResponse[];
   selectedTransaction?: Transaction.Response;
   report?: Transaction.Report[];
 };
@@ -57,7 +56,10 @@ on(transactionApiActions.listDraftTransactionsInitiated, (_state) => {
 on(transactionApiActions.listDraftTransactionsCompleted, (_state, { transactions }) => {
   return {
     ..._state,
-    draftTransactionList: transactions,
+    draftTransactionList: transactions.map(t => ({
+      ...t,
+      transactionType: 'payment',
+    })),
   };
 }),
 

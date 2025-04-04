@@ -12,13 +12,20 @@ import { ProjectMergeDialogComponent, ProjectMergeDialogData } from '@household/
 import { RecipientFormComponent, RecipientFormData } from '@household/web/app/recipient/recipient-form/recipient-form.component';
 import { RecipientMergeDialogComponent, RecipientMergeDialogData } from '@household/web/app/recipient/recipient-merge-dialog/recipient-merge-dialog.component';
 import { ConfirmationDialogComponent } from '@household/web/app/shared/confirmation-dialog/confirmation-dialog.component';
+import { accountApiActions } from '@household/web/state/account/account.actions';
+import { categoryApiActions } from '@household/web/state/category/category.actions';
+import { fileApiActions } from '@household/web/state/file/file.actions';
+import { productApiActions } from '@household/web/state/product/product.actions';
+import { projectApiActions } from '@household/web/state/project/project.actions';
+import { recipientApiActions } from '@household/web/state/recipient/recipient.actions';
+import { Store } from '@ngrx/store';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DialogService {
 
-  constructor(private dialog: MatDialog) { }
+  constructor(private dialog: MatDialog, private store: Store) { }
 
   openCreateProjectDialog(): void {
     this.dialog.open<ProjectFormComponent, ProjectFormData, void>(ProjectFormComponent);
@@ -30,13 +37,21 @@ export class DialogService {
     });
   }
 
-  openDeleteProjectDialog(project: Project.Response): MatDialogRef<ConfirmationDialogComponent, boolean> {
-    return this.dialog.open(ConfirmationDialogComponent, {
+  openDeleteProjectDialog(project: Project.Response): void {
+    this.dialog.open(ConfirmationDialogComponent, {
       data: {
         title: 'Törölni akarod ezt a projektet?',
         content: project.name,
       },
-    });
+    }).afterClosed()
+      .subscribe((shouldDelete) => {
+        if (shouldDelete) {
+          this.store.dispatch(projectApiActions.deleteProjectInitiated({
+            projectId: project.projectId,
+          }));
+        }
+      },
+      );
   }
 
   openMergeProjectsDialog(project: Project.Response) {
@@ -55,13 +70,20 @@ export class DialogService {
     });
   }
 
-  openDeleteRecipientDialog(recipient: Recipient.Response): MatDialogRef<ConfirmationDialogComponent, boolean> {
-    return this.dialog.open(ConfirmationDialogComponent, {
+  openDeleteRecipientDialog(recipient: Recipient.Response): void {
+    this.dialog.open(ConfirmationDialogComponent, {
       data: {
         title: 'Törölni akarod ezt a partnert?',
         content: recipient.name,
       },
-    });
+    }).afterClosed()
+      .subscribe((shouldDelete) => {
+        if (shouldDelete) {
+          this.store.dispatch(recipientApiActions.deleteRecipientInitiated({
+            recipientId: recipient.recipientId,
+          }));
+        }
+      });
   }
 
   openMergeRecipientsDialog(recipient: Recipient.Response) {
@@ -82,13 +104,20 @@ export class DialogService {
     });
   }
 
-  openDeleteCategoryDialog(category: Category.Response): MatDialogRef<ConfirmationDialogComponent, boolean> {
-    return this.dialog.open(ConfirmationDialogComponent, {
+  openDeleteCategoryDialog(category: Category.Response): void {
+    this.dialog.open(ConfirmationDialogComponent, {
       data: {
         title: 'Törölni akarod ezt a kategóriát?',
         content: category.name,
       },
-    });
+    }).afterClosed()
+      .subscribe((shouldDelete) => {
+        if (shouldDelete) {
+          this.store.dispatch(categoryApiActions.deleteCategoryInitiated({
+            categoryId: category.categoryId,
+          }));
+        }
+      });
   }
 
   openMergeCategoriesDialog(category: Category.Response) {
@@ -115,13 +144,21 @@ export class DialogService {
     });
   }
 
-  openDeleteProductDialog(product: Product.Response): MatDialogRef<ConfirmationDialogComponent, boolean> {
-    return this.dialog.open(ConfirmationDialogComponent, {
+  openDeleteProductDialog(product: Product.Response, categoryId: Category.Id): void {
+    this.dialog.open(ConfirmationDialogComponent, {
       data: {
         title: 'Törölni akarod ezt a terméket?',
         content: product.fullName,
       },
-    });
+    }).afterClosed()
+      .subscribe((shouldDelete) => {
+        if (shouldDelete) {
+          this.store.dispatch(productApiActions.deleteProductInitiated({
+            productId: product.productId,
+            categoryId,
+          }));
+        }
+      });
   }
 
   openMergeProductsDialog(product: Product.Response, categoryId: Category.Id) {
@@ -143,13 +180,20 @@ export class DialogService {
     });
   }
 
-  openDeleteAccountDialog(account: Account.Response): MatDialogRef<ConfirmationDialogComponent, boolean> {
-    return this.dialog.open(ConfirmationDialogComponent, {
+  openDeleteAccountDialog(account: Account.Response): void {
+    this.dialog.open(ConfirmationDialogComponent, {
       data: {
         title: 'Törölni akarod ezt a számlát?',
         content: account.name,
       },
-    });
+    }).afterClosed()
+      .subscribe((shouldDelete) => {
+        if (shouldDelete) {
+          this.store.dispatch(accountApiActions.deleteAccountInitiated({
+            accountId: account.accountId,
+          }));
+        }
+      });
   }
 
   openDeleteTransactionDialog(): MatDialogRef<ConfirmationDialogComponent, boolean> {
@@ -165,12 +209,19 @@ export class DialogService {
     this.dialog.open<ImportFileUploadFormComponent, void, void>(ImportFileUploadFormComponent);
   }
 
-  openDeleteFileDialog(file: File.Response): MatDialogRef<ConfirmationDialogComponent, boolean> {
-    return this.dialog.open(ConfirmationDialogComponent, {
+  openDeleteFileDialog(file: File.Response): void {
+    this.dialog.open(ConfirmationDialogComponent, {
       data: {
         title: 'Törölni akarod ezt a számlát?',
         content: file.fileId,
       },
-    });
+    }).afterClosed()
+      .subscribe((shouldDelete) => {
+        if (shouldDelete) {
+          this.store.dispatch(fileApiActions.deleteFileInitiated({
+            fileId: file.fileId,
+          }));
+        }
+      });
   }
 }

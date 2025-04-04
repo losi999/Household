@@ -298,15 +298,15 @@ export namespace Transaction {
     product: P;
   };
 
-  type TransferAccount<A extends Account.Document | Account.Response> = {
+  export type TransferAccount<A extends Account.Document | Account.Response> = {
     transferAccount: A;
   };
 
-  type PayingAccount<A extends Account.Document |Account.Response> = {
+  export type PayingAccount<A extends Account.Document |Account.Response> = {
     payingAccount: A;
   };
 
-  type OwnerAccount<A extends Account.Document | Account.Response> = {
+  export type OwnerAccount<A extends Account.Document | Account.Response> = {
     ownerAccount: A;
   };
 

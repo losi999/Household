@@ -1,13 +1,39 @@
 <household-toolbar title="Importálás">
-  <button mat-icon-button type="button" tabindex="-1" [matMenuTriggerFor]="new">
-    <mat-icon>edit</mat-icon>
+  <button mat-icon-button type="button" tabindex="-1" (click)="save()">
+    <mat-icon>save</mat-icon>
   </button>
-  <mat-menu #new="matMenu">
-    <button mat-menu-item (click)="updateAccount()">Számla</button>
-    <button mat-menu-item>Kategória</button>
-    <button mat-menu-item>Termék</button>
-    <button mat-menu-item>Partner</button>
-    <button mat-menu-item>Projekt</button>
-  </mat-menu>
 </household-toolbar>
-<household-import-transactions-list [transactions]="transactions | async" />
+<ng-container *ngIf="(transactions | async)?.length">
+  <button mat-flat-button type="button" [color]="fieldVisibility.account ? 'primary' : ''" (click)="toggleField('account')">
+    <mat-icon>reply_all</mat-icon>Fizető számla
+  </button>
+  <button mat-flat-button type="button" [color]="fieldVisibility.recipient ? 'primary' : ''" (click)="toggleField('recipient')">
+    <mat-icon>store</mat-icon>Partner
+  </button>
+  <button mat-flat-button type="button" [color]="fieldVisibility.category ? 'primary' : ''" (click)="toggleField('category')">
+    <mat-icon>category</mat-icon>Kategória
+  </button>
+  <button mat-flat-button type="button" [color]="fieldVisibility.project ? 'primary' : ''" (click)="toggleField('project')">
+    <mat-icon>stacks</mat-icon>Projekt
+  </button>
+  <button mat-flat-button type="button" [color]="fieldVisibility.description ? 'primary' : ''" (click)="toggleField('description')"><mat-icon>description</mat-icon>Megjegyzés
+  </button>
+  <button mat-flat-button type="button" [color]="fieldVisibility.transferAccount ? 'primary' : ''" (click)="toggleField('transferAccount')"><mat-icon>arrow_right_alt</mat-icon>Átvitel számla
+  </button>
+  <button mat-flat-button type="button" [color]="fieldVisibility.loanAccount ? 'primary' : ''" (click)="toggleField('loanAccount')">
+    <mat-icon>forward</mat-icon>Kölcsön számla
+  </button>
+  <ng-container *ngIf="anyFieldVisible" [formGroup]="editingFields">
+    <household-account-autocomplete-input *ngIf="fieldVisibility.account" label="Számla" formControlName="account" />
+    <household-recipient-autocomplete-input *ngIf="fieldVisibility.recipient" label="Partner" formControlName="recipient" />
+    <household-category-autocomplete-input *ngIf="fieldVisibility.category" label="Kategória" formControlName="category" />
+    <household-project-autocomplete-input *ngIf="fieldVisibility.project" label="Projekt" formControlName="project" />
+    <household-account-autocomplete-input *ngIf="fieldVisibility.transferAccount" label="Átvitel számla" formControlName="transferAccount" />
+    <household-account-autocomplete-input *ngIf="fieldVisibility.loanAccount" label="Kölcsön számla" formControlName="loanAccount" />
+    <household-clearable-input *ngIf="fieldVisibility.description" label="Megjegyzés" />
+    <button mat-button color="primary" type="button" (click)="applyFields()">Alkalmaz</button>
+    <button mat-button color="warn" type="button" (click)="cancel()">Mégse</button>
+  </ng-container>
+</ng-container>
+<mat-divider />
+<household-import-transactions-list [transactions]="transactions | async" [formControl]="selectedTransactions" />

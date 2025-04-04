@@ -37,6 +37,8 @@ import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
 import { DialogEffects } from '@household/web/state/dialog/dialog.effects';
 import { FileEffects } from '@household/web/state/file/file.effects';
 import { fileReducer } from '@household/web/state/file/file.reducer';
+import { importReducer } from '@household/web/state/import/import.reducer';
+import { ImportEffects } from '@household/web/state/import/import.effects';
 
 registerLocaleData(localeHu);
 
@@ -61,6 +63,7 @@ registerLocaleData(localeHu);
       products: productReducer,
       transactions: transactionReducer,
       files: fileReducer,
+      import: importReducer,
     }),
     StoreDevtoolsModule.instrument({
       maxAge: 25,
@@ -77,6 +80,7 @@ registerLocaleData(localeHu);
       NavigationEffects,
       DialogEffects,
       FileEffects,
+      ImportEffects,
     ]),
   ],
   providers: [

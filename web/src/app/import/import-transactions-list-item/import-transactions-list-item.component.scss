@@ -1,18 +1,10 @@
-::ng-deep mat-list-option {
-  display: flex !important;
-  flex-direction: row-reverse !important;
-  justify-content: flex-end;
-}
-
 .list-item {
   margin: 5px 0;
   padding: 0 10px;
   display: grid;
   grid-template-columns: 75px 1fr auto;
   column-gap: 15px;
-  grid-template-areas:
-    "datetime details amount"
-    "buttons buttons buttons";
+  grid-template-areas: "datetime details amount";
 
   & > .details {
     min-width: 0;
@@ -41,11 +33,6 @@
     justify-self: end;
     font-size: 20px;
     font-weight: bold;
-  }
-
-  & > .buttons {
-    grid-area: buttons;
-    justify-self: end;
   }
 
   @media all and (max-width: 639px) {
