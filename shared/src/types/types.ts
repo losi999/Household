@@ -373,7 +373,7 @@ export namespace Transaction {
   & Description
   & IssuedAt<D> & {
     file: File.Document
-    potentialDuplicates?: Transaction.Id[];
+    hasDuplicate?: boolean;
   };
 
   type LoanDocument<D extends Date | string = Date> = Internal.Id
@@ -571,7 +571,7 @@ export namespace Transaction {
   & IssuedAt<string>
   & TransactionType<'draft'>
   & {
-    potentialDuplicates: Transaction.Id[]
+    hasDuplicate: boolean;
   };
 
   export type Response = PaymentResponse | TransferResponse | SplitResponse | LoanTransferResponse | DeferredResponse | ReimbursementResponse;

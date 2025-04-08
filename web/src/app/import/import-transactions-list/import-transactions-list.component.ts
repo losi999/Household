@@ -1,6 +1,7 @@
 import { Component, forwardRef, Input, OnInit } from '@angular/core';
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { Transaction } from '@household/shared/types/types';
+import { ImportFilterPipe } from '@household/web/app/import/import-filter.pipe';
 
 @Component({
   selector: 'household-import-transactions-list',
@@ -24,6 +25,10 @@ export class ImportTransactionsListComponent implements OnInit, ControlValueAcce
   touched: () => void;
   isDisabled: boolean;
 
+  constructor(private importFilter: ImportFilterPipe) {
+
+  }
+
   ngOnInit(): void {
     this.selectedItems = new FormControl([]);
 
@@ -32,8 +37,10 @@ export class ImportTransactionsListComponent implements OnInit, ControlValueAcce
     });
   }
 
-  selectAll() {
-    this.selectedItems.setValue(this.transactions.map(t => t.transactionId));
+  selectAll(filterValue: string) {
+    const transactions = filterValue ? this.importFilter.transform(this.transactions, filterValue) : this.transactions;
+
+    this.selectedItems.setValue(transactions.map(t => t.transactionId));
   }
 
   deselectAll() {

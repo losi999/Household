@@ -576,9 +576,15 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
           .lookup({
             from: 'transactions',
             let: {
-              amount: '$amount',
-              issuedAt: '$issuedAt',
-              id: '$_id',
+              draftAmount: {
+                $abs: '$amount',
+              },
+              draftDate: {
+                $dateToString: {
+                  format: '%Y-%m-%d',
+                  date: '$issuedAt',
+                },
+              },
             },
             pipeline: [
               {
@@ -586,54 +592,52 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
                   $expr: {
                     $and: [
                       {
-                        $eq: [
-                          '$amount',
-                          '$$amount',
-                        ],
-                      },
-                      {
                         $ne: [
                           '$transactionType',
                           'draft',
                         ],
                       },
                       {
-                        $gte: [
-                          '$issuedAt',
+                        $eq: [
                           {
-                            $subtract: [
-                              '$$issuedAt',
-                              1000 * 60 * 60 * 6,
-                            ],
+                            $abs: '$amount',
                           },
+                          '$$draftAmount',
                         ],
                       },
                       {
-                        $lte: [
-                          '$issuedAt',
+                        $eq: [
                           {
-                            $add: [
-                              '$$issuedAt',
-                              1000 * 60 * 60 * 6,
-                            ],
+                            $dateToString: {
+                              format: '%Y-%m-%d',
+                              date: '$issuedAt',
+                            },
                           },
+                          '$$draftDate',
                         ],
                       },
                     ],
                   },
                 },
               },
+              {
+                $limit: 1,
+              },
             ],
             as: 'potentialDuplicates',
           })
           .addFields({
-            potentialDuplicates: {
-              $map: {
-                input: '$potentialDuplicates',
-                as: 'd',
-                in: '$$d._id',
-              },
+            hasDuplicate: {
+              $gt: [
+                {
+                  $size: '$potentialDuplicates', 
+                },
+                0,
+              ], 
             },
+          })
+          .project({
+            potentialDuplicates: 0,
           })
           .session(session)
           .exec();

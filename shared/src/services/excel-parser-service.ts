@@ -7,13 +7,23 @@ export interface IExcelParserService {
 }
 
 export const excelParserServiceFactory = (read: typeof Read, utils: typeof Utils, moment: typeof Moment): IExcelParserService => {
+  const createDescription = (item: any, ...fieldNames: string[]): string => {
+    return fieldNames.reduce((accumulator, currentValue) => {
+      if (item[currentValue]) {
+        return `${accumulator} ${item[currentValue]}`;
+      }
+
+      return accumulator;
+    }, '');
+  };
+
   const parseOtpExcel = (workbook: WorkBook): (Transaction.IssuedAt<Date> & Transaction.Amount & Transaction.Description)[] => {
     const parsed = utils.sheet_to_json<any>(workbook.Sheets.Sheet3);
 
     return parsed.map((p => {
       return {
         amount: p['Összeg'],
-        description: `${p['Forgalom típusa']} ${p['Ellenoldali név']} ${p['Közlemény']}`,
+        description: createDescription(p, 'Forgalom típusa', 'Ellenoldali név', 'Közlemény'),
         issuedAt: moment((p['Tranzakció időpontja'] as Date).toISOString().replace('Z', '')).toDate(),
       };
     }));
@@ -25,7 +35,7 @@ export const excelParserServiceFactory = (read: typeof Read, utils: typeof Utils
     return parsed.map((p => {
       return {
         amount: p['Amount'] - p['Fee'],
-        description: p['Description'],
+        description: createDescription(p, 'Type', 'Description', 'Currency'),
         issuedAt: moment((p['Started Date'] as Date).toISOString().replace('Z', '')).toDate(),
       };
     }));
@@ -39,10 +49,9 @@ export const excelParserServiceFactory = (read: typeof Read, utils: typeof Utils
     return parsed.map((p => {
 
       const date = p['Tranzakció dátuma és ideje'] ? moment(p['Tranzakció dátuma és ideje'], 'YYYY.MM.DD HH:mm:ss').toDate() : moment((p['Dátum'] as Date).toISOString().replace('Z', '')).toDate();
-      console.log(date);
       return {
         amount: p['Összeg'],
-        description: `${p['Partner név']} ${p['Közlemény']}`,
+        description: createDescription(p, 'Partner név', 'Közlemény', 'Kategória'),
         issuedAt: date,
       };
     }));

@@ -21,12 +21,14 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { TransactionModule } from '@household/web/app/transaction/transaction.module';
 import { MatMenuModule } from '@angular/material/menu';
 import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { AccountAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/account-autocomplete-input/account-autocomplete-input.component';
 import { CategoryAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/category-autocomplete-input/category-autocomplete-input.component';
 import { ProductAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/product-autocomplete-input/product-autocomplete-input.component';
 import { ProjectAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/project-autocomplete-input/project-autocomplete-input.component';
 import { RecipientAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/recipient-autocomplete-input/recipient-autocomplete-input.component';
+import { MatTabsModule } from '@angular/material/tabs';
+import { ImportTransactionsEditComponent } from '@household/web/app/import/import-transactions-edit/import-transactions-edit.component';
+import { ImportFilterPipe } from '@household/web/app/import/import-filter.pipe';
 
 @NgModule({
   declarations: [
@@ -37,7 +39,10 @@ import { RecipientAutocompleteInputComponent } from '@household/web/app/shared/a
     ImportTransactionsHomeComponent,
     ImportTransactionsListComponent,
     ImportTransactionsListItemComponent,
+    ImportTransactionsEditComponent,
+    ImportFilterPipe,
   ],
+  providers: [ImportFilterPipe],
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -54,7 +59,7 @@ import { RecipientAutocompleteInputComponent } from '@household/web/app/shared/a
     TransactionModule,
     MatMenuModule,
     ClearableInputComponent,
-    MatSlideToggleModule,
+    MatTabsModule,
     AccountAutocompleteInputComponent,
     ProjectAutocompleteInputComponent,
     RecipientAutocompleteInputComponent,
