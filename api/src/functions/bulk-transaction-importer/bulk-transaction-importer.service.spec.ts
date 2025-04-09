@@ -65,7 +65,11 @@ describe('Bulk transaction importer service', () => {
       });
       validateFunctionCall(mockFileService.functions.getFileById, fileId);
       validateFunctionCall(mockStorageService.functions.readFile, bucketName, fileId);
-      validateFunctionCall(mockExcelParser.functions.parse, fileContent, queriedFileDocument.fileType, queriedFileDocument.timezone);
+      validateFunctionCall(mockExcelParser.functions.parse, {
+        fileContent,
+        fileType: queriedFileDocument.fileType,
+        timezone: queriedFileDocument.timezone,
+      });
       validateFunctionCall(mockDraftTransactionDocumentConverter.functions.create, {
         body: {
           amount,
@@ -137,7 +141,11 @@ describe('Bulk transaction importer service', () => {
       }).catch(validateError('Error while saving transactions', 500));
       validateFunctionCall(mockFileService.functions.getFileById, fileId);
       validateFunctionCall(mockStorageService.functions.readFile, bucketName, fileId);
-      validateFunctionCall(mockExcelParser.functions.parse, fileContent, queriedFileDocument.fileType, queriedFileDocument.timezone);
+      validateFunctionCall(mockExcelParser.functions.parse, {
+        fileContent,
+        fileType: queriedFileDocument.fileType,
+        timezone: queriedFileDocument.timezone,
+      });
       validateFunctionCall(mockDraftTransactionDocumentConverter.functions.create, {
         body: {
           amount,
@@ -173,7 +181,11 @@ describe('Bulk transaction importer service', () => {
       }).catch(validateError('Error while updating file document', 500));
       validateFunctionCall(mockFileService.functions.getFileById, fileId);
       validateFunctionCall(mockStorageService.functions.readFile, bucketName, fileId);
-      validateFunctionCall(mockExcelParser.functions.parse, fileContent, queriedFileDocument.fileType, queriedFileDocument.timezone);
+      validateFunctionCall(mockExcelParser.functions.parse, {
+        fileContent,
+        fileType: queriedFileDocument.fileType,
+        timezone: queriedFileDocument.timezone,
+      });
       validateFunctionCall(mockDraftTransactionDocumentConverter.functions.create, {
         body: {
           amount,

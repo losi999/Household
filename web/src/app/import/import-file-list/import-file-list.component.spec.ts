@@ -8,9 +8,9 @@ describe('ImportFileListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ImportFileListComponent]
+      declarations: [ImportFileListComponent],
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(ImportFileListComponent);
     component = fixture.componentInstance;

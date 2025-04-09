@@ -80,15 +80,6 @@ Resources:
           ADMIN_COUNT: "1"
           TEST_USER_PASSWORD: !Ref TestUserPassword
 
-  MigrateCategories:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: !Sub Household-${Env}-MigrateCategories
-      CodeUri: dist/api/migrate-categories
-      Role: !Ref LambdaRoleArn
-
 Outputs:
   PostDeployCreateTestUsers:
     Value: !If [ShouldCreateTestUsers, !GetAtt CreateTestUsers.Arn, ""]
-  PostDeployMigrateCategories:
-    Value: !GetAtt MigrateCategories.Arn

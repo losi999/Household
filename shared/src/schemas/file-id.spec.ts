@@ -1,4 +1,4 @@
-import { default as schema } from '@household/shared/schemas/project-id';
+import { default as schema } from '@household/shared/schemas/file-id';
 import { File } from '@household/shared/types/types';
 import { createFileId } from '@household/shared/common/test-data-factory';
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';

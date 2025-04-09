@@ -8,9 +8,9 @@ describe('ImportFileUploadFormComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ImportFileUploadFormComponent]
+      declarations: [ImportFileUploadFormComponent],
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(ImportFileUploadFormComponent);
     component = fixture.componentInstance;

@@ -8,9 +8,9 @@ describe('ImportTransactionsListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ImportTransactionsListComponent]
+      declarations: [ImportTransactionsListComponent],
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(ImportTransactionsListComponent);
     component = fixture.componentInstance;
