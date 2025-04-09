@@ -7,7 +7,6 @@ import { Store } from '@ngrx/store';
 @Component({
   selector: 'household-import-transactions-home',
   standalone: false,
-
   templateUrl: './import-transactions-home.component.html',
   styleUrl: './import-transactions-home.component.scss',
 })
