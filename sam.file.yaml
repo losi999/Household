@@ -149,33 +149,6 @@ Resources:
             Bucket: !Ref ImportBucket
             Events:
               - "s3:ObjectCreated:*"
-            # Filter:
-            #   S3Key:
-            #     Rules:
-            #       - Name: prefix
-            #         Value: "erste/"
-        # Otp:
-        #   Type: S3
-        #   Properties:
-        #     Bucket: !Ref ImportBucket
-        #     Events:
-        #       - "s3:ObjectCreated:*"
-        #     Filter:
-        #       S3Key:
-        #         Rules:
-        #           - Name: prefix
-        #             Value: "otp/"
-        # Revolut:
-        #   Type: S3
-        #   Properties:
-        #     Bucket: !Ref ImportBucket
-        #     Events:
-        #       - "s3:ObjectCreated:*"
-        #     Filter:
-        #       S3Key:
-        #         Rules:
-        #           - Name: prefix
-        #             Value: "revolut/"
 
 Outputs:
   FileApi:
