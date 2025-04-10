@@ -105,7 +105,7 @@ export class AccountTransactionsListItemComponent implements OnInit {
         if (this.transaction.payingAccount.accountId === viewingAccountId) {
           this.viewingAccount = this.transaction.payingAccount;
           this.ownerAccount = this.transaction.ownerAccount;
-          this.amount = this.transaction.amount * -1;
+          this.amount = this.transaction.amount;
         } else {
           this.viewingAccount = this.transaction.ownerAccount;
           this.payingAccount = this.transaction.payingAccount;

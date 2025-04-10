@@ -479,7 +479,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
     },
     listTransactionsByAccountId: ({ accountId, pageSize, pageNumber }) => {
       return mongodbService.inSession(async (session) => {
-        return mongodbService.transactions.aggregate([
+        const aggr = [
           {
             $match: {
               $or: [
@@ -518,7 +518,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
             tx_id: '$_id',
             tx_transactionType: '$transactionType',
           }),
-          ...duplicateByAccounts(),
+          ...duplicateByAccounts('loan'),
           {
             $unset: [
               'tmp_dupes',
@@ -562,7 +562,9 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
               issuedAt: -1,
             },
           },
-        ], {
+        ] as any;
+        console.log(JSON.stringify(aggr, null, 2));
+        return mongodbService.transactions.aggregate(aggr, {
           session,
         });
       });
@@ -630,10 +632,10 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
             hasDuplicate: {
               $gt: [
                 {
-                  $size: '$potentialDuplicates', 
+                  $size: '$potentialDuplicates',
                 },
                 0,
-              ], 
+              ],
             },
           })
           .project({

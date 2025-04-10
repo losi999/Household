@@ -18,7 +18,6 @@ export const accountReducer = createReducer<Account.Response[]>([],
         name,
         owner,
         balance: exisingAccount ? exisingAccount.balance : 0,
-        deferredCount: exisingAccount ? exisingAccount.deferredCount : 0,
         fullName: `${name} (${owner})`,
         isOpen: exisingAccount ? exisingAccount.isOpen : true,
       });

@@ -9,7 +9,7 @@ const validateAccountDocument = (response: Account.AccountId, request: Account.R
   cy.log('Get account document', id)
     .getAccountDocumentById(id)
     .should((document) => {
-      const { name, accountType, currency, owner, balance, deferredCount, isOpen, ...internal } = document;
+      const { name, accountType, currency, owner, balance, isOpen, ...internal } = document;
 
       expect(getAccountId(document), '_id').to.equal(id);
       expect(name, 'name').to.equal(request.name);
@@ -17,14 +17,13 @@ const validateAccountDocument = (response: Account.AccountId, request: Account.R
       expect(currency, 'currency').to.equal(request.currency);
       expect(owner, 'owner').to.equal(request.owner);
       expect(balance, 'balance').to.equal(0);
-      expect(deferredCount, 'deferredCount').to.equal(0);
       expect(isOpen, 'isOpen').to.equal(true);
       expectRemainingProperties(internal);
     });
 };
 
-const validateAccountResponse = (nestedPath: string = '') => (response: Account.Response, document: Account.Document, expectedBalance: number, expectedDeferredCount: number) => {
-  const { accountId, name, accountType, currency, owner, balance, deferredCount, isOpen, fullName, ...empty } = response;
+const validateAccountResponse = (nestedPath: string = '') => (response: Account.Response, document: Account.Document, expectedBalance: number) => {
+  const { accountId, name, accountType, currency, owner, balance, isOpen, fullName, ...empty } = response;
 
   expect(accountId, `${nestedPath}accountId`).to.equal(getAccountId(document));
   expect(name, `${nestedPath}name`).to.equal(document.name);
@@ -32,7 +31,6 @@ const validateAccountResponse = (nestedPath: string = '') => (response: Account.
   expect(currency, `${nestedPath}currency`).to.equal(document.currency);
   expect(owner, `${nestedPath}owner`).to.equal(document.owner);
   expect(balance, `${nestedPath}balance`).to.equal(expectedBalance);
-  expect(deferredCount, `${nestedPath}deferredCount`).to.equal(expectedDeferredCount);
   expect(isOpen, `${nestedPath}isOpen`).to.equal(document.isOpen);
   expect(fullName, `${nestedPath}fullName`).to.equal(`${document.name} (${document.owner})`);
   expectEmptyObject(empty, nestedPath);
@@ -44,10 +42,9 @@ const validateAccountListResponse = (responses: Account.Response[], documents: [
   documents.forEach(([
     document,
     balance,
-    deferredCount,
   ], index) => {
     const response = responses.find(r => r.accountId === getAccountId(document));
-    cy.validateNestedAccountResponse(`[${index}].`, response, document, balance, deferredCount);
+    cy.validateNestedAccountResponse(`[${index}].`, response, document, balance);
   });
 };
 

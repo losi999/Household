@@ -4,212 +4,145 @@ const aggregate = [
       from: 'transactions',
       let: {
         accountId: '$_id',
+        accountType: "$accountType"
       },
+      as: 'transactions',
       pipeline: [
-        {
-          $set: {
-            tmp_splits: {
-              $concatArrays: [{
-                $ifNull: ['$splits', []]
-              }, {
-                $ifNull: ['$deferredSplits', []]
-              }]
-            }
-          }
-        },
-        {
-          $unwind: {
-            path: '$tmp_splits',
-            preserveNullAndEmptyArrays: true,
-          },
-        },
-        {
-          $replaceRoot: {
-            newRoot: {
-              $mergeObjects: [
-                '$$ROOT',
-                '$tmp_splits',
-                {
-                  tx_amount: '$amount',
-                  tx_description: '$description',
-                  tx_id: '$_id',
-                  tx_transactionType: '$transactionType'
-                }
-              ],
-            },
-          },
-        },
-        {
-          $set: {
-            tmp_dupes: {
-              $filter: {
-                input: [
-                  {
-                    tmp_account: {
-                      $cond: {
-                        if: {
-                          $ne: ['$transactionType', 'deferred']
-                        },
-                        then: '$account',
-                        else: null
-                      }
-                    },
-                  },
-                  {
-                    tmp_account: '$transferAccount',
-                    amount: {
-                      $ifNull: [
-                        '$transferAmount',
-                        '$amount',
-                      ],
-                    },
-                  },
-                  {
-                    tmp_account: '$ownerAccount',
-                  },
-                  {
-                    tmp_account: '$payingAccount',
-                  },
-                ],
-                cond: {
-                  $ne: [
-                    {
-                      $ifNull: [
-                        '$$this.tmp_account',
-                        null,
-                      ],
-                    },
-                    null,
-                  ],
-                },
-              },
-            },
-          },
-        },
-        {
-          $unwind: {
-            path: '$tmp_dupes',
-          },
-        },
-        {
-          $replaceRoot: {
-            newRoot: {
-              $mergeObjects: [
-                '$$ROOT',
-                '$tmp_dupes',
-              ],
-            },
-          },
-        },
-        {
-          $unset: [
-            'tmp_dupes',
-            'tmp_splits',
-            'splits',
-            'deferredSplits'
-          ],
-        },
         {
           $match: {
             $expr: {
-              $eq: [
-                '$$accountId',
-                '$tmp_account',
-              ],
-            },
-          },
-        },
-      ],
-      as: 'tmp_tx',
-    },
-  },
-  {
-    $set: {
-      deferredCount: {
-        $cond: {
-          if: {
-            $eq: ['$accountType', 'loan']
-          },
-          then: 0,
-          else: {
-            $size: {
-              $filter: {
-                input: '$tmp_tx',
-                cond: {
-                  $and:[{
-                  $eq: ['$$this.transactionType', 'deferred']  
-                  }, {
-                    $eq: ['$$this.tmp_account', '$$this.ownerAccount']
-                  }]
-                  
+              $or: [
+                {
+                  $eq: ['$$accountId', '$account']
+                },
+                {
+                  $eq: ['$$accountId', '$transferAccount']
+                },
+                {
+                  $eq: ['$$accountId', '$payingAccount']
+                },
+                {
+                  $and: [
+                    { $eq: ["$$accountType", "loan"] },
+                    {
+                      $or: [
+                        {
+                          $eq: ['$$accountId', '$ownerAccount']
+                        },
+                        {
+                          $in: [
+                            "$$accountId",
+                            {
+                              $map: {
+                                input: { $ifNull: ["$deferredSplits", []] },
+                                as: "split",
+                                in: "$$split.ownerAccount"
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
                 }
-              }
+              ]
             }
           }
         }
-      },
+      ]
+    }
+  },
+  {
+    $set: {
       balance: {
         $reduce: {
-          input: '$tmp_tx',
+          input: '$transactions',
           initialValue: 0,
           in: {
-            $switch: {
-              branches: [
-                {
-                  case: {
+            $add: [
+              '$$value',
+              {
+                $cond: {
+                  if: {
+                    $or: [
+                      {
+                        $eq: ['$$this.account', '$_id']
+                      },
+                      {
+                        $eq: ['$$this.payingAccount', '$_id']
+                      }
+                    ]
+
+                  },
+                  then: '$$this.amount',
+                  else: 0
+                }
+              },
+              {
+                $cond: {
+                  if: {
+                    $eq: ['$$this.transferAccount', '$_id']
+                  },
+                  then: '$$this.transferAmount',
+                  else: 0
+                }
+              },
+              {
+                $cond: {
+                  if: {
                     $and: [
                       {
-                        $eq: [
-                          '$$this.tmp_account',
-                          '$$this.ownerAccount',
-                        ],
+                        $eq: ['$accountType', 'loan'],
+                      },
+                      {
+                        $eq: ['$$this.ownerAccount', '$_id']
+                      }
+                    ]
+                  },
+                  then: { $multiply: [-1, "$$this.amount"] },
+                  else: 0
+                }
+              },
+              {
+                $cond: {
+                  if: {
+                    $and: [
+                      {
+                        $eq: ['$accountType', 'loan'],
                       },
                       {
                         $ne: [
-                          '$accountType',
-                          'loan',
-                        ],
-                      },
-                    ],
-                  },
-                  then: '$$value',
-                },
-                {
-                  case: {
-                    $and: [
-                      {
-                        $eq: [
-                          '$$this.tmp_account',
-                          '$$this.payingAccount',
-                        ],
-                      },
-                      {
-                        $eq: [
-                          '$accountType',
-                          'loan',
-                        ],
-                      },
-                    ],
+                          { $type: "$$this.deferredSplits" },
+                          "missing"
+                        ]
+                      }
+                    ]
                   },
                   then: {
-                    $subtract: [
-                      '$$value',
-                      '$$this.amount',
-                    ],
+                    $sum: {
+                      $map: {
+                        input: '$$this.deferredSplits',
+                        as: 'split',
+                        in: {
+                          $cond: {
+                            if: {
+                              $eq: ['$$split.ownerAccount', '$_id']
+                            },
+                            then: { $multiply: [-1, "$$split.amount"] },
+                            else: 0
+                          }
+                        }
+                      }
+                    }
                   },
-                },
-              ],
-              default: {
-                $sum: [
-                  '$$value',
-                  '$$this.amount',
-                ],
-              },
-            },
-          },
-        },
-      },
-    },
+                  else: 0,
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
   },
   //  {
   //    $unset: ['tmp_tx'],

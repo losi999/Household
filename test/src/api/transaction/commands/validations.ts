@@ -303,7 +303,7 @@ const validateTransactionPaymentResponse = (response: Transaction.PaymentRespons
     transactionType,
   }, document);
 
-  cy.validateNestedAccountResponse('account.', account, document.account, document.account.balance ?? null, document.account.deferredCount ?? null);
+  cy.validateNestedAccountResponse('account.', account, document.account, document.account.balance ?? null);
 
   if (project) {
     cy.validateNestedProjectResponse('project.', project, document.project);
@@ -362,8 +362,8 @@ const validateTransactionDeferredResponse = (response: Transaction.DeferredRespo
   expect(isSettled, 'isSettled').to.equal(document.isSettled ?? false);
   expect(remainingAmount, 'remainingAmount').to.equal(document.isSettled ? 0 : expectedRemainingAmount);
 
-  cy.validateNestedAccountResponse('payingAccount.', payingAccount, document.payingAccount, document.payingAccount.balance ?? null, document.payingAccount.deferredCount ?? null)
-    .validateNestedAccountResponse('ownerAccount.', ownerAccount, document.ownerAccount, document.ownerAccount.balance ?? null, document.ownerAccount.deferredCount ?? null);
+  cy.validateNestedAccountResponse('payingAccount.', payingAccount, document.payingAccount, document.payingAccount.balance ?? null)
+    .validateNestedAccountResponse('ownerAccount.', ownerAccount, document.ownerAccount, document.ownerAccount.balance ?? null);
 
   if (project) {
     cy.validateNestedProjectResponse('project.', project, document.project);
@@ -418,8 +418,8 @@ const validateTransactionReimbursementResponse = (response: Transaction.Reimburs
     transactionType,
   }, document);
 
-  cy.validateNestedAccountResponse('payingAccount.', payingAccount, document.payingAccount, document.payingAccount.balance ?? null, document.payingAccount.deferredCount ?? null)
-    .validateNestedAccountResponse('ownerAccount.', ownerAccount, document.ownerAccount, document.ownerAccount.balance ?? null, document.ownerAccount.deferredCount ?? null);
+  cy.validateNestedAccountResponse('payingAccount.', payingAccount, document.payingAccount, document.payingAccount.balance ?? null)
+    .validateNestedAccountResponse('ownerAccount.', ownerAccount, document.ownerAccount, document.ownerAccount.balance ?? null);
 
   if (project) {
     cy.validateNestedProjectResponse('project.', project, document.project);
@@ -483,8 +483,8 @@ const validateTransactionTransferResponse = (response: Transaction.TransferRespo
   });
   expect(transferAmount, 'transferAmount').to.equal(documentTransferAmount);
 
-  cy.validateNestedAccountResponse('account.', account, documentAccount, documentAccount.balance ?? null, document.account.deferredCount ?? null)
-    .validateNestedAccountResponse('transferAccount.', transferAccount, documentTransferAccount, documentTransferAccount.balance ?? null, document.account.deferredCount ?? null);
+  cy.validateNestedAccountResponse('account.', account, documentAccount, documentAccount.balance ?? null)
+    .validateNestedAccountResponse('transferAccount.', transferAccount, documentTransferAccount, documentTransferAccount.balance ?? null);
 
   payments?.forEach((p, index) => {
     const documentItem = document.payments[index];
@@ -511,8 +511,8 @@ const validateTransactionLoanTransferResponse = (response: Transaction.LoanTrans
     transactionType,
   }, document);
 
-  cy.validateNestedAccountResponse('account.', account, documentAccount, documentAccount.balance ?? null, document.account.deferredCount ?? null)
-    .validateNestedAccountResponse('transferAccount.', transferAccount, documentTransferAccount, documentTransferAccount.balance ?? null, document.account.deferredCount ?? null);
+  cy.validateNestedAccountResponse('account.', account, documentAccount, documentAccount.balance ?? null)
+    .validateNestedAccountResponse('transferAccount.', transferAccount, documentTransferAccount, documentTransferAccount.balance ?? null);
   expectEmptyObject(empty, 'response');
 };
 
@@ -528,7 +528,7 @@ const validateTransactionSplitResponse = (response: Transaction.SplitResponse, d
     transactionType,
   }, document);
 
-  cy.validateNestedAccountResponse('account.', account, document.account, document.account.balance ?? null, document.account.deferredCount ?? null);
+  cy.validateNestedAccountResponse('account.', account, document.account, document.account.balance ?? null);
 
   if (recipient) {
     cy.validateNestedRecipientResponse('recipient.', recipient, document.recipient);
@@ -590,8 +590,8 @@ const validateTransactionSplitResponse = (response: Transaction.SplitResponse, d
     expect(description, `deferredSplits[${index}].description`).to.equal(documentSplit.description);
     expect(isSettled, `deferredSplits[${index}].isSettled`).to.equal(documentSplit.isSettled);
 
-    cy.validateNestedAccountResponse(`deferredSplits[${index}].payingAccount`, payingAccount, documentSplit.payingAccount, documentSplit.payingAccount.balance ?? null, document.account.deferredCount ?? null)
-      .validateNestedAccountResponse(`deferredSplits[${index}].ownerAccount`, ownerAccount, documentSplit.ownerAccount, documentSplit.ownerAccount.balance ?? null, document.account.deferredCount ?? null);
+    cy.validateNestedAccountResponse(`deferredSplits[${index}].payingAccount`, payingAccount, documentSplit.payingAccount, documentSplit.payingAccount.balance ?? null)
+      .validateNestedAccountResponse(`deferredSplits[${index}].ownerAccount`, ownerAccount, documentSplit.ownerAccount, documentSplit.ownerAccount.balance ?? null);
 
     if (project) {
       cy.validateNestedProjectResponse(`deferredSplits[${index}].project.`, project, documentSplit.project);
