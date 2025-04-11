@@ -80,6 +80,15 @@ Resources:
           ADMIN_COUNT: "1"
           TEST_USER_PASSWORD: !Ref TestUserPassword
 
+  MigrateLoanTransactions:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-MigrateLoanTransactions
+      CodeUri: dist/api/migrate-loan-transactions
+      Role: !Ref LambdaRoleArn
+
 Outputs:
   PostDeployCreateTestUsers:
     Value: !If [ShouldCreateTestUsers, !GetAtt CreateTestUsers.Arn, ""]
+  PostDeployMigrateLoanTransactions:
+    Value: !GetAtt MigrateLoanTransactions.Arn

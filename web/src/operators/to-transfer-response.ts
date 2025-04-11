@@ -9,7 +9,6 @@ export const toTransferResponse = () => {
       }
 
       const isLoan = transaction.transactionType === 'deferred' || transaction.transactionType === 'reimbursement';
-      const isTransfer = transaction.transactionType === 'loanTransfer';
 
       return {
         amount: transaction.amount,
@@ -19,7 +18,7 @@ export const toTransferResponse = () => {
         transactionId: transaction.transactionId,
         account: isLoan ? transaction.payingAccount : transaction.account,
         payments: [],
-        transferAccount: isTransfer ? transaction.transferAccount : isLoan ? transaction.ownerAccount : undefined,
+        transferAccount: isLoan ? transaction.ownerAccount : undefined,
         transferAmount: undefined,
       };
     }),

@@ -8,7 +8,7 @@ export const toSplitResponse = () => {
         return transaction;
       }
 
-      const isTransfer = transaction.transactionType === 'transfer' || transaction.transactionType === 'loanTransfer';
+      const isTransfer = transaction.transactionType === 'transfer';
       const isLoan = transaction.transactionType === 'deferred' || transaction.transactionType === 'reimbursement';
 
       return {

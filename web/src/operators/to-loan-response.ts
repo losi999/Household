@@ -9,7 +9,7 @@ export const toLoanResponse = () => {
       }
 
       const isLoan = transaction.transactionType === 'reimbursement';
-      const isTransfer = transaction.transactionType === 'transfer' || transaction.transactionType === 'loanTransfer';
+      const isTransfer = transaction.transactionType === 'transfer';
       const isSplit = transaction.transactionType === 'split';
 
       return {
