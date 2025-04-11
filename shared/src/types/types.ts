@@ -423,15 +423,6 @@ export namespace Transaction {
   & Description
   & Payments;
 
-  export type LoanTransferDocument<D extends Date | string = Date> = Internal.Id
-  & Internal.Timestamps
-  & TransactionType<'loanTransfer'>
-  & Account<Account.Document>
-  & TransferAccount<Account.Document>
-  & IssuedAt<D>
-  & Amount
-  & Description;
-
   export type SplitDocumentItem<D extends Date | string = Date> = Internal.Id
   & Project<Project.Document>
   & Category<Category.Document>
@@ -473,7 +464,7 @@ export namespace Transaction {
     splitId: Transaction.Id;
   };
 
-  export type Document<D extends Date | string = Date > = PaymentDocument<D> | TransferDocument<D> | SplitDocument<D> | DraftDocument<D> | DeferredDocument<D> | ReimbursementDocument<D> | LoanTransferDocument<D>;
+  export type Document<D extends Date | string = Date > = PaymentDocument<D> | TransferDocument<D> | SplitDocument<D> | DraftDocument<D> | DeferredDocument<D> | ReimbursementDocument<D>;
 
   export type PaymentResponse = TransactionId
   & Amount
@@ -535,14 +526,6 @@ export namespace Transaction {
     } & Amount)[];
   };
 
-  export type LoanTransferResponse = TransactionId
-  & Amount
-  & Description
-  & IssuedAt<string>
-  & TransactionType<'loanTransfer'>
-  & Account<Account.Response>
-  & TransferAccount<Account.Response>;
-
   export type SplitResponseItem = Amount
   & Description
   & InvoiceNumber
@@ -573,7 +556,7 @@ export namespace Transaction {
     hasDuplicate: boolean;
   };
 
-  export type Response = PaymentResponse | TransferResponse | SplitResponse | LoanTransferResponse | DeferredResponse | ReimbursementResponse;
+  export type Response = PaymentResponse | TransferResponse | SplitResponse | DeferredResponse | ReimbursementResponse;
 
   export type Report = TransactionId
   & Amount

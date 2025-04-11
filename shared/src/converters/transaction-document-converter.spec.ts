@@ -1,4 +1,4 @@
-import { createAccountDocument, createCategoryDocument, createPaymentTransactionDocument, createPaymentTransactionResponse, createProjectDocument, createRecipientDocument, createSplitTransactionDocument, createSplitTransactionResponse, createTransferTransactionDocument, createTransferTransactionResponse, createProductDocument, createTransactionReport, createAccountReport, createCategoryReport, createProjectReport, createProductReport, createRecipientReport, createDeferredTransactionDocument, createDeferredTransactionResponse, createLoanTransferTransactionDocument, createLoanTransferTransactionResponse, createReimbursementTransactionDocument, createReimbursementTransactionResponse, createAccountId, createTransactionRawReport, createTransactionId } from '@household/shared/common/test-data-factory';
+import { createAccountDocument, createCategoryDocument, createPaymentTransactionDocument, createPaymentTransactionResponse, createProjectDocument, createRecipientDocument, createSplitTransactionDocument, createSplitTransactionResponse, createTransferTransactionDocument, createTransferTransactionResponse, createProductDocument, createTransactionReport, createAccountReport, createCategoryReport, createProjectReport, createProductReport, createRecipientReport, createDeferredTransactionDocument, createDeferredTransactionResponse, createReimbursementTransactionDocument, createReimbursementTransactionResponse, createAccountId, createTransactionRawReport, createTransactionId } from '@household/shared/common/test-data-factory';
 import { getTransactionId } from '@household/shared/common/utils';
 import { transactionDocumentConverterFactory, ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { advanceTo, clear } from 'jest-date-mock';
@@ -9,7 +9,6 @@ import { IRecipientDocumentConverter } from '@household/shared/converters/recipi
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
 import { IDeferredTransactionDocumentConverter } from '@household/shared/converters/deferred-transaction-document-converter';
-import { ILoanTransferTransactionDocumentConverter } from '@household/shared/converters/loan-transfer-transaction-document-converter';
 import { IPaymentTransactionDocumentConverter } from '@household/shared/converters/payment-transaction-document-converter';
 import { IReimbursementTransactionDocumentConverter } from '@household/shared/converters/reimbursement-transaction-document-converter';
 import { ISplitTransactionDocumentConverter } from '@household/shared/converters/split-transaction-document-converter';
@@ -27,7 +26,6 @@ describe('Transaction document converter', () => {
   let mockDeferredTransactionDocumentConverter: Mock<IDeferredTransactionDocumentConverter>;
   let mockReimbursementTransactionDocumentConverter: Mock<IReimbursementTransactionDocumentConverter>;
   let mockTransferTransactionDocumentConverter: Mock<ITransferTransactionDocumentConverter>;
-  let mockLoanTransferTransactionDocumentConverter: Mock<ILoanTransferTransactionDocumentConverter>;
   const now = new Date();
 
   beforeEach(() => {
@@ -41,10 +39,9 @@ describe('Transaction document converter', () => {
     mockDeferredTransactionDocumentConverter = createMockService('toResponse');
     mockReimbursementTransactionDocumentConverter = createMockService('toResponse');
     mockTransferTransactionDocumentConverter = createMockService('toResponse');
-    mockLoanTransferTransactionDocumentConverter = createMockService('toResponse');
 
     advanceTo(now);
-    converter = transactionDocumentConverterFactory(mockAccountDocumentConverter.service, mockProjectDocumentConverter.service, mockCategoryDocumentConverter.service, mockRecipientDocumentConverter.service, mockProductDocumentConverter.service, mockPaymentTransactionDocumentConverter.service, mockSplitTransactionDocumentConverter.service, mockDeferredTransactionDocumentConverter.service, mockReimbursementTransactionDocumentConverter.service, mockTransferTransactionDocumentConverter.service, mockLoanTransferTransactionDocumentConverter.service);
+    converter = transactionDocumentConverterFactory(mockAccountDocumentConverter.service, mockProjectDocumentConverter.service, mockCategoryDocumentConverter.service, mockRecipientDocumentConverter.service, mockProductDocumentConverter.service, mockPaymentTransactionDocumentConverter.service, mockSplitTransactionDocumentConverter.service, mockDeferredTransactionDocumentConverter.service, mockReimbursementTransactionDocumentConverter.service, mockTransferTransactionDocumentConverter.service);
   });
 
   afterEach(() => {
@@ -62,8 +59,6 @@ describe('Transaction document converter', () => {
   const reimbursementResponse = createReimbursementTransactionResponse();
   const transferDocument = createTransferTransactionDocument();
   const transferResponse = createTransferTransactionResponse();
-  const loanTransferDocument = createLoanTransferTransactionDocument();
-  const loanTransferResponse = createLoanTransferTransactionResponse();
   describe('toResponseList', () => {
     it('should return response list', async () => {
       mockPaymentTransactionDocumentConverter.functions.toResponse.mockReturnValue(paymentResponse);
@@ -71,7 +66,6 @@ describe('Transaction document converter', () => {
       mockDeferredTransactionDocumentConverter.functions.toResponse.mockReturnValue(deferredResponse);
       mockReimbursementTransactionDocumentConverter.functions.toResponse.mockReturnValue(reimbursementResponse);
       mockTransferTransactionDocumentConverter.functions.toResponse.mockReturnValue(transferResponse);
-      mockLoanTransferTransactionDocumentConverter.functions.toResponse.mockReturnValue(loanTransferResponse);
 
       const result = converter.toResponseList([
         paymentDocument,
@@ -79,7 +73,6 @@ describe('Transaction document converter', () => {
         deferredDocument,
         reimbursementDocument,
         transferDocument,
-        loanTransferDocument,
       ], viewingAccountId);
       expect(result).toEqual([
         paymentResponse,
@@ -87,14 +80,12 @@ describe('Transaction document converter', () => {
         deferredResponse,
         reimbursementResponse,
         transferResponse,
-        loanTransferResponse,
       ]);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.toResponse, paymentDocument);
       validateFunctionCall(mockSplitTransactionDocumentConverter.functions.toResponse, splitDocument);
       validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.toResponse, deferredDocument);
       validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.toResponse, reimbursementDocument);
       validateFunctionCall(mockTransferTransactionDocumentConverter.functions.toResponse, transferDocument, viewingAccountId);
-      validateFunctionCall(mockLoanTransferTransactionDocumentConverter.functions.toResponse, loanTransferDocument, viewingAccountId);
     });
   });
 
@@ -109,7 +100,6 @@ describe('Transaction document converter', () => {
       validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.toResponse);
       validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.toResponse);
       validateFunctionCall(mockTransferTransactionDocumentConverter.functions.toResponse);
-      validateFunctionCall(mockLoanTransferTransactionDocumentConverter.functions.toResponse);
     });
 
     it('should return split response', async () => {
@@ -122,7 +112,6 @@ describe('Transaction document converter', () => {
       validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.toResponse);
       validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.toResponse);
       validateFunctionCall(mockTransferTransactionDocumentConverter.functions.toResponse);
-      validateFunctionCall(mockLoanTransferTransactionDocumentConverter.functions.toResponse);
     });
 
     it('should return deferred response', async () => {
@@ -135,7 +124,6 @@ describe('Transaction document converter', () => {
       validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.toResponse, deferredDocument);
       validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.toResponse);
       validateFunctionCall(mockTransferTransactionDocumentConverter.functions.toResponse);
-      validateFunctionCall(mockLoanTransferTransactionDocumentConverter.functions.toResponse);
     });
 
     it('should return reimbursement response', async () => {
@@ -148,7 +136,6 @@ describe('Transaction document converter', () => {
       validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.toResponse);
       validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.toResponse, reimbursementDocument);
       validateFunctionCall(mockTransferTransactionDocumentConverter.functions.toResponse);
-      validateFunctionCall(mockLoanTransferTransactionDocumentConverter.functions.toResponse);
     });
 
     it('should return transfer response', async () => {
@@ -161,20 +148,6 @@ describe('Transaction document converter', () => {
       validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.toResponse);
       validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.toResponse);
       validateFunctionCall(mockTransferTransactionDocumentConverter.functions.toResponse, transferDocument, viewingAccountId);
-      validateFunctionCall(mockLoanTransferTransactionDocumentConverter.functions.toResponse);
-    });
-
-    it('should return loan transfer response', async () => {
-      mockLoanTransferTransactionDocumentConverter.functions.toResponse.mockReturnValue(loanTransferResponse);
-
-      const result = converter.toResponse(loanTransferDocument, viewingAccountId);
-      expect(result).toEqual(loanTransferResponse);
-      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.toResponse);
-      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.toResponse);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.toResponse);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.toResponse);
-      validateFunctionCall(mockTransferTransactionDocumentConverter.functions.toResponse);
-      validateFunctionCall(mockLoanTransferTransactionDocumentConverter.functions.toResponse, loanTransferDocument, viewingAccountId);
     });
   });
 

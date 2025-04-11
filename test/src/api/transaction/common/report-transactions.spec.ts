@@ -10,7 +10,6 @@ import { productDataFactory } from '@household/test/api/product/data-factory';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
-import { loanTransferTransactionDataFactory } from '@household/test/api/transaction/loan-transfer/loan-transfer-data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { isDeferredTransaction } from '@household/shared/common/type-guards';
@@ -57,7 +56,7 @@ describe('POST /transaction/v1/transactionReports', () => {
       let excludedReimbursementTransactionDocument: Transaction.ReimbursementDocument;
       let deferredSplitTransactionDocument: Transaction.SplitDocument;
       let transferTransactionDocument: Transaction.TransferDocument;
-      let loanTransferTransactionDocument: Transaction.LoanTransferDocument;
+      let loanTransferTransactionDocument: Transaction.TransferDocument;
 
       beforeEach(() => {
         accountDocument = accountDataFactory.document();
@@ -104,7 +103,7 @@ describe('POST /transaction/v1/transactionReports', () => {
           transferAccount: secondaryAccountDocument,
         });
 
-        loanTransferTransactionDocument = loanTransferTransactionDataFactory.document({
+        loanTransferTransactionDocument = transferTransactionDataFactory.document({
           account: accountDocument,
           transferAccount: loanAccountDocument,
         });

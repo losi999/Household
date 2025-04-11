@@ -38,10 +38,6 @@ export const transferTransactionDataFactory = (() => {
     transferAccount: Account.Document;
     transactions?: Transaction.DeferredDocument[];
   }): Transaction.TransferDocument => {
-    if ((ctx.account.accountType === 'loan') !== (ctx.transferAccount.accountType === 'loan')) {
-      throw 'Either both or none of the accounts can be loan type in transfer transaction';
-    }
-
     return transferTransactionDocumentConverter.create({
       body: createTransferTransactionRequest({
         ...ctx.body,

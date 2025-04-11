@@ -52,6 +52,27 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfer)', 
           .validateTransactionTransferDocument(request);
       });
 
+      it('between a non-loan and a loan account', () => {
+        const loanAccountDocument = accountDataFactory.document({
+          accountType: 'loan',
+        });
+
+        request = transferTransactionDataFactory.request({
+          accountId: getAccountId(accountDocument),
+          transferAccountId: getAccountId(loanAccountDocument),
+        });
+
+        cy.saveTransactionDocument(originalDocument)
+          .saveAccountDocuments([
+            accountDocument,
+            loanAccountDocument,
+          ])
+          .authenticate(1)
+          .requestUpdateToTransferTransaction(getTransactionId(originalDocument), request)
+          .expectCreatedResponse()
+          .validateTransactionTransferDocument(request);
+      });
+
       it('between two loan accounts', () => {
         accountDocument = accountDataFactory.document({
           accountType: 'loan',

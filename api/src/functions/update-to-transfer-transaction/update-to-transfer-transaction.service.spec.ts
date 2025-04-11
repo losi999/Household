@@ -1,8 +1,7 @@
 import { IUpdateToTransferTransactionService, updateToTransferTransactionServiceFactory } from '@household/api/functions/update-to-transfer-transaction/update-to-transfer-transaction.service';
-import { createTransferTransactionRequest, createAccountDocument, createTransferTransactionDocument, createPaymentTransactionDocument, createLoanTransferTransactionDocument, createDeferredTransactionDocument } from '@household/shared/common/test-data-factory';
+import { createTransferTransactionRequest, createAccountDocument, createTransferTransactionDocument, createPaymentTransactionDocument, createDeferredTransactionDocument } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getAccountId, getTransactionId, toDictionary } from '@household/shared/common/utils';
-import { ILoanTransferTransactionDocumentConverter } from '@household/shared/converters/loan-transfer-transaction-document-converter';
 import { ITransferTransactionDocumentConverter } from '@household/shared/converters/transfer-transaction-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
@@ -13,24 +12,19 @@ describe('Update to transfer transaction service', () => {
   let mockAccountService: Mock<IAccountService>;
   let mockTransactionService: Mock<ITransactionService>;
   let mockTransferTransactionDocumentConverter: Mock<ITransferTransactionDocumentConverter>;
-  let mockLoanTransferTransactionDocumentConverter: Mock<ILoanTransferTransactionDocumentConverter>;
 
   beforeEach(() => {
     mockAccountService = createMockService('listAccountsByIds');
     mockTransactionService = createMockService('replaceTransaction', 'getTransactionById', 'listDeferredTransactions');
     mockTransferTransactionDocumentConverter = createMockService('create');
-    mockLoanTransferTransactionDocumentConverter = createMockService('create');
 
-    service = updateToTransferTransactionServiceFactory(mockAccountService.service, mockTransactionService.service, mockTransferTransactionDocumentConverter.service, mockLoanTransferTransactionDocumentConverter.service);
+    service = updateToTransferTransactionServiceFactory(mockAccountService.service, mockTransactionService.service, mockTransferTransactionDocumentConverter.service);
   });
 
   const queriedAccount = createAccountDocument();
   const queriedTransferAccount = createAccountDocument();
   let body: Transaction.TransferRequest;
   const updatedTransferDocument = createTransferTransactionDocument({
-    description: 'updated',
-  });
-  const updatedLoanTransferDocument = createLoanTransferTransactionDocument({
     description: 'updated',
   });
   const queriedDocument = createPaymentTransactionDocument();
@@ -82,9 +76,8 @@ describe('Update to transfer transaction service', () => {
         transactions: undefined,
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.replaceTransaction, transactionId, updatedTransferDocument);
-      validateFunctionCall(mockLoanTransferTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.listDeferredTransactions);
-      expect.assertions(6);
+      expect.assertions(5);
     });
 
     it('if updated to transfer transaction between 2 non-1oan accounts', async () => {
@@ -113,9 +106,8 @@ describe('Update to transfer transaction service', () => {
         transactions: undefined,
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.replaceTransaction, transactionId, updatedTransferDocument);
-      validateFunctionCall(mockLoanTransferTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.listDeferredTransactions);
-      expect.assertions(6);
+      expect.assertions(5);
     });
 
     it('if updated to transfer transaction between 2 non-1oan accounts with payments', async () => {
@@ -165,11 +157,10 @@ describe('Update to transfer transaction service', () => {
         transactions: toDictionary([deferredTransactionDocument], '_id'),
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.replaceTransaction, transactionId, updatedTransferDocument);
-      validateFunctionCall(mockLoanTransferTransactionDocumentConverter.functions.create);
-      expect.assertions(6);
+      expect.assertions(5);
     });
 
-    it('if updated to loan transfer transaction', async () => {
+    it('if updated to transfer transaction between a loan and non-loan accounts', async () => {
       const queriedLoanAccount = createAccountDocument({
         accountType: 'loan',
       });
@@ -183,7 +174,7 @@ describe('Update to transfer transaction service', () => {
         queriedAccount,
         queriedLoanAccount,
       ]);
-      mockLoanTransferTransactionDocumentConverter.functions.create.mockReturnValue(updatedLoanTransferDocument);
+      mockTransferTransactionDocumentConverter.functions.create.mockReturnValue(updatedTransferDocument);
       mockTransactionService.functions.replaceTransaction.mockResolvedValue(undefined);
 
       await service({
@@ -196,15 +187,15 @@ describe('Update to transfer transaction service', () => {
         body.accountId,
         body.transferAccountId,
       ]);
-      validateFunctionCall(mockLoanTransferTransactionDocumentConverter.functions.create, {
+      validateFunctionCall(mockTransferTransactionDocumentConverter.functions.create, {
         body,
         account: queriedAccount,
         transferAccount: queriedLoanAccount,
+        transactions: undefined,
       }, undefined);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction, transactionId, updatedLoanTransferDocument);
-      validateFunctionCall(mockTransferTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockTransactionService.functions.replaceTransaction, transactionId, updatedTransferDocument);
       validateFunctionCall(mockTransactionService.functions.listDeferredTransactions);
-      expect.assertions(6);
+      expect.assertions(5);
     });
   });
 
@@ -225,9 +216,8 @@ describe('Update to transfer transaction service', () => {
       validateFunctionCall(mockAccountService.functions.listAccountsByIds);
       validateFunctionCall(mockTransferTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.replaceTransaction);
-      validateFunctionCall(mockLoanTransferTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.listDeferredTransactions);
-      expect.assertions(8);
+      expect.assertions(7);
     });
 
     it('if unable to query transaction', async () => {
@@ -242,9 +232,8 @@ describe('Update to transfer transaction service', () => {
       validateFunctionCall(mockAccountService.functions.listAccountsByIds);
       validateFunctionCall(mockTransferTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.replaceTransaction);
-      validateFunctionCall(mockLoanTransferTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.listDeferredTransactions);
-      expect.assertions(8);
+      expect.assertions(7);
     });
 
     it('if no transaction found', async () => {
@@ -259,9 +248,8 @@ describe('Update to transfer transaction service', () => {
       validateFunctionCall(mockAccountService.functions.listAccountsByIds);
       validateFunctionCall(mockTransferTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.replaceTransaction);
-      validateFunctionCall(mockLoanTransferTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.listDeferredTransactions);
-      expect.assertions(8);
+      expect.assertions(7);
     });
 
     it('if unable to query accounts', async () => {
@@ -280,9 +268,8 @@ describe('Update to transfer transaction service', () => {
       ]);
       validateFunctionCall(mockTransferTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.replaceTransaction);
-      validateFunctionCall(mockLoanTransferTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.listDeferredTransactions);
-      expect.assertions(8);
+      expect.assertions(7);
     });
 
     it('if no account found', async () => {
@@ -301,9 +288,8 @@ describe('Update to transfer transaction service', () => {
       ]);
       validateFunctionCall(mockTransferTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.replaceTransaction);
-      validateFunctionCall(mockLoanTransferTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.listDeferredTransactions);
-      expect.assertions(8);
+      expect.assertions(7);
     });
 
     it('if unable to query deferred transactions', async () => {
@@ -345,8 +331,7 @@ describe('Update to transfer transaction service', () => {
       });
       validateFunctionCall(mockTransferTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.replaceTransaction);
-      validateFunctionCall(mockLoanTransferTransactionDocumentConverter.functions.create);
-      expect.assertions(8);
+      expect.assertions(7);
     });
 
     it('if a deferred transaction is not found', async () => {
@@ -388,8 +373,7 @@ describe('Update to transfer transaction service', () => {
       });
       validateFunctionCall(mockTransferTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.replaceTransaction);
-      validateFunctionCall(mockLoanTransferTransactionDocumentConverter.functions.create);
-      expect.assertions(8);
+      expect.assertions(7);
     });
 
     it('if unable to update transaction', async () => {
@@ -418,9 +402,8 @@ describe('Update to transfer transaction service', () => {
         transactions: undefined,
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.replaceTransaction, transactionId, updatedTransferDocument);
-      validateFunctionCall(mockLoanTransferTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.listDeferredTransactions);
-      expect.assertions(8);
+      expect.assertions(7);
     });
   });
 });

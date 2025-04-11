@@ -242,26 +242,6 @@ const validateTransactionTransferDocument = (response: Transaction.TransactionId
     });
 };
 
-const validateTransactionLoanTransferDocument = (response: Transaction.TransactionId, request: Transaction.TransferRequest) => {
-  const id = response?.transactionId;
-
-  cy.log('Get transaction document', id)
-    .getTransactionDocumentById(id)
-    .should((document: Transaction.LoanTransferDocument) => {
-      const { amount, issuedAt, transactionType, description, transferAccount, account, ...internal } = document;
-
-      expect(getTransactionId(document), 'id').to.equal(id);
-      expect(amount, 'amount').to.equal(request.amount);
-      expect(issuedAt.toISOString(), 'issuedAt').to.equal(createDate(request.issuedAt).toISOString());
-      expect(transactionType, 'transactionType').to.equal('loanTransfer');
-      expect(description, 'description').to.equal(request.description);
-      expect(getAccountId(account), 'account').to.equal(request.accountId);
-      expect(getAccountId(transferAccount), 'transferAccount').to.equal(request.transferAccountId);
-
-      expectRemainingProperties(internal);
-    });
-};
-
 const validateInventoryResponse = (response: Transaction.Quantity & Transaction.Product<Product.Response>, document: Transaction.Quantity & Transaction.Product<Product.Document>, nestedPath: string = '') => {
   const { quantity, product } = response;
   const { productId, brand, measurement, unitOfMeasurement, fullName, ...empty } = product;
@@ -347,20 +327,26 @@ const validateTransactionPaymentResponse = (response: Transaction.PaymentRespons
   expectEmptyObject(empty, 'response');
 };
 
-const validateTransactionDeferredResponse = (response: Transaction.DeferredResponse, document: Transaction.DeferredDocument, paymentAmount?: number) => {
+const validateTransactionDeferredResponse = (response: Transaction.DeferredResponse, document: Transaction.DeferredDocument, params: {
+  viewingAccountId?: Account.Id;
+  paymentAmount?: number;
+} = {}) => {
   const { transactionId, amount, issuedAt, transactionType, description, payingAccount, ownerAccount, project, product, recipient, category, billingEndDate, billingStartDate, invoiceNumber, quantity, remainingAmount, isSettled, ...empty } = response;
+  const { paymentAmount, viewingAccountId } = params;
+
+  const viewingAccount = ownerAccount.accountId === viewingAccountId ? ownerAccount : payingAccount;
 
   const expectedRemainingAmount = Math.abs(document.amount) - (paymentAmount ?? 0);
 
   validateCommonResponse({
-    amount,
+    amount: viewingAccount.accountType === 'loan' ? amount * -1 : amount,
     description,
     issuedAt,
     transactionId,
     transactionType,
   }, document);
   expect(isSettled, 'isSettled').to.equal(document.isSettled ?? false);
-  expect(remainingAmount, 'remainingAmount').to.equal(document.isSettled ? 0 : expectedRemainingAmount);
+  expect(remainingAmount, 'remainingAmount').to.equal(document.isSettled ? undefined : expectedRemainingAmount);
 
   cy.validateNestedAccountResponse('payingAccount.', payingAccount, document.payingAccount, document.payingAccount.balance ?? null)
     .validateNestedAccountResponse('ownerAccount.', ownerAccount, document.ownerAccount, document.ownerAccount.balance ?? null);
@@ -497,25 +483,6 @@ const validateTransactionTransferResponse = (response: Transaction.TransferRespo
 
 };
 
-const validateTransactionLoanTransferResponse = (response: Transaction.LoanTransferResponse, document: Transaction.LoanTransferDocument, viewingAccountId: Account.Id) => {
-  const documentAccount = getAccountId(document.account) === viewingAccountId ? document.account : document.transferAccount;
-  const documentTransferAccount = getAccountId(document.account) === viewingAccountId ? document.transferAccount : document.account;
-
-  const { transactionId, amount, issuedAt, transactionType, description, account, transferAccount, ...empty } = response;
-
-  validateCommonResponse({
-    amount,
-    description,
-    issuedAt,
-    transactionId,
-    transactionType,
-  }, document);
-
-  cy.validateNestedAccountResponse('account.', account, documentAccount, documentAccount.balance ?? null)
-    .validateNestedAccountResponse('transferAccount.', transferAccount, documentTransferAccount, documentTransferAccount.balance ?? null);
-  expectEmptyObject(empty, 'response');
-};
-
 const validateTransactionSplitResponse = (response: Transaction.SplitResponse, document: Transaction.SplitDocument, repayments?: Record<Transaction.Id, number>) => {
 
   const { transactionId, amount, issuedAt, transactionType, description, account, deferredSplits, splits, recipient, ...empty } = response;
@@ -586,7 +553,7 @@ const validateTransactionSplitResponse = (response: Transaction.SplitResponse, d
     expect(transactionId, `deferredSplits[${index}].transactionId`).to.equal(getTransactionId(documentSplit));
     expect(amount, `deferredSplits[${index}].amount`).to.equal(documentSplit.amount);
     expect(transactionType, `deferredSplits[${index}].transactionType`).to.equal('deferred');
-    expect(remainingAmount, `deferredSplits[${index}].remainingAmount`).to.equal(documentSplit.isSettled ? 0 : (Math.abs(documentSplit.amount) - (repayments?.[transactionId] ?? 0)));
+    expect(remainingAmount, `deferredSplits[${index}].remainingAmount`).to.equal(documentSplit.isSettled ? undefined : (Math.abs(documentSplit.amount) - (repayments?.[transactionId] ?? 0)));
     expect(description, `deferredSplits[${index}].description`).to.equal(documentSplit.description);
     expect(isSettled, `deferredSplits[${index}].isSettled`).to.equal(documentSplit.isSettled);
 
@@ -639,9 +606,11 @@ const validateTransactionListResponse = (responses: Transaction.Response[], docu
       case 'payment': validateTransactionPaymentResponse(response, document as Transaction.PaymentDocument); break;
       case 'transfer': validateTransactionTransferResponse(response, document as Transaction.TransferDocument, viewingAccountId); break;
       case 'split': validateTransactionSplitResponse(response, document as Transaction.SplitDocument, repayments); break;
-      case 'deferred': validateTransactionDeferredResponse(response, document as Transaction.DeferredDocument, repayments[response.transactionId]); break;
+      case 'deferred': validateTransactionDeferredResponse(response, document as Transaction.DeferredDocument, {
+        viewingAccountId,
+        paymentAmount: repayments[response.transactionId],
+      }); break;
       case 'reimbursement': validateTransactionReimbursementResponse(response, document as Transaction.ReimbursementDocument); break;
-      case 'loanTransfer': validateTransactionLoanTransferResponse(response, document as Transaction.LoanTransferDocument, viewingAccountId); break;
     }
   });
 };
@@ -1187,13 +1156,11 @@ export const setTransactionValidationCommands = () => {
     validateTransactionDeferredDocument,
     validateTransactionReimbursementDocument,
     validateTransactionTransferDocument,
-    validateTransactionLoanTransferDocument,
     validateTransactionSplitDocument,
     validateTransactionPaymentResponse,
     validateTransactionDeferredResponse,
     validateTransactionReimbursementResponse,
     validateTransactionTransferResponse,
-    validateTransactionLoanTransferResponse,
     validateTransactionSplitResponse,
     validateTransactionListResponse,
     validateTransactionListReport,
@@ -1227,13 +1194,11 @@ declare global {
       validateTransactionReimbursementDocument: CommandFunctionWithPreviousSubject<typeof validateTransactionReimbursementDocument>;
       validateTransactionPaymentDocument: CommandFunctionWithPreviousSubject<typeof validateTransactionPaymentDocument>;
       validateTransactionTransferDocument: CommandFunctionWithPreviousSubject<typeof validateTransactionTransferDocument>;
-      validateTransactionLoanTransferDocument: CommandFunctionWithPreviousSubject<typeof validateTransactionLoanTransferDocument>;
       validateTransactionSplitDocument: CommandFunctionWithPreviousSubject<typeof validateTransactionSplitDocument>;
       validateTransactionPaymentResponse: CommandFunctionWithPreviousSubject<typeof validateTransactionPaymentResponse>;
       validateTransactionDeferredResponse: CommandFunctionWithPreviousSubject<typeof validateTransactionDeferredResponse>;
       validateTransactionReimbursementResponse: CommandFunctionWithPreviousSubject<typeof validateTransactionReimbursementResponse>;
       validateTransactionTransferResponse: CommandFunctionWithPreviousSubject<typeof validateTransactionTransferResponse>;
-      validateTransactionLoanTransferResponse: CommandFunctionWithPreviousSubject<typeof validateTransactionLoanTransferResponse>;
       validateTransactionSplitResponse: CommandFunctionWithPreviousSubject<typeof validateTransactionSplitResponse>;
       validateTransactionListResponse: CommandFunctionWithPreviousSubject<typeof validateTransactionListResponse>;
       validateTransactionListReport: CommandFunctionWithPreviousSubject<typeof validateTransactionListReport>;

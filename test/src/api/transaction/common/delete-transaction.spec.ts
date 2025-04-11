@@ -2,7 +2,6 @@ import { getTransactionId } from '@household/shared/common/utils';
 import { Account, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
-import { loanTransferTransactionDataFactory } from '@household/test/api/transaction/loan-transfer/loan-transfer-data-factory';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
@@ -17,7 +16,7 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
   let transferTransactionDocument: Transaction.TransferDocument;
   let deferredTransactionDocument: Transaction.DeferredDocument;
   let reimbursementTransactionDocument: Transaction.ReimbursementDocument;
-  let loanTransferTransactionDocument: Transaction.LoanTransferDocument;
+  let loanTransferTransactionDocument: Transaction.TransferDocument;
 
   beforeEach(() => {
     accountDocument = accountDataFactory.document();
@@ -49,7 +48,7 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
       loanAccount: accountDocument,
     });
 
-    loanTransferTransactionDocument = loanTransferTransactionDataFactory.document({
+    loanTransferTransactionDocument = transferTransactionDataFactory.document({
       account: accountDocument,
       transferAccount: loanAccountDocument,
     });

@@ -220,20 +220,6 @@ export const createTransferTransactionDocument: DataFactoryFunction<Transaction.
   };
 };
 
-export const createLoanTransferTransactionDocument: DataFactoryFunction<Transaction.LoanTransferDocument> = (doc) => {
-  return {
-    _id: generateMongoId(),
-    transactionType: 'loanTransfer',
-    amount: 100,
-    description: 'transaction description',
-    issuedAt: new Date(),
-    expiresAt: undefined,
-    account: createAccountDocument(),
-    transferAccount: createAccountDocument(),
-    ...doc,
-  };
-};
-
 export const createDraftTransactionDocument: DataFactoryFunction<Transaction.DraftDocument> = (doc) => {
   return {
     _id: generateMongoId(),
@@ -604,20 +590,6 @@ export const createTransferTransactionResponse: DataFactoryFunction<Transaction.
     transactionType: 'transfer',
     amount: 100,
     transferAmount: -1200,
-    description: 'transaction description',
-    issuedAt: new Date().toISOString(),
-    account: createAccountResponse(),
-    transferAccount: createAccountResponse(),
-    payments: undefined,
-    ...resp,
-  };
-};
-
-export const createLoanTransferTransactionResponse: DataFactoryFunction<Transaction.LoanTransferResponse> = (resp) => {
-  return {
-    transactionId: createTransactionId(),
-    transactionType: 'loanTransfer',
-    amount: 100,
     description: 'transaction description',
     issuedAt: new Date().toISOString(),
     account: createAccountResponse(),

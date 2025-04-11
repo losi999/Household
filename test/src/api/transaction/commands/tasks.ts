@@ -6,7 +6,6 @@ import { createDate } from '@household/shared/common/utils';
 const fixDate = (doc: Transaction.Document<string>): Transaction.Document => {
   switch(doc?.transactionType) {
     case 'draft':
-    case 'loanTransfer':
     case 'transfer': return {
       ...doc,
       issuedAt: createDate(doc.issuedAt),
