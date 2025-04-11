@@ -25,16 +25,8 @@ export class TransactionService {
     return this.httpClient.get<Transaction.DraftResponse[]>(`${environment.apiUrl}/transaction/v1/files/${fileId}/transactions`);
   }
 
-  listDeferredTransactions(params: {
-    isSettled: boolean;
-    // transactionIds: Transaction.Id[];
-  }): Observable<Transaction.DeferredResponse[]> {
-    return this.httpClient.get<Transaction.DeferredResponse[]>(`${environment.apiUrl}/transaction/v1/transactions/deferred`, {
-      params: {
-        isSettled: params.isSettled,
-        // transactionId: params.transactionIds,
-      },
-    });
+  listDeferredTransactions(): Observable<Transaction.DeferredResponse[]> {
+    return this.httpClient.get<Transaction.DeferredResponse[]>(`${environment.apiUrl}/transaction/v1/transactions/deferred`);
   }
 
   getTransactionById(transactionId: Transaction.Id, accountId: Account.Id): Observable<Transaction.Response> {

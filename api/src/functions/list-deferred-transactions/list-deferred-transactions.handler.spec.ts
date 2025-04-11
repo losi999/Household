@@ -1,4 +1,4 @@
-import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { MockBusinessService } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/list-deferred-transactions/list-deferred-transactions.handler';
 import { createDeferredTransactionResponse, createTransactionId } from '@household/shared/common/test-data-factory';
 import { IListDeferredTransactionsService } from '@household/api/functions/list-deferred-transactions/list-deferred-transactions.service';
@@ -33,10 +33,7 @@ describe('List transactions handler', () => {
     });
 
     const response = await handlerFunction(handlerEvent, undefined, undefined) as AWSLambda.APIGatewayProxyResult;
-    validateFunctionCall(mockListTransactionsService, {
-      isSettled: true,
-      transactionIds: [transactionId],
-    });
+    expect(mockListTransactionsService).toHaveBeenCalledTimes(1);
     expect(response.statusCode).toEqual(statusCode);
     expect(JSON.parse(response.body).message).toEqual(message);
     expect.assertions(3);
@@ -46,10 +43,7 @@ describe('List transactions handler', () => {
     mockListTransactionsService.mockResolvedValue(transactions);
 
     const response = await handlerFunction(handlerEvent, undefined, undefined) as AWSLambda.APIGatewayProxyResult;
-    validateFunctionCall(mockListTransactionsService, {
-      isSettled: true,
-      transactionIds: [transactionId],
-    });
+    expect(mockListTransactionsService).toHaveBeenCalledTimes(1);
     expect(response.statusCode).toEqual(200);
     expect(JSON.parse(response.body)).toEqual(transactions);
     expect.assertions(3);

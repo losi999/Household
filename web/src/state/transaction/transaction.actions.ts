@@ -1,12 +1,12 @@
-import { Account, Category, Common, File, Product, Project, Recipient, Report, Transaction } from '@household/shared/types/types';
-import { createActionGroup, props } from '@ngrx/store';
+import { Account, Common, File, Report, Transaction } from '@household/shared/types/types';
+import { createActionGroup, emptyProps, props } from '@ngrx/store';
 
 export const transactionApiActions = createActionGroup({
   source: 'Transaction API',
   events: {
     'List transactions initiated': props<Account.AccountId & Common.Pagination<number>>(),
     'List transactions completed': props<Common.Pagination<number> & { transactions: Transaction.Response[] }>(),
-    'List deferred transactions initiated': props<Transaction.IsSettled>(),
+    'List deferred transactions initiated': emptyProps(),
     'List deferred transactions completed': props<{ transactions: Transaction.DeferredResponse[] }>(),
     'List draft transactions initiated': props<File.FileId>(),
     'List draft transactions completed': props<{transactions: Transaction.DraftResponse[]}>(),

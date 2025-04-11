@@ -45,9 +45,7 @@ export class TransactionTransferEditComponent implements OnInit {
     this.transactionId = this.activatedRoute.snapshot.paramMap.get('transactionId') as Transaction.Id;
 
     this.store.dispatch(accountApiActions.listAccountsInitiated());
-    this.store.dispatch(transactionApiActions.listDeferredTransactionsInitiated({
-      isSettled: false,
-    }));
+    this.store.dispatch(transactionApiActions.listDeferredTransactionsInitiated());
 
     this.form = new FormGroup({
       issuedAt: new FormControl(new Date(), [Validators.required]),

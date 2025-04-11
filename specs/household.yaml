@@ -491,9 +491,6 @@ paths:
     get:
       tags:
         - transaction
-      parameters:
-        - $ref: "#/components/parameters/Query.IsSettled"
-        - $ref: "#/components/parameters/Query.TransactionId"
       responses:
         200:
           description: Transaction response list

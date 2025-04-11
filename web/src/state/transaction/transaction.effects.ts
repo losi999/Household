@@ -64,12 +64,8 @@ export class TransactionEffects {
   loadDeferredTransactions = createEffect(() => {
     return this.actions.pipe(
       ofType(transactionApiActions.listDeferredTransactionsInitiated),
-      exhaustMap(({
-        isSettled,
-      }) => {
-        return this.transactionService.listDeferredTransactions({
-          isSettled,
-        }).pipe(
+      exhaustMap(() => {
+        return this.transactionService.listDeferredTransactions().pipe(
           map((transactions) => transactionApiActions.listDeferredTransactionsCompleted({
             transactions,
           })),
