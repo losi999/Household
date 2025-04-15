@@ -2,6 +2,7 @@ import { Account, Category, Product, Project, Recipient, Transaction } from '@ho
 import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/test/api/types';
 import { createDate, getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
 import { expectEmptyObject, expectRemainingProperties } from '@household/test/api/utils';
+import { CategoryType, AccountType } from '@household/shared/enums';
 
 type Reassignment<T> = {
   from: T;
@@ -22,19 +23,35 @@ const validateTransactionPaymentDocument = (response: Transaction.TransactionId,
       expect(transactionType, 'transactionType').to.equal('payment');
       expect(description, 'description').to.equal(request.description);
       expect(getAccountId(account), 'account').to.equal(request.accountId);
-      expect(getCategoryId(category), 'category').to.equal(request.categoryId);
-      expect(getProjectId(project), 'project').to.equal(request.projectId);
-      expect(getRecipientId(recipient), 'recipient').to.equal(request.recipientId);
+      if (category) {
+        expect(getCategoryId(category), 'category').to.equal(request.categoryId);
+      } else {
+        expect(category, 'category').to.be.undefined;
+      }
+      if (project) {
+        expect(getProjectId(project), 'project').to.equal(request.projectId);
+      } else {
+        expect(project, 'project').to.be.undefined;
+      }
+      if (recipient) {
+        expect(getRecipientId(recipient), 'recipient').to.equal(request.recipientId);
+      } else {
+        expect(recipient, 'recipient').to.be.undefined;
+      }
 
-      if (category?.categoryType === 'inventory') {
+      if (category?.categoryType === CategoryType.Inventory) {
         expect(quantity, 'quantity').to.equal(request.quantity);
-        expect(getProductId(product), 'productId').to.equal(request.productId);
+        if (product) {
+          expect(getProductId(product), 'productId').to.equal(request.productId);
+        } else {
+          expect(product, 'product').to.be.undefined;
+        }
       } else {
         expect(quantity, 'quantity').to.be.undefined;
         expect(product, 'product').to.be.undefined;
       }
 
-      if (category?.categoryType === 'invoice') {
+      if (category?.categoryType === CategoryType.Invoice) {
         expect(invoiceNumber, 'invoiceNumber').to.equal(request.invoiceNumber);
         expect(billingStartDate?.toISOString(), 'billingStartDate').to.equal(createDate(request.billingStartDate)?.toISOString());
         expect(billingEndDate?.toISOString(), 'billingEndDate').to.equal(createDate(request.billingEndDate)?.toISOString());
@@ -63,11 +80,23 @@ const validateTransactionDeferredDocument = (response: Transaction.TransactionId
       expect(isSettled, 'isSettled').to.equal(request.isSettled ?? false);
       expect(getAccountId(payingAccount), 'payingAccount').to.equal(request.accountId);
       expect(getAccountId(ownerAccount), 'ownerAccount').to.equal(request.loanAccountId);
-      expect(getCategoryId(category), 'category').to.equal(request.categoryId);
-      expect(getProjectId(project), 'project').to.equal(request.projectId);
-      expect(getRecipientId(recipient), 'recipient').to.equal(request.recipientId);
+      if (category) {
+        expect(getCategoryId(category), 'category').to.equal(request.categoryId);
+      } else {
+        expect(category, 'category').to.be.undefined;
+      }
+      if (project) {
+        expect(getProjectId(project), 'project').to.equal(request.projectId);
+      } else {
+        expect(project, 'project').to.be.undefined;
+      }
+      if (recipient) {
+        expect(getRecipientId(recipient), 'recipient').to.equal(request.recipientId);
+      } else {
+        expect(recipient, 'recipient').to.be.undefined;
+      }
 
-      if (category?.categoryType === 'inventory') {
+      if (category?.categoryType === CategoryType.Inventory) {
         expect(quantity, 'quantity').to.equal(request.quantity);
         expect(getProductId(product), 'productId').to.equal(request.productId);
       } else {
@@ -75,7 +104,7 @@ const validateTransactionDeferredDocument = (response: Transaction.TransactionId
         expect(product, 'product').to.be.undefined;
       }
 
-      if (category?.categoryType === 'invoice') {
+      if (category?.categoryType === CategoryType.Invoice) {
         expect(invoiceNumber, 'invoiceNumber').to.equal(request.invoiceNumber);
         expect(billingStartDate?.toISOString(), 'billingStartDate').to.equal(createDate(request.billingStartDate)?.toISOString());
         expect(billingEndDate?.toISOString(), 'billingEndDate').to.equal(createDate(request.billingEndDate)?.toISOString());
@@ -102,19 +131,35 @@ const validateTransactionReimbursementDocument = (response: Transaction.Transact
       expect(description, 'description').to.equal(request.description);
       expect(getAccountId(payingAccount), 'payingAccount').to.equal(request.accountId);
       expect(getAccountId(ownerAccount), 'ownerAccount').to.equal(request.loanAccountId);
-      expect(getCategoryId(category), 'category').to.equal(request.categoryId);
-      expect(getProjectId(project), 'project').to.equal(request.projectId);
-      expect(getRecipientId(recipient), 'recipient').to.equal(request.recipientId);
+      if (category) {
+        expect(getCategoryId(category), 'category').to.equal(request.categoryId);
+      } else {
+        expect(category, 'category').to.be.undefined;
+      }
+      if (project) {
+        expect(getProjectId(project), 'project').to.equal(request.projectId);
+      } else {
+        expect(project, 'project').to.be.undefined;
+      }
+      if (recipient) {
+        expect(getRecipientId(recipient), 'recipient').to.equal(request.recipientId);
+      } else {
+        expect(recipient, 'recipient').to.be.undefined;
+      }
 
-      if (category?.categoryType === 'inventory') {
+      if (category?.categoryType === CategoryType.Inventory) {
         expect(quantity, 'quantity').to.equal(request.quantity);
-        expect(getProductId(product), 'productId').to.equal(request.productId);
+        if (product) {
+          expect(getProductId(product), 'productId').to.equal(request.productId);
+        } else {
+          expect(product, 'product').to.be.undefined;
+        }
       } else {
         expect(quantity, 'quantity').to.be.undefined;
         expect(product, 'product').to.be.undefined;
       }
 
-      if (category?.categoryType === 'invoice') {
+      if (category?.categoryType === CategoryType.Invoice) {
         expect(invoiceNumber, 'invoiceNumber').to.equal(request.invoiceNumber);
         expect(billingStartDate?.toISOString(), 'billingStartDate').to.equal(createDate(request.billingStartDate)?.toISOString());
         expect(billingEndDate?.toISOString(), 'billingEndDate').to.equal(createDate(request.billingEndDate)?.toISOString());
@@ -141,7 +186,11 @@ const validateTransactionSplitDocument = (response: Transaction.TransactionId, r
       expect(transactionType, 'transactionType').to.equal('split');
       expect(description, 'description').to.equal(request.description);
       expect(getAccountId(account), 'account').to.equal(request.accountId);
-      expect(getRecipientId(recipient), 'recipient').to.equal(request.recipientId);
+      if (recipient) {
+        expect(getRecipientId(recipient), 'recipient').to.equal(request.recipientId);
+      } else {
+        expect(recipient, 'recipient').to.be.undefined;
+      }
 
       const regularSplitRequests = request.splits.filter(s => !s.loanAccountId);
       const deferredsplitRequests = request.splits.filter(s => s.loanAccountId);
@@ -152,18 +201,18 @@ const validateTransactionSplitDocument = (response: Transaction.TransactionId, r
 
         expect(amount, `splits[${index}].amount`).to.equal(splitRequestItem.amount);
         expect(description, `splits[${index}].description`).to.equal(splitRequestItem.description);
-        expect(getProjectId(project), `splits[${index}].project`).to.equal(splitRequestItem.projectId);
-        expect(getCategoryId(category), `splits[${index}].category`).to.equal(splitRequestItem.categoryId);
+        expect(getProjectId(project), `splits[${index}].project`).to.equal(splitRequestItem.projectId); // TODO
+        expect(getCategoryId(category), `splits[${index}].category`).to.equal(splitRequestItem.categoryId); // TODO
 
-        if (category?.categoryType === 'inventory') {
+        if (category?.categoryType === CategoryType.Inventory) {
           expect(quantity, `splits[${index}].quantity`).to.equal(splitRequestItem.quantity);
-          expect(getProductId(product), `splits[${index}].productId`).to.equal(splitRequestItem.productId);
+          expect(getProductId(product), `splits[${index}].productId`).to.equal(splitRequestItem.productId); // TODO
         } else {
           expect(quantity, `splits[${index}].quantity`).to.be.undefined;
           expect(product, `splits[${index}].product`).to.be.undefined;
         }
 
-        if (category?.categoryType === 'invoice') {
+        if (category?.categoryType === CategoryType.Invoice) {
           expect(invoiceNumber, `splits[${index}].invoiceNumber`).to.equal(splitRequestItem.invoiceNumber);
           expect(billingStartDate?.toISOString(), `splits[${index}].billingStartDate`).to.equal(createDate(splitRequestItem.billingStartDate)?.toISOString());
           expect(billingEndDate?.toISOString(), `splits[${index}].billingEndDate`).to.equal(createDate(splitRequestItem.billingEndDate)?.toISOString());
@@ -183,20 +232,20 @@ const validateTransactionSplitDocument = (response: Transaction.TransactionId, r
         expect(description, `deferredSplits[${index}].description`).to.equal(splitRequestItem.description);
         expect(isSettled, `deferredSplits[${index}].isSettled`).to.equal(splitRequestItem.isSettled ?? false);
         expect(transactionType, `deferredSplits[${index}].transactionType`).to.equal('deferred');
-        expect(getProjectId(project), `deferredSplits[${index}].project`).to.equal(splitRequestItem.projectId);
-        expect(getCategoryId(category), `deferredSplits[${index}].category`).to.equal(splitRequestItem.categoryId);
+        expect(getProjectId(project), `deferredSplits[${index}].project`).to.equal(splitRequestItem.projectId); // TODO
+        expect(getCategoryId(category), `deferredSplits[${index}].category`).to.equal(splitRequestItem.categoryId); // TODO
         expect(getAccountId(payingAccount), `deferredSplits[${index}].payingAccount`).to.equal(request.accountId);
         expect(getAccountId(ownerAccount), `deferredSplits[${index}].ownerAccount`).to.equal(splitRequestItem.loanAccountId);
 
-        if (category?.categoryType === 'inventory') {
+        if (category?.categoryType === CategoryType.Inventory) {
           expect(quantity, `deferredSplits[${index}].quantity`).to.equal(splitRequestItem.quantity);
-          expect(getProductId(product), `deferredSplits[${index}].productId`).to.equal(splitRequestItem.productId);
+          expect(getProductId(product), `deferredSplits[${index}].productId`).to.equal(splitRequestItem.productId); // TODO
         } else {
           expect(quantity, `deferredSplits[${index}].quantity`).to.be.undefined;
           expect(product, `deferredSplits[${index}].product`).to.be.undefined;
         }
 
-        if (category?.categoryType === 'invoice') {
+        if (category?.categoryType === CategoryType.Invoice) {
           expect(invoiceNumber, `deferredSplits[${index}].invoiceNumber`).to.equal(splitRequestItem.invoiceNumber);
           expect(billingStartDate?.toISOString(), `deferredSplits[${index}].billingStartDate`).to.equal(createDate(splitRequestItem.billingStartDate)?.toISOString());
           expect(billingEndDate?.toISOString(), `deferredSplits[${index}].billingEndDate`).to.equal(createDate(splitRequestItem.billingEndDate)?.toISOString());
@@ -303,7 +352,7 @@ const validateTransactionPaymentResponse = (response: Transaction.PaymentRespons
     expect(category, 'category').to.be.undefined;
   }
 
-  if (category?.categoryType === 'inventory' && product) {
+  if (category?.categoryType === CategoryType.Inventory && product) {
     validateInventoryResponse({
       product,
       quantity,
@@ -313,7 +362,7 @@ const validateTransactionPaymentResponse = (response: Transaction.PaymentRespons
     expect(product, 'product').to.be.undefined;
   }
 
-  if (category?.categoryType === 'invoice') {
+  if (category?.categoryType === CategoryType.Invoice) {
     validateInvoiceResponse({
       billingEndDate,
       billingStartDate,
@@ -339,7 +388,7 @@ const validateTransactionDeferredResponse = (response: Transaction.DeferredRespo
   const expectedRemainingAmount = Math.abs(document.amount) - (paymentAmount ?? 0);
 
   validateCommonResponse({
-    amount: viewingAccount.accountType === 'loan' ? amount * -1 : amount,
+    amount: viewingAccount.accountType === AccountType.Loan ? amount * -1 : amount,
     description,
     issuedAt,
     transactionId,
@@ -369,7 +418,7 @@ const validateTransactionDeferredResponse = (response: Transaction.DeferredRespo
     expect(category, 'category').to.be.undefined;
   }
 
-  if (category?.categoryType === 'inventory' && product) {
+  if (category?.categoryType === CategoryType.Inventory && product) {
     validateInventoryResponse({
       product,
       quantity,
@@ -379,7 +428,7 @@ const validateTransactionDeferredResponse = (response: Transaction.DeferredRespo
     expect(product, 'product').to.be.undefined;
   }
 
-  if (category?.categoryType === 'invoice') {
+  if (category?.categoryType === CategoryType.Invoice) {
     validateInvoiceResponse({
       billingEndDate,
       billingStartDate,
@@ -425,7 +474,7 @@ const validateTransactionReimbursementResponse = (response: Transaction.Reimburs
     expect(category, 'category').to.be.undefined;
   }
 
-  if (category?.categoryType === 'inventory' && product) {
+  if (category?.categoryType === CategoryType.Inventory && product) {
     validateInventoryResponse({
       product,
       quantity,
@@ -435,7 +484,7 @@ const validateTransactionReimbursementResponse = (response: Transaction.Reimburs
     expect(product, 'product').to.be.undefined;
   }
 
-  if (category?.categoryType === 'invoice') {
+  if (category?.categoryType === CategoryType.Invoice) {
     validateInvoiceResponse({
       billingEndDate,
       billingStartDate,
@@ -522,7 +571,7 @@ const validateTransactionSplitResponse = (response: Transaction.SplitResponse, d
       expect(category, `splits[${index}].category`).to.be.undefined;
     }
 
-    if (category?.categoryType === 'inventory' && product) {
+    if (category?.categoryType === CategoryType.Inventory && product) {
       validateInventoryResponse({
         product,
         quantity,
@@ -532,7 +581,7 @@ const validateTransactionSplitResponse = (response: Transaction.SplitResponse, d
       expect(product, `splits[${index}].product`).to.be.undefined;
     }
 
-    if (category?.categoryType === 'invoice') {
+    if (category?.categoryType === CategoryType.Invoice) {
       validateInvoiceResponse({
         billingEndDate,
         billingStartDate,
@@ -572,7 +621,7 @@ const validateTransactionSplitResponse = (response: Transaction.SplitResponse, d
       expect(category, `deferredSplits[${index}].category`).to.be.undefined;
     }
 
-    if (category?.categoryType === 'inventory' && product) {
+    if (category?.categoryType === CategoryType.Inventory && product) {
       validateInventoryResponse({
         product,
         quantity,
@@ -582,7 +631,7 @@ const validateTransactionSplitResponse = (response: Transaction.SplitResponse, d
       expect(product, `deferredSplits[${index}].product`).to.be.undefined;
     }
 
-    if (category?.categoryType === 'invoice') {
+    if (category?.categoryType === CategoryType.Invoice) {
       validateInvoiceResponse({
         billingEndDate,
         billingStartDate,

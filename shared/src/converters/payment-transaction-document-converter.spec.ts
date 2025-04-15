@@ -47,10 +47,10 @@ describe('Payment transaction document converter', () => {
   const recipient = createRecipientDocument();
   const regularCategory = createCategoryDocument();
   const invoiceCategory = createCategoryDocument({
-    categoryType: 'invoice',
+    categoryType: CategoryType.Invoice,
   });
   const inventoryCategory = createCategoryDocument({
-    categoryType: 'inventory',
+    categoryType: CategoryType.Inventory,
   });
   const product = createProductDocument();
   const productId = getProductId(product);

@@ -33,6 +33,9 @@ export type RecursivePartial<T> = {
       T[P];
 };
 
+type UnionKeys<T> = T extends any ? keyof T : never;
+export type Unset<Union, NotInThis> = Record<Exclude<UnionKeys<Union>, keyof NotInThis>, true>;
+
 export type HttpError = {
   statusCode: number;
   message: string;

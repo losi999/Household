@@ -34,14 +34,14 @@ describe('Update to split transaction service', () => {
   });
 
   const category = createCategoryDocument({
-    categoryType: 'inventory',
+    categoryType: CategoryType.Inventory,
   });
   const product = createProductDocument({
     category,
   });
   const project = createProjectDocument();
   const loanAccount = createAccountDocument({
-    accountType: 'loan',
+    accountType: AccountType.Loan,
   });
 
   const categoryId = getCategoryId(category);

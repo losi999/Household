@@ -1,4 +1,5 @@
 import { getProductId } from '@household/shared/common/utils';
+import { AccountType, CategoryType } from '@household/shared/enums';
 import { Account, Category, Product, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
@@ -26,12 +27,12 @@ describe('POST product/v1/products/{productId}/merge', () => {
   beforeEach(() => {
     accountDocument = accountDataFactory.document();
     loanAccountDocument = accountDataFactory.document({
-      accountType: 'loan',
+      accountType: AccountType.Loan,
     });
 
     categoryDocument = categoryDataFactory.document({
       body: {
-        categoryType: 'inventory',
+        categoryType: CategoryType.Inventory,
       },
     });
 
@@ -192,7 +193,7 @@ describe('POST product/v1/products/{productId}/merge', () => {
       it('if products do not belong to the same category', () => {
         const otherCategory = categoryDataFactory.document({
           body: {
-            categoryType: 'inventory',
+            categoryType: CategoryType.Inventory,
           },
         });
 

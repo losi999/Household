@@ -1,5 +1,6 @@
 import { flattenSplit, populateAggregate } from '@household/shared/common/aggregate-helpers';
 import { populate } from '@household/shared/common/utils';
+import { AccountType } from '@household/shared/enums';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { Account, Common, File, Transaction } from '@household/shared/types/types';
 import { PipelineStage, Types, UpdateQuery } from 'mongoose';
@@ -591,11 +592,56 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
 
     },
     updateTransaction: async (transactionId, updateQuery) => {
-      return mongodbService.transactions.findOneAndUpdate({
-        _id: new Types.ObjectId(transactionId),
-        transactionType: updateQuery.$set.transactionType,
-      }, updateQuery, {
-        runValidators: true,
+      return mongodbService.inSession((session) => {
+        return session.withTransaction(async () => {
+          const old = await mongodbService.transactions.findByIdAndUpdate(transactionId, updateQuery, {
+            session,
+            returnOriginal: true,
+            runValidators: true,
+          });
+
+          const previousTransactionType = old.transactionType;
+          const currentTransactionType = updateQuery.$set.transactionType;
+          let deletedDeferredTransactionIds: Types.ObjectId[];
+
+          if (previousTransactionType === 'deferred' && currentTransactionType !== 'deferred') {
+            deletedDeferredTransactionIds = [old._id];
+          }
+
+          if (previousTransactionType === 'split' && old.deferredSplits?.length > 0) {
+            if (currentTransactionType === 'split' && updateQuery.$set.deferredSplits?.length > 0) {
+              // const newDeferredTransactionIds = updateQuery.$set.deferredSplits.map(s => s._id) ;
+
+              // deletedDeferredTransactionIds = old.deferredSplits.reduce((accumulator, currentValue) => {
+              //   return newDeferredTransactionIds.includes(currentValue._id) ? accumulator : [
+              //     ...accumulator,
+              //     currentValue._id,
+              //   ];
+              // }, []);
+
+            } else {
+              deletedDeferredTransactionIds = old.deferredSplits.map(s => s._id);
+            }
+          }
+
+          if (deletedDeferredTransactionIds) {
+            await mongodbService.transactions.updateMany({
+              'payments.transaction': {
+                $in: deletedDeferredTransactionIds,
+              },
+            }, {
+              $pull: {
+                payments: {
+                  transaction: {
+                    $in: deletedDeferredTransactionIds,
+                  },
+                },
+              },
+            }, {
+              session,
+            });
+          }
+        });
       });
     },
     replaceTransaction: (transactionId, doc) => {
@@ -1063,7 +1109,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
                       {
                         $eq: [
                           account.accountType,
-                          'loan',
+                          AccountType.Loan,
                         ],
                       },
                       {

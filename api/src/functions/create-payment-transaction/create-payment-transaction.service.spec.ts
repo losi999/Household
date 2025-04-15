@@ -53,10 +53,10 @@ describe('Create payment transaction service', () => {
   beforeEach(() => {
     queriedAccount = createAccountDocument();
     queriedLoanAccount = createAccountDocument({
-      accountType: 'loan',
+      accountType: AccountType.Loan,
     });
     queriedCategory = createCategoryDocument({
-      categoryType: 'inventory',
+      categoryType: CategoryType.Inventory,
     });
     queriedProduct = createProductDocument({
       category: queriedCategory,
@@ -573,7 +573,7 @@ describe('Create payment transaction service', () => {
 
     it('if loanAccount is loan type for reimbursement transaction', async () => {
       const queriedSecondLoanAccount = createAccountDocument({
-        accountType: 'loan',
+        accountType: AccountType.Loan,
       });
       body = createPaymentTransactionRequest({
         ...body,

@@ -6,6 +6,7 @@ import { ITransactionService } from '@household/shared/services/transaction-serv
 import { IFileDocumentConverter } from '@household/shared/converters/file-document-converter';
 import { httpErrors } from '@household/api/common/error-handlers';
 import { IDraftTransactionDocumentConverter } from '@household/shared/converters/draft-transaction-document-converter';
+import { FileProcessingStatus } from '@household/shared/enums';
 
 export interface IBulkTransactionImporterService {
   (ctx: {
@@ -38,7 +39,7 @@ export const bulkTransactionImporterServiceFactory = (fileService: IFileService,
 
     await transactionService.saveTransactions(drafts).catch(httpErrors.transaction.saveMultiple(drafts));
 
-    const update = fileDocumentConverter.updateStatus('completed');
+    const update = fileDocumentConverter.updateStatus(FileProcessingStatus.Completed);
 
     await fileService.updateFile(fileId, update).catch(httpErrors.file.update({
       fileId,

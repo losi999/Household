@@ -1,4 +1,5 @@
 import { generateMongoId } from '@household/shared/common/utils';
+import { AccountType, CategoryType, FileType, TransactionType } from '@household/shared/enums';
 import { Account, Auth, Category, File, Product, Project, Recipient, Report, Transaction } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
 
@@ -35,7 +36,7 @@ export const createFileId = (id?: string): File.Id => {
 export const createAccountDocument: DataFactoryFunction<Account.Document> = (doc) => {
   return {
     _id: generateMongoId(),
-    accountType: 'bankAccount',
+    accountType: AccountType.BankAccount,
     name: 'account name',
     currency: 'Ft',
     expiresAt: undefined,
@@ -58,7 +59,7 @@ export const createCategoryDocument: DataFactoryFunction<Category.Document> = (d
     _id: generateMongoId(),
     name: 'category name',
     expiresAt: undefined,
-    categoryType: 'regular',
+    categoryType: CategoryType.Regular,
     ancestors: [],
     ...doc,
   };
@@ -108,7 +109,7 @@ export const createTransactionRawReport: DataFactoryFunction<Transaction.RawRepo
 export const createPaymentTransactionDocument: DataFactoryFunction<Transaction.PaymentDocument> = (doc) => {
   return {
     _id: generateMongoId(),
-    transactionType: 'payment',
+    transactionType: TransactionType.Payment,
     amount: 100,
     description: 'transaction description',
     product: createProductDocument(),
@@ -129,7 +130,7 @@ export const createPaymentTransactionDocument: DataFactoryFunction<Transaction.P
 export const createDeferredTransactionDocument: DataFactoryFunction<Transaction.DeferredDocument> = (doc) => {
   return {
     _id: generateMongoId(),
-    transactionType: 'deferred',
+    transactionType: TransactionType.Deferred,
     amount: 100,
     description: 'transaction description',
     product: createProductDocument(),
@@ -153,7 +154,7 @@ export const createDeferredTransactionDocument: DataFactoryFunction<Transaction.
 export const createReimbursementTransactionDocument: DataFactoryFunction<Transaction.ReimbursementDocument> = (doc) => {
   return {
     _id: generateMongoId(),
-    transactionType: 'reimbursement',
+    transactionType: TransactionType.Reimbursement,
     amount: 100,
     description: 'transaction description',
     product: createProductDocument(),
@@ -191,8 +192,8 @@ export const createSplitDocumentItem: DataFactoryFunction<Transaction.SplitDocum
 export const createSplitTransactionDocument: DataFactoryFunction<Transaction.SplitDocument> = (doc) => {
   return {
     _id: generateMongoId(),
-    transactionType: 'split',
-    amount: ((doc?.splits?.length ?? 0) + (doc?.deferredSplits?.length ?? 0)) * -1 ?? -1,
+    transactionType: TransactionType.Split,
+    amount: 0, //((doc?.splits?.length ?? 0) + (doc?.deferredSplits?.length ?? 0)) * -1 ?? -1,
     description: 'transaction description',
     issuedAt: new Date(),
     expiresAt: undefined,
@@ -207,7 +208,7 @@ export const createSplitTransactionDocument: DataFactoryFunction<Transaction.Spl
 export const createTransferTransactionDocument: DataFactoryFunction<Transaction.TransferDocument> = (doc) => {
   return {
     _id: generateMongoId(),
-    transactionType: 'transfer',
+    transactionType: TransactionType.Transfer,
     amount: 100,
     description: 'transaction description',
     issuedAt: new Date(),
@@ -223,7 +224,7 @@ export const createTransferTransactionDocument: DataFactoryFunction<Transaction.
 export const createDraftTransactionDocument: DataFactoryFunction<Transaction.DraftDocument> = (doc) => {
   return {
     _id: generateMongoId(),
-    transactionType: 'draft',
+    transactionType: TransactionType.Draft,
     amount: 100,
     description: 'transaction description',
     issuedAt: new Date(),
@@ -236,7 +237,7 @@ export const createDraftTransactionDocument: DataFactoryFunction<Transaction.Dra
 export const createDraftTransactionResponse: DataFactoryFunction<Transaction.DraftResponse> = (doc) => {
   return {
     transactionId: createTransactionId(),
-    transactionType: 'draft',
+    transactionType: TransactionType.Draft,
     amount: 100,
     description: 'transaction description',
     issuedAt: new Date().toISOString(),
@@ -247,7 +248,7 @@ export const createDraftTransactionResponse: DataFactoryFunction<Transaction.Dra
 
 export const createAccountRequest: DataFactoryFunction<Account.Request> = (req) => {
   return {
-    accountType: 'bankAccount',
+    accountType: AccountType.BankAccount,
     name: 'account name',
     currency: 'Ft',
     owner: 'owner1',
@@ -266,7 +267,7 @@ export const createCategoryRequest: DataFactoryFunction<Category.Request> = (req
   return {
     name: 'category name',
     parentCategoryId: createCategoryId(),
-    categoryType: 'regular',
+    categoryType: CategoryType.Regular,
     ...req,
   };
 };
@@ -332,6 +333,7 @@ export const createSplitTransactionRequest: DataFactoryFunction<Transaction.Spli
     accountId: createAccountId(),
     recipientId: createRecipientId(),
     splits: [createSplitRequestItem()],
+    loans: [], //TOOD
     ...req,
   };
 };
@@ -422,7 +424,7 @@ export const createReportIssuedAtFilter: DataFactoryFunction<Report.IssuedAtFilt
 
 export const createAccountResponse: DataFactoryFunction<Account.Response> = (resp) => {
   return {
-    accountType: 'bankAccount',
+    accountType: AccountType.BankAccount,
     name: 'account name',
     currency: 'Ft',
     balance: 123,
@@ -446,7 +448,7 @@ export const createCategoryResponseBase: DataFactoryFunction<Category.ResponseAn
   return {
     categoryId: createCategoryId(),
     name: 'category name',
-    categoryType: 'regular',
+    categoryType: CategoryType.Regular,
     ...resp,
   };
 };
@@ -457,7 +459,7 @@ export const createCategoryResponse: DataFactoryFunction<Category.Response> = (r
     name: 'category name',
     parentCategory: undefined,
     fullName: 'category name',
-    categoryType: 'regular',
+    categoryType: CategoryType.Regular,
     ancestors: [],
     ...resp,
   };
@@ -493,7 +495,7 @@ export const createProductGroupedResponse: DataFactoryFunction<Product.GroupedRe
 export const createPaymentTransactionResponse: DataFactoryFunction<Transaction.PaymentResponse> = (resp) => {
   return {
     transactionId: createTransactionId(),
-    transactionType: 'payment',
+    transactionType: TransactionType.Payment,
     amount: 100,
     description: 'transaction description',
     product: createProductResponse(),
@@ -513,7 +515,7 @@ export const createPaymentTransactionResponse: DataFactoryFunction<Transaction.P
 export const createDeferredTransactionResponse: DataFactoryFunction<Transaction.DeferredResponse> = (resp) => {
   return {
     transactionId: createTransactionId(),
-    transactionType: 'deferred',
+    transactionType: TransactionType.Deferred,
     amount: 100,
     description: 'transaction description',
     product: createProductResponse(),
@@ -536,7 +538,7 @@ export const createDeferredTransactionResponse: DataFactoryFunction<Transaction.
 export const createReimbursementTransactionResponse: DataFactoryFunction<Transaction.ReimbursementResponse> = (resp) => {
   return {
     transactionId: createTransactionId(),
-    transactionType: 'reimbursement',
+    transactionType: TransactionType.Reimbursement,
     amount: 100,
     description: 'transaction description',
     product: createProductResponse(),
@@ -572,8 +574,8 @@ export const createSplitResponseItem: DataFactoryFunction<Transaction.SplitRespo
 export const createSplitTransactionResponse: DataFactoryFunction<Transaction.SplitResponse> = (resp) => {
   return {
     transactionId: createTransactionId(),
-    transactionType: 'split',
-    amount: ((resp?.splits?.length ?? 0) + (resp?.deferredSplits?.length ?? 0)) * -1 ?? -1,
+    transactionType: TransactionType.Split,
+    amount: 0, //((resp?.splits?.length ?? 0) + (resp?.deferredSplits?.length ?? 0)) * -1 ?? -1,
     description: 'transaction description',
     issuedAt: new Date().toISOString(),
     account: createAccountResponse(),
@@ -587,7 +589,7 @@ export const createSplitTransactionResponse: DataFactoryFunction<Transaction.Spl
 export const createTransferTransactionResponse: DataFactoryFunction<Transaction.TransferResponse> = (resp) => {
   return {
     transactionId: createTransactionId(),
-    transactionType: 'transfer',
+    transactionType: TransactionType.Transfer,
     amount: 100,
     transferAmount: -1200,
     description: 'transaction description',
@@ -663,7 +665,7 @@ export const createTransactionReport: DataFactoryFunction<Transaction.Report> = 
 export const createFileRequest: DataFactoryFunction<File.Request> = (req) => {
   return {
     timezone: 'Europe/Budapest',
-    fileType: 'otp',
+    fileType: FileType.Otp,
     ...req,
   };
 };
@@ -673,7 +675,7 @@ export const createFileDocument: DataFactoryFunction<File.Document> = (doc) => {
     _id: generateMongoId(),
     expiresAt: undefined,
     timezone: 'Europe/Budapest',
-    fileType: 'otp',
+    fileType: FileType.Otp,
     ...doc,
   };
 };
@@ -682,7 +684,7 @@ export const createFileResponse: DataFactoryFunction<File.Response> = (doc) => {
   return {
     fileId: createFileId(),
     draftCount: 0,
-    fileType: 'otp',
+    fileType: FileType.Otp,
     uploadedAt: new Date().toISOString(),
     ...doc,
   };

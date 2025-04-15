@@ -1,5 +1,6 @@
 import { generateMongoId, getTransactionId } from '@household/shared/common/utils';
 import { addSeconds } from '@household/shared/common/utils';
+import { TransactionType } from '@household/shared/enums';
 import { File, Transaction } from '@household/shared/types/types';
 
 export interface IDraftTransactionDocumentConverter {
@@ -18,7 +19,7 @@ export const draftTransactionDocumentConverterFactory = (): IDraftTransactionDoc
       return {
         ...body,
         file,
-        transactionType: 'draft',
+        transactionType: TransactionType.Draft,
         _id: generateId ? generateMongoId() : undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
@@ -30,7 +31,7 @@ export const draftTransactionDocumentConverterFactory = (): IDraftTransactionDoc
         hasDuplicate,
         issuedAt: issuedAt.toISOString(),
         transactionId: getTransactionId(_id),
-        transactionType: 'draft',
+        transactionType: TransactionType.Draft,
       };
     },
     toResponseList: (documents) => documents.map(d => instance.toResponse(d)),

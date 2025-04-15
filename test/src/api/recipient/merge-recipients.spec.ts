@@ -1,5 +1,6 @@
 import { createRecipientId } from '@household/shared/common/test-data-factory';
 import { getRecipientId } from '@household/shared/common/utils';
+import { AccountType } from '@household/shared/enums';
 import { Account, Recipient, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
@@ -26,7 +27,7 @@ describe('POST recipient/v1/recipients/{recipientId}/merge', () => {
   beforeEach(() => {
     accountDocument = accountDataFactory.document();
     loanAccountDocument = accountDataFactory.document({
-      accountType: 'loan',
+      accountType: AccountType.Loan,
     });
 
     sourceRecipientDocument = recipientDataFactory.document();

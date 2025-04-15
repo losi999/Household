@@ -1,5 +1,5 @@
 import { getCategoryId } from '@household/shared/common/utils';
-import { categoryTypes } from '@household/shared/constants';
+import { CategoryType, AccountType } from '@household/shared/enums';
 import { Account, Category, Product, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
@@ -58,13 +58,13 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
       it('a category and reassign its products', () => {
         sourceCategoryDocument = categoryDataFactory.document({
           body: {
-            categoryType: 'inventory',
+            categoryType: CategoryType.Inventory,
           },
         });
 
         targetCategoryDocument = categoryDataFactory.document({
           body: {
-            categoryType: 'inventory',
+            categoryType: CategoryType.Inventory,
           },
         });
 
@@ -100,11 +100,11 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
 
         beforeEach(() => {
           loanAccountDocument = accountDataFactory.document({
-            accountType: 'loan',
+            accountType: AccountType.Loan,
           });
         });
 
-        categoryTypes.forEach((categoryType) => {
+        Object.values(CategoryType).forEach((categoryType) => {
           it(`${categoryType} categories`, () => {
             sourceCategoryDocument = categoryDataFactory.document({
               body: {
@@ -123,7 +123,7 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
               },
             });
 
-            if (categoryType === 'inventory') {
+            if (categoryType === CategoryType.Inventory) {
               productOfSourceCategoryDocument = productDataFactory.document({
                 category: sourceCategoryDocument,
               });
@@ -209,7 +209,7 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
                 targetCategoryDocument,
                 unrelatedCategoryDocument,
               ]);
-            if (categoryType === 'inventory') {
+            if (categoryType === CategoryType.Inventory) {
               chain = chain.saveProductDocuments([
                 productOfSourceCategoryDocument,
                 productOfTargetCategoryDocument,
@@ -231,7 +231,7 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
               .expectCreatedResponse()
               .validateCategoryDeleted(getCategoryId(sourceCategoryDocument));
 
-            if (categoryType === 'inventory') {
+            if (categoryType === CategoryType.Inventory) {
               chain = chain.validateProductReassigned(productOfSourceCategoryDocument, getCategoryId(targetCategoryDocument));
             }
             chain.validateRelatedChangesInPaymentDocument(paymentTransactionDocument, {
@@ -299,7 +299,7 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
       it('if a source category type is different than the others', () => {
         const otherTypeCategoryDocument = categoryDataFactory.document({
           body: {
-            categoryType: sourceCategoryDocument.categoryType === 'regular' ? 'inventory' : 'regular',
+            categoryType: sourceCategoryDocument.categoryType === CategoryType.Regular ? CategoryType.Inventory : CategoryType.Regular,
           },
         });
         cy.saveCategoryDocuments([

@@ -36,10 +36,10 @@ describe('Create transfer transaction service', () => {
   describe('should return new id', () => {
     it('of created transfer transaction between 2 loan accounts', async () => {
       const queriedLoanAccount1 = createAccountDocument({
-        accountType: 'loan',
+        accountType: AccountType.Loan,
       });
       const queriedLoanAccount2 = createAccountDocument({
-        accountType: 'loan',
+        accountType: AccountType.Loan,
       });
       body = createTransferTransactionRequest({
         ...body,
@@ -150,7 +150,7 @@ describe('Create transfer transaction service', () => {
 
     it('of created transfer transaction between a loan and non-loan accounts', async () => {
       const queriedLoanAccount = createAccountDocument({
-        accountType: 'loan',
+        accountType: AccountType.Loan,
       });
       body = createTransferTransactionRequest({
         ...body,

@@ -22,7 +22,7 @@ describe('Create product service', () => {
 
   const body = createProductRequest();
   const queriedCategory = createCategoryDocument({
-    categoryType: 'inventory',
+    categoryType: CategoryType.Inventory,
   });
   const categoryId = getCategoryId(queriedCategory);
   const convertedProductDocument = createProductDocument();
@@ -78,7 +78,7 @@ describe('Create product service', () => {
 
     it('if category is not "inventory" type', async () => {
       mockCategoryService.functions.getCategoryById.mockResolvedValue(createCategoryDocument({
-        categoryType: 'regular',
+        categoryType: CategoryType.Regular,
       }));
       mockProductDocumentConverter.functions.create.mockReturnValue(convertedProductDocument);
       mockProductService.functions.saveProduct.mockResolvedValue(convertedProductDocument);

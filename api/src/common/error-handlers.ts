@@ -1,4 +1,5 @@
 import { getCategoryId, getProductId } from '@household/shared/common/utils';
+import { AccountType, CategoryType } from '@household/shared/enums';
 import { HttpError } from '@household/shared/types/common';
 import { Account, Category, Common, File, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
@@ -57,13 +58,13 @@ export const httpErrors = {
         throw httpError(statusCode, 'Some of the transactions are not found');
       }
     },
-    update: (doc: Transaction.Document, statusCode = 500): CatchAndThrow => (error) => {
+    update: (update: UpdateQuery<Transaction.Document>, statusCode = 500): CatchAndThrow => (error) => {
       if (error.code === 11000) {
-        log('Duplicate transaction name', doc, error);
+        log('Duplicate transaction name', update, error);
         throw httpError(400, 'Duplicate transaction name');
       }
 
-      log('Update transaction', doc, error);
+      log('Update transaction', update, error);
       throw httpError(statusCode, 'Error while updating transaction');
     },
     delete: (ctx: Transaction.TransactionId, statusCode = 500): CatchAndThrow => (error) => {
@@ -89,7 +90,7 @@ export const httpErrors = {
       }
     },
     invalidLoanAccountType: (ctx: Account.Document, statusCode = 400) => {
-      if (ctx.accountType === 'loan') {
+      if (ctx.accountType === AccountType.Loan) {
         log('Account type cannot be loan', ctx);
         throw httpError(statusCode, 'Account type cannot be loan');
       }
@@ -246,7 +247,7 @@ export const httpErrors = {
       throw httpError(statusCode, 'Error while deleting category');
     },
     notInventoryType: (ctx: Category.Document, statusCode = 400) => {
-      if(ctx.categoryType !== 'inventory') {
+      if(ctx.categoryType !== CategoryType.Inventory) {
         log('Category must be "inventory" type', ctx);
         throw httpError(statusCode, 'Category must be "inventory" type');
       }

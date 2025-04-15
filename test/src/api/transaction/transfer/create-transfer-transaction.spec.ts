@@ -1,4 +1,5 @@
 import { getAccountId, getTransactionId } from '@household/shared/common/utils';
+import { AccountType } from '@household/shared/enums';
 import { Account, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
@@ -45,7 +46,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
 
       it('between a non-loan and a loan account', () => {
         const loanAccountDocument = accountDataFactory.document({
-          accountType: 'loan',
+          accountType: AccountType.Loan,
         });
 
         request = transferTransactionDataFactory.request({
@@ -65,11 +66,11 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
 
       it('between two loan accounts', () => {
         accountDocument = accountDataFactory.document({
-          accountType: 'loan',
+          accountType: AccountType.Loan,
         });
 
         transferAccountDocument = accountDataFactory.document({
-          accountType: 'loan',
+          accountType: AccountType.Loan,
         });
 
         request = transferTransactionDataFactory.request({

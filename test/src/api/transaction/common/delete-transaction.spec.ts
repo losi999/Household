@@ -1,4 +1,5 @@
 import { getTransactionId } from '@household/shared/common/utils';
+import { AccountType } from '@household/shared/enums';
 import { Account, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
@@ -22,7 +23,7 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
     accountDocument = accountDataFactory.document();
     transferAccountDocument = accountDataFactory.document();
     loanAccountDocument = accountDataFactory.document({
-      accountType: 'loan',
+      accountType: AccountType.Loan,
     });
 
     paymentTransactionDocument = paymentTransactionDataFactory.document({

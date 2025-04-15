@@ -12,6 +12,7 @@ import { splitTransactionDataFactory } from '@household/test/api/transaction/spl
 import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
+import { AccountType, CategoryType } from '@household/shared/enums';
 
 describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
   let accountDocument: Account.Document;
@@ -33,24 +34,24 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
     describe('should get a list of transactions', () => {
       it('of a non-loan account', () => {
         const loanAccountDocument = accountDataFactory.document({
-          accountType: 'loan',
+          accountType: AccountType.Loan,
         });
         const transferAccountDocument = accountDataFactory.document();
         const projectDocument = projectDataFactory.document();
         const recipientDocument = recipientDataFactory.document();
         const regularCategoryDocument = categoryDataFactory.document({
           body: {
-            categoryType: 'regular',
+            categoryType: CategoryType.Regular,
           },
         });
         const inventoryCategoryDocument = categoryDataFactory.document({
           body: {
-            categoryType: 'inventory',
+            categoryType: CategoryType.Inventory,
           },
         });
         const invoiceCategoryDocument = categoryDataFactory.document({
           body: {
-            categoryType: 'invoice',
+            categoryType: CategoryType.Invoice,
           },
         });
         const productDocument = productDataFactory.document({
@@ -245,24 +246,24 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
 
       it('of a loan account', () => {
         const loanAccountDocument = accountDataFactory.document({
-          accountType: 'loan',
+          accountType: AccountType.Loan,
         });
         const transferAccountDocument = accountDataFactory.document();
         const projectDocument = projectDataFactory.document();
         const recipientDocument = recipientDataFactory.document();
         const regularCategoryDocument = categoryDataFactory.document({
           body: {
-            categoryType: 'regular',
+            categoryType: CategoryType.Regular,
           },
         });
         const inventoryCategoryDocument = categoryDataFactory.document({
           body: {
-            categoryType: 'inventory',
+            categoryType: CategoryType.Inventory,
           },
         });
         const invoiceCategoryDocument = categoryDataFactory.document({
           body: {
-            categoryType: 'invoice',
+            categoryType: CategoryType.Invoice,
           },
         });
         const productDocument = productDataFactory.document({

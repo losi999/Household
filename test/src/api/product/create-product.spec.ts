@@ -1,4 +1,5 @@
 import { getCategoryId } from '@household/shared/common/utils';
+import { CategoryType } from '@household/shared/enums';
 import { Category, Product } from '@household/shared/types/types';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { productDataFactory } from '@household/test/api/product/data-factory';
@@ -12,7 +13,7 @@ describe('POST product/v1/products', () => {
 
     categoryDocument = categoryDataFactory.document({
       body: {
-        categoryType: 'inventory',
+        categoryType: CategoryType.Inventory,
       },
     });
   });

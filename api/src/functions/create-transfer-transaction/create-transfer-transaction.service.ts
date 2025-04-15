@@ -1,6 +1,7 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { getAccountId, getTransactionId, pushUnique, toDictionary } from '@household/shared/common/utils';
 import { ITransferTransactionDocumentConverter } from '@household/shared/converters/transfer-transaction-document-converter';
+import { AccountType } from '@household/shared/enums';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
 import { Transaction } from '@household/shared/types/types';
@@ -48,7 +49,7 @@ export const createTransferTransactionServiceFactory = (
 
     let document: Transaction.TransferDocument;
 
-    if (account.accountType === 'loan' || transferAccount.accountType === 'loan') {
+    if (account.accountType === AccountType.Loan || transferAccount.accountType === AccountType.Loan) {
       body.payments = undefined;
       document = transferTransactionDocumentConverter.create({
         body,

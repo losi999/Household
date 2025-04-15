@@ -1,6 +1,7 @@
-import { categoryTypes, fileProcessingStatuses, fileTypes, unitsOfMeasurement } from '@household/shared/constants';
+import { unitsOfMeasurement } from '@household/shared/constants';
 import { Branding } from '@household/shared/types/common';
 import { Types } from 'mongoose';
+import * as Enum from '@household/shared/enums';
 
 export namespace Internal {
   export type Id = {
@@ -89,7 +90,7 @@ export namespace Account {
   };
 
   export type AccountType = {
-    accountType: 'bankAccount' | 'cash' | 'creditCard' | 'loan' | 'cafeteria';
+    accountType: Enum.AccountType;
   };
 
   type Owner = {
@@ -148,7 +149,7 @@ export namespace Category {
   };
 
   export type CategoryType = {
-    categoryType: typeof categoryTypes[number];
+    categoryType: Enum.CategoryType;
   };
 
   type Name = {
@@ -236,7 +237,7 @@ export namespace Transaction {
     issuedAt: D;
   };
 
-  export type TransactionType<T extends string = never> = {
+  export type TransactionType<T extends Enum.TransactionType> = {
     transactionType: T;
   };
 
@@ -351,6 +352,15 @@ export namespace Transaction {
   & Quantity
   & Product.ProductId
   & Amount
+  & Description;
+
+  export type LoanRequestItem = Category.CategoryId
+  & Project.ProjectId
+  & InvoiceNumber
+  & InvoiceDate<string>
+  & Quantity
+  & Product.ProductId
+  & Amount
   & Description
   & LoanAccountId
   & IsSettled
@@ -363,11 +373,12 @@ export namespace Transaction {
   & Description
   & {
     splits: SplitRequestItem[];
+    loans: LoanRequestItem[];
   };
 
   export type DraftDocument<D extends Date | string = Date> = Internal.Id
   & Internal.Timestamps
-  & TransactionType<'draft'>
+  & TransactionType<Enum.TransactionType.Draft>
   & Amount
   & Description
   & IssuedAt<D> & {
@@ -391,15 +402,16 @@ export namespace Transaction {
   & OwnerAccount<Account.Document>;
 
   export type DeferredDocument<D extends Date | string = Date> = LoanDocument<D>
-  & TransactionType<'deferred'>
+  & TransactionType<Enum.TransactionType.Deferred>
   & IsSettled
   & Partial<RemainingAmount>;
 
-  export type ReimbursementDocument<D extends Date | string = Date> = LoanDocument<D> & TransactionType<'reimbursement'>;
+  export type ReimbursementDocument<D extends Date | string = Date> = LoanDocument<D>
+  & TransactionType<Enum.TransactionType.Reimbursement>;
 
   export type PaymentDocument<D extends Date | string = Date> = Internal.Id
   & Internal.Timestamps
-  & TransactionType<'payment'>
+  & TransactionType<Enum.TransactionType.Payment>
   & Account<Account.Document>
   & Category<Category.Document>
   & Project<Project.Document>
@@ -414,7 +426,7 @@ export namespace Transaction {
 
   export type TransferDocument<D extends Date | string = Date> = Internal.Id
   & Internal.Timestamps
-  & TransactionType<'transfer'>
+  & TransactionType<Enum.TransactionType.Transfer>
   & Account<Account.Document>
   & TransferAccount<Account.Document>
   & IssuedAt<D>
@@ -423,8 +435,7 @@ export namespace Transaction {
   & Description
   & Payments;
 
-  export type SplitDocumentItem<D extends Date | string = Date> = Internal.Id
-  & Project<Project.Document>
+  export type SplitDocumentItem<D extends Date | string = Date> = Project<Project.Document>
   & Category<Category.Document>
   & InvoiceNumber
   & InvoiceDate<D>
@@ -440,7 +451,7 @@ export namespace Transaction {
 
   export type SplitDocument<D extends Date | string = Date> = Internal.Id
   & Internal.Timestamps
-  & TransactionType<'split'>
+  & TransactionType<Enum.TransactionType.Split>
   & Account<Account.Document>
   & Recipient<Recipient.Document>
   & IssuedAt<D>
@@ -474,7 +485,7 @@ export namespace Transaction {
   & InvoiceDate<string>
   & Quantity
   & Product<Product.Response>
-  & TransactionType<'payment'>
+  & TransactionType<Enum.TransactionType.Payment>
   & Account<Account.Response>
   & Category<Category.Response>
   & Project<Project.Response>
@@ -489,7 +500,7 @@ export namespace Transaction {
   & Quantity
   & IsSettled
   & Product<Product.Response>
-  & TransactionType<'deferred'>
+  & TransactionType<Enum.TransactionType.Deferred>
   & PayingAccount<Account.Response>
   & OwnerAccount<Account.Response>
   & Category<Category.Response>
@@ -505,7 +516,7 @@ export namespace Transaction {
   & InvoiceDate<string>
   & Quantity
   & Product<Product.Response>
-  & TransactionType<'reimbursement'>
+  & TransactionType<Enum.TransactionType.Reimbursement>
   & PayingAccount<Account.Response>
   & OwnerAccount<Account.Response>
   & Category<Category.Response>
@@ -516,7 +527,7 @@ export namespace Transaction {
   & Amount
   & Description
   & IssuedAt<string>
-  & TransactionType<'transfer'>
+  & TransactionType<Enum.TransactionType.Transfer>
   & Account<Account.Response>
   & TransferAccount<Account.Response>
   & TransferAmount
@@ -539,7 +550,7 @@ export namespace Transaction {
   & Amount
   & Description
   & IssuedAt<string>
-  & TransactionType<'split'>
+  & TransactionType<Enum.TransactionType.Split>
   & Account<Account.Response>
   & Recipient<Recipient.Response>
   & {
@@ -551,7 +562,7 @@ export namespace Transaction {
   & Amount
   & Description
   & IssuedAt<string>
-  & TransactionType<'draft'>
+  & TransactionType<Enum.TransactionType.Draft>
   & {
     hasDuplicate: boolean;
   };
@@ -654,7 +665,7 @@ export namespace File {
   };
 
   export type FileType = {
-    fileType: typeof fileTypes[number];
+    fileType: Enum.FileType;
   };
 
   export type Timezone = {
@@ -666,7 +677,7 @@ export namespace File {
   };
 
   export type ProcessingStatus = {
-    processingStatus: typeof fileProcessingStatuses[number];
+    processingStatus: Enum.FileProcessingStatus;
   };
 
   export type DraftCount = {

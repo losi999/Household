@@ -3,6 +3,7 @@ import { getAccountId, getTransactionId } from '@household/shared/common/utils';
 import { IDeferredTransactionDocumentConverter } from '@household/shared/converters/deferred-transaction-document-converter';
 import { IPaymentTransactionDocumentConverter } from '@household/shared/converters/payment-transaction-document-converter';
 import { IReimbursementTransactionDocumentConverter } from '@household/shared/converters/reimbursement-transaction-document-converter';
+import { AccountType, CategoryType } from '@household/shared/enums';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICategoryService } from '@household/shared/services/category-service';
 import { IProductService } from '@household/shared/services/product-service';
@@ -89,7 +90,7 @@ export const createPaymentTransactionServiceFactory = (
       recipient: recipient,
     }, 400);
 
-    if (category?.categoryType === 'inventory' && productId) {
+    if (category?.categoryType === CategoryType.Inventory && productId) {
       httpErrors.product.notFound({
         product: product,
         productId,
@@ -115,7 +116,7 @@ export const createPaymentTransactionServiceFactory = (
         product,
       }, expiresIn);
     } else {
-      if (account.accountType === 'loan') {
+      if (account.accountType === AccountType.Loan) {
         httpErrors.transaction.invalidLoanAccountType(loanAccount);
 
         document = reimbursementTransactionDocumentConverter.create({

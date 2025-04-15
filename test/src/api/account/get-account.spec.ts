@@ -7,6 +7,7 @@ import { transferTransactionDataFactory } from '@household/test/api/transaction/
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
+import { AccountType } from '@household/shared/enums';
 
 describe('GET /account/v1/accounts/{accountId}', () => {
   let accountDocument: Account.Document;
@@ -30,7 +31,7 @@ describe('GET /account/v1/accounts/{accountId}', () => {
     accountDocument = accountDataFactory.document();
     secondaryAccountDocument = accountDataFactory.document();
     loanAccountDocument = accountDataFactory.document({
-      accountType: 'loan',
+      accountType: AccountType.Loan,
     });
 
     paymentTransactionDocument = paymentTransactionDataFactory.document({

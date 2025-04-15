@@ -1,4 +1,5 @@
 import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId } from '@household/shared/common/utils';
+import { AccountType, CategoryType } from '@household/shared/enums';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
@@ -24,19 +25,19 @@ describe('POST transaction/v1/transactions/payment (payment)', () => {
     accountDocument = accountDataFactory.document();
     regularCategoryDocument = categoryDataFactory.document({
       body: {
-        categoryType: 'regular',
+        categoryType: CategoryType.Regular,
       },
     });
 
     invoiceCategoryDocument = categoryDataFactory.document({
       body: {
-        categoryType: 'invoice',
+        categoryType: CategoryType.Invoice,
       },
     });
 
     inventoryCategoryDocument = categoryDataFactory.document({
       body: {
-        categoryType: 'inventory',
+        categoryType: CategoryType.Inventory,
       },
     });
 
@@ -126,7 +127,7 @@ describe('POST transaction/v1/transactions/payment (payment)', () => {
             .expectCreatedResponse()
             .validateTransactionPaymentDocument(request);
         });
-        it('inventory', () => {
+        it(CategoryType.Inventory, () => {
           request = paymentTransactionDataFactory.request({
             ...relatedDocumentIds,
             productId: undefined,
@@ -144,7 +145,7 @@ describe('POST transaction/v1/transactions/payment (payment)', () => {
             .validateTransactionPaymentDocument(request);
         });
 
-        it('invoice', () => {
+        it(CategoryType.Invoice, () => {
           request = paymentTransactionDataFactory.request({
             ...relatedDocumentIds,
             categoryId: getCategoryId(invoiceCategoryDocument),
@@ -482,7 +483,7 @@ describe('POST transaction/v1/transactions/payment (payment)', () => {
       describe('if accountId', () => {
         it('belongs to a loan type account', () => {
           const loanAccountDocument = accountDataFactory.document({
-            accountType: 'loan',
+            accountType: AccountType.Loan,
           });
           cy.saveAccountDocument(loanAccountDocument)
             .saveCategoryDocument(regularCategoryDocument)

@@ -1,3 +1,4 @@
+import { TransactionType } from '@household/shared/enums';
 import { Transaction } from '@household/shared/types/types';
 import { Schema, SchemaDefinition, SchemaDefinitionType } from 'mongoose';
 
@@ -35,6 +36,8 @@ const splitItemSchema = new Schema<Transaction.SplitDocumentItem>({
     type: String,
     minlength: 1,
   },
+}, {
+  _id: false,
 });
 
 const deferredSplitSchema = new Schema<Transaction.DeferredDocument>({
@@ -93,15 +96,7 @@ const deferredSplitSchema = new Schema<Transaction.DeferredDocument>({
 const schemaDefinition: SchemaDefinition<SchemaDefinitionType<Transaction.Document>, Transaction.Document> = {
   transactionType: {
     type: String,
-    enum: [
-      'payment',
-      'split',
-      'transfer',
-      'loanTransfer',
-      'deferred',
-      'reimbursement',
-      'draft',
-    ],
+    enum: TransactionType,
   },
   issuedAt: {
     type: Schema.Types.Date,

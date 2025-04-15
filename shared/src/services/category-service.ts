@@ -1,3 +1,4 @@
+import { CategoryType } from '@household/shared/enums';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { Category } from '@household/shared/types/types';
 import { Types, UpdateQuery } from 'mongoose';
@@ -41,7 +42,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
       });
     },
     getCategoryById: async (categoryId) => {
-      return !categoryId ? null : mongodbService.categories.findById(categoryId)
+      return !categoryId ? undefined : mongodbService.categories.findById(categoryId)
         .populate('ancestors')
         .sort('fullName')
         .lean<Category.Document>()
@@ -170,7 +171,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
 
           await mongodbService.transactions.updateMany({
             category: categoryId,
-          }, updateQuery.$set.categoryType === 'regular' ? {
+          }, updateQuery.$set.categoryType === CategoryType.Regular ? {
             $unset: {
               quantity: 1,
               product: 1,
@@ -178,7 +179,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
               billingEndDate: 1,
               billingStartDate: 1,
             },
-          } : updateQuery.$set.categoryType === 'inventory' ? {
+          } : updateQuery.$set.categoryType === CategoryType.Inventory ? {
             $unset: {
               invoiceNumber: 1,
               billingEndDate: 1,
@@ -196,7 +197,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
 
           await mongodbService.transactions.updateMany({
             'splits.category': categoryId,
-          }, updateQuery.$set.categoryType === 'regular' ? {
+          }, updateQuery.$set.categoryType === CategoryType.Regular ? {
             $unset: {
               'splits.$[element].quantity': 1,
               'splits.$[element].product': 1,
@@ -204,7 +205,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
               'splits.$[element].billingEndDate': 1,
               'splits.$[element].billingStartDate': 1,
             },
-          } : updateQuery.$set.categoryType === 'inventory' ? {
+          } : updateQuery.$set.categoryType === CategoryType.Inventory ? {
             $unset: {
               'splits.$[element].invoiceNumber': 1,
               'splits.$[element].billingEndDate': 1,
@@ -227,7 +228,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
 
           await mongodbService.transactions.updateMany({
             'deferredSplits.category': categoryId,
-          }, updateQuery.$set.categoryType === 'regular' ? {
+          }, updateQuery.$set.categoryType === CategoryType.Regular ? {
             $unset: {
               'deferredSplits.$[element].quantity': 1,
               'deferredSplits.$[element].product': 1,
@@ -235,7 +236,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
               'deferredSplits.$[element].billingEndDate': 1,
               'deferredSplits.$[element].billingStartDate': 1,
             },
-          } : updateQuery.$set.categoryType === 'inventory' ? {
+          } : updateQuery.$set.categoryType === CategoryType.Inventory ? {
             $unset: {
               'deferredSplits.$[element].invoiceNumber': 1,
               'deferredSplits.$[element].billingEndDate': 1,

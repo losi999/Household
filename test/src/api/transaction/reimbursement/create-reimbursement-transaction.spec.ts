@@ -1,4 +1,5 @@
 import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId } from '@household/shared/common/utils';
+import { AccountType, CategoryType } from '@household/shared/enums';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
@@ -23,24 +24,24 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
     projectDocument = projectDataFactory.document();
     recipientDocument = recipientDataFactory.document();
     accountDocument = accountDataFactory.document({
-      accountType: 'loan',
+      accountType: AccountType.Loan,
     });
     secondaryAccountDocument = accountDataFactory.document();
     regularCategoryDocument = categoryDataFactory.document({
       body: {
-        categoryType: 'regular',
+        categoryType: CategoryType.Regular,
       },
     });
 
     invoiceCategoryDocument = categoryDataFactory.document({
       body: {
-        categoryType: 'invoice',
+        categoryType: CategoryType.Invoice,
       },
     });
 
     inventoryCategoryDocument = categoryDataFactory.document({
       body: {
-        categoryType: 'inventory',
+        categoryType: CategoryType.Inventory,
       },
     });
 
@@ -143,7 +144,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
             .expectCreatedResponse()
             .validateTransactionReimbursementDocument(request);
         });
-        it('inventory', () => {
+        it(CategoryType.Inventory, () => {
           request = reimbursementTransactionDataFactory.request({
             ...relatedDocumentIds,
             productId: undefined,
@@ -164,7 +165,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
             .validateTransactionReimbursementDocument(request);
         });
 
-        it('invoice', () => {
+        it(CategoryType.Invoice, () => {
           request = reimbursementTransactionDataFactory.request({
             ...relatedDocumentIds,
             categoryId: getCategoryId(invoiceCategoryDocument),
@@ -573,7 +574,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
       describe('if loanAccountId', () => {
         it('belongs to a loan type account', () => {
           const loanAccountDocument = accountDataFactory.document({
-            accountType: 'loan',
+            accountType: AccountType.Loan,
           });
           cy.saveAccountDocuments([
             loanAccountDocument,

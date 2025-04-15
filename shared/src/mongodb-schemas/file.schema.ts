@@ -1,4 +1,4 @@
-import { fileProcessingStatuses, fileTypes } from '@household/shared/constants';
+import { FileProcessingStatus, FileType } from '@household/shared/enums';
 import { File } from '@household/shared/types/types';
 import { Schema } from 'mongoose';
 
@@ -6,15 +6,15 @@ export const fileSchema = new Schema<File.Document>({
   fileType: {
     type: String,
     required: true,
-    enum: fileTypes,
+    enum: FileType,
   },
   timezone: {
     type: String,
   },
   processingStatus: {
     type: String,
-    default: 'pending',
-    enum: fileProcessingStatuses,
+    default: FileProcessingStatus.Pending,
+    enum: FileProcessingStatus,
   },
   expiresAt: {
     type: Schema.Types.Date,
@@ -27,7 +27,7 @@ export const fileSchema = new Schema<File.Document>({
     index: {
       expireAfterSeconds: 120,
       partialFilterExpression: {
-        processingStatus: 'pending',
+        processingStatus: FileProcessingStatus.Pending,
       },
     },
   },

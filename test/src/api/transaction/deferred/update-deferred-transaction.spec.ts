@@ -1,5 +1,6 @@
 
 import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
+import { AccountType, CategoryType } from '@household/shared/enums';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
@@ -28,23 +29,23 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
     recipientDocument = recipientDataFactory.document();
     accountDocument = accountDataFactory.document();
     secondaryAccountDocument = accountDataFactory.document({
-      accountType: 'loan',
+      accountType: AccountType.Loan,
     });
     regularCategoryDocument = categoryDataFactory.document({
       body: {
-        categoryType: 'regular',
+        categoryType: CategoryType.Regular,
       },
     });
 
     invoiceCategoryDocument = categoryDataFactory.document({
       body: {
-        categoryType: 'invoice',
+        categoryType: CategoryType.Invoice,
       },
     });
 
     inventoryCategoryDocument = categoryDataFactory.document({
       body: {
-        categoryType: 'inventory',
+        categoryType: CategoryType.Inventory,
       },
     });
 
@@ -155,7 +156,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
             .expectCreatedResponse()
             .validateTransactionDeferredDocument(request);
         });
-        it('inventory', () => {
+        it(CategoryType.Inventory, () => {
           request = deferredTransactionDataFactory.request({
             ...relatedDocumentIds,
             productId: undefined,
@@ -177,7 +178,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
             .validateTransactionDeferredDocument(request);
         });
 
-        it('invoice', () => {
+        it(CategoryType.Invoice, () => {
           request = deferredTransactionDataFactory.request({
             ...relatedDocumentIds,
             categoryId: getCategoryId(invoiceCategoryDocument),
@@ -274,6 +275,165 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
             .saveRecipientDocument(recipientDocument)
             .authenticate(1)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request)
+            .expectCreatedResponse()
+            .validateTransactionDeferredDocument(request);
+        });
+      });
+
+      describe('with unsetting', () => {
+        let deferredDocument: Transaction.DeferredDocument;
+
+        beforeEach(() => {
+          deferredDocument = deferredTransactionDataFactory.document({
+            account: accountDocument,
+            loanAccount: secondaryAccountDocument,
+            project: projectDocument,
+            recipient: recipientDocument,
+            category: inventoryCategoryDocument,
+            product: productDocument,
+            body: {
+              description: 'old description',
+            },
+          });
+        });
+
+        it('description', () => {
+          request = deferredTransactionDataFactory.request({
+            ...relatedDocumentIds,
+            categoryId: getCategoryId(inventoryCategoryDocument),
+            description: undefined,
+          });
+          cy.saveTransactionDocument(deferredDocument)
+            .saveAccountDocument(accountDocument)
+            .saveAccountDocument(secondaryAccountDocument)
+            .saveCategoryDocument(inventoryCategoryDocument)
+            .saveProductDocument(productDocument)
+            .saveProjectDocument(projectDocument)
+            .saveRecipientDocument(recipientDocument)
+            .authenticate(1)
+            .requestUpdateToPaymentTransaction(getTransactionId(deferredDocument), request)
+            .expectCreatedResponse()
+            .validateTransactionDeferredDocument(request);
+        });
+
+        it(CategoryType.Inventory, () => {
+          request = deferredTransactionDataFactory.request({
+            ...relatedDocumentIds,
+            productId: undefined,
+            quantity: undefined,
+            categoryId: getCategoryId(inventoryCategoryDocument),
+          });
+
+          cy.saveTransactionDocument(deferredDocument)
+            .saveAccountDocument(accountDocument)
+            .saveAccountDocument(secondaryAccountDocument)
+            .saveCategoryDocument(inventoryCategoryDocument)
+            .saveProjectDocument(projectDocument)
+            .saveRecipientDocument(recipientDocument)
+            .authenticate(1)
+            .requestUpdateToPaymentTransaction(getTransactionId(deferredDocument), request)
+            .expectCreatedResponse()
+            .validateTransactionDeferredDocument(request);
+        });
+
+        it(CategoryType.Invoice, () => {
+          request = deferredTransactionDataFactory.request({
+            ...relatedDocumentIds,
+            categoryId: getCategoryId(invoiceCategoryDocument),
+            invoiceNumber: undefined,
+            billingEndDate: undefined,
+            billingStartDate: undefined,
+          });
+
+          cy.saveTransactionDocument(deferredDocument)
+            .saveAccountDocument(accountDocument)
+            .saveAccountDocument(secondaryAccountDocument)
+            .saveCategoryDocument(invoiceCategoryDocument)
+            .saveProjectDocument(projectDocument)
+            .saveRecipientDocument(recipientDocument)
+            .authenticate(1)
+            .requestUpdateToPaymentTransaction(getTransactionId(deferredDocument), request)
+            .expectCreatedResponse()
+            .validateTransactionDeferredDocument(request);
+        });
+
+        it('invoice.invoiceNumber', () => {
+          deferredDocument = deferredTransactionDataFactory.document({
+            account: accountDocument,
+            loanAccount: secondaryAccountDocument,
+            recipient: recipientDocument,
+            category: invoiceCategoryDocument,
+            product: productDocument,
+            body: {
+              description: 'old description',
+            },
+          });
+
+          request = deferredTransactionDataFactory.request({
+            ...relatedDocumentIds,
+            categoryId: getCategoryId(invoiceCategoryDocument),
+            invoiceNumber: undefined,
+          });
+
+          cy.saveTransactionDocument(deferredDocument)
+            .saveAccountDocument(accountDocument)
+            .saveAccountDocument(secondaryAccountDocument)
+            .saveCategoryDocument(invoiceCategoryDocument)
+            .saveProjectDocument(projectDocument)
+            .saveRecipientDocument(recipientDocument)
+            .authenticate(1)
+            .requestUpdateToPaymentTransaction(getTransactionId(deferredDocument), request)
+            .expectCreatedResponse()
+            .validateTransactionDeferredDocument(request);
+        });
+
+        it('categoryId', () => {
+          request = deferredTransactionDataFactory.request({
+            ...relatedDocumentIds,
+            categoryId: undefined,
+          });
+
+          cy.saveTransactionDocument(deferredDocument)
+            .saveAccountDocument(accountDocument)
+            .saveAccountDocument(secondaryAccountDocument)
+            .saveProjectDocument(projectDocument)
+            .saveRecipientDocument(recipientDocument)
+            .authenticate(1)
+            .requestUpdateToPaymentTransaction(getTransactionId(deferredDocument), request)
+            .expectCreatedResponse()
+            .validateTransactionDeferredDocument(request);
+        });
+
+        it('recipientId', () => {
+          request = deferredTransactionDataFactory.request({
+            ...relatedDocumentIds,
+            recipientId: undefined,
+          });
+
+          cy.saveTransactionDocument(deferredDocument)
+            .saveAccountDocument(accountDocument)
+            .saveAccountDocument(secondaryAccountDocument)
+            .saveCategoryDocument(regularCategoryDocument)
+            .saveProjectDocument(projectDocument)
+            .authenticate(1)
+            .requestUpdateToPaymentTransaction(getTransactionId(deferredDocument), request)
+            .expectCreatedResponse()
+            .validateTransactionDeferredDocument(request);
+        });
+
+        it('projectId', () => {
+          request = deferredTransactionDataFactory.request({
+            ...relatedDocumentIds,
+            projectId: undefined,
+          });
+
+          cy.saveTransactionDocument(deferredDocument)
+            .saveAccountDocument(accountDocument)
+            .saveAccountDocument(secondaryAccountDocument)
+            .saveCategoryDocument(regularCategoryDocument)
+            .saveRecipientDocument(recipientDocument)
+            .authenticate(1)
+            .requestUpdateToPaymentTransaction(getTransactionId(deferredDocument), request)
             .expectCreatedResponse()
             .validateTransactionDeferredDocument(request);
         });

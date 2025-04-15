@@ -6,6 +6,7 @@ import { projectDataFactory } from './data-factory';
 import { accountDataFactory } from '../account/data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
+import { AccountType } from '@household/shared/enums';
 
 describe('DELETE /project/v1/projects/{projectId}', () => {
   let projectDocument: Project.Document;
@@ -47,7 +48,7 @@ describe('DELETE /project/v1/projects/{projectId}', () => {
       beforeEach(() => {
         accountDocument = accountDataFactory.document();
         loanAccountDocument = accountDataFactory.document({
-          accountType: 'loan',
+          accountType: AccountType.Loan,
         });
 
         unrelatedProjectDocument = projectDataFactory.document();

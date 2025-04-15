@@ -13,6 +13,7 @@ import { transferTransactionDataFactory } from '@household/test/api/transaction/
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { isDeferredTransaction } from '@household/shared/common/type-guards';
+import { AccountType, CategoryType } from '@household/shared/enums';
 
 const splitTransactionHelper = (doc: Transaction.SplitDocument, split: Transaction.SplitDocumentItem | Transaction.DeferredDocument):(Transaction.SplitDocument & {split?: Transaction.SplitDocumentItem; deferredSplit?: Transaction.DeferredDocument}) => {
   return {
@@ -62,7 +63,7 @@ describe('POST /transaction/v1/transactionReports', () => {
         accountDocument = accountDataFactory.document();
         secondaryAccountDocument = accountDataFactory.document();
         loanAccountDocument = accountDataFactory.document({
-          accountType: 'loan',
+          accountType: AccountType.Loan,
         });
 
         recipientDocument = recipientDataFactory.document();
@@ -73,19 +74,19 @@ describe('POST /transaction/v1/transactionReports', () => {
 
         regularCategoryDocument = categoryDataFactory.document({
           body: {
-            categoryType: 'regular',
+            categoryType: CategoryType.Regular,
           },
         });
 
         invoiceCategoryDocument = categoryDataFactory.document({
           body: {
-            categoryType: 'invoice',
+            categoryType: CategoryType.Invoice,
           },
         });
 
         inventoryCategoryDocument = categoryDataFactory.document({
           body: {
-            categoryType: 'inventory',
+            categoryType: CategoryType.Inventory,
           },
         });
 

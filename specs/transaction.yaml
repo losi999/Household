@@ -12,6 +12,12 @@ components:
         transactionId:
           type: string
           minLength: 1
+    SplitId:
+      type: object
+      properties:
+        splitId:
+          type: string
+          minLength: 1
     IssuedAt:
       type: object
       required:
@@ -194,6 +200,17 @@ components:
         - $ref: "product.yaml#/components/schemas/ProductId"
         - $ref: "#/components/schemas/Amount"
         - $ref: "#/components/schemas/Description"
+    LoanRequestItem:
+      allOf:
+        - $ref: "#/components/schemas/SplitId"
+        - $ref: "category.yaml#/components/schemas/CategoryId"
+        - $ref: "project.yaml#/components/schemas/ProjectId"
+        - $ref: "#/components/schemas/InvoiceNumber"
+        - $ref: "#/components/schemas/InvoiceDate"
+        - $ref: "#/components/schemas/Quantity"
+        - $ref: "product.yaml#/components/schemas/ProductId"
+        - $ref: "#/components/schemas/Amount"
+        - $ref: "#/components/schemas/Description"
         - $ref: "#/components/schemas/Loan"
         - type: object
           properties:
@@ -211,10 +228,17 @@ components:
           required:
             - splits
           properties:
+            amount:
+              exclusiveMaximum: true
+              minimum: 0
             splits:
               type: array
               items:
                 $ref: "#/components/schemas/SplitRequestItem"
+            loans:
+              type: array
+              items:
+                $ref: "#/components/schemas/LoanRequestItem"
     PaymentResponse:
       allOf:
         - $ref: "#/components/schemas/TransactionId"

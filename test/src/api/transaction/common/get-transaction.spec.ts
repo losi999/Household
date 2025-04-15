@@ -15,6 +15,7 @@ import { transferTransactionDataFactory } from '@household/test/api/transaction/
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
+import { AccountType, CategoryType } from '@household/shared/enums';
 
 describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}', () => {
   let accountDocument: Account.Document;
@@ -30,7 +31,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
   beforeEach(() => {
     accountDocument = accountDataFactory.document();
     loanAccountDocument = accountDataFactory.document({
-      accountType: 'loan',
+      accountType: AccountType.Loan,
     });
     transferAccountDocument = accountDataFactory.document();
 
@@ -40,19 +41,19 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
 
     regularCategoryDocument = categoryDataFactory.document({
       body: {
-        categoryType: 'regular',
+        categoryType: CategoryType.Regular,
       },
     });
 
     inventoryCategoryDocument = categoryDataFactory.document({
       body: {
-        categoryType: 'inventory',
+        categoryType: CategoryType.Inventory,
       },
     });
 
     invoiceCategoryDocument = categoryDataFactory.document({
       body: {
-        categoryType: 'invoice',
+        categoryType: CategoryType.Invoice,
       },
     });
 

@@ -1,4 +1,5 @@
 import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
+import { CategoryType, AccountType } from '@household/shared/enums';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
@@ -31,19 +32,19 @@ describe('PUT transaction/v1/transactions/{transactionId}/split (split)', () => 
 
     regularCategoryDocument = categoryDataFactory.document({
       body: {
-        categoryType: 'regular',
+        categoryType: CategoryType.Regular,
       },
     });
 
     invoiceCategoryDocument = categoryDataFactory.document({
       body: {
-        categoryType: 'invoice',
+        categoryType: CategoryType.Invoice,
       },
     });
 
     inventoryCategoryDocument = categoryDataFactory.document({
       body: {
-        categoryType: 'inventory',
+        categoryType: CategoryType.Inventory,
       },
     });
 
@@ -376,7 +377,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split (split)', () => 
       describe('if accountId', () => {
         it('belongs to a loan type account', () => {
           const loanAccountDocument = accountDataFactory.document({
-            accountType: 'loan',
+            accountType: AccountType.Loan,
           });
           cy.saveTransactionDocument(originalDocument)
             .saveAccountDocument(loanAccountDocument)

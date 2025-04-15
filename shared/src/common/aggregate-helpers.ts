@@ -1,3 +1,4 @@
+import { AccountType } from '@household/shared/enums';
 import { PipelineStage } from 'mongoose';
 
 export const populateAggregate = (localField: string, from: string, pipeline?: PipelineStage.Lookup['$lookup']['pipeline']): [PipelineStage.Lookup, PipelineStage.Unwind] => [
@@ -97,7 +98,7 @@ export const calculateAccountBalances = (): [PipelineStage.Lookup, PipelineStage
                     {
                       $eq: [
                         '$$accountType',
-                        'loan',
+                        AccountType.Loan,
                       ],
                     },
                     {
@@ -179,7 +180,7 @@ export const calculateAccountBalances = (): [PipelineStage.Lookup, PipelineStage
                       {
                         $eq: [
                           '$accountType',
-                          'loan',
+                          AccountType.Loan,
                         ],
                       },
                       {
@@ -206,7 +207,7 @@ export const calculateAccountBalances = (): [PipelineStage.Lookup, PipelineStage
                       {
                         $eq: [
                           '$accountType',
-                          'loan',
+                          AccountType.Loan,
                         ],
                       },
                       {

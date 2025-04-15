@@ -9,6 +9,7 @@ import { IRecipientDocumentConverter } from '@household/shared/converters/recipi
 import { IReimbursementTransactionDocumentConverter } from '@household/shared/converters/reimbursement-transaction-document-converter';
 import { ISplitTransactionDocumentConverter } from '@household/shared/converters/split-transaction-document-converter';
 import { ITransferTransactionDocumentConverter } from '@household/shared/converters/transfer-transaction-document-converter';
+import { TransactionType } from '@household/shared/enums';
 import { Account, Transaction } from '@household/shared/types/types';
 
 export interface ITransactionDocumentConverter {
@@ -33,11 +34,11 @@ export const transactionDocumentConverterFactory = (
   const instance: ITransactionDocumentConverter = {
     toResponse: (doc, viewingAccountId) => {
       switch (doc.transactionType) {
-        case 'payment': return paymentTransactionDocumentConverter.toResponse(doc);
-        case 'split': return splitTransactionDocumentConverter.toResponse(doc);
-        case 'transfer': return transferTransactionDocumentConverter.toResponse(doc, viewingAccountId);
-        case 'deferred': return deferredTransactionDocumentConverter.toResponse(doc);
-        case 'reimbursement': return reimbursementTransactionDocumentConverter.toResponse(doc);
+        case TransactionType.Payment: return paymentTransactionDocumentConverter.toResponse(doc);
+        case TransactionType.Split: return splitTransactionDocumentConverter.toResponse(doc);
+        case TransactionType.Transfer: return transferTransactionDocumentConverter.toResponse(doc, viewingAccountId);
+        case TransactionType.Deferred: return deferredTransactionDocumentConverter.toResponse(doc);
+        case TransactionType.Reimbursement: return reimbursementTransactionDocumentConverter.toResponse(doc);
         default: return undefined;
       }
     },

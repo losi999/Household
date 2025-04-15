@@ -5,6 +5,7 @@ import { Account, Category, Product, Project, Recipient, Transaction } from '@ho
 import { faker } from '@faker-js/faker';
 import { createId } from '@household/test/api/utils';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
+import { AccountType } from '@household/shared/enums';
 
 export const splitTransactionDataFactory = (() => {
   const createSplitRequestItem: DataFactoryFunction<Transaction.SplitRequestItem> = (req) => {
@@ -72,7 +73,7 @@ export const splitTransactionDataFactory = (() => {
     account: Account.Document;
     recipient?: Recipient.Document;
   }): Transaction.SplitDocument => {
-    if (ctx.account.accountType === 'loan') {
+    if (ctx.account.accountType === AccountType.Loan) {
       throw 'Account cannot be loan in split transaction';
     }
 
