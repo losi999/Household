@@ -57,7 +57,7 @@ describe('PUT /product/v1/products/{productId}', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestUpdateProduct(productDataFactory.id(), productDataFactory.request({
-              brand: 1,
+              brand: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('brand', 'string', 'body');
@@ -100,7 +100,7 @@ describe('PUT /product/v1/products/{productId}', () => {
         it('is not number', () => {
           cy.authenticate(1)
             .requestUpdateProduct(productDataFactory.id(), productDataFactory.request({
-              measurement: '1',
+              measurement: <any>'1',
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('measurement', 'number', 'body');
@@ -129,7 +129,7 @@ describe('PUT /product/v1/products/{productId}', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestUpdateProduct(productDataFactory.id(), productDataFactory.request({
-              unitOfMeasurement: 1,
+              unitOfMeasurement: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('unitOfMeasurement', 'string', 'body');
@@ -138,7 +138,7 @@ describe('PUT /product/v1/products/{productId}', () => {
         it('is not a valid enum value', () => {
           cy.authenticate(1)
             .requestUpdateProduct(productDataFactory.id(), productDataFactory.request({
-              unitOfMeasurement: 'not-valid',
+              unitOfMeasurement: <any>'not-valid',
             }))
             .expectBadRequestResponse()
             .expectWrongEnumValue('unitOfMeasurement', 'body');

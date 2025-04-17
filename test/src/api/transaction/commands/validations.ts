@@ -192,21 +192,31 @@ const validateTransactionSplitDocument = (response: Transaction.TransactionId, r
         expect(recipient, 'recipient').to.be.undefined;
       }
 
-      const regularSplitRequests = request.splits.filter(s => !s.loanAccountId);
-      const deferredsplitRequests = request.splits.filter(s => s.loanAccountId);
-
       splits?.forEach((split, index) => {
         const { amount, description, project, product, category, quantity, billingEndDate, billingStartDate, invoiceNumber, ...internal } = split;
-        const splitRequestItem = regularSplitRequests[index];
+        const splitRequestItem = request.splits[index];
 
         expect(amount, `splits[${index}].amount`).to.equal(splitRequestItem.amount);
         expect(description, `splits[${index}].description`).to.equal(splitRequestItem.description);
-        expect(getProjectId(project), `splits[${index}].project`).to.equal(splitRequestItem.projectId); // TODO
-        expect(getCategoryId(category), `splits[${index}].category`).to.equal(splitRequestItem.categoryId); // TODO
+        if (project) {
+          expect(getProjectId(project), `splits[${index}].project`).to.equal(splitRequestItem.projectId);
+        } else {
+          expect(project, `splits[${index}].project`).to.be.undefined;
+        }
+        if (category) {
+          expect(getCategoryId(category), `splits[${index}].category`).to.equal(splitRequestItem.categoryId);
+        } else {
+          expect(category, `splits[${index}].category`).to.be.undefined;
+        }
 
         if (category?.categoryType === CategoryType.Inventory) {
           expect(quantity, `splits[${index}].quantity`).to.equal(splitRequestItem.quantity);
-          expect(getProductId(product), `splits[${index}].productId`).to.equal(splitRequestItem.productId); // TODO
+          if (product) {
+            expect(getProductId(product), `splits[${index}].product`).to.equal(splitRequestItem.productId);
+          } else {
+            expect(product, `splits[${index}].product`).to.be.undefined;
+          }
+          expect(getProductId(product), `splits[${index}].productId`).to.equal(splitRequestItem.productId);
         } else {
           expect(quantity, `splits[${index}].quantity`).to.be.undefined;
           expect(product, `splits[${index}].product`).to.be.undefined;
@@ -226,20 +236,35 @@ const validateTransactionSplitDocument = (response: Transaction.TransactionId, r
 
       deferredSplits?.forEach((split, index) => {
         const { amount, description, project, product, category, quantity, billingEndDate, billingStartDate, invoiceNumber, payingAccount, ownerAccount, transactionType, isSettled, ...internal } = split;
-        const splitRequestItem = deferredsplitRequests[index];
+        const splitRequestItem = request.loans[index];
 
         expect(amount, `deferredSplits[${index}].amount`).to.equal(splitRequestItem.amount);
         expect(description, `deferredSplits[${index}].description`).to.equal(splitRequestItem.description);
         expect(isSettled, `deferredSplits[${index}].isSettled`).to.equal(splitRequestItem.isSettled ?? false);
         expect(transactionType, `deferredSplits[${index}].transactionType`).to.equal('deferred');
-        expect(getProjectId(project), `deferredSplits[${index}].project`).to.equal(splitRequestItem.projectId); // TODO
-        expect(getCategoryId(category), `deferredSplits[${index}].category`).to.equal(splitRequestItem.categoryId); // TODO
+        if (project) {
+          expect(getProjectId(project), `deferredSplits[${index}].project`).to.equal(splitRequestItem.projectId);
+        } else {
+          expect(project, `deferredSplits[${index}].project`).to.be.undefined;
+        }
+        if (category) {
+          expect(getCategoryId(category), `deferredSplits[${index}].category`).to.equal(splitRequestItem.categoryId);
+        } else {
+          expect(category, `deferredSplits[${index}].category`).to.be.undefined;
+        }
+
+        expect(getProjectId(project), `deferredSplits[${index}].project`).to.equal(splitRequestItem.projectId);
+        expect(getCategoryId(category), `deferredSplits[${index}].category`).to.equal(splitRequestItem.categoryId);
         expect(getAccountId(payingAccount), `deferredSplits[${index}].payingAccount`).to.equal(request.accountId);
         expect(getAccountId(ownerAccount), `deferredSplits[${index}].ownerAccount`).to.equal(splitRequestItem.loanAccountId);
 
         if (category?.categoryType === CategoryType.Inventory) {
           expect(quantity, `deferredSplits[${index}].quantity`).to.equal(splitRequestItem.quantity);
-          expect(getProductId(product), `deferredSplits[${index}].productId`).to.equal(splitRequestItem.productId); // TODO
+          if (product) {
+            expect(getProductId(product), `deferredSplits[${index}].product`).to.equal(splitRequestItem.productId);
+          } else {
+            expect(product, `deferredSplits[${index}].product`).to.be.undefined;
+          }
         } else {
           expect(quantity, `deferredSplits[${index}].quantity`).to.be.undefined;
           expect(product, `deferredSplits[${index}].product`).to.be.undefined;

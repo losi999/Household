@@ -1,7 +1,7 @@
 import { JSONSchema7 } from 'json-schema';
 
 export type AnyValueObject<T> = Record<keyof T, any>;
-export type DataFactoryFunction<I, O = I> = (input?: Partial<I> | Partial<AnyValueObject<I>>) => O;
+export type DataFactoryFunction<I, O = I> = (input?: Partial<I> /*| Partial<AnyValueObject<I>>*/) => O;
 
 type JSONSchemaType<T> =
   T extends undefined ? 'null' :

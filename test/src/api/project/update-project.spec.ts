@@ -60,7 +60,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestUpdateProject(projectDataFactory.id(), projectDataFactory.request({
-              name: 1,
+              name: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('name', 'string', 'body');
@@ -91,7 +91,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestUpdateProject(projectDataFactory.id(), projectDataFactory.request({
-              description: 1,
+              description: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('description', 'string', 'body');

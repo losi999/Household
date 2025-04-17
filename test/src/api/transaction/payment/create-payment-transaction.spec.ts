@@ -253,7 +253,7 @@ describe('POST transaction/v1/transactions/payment (payment)', () => {
         it('is not number', () => {
           cy.authenticate(1)
             .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
-              amount: '1',
+              amount: <any>'1',
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('amount', 'number', 'body');
@@ -264,7 +264,7 @@ describe('POST transaction/v1/transactions/payment (payment)', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
-              description: 1,
+              description: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('description', 'string', 'body');
@@ -294,7 +294,7 @@ describe('POST transaction/v1/transactions/payment (payment)', () => {
         it('is not number', () => {
           cy.authenticate(1)
             .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
-              quantity: 'a',
+              quantity: <any>'a',
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('quantity', 'number', 'body');
@@ -324,7 +324,7 @@ describe('POST transaction/v1/transactions/payment (payment)', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
-              productId: 1,
+              productId: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('productId', 'string', 'body');
@@ -367,7 +367,7 @@ describe('POST transaction/v1/transactions/payment (payment)', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
-              invoiceNumber: 1,
+              invoiceNumber: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('invoiceNumber', 'string', 'body');
@@ -396,7 +396,7 @@ describe('POST transaction/v1/transactions/payment (payment)', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
-              billingEndDate: 1,
+              billingEndDate: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('billingEndDate', 'string', 'body');
@@ -435,7 +435,7 @@ describe('POST transaction/v1/transactions/payment (payment)', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
-              billingStartDate: 1,
+              billingStartDate: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('billingStartDate', 'string', 'body');
@@ -464,7 +464,7 @@ describe('POST transaction/v1/transactions/payment (payment)', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
-              issuedAt: 1,
+              issuedAt: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('issuedAt', 'string', 'body');
@@ -523,7 +523,7 @@ describe('POST transaction/v1/transactions/payment (payment)', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
-              accountId: 1,
+              accountId: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('accountId', 'string', 'body');
@@ -556,7 +556,7 @@ describe('POST transaction/v1/transactions/payment (payment)', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
-              categoryId: 1,
+              categoryId: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('categoryId', 'string', 'body');
@@ -589,7 +589,7 @@ describe('POST transaction/v1/transactions/payment (payment)', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
-              recipientId: 1,
+              recipientId: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('recipientId', 'string', 'body');
@@ -622,7 +622,7 @@ describe('POST transaction/v1/transactions/payment (payment)', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
-              projectId: 1,
+              projectId: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('projectId', 'string', 'body');

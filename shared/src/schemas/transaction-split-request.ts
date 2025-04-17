@@ -85,6 +85,14 @@ const schema: StrictJSONSchema7<Transaction.SplitRequest> = {
       },
     },
   },
+  anyOf: [
+    {
+      required: ['splits'],
+    },
+    {
+      required: ['loans'],
+    },
+  ],
 };
 
 export default schema;

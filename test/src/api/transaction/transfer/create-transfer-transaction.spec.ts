@@ -212,7 +212,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
         it('is not number', () => {
           cy.authenticate(1)
             .requestCreateTransferTransaction(transferTransactionDataFactory.request({
-              amount: '1',
+              amount: <any>'1',
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('amount', 'number', 'body');
@@ -223,7 +223,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestCreateTransferTransaction(transferTransactionDataFactory.request({
-              description: 1,
+              description: <any> 1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('description', 'string', 'body');
@@ -252,7 +252,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestCreateTransferTransaction(transferTransactionDataFactory.request({
-              issuedAt: 1,
+              issuedAt: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('issuedAt', 'string', 'body');
@@ -291,7 +291,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestCreateTransferTransaction(transferTransactionDataFactory.request({
-              accountId: 1,
+              accountId: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('accountId', 'string', 'body');
@@ -341,7 +341,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestCreateTransferTransaction(transferTransactionDataFactory.request({
-              transferAccountId: 1,
+              transferAccountId: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('transferAccountId', 'string', 'body');
@@ -361,7 +361,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
         it('is not number', () => {
           cy.authenticate(1)
             .requestCreateTransferTransaction(transferTransactionDataFactory.request({
-              transferAmount: '1',
+              transferAmount: <any>'1',
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('transferAmount', 'number', 'body');

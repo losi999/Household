@@ -437,7 +437,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (payment)', ()
         it('is not number', () => {
           cy.authenticate(1)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
-              amount: '1',
+              amount: <any>'1',
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('amount', 'number', 'body');
@@ -448,7 +448,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (payment)', ()
         it('is not string', () => {
           cy.authenticate(1)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
-              description: 1,
+              description: <any> 1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('description', 'string', 'body');
@@ -478,7 +478,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (payment)', ()
         it('is not number', () => {
           cy.authenticate(1)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
-              quantity: 'a',
+              quantity: <any>'a',
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('quantity', 'number', 'body');
@@ -508,7 +508,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (payment)', ()
         it('is not string', () => {
           cy.authenticate(1)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
-              productId: 1,
+              productId: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('productId', 'string', 'body');
@@ -553,7 +553,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (payment)', ()
         it('is not string', () => {
           cy.authenticate(1)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
-              invoiceNumber: 1,
+              invoiceNumber: <any> 1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('invoiceNumber', 'string', 'body');
@@ -582,7 +582,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (payment)', ()
         it('is not string', () => {
           cy.authenticate(1)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
-              billingEndDate: 1,
+              billingEndDate: <any> 1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('billingEndDate', 'string', 'body');
@@ -621,7 +621,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (payment)', ()
         it('is not string', () => {
           cy.authenticate(1)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
-              billingStartDate: 1,
+              billingStartDate: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('billingStartDate', 'string', 'body');
@@ -650,7 +650,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (payment)', ()
         it('is not string', () => {
           cy.authenticate(1)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
-              issuedAt: 1,
+              issuedAt: <any> 1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('issuedAt', 'string', 'body');
@@ -710,7 +710,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (payment)', ()
         it('is not string', () => {
           cy.authenticate(1)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
-              accountId: 1,
+              accountId: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('accountId', 'string', 'body');
@@ -744,7 +744,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (payment)', ()
         it('is not string', () => {
           cy.authenticate(1)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
-              categoryId: 1,
+              categoryId: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('categoryId', 'string', 'body');
@@ -778,7 +778,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (payment)', ()
         it('is not string', () => {
           cy.authenticate(1)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
-              recipientId: 1,
+              recipientId: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('recipientId', 'string', 'body');
@@ -812,7 +812,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (payment)', ()
         it('is not string', () => {
           cy.authenticate(1)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), paymentTransactionDataFactory.request({
-              projectId: 1,
+              projectId: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('projectId', 'string', 'body');

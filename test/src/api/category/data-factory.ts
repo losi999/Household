@@ -31,6 +31,6 @@ export const categoryDataFactory = (() => {
   return {
     request: createCategoryRequest,
     document: createCategoryDocument,
-    id: (createId<Category.Id>),
+    id: createId<Category.Id>,
   };
 })();

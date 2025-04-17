@@ -28,12 +28,4 @@ export default (on: Cypress.PluginEvents) => {
   setTasksFromService(on, accountService, 'getAccountById', 'saveAccount', 'saveAccounts');
   setTasksFromService(on, categoryService, 'getCategoryById', 'saveCategory', 'saveCategories');
   setTasksFromService(on, transactionService, 'getTransactionByIdAndAccountId', 'saveTransaction', 'getTransactionById', 'saveTransactions');
-  // on('task', {
-  //   getCategoryById: async (...params) => {
-  //     console.log(params);
-  //     const res = await categoryService.getCategoryById(...params);
-  //     console.log('res', res);
-  //     return res ?? null;
-  //   },
-  // });
 };
