@@ -115,6 +115,8 @@ describe('DELETE /product/v1/products/{productId}', () => {
               product: productDocument,
               category: categoryDocument,
             },
+          ],
+          loans: [
             {
               product: unrelatedProductDocument,
               category: categoryDocument,

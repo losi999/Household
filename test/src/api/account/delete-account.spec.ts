@@ -65,14 +65,13 @@ describe('DELETE /account/v1/accounts/{accountId}', () => {
 
         deferredSplitTransactionDocument = splitTransactionDataFactory.document({
           account: secondaryAccountDocument,
-          splits: [
+          loans: [
             {
               loanAccount: accountDocument,
             },
             {
               loanAccount: loanAccountDocument,
             },
-            {},
           ],
         });
 
@@ -166,7 +165,7 @@ describe('DELETE /account/v1/accounts/{accountId}', () => {
           .validateTransactionDeleted(getTransactionId(repayingTransferTransactionDocument))
           .validateTransactionDeleted(getTransactionId(invertedRepayingTransferTransactionDocument))
           .validateConvertedToPaymentDocument(owningDeferredTransactionDocument)
-          .validateConvertedToRegularSplitItemDocument(deferredSplitTransactionDocument);
+          .validateConvertedToRegularSplitItemDocument(deferredSplitTransactionDocument, getAccountId(accountDocument));
       });
     });
 

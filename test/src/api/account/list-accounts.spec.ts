@@ -43,14 +43,13 @@ describe('GET /account/v1/accounts', () => {
 
     deferredSplitTransactionDocument = splitTransactionDataFactory.document({
       account: secondaryAccountDocument,
-      splits: [
+      loans: [
         {
           loanAccount: accountDocument,
         },
         {
           loanAccount: loanAccountDocument,
         },
-        {},
       ],
     });
 

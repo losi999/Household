@@ -2,7 +2,7 @@ import { Account, Category, Product, Project, Recipient, Transaction } from '@ho
 import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/test/api/types';
 import { createDate, getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
 import { expectEmptyObject, expectRemainingProperties } from '@household/test/api/utils';
-import { CategoryType, AccountType } from '@household/shared/enums';
+import { CategoryType, AccountType, TransactionType } from '@household/shared/enums';
 
 type Reassignment<T> = {
   from: T;
@@ -336,7 +336,7 @@ const validateInvoiceResponse = (response: Transaction.InvoiceDate<string> & Tra
   expect(createDate(billingEndDate)?.toISOString(), `${nestedPath}billingEndDate`).to.equal(document.billingEndDate?.toISOString());
 };
 
-const validateCommonResponse = (response: Transaction.TransactionId & Transaction.Amount & Transaction.IssuedAt<string> & Transaction.TransactionType<string> & Transaction.Description, document: Transaction.Document) => {
+const validateCommonResponse = (response: Transaction.TransactionId & Transaction.Amount & Transaction.IssuedAt<string> & Transaction.TransactionType<TransactionType> & Transaction.Description, document: Transaction.Document) => {
   const { amount, description, issuedAt, transactionId, transactionType } = response;
 
   expect(transactionId, 'transactionId').to.equal(getTransactionId(document));
@@ -830,7 +830,7 @@ const validateConvertedToPaymentDocument = (originalDocument: Transaction.Deferr
     });
 };
 
-const validateConvertedToRegularSplitItemDocument = (originalDocument: Transaction.SplitDocument) => {
+const validateConvertedToRegularSplitItemDocument = (originalDocument: Transaction.SplitDocument, deletedAccountId: Account.Id) => {
   const transactionId = getTransactionId(originalDocument);
 
   cy.log('Get transaction document', transactionId)
@@ -847,10 +847,9 @@ const validateConvertedToRegularSplitItemDocument = (originalDocument: Transacti
       expect(getRecipientId(recipient), 'recipient').to.equal(getRecipientId(originalDocument.recipient));
 
       splits?.forEach((split, index) => {
-        const { amount, billingEndDate, billingStartDate, category, description, invoiceNumber, product, project, quantity, _id, ...empty } = split;
-        const originalSplitItem = originalDocument.splits.find(s => s._id.toString() === _id.toString()) ?? originalDocument.deferredSplits.find(s => s._id.toString() === _id.toString());
+        const { amount, billingEndDate, billingStartDate, category, description, invoiceNumber, product, project, quantity, ...empty } = split;
+        const originalSplitItem = originalDocument.splits[index] ?? originalDocument.deferredSplits.find(x => getAccountId(x.ownerAccount) === deletedAccountId);
 
-        expect(_id.toString(), `splits.[${index}].id`).to.equal(originalSplitItem._id.toString());
         expect(amount, `splits.[${index}].amount`).to.equal(originalSplitItem.amount);
         expect(description, `splits.[${index}].description`).to.equal(originalSplitItem.description);
 

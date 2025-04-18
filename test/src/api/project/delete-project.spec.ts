@@ -96,6 +96,8 @@ describe('DELETE /project/v1/projects/{projectId}', () => {
             {
               project: projectDocument,
             },
+          ],
+          loans: [
             {
               project: unrelatedProjectDocument,
               loanAccount: loanAccountDocument,

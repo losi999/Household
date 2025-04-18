@@ -184,13 +184,15 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
                   product: productOfSourceCategoryDocument,
                 },
                 {
+                  category: unrelatedCategoryDocument,
+                  product: unrelatedProductDocument,
+                },
+              ],
+              loans: [
+                {
                   category: sourceCategoryDocument,
                   product: productOfSourceCategoryDocument,
                   loanAccount: loanAccountDocument,
-                },
-                {
-                  category: unrelatedCategoryDocument,
-                  product: unrelatedProductDocument,
                 },
                 {
                   category: unrelatedCategoryDocument,

@@ -97,6 +97,8 @@ describe('POST product/v1/products/{productId}/merge', () => {
           product: sourceProductDocument,
           category: categoryDocument,
         },
+      ],
+      loans: [
         {
           product: unrelatedProductDocument,
           category: categoryDocument,
@@ -256,7 +258,7 @@ describe('POST product/v1/products/{productId}/merge', () => {
         });
       });
 
-      describe('is productId', () => {
+      describe('if productId', () => {
         it('is not a valid mongo id', () => {
           cy.authenticate(1)
             .requestMergeProducts(productDataFactory.id('not-valid'), [productDataFactory.id()])

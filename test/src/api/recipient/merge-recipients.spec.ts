@@ -207,7 +207,7 @@ describe('POST recipient/v1/recipients/{recipientId}/merge', () => {
         });
       });
 
-      describe('is recipientId', () => {
+      describe('if recipientId', () => {
         it('is not a valid mongo id', () => {
           cy.authenticate(1)
             .requestMergeRecipients(createRecipientId('not-valid'), [createRecipientId()])

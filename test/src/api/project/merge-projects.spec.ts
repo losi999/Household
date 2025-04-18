@@ -78,6 +78,8 @@ describe('POST project/v1/projects/{projectId}/merge', () => {
         {
           project: targetProjectDocument,
         },
+      ],
+      loans: [
         {
           project: unrelatedProjectDocument,
           loanAccount: loanAccountDocument,
@@ -214,7 +216,7 @@ describe('POST project/v1/projects/{projectId}/merge', () => {
         });
       });
 
-      describe('is projectId', () => {
+      describe('if projectId', () => {
         it('is not a valid mongo id', () => {
           cy.authenticate(1)
             .requestMergeProjects(projectDataFactory.id('not-valid'), [projectDataFactory.id()])

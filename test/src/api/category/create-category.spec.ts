@@ -61,7 +61,7 @@ describe('POST category/v1/categories', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestCreateCategory(categoryDataFactory.request({
-              name: 1,
+              name: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('name', 'string', 'body');
@@ -102,7 +102,7 @@ describe('POST category/v1/categories', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestCreateCategory(categoryDataFactory.request({
-              categoryType: 1,
+              categoryType: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('categoryType', 'string', 'body');
@@ -112,7 +112,7 @@ describe('POST category/v1/categories', () => {
           cy.authenticate(1)
             .requestCreateCategory(
               categoryDataFactory.request({
-                categoryType: 'not-category-type',
+                categoryType: <any>'not-category-type',
               }))
             .expectBadRequestResponse()
             .expectWrongEnumValue('categoryType', 'body');
@@ -124,7 +124,7 @@ describe('POST category/v1/categories', () => {
           cy.authenticate(1)
             .requestCreateCategory(
               categoryDataFactory.request({
-                parentCategoryId: 1,
+                parentCategoryId: <any>1,
               }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('parentCategoryId', 'string', 'body');
@@ -134,7 +134,7 @@ describe('POST category/v1/categories', () => {
           cy.authenticate(1)
             .requestCreateCategory(
               categoryDataFactory.request({
-                parentCategoryId: 'not-mongo-id',
+                parentCategoryId: <any>'not-mongo-id',
               }))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('parentCategoryId', 'body');

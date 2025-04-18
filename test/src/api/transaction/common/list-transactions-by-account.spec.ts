@@ -84,6 +84,8 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
             {
               category: invoiceCategoryDocument,
             },
+          ],
+          loans: [
             {
               loanAccount: loanAccountDocument,
             },
@@ -104,6 +106,8 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
             {
               project: projectDocument,
             },
+          ],
+          loans: [
             {
               loanAccount: accountDocument,
             },
@@ -277,6 +281,8 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
             {
               project: projectDocument,
             },
+          ],
+          loans: [
             {
               loanAccount: loanAccountDocument,
             },

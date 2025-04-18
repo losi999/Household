@@ -103,7 +103,7 @@ export const splitTransactionDataFactory = (() => {
     Transaction.Project<Project.Document> &
     Transaction.Category<Category.Document> &
     Transaction.Product<Product.Document>>[];
-    loans?: (Partial<Transaction.SplitRequestItem &
+    loans?: (Partial<Transaction.LoanRequestItem &
     Transaction.Project<Project.Document> &
     Transaction.Category<Category.Document> &
     Transaction.Product<Product.Document>> &
@@ -117,12 +117,14 @@ export const splitTransactionDataFactory = (() => {
       throw 'Account cannot be loan in split transaction';
     }
 
-    const accounts: Dictionary<Account.Document> = {};
+    const accounts: Dictionary<Account.Document> = {
+      [getAccountId(ctx.account)]: ctx.account,
+    };
     const categories: Dictionary<Category.Document> = {};
     const products: Dictionary<Product.Document> = {};
     const projects: Dictionary<Project.Document> = {};
 
-    const splits = ctx.splits?.map<Transaction.SplitRequestItem>(({ category, product, project, amount, billingEndDate, billingStartDate, description, invoiceNumber, quantity }) => {
+    const splits = ctx.splits?.map<Partial<Transaction.SplitRequestItem>>(({ category, product, project, ...split }) => {
       categories[getCategoryId(category)] = category;
       products[getProductId(product)] = product;
       projects[getProjectId(project)] = project;
@@ -131,16 +133,11 @@ export const splitTransactionDataFactory = (() => {
         categoryId: getCategoryId(category),
         productId: getProductId(product),
         projectId: getProjectId(project),
-        amount,
-        billingEndDate,
-        billingStartDate,
-        description,
-        invoiceNumber,
-        quantity,
+        ...split,
       };
     });
 
-    const loans = ctx.loans?.map<Transaction.LoanRequestItem>(({ category, product, project, loanAccount, amount, billingEndDate, billingStartDate, description, invoiceNumber, quantity }) => {
+    const loans = ctx.loans?.map<Partial<Transaction.LoanRequestItem>>(({ category, product, project, loanAccount, ...split }) => {
       categories[getCategoryId(category)] = category;
       products[getProductId(product)] = product;
       projects[getProjectId(project)] = project;
@@ -151,14 +148,8 @@ export const splitTransactionDataFactory = (() => {
         productId: getProductId(product),
         projectId: getProjectId(project),
         loanAccountId: getAccountId(loanAccount),
-        isSettled: false, //TODO
         transactionId: deferredTransactionDataFactory.id(), // TODO
-        amount,
-        billingEndDate,
-        billingStartDate,
-        description,
-        invoiceNumber,
-        quantity,
+        ...split,
       };
     });
 

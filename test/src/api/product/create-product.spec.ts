@@ -139,7 +139,7 @@ describe('POST product/v1/products', () => {
         });
       });
 
-      describe('is categoryId', () => {
+      describe('if categoryId', () => {
         it('is not a valid mongo id', () => {
           cy.authenticate(1)
             .requestCreateProduct(request, categoryDataFactory.id('not-valid'))

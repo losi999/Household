@@ -1550,7 +1550,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
       });
 
-      describe.only('if loans.transactionId', () => {
+      describe('if loans.transactionId', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
