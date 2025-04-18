@@ -1,3 +1,4 @@
+import { TransactionType } from '@household/shared/enums';
 import { File, Transaction } from '@household/shared/types/types';
 import { importActions } from '@household/web/state/import/import.actions';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
@@ -49,19 +50,19 @@ on(importActions.applyEditingFields, (_state, { fileId, transactionIds, updatedV
           const tx: ImportedTransaction = {
             ...original,
             ...updatedValues,
-            transactionType: 'payment',
+            transactionType: TransactionType.Payment,
           };
 
           if (tx.transferAccount) {
-            tx.transactionType = 'transfer';
+            tx.transactionType = TransactionType.Transfer;
           }
 
           if (updatedValues.loanAccount) {
-            tx.transactionType = 'payment';
+            tx.transactionType = TransactionType.Payment;
           }
 
           if (!tx.account) {
-            tx.transactionType = 'draft';
+            tx.transactionType = TransactionType.Draft;
           }
 
           return {

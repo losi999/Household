@@ -1,4 +1,5 @@
 import { FormControl } from '@angular/forms';
+import { TransactionType } from '@household/shared/enums';
 import { Account, Project, Category, Recipient, Transaction } from '@household/shared/types/types';
 
 export type FormGroupify<T> = {
@@ -18,7 +19,7 @@ export type TransactionImportUpdatableFields = {
 export type ImportedTransaction = Transaction.TransactionId
 & Transaction.Amount
 & Transaction.IssuedAt<string>
-& Transaction.TransactionType<'draft' | 'payment' | 'transfer'>
+& Transaction.TransactionType<TransactionType.Draft |TransactionType.Payment | TransactionType.Transfer>
 & Partial<Transaction.Description>
 & Partial<Transaction.Account<Account.Response>>
 & Partial<Transaction.TransferAccount<Account.Response>>

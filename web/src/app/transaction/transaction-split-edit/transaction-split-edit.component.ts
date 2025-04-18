@@ -240,12 +240,37 @@ export class TransactionSplitEditComponent implements OnInit {
         description: toUndefined(description),
         issuedAt: issuedAt.toISOString(),
         recipientId: recipient?.recipientId,
-        splits: splits.map(s => ({
+        loans: splits.filter(s => s.loanAccount).map(s => ({
           amount: s.amount,
           categoryId: s.category?.categoryId,
           projectId: s.project?.projectId,
           loanAccountId: s.loanAccount?.accountId,
           isSettled: s.isSettled,
+          description: toUndefined(s.description),
+          transactionId: toUndefined(s.transactionId), // TODO
+          ...(s.category?.categoryType === 'invoice') ? {
+            billingStartDate: s.billingStartDate ? new Date(s.billingStartDate.getTime() - s.billingStartDate.getTimezoneOffset() * 60000).toISOString()
+              .split('T')[0] : undefined,
+            billingEndDate: s.billingEndDate ? new Date(s.billingEndDate.getTime() - s.billingEndDate.getTimezoneOffset() * 60000).toISOString()
+              .split('T')[0] : undefined,
+            invoiceNumber: toUndefined(s.invoiceNumber),
+          } : {
+            billingEndDate: undefined,
+            billingStartDate: undefined,
+            invoiceNumber: undefined,
+          },
+          ...(s.category?.categoryType === 'inventory' ? {
+            productId: s.product?.productId,
+            quantity: toUndefined(s.quantity),
+          } : {
+            productId: undefined,
+            quantity: undefined,
+          }),
+        })),
+        splits: splits.filter(s => !s.loanAccount).map(s => ({
+          amount: s.amount,
+          categoryId: s.category?.categoryId,
+          projectId: s.project?.projectId,
           description: toUndefined(s.description),
           transactionId: toUndefined(s.transactionId),
           ...(s.category?.categoryType === 'invoice') ? {

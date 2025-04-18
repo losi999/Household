@@ -9,7 +9,7 @@ import { IRecipientDocumentConverter } from '@household/shared/converters/recipi
 import { CategoryType, TransactionType } from '@household/shared/enums';
 import { Dictionary, Unset } from '@household/shared/types/common';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
-import { UpdateQuery } from 'mongoose';
+import { Types, UpdateQuery } from 'mongoose';
 
 export interface ISplitTransactionDocumentConverter {
   create(data: {
@@ -155,7 +155,11 @@ export const splitTransactionDocumentConverterFactory = (
               product: products[s.productId],
               project: projects[s.projectId],
               recipient,
-            }, expiresIn, !!s.transactionId);
+            }, expiresIn);
+
+            if (s.transactionId) {
+              deferredDocument._id = new Types.ObjectId(s.transactionId);
+            }
 
             return deferredDocument;
           }) ?? [],

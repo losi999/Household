@@ -609,10 +609,10 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
 
           if (previousTransactionType === 'split' && old.deferredSplits?.length > 0) {
             if (currentTransactionType === 'split' && updateQuery.$set.deferredSplits?.length > 0) {
-              const newDeferredTransactionIds = updateQuery.$set.deferredSplits.map((s: any) => s._id) ;
+              const newDeferredTransactionIds = updateQuery.$set.deferredSplits.map((s: any) => s._id.toString()) ;
 
               deletedDeferredTransactionIds = old.deferredSplits.reduce((accumulator, currentValue) => {
-                return newDeferredTransactionIds.includes(currentValue._id) ? accumulator : [
+                return newDeferredTransactionIds.includes(currentValue._id.toString()) ? accumulator : [
                   ...accumulator,
                   currentValue._id,
                 ];
@@ -623,7 +623,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
             }
           }
 
-          if (deletedDeferredTransactionIds) {
+          if (deletedDeferredTransactionIds?.length > 0) {
             await mongodbService.transactions.updateMany({
               'payments.transaction': {
                 $in: deletedDeferredTransactionIds,

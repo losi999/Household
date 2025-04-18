@@ -1,22 +1,23 @@
+import { TransactionType } from '@household/shared/enums';
 import { Transaction } from '@household/shared/types/types';
 import { map, pipe } from 'rxjs';
 
 export const toLoanResponse = () => {
   return pipe(
     map<Transaction.Response, Transaction.DeferredResponse>((transaction) => {
-      if (transaction.transactionType === 'deferred') {
+      if (transaction.transactionType === TransactionType.Deferred) {
         return transaction;
       }
 
-      const isLoan = transaction.transactionType === 'reimbursement';
-      const isTransfer = transaction.transactionType === 'transfer';
-      const isSplit = transaction.transactionType === 'split';
+      const isLoan = transaction.transactionType === TransactionType.Reimbursement;
+      const isTransfer = transaction.transactionType === TransactionType.Transfer;
+      const isSplit = transaction.transactionType === TransactionType.Split;
 
       return {
         amount: transaction.amount,
         issuedAt: transaction.issuedAt,
         description: transaction.description,
-        transactionType: 'deferred',
+        transactionType: TransactionType.Deferred,
         transactionId: transaction.transactionId,
         payingAccount: isLoan ? transaction.payingAccount : transaction.account,
         ownerAccount: isLoan ? transaction.ownerAccount : isTransfer ? transaction.transferAccount : undefined,
