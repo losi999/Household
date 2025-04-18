@@ -16,12 +16,7 @@ export const splitTransactionDataFactory = (() => {
         min: -10000,
         max: 10,
       }),
-      description: faker.word.words({
-        count: {
-          min: 1,
-          max: 5,
-        },
-      }),
+      description: faker.string.uuid(),
       billingEndDate: billingEndDate.toISOString().split('T')[0],
       billingStartDate: faker.date.recent({
         refDate: addSeconds(-60 * 60 * 24, billingEndDate),
@@ -47,12 +42,7 @@ export const splitTransactionDataFactory = (() => {
         min: -10000,
         max: 0,
       }),
-      description: faker.word.words({
-        count: {
-          min: 1,
-          max: 5,
-        },
-      }),
+      description: faker.string.uuid(),
       billingEndDate: billingEndDate.toISOString().split('T')[0],
       billingStartDate: faker.date.recent({
         refDate: addSeconds(-60 * 60 * 24, billingEndDate),

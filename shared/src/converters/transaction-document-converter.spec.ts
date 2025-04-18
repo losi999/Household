@@ -158,7 +158,6 @@ describe('Transaction document converter', () => {
     const invoiceNumber = '2022asdf';
     const billingStartDate = '2022-03-01';
     const billingEndDate = '2022-03-10';
-    const splitId = createTransactionId();
 
     const account = createAccountDocument();
     const project = createProjectDocument();
@@ -185,7 +184,6 @@ describe('Transaction document converter', () => {
       invoiceNumber,
       billingEndDate: new Date(billingEndDate),
       billingStartDate: new Date(billingStartDate),
-      splitId,
     });
     it('should return report', () => {
       mockAccountDocumentConverter.functions.toReport.mockReturnValue(accountReport);
@@ -199,7 +197,6 @@ describe('Transaction document converter', () => {
         ...createTransactionReport(),
         amount,
         description,
-        splitId,
         billingEndDate,
         billingStartDate,
         invoiceNumber,

@@ -714,7 +714,6 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
             },
             ...flattenSplit({
               _id: '$_id',
-              splitId: '$tmp_splits._id',
             }),
             {
               $set: {

@@ -60,7 +60,6 @@ export const transactionDocumentConverterFactory = (
         billingStartDate: document.billingStartDate?.toISOString().split('T')[0],
         project: projectDocumentConverter.toReport(document.project),
         recipient: recipientDocumentConverter.toReport(document.recipient),
-        splitId: document.splitId,
       };
 
     },

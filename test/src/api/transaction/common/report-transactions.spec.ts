@@ -186,8 +186,7 @@ describe('POST /transaction/v1/transactionReports', () => {
           deferredSplitTransactionDocument = splitTransactionDataFactory.document({
             account: secondaryAccountDocument,
             recipient: recipientDocument,
-            splits: [
-              {},
+            loans: [
               {
                 loanAccount: accountDocument,
               },
@@ -300,7 +299,7 @@ describe('POST /transaction/v1/transactionReports', () => {
           deferredSplitTransactionDocument = splitTransactionDataFactory.document({
             account: accountDocument,
             recipient: recipientDocument,
-            splits: [
+            loans: [
               {
                 loanAccount: secondaryAccountDocument,
               },
@@ -336,6 +335,7 @@ describe('POST /transaction/v1/transactionReports', () => {
               splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[0]),
               splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[1]),
               splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]),
+              splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.splits[0]),
             ]);
         });
 
@@ -412,7 +412,7 @@ describe('POST /transaction/v1/transactionReports', () => {
 
           deferredSplitTransactionDocument = splitTransactionDataFactory.document({
             account: secondaryAccountDocument,
-            splits: [
+            loans: [
               {
                 loanAccount: accountDocument,
                 project: projectDocument,
@@ -535,7 +535,7 @@ describe('POST /transaction/v1/transactionReports', () => {
 
           deferredSplitTransactionDocument = splitTransactionDataFactory.document({
             account: secondaryAccountDocument,
-            splits: [
+            loans: [
               {
                 loanAccount: accountDocument,
                 category: regularCategoryDocument,
@@ -669,7 +669,7 @@ describe('POST /transaction/v1/transactionReports', () => {
 
           deferredSplitTransactionDocument = splitTransactionDataFactory.document({
             account: secondaryAccountDocument,
-            splits: [
+            loans: [
               {
                 loanAccount: accountDocument,
                 category: inventoryCategoryDocument,
@@ -805,7 +805,7 @@ describe('POST /transaction/v1/transactionReports', () => {
               issuedAt: new Date(2024, 7, 5, 2, 0, 0).toISOString(),
             },
             account: secondaryAccountDocument,
-            splits: [
+            loans: [
               {
                 loanAccount: accountDocument,
               },

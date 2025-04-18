@@ -693,14 +693,14 @@ const validateTransactionListReport = (reports: Transaction.Report[], documents:
   const total = documents?.length ?? 0;
   expect(reports.length, 'number of items').to.equal(total);
   reports.forEach((report, index) => {
-    const { account, amount, category, description, issuedAt, product, project, recipient, splitId, transactionId, invoiceNumber, billingEndDate, billingStartDate, ...empty } = report;
+    const { account, amount, category, description, issuedAt, product, project, recipient, transactionId, invoiceNumber, billingEndDate, billingStartDate, ...empty } = report;
     const document = documents.find(d => {
       if (report.transactionId !== getTransactionId(d)) {
         return false;
       }
 
       if (d.transactionType === 'split') {
-        return (d.split?._id.toString() === splitId || getTransactionId(d.deferredSplit) === splitId);
+        return d.split?.description === description || d.deferredSplit?.description === description;
       }
       return true;
     });

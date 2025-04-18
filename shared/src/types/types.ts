@@ -470,10 +470,7 @@ export namespace Transaction {
   & Quantity
   & Product<Product.Document>
   & Amount
-  & Description
-  & {
-    splitId: Transaction.Id;
-  };
+  & Description;
 
   export type Document<D extends Date | string = Date > = PaymentDocument<D> | TransferDocument<D> | SplitDocument<D> | DraftDocument<D> | DeferredDocument<D> | ReimbursementDocument<D>;
 
@@ -579,10 +576,7 @@ export namespace Transaction {
   & Recipient<Recipient.Report>
   & Product<Product.Report>
   & InvoiceNumber
-  & InvoiceDate<string>
-  & {
-    splitId: Transaction.Id;
-  };
+  & InvoiceDate<string>;
 }
 
 export namespace Report {

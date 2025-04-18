@@ -101,7 +101,6 @@ export const createTransactionRawReport: DataFactoryFunction<Transaction.RawRepo
     category: createCategoryDocument(),
     project: createProjectDocument(),
     recipient: createRecipientDocument(),
-    splitId: createTransactionId(),
     ...doc,
   };
 };
@@ -657,7 +656,6 @@ export const createTransactionReport: DataFactoryFunction<Transaction.Report> = 
     invoiceNumber: 'inv123',
     billingEndDate: '2022-03-10',
     billingStartDate: '2022-03-01',
-    splitId: undefined,
     ...rep,
   };
 };
