@@ -3,6 +3,7 @@ import { createDocumentUpdate, createDraftTransactionDocument, createFileDocumen
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IDraftTransactionDocumentConverter } from '@household/shared/converters/draft-transaction-document-converter';
 import { IFileDocumentConverter } from '@household/shared/converters/file-document-converter';
+import { FileProcessingStatus } from '@household/shared/enums';
 import { IExcelParserService } from '@household/shared/services/excel-parser-service';
 import { IFileService } from '@household/shared/services/file-service';
 import { IStorageService } from '@household/shared/services/storage-service';
@@ -79,7 +80,7 @@ describe('Bulk transaction importer service', () => {
         file: queriedFileDocument,
       }, null);
       validateFunctionCall(mockTransactionService.functions.saveTransactions, [draftTransaction]);
-      validateFunctionCall(mockFileDocumentConverter.functions.updateStatus, 'completed');
+      validateFunctionCall(mockFileDocumentConverter.functions.updateStatus, FileProcessingStatus.Completed);
       validateFunctionCall(mockFileService.functions.updateFile, fileId, fileDocumentUpdate);
       expect.assertions(7);
     });
@@ -195,7 +196,7 @@ describe('Bulk transaction importer service', () => {
         file: queriedFileDocument,
       }, null);
       validateFunctionCall(mockTransactionService.functions.saveTransactions, [draftTransaction]);
-      validateFunctionCall(mockFileDocumentConverter.functions.updateStatus, 'completed');
+      validateFunctionCall(mockFileDocumentConverter.functions.updateStatus, FileProcessingStatus.Completed);
       validateFunctionCall(mockFileService.functions.updateFile, fileId, fileDocumentUpdate);
       expect.assertions(9);
     });

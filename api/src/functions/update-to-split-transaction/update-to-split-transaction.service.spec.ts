@@ -1,8 +1,9 @@
 import { IUpdateToSplitTransactionService, updateToSplitTransactionServiceFactory } from '@household/api/functions/update-to-split-transaction/update-to-split-transaction.service';
-import { createSplitTransactionRequest, createAccountDocument, createCategoryDocument, createProjectDocument, createRecipientDocument, createSplitTransactionDocument, createSplitRequestItem, createProductDocument } from '@household/shared/common/test-data-factory';
+import { createSplitTransactionRequest, createAccountDocument, createCategoryDocument, createProjectDocument, createRecipientDocument, createSplitTransactionDocument, createSplitRequestItem, createProductDocument, createLoanRequestItem, createDocumentUpdate } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getCategoryId, getProjectId, getProductId, toDictionary, getTransactionId, getAccountId, getRecipientId } from '@household/shared/common/utils';
 import { ISplitTransactionDocumentConverter } from '@household/shared/converters/split-transaction-document-converter';
+import { AccountType, CategoryType } from '@household/shared/enums';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICategoryService } from '@household/shared/services/category-service';
 import { IProductService } from '@household/shared/services/product-service';
@@ -27,8 +28,8 @@ describe('Update to split transaction service', () => {
     mockCategoryService = createMockService('listCategoriesByIds');
     mockRecipientService = createMockService('getRecipientById');
     mockProductService = createMockService('listProductsByIds');
-    mockTransactionService = createMockService('replaceTransaction', 'getTransactionById');
-    mockSplitTransactionDocumentConverter = createMockService('create');
+    mockTransactionService = createMockService('updateTransaction', 'getTransactionById');
+    mockSplitTransactionDocumentConverter = createMockService('update');
 
     service = updateToSplitTransactionServiceFactory(mockAccountService.service, mockProjectService.service, mockCategoryService.service, mockRecipientService.service, mockProductService.service, mockTransactionService.service, mockSplitTransactionDocumentConverter.service);
   });
@@ -54,7 +55,7 @@ describe('Update to split transaction service', () => {
   let body: Transaction.SplitRequest;
   const queriedDocument = createSplitTransactionDocument();
   const transactionId = getTransactionId(queriedDocument);
-  const updatedDocument = createSplitTransactionDocument({
+  const updateQuery = createDocumentUpdate({
     description: 'updated',
   });
 
@@ -62,17 +63,19 @@ describe('Update to split transaction service', () => {
     body = createSplitTransactionRequest({
       accountId: getAccountId(queriedAccount),
       recipientId: getRecipientId(queriedRecipient),
+      loans: [
+        createLoanRequestItem({
+          categoryId,
+          projectId,
+          productId,
+          loanAccountId,
+        }),
+      ],
       splits: [
         createSplitRequestItem({
           categoryId,
           projectId,
           productId,
-        }),
-        createSplitRequestItem({
-          categoryId,
-          projectId,
-          productId,
-          loanAccountId,
         }),
       ],
     });
@@ -89,8 +92,8 @@ describe('Update to split transaction service', () => {
       mockProjectService.functions.listProjectsByIds.mockResolvedValue([project]);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
       mockProductService.functions.listProductsByIds.mockResolvedValue([product]);
-      mockSplitTransactionDocumentConverter.functions.create.mockReturnValue(updatedDocument);
-      mockTransactionService.functions.replaceTransaction.mockResolvedValue(updatedDocument);
+      mockSplitTransactionDocumentConverter.functions.update.mockReturnValue(updateQuery);
+      mockTransactionService.functions.updateTransaction.mockResolvedValue(undefined);
 
       await service({
         body,
@@ -106,7 +109,7 @@ describe('Update to split transaction service', () => {
       validateFunctionCall(mockProjectService.functions.listProjectsByIds, [projectId]);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.listProductsByIds, [productId]);
-      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.create, {
+      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.update, {
         body,
         categories: toDictionary([category], '_id'),
         accounts: toDictionary([
@@ -117,7 +120,7 @@ describe('Update to split transaction service', () => {
         recipient: queriedRecipient,
         products: toDictionary([product], '_id'),
       }, undefined);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction, transactionId, updatedDocument);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction, transactionId, updateQuery);
       expect.assertions(8);
     });
   });
@@ -137,8 +140,8 @@ describe('Update to split transaction service', () => {
       validateFunctionCall(mockProjectService.functions.listProjectsByIds);
       validateFunctionCall(mockRecipientService.functions.getRecipientById);
       validateFunctionCall(mockProductService.functions.listProductsByIds);
-      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction);
+      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction);
       expect.assertions(10);
     });
 
@@ -156,16 +159,16 @@ describe('Update to split transaction service', () => {
       validateFunctionCall(mockProjectService.functions.listProjectsByIds);
       validateFunctionCall(mockRecipientService.functions.getRecipientById);
       validateFunctionCall(mockProductService.functions.listProductsByIds);
-      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction);
+      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction);
       expect.assertions(10);
     });
 
     it('if account and loan account are the same', async () => {
       body = createSplitTransactionRequest({
         ...body,
-        splits: [
-          createSplitRequestItem({
+        loans: [
+          createLoanRequestItem({
             loanAccountId: getAccountId(queriedAccount),
           }),
         ],
@@ -184,8 +187,8 @@ describe('Update to split transaction service', () => {
       validateFunctionCall(mockProjectService.functions.listProjectsByIds);
       validateFunctionCall(mockRecipientService.functions.getRecipientById);
       validateFunctionCall(mockProductService.functions.listProductsByIds);
-      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction);
+      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction);
       expect.assertions(10);
     });
 
@@ -208,8 +211,8 @@ describe('Update to split transaction service', () => {
       validateFunctionCall(mockProjectService.functions.listProjectsByIds);
       validateFunctionCall(mockRecipientService.functions.getRecipientById);
       validateFunctionCall(mockProductService.functions.listProductsByIds);
-      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction);
+      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction);
       expect.assertions(10);
     });
 
@@ -235,8 +238,8 @@ describe('Update to split transaction service', () => {
       validateFunctionCall(mockProjectService.functions.listProjectsByIds, [projectId]);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.listProductsByIds, [productId]);
-      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction);
+      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction);
       expect.assertions(10);
     });
 
@@ -265,8 +268,8 @@ describe('Update to split transaction service', () => {
       validateFunctionCall(mockProjectService.functions.listProjectsByIds, [projectId]);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.listProductsByIds, [productId]);
-      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction);
+      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction);
       expect.assertions(10);
     });
 
@@ -295,8 +298,8 @@ describe('Update to split transaction service', () => {
       validateFunctionCall(mockProjectService.functions.listProjectsByIds, [projectId]);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.listProductsByIds, [productId]);
-      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction);
+      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction);
       expect.assertions(10);
     });
 
@@ -325,8 +328,8 @@ describe('Update to split transaction service', () => {
       validateFunctionCall(mockProjectService.functions.listProjectsByIds, [projectId]);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.listProductsByIds, [productId]);
-      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction);
+      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction);
       expect.assertions(10);
     });
 
@@ -355,8 +358,8 @@ describe('Update to split transaction service', () => {
       validateFunctionCall(mockProjectService.functions.listProjectsByIds, [projectId]);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.listProductsByIds, [productId]);
-      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction);
+      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction);
       expect.assertions(10);
     });
 
@@ -382,8 +385,8 @@ describe('Update to split transaction service', () => {
       validateFunctionCall(mockProjectService.functions.listProjectsByIds, [projectId]);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.listProductsByIds, [productId]);
-      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction);
+      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction);
       expect.assertions(10);
     });
 
@@ -412,8 +415,8 @@ describe('Update to split transaction service', () => {
       validateFunctionCall(mockProjectService.functions.listProjectsByIds, [projectId]);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.listProductsByIds, [productId]);
-      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction);
+      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction);
       expect.assertions(10);
     });
 
@@ -442,8 +445,8 @@ describe('Update to split transaction service', () => {
       validateFunctionCall(mockProjectService.functions.listProjectsByIds, [projectId]);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.listProductsByIds, [productId]);
-      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction);
+      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction);
       expect.assertions(10);
     });
 
@@ -472,8 +475,8 @@ describe('Update to split transaction service', () => {
       validateFunctionCall(mockProjectService.functions.listProjectsByIds, [projectId]);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.listProductsByIds, [productId]);
-      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction);
+      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction);
       expect.assertions(10);
     });
 
@@ -502,8 +505,8 @@ describe('Update to split transaction service', () => {
       validateFunctionCall(mockProjectService.functions.listProjectsByIds, [projectId]);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.listProductsByIds, [productId]);
-      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction);
+      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction);
       expect.assertions(10);
     });
 
@@ -512,10 +515,11 @@ describe('Update to split transaction service', () => {
       const otherProductId = getProductId(otherProduct);
 
       body = createSplitTransactionRequest({
-        ...body,
-        amount: -1,
-        splits: [
-          createSplitRequestItem({
+        accountId: getAccountId(queriedAccount),
+        recipientId: getRecipientId(queriedRecipient),
+        splits: [],
+        loans: [
+          createLoanRequestItem({
             categoryId,
             projectId,
             productId: otherProductId,
@@ -548,8 +552,8 @@ describe('Update to split transaction service', () => {
       validateFunctionCall(mockProjectService.functions.listProjectsByIds, [projectId]);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.listProductsByIds, [otherProductId]);
-      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction);
+      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction);
       expect.assertions(10);
     });
 
@@ -557,17 +561,19 @@ describe('Update to split transaction service', () => {
       body = createSplitTransactionRequest({
         ...body,
         accountId: getAccountId(loanAccount),
+        loans: [
+          createLoanRequestItem({
+            categoryId,
+            projectId,
+            productId,
+            loanAccountId: getAccountId(queriedAccount),
+          }),
+        ],
         splits: [
           createSplitRequestItem({
             categoryId,
             projectId,
             productId,
-          }),
-          createSplitRequestItem({
-            categoryId,
-            projectId,
-            productId,
-            loanAccountId: getAccountId(queriedAccount),
           }),
         ],
       });
@@ -596,8 +602,8 @@ describe('Update to split transaction service', () => {
       validateFunctionCall(mockProjectService.functions.listProjectsByIds, [projectId]);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.listProductsByIds, [productId]);
-      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction);
+      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction);
       expect.assertions(10);
     });
 
@@ -611,8 +617,8 @@ describe('Update to split transaction service', () => {
       mockProjectService.functions.listProjectsByIds.mockResolvedValue([project]);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
       mockProductService.functions.listProductsByIds.mockResolvedValue([product]);
-      mockSplitTransactionDocumentConverter.functions.create.mockReturnValue(updatedDocument);
-      mockTransactionService.functions.replaceTransaction.mockRejectedValue('this is a mongo error');
+      mockSplitTransactionDocumentConverter.functions.update.mockReturnValue(updateQuery);
+      mockTransactionService.functions.updateTransaction.mockRejectedValue('this is a mongo error');
 
       await service({
         body,
@@ -628,7 +634,7 @@ describe('Update to split transaction service', () => {
       validateFunctionCall(mockProjectService.functions.listProjectsByIds, [projectId]);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.listProductsByIds, [productId]);
-      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.create, {
+      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.update, {
         body,
         categories: toDictionary([category], '_id'),
         accounts: toDictionary([
@@ -639,7 +645,7 @@ describe('Update to split transaction service', () => {
         recipient: queriedRecipient,
         products: toDictionary([product], '_id'),
       }, undefined);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction, transactionId, updatedDocument);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction, transactionId, updateQuery);
       expect.assertions(10);
     });
   });

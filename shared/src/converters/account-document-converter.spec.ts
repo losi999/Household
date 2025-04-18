@@ -1,6 +1,7 @@
 import { createAccountDocument, createAccountReport, createAccountRequest, createAccountResponse, createDocumentUpdate } from '@household/shared/common/test-data-factory';
 import { addSeconds, getAccountId } from '@household/shared/common/utils';
 import { accountDocumentConverterFactory, IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
+import { AccountType } from '@household/shared/enums';
 import { advanceTo, clear } from 'jest-date-mock';
 
 describe('Account document converter', () => {
@@ -19,7 +20,7 @@ describe('Account document converter', () => {
   const name = 'Pénztárca';
   const owner = 'owner1';
   const currency = 'Ft';
-  const accountType = 'cash';
+  const accountType = AccountType.Cash;
   const expiresIn = 3600;
   const balance = 12000;
   const isOpen = false;

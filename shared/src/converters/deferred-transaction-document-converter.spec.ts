@@ -9,6 +9,7 @@ import { ICategoryDocumentConverter } from '@household/shared/converters/categor
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
 import { Transaction } from '@household/shared/types/types';
 import { IDeferredTransactionDocumentConverter, deferredTransactionDocumentConverterFactory } from '@household/shared/converters/deferred-transaction-document-converter';
+import { CategoryType } from '@household/shared/enums';
 
 describe('Deferred transaction document converter', () => {
   let converter: IDeferredTransactionDocumentConverter;

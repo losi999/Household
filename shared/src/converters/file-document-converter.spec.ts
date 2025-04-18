@@ -1,6 +1,7 @@
 import { createFileDocument, createFileRequest, createFileResponse } from '@household/shared/common/test-data-factory';
 import { addSeconds, getFileId } from '@household/shared/common/utils';
 import { fileDocumentConverterFactory, IFileDocumentConverter } from '@household/shared/converters/file-document-converter';
+import { FileProcessingStatus, FileType } from '@household/shared/enums';
 import { advanceTo, clear } from 'jest-date-mock';
 
 describe('File document converter', () => {
@@ -18,9 +19,9 @@ describe('File document converter', () => {
 
   const expiresIn = 3600;
   const timezone = 'Europe/Budapest';
-  const fileType = 'otp';
+  const fileType = FileType.Otp;
   const draftCount = 5;
-  const processingStatus = 'completed';
+  const processingStatus = FileProcessingStatus.Completed;
 
   const body = createFileRequest({
     timezone,
@@ -62,7 +63,7 @@ describe('File document converter', () => {
 
   describe('update status', () => {
     it('should update document', () => {
-      const result = converter.updateStatus('completed');
+      const result = converter.updateStatus(FileProcessingStatus.Completed);
       expect(result).toEqual({
         $set: {
           processingStatus: 'completed',

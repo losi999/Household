@@ -3,6 +3,7 @@ import { createFileDocument, createFileRequest } from '@household/shared/common/
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { generateMongoId } from '@household/shared/common/utils';
 import { IFileDocumentConverter } from '@household/shared/converters/file-document-converter';
+import { FileProcessingStatus } from '@household/shared/enums';
 import { IFileService } from '@household/shared/services/file-service';
 import { IStorageService } from '@household/shared/services/storage-service';
 
@@ -27,7 +28,7 @@ describe('Create upload URL service', () => {
     processingStatus: undefined,
   });
   const savedFileDocument = createFileDocument({
-    processingStatus: 'pending',
+    processingStatus: FileProcessingStatus.Pending,
     _id: generateMongoId(),
   });
 

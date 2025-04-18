@@ -1,4 +1,4 @@
-import { createAccountDocument, createAccountResponse, createCategoryDocument, createCategoryResponse, createProjectDocument, createProjectResponse, createRecipientDocument, createRecipientResponse, createSplitTransactionDocument, createSplitTransactionRequest, createSplitTransactionResponse, createProductDocument, createSplitResponseItem, createProductResponse, createSplitRequestItem, createSplitDocumentItem, createDeferredTransactionDocument, createDeferredTransactionResponse } from '@household/shared/common/test-data-factory';
+import { createAccountDocument, createAccountResponse, createCategoryDocument, createCategoryResponse, createProjectDocument, createProjectResponse, createRecipientDocument, createRecipientResponse, createSplitTransactionDocument, createSplitTransactionRequest, createSplitTransactionResponse, createProductDocument, createSplitResponseItem, createProductResponse, createSplitRequestItem, createSplitDocumentItem, createDeferredTransactionDocument, createDeferredTransactionResponse, createLoanRequestItem } from '@household/shared/common/test-data-factory';
 import { addSeconds, getTransactionId, getProjectId, getCategoryId, toDictionary, getAccountId, getProductId } from '@household/shared/common/utils';
 import { advanceTo, clear } from 'jest-date-mock';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
@@ -9,6 +9,7 @@ import { ICategoryDocumentConverter } from '@household/shared/converters/categor
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
 import { ISplitTransactionDocumentConverter, splitTransactionDocumentConverterFactory } from '@household/shared/converters/split-transaction-document-converter';
 import { IDeferredTransactionDocumentConverter } from '@household/shared/converters/deferred-transaction-document-converter';
+import { CategoryType } from '@household/shared/enums';
 
 describe('Split transaction document converter', () => {
   let converter: ISplitTransactionDocumentConverter;
@@ -67,6 +68,14 @@ describe('Split transaction document converter', () => {
     accountId: getAccountId(account),
     description,
     issuedAt: now.toISOString(),
+    loans: [
+      createLoanRequestItem({
+        description,
+        categoryId: getCategoryId(regularCategory),
+        projectId: getProjectId(project),
+        loanAccountId: getAccountId(loanAccount),
+      }),
+    ],
     splits: [
       createSplitRequestItem({
         description,
@@ -88,14 +97,10 @@ describe('Split transaction document converter', () => {
         billingEndDate,
         billingStartDate,
       }),
-      createSplitRequestItem({
-        description,
-        categoryId: getCategoryId(regularCategory),
-        projectId: getProjectId(project),
-        loanAccountId: getAccountId(loanAccount),
-      }),
     ],
   });
+
+  console.log(body);
 
   const deferredTransaction = createDeferredTransactionDocument({
     _id: undefined,
@@ -157,7 +162,6 @@ describe('Split transaction document converter', () => {
             invoiceNumber: undefined,
             billingEndDate: undefined,
             billingStartDate: undefined,
-            _id: undefined,
           }),
           createSplitDocumentItem({
             category: inventoryCategory,
@@ -168,7 +172,6 @@ describe('Split transaction document converter', () => {
             invoiceNumber: undefined,
             billingEndDate: undefined,
             billingStartDate: undefined,
-            _id: undefined,
           }),
           createSplitDocumentItem({
             category: invoiceCategory,
@@ -179,7 +182,6 @@ describe('Split transaction document converter', () => {
             invoiceNumber,
             billingEndDate: new Date(billingEndDate),
             billingStartDate: new Date(billingStartDate),
-            _id: undefined,
           }),
         ],
         deferredSplits: [deferredTransaction],
@@ -218,7 +220,6 @@ describe('Split transaction document converter', () => {
             invoiceNumber: undefined,
             billingEndDate: undefined,
             billingStartDate: undefined,
-            _id: undefined,
           }),
           createSplitDocumentItem({
             category: inventoryCategory,
@@ -229,7 +230,6 @@ describe('Split transaction document converter', () => {
             invoiceNumber: undefined,
             billingEndDate: undefined,
             billingStartDate: undefined,
-            _id: undefined,
           }),
           createSplitDocumentItem({
             category: invoiceCategory,
@@ -240,7 +240,6 @@ describe('Split transaction document converter', () => {
             invoiceNumber,
             billingEndDate: new Date(billingEndDate),
             billingStartDate: new Date(billingStartDate),
-            _id: undefined,
           }),
         ],
         deferredSplits: [deferredTransaction],

@@ -3,6 +3,8 @@ import { AccountType, CategoryType, FileType, TransactionType } from '@household
 import { Account, Auth, Category, File, Product, Project, Recipient, Report, Transaction } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
 
+const amount = -100;
+
 type DataFactoryFunction<T> = (input?: Partial<T>) => T;
 
 export const createAccountId = (id?: string): Account.Id => {
@@ -89,7 +91,7 @@ export const createProductDocument: DataFactoryFunction<Product.Document> = (doc
 export const createTransactionRawReport: DataFactoryFunction<Transaction.RawReport> = (doc) => {
   return {
     _id: generateMongoId(),
-    amount: 100,
+    amount,
     description: 'transaction description',
     product: createProductDocument(),
     quantity: 100,
@@ -109,7 +111,7 @@ export const createPaymentTransactionDocument: DataFactoryFunction<Transaction.P
   return {
     _id: generateMongoId(),
     transactionType: TransactionType.Payment,
-    amount: 100,
+    amount,
     description: 'transaction description',
     product: createProductDocument(),
     quantity: 100,
@@ -130,7 +132,7 @@ export const createDeferredTransactionDocument: DataFactoryFunction<Transaction.
   return {
     _id: generateMongoId(),
     transactionType: TransactionType.Deferred,
-    amount: 100,
+    amount,
     description: 'transaction description',
     product: createProductDocument(),
     quantity: 100,
@@ -154,7 +156,7 @@ export const createReimbursementTransactionDocument: DataFactoryFunction<Transac
   return {
     _id: generateMongoId(),
     transactionType: TransactionType.Reimbursement,
-    amount: 100,
+    amount,
     description: 'transaction description',
     product: createProductDocument(),
     quantity: 100,
@@ -174,8 +176,7 @@ export const createReimbursementTransactionDocument: DataFactoryFunction<Transac
 
 export const createSplitDocumentItem: DataFactoryFunction<Transaction.SplitDocumentItem> = (doc) => {
   return {
-    _id: generateMongoId(),
-    amount: -1,
+    amount,
     category: createCategoryDocument(),
     project: createProjectDocument(),
     description: 'split description',
@@ -192,7 +193,7 @@ export const createSplitTransactionDocument: DataFactoryFunction<Transaction.Spl
   return {
     _id: generateMongoId(),
     transactionType: TransactionType.Split,
-    amount: 0, //((doc?.splits?.length ?? 0) + (doc?.deferredSplits?.length ?? 0)) * -1 ?? -1,
+    amount: ((doc?.splits?.length ?? 0) + (doc?.deferredSplits?.length ?? 0)) * amount || amount,
     description: 'transaction description',
     issuedAt: new Date(),
     expiresAt: undefined,
@@ -208,14 +209,14 @@ export const createTransferTransactionDocument: DataFactoryFunction<Transaction.
   return {
     _id: generateMongoId(),
     transactionType: TransactionType.Transfer,
-    amount: 100,
+    amount,
     description: 'transaction description',
     issuedAt: new Date(),
     expiresAt: undefined,
     account: createAccountDocument(),
     transferAccount: createAccountDocument(),
-    transferAmount: -1200,
-    payments: undefined,
+    transferAmount: 1200,
+    payments: [],
     ...doc,
   };
 };
@@ -224,7 +225,7 @@ export const createDraftTransactionDocument: DataFactoryFunction<Transaction.Dra
   return {
     _id: generateMongoId(),
     transactionType: TransactionType.Draft,
-    amount: 100,
+    amount,
     description: 'transaction description',
     issuedAt: new Date(),
     expiresAt: undefined,
@@ -237,7 +238,7 @@ export const createDraftTransactionResponse: DataFactoryFunction<Transaction.Dra
   return {
     transactionId: createTransactionId(),
     transactionType: TransactionType.Draft,
-    amount: 100,
+    amount,
     description: 'transaction description',
     issuedAt: new Date().toISOString(),
     hasDuplicate: false,
@@ -288,7 +289,7 @@ export const createProductRequest: DataFactoryFunction<Product.Request> = (req) 
 
 export const createPaymentTransactionRequest: DataFactoryFunction<Transaction.PaymentRequest> = (req) => {
   return {
-    amount: 100,
+    amount,
     description: 'transaction description',
     productId: createProductId(),
     quantity: 100,
@@ -308,7 +309,7 @@ export const createPaymentTransactionRequest: DataFactoryFunction<Transaction.Pa
 
 export const createSplitRequestItem: DataFactoryFunction<Transaction.SplitRequestItem> = (req) => {
   return {
-    amount: -1,
+    amount,
     categoryId: createCategoryId(),
     projectId: createProjectId(),
     description: 'split description',
@@ -317,7 +318,22 @@ export const createSplitRequestItem: DataFactoryFunction<Transaction.SplitReques
     invoiceNumber: 'inv123',
     billingEndDate: '2022-03-21',
     billingStartDate: '2022-01-01',
-    loanAccountId: undefined,
+    ...req,
+  };
+};
+
+export const createLoanRequestItem: DataFactoryFunction<Transaction.LoanRequestItem> = (req) => {
+  return {
+    amount,
+    categoryId: createCategoryId(),
+    projectId: createProjectId(),
+    description: 'split description',
+    productId: createProductId(),
+    quantity: 100,
+    invoiceNumber: 'inv123',
+    billingEndDate: '2022-03-21',
+    billingStartDate: '2022-01-01',
+    loanAccountId: createAccountId(),
     isSettled: undefined,
     transactionId: undefined,
     ...req,
@@ -326,21 +342,21 @@ export const createSplitRequestItem: DataFactoryFunction<Transaction.SplitReques
 
 export const createSplitTransactionRequest: DataFactoryFunction<Transaction.SplitRequest> = (req) => {
   return {
-    amount: req?.splits?.length * -1 || -1,
+    amount: ((req?.loans?.length ?? 0) + (req?.splits?.length ?? 0)) * amount || amount * 2,
     description: 'transaction description',
     issuedAt: new Date().toISOString(),
     accountId: createAccountId(),
     recipientId: createRecipientId(),
     splits: [createSplitRequestItem()],
-    loans: [], //TOOD
+    loans: [createLoanRequestItem()],
     ...req,
   };
 };
 
 export const createTransferTransactionRequest: DataFactoryFunction<Transaction.TransferRequest> = (req) => {
   return {
-    amount: 100,
-    transferAmount: -1200,
+    amount,
+    transferAmount: 1200,
     description: 'transaction description',
     issuedAt: new Date().toISOString(),
     accountId: createAccountId(),
@@ -495,7 +511,7 @@ export const createPaymentTransactionResponse: DataFactoryFunction<Transaction.P
   return {
     transactionId: createTransactionId(),
     transactionType: TransactionType.Payment,
-    amount: 100,
+    amount,
     description: 'transaction description',
     product: createProductResponse(),
     quantity: 100,
@@ -515,7 +531,7 @@ export const createDeferredTransactionResponse: DataFactoryFunction<Transaction.
   return {
     transactionId: createTransactionId(),
     transactionType: TransactionType.Deferred,
-    amount: 100,
+    amount,
     description: 'transaction description',
     product: createProductResponse(),
     quantity: 100,
@@ -538,7 +554,7 @@ export const createReimbursementTransactionResponse: DataFactoryFunction<Transac
   return {
     transactionId: createTransactionId(),
     transactionType: TransactionType.Reimbursement,
-    amount: 100,
+    amount,
     description: 'transaction description',
     product: createProductResponse(),
     quantity: 100,
@@ -557,7 +573,7 @@ export const createReimbursementTransactionResponse: DataFactoryFunction<Transac
 
 export const createSplitResponseItem: DataFactoryFunction<Transaction.SplitResponseItem> = (resp) => {
   return {
-    amount: -1,
+    amount,
     category: createCategoryResponse(),
     project: createProjectResponse(),
     description: 'split description',
@@ -574,7 +590,7 @@ export const createSplitTransactionResponse: DataFactoryFunction<Transaction.Spl
   return {
     transactionId: createTransactionId(),
     transactionType: TransactionType.Split,
-    amount: 0, //((resp?.splits?.length ?? 0) + (resp?.deferredSplits?.length ?? 0)) * -1 ?? -1,
+    amount: ((resp?.splits?.length ?? 0) + (resp?.deferredSplits?.length ?? 0)) * amount || amount,
     description: 'transaction description',
     issuedAt: new Date().toISOString(),
     account: createAccountResponse(),
@@ -589,13 +605,13 @@ export const createTransferTransactionResponse: DataFactoryFunction<Transaction.
   return {
     transactionId: createTransactionId(),
     transactionType: TransactionType.Transfer,
-    amount: 100,
-    transferAmount: -1200,
+    amount,
+    transferAmount: 1200,
     description: 'transaction description',
     issuedAt: new Date().toISOString(),
     account: createAccountResponse(),
     transferAccount: createAccountResponse(),
-    payments: undefined,
+    payments: [],
     ...resp,
   };
 };
@@ -645,7 +661,7 @@ export const createRecipientReport: DataFactoryFunction<Recipient.Report> = (rep
 export const createTransactionReport: DataFactoryFunction<Transaction.Report> = (rep) => {
   return {
     transactionId: createTransactionId(),
-    amount: 100,
+    amount,
     description: 'description',
     issuedAt: new Date().toISOString(),
     account: createAccountReport(),

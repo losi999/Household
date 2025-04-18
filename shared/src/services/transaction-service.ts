@@ -13,7 +13,6 @@ export interface ITransactionService {
   getTransactionByIdAndAccountId(query: Transaction.TransactionId & Account.AccountId): Promise<Transaction.Document>;
   deleteTransaction(transactionId: Transaction.Id): Promise<unknown>;
   updateTransaction(transactionId: Transaction.Id, updateQuery: UpdateQuery<Transaction.Document>): Promise<unknown>;
-  replaceTransaction(transactionId: Transaction.Id, doc: Transaction.Document): Promise<unknown>;
   listTransactions(match: PipelineStage.Match): Promise<Transaction.RawReport[]>;
   listDeferredTransactions(ctx?: {
     deferredTransactionIds?: Transaction.Id[];
@@ -610,60 +609,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
 
           if (previousTransactionType === 'split' && old.deferredSplits?.length > 0) {
             if (currentTransactionType === 'split' && updateQuery.$set.deferredSplits?.length > 0) {
-              // const newDeferredTransactionIds = updateQuery.$set.deferredSplits.map(s => s._id) ;
-
-              // deletedDeferredTransactionIds = old.deferredSplits.reduce((accumulator, currentValue) => {
-              //   return newDeferredTransactionIds.includes(currentValue._id) ? accumulator : [
-              //     ...accumulator,
-              //     currentValue._id,
-              //   ];
-              // }, []);
-
-            } else {
-              deletedDeferredTransactionIds = old.deferredSplits.map(s => s._id);
-            }
-          }
-
-          if (deletedDeferredTransactionIds) {
-            await mongodbService.transactions.updateMany({
-              'payments.transaction': {
-                $in: deletedDeferredTransactionIds,
-              },
-            }, {
-              $pull: {
-                payments: {
-                  transaction: {
-                    $in: deletedDeferredTransactionIds,
-                  },
-                },
-              },
-            }, {
-              session,
-            });
-          }
-        });
-      });
-    },
-    replaceTransaction: (transactionId, doc) => {
-      delete doc._id;
-      return mongodbService.inSession((session) => {
-        return session.withTransaction(async () => {
-          const old = await mongodbService.transactions.findOneAndReplace({
-            _id: new Types.ObjectId(transactionId),
-          }, doc, {
-            session,
-            runValidators: true,
-          });
-
-          let deletedDeferredTransactionIds: Types.ObjectId[];
-
-          if (old.transactionType === 'deferred' && doc.transactionType !== 'deferred') {
-            deletedDeferredTransactionIds = [old._id];
-          }
-
-          if (old.transactionType === 'split' && old.deferredSplits?.length > 0) {
-            if (doc.transactionType === 'split' && doc.deferredSplits?.length > 0) {
-              const newDeferredTransactionIds = doc.deferredSplits.map(s => s._id) ;
+              const newDeferredTransactionIds = updateQuery.$set.deferredSplits.map((s: any) => s._id) ;
 
               deletedDeferredTransactionIds = old.deferredSplits.reduce((accumulator, currentValue) => {
                 return newDeferredTransactionIds.includes(currentValue._id) ? accumulator : [
@@ -696,7 +642,6 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
           }
         });
       });
-
     },
     listTransactions: (match) => {
       return mongodbService.inSession((session) => {
