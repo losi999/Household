@@ -90,11 +90,7 @@ describe('File document converter', () => {
   describe('toResponseList', () => {
     it('should return response list', () => {
 
-      const result = converter.toResponseList([
-        {
-          ...queriedDocument,
-        },
-      ]);
+      const result = converter.toResponseList([queriedDocument]);
       expect(result).toEqual([
         createFileResponse({
           fileId: getFileId(queriedDocument),
