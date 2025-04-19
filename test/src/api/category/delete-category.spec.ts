@@ -165,11 +165,11 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
           .saveTransactionDocuments([
             paymentTransactionDocument,
             splitTransactionDocument,
-            // deferredTransactionDocument,
-            // reimbursementTransactionDocument,
-            // unrelatedPaymentTransactionDocument,
-            // unrelatedDeferredTransactionDocument,
-            // unrelatedReimbursementTransactionDocument,
+            deferredTransactionDocument,
+            reimbursementTransactionDocument,
+            unrelatedPaymentTransactionDocument,
+            unrelatedDeferredTransactionDocument,
+            unrelatedReimbursementTransactionDocument,
           ])
           .authenticate(1)
           .requestDeleteCategory(getCategoryId(categoryDocument))
