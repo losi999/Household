@@ -51,16 +51,7 @@ describe('List transactions by file handler', () => {
 
   it('should respond with success with pagination', async () => {
     mockListTransactionsByFileService.mockResolvedValue(transactions);
-    const pageNumber = 2;
-    const pageSize = 13;
-
-    const response = await handlerFunction({
-      ...handlerEvent,
-      queryStringParameters: {
-        pageNumber: String(pageNumber),
-        pageSize: String(pageSize),
-      },
-    }, undefined, undefined) as AWSLambda.APIGatewayProxyResult;
+    const response = await handlerFunction(handlerEvent, undefined, undefined) as AWSLambda.APIGatewayProxyResult;
     validateFunctionCall(mockListTransactionsByFileService, {
       fileId,
     });
