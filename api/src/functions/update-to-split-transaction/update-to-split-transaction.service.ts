@@ -1,6 +1,7 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { pushUnique, toDictionary } from '@household/shared/common/utils';
 import { ISplitTransactionDocumentConverter } from '@household/shared/converters/split-transaction-document-converter';
+import { CategoryType } from '@household/shared/enums';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICategoryService } from '@household/shared/services/category-service';
 import { IProductService } from '@household/shared/services/product-service';
@@ -15,6 +16,7 @@ export interface IUpdateToSplitTransactionService {
     transactionId: Transaction.Id;
     expiresIn: number;
   }): Promise<void>;
+
 }
 
 export const updateToSplitTransactionServiceFactory = (
@@ -37,13 +39,22 @@ export const updateToSplitTransactionServiceFactory = (
     });
 
     const { accountId, recipientId } = body;
+    const splits = body.splits ?? [];
+    const loans = body.loans ?? [];
     let total = 0;
     const categoryIds: Category.Id[] = [];
     const projectIds: Project.Id[] = [];
     const productIds: Product.Id[] = [];
     const accountIds: Account.Id[] = [accountId];
 
-    body.splits.forEach(({ amount, categoryId, productId, projectId, loanAccountId }) => {
+    splits.forEach(({ amount, categoryId, productId, projectId }) => {
+      total += amount;
+      pushUnique(categoryIds, categoryId);
+      pushUnique(projectIds, projectId);
+      pushUnique(productIds, productId);
+    });
+
+    loans.forEach(({ amount, categoryId, productId, projectId, loanAccountId }) => {
       httpErrors.transaction.sameAccountLoan({
         accountId,
         loanAccountId,
@@ -105,11 +116,14 @@ export const updateToSplitTransactionServiceFactory = (
     const products = toDictionary(productList, '_id');
     const accounts = toDictionary(accountList, '_id');
 
-    body.splits.forEach((split) => {
+    [
+      ...splits,
+      ...loans,
+    ].forEach((split) => {
       const { categoryId, productId } = split;
       const category = categories[categoryId];
       const product = products[productId];
-      if (category?.categoryType === 'inventory' && productId) {
+      if (category?.categoryType === CategoryType.Inventory && productId) {
 
         httpErrors.product.notFound({
           productId,
@@ -125,17 +139,15 @@ export const updateToSplitTransactionServiceFactory = (
 
     httpErrors.transaction.invalidLoanAccountType(accounts[body.accountId]);
 
-    const document = splitTransactionDocumentConverter.create({
+    const update = splitTransactionDocumentConverter.update({
       body,
       accounts,
-      recipient,
       categories,
-      projects,
       products,
+      projects,
+      recipient,
     }, expiresIn);
 
-    console.log(document);
-
-    await transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update(document));
+    await transactionService.updateTransaction(transactionId, update).catch(httpErrors.transaction.update(update));
   };
 };

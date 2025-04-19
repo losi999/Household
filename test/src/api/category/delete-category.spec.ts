@@ -1,5 +1,6 @@
 import { createCategoryId } from '@household/shared/common/test-data-factory';
 import { getCategoryId, getProductId } from '@household/shared/common/utils';
+import { AccountType, CategoryType } from '@household/shared/enums';
 import { Account, Category, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
@@ -90,7 +91,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
       beforeEach(() => {
         accountDocument = accountDataFactory.document();
         loanAccountDocument = accountDataFactory.document({
-          accountType: 'loan',
+          accountType: AccountType.Loan,
         });
       });
 
@@ -138,11 +139,13 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
               category: categoryDocument,
             },
             {
+              category: unrelatedCategoryDocument,
+            },
+          ],
+          loans: [
+            {
               category: categoryDocument,
               loanAccount: loanAccountDocument,
-            },
-            {
-              category: unrelatedCategoryDocument,
             },
             {
               category: unrelatedCategoryDocument,
@@ -212,7 +215,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
       it('inventory should be unset if category is deleted', () => {
         categoryDocument = categoryDataFactory.document({
           body: {
-            categoryType: 'inventory',
+            categoryType: CategoryType.Inventory,
           },
         });
 
@@ -222,7 +225,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
 
         unrelatedCategoryDocument = categoryDataFactory.document({
           body: {
-            categoryType: 'inventory',
+            categoryType: CategoryType.Inventory,
           },
         });
 
@@ -278,13 +281,15 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
               product: productDocument,
             },
             {
+              category: unrelatedCategoryDocument,
+              product: unrelatedProductDocument,
+            },
+          ],
+          loans: [
+            {
               category: categoryDocument,
               product: productDocument,
               loanAccount: loanAccountDocument,
-            },
-            {
-              category: unrelatedCategoryDocument,
-              product: unrelatedProductDocument,
             },
             {
               category: unrelatedCategoryDocument,
@@ -359,13 +364,13 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
       it('invoice should be unset if category is deleted', () => {
         categoryDocument = categoryDataFactory.document({
           body: {
-            categoryType: 'invoice',
+            categoryType: CategoryType.Invoice,
           },
         });
 
         unrelatedCategoryDocument = categoryDataFactory.document({
           body: {
-            categoryType: 'invoice',
+            categoryType: CategoryType.Invoice,
           },
         });
 
@@ -410,11 +415,13 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
               category: categoryDocument,
             },
             {
+              category: unrelatedCategoryDocument,
+            },
+          ],
+          loans: [
+            {
               category: categoryDocument,
               loanAccount: loanAccountDocument,
-            },
-            {
-              category: unrelatedCategoryDocument,
             },
             {
               category: unrelatedCategoryDocument,
@@ -486,7 +493,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
       it('should be deleted', () => {
         categoryDocument = categoryDataFactory.document({
           body: {
-            categoryType: 'inventory',
+            categoryType: CategoryType.Inventory,
           },
         });
         const productDocument = productDataFactory.document({

@@ -1,13 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { EMPTY, exhaustMap, map } from 'rxjs';
+import { EMPTY, exhaustMap } from 'rxjs';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { DialogService } from '@household/web/app/shared/dialog.service';
-import { projectApiActions } from '@household/web/state/project/project.actions';
-import { recipientApiActions } from '@household/web/state/recipient/recipient.actions';
-import { categoryApiActions } from '@household/web/state/category/category.actions';
-import { productApiActions } from '@household/web/state/product/product.actions';
-import { accountApiActions } from '@household/web/state/account/account.actions';
 
 @Injectable()
 export class DialogEffects {
@@ -43,18 +38,12 @@ export class DialogEffects {
     return this.actions.pipe(
       ofType(dialogActions.deleteProject),
       exhaustMap(({ type, ...project }) => {
-        return this.dialogService.openDeleteProjectDialog(project).afterClosed()
-          .pipe(
-            map((shouldDelete) => {
-              if (shouldDelete) {
-                return projectApiActions.deleteProjectInitiated({
-                  projectId: project.projectId,
-                });
-              }
-            }),
-          );
+        this.dialogService.openDeleteProjectDialog(project);
+        return EMPTY;
       }),
     );
+  }, {
+    dispatch: false,
   });
 
   mergeProjects = createEffect(() => {
@@ -100,18 +89,12 @@ export class DialogEffects {
     return this.actions.pipe(
       ofType(dialogActions.deleteRecipient),
       exhaustMap(({ type, ...recipient }) => {
-        return this.dialogService.openDeleteRecipientDialog(recipient).afterClosed()
-          .pipe(
-            map((shouldDelete) => {
-              if (shouldDelete) {
-                return recipientApiActions.deleteRecipientInitiated({
-                  recipientId: recipient.recipientId,
-                });
-              }
-            }),
-          );
+        this.dialogService.openDeleteRecipientDialog(recipient);
+        return EMPTY;
       }),
     );
+  }, {
+    dispatch: false,
   });
 
   mergeRecipients = createEffect(() => {
@@ -157,18 +140,12 @@ export class DialogEffects {
     return this.actions.pipe(
       ofType(dialogActions.deleteCategory),
       exhaustMap(({ type, ...category }) => {
-        return this.dialogService.openDeleteCategoryDialog(category).afterClosed()
-          .pipe(
-            map((shouldDelete) => {
-              if (shouldDelete) {
-                return categoryApiActions.deleteCategoryInitiated({
-                  categoryId: category.categoryId,
-                });
-              }
-            }),
-          );
+        this.dialogService.openDeleteCategoryDialog(category);
+        return EMPTY;
       }),
     );
+  }, {
+    dispatch: false,
   });
 
   mergeCategories = createEffect(() => {
@@ -214,19 +191,12 @@ export class DialogEffects {
     return this.actions.pipe(
       ofType(dialogActions.deleteProduct),
       exhaustMap(({ product, categoryId }) => {
-        return this.dialogService.openDeleteProductDialog(product).afterClosed()
-          .pipe(
-            map((shouldDelete) => {
-              if (shouldDelete) {
-                return productApiActions.deleteProductInitiated({
-                  productId: product.productId,
-                  categoryId,
-                });
-              }
-            }),
-          );
+        this.dialogService.openDeleteProductDialog(product, categoryId);
+        return EMPTY;
       }),
     );
+  }, {
+    dispatch: false,
   });
 
   mergeProducts = createEffect(() => {
@@ -235,7 +205,6 @@ export class DialogEffects {
       exhaustMap(({ product, categoryId }) => {
         this.dialogService.openMergeProductsDialog(product, categoryId);
         return EMPTY;
-
       }),
     );
   }, {
@@ -272,17 +241,35 @@ export class DialogEffects {
     return this.actions.pipe(
       ofType(dialogActions.deleteAccount),
       exhaustMap(({ type, ...account }) => {
-        return this.dialogService.openDeleteAccountDialog(account).afterClosed()
-          .pipe(
-            map((shouldDelete) => {
-              if (shouldDelete) {
-                return accountApiActions.deleteAccountInitiated({
-                  accountId: account.accountId,
-                });
-              }
-            }),
-          );
+        this.dialogService.openDeleteAccountDialog(account);
+        return EMPTY;
       }),
     );
+  }, {
+    dispatch: false,
+  });
+
+  deleteFile = createEffect(() => {
+    return this.actions.pipe(
+      ofType(dialogActions.deleteFile),
+      exhaustMap(({ type, ...file }) => {
+        this.dialogService.openDeleteFileDialog(file);
+        return EMPTY;
+      }),
+    );
+  }, {
+    dispatch: false,
+  });
+
+  importFile = createEffect(() => {
+    return this.actions.pipe(
+      ofType(dialogActions.importFile),
+      exhaustMap(() => {
+        this.dialogService.openImportFileDialog();
+        return EMPTY;
+      }),
+    );
+  }, {
+    dispatch: false,
   });
 }

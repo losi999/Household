@@ -30,7 +30,7 @@ export const accountDocumentConverterFactory = (): IAccountDocumentConverter => 
         },
       };
     },
-    toResponse: ({ accountType, currency, owner, name, isOpen, balance, deferredCount, _id }) => {
+    toResponse: ({ accountType, currency, owner, name, isOpen, balance, _id }) => {
       return {
         accountType,
         currency,
@@ -38,7 +38,6 @@ export const accountDocumentConverterFactory = (): IAccountDocumentConverter => 
         name,
         isOpen,
         balance: balance ?? null,
-        deferredCount: deferredCount ?? null,
         fullName: `${name} (${owner})`,
         accountId: getAccountId(_id),
       };

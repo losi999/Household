@@ -1,0 +1,10 @@
+<household-toolbar title="Importálás">
+  <ng-container *ngIf="selectedIndex === 0" [ngTemplateOutlet]="edit.toolbarButtons" />
+</household-toolbar>
+<mat-tab-group [(selectedIndex)]="selectedIndex">
+  <mat-tab label="Szerkesztés">
+    <household-import-transactions-edit #edit />
+  </mat-tab>
+  <mat-tab label="Egyezések">
+  </mat-tab>
+</mat-tab-group>

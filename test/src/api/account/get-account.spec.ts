@@ -5,9 +5,9 @@ import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
-import { loanTransferTransactionDataFactory } from '@household/test/api/transaction/loan-transfer/loan-transfer-data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
+import { AccountType } from '@household/shared/enums';
 
 describe('GET /account/v1/accounts/{accountId}', () => {
   let accountDocument: Account.Document;
@@ -19,8 +19,8 @@ describe('GET /account/v1/accounts/{accountId}', () => {
   let invertedTransferTransactionDocument: Transaction.TransferDocument;
   let repayingTransferTransactionDocument: Transaction.TransferDocument;
   let invertedRepayingTransferTransactionDocument: Transaction.TransferDocument;
-  let loanTransferTransactionDocument: Transaction.LoanTransferDocument;
-  let invertedLoanTransferTransactionDocument: Transaction.LoanTransferDocument;
+  let loanTransferTransactionDocument: Transaction.TransferDocument;
+  let invertedLoanTransferTransactionDocument: Transaction.TransferDocument;
   let payingDeferredTransactionDocument: Transaction.DeferredDocument;
   let owningDeferredTransactionDocument: Transaction.DeferredDocument;
   let payingDeferredToLoanTransactionDocument: Transaction.DeferredDocument;
@@ -31,7 +31,7 @@ describe('GET /account/v1/accounts/{accountId}', () => {
     accountDocument = accountDataFactory.document();
     secondaryAccountDocument = accountDataFactory.document();
     loanAccountDocument = accountDataFactory.document({
-      accountType: 'loan',
+      accountType: AccountType.Loan,
     });
 
     paymentTransactionDocument = paymentTransactionDataFactory.document({
@@ -44,14 +44,13 @@ describe('GET /account/v1/accounts/{accountId}', () => {
 
     deferredSplitTransactionDocument = splitTransactionDataFactory.document({
       account: secondaryAccountDocument,
-      splits: [
+      loans: [
         {
           loanAccount: accountDocument,
         },
         {
           loanAccount: loanAccountDocument,
         },
-        {},
       ],
     });
 
@@ -65,12 +64,12 @@ describe('GET /account/v1/accounts/{accountId}', () => {
       transferAccount: accountDocument,
     });
 
-    loanTransferTransactionDocument = loanTransferTransactionDataFactory.document({
+    loanTransferTransactionDocument = transferTransactionDataFactory.document({
       account: accountDocument,
       transferAccount: loanAccountDocument,
     });
 
-    invertedLoanTransferTransactionDocument = loanTransferTransactionDataFactory.document({
+    invertedLoanTransferTransactionDocument = transferTransactionDataFactory.document({
       account: loanAccountDocument,
       transferAccount: accountDocument,
     });
@@ -140,23 +139,23 @@ describe('GET /account/v1/accounts/{accountId}', () => {
         ]);
     });
     it('should get account by id', () => {
-      const expectedBalance = paymentTransactionDocument.amount + transferTransactionDocument.amount + invertedTransferTransactionDocument.transferAmount + splitTransactionDocument.amount + loanTransferTransactionDocument.amount + invertedLoanTransferTransactionDocument.amount + payingDeferredTransactionDocument.amount + repayingTransferTransactionDocument.amount + invertedRepayingTransferTransactionDocument.transferAmount + payingDeferredToLoanTransactionDocument.amount;
+      const expectedBalance = paymentTransactionDocument.amount + transferTransactionDocument.amount + invertedTransferTransactionDocument.transferAmount + splitTransactionDocument.amount + loanTransferTransactionDocument.amount + invertedLoanTransferTransactionDocument.transferAmount + payingDeferredTransactionDocument.amount + repayingTransferTransactionDocument.amount + invertedRepayingTransferTransactionDocument.transferAmount + payingDeferredToLoanTransactionDocument.amount;
 
       cy.authenticate(1)
         .requestGetAccount(getAccountId(accountDocument))
         .expectOkResponse()
         .expectValidResponseSchema(schema)
-        .validateAccountResponse(accountDocument, expectedBalance, 2);
+        .validateAccountResponse(accountDocument, expectedBalance);
     });
 
     it('should get loan account by id', () => {
-      const expectedBalance = deferredSplitTransactionDocument.deferredSplits[1].amount + loanTransferTransactionDocument.amount + invertedLoanTransferTransactionDocument.amount - owningReimbursementTransactionDocument.amount + payingDeferredToLoanTransactionDocument.amount;
+      const expectedBalance = loanTransferTransactionDocument.transferAmount + invertedLoanTransferTransactionDocument.amount - deferredSplitTransactionDocument.deferredSplits[1].amount + owningReimbursementTransactionDocument.amount - payingDeferredToLoanTransactionDocument.amount;
 
       cy.authenticate(1)
         .requestGetAccount(getAccountId(loanAccountDocument))
         .expectOkResponse()
         .expectValidResponseSchema(schema)
-        .validateAccountResponse(loanAccountDocument, expectedBalance, 0);
+        .validateAccountResponse(loanAccountDocument, expectedBalance);
     });
 
     describe('should return error if accountId', () => {

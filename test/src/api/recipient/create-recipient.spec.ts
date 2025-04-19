@@ -39,7 +39,7 @@ describe('POST recipient/v1/recipients', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestCreateRecipient(recipientDataFactory.request({
-              name: 1 as any,
+              name: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('name', 'string', 'body');

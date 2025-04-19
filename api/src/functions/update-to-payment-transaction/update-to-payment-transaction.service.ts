@@ -3,6 +3,7 @@ import { getAccountId } from '@household/shared/common/utils';
 import { IDeferredTransactionDocumentConverter } from '@household/shared/converters/deferred-transaction-document-converter';
 import { IPaymentTransactionDocumentConverter } from '@household/shared/converters/payment-transaction-document-converter';
 import { IReimbursementTransactionDocumentConverter } from '@household/shared/converters/reimbursement-transaction-document-converter';
+import { AccountType, CategoryType } from '@household/shared/enums';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICategoryService } from '@household/shared/services/category-service';
 import { IProductService } from '@household/shared/services/product-service';
@@ -10,6 +11,7 @@ import { IProjectService } from '@household/shared/services/project-service';
 import { IRecipientService } from '@household/shared/services/recipient-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
 import { Transaction } from '@household/shared/types/types';
+import { UpdateQuery } from 'mongoose';
 
 export interface IUpdateToPaymentTransactionService {
   (ctx: {
@@ -99,7 +101,7 @@ export const updateToPaymentTransactionServiceFactory = (
       recipient,
     }, 400);
 
-    if (category?.categoryType === 'inventory' && productId) {
+    if (category?.categoryType === CategoryType.Inventory && productId) {
       httpErrors.product.notFound({
         productId,
         product,
@@ -111,10 +113,12 @@ export const updateToPaymentTransactionServiceFactory = (
       });
     }
 
+    let update: UpdateQuery<Transaction.Document>;
+
     if (!body.loanAccountId) {
       httpErrors.transaction.invalidLoanAccountType(account);
 
-      const document = paymentTransactionDocumentConverter.create({
+      update = paymentTransactionDocumentConverter.update({
         body,
         account,
         category,
@@ -122,35 +126,33 @@ export const updateToPaymentTransactionServiceFactory = (
         recipient,
         product,
       }, expiresIn);
+    } else {
 
-      return transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update(document));
+      if (account.accountType === AccountType.Loan) {
+        httpErrors.transaction.invalidLoanAccountType(loanAccount);
+
+        update = reimbursementTransactionDocumentConverter.update({
+          body,
+          payingAccount: account,
+          ownerAccount: loanAccount,
+          category,
+          project,
+          recipient,
+          product,
+        }, expiresIn);
+      } else {
+        update = deferredTransactionDocumentConverter.update({
+          body,
+          payingAccount: account,
+          ownerAccount: loanAccount,
+          category,
+          project,
+          recipient,
+          product,
+        }, expiresIn);
+      }
     }
-    if (account.accountType === 'loan') {
-      httpErrors.transaction.invalidLoanAccountType(loanAccount);
 
-      const document = reimbursementTransactionDocumentConverter.create({
-        body,
-        payingAccount: account,
-        ownerAccount: loanAccount,
-        category,
-        project,
-        recipient,
-        product,
-      }, expiresIn);
-
-      return transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update(document));
-    }
-
-    const document = deferredTransactionDocumentConverter.create({
-      body,
-      payingAccount: account,
-      ownerAccount: loanAccount,
-      category,
-      project,
-      recipient,
-      product,
-    }, expiresIn);
-
-    return transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update(document));
+    return transactionService.updateTransaction(transactionId, update).catch(httpErrors.transaction.update(update));
   };
 };

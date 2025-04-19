@@ -3,6 +3,7 @@ import { createProductRequest, createProductDocument, createCategoryDocument } f
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getCategoryId, getProductId } from '@household/shared/common/utils';
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
+import { CategoryType } from '@household/shared/enums';
 import { ICategoryService } from '@household/shared/services/category-service';
 import { IProductService } from '@household/shared/services/product-service';
 
@@ -22,7 +23,7 @@ describe('Create product service', () => {
 
   const body = createProductRequest();
   const queriedCategory = createCategoryDocument({
-    categoryType: 'inventory',
+    categoryType: CategoryType.Inventory,
   });
   const categoryId = getCategoryId(queriedCategory);
   const convertedProductDocument = createProductDocument();
@@ -78,7 +79,7 @@ describe('Create product service', () => {
 
     it('if category is not "inventory" type', async () => {
       mockCategoryService.functions.getCategoryById.mockResolvedValue(createCategoryDocument({
-        categoryType: 'regular',
+        categoryType: CategoryType.Regular,
       }));
       mockProductDocumentConverter.functions.create.mockReturnValue(convertedProductDocument);
       mockProductService.functions.saveProduct.mockResolvedValue(convertedProductDocument);

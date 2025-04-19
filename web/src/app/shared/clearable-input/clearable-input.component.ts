@@ -34,6 +34,10 @@ export class ClearableInputComponent implements OnInit, ControlValueAccessor {
     }
   }
 
+  get value() {
+    return this.input.value;
+  }
+
   ngOnInit(): void {
     if (this.ngControl instanceof FormControlName) {
       this.input = this.injector.get(FormGroupDirective).getControl(this.ngControl);

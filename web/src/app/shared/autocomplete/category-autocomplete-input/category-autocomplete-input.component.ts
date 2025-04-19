@@ -37,7 +37,7 @@ export class CategoryAutocompleteInputComponent implements OnInit, ControlValueA
   @Input() excludeAsParent: Category.Id;
   @Input() hideNewButton: boolean = false;
 
-  changed: (value: Category.Id) => void;
+  changed: (value: Category.Response) => void;
   touched: () => void;
   isDisabled: boolean;
 

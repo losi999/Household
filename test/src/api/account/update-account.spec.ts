@@ -58,7 +58,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
-              name: 1,
+              name: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('name', 'string', 'body');
@@ -98,7 +98,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
-              accountType: 1,
+              accountType: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('accountType', 'string', 'body');
@@ -107,7 +107,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
         it('is not a valid enum value', () => {
           cy.authenticate(1)
             .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
-              accountType: 'not-account-type',
+              accountType: <any>'not-account-type',
             }))
             .expectBadRequestResponse()
             .expectWrongEnumValue('accountType', 'body');
@@ -127,7 +127,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
-              currency: 1,
+              currency: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('currency', 'string', 'body');
@@ -156,7 +156,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
-              owner: 1,
+              owner: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('owner', 'string', 'body');

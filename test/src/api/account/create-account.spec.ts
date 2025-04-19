@@ -52,7 +52,7 @@ describe('POST account/v1/accounts', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestCreateAccount(accountDataFactory.request({
-              name: 1,
+              name: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('name', 'string', 'body');
@@ -91,7 +91,7 @@ describe('POST account/v1/accounts', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestCreateAccount(accountDataFactory.request({
-              accountType: 1,
+              accountType: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('accountType', 'string', 'body');
@@ -100,7 +100,7 @@ describe('POST account/v1/accounts', () => {
         it('is not a valid enum value', () => {
           cy.authenticate(1)
             .requestCreateAccount(accountDataFactory.request({
-              accountType: 'not-account-type',
+              accountType: 'not-account-type' as any,
             }))
             .expectBadRequestResponse()
             .expectWrongEnumValue('accountType', 'body');
@@ -120,7 +120,7 @@ describe('POST account/v1/accounts', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestCreateAccount(accountDataFactory.request({
-              currency: 1,
+              currency: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('currency', 'string', 'body');
@@ -149,7 +149,7 @@ describe('POST account/v1/accounts', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestCreateAccount(accountDataFactory.request({
-              owner: 1,
+              owner: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('owner', 'string', 'body');

@@ -5,6 +5,7 @@ import { Account, Category, Product, Project, Recipient, Transaction } from '@ho
 import { faker } from '@faker-js/faker';
 import { createId } from '@household/test/api/utils';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
+import { AccountType } from '@household/shared/enums';
 
 export const paymentTransactionDataFactory = (() => {
   const createPaymentTransactionRequest: DataFactoryFunction<Transaction.PaymentRequest> = (req) => {
@@ -50,7 +51,7 @@ export const paymentTransactionDataFactory = (() => {
     project?: Project.Document;
     recipient?: Recipient.Document;
   }): Transaction.PaymentDocument => {
-    if (ctx.account.accountType === 'loan') {
+    if (ctx.account.accountType === AccountType.Loan) {
       throw 'Account cannot be loan in payment transaction';
     }
 

@@ -40,15 +40,26 @@ on(transactionApiActions.listTransactionReportCompleted, (_state, { transactions
   };
 }),
 
-on(transactionApiActions.listDeferredTransactionsInitiated, (_state) => {
-  return {
-    ..._state,
-  };
-}),
 on(transactionApiActions.listDeferredTransactionsCompleted, (_state, { transactions }) => {
   return {
     ..._state,
     deferredTransactionList: transactions,
+  };
+}),
+
+on(transactionApiActions.listDraftTransactionsInitiated, (_state) => {
+  return {
+    ..._state,
+    draftTransactionList: undefined,
+  };
+}),
+on(transactionApiActions.listDraftTransactionsCompleted, (_state, { transactions }) => {
+  return {
+    ..._state,
+    draftTransactionList: transactions.map(t => ({
+      ...t,
+      transactionType: 'payment',
+    })),
   };
 }),
 

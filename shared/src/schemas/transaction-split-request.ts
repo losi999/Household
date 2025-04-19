@@ -19,7 +19,6 @@ const schema: StrictJSONSchema7<Transaction.SplitRequest> = {
     ...amount.required,
     ...issuedAt.required,
     ...accountId.required,
-    'splits',
   ],
   properties: {
     ...accountId.properties,
@@ -49,23 +48,51 @@ const schema: StrictJSONSchema7<Transaction.SplitRequest> = {
           ...amount.properties,
           ...description.properties,
           ...transactionId.properties,
+        },
+      },
+    },
+    loans: {
+      type: 'array',
+      minItems: 1,
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: [
+          ...amount.required,
+          'loanAccountId',
+        ],
+        dependentRequired: {
+          ...invoice.dependentRequired,
+          ...inventory.dependentRequired,
+        },
+        properties: {
+          ...categoryId.properties,
+          ...projectId.properties,
+          ...invoice.properties,
+          ...inventory.properties,
+          amount: {
+            ...amount.properties.amount,
+            exclusiveMaximum: 0,
+          },
+          ...description.properties,
+          ...transactionId.properties,
           loanAccountId: mongoId,
+          transactionId: mongoId,
           isSettled: {
             type: 'boolean',
-          },
-        },
-        dependentSchemas: {
-          loanAccountId: {
-            properties: {
-              amount: {
-                exclusiveMaximum: 0,
-              },
-            },
           },
         },
       },
     },
   },
+  anyOf: [
+    {
+      required: ['splits'],
+    },
+    {
+      required: ['loans'],
+    },
+  ],
 };
 
 export default schema;

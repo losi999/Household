@@ -4,6 +4,7 @@ import { faker } from '@faker-js/faker';
 import { createId } from '@household/test/api/utils';
 import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
 import { unitsOfMeasurement } from '@household/shared/constants';
+import { CategoryType } from '@household/shared/enums';
 
 export const productDataFactory = (() => {
   const createProductRequest: DataFactoryFunction<Product.Request> = (req) => {
@@ -22,7 +23,7 @@ export const productDataFactory = (() => {
     body?: Partial<Product.Request>;
     category: Category.Document;
   }): Product.Document => {
-    if (ctx.category.categoryType !== 'inventory') {
+    if (ctx.category.categoryType !== CategoryType.Inventory) {
       throw 'Category must be of inventory type';
     }
 

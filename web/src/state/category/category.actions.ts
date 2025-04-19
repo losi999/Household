@@ -13,12 +13,12 @@ export const categoryApiActions = createActionGroup({
       sourceCategoryIds: Category.Id[];
       targetCategoryId: Category.Id;
     }>(),
-    'Merge categories completed': props<{sourceCategoryIds: Category.Id[]}>(),
+    'Merge categories completed': emptyProps(),
     'Merge categories failed': props<{sourceCategoryIds: Category.Id[]}>(),
     'Update category initiated': props<Category.CategoryId & Category.Request>(),
-    'Update category completed': props<Category.CategoryId & Category.Request>(),
+    'Update category completed': emptyProps(),
     'Delete category initiated': props<Category.CategoryId>(),
-    'Delete category completed': props<Category.CategoryId>(),
+    'Delete category completed': emptyProps(),
     'Delete category failed': props<Category.CategoryId>(),
   },
 });

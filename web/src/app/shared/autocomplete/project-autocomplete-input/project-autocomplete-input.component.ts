@@ -33,7 +33,7 @@ export class ProjectAutocompleteInputComponent implements OnInit, ControlValueAc
   }) label: string;
   selected: FormControl<Project.Response>;
 
-  changed: (value: Project.Id) => void;
+  changed: (value: Project.Response) => void;
   touched: () => void;
   isDisabled: boolean;
 

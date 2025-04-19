@@ -5,13 +5,6 @@
 export const environment = {
   production: false,
   apiUrl: 'http://localhost',
-  accountStage: ':3000/',
-  projectStage: ':3002/',
-  recipientStage: ':3003/',
-  transactionStage: ':3004/',
-  categoryStage: ':3001/',
-  productStage: ':3005/',
-  authStage: '',
 };
 
 /*

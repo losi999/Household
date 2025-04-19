@@ -1,4 +1,4 @@
-import { getAccountId, toDictionary } from '@household/shared/common/utils';
+import { getAccountId, getTransactionId, toDictionary } from '@household/shared/common/utils';
 import { DataFactoryFunction } from '@household/shared/types/common';
 import { Account, Transaction } from '@household/shared/types/types';
 import { faker } from '@faker-js/faker';
@@ -38,17 +38,13 @@ export const transferTransactionDataFactory = (() => {
     transferAccount: Account.Document;
     transactions?: Transaction.DeferredDocument[];
   }): Transaction.TransferDocument => {
-    if ((ctx.account.accountType === 'loan') !== (ctx.transferAccount.accountType === 'loan')) {
-      throw 'Either both or none of the accounts can be loan type in transfer transaction';
-    }
-
     return transferTransactionDocumentConverter.create({
       body: createTransferTransactionRequest({
         ...ctx.body,
         accountId: getAccountId(ctx.account),
         transferAccountId: getAccountId(ctx.transferAccount),
         payments: ctx.transactions ? ctx.transactions.map(t => ({
-          transactionId: t._id,
+          transactionId: getTransactionId(t),
           amount: faker.number.float({
             min: 1,
             max: 500,

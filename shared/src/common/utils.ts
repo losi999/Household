@@ -45,7 +45,7 @@ export const parseStringToBoolean = (value: string): boolean => {
 };
 
 export const generateMongoId = (): Types.ObjectId => new Types.ObjectId();
-const getId = (doc: Internal.Id) => doc?._id.toString();
+const getId = (doc: Internal.Id) => doc?._id?.toString() ?? doc?.toString();
 export const getTransactionId = (doc: Transaction.Document | Transaction.RawReport | Types.ObjectId): Transaction.Id => getId(doc) as Transaction.Id;
 export const getAccountId = (doc: Account.Document | Types.ObjectId): Account.Id => getId(doc) as Account.Id;
 export const getProjectId = (doc: Project.Document | Types.ObjectId): Project.Id => getId(doc) as Project.Id;

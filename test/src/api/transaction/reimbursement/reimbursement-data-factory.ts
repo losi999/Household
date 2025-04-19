@@ -2,6 +2,7 @@ import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { reimbursementTransactionDocumentConverter } from '@household/shared/dependencies/converters/reimbursement-transaction-document-converter';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
+import { AccountType } from '@household/shared/enums';
 
 export const reimbursementTransactionDataFactory = (() => {
   const createReimbursementTransactionDocument = (ctx: {
@@ -13,11 +14,11 @@ export const reimbursementTransactionDataFactory = (() => {
     project?: Project.Document;
     recipient?: Recipient.Document;
   }): Transaction.ReimbursementDocument => {
-    if (ctx.account.accountType !== 'loan') {
+    if (ctx.account.accountType !== AccountType.Loan) {
       throw 'Paying account type must be loan in reimbursement transaction';
     }
 
-    if (ctx.loanAccount.accountType === 'loan') {
+    if (ctx.loanAccount.accountType === AccountType.Loan) {
       throw 'Owner account type cannot be loan in reimbursement transaction';
     }
 

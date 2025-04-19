@@ -58,17 +58,6 @@ export class AccountTransactionsListItemComponent implements OnInit {
         this.billingEndDate = this.transaction.billingEndDate;
         this.billingStartDate = this.transaction.billingStartDate;
       } break;
-      case 'loanTransfer': {
-        this.formType = 'transfer';
-        this.viewingAccount = this.transaction.account;
-        const isLoan = this.viewingAccount.accountType === 'loan';
-        const isPositive = this.transaction.amount >= 0;
-
-        this.receivingAccount = (isLoan && isPositive) || (!isLoan && !isPositive) ? this.transaction.transferAccount : undefined;
-        this.givingAccount = (isLoan && !isPositive) || (!isLoan && isPositive) ? this.transaction.transferAccount : undefined;
-        this.transferColor = this.transaction.amount >= 0 ? 'green' : 'red';
-        this.amount = this.transaction.amount;
-      } break;
       case 'transfer': {
         this.formType = 'transfer';
         this.viewingAccount = this.transaction.account;
@@ -105,7 +94,7 @@ export class AccountTransactionsListItemComponent implements OnInit {
         if (this.transaction.payingAccount.accountId === viewingAccountId) {
           this.viewingAccount = this.transaction.payingAccount;
           this.ownerAccount = this.transaction.ownerAccount;
-          this.amount = this.transaction.amount * -1;
+          this.amount = this.transaction.amount;
         } else {
           this.viewingAccount = this.transaction.ownerAccount;
           this.payingAccount = this.transaction.payingAccount;
@@ -132,7 +121,7 @@ export class AccountTransactionsListItemComponent implements OnInit {
           this.payingAccount = this.transaction.account;
           if (this.viewingAccount.accountType === 'loan') {
             this.amount = this.transaction.deferredSplits.reduce((accumulator, currentValue) => {
-              return accumulator + currentValue.amount;
+              return accumulator - currentValue.amount;
             }, 0);
           } else {
             this.remainingAmount = this.transaction.deferredSplits?.reduce((accumulator, currentValue) => {

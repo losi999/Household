@@ -11,22 +11,22 @@ export class ProjectService {
   constructor(private httpClient: HttpClient) { }
 
   listProjects() {
-    return this.httpClient.get<Project.Response[]>(`${environment.apiUrl}${environment.projectStage}v1/projects`);
+    return this.httpClient.get<Project.Response[]>(`${environment.apiUrl}/project/v1/projects`);
   }
 
   createProject(body: Project.Request) {
-    return this.httpClient.post<Project.ProjectId>(`${environment.apiUrl}${environment.projectStage}v1/projects`, body);
+    return this.httpClient.post<Project.ProjectId>(`${environment.apiUrl}/project/v1/projects`, body);
   }
 
   updateProject(projectId: Project.Id, body: Project.Request) {
-    return this.httpClient.put<Project.ProjectId>(`${environment.apiUrl}${environment.projectStage}v1/projects/${projectId}`, body);
+    return this.httpClient.put<Project.ProjectId>(`${environment.apiUrl}/project/v1/projects/${projectId}`, body);
   }
 
   deleteProject(projectId: Project.Id) {
-    return this.httpClient.delete(`${environment.apiUrl}${environment.projectStage}v1/projects/${projectId}`);
+    return this.httpClient.delete(`${environment.apiUrl}/project/v1/projects/${projectId}`);
   }
 
   mergeProjects(projectId: Project.Id, body: Project.Id[]) {
-    return this.httpClient.post(`${environment.apiUrl}${environment.projectStage}v1/projects/${projectId}/merge`, body);
+    return this.httpClient.post(`${environment.apiUrl}/project/v1/projects/${projectId}/merge`, body);
   }
 }

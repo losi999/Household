@@ -9,7 +9,6 @@ import { default as recipient } from '@household/test/api/schemas/recipient-resp
 import { default as amount } from '@household/shared/schemas/partials/transaction-amount';
 import { default as description } from '@household/shared/schemas/partials/transaction-description';
 import { default as issuedAt } from '@household/shared/schemas/partials/transaction-issued-at';
-import { default as productId } from '@household/shared/schemas/product-id';
 import { default as invoice } from '@household/shared/schemas/partials/transaction-invoice';
 import { default as quantity } from '@household/shared/schemas/partials/transaction-quantity';
 
@@ -46,10 +45,6 @@ const schema: StrictJSONSchema7<Transaction.PaymentResponse> = {
       ...category,
       properties: {
         ...category.properties,
-        products: {
-          type: 'array',
-          items: productId,
-        },
       },
     },
     project,

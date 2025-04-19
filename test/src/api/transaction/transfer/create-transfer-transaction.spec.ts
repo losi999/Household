@@ -1,4 +1,5 @@
 import { getAccountId, getTransactionId } from '@household/shared/common/utils';
+import { AccountType } from '@household/shared/enums';
 import { Account, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
@@ -43,13 +44,33 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
           .validateTransactionTransferDocument(request);
       });
 
+      it('between a non-loan and a loan account', () => {
+        const loanAccountDocument = accountDataFactory.document({
+          accountType: AccountType.Loan,
+        });
+
+        request = transferTransactionDataFactory.request({
+          accountId: getAccountId(accountDocument),
+          transferAccountId: getAccountId(loanAccountDocument),
+        });
+
+        cy.saveAccountDocuments([
+          accountDocument,
+          loanAccountDocument,
+        ])
+          .authenticate(1)
+          .requestCreateTransferTransaction(request)
+          .expectCreatedResponse()
+          .validateTransactionTransferDocument(request);
+      });
+
       it('between two loan accounts', () => {
         accountDocument = accountDataFactory.document({
-          accountType: 'loan',
+          accountType: AccountType.Loan,
         });
 
         transferAccountDocument = accountDataFactory.document({
-          accountType: 'loan',
+          accountType: AccountType.Loan,
         });
 
         request = transferTransactionDataFactory.request({
@@ -191,7 +212,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
         it('is not number', () => {
           cy.authenticate(1)
             .requestCreateTransferTransaction(transferTransactionDataFactory.request({
-              amount: '1',
+              amount: <any>'1',
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('amount', 'number', 'body');
@@ -202,7 +223,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestCreateTransferTransaction(transferTransactionDataFactory.request({
-              description: 1,
+              description: <any> 1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('description', 'string', 'body');
@@ -231,7 +252,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestCreateTransferTransaction(transferTransactionDataFactory.request({
-              issuedAt: 1,
+              issuedAt: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('issuedAt', 'string', 'body');
@@ -270,7 +291,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestCreateTransferTransaction(transferTransactionDataFactory.request({
-              accountId: 1,
+              accountId: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('accountId', 'string', 'body');
@@ -320,7 +341,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestCreateTransferTransaction(transferTransactionDataFactory.request({
-              transferAccountId: 1,
+              transferAccountId: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('transferAccountId', 'string', 'body');
@@ -340,7 +361,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
         it('is not number', () => {
           cy.authenticate(1)
             .requestCreateTransferTransaction(transferTransactionDataFactory.request({
-              transferAmount: '1',
+              transferAmount: <any>'1',
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('transferAmount', 'number', 'body');

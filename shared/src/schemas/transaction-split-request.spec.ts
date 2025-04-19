@@ -1,6 +1,6 @@
 import { default as schema } from '@household/shared/schemas/transaction-split-request';
 import { Transaction } from '@household/shared/types/types';
-import { createAccountId, createCategoryId, createProductId, createProjectId, createRecipientId, createSplitRequestItem as createSplitRequestItem, createSplitTransactionRequest } from '@household/shared/common/test-data-factory';
+import { createAccountId, createCategoryId, createLoanRequestItem, createProductId, createProjectId, createRecipientId, createSplitRequestItem as createSplitRequestItem, createSplitTransactionRequest, createTransactionId } from '@household/shared/common/test-data-factory';
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 
 describe('Split transaction schema', () => {
@@ -18,8 +18,8 @@ describe('Split transaction schema', () => {
     }), 'without recipientId');
 
     tester.validateSuccess(createSplitTransactionRequest({
-      splits: [
-        createSplitRequestItem({
+      loans: [
+        createLoanRequestItem({
           loanAccountId: createAccountId(),
           amount: -100,
           isSettled: false,
@@ -85,6 +85,18 @@ describe('Split transaction schema', () => {
         ...createSplitTransactionRequest(),
         extra: 1,
       } as any, 'data');
+
+      describe('misses both splits and loans', () => {
+        tester.required(createSplitTransactionRequest({
+          splits: undefined,
+          loans: undefined,
+        }), 'splits', '(splits)');
+
+        tester.required(createSplitTransactionRequest({
+          splits: undefined,
+          loans: undefined,
+        }), 'loans', '(loans)');
+      });
     });
 
     describe('if data.amount', () => {
@@ -150,10 +162,6 @@ describe('Split transaction schema', () => {
     });
 
     describe('if data.splits', () => {
-      tester.required(createSplitTransactionRequest({
-        splits: undefined,
-      }), 'splits');
-
       tester.minItems(createSplitTransactionRequest({
         splits: [],
       }), 'splits', 1);
@@ -184,16 +192,6 @@ describe('Split transaction schema', () => {
           }),
         ],
       }), 'splits/0/amount', 'number');
-
-      tester.exclusiveMaximum(createSplitTransactionRequest({
-        splits: [
-          createSplitRequestItem({
-            amount: 1,
-            loanAccountId: createAccountId(),
-            isSettled: false,
-          }),
-        ],
-      }), 'splits/0/amount', 0, 'if splits.loanAccountId is set');
     });
 
     describe('if data.splits.description', () => {
@@ -388,6 +386,289 @@ describe('Split transaction schema', () => {
           }),
         ],
       }), 'splits/0/projectId');
+    });
+
+    describe('if data.loans', () => {
+      tester.minItems(createSplitTransactionRequest({
+        loans: [],
+      }), 'loans', 1);
+
+      tester.additionalProperties(createSplitTransactionRequest({
+        loans: [
+          {
+            ...createLoanRequestItem(),
+            extra: 1,
+          } as any,
+        ],
+      }), 'loans/0');
+    });
+
+    describe('if data.loans.amount', () => {
+      tester.required(createSplitTransactionRequest({
+        loans: [
+          createLoanRequestItem({
+            amount: undefined,
+          }),
+        ],
+      }), 'amount');
+
+      tester.type(createSplitTransactionRequest({
+        loans: [
+          createLoanRequestItem({
+            amount: '1' as any,
+          }),
+        ],
+      }), 'loans/0/amount', 'number');
+
+      tester.exclusiveMaximum(createSplitTransactionRequest({
+        loans: [
+          createLoanRequestItem({
+            amount: 1,
+            loanAccountId: createAccountId(),
+            isSettled: false,
+          }),
+        ],
+      }), 'loans/0/amount', 0);
+    });
+
+    describe('if data.loans.description', () => {
+      tester.type(createSplitTransactionRequest({
+        loans: [
+          createLoanRequestItem({
+            description: 1 as any,
+          }),
+        ],
+      }), 'loans/0/description', 'string');
+
+      tester.minLength(createSplitTransactionRequest({
+        loans: [
+          createLoanRequestItem({
+            description: '',
+          }),
+        ],
+      }), 'loans/0/description', 1);
+    });
+
+    describe('if data.loans.quantity', () => {
+      tester.dependentRequired(createSplitTransactionRequest({
+        loans: [
+          createLoanRequestItem({
+            productId: undefined,
+          }),
+        ],
+      }), 'quantity', 'productId');
+
+      tester.type(createSplitTransactionRequest({
+        loans: [
+          createLoanRequestItem({
+            quantity: '1' as any,
+          }),
+        ],
+      }), 'loans/0/quantity', 'number');
+
+      tester.exclusiveMinimum(createSplitTransactionRequest({
+        loans: [
+          createLoanRequestItem({
+            quantity: 0,
+          }),
+        ],
+      }), 'loans/0/quantity', 0);
+    });
+
+    describe('if data.loans.productId', () => {
+      tester.dependentRequired(createSplitTransactionRequest({
+        loans: [
+          createLoanRequestItem({
+            quantity: undefined,
+          }),
+        ],
+      }), 'productId', 'quantity');
+
+      tester.type(createSplitTransactionRequest({
+        loans: [
+          createLoanRequestItem({
+            productId: 1 as any,
+          }),
+        ],
+      }), 'loans/0/productId', 'string');
+
+      tester.pattern(createSplitTransactionRequest({
+        loans: [
+          createLoanRequestItem({
+            productId: createProductId('not-valid'),
+          }),
+        ],
+      }), 'loans/0/productId');
+    });
+
+    describe('if data.loans.invoiceNumber', () => {
+      tester.dependentRequired(createSplitTransactionRequest({
+        loans: [
+          createLoanRequestItem({
+            billingEndDate: undefined,
+            billingStartDate: undefined,
+          }),
+        ],
+      }), 'invoiceNumber', 'billingEndDate', 'billingStartDate');
+
+      tester.type(createSplitTransactionRequest({
+        loans: [
+          createLoanRequestItem({
+            invoiceNumber: 1 as any,
+          }),
+        ],
+      }), 'loans/0/invoiceNumber', 'string');
+
+      tester.minLength(createSplitTransactionRequest({
+        loans: [
+          createLoanRequestItem({
+            invoiceNumber: '',
+          }),
+        ],
+      }), 'loans/0/invoiceNumber', 1);
+    });
+
+    describe('if data.loans[0].billingEndDate', () => {
+      tester.dependentRequired(createSplitTransactionRequest({
+        loans: [
+          createLoanRequestItem({
+            billingStartDate: undefined,
+          }),
+        ],
+      }), 'billingEndDate', 'billingStartDate');
+
+      tester.type(createSplitTransactionRequest({
+        loans: [
+          createLoanRequestItem({
+            billingEndDate: 1 as any,
+          }),
+        ],
+      }), 'loans/0/billingEndDate', 'string');
+
+      tester.format(createSplitTransactionRequest({
+        loans: [
+          createLoanRequestItem({
+            billingEndDate: 'not-date',
+          }),
+        ],
+      }), 'loans/0/billingEndDate', 'date');
+
+      tester.formatExclusiveMinimum(createSplitTransactionRequest({
+        loans: [
+          createLoanRequestItem({
+            billingEndDate: '2022-01-01',
+            billingStartDate: '2022-12-31',
+          }),
+        ],
+      }), 'loans/0/billingEndDate');
+    });
+
+    describe('if data.loans[0].billingStartDate', () => {
+      tester.dependentRequired(createSplitTransactionRequest({
+        loans: [
+          createLoanRequestItem({
+            billingEndDate: undefined,
+          }),
+        ],
+      }), 'billingStartDate', 'billingEndDate');
+
+      tester.type(createSplitTransactionRequest({
+        loans: [
+          createLoanRequestItem({
+            billingStartDate: 1 as any,
+          }),
+        ],
+      }), 'loans/0/billingStartDate', 'string');
+
+      tester.format(createSplitTransactionRequest({
+        loans: [
+          createLoanRequestItem({
+            billingStartDate: 'not-date',
+          }),
+        ],
+      }), 'loans/0/billingStartDate', 'date');
+    });
+
+    describe('if data.loans[0].categoryId', () => {
+      tester.type(createSplitTransactionRequest({
+        loans: [
+          createLoanRequestItem({
+            categoryId: 1 as any,
+          }),
+        ],
+      }), 'loans/0/categoryId', 'string');
+
+      tester.pattern(createSplitTransactionRequest({
+        loans: [
+          createLoanRequestItem({
+            categoryId: createCategoryId('not-valid'),
+          }),
+        ],
+      }), 'loans/0/categoryId');
+    });
+
+    describe('if data.loans[0].projectId', () => {
+      tester.type(createSplitTransactionRequest({
+        loans: [
+          createLoanRequestItem({
+            projectId: 1 as any,
+          }),
+        ],
+      }), 'loans/0/projectId', 'string');
+
+      tester.pattern(createSplitTransactionRequest({
+        loans: [
+          createLoanRequestItem({
+            projectId: createProjectId('not-valid'),
+          }),
+        ],
+      }), 'loans/0/projectId');
+    });
+
+    describe('if data.loans[0].loanAccountId', () => {
+      tester.type(createSplitTransactionRequest({
+        loans: [
+          createLoanRequestItem({
+            loanAccountId: 1 as any,
+          }),
+        ],
+      }), 'loans/0/loanAccountId', 'string');
+
+      tester.pattern(createSplitTransactionRequest({
+        loans: [
+          createLoanRequestItem({
+            loanAccountId: createAccountId('not-valid'),
+          }),
+        ],
+      }), 'loans/0/loanAccountId');
+    });
+
+    describe('if data.loans[0].transactionId', () => {
+      tester.type(createSplitTransactionRequest({
+        loans: [
+          createLoanRequestItem({
+            transactionId: 1 as any,
+          }),
+        ],
+      }), 'loans/0/transactionId', 'string');
+
+      tester.pattern(createSplitTransactionRequest({
+        loans: [
+          createLoanRequestItem({
+            transactionId: createTransactionId('not-valid'),
+          }),
+        ],
+      }), 'loans/0/transactionId');
+    });
+
+    describe('if data.loans[0].isSettled', () => {
+      tester.type(createSplitTransactionRequest({
+        loans: [
+          createLoanRequestItem({
+            isSettled: 1 as any,
+          }),
+        ],
+      }), 'loans/0/isSettled', 'boolean');
     });
   });
 });

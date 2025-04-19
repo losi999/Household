@@ -1,8 +1,8 @@
 import { getAccountId, getTransactionId } from '@household/shared/common/utils';
+import { AccountType } from '@household/shared/enums';
 import { Account, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
-import { loanTransferTransactionDataFactory } from '@household/test/api/transaction/loan-transfer/loan-transfer-data-factory';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
@@ -41,8 +41,8 @@ describe('DELETE /account/v1/accounts/{accountId}', () => {
       let invertedTransferTransactionDocument: Transaction.TransferDocument;
       let repayingTransferTransactionDocument: Transaction.TransferDocument;
       let invertedRepayingTransferTransactionDocument: Transaction.TransferDocument;
-      let loanTransferTransactionDocument: Transaction.LoanTransferDocument;
-      let invertedLoanTransferTransactionDocument: Transaction.LoanTransferDocument;
+      let loanTransferTransactionDocument: Transaction.TransferDocument;
+      let invertedLoanTransferTransactionDocument: Transaction.TransferDocument;
       let payingDeferredTransactionDocument: Transaction.DeferredDocument;
       let owningDeferredTransactionDocument: Transaction.DeferredDocument;
       let payingDeferredToLoanTransactionDocument: Transaction.DeferredDocument;
@@ -52,7 +52,7 @@ describe('DELETE /account/v1/accounts/{accountId}', () => {
       beforeEach(() => {
         secondaryAccountDocument = accountDataFactory.document();
         loanAccountDocument = accountDataFactory.document({
-          accountType: 'loan',
+          accountType: AccountType.Loan,
         });
 
         paymentTransactionDocument = paymentTransactionDataFactory.document({
@@ -65,14 +65,13 @@ describe('DELETE /account/v1/accounts/{accountId}', () => {
 
         deferredSplitTransactionDocument = splitTransactionDataFactory.document({
           account: secondaryAccountDocument,
-          splits: [
+          loans: [
             {
               loanAccount: accountDocument,
             },
             {
               loanAccount: loanAccountDocument,
             },
-            {},
           ],
         });
 
@@ -86,12 +85,12 @@ describe('DELETE /account/v1/accounts/{accountId}', () => {
           transferAccount: accountDocument,
         });
 
-        loanTransferTransactionDocument = loanTransferTransactionDataFactory.document({
+        loanTransferTransactionDocument = transferTransactionDataFactory.document({
           account: accountDocument,
           transferAccount: loanAccountDocument,
         });
 
-        invertedLoanTransferTransactionDocument = loanTransferTransactionDataFactory.document({
+        invertedLoanTransferTransactionDocument = transferTransactionDataFactory.document({
           account: loanAccountDocument,
           transferAccount: accountDocument,
         });
@@ -166,7 +165,7 @@ describe('DELETE /account/v1/accounts/{accountId}', () => {
           .validateTransactionDeleted(getTransactionId(repayingTransferTransactionDocument))
           .validateTransactionDeleted(getTransactionId(invertedRepayingTransferTransactionDocument))
           .validateConvertedToPaymentDocument(owningDeferredTransactionDocument)
-          .validateConvertedToRegularSplitItemDocument(deferredSplitTransactionDocument);
+          .validateConvertedToRegularSplitItemDocument(deferredSplitTransactionDocument, getAccountId(accountDocument));
       });
     });
 

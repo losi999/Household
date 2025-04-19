@@ -155,6 +155,7 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
                 'splits.transactionType',
                 'splits.ownerAccount',
                 'splits.isSettled',
+                'splits._id',
               ],
             },
           ],

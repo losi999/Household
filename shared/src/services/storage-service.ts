@@ -6,6 +6,7 @@ export interface IStorageService {
   getSignedUrlForUpload(fileName: string): Promise<string>;
   writeFile(bucket: string, fileName: string, data: object, folder: string): Promise<unknown>;
   readFile(bucket: string, fileName: string): Promise<Uint8Array>;
+  deleteFile(fileName: string): Promise<unknown>;
 }
 
 export const storageServiceFactory = (s3: S3, s3Client: S3Client, s3RequestPresigner: typeof getSignedUrl): IStorageService => {
@@ -33,6 +34,12 @@ export const storageServiceFactory = (s3: S3, s3Client: S3Client, s3RequestPresi
         Key: fileName,
       });
       return resp.Body.transformToByteArray();
+    },
+    deleteFile: (fileName) => {
+      return s3.deleteObject({
+        Bucket: process.env.IMPORT_BUCKET,
+        Key: `${fileName}`,
+      });
     },
   };
 

@@ -111,7 +111,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
         cy.authenticate(1)
           .requestUpdateCategory(categoryDataFactory.id(),
             categoryDataFactory.request({
-              name: 1,
+              name: <any>1,
             }))
           .expectBadRequestResponse()
           .expectWrongPropertyType('name', 'string', 'body');
@@ -156,7 +156,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
         cy.authenticate(1)
           .requestUpdateCategory(categoryDataFactory.id(),
             categoryDataFactory.request({
-              categoryType: 1,
+              categoryType: <any>1,
             }))
           .expectBadRequestResponse()
           .expectWrongPropertyType('categoryType', 'string', 'body');
@@ -166,7 +166,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
         cy.authenticate(1)
           .requestUpdateCategory(categoryDataFactory.id(),
             categoryDataFactory.request({
-              categoryType: 'not-category-type',
+              categoryType: <any>'not-category-type',
             }))
           .expectBadRequestResponse()
           .expectWrongEnumValue('categoryType', 'body');
@@ -178,7 +178,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
         cy.authenticate(1)
           .requestUpdateCategory(categoryDataFactory.id(),
             categoryDataFactory.request({
-              parentCategoryId: 1,
+              parentCategoryId: <any>1,
             }))
           .expectBadRequestResponse()
           .expectWrongPropertyType('parentCategoryId', 'string', 'body');
@@ -188,7 +188,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
         cy.authenticate(1)
           .requestUpdateCategory(categoryDataFactory.id(),
             categoryDataFactory.request({
-              parentCategoryId: 'not-mongo-id',
+              parentCategoryId: <any>'not-mongo-id',
             }))
           .expectBadRequestResponse()
           .expectWrongPropertyPattern('parentCategoryId', 'body');
