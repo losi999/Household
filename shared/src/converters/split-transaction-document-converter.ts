@@ -100,7 +100,7 @@ export const splitTransactionDocumentConverterFactory = (
             product: products[s.productId],
             project: projects[s.projectId],
             recipient,
-          }, expiresIn, true);
+          }, expiresIn, generateId);
 
           return deferredDocument;
         }) ?? [],
