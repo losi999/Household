@@ -81,10 +81,6 @@ const schema: StrictJSONSchema7<Transaction.SplitResponse> = {
             ...category,
             properties: {
               ...category.properties,
-              // products: {
-              //   type: 'array',
-              //   items: productId,
-              // },
             },
           },
           project,
