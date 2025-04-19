@@ -315,6 +315,7 @@ workflows:
             branches:
               only:
                 - master
+                - temp-master
       - unit_test:
           name: unit_test
           requires:
