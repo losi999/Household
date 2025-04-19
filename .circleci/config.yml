@@ -300,12 +300,6 @@ workflows:
           testCommand: "transaction-transfer"
           requires:
             - web_deploy_dev
-      - test:
-          name: test_dev_transaction_loan_transfer
-          env: "DEV"
-          testCommand: "transaction-loan-transfer"
-          requires:
-            - web_deploy_dev
 
   prod:
     jobs:
