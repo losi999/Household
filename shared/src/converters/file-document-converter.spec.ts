@@ -75,9 +75,7 @@ describe('File document converter', () => {
   describe('toResponse', () => {
     it('should return response', () => {
 
-      const result = converter.toResponse({
-        ...queriedDocument,
-      });
+      const result = converter.toResponse(queriedDocument);
       expect(result).toEqual(createFileResponse({
         fileId: getFileId(queriedDocument),
         fileType,
