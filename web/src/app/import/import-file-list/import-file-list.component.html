@@ -1,0 +1,6 @@
+<ngx-skeleton-loader *ngIf="files.length === 0" count="10" appearance="line" animation="progress" [theme]="{
+  height: '48px'
+}" />
+<mat-action-list>
+  <household-import-file-list-item *ngFor="let file of files" [file]="file" />
+</mat-action-list>

@@ -22,6 +22,7 @@ import { TransactionModule } from '@household/web/app/transaction/transaction.mo
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { MatMenuModule } from '@angular/material/menu';
 import { KeyvalueAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/keyvalue-autocomplete-input/keyvalue-autocomplete-input.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @NgModule({
   declarations: [
@@ -51,6 +52,7 @@ import { KeyvalueAutocompleteInputComponent } from '@household/web/app/shared/au
     TransactionModule,
     MatMenuModule,
     NgxSkeletonLoaderModule,
+    MatTooltipModule,
   ],
 })
 export class AccountModule { }

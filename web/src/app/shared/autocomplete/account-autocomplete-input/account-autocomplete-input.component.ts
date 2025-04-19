@@ -34,7 +34,7 @@ export class AccountAutocompleteInputComponent implements OnInit, OnChanges, Con
   selected: FormControl<Account.Response>;
   @Input() exclude: Account.Id;
 
-  changed: (value: Account.Id) => void;
+  changed: (value: Account.Response) => void;
   touched: () => void;
   isDisabled: boolean;
 

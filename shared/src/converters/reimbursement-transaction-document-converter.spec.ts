@@ -9,6 +9,7 @@ import { ICategoryDocumentConverter } from '@household/shared/converters/categor
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
 import { Transaction } from '@household/shared/types/types';
 import { IReimbursementTransactionDocumentConverter, reimbursementTransactionDocumentConverterFactory } from '@household/shared/converters/reimbursement-transaction-document-converter';
+import { CategoryType } from '@household/shared/enums';
 
 describe('Reimbursement transaction document converter', () => {
   let converter: IReimbursementTransactionDocumentConverter;
@@ -48,10 +49,10 @@ describe('Reimbursement transaction document converter', () => {
   const recipient = createRecipientDocument();
   const regularCategory = createCategoryDocument();
   const invoiceCategory = createCategoryDocument({
-    categoryType: 'invoice',
+    categoryType: CategoryType.Invoice,
   });
   const inventoryCategory = createCategoryDocument({
-    categoryType: 'inventory',
+    categoryType: CategoryType.Inventory,
   });
   const product = createProductDocument();
   const productId = getProductId(product);

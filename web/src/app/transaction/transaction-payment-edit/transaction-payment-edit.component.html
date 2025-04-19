@@ -1,7 +1,21 @@
+<household-toolbar title="Tranzakció">
+  <button mat-icon-button type="button" tabindex="-1" [matMenuTriggerFor]="new">
+    <mat-icon>autorenew</mat-icon>
+  </button>
+  <mat-menu #new="matMenu">
+    <button mat-menu-item replaceUrl="true" [routerLink]="['..', 'split']">Bontás</button>
+    <button mat-menu-item replaceUrl="true" [routerLink]="['..', 'loan']">Kölcsön</button>
+    <button mat-menu-item replaceUrl="true" [routerLink]="['..', 'transfer']">Átvitel</button>
+  </mat-menu>
+  <button mat-icon-button type="button" tabindex="-1" (click)="save()">
+    <mat-icon>save</mat-icon>
+  </button>
+</household-toolbar>
+
 <form [formGroup]="form">
   <household-datetime-input formControlName="issuedAt" />
 
-  <household-amount-input [currency]="form.value.account?.currency" formControlName="amount" [isPositive]="(activatedRoute.params | async).formType === 'income'" />
+  <household-amount-input [currency]="form.value.account?.currency" formControlName="amount" [isPositive]="(activatedRoute.data | async).income" />
 
   <household-account-autocomplete-input label="Számla" formControlName="account" />
 

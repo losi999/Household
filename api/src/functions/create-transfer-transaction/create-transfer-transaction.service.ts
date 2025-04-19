@@ -1,7 +1,7 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { getAccountId, getTransactionId, pushUnique, toDictionary } from '@household/shared/common/utils';
-import { ILoanTransferTransactionDocumentConverter } from '@household/shared/converters/loan-transfer-transaction-document-converter';
 import { ITransferTransactionDocumentConverter } from '@household/shared/converters/transfer-transaction-document-converter';
+import { AccountType } from '@household/shared/enums';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
 import { Transaction } from '@household/shared/types/types';
@@ -17,7 +17,6 @@ export const createTransferTransactionServiceFactory = (
   accountService: IAccountService,
   transactionService: ITransactionService,
   transferTransactionDocumentConverter: ITransferTransactionDocumentConverter,
-  loanTransferDocumentDonverter: ILoanTransferTransactionDocumentConverter,
 ): ICreateTransferTransactionService => {
   return async ({ body, expiresIn }) => {
     const { accountId, transferAccountId, payments } = body;
@@ -48,24 +47,16 @@ export const createTransferTransactionServiceFactory = (
       account: transferAccount,
     }, 400);
 
-    let document: Transaction.TransferDocument | Transaction.LoanTransferDocument;
+    let document: Transaction.TransferDocument;
 
-    if (account.accountType === 'loan' || transferAccount.accountType === 'loan') {
-      if (account.accountType === transferAccount.accountType) {
-        body.payments = undefined;
-        document = transferTransactionDocumentConverter.create({
-          body,
-          account,
-          transferAccount,
-          transactions: undefined,
-        }, expiresIn);
-      } else {
-        document = loanTransferDocumentDonverter.create({
-          body,
-          account,
-          transferAccount,
-        }, expiresIn);
-      }
+    if (account.accountType === AccountType.Loan || transferAccount.accountType === AccountType.Loan) {
+      body.payments = undefined;
+      document = transferTransactionDocumentConverter.create({
+        body,
+        account,
+        transferAccount,
+        transactions: undefined,
+      }, expiresIn);
     } else {
       if (payments) {
         const deferredTransactionIds: Transaction.Id[] = [];

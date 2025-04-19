@@ -3,16 +3,12 @@ import { DataFactoryFunction } from '@household/shared/types/common';
 import { Account } from '@household/shared/types/types';
 import { faker } from '@faker-js/faker';
 import { createId } from '@household/test/api/utils';
+import { AccountType } from '@household/shared/enums';
 
 export const accountDataFactory = (() => {
   const createAccountRequest: DataFactoryFunction<Account.Request> = (req) => {
     return {
-      accountType: faker.helpers.arrayElement([
-        'bankAccount',
-        'cash',
-        'creditCard',
-        'cafeteria',
-      ]),
+      accountType: faker.helpers.arrayElement(Object.values(AccountType).filter(a => a !== AccountType.Loan)),
       name: `${faker.finance.accountName()} ${faker.finance.accountNumber()}`,
       currency: faker.finance.currencySymbol(),
       owner: faker.person.firstName(),

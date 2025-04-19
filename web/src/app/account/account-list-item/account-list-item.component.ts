@@ -26,7 +26,7 @@ export class AccountListItemComponent implements OnInit {
     this.balance = this.account.accountType === 'loan' ? Math.abs(this.account.balance) : this.account.balance;
 
     if (this.account.accountType === 'loan') {
-      this.balanceTitle = this.account.balance <= 0 ? 'Kintlévőség' : 'Tartozás';
+      this.balanceTitle = this.account.balance >= 0 ? 'Kintlévőség' : 'Tartozás';
     } else {
       this.balanceTitle = 'Egyenleg';
     }

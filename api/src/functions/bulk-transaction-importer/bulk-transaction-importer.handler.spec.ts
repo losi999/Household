@@ -6,7 +6,7 @@ describe('Bulk transaction importer handler', () => {
   let mockBulkTransactionImporterService: jest.Mock;
 
   const bucketName = 'bucket-name';
-  const fileName = 'file.xls';
+  const fileId = 'file.xls';
 
   const handlerEvent = {
     Records: [
@@ -16,7 +16,7 @@ describe('Bulk transaction importer handler', () => {
             name: bucketName,
           },
           object: {
-            key: fileName,
+            key: fileId,
           },
 
         },
@@ -37,7 +37,7 @@ describe('Bulk transaction importer handler', () => {
     expect(result).toBeUndefined();
     expect(mockBulkTransactionImporterService).toHaveBeenCalledWith({
       bucketName,
-      fileName,
+      fileId,
     });
     expect.assertions(2);
   });
@@ -51,7 +51,7 @@ describe('Bulk transaction importer handler', () => {
     await (handlerFuntion(handlerEvent, undefined, undefined) as Promise<any>).catch(validateError(errorMessage));
     expect(mockBulkTransactionImporterService).toHaveBeenCalledWith({
       bucketName,
-      fileName,
+      fileId,
     });
     expect.assertions(2);
   });

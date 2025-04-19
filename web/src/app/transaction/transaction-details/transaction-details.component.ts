@@ -64,8 +64,7 @@ export class TransactionDetailsComponent implements OnInit {
           case 'payment': this.formType = transaction.amount >= 0 ? 'income' : 'payment'; break;
           case 'deferred':
           case 'reimbursement': this.formType = 'loan'; break;
-          case 'transfer':
-          case 'loanTransfer': this.formType = 'transfer'; break;
+          case 'transfer': this.formType = 'transfer'; break;
           case 'split': this.formType = 'split'; break;
         }
       }));

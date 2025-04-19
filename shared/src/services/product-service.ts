@@ -106,7 +106,7 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
       });
     },
     getProductById: async (productId) => {
-      return !productId ? null : mongodbService.products.findById(productId)
+      return !productId ? undefined : mongodbService.products.findById(productId)
         .setOptions({
           lean: true,
         })

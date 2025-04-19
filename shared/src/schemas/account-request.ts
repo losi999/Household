@@ -1,3 +1,4 @@
+import { AccountType } from '@household/shared/enums';
 import { StrictJSONSchema7 } from '@household/shared/types/common';
 import { Account } from '@household/shared/types/types';
 
@@ -21,13 +22,7 @@ const schema: StrictJSONSchema7<Account.Request> = {
     },
     accountType: {
       type: 'string',
-      enum: [
-        'bankAccount',
-        'cash',
-        'creditCard',
-        'loan',
-        'cafeteria',
-      ],
+      enum: Object.values(AccountType),
     },
     owner: {
       type: 'string',

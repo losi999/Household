@@ -5,6 +5,7 @@ import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId
 import { IDeferredTransactionDocumentConverter } from '@household/shared/converters/deferred-transaction-document-converter';
 import { IPaymentTransactionDocumentConverter } from '@household/shared/converters/payment-transaction-document-converter';
 import { IReimbursementTransactionDocumentConverter } from '@household/shared/converters/reimbursement-transaction-document-converter';
+import { AccountType, CategoryType } from '@household/shared/enums';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICategoryService } from '@household/shared/services/category-service';
 import { IProductService } from '@household/shared/services/product-service';
@@ -53,10 +54,10 @@ describe('Create payment transaction service', () => {
   beforeEach(() => {
     queriedAccount = createAccountDocument();
     queriedLoanAccount = createAccountDocument({
-      accountType: 'loan',
+      accountType: AccountType.Loan,
     });
     queriedCategory = createCategoryDocument({
-      categoryType: 'inventory',
+      categoryType: CategoryType.Inventory,
     });
     queriedProduct = createProductDocument({
       category: queriedCategory,
@@ -573,7 +574,7 @@ describe('Create payment transaction service', () => {
 
     it('if loanAccount is loan type for reimbursement transaction', async () => {
       const queriedSecondLoanAccount = createAccountDocument({
-        accountType: 'loan',
+        accountType: AccountType.Loan,
       });
       body = createPaymentTransactionRequest({
         ...body,

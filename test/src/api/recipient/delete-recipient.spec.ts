@@ -6,6 +6,7 @@ import { recipientDataFactory } from './data-factory';
 import { accountDataFactory } from '../account/data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
+import { AccountType } from '@household/shared/enums';
 
 describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
   let recipientDocument: Recipient.Document;
@@ -48,7 +49,7 @@ describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
       beforeEach(() => {
         accountDocument = accountDataFactory.document();
         loanAccountDocument = accountDataFactory.document({
-          accountType: 'loan',
+          accountType: AccountType.Loan,
         });
 
         unrelatedRecipientDocument = recipientDataFactory.document();

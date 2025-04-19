@@ -2,6 +2,7 @@ import { default as schema } from '@household/test/api/schemas/product-response-
 import { Category, Product } from '@household/shared/types/types';
 import { productDataFactory } from './data-factory';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
+import { CategoryType } from '@household/shared/enums';
 
 describe('GET /product/v1/products', () => {
   let productDocument1: Product.Document;
@@ -12,12 +13,12 @@ describe('GET /product/v1/products', () => {
   beforeEach(() => {
     categoryDocument1 = categoryDataFactory.document({
       body: {
-        categoryType: 'inventory',
+        categoryType: CategoryType.Inventory,
       },
     });
     categoryDocument2 = categoryDataFactory.document({
       body: {
-        categoryType: 'inventory',
+        categoryType: CategoryType.Inventory,
       },
     });
 

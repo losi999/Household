@@ -13,22 +13,22 @@ export class AccountService {
   }
 
   listAccounts(): Observable<Account.Response[]> {
-    return this.httpClient.get<Account.Response[]>(`${environment.apiUrl}${environment.accountStage}v1/accounts`);
+    return this.httpClient.get<Account.Response[]>(`${environment.apiUrl}/account/v1/accounts`);
   }
 
   createAccount(body: Account.Request) {
-    return this.httpClient.post<Account.AccountId>(`${environment.apiUrl}${environment.accountStage}v1/accounts`, body);
+    return this.httpClient.post<Account.AccountId>(`${environment.apiUrl}/account/v1/accounts`, body);
   }
 
   getAccountById(accountId: Account.Id) {
-    return this.httpClient.get<Account.Response>(`${environment.apiUrl}${environment.accountStage}v1/accounts/${accountId}`);
+    return this.httpClient.get<Account.Response>(`${environment.apiUrl}/account/v1/accounts/${accountId}`);
   }
 
   updateAccount(accountId: Account.Id, body: Account.Request) {
-    return this.httpClient.put<Account.AccountId>(`${environment.apiUrl}${environment.accountStage}v1/accounts/${accountId}`, body);
+    return this.httpClient.put<Account.AccountId>(`${environment.apiUrl}/account/v1/accounts/${accountId}`, body);
   }
 
   deleteAccount(accountId: Account.Id) {
-    return this.httpClient.delete(`${environment.apiUrl}${environment.accountStage}v1/accounts/${accountId}`);
+    return this.httpClient.delete(`${environment.apiUrl}/account/v1/accounts/${accountId}`);
   }
 }

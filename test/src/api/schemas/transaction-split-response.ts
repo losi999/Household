@@ -9,7 +9,6 @@ import { default as amount } from '@household/shared/schemas/partials/transactio
 import { default as description } from '@household/shared/schemas/partials/transaction-description';
 import { default as issuedAt } from '@household/shared/schemas/partials/transaction-issued-at';
 import { default as product } from '@household/test/api/schemas/product-response';
-import { default as productId } from '@household/shared/schemas/product-id';
 import { default as invoice } from '@household/shared/schemas/partials/transaction-invoice';
 import { default as quantity } from '@household/shared/schemas/partials/transaction-quantity';
 
@@ -48,16 +47,7 @@ const schema: StrictJSONSchema7<Transaction.SplitResponse> = {
         properties: {
           ...amount.properties,
           ...description.properties,
-          category: {
-            ...category,
-            properties: {
-              ...category.properties,
-              products: {
-                type: 'array',
-                items: productId,
-              },
-            },
-          },
+          category,
           project,
           ...invoice.properties,
           ...quantity.properties,
@@ -91,10 +81,6 @@ const schema: StrictJSONSchema7<Transaction.SplitResponse> = {
             ...category,
             properties: {
               ...category.properties,
-              products: {
-                type: 'array',
-                items: productId,
-              },
             },
           },
           project,

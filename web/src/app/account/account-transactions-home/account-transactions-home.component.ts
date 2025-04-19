@@ -4,7 +4,7 @@ import { Account } from '@household/shared/types/types';
 import { skip } from 'rxjs/operators';
 import { Store } from '@ngrx/store';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
-import { transactionsPageSize } from '@household/web/app/constants';
+import { transactionsPageSize } from '@household/web/constants';
 import { selectTransactionList } from '@household/web/state/transaction/transaction.selector';
 
 @Component({

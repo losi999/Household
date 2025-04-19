@@ -4,13 +4,13 @@ import { faker } from '@faker-js/faker';
 import { createId } from '@household/test/api/utils';
 import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
 import { getCategoryId } from '@household/shared/common/utils';
-import { categoryTypes } from '@household/shared/constants';
+import { CategoryType } from '@household/shared/enums';
 
 export const categoryDataFactory = (() => {
   const createCategoryRequest: DataFactoryFunction<Category.Request> = (req) => {
     return {
       name: `${faker.company.name()} ${faker.string.uuid()}`,
-      categoryType: faker.helpers.arrayElement(categoryTypes),
+      categoryType: faker.helpers.enumValue(CategoryType),
       parentCategoryId: undefined,
       ...req,
     };
@@ -31,6 +31,6 @@ export const categoryDataFactory = (() => {
   return {
     request: createCategoryRequest,
     document: createCategoryDocument,
-    id: (createId<Category.Id>),
+    id: createId<Category.Id>,
   };
 })();

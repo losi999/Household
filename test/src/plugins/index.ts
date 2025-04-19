@@ -1,11 +1,13 @@
 import webpack from '@cypress/webpack-preprocessor';
 import { accountService, categoryService, projectService, recipientService, transactionService, productService } from '@household/test/api/dependencies';
 
-const setTasksFromService = <T>(on: Cypress.PluginEvents, service: T, ...functions: (keyof T)[]) => {
+const setTasksFromService = <T extends Record<keyof T, (...args: any[]) => Promise<any>>>(on: Cypress.PluginEvents, service: T, ...functions: (keyof T)[]) => {
   on('task', functions.reduce((accumulator, currentValue) => {
     return {
       ...accumulator,
-      [currentValue]: service[currentValue],
+      [currentValue]: async (...params: any[]) => {
+        return (await service[currentValue](...params)) ?? null;
+      },
     };
   }, {}));
 };

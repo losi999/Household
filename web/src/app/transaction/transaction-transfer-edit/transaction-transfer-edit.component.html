@@ -1,3 +1,18 @@
+<household-toolbar title="Tranzakció">
+  <button mat-icon-button type="button" tabindex="-1" [matMenuTriggerFor]="new">
+    <mat-icon>autorenew</mat-icon>
+  </button>
+  <mat-menu #new="matMenu">
+    <button mat-menu-item replaceUrl="true" [routerLink]="['..', 'payment']">Kiadás</button>
+    <button mat-menu-item replaceUrl="true" [routerLink]="['..', 'income']">Bevétel</button>
+    <button mat-menu-item replaceUrl="true" [routerLink]="['..', 'split']">Bontás</button>
+    <button mat-menu-item replaceUrl="true" [routerLink]="['..', 'loan']">Kölcsön</button>
+  </mat-menu>
+  <button mat-icon-button type="button" tabindex="-1" (click)="save()">
+    <mat-icon>save</mat-icon>
+  </button>
+</household-toolbar>
+
 <form [formGroup]="form">
   <household-datetime-input formControlName="issuedAt" />
 

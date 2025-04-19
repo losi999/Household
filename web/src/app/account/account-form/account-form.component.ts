@@ -4,6 +4,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Account } from '@household/shared/types/types';
 import { Store } from '@ngrx/store';
 import { accountApiActions } from '@household/web/state/account/account.actions';
+import { AccountType } from '@household/shared/enums';
 
 export type AccountFormData = Account.Response;
 
@@ -16,13 +17,13 @@ export type AccountFormData = Account.Response;
 export class AccountFormComponent implements OnInit {
   form: FormGroup<{
     name: FormControl<string>;
-    accountType: FormControl<Account.AccountType['accountType']>;
+    accountType: FormControl<AccountType>;
     currency: FormControl<string>;
     owner: FormControl<string>;
   }>;
 
   accountTypes: {
-    [id in Account.AccountType['accountType']]: string
+    [id in AccountType]: string
   } = {
       bankAccount: 'Bankszámla',
       cafeteria: 'Cafeteria',

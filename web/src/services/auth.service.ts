@@ -30,7 +30,7 @@ export class AuthService {
   }
 
   public login(request: Auth.Login.Request): Observable<unknown> {
-    return this.httpClient.post<Auth.Login.Response>(`${environment.apiUrl}${environment.authStage}v1/login`, request).pipe(
+    return this.httpClient.post<Auth.Login.Response>(`${environment.apiUrl}/user/v1/login`, request).pipe(
       map((data) => {
         localStorage.setItem('idToken', data.idToken);
         localStorage.setItem('refreshToken', data.refreshToken);
@@ -43,7 +43,7 @@ export class AuthService {
     const request: Auth.RefreshToken.Request = {
       refreshToken: localStorage.getItem('refreshToken'),
     };
-    return this.httpClient.post<Auth.RefreshToken.Response>(`${environment.apiUrl}${environment.authStage}v1/refreshToken`, request).pipe(map((data) => {
+    return this.httpClient.post<Auth.RefreshToken.Response>(`${environment.apiUrl}/user/v1/refreshToken`, request).pipe(map((data) => {
       localStorage.setItem('idToken', data.idToken);
     }));
   }

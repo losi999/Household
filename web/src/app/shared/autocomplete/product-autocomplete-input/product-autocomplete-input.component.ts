@@ -37,7 +37,7 @@ export class ProductAutocompleteInputComponent implements OnInit, ControlValueAc
 
   selected: FormControl<Product.Response>;
 
-  changed: (value: Product.Id) => void;
+  changed: (value: Product.Response) => void;
   touched: () => void;
   isDisabled: boolean;
 

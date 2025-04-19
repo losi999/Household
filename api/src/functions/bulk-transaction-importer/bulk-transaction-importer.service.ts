@@ -6,37 +6,40 @@ import { ITransactionService } from '@household/shared/services/transaction-serv
 import { IFileDocumentConverter } from '@household/shared/converters/file-document-converter';
 import { httpErrors } from '@household/api/common/error-handlers';
 import { IDraftTransactionDocumentConverter } from '@household/shared/converters/draft-transaction-document-converter';
+import { FileProcessingStatus } from '@household/shared/enums';
 
 export interface IBulkTransactionImporterService {
   (ctx: {
     bucketName: string;
-    fileName: string;
+    fileId: File.Id;
   }): Promise<void>;
 }
 
 export const bulkTransactionImporterServiceFactory = (fileService: IFileService, fileDocumentConverter: IFileDocumentConverter, storageService: IStorageService, excelParser: IExcelParserService, draftTransactionDocumentConverter: IDraftTransactionDocumentConverter, transactionService: ITransactionService): IBulkTransactionImporterService =>
-  async ({ bucketName, fileName }) => {
-    const fileId = fileName.split('/').pop() as File.Id;
-
+  async ({ bucketName, fileId }) => {
     const document = await fileService.getFileById(fileId).catch(httpErrors.file.getById({
       fileId,
     }));
 
-    const file = await storageService.readFile(bucketName, fileName).catch(httpErrors.file.readFile({
+    const file = await storageService.readFile(bucketName, fileId).catch(httpErrors.file.readFile({
       bucketName,
-      fileName,
+      fileId,
     }));
 
-    const parsed = excelParser.parse(file, document.type, document.timezone);
+    const parsed = excelParser.parse({
+      fileContent: file,
+      fileType: document.fileType,
+      timezone: document.timezone,
+    });
 
     const drafts = parsed.map(p => draftTransactionDocumentConverter.create({
       body: p,
       file: document,
-    }, null));
+    }, document.expiresAt ? (document.expiresAt?.getTime() - Date.now()) / 1000 : null));
 
     await transactionService.saveTransactions(drafts).catch(httpErrors.transaction.saveMultiple(drafts));
 
-    const update = fileDocumentConverter.updateStatus('completed');
+    const update = fileDocumentConverter.updateStatus(FileProcessingStatus.Completed);
 
     await fileService.updateFile(fileId, update).catch(httpErrors.file.update({
       fileId,

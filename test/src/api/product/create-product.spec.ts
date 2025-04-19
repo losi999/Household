@@ -1,4 +1,5 @@
 import { getCategoryId } from '@household/shared/common/utils';
+import { CategoryType } from '@household/shared/enums';
 import { Category, Product } from '@household/shared/types/types';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { productDataFactory } from '@household/test/api/product/data-factory';
@@ -12,7 +13,7 @@ describe('POST product/v1/products', () => {
 
     categoryDocument = categoryDataFactory.document({
       body: {
-        categoryType: 'inventory',
+        categoryType: CategoryType.Inventory,
       },
     });
   });
@@ -50,7 +51,7 @@ describe('POST product/v1/products', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestCreateProduct(productDataFactory.request({
-              brand: 1,
+              brand: <any>1,
             }), getCategoryId(categoryDocument))
             .expectBadRequestResponse()
             .expectWrongPropertyType('brand', 'string', 'body');
@@ -93,7 +94,7 @@ describe('POST product/v1/products', () => {
         it('is not number', () => {
           cy.authenticate(1)
             .requestCreateProduct(productDataFactory.request({
-              measurement: '1',
+              measurement: <any>'1',
             }), getCategoryId(categoryDocument))
             .expectBadRequestResponse()
             .expectWrongPropertyType('measurement', 'number', 'body');
@@ -122,7 +123,7 @@ describe('POST product/v1/products', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestCreateProduct(productDataFactory.request({
-              unitOfMeasurement: 1,
+              unitOfMeasurement: <any>1,
             }), getCategoryId(categoryDocument))
             .expectBadRequestResponse()
             .expectWrongPropertyType('unitOfMeasurement', 'string', 'body');
@@ -131,14 +132,14 @@ describe('POST product/v1/products', () => {
         it('is not a valid enum value', () => {
           cy.authenticate(1)
             .requestCreateProduct(productDataFactory.request({
-              unitOfMeasurement: 'not-valid',
+              unitOfMeasurement: <any>'not-valid',
             }), getCategoryId(categoryDocument))
             .expectBadRequestResponse()
             .expectWrongEnumValue('unitOfMeasurement', 'body');
         });
       });
 
-      describe('is categoryId', () => {
+      describe('if categoryId', () => {
         it('is not a valid mongo id', () => {
           cy.authenticate(1)
             .requestCreateProduct(request, categoryDataFactory.id('not-valid'))

@@ -1,0 +1,18 @@
+<form [formGroup]="form" (ngSubmit)="upload()">
+  <h1 mat-dialog-title>Fájl feltöltés</h1>
+  <div mat-dialog-content>
+    <mat-form-field>
+      <mat-label>Fájl típusa</mat-label>
+      <mat-select formControlName="fileType">
+        <mat-option value="erste">Erste</mat-option>
+        <mat-option value="otp">OTP</mat-option>
+        <mat-option value="revolut">Revolut</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <input type="file" (change)="fileSelected($event)">
+  </div>
+  <div mat-dialog-actions>
+    <button mat-button cdkFocusInitial>Feltöltés</button>
+    <button mat-button mat-dialog-close>Mégse</button>
+  </div>
+</form>

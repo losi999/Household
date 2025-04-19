@@ -10,10 +10,10 @@ import { productDataFactory } from '@household/test/api/product/data-factory';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
-import { loanTransferTransactionDataFactory } from '@household/test/api/transaction/loan-transfer/loan-transfer-data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { isDeferredTransaction } from '@household/shared/common/type-guards';
+import { AccountType, CategoryType } from '@household/shared/enums';
 
 const splitTransactionHelper = (doc: Transaction.SplitDocument, split: Transaction.SplitDocumentItem | Transaction.DeferredDocument):(Transaction.SplitDocument & {split?: Transaction.SplitDocumentItem; deferredSplit?: Transaction.DeferredDocument}) => {
   return {
@@ -57,13 +57,13 @@ describe('POST /transaction/v1/transactionReports', () => {
       let excludedReimbursementTransactionDocument: Transaction.ReimbursementDocument;
       let deferredSplitTransactionDocument: Transaction.SplitDocument;
       let transferTransactionDocument: Transaction.TransferDocument;
-      let loanTransferTransactionDocument: Transaction.LoanTransferDocument;
+      let loanTransferTransactionDocument: Transaction.TransferDocument;
 
       beforeEach(() => {
         accountDocument = accountDataFactory.document();
         secondaryAccountDocument = accountDataFactory.document();
         loanAccountDocument = accountDataFactory.document({
-          accountType: 'loan',
+          accountType: AccountType.Loan,
         });
 
         recipientDocument = recipientDataFactory.document();
@@ -74,19 +74,19 @@ describe('POST /transaction/v1/transactionReports', () => {
 
         regularCategoryDocument = categoryDataFactory.document({
           body: {
-            categoryType: 'regular',
+            categoryType: CategoryType.Regular,
           },
         });
 
         invoiceCategoryDocument = categoryDataFactory.document({
           body: {
-            categoryType: 'invoice',
+            categoryType: CategoryType.Invoice,
           },
         });
 
         inventoryCategoryDocument = categoryDataFactory.document({
           body: {
-            categoryType: 'inventory',
+            categoryType: CategoryType.Inventory,
           },
         });
 
@@ -104,7 +104,7 @@ describe('POST /transaction/v1/transactionReports', () => {
           transferAccount: secondaryAccountDocument,
         });
 
-        loanTransferTransactionDocument = loanTransferTransactionDataFactory.document({
+        loanTransferTransactionDocument = transferTransactionDataFactory.document({
           account: accountDocument,
           transferAccount: loanAccountDocument,
         });
@@ -186,8 +186,7 @@ describe('POST /transaction/v1/transactionReports', () => {
           deferredSplitTransactionDocument = splitTransactionDataFactory.document({
             account: secondaryAccountDocument,
             recipient: recipientDocument,
-            splits: [
-              {},
+            loans: [
               {
                 loanAccount: accountDocument,
               },
@@ -300,7 +299,7 @@ describe('POST /transaction/v1/transactionReports', () => {
           deferredSplitTransactionDocument = splitTransactionDataFactory.document({
             account: accountDocument,
             recipient: recipientDocument,
-            splits: [
+            loans: [
               {
                 loanAccount: secondaryAccountDocument,
               },
@@ -336,6 +335,7 @@ describe('POST /transaction/v1/transactionReports', () => {
               splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[0]),
               splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[1]),
               splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]),
+              splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.splits[0]),
             ]);
         });
 
@@ -412,7 +412,7 @@ describe('POST /transaction/v1/transactionReports', () => {
 
           deferredSplitTransactionDocument = splitTransactionDataFactory.document({
             account: secondaryAccountDocument,
-            splits: [
+            loans: [
               {
                 loanAccount: accountDocument,
                 project: projectDocument,
@@ -535,7 +535,7 @@ describe('POST /transaction/v1/transactionReports', () => {
 
           deferredSplitTransactionDocument = splitTransactionDataFactory.document({
             account: secondaryAccountDocument,
-            splits: [
+            loans: [
               {
                 loanAccount: accountDocument,
                 category: regularCategoryDocument,
@@ -669,7 +669,7 @@ describe('POST /transaction/v1/transactionReports', () => {
 
           deferredSplitTransactionDocument = splitTransactionDataFactory.document({
             account: secondaryAccountDocument,
-            splits: [
+            loans: [
               {
                 loanAccount: accountDocument,
                 category: inventoryCategoryDocument,
@@ -805,7 +805,7 @@ describe('POST /transaction/v1/transactionReports', () => {
               issuedAt: new Date(2024, 7, 5, 2, 0, 0).toISOString(),
             },
             account: secondaryAccountDocument,
-            splits: [
+            loans: [
               {
                 loanAccount: accountDocument,
               },

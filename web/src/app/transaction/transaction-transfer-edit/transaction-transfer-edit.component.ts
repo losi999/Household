@@ -1,15 +1,13 @@
-import { Component, DestroyRef, OnInit } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Account, Transaction } from '@household/shared/types/types';
 import { takeFirstDefined } from '@household/web/operators/take-first-defined';
 import { toTransferResponse } from '@household/web/operators/to-transfer-response';
+import { accountApiActions } from '@household/web/state/account/account.actions';
 import { selectAccountById } from '@household/web/state/account/account.selector';
-import { messageActions } from '@household/web/state/message/message.actions';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
 import { selectDeferredTransactionList, selectTransaction } from '@household/web/state/transaction/transaction.selector';
-import { Actions, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { combineLatest, filter, map } from 'rxjs';
 
@@ -38,11 +36,16 @@ export class TransactionTransferEditComponent implements OnInit {
 
   availableDeferredTransactions = this.store.select(selectDeferredTransactionList());
 
-  constructor(public activatedRoute: ActivatedRoute, private destroyRef: DestroyRef, private store: Store, private actions: Actions) { }
+  transactionId: Transaction.Id;
+
+  constructor(public activatedRoute: ActivatedRoute, private store: Store) { }
 
   ngOnInit(): void {
     const accountId = this.activatedRoute.snapshot.paramMap.get('accountId') as Account.Id;
-    const transactionId = this.activatedRoute.snapshot.paramMap.get('transactionId') as Transaction.Id;
+    this.transactionId = this.activatedRoute.snapshot.paramMap.get('transactionId') as Transaction.Id;
+
+    this.store.dispatch(accountApiActions.listAccountsInitiated());
+    this.store.dispatch(transactionApiActions.listDeferredTransactionsInitiated());
 
     this.form = new FormGroup({
       issuedAt: new FormControl(new Date(), [Validators.required]),
@@ -60,7 +63,12 @@ export class TransactionTransferEditComponent implements OnInit {
 
     this.payments = [];
 
-    if (transactionId) {
+    if (this.transactionId) {
+      this.store.dispatch(transactionApiActions.getTransactionInitiated({
+        accountId,
+        transactionId: this.transactionId,
+      }));
+
       const transaction = this.store.select(selectTransaction).pipe(
         takeFirstDefined(),
         toTransferResponse(),
@@ -95,6 +103,8 @@ export class TransactionTransferEditComponent implements OnInit {
       );
 
       transaction.subscribe((transaction) => {
+        this.isDownwardTransfer = transaction.account.accountType !== 'loan' && transaction.amount < 0;
+
         this.form.patchValue({
           amount: transaction.amount,
           account: transaction.account,
@@ -111,63 +121,33 @@ export class TransactionTransferEditComponent implements OnInit {
           },
         })) ?? [];
       });
+    } else {
+      this.store.select(selectAccountById(accountId)).pipe(takeFirstDefined())
+        .subscribe((account) => {
+          this.form.patchValue({
+            account,
+          });
+        });
     }
 
-    this.actions.pipe(
-      ofType(messageActions.submitTransactionEditForm),
-      takeUntilDestroyed(this.destroyRef),
-    ).subscribe(() => {
-      this.form.markAllAsTouched();
-
-      console.log(this.form);
-
-      if (this.form.valid) {
-        const request: Transaction.TransferRequest = {
-          accountId: this.form.value.account.accountId,
-          amount: this.form.value.amount,
-          description: this.form.value.description ?? undefined,
-          issuedAt: this.form.value.issuedAt.toISOString(),
-          transferAccountId: this.form.value.transferAccount.accountId,
-          payments: this.payments.length > 0 ? this.payments.map(p => ({
-            amount: p.amount,
-            transactionId: p.transaction.transactionId,
-          })) : undefined,
-          transferAmount: this.form.value.transferAmount ?? undefined,
-        };
-
-        if (transactionId) {
-          this.store.dispatch(transactionApiActions.updateTransferTransactionInitiated({
-            transactionId,
-            request,
-          }));
-        } else {
-          this.store.dispatch(transactionApiActions.createTransferTransactionInitiated(request));
-        }
-      }
-    });
-
-    this.store.select(selectAccountById(accountId)).pipe(takeFirstDefined())
-      .subscribe((account) => {
-        this.form.patchValue({
-          account,
-        });
-      });
-
-    combineLatest([
+    /*combineLatest([
       this.form.controls.account.valueChanges,
       this.form.controls.transferAccount.valueChanges,
     ]).subscribe(([
       account,
       transferAccount,
     ]) => {
+      console.log('curr', account?.currency, transferAccount?.currency, account?.currency !== transferAccount?.currency);
       this.form.controls.transferAmount.reset();
 
       if (account && transferAccount && account.currency !== transferAccount.currency) {
+        console.log('A');
         this.form.controls.transferAmount.setValidators(Validators.required);
       } else {
+        console.log('B');
         this.form.controls.transferAmount.removeValidators(Validators.required);
       }
-    });
+    });*/
   }
 
   inverseTransaction() {
@@ -191,6 +171,38 @@ export class TransactionTransferEditComponent implements OnInit {
 
   deletePayment(transactionId: Transaction.Id) {
     this.payments = this.payments.filter(p => p.transaction.transactionId !== transactionId);
+  }
+
+  save() {
+    console.log('submit transfer');
+
+    this.form.markAllAsTouched();
+
+    console.log(this.form);
+
+    if (this.form.valid) {
+      const request: Transaction.TransferRequest = {
+        accountId: this.form.value.account.accountId,
+        amount: this.form.value.amount,
+        description: this.form.value.description ?? undefined,
+        issuedAt: this.form.value.issuedAt.toISOString(),
+        transferAccountId: this.form.value.transferAccount.accountId,
+        payments: this.payments.length > 0 ? this.payments.map(p => ({
+          amount: p.amount,
+          transactionId: p.transaction.transactionId,
+        })) : undefined,
+        transferAmount: this.form.value.transferAmount ?? undefined,
+      };
+
+      if (this.transactionId) {
+        this.store.dispatch(transactionApiActions.updateTransferTransactionInitiated({
+          transactionId: this.transactionId,
+          request,
+        }));
+      } else {
+        this.store.dispatch(transactionApiActions.createTransferTransactionInitiated(request));
+      }
+    }
   }
 
 }

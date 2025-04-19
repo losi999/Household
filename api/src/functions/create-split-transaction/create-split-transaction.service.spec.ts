@@ -1,8 +1,9 @@
 import { ICreateSplitTransactionService, createSplitTransactionServiceFactory } from '@household/api/functions/create-split-transaction/create-split-transaction.service';
-import { createAccountDocument, createCategoryDocument, createProductDocument, createProjectDocument, createRecipientDocument, createSplitRequestItem, createSplitTransactionDocument, createSplitTransactionRequest } from '@household/shared/common/test-data-factory';
+import { createAccountDocument, createCategoryDocument, createLoanRequestItem, createProductDocument, createProjectDocument, createRecipientDocument, createSplitRequestItem, createSplitTransactionDocument, createSplitTransactionRequest } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId, toDictionary } from '@household/shared/common/utils';
 import { ISplitTransactionDocumentConverter } from '@household/shared/converters/split-transaction-document-converter';
+import { AccountType, CategoryType } from '@household/shared/enums';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICategoryService } from '@household/shared/services/category-service';
 import { IProductService } from '@household/shared/services/product-service';
@@ -34,14 +35,14 @@ describe('Create split transaction service', () => {
   });
 
   const category = createCategoryDocument({
-    categoryType: 'inventory',
+    categoryType: CategoryType.Inventory,
   });
   const product = createProductDocument({
     category,
   });
   const project = createProjectDocument();
   const loanAccount = createAccountDocument({
-    accountType: 'loan',
+    accountType: AccountType.Loan,
   });
 
   const categoryId = getCategoryId(category);
@@ -59,17 +60,19 @@ describe('Create split transaction service', () => {
     body = createSplitTransactionRequest({
       accountId: getAccountId(queriedAccount),
       recipientId: getRecipientId(queriedRecipient),
+      loans: [
+        createLoanRequestItem({
+          categoryId,
+          projectId,
+          productId,
+          loanAccountId,
+        }),
+      ],
       splits: [
         createSplitRequestItem({
           categoryId,
           projectId,
           productId,
-        }),
-        createSplitRequestItem({
-          categoryId,
-          projectId,
-          productId,
-          loanAccountId,
         }),
       ],
     });
@@ -121,8 +124,8 @@ describe('Create split transaction service', () => {
     it('if account and loan account are the same', async () => {
       body = createSplitTransactionRequest({
         ...body,
-        splits: [
-          createSplitRequestItem({
+        loans: [
+          createLoanRequestItem({
             loanAccountId: getAccountId(queriedAccount),
           }),
         ],
@@ -431,10 +434,11 @@ describe('Create split transaction service', () => {
       const otherProductId = getProductId(otherProduct);
 
       body = createSplitTransactionRequest({
-        ...body,
-        amount: -1,
-        splits: [
-          createSplitRequestItem({
+        accountId: getAccountId(queriedAccount),
+        recipientId: getRecipientId(queriedRecipient),
+        splits: [],
+        loans: [
+          createLoanRequestItem({
             categoryId,
             projectId,
             productId: otherProductId,
@@ -472,17 +476,19 @@ describe('Create split transaction service', () => {
       body = createSplitTransactionRequest({
         ...body,
         accountId: getAccountId(loanAccount),
+        loans: [
+          createLoanRequestItem({
+            categoryId,
+            projectId,
+            productId,
+            loanAccountId: getAccountId(queriedAccount),
+          }),
+        ],
         splits: [
           createSplitRequestItem({
             categoryId,
             projectId,
             productId,
-          }),
-          createSplitRequestItem({
-            categoryId,
-            projectId,
-            productId,
-            loanAccountId: getAccountId(queriedAccount),
           }),
         ],
       });

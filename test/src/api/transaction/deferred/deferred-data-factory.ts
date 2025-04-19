@@ -2,6 +2,7 @@ import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { deferredTransactionDocumentConverter } from '@household/shared/dependencies/converters/deferred-transaction-document-converter';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
+import { AccountType } from '@household/shared/enums';
 
 export const deferredTransactionDataFactory = (() => {
   const createDeferredTransactionDocument = (ctx: {
@@ -13,7 +14,7 @@ export const deferredTransactionDataFactory = (() => {
     project?: Project.Document;
     recipient?: Recipient.Document;
   }): Transaction.DeferredDocument => {
-    if (ctx.account.accountType === 'loan') {
+    if (ctx.account.accountType === AccountType.Loan) {
       throw 'Paying account type cannot be loan in deferred transaction';
     }
 

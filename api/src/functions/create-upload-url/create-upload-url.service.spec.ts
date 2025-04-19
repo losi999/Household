@@ -3,6 +3,7 @@ import { createFileDocument, createFileRequest } from '@household/shared/common/
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { generateMongoId } from '@household/shared/common/utils';
 import { IFileDocumentConverter } from '@household/shared/converters/file-document-converter';
+import { FileProcessingStatus } from '@household/shared/enums';
 import { IFileService } from '@household/shared/services/file-service';
 import { IStorageService } from '@household/shared/services/storage-service';
 
@@ -27,7 +28,7 @@ describe('Create upload URL service', () => {
     processingStatus: undefined,
   });
   const savedFileDocument = createFileDocument({
-    processingStatus: 'pending',
+    processingStatus: FileProcessingStatus.Pending,
     _id: generateMongoId(),
   });
 
@@ -45,7 +46,7 @@ describe('Create upload URL service', () => {
       });
       validateFunctionCall(mockFileDocumentConverter.functions.create, fileRequest, undefined);
       validateFunctionCall(mockFileService.functions.saveFile, convertedFileDocument);
-      validateFunctionCall(mockStorageService.functions.getSignedUrlForUpload, `${fileRequest.type}/${savedFileDocument._id}`);
+      validateFunctionCall(mockStorageService.functions.getSignedUrlForUpload, savedFileDocument._id.toString());
       expect.assertions(3);
     });
   });
@@ -76,7 +77,7 @@ describe('Create upload URL service', () => {
       }).catch(validateError('Error while getting URL for file upload', 500));
       validateFunctionCall(mockFileDocumentConverter.functions.create, fileRequest, undefined);
       validateFunctionCall(mockFileService.functions.saveFile, convertedFileDocument);
-      validateFunctionCall(mockStorageService.functions.getSignedUrlForUpload, `${fileRequest.type}/${savedFileDocument._id}`);
+      validateFunctionCall(mockStorageService.functions.getSignedUrlForUpload, savedFileDocument._id.toString());
       expect.assertions(5);
     });
   });

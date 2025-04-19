@@ -1,24 +1,24 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { getAccountId, pushUnique, toDictionary } from '@household/shared/common/utils';
-import { ILoanTransferTransactionDocumentConverter } from '@household/shared/converters/loan-transfer-transaction-document-converter';
 import { ITransferTransactionDocumentConverter } from '@household/shared/converters/transfer-transaction-document-converter';
+import { AccountType } from '@household/shared/enums';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
 import { Transaction } from '@household/shared/types/types';
+import { UpdateQuery } from 'mongoose';
 
 export interface IUpdateToTransferTransactionService {
   (ctx: {
     body: Transaction.TransferRequest;
     transactionId: Transaction.Id;
     expiresIn: number;
-  }): Promise<void>;
+  }): Promise<unknown>;
 }
 
 export const updateToTransferTransactionServiceFactory = (
   accountService: IAccountService,
   transactionService: ITransactionService,
   transferTransactionDocumentConverter: ITransferTransactionDocumentConverter,
-  loanTransferDocumentDonverter: ILoanTransferTransactionDocumentConverter,
 ): IUpdateToTransferTransactionService => {
   return async ({ body, transactionId, expiresIn }) => {
     const { accountId, transferAccountId, payments } = body;
@@ -58,26 +58,16 @@ export const updateToTransferTransactionServiceFactory = (
       account: transferAccount,
     }, 400);
 
-    if (account.accountType === 'loan' || transferAccount.accountType === 'loan') {
-      if (account.accountType === transferAccount.accountType) {
-        body.payments = undefined;
-        const document = transferTransactionDocumentConverter.create({
-          body,
-          account,
-          transferAccount,
-          transactions: undefined,
-        }, expiresIn);
+    let update: UpdateQuery<Transaction.Document>;
 
-        await transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update(document));
-      } else {
-        const document = loanTransferDocumentDonverter.create({
-          body,
-          account,
-          transferAccount,
-        }, expiresIn);
-
-        await transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update(document));
-      }
+    if (account.accountType === AccountType.Loan || transferAccount.accountType === AccountType.Loan) {
+      body.payments = undefined;
+      update = transferTransactionDocumentConverter.update({
+        body,
+        account,
+        transferAccount,
+        transactions: undefined,
+      }, expiresIn);
     } else {
       if (payments) {
         const deferredTransactionIds: Transaction.Id[] = [];
@@ -98,24 +88,23 @@ export const updateToTransferTransactionServiceFactory = (
         });
         const transactions = toDictionary(transactionList, '_id');
 
-        const document = transferTransactionDocumentConverter.create({
+        update = transferTransactionDocumentConverter.update({
           body,
           account,
           transferAccount,
           transactions,
         }, expiresIn);
 
-        await transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update(document));
       } else {
-        const document = transferTransactionDocumentConverter.create({
+        update = transferTransactionDocumentConverter.update({
           body,
           account,
           transferAccount,
           transactions: undefined,
         }, expiresIn);
-
-        await transactionService.replaceTransaction(transactionId, document).catch(httpErrors.transaction.update(document));
       }
     }
+
+    return transactionService.updateTransaction(transactionId, update).catch(httpErrors.transaction.update(update));
   };
 };

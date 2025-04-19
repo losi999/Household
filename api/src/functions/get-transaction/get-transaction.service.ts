@@ -29,7 +29,7 @@ export const getTransactionServiceFactory = (
       accountId,
     });
 
-    if (transaction.transactionType === 'transfer' && transaction.payments?.length > 0) {
+    if (transaction.transactionType === 'transfer' && transaction.payments?.length > 0) { // TODO
       const deferredTransactionIds = transaction.payments.map(p => getTransactionId(p.transaction));
 
       const deferredTransactions = await transactionService.listDeferredTransactions({

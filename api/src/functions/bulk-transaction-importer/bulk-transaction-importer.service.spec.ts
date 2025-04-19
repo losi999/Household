@@ -3,6 +3,7 @@ import { createDocumentUpdate, createDraftTransactionDocument, createFileDocumen
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IDraftTransactionDocumentConverter } from '@household/shared/converters/draft-transaction-document-converter';
 import { IFileDocumentConverter } from '@household/shared/converters/file-document-converter';
+import { FileProcessingStatus } from '@household/shared/enums';
 import { IExcelParserService } from '@household/shared/services/excel-parser-service';
 import { IFileService } from '@household/shared/services/file-service';
 import { IStorageService } from '@household/shared/services/storage-service';
@@ -35,7 +36,6 @@ describe('Bulk transaction importer service', () => {
 
   const bucketName = 'file-importer-bucket';
   const fileId = createFileId();
-  const fileName = `otp/${fileId}`;
   const queriedFileDocument = createFileDocument();
   const fileContent = new Uint8Array();
   const amount = 100;
@@ -62,11 +62,15 @@ describe('Bulk transaction importer service', () => {
 
       await service({
         bucketName,
-        fileName,
+        fileId,
       });
       validateFunctionCall(mockFileService.functions.getFileById, fileId);
-      validateFunctionCall(mockStorageService.functions.readFile, bucketName, fileName);
-      validateFunctionCall(mockExcelParser.functions.parse, fileContent, queriedFileDocument.type, queriedFileDocument.timezone);
+      validateFunctionCall(mockStorageService.functions.readFile, bucketName, fileId);
+      validateFunctionCall(mockExcelParser.functions.parse, {
+        fileContent,
+        fileType: queriedFileDocument.fileType,
+        timezone: queriedFileDocument.timezone,
+      });
       validateFunctionCall(mockDraftTransactionDocumentConverter.functions.create, {
         body: {
           amount,
@@ -76,7 +80,7 @@ describe('Bulk transaction importer service', () => {
         file: queriedFileDocument,
       }, null);
       validateFunctionCall(mockTransactionService.functions.saveTransactions, [draftTransaction]);
-      validateFunctionCall(mockFileDocumentConverter.functions.updateStatus, 'completed');
+      validateFunctionCall(mockFileDocumentConverter.functions.updateStatus, FileProcessingStatus.Completed);
       validateFunctionCall(mockFileService.functions.updateFile, fileId, fileDocumentUpdate);
       expect.assertions(7);
     });
@@ -89,7 +93,7 @@ describe('Bulk transaction importer service', () => {
 
       await service({
         bucketName,
-        fileName,
+        fileId,
       }).catch(validateError('Error while getting file document', 500));
       validateFunctionCall(mockFileService.functions.getFileById, fileId);
       validateFunctionCall(mockStorageService.functions.readFile);
@@ -107,10 +111,10 @@ describe('Bulk transaction importer service', () => {
 
       await service({
         bucketName,
-        fileName,
+        fileId,
       }).catch(validateError('Error while reading file', 500));
       validateFunctionCall(mockFileService.functions.getFileById, fileId);
-      validateFunctionCall(mockStorageService.functions.readFile, bucketName, fileName);
+      validateFunctionCall(mockStorageService.functions.readFile, bucketName, fileId);
       validateFunctionCall(mockExcelParser.functions.parse);
       validateFunctionCall(mockDraftTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransactions);
@@ -134,11 +138,15 @@ describe('Bulk transaction importer service', () => {
 
       await service({
         bucketName,
-        fileName,
+        fileId,
       }).catch(validateError('Error while saving transactions', 500));
       validateFunctionCall(mockFileService.functions.getFileById, fileId);
-      validateFunctionCall(mockStorageService.functions.readFile, bucketName, fileName);
-      validateFunctionCall(mockExcelParser.functions.parse, fileContent, queriedFileDocument.type, queriedFileDocument.timezone);
+      validateFunctionCall(mockStorageService.functions.readFile, bucketName, fileId);
+      validateFunctionCall(mockExcelParser.functions.parse, {
+        fileContent,
+        fileType: queriedFileDocument.fileType,
+        timezone: queriedFileDocument.timezone,
+      });
       validateFunctionCall(mockDraftTransactionDocumentConverter.functions.create, {
         body: {
           amount,
@@ -170,11 +178,15 @@ describe('Bulk transaction importer service', () => {
 
       await service({
         bucketName,
-        fileName,
+        fileId,
       }).catch(validateError('Error while updating file document', 500));
       validateFunctionCall(mockFileService.functions.getFileById, fileId);
-      validateFunctionCall(mockStorageService.functions.readFile, bucketName, fileName);
-      validateFunctionCall(mockExcelParser.functions.parse, fileContent, queriedFileDocument.type, queriedFileDocument.timezone);
+      validateFunctionCall(mockStorageService.functions.readFile, bucketName, fileId);
+      validateFunctionCall(mockExcelParser.functions.parse, {
+        fileContent,
+        fileType: queriedFileDocument.fileType,
+        timezone: queriedFileDocument.timezone,
+      });
       validateFunctionCall(mockDraftTransactionDocumentConverter.functions.create, {
         body: {
           amount,
@@ -184,7 +196,7 @@ describe('Bulk transaction importer service', () => {
         file: queriedFileDocument,
       }, null);
       validateFunctionCall(mockTransactionService.functions.saveTransactions, [draftTransaction]);
-      validateFunctionCall(mockFileDocumentConverter.functions.updateStatus, 'completed');
+      validateFunctionCall(mockFileDocumentConverter.functions.updateStatus, FileProcessingStatus.Completed);
       validateFunctionCall(mockFileService.functions.updateFile, fileId, fileDocumentUpdate);
       expect.assertions(9);
     });

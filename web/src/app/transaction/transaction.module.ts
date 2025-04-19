@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TransactionEditComponent } from './transaction-edit/transaction-edit.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTabsModule } from '@angular/material/tabs';
@@ -35,7 +34,6 @@ import { OrderByPipe } from '@household/web/app/shared/order-by.pipe';
 
 @NgModule({
   declarations: [
-    TransactionEditComponent,
     TransactionDetailsComponent,
     TransactionPaymentEditComponent,
     TransactionSplitEditComponent,

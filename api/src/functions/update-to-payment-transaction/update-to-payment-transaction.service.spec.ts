@@ -1,10 +1,11 @@
 import { IUpdateToPaymentTransactionService, updateToPaymentTransactionServiceFactory } from '@household/api/functions/update-to-payment-transaction/update-to-payment-transaction.service';
-import { createAccountDocument, createCategoryDocument, createDeferredTransactionDocument, createPaymentTransactionDocument, createPaymentTransactionRequest, createProductDocument, createProductId, createProjectDocument, createRecipientDocument, createReimbursementTransactionDocument, createTransferTransactionDocument } from '@household/shared/common/test-data-factory';
+import { createAccountDocument, createCategoryDocument, createDocumentUpdate, createPaymentTransactionRequest, createProductDocument, createProductId, createProjectDocument, createRecipientDocument, createTransferTransactionDocument } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getCategoryId, getProjectId, getRecipientId, getAccountId, getProductId, getTransactionId } from '@household/shared/common/utils';
 import { IDeferredTransactionDocumentConverter } from '@household/shared/converters/deferred-transaction-document-converter';
 import { IPaymentTransactionDocumentConverter } from '@household/shared/converters/payment-transaction-document-converter';
 import { IReimbursementTransactionDocumentConverter } from '@household/shared/converters/reimbursement-transaction-document-converter';
+import { AccountType, CategoryType } from '@household/shared/enums';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICategoryService } from '@household/shared/services/category-service';
 import { IProductService } from '@household/shared/services/product-service';
@@ -31,10 +32,10 @@ describe('Update to payment transaction service', () => {
     mockCategoryService = createMockService('getCategoryById');
     mockRecipientService = createMockService('getRecipientById');
     mockProductService = createMockService('getProductById');
-    mockTransactionService = createMockService('replaceTransaction', 'getTransactionById');
-    mockPaymentTransactionDocumentConverter = createMockService('create');
-    mockDeferredTransactionDocumentConverter = createMockService('create');
-    mockReimbursementTransactionDocumentConverter = createMockService('create');
+    mockTransactionService = createMockService('updateTransaction', 'getTransactionById');
+    mockPaymentTransactionDocumentConverter = createMockService('update');
+    mockDeferredTransactionDocumentConverter = createMockService('update');
+    mockReimbursementTransactionDocumentConverter = createMockService('update');
 
     service = updateToPaymentTransactionServiceFactory(mockAccountService.service, mockProjectService.service, mockCategoryService.service, mockRecipientService.service, mockProductService.service, mockTransactionService.service, mockPaymentTransactionDocumentConverter.service, mockReimbursementTransactionDocumentConverter.service, mockDeferredTransactionDocumentConverter.service);
   });
@@ -50,10 +51,10 @@ describe('Update to payment transaction service', () => {
   beforeEach(() => {
     queriedAccount = createAccountDocument();
     queriedLoanAccount = createAccountDocument({
-      accountType: 'loan',
+      accountType: AccountType.Loan,
     });
     queriedCategory = createCategoryDocument({
-      categoryType: 'inventory',
+      categoryType: CategoryType.Inventory,
     });
     queriedProduct = createProductDocument({
       category: queriedCategory,
@@ -72,13 +73,7 @@ describe('Update to payment transaction service', () => {
 
   const queriedDocument = createTransferTransactionDocument();
   const transactionId = getTransactionId(queriedDocument);
-  const updatedPaymentDocument = createPaymentTransactionDocument({
-    description: 'updated',
-  });
-  const updatedDeferredDocument = createDeferredTransactionDocument({
-    description: 'updated',
-  });
-  const updatedReimbursementDocument = createReimbursementTransactionDocument({
+  const updateQuery = createDocumentUpdate({
     description: 'updated',
   });
 
@@ -90,8 +85,8 @@ describe('Update to payment transaction service', () => {
       mockProjectService.functions.getProjectById.mockResolvedValue(queriedProject);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
       mockProductService.functions.getProductById.mockResolvedValue(queriedProduct);
-      mockPaymentTransactionDocumentConverter.functions.create.mockReturnValue(updatedPaymentDocument);
-      mockTransactionService.functions.replaceTransaction.mockResolvedValue(undefined);
+      mockPaymentTransactionDocumentConverter.functions.update.mockReturnValue(updateQuery);
+      mockTransactionService.functions.updateTransaction.mockResolvedValue(undefined);
 
       await service({
         body,
@@ -107,7 +102,7 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.getProductById, body.productId);
-      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create, {
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update, {
         body,
         category: queriedCategory,
         account: queriedAccount,
@@ -115,9 +110,9 @@ describe('Update to payment transaction service', () => {
         recipient: queriedRecipient,
         product: queriedProduct,
       }, undefined);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction, transactionId, updatedPaymentDocument);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction, transactionId, updateQuery);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
       expect.assertions(10);
     });
 
@@ -135,8 +130,8 @@ describe('Update to payment transaction service', () => {
       mockProjectService.functions.getProjectById.mockResolvedValue(queriedProject);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
       mockProductService.functions.getProductById.mockResolvedValue(queriedProduct);
-      mockDeferredTransactionDocumentConverter.functions.create.mockReturnValue(updatedDeferredDocument);
-      mockTransactionService.functions.replaceTransaction.mockResolvedValue(undefined);
+      mockDeferredTransactionDocumentConverter.functions.update.mockReturnValue(updateQuery);
+      mockTransactionService.functions.updateTransaction.mockResolvedValue(undefined);
 
       await service({
         body,
@@ -152,7 +147,7 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.getProductById, body.productId);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create, {
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update, {
         body,
         category: queriedCategory,
         payingAccount: queriedAccount,
@@ -161,9 +156,9 @@ describe('Update to payment transaction service', () => {
         recipient: queriedRecipient,
         product: queriedProduct,
       }, undefined);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction, transactionId, updatedDeferredDocument);
-      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction, transactionId, updateQuery);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
       expect.assertions(10);
     });
 
@@ -182,8 +177,8 @@ describe('Update to payment transaction service', () => {
       mockProjectService.functions.getProjectById.mockResolvedValue(queriedProject);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
       mockProductService.functions.getProductById.mockResolvedValue(queriedProduct);
-      mockReimbursementTransactionDocumentConverter.functions.create.mockReturnValue(updatedReimbursementDocument);
-      mockTransactionService.functions.replaceTransaction.mockResolvedValue(undefined);
+      mockReimbursementTransactionDocumentConverter.functions.update.mockReturnValue(updateQuery);
+      mockTransactionService.functions.updateTransaction.mockResolvedValue(undefined);
 
       await service({
         body,
@@ -199,7 +194,7 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.getProductById, body.productId);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.create, {
+      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update, {
         body,
         category: queriedCategory,
         ownerAccount: queriedAccount,
@@ -208,9 +203,9 @@ describe('Update to payment transaction service', () => {
         recipient: queriedRecipient,
         product: queriedProduct,
       }, undefined);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction, transactionId, updatedReimbursementDocument);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction, transactionId, updateQuery);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
       expect.assertions(10);
     });
   });
@@ -230,10 +225,10 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockProjectService.functions.getProjectById);
       validateFunctionCall(mockRecipientService.functions.getRecipientById);
       validateFunctionCall(mockProductService.functions.getProductById);
-      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction);
       expect.assertions(12);
     });
 
@@ -251,10 +246,10 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockProjectService.functions.getProjectById);
       validateFunctionCall(mockRecipientService.functions.getRecipientById);
       validateFunctionCall(mockProductService.functions.getProductById);
-      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction);
       expect.assertions(12);
     });
 
@@ -277,10 +272,10 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockProjectService.functions.getProjectById);
       validateFunctionCall(mockRecipientService.functions.getRecipientById);
       validateFunctionCall(mockProductService.functions.getProductById);
-      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction);
-      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
       expect.assertions(12);
     });
     it('if no account found', async () => {
@@ -305,10 +300,10 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.getProductById, body.productId);
-      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction);
       expect.assertions(12);
     });
 
@@ -338,10 +333,10 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.getProductById, body.productId);
-      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction);
       expect.assertions(12);
     });
 
@@ -367,10 +362,10 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.getProductById, body.productId);
-      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction);
       expect.assertions(12);
     });
 
@@ -396,10 +391,10 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.getProductById, body.productId);
-      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction);
       expect.assertions(12);
     });
 
@@ -425,10 +420,10 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.getProductById, body.productId);
-      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction);
       expect.assertions(12);
     });
 
@@ -454,10 +449,10 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.getProductById, body.productId);
-      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction);
       expect.assertions(12);
     });
 
@@ -485,10 +480,10 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.getProductById, body.productId);
-      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction);
       expect.assertions(12);
     });
 
@@ -514,10 +509,10 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.getProductById, body.productId);
-      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction);
       expect.assertions(12);
     });
 
@@ -543,10 +538,10 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.getProductById, body.productId);
-      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction);
       expect.assertions(12);
     });
 
@@ -572,10 +567,10 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.getProductById, body.productId);
-      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction);
       expect.assertions(12);
     });
 
@@ -601,10 +596,10 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.getProductById, body.productId);
-      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction);
       expect.assertions(12);
     });
 
@@ -630,10 +625,10 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.getProductById, body.productId);
-      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction);
       expect.assertions(12);
     });
 
@@ -663,16 +658,16 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.getProductById, body.productId);
-      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction);
+      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
       expect.assertions(12);
     });
 
     it('if loanAccount is loan type for reimbursement transaction', async () => {
       const queriedSecondLoanAccount = createAccountDocument({
-        accountType: 'loan',
+        accountType: AccountType.Loan,
       });
       body = createPaymentTransactionRequest({
         ...body,
@@ -703,10 +698,10 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.getProductById, body.productId);
-      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction);
+      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
       expect.assertions(12);
     });
 
@@ -717,8 +712,8 @@ describe('Update to payment transaction service', () => {
       mockProjectService.functions.getProjectById.mockResolvedValue(queriedProject);
       mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedRecipient);
       mockProductService.functions.getProductById.mockResolvedValue(queriedProduct);
-      mockPaymentTransactionDocumentConverter.functions.create.mockReturnValue(updatedPaymentDocument);
-      mockTransactionService.functions.replaceTransaction.mockRejectedValue('this is a mongo error');
+      mockPaymentTransactionDocumentConverter.functions.update.mockReturnValue(updateQuery);
+      mockTransactionService.functions.updateTransaction.mockRejectedValue('this is a mongo error');
 
       await service({
         body,
@@ -734,7 +729,7 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockProjectService.functions.getProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.getRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.getProductById, body.productId);
-      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create, {
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update, {
         body,
         category: queriedCategory,
         account: queriedAccount,
@@ -742,9 +737,9 @@ describe('Update to payment transaction service', () => {
         recipient: queriedRecipient,
         product: queriedProduct,
       }, undefined);
-      validateFunctionCall(mockTransactionService.functions.replaceTransaction, transactionId, updatedPaymentDocument);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction, transactionId, updateQuery);
+      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
       expect.assertions(12);
     });
   });

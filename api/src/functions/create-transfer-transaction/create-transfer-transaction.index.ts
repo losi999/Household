@@ -7,9 +7,8 @@ import { accountService } from '@household/shared/dependencies/services/account-
 import { transactionService } from '@household/shared/dependencies/services/transaction-service';
 import { default as index } from '@household/api/handlers/index.handler';
 import { transferTransactionDocumentConverter } from '@household/shared/dependencies/converters/transfer-transaction-document-converter';
-import { loanTransferTransactionDocumentConverter } from '@household/shared/dependencies/converters/loan-transfer-transaction-document-converter';
 
-const createTransferTransactionService = createTransferTransactionServiceFactory(accountService, transactionService, transferTransactionDocumentConverter, loanTransferTransactionDocumentConverter);
+const createTransferTransactionService = createTransferTransactionServiceFactory(accountService, transactionService, transferTransactionDocumentConverter);
 
 export default index({
   handler: handler(createTransferTransactionService),

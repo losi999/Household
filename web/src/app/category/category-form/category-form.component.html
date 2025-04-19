@@ -4,11 +4,11 @@
     <household-clearable-input formControlName="name" label="Név" />
     <label for="category-type">Kategória fajta</label>
     <mat-radio-group id="category-type" formControlName="categoryType">
-      <mat-radio-button value="regular">Alap </mat-radio-button>
-      <mat-radio-button value="inventory">Leltározható </mat-radio-button>
-      <mat-radio-button value="invoice">Számla </mat-radio-button>
+      <mat-radio-button [value]="CategoryType.Regular">Alap </mat-radio-button>
+      <mat-radio-button [value]="CategoryType.Inventory">Leltározható </mat-radio-button>
+      <mat-radio-button [value]="CategoryType.Invoice">Számla </mat-radio-button>
     </mat-radio-group>
-    <household-category-autocomplete-input label="Szülő" formControlName="parentCategoryId" [excludeAsParent]="category?.categoryId" hideNewButton="true" />
+    <household-category-autocomplete-input label="Szülő" formControlName="parentCategory" [excludeAsParent]="category?.categoryId" hideNewButton="true" />
   </div>
   <div mat-dialog-actions>
     <button mat-button cdkFocusInitial>Mentés</button>

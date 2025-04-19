@@ -226,6 +226,22 @@ Resources:
             Auth:
               Authorizer: CognitoAuthorizer
 
+  ListTransactionsByFile:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-ListTransactionsByFile
+      CodeUri: dist/api/list-transactions-by-file
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TransactionApi
+            Path: /v1/files/{fileId}/transactions
+            Method: GET
+            Auth:
+              Authorizer: CognitoAuthorizer
+
   ReportTransactions:
     Type: AWS::Serverless::Function
     Properties:

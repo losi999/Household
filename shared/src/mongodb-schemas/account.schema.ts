@@ -1,3 +1,4 @@
+import { AccountType } from '@household/shared/enums';
 import { Account } from '@household/shared/types/types';
 import { Schema } from 'mongoose';
 
@@ -19,13 +20,7 @@ export const accountSchema = new Schema<Account.Document>({
   },
   accountType: {
     type: String,
-    enum: [
-      'bankAccount',
-      'cash',
-      'creditCard',
-      'loan',
-      'cafeteria',
-    ],
+    enum: AccountType,
   },
   owner: {
     type: String,

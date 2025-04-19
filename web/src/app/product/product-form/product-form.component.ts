@@ -23,7 +23,7 @@ export class ProductFormComponent implements OnInit {
     brand: FormControl<string>,
     measurement: FormControl<number>,
     unitOfMeasurement: FormControl<typeof unitsOfMeasurement[number]>,
-    categoryId: FormControl<Category.Id>,
+    category: FormControl<Category.Response>,
   }>;
   get unitsOfMeasurement() { return unitsOfMeasurement; }
 
@@ -38,7 +38,7 @@ export class ProductFormComponent implements OnInit {
       brand: new FormControl(this.data.product?.brand, [Validators.required]),
       measurement: new FormControl(this.data.product?.measurement, [Validators.required]),
       unitOfMeasurement: new FormControl(this.data.product?.unitOfMeasurement, [Validators.required]),
-      categoryId: new FormControl(null),
+      category: new FormControl(null),
     });
   }
 
@@ -58,7 +58,7 @@ export class ProductFormComponent implements OnInit {
         }));
       } else {
         this.store.dispatch(productApiActions.createProductInitiated({
-          categoryId: this.form.value.categoryId ?? this.data.categoryId,
+          categoryId: this.form.value.category?.categoryId ?? this.data.categoryId,
           ...request,
         }));
       }

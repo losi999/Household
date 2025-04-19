@@ -1,9 +1,9 @@
 import { ICreateTransferTransactionService, createTransferTransactionServiceFactory } from '@household/api/functions/create-transfer-transaction/create-transfer-transaction.service';
-import { createTransferTransactionRequest, createAccountDocument, createTransferTransactionDocument, createDeferredTransactionDocument, createLoanTransferTransactionDocument } from '@household/shared/common/test-data-factory';
+import { createTransferTransactionRequest, createAccountDocument, createTransferTransactionDocument, createDeferredTransactionDocument } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getAccountId, getTransactionId, toDictionary } from '@household/shared/common/utils';
-import { ILoanTransferTransactionDocumentConverter } from '@household/shared/converters/loan-transfer-transaction-document-converter';
 import { ITransferTransactionDocumentConverter } from '@household/shared/converters/transfer-transaction-document-converter';
+import { AccountType } from '@household/shared/enums';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
 import { Transaction } from '@household/shared/types/types';
@@ -13,22 +13,19 @@ describe('Create transfer transaction service', () => {
   let mockAccountService: Mock<IAccountService>;
   let mockTransactionService: Mock<ITransactionService>;
   let mockTransferTransactionDocumentConverter: Mock<ITransferTransactionDocumentConverter>;
-  let mockLoanTransferTransactionDocumentConverter: Mock<ILoanTransferTransactionDocumentConverter>;
 
   beforeEach(() => {
     mockAccountService = createMockService('listAccountsByIds');
     mockTransactionService = createMockService('saveTransaction', 'listDeferredTransactions');
     mockTransferTransactionDocumentConverter = createMockService('create');
-    mockLoanTransferTransactionDocumentConverter = createMockService('create');
 
-    service = createTransferTransactionServiceFactory(mockAccountService.service, mockTransactionService.service, mockTransferTransactionDocumentConverter.service, mockLoanTransferTransactionDocumentConverter.service);
+    service = createTransferTransactionServiceFactory(mockAccountService.service, mockTransactionService.service, mockTransferTransactionDocumentConverter.service);
   });
 
   const queriedAccount = createAccountDocument();
   const queriedTransferAccount = createAccountDocument();
   let body: Transaction.TransferRequest;
   const createdTransferDocument = createTransferTransactionDocument();
-  const createdLoanTransferDocument = createLoanTransferTransactionDocument();
 
   beforeEach(() => {
     body = createTransferTransactionRequest({
@@ -40,10 +37,10 @@ describe('Create transfer transaction service', () => {
   describe('should return new id', () => {
     it('of created transfer transaction between 2 loan accounts', async () => {
       const queriedLoanAccount1 = createAccountDocument({
-        accountType: 'loan',
+        accountType: AccountType.Loan,
       });
       const queriedLoanAccount2 = createAccountDocument({
-        accountType: 'loan',
+        accountType: AccountType.Loan,
       });
       body = createTransferTransactionRequest({
         ...body,
@@ -74,9 +71,8 @@ describe('Create transfer transaction service', () => {
         transactions: undefined,
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.saveTransaction, createdTransferDocument);
-      validateFunctionCall(mockLoanTransferTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.listDeferredTransactions);
-      expect.assertions(6);
+      expect.assertions(5);
     });
 
     it('of created transfer transaction between 2 non-1oan accounts', async () => {
@@ -103,9 +99,8 @@ describe('Create transfer transaction service', () => {
         transactions: undefined,
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.saveTransaction, createdTransferDocument);
-      validateFunctionCall(mockLoanTransferTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.listDeferredTransactions);
-      expect.assertions(6);
+      expect.assertions(5);
     });
 
     it('of created transfer transaction between 2 non-1oan accounts with payments', async () => {
@@ -151,13 +146,12 @@ describe('Create transfer transaction service', () => {
         transactions: toDictionary([deferredTransactionDocument], '_id'),
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.saveTransaction, createdTransferDocument);
-      validateFunctionCall(mockLoanTransferTransactionDocumentConverter.functions.create);
-      expect.assertions(6);
+      expect.assertions(5);
     });
 
-    it('of created loan transfer transaction', async () => {
+    it('of created transfer transaction between a loan and non-loan accounts', async () => {
       const queriedLoanAccount = createAccountDocument({
-        accountType: 'loan',
+        accountType: AccountType.Loan,
       });
       body = createTransferTransactionRequest({
         ...body,
@@ -167,27 +161,27 @@ describe('Create transfer transaction service', () => {
         queriedAccount,
         queriedLoanAccount,
       ]);
-      mockLoanTransferTransactionDocumentConverter.functions.create.mockReturnValue(createdLoanTransferDocument);
-      mockTransactionService.functions.saveTransaction.mockResolvedValue(createdLoanTransferDocument);
+      mockTransferTransactionDocumentConverter.functions.create.mockReturnValue(createdTransferDocument);
+      mockTransactionService.functions.saveTransaction.mockResolvedValue(createdTransferDocument);
 
       const result = await service({
         body,
         expiresIn: undefined,
       });
-      expect(result).toEqual(getTransactionId(createdLoanTransferDocument));
+      expect(result).toEqual(getTransactionId(createdTransferDocument));
       validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
         body.accountId,
         body.transferAccountId,
       ]);
-      validateFunctionCall(mockLoanTransferTransactionDocumentConverter.functions.create, {
+      validateFunctionCall(mockTransferTransactionDocumentConverter.functions.create, {
         body,
         account: queriedAccount,
         transferAccount: queriedLoanAccount,
+        transactions: undefined,
       }, undefined);
-      validateFunctionCall(mockTransactionService.functions.saveTransaction, createdLoanTransferDocument);
-      validateFunctionCall(mockTransferTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockTransactionService.functions.saveTransaction, createdTransferDocument);
       validateFunctionCall(mockTransactionService.functions.listDeferredTransactions);
-      expect.assertions(6);
+      expect.assertions(5);
     });
   });
 
@@ -206,9 +200,8 @@ describe('Create transfer transaction service', () => {
       validateFunctionCall(mockAccountService.functions.listAccountsByIds);
       validateFunctionCall(mockTransferTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
-      validateFunctionCall(mockLoanTransferTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.listDeferredTransactions);
-      expect.assertions(7);
+      expect.assertions(6);
     });
 
     it('if unable to query accounts', async () => {
@@ -224,9 +217,8 @@ describe('Create transfer transaction service', () => {
       ]);
       validateFunctionCall(mockTransferTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
-      validateFunctionCall(mockLoanTransferTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.listDeferredTransactions);
-      expect.assertions(7);
+      expect.assertions(6);
     });
 
     it('if no account found', async () => {
@@ -242,9 +234,8 @@ describe('Create transfer transaction service', () => {
       ]);
       validateFunctionCall(mockTransferTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
-      validateFunctionCall(mockLoanTransferTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.listDeferredTransactions);
-      expect.assertions(7);
+      expect.assertions(6);
     });
 
     it('if unable to query deferred transactions', async () => {
@@ -282,8 +273,7 @@ describe('Create transfer transaction service', () => {
       });
       validateFunctionCall(mockTransferTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
-      validateFunctionCall(mockLoanTransferTransactionDocumentConverter.functions.create);
-      expect.assertions(7);
+      expect.assertions(6);
     });
 
     it('if a deferred transaction is not found', async () => {
@@ -321,8 +311,7 @@ describe('Create transfer transaction service', () => {
       });
       validateFunctionCall(mockTransferTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
-      validateFunctionCall(mockLoanTransferTransactionDocumentConverter.functions.create);
-      expect.assertions(7);
+      expect.assertions(6);
     });
 
     it('if unable to save transaction', async () => {
@@ -348,9 +337,8 @@ describe('Create transfer transaction service', () => {
         transactions: undefined,
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.saveTransaction, createdTransferDocument);
-      validateFunctionCall(mockLoanTransferTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.listDeferredTransactions);
-      expect.assertions(7);
+      expect.assertions(6);
     });
   });
 });

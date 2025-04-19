@@ -1,6 +1,7 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { getTransactionId, pushUnique, toDictionary } from '@household/shared/common/utils';
 import { ISplitTransactionDocumentConverter } from '@household/shared/converters/split-transaction-document-converter';
+import { CategoryType } from '@household/shared/enums';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICategoryService } from '@household/shared/services/category-service';
 import { IProductService } from '@household/shared/services/product-service';
@@ -27,13 +28,22 @@ export const createSplitTransactionServiceFactory = (
 ): ICreateSplitTransactionService => {
   return async ({ body, expiresIn }) => {
     const { accountId, recipientId } = body;
+    const splits = body.splits ?? [];
+    const loans = body.loans ?? [];
     let total = 0;
     const categoryIds: Category.Id[] = [];
     const projectIds: Project.Id[] = [];
     const productIds: Product.Id[] = [];
     const accountIds: Account.Id[] = [accountId];
 
-    body.splits.forEach(({ amount, categoryId, productId, projectId, loanAccountId }) => {
+    splits.forEach(({ amount, categoryId, productId, projectId }) => {
+      total += amount;
+      pushUnique(categoryIds, categoryId);
+      pushUnique(projectIds, projectId);
+      pushUnique(productIds, productId);
+    });
+
+    loans.forEach(({ amount, categoryId, productId, projectId, loanAccountId }) => {
       httpErrors.transaction.sameAccountLoan({
         accountId,
         loanAccountId,
@@ -95,11 +105,14 @@ export const createSplitTransactionServiceFactory = (
     const products = toDictionary(productList, '_id');
     const accounts = toDictionary(accountList, '_id');
 
-    body.splits.forEach((split) => {
+    [
+      ...splits,
+      ...loans,
+    ].forEach((split) => {
       const { categoryId, productId } = split;
       const category = categories[categoryId];
       const product = products[productId];
-      if (category?.categoryType === 'inventory' && productId) {
+      if (category?.categoryType === CategoryType.Inventory && productId) {
 
         httpErrors.product.notFound({
           productId,

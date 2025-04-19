@@ -43,7 +43,7 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
         it('is not string', () => {
           cy.authenticate(1)
             .requestUpdateRecipient(recipientDataFactory.id(), recipientDataFactory.request({
-              name: 1,
+              name: <any>1,
             }))
             .expectBadRequestResponse()
             .expectWrongPropertyType('name', 'string', 'body');

@@ -7,14 +7,18 @@ import { Account, Project, Recipient, Category, Product, Transaction } from '@ho
 import { takeFirstDefined } from '@household/web/operators/take-first-defined';
 import { toSplitResponse } from '@household/web/operators/to-split-response';
 import { selectAccountById } from '@household/web/state/account/account.selector';
-import { messageActions } from '@household/web/state/message/message.actions';
 import { selectCategoryOfProductId } from '@household/web/state/product/product.selector';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
 import { selectTransaction } from '@household/web/state/transaction/transaction.selector';
-import { Actions, ofType } from '@ngrx/effects';
+import { Actions } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { switchMap } from 'rxjs';
 import { isDeferredTransactionResponse } from '@household/shared/common/type-guards';
+import { accountApiActions } from '@household/web/state/account/account.actions';
+import { categoryApiActions } from '@household/web/state/category/category.actions';
+import { productApiActions } from '@household/web/state/product/product.actions';
+import { projectApiActions } from '@household/web/state/project/project.actions';
+import { recipientApiActions } from '@household/web/state/recipient/recipient.actions';
 
 type SplitFormGroup = FormGroup<{
   amount: FormControl<number>;
@@ -58,9 +62,17 @@ export class TransactionSplitEditComponent implements OnInit {
 
   constructor(public activatedRoute: ActivatedRoute, private destroyRef: DestroyRef, private store: Store, private actions: Actions) { }
 
+  transactionId: Transaction.Id;
+
   ngOnInit(): void {
     const accountId = this.activatedRoute.snapshot.paramMap.get('accountId') as Account.Id;
-    const transactionId = this.activatedRoute.snapshot.paramMap.get('transactionId') as Transaction.Id;
+    this.transactionId = this.activatedRoute.snapshot.paramMap.get('transactionId') as Transaction.Id;
+
+    this.store.dispatch(accountApiActions.listAccountsInitiated());
+    this.store.dispatch(categoryApiActions.listCategoriesInitiated());
+    this.store.dispatch(productApiActions.listProductsInitiated());
+    this.store.dispatch(projectApiActions.listProjectsInitiated());
+    this.store.dispatch(recipientApiActions.listRecipientsInitiated());
 
     this.form = new FormGroup({
       issuedAt: new FormControl(new Date(), [Validators.required]),
@@ -87,7 +99,12 @@ export class TransactionSplitEditComponent implements OnInit {
       },
     ]);
 
-    if (transactionId) {
+    if (this.transactionId) {
+      this.store.dispatch(transactionApiActions.getTransactionInitiated({
+        accountId,
+        transactionId: this.transactionId,
+      }));
+
       this.store.select(selectTransaction).pipe(
         takeFirstDefined(),
         toSplitResponse(),
@@ -112,73 +129,14 @@ export class TransactionSplitEditComponent implements OnInit {
           });
 
         });
-    }
-
-    this.actions.pipe(
-      ofType(messageActions.submitTransactionEditForm),
-      takeUntilDestroyed(this.destroyRef),
-    ).subscribe(() => {
-      this.form.markAllAsTouched();
-
-      console.log(this.form);
-
-      if (this.form.valid) {
-        const { account, amount, issuedAt, description, recipient, splits } = this.form.getRawValue();
-
-        const request: Transaction.SplitRequest = {
-          accountId: account.accountId,
-          amount,
-          description: toUndefined(description),
-          issuedAt: issuedAt.toISOString(),
-          recipientId: recipient?.recipientId,
-          splits: splits.map(s => ({
-            amount: s.amount,
-            categoryId: s.category?.categoryId,
-            projectId: s.project?.projectId,
-            loanAccountId: s.loanAccount?.accountId,
-            isSettled: s.isSettled,
-            description: toUndefined(s.description),
-            transactionId: toUndefined(s.transactionId),
-            ...(s.category?.categoryType === 'invoice') ? {
-              billingStartDate: s.billingStartDate ? new Date(s.billingStartDate.getTime() - s.billingStartDate.getTimezoneOffset() * 60000).toISOString()
-                .split('T')[0] : undefined,
-              billingEndDate: s.billingEndDate ? new Date(s.billingEndDate.getTime() - s.billingEndDate.getTimezoneOffset() * 60000).toISOString()
-                .split('T')[0] : undefined,
-              invoiceNumber: toUndefined(s.invoiceNumber),
-            } : {
-              billingEndDate: undefined,
-              billingStartDate: undefined,
-              invoiceNumber: undefined,
-            },
-            ...(s.category?.categoryType === 'inventory' ? {
-              productId: s.product?.productId,
-              quantity: toUndefined(s.quantity),
-            } : {
-              productId: undefined,
-              quantity: undefined,
-            }),
-          })),
-        };
-
-        if (transactionId) {
-          this.store.dispatch(transactionApiActions.updateSplitTransactionInitiated({
-            transactionId,
-            request,
-          }));
-        } else {
-          this.store.dispatch(transactionApiActions.createSplitTransactionInitiated(request));
-        }
-      }
-      this.showErrors = true;
-
-    });
-
-    this.store.select(selectAccountById(accountId)).pipe(takeFirstDefined())
-      .subscribe((account) => {
-        this.form.patchValue({
-          account,
+    } else {
+      this.store.select(selectAccountById(accountId)).pipe(takeFirstDefined())
+        .subscribe((account) => {
+          this.form.patchValue({
+            account,
+          });
         });
-      });
+    }
   }
 
   saveSplit(splitGroup: SplitFormGroup) {
@@ -266,5 +224,85 @@ export class TransactionSplitEditComponent implements OnInit {
 
   deleteSplit(index: number) {
     this.form.controls.splits.removeAt(index);
+  }
+
+  save() {
+    this.form.markAllAsTouched();
+
+    console.log(this.form);
+
+    if (this.form.valid) {
+      const { account, amount, issuedAt, description, recipient, splits } = this.form.getRawValue();
+
+      const request: Transaction.SplitRequest = {
+        accountId: account.accountId,
+        amount,
+        description: toUndefined(description),
+        issuedAt: issuedAt.toISOString(),
+        recipientId: recipient?.recipientId,
+        loans: splits.filter(s => s.loanAccount).map(s => ({
+          amount: s.amount,
+          categoryId: s.category?.categoryId,
+          projectId: s.project?.projectId,
+          loanAccountId: s.loanAccount?.accountId,
+          isSettled: s.isSettled,
+          description: toUndefined(s.description),
+          transactionId: toUndefined(s.transactionId), // TODO
+          ...(s.category?.categoryType === 'invoice') ? {
+            billingStartDate: s.billingStartDate ? new Date(s.billingStartDate.getTime() - s.billingStartDate.getTimezoneOffset() * 60000).toISOString()
+              .split('T')[0] : undefined,
+            billingEndDate: s.billingEndDate ? new Date(s.billingEndDate.getTime() - s.billingEndDate.getTimezoneOffset() * 60000).toISOString()
+              .split('T')[0] : undefined,
+            invoiceNumber: toUndefined(s.invoiceNumber),
+          } : {
+            billingEndDate: undefined,
+            billingStartDate: undefined,
+            invoiceNumber: undefined,
+          },
+          ...(s.category?.categoryType === 'inventory' ? {
+            productId: s.product?.productId,
+            quantity: toUndefined(s.quantity),
+          } : {
+            productId: undefined,
+            quantity: undefined,
+          }),
+        })),
+        splits: splits.filter(s => !s.loanAccount).map(s => ({
+          amount: s.amount,
+          categoryId: s.category?.categoryId,
+          projectId: s.project?.projectId,
+          description: toUndefined(s.description),
+          transactionId: toUndefined(s.transactionId),
+          ...(s.category?.categoryType === 'invoice') ? {
+            billingStartDate: s.billingStartDate ? new Date(s.billingStartDate.getTime() - s.billingStartDate.getTimezoneOffset() * 60000).toISOString()
+              .split('T')[0] : undefined,
+            billingEndDate: s.billingEndDate ? new Date(s.billingEndDate.getTime() - s.billingEndDate.getTimezoneOffset() * 60000).toISOString()
+              .split('T')[0] : undefined,
+            invoiceNumber: toUndefined(s.invoiceNumber),
+          } : {
+            billingEndDate: undefined,
+            billingStartDate: undefined,
+            invoiceNumber: undefined,
+          },
+          ...(s.category?.categoryType === 'inventory' ? {
+            productId: s.product?.productId,
+            quantity: toUndefined(s.quantity),
+          } : {
+            productId: undefined,
+            quantity: undefined,
+          }),
+        })),
+      };
+
+      if (this.transactionId) {
+        this.store.dispatch(transactionApiActions.updateSplitTransactionInitiated({
+          transactionId: this.transactionId,
+          request,
+        }));
+      } else {
+        this.store.dispatch(transactionApiActions.createSplitTransactionInitiated(request));
+      }
+    }
+    this.showErrors = true;
   }
 }

@@ -12,26 +12,26 @@ export class CategoryService {
   constructor(private httpClient: HttpClient) { }
 
   listCategories(): Observable<Category.Response[]> {
-    return this.httpClient.get<Category.Response[]>(`${environment.apiUrl}${environment.categoryStage}v1/categories`);
+    return this.httpClient.get<Category.Response[]>(`${environment.apiUrl}/category/v1/categories`);
   }
 
   getCategoryById(categoryId: Category.Id) {
-    return this.httpClient.get<Category.Response>(`${environment.apiUrl}${environment.categoryStage}/v1/categories/${categoryId}`);
+    return this.httpClient.get<Category.Response>(`${environment.apiUrl}/category//v1/categories/${categoryId}`);
   }
 
   createCategory(body: Category.Request) {
-    return this.httpClient.post<Category.CategoryId>(`${environment.apiUrl}${environment.categoryStage}v1/categories`, body);
+    return this.httpClient.post<Category.CategoryId>(`${environment.apiUrl}/category/v1/categories`, body);
   }
 
   updateCategory(categoryId: Category.Id, body: Category.Request) {
-    return this.httpClient.put<Category.CategoryId>(`${environment.apiUrl}${environment.categoryStage}v1/categories/${categoryId}`, body);
+    return this.httpClient.put<Category.CategoryId>(`${environment.apiUrl}/category/v1/categories/${categoryId}`, body);
   }
 
   deleteCategory(categoryId: Category.Id) {
-    return this.httpClient.delete(`${environment.apiUrl}${environment.categoryStage}v1/categories/${categoryId}`);
+    return this.httpClient.delete(`${environment.apiUrl}/category/v1/categories/${categoryId}`);
   }
 
   mergeCategories(categoryId: Category.Id, body: Category.Id[]) {
-    return this.httpClient.post(`${environment.apiUrl}${environment.categoryStage}v1/categories/${categoryId}/merge`, body);
+    return this.httpClient.post(`${environment.apiUrl}/category/v1/categories/${categoryId}/merge`, body);
   }
 }

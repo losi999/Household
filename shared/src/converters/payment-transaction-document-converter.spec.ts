@@ -9,6 +9,7 @@ import { ICategoryDocumentConverter } from '@household/shared/converters/categor
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
 import { Transaction } from '@household/shared/types/types';
 import { IPaymentTransactionDocumentConverter, paymentTransactionDocumentConverterFactory } from '@household/shared/converters/payment-transaction-document-converter';
+import { CategoryType } from '@household/shared/enums';
 
 describe('Payment transaction document converter', () => {
   let converter: IPaymentTransactionDocumentConverter;
@@ -47,10 +48,10 @@ describe('Payment transaction document converter', () => {
   const recipient = createRecipientDocument();
   const regularCategory = createCategoryDocument();
   const invoiceCategory = createCategoryDocument({
-    categoryType: 'invoice',
+    categoryType: CategoryType.Invoice,
   });
   const inventoryCategory = createCategoryDocument({
-    categoryType: 'inventory',
+    categoryType: CategoryType.Inventory,
   });
   const product = createProductDocument();
   const productId = getProductId(product);

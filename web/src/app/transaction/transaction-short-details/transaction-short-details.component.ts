@@ -11,6 +11,7 @@ export class TransactionShortDetailsComponent {
   @Input() currency: string;
   @Input() transferColor: 'red' | 'green';
 
+  @Input() error: string;
   @Input() amount: number;
   @Input() remainingAmount: number;
   @Input() description: string;

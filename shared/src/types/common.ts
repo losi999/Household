@@ -1,7 +1,7 @@
 import { JSONSchema7 } from 'json-schema';
 
 export type AnyValueObject<T> = Record<keyof T, any>;
-export type DataFactoryFunction<I, O = I> = (input?: Partial<I> | Partial<AnyValueObject<I>>) => O;
+export type DataFactoryFunction<I, O = I> = (input?: Partial<I>) => O;
 
 type JSONSchemaType<T> =
   T extends undefined ? 'null' :
@@ -32,6 +32,9 @@ export type RecursivePartial<T> = {
     T[P] extends object ? RecursivePartial<T[P]> :
       T[P];
 };
+
+type UnionKeys<T> = T extends any ? keyof T : never;
+export type Unset<Union, NotInThis> = Record<Exclude<UnionKeys<Union>, keyof NotInThis>, true>;
 
 export type HttpError = {
   statusCode: number;
