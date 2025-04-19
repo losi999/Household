@@ -204,7 +204,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
             category: {
               from: categoryDocument,
             },
-          });
+          })
           .validateRelatedChangesInSplitDocument(splitTransactionDocument, {
             category: {
               from: categoryDocument,

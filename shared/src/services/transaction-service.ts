@@ -66,8 +66,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
             'deferredSplits.ownerAccount',
             'deferredSplits.category',
             'deferredSplits.project',
-            'deferredSplits.product',
-            'payments.transaction'),
+            'deferredSplits.product'),
           lean: true,
         })
         .exec();
@@ -609,7 +608,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
 
           if (previousTransactionType === 'split' && old.deferredSplits?.length > 0) {
             if (currentTransactionType === 'split' && updateQuery.$set.deferredSplits?.length > 0) {
-              const newDeferredTransactionIds = updateQuery.$set.deferredSplits.map((s: any) => s._id.toString()) ;
+              const newDeferredTransactionIds = updateQuery.$set.deferredSplits.map((s: any) => s._id?.toString()) ;
 
               deletedDeferredTransactionIds = old.deferredSplits.reduce((accumulator, currentValue) => {
                 return newDeferredTransactionIds.includes(currentValue._id.toString()) ? accumulator : [

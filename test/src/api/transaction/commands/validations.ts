@@ -1221,6 +1221,29 @@ const validateRelatedChangesInReimbursementDocument = (originalDocument: Transac
     });
 };
 
+const validateRelatedRepaymentDeleted = (deferredTransactionId: Transaction.Id, repayingTransferTransactionDocumentId: Transaction.Id) => {
+  cy.log('Get transaction document', repayingTransferTransactionDocumentId)
+    .getTransactionDocumentById(repayingTransferTransactionDocumentId)
+    .should((currentDocument: Transaction.TransferDocument) => {
+      const repayments = currentDocument.payments.filter(p => getTransactionId(p.transaction) === deferredTransactionId);
+
+      expect(repayments).to.have.lengthOf(0, 'has no repayment');
+    });
+};
+
+const validateRelatedRepaymentUnchanged = (deferredTransactionId: Transaction.Id, originalRepayingTransferTransactionDocument: Transaction.TransferDocument) => {
+  cy.log('Get transaction document', getTransactionId(originalRepayingTransferTransactionDocument))
+    .getTransactionDocumentById(getTransactionId(originalRepayingTransferTransactionDocument))
+    .should((currentDocument: Transaction.TransferDocument) => {
+      const { amount, transaction, ...empty } = currentDocument.payments.find(p => getTransactionId(p.transaction) === deferredTransactionId);
+      const originalRepayment = originalRepayingTransferTransactionDocument.payments.find(p => getTransactionId(p.transaction) === deferredTransactionId);
+
+      expect(amount, 'payment.amount').to.equals(originalRepayment.amount);
+      expect(getTransactionId(transaction), 'payment.transactionId').to.equals(getTransactionId(originalRepayment.transaction));
+      expectEmptyObject(empty, 'repayments');
+    });
+};
+
 export const setTransactionValidationCommands = () => {
   Cypress.Commands.addAll<any>({
     prevSubject: true,
@@ -1247,6 +1270,8 @@ export const setTransactionValidationCommands = () => {
     validateRelatedChangesInPaymentDocument,
     validateRelatedChangesInDeferredDocument,
     validateRelatedChangesInReimbursementDocument,
+    validateRelatedRepaymentDeleted,
+    validateRelatedRepaymentUnchanged,
   });
 };
 
@@ -1260,6 +1285,8 @@ declare global {
       validateRelatedChangesInPaymentDocument: CommandFunction<typeof validateRelatedChangesInPaymentDocument>;
       validateRelatedChangesInDeferredDocument: CommandFunction<typeof validateRelatedChangesInDeferredDocument>;
       validateRelatedChangesInReimbursementDocument: CommandFunction<typeof validateRelatedChangesInReimbursementDocument>;
+      validateRelatedRepaymentDeleted: CommandFunction<typeof validateRelatedRepaymentDeleted>;
+      validateRelatedRepaymentUnchanged: CommandFunction<typeof validateRelatedRepaymentUnchanged>;
     }
 
     interface ChainableResponseBody extends Chainable {

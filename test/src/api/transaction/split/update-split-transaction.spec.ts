@@ -9,6 +9,7 @@ import { recipientDataFactory } from '@household/test/api/recipient/data-factory
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
+import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
 
 describe('PUT transaction/v1/transactions/{transactionId}/split (split)', () => {
   let request: Transaction.SplitRequest;
@@ -130,6 +131,49 @@ describe('PUT transaction/v1/transactions/{transactionId}/split (split)', () => 
           .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
           .expectCreatedResponse()
           .validateTransactionSplitDocument(request);
+      });
+
+      it('keeping existing deferred split and its repayment', () => {
+        const splitDocument = splitTransactionDataFactory.document({
+          account: accountDocument,
+          loans: [
+            {
+              loanAccount: secondaryAccountDocument,
+            },
+          ],
+        });
+
+        const transferAccountDocument = accountDataFactory.document();
+
+        const repayingTransferTransactionDocument = transferTransactionDataFactory.document({
+          account: accountDocument,
+          transferAccount: transferAccountDocument,
+          transactions: [splitDocument.deferredSplits[0]],
+        });
+
+        request = splitTransactionDataFactory.request({
+          accountId: getAccountId(accountDocument),
+        }, undefined, [
+          {
+            loanAccountId: getAccountId(secondaryAccountDocument),
+            transactionId: getTransactionId(splitDocument.deferredSplits[0]),
+          },
+        ]);
+
+        cy.saveTransactionDocuments([
+          splitDocument,
+          repayingTransferTransactionDocument,
+        ])
+          .saveAccountDocuments([
+            accountDocument,
+            secondaryAccountDocument,
+            transferAccountDocument,
+          ])
+          .authenticate(1)
+          .requestUpdateToSplitTransaction(getTransactionId(splitDocument), request)
+          .expectCreatedResponse()
+          .validateTransactionSplitDocument(request)
+          .validateRelatedRepaymentUnchanged(getTransactionId(splitDocument.deferredSplits[0]), repayingTransferTransactionDocument);
       });
       describe('without optional properties', () => {
         it('description', () => {
@@ -635,9 +679,21 @@ describe('PUT transaction/v1/transactions/{transactionId}/split (split)', () => 
 
         it('loans', () => {
           request = splitTransactionDataFactory.request(relatedDocumentIds, request.splits, []);
-          cy.saveTransactionDocument(splitDocument)
+          const transferAccountDocument = accountDataFactory.document();
+
+          const repayingTransferTransactionDocument = transferTransactionDataFactory.document({
+            account: accountDocument,
+            transferAccount: transferAccountDocument,
+            transactions: [splitDocument.deferredSplits[0]],
+          });
+
+          cy.saveTransactionDocuments([
+            splitDocument,
+            repayingTransferTransactionDocument,
+          ])
             .saveAccountDocuments([
               accountDocument,
+              transferAccountDocument,
               secondaryAccountDocument,
             ])
             .saveCategoryDocuments([
@@ -651,7 +707,8 @@ describe('PUT transaction/v1/transactions/{transactionId}/split (split)', () => 
             .authenticate(1)
             .requestUpdateToSplitTransaction(getTransactionId(splitDocument), request)
             .expectCreatedResponse()
-            .validateTransactionSplitDocument(request);
+            .validateTransactionSplitDocument(request)
+            .validateRelatedRepaymentDeleted(getTransactionId(splitDocument.deferredSplits[0]), getTransactionId(repayingTransferTransactionDocument));
         });
       });
     });

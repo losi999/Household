@@ -1,4 +1,4 @@
-import { getAccountId, toDictionary } from '@household/shared/common/utils';
+import { getAccountId, getTransactionId, toDictionary } from '@household/shared/common/utils';
 import { DataFactoryFunction } from '@household/shared/types/common';
 import { Account, Transaction } from '@household/shared/types/types';
 import { faker } from '@faker-js/faker';
@@ -44,7 +44,7 @@ export const transferTransactionDataFactory = (() => {
         accountId: getAccountId(ctx.account),
         transferAccountId: getAccountId(ctx.transferAccount),
         payments: ctx.transactions ? ctx.transactions.map(t => ({
-          transactionId: t._id,
+          transactionId: getTransactionId(t),
           amount: faker.number.float({
             min: 1,
             max: 500,
