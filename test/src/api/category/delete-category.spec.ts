@@ -163,7 +163,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
             unrelatedCategoryDocument,
           ])
           .saveTransactionDocuments([
-            // paymentTransactionDocument,
+            paymentTransactionDocument,
             splitTransactionDocument,
             // deferredTransactionDocument,
             // reimbursementTransactionDocument,
