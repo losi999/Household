@@ -26,4 +26,18 @@ export const accountReducer = createReducer<Account.Response[]>([],
   on(accountApiActions.deleteAccountCompleted, (_state, { accountId }) => {
     return _state.filter(a => a.accountId !== accountId);
   }),
+
+  on(accountApiActions.getAccountCompleted, (_state, { account }) => {
+
+    const exisingAccount = _state.find(a => a.accountId === account.accountId);
+
+    if (exisingAccount) {
+      return _state;
+    }
+
+    return [
+      ..._state,
+      account,
+    ];
+  }),
 );

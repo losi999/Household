@@ -240,7 +240,7 @@ export class TransactionSplitEditComponent implements OnInit {
         description: toUndefined(description),
         issuedAt: issuedAt.toISOString(),
         recipientId: recipient?.recipientId,
-        loans: splits.filter(s => s.loanAccount).map(s => ({
+        loans: toUndefined(splits.filter(s => s.loanAccount).map(s => ({
           amount: s.amount,
           categoryId: s.category?.categoryId,
           projectId: s.project?.projectId,
@@ -266,8 +266,8 @@ export class TransactionSplitEditComponent implements OnInit {
             productId: undefined,
             quantity: undefined,
           }),
-        })),
-        splits: splits.filter(s => !s.loanAccount).map(s => ({
+        }))),
+        splits: toUndefined(splits.filter(s => !s.loanAccount).map(s => ({
           amount: s.amount,
           categoryId: s.category?.categoryId,
           projectId: s.project?.projectId,
@@ -291,7 +291,7 @@ export class TransactionSplitEditComponent implements OnInit {
             productId: undefined,
             quantity: undefined,
           }),
-        })),
+        }))),
       };
 
       if (this.transactionId) {

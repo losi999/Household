@@ -1,9 +1,11 @@
-import { Account } from '@household/shared/types/types';
+import { Account, Transaction } from '@household/shared/types/types';
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
 
 export const accountApiActions = createActionGroup({
   source: 'Account API',
   events: {
+    'Get account initiated': props<Account.AccountId>(),
+    'Get account completed': props<Transaction.Account<Account.Response>>(),
     'List accounts initiated': emptyProps(),
     'List accounts completed': props<{accounts: Account.Response[]}>(),
     'Create account initiated': props<Account.Request>(),

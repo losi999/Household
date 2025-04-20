@@ -30,6 +30,26 @@ export class AccountEffects {
     );
   });
 
+  getAccount = createEffect(() => {
+    return this.actions.pipe(
+      ofType(accountApiActions.getAccountInitiated),
+      exhaustMap(({ accountId }) => {
+        return this.accountService.getAccountById(accountId).pipe(
+          map((account) => accountApiActions.getAccountCompleted({
+            account,
+          })),
+          catchError(() => {
+            return of(progressActions.processFinished(),
+              notificationActions.showMessage({
+                message: 'Hiba történt',
+              }),
+            );
+          }),
+        );
+      }),
+    );
+  });
+
   createAccount = createEffect(() => {
     return this.actions.pipe(
       ofType(accountApiActions.createAccountInitiated),
