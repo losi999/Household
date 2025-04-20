@@ -1481,6 +1481,9 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
           .project({
             potentialDuplicates: 0,
           })
+          .sort({
+            issuedAt: -1,
+          })
           .session(session)
           .exec();
       });
