@@ -103,7 +103,7 @@ export class TransactionTransferEditComponent implements OnInit {
       );
 
       transaction.subscribe((transaction) => {
-        this.isDownwardTransfer = transaction.account.accountType !== 'loan' && transaction.amount < 0;
+        this.isDownwardTransfer = transaction.amount < 0;
 
         this.form.patchValue({
           amount: transaction.amount,
@@ -124,8 +124,16 @@ export class TransactionTransferEditComponent implements OnInit {
     } else {
       this.store.select(selectAccountById(accountId)).pipe(takeFirstDefined())
         .subscribe((account) => {
+          const newBalance = Number(this.activatedRoute.snapshot.queryParamMap.get('newBalance'));
+          let amount: number;
+          if (newBalance) {
+            amount = newBalance - account.balance;
+            this.isDownwardTransfer = amount < 0;
+          }
+
           this.form.patchValue({
             account,
+            amount,
           });
         });
     }

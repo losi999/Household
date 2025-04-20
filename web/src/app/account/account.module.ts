@@ -23,6 +23,9 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { MatMenuModule } from '@angular/material/menu';
 import { KeyvalueAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/keyvalue-autocomplete-input/keyvalue-autocomplete-input.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { AccountBalanceCalculatorComponent } from './account-balance-calculator/account-balance-calculator.component';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 
 @NgModule({
   declarations: [
@@ -34,6 +37,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     AccountTransactionsListItemComponent,
     OpenAccountFilterPipe,
     AccountFormComponent,
+    AccountBalanceCalculatorComponent,
   ],
   imports: [
     CommonModule,
@@ -53,6 +57,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     MatMenuModule,
     NgxSkeletonLoaderModule,
     MatTooltipModule,
+    MatFormFieldModule,
+    MatInputModule,
   ],
 })
 export class AccountModule { }

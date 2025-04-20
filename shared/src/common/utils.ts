@@ -27,6 +27,10 @@ export const toDictionary = <P>(docs: P[], key: keyof P): Dictionary<P> => {
 };
 
 export const toUndefined = (value: any) => {
+  if (value?.length === 0) {
+    return undefined;
+  }
+
   return value ? value : undefined;
 };
 

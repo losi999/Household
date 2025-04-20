@@ -1,0 +1,16 @@
+<household-toolbar title="Egyenleg kalkulátor">
+  <a mat-icon-button type="button" [routerLink]="['..', 'new', 'transfer']" [queryParams]="{ newBalance }">
+    <mat-icon>save</mat-icon>
+  </a>
+</household-toolbar>
+
+<div class="form" [formGroup]="form">
+  <mat-form-field *ngFor="let q of quantities">
+    <mat-label>x {{q | number:'1.0-2': 'hu'}} Ft</mat-label>
+    <input matInput type="number" [formControlName]="q">
+    <span matTextSuffix>db</span>
+    <mat-hint align="end">{{(form.value[q] * q) | number:'1.0-2': 'hu'}} Ft</mat-hint>
+  </mat-form-field>
+</div>
+
+<h1>Egyenleg: {{newBalance | number:'1.0-2': 'hu'}} Ft</h1>

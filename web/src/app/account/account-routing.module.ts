@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { AccountBalanceCalculatorComponent } from '@household/web/app/account/account-balance-calculator/account-balance-calculator.component';
 import { AccountHomeComponent } from '@household/web/app/account/account-home/account-home.component';
 import { AccountTransactionsHomeComponent } from '@household/web/app/account/account-transactions-home/account-transactions-home.component';
 import { TransactionDetailsComponent } from '@household/web/app/transaction/transaction-details/transaction-details.component';
@@ -16,6 +17,10 @@ const routes: Routes = [
   {
     path: 'accounts/:accountId',
     component: AccountTransactionsHomeComponent,
+  },
+  {
+    path: 'accounts/:accountId/balance',
+    component: AccountBalanceCalculatorComponent,
   },
   {
     path: 'accounts/:accountId/transactions/:transactionId',
