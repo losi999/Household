@@ -852,13 +852,15 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
               'account',
             ],
           },
-          {
-            $match: {
-              remainingAmount: {
-                $gt: 0,
+          ...(deferredTransactionIds?.length > 0 ? [] : [
+            {
+              $match: {
+                remainingAmount: {
+                  $gt: 0,
+                },
               },
             },
-          },
+          ]),
           ...populateAggregate('payingAccount', 'accounts'),
           ...populateAggregate('ownerAccount', 'accounts'),
           ...populateAggregate('category', 'categories', [
@@ -1421,12 +1423,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
               draftAmount: {
                 $abs: '$amount',
               },
-              draftDate: {
-                $dateToString: {
-                  format: '%Y-%m-%d',
-                  date: '$issuedAt',
-                },
-              },
+              draftIssuedAt: '$issuedAt',
             },
             pipeline: [
               {
@@ -1448,14 +1445,16 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
                         ],
                       },
                       {
-                        $eq: [
+                        $lte: [
                           {
-                            $dateToString: {
-                              format: '%Y-%m-%d',
-                              date: '$issuedAt',
+                            $abs: {
+                              $subtract: [
+                                '$$draftIssuedAt',
+                                '$issuedAt',
+                              ],
                             },
                           },
-                          '$$draftDate',
+                          1000 * 60 * 60 * 24,
                         ],
                       },
                     ],
