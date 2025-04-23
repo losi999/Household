@@ -852,13 +852,15 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
               'account',
             ],
           },
-          {
-            $match: {
-              remainingAmount: {
-                $gt: 0,
+          ...(deferredTransactionIds?.length > 0 ? [] : [
+            {
+              $match: {
+                remainingAmount: {
+                  $gt: 0,
+                },
               },
             },
-          },
+          ]),
           ...populateAggregate('payingAccount', 'accounts'),
           ...populateAggregate('ownerAccount', 'accounts'),
           ...populateAggregate('category', 'categories', [
