@@ -39,6 +39,8 @@ import { FileEffects } from '@household/web/state/file/file.effects';
 import { fileReducer } from '@household/web/state/file/file.reducer';
 import { importReducer } from '@household/web/state/import/import.reducer';
 import { ImportEffects } from '@household/web/state/import/import.effects';
+import { SettingEffects } from '@household/web/state/setting/setting.effects';
+import { settingReducer } from '@household/web/state/setting/setting.reducer';
 
 registerLocaleData(localeHu);
 
@@ -64,6 +66,7 @@ registerLocaleData(localeHu);
       transactions: transactionReducer,
       files: fileReducer,
       import: importReducer,
+      settings: settingReducer,
     }),
     StoreDevtoolsModule.instrument({
       maxAge: 25,
@@ -81,6 +84,7 @@ registerLocaleData(localeHu);
       DialogEffects,
       FileEffects,
       ImportEffects,
+      SettingEffects,
     ]),
   ],
   providers: [

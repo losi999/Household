@@ -68,6 +68,15 @@ const routes: Routes = [
     canMatch: [canMatch],
   },
   {
+    path: 'settings',
+    title: 'Beállítások',
+    loadChildren: () => import('./settings/settings.module').then(m => m.SettingsModule),
+    data: {
+      requireLogin: true,
+    },
+    canMatch: [canMatch],
+  },
+  {
     path: '',
     title: 'Számlák',
     loadChildren: () => import('./account/account.module').then(m => m.AccountModule),
