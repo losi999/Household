@@ -8,13 +8,12 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import localeHu from '@angular/common/locales/hu';
 import { registerLocaleData } from '@angular/common';
 import { TransactionModule } from './transaction/transaction.module';
-import { MatNativeDateModule, MAT_DATE_LOCALE, DateAdapter } from '@angular/material/core';
+import { MatNativeDateModule, MAT_DATE_LOCALE } from '@angular/material/core';
 import { AuthInterceptor } from '@household/web/interceptors/auth.interceptor';
 import { AuthModule } from '@household/web/app/auth/auth.module';
 import { ProgressInterceptor } from '@household/web/interceptors/progress.interceptor';
 import { ProductModule } from '@household/web/app/product/product.module';
 import { ProgressIndicatorComponent } from '@household/web/app/shared/progress-indicator/progress-indicator.component';
-import { CustomDateAdapter } from '@household/web/app/shared/data-adapter';
 import { StoreModule } from '@ngrx/store';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 import { accountReducer } from '@household/web/state/account/account.reducer';
@@ -41,6 +40,8 @@ import { importReducer } from '@household/web/state/import/import.reducer';
 import { ImportEffects } from '@household/web/state/import/import.effects';
 import { SettingEffects } from '@household/web/state/setting/setting.effects';
 import { settingReducer } from '@household/web/state/setting/setting.reducer';
+import { HairdressingEffects } from '@household/web/state/hairdressing/hairdressing.effects';
+import { hairdressingReducer } from '@household/web/state/hairdressing/hairdressing.reducer';
 
 registerLocaleData(localeHu);
 
@@ -67,6 +68,7 @@ registerLocaleData(localeHu);
       files: fileReducer,
       import: importReducer,
       settings: settingReducer,
+      hairdressing: hairdressingReducer,
     }),
     StoreDevtoolsModule.instrument({
       maxAge: 25,
@@ -85,6 +87,7 @@ registerLocaleData(localeHu);
       FileEffects,
       ImportEffects,
       SettingEffects,
+      HairdressingEffects,
     ]),
   ],
   providers: [
@@ -95,10 +98,6 @@ registerLocaleData(localeHu);
     {
       provide: LOCALE_ID,
       useValue: 'hu-HU',
-    },
-    {
-      provide: DateAdapter,
-      useClass: CustomDateAdapter,
     },
     {
       provide: HTTP_INTERCEPTORS,

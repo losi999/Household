@@ -1,0 +1,1 @@
+<household-hairdressing-income-list-item *ngFor="let day of date | daysOfMonth" [currency]="currency" [day]="day" [amount]="amountMap?.[day.getDate()]" />

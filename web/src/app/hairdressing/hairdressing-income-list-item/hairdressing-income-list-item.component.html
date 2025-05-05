@@ -1,0 +1,17 @@
+<div class="list-item mat-elevation-z1">
+  <div class="datetime">
+    <div class="year">{{day | date:'yyyy'}}</div>
+    <div class="date">{{day | date:'MMM dd.'}}</div>
+    <div class="date">{{day | date:'EEEE'}}</div>
+  </div>
+
+  <div class="amount green" *ngIf="amount">{{amount | number:'1.0-2':'hu'}} {{currency}}</div>
+  <div class="buttons">
+    <button mat-icon-button color="primary" *ngIf="amount">
+      <mat-icon>edit</mat-icon>
+    </button>
+    <button mat-icon-button color="primary" *ngIf="!amount">
+      <mat-icon>post_add</mat-icon>
+    </button>
+  </div>
+</div>
