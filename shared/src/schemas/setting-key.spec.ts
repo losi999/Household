@@ -3,7 +3,7 @@ import { Setting } from '@household/shared/types/types';
 import { createSettingKey } from '@household/shared/common/test-data-factory';
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 
-describe('Setting id schema', () => {
+describe('Setting key schema', () => {
   const tester = jsonSchemaTesterFactory<Setting.SettingKey>(schema);
 
   tester.validateSuccess({
