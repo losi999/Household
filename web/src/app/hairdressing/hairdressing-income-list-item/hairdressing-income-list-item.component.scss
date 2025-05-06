@@ -1,0 +1,88 @@
+::ng-deep .custom-header .list-item {
+  width: 100%;
+}
+
+::ng-deep .mat-expansion-panel-header {
+  min-height: auto !important;
+  height: auto !important;
+  align-items: flex-start;
+  white-space: normal;
+  padding: 0 !important;
+}
+
+::ng-deep .mat-expansion-panel-body {
+  padding: 0 12px 12px !important;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "amount add"
+    "buttons buttons"
+    "splits splits";
+
+  .amount {
+    grid-area: amount;
+  }
+
+  .add {
+    grid-area: add;
+  }
+
+  .buttons {
+    grid-area: buttons;
+    display: flex;
+    justify-content: space-evenly;
+  }
+
+  .splits {
+    grid-area: splits;
+  }
+}
+
+.list-item {
+  margin: 5px 0;
+  padding: 0 10px;
+  display: grid;
+  grid-template-columns: 75px 1fr;
+  column-gap: 15px;
+  grid-template-areas: "datetime amount";
+
+  & > .datetime {
+    grid-area: datetime;
+    text-align: right;
+    font-weight: 400;
+
+    & > .year {
+      font-size: 12px;
+    }
+
+    & > .date {
+      font-size: 16px;
+    }
+  }
+
+  & > .amount {
+    grid-area: amount;
+    align-self: center;
+    justify-self: end;
+    font-size: 20px;
+    font-weight: bold;
+  }
+
+  @media all and (max-width: 639px) {
+    & {
+      grid-template-columns: 65px 1fr;
+      column-gap: 5px;
+    }
+
+    & > .date {
+      font-size: 14px;
+    }
+
+    & > .amount {
+      font-size: 14px;
+    }
+  }
+}

@@ -25,6 +25,7 @@ export class AmountInputComponent implements OnInit, OnChanges, ControlValueAcce
   @Input() signDisabled = false;
   @Input() currency: string;
   @Input() newBalance: number;
+  @Input() label = 'Összeg';
 
   account: Observable<Account.Response>;
 

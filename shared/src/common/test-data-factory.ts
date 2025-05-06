@@ -1,6 +1,6 @@
 import { generateMongoId } from '@household/shared/common/utils';
 import { AccountType, CategoryType, FileType, TransactionType } from '@household/shared/enums';
-import { Account, Auth, Category, File, Product, Project, Recipient, Report, Transaction } from '@household/shared/types/types';
+import { Account, Auth, Category, File, Product, Project, Recipient, Report, Setting, Transaction } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
 
 const amount = -100;
@@ -33,6 +33,10 @@ export const createProductId = (id?: string): Product.Id => {
 
 export const createFileId = (id?: string): File.Id => {
   return (id ?? generateMongoId().toString()) as File.Id;
+};
+
+export const createSettingKey = (key?: string): Setting.Id => {
+  return (key ?? 'defaultKey') as Setting.Id;
 };
 
 export const createAccountDocument: DataFactoryFunction<Account.Document> = (doc) => {
@@ -459,6 +463,31 @@ export const createProjectResponse: DataFactoryFunction<Project.Response> = (res
     ...resp,
   };
 };
+
+export const createSettingRequest: DataFactoryFunction<Setting.Request> = (doc) => {
+  return {
+    value: 123,
+    ...doc,
+  };
+};
+
+export const createSettingDocument: DataFactoryFunction<Setting.Document> = (doc) => {
+  return {
+    settingKey: createSettingKey(),
+    value: 123,
+    expiresAt: undefined,
+    ...doc,
+  };
+};
+
+export const createSettingResponse: DataFactoryFunction<Setting.Response> = (resp) => {
+  return {
+    settingKey: createSettingKey(),
+    value: 123,
+    ...resp,
+  };
+};
+
 export const createCategoryResponseBase: DataFactoryFunction<Category.ResponseAncestor> = (resp) => {
   return {
     categoryId: createCategoryId(),

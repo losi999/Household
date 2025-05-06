@@ -617,6 +617,26 @@ export namespace Report {
   export type Request = Filter[];
 }
 
+export namespace Setting {
+  export type Id = Branding<string, 'settings'>;
+
+  type Base = {
+    value: string | number | boolean;
+  };
+
+  export type SettingKey = {
+    settingKey: Id;
+  };
+
+  export type Request = Base;
+
+  export type Document = Base
+  & SettingKey
+  & Internal.Timestamps;
+
+  export type Response = Base & SettingKey;
+}
+
 export namespace Auth {
   type IdTokenResponse = {
     idToken: string;

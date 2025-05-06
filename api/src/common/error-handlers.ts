@@ -1,7 +1,7 @@
 import { getCategoryId, getProductId } from '@household/shared/common/utils';
 import { AccountType, CategoryType } from '@household/shared/enums';
 import { HttpError } from '@household/shared/types/common';
-import { Account, Category, Common, File, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Account, Category, Common, File, Product, Project, Recipient, Setting, Transaction } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
 
 type CatchAndThrow = (error: any) => never;
@@ -483,6 +483,20 @@ export const httpErrors = {
     update: (ctx: File.FileId & UpdateQuery<File.Document>, statusCode = 500): CatchAndThrow => (error) => {
       log('Update file', ctx, error);
       throw httpError(statusCode, 'Error while updating file document');
+    },
+  },
+  setting: {
+    list: (statusCode = 500): CatchAndThrow => (error) => {
+      log('List settings', undefined, error);
+      throw httpError(statusCode, 'Error while listing settings');
+    },
+    delete: (ctx: Setting.SettingKey, statusCode = 500): CatchAndThrow => (error) => {
+      log('Delete setting', ctx, error);
+      throw httpError(statusCode, 'Error while deleting setting');
+    },
+    update: (ctx: Setting.SettingKey & UpdateQuery<Setting.Document>, statusCode = 500): CatchAndThrow => (error) => {
+      log('Update setting', ctx, error);
+      throw httpError(statusCode, 'Error while updating setting document');
     },
   },
   common: {

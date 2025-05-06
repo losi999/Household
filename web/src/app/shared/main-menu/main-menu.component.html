@@ -3,10 +3,21 @@
 </button>
 <mat-menu #main="matMenu">
   <button mat-menu-item [routerLink]="['/']">Számlák</button>
-  <button mat-menu-item [routerLink]="['/projects']">Projektek</button>
-  <button mat-menu-item [routerLink]="['/categories']">Kategóriák</button>
-  <button mat-menu-item [routerLink]="['/products']">Termékek</button>
-  <button mat-menu-item [routerLink]="['/recipients']">Partnerek</button>
-  <button mat-menu-item [routerLink]="['/reports']">Jelentések</button>
-  <button mat-menu-item [routerLink]="['/imports']">Importálás</button>
+  <button mat-menu-item [matMenuTriggerFor]="catalog">Katalógus</button>
+  <button mat-menu-item [routerLink]="['/','reports']">Jelentések</button>
+  <button mat-menu-item [routerLink]="['/','imports']">Importálás</button>
+  <button mat-menu-item [matMenuTriggerFor]="hairdressing">Fodrászat</button>
+  <mat-divider />
+  <button mat-menu-item [routerLink]="['/','settings']">Beállítások</button>
+</mat-menu>
+
+<mat-menu #hairdressing="matMenu">
+  <button mat-menu-item [routerLink]="['/', 'hairdressing', 'income']">Bevétel</button>
+</mat-menu>
+
+<mat-menu #catalog="matMenu">
+  <button mat-menu-item [routerLink]="['/','projects']">Projektek</button>
+  <button mat-menu-item [routerLink]="['/','categories']">Kategóriák</button>
+  <button mat-menu-item [routerLink]="['/','products']">Termékek</button>
+  <button mat-menu-item [routerLink]="['/','recipients']">Partnerek</button>
 </mat-menu>

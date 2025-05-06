@@ -1,0 +1,27 @@
+<mat-expansion-panel hideToggle>
+  <mat-expansion-panel-header class="custom-header">
+    <div class="list-item">
+      <div class="datetime">
+        <div class="year">{{day | date:'yyyy'}}</div>
+        <div class="date">{{day | date:'MMM dd.'}}</div>
+        <div class="date">{{day | date:'EEEE'}}</div>
+      </div>
+      <div class="amount green" *ngIf="amount">{{amount | number:'1.0-2':'hu'}} {{currency}}</div>
+    </div>
+  </mat-expansion-panel-header>
+  <div class="content">
+    <household-amount-input class="amount" label="Részösszeg" [formControl]="partialAmount" [currency]="currency" />
+    <button mat-icon-button class="add" (click)="add()"><mat-icon>check</mat-icon></button>
+    <div class="buttons">
+      <button mat-flat-button color="primary" [disabled]="!amount" (click)="save()">Mentés</button>
+      <button mat-button [disabled]="(!transaction && !amount) || amount === transaction?.amount" (click)="cancel()">Mégse</button>
+      <button mat-flat-button color="warn" [disabled]="!transaction" (click)="delete()">Törlés</button>
+    </div>
+    <mat-chip-set class="splits">
+      <mat-chip *ngFor="let s of splits; let i = index" (click)="remove(i)">
+        {{s}} {{currency}}
+        <mat-icon matChipTrailingIcon>cancel</mat-icon>
+      </mat-chip>
+    </mat-chip-set>
+  </div>
+</mat-expansion-panel>

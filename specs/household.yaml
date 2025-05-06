@@ -695,6 +695,44 @@ paths:
                 type: array
                 items:
                   $ref: "transaction.yaml#/components/schemas/DraftResponse"
+  /setting/v1/settings:
+    get:
+      tags:
+        - setting
+      responses:
+        200:
+          description: Setting saved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - key
+                    - value
+                  properties:
+                    key:
+                      type: string
+                    value:
+                      type: string
+  /setting/v1/settings/{settingKey}:
+    post:
+      tags:
+        - setting
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - value
+              properties:
+                value:
+                  type: string
+      responses:
+        204:
+          description: Setting saved
 
 components:
   parameters:
