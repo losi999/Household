@@ -272,4 +272,19 @@ export class DialogEffects {
   }, {
     dispatch: false,
   });
+
+  deleteIncome = createEffect(() => {
+    return this.actions.pipe(
+      ofType(dialogActions.deleteIncome),
+      exhaustMap(({ transactionId, day }) => {
+        this.dialogService.openDeleteIncomeDialog({
+          transactionId,
+          day,
+        });
+        return EMPTY;
+      }),
+    );
+  }, {
+    dispatch: false,
+  });
 }

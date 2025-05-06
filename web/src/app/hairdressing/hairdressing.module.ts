@@ -14,6 +14,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { DaysOfMonthPipe } from '@household/web/app/shared/days-of-month.pipe';
 import { HairdressingIncomeListComponent } from './hairdressing-income-list/hairdressing-income-list.component';
 import { HairdressingIncomeListItemComponent } from './hairdressing-income-list-item/hairdressing-income-list-item.component';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { AmountInputComponent } from '@household/web/app/shared/amount-input/amount-input.component';
+import { MatChipsModule } from '@angular/material/chips';
 
 @NgModule({
   declarations: [
@@ -35,6 +38,9 @@ import { HairdressingIncomeListItemComponent } from './hairdressing-income-list-
     MatIconModule,
     MatButtonModule,
     DaysOfMonthPipe,
+    MatExpansionModule,
+    AmountInputComponent,
+    MatChipsModule,
   ],
 })
 export class HairdressingModule { }

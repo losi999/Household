@@ -2,7 +2,7 @@
   <button mat-icon-button matPrefix type="button" (click)="inverseValue($event)" [disabled]="signDisabled">
     <mat-icon>{{isPositive ? 'add' : 'remove'}}</mat-icon>
   </button>
-  <mat-label>Összeg</mat-label>
+  <mat-label>{{label}}</mat-label>
   <input type="number" matInput [formControl]="amount" min="0" (blur)="touched?.()" (input)="touched?.()">
   <span matTextSuffix>{{currency}}</span>
   <mat-hint *ngIf="newBalance">Új egyenleg: {{newBalance}} {{currency}}</mat-hint>

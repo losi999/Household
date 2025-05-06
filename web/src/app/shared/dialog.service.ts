@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { Account, Category, File, Product, Project, Recipient } from '@household/shared/types/types';
+import { Account, Category, File, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { AccountFormComponent, AccountFormData } from '@household/web/app/account/account-form/account-form.component';
 import { CategoryFormComponent, CategoryFormData } from '@household/web/app/category/category-form/category-form.component';
 import { CategoryMergeDialogComponent, CategoryMergeDialogData } from '@household/web/app/category/category-merge-dialog/category-merge-dialog.component';
@@ -15,6 +15,7 @@ import { ConfirmationDialogComponent } from '@household/web/app/shared/confirmat
 import { accountApiActions } from '@household/web/state/account/account.actions';
 import { categoryApiActions } from '@household/web/state/category/category.actions';
 import { fileApiActions } from '@household/web/state/file/file.actions';
+import { hairdressingActions } from '@household/web/state/hairdressing/hairdressing.actions';
 import { productApiActions } from '@household/web/state/product/product.actions';
 import { projectApiActions } from '@household/web/state/project/project.actions';
 import { recipientApiActions } from '@household/web/state/recipient/recipient.actions';
@@ -220,6 +221,27 @@ export class DialogService {
         if (shouldDelete) {
           this.store.dispatch(fileApiActions.deleteFileInitiated({
             fileId: file.fileId,
+          }));
+        }
+      });
+  }
+
+  openDeleteIncomeDialog(data: Transaction.TransactionId & {day: Date}): void {
+    this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        title: 'Törölni akarod a bevételt?',
+        content: new Intl.DateTimeFormat('hu-HU', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          weekday: 'long',
+        }).format(data.day),
+      },
+    }).afterClosed()
+      .subscribe((shouldDelete) => {
+        if (shouldDelete) {
+          this.store.dispatch(hairdressingActions.deleteIncomeInitiated({
+            transactionId: data.transactionId,
           }));
         }
       });

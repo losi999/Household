@@ -13,18 +13,18 @@ export class HairdressingIncomeListComponent implements OnChanges {
   @Input() currency: string;
   @Input() date: Moment;
 
-  amountMap: {
-    [day: number]: number;
+  transactionMap: {
+    [day: number]: Transaction.Report;
   };
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.transactions) {
-      this.amountMap = this.transactions?.reduce((accumulator, currentValue) => {
+      this.transactionMap = this.transactions?.reduce((accumulator, currentValue) => {
         const day = new Date(currentValue.issuedAt).getDate();
 
         return {
           ...accumulator,
-          [day]: (accumulator[day] ?? 0) + currentValue.amount,
+          [day]: currentValue,
         };
       }, {});
     }

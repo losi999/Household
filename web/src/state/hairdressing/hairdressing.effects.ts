@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, combineLatest, map, of, switchMap, take } from 'rxjs';
+import { catchError, combineLatest, map, mergeMap, of, switchMap, take } from 'rxjs';
 import { progressActions } from '@household/web/state/progress/progress.actions';
 import { notificationActions } from '@household/web/state/notification/notification.actions';
 import { hairdressingActions } from '@household/web/state/hairdressing/hairdressing.actions';
@@ -53,6 +53,128 @@ export class HairdressingEffects {
                 return hairdressingActions.listIncomeCompleted({
                   transactions,
                   month: moment(date).format('YYYY-MM'),
+                });
+              }),
+              catchError(() => {
+                return of(progressActions.processFinished(),
+                  notificationActions.showMessage({
+                    message: 'Hiba történt',
+                  }),
+                );
+              }),
+            );
+          }));
+      }),
+    );
+  });
+
+  deleteIncome = createEffect(() => {
+    return this.actions.pipe(
+      ofType(hairdressingActions.deleteIncomeInitiated),
+      mergeMap(({ transactionId }) => {
+        return this.transactionService.deleteTransaction(transactionId).pipe(
+          map(() => {
+            return hairdressingActions.deleteIncomeCompleted({
+              transactionId,
+            });
+          }),
+          catchError(() => {
+            return of(progressActions.processFinished(),
+              notificationActions.showMessage({
+                message: 'Hiba történt',
+              }),
+            );
+          }),
+        );
+      }),
+    );
+  });
+
+  saveIncome = createEffect(() => {
+    return this.actions.pipe(
+      ofType(hairdressingActions.saveIncomeInitiated),
+      switchMap(({ description, issuedAt, amount }) => {
+        return combineLatest([
+          this.store.select(selectSettingByKey('hairdressingIncomeAccount')).pipe(takeFirstDefined()),
+          this.store.select(selectSettingByKey('hairdressingIncomeCategory')).pipe(takeFirstDefined()),
+        ]).pipe(
+          take(1),
+          switchMap(([
+            { value: accountId },
+            { value: categoryId },
+          ]) => {
+            return this.transactionService.createPaymentTransaction({
+              amount,
+              accountId: accountId as Account.Id,
+              categoryId: categoryId as Category.Id,
+              issuedAt,
+              description,
+              billingEndDate: undefined,
+              billingStartDate: undefined,
+              invoiceNumber: undefined,
+              isSettled: undefined,
+              loanAccountId: undefined,
+              productId: undefined,
+              projectId: undefined,
+              quantity: undefined,
+              recipientId: undefined,
+            }).pipe(
+              map(({ transactionId }) => {
+                return hairdressingActions.saveIncomeCompleted({
+                  transactionId,
+                  description,
+                  issuedAt,
+                  amount,
+                });
+              }),
+              catchError(() => {
+                return of(progressActions.processFinished(),
+                  notificationActions.showMessage({
+                    message: 'Hiba történt',
+                  }),
+                );
+              }),
+            );
+          }));
+      }),
+    );
+  });
+
+  updateIncome = createEffect(() => {
+    return this.actions.pipe(
+      ofType(hairdressingActions.updateIncomeInitiated),
+      switchMap(({ description, issuedAt, amount, transactionId }) => {
+        return combineLatest([
+          this.store.select(selectSettingByKey('hairdressingIncomeAccount')).pipe(takeFirstDefined()),
+          this.store.select(selectSettingByKey('hairdressingIncomeCategory')).pipe(takeFirstDefined()),
+        ]).pipe(
+          take(1),
+          switchMap(([
+            { value: accountId },
+            { value: categoryId },
+          ]) => {
+            return this.transactionService.updatePaymentTransaction(transactionId, {
+              amount,
+              accountId: accountId as Account.Id,
+              categoryId: categoryId as Category.Id,
+              issuedAt,
+              description,
+              billingEndDate: undefined,
+              billingStartDate: undefined,
+              invoiceNumber: undefined,
+              isSettled: undefined,
+              loanAccountId: undefined,
+              productId: undefined,
+              projectId: undefined,
+              quantity: undefined,
+              recipientId: undefined,
+            }).pipe(
+              map(({ transactionId }) => {
+                return hairdressingActions.updateIncomeCompleted({
+                  transactionId,
+                  description,
+                  issuedAt,
+                  amount,
                 });
               }),
               catchError(() => {
