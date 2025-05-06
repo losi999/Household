@@ -28,6 +28,9 @@ export class SettingsHomeComponent implements OnInit {
     this.store.dispatch(categoryApiActions.listCategoriesInitiated());
     this.store.dispatch(settingApiActions.listSettingsInitiated());
 
+    this.hairdressingIncomeAccount = new FormControl();
+    this.hairdressingIncomeCategory = new FormControl();
+
     this.store.select(selectSettingByKey('hairdressingIncomeAccount')).pipe(
       takeFirstDefined(),
       mergeMap((setting) => this.store.select(selectAccountById(setting.value as Account.Id))),
@@ -47,9 +50,6 @@ export class SettingsHomeComponent implements OnInit {
           emitEvent: false,
         });
       });
-
-    this.hairdressingIncomeAccount = new FormControl();
-    this.hairdressingIncomeCategory = new FormControl();
 
     this.hairdressingIncomeAccount.valueChanges.subscribe((value) => {
       if (value) {

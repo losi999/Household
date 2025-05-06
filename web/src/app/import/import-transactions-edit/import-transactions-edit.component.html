@@ -31,7 +31,7 @@
       <household-project-autocomplete-input *ngIf="fieldVisibility.project" label="Projekt" formControlName="project" />
       <household-account-autocomplete-input *ngIf="fieldVisibility.transferAccount" label="Átvitel számla" formControlName="transferAccount" />
       <household-account-autocomplete-input *ngIf="fieldVisibility.loanAccount" label="Kölcsön számla" formControlName="loanAccount" />
-      <household-clearable-input *ngIf="fieldVisibility.description" label="Megjegyzés" />
+      <household-clearable-input *ngIf="fieldVisibility.description" label="Megjegyzés" formControlName="description" />
       <button mat-button color="primary" type="button" (click)="applyFields()">Alkalmaz</button>
       <button mat-button color="warn" type="button" (click)="cancel()">Mégse</button>
     </ng-container>
