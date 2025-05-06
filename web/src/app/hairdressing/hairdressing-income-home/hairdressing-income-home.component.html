@@ -1,0 +1,14 @@
+<household-toolbar title="Fodrászat">
+</household-toolbar>
+
+<button mat-icon-button type="button" (click)="previousMonth()"><mat-icon>arrow_left</mat-icon></button>
+<mat-form-field>
+  <mat-label>Választott hónap</mat-label>
+  <input matInput [matDatepicker]="picker" [formControl]="date">
+  <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+  <mat-datepicker #picker startView="multi-year" disabled="false" (monthSelected)="setMonthAndYear($event, picker)">
+  </mat-datepicker>
+</mat-form-field>
+<button mat-icon-button type="button" (click)="nextMonth()"><mat-icon>arrow_right</mat-icon></button>
+
+<household-hairdressing-income-list [transactions]="transactions | async" [date]="date.value" [currency]="(account | async)?.currency" />

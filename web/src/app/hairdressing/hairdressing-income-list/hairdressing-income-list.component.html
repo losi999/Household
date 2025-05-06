@@ -1,0 +1,3 @@
+<mat-accordion>
+  <household-hairdressing-income-list-item *ngFor="let day of date | daysOfMonth" [day]="day" [currency]="currency" [transaction]="transactionMap?.[day.getDate()]" />
+</mat-accordion>
