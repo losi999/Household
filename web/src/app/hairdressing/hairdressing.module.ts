@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { HairdressingRoutingModule } from './hairdressing-routing.module';
-import { HairdressingIncomeComponent } from './hairdressing-income/hairdressing-income.component';
+import { HairdressingIncomeHomeComponent } from './hairdressing-income-home/hairdressing-income-home.component';
 import { ToolbarComponent } from '@household/web/app/shared/toolbar/toolbar.component';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -20,7 +20,7 @@ import { MatChipsModule } from '@angular/material/chips';
 
 @NgModule({
   declarations: [
-    HairdressingIncomeComponent,
+    HairdressingIncomeHomeComponent,
     HairdressingIncomeListComponent,
     HairdressingIncomeListItemComponent,
   ],

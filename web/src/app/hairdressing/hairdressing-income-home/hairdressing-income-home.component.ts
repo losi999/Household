@@ -29,10 +29,10 @@ const CUSTOM_DATE_FORMATS: MatDateFormats = {
 };
 
 @Component({
-  selector: 'household-hairdressing-income',
+  selector: 'household-hairdressing-income-home',
   standalone: false,
-  templateUrl: './hairdressing-income.component.html',
-  styleUrl: './hairdressing-income.component.scss',
+  templateUrl: './hairdressing-income-home.component.html',
+  styleUrl: './hairdressing-income-home.component.scss',
   providers: [
     {
       provide: DateAdapter,
@@ -44,7 +44,7 @@ const CUSTOM_DATE_FORMATS: MatDateFormats = {
     },
   ],
 })
-export class HairdressingIncomeComponent implements OnInit {
+export class HairdressingIncomeHomeComponent implements OnInit {
   date: FormControl<Moment>;
   account: Observable<Account.Response>;
 

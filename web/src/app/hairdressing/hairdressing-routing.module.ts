@@ -1,11 +1,11 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { HairdressingIncomeComponent } from '@household/web/app/hairdressing/hairdressing-income/hairdressing-income.component';
+import { HairdressingIncomeHomeComponent } from '@household/web/app/hairdressing/hairdressing-income-home/hairdressing-income-home.component';
 
 const routes: Routes = [
   {
     path: 'income',
-    component: HairdressingIncomeComponent,
+    component: HairdressingIncomeHomeComponent,
   },
   {
     path: '**',
