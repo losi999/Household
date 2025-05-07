@@ -97,6 +97,10 @@ Resources:
                   - cognito-idp:AdminInitiateAuth
                   - cognito-idp:AdminAddUserToGroup
                   - cognito-idp:AdminSetUserPassword
+                  - cognito-idp:ListUsers
+                  - cognito-idp:AdminRespondToAuthChallenge
+                  - cognito-idp:AdminUpdateUserAttributes
+                  - cognito-idp:AdminDeleteUser
                   - cloudformation:DescribeStacks
                   - lambda:InvokeFunction
                   - sqs:SendMessage

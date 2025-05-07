@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { AuthService } from '@household/web/services/auth.service';
+import { authActions } from '@household/web/state/auth/auth.actions';
+import { Store } from '@ngrx/store';
 
 @Component({
   selector: 'household-login',
@@ -13,7 +14,8 @@ export class LoginComponent implements OnInit {
     email: FormControl<string>;
     password: FormControl<string>;
   }>;
-  constructor(private authService: AuthService) { }
+
+  constructor(private store: Store) { }
 
   ngOnInit(): void {
     this.form = new FormGroup({
@@ -32,14 +34,10 @@ export class LoginComponent implements OnInit {
     this.form.markAllAsTouched();
 
     if(this.form.valid) {
-      this.authService.login({
+      this.store.dispatch(authActions.logInInitiated({
         email: this.form.value.email,
         password: this.form.value.password,
-      }).subscribe({
-        error: () => {
-          alert('Hibás felhasználónév vagy jelszó');
-        },
-      });
+      }));
     }
   }
 

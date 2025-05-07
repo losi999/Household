@@ -2,6 +2,7 @@ import { unitsOfMeasurement } from '@household/shared/constants';
 import { Branding } from '@household/shared/types/common';
 import { Types } from 'mongoose';
 import * as Enum from '@household/shared/enums';
+import { UserStatusType } from '@aws-sdk/client-cognito-identity-provider';
 
 export namespace Internal {
   export type Id = {
@@ -637,25 +638,36 @@ export namespace Setting {
   export type Response = Base & SettingKey;
 }
 
+export namespace User {
+  export type Email = {
+    email: string
+  };
+
+  export type Request = Email;
+
+  export type Response = Email & {
+    status: UserStatusType;
+  };
+}
+
 export namespace Auth {
+  export type Password = {
+    password: string;
+  };
+
   type IdTokenResponse = {
     idToken: string;
   };
 
-  export namespace Registration {
-    export type Request = {
-      email: string;
-      displayName: string;
-      password: string;
+  export namespace ConfirmUser {
+    export type Request = Password & {
+      temporaryPassword: string;
     };
   }
 
   export namespace Login {
-
-    export type Request = {
-      email: string;
-      password: string;
-    };
+    export type Request = User.Email
+    & Password;
 
     export type Response = IdTokenResponse & {
       refreshToken: string;

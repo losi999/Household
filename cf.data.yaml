@@ -2,6 +2,8 @@ AWSTemplateFormatVersion: "2010-09-09"
 Parameters:
   Env:
     Type: String
+  WebsiteDomain:
+    Type: String
 
 Resources:
   DatabaseArchiveBucket:
@@ -15,6 +17,9 @@ Resources:
     Properties:
       AdminCreateUserConfig:
         AllowAdminCreateUserOnly: true
+        InviteMessageTemplate:
+          EmailSubject: "Felhasználó regisztráció"
+          EmailMessage: !Sub "Kattints az alábbi linkre a jelszó megadásához: https://${WebsiteDomain}/confirm-user?email={username}&temporaryPassword={####}"
       UsernameAttributes:
         - email
       AutoVerifiedAttributes:

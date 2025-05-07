@@ -6,9 +6,8 @@ import { notificationActions } from '@household/web/state/notification/notificat
 import { hairdressingActions } from '@household/web/state/hairdressing/hairdressing.actions';
 import { TransactionService } from '@household/web/services/transaction.service';
 import { Store } from '@ngrx/store';
-import { selectSettingByKey } from '@household/web/state/setting/setting.selector';
+import { selectHairdressingIncomeAccountId, selectHairdressingIncomeCategoryId } from '@household/web/state/setting/setting.selector';
 import { takeFirstDefined } from '@household/web/operators/take-first-defined';
-import { Account, Category } from '@household/shared/types/types';
 import moment from 'moment';
 
 @Injectable()
@@ -20,13 +19,13 @@ export class HairdressingEffects {
       ofType(hairdressingActions.listIncomeInitiated),
       switchMap(({ date }) => {
         return combineLatest([
-          this.store.select(selectSettingByKey('hairdressingIncomeAccount')).pipe(takeFirstDefined()),
-          this.store.select(selectSettingByKey('hairdressingIncomeCategory')).pipe(takeFirstDefined()),
+          this.store.select(selectHairdressingIncomeAccountId).pipe(takeFirstDefined()),
+          this.store.select(selectHairdressingIncomeCategoryId).pipe(takeFirstDefined()),
         ]).pipe(
           take(1),
           switchMap(([
-            { value: accountId },
-            { value: categoryId },
+            accountId,
+            categoryId,
           ]) => {
             const from = new Date(date.getFullYear(), date.getMonth(), 1);
             const to = new Date(date.getFullYear(), date.getMonth() + 1, 1);
@@ -35,12 +34,12 @@ export class HairdressingEffects {
               {
                 filterType: 'account',
                 include: true,
-                items: [accountId as Account.Id],
+                items: [accountId],
               },
               {
                 filterType: 'category',
                 include: true,
-                items: [categoryId as Category.Id],
+                items: [categoryId],
               },
               {
                 filterType: 'issuedAt',
@@ -95,18 +94,18 @@ export class HairdressingEffects {
       ofType(hairdressingActions.saveIncomeInitiated),
       switchMap(({ description, issuedAt, amount }) => {
         return combineLatest([
-          this.store.select(selectSettingByKey('hairdressingIncomeAccount')).pipe(takeFirstDefined()),
-          this.store.select(selectSettingByKey('hairdressingIncomeCategory')).pipe(takeFirstDefined()),
+          this.store.select(selectHairdressingIncomeAccountId).pipe(takeFirstDefined()),
+          this.store.select(selectHairdressingIncomeCategoryId).pipe(takeFirstDefined()),
         ]).pipe(
           take(1),
           switchMap(([
-            { value: accountId },
-            { value: categoryId },
+            accountId,
+            categoryId,
           ]) => {
             return this.transactionService.createPaymentTransaction({
               amount,
-              accountId: accountId as Account.Id,
-              categoryId: categoryId as Category.Id,
+              accountId: accountId,
+              categoryId: categoryId,
               issuedAt,
               description,
               billingEndDate: undefined,
@@ -145,18 +144,18 @@ export class HairdressingEffects {
       ofType(hairdressingActions.updateIncomeInitiated),
       switchMap(({ description, issuedAt, amount, transactionId }) => {
         return combineLatest([
-          this.store.select(selectSettingByKey('hairdressingIncomeAccount')).pipe(takeFirstDefined()),
-          this.store.select(selectSettingByKey('hairdressingIncomeCategory')).pipe(takeFirstDefined()),
+          this.store.select(selectHairdressingIncomeAccountId).pipe(takeFirstDefined()),
+          this.store.select(selectHairdressingIncomeCategoryId).pipe(takeFirstDefined()),
         ]).pipe(
           take(1),
           switchMap(([
-            { value: accountId },
-            { value: categoryId },
+            accountId,
+            categoryId,
           ]) => {
             return this.transactionService.updatePaymentTransaction(transactionId, {
               amount,
-              accountId: accountId as Account.Id,
-              categoryId: categoryId as Category.Id,
+              accountId: accountId,
+              categoryId: categoryId,
               issuedAt,
               description,
               billingEndDate: undefined,
