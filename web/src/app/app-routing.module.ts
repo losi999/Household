@@ -1,98 +1,75 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { ConfirmUserComponent } from '@household/web/app/auth/confirm-user/confirm-user.component';
 import { LoginComponent } from '@household/web/app/auth/login/login.component';
-import { canMatch, canActivate } from '@household/web/app/shared/guards';
+import { authenticated, unauthenticated } from '@household/web/app/shared/guards';
 
 const routes: Routes = [
   {
     path: 'login',
     title: 'Bejelentkezés',
     component: LoginComponent,
-    data: {
-      requireLogin: false,
-    },
-    canActivate: [canActivate],
+    canActivate: [unauthenticated],
+  },
+  {
+    path: 'confirm-user',
+    title: 'Jelszó megadása',
+    component: ConfirmUserComponent,
+    canActivate: [unauthenticated],
   },
   {
     path: 'projects',
     title: 'Projektek',
     loadChildren: () => import('./project/project.module').then(m => m.ProjectModule),
-    data: {
-      requireLogin: true,
-    },
-    canMatch: [canMatch],
+    canMatch: [authenticated],
   },
   {
     path: 'products',
     title: 'Termékek',
     loadChildren: () => import('./product/product.module').then(m => m.ProductModule),
-    data: {
-      requireLogin: true,
-    },
-    canMatch: [canMatch],
+    canMatch: [authenticated],
   },
   {
     path: 'categories',
     title: 'Kategóriák',
     loadChildren: () => import('./category/category.module').then(m => m.CategoryModule),
-    data: {
-      requireLogin: true,
-    },
-    canMatch: [canMatch],
+    canMatch: [authenticated],
   },
   {
     path: 'recipients',
     title: 'Partnerek',
     loadChildren: () => import('./recipient/recipient.module').then(m => m.RecipientModule),
-    data: {
-      requireLogin: true,
-    },
-    canMatch: [canMatch],
+    canMatch: [authenticated],
   },
   {
     path: 'reports',
     title: 'Jelentések',
     loadChildren: () => import('./report/report.module').then(m => m.ReportModule),
-    data: {
-      requireLogin: true,
-    },
-    canMatch: [canMatch],
+    canMatch: [authenticated],
   },
   {
     path: 'imports',
     title: 'Importálás',
     loadChildren: () => import('./import/import.module').then(m => m.ImportModule),
-    data: {
-      requireLogin: true,
-    },
-    canMatch: [canMatch],
+    canMatch: [authenticated],
   },
   {
     path: 'settings',
     title: 'Beállítások',
     loadChildren: () => import('./settings/settings.module').then(m => m.SettingsModule),
-    data: {
-      requireLogin: true,
-    },
-    canMatch: [canMatch],
+    canMatch: [authenticated],
   },
   {
     path: 'hairdressing',
     title: 'Fodrászat',
     loadChildren: () => import('./hairdressing/hairdressing.module').then(m => m.HairdressingModule),
-    data: {
-      requireLogin: true,
-    },
-    canMatch: [canMatch],
+    canMatch: [authenticated],
   },
   {
     path: '',
     title: 'Számlák',
     loadChildren: () => import('./account/account.module').then(m => m.AccountModule),
-    data: {
-      requireLogin: true,
-    },
-    canMatch: [canMatch],
+    canMatch: [authenticated],
   },
   {
     path: '**',

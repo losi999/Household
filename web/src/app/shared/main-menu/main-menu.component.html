@@ -9,6 +9,7 @@
   <button mat-menu-item [matMenuTriggerFor]="hairdressing">Fodrászat</button>
   <mat-divider />
   <button mat-menu-item [routerLink]="['/','settings']">Beállítások</button>
+  <button mat-menu-item (click)="logOut()">Kijelentkezés</button>
 </mat-menu>
 
 <mat-menu #hairdressing="matMenu">

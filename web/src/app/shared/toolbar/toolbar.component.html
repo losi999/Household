@@ -1,7 +1,9 @@
 <div class="header">
   <mat-toolbar color="primary">
     <div class="wrapper">
-      <household-main-menu></household-main-menu>
+      <span class="main-menu">
+        <household-main-menu *ngIf="authService.isLoggedIn" />
+      </span>
       <span>{{title}}</span>
       <span class="spacer"></span>
       <ng-content></ng-content>

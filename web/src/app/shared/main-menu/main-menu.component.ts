@@ -4,6 +4,8 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { RouterModule } from '@angular/router';
+import { authActions } from '@household/web/state/auth/auth.actions';
+import { Store } from '@ngrx/store';
 
 @Component({
   selector: 'household-main-menu',
@@ -19,5 +21,9 @@ import { RouterModule } from '@angular/router';
 })
 export class MainMenuComponent {
 
-  constructor() { }
+  constructor(private store: Store) { }
+
+  logOut() {
+    this.store.dispatch(authActions.logOut());
+  }
 }

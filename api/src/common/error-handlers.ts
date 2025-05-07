@@ -504,7 +504,7 @@ export const httpErrors = {
       log('Unable to query related data', ctx, error);
       throw httpError(statusCode, 'Unable to query related data');
     },
-    genericError: (message: string, ctx: any, statusCode = 500): CatchAndThrow => (error) => {
+    genericError: (message: string, ctx?: any, statusCode = 500): CatchAndThrow => (error) => {
       log(message, ctx, error);
       throw httpError(statusCode, error.message);
     },

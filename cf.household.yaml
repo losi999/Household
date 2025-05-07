@@ -53,6 +53,7 @@ Resources:
       TemplateURL: cf.data.yaml
       Parameters:
         Env: !Ref Env
+        WebsiteDomain: !FindInMap [EnvMapping, !Ref Env, WebsiteDomain]
 
   Infrastructure:
     Type: AWS::CloudFormation::Stack
@@ -145,6 +146,7 @@ Resources:
       Parameters:
         LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
         DependenciesLayer: !GetAtt Infrastructure.Outputs.DependenciesLayer
+        UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         UserPoolId: !GetAtt Data.Outputs.UserPoolId
         ClientId: !GetAtt Data.Outputs.ClientId
         Env: !Ref Env

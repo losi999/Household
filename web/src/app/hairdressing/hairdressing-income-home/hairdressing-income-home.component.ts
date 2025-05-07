@@ -4,7 +4,7 @@ import { MatDatepicker } from '@angular/material/datepicker';
 import { MatDateFormats, MAT_DATE_FORMATS, DateAdapter } from '@angular/material/core';
 import { MomentDateAdapter } from '@angular/material-moment-adapter';
 import 'moment/locale/hu';
-import { map, mergeMap, Observable, startWith, tap } from 'rxjs';
+import { map, Observable, startWith, tap } from 'rxjs';
 import moment, { Moment } from 'moment';
 import { Store } from '@ngrx/store';
 import { settingApiActions } from '@household/web/state/setting/setting.actions';
@@ -12,9 +12,8 @@ import { hairdressingActions } from '@household/web/state/hairdressing/hairdress
 import { Account, Transaction } from '@household/shared/types/types';
 import { accountApiActions } from '@household/web/state/account/account.actions';
 import { selectIncomeByMonth } from '@household/web/state/hairdressing/hairdressing.selector';
-import { selectSettingByKey } from '@household/web/state/setting/setting.selector';
+import { selectHairdressingIncomeAccount } from '@household/web/state/setting/setting.selector';
 import { takeFirstDefined } from '@household/web/operators/take-first-defined';
-import { selectAccountById } from '@household/web/state/account/account.selector';
 
 const CUSTOM_DATE_FORMATS: MatDateFormats = {
   parse: {
@@ -58,10 +57,7 @@ export class HairdressingIncomeHomeComponent implements OnInit {
     this.store.dispatch(settingApiActions.listSettingsInitiated());
     this.store.dispatch(accountApiActions.listAccountsInitiated());
 
-    this.account = this.store.select(selectSettingByKey('hairdressingIncomeAccount')).pipe(takeFirstDefined(),
-      mergeMap((setting) => {
-        return this.store.select(selectAccountById(setting.value as Account.Id));
-      }));
+    this.account = this.store.select(selectHairdressingIncomeAccount).pipe(takeFirstDefined());
 
     this.date = new FormControl({
       value: moment(),

@@ -1,10 +1,13 @@
-import { Auth } from '@household/shared/types/types';
-import type { AdminInitiateAuthResponse, CognitoIdentityProvider } from '@aws-sdk/client-cognito-identity-provider';
+import { Auth, User } from '@household/shared/types/types';
+import { AuthFlowType, MessageActionType, type AdminInitiateAuthResponse, type CognitoIdentityProvider, type ListUsersResponse } from '@aws-sdk/client-cognito-identity-provider';
 
 export interface IIdentityService {
   login(body: Auth.Login.Request): Promise<AdminInitiateAuthResponse>;
-  register(body: Auth.Registration.Request): Promise<any>;
+  createUser(body: User.Email & Partial<Auth.Password>): Promise<unknown>;
+  deleteUser(ctx: User.Email): Promise<unknown>;
   refreshToken(body: Auth.RefreshToken.Request): Promise<AdminInitiateAuthResponse>;
+  listUsers(): Promise<ListUsersResponse>;
+  confirmUser(ctx: User.Email & Auth.ConfirmUser.Request): Promise<any>;
 }
 
 export const identityServiceFactory = (
@@ -12,46 +15,82 @@ export const identityServiceFactory = (
   clientId: string,
   cognito: CognitoIdentityProvider): IIdentityService => {
   const instance: IIdentityService = {
+    confirmUser: async (body) => {
+      const authResp = await cognito.adminInitiateAuth({
+        ClientId: clientId,
+        UserPoolId: userPoolId,
+        AuthFlow: AuthFlowType.ADMIN_USER_PASSWORD_AUTH,
+        AuthParameters: {
+          USERNAME: body.email,
+          PASSWORD: body.temporaryPassword,
+        },
+      });
+
+      await cognito.adminRespondToAuthChallenge({
+        ChallengeName: authResp.ChallengeName,
+        UserPoolId: userPoolId,
+        ClientId: clientId,
+        Session: authResp.Session,
+        ChallengeResponses: {
+          USERNAME: body.email,
+          NEW_PASSWORD: body.password,
+        },
+      });
+
+      return cognito.adminUpdateUserAttributes({
+        UserPoolId: userPoolId,
+        Username: body.email,
+        UserAttributes: [
+          {
+            Name: 'email_verified',
+            Value: 'true',
+          },
+        ],
+      });
+    },
+    listUsers: () => {
+      return cognito.listUsers({
+        UserPoolId: userPoolId,
+      });
+    },
     login: (body) => {
       return cognito.adminInitiateAuth({
         UserPoolId: userPoolId,
         ClientId: clientId,
-        AuthFlow: 'ADMIN_USER_PASSWORD_AUTH',
+        AuthFlow: AuthFlowType.ADMIN_USER_PASSWORD_AUTH,
         AuthParameters: {
           USERNAME: body.email,
           PASSWORD: body.password,
         },
       });
     },
-    register: async (body) => {
+    createUser: async ({ email, password }) => {
       await cognito.adminCreateUser({
         UserPoolId: userPoolId,
-        Username: body.email,
-        MessageAction: 'SUPPRESS',
-        UserAttributes: [
-          {
-            Name: 'email',
-            Value: body.email,
-          },
-          {
-            Name: 'nickname',
-            Value: body.displayName,
-          },
-        ],
+        Username: email,
+        MessageAction: password ? MessageActionType.SUPPRESS : undefined,
       });
 
-      return cognito.adminSetUserPassword({
+      if (password) {
+        return cognito.adminSetUserPassword({
+          UserPoolId: userPoolId,
+          Password: password,
+          Permanent: true,
+          Username: email,
+        });
+      }
+    },
+    deleteUser: ({ email }) => {
+      return cognito.adminDeleteUser({
+        Username: email,
         UserPoolId: userPoolId,
-        Password: body.password,
-        Permanent: true,
-        Username: body.email,
       });
     },
     refreshToken: (body) => {
       return cognito.adminInitiateAuth({
         UserPoolId: userPoolId,
         ClientId: clientId,
-        AuthFlow: 'REFRESH_TOKEN_AUTH',
+        AuthFlow: AuthFlowType.REFRESH_TOKEN_AUTH,
         AuthParameters: {
           REFRESH_TOKEN: body.refreshToken,
         },

@@ -1,6 +1,6 @@
 import { generateMongoId } from '@household/shared/common/utils';
 import { AccountType, CategoryType, FileType, TransactionType } from '@household/shared/enums';
-import { Account, Auth, Category, File, Product, Project, Recipient, Report, Setting, Transaction } from '@household/shared/types/types';
+import { Account, Auth, Category, File, Product, Project, Recipient, Report, Setting, Transaction, User } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
 
 const amount = -100;
@@ -386,6 +386,14 @@ export const createLoginRequest: DataFactoryFunction<Auth.Login.Request> = (req)
   };
 };
 
+export const createConfirmUserRequest: DataFactoryFunction<Auth.ConfirmUser.Request> = (req) => {
+  return {
+    temporaryPassword: 'temp123',
+    password: 'password123',
+    ...req,
+  };
+};
+
 export const createReportAccountFilter: DataFactoryFunction<Report.AccountFilter> = (req) => {
   return {
     filterType: 'account',
@@ -739,5 +747,13 @@ export const createDocumentUpdate: DataFactoryFunction<UpdateQuery<any>> = (upda
       someProperty: 123,
     },
     ...update,
+  };
+};
+
+export const createUserResponse: DataFactoryFunction<User.Response> = (resp) => {
+  return {
+    email: 'user@email.com',
+    status: 'CONFIRMED',
+    ...resp,
   };
 };
