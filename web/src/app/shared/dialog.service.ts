@@ -20,7 +20,7 @@ import { productApiActions } from '@household/web/state/product/product.actions'
 import { projectApiActions } from '@household/web/state/project/project.actions';
 import { recipientApiActions } from '@household/web/state/recipient/recipient.actions';
 import { userApiActions } from '@household/web/state/user/user.actions';
-import { Store } from '@ngrx/store';
+import { Action, Store } from '@ngrx/store';
 
 @Injectable({
   providedIn: 'root',
@@ -28,6 +28,20 @@ import { Store } from '@ngrx/store';
 export class DialogService {
 
   constructor(private dialog: MatDialog, private store: Store) { }
+
+  private openConfirmationDialog(title: string, content: string, action: Action) {
+    this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        title,
+        content,
+      },
+    }).afterClosed()
+      .subscribe((shouldDelete) => {
+        if (shouldDelete) {
+          this.store.dispatch(action);
+        }
+      });
+  }
 
   openCreateProjectDialog(): void {
     this.dialog.open<ProjectFormComponent, ProjectFormData, void>(ProjectFormComponent);
@@ -40,20 +54,9 @@ export class DialogService {
   }
 
   openDeleteProjectDialog(project: Project.Response): void {
-    this.dialog.open(ConfirmationDialogComponent, {
-      data: {
-        title: 'Törölni akarod ezt a projektet?',
-        content: project.name,
-      },
-    }).afterClosed()
-      .subscribe((shouldDelete) => {
-        if (shouldDelete) {
-          this.store.dispatch(projectApiActions.deleteProjectInitiated({
-            projectId: project.projectId,
-          }));
-        }
-      },
-      );
+    this.openConfirmationDialog('Törölni akarod ezt a projektet?', project.name, projectApiActions.deleteProjectInitiated({
+      projectId: project.projectId,
+    }));
   }
 
   openMergeProjectsDialog(project: Project.Response) {
@@ -73,19 +76,9 @@ export class DialogService {
   }
 
   openDeleteRecipientDialog(recipient: Recipient.Response): void {
-    this.dialog.open(ConfirmationDialogComponent, {
-      data: {
-        title: 'Törölni akarod ezt a partnert?',
-        content: recipient.name,
-      },
-    }).afterClosed()
-      .subscribe((shouldDelete) => {
-        if (shouldDelete) {
-          this.store.dispatch(recipientApiActions.deleteRecipientInitiated({
-            recipientId: recipient.recipientId,
-          }));
-        }
-      });
+    this.openConfirmationDialog('Törölni akarod ezt a partnert?', recipient.name, recipientApiActions.deleteRecipientInitiated({
+      recipientId: recipient.recipientId,
+    }));
   }
 
   openMergeRecipientsDialog(recipient: Recipient.Response) {
@@ -107,19 +100,9 @@ export class DialogService {
   }
 
   openDeleteCategoryDialog(category: Category.Response): void {
-    this.dialog.open(ConfirmationDialogComponent, {
-      data: {
-        title: 'Törölni akarod ezt a kategóriát?',
-        content: category.name,
-      },
-    }).afterClosed()
-      .subscribe((shouldDelete) => {
-        if (shouldDelete) {
-          this.store.dispatch(categoryApiActions.deleteCategoryInitiated({
-            categoryId: category.categoryId,
-          }));
-        }
-      });
+    this.openConfirmationDialog('Törölni akarod ezt a kategóriát?', category.name, categoryApiActions.deleteCategoryInitiated({
+      categoryId: category.categoryId,
+    }));
   }
 
   openMergeCategoriesDialog(category: Category.Response) {
@@ -147,20 +130,10 @@ export class DialogService {
   }
 
   openDeleteProductDialog(product: Product.Response, categoryId: Category.Id): void {
-    this.dialog.open(ConfirmationDialogComponent, {
-      data: {
-        title: 'Törölni akarod ezt a terméket?',
-        content: product.fullName,
-      },
-    }).afterClosed()
-      .subscribe((shouldDelete) => {
-        if (shouldDelete) {
-          this.store.dispatch(productApiActions.deleteProductInitiated({
-            productId: product.productId,
-            categoryId,
-          }));
-        }
-      });
+    this.openConfirmationDialog('Törölni akarod ezt a terméket?', product.fullName, productApiActions.deleteProductInitiated({
+      productId: product.productId,
+      categoryId,
+    }));
   }
 
   openMergeProductsDialog(product: Product.Response, categoryId: Category.Id) {
@@ -183,22 +156,16 @@ export class DialogService {
   }
 
   openDeleteAccountDialog(account: Account.Response): void {
-    this.dialog.open(ConfirmationDialogComponent, {
-      data: {
-        title: 'Törölni akarod ezt a számlát?',
-        content: account.name,
-      },
-    }).afterClosed()
-      .subscribe((shouldDelete) => {
-        if (shouldDelete) {
-          this.store.dispatch(accountApiActions.deleteAccountInitiated({
-            accountId: account.accountId,
-          }));
-        }
-      });
+    this.openConfirmationDialog('Törölni akarod ezt a számlát?', account.name, accountApiActions.deleteAccountInitiated({
+      accountId: account.accountId,
+    }));
   }
 
   openDeleteTransactionDialog(): MatDialogRef<ConfirmationDialogComponent, boolean> {
+    // this.openConfirmationDialog('Törölni akarod ezt a tranzakciót?', undefined, projectApiActions.deleteProjectInitiated({
+    //   projectId: project.projectId,
+    // }));
+
     return this.dialog.open(ConfirmationDialogComponent, {
       width: '250px',
       data: {
@@ -212,55 +179,25 @@ export class DialogService {
   }
 
   openDeleteFileDialog(file: File.Response): void {
-    this.dialog.open(ConfirmationDialogComponent, {
-      data: {
-        title: 'Törölni akarod ezt a számlát?',
-        content: file.fileId,
-      },
-    }).afterClosed()
-      .subscribe((shouldDelete) => {
-        if (shouldDelete) {
-          this.store.dispatch(fileApiActions.deleteFileInitiated({
-            fileId: file.fileId,
-          }));
-        }
-      });
+    this.openConfirmationDialog('Törölni akarod ezt a számlát?', file.fileId, fileApiActions.deleteFileInitiated({
+      fileId: file.fileId,
+    }));
   }
 
   openDeleteUserDialog({ email }: User.Email): void {
-    this.dialog.open(ConfirmationDialogComponent, {
-      data: {
-        title: 'Törölni akarod ezt a felhasználót?',
-        content: email,
-      },
-    }).afterClosed()
-      .subscribe((shouldDelete) => {
-        if (shouldDelete) {
-          this.store.dispatch(userApiActions.deleteUserInitiated({
-            email,
-          }));
-        }
-      });
+    this.openConfirmationDialog('Törölni akarod ezt a felhasználót?', email, userApiActions.deleteUserInitiated({
+      email,
+    }));
   }
 
   openDeleteIncomeDialog(data: Transaction.TransactionId & {day: Date}): void {
-    this.dialog.open(ConfirmationDialogComponent, {
-      data: {
-        title: 'Törölni akarod a bevételt?',
-        content: new Intl.DateTimeFormat('hu-HU', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-          weekday: 'long',
-        }).format(data.day),
-      },
-    }).afterClosed()
-      .subscribe((shouldDelete) => {
-        if (shouldDelete) {
-          this.store.dispatch(hairdressingActions.deleteIncomeInitiated({
-            transactionId: data.transactionId,
-          }));
-        }
-      });
+    this.openConfirmationDialog('Törölni akarod a bevételt?', new Intl.DateTimeFormat('hu-HU', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      weekday: 'long',
+    }).format(data.day), hairdressingActions.deleteIncomeInitiated({
+      transactionId: data.transactionId,
+    }));
   }
 }

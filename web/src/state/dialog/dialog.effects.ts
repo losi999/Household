@@ -14,7 +14,6 @@ export class DialogEffects {
       exhaustMap(() => {
         this.dialogService.openCreateProjectDialog();
         return EMPTY;
-
       }),
     );
   }, {
@@ -27,7 +26,6 @@ export class DialogEffects {
       exhaustMap(({ type, ...project }) => {
         this.dialogService.openEditProjectDialog(project);
         return EMPTY;
-
       }),
     );
   }, {
@@ -52,7 +50,6 @@ export class DialogEffects {
       exhaustMap(({ type, ...project }) => {
         this.dialogService.openMergeProjectsDialog(project);
         return EMPTY;
-
       }),
     );
   }, {
@@ -65,7 +62,6 @@ export class DialogEffects {
       exhaustMap(() => {
         this.dialogService.openCreateRecipientDialog();
         return EMPTY;
-
       }),
     );
   }, {
@@ -78,7 +74,6 @@ export class DialogEffects {
       exhaustMap(({ type, ...recipient }) => {
         this.dialogService.openEditRecipientDialog(recipient);
         return EMPTY;
-
       }),
     );
   }, {
@@ -103,7 +98,6 @@ export class DialogEffects {
       exhaustMap(({ type, ...recipient }) => {
         this.dialogService.openMergeRecipientsDialog(recipient);
         return EMPTY;
-
       }),
     );
   }, {
@@ -116,7 +110,6 @@ export class DialogEffects {
       exhaustMap(() => {
         this.dialogService.openCreateCategoryDialog();
         return EMPTY;
-
       }),
     );
   }, {
@@ -129,7 +122,6 @@ export class DialogEffects {
       exhaustMap(({ type, ...category }) => {
         this.dialogService.openEditCategoryDialog(category);
         return EMPTY;
-
       }),
     );
   }, {
@@ -154,7 +146,6 @@ export class DialogEffects {
       exhaustMap(({ type, ...category }) => {
         this.dialogService.openMergeCategoriesDialog(category);
         return EMPTY;
-
       }),
     );
   }, {
@@ -167,7 +158,6 @@ export class DialogEffects {
       exhaustMap(({ categoryId }) => {
         this.dialogService.openCreateProductDialog(categoryId);
         return EMPTY;
-
       }),
     );
   }, {
@@ -180,7 +170,6 @@ export class DialogEffects {
       exhaustMap(({ product, categoryId }) => {
         this.dialogService.openEditProductDialog(product, categoryId);
         return EMPTY;
-
       }),
     );
   }, {
