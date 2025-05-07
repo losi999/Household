@@ -10,10 +10,9 @@ export const createTestUsersServiceFactory = (identityService: IIdentityService)
   const createUser = async (index: number) => {
     const email = `losonczil+${index}@gmail.com`;
     try {
-      await identityService.register({
+      await identityService.createUser({
         email,
         password: process.env.TEST_USER_PASSWORD,
-        displayName: `test${index}`,
       });
     } catch (error) {
       if (error.name !== 'UsernameExistsException') {

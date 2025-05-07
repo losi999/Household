@@ -637,25 +637,36 @@ export namespace Setting {
   export type Response = Base & SettingKey;
 }
 
+export namespace User {
+  export type Email = {
+    email: string
+  };
+
+  export type Request = Email;
+
+  export type Response = Email & {
+    status: string;
+  };
+}
+
 export namespace Auth {
+  export type Password = {
+    password: string;
+  };
+
   type IdTokenResponse = {
     idToken: string;
   };
 
-  export namespace Registration {
-    export type Request = {
-      email: string;
-      displayName: string;
-      password: string;
+  export namespace ConfirmUser {
+    export type Request = Password & {
+      temporaryPassword: string;
     };
   }
 
   export namespace Login {
-
-    export type Request = {
-      email: string;
-      password: string;
-    };
+    export type Request = User.Email
+    & Password;
 
     export type Response = IdTokenResponse & {
       refreshToken: string;

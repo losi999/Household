@@ -8,7 +8,7 @@ describe('Create test users service', () => {
   const testUserPassword = 'password';
 
   beforeEach(() => {
-    mockIdentityService = createMockService('register');
+    mockIdentityService = createMockService('createUser');
 
     service = createTestUsersServiceFactory(mockIdentityService.service);
 
@@ -22,44 +22,42 @@ describe('Create test users service', () => {
   it('should create a specific number of test users', async () => {
     const numberOfAdmins = 2;
 
-    mockIdentityService.functions.register.mockResolvedValue(undefined);
+    mockIdentityService.functions.createUser.mockResolvedValue(undefined);
 
     await service({
       numberOfAdmins,
     });
-    expect(mockIdentityService.functions.register).toHaveBeenCalledTimes(numberOfAdmins);
-    expect(mockIdentityService.functions.register).toHaveBeenNthCalledWith(1, {
+    expect(mockIdentityService.functions.createUser).toHaveBeenCalledTimes(numberOfAdmins);
+    expect(mockIdentityService.functions.createUser).toHaveBeenNthCalledWith(1, {
       email: 'losonczil+1@gmail.com',
       password: testUserPassword,
-      displayName: 'test1',
     });
-    expect(mockIdentityService.functions.register).toHaveBeenNthCalledWith(2, {
+    expect(mockIdentityService.functions.createUser).toHaveBeenNthCalledWith(2, {
       email: 'losonczil+2@gmail.com',
       password: testUserPassword,
-      displayName: 'test2',
     });
   });
 
-  it('should handler error if register throws "UsernameExistsException" error', async () => {
+  it('should handler error if createUser throws "UsernameExistsException" error', async () => {
 
     const numberOfAdmins = 2;
 
-    mockIdentityService.functions.register.mockRejectedValue({
+    mockIdentityService.functions.createUser.mockRejectedValue({
       name: 'UsernameExistsException',
     });
 
     await service({
       numberOfAdmins,
     });
-    expect(mockIdentityService.functions.register).toHaveBeenCalledTimes(numberOfAdmins);
+    expect(mockIdentityService.functions.createUser).toHaveBeenCalledTimes(numberOfAdmins);
     expect.assertions(1);
   });
 
-  it('should throw error if register NOT throws "UsernameExistsException" error', async () => {
+  it('should throw error if createUser NOT throws "UsernameExistsException" error', async () => {
     const numberOfAdmins = 2;
 
     const message = 'This is a cognito error';
-    mockIdentityService.functions.register.mockRejectedValue({
+    mockIdentityService.functions.createUser.mockRejectedValue({
       message,
       name: 'NOTUsernameExistsException',
     });
@@ -67,7 +65,7 @@ describe('Create test users service', () => {
     await service({
       numberOfAdmins,
     }).catch(validateError(message));
-    expect(mockIdentityService.functions.register).toHaveBeenCalledTimes(numberOfAdmins);
+    expect(mockIdentityService.functions.createUser).toHaveBeenCalledTimes(numberOfAdmins);
     expect.assertions(2);
   });
 });

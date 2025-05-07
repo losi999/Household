@@ -53,6 +53,7 @@ Resources:
       TemplateURL: cf.data.yaml
       Parameters:
         Env: !Ref Env
+        WebsiteDomain: !FindInMap [EnvMapping, !Ref Env, WebsiteDomain]
 
   Infrastructure:
     Type: AWS::CloudFormation::Stack
