@@ -2,6 +2,7 @@ import { unitsOfMeasurement } from '@household/shared/constants';
 import { Branding } from '@household/shared/types/common';
 import { Types } from 'mongoose';
 import * as Enum from '@household/shared/enums';
+import { UserStatusType } from '@aws-sdk/client-cognito-identity-provider';
 
 export namespace Internal {
   export type Id = {
@@ -645,7 +646,7 @@ export namespace User {
   export type Request = Email;
 
   export type Response = Email & {
-    status: string;
+    status: UserStatusType;
   };
 }
 

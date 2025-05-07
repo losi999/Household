@@ -287,4 +287,18 @@ export class DialogEffects {
   }, {
     dispatch: false,
   });
+
+  deleteUser = createEffect(() => {
+    return this.actions.pipe(
+      ofType(dialogActions.deleteUser),
+      exhaustMap(({ email }) => {
+        this.dialogService.openDeleteUserDialog({
+          email,
+        });
+        return EMPTY;
+      }),
+    );
+  }, {
+    dispatch: false,
+  });
 }

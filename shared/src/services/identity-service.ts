@@ -4,6 +4,7 @@ import { AuthFlowType, MessageActionType, type AdminInitiateAuthResponse, type C
 export interface IIdentityService {
   login(body: Auth.Login.Request): Promise<AdminInitiateAuthResponse>;
   createUser(body: User.Email & Partial<Auth.Password>): Promise<unknown>;
+  deleteUser(ctx: User.Email): Promise<unknown>;
   refreshToken(body: Auth.RefreshToken.Request): Promise<AdminInitiateAuthResponse>;
   listUsers(): Promise<ListUsersResponse>;
   confirmUser(ctx: User.Email & Auth.ConfirmUser.Request): Promise<any>;
@@ -78,6 +79,12 @@ export const identityServiceFactory = (
           Username: email,
         });
       }
+    },
+    deleteUser: ({ email }) => {
+      return cognito.adminDeleteUser({
+        Username: email,
+        UserPoolId: userPoolId,
+      });
     },
     refreshToken: (body) => {
       return cognito.adminInitiateAuth({

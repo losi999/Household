@@ -1,21 +1,27 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, CanMatchFn } from '@angular/router';
 import { AuthService } from '@household/web/services/auth.service';
+import { navigationActions } from '@household/web/state/navigation/navigation.actions';
+import { Store } from '@ngrx/store';
 
-export const canActivate: CanActivateFn = (route) => {
+export const unauthenticated: CanActivateFn = () => {
   const authService = inject(AuthService);
-  const result = route.data.requireLogin === authService.isLoggedIn;
-  if (!result) {
-    authService.redirect();
+  if (!authService.isLoggedIn) {
+    return true;
   }
-  return result;
+
+  const store = inject(Store);
+  store.dispatch(navigationActions.loggedInHomepage());
+  return false;
 };
 
-export const canMatch: CanMatchFn = (route) => {
+export const authenticated: CanMatchFn = () => {
   const authService = inject(AuthService);
-  const result = route.data.requireLogin === authService.isLoggedIn;
-  if (!result) {
-    authService.redirect();
+  if (authService.isLoggedIn) {
+    return true;
   }
-  return result;
+
+  const store = inject(Store);
+  store.dispatch(navigationActions.loggedOutHomepage());
+  return false;
 };

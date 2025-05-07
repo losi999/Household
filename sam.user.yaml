@@ -4,6 +4,8 @@ Description: "Household User API"
 Parameters:
   LambdaRoleArn:
     Type: String
+  UserPoolArn:
+    Type: String
   Env:
     Type: String
   UserPoolId:
@@ -42,6 +44,10 @@ Resources:
         AllowMethods: "'*'"
         AllowHeaders: "'*'"
         AllowOrigin: "'*'"
+      Auth:
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn: !Ref UserPoolArn
       TracingEnabled: true
       GatewayResponses:
         UNAUTHORIZED:
@@ -76,6 +82,8 @@ Resources:
             RestApiId: !Ref UserApi
             Path: /v1/users
             Method: GET
+            Auth:
+              Authorizer: CognitoAuthorizer
 
   CreateUser:
     Type: AWS::Serverless::Function
@@ -90,6 +98,24 @@ Resources:
             RestApiId: !Ref UserApi
             Path: /v1/users
             Method: POST
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  DeleteUser:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-DeleteUser
+      CodeUri: dist/api/delete-user
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref UserApi
+            Path: /v1/users/{email}
+            Method: DELETE
+            Auth:
+              Authorizer: CognitoAuthorizer
 
   ConfirmUser:
     Type: AWS::Serverless::Function

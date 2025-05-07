@@ -146,6 +146,7 @@ Resources:
       Parameters:
         LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
         DependenciesLayer: !GetAtt Infrastructure.Outputs.DependenciesLayer
+        UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         UserPoolId: !GetAtt Data.Outputs.UserPoolId
         ClientId: !GetAtt Data.Outputs.ClientId
         Env: !Ref Env

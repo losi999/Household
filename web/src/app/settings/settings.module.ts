@@ -6,9 +6,20 @@ import { ToolbarComponent } from '@household/web/app/shared/toolbar/toolbar.comp
 import { AccountAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/account-autocomplete-input/account-autocomplete-input.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { CategoryAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/category-autocomplete-input/category-autocomplete-input.component';
+import { SettingsHairdressingComponent } from './settings-hairdressing/settings-hairdressing.component';
+import { SettingsUsersComponent } from './settings-users/settings-users.component';
+import { MatTableModule } from '@angular/material/table';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 
 @NgModule({
-  declarations: [SettingsHomeComponent],
+  declarations: [
+    SettingsHomeComponent,
+    SettingsHairdressingComponent,
+    SettingsUsersComponent,
+  ],
   imports: [
     ToolbarComponent,
     CommonModule,
@@ -16,6 +27,11 @@ import { CategoryAutocompleteInputComponent } from '@household/web/app/shared/au
     SettingsRoutingModule,
     AccountAutocompleteInputComponent,
     CategoryAutocompleteInputComponent,
+    MatTableModule,
+    MatButtonModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
   ],
 })
 export class SettingsModule { }

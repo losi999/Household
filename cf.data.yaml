@@ -19,7 +19,7 @@ Resources:
         AllowAdminCreateUserOnly: true
         InviteMessageTemplate:
           EmailSubject: "Felhasználó regisztráció"
-          EmailMessage: !Sub "Kattints az alábbi linkre a jelszó megadásához: https://${WebsiteDomain}/confirm-user?email={username}&temporary-password={####}"
+          EmailMessage: !Sub "Kattints az alábbi linkre a jelszó megadásához: https://${WebsiteDomain}/confirm-user?email={username}&temporaryPassword={####}"
       UsernameAttributes:
         - email
       AutoVerifiedAttributes:

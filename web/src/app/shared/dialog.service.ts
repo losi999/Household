@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { Account, Category, File, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Account, Category, File, Product, Project, Recipient, Transaction, User } from '@household/shared/types/types';
 import { AccountFormComponent, AccountFormData } from '@household/web/app/account/account-form/account-form.component';
 import { CategoryFormComponent, CategoryFormData } from '@household/web/app/category/category-form/category-form.component';
 import { CategoryMergeDialogComponent, CategoryMergeDialogData } from '@household/web/app/category/category-merge-dialog/category-merge-dialog.component';
@@ -19,6 +19,7 @@ import { hairdressingActions } from '@household/web/state/hairdressing/hairdress
 import { productApiActions } from '@household/web/state/product/product.actions';
 import { projectApiActions } from '@household/web/state/project/project.actions';
 import { recipientApiActions } from '@household/web/state/recipient/recipient.actions';
+import { userApiActions } from '@household/web/state/user/user.actions';
 import { Store } from '@ngrx/store';
 
 @Injectable({
@@ -221,6 +222,22 @@ export class DialogService {
         if (shouldDelete) {
           this.store.dispatch(fileApiActions.deleteFileInitiated({
             fileId: file.fileId,
+          }));
+        }
+      });
+  }
+
+  openDeleteUserDialog({ email }: User.Email): void {
+    this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        title: 'Törölni akarod ezt a felhasználót?',
+        content: email,
+      },
+    }).afterClosed()
+      .subscribe((shouldDelete) => {
+        if (shouldDelete) {
+          this.store.dispatch(userApiActions.deleteUserInitiated({
+            email,
           }));
         }
       });
