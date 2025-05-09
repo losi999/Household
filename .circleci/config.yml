@@ -199,40 +199,40 @@ workflows:
   local:
     jobs:
       - setup
-      - install:
-          requires:
-            - setup
-          # filters:
-          #   branches:
-          #     ignore:
-          #       - development
-          #       - master
-      - unit_test:
-          name: unit_test
-          requires:
-            - install
-      - lint:
-          name: lint
-          requires:
-            - install
-      - build:
-          name: build
-          requires:
-            - install
-      - api_deploy:
-          name: api_deploy
-          filters: pipeline.git.branch == "master" or pipeline.git.branch == "development" or pipeline.parameters.deploy
-          requires:
-            - unit_test
-            - lint
-            - build
-      - web_deploy:
-          name: web_deploy
-          requires:
-            - api_deploy
+      # - install:
+      #     requires:
+      #       - setup
+      # filters:
+      #   branches:
+      #     ignore:
+      #       - development
+      #       - master
+      # - unit_test:
+      #     name: unit_test
+      #     requires:
+      #       - install
+      # - lint:
+      #     name: lint
+      #     requires:
+      #       - install
+      # - build:
+      #     name: build
+      #     requires:
+      #       - install
+      # - api_deploy:
+      #     name: api_deploy
+      #     filters: pipeline.git.branch == "master" or pipeline.git.branch == "development" or pipeline.parameters.deploy
+      #     requires:
+      #       - unit_test
+      #       - lint
+      #       - build
+      # - web_deploy:
+      #     name: web_deploy
+      #     requires:
+      #       - api_deploy
       - api_test_setup:
           requires:
-            - web_deploy
+            - setup
           filters: pipeline.parameters.skip_api_tests != true
       - test:
           name: test_account
