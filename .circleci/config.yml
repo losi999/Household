@@ -18,13 +18,13 @@ jobs:
           name: Calculate config values
           command: |
             if [ "$CIRCLE_BRANCH" = "master" ]; then
-              ENV="PROD"
+              VALUE="PROD"
             elif [ "$CIRCLE_BRANCH" = "develop" ]; then
-              ENV="DEV"
+              VALUE="DEV"
             else
-              ENV="LOCAL"
+              VALUE="LOCAL"
             fi
-            echo "export ENV=$ENV" >> $BASH_ENV
+            echo "export ENV=$VALUE" >> $BASH_ENV
   testing:
     docker:
       - image: cimg/node:22.5
