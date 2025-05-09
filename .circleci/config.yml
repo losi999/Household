@@ -1,5 +1,4 @@
 version: 2.1
-setup: true
 parameters:
   deploy_to_local:
     type: boolean
@@ -14,26 +13,32 @@ jobs:
     docker:
       - image: cimg/base:stable
     steps:
-      - checkout
       - run:
           name: Calculate config values
           command: |
-            if [ "$CIRCLE_BRANCH" = "master" ]; then
-              VALUE="PROD"
-            elif [ "$CIRCLE_BRANCH" = "develop" ]; then
-              VALUE="DEV"
-            else
-              VALUE="LOCAL"
-            fi
-            echo "export ENV=$VALUE" >> $BASH_ENV
-            echo '{ "version": 2.1, "workflows": { "test-workflow": { "jobs": [ "testing" ] } } }' > .circleci/generated-config.yml
-      - run:
-          name: Print config values
-          command: echo "$ENV"
+            case "$CIRCLE_BRANCH" in
+              master) ENV="PROD" ;;
+              develop) ENV="DEV" ;;
+              *) ENV="LOCAL" ;;
+            esac
+            echo "ENV=$ENV" > .env
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .env
   testing:
     docker:
       - image: cimg/base:stable
     steps:
+      - attach_workspace:
+          at: /workspace
+      - run: "ls -la"
+      - run:
+          name: Load .env File
+          command: |
+            set -o allexport
+            source /workspace/.env
+            set +o allexport
       - run:
           name: Print config values
           command: echo "$ENV"
@@ -210,6 +215,9 @@ workflows:
   setup:
     jobs:
       - setup
+      - testing:
+          requires:
+            - setup
       # - install:
       #     name: install
       #     filters:
