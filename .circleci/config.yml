@@ -13,6 +13,7 @@ jobs:
     docker:
       - image: cimg/base:stable
     steps:
+      - checkout
       - run:
           name: Calculate config values
           command: |
