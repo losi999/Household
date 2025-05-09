@@ -30,8 +30,7 @@ jobs:
           command: echo "$ENV"
   testing:
     docker:
-      - image: cimg/node:22.5
-    working_directory: ~/repo
+      - image: cimg/base:stable
     steps:
       - run:
           name: Print config values
