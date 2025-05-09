@@ -209,9 +209,6 @@ workflows:
   local:
     jobs:
       - setup
-      - testing:
-          requires:
-            - setup
       # - install:
       #     name: install
       #     filters:
