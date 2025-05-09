@@ -23,7 +23,7 @@ jobs:
               development) ENV="DEV" ;;
               *) ENV="LOCAL" ;;
             esac
-            echo "ENV=\"$ENV\"" > .env
+            echo "ENV=$ENV" > .config
       - persist_to_workspace:
           root: ~/
           paths:
@@ -35,13 +35,10 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
-      - run: "pwd"
-      - run: "ls -la"
-      - run: "cat .env"
       - run:
-          name: Load .env File
+          name: Load .config File
           command: |
-            cat .env >> $BASH_ENV
+            cat .config >> $BASH_ENV
             echo "$ENV"
       - run:
           name: Print config values
@@ -103,15 +100,19 @@ jobs:
           name: Running linter
           command: yarn lint
   build:
-    parameters:
-      env:
-        type: string
+    # parameters:
+    #   env:
+    #     type: string
     docker:
       - image: cimg/node:22.5
     working_directory: ~/repo
     steps:
       - attach_workspace:
           at: ~/
+      - run:
+          name: Load .config File
+          command: |
+            cat .config >> $BASH_ENV
 
       - run:
           name: Build API
@@ -119,7 +120,7 @@ jobs:
 
       - run:
           name: Build Web
-          command: yarn build:web -c <<parameters.env>>
+          command: yarn build:web -c $ENV
 
       - persist_to_workspace:
           root: ~/
@@ -219,29 +220,26 @@ workflows:
   setup:
     jobs:
       - setup
-      - testing:
+      - install:
           requires:
             - setup
-      # - install:
-      #     name: install
-      #     filters:
-      #       branches:
-      #         ignore:
-      #           - development
-      #           - master
-      # - unit_test:
-      #     name: unit_test
-      #     requires:
-      #       - install
-      # - lint:
-      #     name: lint
-      #     requires:
-      #       - install
-      # - build:
-      #     name: build
-      #     env: "LOCAL"
-      #     requires:
-      #       - install
+          # filters:
+          #   branches:
+          #     ignore:
+          #       - development
+          #       - master
+      - unit_test:
+          name: unit_test
+          requires:
+            - install
+      - lint:
+          name: lint
+          requires:
+            - install
+      - build:
+          name: build
+          requires:
+            - install
       # - test:
       #     name: test
       #     filters: pipeline.parameters.deploy_to_local != true
