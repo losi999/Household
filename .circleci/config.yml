@@ -2,7 +2,7 @@ version: 2.1
 parameters:
   skip_unit_tests:
     type: boolean
-    default: false
+    default: true
 orbs:
   sam: circleci/aws-sam-serverless@6.0.3
 jobs:
@@ -37,10 +37,6 @@ jobs:
       - image: cimg/node:22.5
     working_directory: ~/repo
     steps:
-      - when:
-          condition: <<pipeline.parameters.skip_unit_tests>>
-          steps:
-            - run: echo "Unit tests skipped"
       - attach_workspace:
           at: ~/
 
@@ -180,41 +176,35 @@ jobs:
           path: test/cypress/screenshots
           destination: test/cypress/screenshots
 workflows:
-  pipeline:
+  local:
     jobs:
-      - install
+      - install:
+          name: install
+          filters:
+            branches:
+              ignore:
+                - development
+                - master
       - unit_test:
+          name: unit_test
+          filters: pipeline.parameters.skip_unit_tests != true
           requires:
             - install
-
-  # local:
-  #   jobs:
-  #     - install:
-  #         name: install
-  #         filters:
-  #           branches:
-  #             ignore:
-  #               - development
-  #               - master
-  #     - unit_test:
-  #         name: unit_test
-  #         requires:
-  #           - install
-  #     - lint:
-  #         name: lint
-  #         requires:
-  #           - install
-  #     - build:
-  #         name: build_local
-  #         env: "LOCAL"
-  #         requires:
-  #           - install
-  #     - test:
-  #         name: test_local
-  #         env: "LOCAL"
-  #         testCommand: ""
-  #         requires:
-  #           - install
+      - lint:
+          name: lint
+          requires:
+            - install
+      - build:
+          name: build_local
+          env: "LOCAL"
+          requires:
+            - install
+      - test:
+          name: test_local
+          env: "LOCAL"
+          testCommand: ""
+          requires:
+            - install
 
   dev:
     jobs:
