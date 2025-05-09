@@ -24,7 +24,7 @@ jobs:
     steps:
       - run:
           name: Print config values
-          command: echo $ENV
+          command: echo "$ENV"
   install:
     docker:
       - image: cimg/node:22.5
