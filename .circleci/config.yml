@@ -1,8 +1,11 @@
 version: 2.1
 parameters:
-  skip_unit_tests:
+  deploy_to_local:
     type: boolean
-    default: true
+    default: false
+  skip_api_tests:
+    type: boolean
+    default: false
 orbs:
   sam: circleci/aws-sam-serverless@6.0.3
 jobs:
@@ -187,7 +190,6 @@ workflows:
                 - master
       - unit_test:
           name: unit_test
-          filters: pipeline.parameters.skip_unit_tests != true
           requires:
             - install
       - lint:
@@ -201,10 +203,24 @@ workflows:
             - install
       - test:
           name: test_local
+          filters: pipeline.parameters.deploy_to_local != true
           env: "LOCAL"
           testCommand: ""
           requires:
             - install
+      - api_deploy:
+          name: api_deploy_local
+          env: "LOCAL"
+          filters: pipeline.parameters.deploy_to_local
+          requires:
+            - unit_test
+            - lint
+            - build_local
+      - web_deploy:
+          name: web_deploy_local
+          env: "LOCAL"
+          requires:
+            - api_deploy_local
 
   dev:
     jobs:
