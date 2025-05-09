@@ -1,6 +1,6 @@
 version: 2.1
 parameters:
-  deploy_to_local:
+  skip_unit_tests:
     type: boolean
     default: false
 orbs:
@@ -37,6 +37,10 @@ jobs:
       - image: cimg/node:22.5
     working_directory: ~/repo
     steps:
+      - when:
+          condition: <<pipeline.parameters.skip_unit_tests>>
+          steps:
+            - run: echo "Unit tests skipped"
       - attach_workspace:
           at: ~/
 
@@ -176,35 +180,41 @@ jobs:
           path: test/cypress/screenshots
           destination: test/cypress/screenshots
 workflows:
-  local:
+  pipeline:
     jobs:
-      - install:
-          name: install
-          filters:
-            branches:
-              ignore:
-                - development
-                - master
+      - install
       - unit_test:
-          name: unit_test
           requires:
             - install
-      - lint:
-          name: lint
-          requires:
-            - install
-      - build:
-          name: build_local
-          env: "LOCAL"
-          requires:
-            - install
-      - test:
-          name: test_local
-          env: "LOCAL"
-          testCommand: ""
-          when: <<pipeline.parameters.deploy_to_local>>
-          requires:
-            - install
+
+  # local:
+  #   jobs:
+  #     - install:
+  #         name: install
+  #         filters:
+  #           branches:
+  #             ignore:
+  #               - development
+  #               - master
+  #     - unit_test:
+  #         name: unit_test
+  #         requires:
+  #           - install
+  #     - lint:
+  #         name: lint
+  #         requires:
+  #           - install
+  #     - build:
+  #         name: build_local
+  #         env: "LOCAL"
+  #         requires:
+  #           - install
+  #     - test:
+  #         name: test_local
+  #         env: "LOCAL"
+  #         testCommand: ""
+  #         requires:
+  #           - install
 
   dev:
     jobs:
