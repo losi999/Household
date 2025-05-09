@@ -11,7 +11,8 @@ orbs:
 jobs:
   setup:
     docker:
-      - image: cimg/base:stable
+      - image: cimg/node:22.5
+    working_directory: ~/repo
     steps:
       - checkout
       - run:
@@ -19,26 +20,27 @@ jobs:
           command: |
             case "$CIRCLE_BRANCH" in
               master) ENV="PROD" ;;
-              develop) ENV="DEV" ;;
+              development) ENV="DEV" ;;
               *) ENV="LOCAL" ;;
             esac
             echo "ENV=$ENV" > .env
       - persist_to_workspace:
-          root: .
+          root: ~/
           paths:
-            - .env
+            - repo
   testing:
     docker:
-      - image: cimg/base:stable
+      - image: cimg/node:22.5
+    working_directory: ~/repo
     steps:
       - attach_workspace:
-          at: /workspace
+          at: ~/
       - run: "ls -la"
       - run:
           name: Load .env File
           command: |
             set -o allexport
-            source /workspace/.env
+            source ~/repo/.env
             set +o allexport
       - run:
           name: Print config values
