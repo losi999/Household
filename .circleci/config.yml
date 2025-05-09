@@ -201,7 +201,7 @@ workflows:
             - install
       - api_deploy:
           name: api_deploy
-          # filters: pipeline.parameters.deploy_to_local
+          filters: pipeline.git.branch == "master" || pipeline.git.branch == "development" || pipeline.parameters.deploy
           requires:
             - unit_test
             - lint
