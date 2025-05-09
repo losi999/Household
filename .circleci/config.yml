@@ -207,7 +207,7 @@ jobs:
           path: test/cypress/screenshots
           destination: test/cypress/screenshots
 workflows:
-  local:
+  setup:
     jobs:
       - setup
       # - install:
