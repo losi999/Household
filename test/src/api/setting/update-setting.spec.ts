@@ -1,0 +1,80 @@
+import { Setting } from '@household/shared/types/types';
+import { settingDataFactory } from './data-factory';
+
+describe('POST /setting/v1/settings/{settingKey}', () => {
+  let request: Setting.Request;
+  let settingKey: Setting.Id;
+
+  beforeEach(() => {
+    request = settingDataFactory.request();
+    settingKey = settingDataFactory.key();
+  });
+
+  describe('called as anonymous', () => {
+    it('should return unauthorized', () => {
+      cy.unauthenticate()
+        .requestUpdateSetting(settingKey, request)
+        .expectUnauthorizedResponse();
+    });
+  });
+
+  describe('called as an admin', () => {
+    describe('should update setting', () => {
+      it('with complete body', () => {
+        cy.authenticate(1)
+          .requestUpdateSetting(settingKey, request)
+          .expectNoContentResponse()
+          .validateSettingDocument(settingKey, request);
+      });
+    });
+
+    describe('should return error', () => {
+      describe('if value', () => {
+        it('is missing from body', () => {
+          cy.authenticate(1)
+            .requestUpdateSetting(settingKey, settingDataFactory.request({
+              value: undefined,
+            }))
+            .expectBadRequestResponse()
+            .expectRequiredProperty('value', 'body');
+        });
+
+        it('is not string', () => {
+          cy.authenticate(1)
+            .requestUpdateSetting(settingKey, settingDataFactory.request({
+              value: {} as any,
+            }))
+            .expectBadRequestResponse()
+            .expectWrongPropertyType('value', 'string', 'body');
+        });
+
+        it('is not number', () => {
+          cy.authenticate(1)
+            .requestUpdateSetting(settingKey, settingDataFactory.request({
+              value: {} as any,
+            }))
+            .expectBadRequestResponse()
+            .expectWrongPropertyType('value', 'number', 'body');
+        });
+
+        it('is not boolean', () => {
+          cy.authenticate(1)
+            .requestUpdateSetting(settingKey, settingDataFactory.request({
+              value: {} as any,
+            }))
+            .expectBadRequestResponse()
+            .expectWrongPropertyType('value', 'boolean', 'body');
+        });
+
+        it('is too short', () => {
+          cy.authenticate(1)
+            .requestUpdateSetting(settingKey, settingDataFactory.request({
+              value: '',
+            }))
+            .expectBadRequestResponse()
+            .expectTooShortProperty('value', 1, 'body');
+        });
+      });
+    });
+  });
+});

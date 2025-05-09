@@ -19,6 +19,9 @@ import { setCategoryValidationCommands } from '@household/test/api/category/comm
 import { setTransactionRequestCommands } from '@household/test/api/transaction/commands/requests';
 import { setTransactionTaskCommands } from '@household/test/api/transaction/commands/tasks';
 import { setTransactionValidationCommands } from '@household/test/api/transaction/commands/validations';
+import { setSettingRequestCommands } from '@household/test/api/setting/commands/requests';
+import { setSettingTaskCommands } from '@household/test/api/setting/commands/tasks';
+import { setSettingValidationCommands } from '@household/test/api/setting/commands/validations';
 
 setProjectRequestCommands();
 setProjectTaskCommands();
@@ -38,5 +41,8 @@ setTransactionValidationCommands();
 setAccountTaskCommands();
 setAccountValidationCommands();
 setAccountRequestCommands();
+setSettingRequestCommands();
+setSettingTaskCommands();
+setSettingValidationCommands();
 setAuthCommands();
 setExpectCommands();

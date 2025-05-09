@@ -4,6 +4,7 @@ import { mongodbServiceFactory } from '@household/shared/services/mongodb-servic
 import { productServiceFactory } from '@household/shared/services/product-service';
 import { projectServiceFactory } from '@household/shared/services/project-service';
 import { recipientServiceFactory } from '@household/shared/services/recipient-service';
+import { settingServiceFactory } from '@household/shared/services/setting-service';
 import { transactionServiceFactory } from '@household/shared/services/transaction-service';
 
 const mongoDbService = mongodbServiceFactory(process.env.MONGODB_CONNECTION_STRING.replace('{{ENV}}', process.env.ENV));
@@ -14,3 +15,4 @@ export const accountService = accountServiceFactory(mongoDbService);
 export const categoryService = categoryServiceFactory(mongoDbService);
 export const transactionService = transactionServiceFactory(mongoDbService);
 export const productService = productServiceFactory(mongoDbService);
+export const settingService = settingServiceFactory(mongoDbService);

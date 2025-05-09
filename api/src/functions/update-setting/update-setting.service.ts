@@ -20,9 +20,7 @@ export const updateSettingServiceFactory = (
       value,
     }, expiresIn);
 
-    await settingService.updateSetting({
-      settingKey,
-    }, update).catch(httpErrors.setting.update({
+    await settingService.updateSetting(settingKey, update).catch(httpErrors.setting.update({
       settingKey,
       update,
     }));
