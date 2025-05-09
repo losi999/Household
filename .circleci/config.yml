@@ -1,4 +1,8 @@
 version: 2.1
+parameters:
+  deploy_to_local:
+    type: boolean
+    default: false
 orbs:
   sam: circleci/aws-sam-serverless@6.0.3
 jobs:
@@ -198,6 +202,7 @@ workflows:
           name: test_local
           env: "LOCAL"
           testCommand: ""
+          when: <<pipeline.parameters.deploy_to_local>>
           requires:
             - install
 
