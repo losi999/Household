@@ -1,4 +1,5 @@
 version: 2.1
+setup: true
 parameters:
   deploy_to_local:
     type: boolean
@@ -11,8 +12,7 @@ orbs:
 jobs:
   setup:
     docker:
-      - image: cimg/node:22.5
-    working_directory: ~/repo
+      - image: cimg/base:stable
     steps:
       - run:
           name: Calculate config values
