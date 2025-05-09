@@ -212,7 +212,7 @@ workflows:
             - api_deploy
       - test:
           name: test_account
-          # filters: pipeline.parameters.skip_api_tests != true
+          filters: pipeline.parameters.skip_api_tests != true
           testCommand: "account"
           requires:
             - web_deploy
