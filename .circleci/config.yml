@@ -1,6 +1,6 @@
 version: 2.1
 parameters:
-  deploy_to_local:
+  deploy:
     type: boolean
     default: false
   skip_api_tests:
@@ -18,12 +18,18 @@ jobs:
       - run:
           name: Calculate config values
           command: |
+            CYPRESS_PASSWORD="${CYPRESS_PASSWORD}"
             case "$CIRCLE_BRANCH" in
-              master) ENV="PROD" ;;
+              master) ENV="PROD" 
+              CYPRESS_PASSWORD="" ;;
               development) ENV="DEV" ;;
-              *) ENV="LOCAL" ;;
+              *) ENV="LOCAL" 
+              CYPRESS_PASSWORD="";;
             esac
-            echo "ENV=$ENV" > .config
+            echo "ENV=$ENV" >> .config
+            echo "CYPRESS_ENV=$ENV" >> .config
+            echo "CYPRESS_PASSWORD=$CYPRESS_PASSWORD" >> .config
+      - run: "cat .config"
       - persist_to_workspace:
           root: ~/
           paths:
@@ -100,19 +106,13 @@ jobs:
           name: Running linter
           command: yarn lint
   build:
-    # parameters:
-    #   env:
-    #     type: string
     docker:
       - image: cimg/node:22.5
     working_directory: ~/repo
     steps:
       - attach_workspace:
           at: ~/
-      - run:
-          name: Load .config File
-          command: |
-            cat .config >> $BASH_ENV
+      - run: cat .config >> $BASH_ENV
 
       - run:
           name: Build API
@@ -130,8 +130,6 @@ jobs:
   api_deploy:
     executor: sam/default
     parameters:
-      env:
-        type: string
       cypress_password:
         type: string
         default: ${CYPRESS_PASSWORD}
@@ -139,13 +137,14 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
+      - run: cat .config >> $BASH_ENV
       - sam/install
       - deploy:
           name: SAM Deploy
-          command: sam deploy --template-file cf.household.yaml --s3-bucket ${AWS_PACKAGES_S3} --stack-name Household-<<parameters.env>> --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND CAPABILITY_NAMED_IAM --parameter-overrides Env=<<parameters.env>> TestUserPassword=<<parameters.cypress_password>>
+          command: sam deploy --template-file cf.household.yaml --s3-bucket ${AWS_PACKAGES_S3} --stack-name Household-$ENV --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND CAPABILITY_NAMED_IAM --parameter-overrides Env=$ENV TestUserPassword=<<parameters.cypress_password>>
       - run:
           name: Invoke Post deploy Lambda
-          command: aws lambda invoke --function-name Household-<<parameters.env>>-PostDeploy /dev/null
+          command: aws lambda invoke --function-name Household-$ENV-PostDeploy /dev/null
   web_deploy:
     parameters:
       env:
@@ -217,7 +216,7 @@ jobs:
           path: test/cypress/screenshots
           destination: test/cypress/screenshots
 workflows:
-  setup:
+  local:
     jobs:
       - setup
       - install:
