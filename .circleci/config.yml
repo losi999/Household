@@ -41,9 +41,7 @@ jobs:
       - run:
           name: Load .env File
           command: |
-            set -o allexport
-            source .env
-            set +o allexport
+            cat .env >> $BASH_ENV
             echo "$ENV"
       - run:
           name: Print config values
