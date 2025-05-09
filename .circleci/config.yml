@@ -173,6 +173,7 @@ jobs:
           at: ~/
       - run: cat .config >> $BASH_ENV
       - run: cat .test_config >> $BASH_ENV
+      - run: printenv
       - restore_cache:
           key: cache-cypress-v4-{{checksum "test/yarn.lock"}}
       - run:
