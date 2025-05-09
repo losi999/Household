@@ -35,12 +35,13 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
+      - run: "pwd"
       - run: "ls -la"
       - run:
           name: Load .env File
           command: |
             set -o allexport
-            source ~/repo/.env
+            source .env
             set +o allexport
       - run:
           name: Print config values
