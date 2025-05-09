@@ -25,6 +25,7 @@ jobs:
               VALUE="LOCAL"
             fi
             echo "export ENV=$VALUE" >> $BASH_ENV
+            echo '{ "version": 2.1, "workflows": { "test-workflow": { "jobs": [ "testing" ] } } }' > .circleci/generated-config.yml
       - run:
           name: Print config values
           command: echo "$ENV"
