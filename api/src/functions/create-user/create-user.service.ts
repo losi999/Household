@@ -3,11 +3,14 @@ import { IIdentityService } from '@household/shared/services/identity-service';
 import { User } from '@household/shared/types/types';
 
 export interface ICreateUserService {
-  (ctx: {body: User.Request}): Promise<void>;
+  (ctx: {
+    body: User.Request;
+    suppressEmail: boolean;
+  }): Promise<void>;
 }
 
 export const createUserServiceFactory = (identityService: IIdentityService): ICreateUserService => {
-  return async ({ body }) => {
-    await identityService.createUser(body).catch(httpErrors.common.genericError('Create user', body));
+  return async ({ body, suppressEmail }) => {
+    await identityService.createUser(body, suppressEmail).catch(httpErrors.cognito.createUser(body));
   };
 };

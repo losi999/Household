@@ -1,8 +1,10 @@
 import { default as handler } from '@household/api/functions/list-users/list-users.handler';
+import { IListUsersService } from '@household/api/functions/list-users/list-users.service';
 import { createUserResponse } from '@household/shared/common/test-data-factory';
+import { MockBusinessService } from '@household/shared/common/unit-testing';
 
 describe('List users handler', () => {
-  let mockListUsersService: jest.Mock;
+  let mockListUsersService: MockBusinessService<IListUsersService>;
   let apiHandler: ReturnType<typeof handler>;
 
   beforeEach(() => {

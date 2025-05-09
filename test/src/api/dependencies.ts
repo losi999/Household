@@ -6,6 +6,8 @@ import { projectServiceFactory } from '@household/shared/services/project-servic
 import { recipientServiceFactory } from '@household/shared/services/recipient-service';
 import { settingServiceFactory } from '@household/shared/services/setting-service';
 import { transactionServiceFactory } from '@household/shared/services/transaction-service';
+import { identityServiceFactory } from '@household/shared/services/identity-service';
+import { cognito } from '@household/shared/dependencies/aws/cognito';
 
 const mongoDbService = mongodbServiceFactory(process.env.MONGODB_CONNECTION_STRING.replace('{{ENV}}', process.env.ENV));
 
@@ -16,3 +18,4 @@ export const categoryService = categoryServiceFactory(mongoDbService);
 export const transactionService = transactionServiceFactory(mongoDbService);
 export const productService = productServiceFactory(mongoDbService);
 export const settingService = settingServiceFactory(mongoDbService);
+export const identityService = identityServiceFactory(process.env.USER_POOL_ID, '', cognito);

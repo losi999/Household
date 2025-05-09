@@ -22,6 +22,9 @@ import { setTransactionValidationCommands } from '@household/test/api/transactio
 import { setSettingRequestCommands } from '@household/test/api/setting/commands/requests';
 import { setSettingTaskCommands } from '@household/test/api/setting/commands/tasks';
 import { setSettingValidationCommands } from '@household/test/api/setting/commands/validations';
+import { setUserRequestCommands } from '@household/test/api/user/commands/requests';
+import { setUserTaskCommands } from '@household/test/api/user/commands/tasks';
+import { setUserValidationCommands } from '@household/test/api/user/commands/validations';
 
 setProjectRequestCommands();
 setProjectTaskCommands();
@@ -44,5 +47,8 @@ setAccountRequestCommands();
 setSettingRequestCommands();
 setSettingTaskCommands();
 setSettingValidationCommands();
+setUserRequestCommands();
+setUserTaskCommands();
+setUserValidationCommands();
 setAuthCommands();
 setExpectCommands();

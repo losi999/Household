@@ -1,9 +1,10 @@
 import { default as handler } from '@household/api/functions/post-deploy/post-deploy.handler';
-import { validateError } from '@household/shared/common/unit-testing';
+import { IPostDeployService } from '@household/api/functions/post-deploy/post-deploy.service';
+import { MockBusinessService, validateError } from '@household/shared/common/unit-testing';
 
 describe('Post deploy handler', () => {
   let handlerFuntion: ReturnType<typeof handler>;
-  let mockPostDeployService: jest.Mock;
+  let mockPostDeployService: MockBusinessService<IPostDeployService>;
 
   const infrastructureStack = 'stackName';
 

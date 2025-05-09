@@ -1,7 +1,7 @@
 import { getCategoryId, getProductId } from '@household/shared/common/utils';
 import { AccountType, CategoryType } from '@household/shared/enums';
 import { HttpError } from '@household/shared/types/common';
-import { Account, Category, Common, File, Product, Project, Recipient, Setting, Transaction } from '@household/shared/types/types';
+import { Account, Category, Common, File, Product, Project, Recipient, Setting, Transaction, User } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
 
 type CatchAndThrow = (error: any) => never;
@@ -507,6 +507,28 @@ export const httpErrors = {
     genericError: (message: string, ctx?: any, statusCode = 500): CatchAndThrow => (error) => {
       log(message, ctx, error);
       throw httpError(statusCode, error.message);
+    },
+  },
+  cognito: {
+    createUser: (ctx: User.Email, statusCode = 500): CatchAndThrow => (error) => {
+      if (error.name === 'UsernameExistsException') {
+        log('Duplicate user email', ctx, error);
+        throw httpError(400, 'Duplicate user email');
+      }
+      log('Create user in cognito', ctx, error);
+      throw httpError(statusCode, 'Error while creating user in cognito');
+    },
+    confirmUser: (ctx: User.Email, statusCode = 500): CatchAndThrow => (error) => {
+      log('Confirm user in cognito', ctx, error);
+      throw httpError(statusCode, 'Error while confirming user in cognito');
+    },
+    deleteUser: (ctx: User.Email, statusCode = 500): CatchAndThrow => (error) => {
+      log('Delete user from cognito', ctx, error);
+      throw httpError(statusCode, 'Error while deleting user from cognito');
+    },
+    listUsers: (statusCode = 500): CatchAndThrow => (error) => {
+      log('Listing users from cognito', undefined, error);
+      throw httpError(statusCode, 'Error while listing users from cognito');
     },
   },
 };

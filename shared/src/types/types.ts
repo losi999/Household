@@ -655,14 +655,16 @@ export namespace Auth {
     password: string;
   };
 
+  export type TemporaryPassword = {
+    temporaryPassword: string;
+  };
+
   type IdTokenResponse = {
     idToken: string;
   };
 
   export namespace ConfirmUser {
-    export type Request = Password & {
-      temporaryPassword: string;
-    };
+    export type Request = Password & TemporaryPassword;
   }
 
   export namespace Login {

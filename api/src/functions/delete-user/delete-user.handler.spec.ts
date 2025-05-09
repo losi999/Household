@@ -1,8 +1,9 @@
 import { default as handler } from '@household/api/functions/delete-user/delete-user.handler';
-import { validateFunctionCall } from '@household/shared/common/unit-testing';
+import { IDeleteUserService } from '@household/api/functions/delete-user/delete-user.service';
+import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 
 describe('Delete user handler', () => {
-  let mockDeleteUserService: jest.Mock;
+  let mockDeleteUserService: MockBusinessService<IDeleteUserService>;
   let apiHandler: ReturnType<typeof handler>;
 
   beforeEach(() => {
@@ -42,7 +43,7 @@ describe('Delete user handler', () => {
     validateFunctionCall(mockDeleteUserService, {
       email,
     });
-    expect(response.statusCode).toEqual(201);
+    expect(response.statusCode).toEqual(204);
     expect.assertions(2);
   });
 });

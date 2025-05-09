@@ -1,9 +1,10 @@
 import { default as handler } from '@household/api/functions/bulk-transaction-importer/bulk-transaction-importer.handler';
-import { validateError } from '@household/shared/common/unit-testing';
+import { IBulkTransactionImporterService } from '@household/api/functions/bulk-transaction-importer/bulk-transaction-importer.service';
+import { MockBusinessService, validateError } from '@household/shared/common/unit-testing';
 
 describe('Bulk transaction importer handler', () => {
   let handlerFuntion: ReturnType<typeof handler>;
-  let mockBulkTransactionImporterService: jest.Mock;
+  let mockBulkTransactionImporterService: MockBusinessService<IBulkTransactionImporterService>;
 
   const bucketName = 'bucket-name';
   const fileId = 'file.xls';

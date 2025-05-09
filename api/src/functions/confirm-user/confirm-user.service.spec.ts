@@ -35,14 +35,12 @@ describe('Confirm user service', () => {
   });
 
   it('should throw error if unable to confirm user', async () => {
-    mockIdentityService.functions.confirmUser.mockRejectedValue({
-      message: 'This is a cognito error',
-    });
+    mockIdentityService.functions.confirmUser.mockRejectedValue('This is a cognito error');
 
     await service({
       body,
       email,
-    }).catch(validateError('This is a cognito error', 500));
+    }).catch(validateError('Error while confirming user in cognito', 500));
     validateFunctionCall(mockIdentityService.functions.confirmUser, {
       email,
       temporaryPassword,
