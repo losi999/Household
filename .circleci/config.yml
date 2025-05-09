@@ -25,6 +25,9 @@ jobs:
               VALUE="LOCAL"
             fi
             echo "export ENV=$VALUE" >> $BASH_ENV
+      - run:
+          name: Print config values
+          command: echo "$ENV"
   testing:
     docker:
       - image: cimg/node:22.5
