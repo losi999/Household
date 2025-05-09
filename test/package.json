@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "cypress-env": "cp cypress.${ENV}.env.json cypress.env.json",
+    "cypress-env": "cp cypress.$ENV.env.json cypress.env.json",
     "start": "export ENV=localhost && yarn cypress-env && cypress open -C cypress.localhost.json",
     "start:LOCAL": "export ENV=LOCAL && yarn cypress-env && cypress open --config-file=cypress.LOCAL.config.ts",
     "start:DEV": "export ENV=DEV && yarn cypress-env && cypress open --config-file=cypress.DEV.config.ts",
-    "test": "cypress run --config-file=cypress.${ENV}.config.ts",
+    "test": "cypress run --config-file=cypress.$ENV.config.ts",
     "test:account": "yarn test --spec \"./src/api/account/**/*\"",
     "test:category": "yarn test --spec \"./src/api/category/**/*\"",
     "test:project": "yarn test --spec \"./src/api/project/**/*\"",

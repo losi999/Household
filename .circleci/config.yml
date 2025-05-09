@@ -142,6 +142,25 @@ jobs:
       - deploy:
           name: Web deploy
           command: aws s3 sync dist/web/browser s3://$(aws cloudformation describe-stacks --stack-name Household-$ENV --query "Stacks[0].Outputs[?OutputKey=='WebsiteBucket'].OutputValue" --output text)
+  api_test_setup:
+    docker:
+      - image: cibuilds/aws:1.16.1
+    working_directory: ~/repo
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run: cat .config >> $BASH_ENV
+      - run:
+          name: Getting MongoDB connection string
+          command: echo "MONGODB_CONNECTION_STRING=\"mongodb+srv://$MONGODB_USERNAME:$MONGODB_PASSWORD@$MONGODB_CLUSTER_DOMAIN/household-$ENV?retryWrites=true&w=majority\"" >> .test_config
+      - run:
+          name: Getting Cognito user pool Id
+          command: echo "USER_POOL_ID=$(aws cloudformation describe-stacks --stack-name Household-$ENV --query 'Stacks[0].Outputs[?OutputKey==`CognitoUserPoolId`].OutputValue'  --output text) >> .test_config
+      - run: "cat .test_config"
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - repo
   test:
     parameters:
       testCommand:
@@ -153,6 +172,7 @@ jobs:
       - attach_workspace:
           at: ~/
       - run: cat .config >> $BASH_ENV
+      - run: cat .test_config >> $BASH_ENV
       - restore_cache:
           key: cache-cypress-v4-{{checksum "test/yarn.lock"}}
       - run:
@@ -163,9 +183,9 @@ jobs:
           key: cache-cypress-v4-{{checksum "test/yarn.lock"}}
           paths:
             - /root/.cache/Cypress
-      - run:
-          name: Setting MongoDB connection string
-          command: echo "export MONGODB_CONNECTION_STRING=\"mongodb+srv://$MONGODB_USERNAME:$MONGODB_PASSWORD@$MONGODB_CLUSTER_DOMAIN/household-$ENV?retryWrites=true&w=majority\"" >> "$BASH_ENV"
+      # - run:
+      #     name: Setting MongoDB connection string
+      #     command: echo "export MONGODB_CONNECTION_STRING=\"mongodb+srv://$MONGODB_USERNAME:$MONGODB_PASSWORD@$MONGODB_CLUSTER_DOMAIN/household-$ENV?retryWrites=true&w=majority\"" >> "$BASH_ENV"
 
       - run:
           name: Running tests
@@ -210,253 +230,102 @@ workflows:
           name: web_deploy
           requires:
             - api_deploy
-      - test:
-          name: test_account
-          filters: pipeline.parameters.skip_api_tests != true
-          testCommand: "account"
+      - api_test_setup:
           requires:
             - web_deploy
+          filters: pipeline.parameters.skip_api_tests != true
+      - test:
+          name: test_account
+          testCommand: "account"
+          requires:
+            - api_test_setup
       # - test:
       #     name: test_category
       #     filters: pipeline.parameters.skip_api_tests != true
       #     env: "LOCAL"
       #     testCommand: "category"
       #     requires:
-      #       - web_deploy
+      #       - api_test_setup
       # - test:
       #     name: test_project
       #     filters: pipeline.parameters.skip_api_tests != true
       #     env: "LOCAL"
       #     testCommand: "project"
       #     requires:
-      #       - web_deploy
+      #       - api_test_setup
       # - test:
       #     name: test_product
       #     filters: pipeline.parameters.skip_api_tests != true
       #     env: "LOCAL"
       #     testCommand: "product"
       #     requires:
-      #       - web_deploy
+      #       - api_test_setup
       # - test:
       #     name: test_recipient
       #     filters: pipeline.parameters.skip_api_tests != true
       #     env: "LOCAL"
       #     testCommand: "recipient"
       #     requires:
-      #       - web_deploy
+      #       - api_test_setup
       # - test:
       #     name: test_transaction_common
       #     filters: pipeline.parameters.skip_api_tests != true
       #     env: "LOCAL"
       #     testCommand: "transaction-common"
       #     requires:
-      #       - web_deploy
+      #       - api_test_setup
       # - test:
       #     name: test_transaction_payment
       #     filters: pipeline.parameters.skip_api_tests != true
       #     env: "LOCAL"
       #     testCommand: "transaction-payment"
       #     requires:
-      #       - web_deploy
+      #       - api_test_setup
       # - test:
       #     name: test_transaction_deferred
       #     filters: pipeline.parameters.skip_api_tests != true
       #     env: "LOCAL"
       #     testCommand: "transaction-deferred"
       #     requires:
-      #       - web_deploy
+      #       - api_test_setup
       # - test:
       #     name: test_transaction_split
       #     filters: pipeline.parameters.skip_api_tests != true
       #     env: "LOCAL"
       #     testCommand: "transaction-split"
       #     requires:
-      #       - web_deploy
+      #       - api_test_setup
       # - test:
       #     name: test_transaction_reimbursement
       #     filters: pipeline.parameters.skip_api_tests != true
       #     env: "LOCAL"
       #     testCommand: "transaction-reimbursement"
       #     requires:
-      #       - web_deploy
+      #       - api_test_setup
       # - test:
       #     name: test_transaction_transfer
       #     filters: pipeline.parameters.skip_api_tests != true
       #     env: "LOCAL"
       #     testCommand: "transaction-transfer"
       #     requires:
-      #       - web_deploy
+      #       - api_test_setup
       # - test:
       #     name: test_setting
       #     filters: pipeline.parameters.skip_api_tests != true
       #     env: "LOCAL"
       #     testCommand: "setting"
       #     requires:
-      #       - web_deploy
-      # - test:
-      #     name: test_user
-      #     filters: pipeline.parameters.skip_api_tests != true
-      #     env: "LOCAL"
-      #     testCommand: "user"
-      #     requires:
-      #       - web_deploy
+      #       - api_test_setup
+      - test:
+          name: test_user
+          filters: pipeline.parameters.skip_api_tests != true
+          testCommand: "user"
+          requires:
+            - api_test_setup
       # - test:
       #     name: test_file
       #     filters: pipeline.parameters.skip_api_tests != true
       #     env: "LOCAL"
       #     testCommand: "file"
       #     requires:
-      #       - web_deploy
-
-  # dev:
-  #   jobs:
-  #     - install:
-  #         name: install
-  #         filters:
-  #           branches:
-  #             only:
-  #               - development
-  #     - unit_test:
-  #         name: unit_test
-  #         requires:
-  #           - install
-  #     - lint:
-  #         name: lint
-  #         requires:
-  #           - install
-  #     - build:
-  #         name: build
-  #         env: "DEV"
-  #         requires:
-  #           - install
-  #     - api_deploy:
-  #         name: api_deploy
-  #         env: "DEV"
-  #         requires:
-  #           - unit_test
-  #           - lint
-  #           - build
-  #     - web_deploy:
-  #         name: web_deploy
-  #         env: "DEV"
-  #         requires:
-  #           - api_deploy
-  #     - test:
-  #         name: test_account
-  #         env: "DEV"
-  #         testCommand: "account"
-  #         requires:
-  #           - web_deploy
-  #     - test:
-  #         name: test_category
-  #         env: "DEV"
-  #         testCommand: "category"
-  #         requires:
-  #           - web_deploy
-  #     - test:
-  #         name: test_project
-  #         env: "DEV"
-  #         testCommand: "project"
-  #         requires:
-  #           - web_deploy
-  #     - test:
-  #         name: test_product
-  #         env: "DEV"
-  #         testCommand: "product"
-  #         requires:
-  #           - web_deploy
-  #     - test:
-  #         name: test_recipient
-  #         env: "DEV"
-  #         testCommand: "recipient"
-  #         requires:
-  #           - web_deploy
-  #     - test:
-  #         name: test_transaction_common
-  #         env: "DEV"
-  #         testCommand: "transaction-common"
-  #         requires:
-  #           - web_deploy
-  #     - test:
-  #         name: test_transaction_payment
-  #         env: "DEV"
-  #         testCommand: "transaction-payment"
-  #         requires:
-  #           - web_deploy
-  #     - test:
-  #         name: test_transaction_deferred
-  #         env: "DEV"
-  #         testCommand: "transaction-deferred"
-  #         requires:
-  #           - web_deploy
-  #     - test:
-  #         name: test_transaction_split
-  #         env: "DEV"
-  #         testCommand: "transaction-split"
-  #         requires:
-  #           - web_deploy
-  #     - test:
-  #         name: test_transaction_reimbursement
-  #         env: "DEV"
-  #         testCommand: "transaction-reimbursement"
-  #         requires:
-  #           - web_deploy
-  #     - test:
-  #         name: test_transaction_transfer
-  #         env: "DEV"
-  #         testCommand: "transaction-transfer"
-  #         requires:
-  #           - web_deploy
-  #     - test:
-  #         name: test_setting
-  #         env: "DEV"
-  #         testCommand: "setting"
-  #         requires:
-  #           - web_deploy
-  #     - test:
-  #         name: test_user
-  #         env: "DEV"
-  #         testCommand: "user"
-  #         requires:
-  #           - web_deploy
-  #     # - test:
-  #     #     name: test_file
-  #     #     env: "DEV"
-  #     #     testCommand: "file"
-  #     #     requires:
-  #     #       - web_deploy
-
-  # prod:
-  #   jobs:
-  #     - install:
-  #         name: install
-  #         filters:
-  #           branches:
-  #             only:
-  #               - master
-  #     - unit_test:
-  #         name: unit_test
-  #         requires:
-  #           - install
-  #     - lint:
-  #         name: lint
-  #         requires:
-  #           - install
-  #     - build:
-  #         name: build
-  #         env: "PROD"
-  #         requires:
-  #           - install
-  #     - api_deploy:
-  #         name: api_deploy
-  #         env: "PROD"
-  #         cypress_password: '"''''"'
-  #         requires:
-  #           - unit_test
-  #           - lint
-  #           - build
-  #     - web_deploy:
-  #         name: web_deploy
-  #         env: "PROD"
-  #         requires:
-  #           - api_deploy
+      #       - api_test_setup
