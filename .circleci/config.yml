@@ -23,7 +23,7 @@ jobs:
               development) ENV="DEV" ;;
               *) ENV="LOCAL" ;;
             esac
-            echo "ENV=$ENV" > .env
+            echo "ENV=\"$ENV\"" > .env
       - persist_to_workspace:
           root: ~/
           paths:
