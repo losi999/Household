@@ -155,7 +155,7 @@ jobs:
           command: echo "MONGODB_CONNECTION_STRING=\"mongodb+srv://$MONGODB_USERNAME:$MONGODB_PASSWORD@$MONGODB_CLUSTER_DOMAIN/household-$ENV?retryWrites=true&w=majority\"" >> test/.env
       - run:
           name: Getting Cognito user pool Id
-          command: echo "USER_POOL_ID=$(aws cloudformation describe-stacks --stack-name Household-$ENV --query 'Stacks[0].Outputs[?OutputKey==`CognitoUserPoolId`].OutputValue'  --output text)" >> test/.env
+          command: echo "USER_POOL_ID=\"$(aws cloudformation describe-stacks --stack-name Household-$ENV --query 'Stacks[0].Outputs[?OutputKey==`CognitoUserPoolId`].OutputValue'  --output text)\"" >> test/.env
       - persist_to_workspace:
           root: ~/
           paths:
