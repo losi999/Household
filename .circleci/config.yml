@@ -171,6 +171,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
+      - run: cat .test_config
       - run: cat .config >> $BASH_ENV
       - run: cat .test_config >> $BASH_ENV
       - run: printenv
@@ -200,9 +201,9 @@ workflows:
   local:
     jobs:
       - setup
-      - install:
-          requires:
-            - setup
+      # - install:
+      #     requires:
+      #       - setup
       # filters:
       #   branches:
       #     ignore:
@@ -233,7 +234,7 @@ workflows:
       #       - api_deploy
       - api_test_setup:
           requires:
-            - install
+            - setup
           filters: pipeline.parameters.skip_api_tests != true
       - test:
           name: test_account
