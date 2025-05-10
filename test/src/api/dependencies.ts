@@ -9,6 +9,8 @@ import { transactionServiceFactory } from '@household/shared/services/transactio
 import { identityServiceFactory } from '@household/shared/services/identity-service';
 import { cognito } from '@household/shared/dependencies/aws/cognito';
 
+console.log('env', process.env);
+
 const mongoDbService = mongodbServiceFactory(process.env.MONGODB_CONNECTION_STRING.replace('{{ENV}}', process.env.ENV));
 
 export const projectService = projectServiceFactory(mongoDbService);

@@ -175,6 +175,7 @@ jobs:
       - run: cat .config >> $BASH_ENV
       - run: cat .test_config >> $BASH_ENV
       - run: printenv
+      - run: echo $MONGODB_CONNECTION_STRING
       - restore_cache:
           key: cache-cypress-v4-{{checksum "test/yarn.lock"}}
       - run:
