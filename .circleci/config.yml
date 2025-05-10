@@ -191,7 +191,7 @@ jobs:
       - run:
           name: Running tests
           working_directory: test
-          command: yarn run test:<<parameters.testCommand>>
+          command: export ENV=$ENV && yarn run test:<<parameters.testCommand>>
 
       - store_artifacts:
           path: test/cypress/screenshots
