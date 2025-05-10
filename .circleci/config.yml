@@ -151,9 +151,6 @@ jobs:
           at: ~/
       - run: cat .config >> $BASH_ENV
       - run: cat .config >> test/.env
-      - run: echo $ENV
-      - run: aws cloudformation describe-stacks --stack-name Household-$ENV --query 'Stacks[0].Outputs[?OutputKey==`CognitoUserPoolId`].OutputValue'  --output text
-      - run: echo "USER_POOL_ID=\"$(aws cloudformation describe-stacks --stack-name Household-$ENV --query 'Stacks[0].Outputs[?OutputKey==`CognitoUserPoolId`].OutputValue'  --output text)\""
       - run:
           name: Getting MongoDB connection string
           command: echo "MONGODB_CONNECTION_STRING=\"mongodb+srv://$MONGODB_USERNAME:$MONGODB_PASSWORD@$MONGODB_CLUSTER_DOMAIN/household-$ENV?retryWrites=true&w=majority\"" >> test/.env
@@ -202,9 +199,9 @@ workflows:
   local:
     jobs:
       - setup
-      # - install:
-      #     requires:
-      #       - setup
+      - install:
+          requires:
+            - setup
       # filters:
       #   branches:
       #     ignore:
@@ -235,7 +232,7 @@ workflows:
       #       - api_deploy
       - api_test_setup:
           requires:
-            - setup
+            - install
           filters: pipeline.parameters.skip_api_tests != true
       - test:
           name: test_account
