@@ -128,10 +128,10 @@ jobs:
       - load-config
       - run:
           name: Insert RUM App Monitor Id
-          command: sed -i -e "s/RUM_APP_MONITOR_ID/$(aws cloudformation describe-stacks --stack-name Household-$ENV --query 'Stacks[0].Outputs[?OutputKey==`RumAppMonitorId`].OutputValue'  --output text)/g" ./dist/web/browser/index.html
+          command: sed -i -e "s/RUM_APP_MONITOR_ID/$(aws cloudformation describe-stacks --stack-name Household-$ENV --query 'Stacks[0].Outputs[?OutputKey==`RumAppMonitorId`].OutputValue' --output text)/g" ./dist/web/browser/index.html
       - run:
           name: Insert RUM Identity Pool Id
-          command: sed -i -e "s/RUM_IDENTITY_POOL_ID/$(aws cloudformation describe-stacks --stack-name Household-$ENV --query 'Stacks[0].Outputs[?OutputKey==`RumIdentityPoolId`].OutputValue'  --output text)/g" ./dist/web/browser/index.html
+          command: sed -i -e "s/RUM_IDENTITY_POOL_ID/$(aws cloudformation describe-stacks --stack-name Household-$ENV --query 'Stacks[0].Outputs[?OutputKey==`RumIdentityPoolId`].OutputValue' --output text)/g" ./dist/web/browser/index.html
       - deploy:
           name: Web deploy
           command: aws s3 sync dist/web/browser s3://$(aws cloudformation describe-stacks --stack-name Household-$ENV --query "Stacks[0].Outputs[?OutputKey=='WebsiteBucket'].OutputValue" --output text)
@@ -149,7 +149,10 @@ jobs:
           command: echo "MONGODB_CONNECTION_STRING=\"mongodb+srv://$MONGODB_USERNAME:$MONGODB_PASSWORD@$MONGODB_CLUSTER_DOMAIN/household-$ENV?retryWrites=true&w=majority\"" >> test/.env
       - run:
           name: Getting Cognito user pool Id
-          command: echo "USER_POOL_ID=\"$(aws cloudformation describe-stacks --stack-name Household-$ENV --query 'Stacks[0].Outputs[?OutputKey==`CognitoUserPoolId`].OutputValue'  --output text)\"" >> test/.env
+          command: echo "USER_POOL_ID=\"$(aws cloudformation describe-stacks --stack-name Household-$ENV --query 'Stacks[0].Outputs[?OutputKey==`CognitoUserPoolId`].OutputValue' --output text)\"" >> test/.env
+      - run:
+          name: Getting Import bucket name
+          command: echo "IMPORT_BUCKET=\"$(aws cloudformation describe-stacks --stack-name Household-$ENV --query 'Stacks[0].Outputs[?OutputKey==`ImportBucket`].OutputValue' --output text)\"" >> test/.env
       - persist_to_workspace:
           root: ~/
           paths:

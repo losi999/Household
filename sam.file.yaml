@@ -154,3 +154,6 @@ Outputs:
   FileApi:
     Description: "Household File API"
     Value: !Sub "${FileApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}"
+  ImportBucket:
+    Description: "File import bucket name"
+    Value: !Ref ImportBucket

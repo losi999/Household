@@ -34,7 +34,6 @@ describe('Bulk transaction importer service', () => {
       mockTransactionService.service);
   });
 
-  const bucketName = 'file-importer-bucket';
   const fileId = createFileId();
   const queriedFileDocument = createFileDocument();
   const fileContent = new Uint8Array();
@@ -61,11 +60,10 @@ describe('Bulk transaction importer service', () => {
       mockFileService.functions.updateFile.mockResolvedValue(undefined);
 
       await service({
-        bucketName,
         fileId,
       });
       validateFunctionCall(mockFileService.functions.getFileById, fileId);
-      validateFunctionCall(mockStorageService.functions.readFile, bucketName, fileId);
+      validateFunctionCall(mockStorageService.functions.readFile, fileId);
       validateFunctionCall(mockExcelParser.functions.parse, {
         fileContent,
         fileType: queriedFileDocument.fileType,
@@ -92,7 +90,6 @@ describe('Bulk transaction importer service', () => {
       mockFileService.functions.getFileById.mockRejectedValue('this is a mongo error');
 
       await service({
-        bucketName,
         fileId,
       }).catch(validateError('Error while getting file document', 500));
       validateFunctionCall(mockFileService.functions.getFileById, fileId);
@@ -110,11 +107,10 @@ describe('Bulk transaction importer service', () => {
       mockStorageService.functions.readFile.mockRejectedValue('this is an s3 error');
 
       await service({
-        bucketName,
         fileId,
       }).catch(validateError('Error while reading file', 500));
       validateFunctionCall(mockFileService.functions.getFileById, fileId);
-      validateFunctionCall(mockStorageService.functions.readFile, bucketName, fileId);
+      validateFunctionCall(mockStorageService.functions.readFile, fileId);
       validateFunctionCall(mockExcelParser.functions.parse);
       validateFunctionCall(mockDraftTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransactions);
@@ -137,11 +133,10 @@ describe('Bulk transaction importer service', () => {
       mockTransactionService.functions.saveTransactions.mockRejectedValue('this is a mongo error');
 
       await service({
-        bucketName,
         fileId,
       }).catch(validateError('Error while saving transactions', 500));
       validateFunctionCall(mockFileService.functions.getFileById, fileId);
-      validateFunctionCall(mockStorageService.functions.readFile, bucketName, fileId);
+      validateFunctionCall(mockStorageService.functions.readFile, fileId);
       validateFunctionCall(mockExcelParser.functions.parse, {
         fileContent,
         fileType: queriedFileDocument.fileType,
@@ -177,11 +172,10 @@ describe('Bulk transaction importer service', () => {
       mockFileService.functions.updateFile.mockRejectedValue('this is a mongo error');
 
       await service({
-        bucketName,
         fileId,
       }).catch(validateError('Error while updating file document', 500));
       validateFunctionCall(mockFileService.functions.getFileById, fileId);
-      validateFunctionCall(mockStorageService.functions.readFile, bucketName, fileId);
+      validateFunctionCall(mockStorageService.functions.readFile, fileId);
       validateFunctionCall(mockExcelParser.functions.parse, {
         fileContent,
         fileType: queriedFileDocument.fileType,

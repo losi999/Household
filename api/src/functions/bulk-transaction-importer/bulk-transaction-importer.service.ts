@@ -10,19 +10,17 @@ import { FileProcessingStatus } from '@household/shared/enums';
 
 export interface IBulkTransactionImporterService {
   (ctx: {
-    bucketName: string;
     fileId: File.Id;
   }): Promise<void>;
 }
 
 export const bulkTransactionImporterServiceFactory = (fileService: IFileService, fileDocumentConverter: IFileDocumentConverter, storageService: IStorageService, excelParser: IExcelParserService, draftTransactionDocumentConverter: IDraftTransactionDocumentConverter, transactionService: ITransactionService): IBulkTransactionImporterService =>
-  async ({ bucketName, fileId }) => {
+  async ({ fileId }) => {
     const document = await fileService.getFileById(fileId).catch(httpErrors.file.getById({
       fileId,
     }));
 
-    const file = await storageService.readFile(bucketName, fileId).catch(httpErrors.file.readFile({
-      bucketName,
+    const file = await storageService.readFile(fileId).catch(httpErrors.file.readFile({
       fileId,
     }));
 

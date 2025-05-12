@@ -467,7 +467,6 @@ export const httpErrors = {
       throw httpError(statusCode, 'Error while deleting file');
     },
     readFile: (ctx: {
-      bucketName: string;
       fileId: string;
     }, statusCode = 500): CatchAndThrow => (error) => {
       log('Read file', ctx, error);

@@ -1,4 +1,4 @@
-import { File, Transaction } from '@household/shared/types/types';
+import { File, Import, Transaction } from '@household/shared/types/types';
 import { read as Read, utils as Utils, WorkBook } from 'xlsx';
 import { default as Moment } from 'moment-timezone';
 
@@ -30,7 +30,7 @@ export const excelParserServiceFactory = (read: typeof Read, utils: typeof Utils
   };
 
   const parseRevolutExcel = (workbook: WorkBook): (Transaction.IssuedAt<Date> & Transaction.Amount & Transaction.Description)[] => {
-    const parsed = utils.sheet_to_json<any>(workbook.Sheets.Sheet1);
+    const parsed = utils.sheet_to_json<Import.Revolut>(workbook.Sheets.Sheet1);
 
     return parsed.map((p => {
       return {

@@ -37,11 +37,11 @@ export const databaseArchiveServiceFactory = (
     const folderName = new Date().toISOString();
 
     await Promise.all([
-      storageService.writeFile(process.env.DATABASE_ARCHIVE_BUCKET, 'accounts.json', accounts, folderName),
-      storageService.writeFile(process.env.DATABASE_ARCHIVE_BUCKET, 'projects.json', projects, folderName),
-      storageService.writeFile(process.env.DATABASE_ARCHIVE_BUCKET, 'categories.json', categories, folderName),
-      storageService.writeFile(process.env.DATABASE_ARCHIVE_BUCKET, 'recipients.json', recipients, folderName),
-      storageService.writeFile(process.env.DATABASE_ARCHIVE_BUCKET, 'transactions.json', transactions, folderName),
-      storageService.writeFile(process.env.DATABASE_ARCHIVE_BUCKET, 'products.json', products, folderName),
+      storageService.writeFile('accounts.json', JSON.stringify(accounts), folderName),
+      storageService.writeFile('projects.json', JSON.stringify(projects), folderName),
+      storageService.writeFile('categories.json', JSON.stringify(categories), folderName),
+      storageService.writeFile('recipients.json', JSON.stringify(recipients), folderName),
+      storageService.writeFile('transactions.json', JSON.stringify(transactions), folderName),
+      storageService.writeFile('products.json', JSON.stringify(products), folderName),
     ]);
   };

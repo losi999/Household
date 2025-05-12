@@ -451,3 +451,5 @@ Outputs:
     Value: !GetAtt Infrastructure.Outputs.RumIdentityPoolId
   CognitoUserPoolId:
     Value: !GetAtt Data.Outputs.UserPoolId
+  ImportBucket:
+    Value: !GetAtt File.Outputs.ImportBucket

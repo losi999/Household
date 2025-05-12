@@ -9,9 +9,7 @@ export interface ICreateUploadUrlService {
   (ctx: {
     body: File.Request,
     expiresIn: number;
-  }): Promise<{
-    url: string;
-  } & File.FileId>;
+  }): Promise<File.Url & File.FileId>;
 }
 
 export const createUploadUrlServiceFactory = (fileService: IFileService, fileDocumentConverter: IFileDocumentConverter, storageService: IStorageService): ICreateUploadUrlService =>

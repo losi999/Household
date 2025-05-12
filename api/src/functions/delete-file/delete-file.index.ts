@@ -5,9 +5,9 @@ import { apiRequestValidator } from '@household/api/dependencies/handlers/api-re
 import { default as pathParameters } from '@household/shared/schemas/file-id';
 import { fileService } from '@household/shared/dependencies/services/file-service';
 import { default as index } from '@household/api/handlers/index.handler';
-import { storageService } from '@household/shared/dependencies/services/storage-service';
+import { importStorageService } from '@household/shared/dependencies/services/storage-service';
 
-const deleteFileService = deleteFileServiceFactory(fileService, storageService);
+const deleteFileService = deleteFileServiceFactory(fileService, importStorageService);
 
 export default index({
   handler: handler(deleteFileService),

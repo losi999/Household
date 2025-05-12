@@ -7,7 +7,11 @@ import { recipientServiceFactory } from '@household/shared/services/recipient-se
 import { settingServiceFactory } from '@household/shared/services/setting-service';
 import { transactionServiceFactory } from '@household/shared/services/transaction-service';
 import { identityServiceFactory } from '@household/shared/services/identity-service';
+import { storageServiceFactory } from '@household/shared/services/storage-service';
 import { cognito } from '@household/shared/dependencies/aws/cognito';
+import { fileServiceFactory } from '@household/shared/services/file-service';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { s3, s3Client } from '@household/shared/dependencies/aws/s3';
 
 const mongoDbService = mongodbServiceFactory(process.env.MONGODB_CONNECTION_STRING.replace('{{ENV}}', process.env.ENV));
 
@@ -18,4 +22,6 @@ export const categoryService = categoryServiceFactory(mongoDbService);
 export const transactionService = transactionServiceFactory(mongoDbService);
 export const productService = productServiceFactory(mongoDbService);
 export const settingService = settingServiceFactory(mongoDbService);
+export const fileService = fileServiceFactory(mongoDbService);
 export const identityService = identityServiceFactory(process.env.USER_POOL_ID, '', cognito);
+export const storageService = storageServiceFactory(s3, s3Client, getSignedUrl)(process.env.IMPORT_BUCKET);

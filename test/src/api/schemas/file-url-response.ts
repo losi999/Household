@@ -1,22 +1,19 @@
-import { FileType } from '@household/shared/enums';
 import { StrictJSONSchema7 } from '@household/shared/types/common';
 import { File } from '@household/shared/types/types';
+import { default as fileId } from '@household/shared/schemas/file-id';
 
-const schema: StrictJSONSchema7<File.Request> = {
+const schema: StrictJSONSchema7<File.Url & File.FileId> = {
   type: 'object',
   additionalProperties: false,
   required: [
-    'fileType',
-    'timezone',
+    ...fileId.required,
+    'url',
   ],
   properties: {
-    fileType: {
+    ...fileId.properties,
+    url: {
       type: 'string',
-      enum: Object.values(FileType),
-    },
-    timezone: {
-      type: 'string',
-      minLength: 1,
+      format: 'url',
     },
   },
 };

@@ -1,25 +1,21 @@
 import { default as handler } from '@household/api/functions/bulk-transaction-importer/bulk-transaction-importer.handler';
 import { IBulkTransactionImporterService } from '@household/api/functions/bulk-transaction-importer/bulk-transaction-importer.service';
-import { MockBusinessService, validateError } from '@household/shared/common/unit-testing';
+import { createFileId } from '@household/shared/common/test-data-factory';
+import { MockBusinessService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 
 describe('Bulk transaction importer handler', () => {
   let handlerFuntion: ReturnType<typeof handler>;
   let mockBulkTransactionImporterService: MockBusinessService<IBulkTransactionImporterService>;
 
-  const bucketName = 'bucket-name';
-  const fileId = 'file.xls';
+  const fileId = createFileId();
 
   const handlerEvent = {
     Records: [
       {
         s3: {
-          bucket: {
-            name: bucketName,
-          },
           object: {
-            key: fileId,
+            key: fileId as string,
           },
-
         },
       },
     ],
@@ -36,8 +32,7 @@ describe('Bulk transaction importer handler', () => {
 
     const result = await handlerFuntion(handlerEvent, undefined, undefined);
     expect(result).toBeUndefined();
-    expect(mockBulkTransactionImporterService).toHaveBeenCalledWith({
-      bucketName,
+    validateFunctionCall(mockBulkTransactionImporterService, {
       fileId,
     });
     expect.assertions(2);
@@ -50,8 +45,7 @@ describe('Bulk transaction importer handler', () => {
     });
 
     await (handlerFuntion(handlerEvent, undefined, undefined) as Promise<any>).catch(validateError(errorMessage));
-    expect(mockBulkTransactionImporterService).toHaveBeenCalledWith({
-      bucketName,
+    validateFunctionCall(mockBulkTransactionImporterService, {
       fileId,
     });
     expect.assertions(2);

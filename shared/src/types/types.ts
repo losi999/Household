@@ -728,6 +728,19 @@ export namespace File {
   };
 }
 
+export namespace Import {
+  export type Revolut = {
+    Amount: number;
+    Fee: number;
+    Type: string;
+    Description: string;
+    Currency: string;
+    'Started Date': Date;
+  };
+
+  export type Row = Revolut;
+}
+
 export namespace Common {
   export type Pagination<P extends string | number> = {
     pageSize: P;
