@@ -22,8 +22,11 @@ Parameters:
 
 Conditions:
   ShouldUseLayers: !Not [!Equals [!Ref DependenciesLayer, "DependenciesLayer"]]
-  ShouldCreateTestUsers: !Not [!Equals [!Ref TestUserPassword, ""]]
   IsProd: !Equals [!Ref Env, "PROD"]
+  HasTestUserPassword: !Not [!Equals [!Ref TestUserPassword, ""]]
+  ShouldCreateTestUsers: !And
+    - !Condition HasTestUserPassword
+    - !Not [!Condition IsProd]
 
 Globals:
   Function:

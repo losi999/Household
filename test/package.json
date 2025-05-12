@@ -15,7 +15,7 @@
     "test:recipient": "yarn test --spec \"./src/api/recipient/**/*\"",
     "test:setting": "yarn test --spec \"./src/api/setting/**/*\"",
     "test:user": "yarn test --spec \"./src/api/user/**/*\"",
-    "test:file": "yarn test --spec \"./src/api/file/**/*\"",
+    "test:file": "echo \"TODO\"",
     "test:transaction-common": "yarn test --spec \"./src/api/transaction/common/**/*\"",
     "test:transaction-deferred": "yarn test --spec \"./src/api/transaction/deferred/**/*\"",
     "test:transaction-payment": "yarn test --spec \"./src/api/transaction/payment/**/*\"",

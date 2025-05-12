@@ -449,3 +449,5 @@ Outputs:
     Value: !GetAtt Infrastructure.Outputs.RumAppMonitorId
   RumIdentityPoolId:
     Value: !GetAtt Infrastructure.Outputs.RumIdentityPoolId
+  CognitoUserPoolId:
+    Value: !GetAtt Data.Outputs.UserPoolId

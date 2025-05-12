@@ -39,15 +39,15 @@ const fixDate = (doc: Transaction.Document<string>): Transaction.Document => {
 };
 
 const saveTransactionDocument = (...params: Parameters<ITransactionService['saveTransaction']>) => {
-  return cy.task<Transaction.Document<string>>('saveTransaction', ...params).then((doc) => fixDate(doc));
+  return cy.task<Transaction.Document<string>>('saveTransaction', params).then((doc) => fixDate(doc));
 };
 
 const saveTransactionDocuments = (...params: Parameters<ITransactionService['saveTransactions']>) => {
-  return cy.task<Transaction.Document<string>[]>('saveTransactions', ...params).then((docs) => docs.map(d => fixDate(d)));
+  return cy.task<Transaction.Document<string>[]>('saveTransactions', params).then((docs) => docs.map(d => fixDate(d)));
 };
 
 const getTransactionDocumentById = (...params: Parameters<ITransactionService['getTransactionById']>) => {
-  return cy.task<Transaction.Document<string>>('getTransactionById', ...params).then((doc) => fixDate(doc));
+  return cy.task<Transaction.Document<string>>('getTransactionById', params).then((doc) => fixDate(doc));
 };
 
 export const setTransactionTaskCommands = () => {

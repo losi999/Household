@@ -34,7 +34,7 @@ describe('POST user/v1/users/{email}/confirm', () => {
       describe('if email', () => {
         it('is not email', () => {
           cy.authenticate(1)
-            .requestConfirmUser(pendingUser.email, request)
+            .requestConfirmUser('not-email', request)
             .expectBadRequestResponse()
             .expectWrongPropertyFormat('email', 'email', 'pathParameters');
         });
