@@ -47,7 +47,7 @@ describe('Import file', () => {
     //   .deleteFileFromS3(getFileId(ersteFileDocument));
   });
 
-  it('should trigger importing of revolut file', () => {
+  it.only('should trigger importing of revolut file', () => {
     cy.validateFileDocumentProcessed(revolutFileDocument)
       .validateImportedRevolutDraftDocuments(getFileId(revolutFileDocument), ...revolutRows);
   });

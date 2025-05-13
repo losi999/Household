@@ -6,6 +6,7 @@ import { utils, WorkSheet, write } from 'xlsx';
 import { fileDocumentConverter } from '@household/shared/dependencies/converters/file-document-converter';
 import { createId } from '@household/test/api/utils';
 import { default as moment } from 'moment-timezone';
+import { addSeconds } from '@household/shared/common/utils';
 
 type File<R> = {
   rows: R[];
@@ -33,10 +34,15 @@ export const fileDataFactory = (() => {
   };
 
   const createRevolutRow: DataFactoryFunction<Import.Revolut> = (row) => {
-    console.log(new Date().toISOString());
-    console.log(new Date().toString());
+
+    const diff = moment().tz('Europe/Budapest')
+      .utcOffset() - moment().utcOffset();
+    console.log(diff);
+    const targetDate = addSeconds(diff * 60);
+    console.log('target', targetDate);
+
     return {
-      'Started Date': moment.tz('Europe/Budapest').toDate(),
+      'Started Date': targetDate,
       Amount: faker.number.float(),
       Currency: faker.finance.currencyCode(),
       Description: faker.word.words({
