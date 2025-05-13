@@ -4,7 +4,7 @@ import { FILE_UPLOAD_LINK_EXPIRATION } from '@household/shared/constants';
 import { Upload } from '@aws-sdk/lib-storage';
 
 export interface IStorageService {
-  getSignedUrlForUpload(fileName: string): Promise<string>;
+  getSignedUrlForUpload(fileName: string, isTestFile: boolean): Promise<string>;
   writeFile(fileName: string, data: any, folder: string, contentType?: string): Promise<unknown>;
   checkFile(fileName: string): Promise<unknown>;
   readFile(fileName: string): Promise<Uint8Array>;
@@ -18,6 +18,7 @@ export const storageServiceFactory = (s3: S3, s3Client: S3Client, s3RequestPresi
       return new upload({
         client: s3Client,
         params: {
+          Tagging: 'Test=true',
           Bucket: bucketName,
           Key: fileName,
           Body: Buffer.from(data),
@@ -25,11 +26,12 @@ export const storageServiceFactory = (s3: S3, s3Client: S3Client, s3RequestPresi
         },
       }).done();
     },
-    getSignedUrlForUpload: async (fileName) => {
+    getSignedUrlForUpload: async (fileName, isTestFile) => {
 
       return s3RequestPresigner(s3Client, new PutObjectCommand({
         Bucket: bucketName,
         Key: fileName,
+        Tagging: isTestFile ? 'Test=true' : undefined,
       }), {
         expiresIn: FILE_UPLOAD_LINK_EXPIRATION,
       });

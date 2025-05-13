@@ -4,17 +4,9 @@ import { default as schema } from '@household/test/api/schemas/file-url-response
 
 describe('POST /file/v1/files', () => {
   let request: File.Request;
-  let fileId: File.Id;
 
   beforeEach(() => {
-    fileId = undefined;
     request = fileDataFactory.request();
-  });
-
-  afterEach(() => {
-    if (fileId) {
-      cy.wait(3000).deleteFileFromS3(fileId);
-    }
   });
 
   describe('called as anonymous', () => {
@@ -34,10 +26,7 @@ describe('POST /file/v1/files', () => {
           .expectValidResponseSchema(schema)
           .validateFileDocument(request)
           .requestUploadFile()
-          .validateFileInS3()
-          .then((body) => {
-            fileId = body.fileId;
-          });
+          .validateFileInS3();
       });
     });
 

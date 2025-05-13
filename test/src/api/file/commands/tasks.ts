@@ -23,16 +23,11 @@ const chechFileInS3 = (...params: Parameters<IStorageService['checkFile']>) => {
   return cy.task<unknown>('checkFile', params, {});
 };
 
-const deleteFileFromS3 = (...params: Parameters<IStorageService['deleteFile']>) => {
-  return cy.task<unknown>('deleteFile', params);
-};
-
 export const setFileTaskCommands = () => {
   Cypress.Commands.addAll({
     getFileDocumentById,
     saveFileDocument,
     chechFileInS3,
-    deleteFileFromS3,
     writeFileToS3,
     uploadFileToS3,
   });
@@ -44,7 +39,6 @@ declare global {
       getFileDocumentById: CommandFunction<typeof getFileDocumentById>;
       saveFileDocument: CommandFunction<typeof saveFileDocument>;
       chechFileInS3: CommandFunction<typeof chechFileInS3>;
-      deleteFileFromS3: CommandFunction<typeof deleteFileFromS3>;
       writeFileToS3: CommandFunction<typeof writeFileToS3>;
       uploadFileToS3: CommandFunction<typeof uploadFileToS3>;
     }
