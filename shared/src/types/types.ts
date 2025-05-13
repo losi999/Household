@@ -738,7 +738,22 @@ export namespace Import {
     'Started Date': Date;
   };
 
-  export type Row = Revolut;
+  export type Otp = {
+    'Összeg': number;
+    'Forgalom típusa': string;
+    'Ellenoldali név': string;
+    'Közlemény': string;
+    'Tranzakció időpontja': Date;
+  };
+
+  export type Erste = {
+    'Tranzakció dátuma és ideje': string;
+    'Dátum': Date;
+    'Összeg': number;
+    'Partner név': string;
+    'Közlemény': string;
+    'Kategória': string;
+  };
 }
 
 export namespace Common {

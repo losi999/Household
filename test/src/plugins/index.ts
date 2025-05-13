@@ -27,9 +27,9 @@ export default (on: Cypress.PluginEvents) => {
   setTasksFromService(on, recipientService, 'getRecipientById', 'saveRecipient', 'saveRecipients');
   setTasksFromService(on, accountService, 'getAccountById', 'saveAccount', 'saveAccounts');
   setTasksFromService(on, categoryService, 'getCategoryById', 'saveCategory', 'saveCategories');
-  setTasksFromService(on, transactionService, 'getTransactionByIdAndAccountId', 'saveTransaction', 'getTransactionById', 'saveTransactions');
+  setTasksFromService(on, transactionService, 'getTransactionByIdAndAccountId', 'saveTransaction', 'getTransactionById', 'saveTransactions', 'listDraftTransactionsByFileId');
   setTasksFromService(on, settingService, 'updateSetting', 'getSettingByKey');
   setTasksFromService(on, fileService, 'getFileById', 'saveFile');
   setTasksFromService(on, identityService, 'deleteUser', 'getUser', 'createUser');
-  setTasksFromService(on, storageService, 'checkFile', 'deleteFile', 'writeFile', 'writeFile');
+  setTasksFromService(on, storageService, 'checkFile', 'deleteFile', 'writeFile', 'writeFile', 'uploadFile');
 };

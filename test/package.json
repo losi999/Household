@@ -22,6 +22,7 @@
     "test:transaction-split": "yarn test --spec \"./src/api/transaction/split/**/*\"",
     "test:transaction-reimbursement": "yarn test --spec \"./src/api/transaction/reimbursement/**/*\"",
     "test:transaction-transfer": "yarn test --spec \"./src/api/transaction/transfer/**/*\"",
+    "test:transaction-draft": "yarn test --spec \"./src/api/transaction/draft/**/*\"",
     "test:LOCAL": "export ENV=LOCAL && yarn cypress-env && yarn test",
     "test:account:LOCAL": "export ENV=LOCAL && yarn cypress-env && yarn test:account",
     "test:category:LOCAL": "export ENV=LOCAL && yarn cypress-env && yarn test:category",

@@ -63,12 +63,12 @@ describe('Database archive service', () => {
     expect(mockRecipientService.functions.dumpRecipients).toHaveBeenCalled();
     expect(mockTransactionService.functions.dumpTransactions).toHaveBeenCalled();
     expect(mockProductService.functions.dumpProducts).toHaveBeenCalled();
-    validateNthFunctionCall(mockStorageService.functions.writeFile, 1, 'accounts.json', accounts, now.toISOString());
-    validateNthFunctionCall(mockStorageService.functions.writeFile, 2, 'projects.json', projects, now.toISOString());
-    validateNthFunctionCall(mockStorageService.functions.writeFile, 3, 'categories.json', categories, now.toISOString());
-    validateNthFunctionCall(mockStorageService.functions.writeFile, 4, 'recipients.json', recipients, now.toISOString());
-    validateNthFunctionCall(mockStorageService.functions.writeFile, 5, 'transactions.json', transactions, now.toISOString());
-    validateNthFunctionCall(mockStorageService.functions.writeFile, 6, 'products.json', products, now.toISOString());
+    validateNthFunctionCall(mockStorageService.functions.writeFile, 1, 'accounts.json', JSON.stringify(accounts), now.toISOString());
+    validateNthFunctionCall(mockStorageService.functions.writeFile, 2, 'projects.json', JSON.stringify(projects), now.toISOString());
+    validateNthFunctionCall(mockStorageService.functions.writeFile, 3, 'categories.json', JSON.stringify(categories), now.toISOString());
+    validateNthFunctionCall(mockStorageService.functions.writeFile, 4, 'recipients.json', JSON.stringify(recipients), now.toISOString());
+    validateNthFunctionCall(mockStorageService.functions.writeFile, 5, 'transactions.json', JSON.stringify(transactions), now.toISOString());
+    validateNthFunctionCall(mockStorageService.functions.writeFile, 6, 'products.json', JSON.stringify(products), now.toISOString());
     expect.assertions(12);
   });
 
@@ -222,12 +222,12 @@ describe('Database archive service', () => {
       expect(mockRecipientService.functions.dumpRecipients).toHaveBeenCalled();
       expect(mockTransactionService.functions.dumpTransactions).toHaveBeenCalled();
       expect(mockProductService.functions.dumpProducts).toHaveBeenCalled();
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 1, 'accounts.json', accounts, now.toISOString());
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 2, 'projects.json', projects, now.toISOString());
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 3, 'categories.json', categories, now.toISOString());
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 4, 'recipients.json', recipients, now.toISOString());
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 5, 'transactions.json', transactions, now.toISOString());
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 6, 'products.json', products, now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 1, 'accounts.json', JSON.stringify(accounts), now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 2, 'projects.json', JSON.stringify(projects), now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 3, 'categories.json', JSON.stringify(categories), now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 4, 'recipients.json', JSON.stringify(recipients), now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 5, 'transactions.json', JSON.stringify(transactions), now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 6, 'products.json', JSON.stringify(products), now.toISOString());
       expect.assertions(13);
     });
 
@@ -254,12 +254,12 @@ describe('Database archive service', () => {
       expect(mockRecipientService.functions.dumpRecipients).toHaveBeenCalled();
       expect(mockTransactionService.functions.dumpTransactions).toHaveBeenCalled();
       expect(mockProductService.functions.dumpProducts).toHaveBeenCalled();
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 1, 'accounts.json', accounts, now.toISOString());
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 2, 'projects.json', projects, now.toISOString());
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 3, 'categories.json', categories, now.toISOString());
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 4, 'recipients.json', recipients, now.toISOString());
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 5, 'transactions.json', transactions, now.toISOString());
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 6, 'products.json', products, now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 1, 'accounts.json', JSON.stringify(accounts), now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 2, 'projects.json', JSON.stringify(projects), now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 3, 'categories.json', JSON.stringify(categories), now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 4, 'recipients.json', JSON.stringify(recipients), now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 5, 'transactions.json', JSON.stringify(transactions), now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 6, 'products.json', JSON.stringify(products), now.toISOString());
       expect.assertions(13);
     });
 
@@ -286,12 +286,12 @@ describe('Database archive service', () => {
       expect(mockRecipientService.functions.dumpRecipients).toHaveBeenCalled();
       expect(mockTransactionService.functions.dumpTransactions).toHaveBeenCalled();
       expect(mockProductService.functions.dumpProducts).toHaveBeenCalled();
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 1, 'accounts.json', accounts, now.toISOString());
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 2, 'projects.json', projects, now.toISOString());
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 3, 'categories.json', categories, now.toISOString());
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 4, 'recipients.json', recipients, now.toISOString());
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 5, 'transactions.json', transactions, now.toISOString());
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 6, 'products.json', products, now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 1, 'accounts.json', JSON.stringify(accounts), now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 2, 'projects.json', JSON.stringify(projects), now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 3, 'categories.json', JSON.stringify(categories), now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 4, 'recipients.json', JSON.stringify(recipients), now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 5, 'transactions.json', JSON.stringify(transactions), now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 6, 'products.json', JSON.stringify(products), now.toISOString());
       expect.assertions(13);
     });
 
@@ -318,12 +318,12 @@ describe('Database archive service', () => {
       expect(mockRecipientService.functions.dumpRecipients).toHaveBeenCalled();
       expect(mockTransactionService.functions.dumpTransactions).toHaveBeenCalled();
       expect(mockProductService.functions.dumpProducts).toHaveBeenCalled();
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 1, 'accounts.json', accounts, now.toISOString());
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 2, 'projects.json', projects, now.toISOString());
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 3, 'categories.json', categories, now.toISOString());
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 4, 'recipients.json', recipients, now.toISOString());
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 5, 'transactions.json', transactions, now.toISOString());
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 6, 'products.json', products, now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 1, 'accounts.json', JSON.stringify(accounts), now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 2, 'projects.json', JSON.stringify(projects), now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 3, 'categories.json', JSON.stringify(categories), now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 4, 'recipients.json', JSON.stringify(recipients), now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 5, 'transactions.json', JSON.stringify(transactions), now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 6, 'products.json', JSON.stringify(products), now.toISOString());
       expect.assertions(13);
     });
 
@@ -350,12 +350,12 @@ describe('Database archive service', () => {
       expect(mockRecipientService.functions.dumpRecipients).toHaveBeenCalled();
       expect(mockTransactionService.functions.dumpTransactions).toHaveBeenCalled();
       expect(mockProductService.functions.dumpProducts).toHaveBeenCalled();
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 1, 'accounts.json', accounts, now.toISOString());
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 2, 'projects.json', projects, now.toISOString());
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 3, 'categories.json', categories, now.toISOString());
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 4, 'recipients.json', recipients, now.toISOString());
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 5, 'transactions.json', transactions, now.toISOString());
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 6, 'products.json', products, now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 1, 'accounts.json', JSON.stringify(accounts), now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 2, 'projects.json', JSON.stringify(projects), now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 3, 'categories.json', JSON.stringify(categories), now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 4, 'recipients.json', JSON.stringify(recipients), now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 5, 'transactions.json', JSON.stringify(transactions), now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 6, 'products.json', JSON.stringify(products), now.toISOString());
       expect.assertions(13);
     });
 
@@ -382,12 +382,12 @@ describe('Database archive service', () => {
       expect(mockRecipientService.functions.dumpRecipients).toHaveBeenCalled();
       expect(mockTransactionService.functions.dumpTransactions).toHaveBeenCalled();
       expect(mockProductService.functions.dumpProducts).toHaveBeenCalled();
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 1, 'accounts.json', accounts, now.toISOString());
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 2, 'projects.json', projects, now.toISOString());
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 3, 'categories.json', categories, now.toISOString());
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 4, 'recipients.json', recipients, now.toISOString());
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 5, 'transactions.json', transactions, now.toISOString());
-      validateNthFunctionCall(mockStorageService.functions.writeFile, 6, 'products.json', products, now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 1, 'accounts.json', JSON.stringify(accounts), now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 2, 'projects.json', JSON.stringify(projects), now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 3, 'categories.json', JSON.stringify(categories), now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 4, 'recipients.json', JSON.stringify(recipients), now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 5, 'transactions.json', JSON.stringify(transactions), now.toISOString());
+      validateNthFunctionCall(mockStorageService.functions.writeFile, 6, 'products.json', JSON.stringify(products), now.toISOString());
       expect.assertions(13);
     });
   });

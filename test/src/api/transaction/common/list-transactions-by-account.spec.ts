@@ -384,6 +384,15 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
     });
 
     describe('should return error', () => {
+      describe('if accountId', () => {
+        it('is not mongo id', () => {
+          cy.authenticate(1)
+            .requestGetTransactionListByAccount(createAccountId('not-mongo-id'))
+            .expectBadRequestResponse()
+            .expectWrongPropertyPattern('accountId', 'pathParameters');
+        });
+      });
+
       describe('if querystring', () => {
         it('has additional parameter', () => {
           cy.authenticate(1)

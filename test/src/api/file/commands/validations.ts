@@ -22,6 +22,22 @@ const validateFileDocument = (body: File.FileId, request: File.Request) => {
     }) as Cypress.ChainableResponseBody;
 };
 
+const validateFileDocumentProcessed = (originalDocument: File.Document) => {
+  const fileId = getFileId(originalDocument);
+
+  cy.log('Get file document', fileId)
+    .getFileDocumentById(fileId)
+    .should((document) => {
+      const { fileType, timezone, draftCount, processingStatus, ...internal } = document;
+
+      expect(fileType, 'fileType').to.equal(originalDocument.fileType);
+      expect(timezone, 'timezone').to.equal(originalDocument.timezone);
+      expect(draftCount, 'draftCount').to.be.undefined;
+      expect(processingStatus, 'processingStatus').to.equal(FileProcessingStatus.Completed);
+      expectRemainingProperties(internal);
+    });
+};
+
 const validateFileInS3 = ({ fileId }: File.FileId) => {
   return cy.log('Reading file from S3', fileId)
     .chechFileInS3(fileId)
@@ -97,6 +113,7 @@ export const setFileValidationCommands = () => {
     validateFileDeleted,
     validateNestedFileResponse,
     validateFileDeletedFromS3,
+    validateFileDocumentProcessed,
   });
 };
 
@@ -106,6 +123,7 @@ declare global {
       validateFileDeleted: CommandFunction<typeof validateFileDeleted>;
       validateNestedFileResponse: CommandFunction<typeof validateNestedFileResponse>;
       validateFileDeletedFromS3: CommandFunction<typeof validateFileDeletedFromS3>;
+      validateFileDocumentProcessed: CommandFunction<typeof validateFileDocumentProcessed>;
     }
 
     interface ChainableResponseBody extends Chainable {

@@ -36,4 +36,15 @@ describe('DELETE /file/v1/files/{fileId}', () => {
 
     });
   });
+
+  describe('should return error', () => {
+    describe('if fileId', () => {
+      it('is not mongo id', () => {
+        cy.authenticate(1)
+          .requestDeleteFile(fileDataFactory.id('not-valid'))
+          .expectBadRequestResponse()
+          .expectWrongPropertyPattern('fileId', 'pathParameters');
+      });
+    });
+  });
 });

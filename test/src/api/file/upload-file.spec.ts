@@ -2,7 +2,7 @@ import { File } from '@household/shared/types/types';
 import { fileDataFactory } from './data-factory';
 import { default as schema } from '@household/test/api/schemas/file-url-response';
 
-describe('POST /file/v1/files/{fileKey}', () => {
+describe('POST /file/v1/files', () => {
   let request: File.Request;
   let fileId: File.Id;
 

@@ -273,6 +273,11 @@ workflows:
           requires:
             - api_test_setup
       - test:
+          name: test_transaction_draft
+          testCommand: "transaction-draft"
+          requires:
+            - api_test_setup
+      - test:
           name: test_setting
           testCommand: "setting"
           requires:

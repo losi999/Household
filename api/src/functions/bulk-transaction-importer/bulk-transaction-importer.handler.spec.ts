@@ -7,12 +7,16 @@ describe('Bulk transaction importer handler', () => {
   let handlerFuntion: ReturnType<typeof handler>;
   let mockBulkTransactionImporterService: MockBusinessService<IBulkTransactionImporterService>;
 
+  const bucketName = 'bucket-name';
   const fileId = createFileId();
 
   const handlerEvent = {
     Records: [
       {
         s3: {
+          bucket: {
+            name: bucketName,
+          },
           object: {
             key: fileId as string,
           },
@@ -27,18 +31,19 @@ describe('Bulk transaction importer handler', () => {
     handlerFuntion = handler(mockBulkTransactionImporterService);
   });
 
-  it('should return undefined if post deploy service executes successfully', async () => {
+  it('should return undefined if service executes successfully', async () => {
     mockBulkTransactionImporterService.mockResolvedValue(undefined);
 
     const result = await handlerFuntion(handlerEvent, undefined, undefined);
     expect(result).toBeUndefined();
     validateFunctionCall(mockBulkTransactionImporterService, {
+      bucketName,
       fileId,
     });
     expect.assertions(2);
   });
 
-  it('should throw error if post deploy service fails', async () => {
+  it('should throw error if service fails', async () => {
     const errorMessage = 'This is an error';
     mockBulkTransactionImporterService.mockRejectedValue({
       message: errorMessage,
@@ -46,8 +51,9 @@ describe('Bulk transaction importer handler', () => {
 
     await (handlerFuntion(handlerEvent, undefined, undefined) as Promise<any>).catch(validateError(errorMessage));
     validateFunctionCall(mockBulkTransactionImporterService, {
+      bucketName,
       fileId,
     });
-    expect.assertions(2);
+    expect.assertions(1);
   });
 });

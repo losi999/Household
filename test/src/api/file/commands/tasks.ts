@@ -11,6 +11,10 @@ const saveFileDocument = (...params: Parameters<IFileService['saveFile']>) => {
   return cy.task<File.Document>('saveFile', params);
 };
 
+const uploadFileToS3 = (...params: Parameters<IStorageService['uploadFile']>) => {
+  return cy.task<unknown>('uploadFile', params);
+};
+
 const writeFileToS3 = (...params: Parameters<IStorageService['writeFile']>) => {
   return cy.task<unknown>('writeFile', params);
 };
@@ -30,6 +34,7 @@ export const setFileTaskCommands = () => {
     chechFileInS3,
     deleteFileFromS3,
     writeFileToS3,
+    uploadFileToS3,
   });
 };
 
@@ -41,6 +46,7 @@ declare global {
       chechFileInS3: CommandFunction<typeof chechFileInS3>;
       deleteFileFromS3: CommandFunction<typeof deleteFileFromS3>;
       writeFileToS3: CommandFunction<typeof writeFileToS3>;
+      uploadFileToS3: CommandFunction<typeof uploadFileToS3>;
     }
   }
 }

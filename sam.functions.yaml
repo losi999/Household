@@ -42,7 +42,6 @@ Globals:
     Environment:
       Variables:
         MONGODB_CONNECTION_STRING: !Ref MongodbConnectionString
-        DATABASE_ARCHIVE_BUCKET: !Ref DatabaseArchiveBucket
 
 Resources:
   DatabaseArchive:
@@ -52,6 +51,9 @@ Resources:
       FunctionName: !Sub Household-${Env}-DatabaseArchive
       CodeUri: dist/api/database-archive
       Role: !Ref LambdaRoleArn
+      Environment:
+        Variables:
+          DATABASE_ARCHIVE_BUCKET: !Ref DatabaseArchiveBucket
       Events:
         Schedule:
           Type: Schedule

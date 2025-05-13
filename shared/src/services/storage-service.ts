@@ -1,6 +1,7 @@
 import { PutObjectCommand, type S3, type S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { FILE_UPLOAD_LINK_EXPIRATION } from '@household/shared/constants';
+import { Upload } from '@aws-sdk/lib-storage';
 
 export interface IStorageService {
   getSignedUrlForUpload(fileName: string): Promise<string>;
@@ -8,10 +9,22 @@ export interface IStorageService {
   checkFile(fileName: string): Promise<unknown>;
   readFile(fileName: string): Promise<Uint8Array>;
   deleteFile(fileName: string): Promise<unknown>;
+  uploadFile(fileName: string, content: any): Promise<unknown>;
 }
 
-export const storageServiceFactory = (s3: S3, s3Client: S3Client, s3RequestPresigner: typeof getSignedUrl) => (bucketName: string): IStorageService => {
+export const storageServiceFactory = (s3: S3, s3Client: S3Client, s3RequestPresigner: typeof getSignedUrl, upload: typeof Upload) => (bucketName: string): IStorageService => {
   const instance: IStorageService = {
+    uploadFile: (fileName, data) => {
+      return new upload({
+        client: s3Client,
+        params: {
+          Bucket: bucketName,
+          Key: fileName,
+          Body: Buffer.from(data),
+          ContentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        },
+      }).done();
+    },
     getSignedUrlForUpload: async (fileName) => {
 
       return s3RequestPresigner(s3Client, new PutObjectCommand({
