@@ -42,9 +42,9 @@ describe('Import file', () => {
   });
 
   after(() => {
-    cy.deleteFileFromS3(getFileId(revolutFileDocument))
-      .deleteFileFromS3(getFileId(otpFileDocument))
-      .deleteFileFromS3(getFileId(ersteFileDocument));
+    // cy.deleteFileFromS3(getFileId(revolutFileDocument))
+    //   .deleteFileFromS3(getFileId(otpFileDocument))
+    //   .deleteFileFromS3(getFileId(ersteFileDocument));
   });
 
   it('should trigger importing of revolut file', () => {

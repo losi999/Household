@@ -38,6 +38,7 @@
     "test:transaction-split:LOCAL": "export ENV=LOCAL && yarn cypress-env && yarn test:transaction-split",
     "test:transaction-reimbursement:LOCAL": "export ENV=LOCAL && yarn cypress-env && yarn test:transaction-reimbursement",
     "test:transaction-transfer:LOCAL": "export ENV=LOCAL && yarn cypress-env && yarn test:transaction-transfer",
+    "test:transaction-draft:LOCAL": "export ENV=LOCAL && yarn cypress-env && yarn test:transaction-draft",
     "verify": "cypress verify"
   },
   "devDependencies": {

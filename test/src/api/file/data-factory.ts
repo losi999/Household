@@ -5,6 +5,7 @@ import { faker } from '@faker-js/faker';
 import { utils, WorkSheet, write } from 'xlsx';
 import { fileDocumentConverter } from '@household/shared/dependencies/converters/file-document-converter';
 import { createId } from '@household/test/api/utils';
+import { default as moment } from 'moment-timezone';
 
 type File<R> = {
   rows: R[];
@@ -33,7 +34,7 @@ export const fileDataFactory = (() => {
 
   const createRevolutRow: DataFactoryFunction<Import.Revolut> = (row) => {
     return {
-      'Started Date': new Date(),
+      'Started Date': moment.tz('Europe/Budapest').toDate(),
       Amount: faker.number.float(),
       Currency: faker.finance.currencyCode(),
       Description: faker.word.words({
@@ -65,7 +66,7 @@ export const fileDataFactory = (() => {
   const createOtpRow: DataFactoryFunction<Import.Otp> = (row) => {
     return {
       Összeg: faker.number.float(),
-      'Tranzakció időpontja': new Date(),
+      'Tranzakció időpontja': moment.tz('Europe/Budapest').toDate(),
       'Ellenoldali név': faker.company.name(),
       Közlemény: faker.word.words({
         count: {
@@ -93,7 +94,7 @@ export const fileDataFactory = (() => {
     return {
       Összeg: faker.number.float(),
       'Tranzakció dátuma és ideje': undefined,
-      Dátum: new Date(),
+      Dátum: moment.tz('Europe/Budapest').toDate(),
       'Partner név': faker.company.name(),
       Közlemény: faker.word.words({
         count: {
