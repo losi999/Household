@@ -33,6 +33,8 @@ export const fileDataFactory = (() => {
   };
 
   const createRevolutRow: DataFactoryFunction<Import.Revolut> = (row) => {
+    console.log(new Date().toISOString());
+    console.log(new Date().toString());
     return {
       'Started Date': moment.tz('Europe/Budapest').toDate(),
       Amount: faker.number.float(),

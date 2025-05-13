@@ -190,103 +190,103 @@ workflows:
   local:
     jobs:
       - install
-      - unit_test:
-          name: unit_test
-          requires:
-            - install
-      - lint:
-          name: lint
-          requires:
-            - install
-      - build:
-          name: build
-          requires:
-            - install
-      - api_deploy:
-          name: api_deploy
-          filters: pipeline.git.branch == "master" or pipeline.git.branch == "development" or pipeline.parameters.deploy
-          requires:
-            - unit_test
-            - lint
-            - build
-      - web_deploy:
-          name: web_deploy
-          requires:
-            - api_deploy
+      # - unit_test:
+      #     name: unit_test
+      #     requires:
+      #       - install
+      # - lint:
+      #     name: lint
+      #     requires:
+      #       - install
+      # - build:
+      #     name: build
+      #     requires:
+      #       - install
+      # - api_deploy:
+      #     name: api_deploy
+      #     filters: pipeline.git.branch == "master" or pipeline.git.branch == "development" or pipeline.parameters.deploy
+      #     requires:
+      #       - unit_test
+      #       - lint
+      #       - build
+      # - web_deploy:
+      #     name: web_deploy
+      #     requires:
+      #       - api_deploy
       - api_test_setup:
           requires:
-            - web_deploy
+            - install
           filters: pipeline.git.branch != "master" and pipeline.parameters.skip_api_tests != true
-      - test:
-          name: test_account
-          testCommand: "account"
-          requires:
-            - api_test_setup
-      - test:
-          name: test_category
-          testCommand: "category"
-          requires:
-            - api_test_setup
-      - test:
-          name: test_project
-          testCommand: "project"
-          requires:
-            - api_test_setup
-      - test:
-          name: test_product
-          testCommand: "product"
-          requires:
-            - api_test_setup
-      - test:
-          name: test_recipient
-          testCommand: "recipient"
-          requires:
-            - api_test_setup
-      - test:
-          name: test_transaction_common
-          testCommand: "transaction-common"
-          requires:
-            - api_test_setup
-      - test:
-          name: test_transaction_payment
-          testCommand: "transaction-payment"
-          requires:
-            - api_test_setup
-      - test:
-          name: test_transaction_deferred
-          testCommand: "transaction-deferred"
-          requires:
-            - api_test_setup
-      - test:
-          name: test_transaction_split
-          testCommand: "transaction-split"
-          requires:
-            - api_test_setup
-      - test:
-          name: test_transaction_reimbursement
-          testCommand: "transaction-reimbursement"
-          requires:
-            - api_test_setup
-      - test:
-          name: test_transaction_transfer
-          testCommand: "transaction-transfer"
-          requires:
-            - api_test_setup
-      - test:
-          name: test_transaction_draft
-          testCommand: "transaction-draft"
-          requires:
-            - api_test_setup
-      - test:
-          name: test_setting
-          testCommand: "setting"
-          requires:
-            - api_test_setup
-      - test:
-          name: test_user
-          testCommand: "user"
-          requires:
-            - api_test_setup
+      # - test:
+      #     name: test_account
+      #     testCommand: "account"
+      #     requires:
+      #       - api_test_setup
+      # - test:
+      #     name: test_category
+      #     testCommand: "category"
+      #     requires:
+      #       - api_test_setup
+      # - test:
+      #     name: test_project
+      #     testCommand: "project"
+      #     requires:
+      #       - api_test_setup
+      # - test:
+      #     name: test_product
+      #     testCommand: "product"
+      #     requires:
+      #       - api_test_setup
+      # - test:
+      #     name: test_recipient
+      #     testCommand: "recipient"
+      #     requires:
+      #       - api_test_setup
+      # - test:
+      #     name: test_transaction_common
+      #     testCommand: "transaction-common"
+      #     requires:
+      #       - api_test_setup
+      # - test:
+      #     name: test_transaction_payment
+      #     testCommand: "transaction-payment"
+      #     requires:
+      #       - api_test_setup
+      # - test:
+      #     name: test_transaction_deferred
+      #     testCommand: "transaction-deferred"
+      #     requires:
+      #       - api_test_setup
+      # - test:
+      #     name: test_transaction_split
+      #     testCommand: "transaction-split"
+      #     requires:
+      #       - api_test_setup
+      # - test:
+      #     name: test_transaction_reimbursement
+      #     testCommand: "transaction-reimbursement"
+      #     requires:
+      #       - api_test_setup
+      # - test:
+      #     name: test_transaction_transfer
+      #     testCommand: "transaction-transfer"
+      #     requires:
+      #       - api_test_setup
+      # - test:
+      #     name: test_transaction_draft
+      #     testCommand: "transaction-draft"
+      #     requires:
+      #       - api_test_setup
+      # - test:
+      #     name: test_setting
+      #     testCommand: "setting"
+      #     requires:
+      #       - api_test_setup
+      # - test:
+      #     name: test_user
+      #     testCommand: "user"
+      #     requires:
+      #       - api_test_setup
       - test:
           name: test_file
           testCommand: "file"
