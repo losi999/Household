@@ -7,9 +7,9 @@ describe('Import file', () => {
   let revolutFileDocument: File.Document;
   let otpFileDocument: File.Document;
   let ersteFileDocument: File.Document;
-  let revolutRows: Import.Revolut[];
-  let otpRows: Import.Otp[];
-  let ersteRows: Import.Erste[];
+  let revolutRow: Import.Revolut;
+  let otpRow: Import.Otp;
+  let ersteRow: Import.Erste;
 
   before('uploading file to import bucket', () => {
     revolutFileDocument = fileDataFactory.document({
@@ -24,41 +24,37 @@ describe('Import file', () => {
       fileType: FileType.Erste,
     });
 
-    const revolutFile = fileDataFactory.revolutFile();
-    const otpFile = fileDataFactory.otpFile();
-    const ersteFile = fileDataFactory.ersteFile();
-
-    revolutRows = revolutFile.rows;
-    otpRows = otpFile.rows;
-    ersteRows = ersteFile.rows;
+    revolutRow = fileDataFactory.revolut.row();
+    ersteRow = fileDataFactory.erste.row();
+    otpRow = fileDataFactory.otp.row();
 
     cy.saveFileDocument(revolutFileDocument)
       .saveFileDocument(otpFileDocument)
       .saveFileDocument(ersteFileDocument)
-      .uploadFileToS3(getFileId(revolutFileDocument), revolutFile.file)
-      .uploadFileToS3(getFileId(otpFileDocument), otpFile.file)
-      .uploadFileToS3(getFileId(ersteFileDocument), ersteFile.file)
+      .uploadFileToS3(getFileId(revolutFileDocument), fileDataFactory.revolut.file(revolutFileDocument.timezone, [revolutRow]))
+      .uploadFileToS3(getFileId(otpFileDocument), fileDataFactory.otp.file(otpFileDocument.timezone, [otpRow]))
+      .uploadFileToS3(getFileId(ersteFileDocument), fileDataFactory.erste.file(ersteFileDocument.timezone, [ersteRow]))
       .wait(5000);
   });
 
   after(() => {
-    // cy.deleteFileFromS3(getFileId(revolutFileDocument))
-    //   .deleteFileFromS3(getFileId(otpFileDocument))
-    //   .deleteFileFromS3(getFileId(ersteFileDocument));
+    cy.deleteFileFromS3(getFileId(revolutFileDocument))
+      .deleteFileFromS3(getFileId(otpFileDocument))
+      .deleteFileFromS3(getFileId(ersteFileDocument));
   });
 
-  it.only('should trigger importing of revolut file', () => {
+  it('should trigger importing of revolut file', () => {
     cy.validateFileDocumentProcessed(revolutFileDocument)
-      .validateImportedRevolutDraftDocuments(getFileId(revolutFileDocument), ...revolutRows);
+      .validateImportedRevolutDraftDocuments(getFileId(revolutFileDocument), revolutRow);
   });
 
   it('should trigger importing of import otp file', () => {
     cy.validateFileDocumentProcessed(otpFileDocument)
-      .validateImportedOtpDraftDocuments(getFileId(otpFileDocument), ...otpRows);
+      .validateImportedOtpDraftDocuments(getFileId(otpFileDocument), otpRow);
   });
 
   it('should trigger importing of import erste file', () => {
     cy.validateFileDocumentProcessed(ersteFileDocument)
-      .validateImportedErsteDraftDocuments(getFileId(ersteFileDocument), ...ersteRows);
+      .validateImportedErsteDraftDocuments(getFileId(ersteFileDocument), ersteRow);
   });
 });

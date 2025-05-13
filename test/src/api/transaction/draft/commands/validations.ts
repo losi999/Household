@@ -1,10 +1,9 @@
 import { File, Import, Transaction } from '@household/shared/types/types';
 import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/test/api/types';
-import { addSeconds, getFileId, getTransactionId } from '@household/shared/common/utils';
+import { getFileId, getTransactionId } from '@household/shared/common/utils';
 import { expectEmptyObject, expectRemainingProperties } from '@household/test/api/utils';
 import { TransactionType } from '@household/shared/enums';
 import { validateCommonResponse } from '@household/test/api/transaction/common/commands/validations';
-import moment from 'moment-timezone';
 
 const validateImportedRevolutDraftDocuments = (fileId: File.Id, ...rows: Import.Revolut[]) => {
   cy.log('Get draft documents by file', fileId)
@@ -16,14 +15,8 @@ const validateImportedRevolutDraftDocuments = (fileId: File.Id, ...rows: Import.
         const { amount, description, issuedAt, transactionType, file, hasDuplicate, ...internal } = document;
         const row = rows.find(r => description.includes(r.Type));
 
-        console.log('iss', issuedAt);
-        console.log('row', row['Started Date']);
-        const diff = moment().tz('Europe/Budapest')
-          .utcOffset() - moment().utcOffset();
-
         expect(amount, `[${index}].amount`).to.equal(row.Amount - row.Fee);
-        expect(issuedAt.toISOString().split('.')[0], `[${index}].issuedAt`).to.equal(addSeconds(diff * -60, row['Started Date'])
-          .toISOString()
+        expect(issuedAt.toISOString().split('.')[0], `[${index}].issuedAt`).to.equal(row['Started Date'].toISOString()
           .split('.')[0]);
         expect(transactionType, `[${index}].transactionType`).to.equal(TransactionType.Draft);
         expect(description, `[${index}].description`).to.equal(`${row.Type} ${row.Description} ${row.Currency}`);

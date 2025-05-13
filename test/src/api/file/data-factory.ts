@@ -34,15 +34,8 @@ export const fileDataFactory = (() => {
   };
 
   const createRevolutRow: DataFactoryFunction<Import.Revolut> = (row) => {
-
-    const diff = moment().tz('Europe/Budapest')
-      .utcOffset() - moment().utcOffset();
-    console.log(diff);
-    const targetDate = addSeconds(diff * 60);
-    console.log('target', targetDate);
-
     return {
-      'Started Date': targetDate,
+      'Started Date': new Date(),
       Amount: faker.number.float(),
       Currency: faker.finance.currencyCode(),
       Description: faker.word.words({
@@ -60,21 +53,26 @@ export const fileDataFactory = (() => {
     };
   };
 
-  const createRevolutFile = (...input: Partial<Import.Revolut>[]): File<Import.Revolut> => {
-    const rows = input.length > 0 ? input.map(r => createRevolutRow(r)) : [createRevolutRow()];
+  const createRevolutFile = (timezone: string, input: Partial<Import.Revolut>[]): unknown => {
+    const diff = moment().tz(timezone)
+      .utcOffset() - moment().utcOffset();
+
+    const rows = input.map(r => {
+      return {
+        ...createRevolutRow(r),
+        'Started Date': addSeconds(diff * 60, r['Started Date']),
+      };
+    });
 
     const worksheet = utils.json_to_sheet(rows);
 
-    return {
-      file: toExcelFile(worksheet, 'Sheet1'),
-      rows,
-    };
+    return toExcelFile(worksheet, 'Sheet1');
   };
 
   const createOtpRow: DataFactoryFunction<Import.Otp> = (row) => {
     return {
       Összeg: faker.number.float(),
-      'Tranzakció időpontja': moment.tz('Europe/Budapest').toDate(),
+      'Tranzakció időpontja': new Date(),
       'Ellenoldali név': faker.company.name(),
       Közlemény: faker.word.words({
         count: {
@@ -87,22 +85,27 @@ export const fileDataFactory = (() => {
     };
   };
 
-  const createOtpFile = (...input: Partial<Import.Otp>[]): File<Import.Otp> => {
-    const rows = input.length > 0 ? input.map(r => createOtpRow(r)) : [createOtpRow()];
+  const createOtpFile = (timezone: string, input: Partial<Import.Otp>[]): unknown => {
+    const diff = moment().tz(timezone)
+      .utcOffset() - moment().utcOffset();
+
+    const rows = input.map(r => {
+      return {
+        ...createOtpRow(r),
+        'Tranzakció időpontja': addSeconds(diff * 60, r['Tranzakció időpontja']),
+      };
+    });
 
     const worksheet = utils.json_to_sheet(rows);
 
-    return {
-      file: toExcelFile(worksheet, 'Sheet3'),
-      rows,
-    };
+    return toExcelFile(worksheet, 'Sheet3');
   };
 
   const createErsteRow: DataFactoryFunction<Import.Erste> = (row) => {
     return {
       Összeg: faker.number.float(),
       'Tranzakció dátuma és ideje': undefined,
-      Dátum: moment.tz('Europe/Budapest').toDate(),
+      Dátum: new Date(),
       'Partner név': faker.company.name(),
       Közlemény: faker.word.words({
         count: {
@@ -115,8 +118,17 @@ export const fileDataFactory = (() => {
     };
   };
 
-  const createErsteFile = (...input: Partial<Import.Erste>[]): File<Import.Erste> => {
-    const rows = input.length > 0 ? input.map(r => createErsteRow(r)) : [createErsteRow()];
+  const createErsteFile = (timezone: string, input: Partial<Import.Erste>[]): unknown => {
+    const diff = moment().tz(timezone)
+      .utcOffset() - moment().utcOffset();
+
+    const rows = input.map(r => {
+      return {
+        ...createErsteRow(r),
+        Dátum: addSeconds(diff * 60, r.Dátum),
+      };
+    });
+
     const headers = Object.keys(rows[0]) as (keyof Import.Erste)[];
     const aoa = [
       [],
@@ -128,10 +140,7 @@ export const fileDataFactory = (() => {
 
     const worksheet = utils.aoa_to_sheet(aoa);
 
-    return {
-      file: toExcelFile(worksheet, 'Sheet0'),
-      rows,
-    };
+    return toExcelFile(worksheet, 'Sheet0');
   };
 
   const createFileDocument: DataFactoryFunction<File.Request, File.Document> = (req) => {
@@ -142,8 +151,17 @@ export const fileDataFactory = (() => {
     id: (createId<File.Id>),
     request: createFileRequest,
     document: createFileDocument,
-    revolutFile: createRevolutFile,
-    otpFile: createOtpFile,
-    ersteFile: createErsteFile,
+    revolut: {
+      row: createRevolutRow,
+      file: createRevolutFile,
+    },
+    otp: {
+      row: createOtpRow,
+      file: createOtpFile,
+    },
+    erste: {
+      row: createErsteRow,
+      file: createErsteFile,
+    },
   };
 })();
