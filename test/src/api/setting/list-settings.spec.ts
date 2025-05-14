@@ -17,7 +17,7 @@ describe('GET /setting/v1/settings', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestGetSettingList()
         .expectUnauthorizedResponse();
     });
@@ -27,7 +27,7 @@ describe('GET /setting/v1/settings', () => {
     it('should get a list of settings', () => {
       cy.updateSettingDocument(settingKey1, settingDataFactory.update(settingRequest1))
         .updateSettingDocument(settingKey2, settingDataFactory.update(settingRequest2))
-        .authenticate(1)
+        .authenticate('admin')
         .requestGetSettingList()
         .expectOkResponse()
         .expectValidResponseSchema(schema)

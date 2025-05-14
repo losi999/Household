@@ -10,7 +10,7 @@ describe('POST project/v1/projects', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestCreateProject(request)
         .expectUnauthorizedResponse();
     });
@@ -19,7 +19,7 @@ describe('POST project/v1/projects', () => {
   describe('called as an admin', () => {
     describe('should create project', () => {
       it('with complete body', () => {
-        cy.authenticate(1)
+        cy.authenticate('admin')
           .requestCreateProject(request)
           .expectCreatedResponse()
           .validateProjectDocument(request);
@@ -31,7 +31,7 @@ describe('POST project/v1/projects', () => {
             description: undefined,
           });
 
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateProject(request)
             .expectCreatedResponse()
             .validateProjectDocument(request);
@@ -42,7 +42,7 @@ describe('POST project/v1/projects', () => {
     describe('should return error', () => {
       describe('if name', () => {
         it('is missing from body', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateProject(projectDataFactory.request({
               name: undefined,
             }))
@@ -51,7 +51,7 @@ describe('POST project/v1/projects', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateProject(projectDataFactory.request({
               name: <any>1,
             }))
@@ -60,7 +60,7 @@ describe('POST project/v1/projects', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateProject(projectDataFactory.request({
               name: '',
             }))
@@ -72,7 +72,7 @@ describe('POST project/v1/projects', () => {
           const projectDocument = projectDataFactory.document(request);
 
           cy.saveProjectDocument(projectDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreateProject(request)
             .expectBadRequestResponse()
             .expectMessage('Duplicate project name');
@@ -81,7 +81,7 @@ describe('POST project/v1/projects', () => {
 
       describe('if description', () => {
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateProject(projectDataFactory.request({
               description: <any>1,
             }))
@@ -90,7 +90,7 @@ describe('POST project/v1/projects', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateProject(projectDataFactory.request({
               description: '',
             }))

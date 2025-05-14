@@ -18,7 +18,7 @@ describe('GET /user/v1/users', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestGetUserList()
         .expectUnauthorizedResponse();
     });
@@ -28,7 +28,7 @@ describe('GET /user/v1/users', () => {
     it('should get a list of users', () => {
       cy.createUser(pendingUser, true)
         .createUser(confirmedUser, true)
-        .authenticate(1)
+        .authenticate('admin')
         .requestGetUserList()
         .expectOkResponse()
         .expectValidResponseSchema(schema)

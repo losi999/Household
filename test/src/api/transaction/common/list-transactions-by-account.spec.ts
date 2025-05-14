@@ -23,7 +23,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestGetTransactionListByAccount(getAccountId(accountDocument))
         .expectUnauthorizedResponse();
     });
@@ -218,7 +218,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
             owningSettledDeferredTransactionDocument,
             owningReimbursementTransactionDocument,
           ])
-          .authenticate(1)
+          .authenticate('admin')
           .requestGetTransactionListByAccount(getAccountId(accountDocument), {
             pageNumber: 1,
             pageSize: 100000,
@@ -361,7 +361,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
             owningSettledDeferredTransactionDocument,
             payingReimbursementTransactionDocument,
           ])
-          .authenticate(1)
+          .authenticate('admin')
           .requestGetTransactionListByAccount(getAccountId(loanAccountDocument), {
             pageNumber: 1,
             pageSize: 100000,
@@ -386,7 +386,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
     describe('should return error', () => {
       describe('if accountId', () => {
         it('is not mongo id', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionListByAccount(createAccountId('not-mongo-id'))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('accountId', 'pathParameters');
@@ -395,7 +395,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
 
       describe('if querystring', () => {
         it('has additional parameter', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionListByAccount(createAccountId(), {
               pageNumber: 1,
               pageSize: 100,
@@ -408,7 +408,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
 
       describe('if querystring.pageSize', () => {
         it('is missing while pageNumber is set', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionListByAccount(createAccountId(), {
               pageNumber: 1,
             })
@@ -417,7 +417,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
         });
 
         it('is not number', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionListByAccount(createAccountId(), {
               pageNumber: 1,
               pageSize: 'asd' as any,
@@ -427,7 +427,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
         });
 
         it('is too small', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionListByAccount(createAccountId(), {
               pageNumber: 1,
               pageSize: 0,
@@ -439,7 +439,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
 
       describe('if querystring.pageNumber', () => {
         it('is missing while pageSize is set', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionListByAccount(createAccountId(), {
               pageSize: 1,
             })
@@ -448,7 +448,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
         });
 
         it('is not number', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionListByAccount(createAccountId(), {
               pageNumber: 'asd' as any,
               pageSize: 1,
@@ -458,7 +458,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
         });
 
         it('is too small', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionListByAccount(createAccountId(), {
               pageNumber: 0,
               pageSize: 1,

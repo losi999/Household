@@ -16,7 +16,7 @@ describe('GET /file/v1/files', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestGetFileList()
         .expectUnauthorizedResponse();
     });
@@ -26,7 +26,7 @@ describe('GET /file/v1/files', () => {
     it('should get a list of files', () => {
       cy.saveFileDocument(fileDocument)
         .saveTransactionDocument(draftDocument)
-        .authenticate(1)
+        .authenticate('admin')
         .requestGetFileList()
         .expectOkResponse()
         .expectValidResponseSchema(schema)

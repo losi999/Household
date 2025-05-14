@@ -32,7 +32,7 @@ describe('GET /transaction/v1/files/{fileId}/transactions', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestGetTransactionListByFile(getFileId(fileDocument))
         .expectUnauthorizedResponse();
     });
@@ -45,7 +45,7 @@ describe('GET /transaction/v1/files/{fileId}/transactions', () => {
         duplicateDraftDocument,
         duplicatePaymentDocument,
       ])
-        .authenticate(1)
+        .authenticate('admin')
         .requestGetTransactionListByFile(getFileId(fileDocument))
         .expectOkResponse()
         .expectValidResponseSchema(schema)
@@ -62,7 +62,7 @@ describe('GET /transaction/v1/files/{fileId}/transactions', () => {
     describe('should return error', () => {
       describe('if fileId', () => {
         it('is not mongo id', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionListByFile(createFileId('not-mongo-id'))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('fileId', 'pathParameters');

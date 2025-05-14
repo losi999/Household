@@ -10,7 +10,7 @@ describe('POST recipient/v1/recipients', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestCreateRecipient(request)
         .expectUnauthorizedResponse();
     });
@@ -19,7 +19,7 @@ describe('POST recipient/v1/recipients', () => {
   describe('called as an admin', () => {
 
     it('should create recipient', () => {
-      cy.authenticate(1)
+      cy.authenticate('admin')
         .requestCreateRecipient(request)
         .expectCreatedResponse()
         .validateRecipientDocument(request);
@@ -28,7 +28,7 @@ describe('POST recipient/v1/recipients', () => {
     describe('should return error', () => {
       describe('if name', () => {
         it('is missing from body', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateRecipient(recipientDataFactory.request({
               name: undefined,
             }))
@@ -37,7 +37,7 @@ describe('POST recipient/v1/recipients', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateRecipient(recipientDataFactory.request({
               name: <any>1,
             }))
@@ -46,7 +46,7 @@ describe('POST recipient/v1/recipients', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateRecipient(recipientDataFactory.request({
               name: '',
             }))
@@ -58,7 +58,7 @@ describe('POST recipient/v1/recipients', () => {
           const recipientDocument = recipientDataFactory.document(request);
 
           cy.saveRecipientDocument(recipientDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreateRecipient(request)
             .expectBadRequestResponse()
             .expectMessage('Duplicate recipient name');

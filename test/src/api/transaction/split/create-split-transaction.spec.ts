@@ -97,7 +97,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestCreateSplitTransaction(request)
         .expectUnauthorizedResponse();
     });
@@ -118,7 +118,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
           .saveProjectDocument(projectDocument)
           .saveRecipientDocument(recipientDocument)
           .saveProductDocument(productDocument)
-          .authenticate(1)
+          .authenticate('admin')
           .requestCreateSplitTransaction(request)
           .expectCreatedResponse()
           .validateTransactionSplitDocument(request);
@@ -141,7 +141,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .saveProductDocument(productDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreateSplitTransaction(request)
             .expectCreatedResponse()
             .validateTransactionSplitDocument(request);
@@ -163,7 +163,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
             ])
             .saveProjectDocument(projectDocument)
             .saveProductDocument(productDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreateSplitTransaction(request)
             .expectCreatedResponse()
             .validateTransactionSplitDocument(request);
@@ -183,7 +183,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .saveProductDocument(productDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreateSplitTransaction(request)
             .expectCreatedResponse()
             .validateTransactionSplitDocument(request);
@@ -200,7 +200,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .saveProductDocument(productDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreateSplitTransaction(request)
             .expectCreatedResponse()
             .validateTransactionSplitDocument(request);
@@ -225,7 +225,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .saveProductDocument(productDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreateSplitTransaction(request)
             .expectCreatedResponse()
             .validateTransactionSplitDocument(request);
@@ -252,7 +252,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .saveProductDocument(productDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreateSplitTransaction(request)
             .expectCreatedResponse()
             .validateTransactionSplitDocument(request);
@@ -280,7 +280,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .saveProductDocument(productDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreateSplitTransaction(request)
             .expectCreatedResponse()
             .validateTransactionSplitDocument(request);
@@ -306,7 +306,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .saveProductDocument(productDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreateSplitTransaction(request)
             .expectCreatedResponse()
             .validateTransactionSplitDocument(request);
@@ -331,7 +331,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .saveProductDocument(productDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreateSplitTransaction(request)
             .expectCreatedResponse()
             .validateTransactionSplitDocument(request);
@@ -357,7 +357,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .saveProductDocument(productDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreateSplitTransaction(request)
             .expectCreatedResponse()
             .validateTransactionSplitDocument(request);
@@ -383,7 +383,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .saveProductDocument(productDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreateSplitTransaction(request)
             .expectCreatedResponse()
             .validateTransactionSplitDocument(request);
@@ -411,7 +411,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .saveProductDocument(productDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreateSplitTransaction(request)
             .expectCreatedResponse()
             .validateTransactionSplitDocument(request);
@@ -441,7 +441,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .saveProductDocument(productDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreateSplitTransaction(request)
             .expectCreatedResponse()
             .validateTransactionSplitDocument(request);
@@ -469,7 +469,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .saveProductDocument(productDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreateSplitTransaction(request)
             .expectCreatedResponse()
             .validateTransactionSplitDocument(request);
@@ -495,7 +495,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .saveProductDocument(productDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreateSplitTransaction(request)
             .expectCreatedResponse()
             .validateTransactionSplitDocument(request);
@@ -522,7 +522,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .saveProductDocument(productDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreateSplitTransaction(request)
             .expectCreatedResponse()
             .validateTransactionSplitDocument(request);
@@ -533,7 +533,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
     describe('should return error', () => {
       describe('if body', () => {
         it('has additional properties', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request({
               extra: 123,
             } as any))
@@ -542,7 +542,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('misses both splits and loans', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], []))
             .expectBadRequestResponse()
             .expectRequiredProperty('splits', 'body')
@@ -552,7 +552,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
 
       describe('if amount', () => {
         it('is not the same as sum of splits', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request({
               amount: -1,
             }))
@@ -561,7 +561,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is missing', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request({
               amount: undefined,
             }))
@@ -570,7 +570,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is not number', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request({
               amount: <any>'1',
             }))
@@ -581,7 +581,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
 
       describe('if description', () => {
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request({
               description: <any>1,
             }))
@@ -590,7 +590,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request({
               description: '',
             }))
@@ -601,7 +601,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
 
       describe('if issuedAt', () => {
         it('is missing', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request({
               issuedAt: undefined,
             }))
@@ -610,7 +610,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request({
               issuedAt: <any>1,
             }))
@@ -619,7 +619,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is not date-time format', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request({
               issuedAt: 'not-date-time',
             }))
@@ -644,7 +644,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
             ])
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request({
               ...relatedDocumentIds,
               accountId: getAccountId(loanAccountDocument),
@@ -661,7 +661,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
           ])
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request({
               ...relatedDocumentIds,
               accountId: accountDataFactory.id(),
@@ -671,7 +671,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is missing', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request({
               accountId: undefined,
             }))
@@ -680,7 +680,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request({
               accountId: <any>1,
             }))
@@ -689,7 +689,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request({
               accountId: accountDataFactory.id('not-mongo-id'),
             }))
@@ -707,7 +707,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
               inventoryCategoryDocument,
             ])
             .saveProjectDocument(projectDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request({
               ...relatedDocumentIds,
               recipientId: recipientDataFactory.id(),
@@ -717,7 +717,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request({
               recipientId: <any>1,
             }))
@@ -726,7 +726,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request({
               recipientId: recipientDataFactory.id('not-mongo-id'),
             }))
@@ -738,7 +738,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
       describe('if splits', () => {
         it('is not an array', () => {
           request.splits = {} as any;
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(request)
             .expectBadRequestResponse()
             .expectWrongPropertyType('splits', 'array', 'body');
@@ -746,7 +746,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
 
         it('is empty array', () => {
           request.splits = [];
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(request)
             .expectBadRequestResponse()
             .expectTooFewItemsProperty('splits', 1, 'body');
@@ -756,7 +756,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
       describe('if splits[0]', () => {
         it('is not object', () => {
           request.splits = [1 as any];
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(request)
             .expectBadRequestResponse()
             .expectWrongPropertyType('splits', 'object', 'body');
@@ -768,7 +768,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
               extra: 1,
             },
           ] as any;
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(request)
             .expectBadRequestResponse()
             .expectAdditionalProperty('splits', 'body');
@@ -777,7 +777,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
 
       describe('if splits.amount', () => {
         it('is missing', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
               {
                 amount: undefined,
@@ -788,7 +788,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is not number', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
               {
                 amount: <any>'1',
@@ -801,7 +801,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
 
       describe('if splits.description', () => {
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
               {
                 description: <any>1,
@@ -812,7 +812,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
               {
                 description: '',
@@ -825,7 +825,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
 
       describe('if splits.quantity', () => {
         it('is present and productId is missing', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
               {
                 quantity: 1,
@@ -836,7 +836,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is not number', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
               {
                 quantity: <any>'1',
@@ -847,7 +847,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is too small', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
               {
                 quantity: 0,
@@ -860,7 +860,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
 
       describe('if splits.productId', () => {
         it('is present and quantity is missing', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
               {
                 productId: productDataFactory.id(),
@@ -872,7 +872,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
               {
                 productId: <any>1,
@@ -883,7 +883,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
               {
                 productId: productDataFactory.id('not-mongo-id'),
@@ -898,7 +898,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
               {
                 ...relatedDocumentItemIds,
@@ -913,7 +913,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
 
       describe('if splits.invoiceNumber', () => {
         it('is present and billingEndDate, billingStartDate are missing', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
               {
                 billingEndDate: undefined,
@@ -925,7 +925,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
               {
                 invoiceNumber: <any>1,
@@ -936,7 +936,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
               {
                 invoiceNumber: '',
@@ -949,7 +949,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
 
       describe('if splits.billingEndDate', () => {
         it('is present and billingStartDate is missing', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
               {
                 billingStartDate: undefined,
@@ -960,7 +960,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
               {
                 billingEndDate: <any>1,
@@ -971,7 +971,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is not date format', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
               {
                 billingEndDate: 'not-date',
@@ -982,7 +982,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is later than billingStartDate', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
               {
                 billingEndDate: '2022-06-01',
@@ -996,7 +996,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
 
       describe('if splits.billingStartDate', () => {
         it('is present and billingEndDate is missing', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
               {
                 billingEndDate: undefined,
@@ -1007,7 +1007,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
               {
                 billingStartDate: <any>1,
@@ -1018,7 +1018,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is not date format', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
               {
                 billingStartDate: 'not-date',
@@ -1034,7 +1034,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
           cy.saveAccountDocument(accountDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
               {
                 ...relatedDocumentItemIds,
@@ -1046,7 +1046,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
               {
                 categoryId: <any>1,
@@ -1057,7 +1057,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
               {
                 categoryId: categoryDataFactory.id('not-mongo-id'),
@@ -1077,7 +1077,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
               inventoryCategoryDocument,
             ])
             .saveRecipientDocument(recipientDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
               {
                 ...relatedDocumentItemIds,
@@ -1089,7 +1089,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
               {
                 projectId: <any>1,
@@ -1100,7 +1100,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
               {
                 projectId: projectDataFactory.id('not-mongo-id'),
@@ -1114,7 +1114,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
       describe('if loans', () => {
         it('is not an array', () => {
           request.loans = {} as any;
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(request)
             .expectBadRequestResponse()
             .expectWrongPropertyType('loans', 'array', 'body');
@@ -1122,7 +1122,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
 
         it('is empty array', () => {
           request.loans = [];
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(request)
             .expectBadRequestResponse()
             .expectTooFewItemsProperty('loans', 1, 'body');
@@ -1132,7 +1132,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
       describe('if loans[0]', () => {
         it('is not object', () => {
           request.loans = [1 as any];
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(request)
             .expectBadRequestResponse()
             .expectWrongPropertyType('loans', 'object', 'body');
@@ -1144,7 +1144,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
               extra: 1,
             },
           ] as any;
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(request)
             .expectBadRequestResponse()
             .expectAdditionalProperty('loans', 'body');
@@ -1153,7 +1153,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
 
       describe('if loans.amount', () => {
         it('is missing', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
               {
                 amount: undefined,
@@ -1164,7 +1164,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is not number', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
               {
                 amount: <any>'1',
@@ -1177,7 +1177,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
 
       describe('if loans.description', () => {
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
               {
                 description: <any>1,
@@ -1188,7 +1188,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
               {
                 description: '',
@@ -1201,7 +1201,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
 
       describe('if loans.quantity', () => {
         it('is present and productId is missing', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
               {
                 quantity: 1,
@@ -1212,7 +1212,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is not number', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
               {
                 quantity: <any>'1',
@@ -1223,7 +1223,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is too small', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
               {
                 quantity: 0,
@@ -1236,7 +1236,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
 
       describe('if loans.productId', () => {
         it('is present and quantity is missing', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
               {
                 productId: productDataFactory.id(),
@@ -1248,7 +1248,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
               {
                 productId: <any>1,
@@ -1259,7 +1259,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
               {
                 productId: productDataFactory.id('not-mongo-id'),
@@ -1277,7 +1277,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
               {
                 ...relatedDocumentItemIds,
@@ -1293,7 +1293,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
 
       describe('if loans.invoiceNumber', () => {
         it('is present and billingEndDate, billingStartDate are missing', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
               {
                 billingEndDate: undefined,
@@ -1305,7 +1305,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
               {
                 invoiceNumber: <any>1,
@@ -1316,7 +1316,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
               {
                 invoiceNumber: '',
@@ -1329,7 +1329,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
 
       describe('if loans.billingEndDate', () => {
         it('is present and billingStartDate is missing', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
               {
                 billingStartDate: undefined,
@@ -1340,7 +1340,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
               {
                 billingEndDate: <any>1,
@@ -1351,7 +1351,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is not date format', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
               {
                 billingEndDate: 'not-date',
@@ -1362,7 +1362,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is later than billingStartDate', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
               {
                 billingEndDate: '2022-06-01',
@@ -1376,7 +1376,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
 
       describe('if loans.billingStartDate', () => {
         it('is present and billingEndDate is missing', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
               {
                 billingEndDate: undefined,
@@ -1387,7 +1387,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
               {
                 billingStartDate: <any>1,
@@ -1398,7 +1398,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is not date format', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
               {
                 billingStartDate: 'not-date',
@@ -1417,7 +1417,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
           ])
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
               {
                 ...relatedDocumentItemIds,
@@ -1430,7 +1430,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
               {
                 categoryId: <any>1,
@@ -1441,7 +1441,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
               {
                 categoryId: categoryDataFactory.id('not-mongo-id'),
@@ -1464,7 +1464,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
               inventoryCategoryDocument,
             ])
             .saveRecipientDocument(recipientDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
               {
                 ...relatedDocumentItemIds,
@@ -1477,7 +1477,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
               {
                 projectId: <any>1,
@@ -1488,7 +1488,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
               {
                 projectId: projectDataFactory.id('not-mongo-id'),
@@ -1508,14 +1508,14 @@ describe('POST transaction/v1/transactions/split (split)', () => {
               inventoryCategoryDocument,
             ])
             .saveRecipientDocument(recipientDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, []))
             .expectBadRequestResponse()
             .expectMessage('Some of the accounts are not found');
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
               {
                 loanAccountId: <any>1,
@@ -1526,7 +1526,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
               {
                 loanAccountId: accountDataFactory.id('not-mongo-id'),
@@ -1539,7 +1539,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
 
       describe('if loans.isSettled', () => {
         it('is not boolean', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
               {
                 isSettled: <any>1,
@@ -1552,7 +1552,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
 
       describe('if loans.transactionId', () => {
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
               {
                 transactionId: <any>1,
@@ -1563,7 +1563,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
               {
                 transactionId: deferredTransactionDataFactory.id('not-mongo-id'),

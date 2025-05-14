@@ -19,7 +19,7 @@ describe('GET /category/v1/categories', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestGetCategoryList()
         .expectUnauthorizedResponse();
     });
@@ -29,7 +29,7 @@ describe('GET /category/v1/categories', () => {
     it('should get a list of categories', () => {
       cy.saveCategoryDocument(categoryDocument1)
         .saveCategoryDocument(categoryDocument2)
-        .authenticate(1)
+        .authenticate('admin')
         .requestGetCategoryList()
         .expectOkResponse()
         .expectValidResponseSchema(schema)

@@ -16,7 +16,7 @@ describe('DELETE /file/v1/files/{fileId}', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestDeleteFile(fileDataFactory.id())
         .expectUnauthorizedResponse();
     });
@@ -27,7 +27,7 @@ describe('DELETE /file/v1/files/{fileId}', () => {
       cy.saveFileDocument(fileDocument)
         .saveTransactionDocument(draftDocument)
         .writeFileToS3(getFileId(fileDocument), 'file', '')
-        .authenticate(1)
+        .authenticate('admin')
         .requestDeleteFile(getFileId(fileDocument))
         .expectNoContentResponse()
         .validateFileDeleted(getFileId(fileDocument))
@@ -40,7 +40,7 @@ describe('DELETE /file/v1/files/{fileId}', () => {
   describe('should return error', () => {
     describe('if fileId', () => {
       it('is not mongo id', () => {
-        cy.authenticate(1)
+        cy.authenticate('admin')
           .requestDeleteFile(fileDataFactory.id('not-valid'))
           .expectBadRequestResponse()
           .expectWrongPropertyPattern('fileId', 'pathParameters');

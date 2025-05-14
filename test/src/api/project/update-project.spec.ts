@@ -14,7 +14,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestUpdateProject(projectDataFactory.id(), request)
         .expectUnauthorizedResponse();
     });
@@ -25,7 +25,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
       it('with complete body', () => {
         cy
           .saveProjectDocument(projectDocument)
-          .authenticate(1)
+          .authenticate('admin')
           .requestUpdateProject(getProjectId(projectDocument), request)
           .expectCreatedResponse()
           .validateProjectDocument(request);
@@ -38,7 +38,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
           });
 
           cy.saveProjectDocument(projectDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestUpdateProject(getProjectId(projectDocument), request)
             .expectCreatedResponse()
             .validateProjectDocument(request);
@@ -49,7 +49,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
     describe('should return error', () => {
       describe('if name', () => {
         it('is missing from body', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestUpdateProject(projectDataFactory.id(), projectDataFactory.request({
               name: undefined,
             }))
@@ -58,7 +58,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestUpdateProject(projectDataFactory.id(), projectDataFactory.request({
               name: <any>1,
             }))
@@ -67,7 +67,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestUpdateProject(projectDataFactory.id(), projectDataFactory.request({
               name: '',
             }))
@@ -80,7 +80,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
 
           cy.saveProjectDocument(projectDocument)
             .saveProjectDocument(duplicateProjectDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestUpdateProject(getProjectId(projectDocument), request)
             .expectBadRequestResponse()
             .expectMessage('Duplicate project name');
@@ -89,7 +89,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
 
       describe('if description', () => {
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestUpdateProject(projectDataFactory.id(), projectDataFactory.request({
               description: <any>1,
             }))
@@ -98,7 +98,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestUpdateProject(projectDataFactory.id(), projectDataFactory.request({
               description: '',
             }))
@@ -109,14 +109,14 @@ describe('PUT /project/v1/projects/{projectId}', () => {
 
       describe('if projectId', () => {
         it('is not mongo id', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestUpdateProject(projectDataFactory.id('not-valid'), request)
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('projectId', 'pathParameters');
         });
 
         it('does not belong to any project', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestUpdateProject(projectDataFactory.id(), request)
             .expectNotFoundResponse();
         });

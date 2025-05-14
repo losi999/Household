@@ -14,7 +14,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestUpdateCategory(categoryDataFactory.id(), request)
         .expectUnauthorizedResponse();
     });
@@ -23,7 +23,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
   describe('called as an admin', () => {
     it('should update a category', () => {
       cy.saveCategoryDocument(categoryDocument)
-        .authenticate(1)
+        .authenticate('admin')
         .requestUpdateCategory(getCategoryId(categoryDocument), request)
         .expectCreatedResponse()
         .validateCategoryDocument(request);
@@ -55,7 +55,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
           .saveCategoryDocument(childCategory)
           .saveCategoryDocument(grandChildCategory)
           .saveCategoryDocument(otherParentCategory)
-          .authenticate(1)
+          .authenticate('admin')
           .requestUpdateCategory(getCategoryId(childCategory), request)
           .expectCreatedResponse()
           .validateCategoryDocument(request, otherParentCategory)
@@ -70,7 +70,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
         cy.saveCategoryDocument(categoryDocument)
           .saveCategoryDocument(childCategory)
           .saveCategoryDocument(grandChildCategory)
-          .authenticate(1)
+          .authenticate('admin')
           .requestUpdateCategory(getCategoryId(childCategory), request)
           .expectCreatedResponse()
           .validateCategoryDocument(request)
@@ -86,7 +86,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
           .saveCategoryDocument(childCategory)
           .saveCategoryDocument(grandChildCategory)
           .saveCategoryDocument(otherParentCategory)
-          .authenticate(1)
+          .authenticate('admin')
           .requestUpdateCategory(getCategoryId(categoryDocument), request)
           .expectCreatedResponse()
           .validateCategoryDocument(request, otherParentCategory)
@@ -98,7 +98,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
   describe('should return error', () => {
     describe('if name', () => {
       it('is missing from body', () => {
-        cy.authenticate(1)
+        cy.authenticate('admin')
           .requestUpdateCategory(categoryDataFactory.id(),
             categoryDataFactory.request({
               name: undefined,
@@ -108,7 +108,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
       });
 
       it('is not string', () => {
-        cy.authenticate(1)
+        cy.authenticate('admin')
           .requestUpdateCategory(categoryDataFactory.id(),
             categoryDataFactory.request({
               name: <any>1,
@@ -118,7 +118,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
       });
 
       it('is too short', () => {
-        cy.authenticate(1)
+        cy.authenticate('admin')
           .requestUpdateCategory(categoryDataFactory.id(),
             categoryDataFactory.request({
               name: '',
@@ -134,7 +134,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
 
         cy.saveCategoryDocument(duplicateCategoryDocument)
           .saveCategoryDocument(categoryDocument)
-          .authenticate(1)
+          .authenticate('admin')
           .requestUpdateCategory(getCategoryId(categoryDocument), request)
           .expectBadRequestResponse()
           .expectMessage('Duplicate category name');
@@ -143,7 +143,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
 
     describe('if categoryType', () => {
       it('is missing from body', () => {
-        cy.authenticate(1)
+        cy.authenticate('admin')
           .requestUpdateCategory(categoryDataFactory.id(),
             categoryDataFactory.request({
               categoryType: undefined,
@@ -153,7 +153,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
       });
 
       it('is not string', () => {
-        cy.authenticate(1)
+        cy.authenticate('admin')
           .requestUpdateCategory(categoryDataFactory.id(),
             categoryDataFactory.request({
               categoryType: <any>1,
@@ -163,7 +163,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
       });
 
       it('is not a valid enum value', () => {
-        cy.authenticate(1)
+        cy.authenticate('admin')
           .requestUpdateCategory(categoryDataFactory.id(),
             categoryDataFactory.request({
               categoryType: <any>'not-category-type',
@@ -175,7 +175,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
 
     describe('if parentCategoryId', () => {
       it('is not string', () => {
-        cy.authenticate(1)
+        cy.authenticate('admin')
           .requestUpdateCategory(categoryDataFactory.id(),
             categoryDataFactory.request({
               parentCategoryId: <any>1,
@@ -185,7 +185,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
       });
 
       it('does not match pattern', () => {
-        cy.authenticate(1)
+        cy.authenticate('admin')
           .requestUpdateCategory(categoryDataFactory.id(),
             categoryDataFactory.request({
               parentCategoryId: <any>'not-mongo-id',
@@ -196,7 +196,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
 
       it('does not belong to any category', () => {
         cy.saveCategoryDocument(categoryDocument)
-          .authenticate(1)
+          .authenticate('admin')
           .requestUpdateCategory(getCategoryId(categoryDocument),
             categoryDataFactory.request({
               parentCategoryId: categoryDataFactory.id(),
@@ -214,7 +214,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
           categoryDocument,
           childCategoryDocument,
         ])
-          .authenticate(1)
+          .authenticate('admin')
           .requestUpdateCategory(getCategoryId(categoryDocument),
             categoryDataFactory.request({
               parentCategoryId: getCategoryId(childCategoryDocument),
@@ -226,14 +226,14 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
 
     describe('if categoryId', () => {
       it('is not mongo id', () => {
-        cy.authenticate(1)
+        cy.authenticate('admin')
           .requestUpdateCategory(categoryDataFactory.id('not-valid'), request)
           .expectBadRequestResponse()
           .expectWrongPropertyPattern('categoryId', 'pathParameters');
       });
 
       it('does not belong to any category', () => {
-        cy.authenticate(1)
+        cy.authenticate('admin')
           .requestUpdateCategory(categoryDataFactory.id(), request)
           .expectNotFoundResponse();
       });

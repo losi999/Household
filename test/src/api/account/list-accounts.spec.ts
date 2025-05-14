@@ -108,7 +108,7 @@ describe('GET /account/v1/accounts', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestGetAccountList()
         .expectUnauthorizedResponse();
     });
@@ -140,7 +140,7 @@ describe('GET /account/v1/accounts', () => {
           repayingTransferTransactionDocument,
           invertedRepayingTransferTransactionDocument,
         ])
-        .authenticate(1)
+        .authenticate('admin')
         .requestGetAccountList()
         .expectOkResponse()
         .expectValidResponseSchema(schema)

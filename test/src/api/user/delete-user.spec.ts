@@ -14,7 +14,7 @@ describe('DELETE /user/v1/users/{email}', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestDeleteUser(pendingUser.email)
         .expectUnauthorizedResponse();
     });
@@ -23,7 +23,7 @@ describe('DELETE /user/v1/users/{email}', () => {
   describe('called as an admin', () => {
     it('should delete user', () => {
       cy.createUser(pendingUser, true)
-        .authenticate(1)
+        .authenticate('admin')
         .requestDeleteUser(pendingUser.email)
         .expectNoContentResponse()
         .validateUserDeleted(pendingUser.email);
@@ -32,7 +32,7 @@ describe('DELETE /user/v1/users/{email}', () => {
     describe('should return error', () => {
       describe('if userId', () => {
         it('is not email', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestDeleteUser('not an email')
             .expectBadRequestResponse()
             .expectWrongPropertyFormat('email', 'email', 'pathParameters');

@@ -20,7 +20,7 @@ describe('POST user/v1/users/{email}/confirm', () => {
     describe('should confirm user', () => {
       it('with complete body', () => {
         cy.createUser(pendingUser, true)
-          .unauthenticate()
+          .authenticate('anonymous')
           .requestConfirmUser(pendingUser.email, request)
           .expectOkResponse()
           .validateUserInCognito({
@@ -33,7 +33,7 @@ describe('POST user/v1/users/{email}/confirm', () => {
     describe('should return error', () => {
       describe('if email', () => {
         it('is not email', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestConfirmUser('not-email', request)
             .expectBadRequestResponse()
             .expectWrongPropertyFormat('email', 'email', 'pathParameters');
@@ -42,7 +42,7 @@ describe('POST user/v1/users/{email}/confirm', () => {
 
       describe('if password', () => {
         it('is missing from body', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestConfirmUser(pendingUser.email, userDataFactory.confirmRequest({
               password: undefined,
             }))
@@ -51,7 +51,7 @@ describe('POST user/v1/users/{email}/confirm', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestConfirmUser(pendingUser.email, userDataFactory.confirmRequest({
               password: 1 as any,
             }))
@@ -60,7 +60,7 @@ describe('POST user/v1/users/{email}/confirm', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestConfirmUser(pendingUser.email, userDataFactory.confirmRequest({
               password: 'asdfg',
             }))
@@ -71,7 +71,7 @@ describe('POST user/v1/users/{email}/confirm', () => {
 
       describe('if temporaryPassword', () => {
         it('is missing from body', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestConfirmUser(pendingUser.email, userDataFactory.confirmRequest({
               temporaryPassword: undefined,
             }))
@@ -80,7 +80,7 @@ describe('POST user/v1/users/{email}/confirm', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestConfirmUser(pendingUser.email, userDataFactory.confirmRequest({
               temporaryPassword: 1 as any,
             }))
@@ -89,7 +89,7 @@ describe('POST user/v1/users/{email}/confirm', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestConfirmUser(pendingUser.email, userDataFactory.confirmRequest({
               temporaryPassword: 'asdfg',
             }))

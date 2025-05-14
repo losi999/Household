@@ -26,7 +26,7 @@ const splitTransactionHelper = (doc: Transaction.SplitDocument, split: Transacti
 describe('POST /transaction/v1/transactionReports', () => {
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestGetTransactionReports([])
         .expectUnauthorizedResponse();
     });
@@ -205,7 +205,7 @@ describe('POST /transaction/v1/transactionReports', () => {
           ]);
         });
         it('to include', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionReports([
               {
                 filterType: 'account',
@@ -226,7 +226,7 @@ describe('POST /transaction/v1/transactionReports', () => {
         });
 
         it('to exclude', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionReports([
               {
                 filterType: 'recipient',
@@ -318,7 +318,7 @@ describe('POST /transaction/v1/transactionReports', () => {
           ]);
         });
         it('to include', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionReports([
               {
                 filterType: 'recipient',
@@ -340,7 +340,7 @@ describe('POST /transaction/v1/transactionReports', () => {
         });
 
         it('to exclude', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionReports([
               {
                 filterType: 'account',
@@ -435,7 +435,7 @@ describe('POST /transaction/v1/transactionReports', () => {
           ]);
         });
         it('to include', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionReports([
               {
                 filterType: 'project',
@@ -455,7 +455,7 @@ describe('POST /transaction/v1/transactionReports', () => {
         });
 
         it('to exclude', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionReports([
               {
                 filterType: 'account',
@@ -558,7 +558,7 @@ describe('POST /transaction/v1/transactionReports', () => {
           ]);
         });
         it('to include', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionReports([
               {
                 filterType: 'category',
@@ -584,7 +584,7 @@ describe('POST /transaction/v1/transactionReports', () => {
         });
 
         it('to exclude', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionReports([
               {
                 filterType: 'account',
@@ -695,7 +695,7 @@ describe('POST /transaction/v1/transactionReports', () => {
           ]);
         });
         it('to include', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionReports([
               {
                 filterType: 'product',
@@ -715,7 +715,7 @@ describe('POST /transaction/v1/transactionReports', () => {
         });
 
         it('to exclude', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionReports([
               {
                 filterType: 'account',
@@ -824,7 +824,7 @@ describe('POST /transaction/v1/transactionReports', () => {
           ]);
         });
         it('to include a range', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionReports([
               {
                 filterType: 'account',
@@ -851,7 +851,7 @@ describe('POST /transaction/v1/transactionReports', () => {
         });
 
         it('to exclude a range', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionReports([
               {
                 filterType: 'account',
@@ -880,14 +880,14 @@ describe('POST /transaction/v1/transactionReports', () => {
     describe('should return error', () => {
       describe('if body', () => {
         it('is not an array', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionReports({} as any)
             .expectBadRequestResponse()
             .expectWrongPropertyType('data', 'array', 'body');
         });
 
         it('does not have at least one item', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionReports([])
             .expectBadRequestResponse()
             .expectTooFewItemsProperty('data', 1, 'body');
@@ -896,7 +896,7 @@ describe('POST /transaction/v1/transactionReports', () => {
 
       describe('if body[0]', () => {
         it('has additional properties', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionReports([
               {
                 filterType: 'account',
@@ -910,7 +910,7 @@ describe('POST /transaction/v1/transactionReports', () => {
         });
 
         it('is missing both "from" and "to" properties', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionReports([
               {
                 filterType: 'issuedAt',
@@ -927,7 +927,7 @@ describe('POST /transaction/v1/transactionReports', () => {
 
       describe('if body[0].include', () => {
         it('is missing', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionReports([
               {
                 filterType: 'account',
@@ -940,7 +940,7 @@ describe('POST /transaction/v1/transactionReports', () => {
         });
 
         it('is not boolean', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionReports([
               {
                 filterType: 'account',
@@ -955,7 +955,7 @@ describe('POST /transaction/v1/transactionReports', () => {
 
       describe('if body[0].filterType', () => {
         it('is missing', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionReports([
               {
                 filterType: undefined,
@@ -967,7 +967,7 @@ describe('POST /transaction/v1/transactionReports', () => {
             .expectRequiredProperty ('filterType', 'body');
         });
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionReports([
               {
                 filterType: 1 as any,
@@ -979,7 +979,7 @@ describe('POST /transaction/v1/transactionReports', () => {
             .expectWrongPropertyType ('filterType', 'string', 'body');
         });
         it('is not a valid enum value', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionReports([
               {
                 filterType: 'not filter type' as any,
@@ -994,7 +994,7 @@ describe('POST /transaction/v1/transactionReports', () => {
 
       describe('if body[0].items', () => {
         it('is missing', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionReports([
               {
                 filterType: 'account',
@@ -1006,7 +1006,7 @@ describe('POST /transaction/v1/transactionReports', () => {
             .expectRequiredProperty ('items', 'body');
         });
         it('is not an array', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionReports([
               {
                 filterType: 'account',
@@ -1018,7 +1018,7 @@ describe('POST /transaction/v1/transactionReports', () => {
             .expectWrongPropertyType ('items', 'array', 'body');
         });
         it('has less than 1 item', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionReports([
               {
                 filterType: 'account',
@@ -1033,7 +1033,7 @@ describe('POST /transaction/v1/transactionReports', () => {
 
       describe('if body[0].items[0]', () => {
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionReports([
               {
                 filterType: 'account',
@@ -1045,7 +1045,7 @@ describe('POST /transaction/v1/transactionReports', () => {
             .expectWrongPropertyType('items/0', 'string', 'body');
         });
         it('does not match pattern', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionReports([
               {
                 filterType: 'account',
@@ -1060,7 +1060,7 @@ describe('POST /transaction/v1/transactionReports', () => {
 
       describe('if body[0].from', () => {
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionReports([
               {
                 filterType: 'issuedAt',
@@ -1073,7 +1073,7 @@ describe('POST /transaction/v1/transactionReports', () => {
             .expectWrongPropertyType('from', 'string', 'body');
         });
         it('is not a date', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionReports([
               {
                 filterType: 'issuedAt',
@@ -1089,7 +1089,7 @@ describe('POST /transaction/v1/transactionReports', () => {
 
       describe('if body[0].to', () => {
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionReports([
               {
                 filterType: 'issuedAt',
@@ -1102,7 +1102,7 @@ describe('POST /transaction/v1/transactionReports', () => {
             .expectWrongPropertyType('to', 'string', 'body');
         });
         it('is not a date', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionReports([
               {
                 filterType: 'issuedAt',
@@ -1116,7 +1116,7 @@ describe('POST /transaction/v1/transactionReports', () => {
         });
 
         it('is earlier than "from"', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransactionReports([
               {
                 filterType: 'issuedAt',

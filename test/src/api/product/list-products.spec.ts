@@ -32,7 +32,7 @@ describe('GET /product/v1/products', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestGetProductList()
         .expectUnauthorizedResponse();
     });
@@ -48,7 +48,7 @@ describe('GET /product/v1/products', () => {
           categoryDocument1,
           categoryDocument2,
         ])
-        .authenticate(1)
+        .authenticate('admin')
         .requestGetProductList()
         .expectOkResponse()
         .expectValidResponseSchema(schema)

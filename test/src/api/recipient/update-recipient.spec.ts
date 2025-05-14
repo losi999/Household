@@ -14,7 +14,7 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestUpdateRecipient(recipientDataFactory.id(), request)
         .expectUnauthorizedResponse();
     });
@@ -23,7 +23,7 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
   describe('called as an admin', () => {
     it('should update a recipient', () => {
       cy.saveRecipientDocument(recipientDocument)
-        .authenticate(1)
+        .authenticate('admin')
         .requestUpdateRecipient(getRecipientId(recipientDocument), request)
         .expectCreatedResponse()
         .validateRecipientDocument(request);
@@ -32,7 +32,7 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
     describe('should return error', () => {
       describe('if name', () => {
         it('is missing from body', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestUpdateRecipient(recipientDataFactory.id(), recipientDataFactory.request({
               name: undefined,
             }))
@@ -41,7 +41,7 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestUpdateRecipient(recipientDataFactory.id(), recipientDataFactory.request({
               name: <any>1,
             }))
@@ -50,7 +50,7 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestUpdateRecipient(recipientDataFactory.id(), recipientDataFactory.request({
               name: '',
             }))
@@ -63,7 +63,7 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
 
           cy.saveRecipientDocument(recipientDocument)
             .saveRecipientDocument(updatedRecipientDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestUpdateRecipient(getRecipientId(recipientDocument), request)
             .expectBadRequestResponse()
             .expectMessage('Duplicate recipient name');
@@ -72,14 +72,14 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
 
       describe('if recipientId', () => {
         it('is not mongo id', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestUpdateRecipient(recipientDataFactory.id('not-valid'), request)
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('recipientId', 'pathParameters');
         });
 
         it('does not belong to any recipient', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestUpdateRecipient(recipientDataFactory.id(), request)
             .expectNotFoundResponse();
         });

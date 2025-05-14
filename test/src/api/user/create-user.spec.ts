@@ -10,7 +10,7 @@ describe('POST user/v1/users', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestCreateUser(request)
         .expectUnauthorizedResponse();
     });
@@ -23,7 +23,7 @@ describe('POST user/v1/users', () => {
   describe('called as an admin', () => {
     describe('should create user', () => {
       it('with complete body', () => {
-        cy.authenticate(1)
+        cy.authenticate('admin')
           .requestCreateUser(request)
           .expectCreatedResponse()
           .validateUserInCognito(request);
@@ -33,7 +33,7 @@ describe('POST user/v1/users', () => {
     describe('should return error', () => {
       describe('if email', () => {
         it('is missing from body', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateUser(userDataFactory.request({
               email: undefined,
             }))
@@ -42,7 +42,7 @@ describe('POST user/v1/users', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateUser(userDataFactory.request({
               email: <any>1,
             }))
@@ -51,7 +51,7 @@ describe('POST user/v1/users', () => {
         });
 
         it('is not email', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateUser(userDataFactory.request({
               email: 'not-email',
             }))
@@ -61,7 +61,7 @@ describe('POST user/v1/users', () => {
 
         it('is already in used by a different user', () => {
           cy.createUser(request, true)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreateUser(request)
             .expectBadRequestResponse()
             .expectMessage('Duplicate user email');

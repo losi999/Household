@@ -27,7 +27,7 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestMergeCategories(categoryDataFactory.id(), [categoryDataFactory.id()])
         .expectUnauthorizedResponse();
     });
@@ -48,7 +48,7 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
           targetCategoryDocument,
           childOfSourceCategoryDocument,
         ])
-          .authenticate(1)
+          .authenticate('admin')
           .requestMergeCategories(getCategoryId(targetCategoryDocument), [getCategoryId(sourceCategoryDocument)])
           .expectCreatedResponse()
           .validateCategoryDeleted(getCategoryId(sourceCategoryDocument))
@@ -77,7 +77,7 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
           targetCategoryDocument,
         ])
           .saveProductDocument(productDocument)
-          .authenticate(1)
+          .authenticate('admin')
           .requestMergeCategories(getCategoryId(targetCategoryDocument), [getCategoryId(sourceCategoryDocument)])
           .expectCreatedResponse()
           .validateCategoryDeleted(getCategoryId(sourceCategoryDocument))
@@ -228,7 +228,7 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
               unrelatedDeferredTransactionDocument,
               unrelatedReimbursementTransactionDocument,
             ])
-              .authenticate(1)
+              .authenticate('admin')
               .requestMergeCategories(getCategoryId(targetCategoryDocument), [getCategoryId(sourceCategoryDocument)])
               .expectCreatedResponse()
               .validateCategoryDeleted(getCategoryId(sourceCategoryDocument));
@@ -289,7 +289,7 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
           sourceCategoryDocument,
           targetCategoryDocument,
         ])
-          .authenticate(1)
+          .authenticate('admin')
           .requestMergeCategories(getCategoryId(targetCategoryDocument), [
             getCategoryId(sourceCategoryDocument),
             categoryDataFactory.id(),
@@ -309,7 +309,7 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
           targetCategoryDocument,
           otherTypeCategoryDocument,
         ])
-          .authenticate(1)
+          .authenticate('admin')
           .requestMergeCategories(getCategoryId(targetCategoryDocument), [
             getCategoryId(sourceCategoryDocument),
             getCategoryId(otherTypeCategoryDocument),
@@ -330,7 +330,7 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
           sourceCategoryDocument,
           targetCategoryDocument,
         ])
-          .authenticate(1)
+          .authenticate('admin')
           .requestMergeCategories(getCategoryId(targetCategoryDocument), [getCategoryId(sourceCategoryDocument)])
           .expectBadRequestResponse()
           .expectMessage('A source category is among the target category ancestors');
@@ -338,14 +338,14 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
 
       describe('if body', () => {
         it('is not array', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestMergeCategories(categoryDataFactory.id(), {} as any)
             .expectBadRequestResponse()
             .expectWrongPropertyType('data', 'array', 'body');
         });
 
         it('has too few items', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestMergeCategories(categoryDataFactory.id(), [])
             .expectBadRequestResponse()
             .expectTooFewItemsProperty('data', 1, 'body');
@@ -354,14 +354,14 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
 
       describe('if body[0]', () => {
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestMergeCategories(categoryDataFactory.id(), [1] as any)
             .expectBadRequestResponse()
             .expectWrongPropertyType('data', 'string', 'body');
         });
 
         it('is not a valid mongo id', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestMergeCategories(categoryDataFactory.id(), [categoryDataFactory.id('not-valid')])
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('data', 'body');
@@ -370,14 +370,14 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
 
       describe('is categoryId', () => {
         it('is not a valid mongo id', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestMergeCategories(categoryDataFactory.id('not-valid'), [categoryDataFactory.id()])
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('categoryId', 'pathParameters');
         });
 
         it('does not belong to any category', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestMergeCategories(categoryDataFactory.id(), [getCategoryId(sourceCategoryDocument)])
             .expectBadRequestResponse()
             .expectMessage('Some of the categories are not found');

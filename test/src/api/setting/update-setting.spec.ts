@@ -12,7 +12,7 @@ describe('POST /setting/v1/settings/{settingKey}', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestUpdateSetting(settingKey, request)
         .expectUnauthorizedResponse();
     });
@@ -21,7 +21,7 @@ describe('POST /setting/v1/settings/{settingKey}', () => {
   describe('called as an admin', () => {
     describe('should update setting', () => {
       it('with complete body', () => {
-        cy.authenticate(1)
+        cy.authenticate('admin')
           .requestUpdateSetting(settingKey, request)
           .expectNoContentResponse()
           .validateSettingDocument(settingKey, request);
@@ -31,7 +31,7 @@ describe('POST /setting/v1/settings/{settingKey}', () => {
     describe('should return error', () => {
       describe('if value', () => {
         it('is missing from body', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestUpdateSetting(settingKey, settingDataFactory.request({
               value: undefined,
             }))
@@ -40,7 +40,7 @@ describe('POST /setting/v1/settings/{settingKey}', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestUpdateSetting(settingKey, settingDataFactory.request({
               value: {} as any,
             }))
@@ -49,7 +49,7 @@ describe('POST /setting/v1/settings/{settingKey}', () => {
         });
 
         it('is not number', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestUpdateSetting(settingKey, settingDataFactory.request({
               value: {} as any,
             }))
@@ -58,7 +58,7 @@ describe('POST /setting/v1/settings/{settingKey}', () => {
         });
 
         it('is not boolean', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestUpdateSetting(settingKey, settingDataFactory.request({
               value: {} as any,
             }))
@@ -67,7 +67,7 @@ describe('POST /setting/v1/settings/{settingKey}', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestUpdateSetting(settingKey, settingDataFactory.request({
               value: '',
             }))

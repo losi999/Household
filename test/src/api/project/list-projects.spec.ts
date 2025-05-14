@@ -13,7 +13,7 @@ describe('GET /project/v1/projects', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestGetProjectList()
         .expectUnauthorizedResponse();
     });
@@ -23,7 +23,7 @@ describe('GET /project/v1/projects', () => {
     it('should get a list of projects', () => {
       cy.saveProjectDocument(projectDocument1)
         .saveProjectDocument(projectDocument2)
-        .authenticate(1)
+        .authenticate('admin')
         .requestGetProjectList()
         .expectOkResponse()
         .expectValidResponseSchema(schema)
