@@ -3,6 +3,8 @@ import { User } from '@household/shared/types/types';
 import { userDataFactory } from './data-factory';
 import { UserType } from '@household/shared/enums';
 
+const allowedUserTypes = [UserType.Editor];
+
 describe('GET /user/v1/users', () => {
   let pendingUser: User.Request;
   let confirmedUser: User.Request;
@@ -25,19 +27,29 @@ describe('GET /user/v1/users', () => {
     });
   });
 
-  describe('called as an editor', () => {
-    it('should get a list of users', () => {
-      cy.createUser(pendingUser, UserType.Editor, true)
-        .createUser(confirmedUser, UserType.Editor, true)
-        .authenticate(UserType.Editor)
-        .requestGetUserList()
-        .expectOkResponse()
-        .expectValidResponseSchema(schema)
-        .validateUserListResponse([
-          pendingUser,
-          confirmedUser,
-        ]);
+  Object.values(UserType).forEach((userType) => {
+    describe(`called as ${userType}`, () => {
+      if (!allowedUserTypes.includes(userType)) {
+        it('should return forbidden', () => {
+          cy.authenticate(userType)
+            .requestGetUserList()
+            .expectForbiddenResponse();
+        });
+      } else {
+        it('should get a list of users', () => {
+          cy.createUser(pendingUser, UserType.Editor, true)
+            .createUser(confirmedUser, UserType.Editor, true)
+            .authenticate(userType)
+            .requestGetUserList()
+            .expectOkResponse()
+            .expectValidResponseSchema(schema)
+            .validateUserListResponse([
+              pendingUser,
+              confirmedUser,
+            ]);
 
+        });
+      }
     });
   });
 });

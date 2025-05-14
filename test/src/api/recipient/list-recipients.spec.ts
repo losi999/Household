@@ -3,6 +3,11 @@ import { Recipient } from '@household/shared/types/types';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
 import { UserType } from '@household/shared/enums';
 
+const allowedUserTypes = [
+  UserType.Editor,
+  UserType.Viewer,
+];
+
 describe('GET /recipient/v1/recipients', () => {
   let recipientDocument1: Recipient.Document;
   let recipientDocument2: Recipient.Document;
@@ -20,18 +25,28 @@ describe('GET /recipient/v1/recipients', () => {
     });
   });
 
-  describe('called as an editor', () => {
-    it('should get a list of recipients', () => {
-      cy.saveRecipientDocument(recipientDocument1)
-        .saveRecipientDocument(recipientDocument2)
-        .authenticate(UserType.Editor)
-        .requestGetRecipientList()
-        .expectOkResponse()
-        .expectValidResponseSchema(schema)
-        .validateRecipientListResponse([
-          recipientDocument1,
-          recipientDocument2,
-        ]);
+  Object.values(UserType).forEach((userType) => {
+    describe(`called as ${userType}`, () => {
+      if (!allowedUserTypes.includes(userType)) {
+        it('should return forbidden', () => {
+          cy.authenticate(userType)
+            .requestGetRecipientList()
+            .expectForbiddenResponse();
+        });
+      } else {
+        it('should get a list of recipients', () => {
+          cy.saveRecipientDocument(recipientDocument1)
+            .saveRecipientDocument(recipientDocument2)
+            .authenticate(userType)
+            .requestGetRecipientList()
+            .expectOkResponse()
+            .expectValidResponseSchema(schema)
+            .validateRecipientListResponse([
+              recipientDocument1,
+              recipientDocument2,
+            ]);
+        });
+      }
     });
   });
 });

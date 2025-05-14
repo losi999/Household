@@ -8,12 +8,15 @@ import { accountService } from '@household/shared/dependencies/services/account-
 import { transactionService } from '@household/shared/dependencies/services/transaction-service';
 import { default as index } from '@household/api/handlers/index.handler';
 import { transferTransactionDocumentConverter } from '@household/shared/dependencies/converters/transfer-transaction-document-converter';
+import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';
+import { UserType } from '@household/shared/enums';
 
 const updateToTransferTransactionService = updateToTransferTransactionServiceFactory(accountService, transactionService, transferTransactionDocumentConverter);
 
 export default index({
   handler: handler(updateToTransferTransactionService),
   before: [
+    authorizer(UserType.Editor),
     apiRequestValidator({
       body,
       pathParameters,

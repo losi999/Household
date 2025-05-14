@@ -4,6 +4,11 @@ import { getRecipientId } from '@household/shared/common/utils';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
 import { UserType } from '@household/shared/enums';
 
+const allowedUserTypes = [
+  UserType.Editor,
+  UserType.Viewer,
+];
+
 describe('GET /recipient/v1/recipients/{recipientId}', () => {
   let recipientDocument: Recipient.Document;
 
@@ -19,29 +24,39 @@ describe('GET /recipient/v1/recipients/{recipientId}', () => {
     });
   });
 
-  describe('called as an editor', () => {
-    it('should get recipient by id', () => {
-      cy.saveRecipientDocument(recipientDocument)
-        .authenticate(UserType.Editor)
-        .requestGetRecipient(getRecipientId(recipientDocument))
-        .expectOkResponse()
-        .expectValidResponseSchema(schema)
-        .validateRecipientResponse(recipientDocument);
-    });
+  Object.values(UserType).forEach((userType) => {
+    describe(`called as ${userType}`, () => {
+      if (!allowedUserTypes.includes(userType)) {
+        it('should return forbidden', () => {
+          cy.authenticate(userType)
+            .requestGetRecipient(recipientDataFactory.id())
+            .expectForbiddenResponse();
+        });
+      } else {
+        it('should get recipient by id', () => {
+          cy.saveRecipientDocument(recipientDocument)
+            .authenticate(userType)
+            .requestGetRecipient(getRecipientId(recipientDocument))
+            .expectOkResponse()
+            .expectValidResponseSchema(schema)
+            .validateRecipientResponse(recipientDocument);
+        });
 
-    describe('should return error if recipientId', () => {
-      it('is not mongo id', () => {
-        cy.authenticate(UserType.Editor)
-          .requestGetRecipient(recipientDataFactory.id('not-valid'))
-          .expectBadRequestResponse()
-          .expectWrongPropertyPattern('recipientId', 'pathParameters');
-      });
+        describe('should return error if recipientId', () => {
+          it('is not mongo id', () => {
+            cy.authenticate(userType)
+              .requestGetRecipient(recipientDataFactory.id('not-valid'))
+              .expectBadRequestResponse()
+              .expectWrongPropertyPattern('recipientId', 'pathParameters');
+          });
 
-      it('does not belong to any recipient', () => {
-        cy.authenticate(UserType.Editor)
-          .requestGetRecipient(recipientDataFactory.id())
-          .expectNotFoundResponse();
-      });
+          it('does not belong to any recipient', () => {
+            cy.authenticate(userType)
+              .requestGetRecipient(recipientDataFactory.id())
+              .expectNotFoundResponse();
+          });
+        });
+      }
     });
   });
 });

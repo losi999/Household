@@ -6,12 +6,15 @@ import { apiRequestValidator } from '@household/api/dependencies/handlers/api-re
 import { default as pathParameters } from '@household/shared/schemas/project-id';
 import { projectService } from '@household/shared/dependencies/services/project-service';
 import { default as index } from '@household/api/handlers/index.handler';
+import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';
+import { UserType } from '@household/shared/enums';
 
 const getProjectService = getProjectServiceFactory(projectService, projectDocumentConverter);
 
 export default index({
   handler: handler(getProjectService),
   before: [
+    authorizer(UserType.Editor, UserType.Viewer),
     apiRequestValidator({
       pathParameters,
     }),

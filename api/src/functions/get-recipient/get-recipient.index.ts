@@ -6,12 +6,15 @@ import { apiRequestValidator } from '@household/api/dependencies/handlers/api-re
 import { default as pathParameters } from '@household/shared/schemas/recipient-id';
 import { recipientService } from '@household/shared/dependencies/services/recipient-service';
 import { default as index } from '@household/api/handlers/index.handler';
+import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';
+import { UserType } from '@household/shared/enums';
 
 const getRecipientService = getRecipientServiceFactory(recipientService, recipientDocumentConverter);
 
 export default index({
   handler: handler(getRecipientService),
   before: [
+    authorizer(UserType.Editor, UserType.Viewer),
     apiRequestValidator({
       pathParameters,
     }),

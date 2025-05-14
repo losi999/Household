@@ -9,6 +9,11 @@ import { deferredTransactionDataFactory } from '@household/test/api/transaction/
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { AccountType, UserType } from '@household/shared/enums';
 
+const allowedUserTypes = [
+  UserType.Editor,
+  UserType.Viewer,
+];
+
 describe('GET /account/v1/accounts/{accountId}', () => {
   let accountDocument: Account.Document;
   let loanAccountDocument: Account.Document;
@@ -115,62 +120,72 @@ describe('GET /account/v1/accounts/{accountId}', () => {
     });
   });
 
-  describe('called as an editor', () => {
-    beforeEach(() => {
-      cy.saveAccountDocuments([
-        loanAccountDocument,
-        accountDocument,
-        secondaryAccountDocument,
-      ])
-        .saveTransactionDocuments([
-          paymentTransactionDocument,
-          splitTransactionDocument,
-          transferTransactionDocument,
-          invertedTransferTransactionDocument,
-          loanTransferTransactionDocument,
-          invertedLoanTransferTransactionDocument,
-          payingDeferredTransactionDocument,
-          owningDeferredTransactionDocument,
-          payingDeferredToLoanTransactionDocument,
-          owningReimbursementTransactionDocument,
-          deferredSplitTransactionDocument,
-          repayingTransferTransactionDocument,
-          invertedRepayingTransferTransactionDocument,
-        ]);
-    });
-    it('should get account by id', () => {
-      const expectedBalance = paymentTransactionDocument.amount + transferTransactionDocument.amount + invertedTransferTransactionDocument.transferAmount + splitTransactionDocument.amount + loanTransferTransactionDocument.amount + invertedLoanTransferTransactionDocument.transferAmount + payingDeferredTransactionDocument.amount + repayingTransferTransactionDocument.amount + invertedRepayingTransferTransactionDocument.transferAmount + payingDeferredToLoanTransactionDocument.amount;
+  Object.values(UserType).forEach((userType) => {
+    describe(`called as ${userType}`, () => {
+      if (!allowedUserTypes.includes(userType)) {
+        it('should return forbidden', () => {
+          cy.authenticate(userType)
+            .requestGetAccount(accountDataFactory.id())
+            .expectForbiddenResponse();
+        });
+      } else {
+        beforeEach(() => {
+          cy.saveAccountDocuments([
+            loanAccountDocument,
+            accountDocument,
+            secondaryAccountDocument,
+          ])
+            .saveTransactionDocuments([
+              paymentTransactionDocument,
+              splitTransactionDocument,
+              transferTransactionDocument,
+              invertedTransferTransactionDocument,
+              loanTransferTransactionDocument,
+              invertedLoanTransferTransactionDocument,
+              payingDeferredTransactionDocument,
+              owningDeferredTransactionDocument,
+              payingDeferredToLoanTransactionDocument,
+              owningReimbursementTransactionDocument,
+              deferredSplitTransactionDocument,
+              repayingTransferTransactionDocument,
+              invertedRepayingTransferTransactionDocument,
+            ]);
+        });
+        it('should get account by id', () => {
+          const expectedBalance = paymentTransactionDocument.amount + transferTransactionDocument.amount + invertedTransferTransactionDocument.transferAmount + splitTransactionDocument.amount + loanTransferTransactionDocument.amount + invertedLoanTransferTransactionDocument.transferAmount + payingDeferredTransactionDocument.amount + repayingTransferTransactionDocument.amount + invertedRepayingTransferTransactionDocument.transferAmount + payingDeferredToLoanTransactionDocument.amount;
 
-      cy.authenticate(UserType.Editor)
-        .requestGetAccount(getAccountId(accountDocument))
-        .expectOkResponse()
-        .expectValidResponseSchema(schema)
-        .validateAccountResponse(accountDocument, expectedBalance);
-    });
+          cy.authenticate(userType)
+            .requestGetAccount(getAccountId(accountDocument))
+            .expectOkResponse()
+            .expectValidResponseSchema(schema)
+            .validateAccountResponse(accountDocument, expectedBalance);
+        });
 
-    it('should get loan account by id', () => {
-      const expectedBalance = loanTransferTransactionDocument.transferAmount + invertedLoanTransferTransactionDocument.amount - deferredSplitTransactionDocument.deferredSplits[1].amount + owningReimbursementTransactionDocument.amount - payingDeferredToLoanTransactionDocument.amount;
+        it('should get loan account by id', () => {
+          const expectedBalance = loanTransferTransactionDocument.transferAmount + invertedLoanTransferTransactionDocument.amount - deferredSplitTransactionDocument.deferredSplits[1].amount + owningReimbursementTransactionDocument.amount - payingDeferredToLoanTransactionDocument.amount;
 
-      cy.authenticate(UserType.Editor)
-        .requestGetAccount(getAccountId(loanAccountDocument))
-        .expectOkResponse()
-        .expectValidResponseSchema(schema)
-        .validateAccountResponse(loanAccountDocument, expectedBalance);
-    });
+          cy.authenticate(userType)
+            .requestGetAccount(getAccountId(loanAccountDocument))
+            .expectOkResponse()
+            .expectValidResponseSchema(schema)
+            .validateAccountResponse(loanAccountDocument, expectedBalance);
+        });
 
-    describe('should return error if accountId', () => {
-      it('is not mongo id', () => {
-        cy.authenticate(UserType.Editor)
-          .requestGetAccount(accountDataFactory.id('not-valid'))
-          .expectBadRequestResponse()
-          .expectWrongPropertyPattern('accountId', 'pathParameters');
-      });
+        describe('should return error if accountId', () => {
+          it('is not mongo id', () => {
+            cy.authenticate(userType)
+              .requestGetAccount(accountDataFactory.id('not-valid'))
+              .expectBadRequestResponse()
+              .expectWrongPropertyPattern('accountId', 'pathParameters');
+          });
 
-      it('does not belong to any account', () => {
-        cy.authenticate(UserType.Editor)
-          .requestGetAccount(accountDataFactory.id())
-          .expectNotFoundResponse();
-      });
+          it('does not belong to any account', () => {
+            cy.authenticate(userType)
+              .requestGetAccount(accountDataFactory.id())
+              .expectNotFoundResponse();
+          });
+        });
+      }
     });
   });
 });

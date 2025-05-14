@@ -3,6 +3,8 @@ import { fileDataFactory } from './data-factory';
 import { default as schema } from '@household/test/api/schemas/file-url-response';
 import { UserType } from '@household/shared/enums';
 
+const allowedUserTypes = [UserType.Editor];
+
 describe('POST /file/v1/files', () => {
   let request: File.Request;
 
@@ -18,77 +20,87 @@ describe('POST /file/v1/files', () => {
     });
   });
 
-  describe('called as an editor', () => {
-    describe('should upload file', () => {
-      it('with complete body', () => {
-        cy.authenticate(UserType.Editor)
-          .requestCreateUploadUrl(request)
-          .expectOkResponse()
-          .expectValidResponseSchema(schema)
-          .validateFileDocument(request)
-          .requestUploadFile()
-          .validateFileInS3();
-      });
-    });
-
-    describe('should return error', () => {
-      describe('if fileType', () => {
-        it('is missing from body', () => {
-          cy.authenticate(UserType.Editor)
-            .requestCreateUploadUrl(fileDataFactory.request({
-              fileType: undefined,
-            }))
-            .expectBadRequestResponse()
-            .expectRequiredProperty('fileType', 'body');
+  Object.values(UserType).forEach((userType) => {
+    describe(`called as ${userType}`, () => {
+      if (!allowedUserTypes.includes(userType)) {
+        it('should return forbidden', () => {
+          cy.authenticate(userType)
+            .requestCreateUploadUrl(request)
+            .expectForbiddenResponse();
+        });
+      } else {
+        describe('should upload file', () => {
+          it('with complete body', () => {
+            cy.authenticate(userType)
+              .requestCreateUploadUrl(request)
+              .expectOkResponse()
+              .expectValidResponseSchema(schema)
+              .validateFileDocument(request)
+              .requestUploadFile()
+              .validateFileInS3();
+          });
         });
 
-        it('is not string', () => {
-          cy.authenticate(UserType.Editor)
-            .requestCreateUploadUrl(fileDataFactory.request({
-              fileType: 1 as any,
-            }))
-            .expectBadRequestResponse()
-            .expectWrongPropertyType('fileType', 'string', 'body');
-        });
+        describe('should return error', () => {
+          describe('if fileType', () => {
+            it('is missing from body', () => {
+              cy.authenticate(userType)
+                .requestCreateUploadUrl(fileDataFactory.request({
+                  fileType: undefined,
+                }))
+                .expectBadRequestResponse()
+                .expectRequiredProperty('fileType', 'body');
+            });
 
-        it('is not a valid enum value', () => {
-          cy.authenticate(UserType.Editor)
-            .requestCreateUploadUrl(fileDataFactory.request({
-              fileType: 'not-enum' as any,
-            }))
-            .expectBadRequestResponse()
-            .expectWrongEnumValue('fileType', 'body');
-        });
-      });
+            it('is not string', () => {
+              cy.authenticate(userType)
+                .requestCreateUploadUrl(fileDataFactory.request({
+                  fileType: 1 as any,
+                }))
+                .expectBadRequestResponse()
+                .expectWrongPropertyType('fileType', 'string', 'body');
+            });
 
-      describe('if timezone', () => {
-        it('is missing from body', () => {
-          cy.authenticate(UserType.Editor)
-            .requestCreateUploadUrl(fileDataFactory.request({
-              timezone: undefined,
-            }))
-            .expectBadRequestResponse()
-            .expectRequiredProperty('timezone', 'body');
-        });
+            it('is not a valid enum value', () => {
+              cy.authenticate(userType)
+                .requestCreateUploadUrl(fileDataFactory.request({
+                  fileType: 'not-enum' as any,
+                }))
+                .expectBadRequestResponse()
+                .expectWrongEnumValue('fileType', 'body');
+            });
+          });
 
-        it('is not string', () => {
-          cy.authenticate(UserType.Editor)
-            .requestCreateUploadUrl(fileDataFactory.request({
-              timezone: 1 as any,
-            }))
-            .expectBadRequestResponse()
-            .expectWrongPropertyType('timezone', 'string', 'body');
-        });
+          describe('if timezone', () => {
+            it('is missing from body', () => {
+              cy.authenticate(userType)
+                .requestCreateUploadUrl(fileDataFactory.request({
+                  timezone: undefined,
+                }))
+                .expectBadRequestResponse()
+                .expectRequiredProperty('timezone', 'body');
+            });
 
-        it('is too short', () => {
-          cy.authenticate(UserType.Editor)
-            .requestCreateUploadUrl(fileDataFactory.request({
-              timezone: '',
-            }))
-            .expectBadRequestResponse()
-            .expectTooShortProperty('timezone', 1, 'body');
+            it('is not string', () => {
+              cy.authenticate(userType)
+                .requestCreateUploadUrl(fileDataFactory.request({
+                  timezone: 1 as any,
+                }))
+                .expectBadRequestResponse()
+                .expectWrongPropertyType('timezone', 'string', 'body');
+            });
+
+            it('is too short', () => {
+              cy.authenticate(userType)
+                .requestCreateUploadUrl(fileDataFactory.request({
+                  timezone: '',
+                }))
+                .expectBadRequestResponse()
+                .expectTooShortProperty('timezone', 1, 'body');
+            });
+          });
         });
-      });
+      }
     });
   });
 });

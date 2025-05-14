@@ -4,6 +4,8 @@ import { draftTransactionDataFactory } from '@household/test/api/transaction/dra
 import { getFileId, getTransactionId } from '@household/shared/common/utils';
 import { UserType } from '@household/shared/enums';
 
+const allowedUserTypes = [UserType.Editor];
+
 describe('DELETE /file/v1/files/{fileId}', () => {
   let fileDocument: File.Document;
   let draftDocument: Transaction.DraftDocument;
@@ -23,29 +25,39 @@ describe('DELETE /file/v1/files/{fileId}', () => {
     });
   });
 
-  describe('called as an editor', () => {
-    it('should delete file', () => {
-      cy.saveFileDocument(fileDocument)
-        .saveTransactionDocument(draftDocument)
-        .writeFileToS3(getFileId(fileDocument), 'file', '')
-        .authenticate(UserType.Editor)
-        .requestDeleteFile(getFileId(fileDocument))
-        .expectNoContentResponse()
-        .validateFileDeleted(getFileId(fileDocument))
-        .validateTransactionDeleted(getTransactionId(draftDocument))
-        .validateFileDeletedFromS3(getFileId(fileDocument));
+  Object.values(UserType).forEach((userType) => {
+    describe(`called as ${userType}`, () => {
+      if (!allowedUserTypes.includes(userType)) {
+        it('should return forbidden', () => {
+          cy.authenticate(userType)
+            .requestDeleteFile(fileDataFactory.id())
+            .expectForbiddenResponse();
+        });
+      } else {
+        it('should delete file', () => {
+          cy.saveFileDocument(fileDocument)
+            .saveTransactionDocument(draftDocument)
+            .writeFileToS3(getFileId(fileDocument), 'file', '')
+            .authenticate(userType)
+            .requestDeleteFile(getFileId(fileDocument))
+            .expectNoContentResponse()
+            .validateFileDeleted(getFileId(fileDocument))
+            .validateTransactionDeleted(getTransactionId(draftDocument))
+            .validateFileDeletedFromS3(getFileId(fileDocument));
 
-    });
-  });
+        });
 
-  describe('should return error', () => {
-    describe('if fileId', () => {
-      it('is not mongo id', () => {
-        cy.authenticate(UserType.Editor)
-          .requestDeleteFile(fileDataFactory.id('not-valid'))
-          .expectBadRequestResponse()
-          .expectWrongPropertyPattern('fileId', 'pathParameters');
-      });
+        describe('should return error', () => {
+          describe('if fileId', () => {
+            it('is not mongo id', () => {
+              cy.authenticate(userType)
+                .requestDeleteFile(fileDataFactory.id('not-valid'))
+                .expectBadRequestResponse()
+                .expectWrongPropertyPattern('fileId', 'pathParameters');
+            });
+          });
+        });
+      }
     });
   });
 });

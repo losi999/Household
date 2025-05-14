@@ -3,6 +3,11 @@ import { Project } from '@household/shared/types/types';
 import { projectDataFactory } from './data-factory';
 import { UserType } from '@household/shared/enums';
 
+const allowedUserTypes = [
+  UserType.Editor,
+  UserType.Viewer,
+];
+
 describe('GET /project/v1/projects', () => {
   let projectDocument1: Project.Document;
   let projectDocument2: Project.Document;
@@ -20,18 +25,28 @@ describe('GET /project/v1/projects', () => {
     });
   });
 
-  describe('called as an editor', () => {
-    it('should get a list of projects', () => {
-      cy.saveProjectDocument(projectDocument1)
-        .saveProjectDocument(projectDocument2)
-        .authenticate(UserType.Editor)
-        .requestGetProjectList()
-        .expectOkResponse()
-        .expectValidResponseSchema(schema)
-        .validateProjectListResponse([
-          projectDocument1,
-          projectDocument2,
-        ]);
+  Object.values(UserType).forEach((userType) => {
+    describe(`called as ${userType}`, () => {
+      if (!allowedUserTypes.includes(userType)) {
+        it('should return forbidden', () => {
+          cy.authenticate(userType)
+            .requestGetProjectList()
+            .expectForbiddenResponse();
+        });
+      } else {
+        it('should get a list of projects', () => {
+          cy.saveProjectDocument(projectDocument1)
+            .saveProjectDocument(projectDocument2)
+            .authenticate(userType)
+            .requestGetProjectList()
+            .expectOkResponse()
+            .expectValidResponseSchema(schema)
+            .validateProjectListResponse([
+              projectDocument1,
+              projectDocument2,
+            ]);
+        });
+      }
     });
   });
 });

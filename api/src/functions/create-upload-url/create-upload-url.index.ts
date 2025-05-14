@@ -7,12 +7,15 @@ import { cors } from '@household/api/dependencies/handlers/cors.handler';
 import { default as body } from '@household/shared/schemas/file-request';
 import { fileService } from '@household/shared/dependencies/services/file-service';
 import { fileDocumentConverter } from '@household/shared/dependencies/converters/file-document-converter';
+import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';
+import { UserType } from '@household/shared/enums';
 
 const createUploadUrlService = createUploadUrlServiceFactory(fileService, fileDocumentConverter, importStorageService);
 
 export default index({
   handler: handler(createUploadUrlService),
   before: [
+    authorizer(UserType.Editor),
     apiRequestValidator({
       body,
     }),

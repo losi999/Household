@@ -3,6 +3,11 @@ import { Setting } from '@household/shared/types/types';
 import { settingDataFactory } from './data-factory';
 import { UserType } from '@household/shared/enums';
 
+const allowedUserTypes = [
+  UserType.Editor,
+  UserType.Viewer,
+];
+
 describe('GET /setting/v1/settings', () => {
   let settingKey1: Setting.Id;
   let settingKey2: Setting.Id;
@@ -24,18 +29,28 @@ describe('GET /setting/v1/settings', () => {
     });
   });
 
-  describe('called as an editor', () => {
-    it('should get a list of settings', () => {
-      cy.updateSettingDocument(settingKey1, settingDataFactory.update(settingRequest1))
-        .updateSettingDocument(settingKey2, settingDataFactory.update(settingRequest2))
-        .authenticate(UserType.Editor)
-        .requestGetSettingList()
-        .expectOkResponse()
-        .expectValidResponseSchema(schema)
-        .validateSettingListResponse([
-          settingDataFactory.document(settingKey1, settingRequest1),
-          settingDataFactory.document(settingKey2, settingRequest2),
-        ]);
+  Object.values(UserType).forEach((userType) => {
+    describe(`called as ${userType}`, () => {
+      if (!allowedUserTypes.includes(userType)) {
+        it('should return forbidden', () => {
+          cy.authenticate(userType)
+            .requestGetSettingList()
+            .expectForbiddenResponse();
+        });
+      } else {
+        it('should get a list of settings', () => {
+          cy.updateSettingDocument(settingKey1, settingDataFactory.update(settingRequest1))
+            .updateSettingDocument(settingKey2, settingDataFactory.update(settingRequest2))
+            .authenticate(userType)
+            .requestGetSettingList()
+            .expectOkResponse()
+            .expectValidResponseSchema(schema)
+            .validateSettingListResponse([
+              settingDataFactory.document(settingKey1, settingRequest1),
+              settingDataFactory.document(settingKey2, settingRequest2),
+            ]);
+        });
+      }
     });
   });
 });

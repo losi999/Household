@@ -9,6 +9,8 @@ import { paymentTransactionDataFactory } from '@household/test/api/transaction/p
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 
+const allowedUserTypes = [UserType.Editor];
+
 describe('POST product/v1/products/{productId}/merge', () => {
   let accountDocument: Account.Document;
   let loanAccountDocument: Account.Document;
@@ -121,158 +123,168 @@ describe('POST product/v1/products/{productId}/merge', () => {
     });
   });
 
-  describe('called as an editor', () => {
-    it('should merge products', () => {
-      cy.saveAccountDocuments([
-        accountDocument,
-        loanAccountDocument,
-      ])
-        .saveCategoryDocument(categoryDocument)
-        .saveProductDocuments([
-          sourceProductDocument,
-          targetProductDocument,
-          unrelatedProductDocument,
-        ])
-        .saveTransactionDocuments([
-          paymentTransactionDocument,
-          splitTransactionDocument,
-          deferredTransactionDocument,
-          reimbursementTransactionDocument,
-          unrelatedPaymentTransactionDocument,
-          unrelatedDeferredTransactionDocument,
-          unrelatedReimbursementTransactionDocument,
-        ])
-        .authenticate(UserType.Editor)
-        .requestMergeProducts(getProductId(targetProductDocument), [getProductId(sourceProductDocument)])
-        .expectCreatedResponse()
-        .validateProductDeleted(getProductId(sourceProductDocument))
-        .validateRelatedChangesInPaymentDocument(paymentTransactionDocument, {
-          product: {
-            from: getProductId(sourceProductDocument),
-            to: getProductId(targetProductDocument),
-          },
-        })
-        .validateRelatedChangesInPaymentDocument(unrelatedPaymentTransactionDocument, {
-          product: {
-            from: getProductId(sourceProductDocument),
-            to: getProductId(targetProductDocument),
-          },
-        })
-        .validateRelatedChangesInDeferredDocument(deferredTransactionDocument, {
-          product: {
-            from: getProductId(sourceProductDocument),
-            to: getProductId(targetProductDocument),
-          },
-        })
-        .validateRelatedChangesInDeferredDocument(unrelatedDeferredTransactionDocument, {
-          product: {
-            from: getProductId(sourceProductDocument),
-            to: getProductId(targetProductDocument),
-          },
-        })
-        .validateRelatedChangesInReimbursementDocument(reimbursementTransactionDocument, {
-          product: {
-            from: getProductId(sourceProductDocument),
-            to: getProductId(targetProductDocument),
-          },
-        })
-        .validateRelatedChangesInReimbursementDocument(unrelatedReimbursementTransactionDocument, {
-          product: {
-            from: getProductId(sourceProductDocument),
-            to: getProductId(targetProductDocument),
-          },
-        })
-        .validateRelatedChangesInSplitDocument(splitTransactionDocument, {
-          product: {
-            from: getProductId(sourceProductDocument),
-            to: getProductId(targetProductDocument),
-          },
+  Object.values(UserType).forEach((userType) => {
+    describe(`called as ${userType}`, () => {
+      if (!allowedUserTypes.includes(userType)) {
+        it('should return forbidden', () => {
+          cy.authenticate(userType)
+            .requestMergeProducts(productDataFactory.id(), [productDataFactory.id()])
+            .expectForbiddenResponse();
         });
-    });
-
-    describe('should return error', () => {
-
-      it('if products do not belong to the same category', () => {
-        const otherCategory = categoryDataFactory.document({
-          body: {
-            categoryType: CategoryType.Inventory,
-          },
-        });
-
-        sourceProductDocument = productDataFactory.document({
-          category: otherCategory,
-        });
-
-        cy.saveCategoryDocument(categoryDocument)
-          .saveCategoryDocument(otherCategory)
-          .saveProductDocument(targetProductDocument)
-          .saveProductDocument(sourceProductDocument)
-          .authenticate(UserType.Editor)
-          .requestMergeProducts(getProductId(targetProductDocument), [getProductId(sourceProductDocument)])
-          .expectBadRequestResponse()
-          .expectMessage('Not all products belong to the same category');
-      });
-
-      it('if a source product does not exist', () => {
-        cy.saveCategoryDocument(categoryDocument)
-          .saveProductDocument(targetProductDocument)
-          .saveProductDocument(sourceProductDocument)
-          .authenticate(UserType.Editor)
-          .requestMergeProducts(getProductId(targetProductDocument), [
-            getProductId(sourceProductDocument),
-            productDataFactory.id(),
+      } else {
+        it('should merge products', () => {
+          cy.saveAccountDocuments([
+            accountDocument,
+            loanAccountDocument,
           ])
-          .expectBadRequestResponse()
-          .expectMessage('Some of the products are not found');
-      });
-
-      describe('if body', () => {
-        it('is not array', () => {
-          cy.authenticate(UserType.Editor)
-            .requestMergeProducts(productDataFactory.id(), {} as any)
-            .expectBadRequestResponse()
-            .expectWrongPropertyType('data', 'array', 'body');
+            .saveCategoryDocument(categoryDocument)
+            .saveProductDocuments([
+              sourceProductDocument,
+              targetProductDocument,
+              unrelatedProductDocument,
+            ])
+            .saveTransactionDocuments([
+              paymentTransactionDocument,
+              splitTransactionDocument,
+              deferredTransactionDocument,
+              reimbursementTransactionDocument,
+              unrelatedPaymentTransactionDocument,
+              unrelatedDeferredTransactionDocument,
+              unrelatedReimbursementTransactionDocument,
+            ])
+            .authenticate(userType)
+            .requestMergeProducts(getProductId(targetProductDocument), [getProductId(sourceProductDocument)])
+            .expectCreatedResponse()
+            .validateProductDeleted(getProductId(sourceProductDocument))
+            .validateRelatedChangesInPaymentDocument(paymentTransactionDocument, {
+              product: {
+                from: getProductId(sourceProductDocument),
+                to: getProductId(targetProductDocument),
+              },
+            })
+            .validateRelatedChangesInPaymentDocument(unrelatedPaymentTransactionDocument, {
+              product: {
+                from: getProductId(sourceProductDocument),
+                to: getProductId(targetProductDocument),
+              },
+            })
+            .validateRelatedChangesInDeferredDocument(deferredTransactionDocument, {
+              product: {
+                from: getProductId(sourceProductDocument),
+                to: getProductId(targetProductDocument),
+              },
+            })
+            .validateRelatedChangesInDeferredDocument(unrelatedDeferredTransactionDocument, {
+              product: {
+                from: getProductId(sourceProductDocument),
+                to: getProductId(targetProductDocument),
+              },
+            })
+            .validateRelatedChangesInReimbursementDocument(reimbursementTransactionDocument, {
+              product: {
+                from: getProductId(sourceProductDocument),
+                to: getProductId(targetProductDocument),
+              },
+            })
+            .validateRelatedChangesInReimbursementDocument(unrelatedReimbursementTransactionDocument, {
+              product: {
+                from: getProductId(sourceProductDocument),
+                to: getProductId(targetProductDocument),
+              },
+            })
+            .validateRelatedChangesInSplitDocument(splitTransactionDocument, {
+              product: {
+                from: getProductId(sourceProductDocument),
+                to: getProductId(targetProductDocument),
+              },
+            });
         });
 
-        it('has too few items', () => {
-          cy.authenticate(UserType.Editor)
-            .requestMergeProducts(productDataFactory.id(), [])
-            .expectBadRequestResponse()
-            .expectTooFewItemsProperty('data', 1, 'body');
-        });
-      });
+        describe('should return error', () => {
 
-      describe('if body[0]', () => {
-        it('is not string', () => {
-          cy.authenticate(UserType.Editor)
-            .requestMergeProducts(productDataFactory.id(), [1] as any)
-            .expectBadRequestResponse()
-            .expectWrongPropertyType('data', 'string', 'body');
-        });
+          it('if products do not belong to the same category', () => {
+            const otherCategory = categoryDataFactory.document({
+              body: {
+                categoryType: CategoryType.Inventory,
+              },
+            });
 
-        it('is not a valid mongo id', () => {
-          cy.authenticate(UserType.Editor)
-            .requestMergeProducts(productDataFactory.id(), [productDataFactory.id('not-valid')])
-            .expectBadRequestResponse()
-            .expectWrongPropertyPattern('data', 'body');
-        });
-      });
+            sourceProductDocument = productDataFactory.document({
+              category: otherCategory,
+            });
 
-      describe('if productId', () => {
-        it('is not a valid mongo id', () => {
-          cy.authenticate(UserType.Editor)
-            .requestMergeProducts(productDataFactory.id('not-valid'), [productDataFactory.id()])
-            .expectBadRequestResponse()
-            .expectWrongPropertyPattern('productId', 'pathParameters');
-        });
+            cy.saveCategoryDocument(categoryDocument)
+              .saveCategoryDocument(otherCategory)
+              .saveProductDocument(targetProductDocument)
+              .saveProductDocument(sourceProductDocument)
+              .authenticate(userType)
+              .requestMergeProducts(getProductId(targetProductDocument), [getProductId(sourceProductDocument)])
+              .expectBadRequestResponse()
+              .expectMessage('Not all products belong to the same category');
+          });
 
-        it('does not belong to any product', () => {
-          cy.authenticate(UserType.Editor)
-            .requestMergeProducts(productDataFactory.id(), [getProductId(sourceProductDocument)])
-            .expectBadRequestResponse()
-            .expectMessage('Some of the products are not found');
+          it('if a source product does not exist', () => {
+            cy.saveCategoryDocument(categoryDocument)
+              .saveProductDocument(targetProductDocument)
+              .saveProductDocument(sourceProductDocument)
+              .authenticate(userType)
+              .requestMergeProducts(getProductId(targetProductDocument), [
+                getProductId(sourceProductDocument),
+                productDataFactory.id(),
+              ])
+              .expectBadRequestResponse()
+              .expectMessage('Some of the products are not found');
+          });
+
+          describe('if body', () => {
+            it('is not array', () => {
+              cy.authenticate(userType)
+                .requestMergeProducts(productDataFactory.id(), {} as any)
+                .expectBadRequestResponse()
+                .expectWrongPropertyType('data', 'array', 'body');
+            });
+
+            it('has too few items', () => {
+              cy.authenticate(userType)
+                .requestMergeProducts(productDataFactory.id(), [])
+                .expectBadRequestResponse()
+                .expectTooFewItemsProperty('data', 1, 'body');
+            });
+          });
+
+          describe('if body[0]', () => {
+            it('is not string', () => {
+              cy.authenticate(userType)
+                .requestMergeProducts(productDataFactory.id(), [1] as any)
+                .expectBadRequestResponse()
+                .expectWrongPropertyType('data', 'string', 'body');
+            });
+
+            it('is not a valid mongo id', () => {
+              cy.authenticate(userType)
+                .requestMergeProducts(productDataFactory.id(), [productDataFactory.id('not-valid')])
+                .expectBadRequestResponse()
+                .expectWrongPropertyPattern('data', 'body');
+            });
+          });
+
+          describe('if productId', () => {
+            it('is not a valid mongo id', () => {
+              cy.authenticate(userType)
+                .requestMergeProducts(productDataFactory.id('not-valid'), [productDataFactory.id()])
+                .expectBadRequestResponse()
+                .expectWrongPropertyPattern('productId', 'pathParameters');
+            });
+
+            it('does not belong to any product', () => {
+              cy.authenticate(userType)
+                .requestMergeProducts(productDataFactory.id(), [getProductId(sourceProductDocument)])
+                .expectBadRequestResponse()
+                .expectMessage('Some of the products are not found');
+            });
+          });
         });
-      });
+      }
     });
   });
 });

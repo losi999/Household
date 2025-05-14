@@ -4,6 +4,11 @@ import { productDataFactory } from './data-factory';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { CategoryType, UserType } from '@household/shared/enums';
 
+const allowedUserTypes = [
+  UserType.Editor,
+  UserType.Viewer,
+];
+
 describe('GET /product/v1/products', () => {
   let productDocument1: Product.Document;
   let productDocument2: Product.Document;
@@ -38,30 +43,40 @@ describe('GET /product/v1/products', () => {
     });
   });
 
-  describe('called as an editor', () => {
-    it('should get a list of products', () => {
-      cy.saveProductDocuments([
-        productDocument1,
-        productDocument2,
-      ])
-        .saveCategoryDocuments([
-          categoryDocument1,
-          categoryDocument2,
-        ])
-        .authenticate(UserType.Editor)
-        .requestGetProductList()
-        .expectOkResponse()
-        .expectValidResponseSchema(schema)
-        .validateProductListResponse([
-          {
-            fullName: categoryDocument1.name,
-            products: [productDocument1],
-          },
-          {
-            fullName: categoryDocument2.name,
-            products: [productDocument2],
-          },
-        ]);
+  Object.values(UserType).forEach((userType) => {
+    describe(`called as ${userType}`, () => {
+      if (!allowedUserTypes.includes(userType)) {
+        it('should return forbidden', () => {
+          cy.authenticate(userType)
+            .requestGetProductList()
+            .expectForbiddenResponse();
+        });
+      } else {
+        it('should get a list of products', () => {
+          cy.saveProductDocuments([
+            productDocument1,
+            productDocument2,
+          ])
+            .saveCategoryDocuments([
+              categoryDocument1,
+              categoryDocument2,
+            ])
+            .authenticate(userType)
+            .requestGetProductList()
+            .expectOkResponse()
+            .expectValidResponseSchema(schema)
+            .validateProductListResponse([
+              {
+                fullName: categoryDocument1.name,
+                products: [productDocument1],
+              },
+              {
+                fullName: categoryDocument2.name,
+                products: [productDocument2],
+              },
+            ]);
+        });
+      }
     });
   });
 });

@@ -8,6 +8,8 @@ import { paymentTransactionDataFactory } from '@household/test/api/transaction/p
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { UserType } from '@household/shared/enums';
 
+const allowedUserTypes = [UserType.Editor];
+
 describe('GET /transaction/v1/files/{fileId}/transactions', () => {
   let fileDocument: File.Document;
   let draftDocument: Transaction.DraftDocument;
@@ -39,36 +41,46 @@ describe('GET /transaction/v1/files/{fileId}/transactions', () => {
     });
   });
 
-  describe('called as an editor', () => {
-    it('should get a list of draft transactions', () => {
-      cy.saveTransactionDocuments([
-        draftDocument,
-        duplicateDraftDocument,
-        duplicatePaymentDocument,
-      ])
-        .authenticate(UserType.Editor)
-        .requestGetTransactionListByFile(getFileId(fileDocument))
-        .expectOkResponse()
-        .expectValidResponseSchema(schema)
-        .validateTransactionDraftListResponse(
-          {
-            document: draftDocument,
-          },
-          {
-            document: duplicateDraftDocument,
-            duplicateTransaction: duplicatePaymentDocument,
-          });
-    });
-
-    describe('should return error', () => {
-      describe('if fileId', () => {
-        it('is not mongo id', () => {
-          cy.authenticate(UserType.Editor)
-            .requestGetTransactionListByFile(createFileId('not-mongo-id'))
-            .expectBadRequestResponse()
-            .expectWrongPropertyPattern('fileId', 'pathParameters');
+  Object.values(UserType).forEach((userType) => {
+    describe(`called as ${userType}`, () => {
+      if (!allowedUserTypes.includes(userType)) {
+        it('should return forbidden', () => {
+          cy.authenticate(userType)
+            .requestGetTransactionListByFile(getFileId(fileDocument))
+            .expectForbiddenResponse();
         });
-      });
+      } else {
+        it('should get a list of draft transactions', () => {
+          cy.saveTransactionDocuments([
+            draftDocument,
+            duplicateDraftDocument,
+            duplicatePaymentDocument,
+          ])
+            .authenticate(userType)
+            .requestGetTransactionListByFile(getFileId(fileDocument))
+            .expectOkResponse()
+            .expectValidResponseSchema(schema)
+            .validateTransactionDraftListResponse(
+              {
+                document: draftDocument,
+              },
+              {
+                document: duplicateDraftDocument,
+                duplicateTransaction: duplicatePaymentDocument,
+              });
+        });
+
+        describe('should return error', () => {
+          describe('if fileId', () => {
+            it('is not mongo id', () => {
+              cy.authenticate(userType)
+                .requestGetTransactionListByFile(createFileId('not-mongo-id'))
+                .expectBadRequestResponse()
+                .expectWrongPropertyPattern('fileId', 'pathParameters');
+            });
+          });
+        });
+      }
     });
   });
 });

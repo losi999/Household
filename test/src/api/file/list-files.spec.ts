@@ -4,6 +4,8 @@ import { fileDataFactory } from './data-factory';
 import { draftTransactionDataFactory } from '@household/test/api/transaction/draft/draft-data-factory';
 import { UserType } from '@household/shared/enums';
 
+const allowedUserTypes = [UserType.Editor];
+
 describe('GET /file/v1/files', () => {
   let fileDocument: File.Document;
   let draftDocument: Transaction.DraftDocument;
@@ -23,15 +25,25 @@ describe('GET /file/v1/files', () => {
     });
   });
 
-  describe('called as an editor', () => {
-    it('should get a list of files', () => {
-      cy.saveFileDocument(fileDocument)
-        .saveTransactionDocument(draftDocument)
-        .authenticate(UserType.Editor)
-        .requestGetFileList()
-        .expectOkResponse()
-        .expectValidResponseSchema(schema)
-        .validateFileListResponse([draftDocument]);
+  Object.values(UserType).forEach((userType) => {
+    describe(`called as ${userType}`, () => {
+      if (!allowedUserTypes.includes(userType)) {
+        it('should return forbidden', () => {
+          cy.authenticate(userType)
+            .requestGetFileList()
+            .expectForbiddenResponse();
+        });
+      } else {
+        it('should get a list of files', () => {
+          cy.saveFileDocument(fileDocument)
+            .saveTransactionDocument(draftDocument)
+            .authenticate(userType)
+            .requestGetFileList()
+            .expectOkResponse()
+            .expectValidResponseSchema(schema)
+            .validateFileListResponse([draftDocument]);
+        });
+      }
     });
   });
 });

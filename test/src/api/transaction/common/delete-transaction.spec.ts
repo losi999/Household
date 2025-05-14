@@ -8,6 +8,8 @@ import { reimbursementTransactionDataFactory } from '@household/test/api/transac
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
 
+const allowedUserTypes = [UserType.Editor];
+
 describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
   let accountDocument: Account.Document;
   let loanAccountDocument: Account.Document;
@@ -63,108 +65,117 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
     });
   });
 
-  describe('called as an editor', () => {
-
-    describe('should delete', () => {
-      it('payment transaction', () => {
-        cy.saveAccountDocument(accountDocument)
-          .saveTransactionDocument(paymentTransactionDocument)
-          .authenticate(UserType.Editor)
-          .requestDeleteTransaction(getTransactionId(paymentTransactionDocument))
-          .expectNoContentResponse()
-          .validateTransactionDeleted(getTransactionId(paymentTransactionDocument));
-      });
-
-      it('split transaction', () => {
-        const repayingTransferTransactionDocument = transferTransactionDataFactory.document({
-          account: accountDocument,
-          transferAccount: transferAccountDocument,
-          transactions: [splitTransactionDocument.deferredSplits[0]],
+  Object.values(UserType).forEach((userType) => {
+    describe(`called as ${userType}`, () => {
+      if (!allowedUserTypes.includes(userType)) {
+        it('should return forbidden', () => {
+          cy.authenticate(userType)
+            .requestDeleteTransaction(paymentTransactionDataFactory.id())
+            .expectForbiddenResponse();
         });
+      } else {
+        describe('should delete', () => {
+          it('payment transaction', () => {
+            cy.saveAccountDocument(accountDocument)
+              .saveTransactionDocument(paymentTransactionDocument)
+              .authenticate(userType)
+              .requestDeleteTransaction(getTransactionId(paymentTransactionDocument))
+              .expectNoContentResponse()
+              .validateTransactionDeleted(getTransactionId(paymentTransactionDocument));
+          });
 
-        cy.saveAccountDocuments([
-          accountDocument,
-          transferAccountDocument,
-          loanAccountDocument,
-        ])
-          .saveTransactionDocuments([
-            splitTransactionDocument,
-            repayingTransferTransactionDocument,
-          ])
-          .authenticate(UserType.Editor)
-          .requestDeleteTransaction(getTransactionId(splitTransactionDocument))
-          .expectNoContentResponse()
-          .validateTransactionDeleted(getTransactionId(splitTransactionDocument))
-          .validateRelatedRepaymentDeleted(getTransactionId(splitTransactionDocument.deferredSplits[0]), getTransactionId(repayingTransferTransactionDocument));
-      });
+          it('split transaction', () => {
+            const repayingTransferTransactionDocument = transferTransactionDataFactory.document({
+              account: accountDocument,
+              transferAccount: transferAccountDocument,
+              transactions: [splitTransactionDocument.deferredSplits[0]],
+            });
 
-      it('transfer transaction', () => {
-        cy.saveAccountDocuments([
-          accountDocument,
-          transferAccountDocument,
-        ])
-          .saveTransactionDocument(transferTransactionDocument)
-          .authenticate(UserType.Editor)
-          .requestDeleteTransaction(getTransactionId(transferTransactionDocument))
-          .expectNoContentResponse()
-          .validateTransactionDeleted(getTransactionId(transferTransactionDocument));
-      });
-      it('deferred transaction', () => {
-        const repayingTransferTransactionDocument = transferTransactionDataFactory.document({
-          account: accountDocument,
-          transferAccount: transferAccountDocument,
-          transactions: [deferredTransactionDocument],
+            cy.saveAccountDocuments([
+              accountDocument,
+              transferAccountDocument,
+              loanAccountDocument,
+            ])
+              .saveTransactionDocuments([
+                splitTransactionDocument,
+                repayingTransferTransactionDocument,
+              ])
+              .authenticate(userType)
+              .requestDeleteTransaction(getTransactionId(splitTransactionDocument))
+              .expectNoContentResponse()
+              .validateTransactionDeleted(getTransactionId(splitTransactionDocument))
+              .validateRelatedRepaymentDeleted(getTransactionId(splitTransactionDocument.deferredSplits[0]), getTransactionId(repayingTransferTransactionDocument));
+          });
+
+          it('transfer transaction', () => {
+            cy.saveAccountDocuments([
+              accountDocument,
+              transferAccountDocument,
+            ])
+              .saveTransactionDocument(transferTransactionDocument)
+              .authenticate(userType)
+              .requestDeleteTransaction(getTransactionId(transferTransactionDocument))
+              .expectNoContentResponse()
+              .validateTransactionDeleted(getTransactionId(transferTransactionDocument));
+          });
+          it('deferred transaction', () => {
+            const repayingTransferTransactionDocument = transferTransactionDataFactory.document({
+              account: accountDocument,
+              transferAccount: transferAccountDocument,
+              transactions: [deferredTransactionDocument],
+            });
+
+            cy.saveAccountDocuments([
+              accountDocument,
+              transferAccountDocument,
+              loanAccountDocument,
+            ])
+              .saveTransactionDocuments([
+                deferredTransactionDocument,
+                repayingTransferTransactionDocument,
+              ])
+              .authenticate(userType)
+              .requestDeleteTransaction(getTransactionId(deferredTransactionDocument))
+              .expectNoContentResponse()
+              .validateTransactionDeleted(getTransactionId(deferredTransactionDocument))
+              .validateRelatedRepaymentDeleted(getTransactionId(deferredTransactionDocument), getTransactionId(repayingTransferTransactionDocument));
+          });
+
+          it('reimbursement transaction', () => {
+            cy.saveAccountDocuments([
+              accountDocument,
+              loanAccountDocument,
+            ])
+              .saveTransactionDocument(reimbursementTransactionDocument)
+              .authenticate(userType)
+              .requestDeleteTransaction(getTransactionId(reimbursementTransactionDocument))
+              .expectNoContentResponse()
+              .validateTransactionDeleted(getTransactionId(reimbursementTransactionDocument));
+          });
+
+          it('loan transfer transaction', () => {
+            cy.saveAccountDocuments([
+              accountDocument,
+              loanAccountDocument,
+            ])
+              .saveTransactionDocument(loanTransferTransactionDocument)
+              .authenticate(userType)
+              .requestDeleteTransaction(getTransactionId(loanTransferTransactionDocument))
+              .expectNoContentResponse()
+              .validateTransactionDeleted(getTransactionId(loanTransferTransactionDocument));
+          });
         });
-
-        cy.saveAccountDocuments([
-          accountDocument,
-          transferAccountDocument,
-          loanAccountDocument,
-        ])
-          .saveTransactionDocuments([
-            deferredTransactionDocument,
-            repayingTransferTransactionDocument,
-          ])
-          .authenticate(UserType.Editor)
-          .requestDeleteTransaction(getTransactionId(deferredTransactionDocument))
-          .expectNoContentResponse()
-          .validateTransactionDeleted(getTransactionId(deferredTransactionDocument))
-          .validateRelatedRepaymentDeleted(getTransactionId(deferredTransactionDocument), getTransactionId(repayingTransferTransactionDocument));
-      });
-
-      it('reimbursement transaction', () => {
-        cy.saveAccountDocuments([
-          accountDocument,
-          loanAccountDocument,
-        ])
-          .saveTransactionDocument(reimbursementTransactionDocument)
-          .authenticate(UserType.Editor)
-          .requestDeleteTransaction(getTransactionId(reimbursementTransactionDocument))
-          .expectNoContentResponse()
-          .validateTransactionDeleted(getTransactionId(reimbursementTransactionDocument));
-      });
-
-      it('loan transfer transaction', () => {
-        cy.saveAccountDocuments([
-          accountDocument,
-          loanAccountDocument,
-        ])
-          .saveTransactionDocument(loanTransferTransactionDocument)
-          .authenticate(UserType.Editor)
-          .requestDeleteTransaction(getTransactionId(loanTransferTransactionDocument))
-          .expectNoContentResponse()
-          .validateTransactionDeleted(getTransactionId(loanTransferTransactionDocument));
-      });
-    });
-    describe('should return error', () => {
-      describe('if transactionId', () => {
-        it('is not mongo id', () => {
-          cy.authenticate(UserType.Editor)
-            .requestDeleteTransaction(paymentTransactionDataFactory.id('not-valid'))
-            .expectBadRequestResponse()
-            .expectWrongPropertyPattern('transactionId', 'pathParameters');
+        describe('should return error', () => {
+          describe('if transactionId', () => {
+            it('is not mongo id', () => {
+              cy.authenticate(userType)
+                .requestDeleteTransaction(paymentTransactionDataFactory.id('not-valid'))
+                .expectBadRequestResponse()
+                .expectWrongPropertyPattern('transactionId', 'pathParameters');
+            });
+          });
         });
-      });
+      }
     });
   });
 });

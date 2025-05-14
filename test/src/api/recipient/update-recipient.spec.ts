@@ -3,6 +3,8 @@ import { UserType } from '@household/shared/enums';
 import { Recipient } from '@household/shared/types/types';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
 
+const allowedUserTypes = [UserType.Editor];
+
 describe('PUT /recipient/v1/recipients/{recipientId}', () => {
   let request: Recipient.Request;
   let recipientDocument: Recipient.Document;
@@ -21,70 +23,80 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
     });
   });
 
-  describe('called as an editor', () => {
-    it('should update a recipient', () => {
-      cy.saveRecipientDocument(recipientDocument)
-        .authenticate(UserType.Editor)
-        .requestUpdateRecipient(getRecipientId(recipientDocument), request)
-        .expectCreatedResponse()
-        .validateRecipientDocument(request);
-    });
-
-    describe('should return error', () => {
-      describe('if name', () => {
-        it('is missing from body', () => {
-          cy.authenticate(UserType.Editor)
-            .requestUpdateRecipient(recipientDataFactory.id(), recipientDataFactory.request({
-              name: undefined,
-            }))
-            .expectBadRequestResponse()
-            .expectRequiredProperty('name', 'body');
-        });
-
-        it('is not string', () => {
-          cy.authenticate(UserType.Editor)
-            .requestUpdateRecipient(recipientDataFactory.id(), recipientDataFactory.request({
-              name: <any>1,
-            }))
-            .expectBadRequestResponse()
-            .expectWrongPropertyType('name', 'string', 'body');
-        });
-
-        it('is too short', () => {
-          cy.authenticate(UserType.Editor)
-            .requestUpdateRecipient(recipientDataFactory.id(), recipientDataFactory.request({
-              name: '',
-            }))
-            .expectBadRequestResponse()
-            .expectTooShortProperty('name', 1, 'body');
-        });
-
-        it('is already in used by a different recipient', () => {
-          const updatedRecipientDocument = recipientDataFactory.document(request);
-
-          cy.saveRecipientDocument(recipientDocument)
-            .saveRecipientDocument(updatedRecipientDocument)
-            .authenticate(UserType.Editor)
-            .requestUpdateRecipient(getRecipientId(recipientDocument), request)
-            .expectBadRequestResponse()
-            .expectMessage('Duplicate recipient name');
-        });
-      });
-
-      describe('if recipientId', () => {
-        it('is not mongo id', () => {
-          cy.authenticate(UserType.Editor)
-            .requestUpdateRecipient(recipientDataFactory.id('not-valid'), request)
-            .expectBadRequestResponse()
-            .expectWrongPropertyPattern('recipientId', 'pathParameters');
-        });
-
-        it('does not belong to any recipient', () => {
-          cy.authenticate(UserType.Editor)
+  Object.values(UserType).forEach((userType) => {
+    describe(`called as ${userType}`, () => {
+      if (!allowedUserTypes.includes(userType)) {
+        it('should return forbidden', () => {
+          cy.authenticate(userType)
             .requestUpdateRecipient(recipientDataFactory.id(), request)
-            .expectNotFoundResponse();
+            .expectForbiddenResponse();
         });
-      });
+      } else {
+        it('should update a recipient', () => {
+          cy.saveRecipientDocument(recipientDocument)
+            .authenticate(userType)
+            .requestUpdateRecipient(getRecipientId(recipientDocument), request)
+            .expectCreatedResponse()
+            .validateRecipientDocument(request);
+        });
+
+        describe('should return error', () => {
+          describe('if name', () => {
+            it('is missing from body', () => {
+              cy.authenticate(userType)
+                .requestUpdateRecipient(recipientDataFactory.id(), recipientDataFactory.request({
+                  name: undefined,
+                }))
+                .expectBadRequestResponse()
+                .expectRequiredProperty('name', 'body');
+            });
+
+            it('is not string', () => {
+              cy.authenticate(userType)
+                .requestUpdateRecipient(recipientDataFactory.id(), recipientDataFactory.request({
+                  name: <any>1,
+                }))
+                .expectBadRequestResponse()
+                .expectWrongPropertyType('name', 'string', 'body');
+            });
+
+            it('is too short', () => {
+              cy.authenticate(userType)
+                .requestUpdateRecipient(recipientDataFactory.id(), recipientDataFactory.request({
+                  name: '',
+                }))
+                .expectBadRequestResponse()
+                .expectTooShortProperty('name', 1, 'body');
+            });
+
+            it('is already in used by a different recipient', () => {
+              const updatedRecipientDocument = recipientDataFactory.document(request);
+
+              cy.saveRecipientDocument(recipientDocument)
+                .saveRecipientDocument(updatedRecipientDocument)
+                .authenticate(userType)
+                .requestUpdateRecipient(getRecipientId(recipientDocument), request)
+                .expectBadRequestResponse()
+                .expectMessage('Duplicate recipient name');
+            });
+          });
+
+          describe('if recipientId', () => {
+            it('is not mongo id', () => {
+              cy.authenticate(userType)
+                .requestUpdateRecipient(recipientDataFactory.id('not-valid'), request)
+                .expectBadRequestResponse()
+                .expectWrongPropertyPattern('recipientId', 'pathParameters');
+            });
+
+            it('does not belong to any recipient', () => {
+              cy.authenticate(userType)
+                .requestUpdateRecipient(recipientDataFactory.id(), request)
+                .expectNotFoundResponse();
+            });
+          });
+        });
+      }
     });
   });
 });

@@ -6,12 +6,15 @@ import { apiRequestValidator } from '@household/api/dependencies/handlers/api-re
 import { default as pathParameters } from '@household/shared/schemas/account-id';
 import { accountService } from '@household/shared/dependencies/services/account-service';
 import { default as index } from '@household/api/handlers/index.handler';
+import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';
+import { UserType } from '@household/shared/enums';
 
 const getAccountService = getAccountServiceFactory(accountService, accountDocumentConverter);
 
 export default index({
   handler: handler(getAccountService),
   before: [
+    authorizer(UserType.Editor, UserType.Viewer),
     apiRequestValidator({
       pathParameters,
     }),
