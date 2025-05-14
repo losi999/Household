@@ -15,16 +15,16 @@ export interface IBulkTransactionImporterService {
   }): Promise<void>;
 }
 
-export const bulkTransactionImporterServiceFactory = (fileService: IFileService, fileDocumentConverter: IFileDocumentConverter, storageService: IStorageService, excelParser: IExcelParserService, draftTransactionDocumentConverter: IDraftTransactionDocumentConverter, transactionService: ITransactionService): IBulkTransactionImporterService =>
-  async ({ bucketName, fileId }) => {
+export const bulkTransactionImporterServiceFactory = (fileService: IFileService, fileDocumentConverter: IFileDocumentConverter, storageService: (bucketName: string) => IStorageService, excelParser: IExcelParserService, draftTransactionDocumentConverter: IDraftTransactionDocumentConverter, transactionService: ITransactionService): IBulkTransactionImporterService =>
+  async ({ fileId, bucketName }) => {
     const document = await fileService.getFileById(fileId).catch(httpErrors.file.getById({
       fileId,
     }));
 
-    const file = await storageService.readFile(bucketName, fileId).catch(httpErrors.file.readFile({
-      bucketName,
-      fileId,
-    }));
+    const file = await storageService(bucketName).readFile(fileId)
+      .catch(httpErrors.file.readFile({
+        fileId,
+      }));
 
     const parsed = excelParser.parse({
       fileContent: file,

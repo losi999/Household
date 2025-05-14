@@ -28,7 +28,7 @@ describe('Bulk transaction importer service', () => {
 
     service = bulkTransactionImporterServiceFactory(mockFileService.service,
       mockFileDocumentConverter.service,
-      mockStorageService.service,
+      () => mockStorageService.service,
       mockExcelParser.service,
       mockDraftTransactionDocumentConverter.service,
       mockTransactionService.service);
@@ -65,7 +65,7 @@ describe('Bulk transaction importer service', () => {
         fileId,
       });
       validateFunctionCall(mockFileService.functions.getFileById, fileId);
-      validateFunctionCall(mockStorageService.functions.readFile, bucketName, fileId);
+      validateFunctionCall(mockStorageService.functions.readFile, fileId);
       validateFunctionCall(mockExcelParser.functions.parse, {
         fileContent,
         fileType: queriedFileDocument.fileType,
@@ -114,7 +114,7 @@ describe('Bulk transaction importer service', () => {
         fileId,
       }).catch(validateError('Error while reading file', 500));
       validateFunctionCall(mockFileService.functions.getFileById, fileId);
-      validateFunctionCall(mockStorageService.functions.readFile, bucketName, fileId);
+      validateFunctionCall(mockStorageService.functions.readFile, fileId);
       validateFunctionCall(mockExcelParser.functions.parse);
       validateFunctionCall(mockDraftTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransactions);
@@ -141,7 +141,7 @@ describe('Bulk transaction importer service', () => {
         fileId,
       }).catch(validateError('Error while saving transactions', 500));
       validateFunctionCall(mockFileService.functions.getFileById, fileId);
-      validateFunctionCall(mockStorageService.functions.readFile, bucketName, fileId);
+      validateFunctionCall(mockStorageService.functions.readFile, fileId);
       validateFunctionCall(mockExcelParser.functions.parse, {
         fileContent,
         fileType: queriedFileDocument.fileType,
@@ -181,7 +181,7 @@ describe('Bulk transaction importer service', () => {
         fileId,
       }).catch(validateError('Error while updating file document', 500));
       validateFunctionCall(mockFileService.functions.getFileById, fileId);
-      validateFunctionCall(mockStorageService.functions.readFile, bucketName, fileId);
+      validateFunctionCall(mockStorageService.functions.readFile, fileId);
       validateFunctionCall(mockExcelParser.functions.parse, {
         fileContent,
         fileType: queriedFileDocument.fileType,

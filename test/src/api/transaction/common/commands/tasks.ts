@@ -4,7 +4,7 @@ import { ITransactionService } from '@household/shared/services/transaction-serv
 import { createDate } from '@household/shared/common/utils';
 import { TransactionType } from '@household/shared/enums';
 
-const fixDate = (doc: Transaction.Document<string>): Transaction.Document => {
+export const fixDate = (doc: Transaction.Document<string>): Transaction.Document => {
   switch(doc?.transactionType) {
     case TransactionType.Draft:
     case TransactionType.Transfer: return {
@@ -39,18 +39,18 @@ const fixDate = (doc: Transaction.Document<string>): Transaction.Document => {
 };
 
 const saveTransactionDocument = (...params: Parameters<ITransactionService['saveTransaction']>) => {
-  return cy.task<Transaction.Document<string>>('saveTransaction', ...params).then((doc) => fixDate(doc));
+  return cy.task<Transaction.Document<string>>('saveTransaction', params).then((doc) => fixDate(doc));
 };
 
 const saveTransactionDocuments = (...params: Parameters<ITransactionService['saveTransactions']>) => {
-  return cy.task<Transaction.Document<string>[]>('saveTransactions', ...params).then((docs) => docs.map(d => fixDate(d)));
+  return cy.task<Transaction.Document<string>[]>('saveTransactions', params).then((docs) => docs.map(d => fixDate(d)));
 };
 
 const getTransactionDocumentById = (...params: Parameters<ITransactionService['getTransactionById']>) => {
-  return cy.task<Transaction.Document<string>>('getTransactionById', ...params).then((doc) => fixDate(doc));
+  return cy.task<Transaction.Document<string>>('getTransactionById', params).then((doc) => fixDate(doc));
 };
 
-export const setTransactionTaskCommands = () => {
+export const setCommonTransactionTaskCommands = () => {
   Cypress.Commands.addAll({
     getTransactionDocumentById,
     saveTransactionDocument,
@@ -63,7 +63,7 @@ declare global {
     interface Chainable {
       saveTransactionDocument: CommandFunction<typeof saveTransactionDocument>;
       saveTransactionDocuments: CommandFunction<typeof saveTransactionDocuments>;
-      getTransactionDocumentById: CommandFunction<typeof getTransactionDocumentById>
+      getTransactionDocumentById: CommandFunction<typeof getTransactionDocumentById>;
     }
   }
 }

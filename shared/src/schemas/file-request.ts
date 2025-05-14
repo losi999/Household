@@ -5,7 +5,10 @@ import { File } from '@household/shared/types/types';
 const schema: StrictJSONSchema7<File.Request> = {
   type: 'object',
   additionalProperties: false,
-  required: ['fileType'],
+  required: [
+    'fileType',
+    'timezone',
+  ],
   properties: {
     fileType: {
       type: 'string',

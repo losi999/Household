@@ -1,9 +1,10 @@
 import { default as handler } from '@household/api/functions/create-test-users/create-test-users.handler';
-import { validateError } from '@household/shared/common/unit-testing';
+import { ICreateTestUsersService } from '@household/api/functions/create-test-users/create-test-users.service';
+import { MockBusinessService, validateError } from '@household/shared/common/unit-testing';
 
 describe('Create test users handler', () => {
   let handlerFunction: ReturnType<typeof handler>;
-  let mockCreateTestUsersService: jest.Mock;
+  let mockCreateTestUsersService: MockBusinessService<ICreateTestUsersService>;
 
   beforeEach(() => {
     mockCreateTestUsersService = jest.fn();

@@ -115,7 +115,7 @@ describe('POST product/v1/products/{productId}/merge', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestMergeProducts(productDataFactory.id(), [productDataFactory.id()])
         .expectUnauthorizedResponse();
     });
@@ -142,7 +142,7 @@ describe('POST product/v1/products/{productId}/merge', () => {
           unrelatedDeferredTransactionDocument,
           unrelatedReimbursementTransactionDocument,
         ])
-        .authenticate(1)
+        .authenticate('admin')
         .requestMergeProducts(getProductId(targetProductDocument), [getProductId(sourceProductDocument)])
         .expectCreatedResponse()
         .validateProductDeleted(getProductId(sourceProductDocument))
@@ -207,7 +207,7 @@ describe('POST product/v1/products/{productId}/merge', () => {
           .saveCategoryDocument(otherCategory)
           .saveProductDocument(targetProductDocument)
           .saveProductDocument(sourceProductDocument)
-          .authenticate(1)
+          .authenticate('admin')
           .requestMergeProducts(getProductId(targetProductDocument), [getProductId(sourceProductDocument)])
           .expectBadRequestResponse()
           .expectMessage('Not all products belong to the same category');
@@ -217,7 +217,7 @@ describe('POST product/v1/products/{productId}/merge', () => {
         cy.saveCategoryDocument(categoryDocument)
           .saveProductDocument(targetProductDocument)
           .saveProductDocument(sourceProductDocument)
-          .authenticate(1)
+          .authenticate('admin')
           .requestMergeProducts(getProductId(targetProductDocument), [
             getProductId(sourceProductDocument),
             productDataFactory.id(),
@@ -228,14 +228,14 @@ describe('POST product/v1/products/{productId}/merge', () => {
 
       describe('if body', () => {
         it('is not array', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestMergeProducts(productDataFactory.id(), {} as any)
             .expectBadRequestResponse()
             .expectWrongPropertyType('data', 'array', 'body');
         });
 
         it('has too few items', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestMergeProducts(productDataFactory.id(), [])
             .expectBadRequestResponse()
             .expectTooFewItemsProperty('data', 1, 'body');
@@ -244,14 +244,14 @@ describe('POST product/v1/products/{productId}/merge', () => {
 
       describe('if body[0]', () => {
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestMergeProducts(productDataFactory.id(), [1] as any)
             .expectBadRequestResponse()
             .expectWrongPropertyType('data', 'string', 'body');
         });
 
         it('is not a valid mongo id', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestMergeProducts(productDataFactory.id(), [productDataFactory.id('not-valid')])
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('data', 'body');
@@ -260,14 +260,14 @@ describe('POST product/v1/products/{productId}/merge', () => {
 
       describe('if productId', () => {
         it('is not a valid mongo id', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestMergeProducts(productDataFactory.id('not-valid'), [productDataFactory.id()])
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('productId', 'pathParameters');
         });
 
         it('does not belong to any product', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestMergeProducts(productDataFactory.id(), [getProductId(sourceProductDocument)])
             .expectBadRequestResponse()
             .expectMessage('Some of the products are not found');

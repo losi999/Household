@@ -1,9 +1,10 @@
 import { default as handler } from '@household/api/functions/confirm-user/confirm-user.handler';
+import { IConfirmUserService } from '@household/api/functions/confirm-user/confirm-user.service';
 import { createConfirmUserRequest } from '@household/shared/common/test-data-factory';
-import { validateFunctionCall } from '@household/shared/common/unit-testing';
+import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 
 describe('Confirm user handler', () => {
-  let mockConfirmUserService: jest.Mock;
+  let mockConfirmUserService: MockBusinessService<IConfirmUserService>;
   let apiHandler: ReturnType<typeof handler>;
 
   beforeEach(() => {
@@ -47,7 +48,7 @@ describe('Confirm user handler', () => {
       body,
       email,
     });
-    expect(response.statusCode).toEqual(201);
+    expect(response.statusCode).toEqual(200);
     expect.assertions(2);
   });
 });

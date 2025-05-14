@@ -22,8 +22,11 @@ Parameters:
 
 Conditions:
   ShouldUseLayers: !Not [!Equals [!Ref DependenciesLayer, "DependenciesLayer"]]
-  ShouldCreateTestUsers: !Not [!Equals [!Ref TestUserPassword, ""]]
   IsProd: !Equals [!Ref Env, "PROD"]
+  HasTestUserPassword: !Not [!Equals [!Ref TestUserPassword, ""]]
+  ShouldCreateTestUsers: !And
+    - !Condition HasTestUserPassword
+    - !Not [!Condition IsProd]
 
 Globals:
   Function:
@@ -39,7 +42,6 @@ Globals:
     Environment:
       Variables:
         MONGODB_CONNECTION_STRING: !Ref MongodbConnectionString
-        DATABASE_ARCHIVE_BUCKET: !Ref DatabaseArchiveBucket
 
 Resources:
   DatabaseArchive:
@@ -49,6 +51,9 @@ Resources:
       FunctionName: !Sub Household-${Env}-DatabaseArchive
       CodeUri: dist/api/database-archive
       Role: !Ref LambdaRoleArn
+      Environment:
+        Variables:
+          DATABASE_ARCHIVE_BUCKET: !Ref DatabaseArchiveBucket
       Events:
         Schedule:
           Type: Schedule
@@ -80,15 +85,6 @@ Resources:
           ADMIN_COUNT: "1"
           TEST_USER_PASSWORD: !Ref TestUserPassword
 
-  MigrateTransactions:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: !Sub Household-${Env}-MigrateTransactions
-      CodeUri: dist/api/migrate-transactions
-      Role: !Ref LambdaRoleArn
-
 Outputs:
   PostDeployCreateTestUsers:
     Value: !If [ShouldCreateTestUsers, !GetAtt CreateTestUsers.Arn, ""]
-  PostDeployMigrateTransactions:
-    Value: !GetAtt MigrateTransactions.Arn

@@ -14,6 +14,8 @@ export const confirmUserServiceFactory = (identityService: IIdentityService): IC
       password,
       temporaryPassword,
       email,
-    }).catch(httpErrors.common.genericError('Confirm user'));
+    }).catch(httpErrors.cognito.confirmUser({
+      email,
+    }));
   };
 };

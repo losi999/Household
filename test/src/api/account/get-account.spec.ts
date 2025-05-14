@@ -109,7 +109,7 @@ describe('GET /account/v1/accounts/{accountId}', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestGetAccount(accountDataFactory.id())
         .expectUnauthorizedResponse();
     });
@@ -141,7 +141,7 @@ describe('GET /account/v1/accounts/{accountId}', () => {
     it('should get account by id', () => {
       const expectedBalance = paymentTransactionDocument.amount + transferTransactionDocument.amount + invertedTransferTransactionDocument.transferAmount + splitTransactionDocument.amount + loanTransferTransactionDocument.amount + invertedLoanTransferTransactionDocument.transferAmount + payingDeferredTransactionDocument.amount + repayingTransferTransactionDocument.amount + invertedRepayingTransferTransactionDocument.transferAmount + payingDeferredToLoanTransactionDocument.amount;
 
-      cy.authenticate(1)
+      cy.authenticate('admin')
         .requestGetAccount(getAccountId(accountDocument))
         .expectOkResponse()
         .expectValidResponseSchema(schema)
@@ -151,7 +151,7 @@ describe('GET /account/v1/accounts/{accountId}', () => {
     it('should get loan account by id', () => {
       const expectedBalance = loanTransferTransactionDocument.transferAmount + invertedLoanTransferTransactionDocument.amount - deferredSplitTransactionDocument.deferredSplits[1].amount + owningReimbursementTransactionDocument.amount - payingDeferredToLoanTransactionDocument.amount;
 
-      cy.authenticate(1)
+      cy.authenticate('admin')
         .requestGetAccount(getAccountId(loanAccountDocument))
         .expectOkResponse()
         .expectValidResponseSchema(schema)
@@ -160,14 +160,14 @@ describe('GET /account/v1/accounts/{accountId}', () => {
 
     describe('should return error if accountId', () => {
       it('is not mongo id', () => {
-        cy.authenticate(1)
+        cy.authenticate('admin')
           .requestGetAccount(accountDataFactory.id('not-valid'))
           .expectBadRequestResponse()
           .expectWrongPropertyPattern('accountId', 'pathParameters');
       });
 
       it('does not belong to any account', () => {
-        cy.authenticate(1)
+        cy.authenticate('admin')
           .requestGetAccount(accountDataFactory.id())
           .expectNotFoundResponse();
       });

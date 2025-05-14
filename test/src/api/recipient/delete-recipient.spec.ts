@@ -17,7 +17,7 @@ describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestDeleteRecipient(recipientDataFactory.id())
         .expectUnauthorizedResponse();
     });
@@ -27,7 +27,7 @@ describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
 
     it('should delete recipient', () => {
       cy.saveRecipientDocument(recipientDocument)
-        .authenticate(1)
+        .authenticate('admin')
         .requestDeleteRecipient(getRecipientId(recipientDocument))
         .expectNoContentResponse()
         .validateRecipientDeleted(getRecipientId(recipientDocument));
@@ -118,7 +118,7 @@ describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
             unrelatedReimbursementTransactionDocument,
             unrelatedSplitTransactionDocument,
           ])
-          .authenticate(1)
+          .authenticate('admin')
           .requestDeleteRecipient(getRecipientId(recipientDocument))
           .expectNoContentResponse()
           .validateRecipientDeleted(getRecipientId(recipientDocument))
@@ -163,7 +163,7 @@ describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
     describe('should return error', () => {
       describe('if recipientId', () => {
         it('is not mongo id', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestDeleteRecipient(recipientDataFactory.id('not-valid'))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('recipientId', 'pathParameters');

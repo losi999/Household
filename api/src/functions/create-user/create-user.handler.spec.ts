@@ -1,8 +1,10 @@
 import { default as handler } from '@household/api/functions/create-user/create-user.handler';
-import { validateFunctionCall } from '@household/shared/common/unit-testing';
+import { ICreateUserService } from '@household/api/functions/create-user/create-user.service';
+import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { headerSuppressEmail } from '@household/shared/constants';
 
 describe('Create user handler', () => {
-  let mockCreateUserService: jest.Mock;
+  let mockCreateUserService: MockBusinessService<ICreateUserService>;
   let apiHandler: ReturnType<typeof handler>;
 
   beforeEach(() => {
@@ -30,6 +32,7 @@ describe('Create user handler', () => {
     const response = await apiHandler(handlerEvent, undefined, undefined) as AWSLambda.APIGatewayProxyResult;
     validateFunctionCall(mockCreateUserService, {
       body,
+      suppressEmail: undefined,
     });
     expect(response.statusCode).toEqual(statusCode);
     expect(JSON.parse(response.body).message).toEqual(message);
@@ -42,6 +45,41 @@ describe('Create user handler', () => {
     const response = await apiHandler(handlerEvent, undefined, undefined) as AWSLambda.APIGatewayProxyResult;
     validateFunctionCall(mockCreateUserService, {
       body,
+      suppressEmail: undefined,
+    });
+    expect(response.statusCode).toEqual(201);
+    expect.assertions(2);
+  });
+
+  it('should respond with success if create user executes successfully with email sending suppressed', async () => {
+    mockCreateUserService.mockResolvedValue(undefined);
+
+    const response = await apiHandler({
+      ...handlerEvent,
+      headers: {
+        [headerSuppressEmail]: 'true',
+      },
+    }, undefined, undefined) as AWSLambda.APIGatewayProxyResult;
+    validateFunctionCall(mockCreateUserService, {
+      body,
+      suppressEmail: true,
+    });
+    expect(response.statusCode).toEqual(201);
+    expect.assertions(2);
+  });
+
+  it('should respond with success if create user executes successfully with explicit false on email suppress', async () => {
+    mockCreateUserService.mockResolvedValue(undefined);
+
+    const response = await apiHandler({
+      ...handlerEvent,
+      headers: {
+        [headerSuppressEmail]: 'FALSE',
+      },
+    }, undefined, undefined) as AWSLambda.APIGatewayProxyResult;
+    validateFunctionCall(mockCreateUserService, {
+      body,
+      suppressEmail: false,
     });
     expect(response.statusCode).toEqual(201);
     expect.assertions(2);

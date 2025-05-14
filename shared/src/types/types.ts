@@ -655,14 +655,16 @@ export namespace Auth {
     password: string;
   };
 
+  export type TemporaryPassword = {
+    temporaryPassword: string;
+  };
+
   type IdTokenResponse = {
     idToken: string;
   };
 
   export namespace ConfirmUser {
-    export type Request = Password & {
-      temporaryPassword: string;
-    };
+    export type Request = Password & TemporaryPassword;
   }
 
   export namespace Login {
@@ -723,6 +725,34 @@ export namespace File {
   & DraftCount
   & {
     uploadedAt: string;
+  };
+}
+
+export namespace Import {
+  export type Revolut = {
+    Amount: number;
+    Fee: number;
+    Type: string;
+    Description: string;
+    Currency: string;
+    'Started Date': Date;
+  };
+
+  export type Otp = {
+    'Összeg': number;
+    'Forgalom típusa': string;
+    'Ellenoldali név': string;
+    'Közlemény': string;
+    'Tranzakció időpontja': Date;
+  };
+
+  export type Erste = {
+    'Tranzakció dátuma és ideje': string;
+    'Dátum': Date;
+    'Összeg': number;
+    'Partner név': string;
+    'Közlemény': string;
+    'Kategória': string;
   };
 }
 

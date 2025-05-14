@@ -63,7 +63,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestCreatePaymentTransaction(request)
         .expectUnauthorizedResponse();
     });
@@ -80,7 +80,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
             .saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreatePaymentTransaction(request)
             .expectCreatedResponse()
             .validateTransactionDeferredDocument(request);
@@ -99,7 +99,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
             .saveCategoryDocument(invoiceCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreatePaymentTransaction(request)
             .expectCreatedResponse()
             .validateTransactionDeferredDocument(request);
@@ -118,7 +118,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .saveProductDocument(productDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreatePaymentTransaction(request)
             .expectCreatedResponse()
             .validateTransactionDeferredDocument(request);
@@ -139,7 +139,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
             .saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreatePaymentTransaction(request)
             .expectCreatedResponse()
             .validateTransactionDeferredDocument(request);
@@ -159,7 +159,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreatePaymentTransaction(request)
             .expectCreatedResponse()
             .validateTransactionDeferredDocument(request);
@@ -181,7 +181,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
             .saveCategoryDocument(invoiceCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreatePaymentTransaction(request)
             .expectCreatedResponse()
             .validateTransactionDeferredDocument(request);
@@ -201,7 +201,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
             .saveCategoryDocument(invoiceCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreatePaymentTransaction(request)
             .expectCreatedResponse()
             .validateTransactionDeferredDocument(request);
@@ -219,7 +219,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
           ])
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreatePaymentTransaction(request)
             .expectCreatedResponse()
             .validateTransactionDeferredDocument(request);
@@ -237,7 +237,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
           ])
             .saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreatePaymentTransaction(request)
             .expectCreatedResponse()
             .validateTransactionDeferredDocument(request);
@@ -255,7 +255,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
           ])
             .saveCategoryDocument(regularCategoryDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreatePaymentTransaction(request)
             .expectCreatedResponse()
             .validateTransactionDeferredDocument(request);
@@ -266,7 +266,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
     describe('should return error', () => {
       describe('if body', () => {
         it('has additional properties', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               extra: 123,
             } as any))
@@ -277,7 +277,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
 
       describe('if amount', () => {
         it('is missing', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               amount: undefined,
             }))
@@ -286,7 +286,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
         });
 
         it('is not number', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               amount: <any>'1',
             }))
@@ -295,7 +295,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
         });
 
         it('is bigger than 0', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               ...relatedDocumentIds,
               amount: 1,
@@ -307,7 +307,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
 
       describe('if description', () => {
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               description: <any>1,
             }))
@@ -316,7 +316,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               description: '',
             }))
@@ -327,7 +327,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
 
       describe('if quantity', () => {
         it('is present and productId is missing', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               productId: undefined,
               quantity: 1,
@@ -337,7 +337,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
         });
 
         it('is not number', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               quantity: <any>'a',
             }))
@@ -346,7 +346,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
         });
 
         it('is too small', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               quantity: 0,
             }))
@@ -357,7 +357,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
 
       describe('if productId', () => {
         it('is present and quantity is missing', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               productId: productDataFactory.id(),
               quantity: undefined,
@@ -367,7 +367,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               productId: <any>1,
             }))
@@ -376,7 +376,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               productId: productDataFactory.id('not-valid'),
             }))
@@ -392,7 +392,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               ...relatedDocumentIds,
               categoryId: getCategoryId(inventoryCategoryDocument),
@@ -404,7 +404,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
 
       describe('if invoiceNumber', () => {
         it('is present and billingEndDate, billingStartDate are missing', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               billingEndDate: undefined,
               billingStartDate: undefined,
@@ -413,7 +413,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
             .expectDependentRequiredProperty('invoiceNumber', 'body', 'billingEndDate', 'billingStartDate');
         });
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               invoiceNumber: <any>1,
             }))
@@ -422,7 +422,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               invoiceNumber: '',
             }))
@@ -433,7 +433,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
 
       describe('if billingEndDate', () => {
         it('is present and billingStartDate is missing', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               billingStartDate: undefined,
             }))
@@ -442,7 +442,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               billingEndDate: <any>1,
             }))
@@ -451,7 +451,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
         });
 
         it('is not date format', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               billingEndDate: 'not-date',
             }))
@@ -460,7 +460,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
         });
 
         it('is later than billingStartDate', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               billingEndDate: '2022-06-01',
               billingStartDate: '2022-06-03',
@@ -472,7 +472,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
 
       describe('if billingStartDate', () => {
         it('is present and billingEndDate is missing', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               billingEndDate: undefined,
             }))
@@ -481,7 +481,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               billingStartDate: <any>1,
             }))
@@ -490,7 +490,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
         });
 
         it('is not date format', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               billingStartDate: 'not-date',
             }))
@@ -501,7 +501,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
 
       describe('if issuedAt', () => {
         it('is missing', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               issuedAt: undefined,
             }))
@@ -510,7 +510,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               issuedAt: <any>1,
             }))
@@ -519,7 +519,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
         });
 
         it('is not date-time format', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               issuedAt: 'not-date-time',
             }))
@@ -533,7 +533,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
           cy.saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               ...relatedDocumentIds,
               accountId: accountDataFactory.id(),
@@ -543,7 +543,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
         });
 
         it('is missing', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               accountId: undefined,
             }))
@@ -552,7 +552,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               accountId: <any>1,
             }))
@@ -561,7 +561,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               accountId: accountDataFactory.id('not-mongo-id'),
             }))
@@ -576,7 +576,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
             .saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               ...relatedDocumentIds,
               loanAccountId: accountDataFactory.id(),
@@ -586,7 +586,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               loanAccountId: <any>1,
             }))
@@ -595,7 +595,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               loanAccountId: accountDataFactory.id('not-mongo-id'),
             }))
@@ -612,7 +612,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
           ])
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               ...relatedDocumentIds,
               categoryId: categoryDataFactory.id(),
@@ -622,7 +622,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               categoryId: <any>1,
             }))
@@ -631,7 +631,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               categoryId: categoryDataFactory.id('not-mongo-id'),
             }))
@@ -648,7 +648,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
           ])
             .saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               ...relatedDocumentIds,
               recipientId: recipientDataFactory.id(),
@@ -658,7 +658,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               recipientId: <any>1,
             }))
@@ -667,7 +667,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               recipientId: recipientDataFactory.id('not-mongo-id'),
             }))
@@ -684,7 +684,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
           ])
             .saveCategoryDocument(regularCategoryDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               ...relatedDocumentIds,
               projectId: projectDataFactory.id(),
@@ -694,7 +694,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               projectId: <any>1,
             }))
@@ -703,7 +703,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
               projectId: projectDataFactory.id('not-mongo-id'),
             }))

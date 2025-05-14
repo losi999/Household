@@ -17,7 +17,7 @@ describe('DELETE /project/v1/projects/{projectId}', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestDeleteProject(projectDataFactory.id())
         .expectUnauthorizedResponse();
     });
@@ -27,7 +27,7 @@ describe('DELETE /project/v1/projects/{projectId}', () => {
 
     it('should delete project', () => {
       cy.saveProjectDocument(projectDocument)
-        .authenticate(1)
+        .authenticate('admin')
         .requestDeleteProject(getProjectId(projectDocument))
         .expectNoContentResponse()
         .validateProjectDeleted(getProjectId(projectDocument));
@@ -127,7 +127,7 @@ describe('DELETE /project/v1/projects/{projectId}', () => {
             unrelatedDeferredTransactionDocument,
             unrelatedReimbursementTransactionDocument,
           ])
-          .authenticate(1)
+          .authenticate('admin')
           .requestDeleteProject(getProjectId(projectDocument))
           .expectNoContentResponse()
           .validateProjectDeleted(getProjectId(projectDocument))
@@ -172,7 +172,7 @@ describe('DELETE /project/v1/projects/{projectId}', () => {
     describe('should return error', () => {
       describe('if projectId', () => {
         it('is not mongo id', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestDeleteProject(projectDataFactory.id('not-valid'))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('projectId', 'pathParameters');

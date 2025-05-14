@@ -27,13 +27,11 @@ describe('Delete user service', () => {
   });
 
   it('should throw error if unable to delete user', async () => {
-    mockIdentityService.functions.deleteUser.mockRejectedValue({
-      message: 'This is a cognito error',
-    });
+    mockIdentityService.functions.deleteUser.mockRejectedValue('This is a cognito error');
 
     await service({
       email,
-    }).catch(validateError('This is a cognito error', 500));
+    }).catch(validateError('Error while deleting user from cognito', 500));
     validateFunctionCall(mockIdentityService.functions.deleteUser, {
       email,
     });

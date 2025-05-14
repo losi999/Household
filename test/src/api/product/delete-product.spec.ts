@@ -26,7 +26,7 @@ describe('DELETE /product/v1/products/{productId}', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestDeleteProduct(productDataFactory.id())
         .expectUnauthorizedResponse();
     });
@@ -36,7 +36,7 @@ describe('DELETE /product/v1/products/{productId}', () => {
 
     it('should delete product', () => {
       cy.saveProductDocument(productDocument)
-        .authenticate(1)
+        .authenticate('admin')
         .requestDeleteProduct(getProductId(productDocument))
         .expectNoContentResponse()
         .validateProductDeleted(getProductId(productDocument));
@@ -149,7 +149,7 @@ describe('DELETE /product/v1/products/{productId}', () => {
             unrelatedDeferredTransactionDocument,
             unrelatedReimbursementTransactionDocument,
           ])
-          .authenticate(1)
+          .authenticate('admin')
           .requestDeleteProduct(getProductId(productDocument))
           .expectNoContentResponse()
           .validateProductDeleted(getProductId(productDocument))
@@ -194,7 +194,7 @@ describe('DELETE /product/v1/products/{productId}', () => {
     describe('should return error', () => {
       describe('if productId', () => {
         it('is not mongo id', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestDeleteProduct(productDataFactory.id('not-valid'))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('productId', 'pathParameters');

@@ -82,7 +82,7 @@ describe('POST recipient/v1/recipients/{recipientId}/merge', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestMergeRecipients(createRecipientId(), [createRecipientId()])
         .expectUnauthorizedResponse();
     });
@@ -109,7 +109,7 @@ describe('POST recipient/v1/recipients/{recipientId}/merge', () => {
           unrelatedReimbursementTransactionDocument,
           unrelatedSplitTransactionDocument,
         ])
-        .authenticate(1)
+        .authenticate('admin')
         .requestMergeRecipients(getRecipientId(targetRecipientDocument), [getRecipientId(sourceRecipientDocument)])
         .expectCreatedResponse()
         .validateRecipientDeleted(getRecipientId(sourceRecipientDocument))
@@ -167,7 +167,7 @@ describe('POST recipient/v1/recipients/{recipientId}/merge', () => {
       it('if a source precipient does not exist', () => {
         cy.saveRecipientDocument(targetRecipientDocument)
           .saveRecipientDocument(sourceRecipientDocument)
-          .authenticate(1)
+          .authenticate('admin')
           .requestMergeRecipients(getRecipientId(targetRecipientDocument), [
             getRecipientId(sourceRecipientDocument),
             createRecipientId(),
@@ -177,14 +177,14 @@ describe('POST recipient/v1/recipients/{recipientId}/merge', () => {
       });
       describe('if body', () => {
         it('is not array', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestMergeRecipients(createRecipientId(), {} as any)
             .expectBadRequestResponse()
             .expectWrongPropertyType('data', 'array', 'body');
         });
 
         it('has too few items', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestMergeRecipients(createRecipientId(), [])
             .expectBadRequestResponse()
             .expectTooFewItemsProperty('data', 1, 'body');
@@ -193,14 +193,14 @@ describe('POST recipient/v1/recipients/{recipientId}/merge', () => {
 
       describe('if body[0]', () => {
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestMergeRecipients(createRecipientId(), [1] as any)
             .expectBadRequestResponse()
             .expectWrongPropertyType('data', 'string', 'body');
         });
 
         it('is not a valid mongo id', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestMergeRecipients(createRecipientId(), [createRecipientId('not-valid')])
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('data', 'body');
@@ -209,14 +209,14 @@ describe('POST recipient/v1/recipients/{recipientId}/merge', () => {
 
       describe('if recipientId', () => {
         it('is not a valid mongo id', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestMergeRecipients(createRecipientId('not-valid'), [createRecipientId()])
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('recipientId', 'pathParameters');
         });
 
         it('does not belong to any recipient', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestMergeRecipients(createRecipientId(), [getRecipientId(sourceRecipientDocument)])
             .expectBadRequestResponse()
             .expectMessage('Some of the recipients are not found');

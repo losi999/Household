@@ -57,7 +57,7 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestDeleteTransaction(paymentTransactionDataFactory.id())
         .expectUnauthorizedResponse();
     });
@@ -69,7 +69,7 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
       it('payment transaction', () => {
         cy.saveAccountDocument(accountDocument)
           .saveTransactionDocument(paymentTransactionDocument)
-          .authenticate(1)
+          .authenticate('admin')
           .requestDeleteTransaction(getTransactionId(paymentTransactionDocument))
           .expectNoContentResponse()
           .validateTransactionDeleted(getTransactionId(paymentTransactionDocument));
@@ -91,7 +91,7 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
             splitTransactionDocument,
             repayingTransferTransactionDocument,
           ])
-          .authenticate(1)
+          .authenticate('admin')
           .requestDeleteTransaction(getTransactionId(splitTransactionDocument))
           .expectNoContentResponse()
           .validateTransactionDeleted(getTransactionId(splitTransactionDocument))
@@ -104,7 +104,7 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
           transferAccountDocument,
         ])
           .saveTransactionDocument(transferTransactionDocument)
-          .authenticate(1)
+          .authenticate('admin')
           .requestDeleteTransaction(getTransactionId(transferTransactionDocument))
           .expectNoContentResponse()
           .validateTransactionDeleted(getTransactionId(transferTransactionDocument));
@@ -125,7 +125,7 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
             deferredTransactionDocument,
             repayingTransferTransactionDocument,
           ])
-          .authenticate(1)
+          .authenticate('admin')
           .requestDeleteTransaction(getTransactionId(deferredTransactionDocument))
           .expectNoContentResponse()
           .validateTransactionDeleted(getTransactionId(deferredTransactionDocument))
@@ -138,7 +138,7 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
           loanAccountDocument,
         ])
           .saveTransactionDocument(reimbursementTransactionDocument)
-          .authenticate(1)
+          .authenticate('admin')
           .requestDeleteTransaction(getTransactionId(reimbursementTransactionDocument))
           .expectNoContentResponse()
           .validateTransactionDeleted(getTransactionId(reimbursementTransactionDocument));
@@ -150,7 +150,7 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
           loanAccountDocument,
         ])
           .saveTransactionDocument(loanTransferTransactionDocument)
-          .authenticate(1)
+          .authenticate('admin')
           .requestDeleteTransaction(getTransactionId(loanTransferTransactionDocument))
           .expectNoContentResponse()
           .validateTransactionDeleted(getTransactionId(loanTransferTransactionDocument));
@@ -159,7 +159,7 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
     describe('should return error', () => {
       describe('if transactionId', () => {
         it('is not mongo id', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestDeleteTransaction(paymentTransactionDataFactory.id('not-valid'))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('transactionId', 'pathParameters');

@@ -1,8 +1,10 @@
 import { default as handler } from '@household/api/functions/login/login.handler';
+import { ILoginService } from '@household/api/functions/login/login.service';
+import { MockBusinessService } from '@household/shared/common/unit-testing';
 import { Auth } from '@household/shared/types/types';
 
 describe('Login handler', () => {
-  let mockLoginService: jest.Mock;
+  let mockLoginService: MockBusinessService<ILoginService>;
   let apiHandler: ReturnType<typeof handler>;
 
   beforeEach(() => {

@@ -98,7 +98,7 @@ describe('POST project/v1/projects/{projectId}/merge', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestMergeProjects(projectDataFactory.id(), [projectDataFactory.id()])
         .expectUnauthorizedResponse();
     });
@@ -124,7 +124,7 @@ describe('POST project/v1/projects/{projectId}/merge', () => {
           unrelatedDeferredTransactionDocument,
           unrelatedReimbursementTransactionDocument,
         ])
-        .authenticate(1)
+        .authenticate('admin')
         .requestMergeProjects(getProjectId(targetProjectDocument), [getProjectId(sourceProjectDocument)])
         .expectCreatedResponse()
         .validateProjectDeleted(getProjectId(sourceProjectDocument))
@@ -176,7 +176,7 @@ describe('POST project/v1/projects/{projectId}/merge', () => {
       it('if a source project does not exist', () => {
         cy.saveProjectDocument(targetProjectDocument)
           .saveProjectDocument(sourceProjectDocument)
-          .authenticate(1)
+          .authenticate('admin')
           .requestMergeProjects(getProjectId(targetProjectDocument), [
             getProjectId(sourceProjectDocument),
             projectDataFactory.id(),
@@ -186,14 +186,14 @@ describe('POST project/v1/projects/{projectId}/merge', () => {
       });
       describe('if body', () => {
         it('is not array', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestMergeProjects(projectDataFactory.id(), {} as any)
             .expectBadRequestResponse()
             .expectWrongPropertyType('data', 'array', 'body');
         });
 
         it('has too few items', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestMergeProjects(projectDataFactory.id(), [])
             .expectBadRequestResponse()
             .expectTooFewItemsProperty('data', 1, 'body');
@@ -202,14 +202,14 @@ describe('POST project/v1/projects/{projectId}/merge', () => {
 
       describe('if body[0]', () => {
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestMergeProjects(projectDataFactory.id(), [1] as any)
             .expectBadRequestResponse()
             .expectWrongPropertyType('data', 'string', 'body');
         });
 
         it('is not a valid mongo id', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestMergeProjects(projectDataFactory.id(), [projectDataFactory.id('not-valid')])
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('data', 'body');
@@ -218,14 +218,14 @@ describe('POST project/v1/projects/{projectId}/merge', () => {
 
       describe('if projectId', () => {
         it('is not a valid mongo id', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestMergeProjects(projectDataFactory.id('not-valid'), [projectDataFactory.id()])
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('projectId', 'pathParameters');
         });
 
         it('does not belong to any project', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestMergeProjects(projectDataFactory.id(), [getProjectId(sourceProjectDocument)])
             .expectBadRequestResponse()
             .expectMessage('Some of the projects are not found');

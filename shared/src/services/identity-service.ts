@@ -1,11 +1,12 @@
 import { Auth, User } from '@household/shared/types/types';
-import { AuthFlowType, MessageActionType, type AdminInitiateAuthResponse, type CognitoIdentityProvider, type ListUsersResponse } from '@aws-sdk/client-cognito-identity-provider';
+import { AdminGetUserCommandOutput, AuthFlowType, MessageActionType, type AdminInitiateAuthResponse, type CognitoIdentityProvider, type ListUsersResponse } from '@aws-sdk/client-cognito-identity-provider';
 
 export interface IIdentityService {
   login(body: Auth.Login.Request): Promise<AdminInitiateAuthResponse>;
-  createUser(body: User.Email & Partial<Auth.Password>): Promise<unknown>;
+  createUser(body: User.Email & Partial<Auth.Password & Auth.TemporaryPassword>, suppressEmail?: boolean): Promise<unknown>;
   deleteUser(ctx: User.Email): Promise<unknown>;
   refreshToken(body: Auth.RefreshToken.Request): Promise<AdminInitiateAuthResponse>;
+  getUser(ctx: User.Email): Promise<AdminGetUserCommandOutput>;
   listUsers(): Promise<ListUsersResponse>;
   confirmUser(ctx: User.Email & Auth.ConfirmUser.Request): Promise<any>;
 }
@@ -15,6 +16,17 @@ export const identityServiceFactory = (
   clientId: string,
   cognito: CognitoIdentityProvider): IIdentityService => {
   const instance: IIdentityService = {
+    getUser: ({ email }) => {
+      return cognito.adminGetUser({
+        UserPoolId: userPoolId,
+        Username: email,
+      }).catch<AdminGetUserCommandOutput>((error) => {
+        if (error.name !== 'UserNotFoundException') {
+          throw error;
+        }
+        return undefined;
+      });
+    },
     confirmUser: async (body) => {
       const authResp = await cognito.adminInitiateAuth({
         ClientId: clientId,
@@ -64,11 +76,12 @@ export const identityServiceFactory = (
         },
       });
     },
-    createUser: async ({ email, password }) => {
+    createUser: async ({ email, password, temporaryPassword }, suppressEmail) => {
       await cognito.adminCreateUser({
         UserPoolId: userPoolId,
         Username: email,
-        MessageAction: password ? MessageActionType.SUPPRESS : undefined,
+        TemporaryPassword: temporaryPassword,
+        MessageAction: (password || suppressEmail) ? MessageActionType.SUPPRESS : undefined,
       });
 
       if (password) {
@@ -84,6 +97,10 @@ export const identityServiceFactory = (
       return cognito.adminDeleteUser({
         Username: email,
         UserPoolId: userPoolId,
+      }).catch((error) => {
+        if (error.name !== 'UserNotFoundException') {
+          throw error;
+        }
       });
     },
     refreshToken: (body) => {

@@ -6,9 +6,7 @@ import { File } from '@household/shared/types/types';
 export default (createUploadUrlService: ICreateUploadUrlService): AWSLambda.APIGatewayProxyHandler =>
   async (event) => {
     const body = JSON.parse(event.body);
-    let response: {
-      url: string;
-    } & File.FileId;
+    let response: File.Url & File.FileId;
 
     try {
       response = await createUploadUrlService({

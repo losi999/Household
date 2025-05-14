@@ -33,9 +33,7 @@ describe('Update setting service', () => {
       expiresIn: undefined,
     });
     validateFunctionCall(mockSettingDocumentConverter.functions.update, body, undefined);
-    validateFunctionCall(mockSettingService.functions.updateSetting, {
-      settingKey,
-    }, updateQuery);
+    validateFunctionCall(mockSettingService.functions.updateSetting, settingKey, updateQuery);
     expect.assertions(2);
   });
 
@@ -50,9 +48,7 @@ describe('Update setting service', () => {
         expiresIn: undefined,
       }).catch(validateError('Error while updating setting document', 500));
       validateFunctionCall(mockSettingDocumentConverter.functions.update, body, undefined);
-      validateFunctionCall(mockSettingService.functions.updateSetting, {
-        settingKey,
-      }, updateQuery);
+      validateFunctionCall(mockSettingService.functions.updateSetting, settingKey, updateQuery);
       expect.assertions(4);
     });
   });

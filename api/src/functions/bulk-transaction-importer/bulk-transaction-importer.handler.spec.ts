@@ -1,12 +1,14 @@
 import { default as handler } from '@household/api/functions/bulk-transaction-importer/bulk-transaction-importer.handler';
-import { validateError } from '@household/shared/common/unit-testing';
+import { IBulkTransactionImporterService } from '@household/api/functions/bulk-transaction-importer/bulk-transaction-importer.service';
+import { createFileId } from '@household/shared/common/test-data-factory';
+import { MockBusinessService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 
 describe('Bulk transaction importer handler', () => {
   let handlerFuntion: ReturnType<typeof handler>;
-  let mockBulkTransactionImporterService: jest.Mock;
+  let mockBulkTransactionImporterService: MockBusinessService<IBulkTransactionImporterService>;
 
   const bucketName = 'bucket-name';
-  const fileId = 'file.xls';
+  const fileId = createFileId();
 
   const handlerEvent = {
     Records: [
@@ -16,9 +18,8 @@ describe('Bulk transaction importer handler', () => {
             name: bucketName,
           },
           object: {
-            key: fileId,
+            key: fileId as string,
           },
-
         },
       },
     ],
@@ -30,29 +31,29 @@ describe('Bulk transaction importer handler', () => {
     handlerFuntion = handler(mockBulkTransactionImporterService);
   });
 
-  it('should return undefined if post deploy service executes successfully', async () => {
+  it('should return undefined if service executes successfully', async () => {
     mockBulkTransactionImporterService.mockResolvedValue(undefined);
 
     const result = await handlerFuntion(handlerEvent, undefined, undefined);
     expect(result).toBeUndefined();
-    expect(mockBulkTransactionImporterService).toHaveBeenCalledWith({
+    validateFunctionCall(mockBulkTransactionImporterService, {
       bucketName,
       fileId,
     });
     expect.assertions(2);
   });
 
-  it('should throw error if post deploy service fails', async () => {
+  it('should throw error if service fails', async () => {
     const errorMessage = 'This is an error';
     mockBulkTransactionImporterService.mockRejectedValue({
       message: errorMessage,
     });
 
     await (handlerFuntion(handlerEvent, undefined, undefined) as Promise<any>).catch(validateError(errorMessage));
-    expect(mockBulkTransactionImporterService).toHaveBeenCalledWith({
+    validateFunctionCall(mockBulkTransactionImporterService, {
       bucketName,
       fileId,
     });
-    expect.assertions(2);
+    expect.assertions(1);
   });
 });

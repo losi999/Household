@@ -64,7 +64,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestGetTransaction(getAccountId(accountDocument), paymentTransactionDataFactory.id())
         .expectUnauthorizedResponse();
     });
@@ -86,7 +86,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
             .saveRecipientDocument(recipientDocument)
             .saveCategoryDocument(regularCategoryDocument)
             .saveTransactionDocument(document)
-            .authenticate(1)
+            .authenticate('admin')
             .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
             .expectOkResponse()
             .expectValidResponseSchema(paymentTransactionSchema)
@@ -108,7 +108,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProductDocument(productDocument)
             .saveTransactionDocument(document)
-            .authenticate(1)
+            .authenticate('admin')
             .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
             .expectOkResponse()
             .expectValidResponseSchema(paymentTransactionSchema)
@@ -128,7 +128,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
             .saveRecipientDocument(recipientDocument)
             .saveCategoryDocument(invoiceCategoryDocument)
             .saveTransactionDocument(document)
-            .authenticate(1)
+            .authenticate('admin')
             .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
             .expectOkResponse()
             .expectValidResponseSchema(paymentTransactionSchema)
@@ -152,7 +152,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
             .saveRecipientDocument(recipientDocument)
             .saveCategoryDocument(regularCategoryDocument)
             .saveTransactionDocument(document)
-            .authenticate(1)
+            .authenticate('admin')
             .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
             .expectOkResponse()
             .expectValidResponseSchema(deferredTransactionSchema)
@@ -178,7 +178,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProductDocument(productDocument)
             .saveTransactionDocument(document)
-            .authenticate(1)
+            .authenticate('admin')
             .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
             .expectOkResponse()
             .expectValidResponseSchema(deferredTransactionSchema)
@@ -202,7 +202,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
             .saveRecipientDocument(recipientDocument)
             .saveCategoryDocument(invoiceCategoryDocument)
             .saveTransactionDocument(document)
-            .authenticate(1)
+            .authenticate('admin')
             .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
             .expectOkResponse()
             .expectValidResponseSchema(deferredTransactionSchema)
@@ -226,7 +226,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
             .saveRecipientDocument(recipientDocument)
             .saveCategoryDocument(regularCategoryDocument)
             .saveTransactionDocument(document)
-            .authenticate(1)
+            .authenticate('admin')
             .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
             .expectOkResponse()
             .expectValidResponseSchema(deferredTransactionSchema)
@@ -265,7 +265,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
               document,
               repayingTransferTransactionDocument,
             ])
-            .authenticate(1)
+            .authenticate('admin')
             .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
             .expectOkResponse()
             .expectValidResponseSchema(deferredTransactionSchema)
@@ -306,7 +306,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
               document,
               repayingTransferTransactionDocument,
             ])
-            .authenticate(1)
+            .authenticate('admin')
             .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
             .expectOkResponse()
             .expectValidResponseSchema(deferredTransactionSchema)
@@ -335,7 +335,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
             .saveRecipientDocument(recipientDocument)
             .saveCategoryDocument(regularCategoryDocument)
             .saveTransactionDocument(document)
-            .authenticate(1)
+            .authenticate('admin')
             .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
             .expectOkResponse()
             .expectValidResponseSchema(deferredTransactionSchema)
@@ -362,7 +362,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
             .saveRecipientDocument(recipientDocument)
             .saveCategoryDocument(regularCategoryDocument)
             .saveTransactionDocument(document)
-            .authenticate(1)
+            .authenticate('admin')
             .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
             .expectOkResponse()
             .expectValidResponseSchema(deferredTransactionSchema)
@@ -386,7 +386,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
             .saveRecipientDocument(recipientDocument)
             .saveCategoryDocument(regularCategoryDocument)
             .saveTransactionDocument(document)
-            .authenticate(1)
+            .authenticate('admin')
             .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
             .expectOkResponse()
             .expectValidResponseSchema(reimbursementTransactionSchema)
@@ -410,7 +410,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
             .saveRecipientDocument(recipientDocument)
             .saveCategoryDocument(regularCategoryDocument)
             .saveTransactionDocument(document)
-            .authenticate(1)
+            .authenticate('admin')
             .requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document))
             .expectOkResponse()
             .expectValidResponseSchema(reimbursementTransactionSchema)
@@ -436,7 +436,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProductDocument(productDocument)
             .saveTransactionDocument(document)
-            .authenticate(1)
+            .authenticate('admin')
             .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
             .expectOkResponse()
             .expectValidResponseSchema(reimbursementTransactionSchema)
@@ -460,7 +460,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
             .saveRecipientDocument(recipientDocument)
             .saveCategoryDocument(invoiceCategoryDocument)
             .saveTransactionDocument(document)
-            .authenticate(1)
+            .authenticate('admin')
             .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
             .expectOkResponse()
             .expectValidResponseSchema(reimbursementTransactionSchema)
@@ -543,7 +543,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
               document,
               repayingTransferTransactionDocument,
             ])
-            .authenticate(1)
+            .authenticate('admin')
             .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
             .expectOkResponse()
             .expectValidResponseSchema(splitTransactionSchema)
@@ -597,7 +597,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
               document,
               repayingTransferTransactionDocument,
             ])
-            .authenticate(1)
+            .authenticate('admin')
             .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
             .expectOkResponse()
             .expectValidResponseSchema(splitTransactionSchema)
@@ -617,7 +617,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
             transferAccountDocument,
           ])
             .saveTransactionDocument(document)
-            .authenticate(1)
+            .authenticate('admin')
             .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
             .expectOkResponse()
             .expectValidResponseSchema(transferTransactionSchema)
@@ -635,7 +635,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
             transferAccountDocument,
           ])
             .saveTransactionDocument(document)
-            .authenticate(1)
+            .authenticate('admin')
             .requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document))
             .expectOkResponse()
             .expectValidResponseSchema(transferTransactionSchema)
@@ -661,7 +661,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
             .saveRecipientDocument(recipientDocument)
             .saveCategoryDocument(regularCategoryDocument)
             .saveTransactionDocument(document)
-            .authenticate(1)
+            .authenticate('admin')
             .requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document))
             .expectOkResponse()
             .expectValidResponseSchema(deferredTransactionSchema)
@@ -701,7 +701,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
               document,
               repayingTransferTransactionDocument,
             ])
-            .authenticate(1)
+            .authenticate('admin')
             .requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document))
             .expectOkResponse()
             .expectValidResponseSchema(deferredTransactionSchema)
@@ -730,7 +730,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
             .saveRecipientDocument(recipientDocument)
             .saveCategoryDocument(regularCategoryDocument)
             .saveTransactionDocument(document)
-            .authenticate(1)
+            .authenticate('admin')
             .requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document))
             .expectOkResponse()
             .expectValidResponseSchema(deferredTransactionSchema)
@@ -754,7 +754,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
             .saveRecipientDocument(recipientDocument)
             .saveCategoryDocument(regularCategoryDocument)
             .saveTransactionDocument(document)
-            .authenticate(1)
+            .authenticate('admin')
             .requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document))
             .expectOkResponse()
             .expectValidResponseSchema(reimbursementTransactionSchema)
@@ -780,7 +780,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProductDocument(productDocument)
             .saveTransactionDocument(document)
-            .authenticate(1)
+            .authenticate('admin')
             .requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document))
             .expectOkResponse()
             .expectValidResponseSchema(reimbursementTransactionSchema)
@@ -804,7 +804,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
             .saveRecipientDocument(recipientDocument)
             .saveCategoryDocument(invoiceCategoryDocument)
             .saveTransactionDocument(document)
-            .authenticate(1)
+            .authenticate('admin')
             .requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document))
             .expectOkResponse()
             .expectValidResponseSchema(reimbursementTransactionSchema)
@@ -857,7 +857,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
               document,
               repayingTransferTransactionDocument,
             ])
-            .authenticate(1)
+            .authenticate('admin')
             .requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document))
             .expectOkResponse()
             .expectValidResponseSchema(splitTransactionSchema)
@@ -877,7 +877,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
             transferAccountDocument,
           ])
             .saveTransactionDocument(document)
-            .authenticate(1)
+            .authenticate('admin')
             .requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document))
             .expectOkResponse()
             .expectValidResponseSchema(transferTransactionSchema)
@@ -889,14 +889,14 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
     describe('should return error', () => {
       describe('if transactionId', () => {
         it('is not mongo id', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransaction(accountDataFactory.id(), paymentTransactionDataFactory.id('not-valid'))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('transactionId', 'pathParameters');
         });
 
         it('does not belong to any transaction', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransaction(accountDataFactory.id(), paymentTransactionDataFactory.id())
             .expectNotFoundResponse();
         });
@@ -904,7 +904,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
 
       describe('if accountId', () => {
         it('is not mongo id', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestGetTransaction(accountDataFactory.id('not-valid'), paymentTransactionDataFactory.id())
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('accountId', 'pathParameters');

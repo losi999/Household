@@ -18,7 +18,7 @@ describe('POST category/v1/categories', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestCreateCategory(request)
         .expectUnauthorizedResponse();
     });
@@ -26,7 +26,7 @@ describe('POST category/v1/categories', () => {
 
   describe('called as an admin', () => {
     it('should create category', () => {
-      cy.authenticate(1)
+      cy.authenticate('admin')
         .requestCreateCategory(request)
         .expectCreatedResponse()
         .validateCategoryDocument(request);
@@ -41,7 +41,7 @@ describe('POST category/v1/categories', () => {
         grandparentCategoryDocument,
         parentCategoryDocument,
       ])
-        .authenticate(1)
+        .authenticate('admin')
         .requestCreateCategory(request)
         .expectCreatedResponse()
         .validateCategoryDocument(request, grandparentCategoryDocument, parentCategoryDocument);
@@ -50,7 +50,7 @@ describe('POST category/v1/categories', () => {
     describe('should return error', () => {
       describe('if name', () => {
         it('is missing from body', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateCategory(categoryDataFactory.request({
               name: undefined,
             }))
@@ -59,7 +59,7 @@ describe('POST category/v1/categories', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateCategory(categoryDataFactory.request({
               name: <any>1,
             }))
@@ -68,7 +68,7 @@ describe('POST category/v1/categories', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateCategory(categoryDataFactory.request({
               name: '',
             }))
@@ -82,7 +82,7 @@ describe('POST category/v1/categories', () => {
           });
 
           cy.saveCategoryDocument(categoryDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestCreateCategory(request)
             .expectBadRequestResponse()
             .expectMessage('Duplicate category name');
@@ -91,7 +91,7 @@ describe('POST category/v1/categories', () => {
 
       describe('if categoryType', () => {
         it('is missing from body', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateCategory(categoryDataFactory.request({
               categoryType: undefined,
             }))
@@ -100,7 +100,7 @@ describe('POST category/v1/categories', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateCategory(categoryDataFactory.request({
               categoryType: <any>1,
             }))
@@ -109,7 +109,7 @@ describe('POST category/v1/categories', () => {
         });
 
         it('is not a valid enum value', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateCategory(
               categoryDataFactory.request({
                 categoryType: <any>'not-category-type',
@@ -121,7 +121,7 @@ describe('POST category/v1/categories', () => {
 
       describe('if parentCategoryId', () => {
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateCategory(
               categoryDataFactory.request({
                 parentCategoryId: <any>1,
@@ -131,7 +131,7 @@ describe('POST category/v1/categories', () => {
         });
 
         it('does not match pattern', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateCategory(
               categoryDataFactory.request({
                 parentCategoryId: <any>'not-mongo-id',
@@ -141,7 +141,7 @@ describe('POST category/v1/categories', () => {
         });
 
         it('does not belong to any category', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestCreateCategory(
               categoryDataFactory.request({
                 parentCategoryId: categoryDataFactory.id(),

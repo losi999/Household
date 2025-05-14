@@ -19,7 +19,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestDeleteCategory(createCategoryId())
         .expectUnauthorizedResponse();
     });
@@ -28,7 +28,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
   describe('called as an admin', () => {
     it('should delete category', () => {
       cy.saveCategoryDocument(categoryDocument)
-        .authenticate(1)
+        .authenticate('admin')
         .requestDeleteCategory(getCategoryId(categoryDocument))
         .expectNoContentResponse()
         .validateCategoryDeleted(getCategoryId(categoryDocument));
@@ -54,7 +54,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
           childCategory,
           grandChildCategory,
         ])
-          .authenticate(1)
+          .authenticate('admin')
           .requestDeleteCategory(getCategoryId(categoryDocument))
           .expectNoContentResponse()
           .validateCategoryDeleted(getCategoryId(categoryDocument))
@@ -68,7 +68,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
           childCategory,
           grandChildCategory,
         ])
-          .authenticate(1)
+          .authenticate('admin')
           .requestDeleteCategory(getCategoryId(childCategory))
           .expectNoContentResponse()
           .validateCategoryDeleted(getCategoryId(childCategory))
@@ -171,7 +171,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
             unrelatedDeferredTransactionDocument,
             unrelatedReimbursementTransactionDocument,
           ])
-          .authenticate(1)
+          .authenticate('admin')
           .requestDeleteCategory(getCategoryId(categoryDocument))
           .expectNoContentResponse()
           .validateCategoryDeleted(getCategoryId(categoryDocument))
@@ -320,7 +320,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
             unrelatedDeferredTransactionDocument,
             unrelatedReimbursementTransactionDocument,
           ])
-          .authenticate(1)
+          .authenticate('admin')
           .requestDeleteCategory(getCategoryId(categoryDocument))
           .expectNoContentResponse()
           .validateCategoryDeleted(getCategoryId(categoryDocument))
@@ -447,7 +447,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
             unrelatedDeferredTransactionDocument,
             unrelatedReimbursementTransactionDocument,
           ])
-          .authenticate(1)
+          .authenticate('admin')
           .requestDeleteCategory(getCategoryId(categoryDocument))
           .expectNoContentResponse()
           .validateCategoryDeleted(getCategoryId(categoryDocument))
@@ -502,7 +502,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
 
         cy.saveCategoryDocument(categoryDocument)
           .saveProductDocument(productDocument)
-          .authenticate(1)
+          .authenticate('admin')
           .requestDeleteCategory(getCategoryId(categoryDocument))
           .expectNoContentResponse()
           .validateCategoryDeleted(getCategoryId(categoryDocument))
@@ -513,7 +513,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
     describe('should return error', () => {
       describe('if categoryId', () => {
         it('is not mongo id', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestDeleteCategory(createCategoryId('not-valid'))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('categoryId', 'pathParameters');

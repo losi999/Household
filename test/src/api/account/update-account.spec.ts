@@ -14,7 +14,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestUpdateAccount(accountDataFactory.id(), request)
         .expectUnauthorizedResponse();
     });
@@ -23,7 +23,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
   describe('called as an admin', () => {
     it('should update account', () => {
       cy.saveAccountDocument(accountDocument)
-        .authenticate(1)
+        .authenticate('admin')
         .requestUpdateAccount(getAccountId(accountDocument), request)
         .expectCreatedResponse()
         .validateAccountDocument(request);
@@ -39,7 +39,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
         accountDocument,
         sameNameAccountDocument,
       ])
-        .authenticate(1)
+        .authenticate('admin')
         .requestCreateAccount(request)
         .expectCreatedResponse()
         .validateAccountDocument(request);
@@ -47,7 +47,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
     describe('should return error', () => {
       describe('if name', () => {
         it('is missing from body', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
               name: undefined,
             }))
@@ -56,7 +56,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
               name: <any>1,
             }))
@@ -65,7 +65,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
               name: '',
             }))
@@ -78,7 +78,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
 
           cy.saveAccountDocument(accountDocument)
             .saveAccountDocument(duplicateAccountDocument)
-            .authenticate(1)
+            .authenticate('admin')
             .requestUpdateAccount(getAccountId(accountDocument), request)
             .expectBadRequestResponse()
             .expectMessage('Duplicate account name');
@@ -87,7 +87,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
 
       describe('if accountType', () => {
         it('is missing from body', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
               accountType: undefined,
             }))
@@ -96,7 +96,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
               accountType: <any>1,
             }))
@@ -105,7 +105,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
         });
 
         it('is not a valid enum value', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
               accountType: <any>'not-account-type',
             }))
@@ -116,7 +116,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
 
       describe('if currency', () => {
         it('is missing from body', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
               currency: undefined,
             }))
@@ -125,7 +125,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
               currency: <any>1,
             }))
@@ -134,7 +134,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
               currency: '',
             }))
@@ -145,7 +145,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
 
       describe('if owner', () => {
         it('is missing from body', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
               owner: undefined,
             }))
@@ -154,7 +154,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
               owner: <any>1,
             }))
@@ -163,7 +163,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
               owner: '',
             }))
@@ -174,14 +174,14 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
 
       describe('if accountId', () => {
         it('is not mongo id', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestUpdateAccount(accountDataFactory.id('not-valid'), request)
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('accountId', 'pathParameters');
         });
 
         it('does not belong to any account', () => {
-          cy.authenticate(1)
+          cy.authenticate('admin')
             .requestUpdateAccount(accountDataFactory.id(), request)
             .expectNotFoundResponse();
         });

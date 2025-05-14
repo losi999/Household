@@ -4,15 +4,15 @@ import { IAccountService } from '@household/shared/services/account-service';
 import '@household/test/api/account/commands/requests';
 
 const saveAccountDocument = (...params: Parameters<IAccountService['saveAccount']>) => {
-  return cy.task<Account.Document>('saveAccount', ...params);
+  return cy.task<Account.Document>('saveAccount', params);
 };
 
 const saveAccountDocuments = (...params: Parameters<IAccountService['saveAccounts']>) => {
-  return cy.task<Account.Document[]>('saveAccounts', ...params);
+  return cy.task<Account.Document[]>('saveAccounts', params);
 };
 
 const getAccountDocumentById = (...params: Parameters<IAccountService['getAccountById']>) => {
-  return cy.task<Account.Document>('getAccountById', ...params);
+  return cy.task<Account.Document>('getAccountById', params);
 };
 
 export const setAccountTaskCommands = () => {

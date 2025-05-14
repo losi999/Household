@@ -12,7 +12,7 @@ describe('GET /project/v1/projects/{projectId}', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestGetProject(projectDataFactory.id())
         .expectUnauthorizedResponse();
     });
@@ -21,7 +21,7 @@ describe('GET /project/v1/projects/{projectId}', () => {
   describe('called as an admin', () => {
     it('should get project by id', () => {
       cy.saveProjectDocument(projectDocument)
-        .authenticate(1)
+        .authenticate('admin')
         .requestGetProject(getProjectId(projectDocument))
         .expectOkResponse()
         .expectValidResponseSchema(schema)
@@ -30,14 +30,14 @@ describe('GET /project/v1/projects/{projectId}', () => {
 
     describe('should return error if projectId', () => {
       it('is not mongo id', () => {
-        cy.authenticate(1)
+        cy.authenticate('admin')
           .requestGetProject(projectDataFactory.id('not-valid'))
           .expectBadRequestResponse()
           .expectWrongPropertyPattern('projectId', 'pathParameters');
       });
 
       it('does not belong to any project', () => {
-        cy.authenticate(1)
+        cy.authenticate('admin')
           .requestGetProject(projectDataFactory.id())
           .expectNotFoundResponse();
       });

@@ -42,11 +42,9 @@ describe('List users service', () => {
   });
 
   it('should throw error if unable to list users', async () => {
-    mockIdentityService.functions.listUsers.mockRejectedValue({
-      message: 'This is a cognito error',
-    });
+    mockIdentityService.functions.listUsers.mockRejectedValue('This is a cognito error');
 
-    await service().catch(validateError('This is a cognito error', 500));
+    await service().catch(validateError('Error while listing users from cognito', 500));
     expect(mockIdentityService.functions.listUsers).toHaveBeenCalledTimes(1);
     expect.assertions(3);
   });

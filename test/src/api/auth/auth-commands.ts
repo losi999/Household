@@ -2,16 +2,14 @@ import { Auth } from '@household/shared/types/types';
 import { CommandFunction } from '@household/test/api/types';
 import { isLocalhost } from '@household/test/api/utils';
 
-const unauthenticate = () => {
-  return undefined as Cypress.ChainableRequest;
-};
+type UserType = 'admin' | 'anonymous';
 
-const authenticate = (userIndex: number) => {
-  if (isLocalhost()) {
+const authenticate = (userType: UserType) => {
+  if (userType === 'anonymous' || isLocalhost()) {
     return undefined as Cypress.ChainableRequest;
   }
 
-  const email = `losonczil+${userIndex}@gmail.com`;
+  const email = `losonczil+${userType}@gmail.com`;
   const body: Auth.Login.Request = {
     email,
     password: Cypress.env('PASSWORD'),
@@ -29,7 +27,6 @@ const authenticate = (userIndex: number) => {
 export const setAuthCommands = () => {
   Cypress.Commands.addAll({
     authenticate,
-    unauthenticate,
   });
 };
 
@@ -37,7 +34,6 @@ declare global {
   namespace Cypress {
     interface Chainable {
       authenticate: CommandFunction<typeof authenticate>;
-      unauthenticate: CommandFunction<typeof unauthenticate>;
     }
   }
 }

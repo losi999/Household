@@ -10,7 +10,7 @@ export const deleteUserServiceFactory = (identityService: IIdentityService): IDe
   return async ({ email }) => {
     await identityService.deleteUser({
       email,
-    }).catch(httpErrors.common.genericError('Delete user', {
+    }).catch(httpErrors.cognito.deleteUser({
       email,
     }));
   };

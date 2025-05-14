@@ -13,7 +13,7 @@ describe('GET /recipient/v1/recipients', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestGetRecipientList()
         .expectUnauthorizedResponse();
     });
@@ -23,7 +23,7 @@ describe('GET /recipient/v1/recipients', () => {
     it('should get a list of recipients', () => {
       cy.saveRecipientDocument(recipientDocument1)
         .saveRecipientDocument(recipientDocument2)
-        .authenticate(1)
+        .authenticate('admin')
         .requestGetRecipientList()
         .expectOkResponse()
         .expectValidResponseSchema(schema)

@@ -9,7 +9,7 @@ export interface IListUsersService {
 
 export const listUsersServiceFactory = (identityService: IIdentityService): IListUsersService => {
   return async () => {
-    const users = await identityService.listUsers().catch(httpErrors.common.genericError('List users'));
+    const users = await identityService.listUsers().catch(httpErrors.cognito.listUsers());
 
     return users.Users.map(u => ({
       email: u.Attributes.find(a => a.Name === 'email').Value,
