@@ -521,6 +521,10 @@ export const httpErrors = {
       log('Confirm user in cognito', ctx, error);
       throw httpError(statusCode, 'Error while confirming user in cognito');
     },
+    confirmForgotPassword: (ctx: User.Email, statusCode = 500): CatchAndThrow => (error) => {
+      log('Confirm forgot password in cognito', ctx, error);
+      throw httpError(statusCode, 'Error while confirming forgot password in cognito');
+    },
     deleteUser: (ctx: User.Email, statusCode = 500): CatchAndThrow => (error) => {
       log('Delete user from cognito', ctx, error);
       throw httpError(statusCode, 'Error while deleting user from cognito');
@@ -528,6 +532,18 @@ export const httpErrors = {
     listUsers: (statusCode = 500): CatchAndThrow => (error) => {
       log('Listing users from cognito', undefined, error);
       throw httpError(statusCode, 'Error while listing users from cognito');
+    },
+    login: (ctx: User.Email, statusCode = 500): CatchAndThrow => (error) => {
+      log('Login', ctx, error);
+      throw httpError(statusCode, 'Error while logging in');
+    },
+    refreshToken: (statusCode = 500): CatchAndThrow => (error) => {
+      log('Refresh token', error);
+      throw httpError(statusCode, 'Error while getting refresh token');
+    },
+    forgotPassword: (ctx: User.Email, statusCode = 500): CatchAndThrow => (error) => {
+      log('Forgot password', ctx, error);
+      throw httpError(statusCode, 'Error while resetting password');
     },
   },
 };

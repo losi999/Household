@@ -31,5 +31,5 @@ export default (on: Cypress.PluginEvents) => {
   setTasksFromService(on, settingService, 'updateSetting', 'getSettingByKey');
   setTasksFromService(on, fileService, 'getFileById', 'saveFile');
   setTasksFromService(on, identityService, 'deleteUser', 'getUser', 'createUser');
-  setTasksFromService(on, storageService, 'checkFile', 'writeFile', 'writeFile', 'uploadFile');
+  setTasksFromService(on, storageService, 'checkFile', 'writeFile', 'uploadFile');
 };

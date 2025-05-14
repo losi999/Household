@@ -28,6 +28,7 @@ Resources:
         PasswordPolicy:
           MinimumLength: 6
           TemporaryPasswordValidityDays: 45
+          RequireSymbols: false
       Schema:
         - Name: email
           AttributeDataType: String
@@ -55,6 +56,21 @@ Resources:
       UserPoolId: !Ref UserPool
       WriteAttributes:
         - email
+  EditorUserGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      UserPoolId: !Ref UserPool
+      GroupName: editor
+  ViewerUserGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      UserPoolId: !Ref UserPool
+      GroupName: viewer
+  HairdresserUserGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      UserPoolId: !Ref UserPool
+      GroupName: hairdresser
   AdminUser:
     Type: AWS::Cognito::UserPoolUser
     Properties:
@@ -63,6 +79,27 @@ Resources:
       UserAttributes:
         - Name: email
           Value: "{{resolve:ssm:AdminUserEmail:1}}"
+  AdminUserToEditorGroup:
+    Type: AWS::Cognito::UserPoolUserToGroupAttachment
+    DependsOn: AdminUser
+    Properties:
+      GroupName: editor
+      UserPoolId: !Ref UserPool
+      Username: "{{resolve:ssm:AdminUserEmail:1}}"
+  AdminUserToViewerGroup:
+    Type: AWS::Cognito::UserPoolUserToGroupAttachment
+    DependsOn: AdminUser
+    Properties:
+      GroupName: viewer
+      UserPoolId: !Ref UserPool
+      Username: "{{resolve:ssm:AdminUserEmail:1}}"
+  AdminUserToHairdresserGroup:
+    Type: AWS::Cognito::UserPoolUserToGroupAttachment
+    DependsOn: AdminUser
+    Properties:
+      GroupName: hairdresser
+      UserPoolId: !Ref UserPool
+      Username: "{{resolve:ssm:AdminUserEmail:1}}"
 
 Outputs:
   UserPoolId:

@@ -2,6 +2,7 @@ import { createUserServiceFactory, ICreateUserService } from '@household/api/fun
 import { IIdentityService } from '@household/shared/services/identity-service';
 import { Mock, createMockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { User } from '@household/shared/types/types';
+import { UserType } from '@household/shared/enums';
 
 describe('Create user service', () => {
   let service: ICreateUserService;
@@ -23,9 +24,9 @@ describe('Create user service', () => {
 
     await service({
       body,
-      suppressEmail: undefined,
+      suppressEmail: true,
     });
-    validateFunctionCall(mockIdentityService.functions.createUser, body, undefined);
+    validateFunctionCall(mockIdentityService.functions.createUser, body, UserType.Viewer, true);
   });
 
   it('should throw error if unable to create user', async () => {
@@ -35,7 +36,7 @@ describe('Create user service', () => {
       body,
       suppressEmail: undefined,
     }).catch(validateError('Error while creating user in cognito', 500));
-    validateFunctionCall(mockIdentityService.functions.createUser, body, undefined);
+    validateFunctionCall(mockIdentityService.functions.createUser, body, UserType.Viewer, undefined);
     expect.assertions(3);
   });
 });

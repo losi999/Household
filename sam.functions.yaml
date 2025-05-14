@@ -82,7 +82,6 @@ Resources:
         Variables:
           USER_POOL_ID: !Ref UserPoolId
           CLIENT_ID: !Ref ClientId
-          ADMIN_COUNT: "1"
           TEST_USER_PASSWORD: !Ref TestUserPassword
 
 Outputs:

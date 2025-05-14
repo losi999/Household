@@ -394,6 +394,14 @@ export const createConfirmUserRequest: DataFactoryFunction<Auth.ConfirmUser.Requ
   };
 };
 
+export const createConfirmForgotPasswordRequest: DataFactoryFunction<Auth.ConfirmForgotPassword.Request> = (req) => {
+  return {
+    confirmationCode: '123456',
+    password: 'password123',
+    ...req,
+  };
+};
+
 export const createReportAccountFilter: DataFactoryFunction<Report.AccountFilter> = (req) => {
   return {
     filterType: 'account',

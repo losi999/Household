@@ -1,26 +1,25 @@
+import { UserType } from '@household/shared/enums';
 import { IIdentityService } from '@household/shared/services/identity-service';
 
 export interface ICreateTestUsersService {
-  (ctx: {
-    numberOfAdmins: number;
-  }): Promise<void>;
+  (): Promise<void>;
 }
 
 export const createTestUsersServiceFactory = (identityService: IIdentityService): ICreateTestUsersService => {
-  const createUser = async (index: number) => {
-    const email = `losonczil+${index}@gmail.com`;
+  const createUser = async (userType: UserType) => {
+    const email = `losonczil+${userType}@gmail.com`;
     try {
       await identityService.createUser({
         email,
         password: process.env.TEST_USER_PASSWORD,
-      });
+      }, userType);
     } catch (error) {
       if (error.name !== 'UsernameExistsException') {
         throw error;
       }
     }
   };
-  return async ({ numberOfAdmins }) => {
-    await Promise.all([...[...Array(numberOfAdmins).keys()].map(x => createUser(x + 1))]);
+  return async () => {
+    await Promise.all(Object.values(UserType).map(x => createUser(x)));
   };
 };

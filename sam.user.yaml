@@ -159,6 +159,34 @@ Resources:
             Path: /v1/refreshToken
             Method: POST
 
+  ForgotPassword:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-ForgotPassword
+      CodeUri: dist/api/forgot-password
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref UserApi
+            Path: /v1/forgotPassword
+            Method: POST
+
+  ConfirmForgotPassword:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-ConfirmForgotPassword
+      CodeUri: dist/api/confirm-forgot-password
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref UserApi
+            Path: /v1/users/{email}/confirmForgotPassword
+            Method: POST
+
 Outputs:
   UserApi:
     Description: "Household User API"

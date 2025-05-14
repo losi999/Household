@@ -663,6 +663,16 @@ export namespace Auth {
     idToken: string;
   };
 
+  export namespace ForgotPassword {
+    export type Request = User.Email;
+  }
+
+  export namespace ConfirmForgotPassword {
+    export type Request = Password & {
+      confirmationCode: string;
+    };
+  }
+
   export namespace ConfirmUser {
     export type Request = Password & TemporaryPassword;
   }

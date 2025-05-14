@@ -10,7 +10,9 @@ export interface ILoginService {
 
 export const loginServiceFactory = (identityService: IIdentityService): ILoginService => {
   return async ({ body }) => {
-    const loginResponse = await identityService.login(body).catch(httpErrors.common.genericError('Login', body));
+    const loginResponse = await identityService.login(body).catch(httpErrors.cognito.login({
+      email: body.email,
+    }));
 
     return {
       idToken: loginResponse.AuthenticationResult.IdToken,

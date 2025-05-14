@@ -31,3 +31,9 @@ export enum TransactionType {
   Reimbursement = 'reimbursement',
   Draft = 'draft',
 }
+
+export enum UserType {
+  Editor = 'editor',
+  Viewer = 'viewer',
+  Hairdresser = 'hairdresser',
+}

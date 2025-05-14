@@ -1,4 +1,4 @@
-import { errorResponse } from '@household/api/common/response-factory';
+import { errorResponse, okResponse } from '@household/api/common/response-factory';
 import { IListUsersService } from '@household/api/functions/list-users/list-users.service';
 import { User } from '@household/shared/types/types';
 
@@ -12,9 +12,6 @@ export default (listUsers: IListUsersService): AWSLambda.APIGatewayProxyHandler 
       return errorResponse(error);
     }
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify(users),
-    };
+    return okResponse(users);
   };
 };
