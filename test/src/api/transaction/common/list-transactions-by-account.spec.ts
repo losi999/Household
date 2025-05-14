@@ -12,7 +12,7 @@ import { splitTransactionDataFactory } from '@household/test/api/transaction/spl
 import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
-import { AccountType, CategoryType } from '@household/shared/enums';
+import { AccountType, CategoryType, UserType } from '@household/shared/enums';
 
 describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
   let accountDocument: Account.Document;
@@ -29,7 +29,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
     });
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
 
     describe('should get a list of transactions', () => {
       it('of a non-loan account', () => {
@@ -218,7 +218,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
             owningSettledDeferredTransactionDocument,
             owningReimbursementTransactionDocument,
           ])
-          .authenticate('admin')
+          .authenticate(UserType.Editor)
           .requestGetTransactionListByAccount(getAccountId(accountDocument), {
             pageNumber: 1,
             pageSize: 100000,
@@ -361,7 +361,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
             owningSettledDeferredTransactionDocument,
             payingReimbursementTransactionDocument,
           ])
-          .authenticate('admin')
+          .authenticate(UserType.Editor)
           .requestGetTransactionListByAccount(getAccountId(loanAccountDocument), {
             pageNumber: 1,
             pageSize: 100000,
@@ -386,7 +386,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
     describe('should return error', () => {
       describe('if accountId', () => {
         it('is not mongo id', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestGetTransactionListByAccount(createAccountId('not-mongo-id'))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('accountId', 'pathParameters');
@@ -395,7 +395,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
 
       describe('if querystring', () => {
         it('has additional parameter', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestGetTransactionListByAccount(createAccountId(), {
               pageNumber: 1,
               pageSize: 100,
@@ -408,7 +408,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
 
       describe('if querystring.pageSize', () => {
         it('is missing while pageNumber is set', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestGetTransactionListByAccount(createAccountId(), {
               pageNumber: 1,
             })
@@ -417,7 +417,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
         });
 
         it('is not number', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestGetTransactionListByAccount(createAccountId(), {
               pageNumber: 1,
               pageSize: 'asd' as any,
@@ -427,7 +427,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
         });
 
         it('is too small', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestGetTransactionListByAccount(createAccountId(), {
               pageNumber: 1,
               pageSize: 0,
@@ -439,7 +439,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
 
       describe('if querystring.pageNumber', () => {
         it('is missing while pageSize is set', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestGetTransactionListByAccount(createAccountId(), {
               pageSize: 1,
             })
@@ -448,7 +448,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
         });
 
         it('is not number', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestGetTransactionListByAccount(createAccountId(), {
               pageNumber: 'asd' as any,
               pageSize: 1,
@@ -458,7 +458,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
         });
 
         it('is too small', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestGetTransactionListByAccount(createAccountId(), {
               pageNumber: 0,
               pageSize: 1,

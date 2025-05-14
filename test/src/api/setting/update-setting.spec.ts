@@ -1,5 +1,6 @@
 import { Setting } from '@household/shared/types/types';
 import { settingDataFactory } from './data-factory';
+import { UserType } from '@household/shared/enums';
 
 describe('POST /setting/v1/settings/{settingKey}', () => {
   let request: Setting.Request;
@@ -18,10 +19,10 @@ describe('POST /setting/v1/settings/{settingKey}', () => {
     });
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
     describe('should update setting', () => {
       it('with complete body', () => {
-        cy.authenticate('admin')
+        cy.authenticate(UserType.Editor)
           .requestUpdateSetting(settingKey, request)
           .expectNoContentResponse()
           .validateSettingDocument(settingKey, request);
@@ -31,7 +32,7 @@ describe('POST /setting/v1/settings/{settingKey}', () => {
     describe('should return error', () => {
       describe('if value', () => {
         it('is missing from body', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateSetting(settingKey, settingDataFactory.request({
               value: undefined,
             }))
@@ -40,7 +41,7 @@ describe('POST /setting/v1/settings/{settingKey}', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateSetting(settingKey, settingDataFactory.request({
               value: {} as any,
             }))
@@ -49,7 +50,7 @@ describe('POST /setting/v1/settings/{settingKey}', () => {
         });
 
         it('is not number', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateSetting(settingKey, settingDataFactory.request({
               value: {} as any,
             }))
@@ -58,7 +59,7 @@ describe('POST /setting/v1/settings/{settingKey}', () => {
         });
 
         it('is not boolean', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateSetting(settingKey, settingDataFactory.request({
               value: {} as any,
             }))
@@ -67,7 +68,7 @@ describe('POST /setting/v1/settings/{settingKey}', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateSetting(settingKey, settingDataFactory.request({
               value: '',
             }))

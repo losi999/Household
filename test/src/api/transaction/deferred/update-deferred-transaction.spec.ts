@@ -1,6 +1,6 @@
 
 import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
-import { AccountType, CategoryType } from '@household/shared/enums';
+import { AccountType, CategoryType, UserType } from '@household/shared/enums';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
@@ -78,7 +78,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
     });
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
     describe('should update transaction', () => {
       describe('with complete body', () => {
         it('using regular category', () => {
@@ -90,7 +90,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
             .saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request)
             .expectCreatedResponse()
             .validateTransactionDeferredDocument(request);
@@ -110,7 +110,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
             .saveCategoryDocument(invoiceCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request)
             .expectCreatedResponse()
             .validateTransactionDeferredDocument(request);
@@ -130,7 +130,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .saveProductDocument(productDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request)
             .expectCreatedResponse()
             .validateTransactionDeferredDocument(request);
@@ -151,7 +151,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
             .saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request)
             .expectCreatedResponse()
             .validateTransactionDeferredDocument(request);
@@ -172,7 +172,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request)
             .expectCreatedResponse()
             .validateTransactionDeferredDocument(request);
@@ -195,7 +195,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
             .saveCategoryDocument(invoiceCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request)
             .expectCreatedResponse()
             .validateTransactionDeferredDocument(request);
@@ -216,7 +216,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
             .saveCategoryDocument(invoiceCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request)
             .expectCreatedResponse()
             .validateTransactionDeferredDocument(request);
@@ -235,7 +235,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
             ])
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request)
             .expectCreatedResponse()
             .validateTransactionDeferredDocument(request);
@@ -254,7 +254,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
             ])
             .saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request)
             .expectCreatedResponse()
             .validateTransactionDeferredDocument(request);
@@ -273,7 +273,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
             ])
             .saveCategoryDocument(regularCategoryDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request)
             .expectCreatedResponse()
             .validateTransactionDeferredDocument(request);
@@ -310,7 +310,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
             .saveProductDocument(productDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(deferredDocument), request)
             .expectCreatedResponse()
             .validateTransactionDeferredDocument(request);
@@ -330,7 +330,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(deferredDocument), request)
             .expectCreatedResponse()
             .validateTransactionDeferredDocument(request);
@@ -351,7 +351,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
             .saveCategoryDocument(invoiceCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(deferredDocument), request)
             .expectCreatedResponse()
             .validateTransactionDeferredDocument(request);
@@ -381,7 +381,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
             .saveCategoryDocument(invoiceCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(deferredDocument), request)
             .expectCreatedResponse()
             .validateTransactionDeferredDocument(request);
@@ -398,7 +398,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
             .saveAccountDocument(secondaryAccountDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(deferredDocument), request)
             .expectCreatedResponse()
             .validateTransactionDeferredDocument(request);
@@ -415,7 +415,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
             .saveAccountDocument(secondaryAccountDocument)
             .saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(deferredDocument), request)
             .expectCreatedResponse()
             .validateTransactionDeferredDocument(request);
@@ -432,7 +432,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
             .saveAccountDocument(secondaryAccountDocument)
             .saveCategoryDocument(regularCategoryDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(deferredDocument), request)
             .expectCreatedResponse()
             .validateTransactionDeferredDocument(request);
@@ -443,14 +443,14 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
     describe('should return error', () => {
       describe('if transactionId', () => {
         it('is not mongo id', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(deferredTransactionDataFactory.id('not-valid'), request)
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('transactionId', 'pathParameters');
         });
 
         it('does not belong to any transaction', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(deferredTransactionDataFactory.id(), request)
             .expectNotFoundResponse();
         });
@@ -458,7 +458,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
 
       describe('if body', () => {
         it('has additional properties', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               extra: 123,
             } as any))
@@ -469,7 +469,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
 
       describe('if amount', () => {
         it('is missing', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               amount: undefined,
             }))
@@ -478,7 +478,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
         });
 
         it('is not number', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               amount: <any>'1',
             }))
@@ -487,7 +487,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
         });
 
         it('is bigger than 0', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               ...relatedDocumentIds,
               amount: 1,
@@ -499,7 +499,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
 
       describe('if description', () => {
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               description: <any>1,
             }))
@@ -508,7 +508,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
         });
 
         it('is too short', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               description: '',
             }))
@@ -519,7 +519,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
 
       describe('if quantity', () => {
         it('is present and productId is missing', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               productId: undefined,
               quantity: 1,
@@ -529,7 +529,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
         });
 
         it('is not number', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               quantity: <any>'a',
             }))
@@ -538,7 +538,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
         });
 
         it('is too small', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               quantity: 0,
             }))
@@ -549,7 +549,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
 
       describe('if productId', () => {
         it('is present and quantity is missing', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               productId: productDataFactory.id(),
               quantity: undefined,
@@ -559,7 +559,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               productId: <any>1,
             }))
@@ -568,7 +568,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               productId: productDataFactory.id('not-valid'),
             }))
@@ -585,7 +585,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               ...relatedDocumentIds,
               categoryId: getCategoryId(inventoryCategoryDocument),
@@ -597,7 +597,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
 
       describe('if invoiceNumber', () => {
         it('is present and billingEndDate, billingStartDate are missing', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               billingEndDate: undefined,
               billingStartDate: undefined,
@@ -607,7 +607,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               invoiceNumber: <any>1,
             }))
@@ -616,7 +616,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
         });
 
         it('is too short', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               invoiceNumber: '',
             }))
@@ -627,7 +627,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
 
       describe('if billingEndDate', () => {
         it('is present and billingStartDate is missing', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               billingStartDate: undefined,
             }))
@@ -636,7 +636,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               billingEndDate: <any>1,
             }))
@@ -645,7 +645,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
         });
 
         it('is not date format', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               billingEndDate: 'not-date',
             }))
@@ -654,7 +654,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
         });
 
         it('is later than billingStartDate', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               billingEndDate: '2022-06-01',
               billingStartDate: '2022-06-03',
@@ -666,7 +666,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
 
       describe('if billingStartDate', () => {
         it('is present and billingEndDate is missing', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               billingEndDate: undefined,
             }))
@@ -675,7 +675,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               billingStartDate: <any>1,
             }))
@@ -684,7 +684,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
         });
 
         it('is not date format', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               billingStartDate: 'not-date',
             }))
@@ -695,7 +695,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
 
       describe('if issuedAt', () => {
         it('is missing', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               issuedAt: undefined,
             }))
@@ -704,7 +704,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               issuedAt: <any>1,
             }))
@@ -713,7 +713,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
         });
 
         it('is not date-time format', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               issuedAt: 'not-date-time',
             }))
@@ -728,7 +728,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
             .saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               ...relatedDocumentIds,
               accountId: accountDataFactory.id(),
@@ -738,7 +738,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
         });
 
         it('is missing', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               accountId: undefined,
             }))
@@ -747,7 +747,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               accountId: <any>1,
             }))
@@ -756,7 +756,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               accountId: accountDataFactory.id('not-mongo-id'),
             }))
@@ -772,7 +772,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
             .saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               ...relatedDocumentIds,
               loanAccountId: accountDataFactory.id(),
@@ -782,7 +782,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               loanAccountId: <any>1,
             }))
@@ -791,7 +791,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               loanAccountId: accountDataFactory.id('not-mongo-id'),
             }))
@@ -809,7 +809,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
             ])
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               ...relatedDocumentIds,
               categoryId: categoryDataFactory.id(),
@@ -819,7 +819,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               categoryId: <any>1,
             }))
@@ -828,7 +828,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               categoryId: categoryDataFactory.id('not-mongo-id'),
             }))
@@ -846,7 +846,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
             ])
             .saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               ...relatedDocumentIds,
               recipientId: recipientDataFactory.id(),
@@ -856,7 +856,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               recipientId: <any>1,
             }))
@@ -865,7 +865,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               recipientId: recipientDataFactory.id('not-mongo-id'),
             }))
@@ -883,7 +883,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
             ])
             .saveCategoryDocument(regularCategoryDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               ...relatedDocumentIds,
               projectId: projectDataFactory.id(),
@@ -893,7 +893,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               projectId: <any>1,
             }))
@@ -902,7 +902,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', (
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
               projectId: projectDataFactory.id('not-mongo-id'),
             }))

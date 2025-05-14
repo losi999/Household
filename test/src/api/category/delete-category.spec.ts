@@ -1,6 +1,6 @@
 import { createCategoryId } from '@household/shared/common/test-data-factory';
 import { getCategoryId, getProductId } from '@household/shared/common/utils';
-import { AccountType, CategoryType } from '@household/shared/enums';
+import { AccountType, CategoryType, UserType } from '@household/shared/enums';
 import { Account, Category, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
@@ -25,10 +25,10 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
     });
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
     it('should delete category', () => {
       cy.saveCategoryDocument(categoryDocument)
-        .authenticate('admin')
+        .authenticate(UserType.Editor)
         .requestDeleteCategory(getCategoryId(categoryDocument))
         .expectNoContentResponse()
         .validateCategoryDeleted(getCategoryId(categoryDocument));
@@ -54,7 +54,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
           childCategory,
           grandChildCategory,
         ])
-          .authenticate('admin')
+          .authenticate(UserType.Editor)
           .requestDeleteCategory(getCategoryId(categoryDocument))
           .expectNoContentResponse()
           .validateCategoryDeleted(getCategoryId(categoryDocument))
@@ -68,7 +68,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
           childCategory,
           grandChildCategory,
         ])
-          .authenticate('admin')
+          .authenticate(UserType.Editor)
           .requestDeleteCategory(getCategoryId(childCategory))
           .expectNoContentResponse()
           .validateCategoryDeleted(getCategoryId(childCategory))
@@ -171,7 +171,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
             unrelatedDeferredTransactionDocument,
             unrelatedReimbursementTransactionDocument,
           ])
-          .authenticate('admin')
+          .authenticate(UserType.Editor)
           .requestDeleteCategory(getCategoryId(categoryDocument))
           .expectNoContentResponse()
           .validateCategoryDeleted(getCategoryId(categoryDocument))
@@ -320,7 +320,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
             unrelatedDeferredTransactionDocument,
             unrelatedReimbursementTransactionDocument,
           ])
-          .authenticate('admin')
+          .authenticate(UserType.Editor)
           .requestDeleteCategory(getCategoryId(categoryDocument))
           .expectNoContentResponse()
           .validateCategoryDeleted(getCategoryId(categoryDocument))
@@ -447,7 +447,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
             unrelatedDeferredTransactionDocument,
             unrelatedReimbursementTransactionDocument,
           ])
-          .authenticate('admin')
+          .authenticate(UserType.Editor)
           .requestDeleteCategory(getCategoryId(categoryDocument))
           .expectNoContentResponse()
           .validateCategoryDeleted(getCategoryId(categoryDocument))
@@ -502,7 +502,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
 
         cy.saveCategoryDocument(categoryDocument)
           .saveProductDocument(productDocument)
-          .authenticate('admin')
+          .authenticate(UserType.Editor)
           .requestDeleteCategory(getCategoryId(categoryDocument))
           .expectNoContentResponse()
           .validateCategoryDeleted(getCategoryId(categoryDocument))
@@ -513,7 +513,7 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
     describe('should return error', () => {
       describe('if categoryId', () => {
         it('is not mongo id', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestDeleteCategory(createCategoryId('not-valid'))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('categoryId', 'pathParameters');

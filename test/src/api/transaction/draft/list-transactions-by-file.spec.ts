@@ -6,6 +6,7 @@ import { addSeconds, getFileId } from '@household/shared/common/utils';
 import { createFileId } from '@household/shared/common/test-data-factory';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
+import { UserType } from '@household/shared/enums';
 
 describe('GET /transaction/v1/files/{fileId}/transactions', () => {
   let fileDocument: File.Document;
@@ -38,14 +39,14 @@ describe('GET /transaction/v1/files/{fileId}/transactions', () => {
     });
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
     it('should get a list of draft transactions', () => {
       cy.saveTransactionDocuments([
         draftDocument,
         duplicateDraftDocument,
         duplicatePaymentDocument,
       ])
-        .authenticate('admin')
+        .authenticate(UserType.Editor)
         .requestGetTransactionListByFile(getFileId(fileDocument))
         .expectOkResponse()
         .expectValidResponseSchema(schema)
@@ -62,7 +63,7 @@ describe('GET /transaction/v1/files/{fileId}/transactions', () => {
     describe('should return error', () => {
       describe('if fileId', () => {
         it('is not mongo id', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestGetTransactionListByFile(createFileId('not-mongo-id'))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('fileId', 'pathParameters');

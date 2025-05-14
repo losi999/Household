@@ -6,7 +6,7 @@ import { recipientDataFactory } from './data-factory';
 import { accountDataFactory } from '../account/data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
-import { AccountType } from '@household/shared/enums';
+import { AccountType, UserType } from '@household/shared/enums';
 
 describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
   let recipientDocument: Recipient.Document;
@@ -23,11 +23,11 @@ describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
     });
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
 
     it('should delete recipient', () => {
       cy.saveRecipientDocument(recipientDocument)
-        .authenticate('admin')
+        .authenticate(UserType.Editor)
         .requestDeleteRecipient(getRecipientId(recipientDocument))
         .expectNoContentResponse()
         .validateRecipientDeleted(getRecipientId(recipientDocument));
@@ -118,7 +118,7 @@ describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
             unrelatedReimbursementTransactionDocument,
             unrelatedSplitTransactionDocument,
           ])
-          .authenticate('admin')
+          .authenticate(UserType.Editor)
           .requestDeleteRecipient(getRecipientId(recipientDocument))
           .expectNoContentResponse()
           .validateRecipientDeleted(getRecipientId(recipientDocument))
@@ -163,7 +163,7 @@ describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
     describe('should return error', () => {
       describe('if recipientId', () => {
         it('is not mongo id', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestDeleteRecipient(recipientDataFactory.id('not-valid'))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('recipientId', 'pathParameters');

@@ -1,5 +1,6 @@
 import { Account } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
+import { UserType } from '@household/shared/enums';
 
 describe('POST account/v1/accounts', () => {
   let request: Account.Request;
@@ -16,9 +17,9 @@ describe('POST account/v1/accounts', () => {
     });
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
     it('should create account', () => {
-      cy.authenticate('admin')
+      cy.authenticate(UserType.Editor)
         .requestCreateAccount(request)
         .expectCreatedResponse()
         .validateAccountDocument(request);
@@ -32,7 +33,7 @@ describe('POST account/v1/accounts', () => {
       });
 
       cy.saveAccountDocument(accountDocument)
-        .authenticate('admin')
+        .authenticate(UserType.Editor)
         .requestCreateAccount(request)
         .expectCreatedResponse()
         .validateAccountDocument(request);
@@ -41,7 +42,7 @@ describe('POST account/v1/accounts', () => {
     describe('should return error', () => {
       describe('if name', () => {
         it('is missing from body', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateAccount(accountDataFactory.request({
               name: undefined,
             }))
@@ -50,7 +51,7 @@ describe('POST account/v1/accounts', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateAccount(accountDataFactory.request({
               name: <any>1,
             }))
@@ -59,7 +60,7 @@ describe('POST account/v1/accounts', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateAccount(accountDataFactory.request({
               name: '',
             }))
@@ -71,7 +72,7 @@ describe('POST account/v1/accounts', () => {
           const accountDocument = accountDataFactory.document(request);
 
           cy.saveAccountDocument(accountDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestCreateAccount(request)
             .expectBadRequestResponse()
             .expectMessage('Duplicate account name');
@@ -80,7 +81,7 @@ describe('POST account/v1/accounts', () => {
 
       describe('if accountType', () => {
         it('is missing from body', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateAccount(accountDataFactory.request({
               accountType: undefined,
             }))
@@ -89,7 +90,7 @@ describe('POST account/v1/accounts', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateAccount(accountDataFactory.request({
               accountType: <any>1,
             }))
@@ -98,7 +99,7 @@ describe('POST account/v1/accounts', () => {
         });
 
         it('is not a valid enum value', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateAccount(accountDataFactory.request({
               accountType: 'not-account-type' as any,
             }))
@@ -109,7 +110,7 @@ describe('POST account/v1/accounts', () => {
 
       describe('if currency', () => {
         it('is missing from body', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateAccount(accountDataFactory.request({
               currency: undefined,
             }))
@@ -118,7 +119,7 @@ describe('POST account/v1/accounts', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateAccount(accountDataFactory.request({
               currency: <any>1,
             }))
@@ -127,7 +128,7 @@ describe('POST account/v1/accounts', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateAccount(accountDataFactory.request({
               currency: '',
             }))
@@ -138,7 +139,7 @@ describe('POST account/v1/accounts', () => {
 
       describe('if owner', () => {
         it('is missing from body', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateAccount(accountDataFactory.request({
               owner: undefined,
             }))
@@ -147,7 +148,7 @@ describe('POST account/v1/accounts', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateAccount(accountDataFactory.request({
               owner: <any>1,
             }))
@@ -156,7 +157,7 @@ describe('POST account/v1/accounts', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateAccount(accountDataFactory.request({
               owner: '',
             }))

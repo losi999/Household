@@ -2,6 +2,7 @@ import { default as schema } from '@household/test/api/schemas/recipient-respons
 import { Recipient } from '@household/shared/types/types';
 import { getRecipientId } from '@household/shared/common/utils';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
+import { UserType } from '@household/shared/enums';
 
 describe('GET /recipient/v1/recipients/{recipientId}', () => {
   let recipientDocument: Recipient.Document;
@@ -18,10 +19,10 @@ describe('GET /recipient/v1/recipients/{recipientId}', () => {
     });
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
     it('should get recipient by id', () => {
       cy.saveRecipientDocument(recipientDocument)
-        .authenticate('admin')
+        .authenticate(UserType.Editor)
         .requestGetRecipient(getRecipientId(recipientDocument))
         .expectOkResponse()
         .expectValidResponseSchema(schema)
@@ -30,14 +31,14 @@ describe('GET /recipient/v1/recipients/{recipientId}', () => {
 
     describe('should return error if recipientId', () => {
       it('is not mongo id', () => {
-        cy.authenticate('admin')
+        cy.authenticate(UserType.Editor)
           .requestGetRecipient(recipientDataFactory.id('not-valid'))
           .expectBadRequestResponse()
           .expectWrongPropertyPattern('recipientId', 'pathParameters');
       });
 
       it('does not belong to any recipient', () => {
-        cy.authenticate('admin')
+        cy.authenticate(UserType.Editor)
           .requestGetRecipient(recipientDataFactory.id())
           .expectNotFoundResponse();
       });

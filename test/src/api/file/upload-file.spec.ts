@@ -1,6 +1,7 @@
 import { File } from '@household/shared/types/types';
 import { fileDataFactory } from './data-factory';
 import { default as schema } from '@household/test/api/schemas/file-url-response';
+import { UserType } from '@household/shared/enums';
 
 describe('POST /file/v1/files', () => {
   let request: File.Request;
@@ -17,10 +18,10 @@ describe('POST /file/v1/files', () => {
     });
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
     describe('should upload file', () => {
       it('with complete body', () => {
-        cy.authenticate('admin')
+        cy.authenticate(UserType.Editor)
           .requestCreateUploadUrl(request)
           .expectOkResponse()
           .expectValidResponseSchema(schema)
@@ -33,7 +34,7 @@ describe('POST /file/v1/files', () => {
     describe('should return error', () => {
       describe('if fileType', () => {
         it('is missing from body', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateUploadUrl(fileDataFactory.request({
               fileType: undefined,
             }))
@@ -42,7 +43,7 @@ describe('POST /file/v1/files', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateUploadUrl(fileDataFactory.request({
               fileType: 1 as any,
             }))
@@ -51,7 +52,7 @@ describe('POST /file/v1/files', () => {
         });
 
         it('is not a valid enum value', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateUploadUrl(fileDataFactory.request({
               fileType: 'not-enum' as any,
             }))
@@ -62,7 +63,7 @@ describe('POST /file/v1/files', () => {
 
       describe('if timezone', () => {
         it('is missing from body', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateUploadUrl(fileDataFactory.request({
               timezone: undefined,
             }))
@@ -71,7 +72,7 @@ describe('POST /file/v1/files', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateUploadUrl(fileDataFactory.request({
               timezone: 1 as any,
             }))
@@ -80,7 +81,7 @@ describe('POST /file/v1/files', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateUploadUrl(fileDataFactory.request({
               timezone: '',
             }))

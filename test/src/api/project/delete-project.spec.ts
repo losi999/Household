@@ -6,7 +6,7 @@ import { projectDataFactory } from './data-factory';
 import { accountDataFactory } from '../account/data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
-import { AccountType } from '@household/shared/enums';
+import { AccountType, UserType } from '@household/shared/enums';
 
 describe('DELETE /project/v1/projects/{projectId}', () => {
   let projectDocument: Project.Document;
@@ -23,11 +23,11 @@ describe('DELETE /project/v1/projects/{projectId}', () => {
     });
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
 
     it('should delete project', () => {
       cy.saveProjectDocument(projectDocument)
-        .authenticate('admin')
+        .authenticate(UserType.Editor)
         .requestDeleteProject(getProjectId(projectDocument))
         .expectNoContentResponse()
         .validateProjectDeleted(getProjectId(projectDocument));
@@ -127,7 +127,7 @@ describe('DELETE /project/v1/projects/{projectId}', () => {
             unrelatedDeferredTransactionDocument,
             unrelatedReimbursementTransactionDocument,
           ])
-          .authenticate('admin')
+          .authenticate(UserType.Editor)
           .requestDeleteProject(getProjectId(projectDocument))
           .expectNoContentResponse()
           .validateProjectDeleted(getProjectId(projectDocument))
@@ -172,7 +172,7 @@ describe('DELETE /project/v1/projects/{projectId}', () => {
     describe('should return error', () => {
       describe('if projectId', () => {
         it('is not mongo id', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestDeleteProject(projectDataFactory.id('not-valid'))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('projectId', 'pathParameters');

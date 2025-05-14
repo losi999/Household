@@ -1,5 +1,6 @@
 import { Auth, User } from '@household/shared/types/types';
 import { userDataFactory } from './data-factory';
+import { UserType } from '@household/shared/enums';
 
 describe('POST user/v1/users/{email}/confirm', () => {
   let pendingUser: User.Request & Auth.TemporaryPassword;
@@ -19,7 +20,7 @@ describe('POST user/v1/users/{email}/confirm', () => {
   describe('called as anonymous', () => {
     describe('should confirm user', () => {
       it('with complete body', () => {
-        cy.createUser(pendingUser, true)
+        cy.createUser(pendingUser, UserType.Editor, true)
           .authenticate('anonymous')
           .requestConfirmUser(pendingUser.email, request)
           .expectOkResponse()
@@ -33,7 +34,7 @@ describe('POST user/v1/users/{email}/confirm', () => {
     describe('should return error', () => {
       describe('if email', () => {
         it('is not email', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestConfirmUser('not-email', request)
             .expectBadRequestResponse()
             .expectWrongPropertyFormat('email', 'email', 'pathParameters');
@@ -42,7 +43,7 @@ describe('POST user/v1/users/{email}/confirm', () => {
 
       describe('if password', () => {
         it('is missing from body', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestConfirmUser(pendingUser.email, userDataFactory.confirmRequest({
               password: undefined,
             }))
@@ -51,7 +52,7 @@ describe('POST user/v1/users/{email}/confirm', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestConfirmUser(pendingUser.email, userDataFactory.confirmRequest({
               password: 1 as any,
             }))
@@ -60,7 +61,7 @@ describe('POST user/v1/users/{email}/confirm', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestConfirmUser(pendingUser.email, userDataFactory.confirmRequest({
               password: 'asdfg',
             }))
@@ -71,7 +72,7 @@ describe('POST user/v1/users/{email}/confirm', () => {
 
       describe('if temporaryPassword', () => {
         it('is missing from body', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestConfirmUser(pendingUser.email, userDataFactory.confirmRequest({
               temporaryPassword: undefined,
             }))
@@ -80,7 +81,7 @@ describe('POST user/v1/users/{email}/confirm', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestConfirmUser(pendingUser.email, userDataFactory.confirmRequest({
               temporaryPassword: 1 as any,
             }))
@@ -89,7 +90,7 @@ describe('POST user/v1/users/{email}/confirm', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestConfirmUser(pendingUser.email, userDataFactory.confirmRequest({
               temporaryPassword: 'asdfg',
             }))

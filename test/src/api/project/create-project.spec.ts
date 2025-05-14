@@ -1,5 +1,6 @@
 import { Project } from '@household/shared/types/types';
 import { projectDataFactory } from './data-factory';
+import { UserType } from '@household/shared/enums';
 
 describe('POST project/v1/projects', () => {
   let request: Project.Request;
@@ -16,10 +17,10 @@ describe('POST project/v1/projects', () => {
     });
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
     describe('should create project', () => {
       it('with complete body', () => {
-        cy.authenticate('admin')
+        cy.authenticate(UserType.Editor)
           .requestCreateProject(request)
           .expectCreatedResponse()
           .validateProjectDocument(request);
@@ -31,7 +32,7 @@ describe('POST project/v1/projects', () => {
             description: undefined,
           });
 
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateProject(request)
             .expectCreatedResponse()
             .validateProjectDocument(request);
@@ -42,7 +43,7 @@ describe('POST project/v1/projects', () => {
     describe('should return error', () => {
       describe('if name', () => {
         it('is missing from body', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateProject(projectDataFactory.request({
               name: undefined,
             }))
@@ -51,7 +52,7 @@ describe('POST project/v1/projects', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateProject(projectDataFactory.request({
               name: <any>1,
             }))
@@ -60,7 +61,7 @@ describe('POST project/v1/projects', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateProject(projectDataFactory.request({
               name: '',
             }))
@@ -72,7 +73,7 @@ describe('POST project/v1/projects', () => {
           const projectDocument = projectDataFactory.document(request);
 
           cy.saveProjectDocument(projectDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestCreateProject(request)
             .expectBadRequestResponse()
             .expectMessage('Duplicate project name');
@@ -81,7 +82,7 @@ describe('POST project/v1/projects', () => {
 
       describe('if description', () => {
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateProject(projectDataFactory.request({
               description: <any>1,
             }))
@@ -90,7 +91,7 @@ describe('POST project/v1/projects', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateProject(projectDataFactory.request({
               description: '',
             }))

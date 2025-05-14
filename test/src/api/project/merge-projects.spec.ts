@@ -6,7 +6,7 @@ import { projectDataFactory } from './data-factory';
 import { accountDataFactory } from '../account/data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
-import { AccountType } from '@household/shared/enums';
+import { AccountType, UserType } from '@household/shared/enums';
 
 describe('POST project/v1/projects/{projectId}/merge', () => {
   let accountDocument: Account.Document;
@@ -104,7 +104,7 @@ describe('POST project/v1/projects/{projectId}/merge', () => {
     });
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
     it('should merge projects', () => {
       cy.saveAccountDocuments([
         accountDocument,
@@ -124,7 +124,7 @@ describe('POST project/v1/projects/{projectId}/merge', () => {
           unrelatedDeferredTransactionDocument,
           unrelatedReimbursementTransactionDocument,
         ])
-        .authenticate('admin')
+        .authenticate(UserType.Editor)
         .requestMergeProjects(getProjectId(targetProjectDocument), [getProjectId(sourceProjectDocument)])
         .expectCreatedResponse()
         .validateProjectDeleted(getProjectId(sourceProjectDocument))
@@ -176,7 +176,7 @@ describe('POST project/v1/projects/{projectId}/merge', () => {
       it('if a source project does not exist', () => {
         cy.saveProjectDocument(targetProjectDocument)
           .saveProjectDocument(sourceProjectDocument)
-          .authenticate('admin')
+          .authenticate(UserType.Editor)
           .requestMergeProjects(getProjectId(targetProjectDocument), [
             getProjectId(sourceProjectDocument),
             projectDataFactory.id(),
@@ -186,14 +186,14 @@ describe('POST project/v1/projects/{projectId}/merge', () => {
       });
       describe('if body', () => {
         it('is not array', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestMergeProjects(projectDataFactory.id(), {} as any)
             .expectBadRequestResponse()
             .expectWrongPropertyType('data', 'array', 'body');
         });
 
         it('has too few items', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestMergeProjects(projectDataFactory.id(), [])
             .expectBadRequestResponse()
             .expectTooFewItemsProperty('data', 1, 'body');
@@ -202,14 +202,14 @@ describe('POST project/v1/projects/{projectId}/merge', () => {
 
       describe('if body[0]', () => {
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestMergeProjects(projectDataFactory.id(), [1] as any)
             .expectBadRequestResponse()
             .expectWrongPropertyType('data', 'string', 'body');
         });
 
         it('is not a valid mongo id', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestMergeProjects(projectDataFactory.id(), [projectDataFactory.id('not-valid')])
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('data', 'body');
@@ -218,14 +218,14 @@ describe('POST project/v1/projects/{projectId}/merge', () => {
 
       describe('if projectId', () => {
         it('is not a valid mongo id', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestMergeProjects(projectDataFactory.id('not-valid'), [projectDataFactory.id()])
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('projectId', 'pathParameters');
         });
 
         it('does not belong to any project', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestMergeProjects(projectDataFactory.id(), [getProjectId(sourceProjectDocument)])
             .expectBadRequestResponse()
             .expectMessage('Some of the projects are not found');

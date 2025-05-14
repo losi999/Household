@@ -2,6 +2,7 @@ import { default as schema } from '@household/test/api/schemas/project-response'
 import { Project } from '@household/shared/types/types';
 import { getProjectId } from '@household/shared/common/utils';
 import { projectDataFactory } from './data-factory';
+import { UserType } from '@household/shared/enums';
 
 describe('GET /project/v1/projects/{projectId}', () => {
   let projectDocument: Project.Document;
@@ -18,10 +19,10 @@ describe('GET /project/v1/projects/{projectId}', () => {
     });
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
     it('should get project by id', () => {
       cy.saveProjectDocument(projectDocument)
-        .authenticate('admin')
+        .authenticate(UserType.Editor)
         .requestGetProject(getProjectId(projectDocument))
         .expectOkResponse()
         .expectValidResponseSchema(schema)
@@ -30,14 +31,14 @@ describe('GET /project/v1/projects/{projectId}', () => {
 
     describe('should return error if projectId', () => {
       it('is not mongo id', () => {
-        cy.authenticate('admin')
+        cy.authenticate(UserType.Editor)
           .requestGetProject(projectDataFactory.id('not-valid'))
           .expectBadRequestResponse()
           .expectWrongPropertyPattern('projectId', 'pathParameters');
       });
 
       it('does not belong to any project', () => {
-        cy.authenticate('admin')
+        cy.authenticate(UserType.Editor)
           .requestGetProject(projectDataFactory.id())
           .expectNotFoundResponse();
       });

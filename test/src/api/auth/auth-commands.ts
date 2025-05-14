@@ -1,10 +1,9 @@
+import { UserType } from '@household/shared/enums';
 import { Auth } from '@household/shared/types/types';
 import { CommandFunction } from '@household/test/api/types';
 import { isLocalhost } from '@household/test/api/utils';
 
-type UserType = 'admin' | 'anonymous';
-
-const authenticate = (userType: UserType) => {
+const authenticate = (userType: UserType | 'anonymous') => {
   if (userType === 'anonymous' || isLocalhost()) {
     return undefined as Cypress.ChainableRequest;
   }

@@ -1,5 +1,5 @@
 import { getTransactionId } from '@household/shared/common/utils';
-import { AccountType } from '@household/shared/enums';
+import { AccountType, UserType } from '@household/shared/enums';
 import { Account, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
@@ -63,13 +63,13 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
     });
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
 
     describe('should delete', () => {
       it('payment transaction', () => {
         cy.saveAccountDocument(accountDocument)
           .saveTransactionDocument(paymentTransactionDocument)
-          .authenticate('admin')
+          .authenticate(UserType.Editor)
           .requestDeleteTransaction(getTransactionId(paymentTransactionDocument))
           .expectNoContentResponse()
           .validateTransactionDeleted(getTransactionId(paymentTransactionDocument));
@@ -91,7 +91,7 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
             splitTransactionDocument,
             repayingTransferTransactionDocument,
           ])
-          .authenticate('admin')
+          .authenticate(UserType.Editor)
           .requestDeleteTransaction(getTransactionId(splitTransactionDocument))
           .expectNoContentResponse()
           .validateTransactionDeleted(getTransactionId(splitTransactionDocument))
@@ -104,7 +104,7 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
           transferAccountDocument,
         ])
           .saveTransactionDocument(transferTransactionDocument)
-          .authenticate('admin')
+          .authenticate(UserType.Editor)
           .requestDeleteTransaction(getTransactionId(transferTransactionDocument))
           .expectNoContentResponse()
           .validateTransactionDeleted(getTransactionId(transferTransactionDocument));
@@ -125,7 +125,7 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
             deferredTransactionDocument,
             repayingTransferTransactionDocument,
           ])
-          .authenticate('admin')
+          .authenticate(UserType.Editor)
           .requestDeleteTransaction(getTransactionId(deferredTransactionDocument))
           .expectNoContentResponse()
           .validateTransactionDeleted(getTransactionId(deferredTransactionDocument))
@@ -138,7 +138,7 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
           loanAccountDocument,
         ])
           .saveTransactionDocument(reimbursementTransactionDocument)
-          .authenticate('admin')
+          .authenticate(UserType.Editor)
           .requestDeleteTransaction(getTransactionId(reimbursementTransactionDocument))
           .expectNoContentResponse()
           .validateTransactionDeleted(getTransactionId(reimbursementTransactionDocument));
@@ -150,7 +150,7 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
           loanAccountDocument,
         ])
           .saveTransactionDocument(loanTransferTransactionDocument)
-          .authenticate('admin')
+          .authenticate(UserType.Editor)
           .requestDeleteTransaction(getTransactionId(loanTransferTransactionDocument))
           .expectNoContentResponse()
           .validateTransactionDeleted(getTransactionId(loanTransferTransactionDocument));
@@ -159,7 +159,7 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
     describe('should return error', () => {
       describe('if transactionId', () => {
         it('is not mongo id', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestDeleteTransaction(paymentTransactionDataFactory.id('not-valid'))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('transactionId', 'pathParameters');

@@ -6,7 +6,7 @@ import { paymentTransactionDataFactory } from '@household/test/api/transaction/p
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
-import { AccountType } from '@household/shared/enums';
+import { AccountType, UserType } from '@household/shared/enums';
 
 describe('GET /account/v1/accounts', () => {
   let accountDocument: Account.Document;
@@ -114,7 +114,7 @@ describe('GET /account/v1/accounts', () => {
     });
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
     it('should get a list of accounts', () => {
       const expectedBalance1 = paymentTransactionDocument.amount + transferTransactionDocument.amount + invertedTransferTransactionDocument.transferAmount + splitTransactionDocument.amount + loanTransferTransactionDocument.amount + invertedLoanTransferTransactionDocument.transferAmount + payingDeferredTransactionDocument.amount + repayingTransferTransactionDocument.amount + invertedRepayingTransferTransactionDocument.transferAmount + payingDeferredToLoanTransactionDocument.amount;
 
@@ -140,7 +140,7 @@ describe('GET /account/v1/accounts', () => {
           repayingTransferTransactionDocument,
           invertedRepayingTransferTransactionDocument,
         ])
-        .authenticate('admin')
+        .authenticate(UserType.Editor)
         .requestGetAccountList()
         .expectOkResponse()
         .expectValidResponseSchema(schema)

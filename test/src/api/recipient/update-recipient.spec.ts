@@ -1,4 +1,5 @@
 import { getRecipientId } from '@household/shared/common/utils';
+import { UserType } from '@household/shared/enums';
 import { Recipient } from '@household/shared/types/types';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
 
@@ -20,10 +21,10 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
     });
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
     it('should update a recipient', () => {
       cy.saveRecipientDocument(recipientDocument)
-        .authenticate('admin')
+        .authenticate(UserType.Editor)
         .requestUpdateRecipient(getRecipientId(recipientDocument), request)
         .expectCreatedResponse()
         .validateRecipientDocument(request);
@@ -32,7 +33,7 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
     describe('should return error', () => {
       describe('if name', () => {
         it('is missing from body', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateRecipient(recipientDataFactory.id(), recipientDataFactory.request({
               name: undefined,
             }))
@@ -41,7 +42,7 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateRecipient(recipientDataFactory.id(), recipientDataFactory.request({
               name: <any>1,
             }))
@@ -50,7 +51,7 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateRecipient(recipientDataFactory.id(), recipientDataFactory.request({
               name: '',
             }))
@@ -63,7 +64,7 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
 
           cy.saveRecipientDocument(recipientDocument)
             .saveRecipientDocument(updatedRecipientDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestUpdateRecipient(getRecipientId(recipientDocument), request)
             .expectBadRequestResponse()
             .expectMessage('Duplicate recipient name');
@@ -72,14 +73,14 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
 
       describe('if recipientId', () => {
         it('is not mongo id', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateRecipient(recipientDataFactory.id('not-valid'), request)
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('recipientId', 'pathParameters');
         });
 
         it('does not belong to any recipient', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateRecipient(recipientDataFactory.id(), request)
             .expectNotFoundResponse();
         });

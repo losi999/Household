@@ -1,5 +1,5 @@
 import { getProductId } from '@household/shared/common/utils';
-import { AccountType, CategoryType } from '@household/shared/enums';
+import { AccountType, CategoryType, UserType } from '@household/shared/enums';
 import { Account, Category, Product, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
@@ -32,11 +32,11 @@ describe('DELETE /product/v1/products/{productId}', () => {
     });
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
 
     it('should delete product', () => {
       cy.saveProductDocument(productDocument)
-        .authenticate('admin')
+        .authenticate(UserType.Editor)
         .requestDeleteProduct(getProductId(productDocument))
         .expectNoContentResponse()
         .validateProductDeleted(getProductId(productDocument));
@@ -149,7 +149,7 @@ describe('DELETE /product/v1/products/{productId}', () => {
             unrelatedDeferredTransactionDocument,
             unrelatedReimbursementTransactionDocument,
           ])
-          .authenticate('admin')
+          .authenticate(UserType.Editor)
           .requestDeleteProduct(getProductId(productDocument))
           .expectNoContentResponse()
           .validateProductDeleted(getProductId(productDocument))
@@ -194,7 +194,7 @@ describe('DELETE /product/v1/products/{productId}', () => {
     describe('should return error', () => {
       describe('if productId', () => {
         it('is not mongo id', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestDeleteProduct(productDataFactory.id('not-valid'))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('productId', 'pathParameters');

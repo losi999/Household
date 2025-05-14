@@ -1,5 +1,5 @@
 import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId } from '@household/shared/common/utils';
-import { AccountType, CategoryType } from '@household/shared/enums';
+import { AccountType, CategoryType, UserType } from '@household/shared/enums';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
@@ -69,7 +69,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
     });
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
     describe('should create transaction', () => {
       describe('with complete body', () => {
         it('using regular category', () => {
@@ -80,7 +80,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
             .saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(request)
             .expectCreatedResponse()
             .validateTransactionReimbursementDocument(request);
@@ -99,7 +99,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
             .saveCategoryDocument(invoiceCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(request)
             .expectCreatedResponse()
             .validateTransactionReimbursementDocument(request);
@@ -118,7 +118,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
             .saveProductDocument(productDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(request)
             .expectCreatedResponse()
             .validateTransactionReimbursementDocument(request);
@@ -139,7 +139,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
             .saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(request)
             .expectCreatedResponse()
             .validateTransactionReimbursementDocument(request);
@@ -159,7 +159,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(request)
             .expectCreatedResponse()
             .validateTransactionReimbursementDocument(request);
@@ -181,7 +181,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
             .saveCategoryDocument(invoiceCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(request)
             .expectCreatedResponse()
             .validateTransactionReimbursementDocument(request);
@@ -201,7 +201,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
             .saveCategoryDocument(invoiceCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(request)
             .expectCreatedResponse()
             .validateTransactionReimbursementDocument(request);
@@ -219,7 +219,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
           ])
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(request)
             .expectCreatedResponse()
             .validateTransactionReimbursementDocument(request);
@@ -237,7 +237,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
           ])
             .saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(request)
             .expectCreatedResponse()
             .validateTransactionReimbursementDocument(request);
@@ -255,7 +255,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
           ])
             .saveCategoryDocument(regularCategoryDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(request)
             .expectCreatedResponse()
             .validateTransactionReimbursementDocument(request);
@@ -266,7 +266,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
     describe('should return error', () => {
       describe('if body', () => {
         it('has additional properties', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               extra: 123,
             } as any))
@@ -277,7 +277,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
 
       describe('if amount', () => {
         it('is missing', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               amount: undefined,
             }))
@@ -286,7 +286,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
         });
 
         it('is not number', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               ...relatedDocumentIds,
               amount: <any>'1',
@@ -296,7 +296,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
         });
 
         it('is bigger than 0', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               ...relatedDocumentIds,
               amount: 1,
@@ -308,7 +308,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
 
       describe('if description', () => {
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               description: <any>1,
             }))
@@ -317,7 +317,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               description: '',
             }))
@@ -328,7 +328,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
 
       describe('if quantity', () => {
         it('is present and productId is missing', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               productId: undefined,
               quantity: 1,
@@ -338,7 +338,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
         });
 
         it('is not number', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               quantity: <any>'a',
             }))
@@ -347,7 +347,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
         });
 
         it('is too small', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               quantity: 0,
             }))
@@ -358,7 +358,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
 
       describe('if productId', () => {
         it('is present and quantity is missing', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               productId: productDataFactory.id(),
               quantity: undefined,
@@ -368,7 +368,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               productId: <any>1,
             }))
@@ -377,7 +377,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               productId: productDataFactory.id('not-valid'),
             }))
@@ -393,7 +393,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
             .saveCategoryDocument(inventoryCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               ...relatedDocumentIds,
               categoryId: getCategoryId(inventoryCategoryDocument),
@@ -405,7 +405,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
 
       describe('if invoiceNumber', () => {
         it('is present and billingEndDate, billingStartDate are missing', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               billingEndDate: undefined,
               billingStartDate: undefined,
@@ -414,7 +414,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
             .expectDependentRequiredProperty('invoiceNumber', 'body', 'billingEndDate', 'billingStartDate');
         });
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               invoiceNumber: <any>1,
             }))
@@ -423,7 +423,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               invoiceNumber: '',
             }))
@@ -434,7 +434,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
 
       describe('if billingEndDate', () => {
         it('is present and billingStartDate is missing', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               billingStartDate: undefined,
             }))
@@ -443,7 +443,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               billingEndDate: <any>1,
             }))
@@ -452,7 +452,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
         });
 
         it('is not date format', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               billingEndDate: 'not-date',
             }))
@@ -461,7 +461,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
         });
 
         it('is later than billingStartDate', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               billingEndDate: '2022-06-01',
               billingStartDate: '2022-06-03',
@@ -473,7 +473,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
 
       describe('if billingStartDate', () => {
         it('is present and billingEndDate is missing', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               billingEndDate: undefined,
             }))
@@ -482,7 +482,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               billingStartDate: <any>1,
             }))
@@ -491,7 +491,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
         });
 
         it('is not date format', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               billingStartDate: 'not-date',
             }))
@@ -502,7 +502,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
 
       describe('if issuedAt', () => {
         it('is missing', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               issuedAt: undefined,
             }))
@@ -511,7 +511,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               issuedAt: <any>1,
             }))
@@ -520,7 +520,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
         });
 
         it('is not date-time format', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               issuedAt: 'not-date-time',
             }))
@@ -534,7 +534,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
           cy.saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               ...relatedDocumentIds,
               accountId: accountDataFactory.id(),
@@ -544,7 +544,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
         });
 
         it('is missing', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               accountId: undefined,
             }))
@@ -553,7 +553,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               accountId: <any>1,
             }))
@@ -562,7 +562,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               accountId: accountDataFactory.id('not-mongo-id'),
             }))
@@ -583,7 +583,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
             .saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               ...relatedDocumentIds,
               loanAccountId: getAccountId(loanAccountDocument),
@@ -597,7 +597,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
             .saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               ...relatedDocumentIds,
               loanAccountId: accountDataFactory.id(),
@@ -607,7 +607,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               loanAccountId: <any>1,
             }))
@@ -616,7 +616,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               loanAccountId: accountDataFactory.id('not-mongo-id'),
             }))
@@ -633,7 +633,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
           ])
             .saveProjectDocument(projectDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               ...relatedDocumentIds,
               categoryId: categoryDataFactory.id(),
@@ -643,7 +643,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               categoryId: <any> 1,
             }))
@@ -652,7 +652,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               categoryId: categoryDataFactory.id('not-mongo-id'),
             }))
@@ -669,7 +669,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
           ])
             .saveCategoryDocument(regularCategoryDocument)
             .saveProjectDocument(projectDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               ...relatedDocumentIds,
               recipientId: recipientDataFactory.id(),
@@ -679,7 +679,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               recipientId: <any>1,
             }))
@@ -688,7 +688,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               recipientId: recipientDataFactory.id('not-mongo-id'),
             }))
@@ -705,7 +705,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
           ])
             .saveCategoryDocument(regularCategoryDocument)
             .saveRecipientDocument(recipientDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               ...relatedDocumentIds,
               projectId: projectDataFactory.id(),
@@ -715,7 +715,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               projectId: <any> 1,
             }))
@@ -724,7 +724,7 @@ describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
               projectId: projectDataFactory.id('not-mongo-id'),
             }))

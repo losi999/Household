@@ -1,6 +1,7 @@
 import { default as schema } from '@household/test/api/schemas/setting-response-list';
 import { Setting } from '@household/shared/types/types';
 import { settingDataFactory } from './data-factory';
+import { UserType } from '@household/shared/enums';
 
 describe('GET /setting/v1/settings', () => {
   let settingKey1: Setting.Id;
@@ -23,11 +24,11 @@ describe('GET /setting/v1/settings', () => {
     });
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
     it('should get a list of settings', () => {
       cy.updateSettingDocument(settingKey1, settingDataFactory.update(settingRequest1))
         .updateSettingDocument(settingKey2, settingDataFactory.update(settingRequest2))
-        .authenticate('admin')
+        .authenticate(UserType.Editor)
         .requestGetSettingList()
         .expectOkResponse()
         .expectValidResponseSchema(schema)

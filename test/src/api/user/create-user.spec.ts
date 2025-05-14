@@ -1,5 +1,6 @@
 import { User } from '@household/shared/types/types';
 import { userDataFactory } from './data-factory';
+import { UserType } from '@household/shared/enums';
 
 describe('POST user/v1/users', () => {
   let request: User.Request;
@@ -20,10 +21,10 @@ describe('POST user/v1/users', () => {
     cy.deleteUser(request);
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
     describe('should create user', () => {
       it('with complete body', () => {
-        cy.authenticate('admin')
+        cy.authenticate(UserType.Editor)
           .requestCreateUser(request)
           .expectCreatedResponse()
           .validateUserInCognito(request);
@@ -33,7 +34,7 @@ describe('POST user/v1/users', () => {
     describe('should return error', () => {
       describe('if email', () => {
         it('is missing from body', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateUser(userDataFactory.request({
               email: undefined,
             }))
@@ -42,7 +43,7 @@ describe('POST user/v1/users', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateUser(userDataFactory.request({
               email: <any>1,
             }))
@@ -51,7 +52,7 @@ describe('POST user/v1/users', () => {
         });
 
         it('is not email', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateUser(userDataFactory.request({
               email: 'not-email',
             }))
@@ -60,8 +61,8 @@ describe('POST user/v1/users', () => {
         });
 
         it('is already in used by a different user', () => {
-          cy.createUser(request, true)
-            .authenticate('admin')
+          cy.createUser(request, UserType.Editor, true)
+            .authenticate(UserType.Editor)
             .requestCreateUser(request)
             .expectBadRequestResponse()
             .expectMessage('Duplicate user email');

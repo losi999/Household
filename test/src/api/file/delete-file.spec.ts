@@ -2,6 +2,7 @@ import { File, Transaction } from '@household/shared/types/types';
 import { fileDataFactory } from './data-factory';
 import { draftTransactionDataFactory } from '@household/test/api/transaction/draft/draft-data-factory';
 import { getFileId, getTransactionId } from '@household/shared/common/utils';
+import { UserType } from '@household/shared/enums';
 
 describe('DELETE /file/v1/files/{fileId}', () => {
   let fileDocument: File.Document;
@@ -22,12 +23,12 @@ describe('DELETE /file/v1/files/{fileId}', () => {
     });
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
     it('should delete file', () => {
       cy.saveFileDocument(fileDocument)
         .saveTransactionDocument(draftDocument)
         .writeFileToS3(getFileId(fileDocument), 'file', '')
-        .authenticate('admin')
+        .authenticate(UserType.Editor)
         .requestDeleteFile(getFileId(fileDocument))
         .expectNoContentResponse()
         .validateFileDeleted(getFileId(fileDocument))
@@ -40,7 +41,7 @@ describe('DELETE /file/v1/files/{fileId}', () => {
   describe('should return error', () => {
     describe('if fileId', () => {
       it('is not mongo id', () => {
-        cy.authenticate('admin')
+        cy.authenticate(UserType.Editor)
           .requestDeleteFile(fileDataFactory.id('not-valid'))
           .expectBadRequestResponse()
           .expectWrongPropertyPattern('fileId', 'pathParameters');

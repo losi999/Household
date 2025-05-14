@@ -1,5 +1,5 @@
 import { getCategoryId } from '@household/shared/common/utils';
-import { CategoryType, AccountType } from '@household/shared/enums';
+import { CategoryType, AccountType, UserType } from '@household/shared/enums';
 import { Account, Category, Product, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
@@ -33,7 +33,7 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
     });
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
     describe('should merge', () => {
       it('a category and reassign its child', () => {
         const childOfSourceCategoryDocument = categoryDataFactory.document({
@@ -48,7 +48,7 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
           targetCategoryDocument,
           childOfSourceCategoryDocument,
         ])
-          .authenticate('admin')
+          .authenticate(UserType.Editor)
           .requestMergeCategories(getCategoryId(targetCategoryDocument), [getCategoryId(sourceCategoryDocument)])
           .expectCreatedResponse()
           .validateCategoryDeleted(getCategoryId(sourceCategoryDocument))
@@ -77,7 +77,7 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
           targetCategoryDocument,
         ])
           .saveProductDocument(productDocument)
-          .authenticate('admin')
+          .authenticate(UserType.Editor)
           .requestMergeCategories(getCategoryId(targetCategoryDocument), [getCategoryId(sourceCategoryDocument)])
           .expectCreatedResponse()
           .validateCategoryDeleted(getCategoryId(sourceCategoryDocument))
@@ -228,7 +228,7 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
               unrelatedDeferredTransactionDocument,
               unrelatedReimbursementTransactionDocument,
             ])
-              .authenticate('admin')
+              .authenticate(UserType.Editor)
               .requestMergeCategories(getCategoryId(targetCategoryDocument), [getCategoryId(sourceCategoryDocument)])
               .expectCreatedResponse()
               .validateCategoryDeleted(getCategoryId(sourceCategoryDocument));
@@ -289,7 +289,7 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
           sourceCategoryDocument,
           targetCategoryDocument,
         ])
-          .authenticate('admin')
+          .authenticate(UserType.Editor)
           .requestMergeCategories(getCategoryId(targetCategoryDocument), [
             getCategoryId(sourceCategoryDocument),
             categoryDataFactory.id(),
@@ -309,7 +309,7 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
           targetCategoryDocument,
           otherTypeCategoryDocument,
         ])
-          .authenticate('admin')
+          .authenticate(UserType.Editor)
           .requestMergeCategories(getCategoryId(targetCategoryDocument), [
             getCategoryId(sourceCategoryDocument),
             getCategoryId(otherTypeCategoryDocument),
@@ -330,7 +330,7 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
           sourceCategoryDocument,
           targetCategoryDocument,
         ])
-          .authenticate('admin')
+          .authenticate(UserType.Editor)
           .requestMergeCategories(getCategoryId(targetCategoryDocument), [getCategoryId(sourceCategoryDocument)])
           .expectBadRequestResponse()
           .expectMessage('A source category is among the target category ancestors');
@@ -338,14 +338,14 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
 
       describe('if body', () => {
         it('is not array', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestMergeCategories(categoryDataFactory.id(), {} as any)
             .expectBadRequestResponse()
             .expectWrongPropertyType('data', 'array', 'body');
         });
 
         it('has too few items', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestMergeCategories(categoryDataFactory.id(), [])
             .expectBadRequestResponse()
             .expectTooFewItemsProperty('data', 1, 'body');
@@ -354,14 +354,14 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
 
       describe('if body[0]', () => {
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestMergeCategories(categoryDataFactory.id(), [1] as any)
             .expectBadRequestResponse()
             .expectWrongPropertyType('data', 'string', 'body');
         });
 
         it('is not a valid mongo id', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestMergeCategories(categoryDataFactory.id(), [categoryDataFactory.id('not-valid')])
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('data', 'body');
@@ -370,14 +370,14 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
 
       describe('is categoryId', () => {
         it('is not a valid mongo id', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestMergeCategories(categoryDataFactory.id('not-valid'), [categoryDataFactory.id()])
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('categoryId', 'pathParameters');
         });
 
         it('does not belong to any category', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestMergeCategories(categoryDataFactory.id(), [getCategoryId(sourceCategoryDocument)])
             .expectBadRequestResponse()
             .expectMessage('Some of the categories are not found');

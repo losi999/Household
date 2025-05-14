@@ -1,5 +1,5 @@
 import { getCategoryId } from '@household/shared/common/utils';
-import { CategoryType } from '@household/shared/enums';
+import { CategoryType, UserType } from '@household/shared/enums';
 import { Category, Product } from '@household/shared/types/types';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { productDataFactory } from '@household/test/api/product/data-factory';
@@ -26,11 +26,11 @@ describe('POST product/v1/products', () => {
     });
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
     describe('should create product', () => {
       it('with complete body', () => {
         cy.saveCategoryDocument(categoryDocument)
-          .authenticate('admin')
+          .authenticate(UserType.Editor)
           .requestCreateProduct(request, getCategoryId(categoryDocument))
           .expectCreatedResponse()
           .validateProductDocument(request, getCategoryId(categoryDocument));
@@ -40,7 +40,7 @@ describe('POST product/v1/products', () => {
     describe('should return error', () => {
       describe('if brand', () => {
         it('is missing from body', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateProduct(productDataFactory.request({
               brand: undefined,
             }), getCategoryId(categoryDocument))
@@ -49,7 +49,7 @@ describe('POST product/v1/products', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateProduct(productDataFactory.request({
               brand: <any>1,
             }), getCategoryId(categoryDocument))
@@ -58,7 +58,7 @@ describe('POST product/v1/products', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateProduct(productDataFactory.request({
               brand: '',
             }), getCategoryId(categoryDocument))
@@ -74,7 +74,7 @@ describe('POST product/v1/products', () => {
 
           cy.saveProductDocument(productDocument)
             .saveCategoryDocument(categoryDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestCreateProduct(request, getCategoryId(categoryDocument))
             .expectBadRequestResponse()
             .expectMessage('Duplicate product name');
@@ -83,7 +83,7 @@ describe('POST product/v1/products', () => {
 
       describe('if measurement', () => {
         it('is missing from body', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateProduct(productDataFactory.request({
               measurement: undefined,
             }), getCategoryId(categoryDocument))
@@ -92,7 +92,7 @@ describe('POST product/v1/products', () => {
         });
 
         it('is not number', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateProduct(productDataFactory.request({
               measurement: <any>'1',
             }), getCategoryId(categoryDocument))
@@ -101,7 +101,7 @@ describe('POST product/v1/products', () => {
         });
 
         it('is too small', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateProduct(productDataFactory.request({
               measurement: 0,
             }), getCategoryId(categoryDocument))
@@ -112,7 +112,7 @@ describe('POST product/v1/products', () => {
 
       describe('if unitOfMeasurement', () => {
         it('is missing from body', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateProduct(productDataFactory.request({
               unitOfMeasurement: undefined,
             }), getCategoryId(categoryDocument))
@@ -121,7 +121,7 @@ describe('POST product/v1/products', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateProduct(productDataFactory.request({
               unitOfMeasurement: <any>1,
             }), getCategoryId(categoryDocument))
@@ -130,7 +130,7 @@ describe('POST product/v1/products', () => {
         });
 
         it('is not a valid enum value', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateProduct(productDataFactory.request({
               unitOfMeasurement: <any>'not-valid',
             }), getCategoryId(categoryDocument))
@@ -141,14 +141,14 @@ describe('POST product/v1/products', () => {
 
       describe('if categoryId', () => {
         it('is not a valid mongo id', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateProduct(request, categoryDataFactory.id('not-valid'))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('categoryId', 'pathParameters');
         });
 
         it('does not belong to any category', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateProduct(request, categoryDataFactory.id())
             .expectBadRequestResponse()
             .expectMessage('No category found');

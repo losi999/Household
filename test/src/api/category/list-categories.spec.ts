@@ -1,7 +1,7 @@
 import { default as schema } from '@household/test/api/schemas/category-response-list';
 import { Category } from '@household/shared/types/types';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
-import { CategoryType } from '@household/shared/enums';
+import { CategoryType, UserType } from '@household/shared/enums';
 
 describe('GET /category/v1/categories', () => {
   let categoryDocument1: Category.Document;
@@ -25,11 +25,11 @@ describe('GET /category/v1/categories', () => {
     });
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
     it('should get a list of categories', () => {
       cy.saveCategoryDocument(categoryDocument1)
         .saveCategoryDocument(categoryDocument2)
-        .authenticate('admin')
+        .authenticate(UserType.Editor)
         .requestGetCategoryList()
         .expectOkResponse()
         .expectValidResponseSchema(schema)

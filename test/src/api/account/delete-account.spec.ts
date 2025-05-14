@@ -7,6 +7,7 @@ import { paymentTransactionDataFactory } from '@household/test/api/transaction/p
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
+import { UserType } from '@household/shared/enums';
 
 describe('DELETE /account/v1/accounts/{accountId}', () => {
   let accountDocument: Account.Document;
@@ -23,10 +24,10 @@ describe('DELETE /account/v1/accounts/{accountId}', () => {
     });
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
     it('should delete account', () => {
       cy.saveAccountDocument(accountDocument)
-        .authenticate('admin')
+        .authenticate(UserType.Editor)
         .requestDeleteAccount(getAccountId(accountDocument))
         .expectNoContentResponse()
         .validateAccountDeleted(getAccountId(accountDocument));
@@ -149,7 +150,7 @@ describe('DELETE /account/v1/accounts/{accountId}', () => {
             repayingTransferTransactionDocument,
             invertedRepayingTransferTransactionDocument,
           ])
-          .authenticate('admin')
+          .authenticate(UserType.Editor)
           .requestDeleteAccount(getAccountId(accountDocument))
           .expectNoContentResponse()
           .validateAccountDeleted(getAccountId(accountDocument))
@@ -172,7 +173,7 @@ describe('DELETE /account/v1/accounts/{accountId}', () => {
     describe('should return error', () => {
       describe('if accountId', () => {
         it('is not mongo id', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestDeleteAccount(accountDataFactory.id('not-valid'))
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('accountId', 'pathParameters');

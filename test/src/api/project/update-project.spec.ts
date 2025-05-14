@@ -1,6 +1,7 @@
 import { getProjectId } from '@household/shared/common/utils';
 import { Project } from '@household/shared/types/types';
 import { projectDataFactory } from './data-factory';
+import { UserType } from '@household/shared/enums';
 
 describe('PUT /project/v1/projects/{projectId}', () => {
   let request: Project.Request;
@@ -20,12 +21,12 @@ describe('PUT /project/v1/projects/{projectId}', () => {
     });
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
     describe('should update project', () => {
       it('with complete body', () => {
         cy
           .saveProjectDocument(projectDocument)
-          .authenticate('admin')
+          .authenticate(UserType.Editor)
           .requestUpdateProject(getProjectId(projectDocument), request)
           .expectCreatedResponse()
           .validateProjectDocument(request);
@@ -38,7 +39,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
           });
 
           cy.saveProjectDocument(projectDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestUpdateProject(getProjectId(projectDocument), request)
             .expectCreatedResponse()
             .validateProjectDocument(request);
@@ -49,7 +50,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
     describe('should return error', () => {
       describe('if name', () => {
         it('is missing from body', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateProject(projectDataFactory.id(), projectDataFactory.request({
               name: undefined,
             }))
@@ -58,7 +59,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateProject(projectDataFactory.id(), projectDataFactory.request({
               name: <any>1,
             }))
@@ -67,7 +68,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateProject(projectDataFactory.id(), projectDataFactory.request({
               name: '',
             }))
@@ -80,7 +81,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
 
           cy.saveProjectDocument(projectDocument)
             .saveProjectDocument(duplicateProjectDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestUpdateProject(getProjectId(projectDocument), request)
             .expectBadRequestResponse()
             .expectMessage('Duplicate project name');
@@ -89,7 +90,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
 
       describe('if description', () => {
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateProject(projectDataFactory.id(), projectDataFactory.request({
               description: <any>1,
             }))
@@ -98,7 +99,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateProject(projectDataFactory.id(), projectDataFactory.request({
               description: '',
             }))
@@ -109,14 +110,14 @@ describe('PUT /project/v1/projects/{projectId}', () => {
 
       describe('if projectId', () => {
         it('is not mongo id', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateProject(projectDataFactory.id('not-valid'), request)
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('projectId', 'pathParameters');
         });
 
         it('does not belong to any project', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestUpdateProject(projectDataFactory.id(), request)
             .expectNotFoundResponse();
         });

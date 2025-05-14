@@ -1,4 +1,5 @@
 import { getCategoryId } from '@household/shared/common/utils';
+import { UserType } from '@household/shared/enums';
 import { Category } from '@household/shared/types/types';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
 
@@ -24,9 +25,9 @@ describe('POST category/v1/categories', () => {
     });
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
     it('should create category', () => {
-      cy.authenticate('admin')
+      cy.authenticate(UserType.Editor)
         .requestCreateCategory(request)
         .expectCreatedResponse()
         .validateCategoryDocument(request);
@@ -41,7 +42,7 @@ describe('POST category/v1/categories', () => {
         grandparentCategoryDocument,
         parentCategoryDocument,
       ])
-        .authenticate('admin')
+        .authenticate(UserType.Editor)
         .requestCreateCategory(request)
         .expectCreatedResponse()
         .validateCategoryDocument(request, grandparentCategoryDocument, parentCategoryDocument);
@@ -50,7 +51,7 @@ describe('POST category/v1/categories', () => {
     describe('should return error', () => {
       describe('if name', () => {
         it('is missing from body', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateCategory(categoryDataFactory.request({
               name: undefined,
             }))
@@ -59,7 +60,7 @@ describe('POST category/v1/categories', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateCategory(categoryDataFactory.request({
               name: <any>1,
             }))
@@ -68,7 +69,7 @@ describe('POST category/v1/categories', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateCategory(categoryDataFactory.request({
               name: '',
             }))
@@ -82,7 +83,7 @@ describe('POST category/v1/categories', () => {
           });
 
           cy.saveCategoryDocument(categoryDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestCreateCategory(request)
             .expectBadRequestResponse()
             .expectMessage('Duplicate category name');
@@ -91,7 +92,7 @@ describe('POST category/v1/categories', () => {
 
       describe('if categoryType', () => {
         it('is missing from body', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateCategory(categoryDataFactory.request({
               categoryType: undefined,
             }))
@@ -100,7 +101,7 @@ describe('POST category/v1/categories', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateCategory(categoryDataFactory.request({
               categoryType: <any>1,
             }))
@@ -109,7 +110,7 @@ describe('POST category/v1/categories', () => {
         });
 
         it('is not a valid enum value', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateCategory(
               categoryDataFactory.request({
                 categoryType: <any>'not-category-type',
@@ -121,7 +122,7 @@ describe('POST category/v1/categories', () => {
 
       describe('if parentCategoryId', () => {
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateCategory(
               categoryDataFactory.request({
                 parentCategoryId: <any>1,
@@ -131,7 +132,7 @@ describe('POST category/v1/categories', () => {
         });
 
         it('does not match pattern', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateCategory(
               categoryDataFactory.request({
                 parentCategoryId: <any>'not-mongo-id',
@@ -141,7 +142,7 @@ describe('POST category/v1/categories', () => {
         });
 
         it('does not belong to any category', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateCategory(
               categoryDataFactory.request({
                 parentCategoryId: categoryDataFactory.id(),

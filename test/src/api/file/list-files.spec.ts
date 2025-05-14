@@ -2,6 +2,7 @@ import { default as schema } from '@household/test/api/schemas/file-response-lis
 import { File, Transaction } from '@household/shared/types/types';
 import { fileDataFactory } from './data-factory';
 import { draftTransactionDataFactory } from '@household/test/api/transaction/draft/draft-data-factory';
+import { UserType } from '@household/shared/enums';
 
 describe('GET /file/v1/files', () => {
   let fileDocument: File.Document;
@@ -22,11 +23,11 @@ describe('GET /file/v1/files', () => {
     });
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
     it('should get a list of files', () => {
       cy.saveFileDocument(fileDocument)
         .saveTransactionDocument(draftDocument)
-        .authenticate('admin')
+        .authenticate(UserType.Editor)
         .requestGetFileList()
         .expectOkResponse()
         .expectValidResponseSchema(schema)

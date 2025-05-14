@@ -1,5 +1,6 @@
 import { Recipient } from '@household/shared/types/types';
 import { recipientDataFactory } from './data-factory';
+import { UserType } from '@household/shared/enums';
 
 describe('POST recipient/v1/recipients', () => {
   let request: Recipient.Request;
@@ -16,10 +17,10 @@ describe('POST recipient/v1/recipients', () => {
     });
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
 
     it('should create recipient', () => {
-      cy.authenticate('admin')
+      cy.authenticate(UserType.Editor)
         .requestCreateRecipient(request)
         .expectCreatedResponse()
         .validateRecipientDocument(request);
@@ -28,7 +29,7 @@ describe('POST recipient/v1/recipients', () => {
     describe('should return error', () => {
       describe('if name', () => {
         it('is missing from body', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateRecipient(recipientDataFactory.request({
               name: undefined,
             }))
@@ -37,7 +38,7 @@ describe('POST recipient/v1/recipients', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateRecipient(recipientDataFactory.request({
               name: <any>1,
             }))
@@ -46,7 +47,7 @@ describe('POST recipient/v1/recipients', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateRecipient(recipientDataFactory.request({
               name: '',
             }))
@@ -58,7 +59,7 @@ describe('POST recipient/v1/recipients', () => {
           const recipientDocument = recipientDataFactory.document(request);
 
           cy.saveRecipientDocument(recipientDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestCreateRecipient(request)
             .expectBadRequestResponse()
             .expectMessage('Duplicate recipient name');

@@ -1,6 +1,7 @@
 import { default as schema } from '@household/test/api/schemas/user-response-list';
 import { User } from '@household/shared/types/types';
 import { userDataFactory } from './data-factory';
+import { UserType } from '@household/shared/enums';
 
 describe('GET /user/v1/users', () => {
   let pendingUser: User.Request;
@@ -24,11 +25,11 @@ describe('GET /user/v1/users', () => {
     });
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
     it('should get a list of users', () => {
-      cy.createUser(pendingUser, true)
-        .createUser(confirmedUser, true)
-        .authenticate('admin')
+      cy.createUser(pendingUser, UserType.Editor, true)
+        .createUser(confirmedUser, UserType.Editor, true)
+        .authenticate(UserType.Editor)
         .requestGetUserList()
         .expectOkResponse()
         .expectValidResponseSchema(schema)

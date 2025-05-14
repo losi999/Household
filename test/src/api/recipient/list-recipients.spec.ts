@@ -1,6 +1,7 @@
 import { default as schema } from '@household/test/api/schemas/recipient-response-list';
 import { Recipient } from '@household/shared/types/types';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
+import { UserType } from '@household/shared/enums';
 
 describe('GET /recipient/v1/recipients', () => {
   let recipientDocument1: Recipient.Document;
@@ -19,11 +20,11 @@ describe('GET /recipient/v1/recipients', () => {
     });
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
     it('should get a list of recipients', () => {
       cy.saveRecipientDocument(recipientDocument1)
         .saveRecipientDocument(recipientDocument2)
-        .authenticate('admin')
+        .authenticate(UserType.Editor)
         .requestGetRecipientList()
         .expectOkResponse()
         .expectValidResponseSchema(schema)

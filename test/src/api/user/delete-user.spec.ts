@@ -1,5 +1,6 @@
 import { User } from '@household/shared/types/types';
 import { userDataFactory } from './data-factory';
+import { UserType } from '@household/shared/enums';
 
 describe('DELETE /user/v1/users/{email}', () => {
   let pendingUser: User.Request;
@@ -20,10 +21,10 @@ describe('DELETE /user/v1/users/{email}', () => {
     });
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
     it('should delete user', () => {
-      cy.createUser(pendingUser, true)
-        .authenticate('admin')
+      cy.createUser(pendingUser, UserType.Editor, true)
+        .authenticate(UserType.Editor)
         .requestDeleteUser(pendingUser.email)
         .expectNoContentResponse()
         .validateUserDeleted(pendingUser.email);
@@ -32,7 +33,7 @@ describe('DELETE /user/v1/users/{email}', () => {
     describe('should return error', () => {
       describe('if userId', () => {
         it('is not email', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestDeleteUser('not an email')
             .expectBadRequestResponse()
             .expectWrongPropertyFormat('email', 'email', 'pathParameters');

@@ -7,7 +7,7 @@ import { transferTransactionDataFactory } from '@household/test/api/transaction/
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
-import { AccountType } from '@household/shared/enums';
+import { AccountType, UserType } from '@household/shared/enums';
 
 describe('GET /account/v1/accounts/{accountId}', () => {
   let accountDocument: Account.Document;
@@ -115,7 +115,7 @@ describe('GET /account/v1/accounts/{accountId}', () => {
     });
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
     beforeEach(() => {
       cy.saveAccountDocuments([
         loanAccountDocument,
@@ -141,7 +141,7 @@ describe('GET /account/v1/accounts/{accountId}', () => {
     it('should get account by id', () => {
       const expectedBalance = paymentTransactionDocument.amount + transferTransactionDocument.amount + invertedTransferTransactionDocument.transferAmount + splitTransactionDocument.amount + loanTransferTransactionDocument.amount + invertedLoanTransferTransactionDocument.transferAmount + payingDeferredTransactionDocument.amount + repayingTransferTransactionDocument.amount + invertedRepayingTransferTransactionDocument.transferAmount + payingDeferredToLoanTransactionDocument.amount;
 
-      cy.authenticate('admin')
+      cy.authenticate(UserType.Editor)
         .requestGetAccount(getAccountId(accountDocument))
         .expectOkResponse()
         .expectValidResponseSchema(schema)
@@ -151,7 +151,7 @@ describe('GET /account/v1/accounts/{accountId}', () => {
     it('should get loan account by id', () => {
       const expectedBalance = loanTransferTransactionDocument.transferAmount + invertedLoanTransferTransactionDocument.amount - deferredSplitTransactionDocument.deferredSplits[1].amount + owningReimbursementTransactionDocument.amount - payingDeferredToLoanTransactionDocument.amount;
 
-      cy.authenticate('admin')
+      cy.authenticate(UserType.Editor)
         .requestGetAccount(getAccountId(loanAccountDocument))
         .expectOkResponse()
         .expectValidResponseSchema(schema)
@@ -160,14 +160,14 @@ describe('GET /account/v1/accounts/{accountId}', () => {
 
     describe('should return error if accountId', () => {
       it('is not mongo id', () => {
-        cy.authenticate('admin')
+        cy.authenticate(UserType.Editor)
           .requestGetAccount(accountDataFactory.id('not-valid'))
           .expectBadRequestResponse()
           .expectWrongPropertyPattern('accountId', 'pathParameters');
       });
 
       it('does not belong to any account', () => {
-        cy.authenticate('admin')
+        cy.authenticate(UserType.Editor)
           .requestGetAccount(accountDataFactory.id())
           .expectNotFoundResponse();
       });

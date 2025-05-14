@@ -1,6 +1,7 @@
 import { default as schema } from '@household/test/api/schemas/project-response-list';
 import { Project } from '@household/shared/types/types';
 import { projectDataFactory } from './data-factory';
+import { UserType } from '@household/shared/enums';
 
 describe('GET /project/v1/projects', () => {
   let projectDocument1: Project.Document;
@@ -19,11 +20,11 @@ describe('GET /project/v1/projects', () => {
     });
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
     it('should get a list of projects', () => {
       cy.saveProjectDocument(projectDocument1)
         .saveProjectDocument(projectDocument2)
-        .authenticate('admin')
+        .authenticate(UserType.Editor)
         .requestGetProjectList()
         .expectOkResponse()
         .expectValidResponseSchema(schema)

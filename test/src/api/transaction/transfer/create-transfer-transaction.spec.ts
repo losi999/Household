@@ -1,5 +1,5 @@
 import { getAccountId, getTransactionId } from '@household/shared/common/utils';
-import { AccountType } from '@household/shared/enums';
+import { AccountType, UserType } from '@household/shared/enums';
 import { Account, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
@@ -31,14 +31,14 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
     });
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
     describe('should create transaction', () => {
       it('between non-loan accounts', () => {
         cy.saveAccountDocuments([
           accountDocument,
           transferAccountDocument,
         ])
-          .authenticate('admin')
+          .authenticate(UserType.Editor)
           .requestCreateTransferTransaction(request)
           .expectCreatedResponse()
           .validateTransactionTransferDocument(request);
@@ -58,7 +58,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
           accountDocument,
           loanAccountDocument,
         ])
-          .authenticate('admin')
+          .authenticate(UserType.Editor)
           .requestCreateTransferTransaction(request)
           .expectCreatedResponse()
           .validateTransactionTransferDocument(request);
@@ -82,7 +82,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
           accountDocument,
           transferAccountDocument,
         ])
-          .authenticate('admin')
+          .authenticate(UserType.Editor)
           .requestCreateTransferTransaction(request)
           .expectCreatedResponse()
           .validateTransactionTransferDocument(request);
@@ -114,7 +114,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
           transferAccountDocument,
         ])
           .saveTransactionDocument(deferredTransactionDocument)
-          .authenticate('admin')
+          .authenticate(UserType.Editor)
           .requestCreateTransferTransaction(request)
           .expectCreatedResponse()
           .validateTransactionTransferDocument(request);
@@ -146,7 +146,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
           transferAccountDocument,
         ])
           .saveTransactionDocument(deferredTransactionDocument)
-          .authenticate('admin')
+          .authenticate(UserType.Editor)
           .requestCreateTransferTransaction(request)
           .expectCreatedResponse()
           .validateTransactionTransferDocument(request, [Math.abs(deferredTransactionDocument.amount)]);
@@ -163,7 +163,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
             accountDocument,
             transferAccountDocument,
           ])
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestCreateTransferTransaction(request)
             .expectCreatedResponse()
             .validateTransactionTransferDocument(request);
@@ -179,7 +179,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
             accountDocument,
             transferAccountDocument,
           ])
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestCreateTransferTransaction(request)
             .expectCreatedResponse()
             .validateTransactionTransferDocument(request);
@@ -190,7 +190,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
     describe('should return error', () => {
       describe('if body', () => {
         it('has additional properties', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateTransferTransaction(transferTransactionDataFactory.request({
               extra: 123,
             } as any))
@@ -201,7 +201,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
 
       describe('if amount', () => {
         it('is missing', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateTransferTransaction(transferTransactionDataFactory.request({
               amount: undefined,
             }))
@@ -210,7 +210,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
         });
 
         it('is not number', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateTransferTransaction(transferTransactionDataFactory.request({
               amount: <any>'1',
             }))
@@ -221,7 +221,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
 
       describe('if description', () => {
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateTransferTransaction(transferTransactionDataFactory.request({
               description: <any> 1,
             }))
@@ -230,7 +230,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
         });
 
         it('is too short', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateTransferTransaction(transferTransactionDataFactory.request({
               description: '',
             }))
@@ -241,7 +241,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
 
       describe('if issuedAt', () => {
         it('is missing', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateTransferTransaction(transferTransactionDataFactory.request({
               issuedAt: undefined,
             }))
@@ -250,7 +250,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateTransferTransaction(transferTransactionDataFactory.request({
               issuedAt: <any>1,
             }))
@@ -259,7 +259,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
         });
 
         it('is not date-time format', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateTransferTransaction(transferTransactionDataFactory.request({
               issuedAt: 'not-date-time',
             }))
@@ -271,7 +271,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
       describe('if accountId', () => {
         it('does not belong to any account', () => {
           cy.saveAccountDocument(transferAccountDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestCreateTransferTransaction(transferTransactionDataFactory.request({
               ...relatedDocumentIds,
               accountId: accountDataFactory.id(),
@@ -280,7 +280,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
             .expectMessage('No account found');
         });
         it('is missing', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateTransferTransaction(transferTransactionDataFactory.request({
               accountId: undefined,
             }))
@@ -289,7 +289,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateTransferTransaction(transferTransactionDataFactory.request({
               accountId: <any>1,
             }))
@@ -298,7 +298,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateTransferTransaction(transferTransactionDataFactory.request({
               accountId: accountDataFactory.id('not-mongo-id'),
             }))
@@ -309,7 +309,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
 
       describe('if transferAccountId', () => {
         it('is the same as accountId', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateTransferTransaction(transferTransactionDataFactory.request({
               ...relatedDocumentIds,
               transferAccountId: getAccountId(accountDocument),
@@ -320,7 +320,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
 
         it('does not belong to any account', () => {
           cy.saveAccountDocument(accountDocument)
-            .authenticate('admin')
+            .authenticate(UserType.Editor)
             .requestCreateTransferTransaction(transferTransactionDataFactory.request({
               ...relatedDocumentIds,
               transferAccountId: accountDataFactory.id(),
@@ -330,7 +330,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
         });
 
         it('is missing', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateTransferTransaction(transferTransactionDataFactory.request({
               transferAccountId: undefined,
             }))
@@ -339,7 +339,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
         });
 
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateTransferTransaction(transferTransactionDataFactory.request({
               transferAccountId: <any>1,
             }))
@@ -348,7 +348,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
         });
 
         it('is not mongo id format', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateTransferTransaction(transferTransactionDataFactory.request({
               transferAccountId: accountDataFactory.id('not-mongo-id'),
             }))
@@ -359,7 +359,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
 
       describe('if transferAmount', () => {
         it('is not number', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestCreateTransferTransaction(transferTransactionDataFactory.request({
               transferAmount: <any>'1',
             }))

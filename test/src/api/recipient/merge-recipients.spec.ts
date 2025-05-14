@@ -1,6 +1,6 @@
 import { createRecipientId } from '@household/shared/common/test-data-factory';
 import { getRecipientId } from '@household/shared/common/utils';
-import { AccountType } from '@household/shared/enums';
+import { AccountType, UserType } from '@household/shared/enums';
 import { Account, Recipient, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
@@ -88,7 +88,7 @@ describe('POST recipient/v1/recipients/{recipientId}/merge', () => {
     });
   });
 
-  describe('called as an admin', () => {
+  describe('called as an editor', () => {
     it('should merge recipients', () => {
       cy.saveAccountDocuments([
         accountDocument,
@@ -109,7 +109,7 @@ describe('POST recipient/v1/recipients/{recipientId}/merge', () => {
           unrelatedReimbursementTransactionDocument,
           unrelatedSplitTransactionDocument,
         ])
-        .authenticate('admin')
+        .authenticate(UserType.Editor)
         .requestMergeRecipients(getRecipientId(targetRecipientDocument), [getRecipientId(sourceRecipientDocument)])
         .expectCreatedResponse()
         .validateRecipientDeleted(getRecipientId(sourceRecipientDocument))
@@ -167,7 +167,7 @@ describe('POST recipient/v1/recipients/{recipientId}/merge', () => {
       it('if a source precipient does not exist', () => {
         cy.saveRecipientDocument(targetRecipientDocument)
           .saveRecipientDocument(sourceRecipientDocument)
-          .authenticate('admin')
+          .authenticate(UserType.Editor)
           .requestMergeRecipients(getRecipientId(targetRecipientDocument), [
             getRecipientId(sourceRecipientDocument),
             createRecipientId(),
@@ -177,14 +177,14 @@ describe('POST recipient/v1/recipients/{recipientId}/merge', () => {
       });
       describe('if body', () => {
         it('is not array', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestMergeRecipients(createRecipientId(), {} as any)
             .expectBadRequestResponse()
             .expectWrongPropertyType('data', 'array', 'body');
         });
 
         it('has too few items', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestMergeRecipients(createRecipientId(), [])
             .expectBadRequestResponse()
             .expectTooFewItemsProperty('data', 1, 'body');
@@ -193,14 +193,14 @@ describe('POST recipient/v1/recipients/{recipientId}/merge', () => {
 
       describe('if body[0]', () => {
         it('is not string', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestMergeRecipients(createRecipientId(), [1] as any)
             .expectBadRequestResponse()
             .expectWrongPropertyType('data', 'string', 'body');
         });
 
         it('is not a valid mongo id', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestMergeRecipients(createRecipientId(), [createRecipientId('not-valid')])
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('data', 'body');
@@ -209,14 +209,14 @@ describe('POST recipient/v1/recipients/{recipientId}/merge', () => {
 
       describe('if recipientId', () => {
         it('is not a valid mongo id', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestMergeRecipients(createRecipientId('not-valid'), [createRecipientId()])
             .expectBadRequestResponse()
             .expectWrongPropertyPattern('recipientId', 'pathParameters');
         });
 
         it('does not belong to any recipient', () => {
-          cy.authenticate('admin')
+          cy.authenticate(UserType.Editor)
             .requestMergeRecipients(createRecipientId(), [getRecipientId(sourceRecipientDocument)])
             .expectBadRequestResponse()
             .expectMessage('Some of the recipients are not found');
