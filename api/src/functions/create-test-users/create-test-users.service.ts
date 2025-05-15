@@ -6,8 +6,8 @@ export interface ICreateTestUsersService {
 }
 
 export const createTestUsersServiceFactory = (identityService: IIdentityService): ICreateTestUsersService => {
-  const createUser = async (userType: UserType) => {
-    const email = `losonczil+${userType}@gmail.com`;
+  const createUser = async (userType?: UserType) => {
+    const email = `losonczil+${userType ?? 'viewer'}@gmail.com`;
     try {
       await identityService.createUser({
         email,
@@ -20,6 +20,9 @@ export const createTestUsersServiceFactory = (identityService: IIdentityService)
     }
   };
   return async () => {
-    await Promise.all(Object.values(UserType).map(x => createUser(x)));
+    await Promise.all([
+      ...Object.values(UserType).map(x => createUser(x)),
+      createUser(),
+    ]);
   };
 };

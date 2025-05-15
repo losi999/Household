@@ -7,15 +7,12 @@ import { listTransactionsByAccountServiceFactory } from '@household/api/function
 import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
 import { transactionService } from '@household/shared/dependencies/services/transaction-service';
 import { default as index } from '@household/api/handlers/index.handler';
-import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';
-import { UserType } from '@household/shared/enums';
 
 const listTransactionsByAccountService = listTransactionsByAccountServiceFactory(transactionService, transactionDocumentConverter);
 
 export default index({
   handler: handler(listTransactionsByAccountService),
   before: [
-    authorizer(UserType.Editor, UserType.Viewer),
     apiRequestValidator({
       pathParameters,
       queryStringParameters,

@@ -13,6 +13,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { IsEditorDirective } from '@household/web/app/shared/is-editor.directive';
+import { IsHairdresserDirective } from '@household/web/app/shared/is-hairdresser.directive';
 
 @NgModule({
   declarations: [
@@ -32,6 +34,8 @@ import { MatInputModule } from '@angular/material/input';
     MatIconModule,
     MatFormFieldModule,
     MatInputModule,
+    IsEditorDirective,
+    IsHairdresserDirective,
   ],
 })
 export class SettingsModule { }

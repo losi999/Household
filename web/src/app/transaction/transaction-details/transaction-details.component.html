@@ -1,11 +1,11 @@
 <household-toolbar title="Tranzakció">
-  <button mat-icon-button type="button" (click)="delete()">
+  <button mat-icon-button type="button" (click)="delete()" *householdIsEditor>
     <mat-icon>delete</mat-icon>
   </button>
-  <button mat-icon-button type="button" replaceUrl="true" [routerLink]="['edit', formType]">
+  <button mat-icon-button type="button" replaceUrl="true" [routerLink]="['edit', formType]" *householdIsEditor>
     <mat-icon>edit</mat-icon>
   </button>
-  <button mat-icon-button type="button" [matMenuTriggerFor]="new">
+  <button mat-icon-button type="button" [matMenuTriggerFor]="new" *householdIsEditor>
     <mat-icon>add</mat-icon>
   </button>
   <mat-menu #new="matMenu">

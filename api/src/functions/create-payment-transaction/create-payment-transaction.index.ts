@@ -21,7 +21,7 @@ const createPaymentTransactionService = createPaymentTransactionServiceFactory(a
 export default index({
   handler: handler(createPaymentTransactionService),
   before: [
-    authorizer(UserType.Editor),
+    authorizer(UserType.Editor, UserType.Hairdresser),
     apiRequestValidator({
       body,
     }),

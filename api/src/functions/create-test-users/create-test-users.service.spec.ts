@@ -26,13 +26,17 @@ describe('Create test users service', () => {
     mockIdentityService.functions.createUser.mockResolvedValue(undefined);
 
     await service();
-    expect(mockIdentityService.functions.createUser).toHaveBeenCalledTimes(userTypes.length);
+    expect(mockIdentityService.functions.createUser).toHaveBeenCalledTimes(userTypes.length + 1);
     userTypes.forEach((userType, index) => {
       validateNthFunctionCall(mockIdentityService.functions.createUser, index + 1, {
         email: `losonczil+${userType}@gmail.com`,
         password: testUserPassword,
       }, userType);
     });
+    validateNthFunctionCall(mockIdentityService.functions.createUser, userTypes.length + 1, {
+      email: 'losonczil+viewer@gmail.com',
+      password: testUserPassword,
+    }, undefined);
   });
 
   it('should handler error if createUser throws "UsernameExistsException" error', async () => {
@@ -41,7 +45,7 @@ describe('Create test users service', () => {
     });
 
     await service();
-    expect(mockIdentityService.functions.createUser).toHaveBeenCalledTimes(userTypes.length);
+    expect(mockIdentityService.functions.createUser).toHaveBeenCalledTimes(userTypes.length + 1);
     expect.assertions(1);
   });
 
@@ -53,7 +57,7 @@ describe('Create test users service', () => {
     });
 
     await service().catch(validateError(message));
-    expect(mockIdentityService.functions.createUser).toHaveBeenCalledTimes(userTypes.length);
+    expect(mockIdentityService.functions.createUser).toHaveBeenCalledTimes(userTypes.length + 1);
     expect.assertions(2);
   });
 });

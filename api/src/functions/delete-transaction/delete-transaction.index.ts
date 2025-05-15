@@ -13,7 +13,7 @@ const deleteTransactionService = deleteTransactionServiceFactory(transactionServ
 export default index({
   handler: handler(deleteTransactionService),
   before: [
-    authorizer(UserType.Editor),
+    authorizer(UserType.Editor, UserType.Hairdresser),
     apiRequestValidator({
       pathParameters,
     }),

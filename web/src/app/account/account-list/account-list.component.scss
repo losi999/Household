@@ -1,0 +1,12 @@
+.container {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  width: 100%;
+
+  @media (max-width: 329px) {
+    & {
+      grid-template-columns: 1fr;
+    }
+  }
+}

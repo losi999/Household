@@ -4,7 +4,7 @@ import { UserType } from '@household/shared/enums';
 
 export interface IIdentityService {
   login(body: Auth.Login.Request): Promise<AdminInitiateAuthResponse>;
-  createUser(body: User.Email & Partial<Auth.Password & Auth.TemporaryPassword>, userType: UserType, suppressEmail?: boolean): Promise<unknown>;
+  createUser(body: User.Email & Partial<Auth.Password & Auth.TemporaryPassword>, userType?: UserType, suppressEmail?: boolean): Promise<unknown>;
   deleteUser(ctx: User.Email): Promise<unknown>;
   refreshToken(body: Auth.RefreshToken.Request): Promise<AdminInitiateAuthResponse>;
   getUser(ctx: User.Email): Promise<AdminGetUserCommandOutput>;
@@ -101,11 +101,13 @@ export const identityServiceFactory = (
         MessageAction: (password || suppressEmail) ? MessageActionType.SUPPRESS : undefined,
       });
 
-      await cognito.adminAddUserToGroup({
-        UserPoolId: userPoolId,
-        Username: email,
-        GroupName: userType,
-      });
+      if (userType) {
+        await cognito.adminAddUserToGroup({
+          UserPoolId: userPoolId,
+          Username: email,
+          GroupName: userType,
+        });
+      }
 
       if (password) {
         return cognito.adminSetUserPassword({

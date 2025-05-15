@@ -31,6 +31,7 @@ import { TransactionShortDetailsComponent } from './transaction-short-details/tr
 import { LetDirective } from '@ngrx/component';
 import { DeferredTransactionFilterPipe } from './deferred-transaction-filter.pipe';
 import { OrderByPipe } from '@household/web/app/shared/order-by.pipe';
+import { IsEditorDirective } from '@household/web/app/shared/is-editor.directive';
 
 @NgModule({
   declarations: [
@@ -68,6 +69,7 @@ import { OrderByPipe } from '@household/web/app/shared/order-by.pipe';
     MatExpansionModule,
     LetDirective,
     OrderByPipe,
+    IsEditorDirective,
   ],
   exports: [TransactionShortDetailsComponent],
 })

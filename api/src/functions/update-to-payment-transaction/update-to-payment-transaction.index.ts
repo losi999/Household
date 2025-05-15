@@ -22,7 +22,7 @@ const updateToPaymentTransactionService = updateToPaymentTransactionServiceFacto
 export default index({
   handler: handler(updateToPaymentTransactionService),
   before: [
-    authorizer(UserType.Editor),
+    authorizer(UserType.Editor, UserType.Hairdresser),
     apiRequestValidator({
       body,
       pathParameters,

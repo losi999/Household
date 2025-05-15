@@ -34,6 +34,5 @@ export enum TransactionType {
 
 export enum UserType {
   Editor = 'editor',
-  Viewer = 'viewer',
   Hairdresser = 'hairdresser',
 }

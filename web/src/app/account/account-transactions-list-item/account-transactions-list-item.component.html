@@ -15,8 +15,8 @@
     <a mat-icon-button color="primary" [routerLink]="['transactions', transaction.transactionId]" href="" target="_blank" [disabled]="isDisabled | async" matTooltip="Részletek">
       <mat-icon>format_list_bulleted</mat-icon>
     </a>
-    <a mat-icon-button color="primary" [routerLink]="['transactions', transaction.transactionId, 'edit', formType]" href="" target="_blank" [disabled]="isDisabled | async" matTooltip="Szerkesztés"> <mat-icon>edit</mat-icon></a>
-    <button mat-icon-button color="warn" (click)="delete()" [disabled]="isDisabled | async" matTooltip="Törlés">
+    <a mat-icon-button color="primary" *householdIsEditor [routerLink]="['transactions', transaction.transactionId, 'edit', formType]" href="" target="_blank" [disabled]="isDisabled | async" matTooltip="Szerkesztés"> <mat-icon>edit</mat-icon></a>
+    <button mat-icon-button color="warn" *householdIsEditor (click)="delete()" [disabled]="isDisabled | async" matTooltip="Törlés">
       <mat-icon>delete</mat-icon>
     </button>
   </div>

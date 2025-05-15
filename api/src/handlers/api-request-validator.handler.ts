@@ -1,16 +1,13 @@
 import { JSONSchema7 } from 'json-schema';
 import { IValidatorService } from '@household/shared/services/validator-service';
 import { badRequestResponse } from '@household/api/common/response-factory';
+import { keys } from '@household/shared/common/utils';
 
 type RequestSchemaTypes = {
   body?: JSONSchema7;
   pathParameters?: JSONSchema7;
   queryStringParameters?: JSONSchema7;
   multiValueQueryStringParameters?: JSONSchema7;
-};
-
-const keys = <O extends object>(obj: O): (keyof O)[] => {
-  return Object.keys(obj) as (keyof O)[];
 };
 
 export default (validatorService: IValidatorService) => {

@@ -5,6 +5,7 @@ import { notificationActions } from '@household/web/state/notification/notificat
 import { progressActions } from '@household/web/state/progress/progress.actions';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, exhaustMap, map, of, tap } from 'rxjs';
+import { jwtDecode } from 'jwt-decode';
 
 @Injectable()
 export class AuthEffects {
@@ -37,6 +38,7 @@ export class AuthEffects {
       exhaustMap(({ idToken, refreshToken }) => {
         localStorage.setItem('idToken', idToken);
         localStorage.setItem('refreshToken', refreshToken);
+        localStorage.setItem('userTypes', jwtDecode(idToken)['cognito:groups']?.join(',') ?? '');
         return of(authActions.logInCompleted());
       }),
     );
@@ -47,6 +49,7 @@ export class AuthEffects {
       ofType(authActions.logOut),
       tap(() => {
         localStorage.clear();
+        this.authService.userTypes = undefined;
       }),
     );
   }, {
