@@ -1,13 +1,11 @@
 import { default as schema } from '@household/test/api/schemas/category-response';
 import { Category } from '@household/shared/types/types';
-import { getCategoryId } from '@household/shared/common/utils';
+import { entries, getCategoryId } from '@household/shared/common/utils';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
-import { CategoryType, UserType } from '@household/shared/enums';
+import { CategoryType } from '@household/shared/enums';
+import { forbidUsers } from '@household/test/api/utils';
 
-const allowedUserTypes = [
-  UserType.Editor,
-  UserType.Viewer,
-];
+const permissionMap = forbidUsers();
 
 describe('GET /category/v1/categories/{categoryId}', () => {
   let categoryDocument: Category.Document;
@@ -32,9 +30,12 @@ describe('GET /category/v1/categories/{categoryId}', () => {
     });
   });
 
-  Object.values(UserType).forEach((userType) => {
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
     describe(`called as ${userType}`, () => {
-      if (!allowedUserTypes.includes(userType)) {
+      if (!isAllowed) {
         it('should return forbidden', () => {
           cy.authenticate(userType)
             .requestGetCategory(categoryDataFactory.id())

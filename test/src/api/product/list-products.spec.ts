@@ -4,10 +4,7 @@ import { productDataFactory } from './data-factory';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { CategoryType, UserType } from '@household/shared/enums';
 
-const allowedUserTypes = [
-  UserType.Editor,
-  UserType.Viewer,
-];
+const permissionMap = forbidUsers();
 
 describe('GET /product/v1/products', () => {
   let productDocument1: Product.Document;
@@ -43,9 +40,12 @@ describe('GET /product/v1/products', () => {
     });
   });
 
-  Object.values(UserType).forEach((userType) => {
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
     describe(`called as ${userType}`, () => {
-      if (!allowedUserTypes.includes(userType)) {
+      if (!isAllowed) {
         it('should return forbidden', () => {
           cy.authenticate(userType)
             .requestGetProductList()

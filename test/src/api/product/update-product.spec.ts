@@ -1,10 +1,11 @@
-import { getCategoryId, getProductId } from '@household/shared/common/utils';
-import { CategoryType, UserType } from '@household/shared/enums';
+import { entries, getCategoryId, getProductId } from '@household/shared/common/utils';
+import { CategoryType } from '@household/shared/enums';
 import { Category, Product } from '@household/shared/types/types';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { productDataFactory } from '@household/test/api/product/data-factory';
+import { allowUsers } from '@household/test/api/utils';
 
-const allowedUserTypes = [UserType.Editor];
+const permissionMap = allowUsers('editor') ;
 
 describe('PUT /product/v1/products/{productId}', () => {
   let request: Product.Request;
@@ -33,9 +34,12 @@ describe('PUT /product/v1/products/{productId}', () => {
     });
   });
 
-  Object.values(UserType).forEach((userType) => {
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
     describe(`called as ${userType}`, () => {
-      if (!allowedUserTypes.includes(userType)) {
+      if (!isAllowed) {
         it('should return forbidden', () => {
           cy.authenticate(userType)
             .requestUpdateProduct(productDataFactory.id(), request)

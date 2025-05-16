@@ -2,9 +2,10 @@ import { default as schema } from '@household/test/api/schemas/file-response-lis
 import { File, Transaction } from '@household/shared/types/types';
 import { fileDataFactory } from './data-factory';
 import { draftTransactionDataFactory } from '@household/test/api/transaction/draft/draft-data-factory';
-import { UserType } from '@household/shared/enums';
+import { allowUsers } from '@household/test/api/utils';
+import { entries } from '@household/shared/common/utils';
 
-const allowedUserTypes = [UserType.Editor];
+const permissionMap = allowUsers('editor') ;
 
 describe('GET /file/v1/files', () => {
   let fileDocument: File.Document;
@@ -25,9 +26,12 @@ describe('GET /file/v1/files', () => {
     });
   });
 
-  Object.values(UserType).forEach((userType) => {
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
     describe(`called as ${userType}`, () => {
-      if (!allowedUserTypes.includes(userType)) {
+      if (!isAllowed) {
         it('should return forbidden', () => {
           cy.authenticate(userType)
             .requestGetFileList()

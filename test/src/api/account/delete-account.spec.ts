@@ -1,4 +1,4 @@
-import { getAccountId, getTransactionId } from '@household/shared/common/utils';
+import { entries, getAccountId, getTransactionId } from '@household/shared/common/utils';
 import { AccountType } from '@household/shared/enums';
 import { Account, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
@@ -7,9 +7,9 @@ import { paymentTransactionDataFactory } from '@household/test/api/transaction/p
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
-import { UserType } from '@household/shared/enums';
+import { allowUsers } from '@household/test/api/utils';
 
-const allowedUserTypes = [UserType.Editor];
+const permissionMap = allowUsers('editor') ;
 
 describe('DELETE /account/v1/accounts/{accountId}', () => {
   let accountDocument: Account.Document;
@@ -26,9 +26,12 @@ describe('DELETE /account/v1/accounts/{accountId}', () => {
     });
   });
 
-  Object.values(UserType).forEach((userType) => {
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
     describe(`called as ${userType}`, () => {
-      if (!allowedUserTypes.includes(userType)) {
+      if (!isAllowed) {
         it('should return forbidden', () => {
           cy.authenticate(userType)
             .requestDeleteAccount(accountDataFactory.id())

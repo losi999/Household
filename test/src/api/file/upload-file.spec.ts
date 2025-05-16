@@ -1,9 +1,10 @@
 import { File } from '@household/shared/types/types';
 import { fileDataFactory } from './data-factory';
 import { default as schema } from '@household/test/api/schemas/file-url-response';
-import { UserType } from '@household/shared/enums';
+import { allowUsers } from '@household/test/api/utils';
+import { entries } from '@household/shared/common/utils';
 
-const allowedUserTypes = [UserType.Editor];
+const permissionMap = allowUsers('editor') ;
 
 describe('POST /file/v1/files', () => {
   let request: File.Request;
@@ -20,9 +21,12 @@ describe('POST /file/v1/files', () => {
     });
   });
 
-  Object.values(UserType).forEach((userType) => {
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
     describe(`called as ${userType}`, () => {
-      if (!allowedUserTypes.includes(userType)) {
+      if (!isAllowed) {
         it('should return forbidden', () => {
           cy.authenticate(userType)
             .requestCreateUploadUrl(request)

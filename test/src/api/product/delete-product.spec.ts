@@ -1,5 +1,5 @@
-import { getProductId } from '@household/shared/common/utils';
-import { AccountType, CategoryType, UserType } from '@household/shared/enums';
+import { entries, getProductId } from '@household/shared/common/utils';
+import { AccountType, CategoryType } from '@household/shared/enums';
 import { Account, Category, Product, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
@@ -8,8 +8,9 @@ import { deferredTransactionDataFactory } from '@household/test/api/transaction/
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
+import { allowUsers } from '@household/test/api/utils';
 
-const allowedUserTypes = [UserType.Editor];
+const permissionMap = allowUsers('editor') ;
 
 describe('DELETE /product/v1/products/{productId}', () => {
   let productDocument: Product.Document;
@@ -34,9 +35,12 @@ describe('DELETE /product/v1/products/{productId}', () => {
     });
   });
 
-  Object.values(UserType).forEach((userType) => {
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
     describe(`called as ${userType}`, () => {
-      if (!allowedUserTypes.includes(userType)) {
+      if (!isAllowed) {
         it('should return forbidden', () => {
           cy.authenticate(userType)
             .requestDeleteProduct(productDataFactory.id())

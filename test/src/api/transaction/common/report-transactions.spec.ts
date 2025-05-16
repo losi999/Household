@@ -1,5 +1,5 @@
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
-import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId } from '@household/shared/common/utils';
+import { entries, getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId } from '@household/shared/common/utils';
 import { default as schema } from '@household/test/api/schemas/transaction-report-list';
 import { createAccountId } from '@household/shared/common/test-data-factory';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
@@ -13,12 +13,10 @@ import { transferTransactionDataFactory } from '@household/test/api/transaction/
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { isDeferredTransaction } from '@household/shared/common/type-guards';
-import { AccountType, CategoryType, UserType } from '@household/shared/enums';
+import { AccountType, CategoryType } from '@household/shared/enums';
+import { forbidUsers } from '@household/test/api/utils';
 
-const allowedUserTypes = [
-  UserType.Editor,
-  UserType.Viewer,
-];
+const permissionMap = forbidUsers();
 
 const splitTransactionHelper = (doc: Transaction.SplitDocument, split: Transaction.SplitDocumentItem | Transaction.DeferredDocument):(Transaction.SplitDocument & {split?: Transaction.SplitDocumentItem; deferredSplit?: Transaction.DeferredDocument}) => {
   return {
@@ -37,9 +35,12 @@ describe('POST /transaction/v1/transactionReports', () => {
     });
   });
 
-  Object.values(UserType).forEach((userType) => {
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
     describe(`called as ${userType}`, () => {
-      if (!allowedUserTypes.includes(userType)) {
+      if (!isAllowed) {
         it('should return forbidden', () => {
           cy.authenticate(userType)
             .requestGetTransactionReports([])

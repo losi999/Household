@@ -6,12 +6,11 @@ import { paymentTransactionDataFactory } from '@household/test/api/transaction/p
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
-import { AccountType, UserType } from '@household/shared/enums';
+import { AccountType } from '@household/shared/enums';
+import { forbidUsers } from '@household/test/api/utils';
+import { entries } from '@household/shared/common/utils';
 
-const allowedUserTypes = [
-  UserType.Editor,
-  UserType.Viewer,
-];
+const permissionMap = forbidUsers();
 
 describe('GET /account/v1/accounts', () => {
   let accountDocument: Account.Document;
@@ -119,9 +118,12 @@ describe('GET /account/v1/accounts', () => {
     });
   });
 
-  Object.values(UserType).forEach((userType) => {
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
     describe(`called as ${userType}`, () => {
-      if (!allowedUserTypes.includes(userType)) {
+      if (!isAllowed) {
         it('should return forbidden', () => {
           cy.authenticate(userType)
             .requestGetAccountList()

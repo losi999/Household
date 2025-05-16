@@ -1,7 +1,7 @@
 import { default as schema } from '@household/test/api/schemas/transaction-response-list';
 import { Account } from '@household/shared/types/types';
 import { createAccountId } from '@household/shared/common/test-data-factory';
-import { getAccountId, getTransactionId } from '@household/shared/common/utils';
+import { entries, getAccountId, getTransactionId } from '@household/shared/common/utils';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { projectDataFactory } from '@household/test/api/project/data-factory';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
@@ -12,12 +12,10 @@ import { splitTransactionDataFactory } from '@household/test/api/transaction/spl
 import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
-import { AccountType, CategoryType, UserType } from '@household/shared/enums';
+import { AccountType, CategoryType } from '@household/shared/enums';
+import { forbidUsers } from '@household/test/api/utils';
 
-const allowedUserTypes = [
-  UserType.Editor,
-  UserType.Viewer,
-];
+const permissionMap = forbidUsers();
 
 describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
   let accountDocument: Account.Document;
@@ -34,9 +32,12 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
     });
   });
 
-  Object.values(UserType).forEach((userType) => {
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
     describe(`called as ${userType}`, () => {
-      if (!allowedUserTypes.includes(userType)) {
+      if (!isAllowed) {
         it('should return forbidden', () => {
           cy.authenticate(userType)
             .requestGetTransactionListByAccount(getAccountId(accountDocument))

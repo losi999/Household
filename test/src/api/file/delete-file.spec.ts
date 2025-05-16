@@ -1,10 +1,10 @@
 import { File, Transaction } from '@household/shared/types/types';
 import { fileDataFactory } from './data-factory';
 import { draftTransactionDataFactory } from '@household/test/api/transaction/draft/draft-data-factory';
-import { getFileId, getTransactionId } from '@household/shared/common/utils';
-import { UserType } from '@household/shared/enums';
+import { entries, getFileId, getTransactionId } from '@household/shared/common/utils';
+import { allowUsers } from '@household/test/api/utils';
 
-const allowedUserTypes = [UserType.Editor];
+const permissionMap = allowUsers('editor') ;
 
 describe('DELETE /file/v1/files/{fileId}', () => {
   let fileDocument: File.Document;
@@ -25,9 +25,12 @@ describe('DELETE /file/v1/files/{fileId}', () => {
     });
   });
 
-  Object.values(UserType).forEach((userType) => {
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
     describe(`called as ${userType}`, () => {
-      if (!allowedUserTypes.includes(userType)) {
+      if (!isAllowed) {
         it('should return forbidden', () => {
           cy.authenticate(userType)
             .requestDeleteFile(fileDataFactory.id())

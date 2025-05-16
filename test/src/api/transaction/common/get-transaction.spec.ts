@@ -4,7 +4,7 @@ import { default as deferredTransactionSchema } from '@household/test/api/schema
 import { default as reimbursementTransactionSchema } from '@household/test/api/schemas/transaction-reimbursement-response';
 import { default as transferTransactionSchema } from '@household/test/api/schemas/transaction-transfer-response';
 import { default as splitTransactionSchema } from '@household/test/api/schemas/transaction-split-response';
-import { getAccountId, getTransactionId } from '@household/shared/common/utils';
+import { entries, getAccountId, getTransactionId } from '@household/shared/common/utils';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
 import { projectDataFactory } from '@household/test/api/project/data-factory';
@@ -15,12 +15,10 @@ import { transferTransactionDataFactory } from '@household/test/api/transaction/
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
-import { AccountType, CategoryType, UserType } from '@household/shared/enums';
+import { AccountType, CategoryType } from '@household/shared/enums';
+import { forbidUsers } from '@household/test/api/utils';
 
-const allowedUserTypes = [
-  UserType.Editor,
-  UserType.Viewer,
-];
+const permissionMap = forbidUsers();
 
 describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}', () => {
   let accountDocument: Account.Document;
@@ -75,9 +73,12 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
     });
   });
 
-  Object.values(UserType).forEach((userType) => {
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
     describe(`called as ${userType}`, () => {
-      if (!allowedUserTypes.includes(userType)) {
+      if (!isAllowed) {
         it('should return forbidden', () => {
           cy.authenticate(userType)
             .requestGetTransaction(getAccountId(accountDocument), paymentTransactionDataFactory.id())

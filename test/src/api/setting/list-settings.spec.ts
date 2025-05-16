@@ -1,12 +1,10 @@
 import { default as schema } from '@household/test/api/schemas/setting-response-list';
 import { Setting } from '@household/shared/types/types';
 import { settingDataFactory } from './data-factory';
-import { UserType } from '@household/shared/enums';
+import { forbidUsers } from '@household/test/api/utils';
+import { entries } from '@household/shared/common/utils';
 
-const allowedUserTypes = [
-  UserType.Editor,
-  UserType.Viewer,
-];
+const permissionMap = forbidUsers();
 
 describe('GET /setting/v1/settings', () => {
   let settingKey1: Setting.Id;
@@ -29,9 +27,12 @@ describe('GET /setting/v1/settings', () => {
     });
   });
 
-  Object.values(UserType).forEach((userType) => {
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
     describe(`called as ${userType}`, () => {
-      if (!allowedUserTypes.includes(userType)) {
+      if (!isAllowed) {
         it('should return forbidden', () => {
           cy.authenticate(userType)
             .requestGetSettingList()

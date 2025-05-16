@@ -1,12 +1,10 @@
 import { default as schema } from '@household/test/api/schemas/project-response-list';
 import { Project } from '@household/shared/types/types';
 import { projectDataFactory } from './data-factory';
-import { UserType } from '@household/shared/enums';
+import { forbidUsers } from '@household/test/api/utils';
+import { entries } from '@household/shared/common/utils';
 
-const allowedUserTypes = [
-  UserType.Editor,
-  UserType.Viewer,
-];
+const permissionMap = forbidUsers();
 
 describe('GET /project/v1/projects', () => {
   let projectDocument1: Project.Document;
@@ -25,9 +23,12 @@ describe('GET /project/v1/projects', () => {
     });
   });
 
-  Object.values(UserType).forEach((userType) => {
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
     describe(`called as ${userType}`, () => {
-      if (!allowedUserTypes.includes(userType)) {
+      if (!isAllowed) {
         it('should return forbidden', () => {
           cy.authenticate(userType)
             .requestGetProjectList()

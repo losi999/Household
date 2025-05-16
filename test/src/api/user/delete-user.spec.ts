@@ -1,8 +1,10 @@
 import { User } from '@household/shared/types/types';
 import { userDataFactory } from './data-factory';
+import { allowUsers } from '@household/test/api/utils';
+import { entries } from '@household/shared/common/utils';
 import { UserType } from '@household/shared/enums';
 
-const allowedUserTypes = [UserType.Editor];
+const permissionMap = allowUsers('editor') ;
 
 describe('DELETE /user/v1/users/{email}', () => {
   let pendingUser: User.Request;
@@ -23,9 +25,12 @@ describe('DELETE /user/v1/users/{email}', () => {
     });
   });
 
-  Object.values(UserType).forEach((userType) => {
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
     describe(`called as ${userType}`, () => {
-      if (!allowedUserTypes.includes(userType)) {
+      if (!isAllowed) {
         it('should return forbidden', () => {
           cy.authenticate(userType)
             .requestDeleteUser(pendingUser.email)

@@ -1,4 +1,4 @@
-import { getRecipientId } from '@household/shared/common/utils';
+import { entries, getRecipientId } from '@household/shared/common/utils';
 import { Account, Recipient, Transaction } from '@household/shared/types/types';
 import { splitTransactionDataFactory } from '../transaction/split/split-data-factory';
 import { paymentTransactionDataFactory } from '../transaction/payment/payment-data-factory';
@@ -6,9 +6,10 @@ import { recipientDataFactory } from './data-factory';
 import { accountDataFactory } from '../account/data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
-import { AccountType, UserType } from '@household/shared/enums';
+import { AccountType } from '@household/shared/enums';
+import { allowUsers } from '@household/test/api/utils';
 
-const allowedUserTypes = [UserType.Editor];
+const permissionMap = allowUsers('editor') ;
 
 describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
   let recipientDocument: Recipient.Document;
@@ -25,9 +26,12 @@ describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
     });
   });
 
-  Object.values(UserType).forEach((userType) => {
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
     describe(`called as ${userType}`, () => {
-      if (!allowedUserTypes.includes(userType)) {
+      if (!isAllowed) {
         it('should return forbidden', () => {
           cy.authenticate(userType)
             .requestDeleteRecipient(recipientDataFactory.id())

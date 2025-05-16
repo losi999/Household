@@ -1,9 +1,9 @@
-import { getProjectId } from '@household/shared/common/utils';
+import { entries, getProjectId } from '@household/shared/common/utils';
 import { Project } from '@household/shared/types/types';
 import { projectDataFactory } from './data-factory';
-import { UserType } from '@household/shared/enums';
+import { allowUsers } from '@household/test/api/utils';
 
-const allowedUserTypes = [UserType.Editor];
+const permissionMap = allowUsers('editor') ;
 
 describe('PUT /project/v1/projects/{projectId}', () => {
   let request: Project.Request;
@@ -23,9 +23,12 @@ describe('PUT /project/v1/projects/{projectId}', () => {
     });
   });
 
-  Object.values(UserType).forEach((userType) => {
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
     describe(`called as ${userType}`, () => {
-      if (!allowedUserTypes.includes(userType)) {
+      if (!isAllowed) {
         it('should return forbidden', () => {
           cy.authenticate(userType)
             .requestUpdateProject(projectDataFactory.id(), request)

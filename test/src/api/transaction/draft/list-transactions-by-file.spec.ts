@@ -2,13 +2,13 @@ import { default as schema } from '@household/test/api/schemas/transaction-respo
 import { File, Transaction } from '@household/shared/types/types';
 import { fileDataFactory } from '../../file/data-factory';
 import { draftTransactionDataFactory } from '@household/test/api/transaction/draft/draft-data-factory';
-import { addSeconds, getFileId } from '@household/shared/common/utils';
+import { addSeconds, entries, getFileId } from '@household/shared/common/utils';
 import { createFileId } from '@household/shared/common/test-data-factory';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
-import { UserType } from '@household/shared/enums';
+import { allowUsers } from '@household/test/api/utils';
 
-const allowedUserTypes = [UserType.Editor];
+const permissionMap = allowUsers('editor') ;
 
 describe('GET /transaction/v1/files/{fileId}/transactions', () => {
   let fileDocument: File.Document;
@@ -41,9 +41,12 @@ describe('GET /transaction/v1/files/{fileId}/transactions', () => {
     });
   });
 
-  Object.values(UserType).forEach((userType) => {
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
     describe(`called as ${userType}`, () => {
-      if (!allowedUserTypes.includes(userType)) {
+      if (!isAllowed) {
         it('should return forbidden', () => {
           cy.authenticate(userType)
             .requestGetTransactionListByFile(getFileId(fileDocument))

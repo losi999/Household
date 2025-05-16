@@ -1,9 +1,9 @@
-import { getAccountId } from '@household/shared/common/utils';
-import { UserType } from '@household/shared/enums';
+import { entries, getAccountId } from '@household/shared/common/utils';
+import { allowUsers } from '@household/test/api/utils';
 import { Account } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 
-const allowedUserTypes = [UserType.Editor];
+const permissionMap = allowUsers('editor') ;
 
 describe('PUT /account/v1/accounts/{accountId}', () => {
   let request: Account.Request;
@@ -23,9 +23,12 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
     });
   });
 
-  Object.values(UserType).forEach((userType) => {
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
     describe(`called as ${userType}`, () => {
-      if (!allowedUserTypes.includes(userType)) {
+      if (!isAllowed) {
         it('should return forbidden', () => {
           cy.authenticate(userType)
             .requestUpdateAccount(accountDataFactory.id(), request)

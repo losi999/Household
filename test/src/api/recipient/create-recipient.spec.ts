@@ -1,8 +1,8 @@
 import { Recipient } from '@household/shared/types/types';
 import { recipientDataFactory } from './data-factory';
-import { UserType } from '@household/shared/enums';
+import { allowUsers } from '@household/test/api/utils';
 
-const allowedUserTypes = [UserType.Editor];
+const permissionMap = allowUsers('editor') ;
 
 describe('POST recipient/v1/recipients', () => {
   let request: Recipient.Request;
@@ -19,9 +19,12 @@ describe('POST recipient/v1/recipients', () => {
     });
   });
 
-  Object.values(UserType).forEach((userType) => {
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
     describe(`called as ${userType}`, () => {
-      if (!allowedUserTypes.includes(userType)) {
+      if (!isAllowed) {
         it('should return forbidden', () => {
           cy.authenticate(userType)
             .requestCreateRecipient(request)

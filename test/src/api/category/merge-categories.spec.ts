@@ -1,5 +1,5 @@
-import { getCategoryId } from '@household/shared/common/utils';
-import { CategoryType, AccountType, UserType } from '@household/shared/enums';
+import { entries, getCategoryId } from '@household/shared/common/utils';
+import { CategoryType, AccountType } from '@household/shared/enums';
 import { Account, Category, Product, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
@@ -8,8 +8,9 @@ import { deferredTransactionDataFactory } from '@household/test/api/transaction/
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
+import { allowUsers } from '@household/test/api/utils';
 
-const allowedUserTypes = [UserType.Editor];
+const permissionMap = allowUsers('editor') ;
 
 describe('POST category/v1/categories/{categoryId}/merge', () => {
   let accountDocument: Account.Document;
@@ -35,9 +36,12 @@ describe('POST category/v1/categories/{categoryId}/merge', () => {
     });
   });
 
-  Object.values(UserType).forEach((userType) => {
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
     describe(`called as ${userType}`, () => {
-      if (!allowedUserTypes.includes(userType)) {
+      if (!isAllowed) {
         it('should return forbidden', () => {
           cy.authenticate(userType)
             .requestMergeCategories(categoryDataFactory.id(), [categoryDataFactory.id()])

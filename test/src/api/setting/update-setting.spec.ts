@@ -1,8 +1,9 @@
 import { Setting } from '@household/shared/types/types';
 import { settingDataFactory } from './data-factory';
-import { UserType } from '@household/shared/enums';
+import { allowUsers } from '@household/test/api/utils';
+import { entries } from '@household/shared/common/utils';
 
-const allowedUserTypes = [UserType.Editor];
+const permissionMap = allowUsers('editor') ;
 
 describe('POST /setting/v1/settings/{settingKey}', () => {
   let request: Setting.Request;
@@ -21,9 +22,12 @@ describe('POST /setting/v1/settings/{settingKey}', () => {
     });
   });
 
-  Object.values(UserType).forEach((userType) => {
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
     describe(`called as ${userType}`, () => {
-      if (!allowedUserTypes.includes(userType)) {
+      if (!isAllowed) {
         it('should return forbidden', () => {
           cy.authenticate(userType)
             .requestUpdateSetting(settingKey, request)
