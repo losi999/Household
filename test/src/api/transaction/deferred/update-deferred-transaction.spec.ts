@@ -9,9 +9,9 @@ import { projectDataFactory } from '@household/test/api/project/data-factory';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
-import { allowUsers } from '@household/test/api/utils';
+import { forbidUsers } from '@household/test/api/utils';
 
-const permissionMap = allowUsers('editor') ;
+const permissionMap = forbidUsers('viewer') ;
 
 describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', () => {
   let request: Transaction.PaymentRequest;

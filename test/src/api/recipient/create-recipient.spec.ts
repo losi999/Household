@@ -1,6 +1,7 @@
 import { Recipient } from '@household/shared/types/types';
 import { recipientDataFactory } from './data-factory';
 import { allowUsers } from '@household/test/api/utils';
+import { entries } from '@household/shared/common/utils';
 
 const permissionMap = allowUsers('editor') ;
 

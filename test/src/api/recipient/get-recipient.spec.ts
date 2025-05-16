@@ -1,8 +1,8 @@
 import { default as schema } from '@household/test/api/schemas/recipient-response';
 import { Recipient } from '@household/shared/types/types';
-import { getRecipientId } from '@household/shared/common/utils';
+import { entries, getRecipientId } from '@household/shared/common/utils';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
-import { allowUsers } from '@household/test/api/utils';
+import { forbidUsers } from '@household/test/api/utils';
 
 const permissionMap = forbidUsers();
 

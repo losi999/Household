@@ -7,9 +7,9 @@ import { productDataFactory } from '@household/test/api/product/data-factory';
 import { projectDataFactory } from '@household/test/api/project/data-factory';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
-import { allowUsers } from '@household/test/api/utils';
+import { forbidUsers } from '@household/test/api/utils';
 
-const permissionMap = allowUsers('editor') ;
+const permissionMap = forbidUsers('viewer') ;
 
 describe('POST transaction/v1/transactions/payment (payment)', () => {
   let request: Transaction.PaymentRequest;

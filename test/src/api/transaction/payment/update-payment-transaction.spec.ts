@@ -9,9 +9,9 @@ import { projectDataFactory } from '@household/test/api/project/data-factory';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
-import { allowUsers } from '@household/test/api/utils';
+import { forbidUsers } from '@household/test/api/utils';
 
-const permissionMap = allowUsers('editor') ;
+const permissionMap = forbidUsers('viewer') ;
 
 describe('PUT transaction/v1/transactions/{transactionId}/payment (payment)', () => {
   let request: Transaction.PaymentRequest;

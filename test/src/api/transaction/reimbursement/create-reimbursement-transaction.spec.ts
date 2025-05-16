@@ -7,9 +7,9 @@ import { productDataFactory } from '@household/test/api/product/data-factory';
 import { projectDataFactory } from '@household/test/api/project/data-factory';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
-import { allowUsers } from '@household/test/api/utils';
+import { forbidUsers } from '@household/test/api/utils';
 
-const permissionMap = allowUsers('editor') ;
+const permissionMap = forbidUsers('viewer') ;
 
 describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
   let request: Transaction.PaymentRequest;

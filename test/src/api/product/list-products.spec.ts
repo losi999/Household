@@ -2,7 +2,9 @@ import { default as schema } from '@household/test/api/schemas/product-response-
 import { Category, Product } from '@household/shared/types/types';
 import { productDataFactory } from './data-factory';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
-import { CategoryType, UserType } from '@household/shared/enums';
+import { CategoryType } from '@household/shared/enums';
+import { forbidUsers } from '@household/test/api/utils';
+import { entries } from '@household/shared/common/utils';
 
 const permissionMap = forbidUsers();
 

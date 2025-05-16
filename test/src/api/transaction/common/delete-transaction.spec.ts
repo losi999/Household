@@ -7,9 +7,9 @@ import { paymentTransactionDataFactory } from '@household/test/api/transaction/p
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
-import { allowUsers } from '@household/test/api/utils';
+import { forbidUsers } from '@household/test/api/utils';
 
-const permissionMap = allowUsers('editor') ;
+const permissionMap = forbidUsers('viewer') ;
 
 describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
   let accountDocument: Account.Document;
