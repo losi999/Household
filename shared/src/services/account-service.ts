@@ -9,10 +9,10 @@ export interface IAccountService {
   saveAccounts(docs: Account.Document[]): Promise<unknown>;
   findAccountById(accountId: Account.Id): Promise<Account.Document>;
   findAccountsByIds(accountIds: Account.Id[]): Promise<Account.Document[]>;
-  getAccountById(accountId: Account.Id): Promise<Account.AggregatedDocument>;
+  getAccountById(accountId: Account.Id): Promise<Account.Document>;
   deleteAccount(accountId: Account.Id): Promise<unknown>;
   updateAccount(accountId: Account.Id, updateQuery: UpdateQuery<Account.Document>): Promise<unknown>;
-  listAccounts(): Promise<Account.AggregatedDocument[]>;
+  listAccounts(): Promise<Account.Document[]>;
 }
 
 export const accountServiceFactory = (mongodbService: IMongodbService): IAccountService => {
@@ -47,7 +47,7 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
     getAccountById: async (accountId) => {
       if (accountId) {
         const [account] = await mongodbService.inSession((session) => {
-          return mongodbService.accounts.aggregate<Account.AggregatedDocument>([
+          return mongodbService.accounts.aggregate([
             {
               $match: {
                 _id: new Types.ObjectId(accountId),

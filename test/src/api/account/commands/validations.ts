@@ -21,8 +21,8 @@ const validateAccountDocument = (response: Account.AccountId, request: Account.R
     });
 };
 
-const validateLeanAccountResponse = (response: Account.LeanResponse, document: Account.Document) => {
-  const { accountId, name, accountType, currency, owner, isOpen, fullName, ...empty } = response;
+const validateAccountResponse = (response: Account.Response, document: Account.Document, expectedBalance?: number) => {
+  const { accountId, name, accountType, currency, owner, isOpen, fullName, balance, ...empty } = response;
 
   expect(accountId, 'accountId').to.equal(getAccountId(document));
   expect(name, 'name').to.equal(document.name);
@@ -31,14 +31,8 @@ const validateLeanAccountResponse = (response: Account.LeanResponse, document: A
   expect(owner, 'owner').to.equal(document.owner);
   expect(isOpen, 'isOpen').to.equal(document.isOpen);
   expect(fullName, 'fullName').to.equal(`${document.name} (${document.owner})`);
-  expectEmptyObject(empty);
-};
-
-const validateAccountResponse = (response: Account.Response, document: Account.Document, expectedBalance: number) => {
-  const { balance, ...lean } = response;
-
-  validateLeanAccountResponse(lean, document);
   expect(balance, 'balance').to.equal(expectedBalance);
+  expectEmptyObject(empty);
 };
 
 const validateInAccountListResponse = (responses: Account.Response[], document: Account.Document, expectedBalance: number) => {
@@ -65,7 +59,6 @@ export const setAccountValidationCommands = () => {
   }, {
     validateAccountDocument,
     validateAccountResponse,
-    validateLeanAccountResponse,
     validateInAccountListResponse,
   });
 
@@ -83,7 +76,6 @@ declare global {
     interface ChainableResponseBody extends Chainable {
       validateAccountDocument: CommandFunctionWithPreviousSubject<typeof validateAccountDocument>;
       validateAccountResponse: CommandFunctionWithPreviousSubject<typeof validateAccountResponse>;
-      validateLeanAccountResponse: CommandFunctionWithPreviousSubject<typeof validateLeanAccountResponse>;
       validateInAccountListResponse: CommandFunctionWithPreviousSubject<typeof validateInAccountListResponse>;
     }
   }

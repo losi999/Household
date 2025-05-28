@@ -134,7 +134,7 @@ export const paymentTransactionDocumentConverterFactory = (
         transactionType,
         transactionId: getTransactionId(_id),
         issuedAt: issuedAt.toISOString(),
-        account: accountDocumentConverter.toLeanResponse(account),
+        account: accountDocumentConverter.toResponse(account),
         billingEndDate: billingEndDate?.toISOString().split('T')[0],
         billingStartDate: billingStartDate?.toISOString().split('T')[0],
         product: product ? productDocumentConverter.toResponse(product) : undefined,

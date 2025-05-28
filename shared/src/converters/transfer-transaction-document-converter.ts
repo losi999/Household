@@ -134,8 +134,8 @@ export const transferTransactionDocumentConverterFactory = (
         })) ?? undefined,
         amount: viewingAccountId === getAccountId(transferAccount) ? transferAmount : amount,
         transferAmount: viewingAccountId === getAccountId(transferAccount) ? amount : transferAmount,
-        account: viewingAccountId === getAccountId(transferAccount) ? accountDocumentConverter.toLeanResponse(transferAccount) : accountDocumentConverter.toLeanResponse(account),
-        transferAccount: viewingAccountId === getAccountId(transferAccount) ? accountDocumentConverter.toLeanResponse(account) : accountDocumentConverter.toLeanResponse(transferAccount),
+        account: viewingAccountId === getAccountId(transferAccount) ? accountDocumentConverter.toResponse(transferAccount) : accountDocumentConverter.toResponse(account),
+        transferAccount: viewingAccountId === getAccountId(transferAccount) ? accountDocumentConverter.toResponse(account) : accountDocumentConverter.toResponse(transferAccount),
       };
     },
     toResponseList: (docs, viewingAccountId) => docs.map(d => instance.toResponse(d, viewingAccountId)),

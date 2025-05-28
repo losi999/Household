@@ -76,7 +76,7 @@ export const validateTransactionPaymentResponse = (response: Transaction.Payment
     transactionType,
   }, document);
 
-  cy.validateTransactionNestedObject('account', account).validateLeanAccountResponse(document.account);
+  cy.validateTransactionNestedObject('account', account).validateAccountResponse(document.account);
 
   if (project) {
     cy.validateTransactionNestedObject('project', project).validateProjectResponse(document.project);

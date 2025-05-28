@@ -76,8 +76,8 @@ export const validateTransactionReimbursementResponse = (response: Transaction.R
     transactionType,
   }, document);
 
-  cy.validateTransactionNestedObject('payingAccount', payingAccount).validateLeanAccountResponse(document.payingAccount);
-  cy.validateTransactionNestedObject('ownerAccount', ownerAccount).validateLeanAccountResponse(document.ownerAccount);
+  cy.validateTransactionNestedObject('payingAccount', payingAccount).validateAccountResponse(document.payingAccount);
+  cy.validateTransactionNestedObject('ownerAccount', ownerAccount).validateAccountResponse(document.ownerAccount);
 
   if (project) {
     cy.validateTransactionNestedObject('project.', project).validateProjectResponse(document.project);

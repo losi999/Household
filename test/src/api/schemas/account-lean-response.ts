@@ -3,7 +3,7 @@ import { Account } from '@household/shared/types/types';
 import { default as accountId } from '@household/shared/schemas/account-id';
 import { default as account } from '@household/shared/schemas/account-request';
 
-const schema: StrictJSONSchema7<Account.LeanResponse> = {
+const schema: StrictJSONSchema7<Account.Response> = {
   type: 'object',
   additionalProperties: false,
   required: [
