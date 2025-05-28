@@ -11,7 +11,7 @@ describe('Update recipient service', () => {
   let mockRecipientDocumentConverter: Mock<IRecipientDocumentConverter>;
 
   beforeEach(() => {
-    mockRecipientService = createMockService('getRecipientById', 'updateRecipient');
+    mockRecipientService = createMockService('findRecipientById', 'updateRecipient');
     mockRecipientDocumentConverter = createMockService('update');
 
     service = updateRecipientServiceFactory(mockRecipientService.service, mockRecipientDocumentConverter.service);
@@ -25,7 +25,7 @@ describe('Update recipient service', () => {
   });
 
   it('should return if recipient is updated', async () => {
-    mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedDocument);
+    mockRecipientService.functions.findRecipientById.mockResolvedValue(queriedDocument);
     mockRecipientDocumentConverter.functions.update.mockReturnValue(updateQuery);
     mockRecipientService.functions.updateRecipient.mockResolvedValue(undefined);
 
@@ -34,7 +34,7 @@ describe('Update recipient service', () => {
       recipientId,
       expiresIn: undefined,
     });
-    validateFunctionCall(mockRecipientService.functions.getRecipientById, recipientId);
+    validateFunctionCall(mockRecipientService.functions.findRecipientById, recipientId);
     validateFunctionCall(mockRecipientDocumentConverter.functions.update, body, undefined);
     validateFunctionCall(mockRecipientService.functions.updateRecipient, recipientId, updateQuery);
     expect.assertions(3);
@@ -42,35 +42,35 @@ describe('Update recipient service', () => {
 
   describe('should throw error', () => {
     it('if unable to query recipient', async () => {
-      mockRecipientService.functions.getRecipientById.mockRejectedValue('this is a mongo error');
+      mockRecipientService.functions.findRecipientById.mockRejectedValue('this is a mongo error');
 
       await service({
         body,
         recipientId,
         expiresIn: undefined,
       }).catch(validateError('Error while getting recipient', 500));
-      validateFunctionCall(mockRecipientService.functions.getRecipientById, recipientId);
+      validateFunctionCall(mockRecipientService.functions.findRecipientById, recipientId);
       validateFunctionCall(mockRecipientDocumentConverter.functions.update);
       validateFunctionCall(mockRecipientService.functions.updateRecipient);
       expect.assertions(5);
     });
 
     it('if recipient not found', async () => {
-      mockRecipientService.functions.getRecipientById.mockResolvedValue(undefined);
+      mockRecipientService.functions.findRecipientById.mockResolvedValue(undefined);
 
       await service({
         body,
         recipientId,
         expiresIn: undefined,
       }).catch(validateError('No recipient found', 404));
-      validateFunctionCall(mockRecipientService.functions.getRecipientById, recipientId);
+      validateFunctionCall(mockRecipientService.functions.findRecipientById, recipientId);
       validateFunctionCall(mockRecipientDocumentConverter.functions.update);
       validateFunctionCall(mockRecipientService.functions.updateRecipient);
       expect.assertions(5);
     });
 
     it('if unable to update recipient', async () => {
-      mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedDocument);
+      mockRecipientService.functions.findRecipientById.mockResolvedValue(queriedDocument);
       mockRecipientDocumentConverter.functions.update.mockReturnValue(updateQuery);
       mockRecipientService.functions.updateRecipient.mockRejectedValue('this is a mongo error');
 
@@ -79,7 +79,7 @@ describe('Update recipient service', () => {
         recipientId,
         expiresIn: undefined,
       }).catch(validateError('Error while updating recipient', 500));
-      validateFunctionCall(mockRecipientService.functions.getRecipientById, recipientId);
+      validateFunctionCall(mockRecipientService.functions.findRecipientById, recipientId);
       validateFunctionCall(mockRecipientDocumentConverter.functions.update, body, undefined);
       validateFunctionCall(mockRecipientService.functions.updateRecipient, recipientId, updateQuery);
       expect.assertions(5);

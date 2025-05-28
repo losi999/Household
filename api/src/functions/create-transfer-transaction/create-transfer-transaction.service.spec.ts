@@ -15,7 +15,7 @@ describe('Create transfer transaction service', () => {
   let mockTransferTransactionDocumentConverter: Mock<ITransferTransactionDocumentConverter>;
 
   beforeEach(() => {
-    mockAccountService = createMockService('listAccountsByIds');
+    mockAccountService = createMockService('findAccountsByIds');
     mockTransactionService = createMockService('saveTransaction', 'listDeferredTransactions');
     mockTransferTransactionDocumentConverter = createMockService('create');
 
@@ -48,7 +48,7 @@ describe('Create transfer transaction service', () => {
         transferAccountId: getAccountId(queriedLoanAccount2),
       });
 
-      mockAccountService.functions.listAccountsByIds.mockResolvedValue([
+      mockAccountService.functions.findAccountsByIds.mockResolvedValue([
         queriedLoanAccount1,
         queriedLoanAccount2,
       ]);
@@ -60,7 +60,7 @@ describe('Create transfer transaction service', () => {
         expiresIn: undefined,
       });
       expect(result).toEqual(getTransactionId(createdTransferDocument));
-      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+      validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         body.transferAccountId,
       ]);
@@ -76,7 +76,7 @@ describe('Create transfer transaction service', () => {
     });
 
     it('of created transfer transaction between 2 non-1oan accounts', async () => {
-      mockAccountService.functions.listAccountsByIds.mockResolvedValue([
+      mockAccountService.functions.findAccountsByIds.mockResolvedValue([
         queriedAccount,
         queriedTransferAccount,
       ]);
@@ -88,7 +88,7 @@ describe('Create transfer transaction service', () => {
         expiresIn: undefined,
       });
       expect(result).toEqual(getTransactionId(createdTransferDocument));
-      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+      validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         body.transferAccountId,
       ]);
@@ -119,7 +119,7 @@ describe('Create transfer transaction service', () => {
           },
         ],
       });
-      mockAccountService.functions.listAccountsByIds.mockResolvedValue([
+      mockAccountService.functions.findAccountsByIds.mockResolvedValue([
         queriedAccount,
         queriedTransferAccount,
       ]);
@@ -132,7 +132,7 @@ describe('Create transfer transaction service', () => {
         expiresIn: undefined,
       });
       expect(result).toEqual(getTransactionId(createdTransferDocument));
-      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+      validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         body.transferAccountId,
       ]);
@@ -157,7 +157,7 @@ describe('Create transfer transaction service', () => {
         ...body,
         transferAccountId: getAccountId(queriedLoanAccount),
       });
-      mockAccountService.functions.listAccountsByIds.mockResolvedValue([
+      mockAccountService.functions.findAccountsByIds.mockResolvedValue([
         queriedAccount,
         queriedLoanAccount,
       ]);
@@ -169,7 +169,7 @@ describe('Create transfer transaction service', () => {
         expiresIn: undefined,
       });
       expect(result).toEqual(getTransactionId(createdTransferDocument));
-      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+      validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         body.transferAccountId,
       ]);
@@ -197,7 +197,7 @@ describe('Create transfer transaction service', () => {
         body,
         expiresIn: undefined,
       }).catch(validateError('Cannot transfer to same account', 400));
-      validateFunctionCall(mockAccountService.functions.listAccountsByIds);
+      validateFunctionCall(mockAccountService.functions.findAccountsByIds);
       validateFunctionCall(mockTransferTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
       validateFunctionCall(mockTransactionService.functions.listDeferredTransactions);
@@ -205,13 +205,13 @@ describe('Create transfer transaction service', () => {
     });
 
     it('if unable to query accounts', async () => {
-      mockAccountService.functions.listAccountsByIds.mockRejectedValue('this is a mongo error');
+      mockAccountService.functions.findAccountsByIds.mockRejectedValue('this is a mongo error');
 
       await service({
         body,
         expiresIn: undefined,
       }).catch(validateError('Unable to query related data', 500));
-      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+      validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         body.transferAccountId,
       ]);
@@ -222,13 +222,13 @@ describe('Create transfer transaction service', () => {
     });
 
     it('if no account found', async () => {
-      mockAccountService.functions.listAccountsByIds.mockResolvedValue([]);
+      mockAccountService.functions.findAccountsByIds.mockResolvedValue([]);
 
       await service({
         body,
         expiresIn: undefined,
       }).catch(validateError('No account found', 400));
-      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+      validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         body.transferAccountId,
       ]);
@@ -254,7 +254,7 @@ describe('Create transfer transaction service', () => {
           },
         ],
       });
-      mockAccountService.functions.listAccountsByIds.mockResolvedValue([
+      mockAccountService.functions.findAccountsByIds.mockResolvedValue([
         queriedAccount,
         queriedTransferAccount,
       ]);
@@ -264,7 +264,7 @@ describe('Create transfer transaction service', () => {
         body,
         expiresIn: undefined,
       }).catch(validateError('Unable to query related data', 500));
-      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+      validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         body.transferAccountId,
       ]);
@@ -292,7 +292,7 @@ describe('Create transfer transaction service', () => {
           },
         ],
       });
-      mockAccountService.functions.listAccountsByIds.mockResolvedValue([
+      mockAccountService.functions.findAccountsByIds.mockResolvedValue([
         queriedAccount,
         queriedTransferAccount,
       ]);
@@ -302,7 +302,7 @@ describe('Create transfer transaction service', () => {
         body,
         expiresIn: undefined,
       }).catch(validateError('Some of the transactions are not found', 400));
-      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+      validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         body.transferAccountId,
       ]);
@@ -315,7 +315,7 @@ describe('Create transfer transaction service', () => {
     });
 
     it('if unable to save transaction', async () => {
-      mockAccountService.functions.listAccountsByIds.mockResolvedValue([
+      mockAccountService.functions.findAccountsByIds.mockResolvedValue([
         queriedAccount,
         queriedTransferAccount,
       ]);
@@ -326,7 +326,7 @@ describe('Create transfer transaction service', () => {
         body,
         expiresIn: undefined,
       }).catch(validateError('Error while saving transaction', 500));
-      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+      validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         body.transferAccountId,
       ]);

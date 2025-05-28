@@ -11,7 +11,7 @@ describe('Update account service', () => {
   let mockAccountDocumentConverter: Mock<IAccountDocumentConverter>;
 
   beforeEach(() => {
-    mockAccountService = createMockService('getAccountById', 'updateAccount');
+    mockAccountService = createMockService('findAccountById', 'updateAccount');
     mockAccountDocumentConverter = createMockService('update');
 
     service = updateAccountServiceFactory(mockAccountService.service, mockAccountDocumentConverter.service);
@@ -25,7 +25,7 @@ describe('Update account service', () => {
   });
 
   it('should return if account is updated', async () => {
-    mockAccountService.functions.getAccountById.mockResolvedValue(queriedDocument);
+    mockAccountService.functions.findAccountById.mockResolvedValue(queriedDocument);
     mockAccountDocumentConverter.functions.update.mockReturnValue(updateQuery);
     mockAccountService.functions.updateAccount.mockResolvedValue(undefined);
 
@@ -34,7 +34,7 @@ describe('Update account service', () => {
       accountId,
       expiresIn: undefined,
     });
-    validateFunctionCall(mockAccountService.functions.getAccountById, accountId);
+    validateFunctionCall(mockAccountService.functions.findAccountById, accountId);
     validateFunctionCall(mockAccountDocumentConverter.functions.update, body, undefined);
     validateFunctionCall(mockAccountService.functions.updateAccount, accountId, updateQuery);
     expect.assertions(3);
@@ -42,35 +42,35 @@ describe('Update account service', () => {
 
   describe('should throw error', () => {
     it('if unable to query account', async () => {
-      mockAccountService.functions.getAccountById.mockRejectedValue('this is a mongo error');
+      mockAccountService.functions.findAccountById.mockRejectedValue('this is a mongo error');
 
       await service({
         body,
         accountId,
         expiresIn: undefined,
       }).catch(validateError('Error while getting account', 500));
-      validateFunctionCall(mockAccountService.functions.getAccountById, accountId);
+      validateFunctionCall(mockAccountService.functions.findAccountById, accountId);
       validateFunctionCall(mockAccountDocumentConverter.functions.update);
       validateFunctionCall(mockAccountService.functions.updateAccount);
       expect.assertions(5);
     });
 
     it('if account not found', async () => {
-      mockAccountService.functions.getAccountById.mockResolvedValue(undefined);
+      mockAccountService.functions.findAccountById.mockResolvedValue(undefined);
 
       await service({
         body,
         accountId,
         expiresIn: undefined,
       }).catch(validateError('No account found', 404));
-      validateFunctionCall(mockAccountService.functions.getAccountById, accountId);
+      validateFunctionCall(mockAccountService.functions.findAccountById, accountId);
       validateFunctionCall(mockAccountDocumentConverter.functions.update);
       validateFunctionCall(mockAccountService.functions.updateAccount);
       expect.assertions(5);
     });
 
     it('if unable to update account', async () => {
-      mockAccountService.functions.getAccountById.mockResolvedValue(queriedDocument);
+      mockAccountService.functions.findAccountById.mockResolvedValue(queriedDocument);
       mockAccountDocumentConverter.functions.update.mockReturnValue(updateQuery);
       mockAccountService.functions.updateAccount.mockRejectedValue('this is a mongo error');
 
@@ -79,7 +79,7 @@ describe('Update account service', () => {
         accountId,
         expiresIn: undefined,
       }).catch(validateError('Error while updating account', 500));
-      validateFunctionCall(mockAccountService.functions.getAccountById, accountId);
+      validateFunctionCall(mockAccountService.functions.findAccountById, accountId);
       validateFunctionCall(mockAccountDocumentConverter.functions.update, body, undefined);
       validateFunctionCall(mockAccountService.functions.updateAccount, accountId, updateQuery);
       expect.assertions(5);

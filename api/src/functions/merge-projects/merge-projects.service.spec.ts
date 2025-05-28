@@ -9,7 +9,7 @@ describe('Merge project service', () => {
   let mockProjectService: Mock<IProjectService>;
 
   beforeEach(() => {
-    mockProjectService = createMockService('listProjectsByIds', 'mergeProjects');
+    mockProjectService = createMockService('findProjectsByIds', 'mergeProjects');
 
     service = mergeProjectsServiceFactory(mockProjectService.service);
   });
@@ -21,7 +21,7 @@ describe('Merge project service', () => {
   const body = [sourceProjectId];
 
   it('should return if projects are merged', async () => {
-    mockProjectService.functions.listProjectsByIds.mockResolvedValue([
+    mockProjectService.functions.findProjectsByIds.mockResolvedValue([
       targetProjectDocument,
       sourceProjectDocument,
     ]);
@@ -31,7 +31,7 @@ describe('Merge project service', () => {
       body,
       projectId,
     });
-    validateFunctionCall(mockProjectService.functions.listProjectsByIds, [
+    validateFunctionCall(mockProjectService.functions.findProjectsByIds, [
       projectId,
       sourceProjectId,
     ]);
@@ -51,19 +51,19 @@ describe('Merge project service', () => {
         ],
         projectId,
       }).catch(validateError('Target project is among the source project Ids', 400));
-      validateFunctionCall(mockProjectService.functions.listProjectsByIds);
+      validateFunctionCall(mockProjectService.functions.findProjectsByIds);
       validateFunctionCall(mockProjectService.functions.mergeProjects);
       expect.assertions(4);
     });
 
     it('if unable to query projects', async () => {
-      mockProjectService.functions.listProjectsByIds.mockRejectedValue('This is a mongo error');
+      mockProjectService.functions.findProjectsByIds.mockRejectedValue('This is a mongo error');
 
       await service({
         body,
         projectId,
       }).catch(validateError('Error while listing projects by ids', 500));
-      validateFunctionCall(mockProjectService.functions.listProjectsByIds, [
+      validateFunctionCall(mockProjectService.functions.findProjectsByIds, [
         projectId,
         sourceProjectId,
       ]);
@@ -72,14 +72,14 @@ describe('Merge project service', () => {
     });
 
     it('if some of the projects not found', async () => {
-      mockProjectService.functions.listProjectsByIds.mockResolvedValue([sourceProjectDocument]);
+      mockProjectService.functions.findProjectsByIds.mockResolvedValue([sourceProjectDocument]);
       mockProjectService.functions.mergeProjects.mockResolvedValue(undefined);
 
       await service({
         body,
         projectId,
       }).catch(validateError('Some of the projects are not found', 400));
-      validateFunctionCall(mockProjectService.functions.listProjectsByIds, [
+      validateFunctionCall(mockProjectService.functions.findProjectsByIds, [
         projectId,
         sourceProjectId,
       ]);
@@ -88,7 +88,7 @@ describe('Merge project service', () => {
     });
 
     it('if unable to merge projects', async () => {
-      mockProjectService.functions.listProjectsByIds.mockResolvedValue([
+      mockProjectService.functions.findProjectsByIds.mockResolvedValue([
         targetProjectDocument,
         sourceProjectDocument,
       ]);
@@ -98,7 +98,7 @@ describe('Merge project service', () => {
         body,
         projectId,
       }).catch(validateError('Error while merging projects', 500));
-      validateFunctionCall(mockProjectService.functions.listProjectsByIds, [
+      validateFunctionCall(mockProjectService.functions.findProjectsByIds, [
         projectId,
         sourceProjectId,
       ]);
