@@ -283,9 +283,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
                 .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
                 .expectOkResponse()
                 .expectValidResponseSchema(deferredTransactionSchema)
-                .validateTransactionDeferredResponse(document, {
-                  paymentAmount: repayingTransferTransactionDocument.payments[0].amount,
-                });
+                .validateTransactionDeferredResponse(document, repayingTransferTransactionDocument.payments[0].amount);
             });
 
             it('owning deferred transaction which has been repaid', () => {
@@ -324,9 +322,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
                 .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
                 .expectOkResponse()
                 .expectValidResponseSchema(deferredTransactionSchema)
-                .validateTransactionDeferredResponse(document, {
-                  paymentAmount: repayingTransferTransactionDocument.payments[0].amount,
-                });
+                .validateTransactionDeferredResponse(document, repayingTransferTransactionDocument.payments[0].amount);
             });
 
             it('paying deferred transaction which has been settled', () => {
@@ -719,9 +715,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
                 .requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document))
                 .expectOkResponse()
                 .expectValidResponseSchema(deferredTransactionSchema)
-                .validateTransactionDeferredResponse(document, {
-                  paymentAmount: repayingTransferTransactionDocument.payments[0].amount,
-                });
+                .validateTransactionDeferredResponse(document, repayingTransferTransactionDocument.payments[0].amount);
             });
 
             it('owning deferred transaction which has been settled', () => {

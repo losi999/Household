@@ -44,7 +44,7 @@ export class AccountTransactionsListItemComponent implements OnInit {
       .toString());
     const viewingAccountId = this.activatedRoute.snapshot.paramMap.get('accountId') as Account.Id;
 
-    switch (this.transaction.transactionType) {
+    switch (this.transaction.transactionType) { // TODO
       case 'payment': {
         this.viewingAccount = this.transaction.account;
         this.formType = this.transaction.amount >= 0 ? 'income' : 'payment';

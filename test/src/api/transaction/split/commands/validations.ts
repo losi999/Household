@@ -143,7 +143,7 @@ export const validateTransactionSplitResponse = (response: Transaction.SplitResp
   } else {
     expect(recipient, 'recipient').to.be.undefined;
   }
-
+  expect(response.splits.length, 'number of splits').to.equal(document.splits.length);
   splits.forEach((split, index) => {
     const documentSplit = document.splits[index];
     const { amount, billingEndDate, billingStartDate, category, description, invoiceNumber, product, project, quantity, ...empty } = split;
@@ -187,6 +187,7 @@ export const validateTransactionSplitResponse = (response: Transaction.SplitResp
     expectEmptyObject(empty, 'response');
   });
 
+  expect(response.deferredSplits.length, 'number of deferred splits').to.equal(document.deferredSplits.length);
   deferredSplits.forEach((split, index) => {
     const documentSplit = document.deferredSplits[index];
     const { amount, billingEndDate, billingStartDate, category, description, invoiceNumber, product, project, quantity, ownerAccount, payingAccount, transactionType, remainingAmount, transactionId, isSettled, ...empty } = split;

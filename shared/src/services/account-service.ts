@@ -58,7 +58,7 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
         });
       }
 
-      return account ?? null;
+      return account;
     },
     deleteAccount: async (accountId) => {
       return mongodbService.inSession((session) => {

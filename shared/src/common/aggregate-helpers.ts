@@ -1,5 +1,321 @@
-import { AccountType } from '@household/shared/enums';
-import { PipelineStage } from 'mongoose';
+import { AccountType, TransactionType } from '@household/shared/enums';
+import { Expression, PipelineStage } from 'mongoose';
+
+export const concatenateSplits: PipelineStage.Set = {
+  $set: {
+    allSplits: {
+      $concatArrays: [
+        {
+          $ifNull: [
+            '$splits',
+            [],
+          ],
+        },
+        {
+          $ifNull: [
+            '$deferredSplits',
+            [],
+          ],
+        },
+      ],
+    },
+  },
+};
+
+export const findById = (idProperty: string, array: string): Expression.First => {
+  return {
+    $first: {
+      $filter: {
+        input: array,
+        cond: {
+          $eq: [
+            '$$this._id',
+            idProperty,
+          ],
+        },
+      },
+    },
+  };
+};
+
+export const collectRelatedIds: PipelineStage.Set = {
+  $set: {
+    allProjects: {
+      $concatArrays: [
+        ['$project'],
+        {
+          $map: {
+            input: '$allSplits',
+            in: '$$this.project',
+          },
+        },
+      ],
+    },
+    allProducts: {
+      $concatArrays: [
+        ['$product'],
+        {
+          $map: {
+            input: '$allSplits',
+            in: '$$this.product',
+          },
+        },
+      ],
+    },
+    allCategories: {
+      $concatArrays: [
+        ['$category'],
+        {
+          $map: {
+            input: '$allSplits',
+            in: '$$this.category',
+          },
+        },
+      ],
+    },
+    allAccounts: {
+      $concatArrays: [
+        [
+          '$account',
+          '$transferAccount',
+          '$payingAccount',
+          '$ownerAccount',
+        ],
+        {
+          $map: {
+            input: '$allSplits',
+            in: '$$this.ownerAccount',
+          },
+        },
+      ],
+    },
+  },
+};
+
+export const populateRelatedObjects: PipelineStage.Set = {
+  $set: {
+    project: findById('$project', '$allProjects'),
+    product: findById('$product', '$allProducts'),
+    category: findById('$category', '$allCategories'),
+    account: findById('$account', '$allAccounts'),
+    transferAccount: findById('$transferAccount', '$allAccounts'),
+    payingAccount: findById('$payingAccount', '$allAccounts'),
+    ownerAccount: findById('$ownerAccount', '$allAccounts'),
+    splits: {
+      $cond: {
+        if: {
+          $ne: [
+            {
+              $type: '$splits',
+            },
+            'missing',
+          ],
+        },
+        then: {
+          $map: {
+            input: '$splits',
+            as: 's',
+            in: {
+              $mergeObjects: [
+                '$$s',
+                {
+                  project: findById('$$s.project', '$allProjects'),
+                  product: findById('$$s.product', '$allProducts'),
+                  category: findById('$$s.category', '$allCategories'),
+                },
+              ],
+            },
+          },
+        },
+        else: '$$REMOVE',
+      },
+    },
+    deferredSplits: {
+      $cond: {
+        if: {
+          $ne: [
+            {
+              $type: '$deferredSplits',
+            },
+            'missing',
+          ],
+        },
+        then: {
+          $map: {
+            input: '$deferredSplits',
+            as: 's',
+            in: {
+              $mergeObjects: [
+                '$$s',
+                {
+                  remainingAmount: {
+                    $cond: {
+                      if: {
+                        $eq: [
+                          '$$s.isSettled',
+                          false,
+                        ],
+                      },
+                      then: {
+                        $subtract: [
+                          {
+                            $abs: '$$s.amount',
+                          },
+                          {
+                            $sum: {
+                              $map: {
+                                input: '$repayments',
+                                as: 'payment',
+                                in: {
+                                  $cond: {
+                                    if: {
+                                      $eq: [
+                                        '$$payment.transaction',
+                                        '$$s._id',
+                                      ],
+                                    },
+                                    then: '$$payment.amount',
+                                    else: 0,
+                                  },
+                                },
+                              },
+                            },
+                          },
+                        ],
+                      },
+                      else: '$$REMOVE',
+                    },
+                  },                            
+                  project: findById('$$s.project', '$allProjects'),
+                  product: findById('$$s.product', '$allProducts'),
+                  category: findById('$$s.category', '$allCategories'),
+                  ownerAccount: findById('$$s.ownerAccount', '$allAccounts'),
+                  payingAccount: findById('$$s.payingAccount', '$allAccounts'),
+                },
+              ],
+            },
+          },
+        },
+        else: '$$REMOVE',
+      },
+    },
+  },
+};
+
+export const lookup = (from: string, localField: string, pipeline?: PipelineStage.Lookup['$lookup']['pipeline']): PipelineStage.Lookup => {
+  return {
+    $lookup: {
+      from, 
+      localField,
+      foreignField: '_id',
+      as: localField,
+      ...(pipeline ? {
+        pipeline,
+      } : {}),
+    },
+  };
+};
+
+export const matchAnyProperty = (value: any, properties: string[]): PipelineStage.Match => {
+  return {
+    $match: {
+      $or: properties.map(p => ({
+        [p]: value,
+      })),
+    },
+  };
+};
+
+export const calculateRemainingAmount: [PipelineStage.Lookup, PipelineStage.Set] = [
+  {
+    $lookup: {
+      from: 'transactions',
+      let: {
+        transactionId: '$_id',
+        deferredSplits: '$deferredSplits',
+      },
+      as: 'repayments',
+      pipeline: [
+        {
+          $unwind: {
+            path: '$payments',
+          },
+        },
+        {
+          $match: {
+            $expr: {
+              $or: [
+                {
+                  $eq: [
+                    '$$transactionId',
+                    '$payments.transaction',
+                  ],
+                },
+                {
+                  $in: [
+                    '$payments.transaction',
+                    {
+                      $map: {
+                        input: {
+                          $ifNull: [
+                            '$$deferredSplits',
+                            [],
+                          ],
+                        },
+                        as: 'split',
+                        in: '$$split._id',
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        },
+        {
+          $replaceRoot: {
+            newRoot: '$payments',
+          },
+        },
+      ],
+    },
+  },
+  {
+    $set: {
+      remainingAmount: {
+        $cond: {
+          if: {
+            $and: [
+              {
+                $eq: [
+                  '$transactionType',
+                  TransactionType.Deferred,
+                ],
+              },
+              {
+                $eq: [
+                  '$isSettled',
+                  false,
+                ],
+              },
+            ],
+          },
+          then: {
+            $subtract: [
+              {
+                $abs: '$amount',
+              },
+              {
+                $sum: '$repayments.amount',
+              },
+            ],
+          },
+          else: '$$REMOVE',
+        },
+      },
+    },
+  }, 
+];
 
 export const populateAggregate = (localField: string, from: string, pipeline?: PipelineStage.Lookup['$lookup']['pipeline']): [PipelineStage.Lookup, PipelineStage.Unwind] => [
   {

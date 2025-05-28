@@ -47,10 +47,7 @@ const validateTransactionListResponse = (responses: Transaction.Response[], docu
       case 'payment': validateTransactionPaymentResponse(response, document as Transaction.PaymentDocument); break;
       case 'transfer': validateTransactionTransferResponse(response, document as Transaction.TransferDocument, viewingAccountId); break;
       case 'split': validateTransactionSplitResponse(response, document as Transaction.SplitDocument, repayments); break;
-      case 'deferred': validateTransactionDeferredResponse(response, document as Transaction.DeferredDocument, {
-        viewingAccountId,
-        paymentAmount: repayments[response.transactionId],
-      }); break;
+      case 'deferred': validateTransactionDeferredResponse(response, document as Transaction.DeferredDocument, repayments[response.transactionId]); break;
       case 'reimbursement': validateTransactionReimbursementResponse(response, document as Transaction.ReimbursementDocument); break;
     }
   });

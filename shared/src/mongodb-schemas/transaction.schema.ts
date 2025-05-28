@@ -20,10 +20,12 @@ const splitItemSchema = new Schema<Transaction.SplitDocumentItem>({
   category: {
     type: Schema.Types.ObjectId,
     ref: 'categories',
+    index: true,
   },
   project: {
     type: Schema.Types.ObjectId,
     ref: 'projects',
+    index: true,
   },
   quantity: {
     type: Number,
@@ -31,6 +33,7 @@ const splitItemSchema = new Schema<Transaction.SplitDocumentItem>({
   product: {
     type: Schema.Types.ObjectId,
     ref: 'products',
+    index: true,
   },
   description: {
     type: String,
@@ -52,10 +55,12 @@ const deferredSplitSchema = new Schema<Transaction.DeferredDocument>({
   payingAccount: {
     type: Schema.Types.ObjectId,
     ref: 'accounts',
+    index: true,
   },
   ownerAccount: {
     type: Schema.Types.ObjectId,
     ref: 'accounts',
+    index: true,
   },
   description: {
     type: String,
@@ -72,6 +77,7 @@ const deferredSplitSchema = new Schema<Transaction.DeferredDocument>({
   product: {
     type: Schema.Types.ObjectId,
     ref: 'products',
+    index: true,
   },
   invoiceNumber: {
     type: String,
@@ -86,10 +92,12 @@ const deferredSplitSchema = new Schema<Transaction.DeferredDocument>({
   category: {
     type: Schema.Types.ObjectId,
     ref: 'categories',
+    index: true,
   },
   project: {
     type: Schema.Types.ObjectId,
     ref: 'projects',
+    index: true,
   },
 });
 
@@ -101,6 +109,7 @@ const schemaDefinition: SchemaDefinition<SchemaDefinitionType<Transaction.Docume
   issuedAt: {
     type: Schema.Types.Date,
     required: true,
+    index: true,
   },
   amount: {
     type: Number,
@@ -109,18 +118,22 @@ const schemaDefinition: SchemaDefinition<SchemaDefinitionType<Transaction.Docume
   account: {
     type: Schema.Types.ObjectId,
     ref: 'accounts',
+    index: true,
   },
   transferAccount: {
     type: Schema.Types.ObjectId,
     ref: 'accounts',
+    index: true,
   },
   payingAccount: {
     type: Schema.Types.ObjectId,
     ref: 'accounts',
+    index: true,
   },
   ownerAccount: {
     type: Schema.Types.ObjectId,
     ref: 'accounts',
+    index: true,
   },
   isSettled: {
     type: Boolean,
@@ -138,6 +151,7 @@ const schemaDefinition: SchemaDefinition<SchemaDefinitionType<Transaction.Docume
   product: {
     type: Schema.Types.ObjectId,
     ref: 'products',
+    index: true,
   },
   invoiceNumber: {
     type: String,
@@ -152,14 +166,17 @@ const schemaDefinition: SchemaDefinition<SchemaDefinitionType<Transaction.Docume
   category: {
     type: Schema.Types.ObjectId,
     ref: 'categories',
+    index: true,
   },
   project: {
     type: Schema.Types.ObjectId,
     ref: 'projects',
+    index: true,
   },
   recipient: {
     type: Schema.Types.ObjectId,
     ref: 'recipients',
+    index: true,
   },
   payments: {
     type: [
@@ -168,6 +185,7 @@ const schemaDefinition: SchemaDefinition<SchemaDefinitionType<Transaction.Docume
           type: Schema.Types.ObjectId,
           ref: 'transactions',
           required: true,
+          index: true,
         },
         amount: {
           type: Number,
@@ -195,6 +213,7 @@ const schemaDefinition: SchemaDefinition<SchemaDefinitionType<Transaction.Docume
   file: {
     type: Schema.Types.ObjectId,
     ref: 'files',
+    index: true,
   },
 };
 
