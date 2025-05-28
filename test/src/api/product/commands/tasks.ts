@@ -10,8 +10,8 @@ const saveProductDocuments = (...params: Parameters<IProductService['saveProduct
   return cy.task<Product.Document>('saveProducts', params);
 };
 
-const getProductDocumentById = (...params: Parameters<IProductService['getProductById']>) => {
-  return cy.task<Product.Document>('getProductById', params);
+const findProductDocumentById = (...params: Parameters<IProductService['findProductById']>) => {
+  return cy.task<Product.Document>('findProductById', params);
 };
 
 export const setProductTaskCommands = () => {
@@ -19,7 +19,7 @@ export const setProductTaskCommands = () => {
   Cypress.Commands.addAll({
     saveProductDocument,
     saveProductDocuments,
-    getProductDocumentById,
+    findProductDocumentById,
   });
 };
 
@@ -28,7 +28,7 @@ declare global {
     interface Chainable {
       saveProductDocument: CommandFunction<typeof saveProductDocument>;
       saveProductDocuments: CommandFunction<typeof saveProductDocuments>;
-      getProductDocumentById: CommandFunction<typeof getProductDocumentById>;
+      findProductDocumentById: CommandFunction<typeof findProductDocumentById>;
     }
   }
 }

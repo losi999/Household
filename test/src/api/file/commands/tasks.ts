@@ -3,8 +3,8 @@ import { CommandFunction } from '@household/test/api/types';
 import { IFileService } from '@household/shared/services/file-service';
 import { IStorageService } from '@household/shared/services/storage-service';
 
-const getFileDocumentById = (...params: Parameters<IFileService['getFileById']>) => {
-  return cy.task<File.Document>('getFileById', params);
+const findFileDocumentById = (...params: Parameters<IFileService['findFileById']>) => {
+  return cy.task<File.Document>('findFileById', params);
 };
 
 const saveFileDocument = (...params: Parameters<IFileService['saveFile']>) => {
@@ -25,7 +25,7 @@ const chechFileInS3 = (...params: Parameters<IStorageService['checkFile']>) => {
 
 export const setFileTaskCommands = () => {
   Cypress.Commands.addAll({
-    getFileDocumentById,
+    findFileDocumentById,
     saveFileDocument,
     chechFileInS3,
     writeFileToS3,
@@ -36,7 +36,7 @@ export const setFileTaskCommands = () => {
 declare global {
   namespace Cypress {
     interface Chainable {
-      getFileDocumentById: CommandFunction<typeof getFileDocumentById>;
+      findFileDocumentById: CommandFunction<typeof findFileDocumentById>;
       saveFileDocument: CommandFunction<typeof saveFileDocument>;
       chechFileInS3: CommandFunction<typeof chechFileInS3>;
       writeFileToS3: CommandFunction<typeof writeFileToS3>;

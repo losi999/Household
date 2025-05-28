@@ -23,10 +23,8 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
   const instance: ICategoryService = {
     dumpCategories: () => {
       return mongodbService.inSession((session) => {
-        return mongodbService.categories.find({}, null, {
-          session,
-        })
-          .lean<Category.Document[]>();
+        return mongodbService.categories.find({}).session(session)
+          .lean();
           
       });
     },
@@ -44,13 +42,13 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
     },
     findCategoryById: async (categoryId) => {
       return !categoryId ? undefined : mongodbService.categories.findById(categoryId)
-        .lean<Category.Document>();
+        .lean();
         
     },
     getCategoryById: async (categoryId) => {
       return !categoryId ? undefined : mongodbService.categories.findById(categoryId)
         .populate('ancestors')
-        .lean<Category.Document>();
+        .lean();
         
     },
     deleteCategory: async (categoryId) => {
@@ -267,7 +265,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
     listCategories: () => {
       return mongodbService.categories.find()
         .populate('ancestors')
-        .lean<Category.Document[]>();
+        .lean();
     },
     findCategoriesByIds: (categoryIds) => {
       return mongodbService.inSession((session) => {
@@ -275,10 +273,8 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
           _id: {
             $in: categoryIds,
           },
-        }, null, {
-          session,
-        })
-          .lean<Category.Document[]>();
+        }).session(session)
+          .lean();
           
       });
     },

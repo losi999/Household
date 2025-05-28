@@ -258,19 +258,6 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
         });
       });
     },
-    // listProducts: () => {
-    //   return mongodbService.inSession((session) => {
-    //     return mongodbService.products.find({}, null, {
-    //       session,
-    //     })
-    //       .collation({
-    //         locale: 'hu',
-    //       })
-    //       .sort('name')
-    //       .lean()
-    //       
-    //   });
-    // },
   };
 
   return instance;

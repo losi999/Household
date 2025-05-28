@@ -22,9 +22,7 @@ export const recipientServiceFactory = (mongodbService: IMongodbService): IRecip
   const instance: IRecipientService = {
     dumpRecipients: () => {
       return mongodbService.inSession(async(session) => {
-        return mongodbService.recipients.find({}, null, {
-          session,
-        })
+        return mongodbService.recipients.find({}).session(session)
           .lean();
           
       });
@@ -75,9 +73,7 @@ export const recipientServiceFactory = (mongodbService: IMongodbService): IRecip
     },
     listRecipients: () => {
       return mongodbService.inSession(async(session) => {
-        return mongodbService.recipients.find({}, null, {
-          session,
-        })
+        return mongodbService.recipients.find({}).session(session)
           .collation({
             locale: 'hu',
           })
@@ -92,9 +88,7 @@ export const recipientServiceFactory = (mongodbService: IMongodbService): IRecip
           _id: {
             $in: recipientIds,
           },
-        }, null, {
-          session,
-        })
+        }).session(session)
           .lean();
           
       });

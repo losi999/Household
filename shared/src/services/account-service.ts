@@ -20,9 +20,7 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
   const instance: IAccountService = {
     dumpAccounts: () => {
       return mongodbService.inSession((session) => {
-        return mongodbService.accounts.find({}, null, {
-          session,
-        })
+        return mongodbService.accounts.find({}).session(session)
           .lean();
       });
     },
@@ -194,9 +192,7 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
           _id: {
             $in: accountIds,
           },
-        }, null, {
-          session,
-        })
+        }).session(session)
           .lean();
           
       });

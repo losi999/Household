@@ -21,9 +21,7 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
   return {
     dumpProjects: () => {
       return mongodbService.inSession((session) => {
-        return mongodbService.projects.find({}, null, {
-          session,
-        })
+        return mongodbService.projects.find({}).session(session)
           .lean();
           
       });
@@ -109,9 +107,7 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
     },
     listProjects: () => {
       return mongodbService.inSession((session) => {
-        return mongodbService.projects.find({}, null, {
-          session,
-        })
+        return mongodbService.projects.find({}).session(session)
           .collation({
             locale: 'hu',
           })
@@ -126,9 +122,7 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
           _id: {
             $in: projectIds,
           },
-        }, null, {
-          session,
-        })
+        }).session(session)
           .lean();
           
       });

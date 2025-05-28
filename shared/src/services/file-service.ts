@@ -9,16 +9,13 @@ export interface IFileService {
   deleteFile(fileId: File.Id): Promise<unknown>;
   updateFile(fileId: File.Id, updateQuery: UpdateQuery<File.Document>): Promise<unknown>;
   listFiles(): Promise<File.Document[]>;
-  // listFilesByIds(fileIds: File.Id[]): Promise<File.Document[]>;
 }
 
 export const fileServiceFactory = (mongodbService: IMongodbService): IFileService => {
   const instance: IFileService = {
     dumpFiles: () => {
       return mongodbService.inSession((session) => {
-        return mongodbService.files.find({}, null, {
-          session,
-        })
+        return mongodbService.files.find({}).session(session)
           .lean();
           
       });
@@ -78,19 +75,6 @@ export const fileServiceFactory = (mongodbService: IMongodbService): IFileServic
           
       });
     },
-    // listFilesByIds: (fileIds) => {
-    //   return mongodbService.inSession((session) => {
-    //     return mongodbService.files.find({
-    //       _id: {
-    //         $in: fileIds,
-    //       },
-    //     }, null, {
-    //       session,
-    //     })
-    //       .lean()
-    //       
-    //   });
-    // },
   };
 
   return instance;
