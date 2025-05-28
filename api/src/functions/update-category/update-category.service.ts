@@ -19,8 +19,8 @@ export const updateCategoryServiceFactory = (
       queried,
       parentCategory,
     ] = await Promise.all([
-      categoryService.getCategoryById(categoryId),
-      categoryService.getCategoryById(parentCategoryId),
+      categoryService.findCategoryById(categoryId),
+      categoryService.findCategoryById(parentCategoryId),
     ]).catch(httpErrors.category.getById({
       categoryId,
       parentCategoryId: parentCategoryId,

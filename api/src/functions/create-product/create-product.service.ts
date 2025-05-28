@@ -17,7 +17,7 @@ export const createProductServiceFactory = (
   categoryService: ICategoryService,
   productDocumentConverter: IProductDocumentConverter): ICreateProductService => {
   return async ({ body, expiresIn, categoryId }) => {
-    const category = await categoryService.getCategoryById(categoryId).catch(httpErrors.category.getById({
+    const category = await categoryService.findCategoryById(categoryId).catch(httpErrors.category.getById({
       categoryId,
     }));
 

@@ -23,8 +23,7 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
         return mongodbService.accounts.find({}, null, {
           session,
         })
-          .lean()
-          .exec();
+          .lean();
       });
     },
     saveAccount: (doc) => {
@@ -41,8 +40,7 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
     },
     findAccountById: (accountId) => {
       return !accountId ? undefined : mongodbService.accounts.findById(accountId)
-        .lean()
-        .exec();
+        .lean();        
     },
     getAccountById: async (accountId) => {
       if (accountId) {
@@ -58,8 +56,7 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
             .session(session)
             .collation({
               locale: 'hu',
-            })
-            .exec();
+            });            
         });
 
         return account;
@@ -72,8 +69,8 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
             _id: accountId,
           }, {
             session,
-          })
-            .exec();
+          });
+            
           await mongodbService.transactions.deleteMany({
             $or: [
               {
@@ -92,8 +89,7 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
             ],
           }, {
             session,
-          })
-            .exec();
+          });
 
           await mongodbService.transactions.updateMany({
             transactionType: 'deferred',
@@ -188,8 +184,8 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
           .session(session)
           .collation({
             locale: 'hu',
-          })
-          .exec();
+          });
+          
       });
     },
     findAccountsByIds: (accountIds) => {
@@ -201,8 +197,8 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
         }, null, {
           session,
         })
-          .lean()
-          .exec();
+          .lean();
+          
       });
     },
   };

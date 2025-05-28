@@ -17,7 +17,7 @@ export interface IBulkTransactionImporterService {
 
 export const bulkTransactionImporterServiceFactory = (fileService: IFileService, fileDocumentConverter: IFileDocumentConverter, storageService: (bucketName: string) => IStorageService, excelParser: IExcelParserService, draftTransactionDocumentConverter: IDraftTransactionDocumentConverter, transactionService: ITransactionService): IBulkTransactionImporterService =>
   async ({ fileId, bucketName }) => {
-    const document = await fileService.getFileById(fileId).catch(httpErrors.file.getById({
+    const document = await fileService.findFileById(fileId).catch(httpErrors.file.getById({
       fileId,
     }));
 

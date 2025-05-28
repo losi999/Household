@@ -60,10 +60,10 @@ export const updateToPaymentTransactionServiceFactory = (
         accountId,
         loanAccountId,
       ]),
-      categoryService.getCategoryById(categoryId),
+      categoryService.findCategoryById(categoryId),
       projectService.findProjectById(projectId),
       recipientService.findRecipientById(recipientId),
-      productService.getProductById(productId),
+      productService.findProductById(productId),
     ]).catch(httpErrors.common.getRelatedData({
       accountId,
       loanAccountId,

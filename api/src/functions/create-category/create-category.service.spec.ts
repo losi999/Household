@@ -11,7 +11,7 @@ describe('Create category service', () => {
   let mockCategoryDocumentConverter: Mock<ICategoryDocumentConverter>;
 
   beforeEach(() => {
-    mockCategoryService = createMockService('saveCategory', 'getCategoryById');
+    mockCategoryService = createMockService('saveCategory', 'findCategoryById');
     mockCategoryDocumentConverter = createMockService('create');
 
     service = createCategoryServiceFactory(mockCategoryService.service, mockCategoryDocumentConverter.service);
@@ -24,7 +24,7 @@ describe('Create category service', () => {
 
   describe('should return new id', () => {
     it('if parent category is given', async () => {
-      mockCategoryService.functions.getCategoryById.mockResolvedValue(parentCategory);
+      mockCategoryService.functions.findCategoryById.mockResolvedValue(parentCategory);
       mockCategoryDocumentConverter.functions.create.mockReturnValue(convertedCategoryDocument);
       mockCategoryService.functions.saveCategory.mockResolvedValue(convertedCategoryDocument);
 
@@ -33,7 +33,7 @@ describe('Create category service', () => {
         expiresIn: undefined,
       });
       expect(result).toEqual(categoryId),
-      validateFunctionCall(mockCategoryService.functions.getCategoryById, body.parentCategoryId);
+      validateFunctionCall(mockCategoryService.functions.findCategoryById, body.parentCategoryId);
       validateFunctionCall(mockCategoryDocumentConverter.functions.create, {
         body,
         parentCategory,
@@ -46,7 +46,7 @@ describe('Create category service', () => {
       const parentlessBody = createCategoryRequest({
         parentCategoryId: undefined,
       });
-      mockCategoryService.functions.getCategoryById.mockResolvedValue(undefined);
+      mockCategoryService.functions.findCategoryById.mockResolvedValue(undefined);
       mockCategoryDocumentConverter.functions.create.mockReturnValue(convertedCategoryDocument);
       mockCategoryService.functions.saveCategory.mockResolvedValue(convertedCategoryDocument);
 
@@ -55,7 +55,7 @@ describe('Create category service', () => {
         expiresIn: undefined,
       });
       expect(result).toEqual(categoryId),
-      validateFunctionCall(mockCategoryService.functions.getCategoryById, parentlessBody.parentCategoryId);
+      validateFunctionCall(mockCategoryService.functions.findCategoryById, parentlessBody.parentCategoryId);
       validateFunctionCall(mockCategoryDocumentConverter.functions.create, {
         body: parentlessBody,
         parentCategory: undefined,
@@ -67,33 +67,33 @@ describe('Create category service', () => {
 
   describe('should throw error', () => {
     it('if unable to query parent category', async () => {
-      mockCategoryService.functions.getCategoryById.mockRejectedValue('this is a mongo error');
+      mockCategoryService.functions.findCategoryById.mockRejectedValue('this is a mongo error');
 
       await service({
         body,
         expiresIn: undefined,
       }).catch(validateError('Error while getting category', 500));
-      validateFunctionCall(mockCategoryService.functions.getCategoryById, body.parentCategoryId);
+      validateFunctionCall(mockCategoryService.functions.findCategoryById, body.parentCategoryId);
       validateFunctionCall(mockCategoryDocumentConverter.functions.create);
       validateFunctionCall(mockCategoryService.functions.saveCategory);
       expect.assertions(5);
     });
 
     it('if parent category not found', async () => {
-      mockCategoryService.functions.getCategoryById.mockResolvedValue(undefined);
+      mockCategoryService.functions.findCategoryById.mockResolvedValue(undefined);
 
       await service({
         body,
         expiresIn: undefined,
       }).catch(validateError('Parent category not found', 400));
-      validateFunctionCall(mockCategoryService.functions.getCategoryById, body.parentCategoryId);
+      validateFunctionCall(mockCategoryService.functions.findCategoryById, body.parentCategoryId);
       validateFunctionCall(mockCategoryDocumentConverter.functions.create);
       validateFunctionCall(mockCategoryService.functions.saveCategory);
       expect.assertions(5);
     });
 
     it('if unable to save document', async () => {
-      mockCategoryService.functions.getCategoryById.mockResolvedValue(parentCategory);
+      mockCategoryService.functions.findCategoryById.mockResolvedValue(parentCategory);
       mockCategoryDocumentConverter.functions.create.mockReturnValue(convertedCategoryDocument);
       mockCategoryService.functions.saveCategory.mockRejectedValue('this is a mongo error');
 
@@ -101,7 +101,7 @@ describe('Create category service', () => {
         body,
         expiresIn: undefined,
       }).catch(validateError('Error while saving category', 500));
-      validateFunctionCall(mockCategoryService.functions.getCategoryById, body.parentCategoryId);
+      validateFunctionCall(mockCategoryService.functions.findCategoryById, body.parentCategoryId);
       validateFunctionCall(mockCategoryDocumentConverter.functions.create, {
         body,
         parentCategory,

@@ -16,7 +16,7 @@ export const updateProductServiceFactory = (
   productDocumentConverter: IProductDocumentConverter,
 ): IUpdateProductService => {
   return async ({ body, productId, expiresIn }) => {
-    const queried = await productService.getProductById(productId).catch(httpErrors.product.getById({
+    const queried = await productService.findProductById(productId).catch(httpErrors.product.getById({
       productId,
     }));
 

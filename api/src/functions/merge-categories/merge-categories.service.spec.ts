@@ -9,7 +9,7 @@ describe('Merge category service', () => {
   let mockCategoryService: Mock<ICategoryService>;
 
   beforeEach(() => {
-    mockCategoryService = createMockService('listCategoriesByIds', 'mergeCategories');
+    mockCategoryService = createMockService('findCategoriesByIds', 'mergeCategories');
 
     service = mergeCategoriesServiceFactory(mockCategoryService.service);
   });
@@ -21,7 +21,7 @@ describe('Merge category service', () => {
   const body = [sourceCategoryId];
 
   it('should return if categories are merged', async () => {
-    mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([
+    mockCategoryService.functions.findCategoriesByIds.mockResolvedValue([
       targetCategoryDocument,
       sourceCategoryDocument,
     ]);
@@ -31,7 +31,7 @@ describe('Merge category service', () => {
       body,
       categoryId,
     });
-    validateFunctionCall(mockCategoryService.functions.listCategoriesByIds, [
+    validateFunctionCall(mockCategoryService.functions.findCategoriesByIds, [
       categoryId,
       sourceCategoryId,
     ]);
@@ -51,19 +51,19 @@ describe('Merge category service', () => {
         ],
         categoryId,
       }).catch(validateError('Target category is among the source category Ids', 400));
-      validateFunctionCall(mockCategoryService.functions.listCategoriesByIds);
+      validateFunctionCall(mockCategoryService.functions.findCategoriesByIds);
       validateFunctionCall(mockCategoryService.functions.mergeCategories);
       expect.assertions(4);
     });
 
     it('if unable to query categories', async () => {
-      mockCategoryService.functions.listCategoriesByIds.mockRejectedValue('This is a mongo error');
+      mockCategoryService.functions.findCategoriesByIds.mockRejectedValue('This is a mongo error');
 
       await service({
         body,
         categoryId,
       }).catch(validateError('Error while listing categories by ids', 500));
-      validateFunctionCall(mockCategoryService.functions.listCategoriesByIds, [
+      validateFunctionCall(mockCategoryService.functions.findCategoriesByIds, [
         categoryId,
         sourceCategoryId,
       ]);
@@ -72,14 +72,14 @@ describe('Merge category service', () => {
     });
 
     it('if some of the categories not found', async () => {
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([sourceCategoryDocument]);
+      mockCategoryService.functions.findCategoriesByIds.mockResolvedValue([sourceCategoryDocument]);
       mockCategoryService.functions.mergeCategories.mockResolvedValue(undefined);
 
       await service({
         body,
         categoryId,
       }).catch(validateError('Some of the categories are not found', 400));
-      validateFunctionCall(mockCategoryService.functions.listCategoriesByIds, [
+      validateFunctionCall(mockCategoryService.functions.findCategoriesByIds, [
         categoryId,
         sourceCategoryId,
       ]);
@@ -88,7 +88,7 @@ describe('Merge category service', () => {
     });
 
     it('if unable to merge categories', async () => {
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([
+      mockCategoryService.functions.findCategoriesByIds.mockResolvedValue([
         targetCategoryDocument,
         sourceCategoryDocument,
       ]);
@@ -98,7 +98,7 @@ describe('Merge category service', () => {
         body,
         categoryId,
       }).catch(validateError('Error while merging categories', 500));
-      validateFunctionCall(mockCategoryService.functions.listCategoriesByIds, [
+      validateFunctionCall(mockCategoryService.functions.findCategoriesByIds, [
         categoryId,
         sourceCategoryId,
       ]);

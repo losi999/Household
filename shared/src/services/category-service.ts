@@ -7,11 +7,12 @@ export interface ICategoryService {
   dumpCategories(): Promise<Category.Document[]>;
   saveCategory(doc: Category.Document): Promise<Category.Document>;
   saveCategories(docs: Category.Document[]): Promise<unknown>;
+  findCategoryById(categoryId: Category.Id): Promise<Category.Document>;
   getCategoryById(categoryId: Category.Id): Promise<Category.Document>;
   deleteCategory(categoryId: Category.Id): Promise<unknown>;
   updateCategory(categoryId: Category.Id, updateQuery: UpdateQuery<Category.Document>): Promise<unknown>;
   listCategories(): Promise<Category.Document[]>;
-  listCategoriesByIds(categoryIds: Category.Id[]): Promise<Category.Document[]>;
+  findCategoriesByIds(categoryIds: Category.Id[]): Promise<Category.Document[]>;
   mergeCategories(ctx: {
     targetCategoryId: Category.Id;
     sourceCategoryIds: Category.Id[];
@@ -25,8 +26,8 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
         return mongodbService.categories.find({}, null, {
           session,
         })
-          .lean<Category.Document[]>()
-          .exec();
+          .lean<Category.Document[]>();
+          
       });
     },
     saveCategory: (doc) => {
@@ -41,12 +42,16 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
         });
       });
     },
+    findCategoryById: async (categoryId) => {
+      return !categoryId ? undefined : mongodbService.categories.findById(categoryId)
+        .lean<Category.Document>();
+        
+    },
     getCategoryById: async (categoryId) => {
       return !categoryId ? undefined : mongodbService.categories.findById(categoryId)
         .populate('ancestors')
-        .sort('fullName')
-        .lean<Category.Document>()
-        .exec();
+        .lean<Category.Document>();
+        
     },
     deleteCategory: async (categoryId) => {
       return mongodbService.inSession((session) => {
@@ -264,7 +269,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
         .populate('ancestors')
         .lean<Category.Document[]>();
     },
-    listCategoriesByIds: (categoryIds) => {
+    findCategoriesByIds: (categoryIds) => {
       return mongodbService.inSession((session) => {
         return mongodbService.categories.find({
           _id: {
@@ -273,8 +278,8 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
         }, null, {
           session,
         })
-          .lean<Category.Document[]>()
-          .exec();
+          .lean<Category.Document[]>();
+          
       });
     },
     mergeCategories: ({ targetCategoryId, sourceCategoryIds }) => {

@@ -5,7 +5,7 @@ import { UpdateQuery } from 'mongoose';
 export interface IFileService {
   dumpFiles(): Promise<File.Document[]>;
   saveFile(doc: File.Document): Promise<File.Document>;
-  getFileById(fileId: File.Id): Promise<File.Document>;
+  findFileById(fileId: File.Id): Promise<File.Document>;
   deleteFile(fileId: File.Id): Promise<unknown>;
   updateFile(fileId: File.Id, updateQuery: UpdateQuery<File.Document>): Promise<unknown>;
   listFiles(): Promise<File.Document[]>;
@@ -19,17 +19,17 @@ export const fileServiceFactory = (mongodbService: IMongodbService): IFileServic
         return mongodbService.files.find({}, null, {
           session,
         })
-          .lean()
-          .exec();
+          .lean();
+          
       });
     },
     saveFile: (doc) => {
       return mongodbService.files.create(doc);
     },
-    getFileById: async (fileId) => {
+    findFileById: async (fileId) => {
       return !fileId ? undefined : mongodbService.files.findById(fileId)
-        .lean()
-        .exec();
+        .lean();
+        
     },
     deleteFile: async (fileId) => {
       return mongodbService.inSession((session) => {
@@ -74,8 +74,8 @@ export const fileServiceFactory = (mongodbService: IMongodbService): IFileServic
           .sort({
             createdAt: -1,
           })
-          .session(session)
-          .exec();
+          .session(session);
+          
       });
     },
     // listFilesByIds: (fileIds) => {
@@ -88,7 +88,7 @@ export const fileServiceFactory = (mongodbService: IMongodbService): IFileServic
     //       session,
     //     })
     //       .lean()
-    //       .exec();
+    //       
     //   });
     // },
   };

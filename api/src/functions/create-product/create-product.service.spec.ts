@@ -15,7 +15,7 @@ describe('Create product service', () => {
 
   beforeEach(() => {
     mockProductService = createMockService('saveProduct');
-    mockCategoryService = createMockService('getCategoryById');
+    mockCategoryService = createMockService('findCategoryById');
     mockProductDocumentConverter = createMockService('create');
 
     service = createProductServiceFactory(mockProductService.service, mockCategoryService.service, mockProductDocumentConverter.service);
@@ -30,7 +30,7 @@ describe('Create product service', () => {
   const productId = getProductId(convertedProductDocument);
 
   it('should return new id', async () => {
-    mockCategoryService.functions.getCategoryById.mockResolvedValue(queriedCategory);
+    mockCategoryService.functions.findCategoryById.mockResolvedValue(queriedCategory);
     mockProductDocumentConverter.functions.create.mockReturnValue(convertedProductDocument);
     mockProductService.functions.saveProduct.mockResolvedValue(convertedProductDocument);
 
@@ -40,7 +40,7 @@ describe('Create product service', () => {
       expiresIn: undefined,
     });
     expect(result).toEqual(productId.toString()),
-    validateFunctionCall(mockCategoryService.functions.getCategoryById, categoryId);
+    validateFunctionCall(mockCategoryService.functions.findCategoryById, categoryId);
     validateFunctionCall(mockProductDocumentConverter.functions.create, {
       body,
       category: queriedCategory,
@@ -50,35 +50,35 @@ describe('Create product service', () => {
   });
   describe('should throw error', () => {
     it('if unable to query category', async () => {
-      mockCategoryService.functions.getCategoryById.mockRejectedValue('this is a mongo error');
+      mockCategoryService.functions.findCategoryById.mockRejectedValue('this is a mongo error');
 
       await service({
         body,
         categoryId,
         expiresIn: undefined,
       }).catch(validateError('Error while getting category', 500));
-      validateFunctionCall(mockCategoryService.functions.getCategoryById, categoryId);
+      validateFunctionCall(mockCategoryService.functions.findCategoryById, categoryId);
       validateFunctionCall(mockProductDocumentConverter.functions.create);
       validateFunctionCall(mockProductService.functions.saveProduct);
       expect.assertions(5);
     });
 
     it('if no category found', async () => {
-      mockCategoryService.functions.getCategoryById.mockResolvedValue(undefined);
+      mockCategoryService.functions.findCategoryById.mockResolvedValue(undefined);
 
       await service({
         body,
         categoryId,
         expiresIn: undefined,
       }).catch(validateError('No category found', 400));
-      validateFunctionCall(mockCategoryService.functions.getCategoryById, categoryId);
+      validateFunctionCall(mockCategoryService.functions.findCategoryById, categoryId);
       validateFunctionCall(mockProductDocumentConverter.functions.create);
       validateFunctionCall(mockProductService.functions.saveProduct);
       expect.assertions(5);
     });
 
     it('if category is not "inventory" type', async () => {
-      mockCategoryService.functions.getCategoryById.mockResolvedValue(createCategoryDocument({
+      mockCategoryService.functions.findCategoryById.mockResolvedValue(createCategoryDocument({
         categoryType: CategoryType.Regular,
       }));
       mockProductDocumentConverter.functions.create.mockReturnValue(convertedProductDocument);
@@ -89,14 +89,14 @@ describe('Create product service', () => {
         categoryId,
         expiresIn: undefined,
       }).catch(validateError('Category must be "inventory" type', 400));
-      validateFunctionCall(mockCategoryService.functions.getCategoryById, categoryId);
+      validateFunctionCall(mockCategoryService.functions.findCategoryById, categoryId);
       validateFunctionCall(mockProductDocumentConverter.functions.create);
       validateFunctionCall(mockProductService.functions.saveProduct);
       expect.assertions(5);
     });
 
     it('if unable to save document', async () => {
-      mockCategoryService.functions.getCategoryById.mockResolvedValue(queriedCategory);
+      mockCategoryService.functions.findCategoryById.mockResolvedValue(queriedCategory);
       mockProductDocumentConverter.functions.create.mockReturnValue(convertedProductDocument);
       mockProductService.functions.saveProduct.mockRejectedValue('this is a mongo error');
 
@@ -105,7 +105,7 @@ describe('Create product service', () => {
         categoryId,
         expiresIn: undefined,
       }).catch(validateError('Error while saving product', 500));
-      validateFunctionCall(mockCategoryService.functions.getCategoryById, categoryId);
+      validateFunctionCall(mockCategoryService.functions.findCategoryById, categoryId);
       validateFunctionCall(mockProductDocumentConverter.functions.create, {
         body,
         category: queriedCategory,

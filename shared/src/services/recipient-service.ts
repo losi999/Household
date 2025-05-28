@@ -25,8 +25,8 @@ export const recipientServiceFactory = (mongodbService: IMongodbService): IRecip
         return mongodbService.recipients.find({}, null, {
           session,
         })
-          .lean()
-          .exec();
+          .lean();
+          
       });
     },
     saveRecipient: async (doc) => {
@@ -43,8 +43,8 @@ export const recipientServiceFactory = (mongodbService: IMongodbService): IRecip
     },
     findRecipientById: async (recipientId) => {
       return !recipientId ? undefined : mongodbService.recipients.findById(recipientId)
-        .lean()
-        .exec();
+        .lean();
+        
     },
     deleteRecipient: async (recipientId) => {
       return mongodbService.inSession((session) => {
@@ -53,8 +53,8 @@ export const recipientServiceFactory = (mongodbService: IMongodbService): IRecip
             _id: recipientId,
           }, {
             session,
-          })
-            .exec();
+          });
+            
           await mongodbService.transactions.updateMany({
             recipient: recipientId,
           }, {
@@ -63,8 +63,8 @@ export const recipientServiceFactory = (mongodbService: IMongodbService): IRecip
             },
           }, {
             session,
-          })
-            .exec();
+          });
+            
         });
       });
     },
@@ -82,8 +82,8 @@ export const recipientServiceFactory = (mongodbService: IMongodbService): IRecip
             locale: 'hu',
           })
           .sort('name')
-          .lean()
-          .exec();
+          .lean();
+          
       });
     },
     findRecipientsByIds: (recipientIds) => {
@@ -95,8 +95,8 @@ export const recipientServiceFactory = (mongodbService: IMongodbService): IRecip
         }, null, {
           session,
         })
-          .lean()
-          .exec();
+          .lean();
+          
       });
     },
     mergeRecipients: ({ targetRecipientId, sourceRecipientIds }) => {

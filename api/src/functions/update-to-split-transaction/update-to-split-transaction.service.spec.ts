@@ -25,7 +25,7 @@ describe('Update to split transaction service', () => {
   beforeEach(() => {
     mockAccountService = createMockService('findAccountsByIds');
     mockProjectService = createMockService('findProjectsByIds');
-    mockCategoryService = createMockService('listCategoriesByIds');
+    mockCategoryService = createMockService('findCategoriesByIds');
     mockRecipientService = createMockService('findRecipientById');
     mockProductService = createMockService('listProductsByIds');
     mockTransactionService = createMockService('updateTransaction', 'getTransactionById');
@@ -88,7 +88,7 @@ describe('Update to split transaction service', () => {
         queriedAccount,
         loanAccount,
       ]);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([category]);
+      mockCategoryService.functions.findCategoriesByIds.mockResolvedValue([category]);
       mockProjectService.functions.findProjectsByIds.mockResolvedValue([project]);
       mockRecipientService.functions.findRecipientById.mockResolvedValue(queriedRecipient);
       mockProductService.functions.listProductsByIds.mockResolvedValue([product]);
@@ -105,7 +105,7 @@ describe('Update to split transaction service', () => {
         body.accountId,
         loanAccountId,
       ]);
-      validateFunctionCall(mockCategoryService.functions.listCategoriesByIds, [categoryId]);
+      validateFunctionCall(mockCategoryService.functions.findCategoriesByIds, [categoryId]);
       validateFunctionCall(mockProjectService.functions.findProjectsByIds, [projectId]);
       validateFunctionCall(mockRecipientService.functions.findRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.listProductsByIds, [productId]);
@@ -136,7 +136,7 @@ describe('Update to split transaction service', () => {
       }).catch(validateError('Error while getting transaction', 500));
       validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
       validateFunctionCall(mockAccountService.functions.findAccountsByIds);
-      validateFunctionCall(mockCategoryService.functions.listCategoriesByIds);
+      validateFunctionCall(mockCategoryService.functions.findCategoriesByIds);
       validateFunctionCall(mockProjectService.functions.findProjectsByIds);
       validateFunctionCall(mockRecipientService.functions.findRecipientById);
       validateFunctionCall(mockProductService.functions.listProductsByIds);
@@ -155,7 +155,7 @@ describe('Update to split transaction service', () => {
       }).catch(validateError('No transaction found', 404));
       validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
       validateFunctionCall(mockAccountService.functions.findAccountsByIds);
-      validateFunctionCall(mockCategoryService.functions.listCategoriesByIds);
+      validateFunctionCall(mockCategoryService.functions.findCategoriesByIds);
       validateFunctionCall(mockProjectService.functions.findProjectsByIds);
       validateFunctionCall(mockRecipientService.functions.findRecipientById);
       validateFunctionCall(mockProductService.functions.listProductsByIds);
@@ -183,7 +183,7 @@ describe('Update to split transaction service', () => {
       }).catch(validateError('Cannot loan to same account', 400));
       validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
       validateFunctionCall(mockAccountService.functions.findAccountsByIds);
-      validateFunctionCall(mockCategoryService.functions.listCategoriesByIds);
+      validateFunctionCall(mockCategoryService.functions.findCategoriesByIds);
       validateFunctionCall(mockProjectService.functions.findProjectsByIds);
       validateFunctionCall(mockRecipientService.functions.findRecipientById);
       validateFunctionCall(mockProductService.functions.listProductsByIds);
@@ -207,7 +207,7 @@ describe('Update to split transaction service', () => {
       }).catch(validateError('Sum of splits must equal to total amount', 400));
       validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
       validateFunctionCall(mockAccountService.functions.findAccountsByIds);
-      validateFunctionCall(mockCategoryService.functions.listCategoriesByIds);
+      validateFunctionCall(mockCategoryService.functions.findCategoriesByIds);
       validateFunctionCall(mockProjectService.functions.findProjectsByIds);
       validateFunctionCall(mockRecipientService.functions.findRecipientById);
       validateFunctionCall(mockProductService.functions.listProductsByIds);
@@ -219,7 +219,7 @@ describe('Update to split transaction service', () => {
     it('if unable to query account', async () => {
       mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
       mockAccountService.functions.findAccountsByIds.mockRejectedValue('this is a mongo error');
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([category]);
+      mockCategoryService.functions.findCategoriesByIds.mockResolvedValue([category]);
       mockProjectService.functions.findProjectsByIds.mockResolvedValue([project]);
       mockRecipientService.functions.findRecipientById.mockResolvedValue(queriedRecipient);
       mockProductService.functions.listProductsByIds.mockResolvedValue([product]);
@@ -234,7 +234,7 @@ describe('Update to split transaction service', () => {
         body.accountId,
         loanAccountId,
       ]);
-      validateFunctionCall(mockCategoryService.functions.listCategoriesByIds, [categoryId]);
+      validateFunctionCall(mockCategoryService.functions.findCategoriesByIds, [categoryId]);
       validateFunctionCall(mockProjectService.functions.findProjectsByIds, [projectId]);
       validateFunctionCall(mockRecipientService.functions.findRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.listProductsByIds, [productId]);
@@ -249,7 +249,7 @@ describe('Update to split transaction service', () => {
         queriedAccount,
         loanAccount,
       ]);
-      mockCategoryService.functions.listCategoriesByIds.mockRejectedValue('this is a mongo error');
+      mockCategoryService.functions.findCategoriesByIds.mockRejectedValue('this is a mongo error');
       mockProjectService.functions.findProjectsByIds.mockResolvedValue([project]);
       mockRecipientService.functions.findRecipientById.mockResolvedValue(queriedRecipient);
       mockProductService.functions.listProductsByIds.mockResolvedValue([product]);
@@ -264,7 +264,7 @@ describe('Update to split transaction service', () => {
         body.accountId,
         loanAccountId,
       ]);
-      validateFunctionCall(mockCategoryService.functions.listCategoriesByIds, [categoryId]);
+      validateFunctionCall(mockCategoryService.functions.findCategoriesByIds, [categoryId]);
       validateFunctionCall(mockProjectService.functions.findProjectsByIds, [projectId]);
       validateFunctionCall(mockRecipientService.functions.findRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.listProductsByIds, [productId]);
@@ -279,7 +279,7 @@ describe('Update to split transaction service', () => {
         queriedAccount,
         loanAccount,
       ]);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([category]);
+      mockCategoryService.functions.findCategoriesByIds.mockResolvedValue([category]);
       mockProjectService.functions.findProjectsByIds.mockRejectedValue('this is a mongo error');
       mockRecipientService.functions.findRecipientById.mockResolvedValue(queriedRecipient);
       mockProductService.functions.listProductsByIds.mockResolvedValue([product]);
@@ -294,7 +294,7 @@ describe('Update to split transaction service', () => {
         body.accountId,
         loanAccountId,
       ]);
-      validateFunctionCall(mockCategoryService.functions.listCategoriesByIds, [categoryId]);
+      validateFunctionCall(mockCategoryService.functions.findCategoriesByIds, [categoryId]);
       validateFunctionCall(mockProjectService.functions.findProjectsByIds, [projectId]);
       validateFunctionCall(mockRecipientService.functions.findRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.listProductsByIds, [productId]);
@@ -309,7 +309,7 @@ describe('Update to split transaction service', () => {
         queriedAccount,
         loanAccount,
       ]);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([category]);
+      mockCategoryService.functions.findCategoriesByIds.mockResolvedValue([category]);
       mockProjectService.functions.findProjectsByIds.mockResolvedValue([project]);
       mockRecipientService.functions.findRecipientById.mockRejectedValue('this is a mongo error');
       mockProductService.functions.listProductsByIds.mockResolvedValue([product]);
@@ -324,7 +324,7 @@ describe('Update to split transaction service', () => {
         body.accountId,
         loanAccountId,
       ]);
-      validateFunctionCall(mockCategoryService.functions.listCategoriesByIds, [categoryId]);
+      validateFunctionCall(mockCategoryService.functions.findCategoriesByIds, [categoryId]);
       validateFunctionCall(mockProjectService.functions.findProjectsByIds, [projectId]);
       validateFunctionCall(mockRecipientService.functions.findRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.listProductsByIds, [productId]);
@@ -339,7 +339,7 @@ describe('Update to split transaction service', () => {
         queriedAccount,
         loanAccount,
       ]);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([category]);
+      mockCategoryService.functions.findCategoriesByIds.mockResolvedValue([category]);
       mockProjectService.functions.findProjectsByIds.mockResolvedValue([project]);
       mockRecipientService.functions.findRecipientById.mockResolvedValue(queriedRecipient);
       mockProductService.functions.listProductsByIds.mockRejectedValue('this is a mongo error');
@@ -354,7 +354,7 @@ describe('Update to split transaction service', () => {
         body.accountId,
         loanAccountId,
       ]);
-      validateFunctionCall(mockCategoryService.functions.listCategoriesByIds, [categoryId]);
+      validateFunctionCall(mockCategoryService.functions.findCategoriesByIds, [categoryId]);
       validateFunctionCall(mockProjectService.functions.findProjectsByIds, [projectId]);
       validateFunctionCall(mockRecipientService.functions.findRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.listProductsByIds, [productId]);
@@ -366,7 +366,7 @@ describe('Update to split transaction service', () => {
     it('if no account found', async () => {
       mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
       mockAccountService.functions.findAccountsByIds.mockResolvedValue([]);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([category]);
+      mockCategoryService.functions.findCategoriesByIds.mockResolvedValue([category]);
       mockProjectService.functions.findProjectsByIds.mockResolvedValue([project]);
       mockRecipientService.functions.findRecipientById.mockResolvedValue(queriedRecipient);
       mockProductService.functions.listProductsByIds.mockResolvedValue([product]);
@@ -381,7 +381,7 @@ describe('Update to split transaction service', () => {
         body.accountId,
         loanAccountId,
       ]);
-      validateFunctionCall(mockCategoryService.functions.listCategoriesByIds, [categoryId]);
+      validateFunctionCall(mockCategoryService.functions.findCategoriesByIds, [categoryId]);
       validateFunctionCall(mockProjectService.functions.findProjectsByIds, [projectId]);
       validateFunctionCall(mockRecipientService.functions.findRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.listProductsByIds, [productId]);
@@ -396,7 +396,7 @@ describe('Update to split transaction service', () => {
         queriedAccount,
         loanAccount,
       ]);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([]);
+      mockCategoryService.functions.findCategoriesByIds.mockResolvedValue([]);
       mockProjectService.functions.findProjectsByIds.mockResolvedValue([project]);
       mockRecipientService.functions.findRecipientById.mockResolvedValue(queriedRecipient);
       mockProductService.functions.listProductsByIds.mockResolvedValue([product]);
@@ -411,7 +411,7 @@ describe('Update to split transaction service', () => {
         body.accountId,
         loanAccountId,
       ]);
-      validateFunctionCall(mockCategoryService.functions.listCategoriesByIds, [categoryId]);
+      validateFunctionCall(mockCategoryService.functions.findCategoriesByIds, [categoryId]);
       validateFunctionCall(mockProjectService.functions.findProjectsByIds, [projectId]);
       validateFunctionCall(mockRecipientService.functions.findRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.listProductsByIds, [productId]);
@@ -426,7 +426,7 @@ describe('Update to split transaction service', () => {
         queriedAccount,
         loanAccount,
       ]);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([category]);
+      mockCategoryService.functions.findCategoriesByIds.mockResolvedValue([category]);
       mockProjectService.functions.findProjectsByIds.mockResolvedValue([]);
       mockRecipientService.functions.findRecipientById.mockResolvedValue(queriedRecipient);
       mockProductService.functions.listProductsByIds.mockResolvedValue([product]);
@@ -441,7 +441,7 @@ describe('Update to split transaction service', () => {
         body.accountId,
         loanAccountId,
       ]);
-      validateFunctionCall(mockCategoryService.functions.listCategoriesByIds, [categoryId]);
+      validateFunctionCall(mockCategoryService.functions.findCategoriesByIds, [categoryId]);
       validateFunctionCall(mockProjectService.functions.findProjectsByIds, [projectId]);
       validateFunctionCall(mockRecipientService.functions.findRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.listProductsByIds, [productId]);
@@ -456,7 +456,7 @@ describe('Update to split transaction service', () => {
         queriedAccount,
         loanAccount,
       ]);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([category]);
+      mockCategoryService.functions.findCategoriesByIds.mockResolvedValue([category]);
       mockProjectService.functions.findProjectsByIds.mockResolvedValue([project]);
       mockRecipientService.functions.findRecipientById.mockResolvedValue(undefined);
       mockProductService.functions.listProductsByIds.mockResolvedValue([product]);
@@ -471,7 +471,7 @@ describe('Update to split transaction service', () => {
         body.accountId,
         loanAccountId,
       ]);
-      validateFunctionCall(mockCategoryService.functions.listCategoriesByIds, [categoryId]);
+      validateFunctionCall(mockCategoryService.functions.findCategoriesByIds, [categoryId]);
       validateFunctionCall(mockProjectService.functions.findProjectsByIds, [projectId]);
       validateFunctionCall(mockRecipientService.functions.findRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.listProductsByIds, [productId]);
@@ -486,7 +486,7 @@ describe('Update to split transaction service', () => {
         queriedAccount,
         loanAccount,
       ]);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([category]);
+      mockCategoryService.functions.findCategoriesByIds.mockResolvedValue([category]);
       mockProjectService.functions.findProjectsByIds.mockResolvedValue([project]);
       mockRecipientService.functions.findRecipientById.mockResolvedValue(queriedRecipient);
       mockProductService.functions.listProductsByIds.mockResolvedValue([]);
@@ -501,7 +501,7 @@ describe('Update to split transaction service', () => {
         body.accountId,
         loanAccountId,
       ]);
-      validateFunctionCall(mockCategoryService.functions.listCategoriesByIds, [categoryId]);
+      validateFunctionCall(mockCategoryService.functions.findCategoriesByIds, [categoryId]);
       validateFunctionCall(mockProjectService.functions.findProjectsByIds, [projectId]);
       validateFunctionCall(mockRecipientService.functions.findRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.listProductsByIds, [productId]);
@@ -533,7 +533,7 @@ describe('Update to split transaction service', () => {
         queriedAccount,
         loanAccount,
       ]);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([category]);
+      mockCategoryService.functions.findCategoriesByIds.mockResolvedValue([category]);
       mockProjectService.functions.findProjectsByIds.mockResolvedValue([project]);
       mockRecipientService.functions.findRecipientById.mockResolvedValue(queriedRecipient);
       mockProductService.functions.listProductsByIds.mockResolvedValue([otherProduct]);
@@ -548,7 +548,7 @@ describe('Update to split transaction service', () => {
         body.accountId,
         loanAccountId,
       ]);
-      validateFunctionCall(mockCategoryService.functions.listCategoriesByIds, [categoryId]);
+      validateFunctionCall(mockCategoryService.functions.findCategoriesByIds, [categoryId]);
       validateFunctionCall(mockProjectService.functions.findProjectsByIds, [projectId]);
       validateFunctionCall(mockRecipientService.functions.findRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.listProductsByIds, [otherProductId]);
@@ -583,7 +583,7 @@ describe('Update to split transaction service', () => {
         queriedAccount,
         loanAccount,
       ]);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([category]);
+      mockCategoryService.functions.findCategoriesByIds.mockResolvedValue([category]);
       mockProjectService.functions.findProjectsByIds.mockResolvedValue([project]);
       mockRecipientService.functions.findRecipientById.mockResolvedValue(queriedRecipient);
       mockProductService.functions.listProductsByIds.mockResolvedValue([product]);
@@ -598,7 +598,7 @@ describe('Update to split transaction service', () => {
         loanAccountId,
         getAccountId(queriedAccount),
       ]);
-      validateFunctionCall(mockCategoryService.functions.listCategoriesByIds, [categoryId]);
+      validateFunctionCall(mockCategoryService.functions.findCategoriesByIds, [categoryId]);
       validateFunctionCall(mockProjectService.functions.findProjectsByIds, [projectId]);
       validateFunctionCall(mockRecipientService.functions.findRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.listProductsByIds, [productId]);
@@ -613,7 +613,7 @@ describe('Update to split transaction service', () => {
         queriedAccount,
         loanAccount,
       ]);
-      mockCategoryService.functions.listCategoriesByIds.mockResolvedValue([category]);
+      mockCategoryService.functions.findCategoriesByIds.mockResolvedValue([category]);
       mockProjectService.functions.findProjectsByIds.mockResolvedValue([project]);
       mockRecipientService.functions.findRecipientById.mockResolvedValue(queriedRecipient);
       mockProductService.functions.listProductsByIds.mockResolvedValue([product]);
@@ -630,7 +630,7 @@ describe('Update to split transaction service', () => {
         body.accountId,
         loanAccountId,
       ]);
-      validateFunctionCall(mockCategoryService.functions.listCategoriesByIds, [categoryId]);
+      validateFunctionCall(mockCategoryService.functions.findCategoriesByIds, [categoryId]);
       validateFunctionCall(mockProjectService.functions.findProjectsByIds, [projectId]);
       validateFunctionCall(mockRecipientService.functions.findRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.listProductsByIds, [productId]);

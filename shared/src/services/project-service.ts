@@ -24,8 +24,8 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
         return mongodbService.projects.find({}, null, {
           session,
         })
-          .lean()
-          .exec();
+          .lean();
+          
       });
     },
     saveProject: (doc) => {
@@ -42,8 +42,8 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
     },
     findProjectById: async (projectId) => {
       return !projectId ? undefined : mongodbService.projects.findById(projectId)
-        .lean()
-        .exec();
+        .lean();
+        
     },
     deleteProject: async (projectId) => {
       return mongodbService.inSession((session) => {
@@ -52,8 +52,8 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
             _id: projectId,
           }, {
             session,
-          })
-            .exec();
+          });
+            
           await mongodbService.transactions.updateMany({
             project: projectId,
           }, {
@@ -63,8 +63,8 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
           }, {
             runValidators: true,
             session,
-          })
-            .exec();
+          });
+            
           await mongodbService.transactions.updateMany({
             'splits.project': projectId,
           }, {
@@ -80,8 +80,8 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
                 'element.project': projectId,
               },
             ],
-          })
-            .exec();
+          });
+            
           await mongodbService.transactions.updateMany({
             'deferredSplits.project': projectId,
           }, {
@@ -97,8 +97,8 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
                 'element.project': projectId,
               },
             ],
-          })
-            .exec();
+          });
+            
         });
       });
     },
@@ -116,8 +116,8 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
             locale: 'hu',
           })
           .sort('name')
-          .lean()
-          .exec();
+          .lean();
+          
       });
     },
     findProjectsByIds: (projectIds) => {
@@ -129,8 +129,8 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
         }, null, {
           session,
         })
-          .lean()
-          .exec();
+          .lean();
+          
       });
     },
     mergeProjects: ({ targetProjectId, sourceProjectIds }) => {

@@ -19,7 +19,7 @@ describe('Bulk transaction importer service', () => {
   let mockTransactionService: Mock<ITransactionService>;
 
   beforeEach(() => {
-    mockFileService = createMockService('getFileById', 'updateFile');
+    mockFileService = createMockService('findFileById', 'updateFile');
     mockFileDocumentConverter = createMockService('updateStatus');
     mockStorageService = createMockService('readFile');
     mockExcelParser = createMockService('parse');
@@ -46,7 +46,7 @@ describe('Bulk transaction importer service', () => {
 
   describe('should return', () => {
     it('if file is processed', async () => {
-      mockFileService.functions.getFileById.mockResolvedValue(queriedFileDocument);
+      mockFileService.functions.findFileById.mockResolvedValue(queriedFileDocument);
       mockStorageService.functions.readFile.mockResolvedValue(fileContent);
       mockExcelParser.functions.parse.mockReturnValue([
         {
@@ -64,7 +64,7 @@ describe('Bulk transaction importer service', () => {
         bucketName,
         fileId,
       });
-      validateFunctionCall(mockFileService.functions.getFileById, fileId);
+      validateFunctionCall(mockFileService.functions.findFileById, fileId);
       validateFunctionCall(mockStorageService.functions.readFile, fileId);
       validateFunctionCall(mockExcelParser.functions.parse, {
         fileContent,
@@ -89,13 +89,13 @@ describe('Bulk transaction importer service', () => {
 
   describe('should throw error', () => {
     it('if unable to get file document', async () => {
-      mockFileService.functions.getFileById.mockRejectedValue('this is a mongo error');
+      mockFileService.functions.findFileById.mockRejectedValue('this is a mongo error');
 
       await service({
         bucketName,
         fileId,
       }).catch(validateError('Error while getting file document', 500));
-      validateFunctionCall(mockFileService.functions.getFileById, fileId);
+      validateFunctionCall(mockFileService.functions.findFileById, fileId);
       validateFunctionCall(mockStorageService.functions.readFile);
       validateFunctionCall(mockExcelParser.functions.parse);
       validateFunctionCall(mockDraftTransactionDocumentConverter.functions.create);
@@ -106,14 +106,14 @@ describe('Bulk transaction importer service', () => {
     });
 
     it('if unable to read file', async () => {
-      mockFileService.functions.getFileById.mockResolvedValue(queriedFileDocument);
+      mockFileService.functions.findFileById.mockResolvedValue(queriedFileDocument);
       mockStorageService.functions.readFile.mockRejectedValue('this is an s3 error');
 
       await service({
         bucketName,
         fileId,
       }).catch(validateError('Error while reading file', 500));
-      validateFunctionCall(mockFileService.functions.getFileById, fileId);
+      validateFunctionCall(mockFileService.functions.findFileById, fileId);
       validateFunctionCall(mockStorageService.functions.readFile, fileId);
       validateFunctionCall(mockExcelParser.functions.parse);
       validateFunctionCall(mockDraftTransactionDocumentConverter.functions.create);
@@ -124,7 +124,7 @@ describe('Bulk transaction importer service', () => {
     });
 
     it('if unable to save transactions', async () => {
-      mockFileService.functions.getFileById.mockResolvedValue(queriedFileDocument);
+      mockFileService.functions.findFileById.mockResolvedValue(queriedFileDocument);
       mockStorageService.functions.readFile.mockResolvedValue(fileContent);
       mockExcelParser.functions.parse.mockReturnValue([
         {
@@ -140,7 +140,7 @@ describe('Bulk transaction importer service', () => {
         bucketName,
         fileId,
       }).catch(validateError('Error while saving transactions', 500));
-      validateFunctionCall(mockFileService.functions.getFileById, fileId);
+      validateFunctionCall(mockFileService.functions.findFileById, fileId);
       validateFunctionCall(mockStorageService.functions.readFile, fileId);
       validateFunctionCall(mockExcelParser.functions.parse, {
         fileContent,
@@ -162,7 +162,7 @@ describe('Bulk transaction importer service', () => {
     });
 
     it('if unable to update file', async () => {
-      mockFileService.functions.getFileById.mockResolvedValue(queriedFileDocument);
+      mockFileService.functions.findFileById.mockResolvedValue(queriedFileDocument);
       mockStorageService.functions.readFile.mockResolvedValue(fileContent);
       mockExcelParser.functions.parse.mockReturnValue([
         {
@@ -180,7 +180,7 @@ describe('Bulk transaction importer service', () => {
         bucketName,
         fileId,
       }).catch(validateError('Error while updating file document', 500));
-      validateFunctionCall(mockFileService.functions.getFileById, fileId);
+      validateFunctionCall(mockFileService.functions.findFileById, fileId);
       validateFunctionCall(mockStorageService.functions.readFile, fileId);
       validateFunctionCall(mockExcelParser.functions.parse, {
         fileContent,

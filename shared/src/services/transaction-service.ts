@@ -30,8 +30,8 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
           .setOptions({
             session,
             lean: true,
-          })
-          .exec();
+          });
+          
       });
     },
     saveTransaction: (doc) => {
@@ -67,8 +67,8 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
             'deferredSplits.project',
             'deferredSplits.product'),
           lean: true,
-        })
-        .exec();
+        });
+        
     },
     getTransactionByIdAndAccountId: async ({ transactionId, accountId }) => {
       if (!transactionId) {
@@ -599,8 +599,8 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
           .sort({
             issuedAt: -1,
           })
-          .session(session)
-          .exec();
+          .session(session);
+          
       });
     },
   };
