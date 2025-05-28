@@ -114,14 +114,17 @@ export namespace Account {
   export type Document = Internal.Id
   & Internal.Timestamps
   & Base
-  & IsOpen
-  & Partial<Balance>;
+  & IsOpen;
 
-  export type Response = Base
+  export type AggregatedDocument = Document & Balance;
+
+  export type LeanResponse = Base
   & IsOpen
-  & Balance
   & AccountId
   & FullName;
+
+  export type Response = LeanResponse
+  & Balance;
 
   export type Report = AccountId
   & FullName
@@ -287,7 +290,7 @@ export namespace Transaction {
     project: P;
   };
 
-  export type Account<A extends Account.Document | Account.Response | Account.Report> = {
+  export type Account<A extends Account.Document | Account.LeanResponse | Account.Report> = {
     account: A;
   };
 
@@ -299,15 +302,15 @@ export namespace Transaction {
     product: P;
   };
 
-  export type TransferAccount<A extends Account.Document | Account.Response> = {
+  export type TransferAccount<A extends Account.Document | Account.LeanResponse> = {
     transferAccount: A;
   };
 
-  export type PayingAccount<A extends Account.Document |Account.Response> = {
+  export type PayingAccount<A extends Account.Document |Account.LeanResponse> = {
     payingAccount: A;
   };
 
-  export type OwnerAccount<A extends Account.Document | Account.Response> = {
+  export type OwnerAccount<A extends Account.Document | Account.LeanResponse> = {
     ownerAccount: A;
   };
 
@@ -484,7 +487,7 @@ export namespace Transaction {
   & Quantity
   & Product<Product.Response>
   & TransactionType<Enum.TransactionType.Payment>
-  & Account<Account.Response>
+  & Account<Account.LeanResponse>
   & Category<Category.Response>
   & Project<Project.Response>
   & Recipient<Recipient.Response>;
@@ -499,8 +502,8 @@ export namespace Transaction {
   & IsSettled
   & Product<Product.Response>
   & TransactionType<Enum.TransactionType.Deferred>
-  & PayingAccount<Account.Response>
-  & OwnerAccount<Account.Response>
+  & PayingAccount<Account.LeanResponse>
+  & OwnerAccount<Account.LeanResponse>
   & Category<Category.Response>
   & Project<Project.Response>
   & Recipient<Recipient.Response>
@@ -515,8 +518,8 @@ export namespace Transaction {
   & Quantity
   & Product<Product.Response>
   & TransactionType<Enum.TransactionType.Reimbursement>
-  & PayingAccount<Account.Response>
-  & OwnerAccount<Account.Response>
+  & PayingAccount<Account.LeanResponse>
+  & OwnerAccount<Account.LeanResponse>
   & Category<Category.Response>
   & Project<Project.Response>
   & Recipient<Recipient.Response>;
@@ -526,8 +529,8 @@ export namespace Transaction {
   & Description
   & IssuedAt<string>
   & TransactionType<Enum.TransactionType.Transfer>
-  & Account<Account.Response>
-  & TransferAccount<Account.Response>
+  & Account<Account.LeanResponse>
+  & TransferAccount<Account.LeanResponse>
   & TransferAmount
   & {
     payments: ({
@@ -549,7 +552,7 @@ export namespace Transaction {
   & Description
   & IssuedAt<string>
   & TransactionType<Enum.TransactionType.Split>
-  & Account<Account.Response>
+  & Account<Account.LeanResponse>
   & Recipient<Recipient.Response>
   & {
     splits: SplitResponseItem[];

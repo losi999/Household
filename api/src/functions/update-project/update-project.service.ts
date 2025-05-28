@@ -16,7 +16,7 @@ export const updateProjectServiceFactory = (
   projectDocumentConverter: IProjectDocumentConverter,
 ): IUpdateProjectService => {
   return async ({ body, projectId, expiresIn }) => {
-    const queried = await projectService.getProjectById(projectId).catch(httpErrors.project.getById({
+    const queried = await projectService.findProjectById(projectId).catch(httpErrors.project.getById({
       projectId,
     }));
 

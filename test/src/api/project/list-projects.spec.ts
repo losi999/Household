@@ -42,10 +42,8 @@ describe('GET /project/v1/projects', () => {
             .requestGetProjectList()
             .expectOkResponse()
             .expectValidResponseSchema(schema)
-            .validateProjectListResponse([
-              projectDocument1,
-              projectDocument2,
-            ]);
+            .validateInProjectListResponse(projectDocument1)
+            .validateInProjectListResponse(projectDocument2);
         });
       }
     });

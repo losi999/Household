@@ -22,7 +22,7 @@ export const mergeProjectsServiceFactory = (
       ...new Set(body),
     ];
 
-    const projects = await projectService.listProjectsByIds(projectIds).catch(httpErrors.project.listByIds(projectIds));
+    const projects = await projectService.findProjectsByIds(projectIds).catch(httpErrors.project.listByIds(projectIds));
 
     httpErrors.project.multipleNotFound({
       projects,

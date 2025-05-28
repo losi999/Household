@@ -186,7 +186,7 @@ export const splitTransactionDocumentConverterFactory = (
         transactionType,
         transactionId: getTransactionId(_id),
         issuedAt: issuedAt.toISOString(),
-        account: accountDocumentConverter.toResponse(account),
+        account: accountDocumentConverter.toLeanResponse(account),
         recipient: recipient ? recipientDocumentConverter.toResponse(recipient) : undefined,
         splits: splits?.map(s => ({
           amount: s.amount,

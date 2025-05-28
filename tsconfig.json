@@ -25,6 +25,10 @@
       ]
     }
   },
+  "exclude": [
+    "api/**/*.spec.ts",
+    "shared/**/*.spec.ts"
+  ],
   "include": [
     "api/src",
     "shared/src",

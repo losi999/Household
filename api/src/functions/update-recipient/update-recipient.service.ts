@@ -16,7 +16,7 @@ export const updateRecipientServiceFactory = (
   recipientDocumentConverter: IRecipientDocumentConverter,
 ): IUpdateRecipientService => {
   return async ({ body, recipientId, expiresIn }) => {
-    const queried = await recipientService.getRecipientById(recipientId).catch(httpErrors.recipient.getById({
+    const queried = await recipientService.findRecipientById(recipientId).catch(httpErrors.recipient.getById({
       recipientId,
     }));
 

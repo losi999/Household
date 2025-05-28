@@ -42,10 +42,8 @@ describe('GET /recipient/v1/recipients', () => {
             .requestGetRecipientList()
             .expectOkResponse()
             .expectValidResponseSchema(schema)
-            .validateRecipientListResponse([
-              recipientDocument1,
-              recipientDocument2,
-            ]);
+            .validateInRecipientListResponse(recipientDocument1)
+            .validateInRecipientListResponse(recipientDocument2);
         });
       }
     });

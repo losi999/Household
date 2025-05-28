@@ -22,7 +22,7 @@ export const mergeRecipientsServiceFactory = (
       ...new Set(body),
     ];
 
-    const recipients = await recipientService.listRecipientsByIds(recipientIds).catch(httpErrors.recipient.listByIds(recipientIds));
+    const recipients = await recipientService.findRecipientsByIds(recipientIds).catch(httpErrors.recipient.listByIds(recipientIds));
 
     httpErrors.recipient.multipleNotFound({
       recipients,

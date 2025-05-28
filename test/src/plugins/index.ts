@@ -22,10 +22,10 @@ export default (on: Cypress.PluginEvents) => {
     watchOptions: {},
   };
   on('file:preprocessor', webpack(options));
-  setTasksFromService(on, projectService, 'getProjectById', 'saveProject', 'saveProjects');
+  setTasksFromService(on, projectService, 'findProjectById', 'saveProject', 'saveProjects');
   setTasksFromService(on, productService, 'saveProduct', 'getProductById', 'saveProducts');
-  setTasksFromService(on, recipientService, 'getRecipientById', 'saveRecipient', 'saveRecipients');
-  setTasksFromService(on, accountService, 'getAccountById', 'saveAccount', 'saveAccounts');
+  setTasksFromService(on, recipientService, 'findRecipientById', 'saveRecipient', 'saveRecipients');
+  setTasksFromService(on, accountService, 'findAccountById', 'saveAccount', 'saveAccounts');
   setTasksFromService(on, categoryService, 'getCategoryById', 'saveCategory', 'saveCategories');
   setTasksFromService(on, transactionService, 'getTransactionByIdAndAccountId', 'saveTransaction', 'getTransactionById', 'saveTransactions', 'listDraftTransactionsByFileId');
   setTasksFromService(on, settingService, 'updateSetting', 'getSettingByKey');

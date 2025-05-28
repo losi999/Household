@@ -6,11 +6,11 @@ export interface IRecipientService {
   dumpRecipients(): Promise<Recipient.Document[]>;
   saveRecipient(doc: Recipient.Document): Promise<Recipient.Document>;
   saveRecipients(docs: Recipient.Document[]): Promise<unknown>;
-  getRecipientById(recipientId: Recipient.Id): Promise<Recipient.Document>;
+  findRecipientById(recipientId: Recipient.Id): Promise<Recipient.Document>;
   deleteRecipient(recipientId: Recipient.Id): Promise<unknown>;
   updateRecipient(recipientId: Recipient.Id, updateQuery: UpdateQuery<Recipient.Document>): Promise<unknown>;
   listRecipients(): Promise<Recipient.Document[]>;
-  listRecipientsByIds(recipientIds: Recipient.Id[]): Promise<Recipient.Document[]>;
+  findRecipientsByIds(recipientIds: Recipient.Id[]): Promise<Recipient.Document[]>;
   mergeRecipients(ctx: {
     targetRecipientId: Recipient.Id;
     sourceRecipientIds: Recipient.Id[];
@@ -41,7 +41,7 @@ export const recipientServiceFactory = (mongodbService: IMongodbService): IRecip
         });
       });
     },
-    getRecipientById: async (recipientId) => {
+    findRecipientById: async (recipientId) => {
       return !recipientId ? undefined : mongodbService.recipients.findById(recipientId)
         .lean()
         .exec();
@@ -86,7 +86,7 @@ export const recipientServiceFactory = (mongodbService: IMongodbService): IRecip
           .exec();
       });
     },
-    listRecipientsByIds: (recipientIds) => {
+    findRecipientsByIds: (recipientIds) => {
       return mongodbService.inSession(async (session) => {
         return mongodbService.recipients.find({
           _id: {

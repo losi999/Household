@@ -26,7 +26,7 @@ export const createTransferTransactionServiceFactory = (
       transferAccountId,
     });
 
-    const accounts = await accountService.listAccountsByIds([
+    const accounts = await accountService.findAccountsByIds([
       accountId,
       transferAccountId,
     ]).catch(httpErrors.common.getRelatedData({

@@ -16,7 +16,7 @@ export const updateAccountServiceFactory = (
   accountDocumentConverter: IAccountDocumentConverter,
 ): IUpdateAccountService => {
   return async ({ body, accountId, expiresIn }) => {
-    const queried = await accountService.getAccountById(accountId).catch(httpErrors.account.getById({
+    const queried = await accountService.findAccountById(accountId).catch(httpErrors.account.getById({
       accountId,
     }));
 

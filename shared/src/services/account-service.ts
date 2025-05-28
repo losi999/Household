@@ -7,11 +7,12 @@ export interface IAccountService {
   dumpAccounts(): Promise<Account.Document[]>;
   saveAccount(doc: Account.Document): Promise<Account.Document>;
   saveAccounts(docs: Account.Document[]): Promise<unknown>;
-  getAccountById(accountId: Account.Id): Promise<Account.Document>;
+  findAccountById(accountId: Account.Id): Promise<Account.Document>;
+  findAccountsByIds(accountIds: Account.Id[]): Promise<Account.Document[]>;
+  getAccountById(accountId: Account.Id): Promise<Account.AggregatedDocument>;
   deleteAccount(accountId: Account.Id): Promise<unknown>;
   updateAccount(accountId: Account.Id, updateQuery: UpdateQuery<Account.Document>): Promise<unknown>;
-  listAccounts(): Promise<Account.Document[]>;
-  listAccountsByIds(accountIds: Account.Id[]): Promise<Account.Document[]>;
+  listAccounts(): Promise<Account.AggregatedDocument[]>;
 }
 
 export const accountServiceFactory = (mongodbService: IMongodbService): IAccountService => {
@@ -38,11 +39,15 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
         });
       });
     },
+    findAccountById: (accountId) => {
+      return !accountId ? undefined : mongodbService.accounts.findById(accountId)
+        .lean()
+        .exec();
+    },
     getAccountById: async (accountId) => {
-      let account: Account.Document;
       if (accountId) {
-        [account] = await mongodbService.inSession((session) => {
-          return mongodbService.accounts.aggregate([
+        const [account] = await mongodbService.inSession((session) => {
+          return mongodbService.accounts.aggregate<Account.AggregatedDocument>([
             {
               $match: {
                 _id: new Types.ObjectId(accountId),
@@ -56,9 +61,9 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
             })
             .exec();
         });
-      }
 
-      return account;
+        return account;
+      }
     },
     deleteAccount: async (accountId) => {
       return mongodbService.inSession((session) => {
@@ -187,7 +192,7 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
           .exec();
       });
     },
-    listAccountsByIds: (accountIds) => {
+    findAccountsByIds: (accountIds) => {
       return mongodbService.inSession((session) => {
         return mongodbService.accounts.find({
           _id: {

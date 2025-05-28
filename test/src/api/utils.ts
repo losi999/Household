@@ -16,7 +16,7 @@ export const expectRemainingProperties = (internal: object) => {
   ]));
 };
 
-export const expectEmptyObject = (obj: object, message: string) => {
+export const expectEmptyObject = (obj: object, message?: string) => {
   expect(obj, message).to.deep.equal({});
 };
 

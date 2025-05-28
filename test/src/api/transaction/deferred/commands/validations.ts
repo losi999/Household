@@ -78,17 +78,17 @@ export const validateTransactionDeferredResponse = (response: Transaction.Deferr
   expect(isSettled, 'isSettled').to.equal(document.isSettled ?? false);
   expect(remainingAmount, 'remainingAmount').to.equal(document.isSettled ? undefined : expectedRemainingAmount);
 
-  cy.validateNestedAccountResponse('payingAccount.', payingAccount, document.payingAccount, document.payingAccount.balance ?? null)
-    .validateNestedAccountResponse('ownerAccount.', ownerAccount, document.ownerAccount, document.ownerAccount.balance ?? null);
+  cy.validateTransactionNestedObject('payingAccount.', payingAccount).validateLeanAccountResponse(document.payingAccount);
+  cy.validateTransactionNestedObject('ownerAccount.', ownerAccount).validateLeanAccountResponse(document.ownerAccount);
 
   if (project) {
-    cy.validateNestedProjectResponse('project.', project, document.project);
+    cy.validateTransactionNestedObject('project', project).validateProjectResponse(document.project);
   } else {
     expect(project, 'project').to.be.undefined;
   }
 
   if (recipient) {
-    cy.validateNestedRecipientResponse('recipient.', recipient, document.recipient);
+    cy.validateTransactionNestedObject('recipient', recipient).validateRecipientResponse(document.recipient);
   } else {
     expect(recipient, 'recipient').to.be.undefined;
   }

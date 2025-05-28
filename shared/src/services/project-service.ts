@@ -6,11 +6,11 @@ export interface IProjectService {
   dumpProjects(): Promise<Project.Document[]>;
   saveProject(doc: Project.Document): Promise<Project.Document>;
   saveProjects(docs: Project.Document[]): Promise<unknown>;
-  getProjectById(projectId: Project.Id): Promise<Project.Document>;
+  findProjectById(projectId: Project.Id): Promise<Project.Document>;
   deleteProject(projectId: Project.Id): Promise<unknown>;
   updateProject(projectId: Project.Id, updateQuery: UpdateQuery<Project.Document>): Promise<unknown>;
   listProjects(): Promise<Project.Document[]>;
-  listProjectsByIds(projectIds: Project.Id[]): Promise<Project.Document[]>;
+  findProjectsByIds(projectIds: Project.Id[]): Promise<Project.Document[]>;
   mergeProjects(ctx: {
     targetProjectId: Project.Id;
     sourceProjectIds: Project.Id[];
@@ -40,7 +40,7 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
         });
       });
     },
-    getProjectById: async (projectId) => {
+    findProjectById: async (projectId) => {
       return !projectId ? undefined : mongodbService.projects.findById(projectId)
         .lean()
         .exec();
@@ -120,7 +120,7 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
           .exec();
       });
     },
-    listProjectsByIds: (projectIds) => {
+    findProjectsByIds: (projectIds) => {
       return mongodbService.inSession((session) => {
         return mongodbService.projects.find({
           _id: {
