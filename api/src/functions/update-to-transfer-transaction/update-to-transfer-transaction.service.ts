@@ -28,7 +28,7 @@ export const updateToTransferTransactionServiceFactory = (
       transferAccountId,
     });
 
-    const queriedDocument = await transactionService.getTransactionById(transactionId).catch(httpErrors.transaction.getById({
+    const queriedDocument = await transactionService.findTransactionById(transactionId).catch(httpErrors.transaction.getById({
       transactionId,
     }));
 

@@ -1,4 +1,4 @@
-import { calculateRemainingAmount, collectRelatedIds, concatenateSplits, flattenSplit, lookup, matchAnyProperty, populateAggregate, populateRelatedObjects } from '@household/shared/common/aggregate-helpers';
+import { matchAnyProperty, populateAggregate, transactionAggregate } from '@household/shared/common/aggregate-helpers';
 import { populate } from '@household/shared/common/utils';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { Account, Common, File, Transaction } from '@household/shared/types/types';
@@ -8,6 +8,7 @@ export interface ITransactionService {
   dumpTransactions(): Promise<Transaction.Document[]>;
   saveTransaction(doc: Transaction.Document): Promise<Transaction.Document>;
   saveTransactions(docs: Transaction.Document[]): Promise<any>;
+  findTransactionById(transactionId: Transaction.Id): Promise<Transaction.Document>;
   getTransactionById(transactionId: Transaction.Id): Promise<Transaction.Document>;
   getTransactionByIdAndAccountId(query: Transaction.TransactionId & Account.AccountId): Promise<Transaction.Document>;
   deleteTransaction(transactionId: Transaction.Id): Promise<unknown>;
@@ -45,6 +46,9 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
           });
         });
       });
+    },
+    findTransactionById: (transactionId) => {
+      return !transactionId ? undefined : mongodbService.transactions.findById(transactionId).lean();
     },
     getTransactionById: (transactionId) => {
       return !transactionId ? undefined : mongodbService.transactions.findById(transactionId)
@@ -96,34 +100,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
               'ownerAccount',
               'deferredSplits.ownerAccount',
             ]),
-            ...calculateRemainingAmount,
-            ...populateAggregate('recipient', 'recipients'), 
-            concatenateSplits,
-            collectRelatedIds,
-            lookup('projects', 'allProjects'),
-            lookup('products', 'allProducts'),
-            lookup('categories', 'allCategories', [
-              {
-                $lookup: {
-                  from: 'categories',
-                  localField: 'ancestors',
-                  foreignField: '_id',
-                  as: 'ancestors',
-                },
-              },
-            ]),
-            lookup('accounts', 'allAccounts'),
-            populateRelatedObjects,
-            {
-              $unset: [
-                'allAccounts',
-                'allProjects',
-                'allProducts',
-                'allCategories',
-                'allSplits',
-                'repayments',
-              ],
-            },
+            ...transactionAggregate,
           ],
         ))[0];
       });
@@ -232,64 +209,35 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
                 transactionType: {
                   $nin: [
                     'transfer',
-                    'loanTransfer',
+                    'draft',
                   ],
                 },
               },
             },
-            ...flattenSplit({
-              _id: '$_id',
-            }),
             {
               $set: {
-                tmp_dupes: {
-                  $filter: {
-                    input: [
-                      {
-                        account: {
-                          $cond: {
-                            if: {
-                              $ne: [
-                                '$transactionType',
-                                'deferred',
-                              ],
-                            },
-                            then: '$account',
-                            else: null,
-                          },
-                        },
-                      },
-                      {
-                        account: '$transferAccount',
-                        amount: {
-                          $ifNull: [
-                            '$transferAmount',
-                            '$amount',
-                          ],
-                        },
-                      },
-                      {
-                        account: '$ownerAccount',
-                      },
-                    ],
-                    cond: {
-                      $ne: [
-                        {
-                          $ifNull: [
-                            '$$this.account',
-                            null,
-                          ],
-                        },
-                        null,
+                tmp_splits: {
+                  $concatArrays: [
+                    {
+                      $ifNull: [
+                        '$splits',
+                        [],
                       ],
                     },
-                  },
+                    {
+                      $ifNull: [
+                        '$deferredSplits',
+                        [],
+                      ],
+                    },
+                  ],
                 },
               },
             },
             {
               $unwind: {
-                path: '$tmp_dupes',
+                path: '$tmp_splits',
+                preserveNullAndEmptyArrays: true,
               },
             },
             {
@@ -297,21 +245,29 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
                 newRoot: {
                   $mergeObjects: [
                     '$$ROOT',
-                    '$tmp_dupes',
+                    '$tmp_splits',
+                    {
+                      _id: '$_id',
+                      account: {
+                        $ifNull: [
+                          '$tmp_splits.ownerAccount',
+                          '$ownerAccount',
+                          '$account',
+                        ], 
+                      },
+                    },
                   ],
                 },
               },
             },
             {
               $unset: [
-                'tmp_dupes',
                 'tmp_splits',
                 'splits',
                 'deferredSplits',
                 'payingAccount',
                 'ownerAccount',
                 'isSettled',
-                'transactionType',
               ],
             },
             match,
@@ -494,34 +450,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
           {
             $limit: pageSize,
           },
-          ...calculateRemainingAmount,
-          ...populateAggregate('recipient', 'recipients'), 
-          concatenateSplits,
-          collectRelatedIds,
-          lookup('projects', 'allProjects'),
-          lookup('products', 'allProducts'),
-          lookup('categories', 'allCategories', [
-            {
-              $lookup: {
-                from: 'categories',
-                localField: 'ancestors',
-                foreignField: '_id',
-                as: 'ancestors',
-              },
-            },
-          ]),
-          lookup('accounts', 'allAccounts'),
-          populateRelatedObjects,
-          {
-            $unset: [
-              'allAccounts',
-              'allProjects',
-              'allProducts',
-              'allCategories',
-              'allSplits',
-              'repayments',
-            ],
-          },
+          ...transactionAggregate,
         ], {
           session,
         });

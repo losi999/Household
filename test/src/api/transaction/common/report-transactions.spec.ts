@@ -259,7 +259,6 @@ describe('POST /transaction/v1/transactionReports', () => {
                   excludedPaymentTransactionDocument,
                   excludedDeferredTransactionDocument,
                   excludedReimbursementTransactionDocument,
-                  splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.splits[0]),
                 ]);
 
             });
@@ -349,7 +348,6 @@ describe('POST /transaction/v1/transactionReports', () => {
                   splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[0]),
                   splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[1]),
                   splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]),
-                  splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.splits[0]),
                 ]);
             });
 

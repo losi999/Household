@@ -28,7 +28,7 @@ describe('Update to split transaction service', () => {
     mockCategoryService = createMockService('findCategoriesByIds');
     mockRecipientService = createMockService('findRecipientById');
     mockProductService = createMockService('listProductsByIds');
-    mockTransactionService = createMockService('updateTransaction', 'getTransactionById');
+    mockTransactionService = createMockService('updateTransaction', 'findTransactionById');
     mockSplitTransactionDocumentConverter = createMockService('update');
 
     service = updateToSplitTransactionServiceFactory(mockAccountService.service, mockProjectService.service, mockCategoryService.service, mockRecipientService.service, mockProductService.service, mockTransactionService.service, mockSplitTransactionDocumentConverter.service);
@@ -83,7 +83,7 @@ describe('Update to split transaction service', () => {
 
   describe('should return', () => {
     it('if updated to split transaction', async () => {
-      mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
+      mockTransactionService.functions.findTransactionById.mockResolvedValue(queriedDocument);
       mockAccountService.functions.findAccountsByIds.mockResolvedValue([
         queriedAccount,
         loanAccount,
@@ -100,7 +100,7 @@ describe('Update to split transaction service', () => {
         transactionId,
         expiresIn: undefined,
       });
-      validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
+      validateFunctionCall(mockTransactionService.functions.findTransactionById, transactionId);
       validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         loanAccountId,
@@ -127,14 +127,14 @@ describe('Update to split transaction service', () => {
 
   describe('should throw error', () => {
     it('if unable to query transaction', async () => {
-      mockTransactionService.functions.getTransactionById.mockRejectedValue('this is a mongo error');
+      mockTransactionService.functions.findTransactionById.mockRejectedValue('this is a mongo error');
 
       await service({
         body,
         transactionId,
         expiresIn: undefined,
       }).catch(validateError('Error while getting transaction', 500));
-      validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
+      validateFunctionCall(mockTransactionService.functions.findTransactionById, transactionId);
       validateFunctionCall(mockAccountService.functions.findAccountsByIds);
       validateFunctionCall(mockCategoryService.functions.findCategoriesByIds);
       validateFunctionCall(mockProjectService.functions.findProjectsByIds);
@@ -146,14 +146,14 @@ describe('Update to split transaction service', () => {
     });
 
     it('if no transaction found', async () => {
-      mockTransactionService.functions.getTransactionById.mockResolvedValue(undefined);
+      mockTransactionService.functions.findTransactionById.mockResolvedValue(undefined);
 
       await service({
         body,
         transactionId,
         expiresIn: undefined,
       }).catch(validateError('No transaction found', 404));
-      validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
+      validateFunctionCall(mockTransactionService.functions.findTransactionById, transactionId);
       validateFunctionCall(mockAccountService.functions.findAccountsByIds);
       validateFunctionCall(mockCategoryService.functions.findCategoriesByIds);
       validateFunctionCall(mockProjectService.functions.findProjectsByIds);
@@ -174,14 +174,14 @@ describe('Update to split transaction service', () => {
         ],
       });
 
-      mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
+      mockTransactionService.functions.findTransactionById.mockResolvedValue(queriedDocument);
 
       await service({
         body,
         transactionId,
         expiresIn: undefined,
       }).catch(validateError('Cannot loan to same account', 400));
-      validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
+      validateFunctionCall(mockTransactionService.functions.findTransactionById, transactionId);
       validateFunctionCall(mockAccountService.functions.findAccountsByIds);
       validateFunctionCall(mockCategoryService.functions.findCategoriesByIds);
       validateFunctionCall(mockProjectService.functions.findProjectsByIds);
@@ -198,14 +198,14 @@ describe('Update to split transaction service', () => {
         amount: 100,
       });
 
-      mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
+      mockTransactionService.functions.findTransactionById.mockResolvedValue(queriedDocument);
 
       await service({
         body,
         transactionId,
         expiresIn: undefined,
       }).catch(validateError('Sum of splits must equal to total amount', 400));
-      validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
+      validateFunctionCall(mockTransactionService.functions.findTransactionById, transactionId);
       validateFunctionCall(mockAccountService.functions.findAccountsByIds);
       validateFunctionCall(mockCategoryService.functions.findCategoriesByIds);
       validateFunctionCall(mockProjectService.functions.findProjectsByIds);
@@ -217,7 +217,7 @@ describe('Update to split transaction service', () => {
     });
 
     it('if unable to query account', async () => {
-      mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
+      mockTransactionService.functions.findTransactionById.mockResolvedValue(queriedDocument);
       mockAccountService.functions.findAccountsByIds.mockRejectedValue('this is a mongo error');
       mockCategoryService.functions.findCategoriesByIds.mockResolvedValue([category]);
       mockProjectService.functions.findProjectsByIds.mockResolvedValue([project]);
@@ -229,7 +229,7 @@ describe('Update to split transaction service', () => {
         transactionId,
         expiresIn: undefined,
       }).catch(validateError('Unable to query related data', 500));
-      validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
+      validateFunctionCall(mockTransactionService.functions.findTransactionById, transactionId);
       validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         loanAccountId,
@@ -244,7 +244,7 @@ describe('Update to split transaction service', () => {
     });
 
     it('if unable to query categories', async () => {
-      mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
+      mockTransactionService.functions.findTransactionById.mockResolvedValue(queriedDocument);
       mockAccountService.functions.findAccountsByIds.mockResolvedValue([
         queriedAccount,
         loanAccount,
@@ -259,7 +259,7 @@ describe('Update to split transaction service', () => {
         transactionId,
         expiresIn: undefined,
       }).catch(validateError('Unable to query related data', 500));
-      validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
+      validateFunctionCall(mockTransactionService.functions.findTransactionById, transactionId);
       validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         loanAccountId,
@@ -274,7 +274,7 @@ describe('Update to split transaction service', () => {
     });
 
     it('if unable to query projects', async () => {
-      mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
+      mockTransactionService.functions.findTransactionById.mockResolvedValue(queriedDocument);
       mockAccountService.functions.findAccountsByIds.mockResolvedValue([
         queriedAccount,
         loanAccount,
@@ -289,7 +289,7 @@ describe('Update to split transaction service', () => {
         transactionId,
         expiresIn: undefined,
       }).catch(validateError('Unable to query related data', 500));
-      validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
+      validateFunctionCall(mockTransactionService.functions.findTransactionById, transactionId);
       validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         loanAccountId,
@@ -304,7 +304,7 @@ describe('Update to split transaction service', () => {
     });
 
     it('if unable to query recipients', async () => {
-      mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
+      mockTransactionService.functions.findTransactionById.mockResolvedValue(queriedDocument);
       mockAccountService.functions.findAccountsByIds.mockResolvedValue([
         queriedAccount,
         loanAccount,
@@ -319,7 +319,7 @@ describe('Update to split transaction service', () => {
         transactionId,
         expiresIn: undefined,
       }).catch(validateError('Unable to query related data', 500));
-      validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
+      validateFunctionCall(mockTransactionService.functions.findTransactionById, transactionId);
       validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         loanAccountId,
@@ -334,7 +334,7 @@ describe('Update to split transaction service', () => {
     });
 
     it('if unable to query products', async () => {
-      mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
+      mockTransactionService.functions.findTransactionById.mockResolvedValue(queriedDocument);
       mockAccountService.functions.findAccountsByIds.mockResolvedValue([
         queriedAccount,
         loanAccount,
@@ -349,7 +349,7 @@ describe('Update to split transaction service', () => {
         transactionId,
         expiresIn: undefined,
       }).catch(validateError('Unable to query related data', 500));
-      validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
+      validateFunctionCall(mockTransactionService.functions.findTransactionById, transactionId);
       validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         loanAccountId,
@@ -364,7 +364,7 @@ describe('Update to split transaction service', () => {
     });
 
     it('if no account found', async () => {
-      mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
+      mockTransactionService.functions.findTransactionById.mockResolvedValue(queriedDocument);
       mockAccountService.functions.findAccountsByIds.mockResolvedValue([]);
       mockCategoryService.functions.findCategoriesByIds.mockResolvedValue([category]);
       mockProjectService.functions.findProjectsByIds.mockResolvedValue([project]);
@@ -376,7 +376,7 @@ describe('Update to split transaction service', () => {
         transactionId,
         expiresIn: undefined,
       }).catch(validateError('Some of the accounts are not found', 400));
-      validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
+      validateFunctionCall(mockTransactionService.functions.findTransactionById, transactionId);
       validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         loanAccountId,
@@ -391,7 +391,7 @@ describe('Update to split transaction service', () => {
     });
 
     it('if no categories found', async () => {
-      mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
+      mockTransactionService.functions.findTransactionById.mockResolvedValue(queriedDocument);
       mockAccountService.functions.findAccountsByIds.mockResolvedValue([
         queriedAccount,
         loanAccount,
@@ -406,7 +406,7 @@ describe('Update to split transaction service', () => {
         transactionId,
         expiresIn: undefined,
       }).catch(validateError('Some of the categories are not found', 400));
-      validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
+      validateFunctionCall(mockTransactionService.functions.findTransactionById, transactionId);
       validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         loanAccountId,
@@ -421,7 +421,7 @@ describe('Update to split transaction service', () => {
     });
 
     it('if no projects found', async () => {
-      mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
+      mockTransactionService.functions.findTransactionById.mockResolvedValue(queriedDocument);
       mockAccountService.functions.findAccountsByIds.mockResolvedValue([
         queriedAccount,
         loanAccount,
@@ -436,7 +436,7 @@ describe('Update to split transaction service', () => {
         transactionId,
         expiresIn: undefined,
       }).catch(validateError('Some of the projects are not found', 400));
-      validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
+      validateFunctionCall(mockTransactionService.functions.findTransactionById, transactionId);
       validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         loanAccountId,
@@ -451,7 +451,7 @@ describe('Update to split transaction service', () => {
     });
 
     it('if no recipient found', async () => {
-      mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
+      mockTransactionService.functions.findTransactionById.mockResolvedValue(queriedDocument);
       mockAccountService.functions.findAccountsByIds.mockResolvedValue([
         queriedAccount,
         loanAccount,
@@ -466,7 +466,7 @@ describe('Update to split transaction service', () => {
         transactionId,
         expiresIn: undefined,
       }).catch(validateError('No recipient found', 400));
-      validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
+      validateFunctionCall(mockTransactionService.functions.findTransactionById, transactionId);
       validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         loanAccountId,
@@ -481,7 +481,7 @@ describe('Update to split transaction service', () => {
     });
 
     it('if category is "inventory" and no product found', async () => {
-      mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
+      mockTransactionService.functions.findTransactionById.mockResolvedValue(queriedDocument);
       mockAccountService.functions.findAccountsByIds.mockResolvedValue([
         queriedAccount,
         loanAccount,
@@ -496,7 +496,7 @@ describe('Update to split transaction service', () => {
         transactionId,
         expiresIn: undefined,
       }).catch(validateError('No product found', 400));
-      validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
+      validateFunctionCall(mockTransactionService.functions.findTransactionById, transactionId);
       validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         loanAccountId,
@@ -528,7 +528,7 @@ describe('Update to split transaction service', () => {
         ],
       });
 
-      mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
+      mockTransactionService.functions.findTransactionById.mockResolvedValue(queriedDocument);
       mockAccountService.functions.findAccountsByIds.mockResolvedValue([
         queriedAccount,
         loanAccount,
@@ -543,7 +543,7 @@ describe('Update to split transaction service', () => {
         transactionId,
         expiresIn: undefined,
       }).catch(validateError('Product belongs to different category', 400));
-      validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
+      validateFunctionCall(mockTransactionService.functions.findTransactionById, transactionId);
       validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         loanAccountId,
@@ -578,7 +578,7 @@ describe('Update to split transaction service', () => {
         ],
       });
 
-      mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
+      mockTransactionService.functions.findTransactionById.mockResolvedValue(queriedDocument);
       mockAccountService.functions.findAccountsByIds.mockResolvedValue([
         queriedAccount,
         loanAccount,
@@ -593,7 +593,7 @@ describe('Update to split transaction service', () => {
         transactionId,
         expiresIn: undefined,
       }).catch(validateError('Account type cannot be loan', 400));
-      validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
+      validateFunctionCall(mockTransactionService.functions.findTransactionById, transactionId);
       validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         loanAccountId,
         getAccountId(queriedAccount),
@@ -608,7 +608,7 @@ describe('Update to split transaction service', () => {
     });
 
     it('if unable to save transaction', async () => {
-      mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
+      mockTransactionService.functions.findTransactionById.mockResolvedValue(queriedDocument);
       mockAccountService.functions.findAccountsByIds.mockResolvedValue([
         queriedAccount,
         loanAccount,
@@ -625,7 +625,7 @@ describe('Update to split transaction service', () => {
         transactionId,
         expiresIn: undefined,
       }).catch(validateError('Error while updating transaction', 500));
-      validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
+      validateFunctionCall(mockTransactionService.functions.findTransactionById, transactionId);
       validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         loanAccountId,

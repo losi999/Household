@@ -29,7 +29,7 @@ export const updateToSplitTransactionServiceFactory = (
   splitTransactionDocumentConverter: ISplitTransactionDocumentConverter,
 ): IUpdateToSplitTransactionService => {
   return async ({ body, transactionId, expiresIn }) => {
-    const queriedDocument = await transactionService.getTransactionById(transactionId).catch(httpErrors.transaction.getById({
+    const queriedDocument = await transactionService.findTransactionById(transactionId).catch(httpErrors.transaction.getById({
       transactionId,
     }));
 

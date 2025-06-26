@@ -33,7 +33,7 @@ export const updateToPaymentTransactionServiceFactory = (
   deferredTransactionDocumentConverter: IDeferredTransactionDocumentConverter,
 ): IUpdateToPaymentTransactionService => {
   return async ({ body, transactionId, expiresIn }) => {
-    const queriedDocument = await transactionService.getTransactionById(transactionId).catch(httpErrors.transaction.getById({
+    const queriedDocument = await transactionService.findTransactionById(transactionId).catch(httpErrors.transaction.getById({
       transactionId,
     }));
 
