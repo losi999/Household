@@ -506,24 +506,17 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
                   },
                 },
               },
-              {
-                $limit: 1,
-              },
             ],
             as: 'potentialDuplicates',
           })
           .addFields({
-            hasDuplicate: {
-              $gt: [
-                {
-                  $size: '$potentialDuplicates',
-                },
-                0,
-              ],
+            potentialDuplicates: {
+              $map: {
+                input: '$potentialDuplicates',
+                as: 'pd',
+                in: '$$pd._id',
+              },
             },
-          })
-          .project({
-            potentialDuplicates: 0,
           })
           .sort({
             issuedAt: -1,

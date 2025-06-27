@@ -24,11 +24,11 @@ export const draftTransactionDocumentConverterFactory = (): IDraftTransactionDoc
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
-    toResponse: ({ amount, description, issuedAt, _id, hasDuplicate }) => {
+    toResponse: ({ amount, description, issuedAt, _id, potentialDuplicates }) => {
       return {
         amount,
         description,
-        hasDuplicate,
+        potentialDuplicates,
         issuedAt: issuedAt.toISOString(),
         transactionId: getTransactionId(_id),
         transactionType: TransactionType.Draft,

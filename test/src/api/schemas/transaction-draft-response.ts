@@ -4,6 +4,7 @@ import { default as transactionId } from '@household/shared/schemas/transaction-
 import { default as amount } from '@household/shared/schemas/partials/transaction-amount';
 import { default as description } from '@household/shared/schemas/partials/transaction-description';
 import { default as issuedAt } from '@household/shared/schemas/partials/transaction-issued-at';
+import { default as mongoId } from '@household/shared/schemas/partials/mongo-id';
 
 const schema: StrictJSONSchema7<Transaction.DraftResponse> = {
   type: 'object',
@@ -13,7 +14,7 @@ const schema: StrictJSONSchema7<Transaction.DraftResponse> = {
     ...amount.required,
     ...issuedAt.required,
     'transactionType',
-    'hasDuplicate',
+    'potentialDuplicates',
   ],
   properties: {
     ...transactionId.properties,
@@ -24,8 +25,9 @@ const schema: StrictJSONSchema7<Transaction.DraftResponse> = {
       type: 'string',
       const: 'draft',
     },
-    hasDuplicate: {
-      type: 'boolean',
+    potentialDuplicates: {
+      type: 'array',
+      items: mongoId,
     },
   },
 };

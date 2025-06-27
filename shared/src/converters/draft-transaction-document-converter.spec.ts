@@ -2,6 +2,7 @@ import { createDraftTransactionDocument, createDraftTransactionResponse, createF
 import { addSeconds, getTransactionId } from '@household/shared/common/utils';
 import { advanceTo, clear } from 'jest-date-mock';
 import { IDraftTransactionDocumentConverter, draftTransactionDocumentConverterFactory } from '@household/shared/converters/draft-transaction-document-converter';
+import { Transaction } from '../types/types';
 
 describe('Draft transaction document converter', () => {
   let converter: IDraftTransactionDocumentConverter;
@@ -21,12 +22,12 @@ describe('Draft transaction document converter', () => {
   const issuedAt = new Date(2025, 1, 2, 3, 4, 5);
   const expiresIn = 3600;
   const fileDocument = createFileDocument();
-  const hasDuplicate = false;
+  const potentialDuplicates: Transaction.Id[] = [];
 
   const queriedDocument = createDraftTransactionDocument({
     amount,
     description,
-    hasDuplicate,
+    potentialDuplicates,
     issuedAt: now,
     createdAt: now,
     updatedAt: now,
@@ -80,7 +81,7 @@ describe('Draft transaction document converter', () => {
         description,
         amount,
         issuedAt: now.toISOString(),
-        hasDuplicate,
+        potentialDuplicates,
       }));
     });
   });
@@ -95,7 +96,7 @@ describe('Draft transaction document converter', () => {
           description,
           amount,
           issuedAt: now.toISOString(),
-          hasDuplicate,
+          potentialDuplicates,
         }),
       ]);
     });

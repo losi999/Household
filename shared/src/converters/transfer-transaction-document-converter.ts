@@ -31,7 +31,7 @@ export const transferTransactionDocumentConverterFactory = (
   const transactionType = TransactionType.Transfer;
   const defaultUnset: Unset<Transaction.Document, Transaction.TransferDocument> = {
     file: true,
-    hasDuplicate: true,
+    potentialDuplicates: true,
     isSettled: true,
     ownerAccount: true,
     payingAccount: true,
