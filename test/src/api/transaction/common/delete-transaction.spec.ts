@@ -35,6 +35,11 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
 
     splitTransactionDocument = splitTransactionDataFactory.document({
       account: accountDocument,
+      loans: [
+        {
+          loanAccount: loanAccountDocument,
+        },
+      ],
     });
 
     transferTransactionDocument = transferTransactionDataFactory.document({

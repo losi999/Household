@@ -620,6 +620,11 @@ describe('PUT transaction/v1/transactions/{transactionId}/split (split)', () => 
                 body: {
                   description: 'old description',
                 },
+                loans: [
+                  {
+                    loanAccount: secondaryAccountDocument,
+                  },
+                ],
               });
             });
 
