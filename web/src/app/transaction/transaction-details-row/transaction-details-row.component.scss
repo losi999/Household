@@ -1,0 +1,26 @@
+.row {
+  display: grid;
+  column-gap: 6px;
+  grid-template-columns: 24px 1fr;
+  height: 24px;
+  align-items: center;
+  font-size: 16px;
+
+  .mat-icon {
+    color: rgba(0, 0, 0, 0.38);
+  }
+
+  .text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.bold {
+  font-weight: bold;
+}
+
+.italic {
+  font-style: italic;
+}

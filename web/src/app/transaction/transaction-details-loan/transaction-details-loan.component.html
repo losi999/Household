@@ -1,0 +1,12 @@
+<ng-container *ngIf="transaction.transactionType === 'split'; else loan">
+  <household-transaction-details-row *ngIf="transaction.account.accountId !== viewingAccountId" icon="reply_all" [text]="transaction.account.fullName" rowColor="red" />
+  <household-transaction-details-row *ngIf="remainingAmount" icon="attach_money" [text]="remainingAmount + ' ' + transaction.account.currency" />
+  <ng-container *ngIf="transaction.account.accountId === viewingAccountId">
+    <household-transaction-details-row *ngFor="let account of ownerAccounts" icon="forward" [text]="account" rowColor="green" />
+  </ng-container>
+</ng-container>
+<ng-template #loan>
+  <household-transaction-details-row *ngIf="transaction.payingAccount && transaction.payingAccount.accountId !== viewingAccountId" icon="reply_all" [text]="transaction.payingAccount.fullName" rowColor="red" />
+  <household-transaction-details-row *ngIf="transaction.ownerAccount && transaction.ownerAccount.accountId !== viewingAccountId" icon="forward" [text]="transaction.ownerAccount.fullName" rowColor="green" />
+  <household-transaction-details-row *ngIf="remainingAmount" icon="attach_money" [text]="remainingAmount + ' ' + transaction.payingAccount.currency" />
+</ng-template>

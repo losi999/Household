@@ -32,6 +32,15 @@ import { LetDirective } from '@ngrx/component';
 import { DeferredTransactionFilterPipe } from './deferred-transaction-filter.pipe';
 import { OrderByPipe } from '@household/web/app/shared/order-by.pipe';
 import { IsEditorDirective } from '@household/web/app/shared/is-editor.directive';
+import { TransactionDetailsRowComponent } from './transaction-details-row/transaction-details-row.component';
+import { TransactionDetailsRecipientComponent } from './transaction-details-recipient/transaction-details-recipient.component';
+import { TransactionDetailsCategoryComponent } from './transaction-details-category/transaction-details-category.component';
+import { TransactionDetailsProjectComponent } from './transaction-details-project/transaction-details-project.component';
+import { TransactionDetailsDescriptionComponent } from './transaction-details-description/transaction-details-description.component';
+import { TransactionDetailsInventoryComponent } from './transaction-details-inventory/transaction-details-inventory.component';
+import { TransactionDetailsInvoiceComponent } from './transaction-details-invoice/transaction-details-invoice.component';
+import { TransactionDetailsTransferComponent } from './transaction-details-transfer/transaction-details-transfer.component';
+import { TransactionDetailsLoanComponent } from './transaction-details-loan/transaction-details-loan.component';
 
 @NgModule({
   declarations: [
@@ -42,6 +51,15 @@ import { IsEditorDirective } from '@household/web/app/shared/is-editor.directive
     TransactionLoanEditComponent,
     TransactionShortDetailsComponent,
     DeferredTransactionFilterPipe,
+    TransactionDetailsRowComponent,
+    TransactionDetailsRecipientComponent,
+    TransactionDetailsCategoryComponent,
+    TransactionDetailsProjectComponent,
+    TransactionDetailsDescriptionComponent,
+    TransactionDetailsInventoryComponent,
+    TransactionDetailsInvoiceComponent,
+    TransactionDetailsTransferComponent,
+    TransactionDetailsLoanComponent,
   ],
   imports: [
     RouterModule,
@@ -71,6 +89,16 @@ import { IsEditorDirective } from '@household/web/app/shared/is-editor.directive
     OrderByPipe,
     IsEditorDirective,
   ],
-  exports: [TransactionShortDetailsComponent],
+  exports: [
+    TransactionShortDetailsComponent,
+    TransactionDetailsRecipientComponent,
+    TransactionDetailsCategoryComponent,
+    TransactionDetailsProjectComponent,
+    TransactionDetailsDescriptionComponent,
+    TransactionDetailsInventoryComponent,
+    TransactionDetailsInvoiceComponent,
+    TransactionDetailsTransferComponent,
+    TransactionDetailsLoanComponent,
+  ],
 })
 export class TransactionModule { }
