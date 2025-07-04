@@ -1,2 +1,2 @@
-<household-transaction-details-row *ngIf="transaction.invoiceNumber" icon="receipt" [text]="transaction.invoiceNumber" />
-<household-transaction-details-row *ngIf="transaction.billingStartDate && transaction.billingEndDate" icon="calendar_month" [text]="(transaction.billingStartDate | date:'yyyy. MMM dd.') + ' - ' + (transaction.billingEndDate | date:'yyyy. MMM dd.')" />
+<household-transaction-details-row *ngIf="transaction?.invoiceNumber" icon="receipt" [text]="transaction.invoiceNumber" />
+<household-transaction-details-row *ngIf="transaction?.billingStartDate && transaction?.billingEndDate" icon="calendar_month" [text]="(transaction.billingStartDate | date:'yyyy. MMM dd.') + ' - ' + (transaction.billingEndDate | date:'yyyy. MMM dd.')" />

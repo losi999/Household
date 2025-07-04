@@ -1,4 +1,3 @@
-<ng-container *ngIf="transaction.transactionType === 'transfer'">
-  <!-- <household-transaction-details-row *ngIf="transaction.account" icon="arrow_left_alt" [text]="transaction.account.fullName" /> -->
+<ng-container *ngIf="transaction?.transactionType === 'transfer'">
   <household-transaction-details-row *ngIf="transaction.transferAccount" [icon]="'arrow_' + (transaction.amount > 0 ? 'left' : 'right') + '_alt'" [text]="transaction.transferAccount.fullName" [rowColor]="transaction.amount > 0 ? 'green' : 'red'" />
 </ng-container>

@@ -67,10 +67,10 @@ export class AccountTransactionsListItemComponent implements OnInit {
           this.viewingAccount = this.transaction.account;
           this.amount = this.transaction.amount;
         } else {
-          this.viewingAccount = this.transaction.deferredSplits[0].ownerAccount;
+          this.viewingAccount = this.transaction.deferredSplits.find(s => s.ownerAccount.accountId === this.viewingAccountId).ownerAccount;
           if (this.viewingAccount.accountType === 'loan') {
             this.amount = this.transaction.deferredSplits.reduce((accumulator, currentValue) => {
-              return accumulator - currentValue.amount;
+              return currentValue.ownerAccount.accountId === this.viewingAccountId ? accumulator - currentValue.amount : accumulator;
             }, 0);
           }
         }

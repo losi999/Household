@@ -17,5 +17,14 @@
   </mat-menu>
 
 </household-toolbar>
-<h1>2025. április 23.</h1>
-<pre>{{transaction | async | json}}</pre>
+<ng-container *ngIf="transaction | async as tx">
+  <h1>{{tx.issuedAt | date: 'yyyy. MMMM d.' }}</h1>
+  <div>{{tx.amount | number:'1.0-2':'hu'}} {{(tx.account || tx.payingAccount).currency}}</div>
+  <household-transaction-details-recipient [transaction]="tx" />
+  <household-transaction-details-category [transaction]="tx" />
+  <household-transaction-details-inventory [transaction]="tx" />
+  <household-transaction-details-invoice [transaction]="tx" />
+  <household-transaction-details-project [transaction]="tx" />
+  <household-transaction-details-description [transaction]="tx" />
+  <pre>{{tx | json}}</pre>
+</ng-container>
