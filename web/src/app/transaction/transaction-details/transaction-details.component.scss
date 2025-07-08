@@ -1,3 +1,17 @@
-ul {
-  list-style-type: none;
+.amount {
+  text-align: right;
+}
+
+.account {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.direction {
+  text-align: center;
+}
+
+.split-item {
+  padding: 5px;
 }
