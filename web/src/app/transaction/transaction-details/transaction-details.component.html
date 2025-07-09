@@ -30,21 +30,21 @@
     loan
   </ng-template>
 
-  <h1>{{tx.issuedAt | date: 'yyyy. MMMM d.' }}</h1>
+  <div class="issued-at">{{tx.issuedAt | date: 'yyyy. MMMM d.' }}</div>
   <ng-container *ngIf="tx.account">
-    <h2 class="account" [ngClass]="tx.amount > 0 ? 'green' : 'red'">{{tx.account.fullName}}</h2>
-    <h2 class="amount" [ngClass]="tx.amount > 0 ? 'green' : 'red'">{{tx.amount | number:'1.0-2':'hu'}} {{tx.account.currency}}</h2>
+    <div class="account" [ngClass]="tx.amount > 0 ? 'green' : 'red'">{{tx.account.fullName}}</div>
+    <div total class="amount" [ngClass]="tx.amount > 0 ? 'green' : 'red'">{{tx.amount | number:'1.0-2':'hu'}} {{tx.account.currency}}</div>
   </ng-container>
   <ng-container *ngIf="tx.transferAccount">
     <div class="direction">
       <mat-icon>{{tx.amount > 0 ? 'stat_3' : 'stat_minus_3'}}</mat-icon>
     </div>
-    <h2 class="account" [ngClass]="tx.transferAmount > 0 ? 'green' : 'red'">{{tx.transferAccount.fullName}}</h2>
-    <h2 class="amount" [ngClass]="tx.transferAmount > 0 ? 'green' : 'red'">{{tx.transferAmount | number:'1.0-2':'hu'}} {{(tx.transferAccount || tx.payingAccount).currency}}</h2>
+    <div class="account" [ngClass]="tx.transferAmount > 0 ? 'green' : 'red'">{{tx.transferAccount.fullName}}</div>
+    <div total class="amount" [ngClass]="tx.transferAmount > 0 ? 'green' : 'red'">{{tx.transferAmount | number:'1.0-2':'hu'}} {{(tx.transferAccount || tx.payingAccount).currency}}</div>
   </ng-container>
   <ng-container *ngIf="tx.payingAccount">
-    <h2 class="account red">{{tx.payingAccount.fullName}}</h2>
-    <h2 class="amount red">{{tx.amount | number:'1.0-2':'hu'}} {{tx.payingAccount.currency}}</h2>
+    <div class="account red">{{tx.payingAccount.fullName}}</div>
+    <div total class="amount red">{{tx.amount | number:'1.0-2':'hu'}} {{tx.payingAccount.currency}}</div>
     <household-transaction-details-loan [transaction]="tx" [viewingAccountId]="tx.payingAccount.accountId" />
   </ng-container>
   <household-transaction-details-recipient [transaction]="tx" />
@@ -56,7 +56,7 @@
   <ng-container *ngIf="tx.transactionType === 'split'">
     <ng-container *ngFor="let s of tx.splits">
       <mat-divider />
-      <h3 class="amount" [ngClass]="s.amount > 0 ? 'green' : 'red'">{{s.amount | number:'1.0-2':'hu'}} {{tx.account.currency}}</h3>
+      <div split class="amount" [ngClass]="s.amount > 0 ? 'green' : 'red'">{{s.amount | number:'1.0-2':'hu'}} {{tx.account.currency}}</div>
       <household-transaction-details-recipient [transaction]="s" />
       <household-transaction-details-category [transaction]="s" />
       <household-transaction-details-inventory [transaction]="s" />
@@ -66,7 +66,7 @@
     </ng-container>
     <ng-container *ngFor="let s of tx.deferredSplits">
       <mat-divider />
-      <h3 class="amount" [ngClass]="s.amount > 0 ? 'green' : 'red'">{{s.amount | number:'1.0-2':'hu'}} {{tx.account.currency}}</h3>
+      <div split class="amount" [ngClass]="s.amount > 0 ? 'green' : 'red'">{{s.amount | number:'1.0-2':'hu'}} {{tx.account.currency}}</div>
       <household-transaction-details-loan [transaction]="s" [viewingAccountId]="tx.account.accountId" />
       <household-transaction-details-recipient [transaction]="s" />
       <household-transaction-details-category [transaction]="s" />
@@ -80,8 +80,7 @@
   <ng-container *ngIf="tx.transactionType === 'transfer'">
     <ng-container *ngFor="let p of tx.payments">
       <mat-divider />
-      <h3 class="amount" [ngClass]="p.amount > 0 ? 'green' : 'red'">{{p.amount | number:'1.0-2':'hu'}} {{tx.account.currency}}</h3>
-
+      <div split class="amount" [ngClass]="p.amount > 0 ? 'green' : 'red'">{{p.amount | number:'1.0-2':'hu'}} {{tx.account.currency}}</div>
 
       <household-transaction-details-loan [transaction]="p.transaction" />
       <household-transaction-details-recipient [transaction]="p.transaction" />

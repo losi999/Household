@@ -1,5 +1,23 @@
+.issued-at {
+  font-size: 26px;
+  margin-bottom: 16px;
+}
+
+.account {
+  font-size: 20px;
+}
+
 .amount {
   text-align: right;
+}
+
+.amount[total] {
+  font-size: 20px;
+  margin-bottom: 16px;
+}
+
+.amount[split] {
+  font-size: 16px;
 }
 
 .account {

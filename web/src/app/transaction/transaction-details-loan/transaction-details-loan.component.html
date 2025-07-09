@@ -21,5 +21,15 @@
 <ng-template #loan>
   <household-transaction-details-row *ngIf="transaction?.payingAccount && transaction?.payingAccount.accountId !== viewingAccountId" icon="reply_all" [text]="transaction.payingAccount.fullName" rowColor="red" />
   <household-transaction-details-row *ngIf="transaction?.ownerAccount && transaction?.ownerAccount.accountId !== viewingAccountId" icon="forward" [text]="transaction.ownerAccount.fullName" rowColor="green" />
-  <household-transaction-details-row *ngIf="transaction?.remainingAmount" icon="attach_money" [text]="(transaction?.remainingAmount | number:'1.0-2':'hu') + ' ' + transaction.payingAccount.currency" [rowColor]="transaction?.payingAccount.accountId !== viewingAccountId ? 'red' : 'green'" />
+  <ng-container *ngIf="repayment; then withRepayment; else justRemainingAmount">
+
+  </ng-container>
+  <ng-template #withRepayment>
+    <household-transaction-details-row icon="attach_money" [text]="(repayment | number:'1.0-2':'hu') + ' ' + transaction.payingAccount.currency" />
+    <household-transaction-details-row *ngIf="transaction?.remainingAmount - repayment" icon="money_off" [text]="((transaction?.remainingAmount - repayment) | number:'1.0-2':'hu') + ' ' + transaction.payingAccount.currency" rowColor="red" />
+  </ng-template>
+  <ng-template #justRemainingAmount>
+    <household-transaction-details-row *ngIf="transaction?.remainingAmount" icon="attach_money" [text]="(transaction?.remainingAmount | number:'1.0-2':'hu') + ' ' + transaction.payingAccount.currency" [rowColor]="transaction?.payingAccount.accountId !== viewingAccountId ? 'red' : 'green'" />
+  </ng-template>
+
 </ng-template>

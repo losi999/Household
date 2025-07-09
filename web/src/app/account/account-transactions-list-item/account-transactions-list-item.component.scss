@@ -13,11 +13,6 @@
     grid-area: details;
   }
 
-  &>.details2 {
-    grid-area: details2;
-    min-width: 0;
-  }
-
   &>.datetime {
     grid-area: datetime;
     text-align: left;

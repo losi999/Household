@@ -11,6 +11,7 @@ import { Account, Transaction } from '@household/shared/types/types';
 export class TransactionDetailsLoanComponent implements OnChanges {
   @Input() transaction: Transaction.DeferredResponse | Transaction.ReimbursementResponse | Transaction.SplitResponse;
   @Input() viewingAccountId: Account.Id;
+  @Input() repayment: number;
 
   loans: {
     [accountId: string]: {
@@ -21,22 +22,20 @@ export class TransactionDetailsLoanComponent implements OnChanges {
   remainingAmount: number;
   
   ngOnChanges(): void {
-    switch (this.transaction?.transactionType) {
-      case TransactionType.Split: {
-        this.loans = this.transaction.deferredSplits?.reduce((accumulator, currentValue) => {
-          const key = currentValue.ownerAccount.accountId;
-          if (!accumulator[key]) {
-            accumulator[key] = {
-              accountName: currentValue.ownerAccount.fullName,
-              amount: 0,
-            };
-          }
+    if (this.transaction?.transactionType === TransactionType.Split) {
+      this.loans = this.transaction.deferredSplits?.reduce((accumulator, currentValue) => {
+        const key = currentValue.ownerAccount.accountId;
+        if (!accumulator[key]) {
+          accumulator[key] = {
+            accountName: currentValue.ownerAccount.fullName,
+            amount: 0,
+          };
+        }
 
-          accumulator[key].amount += currentValue.remainingAmount ?? 0;
+        accumulator[key].amount += currentValue.remainingAmount ?? 0;
 
-          return accumulator;
-        }, {});
-      }break;
-    }    
+        return accumulator;
+      }, {});
+    }
   }
 }

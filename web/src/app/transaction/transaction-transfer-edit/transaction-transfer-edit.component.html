@@ -32,11 +32,18 @@
 
   <div class="list-item" *ngFor="let p of payments | orderBy: 'transaction.issuedAt' : 'desc'">
     <div class="datetime">
-      <div class="year">{{p.transaction.issuedAt | date:'yyyy'}}</div>
-      <div class="date">{{p.transaction.issuedAt | date:'MMM dd.'}}</div>
-      <div class="time">{{p.transaction.issuedAt | date:'HH:mm'}}</div>
+      {{p.transaction.issuedAt | date: showYear ? 'yyyy. MMMM dd. HH:mm' : 'MMMM d. HH:mm'}}
     </div>
-    <household-transaction-short-details [category]="p.transaction.category" [project]="p.transaction.project" [recipient]="p.transaction.recipient" [product]="p.transaction.product" [billingStartDate]="p.transaction.billingStartDate" [billingEndDate]="p.transaction.billingEndDate" [description]="p.transaction.description" [invoiceNumber]="p.transaction.invoiceNumber" [quantity]="p.transaction.quantity" [currency]="p.transaction.payingAccount.currency" [amount]="p.amount" [payingAccount]="p.transaction.payingAccount" [ownerAccount]="p.transaction.ownerAccount" [remainingAmount]="p.transaction.remainingAmount - p.amount" />
+
+    <div class="details">
+      <household-transaction-details-loan [transaction]="p.transaction" [repayment]="p.amount" />
+      <household-transaction-details-recipient [transaction]="p.transaction" />
+      <household-transaction-details-category [transaction]="p.transaction" />
+      <household-transaction-details-inventory [transaction]="p.transaction" />
+      <household-transaction-details-invoice [transaction]="p.transaction" />
+      <household-transaction-details-project [transaction]="p.transaction" />
+      <household-transaction-details-description [transaction]="p.transaction" />
+    </div>
     <div class="buttons">
       <button mat-icon-button type="button" color="warn" (click)="deletePayment(p.transaction.transactionId)">
         <mat-icon>delete</mat-icon>
@@ -48,9 +55,17 @@
     <mat-expansion-panel hideToggle *ngFor="let deferred of availableDeferredTransactions | async | deferredTransactionFilter: payments | orderBy: 'issuedAt' : 'desc'" #panel (afterCollapse)="paymentAmount.reset()">
       <mat-expansion-panel-header>
         <mat-panel-title>{{deferred.issuedAt | date:'yyyy. MMM dd.'}}</mat-panel-title>
-        <mat-panel-description>{{deferred.payingAccount.fullName}} &nbsp; <mat-icon>forward</mat-icon>&nbsp; {{deferred.ownerAccount.fullName}}</mat-panel-description>
+        <mat-panel-description>{{deferred.description ?? deferred.category?.fullName}}</mat-panel-description>
       </mat-expansion-panel-header>
-      <household-transaction-short-details [description]="deferred.description" [category]="deferred.category" [recipient]="deferred.recipient" [project]="deferred.project" [product]="deferred.product" [quantity]="deferred.quantity" [invoiceNumber]="deferred.invoiceNumber" [billingStartDate]="deferred.billingStartDate" [billingEndDate]="deferred.billingEndDate" [amount]="deferred.remainingAmount" [currency]="deferred.payingAccount.currency" />
+
+      <household-transaction-details-loan [transaction]="deferred" />
+      <household-transaction-details-recipient [transaction]="deferred" />
+      <household-transaction-details-category [transaction]="deferred" />
+      <household-transaction-details-inventory [transaction]="deferred" />
+      <household-transaction-details-invoice [transaction]="deferred" />
+      <household-transaction-details-project [transaction]="deferred" />
+      <household-transaction-details-description [transaction]="deferred" />
+
       <household-amount-input *ngIf="panel.expanded" [currency]="deferred.payingAccount.currency" [signDisabled]="true" [formControl]="paymentAmount" [max]="deferred.remainingAmount" />
       <div class="buttons">
         <button mat-icon-button color="primary" class="transaction-edit-split-item" (click)="addPayment(deferred)" type="button">
