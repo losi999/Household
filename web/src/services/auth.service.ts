@@ -28,7 +28,7 @@ export class AuthService {
     }
 
     if (!this.userTypes) {
-      this.userTypes = localStorage.getItem('userTypes')?.split(',') as UserType[];
+      this.userTypes = (localStorage.getItem('userTypes')?.split(',') ?? []) as UserType[];
     }
     return this.userTypes.includes(userType);
   }
