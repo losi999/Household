@@ -8,5 +8,5 @@ import { Transaction } from '@household/shared/types/types';
   styleUrl: './transaction-details-description.component.scss',
 })
 export class TransactionDetailsDescriptionComponent {
-  @Input() transaction: Transaction.Response;
+  @Input() transaction: Transaction.Response | Transaction.Report;
 }

@@ -8,5 +8,5 @@ import { Transaction } from '@household/shared/types/types';
   styleUrl: './transaction-details-recipient.component.scss',
 })
 export class TransactionDetailsRecipientComponent {
-  @Input() transaction: Transaction.PaymentResponse | Transaction.SplitResponse | Transaction.DeferredResponse | Transaction.ReimbursementResponse;
+  @Input() transaction: Transaction.PaymentResponse | Transaction.SplitResponse | Transaction.DeferredResponse | Transaction.ReimbursementResponse | Transaction.Report;  
 }

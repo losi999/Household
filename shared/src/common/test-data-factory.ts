@@ -690,7 +690,6 @@ export const createProductReport: DataFactoryFunction<Product.Report> = (rep) =>
   return {
     productId: createProductId(),
     fullName: 'product name 100 g',
-    quantity: 1,
     ...rep,
   };
 };
@@ -712,6 +711,7 @@ export const createTransactionReport: DataFactoryFunction<Transaction.Report> = 
     account: createAccountReport(),
     category: createCategoryReport(),
     product: createProductReport(),
+    quantity: 1,
     project: createProjectReport(),
     recipient: createRecipientReport(),
     invoiceNumber: 'inv123',

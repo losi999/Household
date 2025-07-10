@@ -27,7 +27,6 @@ import { CategoryAutocompleteInputComponent } from '@household/web/app/shared/au
 import { ProductAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/product-autocomplete-input/product-autocomplete-input.component';
 import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { TransactionShortDetailsComponent } from './transaction-short-details/transaction-short-details.component';
 import { LetDirective } from '@ngrx/component';
 import { DeferredTransactionFilterPipe } from './deferred-transaction-filter.pipe';
 import { OrderByPipe } from '@household/web/app/shared/order-by.pipe';
@@ -49,7 +48,6 @@ import { TransactionDetailsLoanComponent } from './transaction-details-loan/tran
     TransactionSplitEditComponent,
     TransactionTransferEditComponent,
     TransactionLoanEditComponent,
-    TransactionShortDetailsComponent,
     DeferredTransactionFilterPipe,
     TransactionDetailsRowComponent,
     TransactionDetailsRecipientComponent,
@@ -90,7 +88,6 @@ import { TransactionDetailsLoanComponent } from './transaction-details-loan/tran
     IsEditorDirective,
   ],
   exports: [
-    TransactionShortDetailsComponent,
     TransactionDetailsRecipientComponent,
     TransactionDetailsCategoryComponent,
     TransactionDetailsProjectComponent,

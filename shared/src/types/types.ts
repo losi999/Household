@@ -221,8 +221,7 @@ export namespace Product {
   };
 
   export type Report = ProductId
-  & FullName
-  & Transaction.Quantity;
+  & FullName;
 
   export type Request = Base;
 }
@@ -576,6 +575,7 @@ export namespace Transaction {
   & Project<Project.Report>
   & Recipient<Recipient.Report>
   & Product<Product.Report>
+  & Quantity
   & InvoiceNumber
   & InvoiceDate<string>;
 }

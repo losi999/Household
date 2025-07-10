@@ -9,5 +9,5 @@ import { Transaction } from '@household/shared/types/types';
   styleUrl: './transaction-details-project.component.scss',
 })
 export class TransactionDetailsProjectComponent {
-  @Input() transaction: Transaction.PaymentResponse | Transaction.DeferredResponse | Transaction.ReimbursementResponse | Transaction.SplitResponseItem;
+  @Input() transaction: Transaction.PaymentResponse | Transaction.DeferredResponse | Transaction.ReimbursementResponse | Transaction.SplitResponseItem | Transaction.Report;
 }

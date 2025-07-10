@@ -16,48 +16,17 @@
     <ng-container *ngIf="node.transactionId; else groupNode">
       <a [routerLink]="['/accounts', node.account.accountId, 'transactions', node.transactionId]" class="report-item mat-elevation-z2" href="" target="_blank">
         <div class="datetime">
-          <div class="year">{{node.issuedAt | date:'yyyy'}}</div>
-          <div class="date">{{node.issuedAt | date:'MMM dd.'}}</div>
-          <div class="time">{{node.issuedAt | date:'HH:mm'}}</div>
+          {{node.issuedAt | date: 'yyyy. MMMM dd. HH:mm'}}
         </div>
-        <mat-list>
-          <mat-list-item class="account" *ngIf="!groupBy.includes('account')">
-            <mat-icon matListItemIcon>reply_all</mat-icon>
-            <div matListItemTitle>{{node.account.fullName}}</div>
-          </mat-list-item>
-          <mat-list-item *ngIf="!groupBy.includes('recipient') && node.recipient">
-            <mat-icon matListItemIcon>store</mat-icon>
-            <div matListItemTitle class="recipient">{{node.recipient.name}}</div>
-          </mat-list-item>
-          <mat-list-item *ngIf="!groupBy.includes('category') && node.category">
-            <mat-icon matListItemIcon>category</mat-icon>
-            <div matListItemTitle class="category">{{node.category.fullName}}</div>
-          </mat-list-item>
-          <mat-list-item *ngIf="!groupBy.includes('product') && node.product">
-            <mat-icon matListItemIcon>barcode</mat-icon>
-            <div matListItemTitle class="product">{{node.product.fullName}}</div>
-          </mat-list-item>
-          <mat-list-item *ngIf="node.product">
-            <mat-icon matListItemIcon>add_shopping_cart</mat-icon>
-            <div matListItemTitle class="product">{{node.product.quantity}}</div>
-          </mat-list-item>
-          <mat-list-item *ngIf="node.invoiceNumber">
-            <mat-icon matListItemIcon>receipt</mat-icon>
-            <div matListItemTitle class="product">{{node.invoiceNumber}}</div>
-          </mat-list-item>
-          <mat-list-item *ngIf="node.billingStartDate && node.billingEndDate">
-            <mat-icon matListItemIcon>calendar_month</mat-icon>
-            <div matListItemTitle class="product">{{node.billingStartDate | date:'yyyy MMM dd.'}} - {{node.billingEndDate | date:'yyyy MMM dd.'}}</div>
-          </mat-list-item>
-          <mat-list-item *ngIf="!groupBy.includes('project') && node.project">
-            <mat-icon matListItemIcon>stacks</mat-icon>
-            <div matListItemTitle class="project">{{node.project.name}}</div>
-          </mat-list-item>
-          <mat-list-item *ngIf="node.description">
-            <mat-icon matListItemIcon>description</mat-icon>
-            <div matListItemTitle class="description">{{node.description}}</div>
-          </mat-list-item>
-        </mat-list>
+        <div class="details">
+          <household-transaction-details-row *ngIf="!groupBy.includes('account')" icon="reply_all" [text]="node.account.fullName" />
+          <household-transaction-details-recipient *ngIf="!groupBy.includes('recipient')" [transaction]="node" />
+          <household-transaction-details-category *ngIf="!groupBy.includes('category')" [transaction]="node" />
+          <household-transaction-details-inventory *ngIf="!groupBy.includes('product')" [transaction]="node" />
+          <household-transaction-details-invoice [transaction]="node" />
+          <household-transaction-details-project *ngIf="!groupBy.includes('project')" [transaction]="node" />
+          <household-transaction-details-description *ngIf="!groupBy.includes('description')" [transaction]="node" />
+        </div>
         <div class="amount" [ngClass]="node.amount >= 0 ? 'green' : 'red'">
           {{node.amount}} {{node.account.currency}}
         </div>

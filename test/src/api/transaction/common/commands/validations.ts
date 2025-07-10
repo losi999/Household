@@ -57,7 +57,7 @@ const validateTransactionListReport = (reports: Transaction.Report[], documents:
   const total = documents?.length ?? 0;
   expect(reports.length, 'number of items').to.equal(total);
   reports.forEach((report, index) => {
-    const { account, amount, category, description, issuedAt, product, project, recipient, transactionId, invoiceNumber, billingEndDate, billingStartDate, ...empty } = report;
+    const { account, amount, category, description, issuedAt, product, project, quantity, recipient, transactionId, invoiceNumber, billingEndDate, billingStartDate, ...empty } = report;
     const document = documents.find(d => {
       if (report.transactionId !== getTransactionId(d)) {
         return false;
@@ -131,8 +131,8 @@ const validateTransactionListReport = (reports: Transaction.Report[], documents:
     }
 
     if (product) {
-      const { productId, quantity, fullName, ...empty } = product;
-      expect(quantity, `[${index}].product.quantity`).to.equal(documentQuantity);
+      const { productId, fullName, ...empty } = product;
+      expect(quantity, `[${index}].quantity`).to.equal(documentQuantity);
       expect(productId, `[${index}].product.productId`).to.equal(getProductId(documentProduct));
       expect(fullName, `[${index}].product.fullName`).to.equal(documentProduct?.fullName);
       expectEmptyObject(empty, `[${index}]`);
