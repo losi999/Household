@@ -711,7 +711,7 @@ export const createTransactionReport: DataFactoryFunction<Transaction.Report> = 
     account: createAccountReport(),
     category: createCategoryReport(),
     product: createProductReport(),
-    quantity: 1,
+    quantity: 100,
     project: createProjectReport(),
     recipient: createRecipientReport(),
     invoiceNumber: 'inv123',
