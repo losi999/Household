@@ -42,6 +42,10 @@ export class RecipientAutocompleteInputComponent implements OnInit, ControlValue
   constructor(private injector: Injector, private store: Store, @Self() public ngControl: NgControl) {
     ngControl.valueAccessor = this;
   }
+  
+  optionSelected(input: HTMLInputElement) {
+    setTimeout(() => input.blur());
+  }
 
   ngOnInit(): void {
     if (this.ngControl instanceof FormControlName) {

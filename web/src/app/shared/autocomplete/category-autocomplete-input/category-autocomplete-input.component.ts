@@ -47,6 +47,10 @@ export class CategoryAutocompleteInputComponent implements OnInit, ControlValueA
     ngControl.valueAccessor = this;
   }
 
+  optionSelected(input: HTMLInputElement) {
+    setTimeout(() => input.blur());
+  }
+
   ngOnInit(): void {
     if (this.ngControl instanceof FormControlName) {
       this.selected = this.injector.get(FormGroupDirective).getControl(this.ngControl);
