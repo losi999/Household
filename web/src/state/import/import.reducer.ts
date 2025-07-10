@@ -50,14 +50,14 @@ on(importActions.applyEditingFields, (_state, { fileId, transactionIds, updatedV
           const tx: ImportedTransaction = {
             ...original,
             ...updatedValues,
-            transactionType: TransactionType.Payment,
           };
 
-          if (tx.transferAccount) {
-            tx.transactionType = TransactionType.Transfer;
-          }
+          tx.payingAccount = tx.account;
+          tx.ownerAccount = tx.loanAccount;
 
-          if (updatedValues.loanAccount) {
+          if (updatedValues.transferAccount) {
+            tx.transactionType = TransactionType.Transfer;
+          } else {
             tx.transactionType = TransactionType.Payment;
           }
 

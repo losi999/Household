@@ -26,6 +26,8 @@ export type ImportedTransaction = Transaction.TransactionId
 & Partial<Transaction.Category<Category.Response>>
 & Partial<Transaction.Project<Project.Response>>
 & Partial<Transaction.Recipient<Recipient.Response>>
+& Partial<Transaction.PayingAccount<Account.Response>>
+& Partial<Transaction.OwnerAccount<Account.Response>>
 & {
   loanAccount?: Account.Response;
 };

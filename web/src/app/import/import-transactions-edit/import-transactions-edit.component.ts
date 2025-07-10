@@ -18,7 +18,6 @@ type FieldName = keyof TransactionImportUpdatableFields;
 @Component({
   selector: 'household-import-transactions-edit',
   standalone: false,
-
   templateUrl: './import-transactions-edit.component.html',
   styleUrl: './import-transactions-edit.component.scss',
 })
@@ -76,6 +75,9 @@ export class ImportTransactionsEditComponent implements OnInit {
         this.fieldVisibility.transferAccount = false;
       } break;
       case 'transferAccount': {
+        this.fieldVisibility.recipient = false;
+        this.fieldVisibility.category = false;
+        this.fieldVisibility.project = false;
         this.fieldVisibility.loanAccount = false;
       }
     }
@@ -108,7 +110,6 @@ export class ImportTransactionsEditComponent implements OnInit {
     }));
 
     this.cancel();
-    this.selectedTransactions.reset();
   }
 
   cancel() {

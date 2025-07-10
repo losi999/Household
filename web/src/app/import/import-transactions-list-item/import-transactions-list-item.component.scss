@@ -2,32 +2,23 @@
   margin: 5px 0;
   padding: 0 10px;
   display: grid;
-  grid-template-columns: 75px 1fr auto;
+  grid-template-columns: 1fr auto;
   column-gap: 15px;
-  grid-template-areas: "datetime details amount";
+  row-gap: 5px;
+  grid-template-areas: "datetime amount"
+    "details details";
 
-  & > .details {
+  &>.details {
+    grid-area: details;
     min-width: 0;
   }
 
-  & > .datetime {
+  &>.datetime {
     grid-area: datetime;
-    text-align: right;
-
-    & > .year {
-      font-size: 12px;
-    }
-
-    & > .date {
-      font-size: 16px;
-    }
-
-    & > .time {
-      font-size: 14px;
-    }
+    font-size: 16px;
   }
 
-  & > .amount {
+  &>.amount {
     grid-area: amount;
     align-self: center;
     justify-self: end;
@@ -37,15 +28,11 @@
 
   @media all and (max-width: 639px) {
     & {
-      grid-template-columns: 65px 1fr auto;
       column-gap: 5px;
     }
 
-    & > .date {
-      font-size: 14px;
-    }
-
-    & > .amount {
+    &>.amount,
+    &>.datetime {
       font-size: 14px;
     }
   }

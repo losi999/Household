@@ -9,4 +9,5 @@ import { Transaction } from '@household/shared/types/types';
 })
 export class TransactionDetailsTransferComponent {
   @Input() transaction: Transaction.TransferResponse;
+  @Input() twoWayDisplay: boolean;
 }

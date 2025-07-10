@@ -19,8 +19,9 @@
 </ng-template>
 
 <ng-template #loan>
-  <household-transaction-details-row *ngIf="transaction?.payingAccount && transaction?.payingAccount.accountId !== viewingAccountId" icon="reply_all" [text]="transaction.payingAccount.fullName" rowColor="red" />
-  <household-transaction-details-row *ngIf="transaction?.ownerAccount && transaction?.ownerAccount.accountId !== viewingAccountId" icon="forward" [text]="transaction.ownerAccount.fullName" rowColor="green" />
+  <household-transaction-details-row *ngIf="transaction?.payingAccount && transaction?.payingAccount.accountId !== viewingAccountId" icon="reply_all" [text]="transaction.payingAccount.fullName" [rowColor]="transaction?.amount > 0 ? 'green' : 'red'" />
+  <household-transaction-details-row *ngIf="transaction?.ownerAccount && transaction?.ownerAccount.accountId !== viewingAccountId" icon="forward" [text]="transaction.ownerAccount.fullName" [rowColor]="transaction?.amount > 0 ? 'red' : 'green'" />
+
   <ng-container *ngIf="repayment; then withRepayment; else justRemainingAmount">
 
   </ng-container>

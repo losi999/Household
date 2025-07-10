@@ -4,7 +4,7 @@
   </button>
   <mat-label>{{label}}</mat-label>
   <input type="text" #inp matInput [matAutocomplete]="autocomplete" (blur)="touched?.()" [formControl]="selected">
-  <mat-autocomplete #autocomplete="matAutocomplete" [displayWith]="displayName">
+  <mat-autocomplete #autocomplete="matAutocomplete" [displayWith]="displayName" (optionSelected)="inp.blur()">
     <mat-option *ngFor="let category of categories | async | autocompleteFilter: 'name' : inp.value" [value]="category">
       {{category.fullName}}
     </mat-option>

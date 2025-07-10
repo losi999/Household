@@ -99,6 +99,7 @@ import { TransactionDetailsLoanComponent } from './transaction-details-loan/tran
     TransactionDetailsInvoiceComponent,
     TransactionDetailsTransferComponent,
     TransactionDetailsLoanComponent,
+    TransactionDetailsRowComponent,
   ],
 })
 export class TransactionModule { }

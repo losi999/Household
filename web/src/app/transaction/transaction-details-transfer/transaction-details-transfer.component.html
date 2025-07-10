@@ -1,3 +1,13 @@
 <ng-container *ngIf="transaction?.transactionType === 'transfer'">
-  <household-transaction-details-row *ngIf="transaction.transferAccount" [icon]="'arrow_' + (transaction.amount > 0 ? 'left' : 'right') + '_alt'" [text]="transaction.transferAccount.fullName" [rowColor]="transaction.amount > 0 ? 'green' : 'red'" />
+  <ng-container *ngIf="twoWayDisplay; then twoWay; else oneWay" />
+
+  <ng-template #oneWay>
+    <household-transaction-details-row *ngIf="transaction.transferAccount" [icon]="'arrow_' + (transaction.amount > 0 ? 'left' : 'right') + '_alt'" [text]="transaction.transferAccount.fullName" [rowColor]="transaction.amount > 0 ? 'green' : 'red'" />
+  </ng-template>
+
+  <ng-template #twoWay>
+    <household-transaction-details-row [icon]="'arrow_left_alt'" [text]="transaction.amount < 0 ? transaction.account.fullName : transaction.transferAccount.fullName" rowColor="red" />
+    <household-transaction-details-row [icon]="'arrow_right_alt'" [text]="transaction.amount < 0 ? transaction.transferAccount.fullName : transaction.account.fullName" rowColor="green" />
+  </ng-template>
+
 </ng-container>

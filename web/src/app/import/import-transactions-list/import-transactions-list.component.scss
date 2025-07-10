@@ -8,6 +8,11 @@ mat-list-option {
   height: auto !important;
   align-items: flex-start;
   white-space: normal;
+  padding: 0 !important;
+}
+
+::ng-deep mat-list-option .mdc-list-item__end {
+  margin: 0 !important;
 }
 
 mat-selection-list {
