@@ -198,6 +198,60 @@ describe('Update to transfer transaction service', () => {
       validateFunctionCall(mockTransactionService.functions.listDeferredTransactions);
       expect.assertions(5);
     });
+
+    it('if updated to transfer transaction between a loan and non-loan accounts with payments', async () => {
+      const deferredTransactionDocument = createDeferredTransactionDocument({
+        payingAccount: queriedTransferAccount,
+      });
+     
+      const queriedLoanAccount = createAccountDocument({
+        accountType: AccountType.Loan,
+      });
+      body = createTransferTransactionRequest({
+        ...body,
+        transferAccountId: getAccountId(queriedLoanAccount),
+        amount: -1000,
+        transferAmount: 1000,
+        payments: [
+          {
+            amount: 100,
+            transactionId: getTransactionId(deferredTransactionDocument),
+          },
+        ],
+      });
+
+      mockTransactionService.functions.findTransactionById.mockResolvedValue(queriedDocument);
+      mockAccountService.functions.findAccountsByIds.mockResolvedValue([
+        queriedAccount,
+        queriedLoanAccount,
+      ]);
+      mockTransactionService.functions.listDeferredTransactions.mockResolvedValue([deferredTransactionDocument]);
+      mockTransferTransactionDocumentConverter.functions.update.mockReturnValue(updateQuery);
+      mockTransactionService.functions.updateTransaction.mockResolvedValue(undefined);
+
+      await service({
+        body,
+        transactionId,
+        expiresIn: undefined,
+      });
+      validateFunctionCall(mockTransactionService.functions.findTransactionById, transactionId);
+      validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
+        body.accountId,
+        body.transferAccountId,
+      ]);
+      validateFunctionCall(mockTransactionService.functions.listDeferredTransactions, {
+        deferredTransactionIds: [getTransactionId(deferredTransactionDocument)],
+        excludedTransferTransactionId: transactionId,
+      });
+      validateFunctionCall(mockTransferTransactionDocumentConverter.functions.update, {
+        body,
+        account: queriedAccount,
+        transferAccount: queriedLoanAccount,
+        transactions: toDictionary([deferredTransactionDocument], '_id'),
+      }, undefined);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction, transactionId, updateQuery);
+      expect.assertions(5);
+    });
   });
 
   describe('should throw error', () => {

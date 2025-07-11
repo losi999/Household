@@ -60,7 +60,7 @@ export const updateToTransferTransactionServiceFactory = (
 
     let update: UpdateQuery<Transaction.Document>;
 
-    if (account.accountType === AccountType.Loan || transferAccount.accountType === AccountType.Loan) {
+    if (account.accountType === AccountType.Loan && transferAccount.accountType === AccountType.Loan) {
       body.payments = undefined;
       update = transferTransactionDocumentConverter.update({
         body,

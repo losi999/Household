@@ -49,7 +49,7 @@ export const createTransferTransactionServiceFactory = (
 
     let document: Transaction.TransferDocument;
 
-    if (account.accountType === AccountType.Loan || transferAccount.accountType === AccountType.Loan) {
+    if (account.accountType === AccountType.Loan && transferAccount.accountType === AccountType.Loan) {
       body.payments = undefined;
       document = transferTransactionDocumentConverter.create({
         body,
