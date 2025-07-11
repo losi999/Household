@@ -19,6 +19,7 @@ import { hairdressingActions } from '@household/web/state/hairdressing/hairdress
 import { productApiActions } from '@household/web/state/product/product.actions';
 import { projectApiActions } from '@household/web/state/project/project.actions';
 import { recipientApiActions } from '@household/web/state/recipient/recipient.actions';
+import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
 import { userApiActions } from '@household/web/state/user/user.actions';
 import { Action, Store } from '@ngrx/store';
 
@@ -29,7 +30,7 @@ export class DialogService {
 
   constructor(private dialog: MatDialog, private store: Store) { }
 
-  private openConfirmationDialog(title: string, content: string, action: Action) {
+  private openConfirmationDialog(title: string, content: string, ...actions: Action[]) {
     this.dialog.open(ConfirmationDialogComponent, {
       data: {
         title,
@@ -38,7 +39,7 @@ export class DialogService {
     }).afterClosed()
       .subscribe((shouldDelete) => {
         if (shouldDelete) {
-          this.store.dispatch(action);
+          actions?.map(action => this.store.dispatch(action)) ;
         }
       });
   }
@@ -199,5 +200,11 @@ export class DialogService {
     }).format(data.day), hairdressingActions.deleteIncomeInitiated({
       transactionId: data.transactionId,
     }));
+  }
+
+  openDeleteDraftTransactionsDialog(transactionIds: Transaction.Id[]): void {
+    this.openConfirmationDialog(`Törölni akarsz ${transactionIds.length} tranzakciót?`, '', ...transactionIds.map(transactionId => transactionApiActions.deleteTransactionInitiated({
+      transactionId,
+    })));
   }
 }

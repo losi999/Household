@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { File, Transaction } from '@household/shared/types/types';
 import { accountApiActions } from '@household/web/state/account/account.actions';
 import { categoryApiActions } from '@household/web/state/category/category.actions';
+import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { importActions } from '@household/web/state/import/import.actions';
 import { selectDraftTransactionList } from '@household/web/state/import/import.selector';
 import { notificationActions } from '@household/web/state/notification/notification.actions';
@@ -125,6 +126,13 @@ export class ImportTransactionsEditComponent implements OnInit {
 
     this.store.dispatch(importActions.importTransactions({
       fileId: this.fileId,
+      transactionIds: this.selectedTransactions.value,
+    }));
+  }
+
+  delete() {
+    console.log('delete', this.selectedTransactions.value);
+    this.store.dispatch(dialogActions.deleteDraftTransactions({
       transactionIds: this.selectedTransactions.value,
     }));
   }

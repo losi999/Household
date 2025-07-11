@@ -4,6 +4,7 @@
   </div>
 
   <div class="details">
+    <!-- {{transaction.potentialDuplicates.length}} -->
     <household-transaction-details-row *ngIf="transaction.transactionType === 'draft'" icon="error" class="red" text="Fizető számla nincs megadva!" />
     <household-transaction-details-transfer *ngIf="transaction.transactionType === 'transfer'" [transaction]="transaction" [twoWayDisplay]="true" />
     <household-transaction-details-loan *ngIf="transaction.transactionType !== 'transfer'" [transaction]="transaction" />

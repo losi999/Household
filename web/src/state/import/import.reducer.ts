@@ -75,6 +75,13 @@ on(importActions.applyEditingFields, (_state, { fileId, transactionIds, updatedV
     },
   };
 }),
+
+on(transactionApiActions.deleteTransactionCompleted, (_state, { transactionId }) => {
+  return {
+    ..._state,
+    initialDrafts: _state.initialDrafts.filter(draft => draft.transactionId !== transactionId),
+  };
+}),
 );
 
 // export const hydrationMetaReducer = (reducer: ActionReducer<any>): ActionReducer<any> => {

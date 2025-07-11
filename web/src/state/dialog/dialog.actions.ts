@@ -27,5 +27,6 @@ export const dialogActions = createActionGroup({
     'Delete file': props<File.Response>(),
     'Delete income': props<Transaction.TransactionId & {day: Date}>(),
     'Delete user': props<User.Email>(),
+    'Delete draft transactions': props<{transactionIds: Transaction.Id[]}>(),
   },
 });

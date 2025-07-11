@@ -1,4 +1,7 @@
 <ng-template #toolbarButtons>
+  <button mat-icon-button type="button" tabindex="-1" (click)="delete()" [disabled]="!selectedTransactions.value?.length">
+    <mat-icon>delete</mat-icon>
+  </button>
   <button mat-icon-button type="button" tabindex="-1" (click)="save()">
     <mat-icon>save</mat-icon>
   </button>

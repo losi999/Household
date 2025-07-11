@@ -290,4 +290,16 @@ export class DialogEffects {
   }, {
     dispatch: false,
   });
+
+  deleteDraftTransactions = createEffect(() => {
+    return this.actions.pipe(
+      ofType(dialogActions.deleteDraftTransactions),
+      exhaustMap(({ transactionIds }) => {
+        this.dialogService.openDeleteDraftTransactionsDialog(transactionIds);
+        return EMPTY;
+      }),
+    );
+  }, {
+    dispatch: false,
+  });
 }

@@ -7,5 +7,5 @@ const selectImport = createFeatureSelector<ImportState>('import');
 export const selectDraftTransactionList = (fileId: File.Id, transactionIds?: Transaction.Id[]) => createSelector(selectImport, ({ initialDrafts, modifiedTransactions }) => {
   const drafts = transactionIds?.length > 0 ? initialDrafts.filter(t => transactionIds.includes(t.transactionId)) : initialDrafts;
 
-  return drafts.filter(d => d.potentialDuplicates.length === 0).map(t => modifiedTransactions[fileId]?.[t.transactionId] ?? t);
+  return drafts.map(t => modifiedTransactions[fileId]?.[t.transactionId] ?? t);
 });
