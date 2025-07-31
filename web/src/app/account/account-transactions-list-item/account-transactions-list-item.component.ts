@@ -1,9 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Account, Transaction } from '@household/shared/types/types';
-import { DialogService } from '@household/web/app/shared/dialog.service';
+import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { selectTransactionIsInProgress } from '@household/web/state/progress/progress.selector';
-import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 
@@ -24,7 +23,7 @@ export class AccountTransactionsListItemComponent implements OnInit {
 
   viewingAccountId: Account.Id;
 
-  constructor(private activatedRoute: ActivatedRoute, private dialogService: DialogService, private store: Store) { }
+  constructor(private activatedRoute: ActivatedRoute, private store: Store) { }
 
   ngOnInit(): void {
     this.isDisabled = this.store.select(selectTransactionIsInProgress(this.transaction.transactionId));
@@ -79,13 +78,8 @@ export class AccountTransactionsListItemComponent implements OnInit {
   }
 
   delete() {
-    this.dialogService.openDeleteTransactionDialog().afterClosed()
-      .subscribe(shouldDelete => {
-        if (shouldDelete) {
-          this.store.dispatch(transactionApiActions.deleteTransactionInitiated({
-            transactionId: this.transaction.transactionId,
-          }));
-        }
-      });
+    this.store.dispatch(dialogActions.deleteTransaction({
+      transactionId: this.transaction.transactionId,
+    }));
   }
 }

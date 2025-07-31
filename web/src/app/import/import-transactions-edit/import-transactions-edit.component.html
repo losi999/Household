@@ -6,27 +6,54 @@
     <mat-icon>save</mat-icon>
   </button>
 </ng-template>
+
+<ng-template #normalButtons>
+  <button mat-flat-button type="button" [color]="fieldVisibility.account ? 'primary' : ''" (click)="toggleField('account')">
+    <mat-icon>reply_all</mat-icon>Fizető számla
+  </button>
+  <button mat-flat-button type="button" [color]="fieldVisibility.recipient ? 'primary' : ''" (click)="toggleField('recipient')">
+    <mat-icon>store</mat-icon>Partner
+  </button>
+  <button mat-flat-button type="button" [color]="fieldVisibility.category ? 'primary' : ''" (click)="toggleField('category')">
+    <mat-icon>category</mat-icon>Kategória
+  </button>
+  <button mat-flat-button type="button" [color]="fieldVisibility.project ? 'primary' : ''" (click)="toggleField('project')">
+    <mat-icon>stacks</mat-icon>Projekt
+  </button>
+  <button mat-flat-button type="button" [color]="fieldVisibility.description ? 'primary' : ''" (click)="toggleField('description')"><mat-icon>description</mat-icon>Megjegyzés
+  </button>
+  <button mat-flat-button type="button" [color]="fieldVisibility.transferAccount ? 'primary' : ''" (click)="toggleField('transferAccount')"><mat-icon>arrow_right_alt</mat-icon>Átvitel számla
+  </button>
+  <button mat-flat-button type="button" [color]="fieldVisibility.loanAccount ? 'primary' : ''" (click)="toggleField('loanAccount')">
+    <mat-icon>forward</mat-icon>Kölcsön számla
+  </button>
+</ng-template>
+
+<ng-template #smallButtons>
+  <button mat-icon-button type="button" [color]="fieldVisibility.account ? 'primary' : ''" (click)="toggleField('account')">
+    <mat-icon>reply_all</mat-icon>
+  </button>
+  <button mat-icon-button type="button" [color]="fieldVisibility.recipient ? 'primary' : ''" (click)="toggleField('recipient')">
+    <mat-icon>store</mat-icon>
+  </button>
+  <button mat-icon-button type="button" [color]="fieldVisibility.category ? 'primary' : ''" (click)="toggleField('category')">
+    <mat-icon>category</mat-icon>
+  </button>
+  <button mat-icon-button type="button" [color]="fieldVisibility.project ? 'primary' : ''" (click)="toggleField('project')">
+    <mat-icon>stacks</mat-icon>
+  </button>
+  <button mat-icon-button type="button" [color]="fieldVisibility.description ? 'primary' : ''" (click)="toggleField('description')"><mat-icon>description</mat-icon>
+  </button>
+  <button mat-icon-button type="button" [color]="fieldVisibility.transferAccount ? 'primary' : ''" (click)="toggleField('transferAccount')"><mat-icon>arrow_right_alt</mat-icon>
+  </button>
+  <button mat-icon-button type="button" [color]="fieldVisibility.loanAccount ? 'primary' : ''" (click)="toggleField('loanAccount')">
+    <mat-icon>forward</mat-icon>
+  </button>
+</ng-template>
+
 <div class="container">
   <div class="filters">
-    <button mat-flat-button type="button" [color]="fieldVisibility.account ? 'primary' : ''" (click)="toggleField('account')">
-      <mat-icon>reply_all</mat-icon>Fizető számla
-    </button>
-    <button mat-flat-button type="button" [color]="fieldVisibility.recipient ? 'primary' : ''" (click)="toggleField('recipient')">
-      <mat-icon>store</mat-icon>Partner
-    </button>
-    <button mat-flat-button type="button" [color]="fieldVisibility.category ? 'primary' : ''" (click)="toggleField('category')">
-      <mat-icon>category</mat-icon>Kategória
-    </button>
-    <button mat-flat-button type="button" [color]="fieldVisibility.project ? 'primary' : ''" (click)="toggleField('project')">
-      <mat-icon>stacks</mat-icon>Projekt
-    </button>
-    <button mat-flat-button type="button" [color]="fieldVisibility.description ? 'primary' : ''" (click)="toggleField('description')"><mat-icon>description</mat-icon>Megjegyzés
-    </button>
-    <button mat-flat-button type="button" [color]="fieldVisibility.transferAccount ? 'primary' : ''" (click)="toggleField('transferAccount')"><mat-icon>arrow_right_alt</mat-icon>Átvitel számla
-    </button>
-    <button mat-flat-button type="button" [color]="fieldVisibility.loanAccount ? 'primary' : ''" (click)="toggleField('loanAccount')">
-      <mat-icon>forward</mat-icon>Kölcsön számla
-    </button>
+    <ng-container *ngIf="isSmallScreen; then smallButtons; else normalButtons" />
     <ng-container *ngIf="anyFieldVisible" [formGroup]="editingFields">
       <household-account-autocomplete-input *ngIf="fieldVisibility.account" label="Számla" formControlName="account" />
       <household-recipient-autocomplete-input *ngIf="fieldVisibility.recipient" label="Partner" formControlName="recipient" />
@@ -41,6 +68,6 @@
   </div>
   <div class="list">
     <mat-divider />
-    <household-import-transactions-list [transactions]="transactions | async" [formControl]="selectedTransactions" />
+    <household-import-transactions-edit-list [transactions]="transactions | async" [formControl]="selectedTransactions" />
   </div>
 </div>

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { Account, Category, File, Product, Project, Recipient, Transaction, User } from '@household/shared/types/types';
 import { AccountFormComponent, AccountFormData } from '@household/web/app/account/account-form/account-form.component';
 import { CategoryFormComponent, CategoryFormData } from '@household/web/app/category/category-form/category-form.component';
@@ -12,36 +12,21 @@ import { ProjectMergeDialogComponent, ProjectMergeDialogData } from '@household/
 import { RecipientFormComponent, RecipientFormData } from '@household/web/app/recipient/recipient-form/recipient-form.component';
 import { RecipientMergeDialogComponent, RecipientMergeDialogData } from '@household/web/app/recipient/recipient-merge-dialog/recipient-merge-dialog.component';
 import { ConfirmationDialogComponent } from '@household/web/app/shared/confirmation-dialog/confirmation-dialog.component';
-import { accountApiActions } from '@household/web/state/account/account.actions';
-import { categoryApiActions } from '@household/web/state/category/category.actions';
-import { fileApiActions } from '@household/web/state/file/file.actions';
-import { hairdressingActions } from '@household/web/state/hairdressing/hairdressing.actions';
-import { productApiActions } from '@household/web/state/product/product.actions';
-import { projectApiActions } from '@household/web/state/project/project.actions';
-import { recipientApiActions } from '@household/web/state/recipient/recipient.actions';
-import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
-import { userApiActions } from '@household/web/state/user/user.actions';
-import { Action, Store } from '@ngrx/store';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DialogService {
 
-  constructor(private dialog: MatDialog, private store: Store) { }
+  constructor(private dialog: MatDialog) { }
 
-  private openConfirmationDialog(title: string, content: string, ...actions: Action[]) {
-    this.dialog.open(ConfirmationDialogComponent, {
+  private openConfirmationDialog(title: string, content?: string) {
+    return this.dialog.open(ConfirmationDialogComponent, {
       data: {
         title,
         content,
       },
-    }).afterClosed()
-      .subscribe((shouldDelete) => {
-        if (shouldDelete) {
-          actions?.map(action => this.store.dispatch(action)) ;
-        }
-      });
+    }).afterClosed();
   }
 
   openCreateProjectDialog(): void {
@@ -54,10 +39,8 @@ export class DialogService {
     });
   }
 
-  openDeleteProjectDialog(project: Project.Response): void {
-    this.openConfirmationDialog('Törölni akarod ezt a projektet?', project.name, projectApiActions.deleteProjectInitiated({
-      projectId: project.projectId,
-    }));
+  openDeleteProjectDialog(project: Project.Response) {
+    return this.openConfirmationDialog('Törölni akarod ezt a projektet?', project.name);
   }
 
   openMergeProjectsDialog(project: Project.Response) {
@@ -76,10 +59,8 @@ export class DialogService {
     });
   }
 
-  openDeleteRecipientDialog(recipient: Recipient.Response): void {
-    this.openConfirmationDialog('Törölni akarod ezt a partnert?', recipient.name, recipientApiActions.deleteRecipientInitiated({
-      recipientId: recipient.recipientId,
-    }));
+  openDeleteRecipientDialog(recipient: Recipient.Response) {
+    return this.openConfirmationDialog('Törölni akarod ezt a partnert?', recipient.name);
   }
 
   openMergeRecipientsDialog(recipient: Recipient.Response) {
@@ -100,10 +81,8 @@ export class DialogService {
     });
   }
 
-  openDeleteCategoryDialog(category: Category.Response): void {
-    this.openConfirmationDialog('Törölni akarod ezt a kategóriát?', category.name, categoryApiActions.deleteCategoryInitiated({
-      categoryId: category.categoryId,
-    }));
+  openDeleteCategoryDialog(category: Category.Response) {
+    return this.openConfirmationDialog('Törölni akarod ezt a kategóriát?', category.name);
   }
 
   openMergeCategoriesDialog(category: Category.Response) {
@@ -130,11 +109,8 @@ export class DialogService {
     });
   }
 
-  openDeleteProductDialog(product: Product.Response, categoryId: Category.Id): void {
-    this.openConfirmationDialog('Törölni akarod ezt a terméket?', product.fullName, productApiActions.deleteProductInitiated({
-      productId: product.productId,
-      categoryId,
-    }));
+  openDeleteProductDialog(product: Product.Response) {
+    return this.openConfirmationDialog('Törölni akarod ezt a terméket?', product.fullName);
   }
 
   openMergeProductsDialog(product: Product.Response, categoryId: Category.Id) {
@@ -156,55 +132,36 @@ export class DialogService {
     });
   }
 
-  openDeleteAccountDialog(account: Account.Response): void {
-    this.openConfirmationDialog('Törölni akarod ezt a számlát?', account.name, accountApiActions.deleteAccountInitiated({
-      accountId: account.accountId,
-    }));
-  }
-
-  openDeleteTransactionDialog(): MatDialogRef<ConfirmationDialogComponent, boolean> {
-    // this.openConfirmationDialog('Törölni akarod ezt a tranzakciót?', undefined, projectApiActions.deleteProjectInitiated({
-    //   projectId: project.projectId,
-    // }));
-
-    return this.dialog.open(ConfirmationDialogComponent, {
-      width: '250px',
-      data: {
-        title: 'Törölni akarod ezt a tranzakciót?',
-      },
-    });
+  openDeleteAccountDialog(account: Account.Response) {
+    return this.openConfirmationDialog('Törölni akarod ezt a számlát?', account.name);
   }
 
   openImportFileDialog(): void {
     this.dialog.open<ImportFileUploadFormComponent, void, void>(ImportFileUploadFormComponent);
   }
 
-  openDeleteFileDialog(file: File.Response): void {
-    this.openConfirmationDialog('Törölni akarod ezt a számlát?', file.fileId, fileApiActions.deleteFileInitiated({
-      fileId: file.fileId,
-    }));
+  openDeleteFileDialog(file: File.Response) {
+    return this.openConfirmationDialog('Törölni akarod ezt a számlát?', file.fileId);
   }
 
-  openDeleteUserDialog({ email }: User.Email): void {
-    this.openConfirmationDialog('Törölni akarod ezt a felhasználót?', email, userApiActions.deleteUserInitiated({
-      email,
-    }));
+  openDeleteUserDialog({ email }: User.Email) {
+    return this.openConfirmationDialog('Törölni akarod ezt a felhasználót?', email);
   }
 
-  openDeleteIncomeDialog(data: Transaction.TransactionId & {day: Date}): void {
-    this.openConfirmationDialog('Törölni akarod a bevételt?', new Intl.DateTimeFormat('hu-HU', {
+  openDeleteIncomeDialog(data: Transaction.TransactionId & {day: Date}) {
+    return this.openConfirmationDialog('Törölni akarod a bevételt?', new Intl.DateTimeFormat('hu-HU', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
       weekday: 'long',
-    }).format(data.day), hairdressingActions.deleteIncomeInitiated({
-      transactionId: data.transactionId,
-    }));
+    }).format(data.day));
   }
 
-  openDeleteDraftTransactionsDialog(transactionIds: Transaction.Id[]): void {
-    this.openConfirmationDialog(`Törölni akarsz ${transactionIds.length} tranzakciót?`, '', ...transactionIds.map(transactionId => transactionApiActions.deleteTransactionInitiated({
-      transactionId,
-    })));
+  openDeleteDraftTransactionsDialog(transactionIds: Transaction.Id[]) {
+    return this.openConfirmationDialog(`Törölni akarsz ${transactionIds.length} tranzakciót?`);
+  }
+
+  openDeleteTransactionDialog() {
+    return this.openConfirmationDialog('Törölni akarod ezt a tranzakciót?');
   }
 }

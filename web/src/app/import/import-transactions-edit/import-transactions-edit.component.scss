@@ -1,12 +1,14 @@
 .container {
   display: flex;
   flex-direction: column;
+  height: calc(100vh - 70px - 48px);
+  overflow-y: auto;
 
   .filters {
     position: sticky;
+    top: 0;
+    z-index: 3;
     background: white;
-    z-index: 1;
-    top: 55px;
   }
 
   .list {

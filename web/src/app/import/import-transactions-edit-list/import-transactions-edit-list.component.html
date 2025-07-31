@@ -7,7 +7,7 @@
   <button mat-icon-button color="warn" (click)="deselectAll()"><mat-icon>remove_done</mat-icon></button>
   <mat-selection-list [formControl]="selectedItems">
     <mat-list-option *ngFor="let transaction of transactions | importFilter : inp.value" [value]="transaction.transactionId" class="mat-elevation-z1">
-      <household-import-transactions-list-item [transaction]="transaction" />
+      <household-import-transactions-edit-list-item [transaction]="transaction" />
     </mat-list-option>
   </mat-selection-list>
 </div>

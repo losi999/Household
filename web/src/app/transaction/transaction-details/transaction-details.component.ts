@@ -1,8 +1,9 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Account, Transaction } from '@household/shared/types/types';
-import { DialogService } from '@household/web/app/shared/dialog.service';
 import { takeFirstDefined } from '@household/web/operators/take-first-defined';
+import { dialogActions } from '@household/web/state/dialog/dialog.actions';
+import { navigationActions } from '@household/web/state/navigation/navigation.actions';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
 import { selectTransaction } from '@household/web/state/transaction/transaction.selector';
 import { Store } from '@ngrx/store';
@@ -18,8 +19,9 @@ export class TransactionDetailsComponent implements OnInit {
   transaction: Observable<Transaction.Response>;
   formType: string;
   transactionId: Transaction.Id;
+  accountId: Account.Id;
 
-  constructor(private activatedRoute: ActivatedRoute, private store: Store, private router: Router, private dialogService: DialogService) { }
+  constructor(private activatedRoute: ActivatedRoute, private store: Store, private router: Router) { }
 
   @HostListener('window:keydown.meta.i', ['$event'])
   @HostListener('window:keydown.meta.p', ['$event'])
@@ -49,11 +51,11 @@ export class TransactionDetailsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    const accountId = this.activatedRoute.snapshot.paramMap.get('accountId') as Account.Id;
+    this.accountId = this.activatedRoute.snapshot.paramMap.get('accountId') as Account.Id;
     this.transactionId = this.activatedRoute.snapshot.paramMap.get('transactionId') as Transaction.Id;
 
     this.store.dispatch(transactionApiActions.getTransactionInitiated({
-      accountId,
+      accountId: this.accountId,
       transactionId: this.transactionId,
     }));
 
@@ -71,16 +73,11 @@ export class TransactionDetailsComponent implements OnInit {
   }
 
   delete() {
-    this.dialogService.openDeleteTransactionDialog().afterClosed()
-      .subscribe(shouldDelete => {
-        if (shouldDelete) {
-          this.store.dispatch(transactionApiActions.deleteTransactionInitiated({
-            transactionId: this.transactionId,
-          }));
-          this.router.navigate(['../..'], {
-            relativeTo: this.activatedRoute,
-          });
-        }
-      });
+    this.store.dispatch(dialogActions.deleteTransaction({
+      transactionId: this.transactionId,
+      navigationAction: navigationActions.transactionListOfAccount({
+        accountId: this.accountId,
+      }),
+    }));
   }
 }

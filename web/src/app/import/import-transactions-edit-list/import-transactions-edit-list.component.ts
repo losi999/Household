@@ -4,19 +4,19 @@ import { Transaction } from '@household/shared/types/types';
 import { ImportFilterPipe } from '@household/web/app/import/import-filter.pipe';
 
 @Component({
-  selector: 'household-import-transactions-list',
-  standalone: false,
-  templateUrl: './import-transactions-list.component.html',
-  styleUrl: './import-transactions-list.component.scss',
+  selector: 'household-import-transactions-edit-list',
+  standalone: false,  
+  templateUrl: './import-transactions-edit-list.component.html',
+  styleUrl: './import-transactions-edit-list.component.scss',
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => ImportTransactionsListComponent),
+      useExisting: forwardRef(() => ImportTransactionsEditListComponent),
       multi: true,
     },
   ],
 })
-export class ImportTransactionsListComponent implements OnInit, ControlValueAccessor {
+export class ImportTransactionsEditListComponent implements OnInit, ControlValueAccessor {
   @Input() transactions: Transaction.DraftResponse[];
 
   selectedItems: FormControl<Transaction.Id[]>;
@@ -64,4 +64,5 @@ export class ImportTransactionsListComponent implements OnInit, ControlValueAcce
   setDisabledState?(isDisabled: boolean): void {
     this.isDisabled = isDisabled;
   }
+
 }

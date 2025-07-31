@@ -1,0 +1,30 @@
+<mat-expansion-panel>
+  <mat-expansion-panel-header>
+    <div class="list-item">
+      <div class="datetime">
+        {{transaction.issuedAt | date: showYear ? 'yyyy. MMMM dd. HH:mm' : 'MMMM d. HH:mm'}}
+      </div>
+
+      <div class="details">
+        <household-transaction-details-description [transaction]="transaction" />
+      </div>
+
+      <div class="amount" [ngClass]="transaction.amount >= 0 ? 'green' : 'red'">{{transaction.amount | number:'1.0-2':'hu' }}</div>
+    </div>
+  </mat-expansion-panel-header>
+
+  <div class="list-item">
+    <div class="datetime">
+      {{transaction.issuedAt | date: showYear ? 'yyyy. MMMM dd. HH:mm' : 'MMMM d. HH:mm'}}
+    </div>
+
+    <div class="details">
+      <household-transaction-details-description [transaction]="transaction" />
+    </div>
+
+    <div class="amount" [ngClass]="transaction.amount >= 0 ? 'green' : 'red'">{{transaction.amount | number:'1.0-2':'hu' }}</div>
+  </div>
+  <h2>Egyezik a két tranzakció?</h2>
+  <button mat-button color="warn" type="button" (click)="deleteDraft()">Igen</button>
+  <button mat-button color="primary" type="button" (click)="deduplicateDraft()">Nem</button>
+</mat-expansion-panel>

@@ -6,13 +6,12 @@ import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 
 @Component({
-  selector: 'household-import-transactions-list-item',
-  standalone: false,
-
-  templateUrl: './import-transactions-list-item.component.html',
-  styleUrl: './import-transactions-list-item.component.scss',
+  selector: 'household-import-transactions-edit-list-item',
+  standalone: false,  
+  templateUrl: './import-transactions-edit-list-item.component.html',
+  styleUrl: './import-transactions-edit-list-item.component.scss',
 })
-export class ImportTransactionsListItemComponent implements OnInit {
+export class ImportTransactionsEditListItemComponent implements OnInit {
   @Input() transaction: ImportedTransaction;
 
   isDisabled: Observable<boolean>;

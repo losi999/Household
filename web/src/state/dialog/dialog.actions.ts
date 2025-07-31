@@ -1,5 +1,5 @@
 import { Account, Category, File, Product, Project, Recipient, Transaction, User } from '@household/shared/types/types';
-import { createActionGroup, emptyProps, props } from '@ngrx/store';
+import { Action, createActionGroup, emptyProps, props } from '@ngrx/store';
 
 export const dialogActions = createActionGroup({
   source: 'Dialog',
@@ -28,5 +28,6 @@ export const dialogActions = createActionGroup({
     'Delete income': props<Transaction.TransactionId & {day: Date}>(),
     'Delete user': props<User.Email>(),
     'Delete draft transactions': props<{transactionIds: Transaction.Id[]}>(),
+    'Delete transaction': props<Transaction.TransactionId & {navigationAction?: Action;}>(),
   },
 });

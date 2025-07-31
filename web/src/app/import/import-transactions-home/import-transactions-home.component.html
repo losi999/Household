@@ -1,10 +1,11 @@
 <household-toolbar title="Importálás">
-  <ng-container [ngTemplateOutlet]="edit.toolbarButtons" />
+  <ng-container [ngTemplateOutlet]="selectedIndex === 0 ? edit.toolbarButtons : null" />
 </household-toolbar>
-<!-- <mat-tab-group [(selectedIndex)]="selectedIndex">
-  <mat-tab label="Szerkesztés"> -->
-<household-import-transactions-edit #edit />
-<!-- </mat-tab>
-  <mat-tab label="Egyezések">
+<mat-tab-group [(selectedIndex)]="selectedIndex" class="sticky-tab-group">
+  <mat-tab label="Vázlatok">
+    <household-import-transactions-edit #edit />
   </mat-tab>
-</mat-tab-group> -->
+  <mat-tab label="Egyezések">
+    <household-import-transactions-duplicate-list />
+  </mat-tab>
+</mat-tab-group>
