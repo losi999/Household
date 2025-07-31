@@ -77,15 +77,15 @@ on(transactionApiActions.deleteTransactionCompleted, (_state, { transactionId })
   };
 }),
 
-on(importActions.deduplicateDraftTransaction, (_state, { transactionId }) => {
-  const draft = _state.initialDrafts.find(d => d.transactionId === transactionId);
+on(importActions.deduplicateDraftTransaction, (_state, { transactionId, duplicateTransactionId }) => {
+  const draft = _state.modifiedTransactions[transactionId] ?? _state.initialDrafts.find(d => d.transactionId === transactionId);
   return {
     ..._state,
     modifiedTransactions: {
       ..._state.modifiedTransactions,
       [transactionId]: {
         ...draft,
-        potentialDuplicates: [],
+        potentialDuplicates: draft.potentialDuplicates.filter(d => d.transactionId !== duplicateTransactionId),
       },
     },
   };

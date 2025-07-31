@@ -506,17 +506,9 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
                   },
                 },
               },
+              ...transactionAggregate,
             ],
             as: 'potentialDuplicates',
-          })
-          .addFields({
-            potentialDuplicates: {
-              $map: {
-                input: '$potentialDuplicates',
-                as: 'pd',
-                in: '$$pd._id',
-              },
-            },
           })
           .sort({
             issuedAt: -1,

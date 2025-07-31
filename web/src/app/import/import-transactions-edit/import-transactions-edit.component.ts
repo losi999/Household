@@ -82,7 +82,12 @@ export class ImportTransactionsEditComponent implements OnInit {
         this.fieldVisibility.category = false;
         this.fieldVisibility.project = false;
         this.fieldVisibility.loanAccount = false;
-      }
+      } break;
+      case 'category':
+      case 'project':
+      case 'recipient': {
+        this.fieldVisibility.transferAccount = false;
+      } break;
     }
   }
 

@@ -61,7 +61,7 @@ export const populateAggregate = (localField: string, from: string, pipeline?: P
   },
 ];
 
-export const transactionAggregate: PipelineStage[] = [
+export const transactionAggregate: PipelineStage.Lookup['$lookup']['pipeline'] = [
   {
     $lookup: {
       from: 'transactions',

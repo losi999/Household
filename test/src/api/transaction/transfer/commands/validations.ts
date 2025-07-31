@@ -34,7 +34,7 @@ const validateTransactionTransferDocument = (response: Transaction.TransactionId
     });
 };
 
-export const validateTransactionTransferResponse = (response: Transaction.TransferResponse, document: Transaction.TransferDocument, viewingAccountId: Account.Id) => {
+export const validateTransactionTransferResponse = (response: Transaction.TransferResponse, document: Transaction.TransferDocument, viewingAccountId: Account.Id = response.account.accountId) => {
   const documentAmount = getAccountId(document.account) === viewingAccountId ? document.amount : document.transferAmount;
   const documentAccount = getAccountId(document.account) === viewingAccountId ? document.account : document.transferAccount;
   const documentTransferAmount = getAccountId(document.account) === viewingAccountId ? document.transferAmount : document.amount;

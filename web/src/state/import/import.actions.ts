@@ -1,4 +1,4 @@
-import { File, Transaction } from '@household/shared/types/types';
+import { Transaction } from '@household/shared/types/types';
 import { TransactionImportUpdatableFields } from '@household/web/types/common';
 import { createActionGroup, props } from '@ngrx/store';
 
@@ -12,7 +12,7 @@ export const importActions = createActionGroup({
     'Import transactions': props<{
       transactionIds?: Transaction.Id[];
     }>(),
-    'Deduplicate draft transaction': props<Transaction.TransactionId>(),
+    'Deduplicate draft transaction': props<Transaction.TransactionId & {duplicateTransactionId: Transaction.Id}>(),
     'Import payment transaction initiated': props<Transaction.TransactionId & Transaction.PaymentRequest>(),
     'Import payment transaction completed': props<Transaction.TransactionId>(),
     'Import transfer transaction initiated': props<Transaction.TransactionId & Transaction.TransferRequest>(),

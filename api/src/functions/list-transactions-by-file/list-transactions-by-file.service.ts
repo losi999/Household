@@ -15,7 +15,7 @@ export const listTransactionsByFileServiceFactory = (
       fileId,
     }));
 
-    console.log('docs', documents);
+    console.log('docs', JSON.stringify(documents, null, 2));
 
     return draftTransactionDocumentConverter.toResponseList(documents);
   };

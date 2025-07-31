@@ -18,18 +18,6 @@
 
 </household-toolbar>
 <ng-container *ngIf="transaction | async as tx">
-  <ng-template #regularAccount>
-    regular
-  </ng-template>
-
-  <ng-template #transferAccount>
-    transfer
-  </ng-template>
-
-  <ng-template #loanAccount>
-    loan
-  </ng-template>
-
   <div class="issued-at">{{tx.issuedAt | date: 'yyyy. MMMM d.' }}</div>
   <ng-container *ngIf="tx.account">
     <div class="account" [ngClass]="tx.amount > 0 ? 'green' : 'red'">{{tx.account.fullName}}</div>

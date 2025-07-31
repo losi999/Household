@@ -3,7 +3,7 @@ import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/
 import { getFileId, getTransactionId } from '@household/shared/common/utils';
 import { expectEmptyObject, expectRemainingProperties } from '@household/test/api/utils';
 import { TransactionType } from '@household/shared/enums';
-import { validateCommonResponse } from '@household/test/api/transaction/common/commands/validations';
+import { validateCommonResponse, validateTransactionListResponse } from '@household/test/api/transaction/common/commands/validations';
 
 const validateImportedRevolutDraftDocuments = (fileId: File.Id, ...rows: Import.Revolut[]) => {
   cy.log('Get draft documents by file', fileId)
@@ -74,10 +74,10 @@ const validateImportedErsteDraftDocuments = (fileId: File.Id, ...rows: Import.Er
 
 const validateTransactionDraftListResponse = (responses: Transaction.DraftResponse[], ...documents: {
   document: Transaction.DraftDocument;
-  duplicateTransaction?: Transaction.Document;
+  duplicateTransactions?: Transaction.Document[];
 }[]) => {
   expect(responses.length, 'number of items').to.equal(documents.length);
-  documents.forEach(({ document, duplicateTransaction }) => {
+  documents.forEach(({ document, duplicateTransactions }) => {
     const response = responses.find(t => t.transactionId === getTransactionId(document));
 
     const { transactionId, amount, issuedAt, transactionType, description, potentialDuplicates, ...empty } = response;
@@ -90,8 +90,8 @@ const validateTransactionDraftListResponse = (responses: Transaction.DraftRespon
       transactionType,
     }, document);
 
-    if (duplicateTransaction) {
-      expect(potentialDuplicates, 'potentialDuplicates').to.deep.equal([getTransactionId(duplicateTransaction)]);
+    if (duplicateTransactions?.length > 0) {
+      validateTransactionListResponse(potentialDuplicates, duplicateTransactions, undefined, {});
     } else {
       expect(potentialDuplicates, 'potentialDuplicates').to.be.empty;
     }

@@ -1,11 +1,14 @@
-.mat-expansion-panel-header {
-  padding: 0 8px 0 0;
-  font-weight: 400;
-  height: auto;
+.draft {
+  padding-top: 20px;
+  padding-bottom: 20px !important;
+}
 
-  &> ::ng-deep .mat-content {
-    display: block;
-  }
+.duplicate {
+  padding: 0 10px;
+}
+
+.duplicate:nth-child(2n+1) {
+  background-color: #e8eaf6;
 }
 
 .list-item {

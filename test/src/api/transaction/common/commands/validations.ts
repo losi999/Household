@@ -39,7 +39,7 @@ export const validateCommonResponse = (response: Transaction.TransactionId & Tra
   expect(description, 'description').to.equal(document.description);
 };
 
-const validateTransactionListResponse = (responses: Transaction.Response[], documents: Transaction.Document[], viewingAccountId: Account.Id, repayments: Record<Transaction.Id, number>) => {
+export const validateTransactionListResponse = (responses: Transaction.Response[], documents: Transaction.Document[], viewingAccountId: Account.Id, repayments: Record<Transaction.Id, number>) => {
   expect(responses.length, 'number of items').to.equal(documents.length);
   documents.forEach((document) => {
     const response = responses.find(r => r.transactionId === getTransactionId(document));

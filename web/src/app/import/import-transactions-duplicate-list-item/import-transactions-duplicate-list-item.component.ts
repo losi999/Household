@@ -1,4 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { Transaction } from '@household/shared/types/types';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { importActions } from '@household/web/state/import/import.actions';
 import { ImportedTransaction } from '@household/web/types/common';
@@ -28,9 +29,10 @@ export class ImportTransactionsDuplicateListItemComponent implements OnInit {
     }));
   }
 
-  deduplicateDraft() {
+  deduplicateDraft(duplicateTransactionId: Transaction.Id) {
     this.store.dispatch(importActions.deduplicateDraftTransaction({
       transactionId: this.transaction.transactionId,
+      duplicateTransactionId,
     }));
   }
 }
