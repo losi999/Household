@@ -19,7 +19,6 @@
   grid-template-columns: 1fr auto;
   grid-template-areas:
     "amount add"
-    "buttons buttons"
     "splits splits";
 
   .amount {
@@ -28,12 +27,8 @@
 
   .add {
     grid-area: add;
-  }
-
-  .buttons {
-    grid-area: buttons;
-    display: flex;
-    justify-content: space-evenly;
+    background-color: #4caf50;
+    color: white;
   }
 
   .splits {
@@ -49,21 +44,21 @@
   column-gap: 15px;
   grid-template-areas: "datetime amount";
 
-  & > .datetime {
+  &>.datetime {
     grid-area: datetime;
     text-align: right;
     font-weight: 400;
 
-    & > .year {
+    &>.year {
       font-size: 12px;
     }
 
-    & > .date {
+    &>.date {
       font-size: 16px;
     }
   }
 
-  & > .amount {
+  &>.amount {
     grid-area: amount;
     align-self: center;
     justify-self: end;
@@ -77,11 +72,11 @@
       column-gap: 5px;
     }
 
-    & > .date {
+    &>.date {
       font-size: 14px;
     }
 
-    & > .amount {
+    &>.amount {
       font-size: 14px;
     }
   }

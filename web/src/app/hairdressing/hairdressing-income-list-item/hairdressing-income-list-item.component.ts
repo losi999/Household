@@ -5,8 +5,6 @@ import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { hairdressingActions } from '@household/web/state/hairdressing/hairdressing.actions';
 import { Store } from '@ngrx/store';
 
-const SPLITS_DELIMITER = ', ';
-
 @Component({
   selector: 'household-hairdressing-income-list-item',
   standalone: false,
@@ -18,77 +16,63 @@ export class HairdressingIncomeListItemComponent implements OnInit, OnChanges {
   @Input() currency: string;
   amount: number;
   @Input() transaction: Transaction.Report;
-
-  splits: number[];
+  splitsDelimiter = ', ';
+  isInProgress: boolean;
   partialAmount: FormControl<number>;
 
-  constructor(private store: Store) {
-
-  }
-
-  private initialState() {
-    this.amount = this.transaction?.amount;
-    if (this.transaction) {
-      this.splits = this.transaction.description?.split(SPLITS_DELIMITER).map(s => Number(s)) ?? [this.transaction.amount];
-    } else {
-      this.splits = [];
-    }
-  }
+  constructor(private store: Store) { }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.transaction) {
-      this.initialState();
+      this.partialAmount?.reset();
+      this.isInProgress = false;
     }
   }
 
   ngOnInit(): void {
     this.partialAmount = new FormControl(null);
-    this.splits = [ ];
   }
 
-  private calculateAmount() {
-    this.amount = this.splits.reduce((acc, curr) => acc + curr, 0);
+  get issuedAt() {
+    return new Date(this.day.getFullYear(), this.day.getMonth(), this.day.getDate(), 19, 0, 0).toISOString();
   }
 
   add () {
     this.partialAmount.markAsTouched();
-    if (this.partialAmount.value) {
-      this.splits.push(this.partialAmount.value);
-      this.partialAmount.reset();
-      this.calculateAmount();
+    if (this.partialAmount.value) {    
+      if (this.transaction) {
+        this.isInProgress = true;
+        this.store.dispatch(hairdressingActions.updateIncomeInitiated({
+          issuedAt: this.issuedAt,
+          amount: this.transaction.amount + this.partialAmount.value,
+          description: `${this.transaction.description}${this.splitsDelimiter}${this.partialAmount.value}`,
+          transactionId: this.transaction.transactionId,
+        }));
+      } else {
+        this.store.dispatch(hairdressingActions.saveIncomeInitiated({
+          issuedAt: this.issuedAt,
+          amount: this.partialAmount.value,
+          description: `${this.partialAmount.value}`,
+        }));
+      }
     }
   }
 
-  cancel() {
-    this.initialState();
-  }
-
   remove(index: number) {
-    this.splits = this.splits.toSpliced(index, 1);
-    this.calculateAmount();
-  }
+    const splits = this.transaction.description.split(this.splitsDelimiter);
+    const partialAmount = Number(splits.splice(index, 1)[0]);
 
-  delete() {
-    this.store.dispatch(dialogActions.deleteIncome({
-      transactionId: this.transaction.transactionId,
-      day: this.day,
-    }));
-  }
-
-  save() {
-    this.add();
-    if (this.transaction) {
+    if (splits.length > 0) {
       this.store.dispatch(hairdressingActions.updateIncomeInitiated({
-        issuedAt: new Date(this.day.getFullYear(), this.day.getMonth(), this.day.getDate(), 19, 0, 0).toISOString(),
-        amount: this.amount,
-        description: this.splits.join(SPLITS_DELIMITER),
         transactionId: this.transaction.transactionId,
+        issuedAt: this.issuedAt,
+        amount: this.transaction.amount - partialAmount,
+        description: splits.join(this.splitsDelimiter),
       }));
     } else {
-      this.store.dispatch(hairdressingActions.saveIncomeInitiated({
-        issuedAt: new Date(this.day.getFullYear(), this.day.getMonth(), this.day.getDate(), 19, 0, 0).toISOString(),
-        amount: this.amount,
-        description: this.splits.join(SPLITS_DELIMITER),
+      this.store.dispatch(dialogActions.deleteIncome({
+        transactionId: this.transaction.transactionId,
+        day: this.day,
       }));
     }
   }
