@@ -1,5 +1,5 @@
 import { generateMongoId } from '@household/shared/common/utils';
-import { AccountType, CategoryType, FileType, TransactionType } from '@household/shared/enums';
+import { AccountType, CategoryType, FileType, TransactionType, UserType } from '@household/shared/enums';
 import { Account, Auth, Category, File, Product, Project, Recipient, Report, Setting, Transaction, User } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
 
@@ -762,6 +762,7 @@ export const createUserResponse: DataFactoryFunction<User.Response> = (resp) => 
   return {
     email: 'user@email.com',
     status: 'CONFIRMED',
+    groups: [UserType.Editor],
     ...resp,
   };
 };

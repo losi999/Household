@@ -533,6 +533,18 @@ export const httpErrors = {
       log('Listing users from cognito', undefined, error);
       throw httpError(statusCode, 'Error while listing users from cognito');
     },
+    listUsersByGroup: (statusCode = 500): CatchAndThrow => (error) => {
+      log('Listing users by group from cognito', undefined, error);
+      throw httpError(statusCode, 'Error while listing users by group from cognito');
+    },
+    addUserToGroup: (statusCode = 500): CatchAndThrow => (error) => {
+      log('Add user to group in cognito', undefined, error);
+      throw httpError(statusCode, 'Error while adding user to group in cognito');
+    },
+    removeUserFromGroup: (statusCode = 500): CatchAndThrow => (error) => {
+      log('Remove user from group in cognito', undefined, error);
+      throw httpError(statusCode, 'Error while removing user from group in cognito');
+    },
     login: (ctx: User.Email, statusCode = 500): CatchAndThrow => (error) => {
       log('Login', ctx, error);
       throw httpError(statusCode, 'Error while logging in');

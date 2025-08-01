@@ -640,13 +640,18 @@ export namespace Setting {
 
 export namespace User {
   export type Email = {
-    email: string
+    email: string;
+  };
+
+  export type Group = {
+    group: Enum.UserType;
   };
 
   export type Request = Email;
 
   export type Response = Email & {
     status: UserStatusType;
+    groups: Enum.UserType[]
   };
 }
 

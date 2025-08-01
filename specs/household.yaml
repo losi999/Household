@@ -751,6 +751,7 @@ paths:
                   required:
                     - email
                     - status
+                    - groups
                   properties:
                     email:
                       type: string
@@ -765,6 +766,10 @@ paths:
                         - "RESET_REQUIRED"
                         - "UNCONFIRMED"
                         - "UNKNOWN"
+                    groups:
+                      type: array
+                      items:
+                        $ref: "user.yaml#/components/schemas/Group"
     post:
       tags:
         - user
@@ -791,6 +796,23 @@ paths:
       responses:
         204:
           description: User is deleted
+  /user/v1/users/{email}/groups/{group}:
+    parameters:
+      - $ref: "#/components/parameters/Path.Email"
+      - $ref: "#/components/parameters/Path.Group"
+    post:
+      tags:
+        - user
+      responses:
+        204:
+          description: User added to group
+    delete:
+      tags:
+        - user
+      responses:
+        204:
+          description: User removed from group
+
   /user/v1/users/{email}/confirm:
     parameters:
       - $ref: "#/components/parameters/Path.Email"
@@ -874,6 +896,12 @@ components:
       schema:
         type: string
         format: email
+    Path.Group:
+      name: group
+      in: path
+      required: true
+      schema:
+        $ref: "user.yaml#/components/schemas/Group"
     Query.TransactionId:
       name: transactionId
       in: query

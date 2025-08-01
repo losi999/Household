@@ -131,6 +131,38 @@ Resources:
             Path: /v1/users/{email}/confirm
             Method: POST
 
+  AddUserToGroup:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-AddUserToGroup
+      CodeUri: dist/api/add-user-to-group
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref UserApi
+            Path: /v1/users/{email}/groups/{group}
+            Method: POST
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  RemoveUserFromGroup:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-RemoveUserFromGroup
+      CodeUri: dist/api/remove-user-from-group
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref UserApi
+            Path: /v1/users/{email}/groups/{group}
+            Method: DELETE
+            Auth:
+              Authorizer: CognitoAuthorizer
+
   Login:
     Type: AWS::Serverless::Function
     Properties:

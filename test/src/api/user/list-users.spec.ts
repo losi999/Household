@@ -9,16 +9,26 @@ const permissionMap = allowUsers('editor') ;
 
 describe('GET /user/v1/users', () => {
   let pendingUser: User.Request;
-  let confirmedUser: User.Request;
+  let editorUser: User.Request & User.Group;
+  let viewerUser: User.Request & User.Group;
+  let hairdresserUser: User.Request & User.Group;
 
   beforeEach(() => {
     pendingUser = userDataFactory.request();
-    confirmedUser = userDataFactory.confirmedUser();
+    editorUser = userDataFactory.confirmedUser({
+      group: UserType.Editor,
+    });
+    viewerUser = userDataFactory.confirmedUser();
+    hairdresserUser = userDataFactory.confirmedUser({
+      group: UserType.Hairdresser,
+    });
   });
 
   afterEach(() => {
     cy.deleteUser(pendingUser)
-      .deleteUser(confirmedUser);
+      .deleteUser(editorUser)
+      .deleteUser(viewerUser)
+      .deleteUser(hairdresserUser);
   });
 
   describe('called as anonymous', () => {
@@ -42,15 +52,19 @@ describe('GET /user/v1/users', () => {
         });
       } else {
         it('should get a list of users', () => {
-          cy.createUser(pendingUser, UserType.Editor, true)
-            .createUser(confirmedUser, UserType.Editor, true)
+          cy.createUser(pendingUser, undefined, true)
+            .createUser(editorUser, editorUser.group, true)
+            .createUser(viewerUser, viewerUser.group, true)
+            .createUser(hairdresserUser, hairdresserUser.group, true)
             .authenticate(userType)
             .requestGetUserList()
             .expectOkResponse()
             .expectValidResponseSchema(schema)
             .validateUserListResponse([
               pendingUser,
-              confirmedUser,
+              editorUser,
+              viewerUser,
+              hairdresserUser,
             ]);
 
         });
