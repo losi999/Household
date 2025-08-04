@@ -1,4 +1,4 @@
-import { Account, Category, File, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Account, Category, File, Product, Project, Recipient, Transaction, User } from '@household/shared/types/types';
 import { createFeatureSelector, createSelector } from '@ngrx/store';
 import { ProgressState } from '@household/web/state/progress/progress.reducer';
 
@@ -53,3 +53,7 @@ export const selectFileIsInProgress = (fileId: File.Id) => createSelector(
   selectProgress, ({ inProgressFiles }) => {
     return inProgressFiles.includes(fileId);
   });
+
+export const selectUserGroupIsInProgress = ({ email, group }: User.Email & User.Group) => createSelector(selectProgress, ({ inProgressUserGroups }) => {
+  return inProgressUserGroups.includes(`${email}_${group}`);
+});

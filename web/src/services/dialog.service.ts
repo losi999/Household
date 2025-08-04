@@ -148,15 +148,6 @@ export class DialogService {
     return this.openConfirmationDialog('Törölni akarod ezt a felhasználót?', email);
   }
 
-  openDeleteIncomeDialog(data: Transaction.TransactionId & {day: Date}) {
-    return this.openConfirmationDialog('Törölni akarod a bevételt?', new Intl.DateTimeFormat('hu-HU', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      weekday: 'long',
-    }).format(data.day));
-  }
-
   openDeleteDraftTransactionsDialog(transactionIds: Transaction.Id[]) {
     return this.openConfirmationDialog(`Törölni akarsz ${transactionIds.length} tranzakciót?`);
   }

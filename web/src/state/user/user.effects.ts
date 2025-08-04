@@ -80,5 +80,65 @@ export class UserEffects {
       }),
     );
   });
+
+  addUserToGroup = createEffect(() => {
+    return this.actions.pipe(
+      ofType(userApiActions.addUserToGroupInitiated),
+      mergeMap(({ email, group }) => {
+        return this.userService.addUserToGroup({
+          email,
+          group,
+        }).pipe(
+          map(() => userApiActions.addUserToGroupCompleted({
+            email,
+            group,
+          })),
+          catchError((error) => {
+            let errorMessage: string;
+            switch(error.error?.message) {
+              default: {
+                errorMessage = 'Hiba történt';
+              }
+            }
+            return of(progressActions.processFinished(),
+              notificationActions.showMessage({
+                message: errorMessage,
+              }),
+            );
+          }),
+        );
+      }),
+    );
+  });
+
+  removeUserFromGroup = createEffect(() => {
+    return this.actions.pipe(
+      ofType(userApiActions.removeUserFromGroupInitiated),
+      mergeMap(({ email, group }) => {
+        return this.userService.removeUserFromGroup({
+          email,
+          group,
+        }).pipe(
+          map(() => userApiActions.removeUserFromGroupCompleted({
+            email,
+            group,
+          })),
+          catchError((error) => {
+            let errorMessage: string;
+            switch(error.error?.message) {
+              default: {
+                errorMessage = 'Hiba történt';
+              }
+            }
+            return of(progressActions.processFinished(),
+              notificationActions.showMessage({
+                message: errorMessage,
+              }),
+            );
+          }),
+        );
+      }),
+    );
+  });
 }
 

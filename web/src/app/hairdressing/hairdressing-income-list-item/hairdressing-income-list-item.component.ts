@@ -1,7 +1,6 @@
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Transaction } from '@household/shared/types/types';
-import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { hairdressingActions } from '@household/web/state/hairdressing/hairdressing.actions';
 import { Store } from '@ngrx/store';
 
@@ -70,9 +69,8 @@ export class HairdressingIncomeListItemComponent implements OnInit, OnChanges {
         description: splits.join(this.splitsDelimiter),
       }));
     } else {
-      this.store.dispatch(dialogActions.deleteIncome({
+      this.store.dispatch(hairdressingActions.deleteIncomeInitiated({
         transactionId: this.transaction.transactionId,
-        day: this.day,
       }));
     }
   }

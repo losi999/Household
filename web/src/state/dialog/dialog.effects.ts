@@ -7,7 +7,6 @@ import { transactionApiActions } from '@household/web/state/transaction/transact
 import { userApiActions } from '@household/web/state/user/user.actions';
 import { dispatchIfConfirmed } from '@household/web/operators/dispatch-if-confirmed';
 import { fileApiActions } from '@household/web/state/file/file.actions';
-import { hairdressingActions } from '@household/web/state/hairdressing/hairdressing.actions';
 import { accountApiActions } from '@household/web/state/account/account.actions';
 import { productApiActions } from '@household/web/state/product/product.actions';
 import { categoryApiActions } from '@household/web/state/category/category.actions';
@@ -265,20 +264,6 @@ export class DialogEffects {
     );
   }, {
     dispatch: false,
-  });
-
-  deleteIncome = createEffect(() => {
-    return this.actions.pipe(
-      ofType(dialogActions.deleteIncome),
-      exhaustMap(({ transactionId, day }) => {
-        return this.dialogService.openDeleteIncomeDialog({
-          transactionId,
-          day,
-        }).pipe(dispatchIfConfirmed(hairdressingActions.deleteIncomeInitiated({
-          transactionId,
-        })));
-      }),
-    );
   });
 
   deleteUser = createEffect(() => {

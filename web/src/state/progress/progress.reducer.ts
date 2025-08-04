@@ -8,6 +8,7 @@ import { productApiActions } from '@household/web/state/product/product.actions'
 import { accountApiActions } from '@household/web/state/account/account.actions';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
 import { fileApiActions } from '@household/web/state/file/file.actions';
+import { userApiActions } from '@household/web/state/user/user.actions';
 
 export type ProgressState = {
   counter: number;
@@ -18,6 +19,7 @@ export type ProgressState = {
   inProgressAccounts: Account.Id[];
   inProgressTransactions: Transaction.Id[];
   inProgressFiles: File.Id[];
+  inProgressUserGroups: string[];
 };
 
 export const progressReducer = createReducer<ProgressState>({
@@ -29,6 +31,7 @@ export const progressReducer = createReducer<ProgressState>({
   inProgressAccounts: [],
   inProgressTransactions: [],
   inProgressFiles: [],
+  inProgressUserGroups: [],
 },
 on(progressActions.processStarted, (_state) => {
   return {
@@ -233,6 +236,23 @@ on(fileApiActions.deleteFileCompleted, fileApiActions.deleteFileFailed, (_state,
   return {
     ..._state,
     inProgressFiles: _state.inProgressFiles.filter(f => f !== fileId),
+  };
+}),
+
+on(userApiActions.addUserToGroupInitiated, userApiActions.removeUserFromGroupInitiated, (_state, { group, email }) => {
+  return {
+    ..._state,
+    inProgressUserGroups: [
+      ..._state.inProgressUserGroups,
+      `${email}_${group}`,
+    ],
+  };
+}),
+
+on(userApiActions.addUserToGroupCompleted, userApiActions.removeUserFromGroupCompleted, (_state, { group, email }) => {
+  return {
+    ..._state,
+    inProgressUserGroups: _state.inProgressUserGroups.filter(x => x !== `${email}_${group}`),
   };
 }),
 );
