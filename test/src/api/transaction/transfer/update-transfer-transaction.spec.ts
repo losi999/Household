@@ -113,7 +113,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfer)', 
               .validateTransactionTransferDocument(request);
           });
 
-          it('with payments', () => {
+          it('with payments between non-loan accounts', () => {
             const deferredTransactionDocument = deferredTransactionDataFactory.document({
               body: {
                 amount: -5000,
@@ -137,6 +137,45 @@ describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfer)', 
             cy.saveAccountDocuments([
               accountDocument,
               transferAccountDocument,
+            ])
+              .saveTransactionDocuments([
+                originalDocument,
+                deferredTransactionDocument,
+              ])
+              .authenticate(userType)
+              .requestUpdateToTransferTransaction(getTransactionId(originalDocument), request)
+              .expectCreatedResponse()
+              .validateTransactionTransferDocument(request);
+          });
+
+          it('with payments between a non-loan and a loan account', () => {
+            const loanAccountDocument = accountDataFactory.document({
+              accountType: AccountType.Loan,
+            });
+
+            const deferredTransactionDocument = deferredTransactionDataFactory.document({
+              body: {
+                amount: -5000,
+              },
+              account: accountDocument,
+              loanAccount: transferAccountDocument,
+            });
+
+            request = transferTransactionDataFactory.request({
+              accountId: getAccountId(accountDocument),
+              transferAccountId: getAccountId(loanAccountDocument),
+              amount: 2000,
+              payments: [
+                {
+                  amount: 1500,
+                  transactionId: getTransactionId(deferredTransactionDocument),
+                },
+              ],
+            });
+
+            cy.saveAccountDocuments([
+              accountDocument,
+              loanAccountDocument,
             ])
               .saveTransactionDocuments([
                 originalDocument,

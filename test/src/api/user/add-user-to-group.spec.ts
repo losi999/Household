@@ -44,6 +44,26 @@ describe('POST /user/v1/users/{email}/groups/{group}', () => {
             .expectNoContentResponse()
             .validateUserInGroup(viewerUser, UserType.Editor);
         });
+
+        describe('should return error', () => {
+          describe('if email', () => {
+            it('is not email', () => {
+              cy.authenticate(userType)
+                .requestAddUserToGroup('not an email', UserType.Editor)
+                .expectBadRequestResponse()
+                .expectWrongPropertyFormat('email', 'email', 'pathParameters');
+            });
+          });
+
+          describe('if group', () => {
+            it('is not a valid enum value', () => {
+              cy.authenticate(userType)
+                .requestAddUserToGroup(viewerUser.email, 'dummy' as any)
+                .expectBadRequestResponse()
+                .expectWrongEnumValue('group', 'pathParameters');
+            });
+          });
+        });
       }
     });
   });

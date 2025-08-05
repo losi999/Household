@@ -128,15 +128,12 @@ export class ImportTransactionsEditComponent implements OnInit {
   }
 
   save() {
-    console.log('save');
-
     this.store.dispatch(importActions.importTransactions({
       transactionIds: this.selectedTransactions.value,
     }));
   }
 
   delete() {
-    console.log('delete', this.selectedTransactions.value);
     this.store.dispatch(dialogActions.deleteDraftTransactions({
       transactionIds: this.selectedTransactions.value,
     }));

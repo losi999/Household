@@ -46,6 +46,26 @@ describe('DELETE /user/v1/users/{email}/groups/{group}', () => {
             .expectNoContentResponse()
             .validateUserInGroup(editorUser, UserType.Editor);
         });
+
+        describe('should return error', () => {
+          describe('if email', () => {
+            it('is not email', () => {
+              cy.authenticate(userType)
+                .requestRemoveUserFromGroup('not an email', UserType.Editor)
+                .expectBadRequestResponse()
+                .expectWrongPropertyFormat('email', 'email', 'pathParameters');
+            });
+          });
+
+          describe('if group', () => {
+            it('is not a valid enum value', () => {
+              cy.authenticate(userType)
+                .requestRemoveUserFromGroup(editorUser.email, 'dummy' as any)
+                .expectBadRequestResponse()
+                .expectWrongEnumValue('group', 'pathParameters');
+            });
+          });
+        });
       }
     });
   });

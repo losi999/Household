@@ -18,7 +18,6 @@ export class ImportTransactionsDuplicateListItemComponent implements OnInit {
   constructor(private store: Store) { }
 
   ngOnInit(): void {
-    // this.isDisabled = this.store.select(selectTransactionIsInProgress(this.file.fileId));
     this.showYear = !this.transaction.issuedAt.startsWith(new Date().getFullYear()
       .toString());
   }

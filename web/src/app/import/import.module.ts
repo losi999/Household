@@ -31,7 +31,6 @@ import { ImportTransactionsDuplicateListComponent } from './import-transactions-
 import { ImportTransactionsDuplicateListItemComponent } from './import-transactions-duplicate-list-item/import-transactions-duplicate-list-item.component';
 import { ImportTransactionsEditListItemComponent } from './import-transactions-edit-list-item/import-transactions-edit-list-item.component';
 import { ImportTransactionsEditListComponent } from './import-transactions-edit-list/import-transactions-edit-list.component';
-import { MatExpansionModule } from '@angular/material/expansion';
 
 @NgModule({
   declarations: [
@@ -65,7 +64,6 @@ import { MatExpansionModule } from '@angular/material/expansion';
     MatMenuModule,
     ClearableInputComponent,
     MatTabsModule,
-    MatExpansionModule,
     AccountAutocompleteInputComponent,
     ProjectAutocompleteInputComponent,
     RecipientAutocompleteInputComponent,

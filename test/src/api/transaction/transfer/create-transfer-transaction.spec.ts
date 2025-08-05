@@ -102,7 +102,7 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
               .validateTransactionTransferDocument(request);
           });
 
-          it('with payments', () => {
+          it('with payments between non-loan accounts', () => {
             const deferredTransactionDocument = deferredTransactionDataFactory.document({
               body: {
                 amount: -5000,
@@ -126,6 +126,43 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
             cy.saveAccountDocuments([
               accountDocument,
               transferAccountDocument,
+            ])
+              .saveTransactionDocument(deferredTransactionDocument)
+              .authenticate(userType)
+              .requestCreateTransferTransaction(request)
+              .expectCreatedResponse()
+              .validateTransactionTransferDocument(request);
+          });
+
+          it('with payments between a non-loan and a loan account', () => {
+            const loanAccountDocument = accountDataFactory.document({
+              accountType: AccountType.Loan,
+            });
+
+            const deferredTransactionDocument = deferredTransactionDataFactory.document({
+              body: {
+                amount: -5000,
+              },
+              account: accountDocument,
+              loanAccount: transferAccountDocument,
+            });
+
+            request = transferTransactionDataFactory.request({
+              accountId: getAccountId(accountDocument),
+              transferAccountId: getAccountId(loanAccountDocument,
+              ),
+              amount: 2000,
+              payments: [
+                {
+                  amount: 1500,
+                  transactionId: getTransactionId(deferredTransactionDocument),
+                },
+              ],
+            });
+
+            cy.saveAccountDocuments([
+              accountDocument,
+              loanAccountDocument,
             ])
               .saveTransactionDocument(deferredTransactionDocument)
               .authenticate(userType)
