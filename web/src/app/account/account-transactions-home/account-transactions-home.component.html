@@ -1,5 +1,5 @@
 <household-toolbar title="Tranzakciók">
-  <button mat-icon-button type="button" [matMenuTriggerFor]="new">
+  <button mat-icon-button type="button" [matMenuTriggerFor]="new" *householdIsEditor>
     <mat-icon>add</mat-icon>
   </button>
   <mat-menu #new="matMenu">

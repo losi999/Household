@@ -3,14 +3,14 @@ import { IIdentityService } from '@household/shared/services/identity-service';
 import { User } from '@household/shared/types/types';
 
 export interface IDeleteUserService {
-  (ctx: User.Email): Promise<void>;
+  (ctx: User.Email): Promise<unknown>;
 }
 
 export const deleteUserServiceFactory = (identityService: IIdentityService): IDeleteUserService => {
-  return async ({ email }) => {
-    await identityService.deleteUser({
+  return ({ email }) => {
+    return identityService.deleteUser({
       email,
-    }).catch(httpErrors.common.genericError('Delete user', {
+    }).catch(httpErrors.cognito.deleteUser({
       email,
     }));
   };

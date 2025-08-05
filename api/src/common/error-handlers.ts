@@ -1,7 +1,7 @@
 import { getCategoryId, getProductId } from '@household/shared/common/utils';
 import { AccountType, CategoryType } from '@household/shared/enums';
 import { HttpError } from '@household/shared/types/common';
-import { Account, Category, Common, File, Product, Project, Recipient, Setting, Transaction } from '@household/shared/types/types';
+import { Account, Category, Common, File, Product, Project, Recipient, Setting, Transaction, User } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
 
 type CatchAndThrow = (error: any) => never;
@@ -467,7 +467,6 @@ export const httpErrors = {
       throw httpError(statusCode, 'Error while deleting file');
     },
     readFile: (ctx: {
-      bucketName: string;
       fileId: string;
     }, statusCode = 500): CatchAndThrow => (error) => {
       log('Read file', ctx, error);
@@ -507,6 +506,56 @@ export const httpErrors = {
     genericError: (message: string, ctx?: any, statusCode = 500): CatchAndThrow => (error) => {
       log(message, ctx, error);
       throw httpError(statusCode, error.message);
+    },
+  },
+  cognito: {
+    createUser: (ctx: User.Email, statusCode = 500): CatchAndThrow => (error) => {
+      if (error.name === 'UsernameExistsException') {
+        log('Duplicate user email', ctx, error);
+        throw httpError(400, 'Duplicate user email');
+      }
+      log('Create user in cognito', ctx, error);
+      throw httpError(statusCode, 'Error while creating user in cognito');
+    },
+    confirmUser: (ctx: User.Email, statusCode = 500): CatchAndThrow => (error) => {
+      log('Confirm user in cognito', ctx, error);
+      throw httpError(statusCode, 'Error while confirming user in cognito');
+    },
+    confirmForgotPassword: (ctx: User.Email, statusCode = 500): CatchAndThrow => (error) => {
+      log('Confirm forgot password in cognito', ctx, error);
+      throw httpError(statusCode, 'Error while confirming forgot password in cognito');
+    },
+    deleteUser: (ctx: User.Email, statusCode = 500): CatchAndThrow => (error) => {
+      log('Delete user from cognito', ctx, error);
+      throw httpError(statusCode, 'Error while deleting user from cognito');
+    },
+    listUsers: (statusCode = 500): CatchAndThrow => (error) => {
+      log('Listing users from cognito', undefined, error);
+      throw httpError(statusCode, 'Error while listing users from cognito');
+    },
+    listUsersByGroup: (statusCode = 500): CatchAndThrow => (error) => {
+      log('Listing users by group from cognito', undefined, error);
+      throw httpError(statusCode, 'Error while listing users by group from cognito');
+    },
+    addUserToGroup: (statusCode = 500): CatchAndThrow => (error) => {
+      log('Add user to group in cognito', undefined, error);
+      throw httpError(statusCode, 'Error while adding user to group in cognito');
+    },
+    removeUserFromGroup: (statusCode = 500): CatchAndThrow => (error) => {
+      log('Remove user from group in cognito', undefined, error);
+      throw httpError(statusCode, 'Error while removing user from group in cognito');
+    },
+    login: (ctx: User.Email, statusCode = 500): CatchAndThrow => (error) => {
+      log('Login', ctx, error);
+      throw httpError(statusCode, 'Error while logging in');
+    },
+    refreshToken: (statusCode = 500): CatchAndThrow => (error) => {
+      log('Refresh token', error);
+      throw httpError(statusCode, 'Error while getting refresh token');
+    },
+    forgotPassword: (ctx: User.Email, statusCode = 500): CatchAndThrow => (error) => {
+      log('Forgot password', ctx, error);
+      throw httpError(statusCode, 'Error while resetting password');
     },
   },
 };

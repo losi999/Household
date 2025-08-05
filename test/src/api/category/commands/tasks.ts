@@ -3,15 +3,15 @@ import { CommandFunction } from '@household/test/api/types';
 import { ICategoryService } from '@household/shared/services/category-service';
 
 const saveCategoryDocument = (...params: Parameters<ICategoryService['saveCategory']>) => {
-  return cy.task<Category.Document>('saveCategory', ...params);
+  return cy.task<Category.Document>('saveCategory', params);
 };
 
 const saveCategoryDocuments = (...params: Parameters<ICategoryService['saveCategories']>) => {
-  return cy.task<Category.Document>('saveCategories', ...params);
+  return cy.task<Category.Document>('saveCategories', params);
 };
 
 const getCategoryDocumentById = (...params: Parameters<ICategoryService['getCategoryById']>) => {
-  return cy.task<Category.Document>('getCategoryById', ...params);
+  return cy.task<Category.Document>('getCategoryById', params);
 };
 
 export const setCategoryTaskCommands = () => {

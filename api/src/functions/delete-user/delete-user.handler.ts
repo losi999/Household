@@ -1,5 +1,5 @@
 
-import { createdResponse, errorResponse } from '@household/api/common/response-factory';
+import { errorResponse, noContentResponse } from '@household/api/common/response-factory';
 import { IDeleteUserService } from '@household/api/functions/delete-user/delete-user.service';
 
 export default (deleteUser: IDeleteUserService): AWSLambda.APIGatewayProxyHandler =>
@@ -15,5 +15,5 @@ export default (deleteUser: IDeleteUserService): AWSLambda.APIGatewayProxyHandle
       return errorResponse(error);
     }
 
-    return createdResponse();
+    return noContentResponse();
   };

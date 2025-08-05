@@ -9,7 +9,7 @@ describe('Merge recipient service', () => {
   let mockRecipientService: Mock<IRecipientService>;
 
   beforeEach(() => {
-    mockRecipientService = createMockService('listRecipientsByIds', 'mergeRecipients');
+    mockRecipientService = createMockService('findRecipientsByIds', 'mergeRecipients');
 
     service = mergeRecipientsServiceFactory(mockRecipientService.service);
   });
@@ -21,7 +21,7 @@ describe('Merge recipient service', () => {
   const body = [sourceRecipientId];
 
   it('should return if recipients are merged', async () => {
-    mockRecipientService.functions.listRecipientsByIds.mockResolvedValue([
+    mockRecipientService.functions.findRecipientsByIds.mockResolvedValue([
       targetRecipientDocument,
       sourceRecipientDocument,
     ]);
@@ -31,7 +31,7 @@ describe('Merge recipient service', () => {
       body,
       recipientId,
     });
-    validateFunctionCall(mockRecipientService.functions.listRecipientsByIds, [
+    validateFunctionCall(mockRecipientService.functions.findRecipientsByIds, [
       recipientId,
       sourceRecipientId,
     ]);
@@ -51,19 +51,19 @@ describe('Merge recipient service', () => {
         ],
         recipientId,
       }).catch(validateError('Target recipient is among the source recipient Ids', 400));
-      validateFunctionCall(mockRecipientService.functions.listRecipientsByIds);
+      validateFunctionCall(mockRecipientService.functions.findRecipientsByIds);
       validateFunctionCall(mockRecipientService.functions.mergeRecipients);
       expect.assertions(4);
     });
 
     it('if unable to query recipients', async () => {
-      mockRecipientService.functions.listRecipientsByIds.mockRejectedValue('This is a mongo error');
+      mockRecipientService.functions.findRecipientsByIds.mockRejectedValue('This is a mongo error');
 
       await service({
         body,
         recipientId,
       }).catch(validateError('Error while listing recipients by ids', 500));
-      validateFunctionCall(mockRecipientService.functions.listRecipientsByIds, [
+      validateFunctionCall(mockRecipientService.functions.findRecipientsByIds, [
         recipientId,
         sourceRecipientId,
       ]);
@@ -72,14 +72,14 @@ describe('Merge recipient service', () => {
     });
 
     it('if some of the recipients not found', async () => {
-      mockRecipientService.functions.listRecipientsByIds.mockResolvedValue([sourceRecipientDocument]);
+      mockRecipientService.functions.findRecipientsByIds.mockResolvedValue([sourceRecipientDocument]);
       mockRecipientService.functions.mergeRecipients.mockResolvedValue(undefined);
 
       await service({
         body,
         recipientId,
       }).catch(validateError('Some of the recipients are not found', 400));
-      validateFunctionCall(mockRecipientService.functions.listRecipientsByIds, [
+      validateFunctionCall(mockRecipientService.functions.findRecipientsByIds, [
         recipientId,
         sourceRecipientId,
       ]);
@@ -88,7 +88,7 @@ describe('Merge recipient service', () => {
     });
 
     it('if unable to merge recipients', async () => {
-      mockRecipientService.functions.listRecipientsByIds.mockResolvedValue([
+      mockRecipientService.functions.findRecipientsByIds.mockResolvedValue([
         targetRecipientDocument,
         sourceRecipientDocument,
       ]);
@@ -98,7 +98,7 @@ describe('Merge recipient service', () => {
         body,
         recipientId,
       }).catch(validateError('Error while merging recipients', 500));
-      validateFunctionCall(mockRecipientService.functions.listRecipientsByIds, [
+      validateFunctionCall(mockRecipientService.functions.findRecipientsByIds, [
         recipientId,
         sourceRecipientId,
       ]);

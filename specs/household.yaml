@@ -717,6 +717,8 @@ paths:
                     value:
                       type: string
   /setting/v1/settings/{settingKey}:
+    parameters:
+      - $ref: "#/components/parameters/Path.SettingKey"
     post:
       tags:
         - setting
@@ -733,6 +735,109 @@ paths:
       responses:
         204:
           description: Setting saved
+  /user/v1/users:
+    get:
+      tags:
+        - user
+      responses:
+        200:
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - email
+                    - status
+                    - groups
+                  properties:
+                    email:
+                      type: string
+                      format: email
+                    status:
+                      type: string
+                      enum:
+                        - "ARCHIVED"
+                        - "COMPROMISED"
+                        - "CONFIRMED"
+                        - "FORCE_CHANGE_PASSWORD"
+                        - "RESET_REQUIRED"
+                        - "UNCONFIRMED"
+                        - "UNKNOWN"
+                    groups:
+                      type: array
+                      items:
+                        $ref: "user.yaml#/components/schemas/Group"
+    post:
+      tags:
+        - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        201:
+          description: User saved
+  /user/v1/users/{email}:
+    parameters:
+      - $ref: "#/components/parameters/Path.Email"
+    delete:
+      tags:
+        - user
+      responses:
+        204:
+          description: User is deleted
+  /user/v1/users/{email}/groups/{group}:
+    parameters:
+      - $ref: "#/components/parameters/Path.Email"
+      - $ref: "#/components/parameters/Path.Group"
+    post:
+      tags:
+        - user
+      responses:
+        204:
+          description: User added to group
+    delete:
+      tags:
+        - user
+      responses:
+        204:
+          description: User removed from group
+
+  /user/v1/users/{email}/confirm:
+    parameters:
+      - $ref: "#/components/parameters/Path.Email"
+    post:
+      tags:
+        - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - password
+                - temporaryPassword
+              properties:
+                password:
+                  type: string
+                  minLength: 6
+                temporaryPassword:
+                  type: string
+                  minLength: 6
+
+      responses:
+        200:
+          description: User confirmed
 
 components:
   parameters:
@@ -778,6 +883,25 @@ components:
       required: true
       schema:
         type: string
+    Path.SettingKey:
+      name: settingKey
+      in: path
+      required: true
+      schema:
+        type: string
+    Path.Email:
+      name: email
+      in: path
+      required: true
+      schema:
+        type: string
+        format: email
+    Path.Group:
+      name: group
+      in: path
+      required: true
+      schema:
+        $ref: "user.yaml#/components/schemas/Group"
     Query.TransactionId:
       name: transactionId
       in: query

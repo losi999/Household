@@ -67,10 +67,10 @@ export const createSplitTransactionServiceFactory = (
       recipient,
       productList,
     ] = await Promise.all([
-      accountService.listAccountsByIds(accountIds),
-      categoryService.listCategoriesByIds(categoryIds),
-      projectService.listProjectsByIds(projectIds),
-      recipientService.getRecipientById(recipientId),
+      accountService.findAccountsByIds(accountIds),
+      categoryService.findCategoriesByIds(categoryIds),
+      projectService.findProjectsByIds(projectIds),
+      recipientService.findRecipientById(recipientId),
       productService.listProductsByIds(productIds),
     ]).catch(httpErrors.common.getRelatedData({
       accountIds,

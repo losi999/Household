@@ -6,7 +6,7 @@ export interface IProductService {
   dumpProducts(): Promise<Product.Document[]>;
   saveProduct(doc: Product.Document): Promise<Product.Document>;
   saveProducts(docs: Product.Document[]): Promise<unknown>;
-  getProductById(productId: Product.Id): Promise<Product.Document>;
+  findProductById(productId: Product.Id): Promise<Product.Document>;
   listProductsByIds(productIds: Product.Id[]): Promise<Product.Document[]>;
   deleteProduct(productId: Product.Id): Promise<unknown>;
   updateProduct(productId: Product.Id, updateQuery: UpdateQuery<Product.Document>): Promise<unknown>;
@@ -26,8 +26,8 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
           .setOptions({
             session,
             lean: true,
-          })
-          .exec();
+          });
+          
       });
     },
     listProducts: () => {
@@ -105,12 +105,12 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
         });
       });
     },
-    getProductById: async (productId) => {
+    findProductById: async (productId) => {
       return !productId ? undefined : mongodbService.products.findById(productId)
         .setOptions({
           lean: true,
-        })
-        .exec();
+        });
+        
     },
     listProductsByIds: (productIds) => {
       return mongodbService.inSession((session) => {
@@ -123,8 +123,7 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
           .setOptions({
             session,
             lean: true,
-          })
-          .exec();
+          });
 
       });
     },
@@ -135,8 +134,8 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
             _id: productId,
           }, {
             session,
-          })
-            .exec();
+          });
+            
           await mongodbService.transactions.updateMany({
             product: productId,
           }, {
@@ -147,8 +146,8 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
           }, {
             runValidators: true,
             session,
-          })
-            .exec();
+          });
+            
           await mongodbService.transactions.updateMany({
             'splits.product': productId,
           }, {
@@ -165,8 +164,8 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
                 'element.product': productId,
               },
             ],
-          })
-            .exec();
+          });
+            
           await mongodbService.transactions.updateMany({
             'deferredSplits.product': productId,
           }, {
@@ -183,8 +182,8 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
                 'element.product': productId,
               },
             ],
-          })
-            .exec();
+          });
+            
         });
       });
     },
@@ -259,19 +258,6 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
         });
       });
     },
-    // listProducts: () => {
-    //   return mongodbService.inSession((session) => {
-    //     return mongodbService.products.find({}, null, {
-    //       session,
-    //     })
-    //       .collation({
-    //         locale: 'hu',
-    //       })
-    //       .sort('name')
-    //       .lean()
-    //       .exec();
-    //   });
-    // },
   };
 
   return instance;

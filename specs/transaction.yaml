@@ -135,7 +135,7 @@ components:
         - account
       properties:
         account:
-          $ref: "account.yaml#/components/schemas/Response"
+          $ref: "account.yaml#/components/schemas/LeanResponse"
     PayingAccount:
       type: object
       required:

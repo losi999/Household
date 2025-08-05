@@ -63,7 +63,7 @@ export const jsonSchemaTesterFactory = <T extends object>(schema: JSONSchema7) =
     maxLength: (data: T, propertyName: string, maxLength: number) => {
       it('is too long', () => {
         const result = validatorService.validate(data, schema);
-        expect(result).toContain(`${propertyName} must NOT be longer than ${maxLength} characters`);
+        expect(result).toContain(`${propertyName} must NOT have more than ${maxLength} characters`);
       });
     },
     enum: (data: T, propertyName: string) => {

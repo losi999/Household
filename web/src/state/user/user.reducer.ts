@@ -11,6 +11,7 @@ export const userReducer = createReducer<User.Response[]>([],
     return _state.concat({
       email,
       status: 'FORCE_CHANGE_PASSWORD',
+      groups: [],
     })
       .toSorted((a, b) => a.email.localeCompare(b.email, 'hu', {
         sensitivity: 'base',

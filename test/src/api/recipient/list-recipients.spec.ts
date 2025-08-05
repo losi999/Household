@@ -1,6 +1,10 @@
 import { default as schema } from '@household/test/api/schemas/recipient-response-list';
 import { Recipient } from '@household/shared/types/types';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
+import { forbidUsers } from '@household/test/api/utils';
+import { entries } from '@household/shared/common/utils';
+
+const permissionMap = forbidUsers();
 
 describe('GET /recipient/v1/recipients', () => {
   let recipientDocument1: Recipient.Document;
@@ -13,24 +17,35 @@ describe('GET /recipient/v1/recipients', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestGetRecipientList()
         .expectUnauthorizedResponse();
     });
   });
 
-  describe('called as an admin', () => {
-    it('should get a list of recipients', () => {
-      cy.saveRecipientDocument(recipientDocument1)
-        .saveRecipientDocument(recipientDocument2)
-        .authenticate(1)
-        .requestGetRecipientList()
-        .expectOkResponse()
-        .expectValidResponseSchema(schema)
-        .validateRecipientListResponse([
-          recipientDocument1,
-          recipientDocument2,
-        ]);
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
+    describe(`called as ${userType}`, () => {
+      if (!isAllowed) {
+        it('should return forbidden', () => {
+          cy.authenticate(userType)
+            .requestGetRecipientList()
+            .expectForbiddenResponse();
+        });
+      } else {
+        it('should get a list of recipients', () => {
+          cy.saveRecipientDocument(recipientDocument1)
+            .saveRecipientDocument(recipientDocument2)
+            .authenticate(userType)
+            .requestGetRecipientList()
+            .expectOkResponse()
+            .expectValidResponseSchema(schema)
+            .validateInRecipientListResponse(recipientDocument1)
+            .validateInRecipientListResponse(recipientDocument2);
+        });
+      }
     });
   });
 });

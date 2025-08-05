@@ -7,6 +7,10 @@ import { reimbursementTransactionDataFactory } from '@household/test/api/transac
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
 import { AccountType } from '@household/shared/enums';
+import { forbidUsers } from '@household/test/api/utils';
+import { entries } from '@household/shared/common/utils';
+
+const permissionMap = forbidUsers();
 
 describe('GET /account/v1/accounts', () => {
   let accountDocument: Account.Document;
@@ -108,55 +112,57 @@ describe('GET /account/v1/accounts', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestGetAccountList()
         .expectUnauthorizedResponse();
     });
   });
 
-  describe('called as an admin', () => {
-    it('should get a list of accounts', () => {
-      const expectedBalance1 = paymentTransactionDocument.amount + transferTransactionDocument.amount + invertedTransferTransactionDocument.transferAmount + splitTransactionDocument.amount + loanTransferTransactionDocument.amount + invertedLoanTransferTransactionDocument.transferAmount + payingDeferredTransactionDocument.amount + repayingTransferTransactionDocument.amount + invertedRepayingTransferTransactionDocument.transferAmount + payingDeferredToLoanTransactionDocument.amount;
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
+    describe(`called as ${userType}`, () => {
+      if (!isAllowed) {
+        it('should return forbidden', () => {
+          cy.authenticate(userType)
+            .requestGetAccountList()
+            .expectForbiddenResponse();
+        });
+      } else {
+        it('should get a list of accounts', () => {
+          const expectedBalance1 = paymentTransactionDocument.amount + transferTransactionDocument.amount + invertedTransferTransactionDocument.transferAmount + splitTransactionDocument.amount + loanTransferTransactionDocument.amount + invertedLoanTransferTransactionDocument.transferAmount + payingDeferredTransactionDocument.amount + repayingTransferTransactionDocument.amount + invertedRepayingTransferTransactionDocument.transferAmount + payingDeferredToLoanTransactionDocument.amount;
 
-      const expectedBalance2 = loanTransferTransactionDocument.transferAmount + invertedLoanTransferTransactionDocument.amount - deferredSplitTransactionDocument.deferredSplits[1].amount + owningReimbursementTransactionDocument.amount - payingDeferredToLoanTransactionDocument.amount;
+          const expectedBalance2 = loanTransferTransactionDocument.transferAmount + invertedLoanTransferTransactionDocument.amount - deferredSplitTransactionDocument.deferredSplits[1].amount + owningReimbursementTransactionDocument.amount - payingDeferredToLoanTransactionDocument.amount;
 
-      cy.saveAccountDocuments([
-        loanAccountDocument,
-        accountDocument,
-        secondaryAccountDocument,
-      ])
-        .saveTransactionDocuments([
-          paymentTransactionDocument,
-          splitTransactionDocument,
-          transferTransactionDocument,
-          invertedTransferTransactionDocument,
-          loanTransferTransactionDocument,
-          invertedLoanTransferTransactionDocument,
-          payingDeferredTransactionDocument,
-          owningDeferredTransactionDocument,
-          payingDeferredToLoanTransactionDocument,
-          owningReimbursementTransactionDocument,
-          deferredSplitTransactionDocument,
-          repayingTransferTransactionDocument,
-          invertedRepayingTransferTransactionDocument,
-        ])
-        .authenticate(1)
-        .requestGetAccountList()
-        .expectOkResponse()
-        .expectValidResponseSchema(schema)
-        .validateAccountListResponse([
-          [
-            accountDocument,
-            expectedBalance1,
-            2,
-          ],
-          [
+          cy.saveAccountDocuments([
             loanAccountDocument,
-            expectedBalance2,
-            0,
-          ],
-        ],
-        );
+            accountDocument,
+            secondaryAccountDocument,
+          ])
+            .saveTransactionDocuments([
+              paymentTransactionDocument,
+              splitTransactionDocument,
+              transferTransactionDocument,
+              invertedTransferTransactionDocument,
+              loanTransferTransactionDocument,
+              invertedLoanTransferTransactionDocument,
+              payingDeferredTransactionDocument,
+              owningDeferredTransactionDocument,
+              payingDeferredToLoanTransactionDocument,
+              owningReimbursementTransactionDocument,
+              deferredSplitTransactionDocument,
+              repayingTransferTransactionDocument,
+              invertedRepayingTransferTransactionDocument,
+            ])
+            .authenticate(userType)
+            .requestGetAccountList()
+            .expectOkResponse()
+            .expectValidResponseSchema(schema)
+            .validateInAccountListResponse(accountDocument, expectedBalance1)
+            .validateInAccountListResponse(loanAccountDocument, expectedBalance2);
+        });
+      }
     });
   });
 });

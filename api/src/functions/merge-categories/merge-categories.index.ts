@@ -6,12 +6,15 @@ import { apiRequestValidator } from '@household/api/dependencies/handlers/api-re
 import { categoryService } from '@household/shared/dependencies/services/category-service';
 import { default as index } from '@household/api/handlers/index.handler';
 import { mergeCategoriesServiceFactory } from '@household/api/functions/merge-categories/merge-categories.service';
+import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';
+import { UserType } from '@household/shared/enums';
 
 const mergeCategoriesService = mergeCategoriesServiceFactory(categoryService);
 
 export default index({
   handler: handler(mergeCategoriesService),
   before: [
+    authorizer(UserType.Editor),
     apiRequestValidator({
       body,
       pathParameters,

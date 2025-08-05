@@ -1,4 +1,18 @@
 version: 2.1
+parameters:
+  deploy:
+    type: boolean
+    default: false
+  skip_api_tests:
+    type: boolean
+    default: false
+commands:
+  load-config:
+    description: Load env config
+    steps:
+      - run:
+          name: Load env config
+          command: cat .config >> $BASH_ENV
 orbs:
   sam: circleci/aws-sam-serverless@6.0.3
 jobs:
@@ -24,6 +38,16 @@ jobs:
           key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}
           paths:
             - ~/.cache/yarn
+      - run:
+          name: Calculate config values
+          command: |
+            case "$CIRCLE_BRANCH" in
+              master) ENV="PROD" ;;
+              development) ENV="DEV" ;;
+              *) ENV="LOCAL" ;;
+            esac
+            echo "ENV=$ENV" >> .config
+            echo "CYPRESS_ENV=$ENV" >> .config
       - persist_to_workspace:
           root: ~/
           paths:
@@ -59,15 +83,13 @@ jobs:
           name: Running linter
           command: yarn lint
   build:
-    parameters:
-      env:
-        type: string
     docker:
       - image: cimg/node:22.5
     working_directory: ~/repo
     steps:
       - attach_workspace:
           at: ~/
+      - load-config
 
       - run:
           name: Build API
@@ -75,7 +97,7 @@ jobs:
 
       - run:
           name: Build Web
-          command: yarn build:web -c <<parameters.env>>
+          command: yarn build:web -c $ENV
 
       - persist_to_workspace:
           root: ~/
@@ -84,57 +106,68 @@ jobs:
             - repo/layers
   api_deploy:
     executor: sam/default
-    parameters:
-      env:
-        type: string
-      cypress_password:
-        type: string
-        default: ${CYPRESS_PASSWORD}
     working_directory: ~/repo
     steps:
       - attach_workspace:
           at: ~/
+      - load-config
       - sam/install
       - deploy:
           name: SAM Deploy
-          command: sam deploy --template-file cf.household.yaml --s3-bucket ${AWS_PACKAGES_S3} --stack-name Household-<<parameters.env>> --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND CAPABILITY_NAMED_IAM --parameter-overrides Env=<<parameters.env>> TestUserPassword=<<parameters.cypress_password>>
+          command: sam deploy --template-file cf.household.yaml --s3-bucket ${AWS_PACKAGES_S3} --stack-name Household-$ENV --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND CAPABILITY_NAMED_IAM --parameter-overrides Env=$ENV TestUserPassword=${CYPRESS_PASSWORD}
       - run:
           name: Invoke Post deploy Lambda
-          command: aws lambda invoke --function-name Household-<<parameters.env>>-PostDeploy /dev/null
+          command: aws lambda invoke --function-name Household-$ENV-PostDeploy /dev/null
   web_deploy:
-    parameters:
-      env:
-        type: string
     docker:
       - image: cibuilds/aws:1.16.1
     working_directory: ~/repo
     steps:
       - attach_workspace:
           at: ~/
+      - load-config
       - run:
           name: Insert RUM App Monitor Id
-          command: sed -i -e "s/RUM_APP_MONITOR_ID/$(aws cloudformation describe-stacks --stack-name Household-<<parameters.env>> --query 'Stacks[0].Outputs[?OutputKey==`RumAppMonitorId`].OutputValue'  --output text)/g" ./dist/web/browser/index.html
+          command: sed -i -e "s/RUM_APP_MONITOR_ID/$(aws cloudformation describe-stacks --stack-name Household-$ENV --query 'Stacks[0].Outputs[?OutputKey==`RumAppMonitorId`].OutputValue' --output text)/g" ./dist/web/browser/index.html
       - run:
           name: Insert RUM Identity Pool Id
-          command: sed -i -e "s/RUM_IDENTITY_POOL_ID/$(aws cloudformation describe-stacks --stack-name Household-<<parameters.env>> --query 'Stacks[0].Outputs[?OutputKey==`RumIdentityPoolId`].OutputValue'  --output text)/g" ./dist/web/browser/index.html
+          command: sed -i -e "s/RUM_IDENTITY_POOL_ID/$(aws cloudformation describe-stacks --stack-name Household-$ENV --query 'Stacks[0].Outputs[?OutputKey==`RumIdentityPoolId`].OutputValue' --output text)/g" ./dist/web/browser/index.html
       - deploy:
           name: Web deploy
-          command: aws s3 sync dist/web/browser s3://$(aws cloudformation describe-stacks --stack-name Household-<<parameters.env>> --query "Stacks[0].Outputs[?OutputKey=='WebsiteBucket'].OutputValue" --output text)
-  test:
-    parameters:
-      env:
-        type: string
-      testCommand:
-        type: string
+          command: aws s3 sync dist/web/browser s3://$(aws cloudformation describe-stacks --stack-name Household-$ENV --query "Stacks[0].Outputs[?OutputKey=='WebsiteBucket'].OutputValue" --output text)
+  api_test_setup:
     docker:
-      - image: cypress/base:16.14.2
-    environment:
-      ENV: <<parameters.env>>
-      CYPRESS_ENV: <<parameters.env>>
+      - image: cibuilds/aws:1.16.1
     working_directory: ~/repo
     steps:
       - attach_workspace:
           at: ~/
+      - load-config
+      - run: cat .config >> test/.env
+      - run:
+          name: Getting MongoDB connection string
+          command: echo "MONGODB_CONNECTION_STRING=\"mongodb+srv://$MONGODB_USERNAME:$MONGODB_PASSWORD@$MONGODB_CLUSTER_DOMAIN/household-$ENV?retryWrites=true&w=majority\"" >> test/.env
+      - run:
+          name: Getting Cognito user pool Id
+          command: echo "USER_POOL_ID=\"$(aws cloudformation describe-stacks --stack-name Household-$ENV --query 'Stacks[0].Outputs[?OutputKey==`CognitoUserPoolId`].OutputValue' --output text)\"" >> test/.env
+      - run:
+          name: Getting Import bucket name
+          command: echo "IMPORT_BUCKET=\"$(aws cloudformation describe-stacks --stack-name Household-$ENV --query 'Stacks[0].Outputs[?OutputKey==`ImportBucket`].OutputValue' --output text)\"" >> test/.env
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - repo
+  test:
+    parameters:
+      testCommand:
+        type: string
+    docker:
+      - image: cypress/base:16.14.2
+    working_directory: ~/repo
+    steps:
+      - attach_workspace:
+          at: ~/
+      - load-config
       - restore_cache:
           key: cache-cypress-v4-{{checksum "test/yarn.lock"}}
       - run:
@@ -146,27 +179,9 @@ jobs:
           paths:
             - /root/.cache/Cypress
       - run:
-          name: Setting MongoDB connection string
-          command: echo "export MONGODB_CONNECTION_STRING=\"mongodb+srv://$MONGODB_USERNAME:$MONGODB_PASSWORD@$MONGODB_CLUSTER_DOMAIN/household-<<parameters.env>>?retryWrites=true&w=majority\"" >> "$BASH_ENV"
-
-      - when:
-          condition:
-            equal: ["LOCAL", <<parameters.env>>]
-          steps:
-            - run:
-                name: Verify cypress
-                working_directory: test
-                command: yarn verify
-
-      - when:
-          condition:
-            not:
-              equal: ["LOCAL", <<parameters.env>>]
-          steps:
-            - run:
-                name: Running tests
-                working_directory: test
-                command: yarn run test:<<parameters.testCommand>>
+          name: Running tests
+          working_directory: test
+          command: export ENV=$ENV && yarn run test:<<parameters.testCommand>>
 
       - store_artifacts:
           path: test/cypress/screenshots
@@ -174,13 +189,7 @@ jobs:
 workflows:
   local:
     jobs:
-      - install:
-          name: install
-          filters:
-            branches:
-              ignore:
-                - development
-                - master
+      - install
       - unit_test:
           name: unit_test
           requires:
@@ -190,148 +199,96 @@ workflows:
           requires:
             - install
       - build:
-          name: build_local
-          env: "LOCAL"
-          requires:
-            - install
-      - test:
-          name: test_local
-          env: "LOCAL"
-          testCommand: ""
-          requires:
-            - install
-
-  dev:
-    jobs:
-      - install:
-          name: install
-          filters:
-            branches:
-              only:
-                - development
-      - unit_test:
-          name: unit_test
-          requires:
-            - install
-      - lint:
-          name: lint
-          requires:
-            - install
-      - build:
-          name: build_dev
-          env: "DEV"
+          name: build
           requires:
             - install
       - api_deploy:
-          name: api_deploy_dev
-          env: "DEV"
+          name: api_deploy
+          filters: pipeline.git.branch == "master" or pipeline.git.branch == "development" or pipeline.parameters.deploy
           requires:
             - unit_test
             - lint
-            - build_dev
+            - build
       - web_deploy:
-          name: web_deploy_dev
-          env: "DEV"
+          name: web_deploy
           requires:
-            - api_deploy_dev
+            - api_deploy
+      - api_test_setup:
+          requires:
+            - web_deploy
+          filters: pipeline.git.branch != "master" and pipeline.parameters.skip_api_tests != true
       - test:
-          name: test_dev_account
-          env: "DEV"
+          name: test_account
           testCommand: "account"
           requires:
-            - web_deploy_dev
+            - api_test_setup
       - test:
-          name: test_dev_category
-          env: "DEV"
+          name: test_category
           testCommand: "category"
           requires:
-            - web_deploy_dev
+            - api_test_setup
       - test:
-          name: test_dev_project
-          env: "DEV"
+          name: test_project
           testCommand: "project"
           requires:
-            - web_deploy_dev
+            - api_test_setup
       - test:
-          name: test_dev_product
-          env: "DEV"
+          name: test_product
           testCommand: "product"
           requires:
-            - web_deploy_dev
+            - api_test_setup
       - test:
-          name: test_dev_recipient
-          env: "DEV"
+          name: test_recipient
           testCommand: "recipient"
           requires:
-            - web_deploy_dev
+            - api_test_setup
       - test:
-          name: test_dev_transaction_common
-          env: "DEV"
+          name: test_transaction_common
           testCommand: "transaction-common"
           requires:
-            - web_deploy_dev
+            - api_test_setup
       - test:
-          name: test_dev_transaction_payment
-          env: "DEV"
+          name: test_transaction_payment
           testCommand: "transaction-payment"
           requires:
-            - web_deploy_dev
+            - api_test_setup
       - test:
-          name: test_dev_transaction_deferred
-          env: "DEV"
+          name: test_transaction_deferred
           testCommand: "transaction-deferred"
           requires:
-            - web_deploy_dev
+            - api_test_setup
       - test:
-          name: test_dev_transaction_split
-          env: "DEV"
+          name: test_transaction_split
           testCommand: "transaction-split"
           requires:
-            - web_deploy_dev
+            - api_test_setup
       - test:
-          name: test_dev_transaction_reimbursement
-          env: "DEV"
+          name: test_transaction_reimbursement
           testCommand: "transaction-reimbursement"
           requires:
-            - web_deploy_dev
+            - api_test_setup
       - test:
-          name: test_dev_transaction_transfer
-          env: "DEV"
+          name: test_transaction_transfer
           testCommand: "transaction-transfer"
           requires:
-            - web_deploy_dev
-
-  prod:
-    jobs:
-      - install:
-          name: install
-          filters:
-            branches:
-              only:
-                - master
-      - unit_test:
-          name: unit_test
+            - api_test_setup
+      - test:
+          name: test_transaction_draft
+          testCommand: "transaction-draft"
           requires:
-            - install
-      - lint:
-          name: lint
+            - api_test_setup
+      - test:
+          name: test_setting
+          testCommand: "setting"
           requires:
-            - install
-      - build:
-          name: build_prod
-          env: "PROD"
+            - api_test_setup
+      - test:
+          name: test_user
+          testCommand: "user"
           requires:
-            - install
-      - api_deploy:
-          name: api_deploy_prod
-          env: "PROD"
-          cypress_password: '"''''"'
+            - api_test_setup
+      - test:
+          name: test_file
+          testCommand: "file"
           requires:
-            - unit_test
-            - lint
-            - build_prod
-      - web_deploy:
-          name: web_deploy_prod
-          env: "PROD"
-          requires:
-            - api_deploy_prod
+            - api_test_setup

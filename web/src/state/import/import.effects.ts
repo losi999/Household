@@ -16,7 +16,7 @@ export class ImportEffects {
   importTransactions = createEffect(() => {
     return this.actions.pipe(
       ofType(importActions.importTransactions),
-      switchMap(({ fileId, transactionIds }) => this.store.select(selectDraftTransactionList(fileId, transactionIds)).pipe(takeFirstDefined())),
+      switchMap(({ transactionIds }) => this.store.select(selectDraftTransactionList(transactionIds)).pipe(takeFirstDefined())),
       exhaustMap((value) => {
         console.log('ExMAP', value);
 

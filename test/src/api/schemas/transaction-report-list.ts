@@ -29,7 +29,6 @@ const schema: StrictJSONSchema7<Transaction.Report[]> = {
       ...description.properties,
       ...issuedAt.properties,
       ...invoice.properties,
-      splitId: transactionId.properties.transactionId,
       account: {
         type: 'object',
         additionalProperties: false,
@@ -85,15 +84,14 @@ const schema: StrictJSONSchema7<Transaction.Report[]> = {
         additionalProperties: false,
         required: [
           'productId',
-          'quantity',
           'fullName',
         ],
         properties: {
           productId: product.properties.productId,
           fullName: product.properties.fullName,
-          ...quantity.properties,
         },
       },
+      quantity: quantity.properties.quantity,
     },
   },
 };

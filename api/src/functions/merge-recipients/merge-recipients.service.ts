@@ -5,7 +5,7 @@ import { Recipient } from '@household/shared/types/types';
 export interface IMergeRecipientsService {
   (ctx: {
     body: Recipient.Id[];
-  } & Recipient.RecipientId): Promise<void>;
+  } & Recipient.RecipientId): Promise<unknown>;
 }
 
 export const mergeRecipientsServiceFactory = (
@@ -22,14 +22,14 @@ export const mergeRecipientsServiceFactory = (
       ...new Set(body),
     ];
 
-    const recipients = await recipientService.listRecipientsByIds(recipientIds).catch(httpErrors.recipient.listByIds(recipientIds));
+    const recipients = await recipientService.findRecipientsByIds(recipientIds).catch(httpErrors.recipient.listByIds(recipientIds));
 
     httpErrors.recipient.multipleNotFound({
       recipients,
       recipientIds,
     });
 
-    await recipientService.mergeRecipients({
+    return recipientService.mergeRecipients({
       sourceRecipientIds: body,
       targetRecipientId: recipientId,
     }).catch(httpErrors.recipient.merge({

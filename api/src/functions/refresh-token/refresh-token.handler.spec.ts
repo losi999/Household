@@ -1,14 +1,16 @@
 import { default as handler } from '@household/api/functions/refresh-token/refresh-token.handler';
+import { IRefreshTokenService } from '@household/api/functions/refresh-token/refresh-token.service';
+import { MockBusinessService } from '@household/shared/common/unit-testing';
 import { Auth } from '@household/shared/types/types';
 
-describe('Login handler', () => {
-  let mockLoginService: jest.Mock;
+describe('Refresh token handler', () => {
+  let mockRefreshTokenLoginService: MockBusinessService<IRefreshTokenService>;
   let apiHandler: ReturnType<typeof handler>;
 
   beforeEach(() => {
-    mockLoginService = jest.fn();
+    mockRefreshTokenLoginService = jest.fn();
 
-    apiHandler = handler(mockLoginService);
+    apiHandler = handler(mockRefreshTokenLoginService);
   });
 
   it('should respond with error if refresh token throws error', async () => {
@@ -18,7 +20,7 @@ describe('Login handler', () => {
 
     const statusCode = 418;
     const message = 'This is an error';
-    mockLoginService.mockRejectedValue({
+    mockRefreshTokenLoginService.mockRejectedValue({
       statusCode,
       message,
     });
@@ -36,7 +38,7 @@ describe('Login handler', () => {
     const tokens: Auth.RefreshToken.Response = {
       idToken: 'some.id.token',
     };
-    mockLoginService.mockResolvedValue(tokens);
+    mockRefreshTokenLoginService.mockResolvedValue(tokens);
 
     const response = await apiHandler(handlerEvent, undefined, undefined) as AWSLambda.APIGatewayProxyResult;
 

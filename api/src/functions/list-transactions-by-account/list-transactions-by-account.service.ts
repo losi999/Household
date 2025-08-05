@@ -11,7 +11,6 @@ export const listTransactionsByAccountServiceFactory = (
   transactionService: ITransactionService,
   transactionDocumentConverter: ITransactionDocumentConverter): IListTransactionsByAccountService => {
   return async ({ accountId, pageSize, pageNumber }) => {
-
     const documents = await transactionService.listTransactionsByAccountId({
       accountId,
       pageNumber,
@@ -21,8 +20,6 @@ export const listTransactionsByAccountServiceFactory = (
       pageNumber,
       pageSize,
     }));
-
-    console.log('docs', JSON.stringify(documents));
 
     return transactionDocumentConverter.toResponseList(documents, accountId);
   };

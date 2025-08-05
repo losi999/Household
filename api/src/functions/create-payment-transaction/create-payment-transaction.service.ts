@@ -45,14 +45,14 @@ export const createPaymentTransactionServiceFactory = (
       recipient,
       product,
     ] = await Promise.all([
-      accountService.listAccountsByIds([
+      accountService.findAccountsByIds([
         accountId,
         loanAccountId,
       ]),
-      categoryService.getCategoryById(categoryId),
-      projectService.getProjectById(projectId),
-      recipientService.getRecipientById(recipientId),
-      productService.getProductById(productId),
+      categoryService.findCategoryById(categoryId),
+      projectService.findProjectById(projectId),
+      recipientService.findRecipientById(recipientId),
+      productService.findProductById(productId),
     ]).catch(httpErrors.common.getRelatedData({
       accountId,
       loanAccountId,

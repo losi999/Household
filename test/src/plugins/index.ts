@@ -1,11 +1,11 @@
 import webpack from '@cypress/webpack-preprocessor';
-import { accountService, categoryService, projectService, recipientService, transactionService, productService } from '@household/test/api/dependencies';
+import { accountService, categoryService, projectService, recipientService, transactionService, productService, settingService, identityService, fileService, storageService } from '@household/test/api/dependencies';
 
 const setTasksFromService = <T extends Record<keyof T, (...args: any[]) => Promise<any>>>(on: Cypress.PluginEvents, service: T, ...functions: (keyof T)[]) => {
   on('task', functions.reduce((accumulator, currentValue) => {
     return {
       ...accumulator,
-      [currentValue]: async (...params: any[]) => {
+      [currentValue]: async (params: any[]) => {
         return (await service[currentValue](...params)) ?? null;
       },
     };
@@ -22,10 +22,14 @@ export default (on: Cypress.PluginEvents) => {
     watchOptions: {},
   };
   on('file:preprocessor', webpack(options));
-  setTasksFromService(on, projectService, 'getProjectById', 'saveProject', 'saveProjects');
-  setTasksFromService(on, productService, 'saveProduct', 'getProductById', 'saveProducts');
-  setTasksFromService(on, recipientService, 'getRecipientById', 'saveRecipient', 'saveRecipients');
-  setTasksFromService(on, accountService, 'getAccountById', 'saveAccount', 'saveAccounts');
+  setTasksFromService(on, projectService, 'findProjectById', 'saveProject', 'saveProjects');
+  setTasksFromService(on, productService, 'saveProduct', 'findProductById', 'saveProducts');
+  setTasksFromService(on, recipientService, 'findRecipientById', 'saveRecipient', 'saveRecipients');
+  setTasksFromService(on, accountService, 'findAccountById', 'saveAccount', 'saveAccounts');
   setTasksFromService(on, categoryService, 'getCategoryById', 'saveCategory', 'saveCategories');
-  setTasksFromService(on, transactionService, 'getTransactionByIdAndAccountId', 'saveTransaction', 'getTransactionById', 'saveTransactions');
+  setTasksFromService(on, transactionService, 'getTransactionByIdAndAccountId', 'saveTransaction', 'getTransactionById', 'saveTransactions', 'listDraftTransactionsByFileId');
+  setTasksFromService(on, settingService, 'updateSetting', 'getSettingByKey');
+  setTasksFromService(on, fileService, 'findFileById', 'saveFile');
+  setTasksFromService(on, identityService, 'deleteUser', 'getUser', 'createUser', 'listGroupsByUser');
+  setTasksFromService(on, storageService, 'checkFile', 'writeFile', 'uploadFile');
 };

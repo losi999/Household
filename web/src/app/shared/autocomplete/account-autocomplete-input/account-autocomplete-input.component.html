@@ -1,7 +1,7 @@
 <mat-form-field>
   <mat-label>{{label}}</mat-label>
   <input type="text" #inp matInput [matAutocomplete]="autocomplete" (blur)="touched?.()" [formControl]="selected">
-  <mat-autocomplete #autocomplete="matAutocomplete" [displayWith]="displayName">
+  <mat-autocomplete #autocomplete="matAutocomplete" [displayWith]="displayName" (optionSelected)="optionSelected(inp)">
     <mat-option *ngFor="let account of accounts | async | autocompleteFilter: 'fullName' : inp.value" [value]="account">
       {{account.fullName}}
     </mat-option>

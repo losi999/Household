@@ -5,13 +5,13 @@ import { Project } from '@household/shared/types/types';
 export interface IDeleteProjectService {
   (ctx: {
     projectId: Project.Id;
-  }): Promise<void>;
+  }): Promise<unknown>;
 }
 
 export const deleteProjectServiceFactory = (
   projectService: IProjectService): IDeleteProjectService => {
-  return async ({ projectId }) => {
-    await projectService.deleteProject(projectId).catch(httpErrors.project.delete({
+  return ({ projectId }) => {
+    return projectService.deleteProject(projectId).catch(httpErrors.project.delete({
       projectId,
     }));
   };

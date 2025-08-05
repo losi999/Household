@@ -11,7 +11,7 @@ describe('Update project service', () => {
   let mockProjectDocumentConverter: Mock<IProjectDocumentConverter>;
 
   beforeEach(() => {
-    mockProjectService = createMockService('getProjectById', 'updateProject');
+    mockProjectService = createMockService('findProjectById', 'updateProject');
     mockProjectDocumentConverter = createMockService('update');
 
     service = updateProjectServiceFactory(mockProjectService.service, mockProjectDocumentConverter.service);
@@ -25,7 +25,7 @@ describe('Update project service', () => {
   });
 
   it('should return if project is updated', async () => {
-    mockProjectService.functions.getProjectById.mockResolvedValue(queriedDocument);
+    mockProjectService.functions.findProjectById.mockResolvedValue(queriedDocument);
     mockProjectDocumentConverter.functions.update.mockReturnValue(updateQuery);
     mockProjectService.functions.updateProject.mockResolvedValue(undefined);
 
@@ -34,7 +34,7 @@ describe('Update project service', () => {
       projectId,
       expiresIn: undefined,
     });
-    validateFunctionCall(mockProjectService.functions.getProjectById, projectId);
+    validateFunctionCall(mockProjectService.functions.findProjectById, projectId);
     validateFunctionCall(mockProjectDocumentConverter.functions.update, body, undefined);
     validateFunctionCall(mockProjectService.functions.updateProject, projectId, updateQuery);
     expect.assertions(3);
@@ -42,35 +42,35 @@ describe('Update project service', () => {
 
   describe('should throw error', () => {
     it('if unable to query project', async () => {
-      mockProjectService.functions.getProjectById.mockRejectedValue('this is a mongo error');
+      mockProjectService.functions.findProjectById.mockRejectedValue('this is a mongo error');
 
       await service({
         body,
         projectId,
         expiresIn: undefined,
       }).catch(validateError('Error while getting project', 500));
-      validateFunctionCall(mockProjectService.functions.getProjectById, projectId);
+      validateFunctionCall(mockProjectService.functions.findProjectById, projectId);
       validateFunctionCall(mockProjectDocumentConverter.functions.update);
       validateFunctionCall(mockProjectService.functions.updateProject);
       expect.assertions(5);
     });
 
     it('if project not found', async () => {
-      mockProjectService.functions.getProjectById.mockResolvedValue(undefined);
+      mockProjectService.functions.findProjectById.mockResolvedValue(undefined);
 
       await service({
         body,
         projectId,
         expiresIn: undefined,
       }).catch(validateError('No project found', 404));
-      validateFunctionCall(mockProjectService.functions.getProjectById, projectId);
+      validateFunctionCall(mockProjectService.functions.findProjectById, projectId);
       validateFunctionCall(mockProjectDocumentConverter.functions.update);
       validateFunctionCall(mockProjectService.functions.updateProject);
       expect.assertions(5);
     });
 
     it('if unable to update project', async () => {
-      mockProjectService.functions.getProjectById.mockResolvedValue(queriedDocument);
+      mockProjectService.functions.findProjectById.mockResolvedValue(queriedDocument);
       mockProjectDocumentConverter.functions.update.mockReturnValue(updateQuery);
       mockProjectService.functions.updateProject.mockRejectedValue('this is a mongo error');
 
@@ -79,7 +79,7 @@ describe('Update project service', () => {
         projectId,
         expiresIn: undefined,
       }).catch(validateError('Error while updating project', 500));
-      validateFunctionCall(mockProjectService.functions.getProjectById, projectId);
+      validateFunctionCall(mockProjectService.functions.findProjectById, projectId);
       validateFunctionCall(mockProjectDocumentConverter.functions.update, body, undefined);
       validateFunctionCall(mockProjectService.functions.updateProject, projectId, updateQuery);
       expect.assertions(5);

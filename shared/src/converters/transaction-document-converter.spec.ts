@@ -211,10 +211,7 @@ describe('Transaction document converter', () => {
       validateFunctionCall(mockCategoryDocumentConverter.functions.toReport, regularCategory);
       validateFunctionCall(mockProjectDocumentConverter.functions.toReport, project);
       validateFunctionCall(mockRecipientDocumentConverter.functions.toReport, recipient);
-      validateFunctionCall(mockProductDocumentConverter.functions.toReport, {
-        document: product,
-        quantity,
-      });
+      validateFunctionCall(mockProductDocumentConverter.functions.toReport, product);
     });
   });
 });

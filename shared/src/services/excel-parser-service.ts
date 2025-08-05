@@ -1,4 +1,4 @@
-import { File, Transaction } from '@household/shared/types/types';
+import { File, Import, Transaction } from '@household/shared/types/types';
 import { read as Read, utils as Utils, WorkBook } from 'xlsx';
 import { default as Moment } from 'moment-timezone';
 
@@ -7,18 +7,13 @@ export interface IExcelParserService {
 }
 
 export const excelParserServiceFactory = (read: typeof Read, utils: typeof Utils, moment: typeof Moment): IExcelParserService => {
-  const createDescription = (item: any, ...fieldNames: string[]): string => {
-    return fieldNames.reduce((accumulator, currentValue) => {
-      if (item[currentValue]) {
-        return `${accumulator} ${item[currentValue]}`;
-      }
-
-      return accumulator;
-    }, '');
+  const createDescription = <T>(item: T, ...fieldNames: (keyof T)[]): string => {
+    return fieldNames.map(key => item[key]).filter(v => !!v)
+      .join(' ');
   };
 
   const parseOtpExcel = (workbook: WorkBook): (Transaction.IssuedAt<Date> & Transaction.Amount & Transaction.Description)[] => {
-    const parsed = utils.sheet_to_json<any>(workbook.Sheets.Sheet3);
+    const parsed = utils.sheet_to_json<Import.Otp>(workbook.Sheets.Sheet3);
 
     return parsed.map((p => {
       return {
@@ -30,7 +25,7 @@ export const excelParserServiceFactory = (read: typeof Read, utils: typeof Utils
   };
 
   const parseRevolutExcel = (workbook: WorkBook): (Transaction.IssuedAt<Date> & Transaction.Amount & Transaction.Description)[] => {
-    const parsed = utils.sheet_to_json<any>(workbook.Sheets.Sheet1);
+    const parsed = utils.sheet_to_json<Import.Revolut>(workbook.Sheets.Sheet1);
 
     return parsed.map((p => {
       return {
@@ -42,7 +37,7 @@ export const excelParserServiceFactory = (read: typeof Read, utils: typeof Utils
   };
 
   const parseErsteExcel = (workbook: WorkBook): (Transaction.IssuedAt<Date> & Transaction.Amount & Transaction.Description)[] => {
-    const parsed = utils.sheet_to_json<any>(workbook.Sheets.Sheet0, {
+    const parsed = utils.sheet_to_json<Import.Erste>(workbook.Sheets.Sheet0, {
       range: 3,
     });
 

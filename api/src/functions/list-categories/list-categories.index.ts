@@ -9,6 +9,6 @@ const listCategoriesService = listCategoriesServiceFactory(categoryService, cate
 
 export default index({
   handler: handler(listCategoriesService),
-  before: [ ],
+  before: [],
   after: [cors],
 });

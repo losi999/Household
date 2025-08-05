@@ -1,15 +1,19 @@
-import { createDraftTransactionDocument, createDraftTransactionResponse, createFileDocument } from '@household/shared/common/test-data-factory';
+import { createDraftTransactionDocument, createDraftTransactionResponse, createFileDocument, createPaymentTransactionDocument, createPaymentTransactionResponse } from '@household/shared/common/test-data-factory';
 import { addSeconds, getTransactionId } from '@household/shared/common/utils';
 import { advanceTo, clear } from 'jest-date-mock';
 import { IDraftTransactionDocumentConverter, draftTransactionDocumentConverterFactory } from '@household/shared/converters/draft-transaction-document-converter';
+import { createMockService, Mock, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 
 describe('Draft transaction document converter', () => {
   let converter: IDraftTransactionDocumentConverter;
+  let mockTransactionDocumentConverter: Mock<ITransactionDocumentConverter>;
   const now = new Date();
 
   beforeEach(() => {
     advanceTo(now);
-    converter = draftTransactionDocumentConverterFactory();
+    mockTransactionDocumentConverter = createMockService('toResponseList');
+    converter = draftTransactionDocumentConverterFactory(mockTransactionDocumentConverter.service);
   });
 
   afterEach(() => {
@@ -21,12 +25,13 @@ describe('Draft transaction document converter', () => {
   const issuedAt = new Date(2025, 1, 2, 3, 4, 5);
   const expiresIn = 3600;
   const fileDocument = createFileDocument();
-  const hasDuplicate = false;
+  const potentialDuplicateDocument = createPaymentTransactionDocument();
+  const potentialDuplicateResponse = createPaymentTransactionResponse();
 
   const queriedDocument = createDraftTransactionDocument({
     amount,
     description,
-    hasDuplicate,
+    potentialDuplicates: [potentialDuplicateDocument],
     issuedAt: now,
     createdAt: now,
     updatedAt: now,
@@ -74,20 +79,23 @@ describe('Draft transaction document converter', () => {
 
   describe('toResponse', () => {
     it('should return response', () => {
+      mockTransactionDocumentConverter.functions.toResponseList.mockReturnValue([potentialDuplicateResponse]);
       const result = converter.toResponse(queriedDocument);
       expect(result).toEqual(createDraftTransactionResponse({
         transactionId: getTransactionId(queriedDocument),
         description,
         amount,
         issuedAt: now.toISOString(),
-        hasDuplicate,
+        potentialDuplicates: [potentialDuplicateResponse],
       }));
+      validateFunctionCall(mockTransactionDocumentConverter.functions.toResponseList, [potentialDuplicateDocument]);
+      expect.assertions(2);
     });
   });
 
   describe('toResponseList', () => {
     it('should return response', () => {
-
+      mockTransactionDocumentConverter.functions.toResponseList.mockReturnValue([potentialDuplicateResponse]);
       const result = converter.toResponseList([queriedDocument]);
       expect(result).toEqual([
         createDraftTransactionResponse({
@@ -95,9 +103,11 @@ describe('Draft transaction document converter', () => {
           description,
           amount,
           issuedAt: now.toISOString(),
-          hasDuplicate,
+          potentialDuplicates: [potentialDuplicateResponse],
         }),
       ]);
+      validateFunctionCall(mockTransactionDocumentConverter.functions.toResponseList, [potentialDuplicateDocument]);
+      expect.assertions(2);
     });
   });
 });

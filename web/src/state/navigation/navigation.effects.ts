@@ -28,6 +28,22 @@ export class NavigationEffects {
     dispatch: false,
   });
 
+  navigateToTransactionListOfAccount = createEffect(() => {
+    return this.actions.pipe(
+      ofType(navigationActions.transactionListOfAccount),
+      tap(({ accountId }) => {
+        this.router.navigate([
+          '/accounts',
+          accountId,
+        ], {
+          replaceUrl: true,
+        });
+      }),
+    );
+  }, {
+    dispatch: false,
+  });
+
   navigateToLoggedInHomepage = createEffect(() => {
     return this.actions.pipe(
       ofType(authActions.logInCompleted, navigationActions.loggedInHomepage),

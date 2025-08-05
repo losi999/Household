@@ -23,19 +23,19 @@ describe('Create user service', () => {
 
     await service({
       body,
+      suppressEmail: true,
     });
-    validateFunctionCall(mockIdentityService.functions.createUser, body);
+    validateFunctionCall(mockIdentityService.functions.createUser, body, undefined, true);
   });
 
   it('should throw error if unable to create user', async () => {
-    mockIdentityService.functions.createUser.mockRejectedValue({
-      message: 'This is a cognito error',
-    });
+    mockIdentityService.functions.createUser.mockRejectedValue('This is a cognito error');
 
     await service({
       body,
-    }).catch(validateError('This is a cognito error', 500));
-    validateFunctionCall(mockIdentityService.functions.createUser, body);
+      suppressEmail: undefined,
+    }).catch(validateError('Error while creating user in cognito', 500));
+    validateFunctionCall(mockIdentityService.functions.createUser, body, undefined, undefined);
     expect.assertions(3);
   });
 });

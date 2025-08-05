@@ -5,12 +5,13 @@ import { Auth } from '@household/shared/types/types';
 import { Observable } from 'rxjs';
 import { environment } from '@household/web/environments/environment';
 import { map } from 'rxjs/operators';
+import { UserType } from '@household/shared/enums';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-
+  userTypes: UserType[];
   constructor(private httpClient: HttpClient, private router: Router) { }
 
   get idToken(): string {
@@ -19,6 +20,17 @@ export class AuthService {
 
   get isLoggedIn(): boolean {
     return !!this.idToken;
+  }
+
+  hasUserType(userType: UserType) {
+    if (!userType) {
+      return true;
+    }
+
+    if (!this.userTypes) {
+      this.userTypes = (localStorage.getItem('userTypes')?.split(',') ?? []) as UserType[];
+    }
+    return this.userTypes.includes(userType);
   }
 
   redirect(): void {

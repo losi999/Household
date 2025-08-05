@@ -27,10 +27,19 @@ import { CategoryAutocompleteInputComponent } from '@household/web/app/shared/au
 import { ProductAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/product-autocomplete-input/product-autocomplete-input.component';
 import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { TransactionShortDetailsComponent } from './transaction-short-details/transaction-short-details.component';
 import { LetDirective } from '@ngrx/component';
 import { DeferredTransactionFilterPipe } from './deferred-transaction-filter.pipe';
 import { OrderByPipe } from '@household/web/app/shared/order-by.pipe';
+import { IsEditorDirective } from '@household/web/app/shared/is-editor.directive';
+import { TransactionDetailsRowComponent } from './transaction-details-row/transaction-details-row.component';
+import { TransactionDetailsRecipientComponent } from './transaction-details-recipient/transaction-details-recipient.component';
+import { TransactionDetailsCategoryComponent } from './transaction-details-category/transaction-details-category.component';
+import { TransactionDetailsProjectComponent } from './transaction-details-project/transaction-details-project.component';
+import { TransactionDetailsDescriptionComponent } from './transaction-details-description/transaction-details-description.component';
+import { TransactionDetailsInventoryComponent } from './transaction-details-inventory/transaction-details-inventory.component';
+import { TransactionDetailsInvoiceComponent } from './transaction-details-invoice/transaction-details-invoice.component';
+import { TransactionDetailsTransferComponent } from './transaction-details-transfer/transaction-details-transfer.component';
+import { TransactionDetailsLoanComponent } from './transaction-details-loan/transaction-details-loan.component';
 
 @NgModule({
   declarations: [
@@ -39,8 +48,16 @@ import { OrderByPipe } from '@household/web/app/shared/order-by.pipe';
     TransactionSplitEditComponent,
     TransactionTransferEditComponent,
     TransactionLoanEditComponent,
-    TransactionShortDetailsComponent,
     DeferredTransactionFilterPipe,
+    TransactionDetailsRowComponent,
+    TransactionDetailsRecipientComponent,
+    TransactionDetailsCategoryComponent,
+    TransactionDetailsProjectComponent,
+    TransactionDetailsDescriptionComponent,
+    TransactionDetailsInventoryComponent,
+    TransactionDetailsInvoiceComponent,
+    TransactionDetailsTransferComponent,
+    TransactionDetailsLoanComponent,
   ],
   imports: [
     RouterModule,
@@ -68,7 +85,18 @@ import { OrderByPipe } from '@household/web/app/shared/order-by.pipe';
     MatExpansionModule,
     LetDirective,
     OrderByPipe,
+    IsEditorDirective,
   ],
-  exports: [TransactionShortDetailsComponent],
+  exports: [
+    TransactionDetailsRecipientComponent,
+    TransactionDetailsCategoryComponent,
+    TransactionDetailsProjectComponent,
+    TransactionDetailsDescriptionComponent,
+    TransactionDetailsInventoryComponent,
+    TransactionDetailsInvoiceComponent,
+    TransactionDetailsTransferComponent,
+    TransactionDetailsLoanComponent,
+    TransactionDetailsRowComponent,
+  ],
 })
 export class TransactionModule { }

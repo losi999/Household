@@ -7,50 +7,47 @@ const validateAccountDocument = (response: Account.AccountId, request: Account.R
   const id = response?.accountId;
 
   cy.log('Get account document', id)
-    .getAccountDocumentById(id)
+    .findAccountDocumentById(id)
     .should((document) => {
-      const { name, accountType, currency, owner, balance, isOpen, ...internal } = document;
+      const { name, accountType, currency, owner, isOpen, ...internal } = document;
 
       expect(getAccountId(document), '_id').to.equal(id);
       expect(name, 'name').to.equal(request.name);
       expect(accountType, 'accountType').to.equal(request.accountType);
       expect(currency, 'currency').to.equal(request.currency);
       expect(owner, 'owner').to.equal(request.owner);
-      expect(balance, 'balance').to.equal(0);
       expect(isOpen, 'isOpen').to.equal(true);
       expectRemainingProperties(internal);
     });
 };
 
-const validateAccountResponse = (nestedPath: string = '') => (response: Account.Response, document: Account.Document, expectedBalance: number) => {
-  const { accountId, name, accountType, currency, owner, balance, isOpen, fullName, ...empty } = response;
+const validateAccountResponse = (response: Account.Response, document: Account.Document, expectedBalance?: number) => {
+  const { accountId, name, accountType, currency, owner, isOpen, fullName, balance, ...empty } = response;
 
-  expect(accountId, `${nestedPath}accountId`).to.equal(getAccountId(document));
-  expect(name, `${nestedPath}name`).to.equal(document.name);
-  expect(accountType, `${nestedPath}accountType`).to.equal(document.accountType);
-  expect(currency, `${nestedPath}currency`).to.equal(document.currency);
-  expect(owner, `${nestedPath}owner`).to.equal(document.owner);
-  expect(balance, `${nestedPath}balance`).to.equal(expectedBalance);
-  expect(isOpen, `${nestedPath}isOpen`).to.equal(document.isOpen);
-  expect(fullName, `${nestedPath}fullName`).to.equal(`${document.name} (${document.owner})`);
-  expectEmptyObject(empty, nestedPath);
+  expect(accountId, 'accountId').to.equal(getAccountId(document));
+  expect(name, 'name').to.equal(document.name);
+  expect(accountType, 'accountType').to.equal(document.accountType);
+  expect(currency, 'currency').to.equal(document.currency);
+  expect(owner, 'owner').to.equal(document.owner);
+  expect(isOpen, 'isOpen').to.equal(document.isOpen);
+  expect(fullName, 'fullName').to.equal(`${document.name} (${document.owner})`);
+  expect(balance, 'balance').to.equal(expectedBalance);
+  expectEmptyObject(empty);
 };
 
-const validateNestedAccountResponse = (nestedPath: string, ...rest: Parameters<ReturnType<typeof validateAccountResponse>>) => validateAccountResponse(nestedPath)(...rest);
+const validateInAccountListResponse = (responses: Account.Response[], document: Account.Document, expectedBalance: number) => {
+  const response = responses.find(r => r.accountId === getAccountId(document));
 
-const validateAccountListResponse = (responses: Account.Response[], documents: [Account.Document, number, number][]) => {
-  documents.forEach(([
-    document,
-    balance,
-  ], index) => {
-    const response = responses.find(r => r.accountId === getAccountId(document));
-    cy.validateNestedAccountResponse(`[${index}].`, response, document, balance);
-  });
+  validateAccountResponse(response, document, expectedBalance);
+
+  return cy.wrap(responses, {
+    log: false,
+  }) as Cypress.ChainableResponseBody;
 };
 
 const validateAccountDeleted = (accountId: Account.Id) => {
   cy.log('Get account document', accountId)
-    .getAccountDocumentById(accountId)
+    .findAccountDocumentById(accountId)
     .should((document) => {
       expect(document, 'document').to.be.null;
     });
@@ -61,13 +58,12 @@ export const setAccountValidationCommands = () => {
     prevSubject: true,
   }, {
     validateAccountDocument,
-    validateAccountResponse: validateAccountResponse(),
-    validateAccountListResponse,
+    validateAccountResponse,
+    validateInAccountListResponse,
   });
 
   Cypress.Commands.addAll({
     validateAccountDeleted,
-    validateNestedAccountResponse,
   });
 };
 
@@ -75,13 +71,12 @@ declare global {
   namespace Cypress {
     interface Chainable {
       validateAccountDeleted: CommandFunction<typeof validateAccountDeleted>;
-      validateNestedAccountResponse: CommandFunction<typeof validateNestedAccountResponse>;
     }
 
     interface ChainableResponseBody extends Chainable {
       validateAccountDocument: CommandFunctionWithPreviousSubject<typeof validateAccountDocument>;
-      validateAccountResponse: CommandFunctionWithPreviousSubject<ReturnType<typeof validateAccountResponse>>;
-      validateAccountListResponse: CommandFunctionWithPreviousSubject<typeof validateAccountListResponse>;
+      validateAccountResponse: CommandFunctionWithPreviousSubject<typeof validateAccountResponse>;
+      validateInAccountListResponse: CommandFunctionWithPreviousSubject<typeof validateInAccountListResponse>;
     }
   }
 }

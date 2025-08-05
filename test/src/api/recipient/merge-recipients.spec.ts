@@ -1,5 +1,5 @@
 import { createRecipientId } from '@household/shared/common/test-data-factory';
-import { getRecipientId } from '@household/shared/common/utils';
+import { entries, getRecipientId } from '@household/shared/common/utils';
 import { AccountType } from '@household/shared/enums';
 import { Account, Recipient, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
@@ -8,6 +8,9 @@ import { deferredTransactionDataFactory } from '@household/test/api/transaction/
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
+import { allowUsers } from '@household/test/api/utils';
+
+const permissionMap = allowUsers('editor') ;
 
 describe('POST recipient/v1/recipients/{recipientId}/merge', () => {
   let accountDocument: Account.Document;
@@ -82,146 +85,159 @@ describe('POST recipient/v1/recipients/{recipientId}/merge', () => {
 
   describe('called as anonymous', () => {
     it('should return unauthorized', () => {
-      cy.unauthenticate()
+      cy.authenticate('anonymous')
         .requestMergeRecipients(createRecipientId(), [createRecipientId()])
         .expectUnauthorizedResponse();
     });
   });
 
-  describe('called as an admin', () => {
-    it('should merge recipients', () => {
-      cy.saveAccountDocuments([
-        accountDocument,
-        loanAccountDocument,
-      ])
-        .saveRecipientDocuments([
-          sourceRecipientDocument,
-          targetRecipientDocument,
-          unrelatedRecipientDocument,
-        ])
-        .saveTransactionDocuments([
-          paymentTransactionDocument,
-          splitTransactionDocument,
-          deferredTransactionDocument,
-          reimbursementTransactionDocument,
-          unrelatedPaymentTransactionDocument,
-          unrelatedDeferredTransactionDocument,
-          unrelatedReimbursementTransactionDocument,
-          unrelatedSplitTransactionDocument,
-        ])
-        .authenticate(1)
-        .requestMergeRecipients(getRecipientId(targetRecipientDocument), [getRecipientId(sourceRecipientDocument)])
-        .expectCreatedResponse()
-        .validateRecipientDeleted(getRecipientId(sourceRecipientDocument))
-        .validateRelatedChangesInPaymentDocument(paymentTransactionDocument, {
-          recipient: {
-            from: getRecipientId(sourceRecipientDocument),
-            to: getRecipientId(targetRecipientDocument),
-          },
-        })
-        .validateRelatedChangesInPaymentDocument(unrelatedPaymentTransactionDocument, {
-          recipient: {
-            from: getRecipientId(sourceRecipientDocument),
-            to: getRecipientId(targetRecipientDocument),
-          },
-        })
-        .validateRelatedChangesInDeferredDocument(deferredTransactionDocument, {
-          recipient: {
-            from: getRecipientId(sourceRecipientDocument),
-            to: getRecipientId(targetRecipientDocument),
-          },
-        })
-        .validateRelatedChangesInDeferredDocument(unrelatedDeferredTransactionDocument, {
-          recipient: {
-            from: getRecipientId(sourceRecipientDocument),
-            to: getRecipientId(targetRecipientDocument),
-          },
-        })
-        .validateRelatedChangesInReimbursementDocument(reimbursementTransactionDocument, {
-          recipient: {
-            from: getRecipientId(sourceRecipientDocument),
-            to: getRecipientId(targetRecipientDocument),
-          },
-        })
-        .validateRelatedChangesInReimbursementDocument(unrelatedReimbursementTransactionDocument, {
-          recipient: {
-            from: getRecipientId(sourceRecipientDocument),
-            to: getRecipientId(targetRecipientDocument),
-          },
-        })
-        .validateRelatedChangesInSplitDocument(splitTransactionDocument, {
-          recipient: {
-            from: getRecipientId(sourceRecipientDocument),
-            to: getRecipientId(targetRecipientDocument),
-          },
-        })
-        .validateRelatedChangesInSplitDocument(unrelatedSplitTransactionDocument, {
-          recipient: {
-            from: getRecipientId(sourceRecipientDocument),
-            to: getRecipientId(targetRecipientDocument),
-          },
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
+    describe(`called as ${userType}`, () => {
+      if (!isAllowed) {
+        it('should return forbidden', () => {
+          cy.authenticate(userType)
+            .requestMergeRecipients(createRecipientId(), [createRecipientId()])
+            .expectForbiddenResponse();
         });
-    });
-
-    describe('should return error', () => {
-      it('if a source precipient does not exist', () => {
-        cy.saveRecipientDocument(targetRecipientDocument)
-          .saveRecipientDocument(sourceRecipientDocument)
-          .authenticate(1)
-          .requestMergeRecipients(getRecipientId(targetRecipientDocument), [
-            getRecipientId(sourceRecipientDocument),
-            createRecipientId(),
+      } else {
+        it('should merge recipients', () => {
+          cy.saveAccountDocuments([
+            accountDocument,
+            loanAccountDocument,
           ])
-          .expectBadRequestResponse()
-          .expectMessage('Some of the recipients are not found');
-      });
-      describe('if body', () => {
-        it('is not array', () => {
-          cy.authenticate(1)
-            .requestMergeRecipients(createRecipientId(), {} as any)
-            .expectBadRequestResponse()
-            .expectWrongPropertyType('data', 'array', 'body');
+            .saveRecipientDocuments([
+              sourceRecipientDocument,
+              targetRecipientDocument,
+              unrelatedRecipientDocument,
+            ])
+            .saveTransactionDocuments([
+              paymentTransactionDocument,
+              splitTransactionDocument,
+              deferredTransactionDocument,
+              reimbursementTransactionDocument,
+              unrelatedPaymentTransactionDocument,
+              unrelatedDeferredTransactionDocument,
+              unrelatedReimbursementTransactionDocument,
+              unrelatedSplitTransactionDocument,
+            ])
+            .authenticate(userType)
+            .requestMergeRecipients(getRecipientId(targetRecipientDocument), [getRecipientId(sourceRecipientDocument)])
+            .expectCreatedResponse()
+            .validateRecipientDeleted(getRecipientId(sourceRecipientDocument))
+            .validateRelatedChangesInPaymentDocument(paymentTransactionDocument, {
+              recipient: {
+                from: getRecipientId(sourceRecipientDocument),
+                to: getRecipientId(targetRecipientDocument),
+              },
+            })
+            .validateRelatedChangesInPaymentDocument(unrelatedPaymentTransactionDocument, {
+              recipient: {
+                from: getRecipientId(sourceRecipientDocument),
+                to: getRecipientId(targetRecipientDocument),
+              },
+            })
+            .validateRelatedChangesInDeferredDocument(deferredTransactionDocument, {
+              recipient: {
+                from: getRecipientId(sourceRecipientDocument),
+                to: getRecipientId(targetRecipientDocument),
+              },
+            })
+            .validateRelatedChangesInDeferredDocument(unrelatedDeferredTransactionDocument, {
+              recipient: {
+                from: getRecipientId(sourceRecipientDocument),
+                to: getRecipientId(targetRecipientDocument),
+              },
+            })
+            .validateRelatedChangesInReimbursementDocument(reimbursementTransactionDocument, {
+              recipient: {
+                from: getRecipientId(sourceRecipientDocument),
+                to: getRecipientId(targetRecipientDocument),
+              },
+            })
+            .validateRelatedChangesInReimbursementDocument(unrelatedReimbursementTransactionDocument, {
+              recipient: {
+                from: getRecipientId(sourceRecipientDocument),
+                to: getRecipientId(targetRecipientDocument),
+              },
+            })
+            .validateRelatedChangesInSplitDocument(splitTransactionDocument, {
+              recipient: {
+                from: getRecipientId(sourceRecipientDocument),
+                to: getRecipientId(targetRecipientDocument),
+              },
+            })
+            .validateRelatedChangesInSplitDocument(unrelatedSplitTransactionDocument, {
+              recipient: {
+                from: getRecipientId(sourceRecipientDocument),
+                to: getRecipientId(targetRecipientDocument),
+              },
+            });
         });
 
-        it('has too few items', () => {
-          cy.authenticate(1)
-            .requestMergeRecipients(createRecipientId(), [])
-            .expectBadRequestResponse()
-            .expectTooFewItemsProperty('data', 1, 'body');
-        });
-      });
+        describe('should return error', () => {
+          it('if a source precipient does not exist', () => {
+            cy.saveRecipientDocument(targetRecipientDocument)
+              .saveRecipientDocument(sourceRecipientDocument)
+              .authenticate(userType)
+              .requestMergeRecipients(getRecipientId(targetRecipientDocument), [
+                getRecipientId(sourceRecipientDocument),
+                createRecipientId(),
+              ])
+              .expectBadRequestResponse()
+              .expectMessage('Some of the recipients are not found');
+          });
+          describe('if body', () => {
+            it('is not array', () => {
+              cy.authenticate(userType)
+                .requestMergeRecipients(createRecipientId(), {} as any)
+                .expectBadRequestResponse()
+                .expectWrongPropertyType('data', 'array', 'body');
+            });
 
-      describe('if body[0]', () => {
-        it('is not string', () => {
-          cy.authenticate(1)
-            .requestMergeRecipients(createRecipientId(), [1] as any)
-            .expectBadRequestResponse()
-            .expectWrongPropertyType('data', 'string', 'body');
-        });
+            it('has too few items', () => {
+              cy.authenticate(userType)
+                .requestMergeRecipients(createRecipientId(), [])
+                .expectBadRequestResponse()
+                .expectTooFewItemsProperty('data', 1, 'body');
+            });
+          });
 
-        it('is not a valid mongo id', () => {
-          cy.authenticate(1)
-            .requestMergeRecipients(createRecipientId(), [createRecipientId('not-valid')])
-            .expectBadRequestResponse()
-            .expectWrongPropertyPattern('data', 'body');
-        });
-      });
+          describe('if body[0]', () => {
+            it('is not string', () => {
+              cy.authenticate(userType)
+                .requestMergeRecipients(createRecipientId(), [1] as any)
+                .expectBadRequestResponse()
+                .expectWrongPropertyType('data', 'string', 'body');
+            });
 
-      describe('if recipientId', () => {
-        it('is not a valid mongo id', () => {
-          cy.authenticate(1)
-            .requestMergeRecipients(createRecipientId('not-valid'), [createRecipientId()])
-            .expectBadRequestResponse()
-            .expectWrongPropertyPattern('recipientId', 'pathParameters');
-        });
+            it('is not a valid mongo id', () => {
+              cy.authenticate(userType)
+                .requestMergeRecipients(createRecipientId(), [createRecipientId('not-valid')])
+                .expectBadRequestResponse()
+                .expectWrongPropertyPattern('data', 'body');
+            });
+          });
 
-        it('does not belong to any recipient', () => {
-          cy.authenticate(1)
-            .requestMergeRecipients(createRecipientId(), [getRecipientId(sourceRecipientDocument)])
-            .expectBadRequestResponse()
-            .expectMessage('Some of the recipients are not found');
+          describe('if recipientId', () => {
+            it('is not a valid mongo id', () => {
+              cy.authenticate(userType)
+                .requestMergeRecipients(createRecipientId('not-valid'), [createRecipientId()])
+                .expectBadRequestResponse()
+                .expectWrongPropertyPattern('recipientId', 'pathParameters');
+            });
+
+            it('does not belong to any recipient', () => {
+              cy.authenticate(userType)
+                .requestMergeRecipients(createRecipientId(), [getRecipientId(sourceRecipientDocument)])
+                .expectBadRequestResponse()
+                .expectMessage('Some of the recipients are not found');
+            });
+          });
         });
-      });
+      }
     });
   });
 });

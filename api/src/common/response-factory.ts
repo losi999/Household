@@ -13,7 +13,8 @@ export const errorResponse = ({ statusCode, message }: HttpError): AWSLambda.API
   });
 };
 
-export const okResponse = (data: any) => response(200, data);
+export const okResponse = (data?: any) => response(200, data);
 export const createdResponse = (data?: any) => response(201, data);
 export const noContentResponse = () => response(204);
 export const badRequestResponse = (data: any) => response(400, data);
+export const forbiddenResponse = () => response(403);

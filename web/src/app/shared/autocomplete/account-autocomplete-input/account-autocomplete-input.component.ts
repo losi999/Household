@@ -42,6 +42,10 @@ export class AccountAutocompleteInputComponent implements OnInit, OnChanges, Con
 
   constructor(private injector: Injector, private store: Store, @Self() public ngControl: NgControl) {
     ngControl.valueAccessor = this;
+  }  
+  
+  optionSelected(input: HTMLInputElement) {
+    setTimeout(() => input.blur());
   }
 
   ngOnChanges(): void {

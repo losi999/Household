@@ -13,12 +13,15 @@ import { productService } from '@household/shared/dependencies/services/product-
 import { paymentTransactionDocumentConverter } from '@household/shared/dependencies/converters/payment-transaction-document-converter';
 import { reimbursementTransactionDocumentConverter } from '@household/shared/dependencies/converters/reimbursement-transaction-document-converter';
 import { deferredTransactionDocumentConverter } from '@household/shared/dependencies/converters/deferred-transaction-document-converter';
+import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';
+import { UserType } from '@household/shared/enums';
 
 const createPaymentTransactionService = createPaymentTransactionServiceFactory(accountService, projectService, categoryService, recipientService, productService, transactionService, paymentTransactionDocumentConverter, reimbursementTransactionDocumentConverter, deferredTransactionDocumentConverter);
 
 export default index({
   handler: handler(createPaymentTransactionService),
   before: [
+    authorizer(UserType.Editor, UserType.Hairdresser),
     apiRequestValidator({
       body,
     }),

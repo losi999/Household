@@ -26,7 +26,7 @@ export const createTransferTransactionServiceFactory = (
       transferAccountId,
     });
 
-    const accounts = await accountService.listAccountsByIds([
+    const accounts = await accountService.findAccountsByIds([
       accountId,
       transferAccountId,
     ]).catch(httpErrors.common.getRelatedData({
@@ -49,7 +49,7 @@ export const createTransferTransactionServiceFactory = (
 
     let document: Transaction.TransferDocument;
 
-    if (account.accountType === AccountType.Loan || transferAccount.accountType === AccountType.Loan) {
+    if (account.accountType === AccountType.Loan && transferAccount.accountType === AccountType.Loan) {
       body.payments = undefined;
       document = transferTransactionDocumentConverter.create({
         body,

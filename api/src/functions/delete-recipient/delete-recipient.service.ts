@@ -5,13 +5,13 @@ import { Recipient } from '@household/shared/types/types';
 export interface IDeleteRecipientService {
   (ctx: {
     recipientId: Recipient.Id;
-  }): Promise<void>;
+  }): Promise<unknown>;
 }
 
 export const deleteRecipientServiceFactory = (
   recipientService: IRecipientService): IDeleteRecipientService => {
-  return async ({ recipientId }) => {
-    await recipientService.deleteRecipient(recipientId).catch(httpErrors.recipient.delete({
+  return ({ recipientId }) => {
+    return recipientService.deleteRecipient(recipientId).catch(httpErrors.recipient.delete({
       recipientId,
     }));
   };

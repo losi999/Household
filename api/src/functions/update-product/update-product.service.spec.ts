@@ -11,7 +11,7 @@ describe('Update product service', () => {
   let mockProductDocumentConverter: Mock<IProductDocumentConverter>;
 
   beforeEach(() => {
-    mockProductService = createMockService('getProductById', 'updateProduct');
+    mockProductService = createMockService('findProductById', 'updateProduct');
     mockProductDocumentConverter = createMockService('update');
 
     service = updateProductServiceFactory(mockProductService.service, mockProductDocumentConverter.service);
@@ -25,7 +25,7 @@ describe('Update product service', () => {
   });
 
   it('should return if product is updated', async () => {
-    mockProductService.functions.getProductById.mockResolvedValue(queriedDocument);
+    mockProductService.functions.findProductById.mockResolvedValue(queriedDocument);
     mockProductDocumentConverter.functions.update.mockReturnValue(updateQuery);
     mockProductService.functions.updateProduct.mockResolvedValue(undefined);
 
@@ -34,7 +34,7 @@ describe('Update product service', () => {
       productId,
       expiresIn: undefined,
     });
-    validateFunctionCall(mockProductService.functions.getProductById, productId);
+    validateFunctionCall(mockProductService.functions.findProductById, productId);
     validateFunctionCall(mockProductDocumentConverter.functions.update, body, undefined);
     validateFunctionCall(mockProductService.functions.updateProduct, productId, updateQuery);
     expect.assertions(3);
@@ -42,35 +42,35 @@ describe('Update product service', () => {
 
   describe('should throw error', () => {
     it('if unable to query product', async () => {
-      mockProductService.functions.getProductById.mockRejectedValue('this is a mongo error');
+      mockProductService.functions.findProductById.mockRejectedValue('this is a mongo error');
 
       await service({
         body,
         productId,
         expiresIn: undefined,
       }).catch(validateError('Error while getting product', 500));
-      validateFunctionCall(mockProductService.functions.getProductById, productId);
+      validateFunctionCall(mockProductService.functions.findProductById, productId);
       validateFunctionCall(mockProductDocumentConverter.functions.update);
       validateFunctionCall(mockProductService.functions.updateProduct);
       expect.assertions(5);
     });
 
     it('if product not found', async () => {
-      mockProductService.functions.getProductById.mockResolvedValue(undefined);
+      mockProductService.functions.findProductById.mockResolvedValue(undefined);
 
       await service({
         body,
         productId,
         expiresIn: undefined,
       }).catch(validateError('No product found', 404));
-      validateFunctionCall(mockProductService.functions.getProductById, productId);
+      validateFunctionCall(mockProductService.functions.findProductById, productId);
       validateFunctionCall(mockProductDocumentConverter.functions.update);
       validateFunctionCall(mockProductService.functions.updateProduct);
       expect.assertions(5);
     });
 
     it('if unable to update product', async () => {
-      mockProductService.functions.getProductById.mockResolvedValue(queriedDocument);
+      mockProductService.functions.findProductById.mockResolvedValue(queriedDocument);
       mockProductDocumentConverter.functions.update.mockReturnValue(updateQuery);
       mockProductService.functions.updateProduct.mockRejectedValue('this is a mongo error');
 
@@ -79,7 +79,7 @@ describe('Update product service', () => {
         productId,
         expiresIn: undefined,
       }).catch(validateError('Error while updating product', 500));
-      validateFunctionCall(mockProductService.functions.getProductById, productId);
+      validateFunctionCall(mockProductService.functions.findProductById, productId);
       validateFunctionCall(mockProductDocumentConverter.functions.update, body, undefined);
       validateFunctionCall(mockProductService.functions.updateProduct, productId, updateQuery);
       expect.assertions(5);

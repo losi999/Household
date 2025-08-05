@@ -5,33 +5,30 @@
 
 .report-item {
   display: grid;
-  grid-template-columns: 75px 1fr auto;
+  grid-template-columns: 1fr auto;
   column-gap: 15px;
-  grid-template-areas: "datetime details amount";
+  row-gap: 5px;
+  grid-template-areas: "datetime amount"
+    "details details";
   width: 100%;
   padding: 10px;
 
-  & > .datetime {
-    grid-area: datetime;
-    text-align: right;
-
-    & > .year {
-      font-size: 12px;
-    }
-
-    & > .date {
-      font-size: 16px;
-    }
-
-    & > .time {
-      font-size: 14px;
-    }
+  &>.details {
+    grid-area: details;
   }
 
-  .amount {
+  &>.datetime {
+    grid-area: datetime;
+    text-align: left;
+    font-size: 16px;
+  }
+
+  &>.amount {
     grid-area: amount;
     align-self: center;
     justify-self: end;
+    font-size: 20px;
+    font-weight: bold;
   }
 
   .mat-mdc-list {
@@ -67,6 +64,17 @@
 
     .description {
       font-style: italic;
+    }
+  }
+
+  @media all and (max-width: 639px) {
+    & {
+      column-gap: 5px;
+    }
+
+    &>.amount,
+    &>.datetime {
+      font-size: 14px;
     }
   }
 }

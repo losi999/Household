@@ -5,7 +5,7 @@ import { Product } from '@household/shared/types/types';
 export interface IMergeProductsService {
   (ctx: {
     body: Product.Id[];
-  } & Product.ProductId): Promise<void>;
+  } & Product.ProductId): Promise<unknown>;
 }
 
 export const mergeProductsServiceFactory = (
@@ -31,7 +31,7 @@ export const mergeProductsServiceFactory = (
 
     httpErrors.product.notSameCategory(products);
 
-    await productService.mergeProducts({
+    return productService.mergeProducts({
       sourceProductIds: body,
       targetProductId: productId,
     }).catch(httpErrors.product.merge({

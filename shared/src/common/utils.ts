@@ -2,6 +2,14 @@ import { Dictionary } from '@household/shared/types/common';
 import { Account, Category, File, Internal, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { PopulateOptions, Types } from 'mongoose';
 
+export const keys = <O extends object>(obj: O): (keyof O)[] => {
+  return Object.keys(obj) as (keyof O)[];
+};
+
+export const entries = <O extends object>(obj: O): [keyof O, O[keyof O]][] => {
+  return Object.entries(obj) as [keyof O, O[keyof O]][];
+};
+
 export const populate = (...populateOptions: (string | PopulateOptions)[]): PopulateOptions[] => {
   return populateOptions.map(p => {
     return typeof p === 'string' ? {

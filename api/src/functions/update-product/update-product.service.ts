@@ -8,7 +8,7 @@ export interface IUpdateProductService {
     body: Product.Request;
     productId: Product.Id;
     expiresIn: number;
-  }): Promise<void>;
+  }): Promise<unknown>;
 }
 
 export const updateProductServiceFactory = (
@@ -16,7 +16,7 @@ export const updateProductServiceFactory = (
   productDocumentConverter: IProductDocumentConverter,
 ): IUpdateProductService => {
   return async ({ body, productId, expiresIn }) => {
-    const queried = await productService.getProductById(productId).catch(httpErrors.product.getById({
+    const queried = await productService.findProductById(productId).catch(httpErrors.product.getById({
       productId,
     }));
 
@@ -27,7 +27,7 @@ export const updateProductServiceFactory = (
 
     const update = productDocumentConverter.update(body, expiresIn);
 
-    await productService.updateProduct(productId, update).catch(httpErrors.product.update({
+    return productService.updateProduct(productId, update).catch(httpErrors.product.update({
       productId,
       update,
     }));

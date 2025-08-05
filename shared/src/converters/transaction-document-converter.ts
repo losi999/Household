@@ -51,10 +51,8 @@ export const transactionDocumentConverterFactory = (
         description: document.description,
         account: accountDocumentConverter.toReport(document.account),
         category: categoryDocumentConverter.toReport(document.category),
-        product: productDocumentConverter.toReport({
-          quantity: document.quantity,
-          document: document.product,
-        }),
+        product: productDocumentConverter.toReport(document.product),
+        quantity: document.quantity,
         invoiceNumber: document.invoiceNumber,
         billingEndDate: document.billingEndDate?.toISOString().split('T')[0],
         billingStartDate: document.billingStartDate?.toISOString().split('T')[0],

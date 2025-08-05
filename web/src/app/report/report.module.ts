@@ -21,6 +21,7 @@ import { MatInputModule } from '@angular/material/input';
 import { ReportDateRangeFilterComponent } from './report-date-range-filter/report-date-range-filter.component';
 import { MatListModule } from '@angular/material/list';
 import { ReportListTreeBuilderPipe } from '@household/web/app/report/report-list-tree-builder.pipe';
+import { TransactionModule } from '../transaction/transaction.module';
 
 @NgModule({
   declarations: [
@@ -50,6 +51,7 @@ import { ReportListTreeBuilderPipe } from '@household/web/app/report/report-list
     MatFormFieldModule,
     MatInputModule,
     MatListModule,
+    TransactionModule,
   ],
 })
 export class ReportModule { }

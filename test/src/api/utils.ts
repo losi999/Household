@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker';
+import { User, UserPermissionMap } from '@household/test/api/types';
 
 export const isLocalhost = () => {
   return Cypress.env('ENV') === 'localhost';
@@ -15,6 +16,34 @@ export const expectRemainingProperties = (internal: object) => {
   ]));
 };
 
-export const expectEmptyObject = (obj: object, message: string) => {
+export const expectEmptyObject = (obj: object, message?: string) => {
   expect(obj, message).to.deep.equal({});
+};
+
+export const forbidUsers = (...users: User[]): UserPermissionMap => {
+  return {
+    editor: true,
+    hairdresser: true,
+    viewer: true,
+    ...users.reduce((accumulator, currentValue) => {
+      return {
+        ...accumulator,
+        [currentValue]: false,
+      };
+    }, {}),
+  };
+};
+
+export const allowUsers = (...users: User[]): UserPermissionMap => {
+  return {
+    editor: false,
+    hairdresser: false,
+    viewer: false,
+    ...users.reduce((accumulator, currentValue) => {
+      return {
+        ...accumulator,
+        [currentValue]: true,
+      };
+    }, {}),
+  };
 };

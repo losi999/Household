@@ -9,6 +9,6 @@ const listRecipientsService = listRecipientsServiceFactory(recipientService, rec
 
 export default index({
   handler: handler(listRecipientsService),
-  before: [ ],
+  before: [],
   after: [cors],
 });

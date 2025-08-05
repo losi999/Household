@@ -45,7 +45,7 @@ export const splitTransactionDocumentConverterFactory = (
     transferAccount: true,
     transferAmount: true,
     file: true,
-    hasDuplicate: true,
+    potentialDuplicates: true,
     isSettled: true,
     ownerAccount: true,
     payingAccount: true,

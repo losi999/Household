@@ -1,7 +1,7 @@
 import { generateMongoId } from '@household/shared/common/utils';
 import { addSeconds, getProductId } from '@household/shared/common/utils';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
-import { Category, Product, Transaction } from '@household/shared/types/types';
+import { Category, Product } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
 
 export interface IProductDocumentConverter {
@@ -13,7 +13,7 @@ export interface IProductDocumentConverter {
   toGroupedResponse(category: Category.Document): Product.GroupedResponse;
   toGroupedResponseList(categories: Category.Document[]): Product.GroupedResponse[];
   toResponse(document: Product.Document): Product.Response;
-  toReport(data: Transaction.Quantity & { document: Product.Document }): Product.Report;
+  toReport(document: Product.Document): Product.Report;
   toResponseList(documents: Product.Document[]): Product.Response[];
 }
 
@@ -39,11 +39,10 @@ export const productDocumentConverterFactory = (categoryDocumentConverter: ICate
         },
       };
     },
-    toReport: ({ document, quantity }) => {
+    toReport: (document) => {
       return document ? {
         productId: getProductId(document),
         fullName: document.fullName,
-        quantity,
       } : undefined;
     },
     toGroupedResponse: (category) => {

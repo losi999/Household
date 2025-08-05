@@ -7,7 +7,7 @@ export interface IUpdateCategoryService {
   (ctx: {
     body: Category.Request;
     expiresIn: number;
-  } & Category.CategoryId): Promise<void>;
+  } & Category.CategoryId): Promise<unknown>;
 }
 
 export const updateCategoryServiceFactory = (
@@ -19,8 +19,8 @@ export const updateCategoryServiceFactory = (
       queried,
       parentCategory,
     ] = await Promise.all([
-      categoryService.getCategoryById(categoryId),
-      categoryService.getCategoryById(parentCategoryId),
+      categoryService.findCategoryById(categoryId),
+      categoryService.findCategoryById(parentCategoryId),
     ]).catch(httpErrors.category.getById({
       categoryId,
       parentCategoryId: parentCategoryId,
@@ -43,7 +43,7 @@ export const updateCategoryServiceFactory = (
       parentCategory,
     }, expiresIn);
 
-    await categoryService.updateCategory(categoryId, update).catch(httpErrors.category.update({
+    return categoryService.updateCategory(categoryId, update).catch(httpErrors.category.update({
       categoryId,
       update,
     }));

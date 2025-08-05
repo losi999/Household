@@ -1,12 +1,14 @@
 import { IInfrastructureService } from '@household/shared/services/infrastructure-service';
+import { IMongodbService } from '@household/shared/services/mongodb-service';
 
 export interface IPostDeployService {
   (ctx: {
     stackName: string;
-  }): Promise<void>;
+  }): Promise<unknown>;
 }
 
-export const postDeployServiceFactory = (infrastructureService: IInfrastructureService): IPostDeployService =>
+export const postDeployServiceFactory = (mongodbService: IMongodbService, infrastructureService: IInfrastructureService): IPostDeployService =>
   async ({ stackName }) => {
-    await infrastructureService.executePostDeployFunctions(stackName);
+    await mongodbService.syncIndexes();
+    return infrastructureService.executePostDeployFunctions(stackName);
   };

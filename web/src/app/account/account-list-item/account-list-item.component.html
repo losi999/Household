@@ -1,17 +1,34 @@
-<a mat-list-item [routerLink]="(isDisabled | async) ? null : ['/accounts', account.accountId]">
-  <div matListItemTitle>{{account.name}}</div>
-  <div matListItemLine>{{balanceTitle}}: {{balance | number:'1.0-2':'hu'}}
-    {{account.currency}}</div>
-  <div matListItemMeta>
-    <a mat-icon-button color="primary" *ngIf="account.accountType === 'cash'" [routerLink]="['/accounts', account.accountId, 'balance']" [disabled]="isDisabled | async">
-      <mat-icon>payments</mat-icon>
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>{{account.name}}</mat-card-title>
+    <mat-card-subtitle>{{balanceTitle}}: {{balance | number:'1.0-2':'hu'}}
+      {{account.currency}}</mat-card-subtitle>
+  </mat-card-header>
+  <mat-card-actions>
+    <a mat-button color="primary" [routerLink]="(isDisabled | async) ? null : ['/accounts', account.accountId]" href="" [disabled]="isDisabled | async" matTooltip="Tranzakciók">
+      <mat-icon>format_list_bulleted</mat-icon>
+      Tranzakciók
     </a>
-    <a mat-icon-button color="primary" [routerLink]="['/accounts', account.accountId, 'new', 'payment']" href="" [disabled]="isDisabled | async"> <mat-icon>post_add</mat-icon></a>
-    <button mat-icon-button color="primary" (click)="edit($event)" [disabled]="isDisabled | async">
-      <mat-icon>edit</mat-icon>
+    <button mat-icon-button *householdIsEditor [matMenuTriggerFor]="menu" color="primary" [disabled]="isDisabled | async">
+      <mat-icon>more_vert</mat-icon>
     </button>
-    <button mat-icon-button color="warn" (click)="delete($event)" [disabled]="isDisabled | async">
-      <mat-icon>delete</mat-icon>
-    </button>
-  </div>
-</a>
+    <mat-menu #menu="matMenu">
+      <a mat-menu-item color="primary" *ngIf="account.accountType === 'cash'" [routerLink]="['/accounts', account.accountId, 'balance']" [disabled]="isDisabled | async">
+        <mat-icon>payments</mat-icon>
+        <span>Új egyenleg</span>
+      </a>
+      <a mat-menu-item color="primary" [routerLink]="['/accounts', account.accountId, 'new', 'payment']" href="" [disabled]="isDisabled | async">
+        <mat-icon>post_add</mat-icon>
+        <span>Új tranzakció</span>
+      </a>
+      <button mat-menu-item (click)="edit($event)">
+        <mat-icon>edit</mat-icon>
+        <span>Szerkesztés</span>
+      </button>
+      <button mat-menu-item color="warn" (click)="delete($event)">
+        <mat-icon>delete</mat-icon>
+        <span>Törlés</span>
+      </button>
+    </mat-menu>
+  </mat-card-actions>
+</mat-card>

@@ -15,9 +15,9 @@ export const unauthenticated: CanActivateFn = () => {
   return false;
 };
 
-export const authenticated: CanMatchFn = () => {
+export const authenticated: CanMatchFn = (route) => {
   const authService = inject(AuthService);
-  if (authService.isLoggedIn) {
+  if (authService.isLoggedIn && authService.hasUserType(route.data?.requiredUserType)) {
     return true;
   }
 

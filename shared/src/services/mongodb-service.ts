@@ -26,6 +26,7 @@ export type IMongodbService = {
   [collection in keyof CollectionMapping]: Model<CollectionMapping[collection]>;
 } & {
   inSession<T>(fn: (session: ClientSession) => Promise<T>): Promise<T>;
+  syncIndexes(): Promise<unknown>;
 };
 
 let connection: Connection;
@@ -40,7 +41,7 @@ export const mongodbServiceFactory = (mongodbConnectionString: string): IMongodb
   if (!connection || connection.readyState === 0) {
     console.log('pre create connnect');
     connection = createConnection(mongodbConnectionString, {
-      autoIndex: true,
+      autoIndex: false,
       connectTimeoutMS: 480000,
       serverSelectionTimeoutMS: 480000,
     });
@@ -84,6 +85,7 @@ export const mongodbServiceFactory = (mongodbConnectionString: string): IMongodb
       await session.endSession();
       return result;
     },
+    syncIndexes: () => connection.syncIndexes(),
     recipients: connection.model('recipients', recipientSchema),
     projects: connection.model('projects', projectSchema),
     transactions: connection.model('transactions', transactionSchema),

@@ -1,0 +1,39 @@
+<div class="draft">
+  <div class="list-item mat-elevation-z1">
+    <div class="datetime">
+      {{transaction.issuedAt | date: showYear ? 'yyyy. MMMM dd. HH:mm' : 'MMMM d. HH:mm'}}
+    </div>
+
+    <div class="details">
+      <household-transaction-details-description [transaction]="transaction" />
+    </div>
+
+    <div class="amount" [ngClass]="transaction.amount >= 0 ? 'green' : 'red'">{{transaction.amount | number:'1.0-2':'hu' }}</div>
+  </div>
+
+  <div class="duplicate" *ngFor="let dup of transaction.potentialDuplicates">
+    <span>Egyezik az alábbi tranzakcióval?</span>
+    <button mat-button color="warn" type="button" (click)="deleteDraft()">Igen</button>
+    <button mat-button color="primary" type="button" (click)="deduplicateDraft(dup.transactionId)">Nem</button>
+    <div class="list-item">
+      <div class="datetime">
+        {{dup.issuedAt | date: showYear ? 'yyyy. MMMM dd. HH:mm' : 'MMMM d. HH:mm'}}
+      </div>
+
+      <div class="details">
+        <household-transaction-details-loan *ngIf="!dup.account" [transaction]="dup" />
+        <household-transaction-details-row *ngIf="dup.account && dup.transactionType !== 'transfer'" icon="reply_all" [text]="dup.account?.fullName" />
+        <household-transaction-details-recipient [transaction]="dup" />
+        <household-transaction-details-category [transaction]="dup" />
+        <household-transaction-details-inventory [transaction]="dup" />
+        <household-transaction-details-invoice [transaction]="dup" />
+        <household-transaction-details-project [transaction]="dup" />
+        <household-transaction-details-transfer [transaction]="dup" [twoWayDisplay]="true" />
+        <household-transaction-details-description [transaction]="dup" />
+      </div>
+
+      <div class="amount" [ngClass]="dup.amount >= 0 ? 'green' : 'red'">{{dup.amount | number:'1.0-2':'hu' }} {{(dup.account ?? dup.payingAccount)?.currency}}</div>
+    </div>
+    <mat-divider></mat-divider>
+  </div>
+</div>

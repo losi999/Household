@@ -11,7 +11,7 @@ describe('Get recipient service', () => {
   let mockRecipientDocumentConverter: Mock<IRecipientDocumentConverter>;
 
   beforeEach(() => {
-    mockRecipientService = createMockService('getRecipientById');
+    mockRecipientService = createMockService('findRecipientById');
     mockRecipientDocumentConverter = createMockService('toResponse');
 
     service = getRecipientServiceFactory(mockRecipientService.service, mockRecipientDocumentConverter.service);
@@ -22,36 +22,36 @@ describe('Get recipient service', () => {
   const convertedResponse = createRecipientResponse();
 
   it('should return recipient', async () => {
-    mockRecipientService.functions.getRecipientById.mockResolvedValue(queriedDocument);
+    mockRecipientService.functions.findRecipientById.mockResolvedValue(queriedDocument);
     mockRecipientDocumentConverter.functions.toResponse.mockReturnValue(convertedResponse);
 
     const result = await service({
       recipientId,
     });
     expect(result).toEqual(convertedResponse);
-    validateFunctionCall(mockRecipientService.functions.getRecipientById, recipientId);
+    validateFunctionCall(mockRecipientService.functions.findRecipientById, recipientId);
     validateFunctionCall(mockRecipientDocumentConverter.functions.toResponse, queriedDocument);
     expect.assertions(3);
   });
   describe('should throw error', () => {
     it('if unable to query recipient', async () => {
-      mockRecipientService.functions.getRecipientById.mockRejectedValue('this is a mongo error');
+      mockRecipientService.functions.findRecipientById.mockRejectedValue('this is a mongo error');
 
       await service({
         recipientId,
       }).catch(validateError('Error while getting recipient', 500));
-      validateFunctionCall(mockRecipientService.functions.getRecipientById, recipientId);
+      validateFunctionCall(mockRecipientService.functions.findRecipientById, recipientId);
       validateFunctionCall(mockRecipientDocumentConverter.functions.toResponse);
       expect.assertions(4);
     });
 
     it('if no recipient found', async () => {
-      mockRecipientService.functions.getRecipientById.mockResolvedValue(undefined);
+      mockRecipientService.functions.findRecipientById.mockResolvedValue(undefined);
 
       await service({
         recipientId,
       }).catch(validateError('No recipient found', 404));
-      validateFunctionCall(mockRecipientService.functions.getRecipientById, recipientId);
+      validateFunctionCall(mockRecipientService.functions.findRecipientById, recipientId);
       validateFunctionCall(mockRecipientDocumentConverter.functions.toResponse);
       expect.assertions(4);
     });

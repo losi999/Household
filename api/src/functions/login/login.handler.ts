@@ -1,3 +1,4 @@
+import { okResponse } from '@household/api/common/response-factory';
 import { ILoginService } from '@household/api/functions/login/login.service';
 import { Auth } from '@household/shared/types/types';
 
@@ -17,9 +18,6 @@ export default (login: ILoginService): AWSLambda.APIGatewayProxyHandler => {
       };
     }
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify(loginResponse),
-    };
+    return okResponse(loginResponse);
   };
 };

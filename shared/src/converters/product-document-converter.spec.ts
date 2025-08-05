@@ -174,19 +174,14 @@ describe('Product document converter', () => {
 
   describe('toReport', () => {
     it('should return response', () => {
-      const quantity = 1;
       const fullName = 'full name of product 100 g';
       const product = createProductDocument({
         fullName,
       });
-      const result = converter.toReport({
-        document: product,
-        quantity,
-      });
+      const result = converter.toReport(product);
       expect(result).toEqual(createProductReport({
         productId: getProductId(product),
         fullName,
-        quantity,
       }));
     });
   });

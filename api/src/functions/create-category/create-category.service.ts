@@ -15,7 +15,7 @@ export const createCategoryServiceFactory = (
   categoryService: ICategoryService,
   categoryDocumentConverter: ICategoryDocumentConverter): ICreateCategoryService => {
   return async ({ body, expiresIn }) => {
-    const parentCategory = await categoryService.getCategoryById(body.parentCategoryId).catch(httpErrors.category.getById({
+    const parentCategory = await categoryService.findCategoryById(body.parentCategoryId).catch(httpErrors.category.getById({
       categoryId: body.parentCategoryId,
     }));
 

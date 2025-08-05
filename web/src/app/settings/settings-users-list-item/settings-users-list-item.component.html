@@ -1,0 +1,12 @@
+<mat-card appearance="outlined">
+  <mat-card-header>
+    <mat-card-title>{{user.email}}</mat-card-title>
+    <mat-card-subtitle>{{user.status}}</mat-card-subtitle>
+  </mat-card-header>
+  <mat-card-content>
+    <mat-checkbox *ngFor="let group of groupMap | keyvalue" [disabled]="group.value.isDisabled | async" [checked]="user.groups.includes(group.key)" (change)="toggleGroup(group.key, $event.checked)">{{group.value.label}}</mat-checkbox>
+  </mat-card-content>
+  <mat-card-actions>
+    <button mat-flat-button color="warn" (click)="deleteUser()"><mat-icon>delete</mat-icon>Törlés</button>
+  </mat-card-actions>
+</mat-card>

@@ -1,5 +1,5 @@
 import { generateMongoId } from '@household/shared/common/utils';
-import { AccountType, CategoryType, FileType, TransactionType } from '@household/shared/enums';
+import { AccountType, CategoryType, FileType, TransactionType, UserType } from '@household/shared/enums';
 import { Account, Auth, Category, File, Product, Project, Recipient, Report, Setting, Transaction, User } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
 
@@ -245,7 +245,7 @@ export const createDraftTransactionResponse: DataFactoryFunction<Transaction.Dra
     amount,
     description: 'transaction description',
     issuedAt: new Date().toISOString(),
-    hasDuplicate: false,
+    potentialDuplicates: [],
     ...doc,
   };
 };
@@ -389,6 +389,14 @@ export const createLoginRequest: DataFactoryFunction<Auth.Login.Request> = (req)
 export const createConfirmUserRequest: DataFactoryFunction<Auth.ConfirmUser.Request> = (req) => {
   return {
     temporaryPassword: 'temp123',
+    password: 'password123',
+    ...req,
+  };
+};
+
+export const createConfirmForgotPasswordRequest: DataFactoryFunction<Auth.ConfirmForgotPassword.Request> = (req) => {
+  return {
+    confirmationCode: '123456',
     password: 'password123',
     ...req,
   };
@@ -682,7 +690,6 @@ export const createProductReport: DataFactoryFunction<Product.Report> = (rep) =>
   return {
     productId: createProductId(),
     fullName: 'product name 100 g',
-    quantity: 1,
     ...rep,
   };
 };
@@ -704,6 +711,7 @@ export const createTransactionReport: DataFactoryFunction<Transaction.Report> = 
     account: createAccountReport(),
     category: createCategoryReport(),
     product: createProductReport(),
+    quantity: 100,
     project: createProjectReport(),
     recipient: createRecipientReport(),
     invoiceNumber: 'inv123',
@@ -754,6 +762,7 @@ export const createUserResponse: DataFactoryFunction<User.Response> = (resp) => 
   return {
     email: 'user@email.com',
     status: 'CONFIRMED',
+    groups: [UserType.Editor],
     ...resp,
   };
 };

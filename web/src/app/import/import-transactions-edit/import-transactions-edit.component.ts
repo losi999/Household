@@ -1,9 +1,9 @@
 import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
-import { File, Transaction } from '@household/shared/types/types';
+import { Transaction } from '@household/shared/types/types';
 import { accountApiActions } from '@household/web/state/account/account.actions';
 import { categoryApiActions } from '@household/web/state/category/category.actions';
+import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { importActions } from '@household/web/state/import/import.actions';
 import { selectDraftTransactionList } from '@household/web/state/import/import.selector';
 import { notificationActions } from '@household/web/state/notification/notification.actions';
@@ -11,6 +11,7 @@ import { projectApiActions } from '@household/web/state/project/project.actions'
 import { recipientApiActions } from '@household/web/state/recipient/recipient.actions';
 import { FormGroupify, ImportedTransaction, TransactionImportUpdatableFields } from '@household/web/types/common';
 import { Store } from '@ngrx/store';
+import { BreakpointObserver } from '@angular/cdk/layout';
 import { Observable } from 'rxjs';
 
 type FieldName = keyof TransactionImportUpdatableFields;
@@ -18,7 +19,6 @@ type FieldName = keyof TransactionImportUpdatableFields;
 @Component({
   selector: 'household-import-transactions-edit',
   standalone: false,
-
   templateUrl: './import-transactions-edit.component.html',
   styleUrl: './import-transactions-edit.component.scss',
 })
@@ -35,9 +35,13 @@ export class ImportTransactionsEditComponent implements OnInit {
   fieldVisibility: {
     [field in FieldName]?: boolean;
   };
-  fileId: File.Id;
+  isSmallScreen: boolean;
 
-  constructor(private activatedRoute: ActivatedRoute, private store: Store) {}
+  constructor(private store: Store, private breakpointObserver: BreakpointObserver) {
+    this.breakpointObserver.observe(['(max-width: 639px)']).subscribe((result) => {
+      this.isSmallScreen = result.matches;
+    });
+  }
 
   ngOnInit(): void {
     this.fieldVisibility = {
@@ -54,9 +58,7 @@ export class ImportTransactionsEditComponent implements OnInit {
       loanAccount: new FormControl(),
     });
 
-    this.fileId = this.activatedRoute.snapshot.paramMap.get('fileId') as File.Id;
-
-    this.transactions = this.store.select(selectDraftTransactionList(this.fileId));
+    this.transactions = this.store.select(selectDraftTransactionList());
 
     this.store.dispatch(accountApiActions.listAccountsInitiated());
     this.store.dispatch(projectApiActions.listProjectsInitiated());
@@ -76,8 +78,16 @@ export class ImportTransactionsEditComponent implements OnInit {
         this.fieldVisibility.transferAccount = false;
       } break;
       case 'transferAccount': {
+        this.fieldVisibility.recipient = false;
+        this.fieldVisibility.category = false;
+        this.fieldVisibility.project = false;
         this.fieldVisibility.loanAccount = false;
-      }
+      } break;
+      case 'category':
+      case 'project':
+      case 'recipient': {
+        this.fieldVisibility.transferAccount = false;
+      } break;
     }
   }
 
@@ -90,7 +100,6 @@ export class ImportTransactionsEditComponent implements OnInit {
     }
 
     this.store.dispatch(importActions.applyEditingFields({
-      fileId: this.fileId,
       transactionIds: this.selectedTransactions.value,
       updatedValues: Object.entries(this.fieldVisibility).reduce((accumulator, [
         key,
@@ -108,7 +117,6 @@ export class ImportTransactionsEditComponent implements OnInit {
     }));
 
     this.cancel();
-    this.selectedTransactions.reset();
   }
 
   cancel() {
@@ -120,10 +128,13 @@ export class ImportTransactionsEditComponent implements OnInit {
   }
 
   save() {
-    console.log('save');
-
     this.store.dispatch(importActions.importTransactions({
-      fileId: this.fileId,
+      transactionIds: this.selectedTransactions.value,
+    }));
+  }
+
+  delete() {
+    this.store.dispatch(dialogActions.deleteDraftTransactions({
       transactionIds: this.selectedTransactions.value,
     }));
   }
