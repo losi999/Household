@@ -5,12 +5,12 @@ import { Auth, User } from '@household/shared/types/types';
 export interface IConfirmForgotPasswordService {
   (ctx: {
     body: Auth.ConfirmForgotPassword.Request;
-  } & User.Email): Promise<void>;
+  } & User.Email): Promise<unknown>;
 }
 
 export const confirmForgotPasswordServiceFactory = (identityService: IIdentityService): IConfirmForgotPasswordService => {
-  return async ({ body: { confirmationCode, password }, email }) => {
-    await identityService.confirmForgotPassword({
+  return ({ body: { confirmationCode, password }, email }) => {
+    return identityService.confirmForgotPassword({
       confirmationCode,
       password,
       email,

@@ -6,7 +6,7 @@ import { File } from '@household/shared/types/types';
 export interface IDeleteFileService {
   (ctx: {
     fileId: File.Id;
-  }): Promise<void>;
+  }): Promise<unknown>;
 }
 
 export const deleteFileServiceFactory = (
@@ -16,7 +16,7 @@ export const deleteFileServiceFactory = (
       fileId,
     }));
 
-    await storageService.deleteFile(fileId).catch(httpErrors.file.deleteFile({
+    return storageService.deleteFile(fileId).catch(httpErrors.file.deleteFile({
       fileId,
     }));
   };

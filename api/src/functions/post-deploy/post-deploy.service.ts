@@ -4,11 +4,11 @@ import { IMongodbService } from '@household/shared/services/mongodb-service';
 export interface IPostDeployService {
   (ctx: {
     stackName: string;
-  }): Promise<void>;
+  }): Promise<unknown>;
 }
 
 export const postDeployServiceFactory = (mongodbService: IMongodbService, infrastructureService: IInfrastructureService): IPostDeployService =>
   async ({ stackName }) => {
     await mongodbService.syncIndexes();
-    await infrastructureService.executePostDeployFunctions(stackName);
+    return infrastructureService.executePostDeployFunctions(stackName);
   };

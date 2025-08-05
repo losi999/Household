@@ -8,7 +8,7 @@ export interface IUpdateProjectService {
     body: Project.Request;
     projectId: Project.Id;
     expiresIn: number;
-  }): Promise<void>;
+  }): Promise<unknown>;
 }
 
 export const updateProjectServiceFactory = (
@@ -27,7 +27,7 @@ export const updateProjectServiceFactory = (
 
     const update = projectDocumentConverter.update(body, expiresIn);
 
-    await projectService.updateProject(projectId, update).catch(httpErrors.project.update({
+    return projectService.updateProject(projectId, update).catch(httpErrors.project.update({
       projectId,
       update,
     }));

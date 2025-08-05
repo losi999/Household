@@ -8,7 +8,7 @@ export interface IUpdateAccountService {
     accountId: Account.Id;
     expiresIn: number; body:
     Account.Request;
-  }): Promise<void>;
+  }): Promise<unknown>;
 }
 
 export const updateAccountServiceFactory = (
@@ -27,7 +27,7 @@ export const updateAccountServiceFactory = (
 
     const update = accountDocumentConverter.update(body, expiresIn);
 
-    await accountService.updateAccount(accountId, update).catch(httpErrors.account.update({
+    return accountService.updateAccount(accountId, update).catch(httpErrors.account.update({
       accountId,
       update,
     }));

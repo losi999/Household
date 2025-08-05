@@ -6,11 +6,11 @@ export interface ICreateUserService {
   (ctx: {
     body: User.Request;
     suppressEmail: boolean;
-  }): Promise<void>;
+  }): Promise<unknown>;
 }
 
 export const createUserServiceFactory = (identityService: IIdentityService): ICreateUserService => {
-  return async ({ body, suppressEmail }) => {
-    await identityService.createUser(body, undefined, suppressEmail).catch(httpErrors.cognito.createUser(body));
+  return ({ body, suppressEmail }) => {
+    return identityService.createUser(body, undefined, suppressEmail).catch(httpErrors.cognito.createUser(body));
   };
 };

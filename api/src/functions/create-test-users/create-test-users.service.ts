@@ -2,7 +2,7 @@ import { UserType } from '@household/shared/enums';
 import { IIdentityService } from '@household/shared/services/identity-service';
 
 export interface ICreateTestUsersService {
-  (): Promise<void>;
+  (): Promise<unknown>;
 }
 
 export const createTestUsersServiceFactory = (identityService: IIdentityService): ICreateTestUsersService => {
@@ -19,8 +19,8 @@ export const createTestUsersServiceFactory = (identityService: IIdentityService)
       }
     }
   };
-  return async () => {
-    await Promise.all([
+  return () => {
+    return Promise.all([
       ...Object.values(UserType).map(x => createUser(x)),
       createUser(),
     ]);

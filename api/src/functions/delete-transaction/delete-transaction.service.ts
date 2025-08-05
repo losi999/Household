@@ -5,13 +5,13 @@ import { Transaction } from '@household/shared/types/types';
 export interface IDeleteTransactionService {
   (ctx: {
     transactionId: Transaction.Id;
-  }): Promise<void>;
+  }): Promise<unknown>;
 }
 
 export const deleteTransactionServiceFactory = (
   transactionService: ITransactionService): IDeleteTransactionService => {
-  return async ({ transactionId }) => {
-    await transactionService.deleteTransaction(transactionId).catch(httpErrors.transaction.delete({
+  return ({ transactionId }) => {
+    return transactionService.deleteTransaction(transactionId).catch(httpErrors.transaction.delete({
       transactionId,
     }));
   };

@@ -5,12 +5,12 @@ import { Auth } from '@household/shared/types/types';
 export interface IForgotPasswordService {
   (ctx: {
     body: Auth.ForgotPassword.Request
-  }): Promise<void>;
+  }): Promise<unknown>;
 }
 
 export const forgotPasswordServiceFactory = (identityService: IIdentityService): IForgotPasswordService => {
-  return async ({ body }) => {
-    await identityService.forgotPassword(body).catch(httpErrors.cognito.forgotPassword({
+  return ({ body }) => {
+    return identityService.forgotPassword(body).catch(httpErrors.cognito.forgotPassword({
       email: body.email,
     }));
   };

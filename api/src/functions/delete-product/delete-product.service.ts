@@ -5,13 +5,13 @@ import { Product } from '@household/shared/types/types';
 export interface IDeleteProductService {
   (ctx: {
     productId: Product.Id;
-  }): Promise<void>;
+  }): Promise<unknown>;
 }
 
 export const deleteProductServiceFactory = (
   productService: IProductService): IDeleteProductService => {
-  return async ({ productId }) => {
-    await productService.deleteProduct(productId).catch(httpErrors.product.delete({
+  return ({ productId }) => {
+    return productService.deleteProduct(productId).catch(httpErrors.product.delete({
       productId,
     }));
   };

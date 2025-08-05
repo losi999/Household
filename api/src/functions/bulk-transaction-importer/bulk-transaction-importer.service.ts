@@ -12,7 +12,7 @@ export interface IBulkTransactionImporterService {
   (ctx: {
     bucketName: string;
     fileId: File.Id;
-  }): Promise<void>;
+  }): Promise<unknown>;
 }
 
 export const bulkTransactionImporterServiceFactory = (fileService: IFileService, fileDocumentConverter: IFileDocumentConverter, storageService: (bucketName: string) => IStorageService, excelParser: IExcelParserService, draftTransactionDocumentConverter: IDraftTransactionDocumentConverter, transactionService: ITransactionService): IBulkTransactionImporterService =>
@@ -41,7 +41,7 @@ export const bulkTransactionImporterServiceFactory = (fileService: IFileService,
 
     const update = fileDocumentConverter.updateStatus(FileProcessingStatus.Completed);
 
-    await fileService.updateFile(fileId, update).catch(httpErrors.file.update({
+    return fileService.updateFile(fileId, update).catch(httpErrors.file.update({
       fileId,
       update,
     }));

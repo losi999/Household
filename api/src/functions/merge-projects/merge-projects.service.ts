@@ -5,7 +5,7 @@ import { Project } from '@household/shared/types/types';
 export interface IMergeProjectsService {
   (ctx: {
     body: Project.Id[];
-  } & Project.ProjectId): Promise<void>;
+  } & Project.ProjectId): Promise<unknown>;
 }
 
 export const mergeProjectsServiceFactory = (
@@ -29,7 +29,7 @@ export const mergeProjectsServiceFactory = (
       projectIds,
     });
 
-    await projectService.mergeProjects({
+    return projectService.mergeProjects({
       sourceProjectIds: body,
       targetProjectId: projectId,
     }).catch(httpErrors.project.merge({

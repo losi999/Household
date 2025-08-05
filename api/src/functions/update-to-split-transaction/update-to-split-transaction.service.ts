@@ -15,7 +15,7 @@ export interface IUpdateToSplitTransactionService {
     body: Transaction.SplitRequest;
     transactionId: Transaction.Id;
     expiresIn: number;
-  }): Promise<void>;
+  }): Promise<unknown>;
 
 }
 
@@ -148,6 +148,6 @@ export const updateToSplitTransactionServiceFactory = (
       recipient,
     }, expiresIn);
 
-    await transactionService.updateTransaction(transactionId, update).catch(httpErrors.transaction.update(update));
+    return transactionService.updateTransaction(transactionId, update).catch(httpErrors.transaction.update(update));
   };
 };
