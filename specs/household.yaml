@@ -1,4 +1,4 @@
-openapi: "3.0.2"
+openapi: "3.1.0"
 info:
   title: Household API
   version: 1.0.0
@@ -180,7 +180,6 @@ paths:
                   allOf:
                     - $ref: "category.yaml#/components/schemas/FullName"
                     - $ref: "category.yaml#/components/schemas/Products"
-
   /product/v1/products/{productId}:
     parameters:
       - $ref: "#/components/parameters/Path.ProductId"
@@ -225,7 +224,6 @@ paths:
             application/json:
               schema:
                 $ref: "product.yaml#/components/schemas/ProductId"
-
   /project/v1/projects:
     get:
       tags:
@@ -390,6 +388,62 @@ paths:
             application/json:
               schema:
                 $ref: "recipient.yaml#/components/schemas/RecipientId"
+  /customer/v1/customers:
+    get:
+      tags:
+        - customer
+      responses:
+        200:
+          description: List of customers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "customer.yaml#/components/schemas/Response"
+    post:
+      tags:
+        - customer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "customer.yaml#/components/schemas/Request"
+      responses:
+        201:
+          description: Customer id
+          content:
+            application/json:
+              schema:
+                $ref: "customer.yaml#/components/schemas/CustomerId"
+  /customer/v1/customers/{customerId}:
+    parameters:
+      - $ref: "#/components/parameters/Path.CustomerId"
+    get:
+      tags:
+        - customer
+      responses:
+        200:
+          description: Customer details
+          content:
+            application/json:
+              schema:
+                $ref: "customer.yaml#/components/schemas/Response"
+    put:
+      tags:
+        - customer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "customer.yaml#/components/schemas/Request"
+      responses:
+        200:
+          description: Customer id
+          content:
+            application/json:
+              schema:
+                $ref: "customer.yaml#/components/schemas/CustomerId"
   # /report/v1/reports:
   #   get:
   #     responses:
@@ -843,6 +897,12 @@ components:
   parameters:
     Path.RecipientId:
       name: recipientId
+      in: path
+      required: true
+      schema:
+        type: string
+    Path.CustomerId:
+      name: customerId
       in: path
       required: true
       schema:

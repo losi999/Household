@@ -1,0 +1,29 @@
+openapi: "3.1.0"
+info:
+  title: Customer components
+  version: 1.0.0
+components:
+  schemas:
+    CustomerId:
+      type: object
+      required:
+        - customerId
+      properties:
+        customerId:
+          type: string
+          minLength: 1
+    Name:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+    Response:
+      allOf:
+        - $ref: "#/components/schemas/CustomerId"
+        - $ref: "#/components/schemas/Name"
+    Request:
+      allOf:
+        - $ref: "#/components/schemas/Name"

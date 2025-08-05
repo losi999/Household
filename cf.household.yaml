@@ -84,6 +84,17 @@ Resources:
         Env: !Ref Env
         MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
 
+  Customer:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: sam.customer.yaml
+      Parameters:
+        LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
+        DependenciesLayer: !GetAtt Infrastructure.Outputs.DependenciesLayer
+        UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
+        Env: !Ref Env
+        MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
+
   Account:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -205,6 +216,24 @@ Resources:
                 - Authorization
             PathPattern: /recipient/*
             TargetOriginId: Recipient
+            ViewerProtocolPolicy: redirect-to-https
+            MinTTL: 0
+            MaxTTL: 0
+            DefaultTTL: 0
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+              - PUT
+              - PATCH
+              - POST
+              - DELETE
+          - ForwardedValues:
+              QueryString: true
+              Headers:
+                - Authorization
+            PathPattern: /customer/*
+            TargetOriginId: Customer
             ViewerProtocolPolicy: redirect-to-https
             MinTTL: 0
             MaxTTL: 0
@@ -350,6 +379,10 @@ Resources:
               OriginProtocolPolicy: https-only
           - DomainName: !GetAtt Recipient.Outputs.RecipientApi
             Id: Recipient
+            CustomOriginConfig:
+              OriginProtocolPolicy: https-only
+          - DomainName: !GetAtt Customer.Outputs.CustomerApi
+            Id: Customer
             CustomOriginConfig:
               OriginProtocolPolicy: https-only
           - DomainName: !GetAtt Account.Outputs.AccountApi

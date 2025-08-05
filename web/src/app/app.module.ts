@@ -45,6 +45,8 @@ import { hairdressingReducer } from '@household/web/state/hairdressing/hairdress
 import { userReducer } from '@household/web/state/user/user.reducer';
 import { UserEffects } from '@household/web/state/user/user.effects';
 import { AuthEffects } from '@household/web/state/auth/auth.effects';
+import { customerReducer } from '@household/web/state/customer/customer.reducer';
+import { CustomerEffects } from '@household/web/state/customer/customer.effects';
 
 registerLocaleData(localeHu);
 
@@ -73,6 +75,7 @@ registerLocaleData(localeHu);
       settings: settingReducer,
       hairdressing: hairdressingReducer,
       users: userReducer,
+      customers: customerReducer,
     }),
     StoreDevtoolsModule.instrument({
       maxAge: 25,
@@ -94,6 +97,7 @@ registerLocaleData(localeHu);
       HairdressingEffects,
       UserEffects,
       AuthEffects,
+      CustomerEffects,
     ]),
   ],
   providers: [

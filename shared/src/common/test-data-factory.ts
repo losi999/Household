@@ -1,6 +1,6 @@
 import { generateMongoId } from '@household/shared/common/utils';
 import { AccountType, CategoryType, FileType, TransactionType, UserType } from '@household/shared/enums';
-import { Account, Auth, Category, File, Product, Project, Recipient, Report, Setting, Transaction, User } from '@household/shared/types/types';
+import { Account, Auth, Category, Customer, File, Product, Project, Recipient, Report, Setting, Transaction, User } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
 
 const amount = -100;
@@ -33,6 +33,10 @@ export const createProductId = (id?: string): Product.Id => {
 
 export const createFileId = (id?: string): File.Id => {
   return (id ?? generateMongoId().toString()) as File.Id;
+};
+
+export const createCustomerId = (id?: string): Customer.Id => {
+  return (id ?? generateMongoId().toString()) as Customer.Id;
 };
 
 export const createSettingKey = (key?: string): Setting.Id => {
@@ -74,6 +78,14 @@ export const createRecipientDocument: DataFactoryFunction<Recipient.Document> = 
   return {
     _id: generateMongoId(),
     name: 'recipient name',
+    expiresAt: undefined,
+    ...doc,
+  };
+};
+export const createCustomerDocument: DataFactoryFunction<Customer.Document> = (doc) => {
+  return {
+    _id: generateMongoId(),
+    name: 'customer name',
     expiresAt: undefined,
     ...doc,
   };
@@ -278,6 +290,12 @@ export const createCategoryRequest: DataFactoryFunction<Category.Request> = (req
 export const createRecipientRequest: DataFactoryFunction<Recipient.Request> = (req) => {
   return {
     name: 'recipient name',
+    ...req,
+  };
+};
+export const createCustomerRequest: DataFactoryFunction<Customer.Request> = (req) => {
+  return {
+    name: 'customer name',
     ...req,
   };
 };
@@ -528,6 +546,13 @@ export const createRecipientResponse: DataFactoryFunction<Recipient.Response> = 
   return {
     recipientId: createRecipientId(),
     name: 'recipient name',
+    ...resp,
+  };
+};
+export const createCustomerResponse: DataFactoryFunction<Customer.Response> = (resp) => {
+  return {
+    customerId: createCustomerId(),
+    name: 'customer name',
     ...resp,
   };
 };

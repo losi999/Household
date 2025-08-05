@@ -771,6 +771,26 @@ export namespace Import {
   };
 }
 
+export namespace Customer {
+  export type Id = Branding<string, 'customer'>;
+
+  export type CustomerId = {
+    customerId: Id;
+  };
+
+  type Name = {
+    name: string;
+  };
+
+  export type Document = Internal.Id
+  & Internal.Timestamps
+  & Name;
+
+  export type Response = CustomerId & Name;
+
+  export type Request = Name;
+}
+
 export namespace Common {
   export type Pagination<P extends string | number> = {
     pageSize: P;

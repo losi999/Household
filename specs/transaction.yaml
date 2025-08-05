@@ -1,4 +1,4 @@
-openapi: "3.0.0"
+openapi: "3.1.0"
 info:
   title: Transaction components
   version: 1.0.0
@@ -53,8 +53,7 @@ components:
         quantity:
           description: Required if productId is present
           type: number
-          minimum: 0
-          exclusiveMinimum: true
+          exclusiveMinimum: 0
 
     InvoiceNumber:
       type: object
@@ -116,8 +115,7 @@ components:
               - type: object
                 properties:
                   amount:
-                    exclusiveMinimum: true
-                    minimum: 0
+                    exclusiveMinimum: 0
 
     Category:
       type: object
@@ -215,8 +213,7 @@ components:
         - type: object
           properties:
             amount:
-              exclusiveMaximum: true
-              minimum: 0
+              exclusiveMaximum: 0
     SplitRequest:
       allOf:
         - $ref: "account.yaml#/components/schemas/AccountId"
@@ -229,8 +226,7 @@ components:
             - splits
           properties:
             amount:
-              exclusiveMaximum: true
-              minimum: 0
+              exclusiveMaximum: 0
             splits:
               type: array
               items:

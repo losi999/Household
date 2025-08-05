@@ -1,11 +1,19 @@
 import { headerExpiresIn, headerSuppressEmail } from '@household/shared/constants';
-import { Account, Category, File, Product, Project, Recipient, Setting, Transaction } from '@household/shared/types/types';
+import { Account, Category, Customer, File, Product, Project, Recipient, Setting, Transaction } from '@household/shared/types/types';
+
+type APIEvent<R = {}> = Omit<AWSLambda.APIGatewayProxyEvent, 'pathParameters' | 'body' | 'queryStringParameters' | 'multiValueQueryStringParameters'> & R;
+export type APIHandler<R extends {
+  pathParameters?: any;
+  body?: any;
+  queryStringParameters?: any;
+  multiValueQueryStringParameters?: any;
+} = {}> = AWSLambda.Handler<APIEvent<R>, AWSLambda.APIGatewayProxyResult>;
 
 export const castPathParameters = (event: AWSLambda.APIGatewayProxyEvent) => {
-  return event.pathParameters as (Account.AccountId & Project.ProjectId & Category.CategoryId & Recipient.RecipientId & Transaction.TransactionId & Product.ProductId & File.FileId & Setting.SettingKey);
+  return event.pathParameters as (Account.AccountId & Project.ProjectId & Category.CategoryId & Recipient.RecipientId & Transaction.TransactionId & Product.ProductId & File.FileId & Setting.SettingKey & Customer.CustomerId);
 };
 
-export const getExpiresInHeader = (event: AWSLambda.APIGatewayProxyEvent) => {
+export const getExpiresInHeader = (event: AWSLambda.APIGatewayProxyEvent | APIEvent) => {
   const expiresInLowercased = headerExpiresIn.toLowerCase();
   const headerName = Object.keys(event.headers).find(name => name.toLowerCase() === expiresInLowercased);
 

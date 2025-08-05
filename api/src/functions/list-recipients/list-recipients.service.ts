@@ -11,7 +11,6 @@ export const listRecipientsServiceFactory = (
   recipientService: IRecipientService,
   recipientDocumentConverter: IRecipientDocumentConverter): IListRecipientsService => {
   return async () => {
-
     const documents = await recipientService.listRecipients().catch(httpErrors.recipient.list());
 
     return recipientDocumentConverter.toResponseList(documents);

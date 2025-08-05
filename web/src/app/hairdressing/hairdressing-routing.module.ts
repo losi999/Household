@@ -8,6 +8,10 @@ const routes: Routes = [
     component: HairdressingIncomeHomeComponent,
   },
   {
+    path: 'customers',
+    loadChildren: () => import('@household/web/app/customer/customer.module').then(m => m.CustomerModule),
+  },
+  {
     path: '**',
     redirectTo: 'income',
   },
