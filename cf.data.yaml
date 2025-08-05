@@ -76,16 +76,14 @@ Resources:
           Value: "{{resolve:ssm:AdminUserEmail:1}}"
   AdminUserToEditorGroup:
     Type: AWS::Cognito::UserPoolUserToGroupAttachment
-    DependsOn: AdminUser
     Properties:
-      GroupName: editor
+      GroupName: !Ref EditorUserGroup
       UserPoolId: !Ref UserPool
       Username: "{{resolve:ssm:AdminUserEmail:1}}"
   AdminUserToHairdresserGroup:
     Type: AWS::Cognito::UserPoolUserToGroupAttachment
-    DependsOn: AdminUser
     Properties:
-      GroupName: hairdresser
+      GroupName: !Ref HairdresserUserGroup
       UserPoolId: !Ref UserPool
       Username: "{{resolve:ssm:AdminUserEmail:1}}"
 
