@@ -12,7 +12,7 @@ export const listCustomersServiceFactory = (
   customerDocumentConverter: ICustomerDocumentConverter,
 ): IListCustomersService => {
   return async () => {    
-    const documents = await customerService.listCustomers().catch(httpErrors.recipient.list());
+    const documents = await customerService.listCustomers().catch(httpErrors.customer.list());
 
     return customerDocumentConverter.toResponseList(documents);
   };
