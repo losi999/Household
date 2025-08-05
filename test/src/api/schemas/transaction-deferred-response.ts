@@ -1,7 +1,7 @@
 import { StrictJSONSchema7 } from '@household/shared/types/common';
 import { Transaction } from '@household/shared/types/types';
 import { default as transactionId } from '@household/shared/schemas/transaction-id';
-import { default as account } from '@household/test/api/schemas/account-response';
+import { default as account } from '@household/test/api/schemas/account-lean-response';
 import { default as category } from '@household/test/api/schemas/category-response';
 import { default as project } from '@household/test/api/schemas/project-response';
 import { default as product } from '@household/test/api/schemas/product-response';

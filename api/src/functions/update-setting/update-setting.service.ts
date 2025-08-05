@@ -8,7 +8,7 @@ export interface IUpdateSettingService {
   & Setting.SettingKey
   & {
     expiresIn: number;
-  }): Promise<void>;
+  }): Promise<unknown>;
 }
 
 export const updateSettingServiceFactory = (
@@ -20,7 +20,7 @@ export const updateSettingServiceFactory = (
       value,
     }, expiresIn);
 
-    await settingService.updateSetting(settingKey, update).catch(httpErrors.setting.update({
+    return settingService.updateSetting(settingKey, update).catch(httpErrors.setting.update({
       settingKey,
       update,
     }));

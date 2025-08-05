@@ -6,7 +6,7 @@ import { Category } from '@household/shared/types/types';
 export interface IMergeCategoriesService {
   (ctx: {
     body: Category.Id[];
-  } & Category.CategoryId): Promise<void>;
+  } & Category.CategoryId): Promise<unknown>;
 }
 
 export const mergeCategoriesServiceFactory = (
@@ -23,7 +23,7 @@ export const mergeCategoriesServiceFactory = (
       ...new Set(body),
     ];
 
-    const categories = await categoryService.listCategoriesByIds(categoryIds).catch(httpErrors.category.listByIds(categoryIds));
+    const categories = await categoryService.findCategoriesByIds(categoryIds).catch(httpErrors.category.listByIds(categoryIds));
 
     httpErrors.category.multipleNotFound({
       categories,
@@ -39,7 +39,7 @@ export const mergeCategoriesServiceFactory = (
       source: body,
     });
 
-    await categoryService.mergeCategories({
+    return categoryService.mergeCategories({
       sourceCategoryIds: body,
       targetCategoryId: categoryId,
     }).catch(httpErrors.category.merge({

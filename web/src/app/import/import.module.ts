@@ -15,8 +15,6 @@ import { ImportFileListComponent } from './import-file-list/import-file-list.com
 import { ImportFileListItemComponent } from './import-file-list-item/import-file-list-item.component';
 import { MatListModule } from '@angular/material/list';
 import { ImportTransactionsHomeComponent } from './import-transactions-home/import-transactions-home.component';
-import { ImportTransactionsListComponent } from './import-transactions-list/import-transactions-list.component';
-import { ImportTransactionsListItemComponent } from './import-transactions-list-item/import-transactions-list-item.component';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { TransactionModule } from '@household/web/app/transaction/transaction.module';
 import { MatMenuModule } from '@angular/material/menu';
@@ -29,6 +27,10 @@ import { RecipientAutocompleteInputComponent } from '@household/web/app/shared/a
 import { MatTabsModule } from '@angular/material/tabs';
 import { ImportTransactionsEditComponent } from '@household/web/app/import/import-transactions-edit/import-transactions-edit.component';
 import { ImportFilterPipe } from '@household/web/app/import/import-filter.pipe';
+import { ImportTransactionsDuplicateListComponent } from './import-transactions-duplicate-list/import-transactions-duplicate-list.component';
+import { ImportTransactionsDuplicateListItemComponent } from './import-transactions-duplicate-list-item/import-transactions-duplicate-list-item.component';
+import { ImportTransactionsEditListItemComponent } from './import-transactions-edit-list-item/import-transactions-edit-list-item.component';
+import { ImportTransactionsEditListComponent } from './import-transactions-edit-list/import-transactions-edit-list.component';
 
 @NgModule({
   declarations: [
@@ -37,10 +39,12 @@ import { ImportFilterPipe } from '@household/web/app/import/import-filter.pipe';
     ImportFileListComponent,
     ImportFileListItemComponent,
     ImportTransactionsHomeComponent,
-    ImportTransactionsListComponent,
-    ImportTransactionsListItemComponent,
     ImportTransactionsEditComponent,
     ImportFilterPipe,
+    ImportTransactionsDuplicateListComponent,
+    ImportTransactionsDuplicateListItemComponent,
+    ImportTransactionsEditListItemComponent,
+    ImportTransactionsEditListComponent,
   ],
   providers: [ImportFilterPipe],
   imports: [

@@ -5,7 +5,7 @@ import { Project } from '@household/shared/types/types';
 export interface IMergeProjectsService {
   (ctx: {
     body: Project.Id[];
-  } & Project.ProjectId): Promise<void>;
+  } & Project.ProjectId): Promise<unknown>;
 }
 
 export const mergeProjectsServiceFactory = (
@@ -22,14 +22,14 @@ export const mergeProjectsServiceFactory = (
       ...new Set(body),
     ];
 
-    const projects = await projectService.listProjectsByIds(projectIds).catch(httpErrors.project.listByIds(projectIds));
+    const projects = await projectService.findProjectsByIds(projectIds).catch(httpErrors.project.listByIds(projectIds));
 
     httpErrors.project.multipleNotFound({
       projects,
       projectIds,
     });
 
-    await projectService.mergeProjects({
+    return projectService.mergeProjects({
       sourceProjectIds: body,
       targetProjectId: projectId,
     }).catch(httpErrors.project.merge({

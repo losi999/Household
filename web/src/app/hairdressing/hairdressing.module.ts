@@ -17,6 +17,7 @@ import { HairdressingIncomeListItemComponent } from './hairdressing-income-list-
 import { MatExpansionModule } from '@angular/material/expansion';
 import { AmountInputComponent } from '@household/web/app/shared/amount-input/amount-input.component';
 import { MatChipsModule } from '@angular/material/chips';
+import { SplitPipe } from '@household/web/app/shared/split.pipe';
 
 @NgModule({
   declarations: [
@@ -38,6 +39,7 @@ import { MatChipsModule } from '@angular/material/chips';
     MatIconModule,
     MatButtonModule,
     DaysOfMonthPipe,
+    SplitPipe,
     MatExpansionModule,
     AmountInputComponent,
     MatChipsModule,

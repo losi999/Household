@@ -7,11 +7,12 @@ export interface IAccountService {
   dumpAccounts(): Promise<Account.Document[]>;
   saveAccount(doc: Account.Document): Promise<Account.Document>;
   saveAccounts(docs: Account.Document[]): Promise<unknown>;
+  findAccountById(accountId: Account.Id): Promise<Account.Document>;
+  findAccountsByIds(accountIds: Account.Id[]): Promise<Account.Document[]>;
   getAccountById(accountId: Account.Id): Promise<Account.Document>;
   deleteAccount(accountId: Account.Id): Promise<unknown>;
   updateAccount(accountId: Account.Id, updateQuery: UpdateQuery<Account.Document>): Promise<unknown>;
   listAccounts(): Promise<Account.Document[]>;
-  listAccountsByIds(accountIds: Account.Id[]): Promise<Account.Document[]>;
 }
 
 export const accountServiceFactory = (mongodbService: IMongodbService): IAccountService => {
@@ -19,11 +20,8 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
   const instance: IAccountService = {
     dumpAccounts: () => {
       return mongodbService.inSession((session) => {
-        return mongodbService.accounts.find({}, null, {
-          session,
-        })
-          .lean()
-          .exec();
+        return mongodbService.accounts.find({}).session(session)
+          .lean();
       });
     },
     saveAccount: (doc) => {
@@ -38,10 +36,13 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
         });
       });
     },
+    findAccountById: (accountId) => {
+      return !accountId ? undefined : mongodbService.accounts.findById(accountId)
+        .lean();        
+    },
     getAccountById: async (accountId) => {
-      let account: Account.Document;
       if (accountId) {
-        [account] = await mongodbService.inSession((session) => {
+        const [account] = await mongodbService.inSession((session) => {
           return mongodbService.accounts.aggregate([
             {
               $match: {
@@ -53,12 +54,11 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
             .session(session)
             .collation({
               locale: 'hu',
-            })
-            .exec();
+            });            
         });
-      }
 
-      return account ?? null;
+        return account;
+      }
     },
     deleteAccount: async (accountId) => {
       return mongodbService.inSession((session) => {
@@ -67,8 +67,8 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
             _id: accountId,
           }, {
             session,
-          })
-            .exec();
+          });
+            
           await mongodbService.transactions.deleteMany({
             $or: [
               {
@@ -87,8 +87,7 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
             ],
           }, {
             session,
-          })
-            .exec();
+          });
 
           await mongodbService.transactions.updateMany({
             transactionType: 'deferred',
@@ -183,21 +182,19 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
           .session(session)
           .collation({
             locale: 'hu',
-          })
-          .exec();
+          });
+          
       });
     },
-    listAccountsByIds: (accountIds) => {
+    findAccountsByIds: (accountIds) => {
       return mongodbService.inSession((session) => {
         return mongodbService.accounts.find({
           _id: {
             $in: accountIds,
           },
-        }, null, {
-          session,
-        })
-          .lean()
-          .exec();
+        }).session(session)
+          .lean();
+          
       });
     },
   };

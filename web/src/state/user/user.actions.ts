@@ -11,5 +11,9 @@ export const userApiActions = createActionGroup({
     'Create user completed': props<User.Request>(),
     'Delete user initiated': props<User.Request>(),
     'Delete user completed': props<User.Request>(),
+    'Add user to group initiated': props<User.Email & User.Group>(),
+    'Add user to group completed': props<User.Email & User.Group>(),
+    'Remove user from group initiated': props<User.Email & User.Group>(),
+    'Remove user from group completed': props<User.Email & User.Group>(),
   },
 });

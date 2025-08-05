@@ -45,7 +45,7 @@ export const reimbursementTransactionDocumentConverterFactory = (
     transferAccount: true,
     transferAmount: true,
     file: true,
-    hasDuplicate: true,
+    potentialDuplicates: true,
     isSettled: true,
     payments: true,
     remainingAmount: true,

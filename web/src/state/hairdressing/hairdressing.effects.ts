@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, combineLatest, map, mergeMap, of, switchMap, take } from 'rxjs';
+import { catchError, combineLatest, exhaustMap, map, mergeMap, of, switchMap, take } from 'rxjs';
 import { progressActions } from '@household/web/state/progress/progress.actions';
 import { notificationActions } from '@household/web/state/notification/notification.actions';
 import { hairdressingActions } from '@household/web/state/hairdressing/hairdressing.actions';
@@ -17,7 +17,7 @@ export class HairdressingEffects {
   loadIncome = createEffect(() => {
     return this.actions.pipe(
       ofType(hairdressingActions.listIncomeInitiated),
-      switchMap(({ date }) => {
+      mergeMap(({ date }) => {
         return combineLatest([
           this.store.select(selectHairdressingIncomeAccountId).pipe(takeFirstDefined()),
           this.store.select(selectHairdressingIncomeCategoryId).pipe(takeFirstDefined()),
@@ -92,7 +92,7 @@ export class HairdressingEffects {
   saveIncome = createEffect(() => {
     return this.actions.pipe(
       ofType(hairdressingActions.saveIncomeInitiated),
-      switchMap(({ description, issuedAt, amount }) => {
+      exhaustMap(({ description, issuedAt, amount }) => {
         return combineLatest([
           this.store.select(selectHairdressingIncomeAccountId).pipe(takeFirstDefined()),
           this.store.select(selectHairdressingIncomeCategoryId).pipe(takeFirstDefined()),
@@ -142,7 +142,7 @@ export class HairdressingEffects {
   updateIncome = createEffect(() => {
     return this.actions.pipe(
       ofType(hairdressingActions.updateIncomeInitiated),
-      switchMap(({ description, issuedAt, amount, transactionId }) => {
+      exhaustMap(({ description, issuedAt, amount, transactionId }) => {
         return combineLatest([
           this.store.select(selectHairdressingIncomeAccountId).pipe(takeFirstDefined()),
           this.store.select(selectHairdressingIncomeCategoryId).pipe(takeFirstDefined()),

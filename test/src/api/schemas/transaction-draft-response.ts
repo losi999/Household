@@ -4,6 +4,11 @@ import { default as transactionId } from '@household/shared/schemas/transaction-
 import { default as amount } from '@household/shared/schemas/partials/transaction-amount';
 import { default as description } from '@household/shared/schemas/partials/transaction-description';
 import { default as issuedAt } from '@household/shared/schemas/partials/transaction-issued-at';
+import { default as paymentTransactionSchema } from '@household/test/api/schemas/transaction-payment-response';
+import { default as splitTransactionSchema } from '@household/test/api/schemas/transaction-split-response';
+import { default as deferredTransactionSchema } from '@household/test/api/schemas/transaction-deferred-response';
+import { default as reimbursementTransactionSchema } from '@household/test/api/schemas/transaction-reimbursement-response';
+import { default as transferTransactionSchema } from '@household/test/api/schemas/transaction-transfer-response';
 
 const schema: StrictJSONSchema7<Transaction.DraftResponse> = {
   type: 'object',
@@ -13,7 +18,7 @@ const schema: StrictJSONSchema7<Transaction.DraftResponse> = {
     ...amount.required,
     ...issuedAt.required,
     'transactionType',
-    'hasDuplicate',
+    'potentialDuplicates',
   ],
   properties: {
     ...transactionId.properties,
@@ -24,8 +29,17 @@ const schema: StrictJSONSchema7<Transaction.DraftResponse> = {
       type: 'string',
       const: 'draft',
     },
-    hasDuplicate: {
-      type: 'boolean',
+    potentialDuplicates: {
+      type: 'array',
+      items: {
+        oneOf: [
+          splitTransactionSchema,
+          paymentTransactionSchema,
+          deferredTransactionSchema,
+          reimbursementTransactionSchema,
+          transferTransactionSchema,
+        ],
+      },
     },
   },
 };

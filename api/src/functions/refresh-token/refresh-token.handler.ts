@@ -1,3 +1,4 @@
+import { okResponse } from '@household/api/common/response-factory';
 import { IRefreshTokenService } from '@household/api/functions/refresh-token/refresh-token.service';
 import { Auth } from '@household/shared/types/types';
 
@@ -17,9 +18,6 @@ export default (refreshToken: IRefreshTokenService): AWSLambda.APIGatewayProxyHa
       };
     }
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify(loginResponse),
-    };
+    return okResponse(loginResponse);
   };
 };

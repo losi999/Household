@@ -13,7 +13,6 @@ export const getAccountServiceFactory = (
   accountService: IAccountService,
   accountDocumentConverter: IAccountDocumentConverter): IGetAccountService => {
   return async ({ accountId }) => {
-
     const account = await accountService.getAccountById(accountId).catch(httpErrors.account.getById({
       accountId,
     }));

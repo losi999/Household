@@ -1,7 +1,10 @@
 import { default as schema } from '@household/test/api/schemas/project-response';
 import { Project } from '@household/shared/types/types';
-import { getProjectId } from '@household/shared/common/utils';
+import { entries, getProjectId } from '@household/shared/common/utils';
 import { projectDataFactory } from './data-factory';
+import { forbidUsers } from '@household/test/api/utils';
+
+const permissionMap = forbidUsers();
 
 describe('GET /project/v1/projects/{projectId}', () => {
   let projectDocument: Project.Document;
@@ -18,29 +21,42 @@ describe('GET /project/v1/projects/{projectId}', () => {
     });
   });
 
-  describe('called as an admin', () => {
-    it('should get project by id', () => {
-      cy.saveProjectDocument(projectDocument)
-        .authenticate('admin')
-        .requestGetProject(getProjectId(projectDocument))
-        .expectOkResponse()
-        .expectValidResponseSchema(schema)
-        .validateProjectResponse(projectDocument);
-    });
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
+    describe(`called as ${userType}`, () => {
+      if (!isAllowed) {
+        it('should return forbidden', () => {
+          cy.authenticate(userType)
+            .requestGetProject(projectDataFactory.id())
+            .expectForbiddenResponse();
+        });
+      } else {
+        it('should get project by id', () => {
+          cy.saveProjectDocument(projectDocument)
+            .authenticate(userType)
+            .requestGetProject(getProjectId(projectDocument))
+            .expectOkResponse()
+            .expectValidResponseSchema(schema)
+            .validateProjectResponse(projectDocument);
+        });
 
-    describe('should return error if projectId', () => {
-      it('is not mongo id', () => {
-        cy.authenticate('admin')
-          .requestGetProject(projectDataFactory.id('not-valid'))
-          .expectBadRequestResponse()
-          .expectWrongPropertyPattern('projectId', 'pathParameters');
-      });
+        describe('should return error if projectId', () => {
+          it('is not mongo id', () => {
+            cy.authenticate(userType)
+              .requestGetProject(projectDataFactory.id('not-valid'))
+              .expectBadRequestResponse()
+              .expectWrongPropertyPattern('projectId', 'pathParameters');
+          });
 
-      it('does not belong to any project', () => {
-        cy.authenticate('admin')
-          .requestGetProject(projectDataFactory.id())
-          .expectNotFoundResponse();
-      });
+          it('does not belong to any project', () => {
+            cy.authenticate(userType)
+              .requestGetProject(projectDataFactory.id())
+              .expectNotFoundResponse();
+          });
+        });
+      }
     });
   });
 });

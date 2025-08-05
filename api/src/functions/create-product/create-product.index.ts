@@ -8,12 +8,15 @@ import { default as pathParameters } from '@household/shared/schemas/category-id
 import { productService } from '@household/shared/dependencies/services/product-service';
 import { default as index } from '@household/api/handlers/index.handler';
 import { categoryService } from '@household/shared/dependencies/services/category-service';
+import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';
+import { UserType } from '@household/shared/enums';
 
 const createProductService = createProductServiceFactory(productService, categoryService, productDocumentConverter);
 
 export default index({
   handler: handler(createProductService),
   before: [
+    authorizer(UserType.Editor),
     apiRequestValidator({
       body,
       pathParameters,

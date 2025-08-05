@@ -22,4 +22,12 @@ export class UserService {
   deleteUser({ email }: User.Request) {
     return this.httpClient.delete(`${environment.apiUrl}/user/v1/users/${email}`);
   }
+
+  addUserToGroup({ email, group }: User.Email & User.Group) {
+    return this.httpClient.post(`${environment.apiUrl}/user/v1/users/${email}/groups/${group}`, undefined);
+  }
+
+  removeUserFromGroup({ email, group }: User.Email & User.Group) {
+    return this.httpClient.delete(`${environment.apiUrl}/user/v1/users/${email}/groups/${group}`);
+  }
 }

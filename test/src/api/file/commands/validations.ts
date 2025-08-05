@@ -6,7 +6,7 @@ import { expectEmptyObject, expectRemainingProperties } from '@household/test/ap
 
 const validateFileDocument = (body: File.FileId, request: File.Request) => {
   return cy.log('Get file document', body.fileId)
-    .getFileDocumentById(body.fileId)
+    .findFileDocumentById(body.fileId)
     .should((document) => {
       const { fileType, timezone, draftCount, processingStatus, ...internal } = document;
 
@@ -26,7 +26,7 @@ const validateFileDocumentProcessed = (originalDocument: File.Document) => {
   const fileId = getFileId(originalDocument);
 
   cy.log('Get file document', fileId)
-    .getFileDocumentById(fileId)
+    .findFileDocumentById(fileId)
     .should((document) => {
       const { fileType, timezone, draftCount, processingStatus, ...internal } = document;
 
@@ -93,7 +93,7 @@ const validateFileListResponse = (responses: File.Response[], drafts: Transactio
 
 const validateFileDeleted = (fileId: File.Id) => {
   cy.log('Get file document', fileId)
-    .getFileDocumentById(fileId)
+    .findFileDocumentById(fileId)
     .should((document) => {
       expect(document, 'document').to.be.null;
     });

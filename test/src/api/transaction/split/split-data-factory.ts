@@ -125,7 +125,7 @@ export const splitTransactionDataFactory = (() => {
         projectId: getProjectId(project),
         ...split,
       };
-    });
+    }) ?? [];
 
     const loans = ctx.loans?.map<Partial<Transaction.LoanRequestItem>>(({ category, product, project, loanAccount, ...split }) => {
       categories[getCategoryId(category)] = category;
@@ -141,14 +141,15 @@ export const splitTransactionDataFactory = (() => {
         transactionId: deferredTransactionDataFactory.id(), // TODO
         ...split,
       };
-    });
+    }) ?? [];
 
     const body = createSplitTransactionRequest({
       ...ctx.body,
       accountId: getAccountId(ctx.account),
       recipientId: getRecipientId(ctx.recipient),
     }, splits, loans);
-    return splitTransactionDocumentConverter.create({
+
+    const doc = splitTransactionDocumentConverter.create({
       body,
       accounts,
       categories,
@@ -156,6 +157,8 @@ export const splitTransactionDataFactory = (() => {
       projects,
       recipient: ctx.recipient,
     }, Cypress.env('EXPIRES_IN'), true);
+
+    return doc;
   };
 
   return {

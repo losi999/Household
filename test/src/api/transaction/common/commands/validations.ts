@@ -39,7 +39,7 @@ export const validateCommonResponse = (response: Transaction.TransactionId & Tra
   expect(description, 'description').to.equal(document.description);
 };
 
-const validateTransactionListResponse = (responses: Transaction.Response[], documents: Transaction.Document[], viewingAccountId: Account.Id, repayments: Record<Transaction.Id, number>) => {
+export const validateTransactionListResponse = (responses: Transaction.Response[], documents: Transaction.Document[], viewingAccountId: Account.Id, repayments: Record<Transaction.Id, number>) => {
   expect(responses.length, 'number of items').to.equal(documents.length);
   documents.forEach((document) => {
     const response = responses.find(r => r.transactionId === getTransactionId(document));
@@ -47,10 +47,7 @@ const validateTransactionListResponse = (responses: Transaction.Response[], docu
       case 'payment': validateTransactionPaymentResponse(response, document as Transaction.PaymentDocument); break;
       case 'transfer': validateTransactionTransferResponse(response, document as Transaction.TransferDocument, viewingAccountId); break;
       case 'split': validateTransactionSplitResponse(response, document as Transaction.SplitDocument, repayments); break;
-      case 'deferred': validateTransactionDeferredResponse(response, document as Transaction.DeferredDocument, {
-        viewingAccountId,
-        paymentAmount: repayments[response.transactionId],
-      }); break;
+      case 'deferred': validateTransactionDeferredResponse(response, document as Transaction.DeferredDocument, repayments[response.transactionId]); break;
       case 'reimbursement': validateTransactionReimbursementResponse(response, document as Transaction.ReimbursementDocument); break;
     }
   });
@@ -60,7 +57,7 @@ const validateTransactionListReport = (reports: Transaction.Report[], documents:
   const total = documents?.length ?? 0;
   expect(reports.length, 'number of items').to.equal(total);
   reports.forEach((report, index) => {
-    const { account, amount, category, description, issuedAt, product, project, recipient, transactionId, invoiceNumber, billingEndDate, billingStartDate, ...empty } = report;
+    const { account, amount, category, description, issuedAt, product, project, quantity, recipient, transactionId, invoiceNumber, billingEndDate, billingStartDate, ...empty } = report;
     const document = documents.find(d => {
       if (report.transactionId !== getTransactionId(d)) {
         return false;
@@ -134,8 +131,8 @@ const validateTransactionListReport = (reports: Transaction.Report[], documents:
     }
 
     if (product) {
-      const { productId, quantity, fullName, ...empty } = product;
-      expect(quantity, `[${index}].product.quantity`).to.equal(documentQuantity);
+      const { productId, fullName, ...empty } = product;
+      expect(quantity, `[${index}].quantity`).to.equal(documentQuantity);
       expect(productId, `[${index}].product.productId`).to.equal(getProductId(documentProduct));
       expect(fullName, `[${index}].product.fullName`).to.equal(documentProduct?.fullName);
       expectEmptyObject(empty, `[${index}]`);
@@ -171,6 +168,12 @@ const validateTransactionDeleted = (transactionId: Transaction.Id) => {
     });
 };
 
+const validateTransactionNestedObject = (nestedPath: string, object: unknown): Cypress.ChainableResponseBody => {
+  return cy.log(`Validating ${nestedPath}`).wrap(object, {
+    log: false,
+  }) as Cypress.ChainableResponseBody;
+};
+
 export const setCommonTransactionValidationCommands = () => {
   Cypress.Commands.addAll<any>({
     prevSubject: true,
@@ -181,6 +184,7 @@ export const setCommonTransactionValidationCommands = () => {
 
   Cypress.Commands.addAll({
     validateTransactionDeleted,
+    validateTransactionNestedObject,
   });
 };
 
@@ -188,6 +192,7 @@ declare global {
   namespace Cypress {
     interface Chainable {
       validateTransactionDeleted: CommandFunction<typeof validateTransactionDeleted>;
+      validateTransactionNestedObject: CommandFunction<typeof validateTransactionNestedObject>;
     }
 
     interface ChainableResponseBody extends Chainable {

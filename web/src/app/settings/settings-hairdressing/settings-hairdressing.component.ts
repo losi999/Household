@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Account, Category, Setting } from '@household/shared/types/types';
 import { takeFirstDefined } from '@household/web/operators/take-first-defined';
+import { accountApiActions } from '@household/web/state/account/account.actions';
+import { categoryApiActions } from '@household/web/state/category/category.actions';
 import { settingApiActions } from '@household/web/state/setting/setting.actions';
 import { selectHairdressingIncomeAccount, selectHairdressingIncomeCategory } from '@household/web/state/setting/setting.selector';
 import { Store } from '@ngrx/store';
@@ -19,6 +21,9 @@ export class SettingsHairdressingComponent implements OnInit {
   constructor(private store: Store) {}
 
   ngOnInit(): void {
+    this.store.dispatch(accountApiActions.listAccountsInitiated());
+    this.store.dispatch(categoryApiActions.listCategoriesInitiated());
+
     this.hairdressingIncomeAccount = new FormControl();
     this.hairdressingIncomeCategory = new FormControl();
 

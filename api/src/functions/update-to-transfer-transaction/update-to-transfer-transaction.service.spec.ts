@@ -15,8 +15,8 @@ describe('Update to transfer transaction service', () => {
   let mockTransferTransactionDocumentConverter: Mock<ITransferTransactionDocumentConverter>;
 
   beforeEach(() => {
-    mockAccountService = createMockService('listAccountsByIds');
-    mockTransactionService = createMockService('updateTransaction', 'getTransactionById', 'listDeferredTransactions');
+    mockAccountService = createMockService('findAccountsByIds');
+    mockTransactionService = createMockService('updateTransaction', 'findTransactionById', 'listDeferredTransactions');
     mockTransferTransactionDocumentConverter = createMockService('update');
 
     service = updateToTransferTransactionServiceFactory(mockAccountService.service, mockTransactionService.service, mockTransferTransactionDocumentConverter.service);
@@ -52,8 +52,8 @@ describe('Update to transfer transaction service', () => {
         transferAccountId: getAccountId(queriedLoanAccount2),
       });
 
-      mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
-      mockAccountService.functions.listAccountsByIds.mockResolvedValue([
+      mockTransactionService.functions.findTransactionById.mockResolvedValue(queriedDocument);
+      mockAccountService.functions.findAccountsByIds.mockResolvedValue([
         queriedLoanAccount1,
         queriedLoanAccount2,
       ]);
@@ -65,8 +65,8 @@ describe('Update to transfer transaction service', () => {
         transactionId,
         expiresIn: undefined,
       });
-      validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
-      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+      validateFunctionCall(mockTransactionService.functions.findTransactionById, transactionId);
+      validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         body.transferAccountId,
       ]);
@@ -82,8 +82,8 @@ describe('Update to transfer transaction service', () => {
     });
 
     it('if updated to transfer transaction between 2 non-1oan accounts', async () => {
-      mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
-      mockAccountService.functions.listAccountsByIds.mockResolvedValue([
+      mockTransactionService.functions.findTransactionById.mockResolvedValue(queriedDocument);
+      mockAccountService.functions.findAccountsByIds.mockResolvedValue([
         queriedAccount,
         queriedTransferAccount,
       ]);
@@ -95,8 +95,8 @@ describe('Update to transfer transaction service', () => {
         transactionId,
         expiresIn: undefined,
       });
-      validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
-      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+      validateFunctionCall(mockTransactionService.functions.findTransactionById, transactionId);
+      validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         body.transferAccountId,
       ]);
@@ -128,8 +128,8 @@ describe('Update to transfer transaction service', () => {
         ],
       });
 
-      mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
-      mockAccountService.functions.listAccountsByIds.mockResolvedValue([
+      mockTransactionService.functions.findTransactionById.mockResolvedValue(queriedDocument);
+      mockAccountService.functions.findAccountsByIds.mockResolvedValue([
         queriedAccount,
         queriedTransferAccount,
       ]);
@@ -142,8 +142,8 @@ describe('Update to transfer transaction service', () => {
         transactionId,
         expiresIn: undefined,
       });
-      validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
-      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+      validateFunctionCall(mockTransactionService.functions.findTransactionById, transactionId);
+      validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         body.transferAccountId,
       ]);
@@ -170,8 +170,8 @@ describe('Update to transfer transaction service', () => {
         transferAccountId: getAccountId(queriedLoanAccount),
       });
 
-      mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
-      mockAccountService.functions.listAccountsByIds.mockResolvedValue([
+      mockTransactionService.functions.findTransactionById.mockResolvedValue(queriedDocument);
+      mockAccountService.functions.findAccountsByIds.mockResolvedValue([
         queriedAccount,
         queriedLoanAccount,
       ]);
@@ -183,8 +183,8 @@ describe('Update to transfer transaction service', () => {
         transactionId,
         expiresIn: undefined,
       });
-      validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
-      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+      validateFunctionCall(mockTransactionService.functions.findTransactionById, transactionId);
+      validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         body.transferAccountId,
       ]);
@@ -196,6 +196,60 @@ describe('Update to transfer transaction service', () => {
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.updateTransaction, transactionId, updateQuery);
       validateFunctionCall(mockTransactionService.functions.listDeferredTransactions);
+      expect.assertions(5);
+    });
+
+    it('if updated to transfer transaction between a loan and non-loan accounts with payments', async () => {
+      const deferredTransactionDocument = createDeferredTransactionDocument({
+        payingAccount: queriedTransferAccount,
+      });
+     
+      const queriedLoanAccount = createAccountDocument({
+        accountType: AccountType.Loan,
+      });
+      body = createTransferTransactionRequest({
+        ...body,
+        transferAccountId: getAccountId(queriedLoanAccount),
+        amount: -1000,
+        transferAmount: 1000,
+        payments: [
+          {
+            amount: 100,
+            transactionId: getTransactionId(deferredTransactionDocument),
+          },
+        ],
+      });
+
+      mockTransactionService.functions.findTransactionById.mockResolvedValue(queriedDocument);
+      mockAccountService.functions.findAccountsByIds.mockResolvedValue([
+        queriedAccount,
+        queriedLoanAccount,
+      ]);
+      mockTransactionService.functions.listDeferredTransactions.mockResolvedValue([deferredTransactionDocument]);
+      mockTransferTransactionDocumentConverter.functions.update.mockReturnValue(updateQuery);
+      mockTransactionService.functions.updateTransaction.mockResolvedValue(undefined);
+
+      await service({
+        body,
+        transactionId,
+        expiresIn: undefined,
+      });
+      validateFunctionCall(mockTransactionService.functions.findTransactionById, transactionId);
+      validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
+        body.accountId,
+        body.transferAccountId,
+      ]);
+      validateFunctionCall(mockTransactionService.functions.listDeferredTransactions, {
+        deferredTransactionIds: [getTransactionId(deferredTransactionDocument)],
+        excludedTransferTransactionId: transactionId,
+      });
+      validateFunctionCall(mockTransferTransactionDocumentConverter.functions.update, {
+        body,
+        account: queriedAccount,
+        transferAccount: queriedLoanAccount,
+        transactions: toDictionary([deferredTransactionDocument], '_id'),
+      }, undefined);
+      validateFunctionCall(mockTransactionService.functions.updateTransaction, transactionId, updateQuery);
       expect.assertions(5);
     });
   });
@@ -213,8 +267,8 @@ describe('Update to transfer transaction service', () => {
         transactionId,
         expiresIn: undefined,
       }).catch(validateError('Cannot transfer to same account', 400));
-      validateFunctionCall(mockTransactionService.functions.getTransactionById);
-      validateFunctionCall(mockAccountService.functions.listAccountsByIds);
+      validateFunctionCall(mockTransactionService.functions.findTransactionById);
+      validateFunctionCall(mockAccountService.functions.findAccountsByIds);
       validateFunctionCall(mockTransferTransactionDocumentConverter.functions.update);
       validateFunctionCall(mockTransactionService.functions.updateTransaction);
       validateFunctionCall(mockTransactionService.functions.listDeferredTransactions);
@@ -222,15 +276,15 @@ describe('Update to transfer transaction service', () => {
     });
 
     it('if unable to query transaction', async () => {
-      mockTransactionService.functions.getTransactionById.mockRejectedValue('this is a mongo error');
+      mockTransactionService.functions.findTransactionById.mockRejectedValue('this is a mongo error');
 
       await service({
         body,
         transactionId,
         expiresIn: undefined,
       }).catch(validateError('Error while getting transaction', 500));
-      validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
-      validateFunctionCall(mockAccountService.functions.listAccountsByIds);
+      validateFunctionCall(mockTransactionService.functions.findTransactionById, transactionId);
+      validateFunctionCall(mockAccountService.functions.findAccountsByIds);
       validateFunctionCall(mockTransferTransactionDocumentConverter.functions.update);
       validateFunctionCall(mockTransactionService.functions.updateTransaction);
       validateFunctionCall(mockTransactionService.functions.listDeferredTransactions);
@@ -238,15 +292,15 @@ describe('Update to transfer transaction service', () => {
     });
 
     it('if no transaction found', async () => {
-      mockTransactionService.functions.getTransactionById.mockResolvedValue(undefined);
+      mockTransactionService.functions.findTransactionById.mockResolvedValue(undefined);
 
       await service({
         body,
         transactionId,
         expiresIn: undefined,
       }).catch(validateError('No transaction found', 404));
-      validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
-      validateFunctionCall(mockAccountService.functions.listAccountsByIds);
+      validateFunctionCall(mockTransactionService.functions.findTransactionById, transactionId);
+      validateFunctionCall(mockAccountService.functions.findAccountsByIds);
       validateFunctionCall(mockTransferTransactionDocumentConverter.functions.update);
       validateFunctionCall(mockTransactionService.functions.updateTransaction);
       validateFunctionCall(mockTransactionService.functions.listDeferredTransactions);
@@ -254,16 +308,16 @@ describe('Update to transfer transaction service', () => {
     });
 
     it('if unable to query accounts', async () => {
-      mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
-      mockAccountService.functions.listAccountsByIds.mockRejectedValue('this is a mongo error');
+      mockTransactionService.functions.findTransactionById.mockResolvedValue(queriedDocument);
+      mockAccountService.functions.findAccountsByIds.mockRejectedValue('this is a mongo error');
 
       await service({
         body,
         transactionId,
         expiresIn: undefined,
       }).catch(validateError('Unable to query related data', 500));
-      validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
-      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+      validateFunctionCall(mockTransactionService.functions.findTransactionById, transactionId);
+      validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         body.transferAccountId,
       ]);
@@ -274,16 +328,16 @@ describe('Update to transfer transaction service', () => {
     });
 
     it('if no account found', async () => {
-      mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
-      mockAccountService.functions.listAccountsByIds.mockResolvedValue([]);
+      mockTransactionService.functions.findTransactionById.mockResolvedValue(queriedDocument);
+      mockAccountService.functions.findAccountsByIds.mockResolvedValue([]);
 
       await service({
         body,
         transactionId,
         expiresIn: undefined,
       }).catch(validateError('No account found', 400));
-      validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
-      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+      validateFunctionCall(mockTransactionService.functions.findTransactionById, transactionId);
+      validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         body.transferAccountId,
       ]);
@@ -309,8 +363,8 @@ describe('Update to transfer transaction service', () => {
           },
         ],
       });
-      mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
-      mockAccountService.functions.listAccountsByIds.mockResolvedValue([
+      mockTransactionService.functions.findTransactionById.mockResolvedValue(queriedDocument);
+      mockAccountService.functions.findAccountsByIds.mockResolvedValue([
         queriedAccount,
         queriedTransferAccount,
       ]);
@@ -321,8 +375,8 @@ describe('Update to transfer transaction service', () => {
         transactionId,
         expiresIn: undefined,
       }).catch(validateError('Unable to query related data', 500));
-      validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
-      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+      validateFunctionCall(mockTransactionService.functions.findTransactionById, transactionId);
+      validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         body.transferAccountId,
       ]);
@@ -351,8 +405,8 @@ describe('Update to transfer transaction service', () => {
           },
         ],
       });
-      mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
-      mockAccountService.functions.listAccountsByIds.mockResolvedValue([
+      mockTransactionService.functions.findTransactionById.mockResolvedValue(queriedDocument);
+      mockAccountService.functions.findAccountsByIds.mockResolvedValue([
         queriedAccount,
         queriedTransferAccount,
       ]);
@@ -363,8 +417,8 @@ describe('Update to transfer transaction service', () => {
         transactionId,
         expiresIn: undefined,
       }).catch(validateError('Some of the transactions are not found', 400));
-      validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
-      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+      validateFunctionCall(mockTransactionService.functions.findTransactionById, transactionId);
+      validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         body.transferAccountId,
       ]);
@@ -378,8 +432,8 @@ describe('Update to transfer transaction service', () => {
     });
 
     it('if unable to update transaction', async () => {
-      mockTransactionService.functions.getTransactionById.mockResolvedValue(queriedDocument);
-      mockAccountService.functions.listAccountsByIds.mockResolvedValue([
+      mockTransactionService.functions.findTransactionById.mockResolvedValue(queriedDocument);
+      mockAccountService.functions.findAccountsByIds.mockResolvedValue([
         queriedAccount,
         queriedTransferAccount,
       ]);
@@ -391,8 +445,8 @@ describe('Update to transfer transaction service', () => {
         transactionId,
         expiresIn: undefined,
       }).catch(validateError('Error while updating transaction', 500));
-      validateFunctionCall(mockTransactionService.functions.getTransactionById, transactionId);
-      validateFunctionCall(mockAccountService.functions.listAccountsByIds, [
+      validateFunctionCall(mockTransactionService.functions.findTransactionById, transactionId);
+      validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         body.transferAccountId,
       ]);

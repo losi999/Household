@@ -34,7 +34,7 @@ const validateTransactionTransferDocument = (response: Transaction.TransactionId
     });
 };
 
-export const validateTransactionTransferResponse = (response: Transaction.TransferResponse, document: Transaction.TransferDocument, viewingAccountId: Account.Id) => {
+export const validateTransactionTransferResponse = (response: Transaction.TransferResponse, document: Transaction.TransferDocument, viewingAccountId: Account.Id = response.account.accountId) => {
   const documentAmount = getAccountId(document.account) === viewingAccountId ? document.amount : document.transferAmount;
   const documentAccount = getAccountId(document.account) === viewingAccountId ? document.account : document.transferAccount;
   const documentTransferAmount = getAccountId(document.account) === viewingAccountId ? document.transferAmount : document.amount;
@@ -54,8 +54,8 @@ export const validateTransactionTransferResponse = (response: Transaction.Transf
   });
   expect(transferAmount, 'transferAmount').to.equal(documentTransferAmount);
 
-  cy.validateNestedAccountResponse('account.', account, documentAccount, documentAccount.balance ?? null)
-    .validateNestedAccountResponse('transferAccount.', transferAccount, documentTransferAccount, documentTransferAccount.balance ?? null);
+  cy.validateTransactionNestedObject('account', account).validateAccountResponse(documentAccount);
+  cy.validateTransactionNestedObject('transferAccount', transferAccount).validateAccountResponse(documentTransferAccount);
 
   payments?.forEach((p, index) => {
     const documentItem = document.payments[index];

@@ -5,7 +5,7 @@ import { Upload } from '@aws-sdk/lib-storage';
 
 export interface IStorageService {
   getSignedUrlForUpload(fileName: string, isTestFile: boolean): Promise<string>;
-  writeFile(fileName: string, data: any, folder: string, contentType?: string): Promise<unknown>;
+  writeFile(fileName: string, data: any, folder: string): Promise<unknown>;
   checkFile(fileName: string): Promise<unknown>;
   readFile(fileName: string): Promise<Uint8Array>;
   deleteFile(fileName: string): Promise<unknown>;
@@ -36,7 +36,7 @@ export const storageServiceFactory = (s3: S3, s3Client: S3Client, s3RequestPresi
         expiresIn: FILE_UPLOAD_LINK_EXPIRATION,
       });
     },
-    writeFile: async (fileName, data, folder, contentType) => {
+    writeFile: async (fileName, data, folder) => {
       return s3.putObject({
         Bucket: bucketName,
         Key: [
@@ -44,8 +44,6 @@ export const storageServiceFactory = (s3: S3, s3Client: S3Client, s3RequestPresi
           fileName,
         ].filter(p => !!p).join('/'),
         Body: data,
-        ContentType: contentType,
-
       });
     },
     checkFile: async (fileName) => {

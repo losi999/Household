@@ -43,6 +43,10 @@ export class KeyvalueAutocompleteInputComponent implements OnInit, ControlValueA
   constructor(private injector: Injector, @Self() public ngControl: NgControl) {
     ngControl.valueAccessor = this;
   }
+  
+  optionSelected(input: HTMLInputElement) {
+    setTimeout(() => input.blur());
+  }
 
   ngOnInit(): void {
     if (this.ngControl instanceof FormControlName) {

@@ -74,19 +74,19 @@ components:
       type: object
       required:
         - balance
-        - deferredCount
       properties:
         balance:
           type: number
-        deferredCount:
-          type: number
-    Response:
+    LeanResponse:
       allOf:
         - $ref: "#/components/schemas/AccountId"
         - $ref: "#/components/schemas/IsOpen"
         - $ref: "#/components/schemas/Base"
-        - $ref: "#/components/schemas/Balance"
         - $ref: "#/components/schemas/FullName"
+    Response:
+      allOf:
+        - $ref: "#/components/schemas/LeanResponse"
+        - $ref: "#/components/schemas/Balance"
     Report:
       allOf:
         - $ref: "#/components/schemas/AccountId"

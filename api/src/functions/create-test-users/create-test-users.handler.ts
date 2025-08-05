@@ -3,7 +3,5 @@ import { ICreateTestUsersService } from '@household/api/functions/create-test-us
 
 export default (createTestUsers: ICreateTestUsersService): AWSLambda.Handler =>
   async () => {
-    await createTestUsers({
-      numberOfAdmins: Number(process.env.ADMIN_COUNT),
-    });
+    await createTestUsers();
   };

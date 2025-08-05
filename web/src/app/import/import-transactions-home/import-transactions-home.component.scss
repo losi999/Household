@@ -1,0 +1,12 @@
+::ng-deep .sticky-tab-group .mat-mdc-tab-header {
+  position: sticky;
+  top: 55px;
+  z-index: 2;
+}
+
+::ng-deep .mat-mdc-tab-body {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 70px - 48px);
+  overflow-y: auto;
+}

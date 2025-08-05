@@ -13,7 +13,7 @@ export const getRecipientServiceFactory = (
   recipientService: IRecipientService,
   recipientDocumentConverter: IRecipientDocumentConverter): IGetRecipientService => {
   return async ({ recipientId }) => {
-    const recipient = await recipientService.getRecipientById(recipientId).catch(httpErrors.recipient.getById({
+    const recipient = await recipientService.findRecipientById(recipientId).catch(httpErrors.recipient.getById({
       recipientId,
     }));
 

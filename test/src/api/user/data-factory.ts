@@ -10,10 +10,11 @@ export const userDataFactory = (() => {
     };
   };
 
-  const createConfirmedUser: DataFactoryFunction<User.Request & Auth.Password> = (req) => {
+  const createConfirmedUser: DataFactoryFunction<User.Request & Auth.Password & User.Group> = (req) => {
     return {
       email: faker.internet.email(),
       password: faker.internet.password(),
+      group: undefined,
       ...req,
     };
   };

@@ -1,14 +1,21 @@
 import { Auth, User } from '@household/shared/types/types';
-import { AdminGetUserCommandOutput, AuthFlowType, MessageActionType, type AdminInitiateAuthResponse, type CognitoIdentityProvider, type ListUsersResponse } from '@aws-sdk/client-cognito-identity-provider';
+import { AdminGetUserResponse, AdminListGroupsForUserResponse, AuthFlowType, ListUsersInGroupResponse, MessageActionType, type AdminInitiateAuthResponse, type CognitoIdentityProvider, type ListUsersResponse } from '@aws-sdk/client-cognito-identity-provider';
+import { UserType } from '@household/shared/enums';
 
 export interface IIdentityService {
   login(body: Auth.Login.Request): Promise<AdminInitiateAuthResponse>;
-  createUser(body: User.Email & Partial<Auth.Password & Auth.TemporaryPassword>, suppressEmail?: boolean): Promise<unknown>;
+  createUser(body: User.Email & Partial<Auth.Password & Auth.TemporaryPassword>, userType?: UserType, suppressEmail?: boolean): Promise<unknown>;
   deleteUser(ctx: User.Email): Promise<unknown>;
   refreshToken(body: Auth.RefreshToken.Request): Promise<AdminInitiateAuthResponse>;
-  getUser(ctx: User.Email): Promise<AdminGetUserCommandOutput>;
+  getUser(ctx: User.Email): Promise<AdminGetUserResponse>;
   listUsers(): Promise<ListUsersResponse>;
+  listUsersByGroupName(userType: UserType): Promise<ListUsersInGroupResponse>;
+  listGroupsByUser(email: string): Promise<AdminListGroupsForUserResponse>;
+  addUserToGroup(email: string, userType: UserType): Promise<unknown>;
+  removeUserFromGroup(email: string, userType: UserType): Promise<unknown>;
+  forgotPassword(body: Auth.ForgotPassword.Request): Promise<unknown>;
   confirmUser(ctx: User.Email & Auth.ConfirmUser.Request): Promise<any>;
+  confirmForgotPassword(ctx: User.Email & Auth.ConfirmForgotPassword.Request): Promise<unknown>;
 }
 
 export const identityServiceFactory = (
@@ -20,11 +27,17 @@ export const identityServiceFactory = (
       return cognito.adminGetUser({
         UserPoolId: userPoolId,
         Username: email,
-      }).catch<AdminGetUserCommandOutput>((error) => {
+      }).catch<AdminGetUserResponse>((error) => {
         if (error.name !== 'UserNotFoundException') {
           throw error;
         }
         return undefined;
+      });
+    },
+    forgotPassword: (body) => {
+      return cognito.forgotPassword({
+        ClientId: clientId,
+        Username: body.email,
       });
     },
     confirmUser: async (body) => {
@@ -60,8 +73,42 @@ export const identityServiceFactory = (
         ],
       });
     },
+    confirmForgotPassword: (body) => {
+      return cognito.confirmForgotPassword({
+        ClientId: clientId,
+        Username: body.email,
+        ConfirmationCode: body.confirmationCode,
+        Password: body.password,
+      });
+    },
     listUsers: () => {
       return cognito.listUsers({
+        UserPoolId: userPoolId,
+      });
+    },
+    listUsersByGroupName: (userType) => {
+      return cognito.listUsersInGroup({
+        GroupName: userType,
+        UserPoolId: userPoolId,
+      });
+    },
+    listGroupsByUser: (email) => {
+      return cognito.adminListGroupsForUser({
+        UserPoolId: userPoolId,
+        Username: email,
+      });
+    },
+    addUserToGroup: (email, UserType) => {
+      return cognito.adminAddUserToGroup({
+        GroupName: UserType,
+        Username: email,
+        UserPoolId: userPoolId,
+      });
+    },
+    removeUserFromGroup: (email, UserType) => {
+      return cognito.adminRemoveUserFromGroup({
+        GroupName: UserType,
+        Username: email,
         UserPoolId: userPoolId,
       });
     },
@@ -76,13 +123,21 @@ export const identityServiceFactory = (
         },
       });
     },
-    createUser: async ({ email, password, temporaryPassword }, suppressEmail) => {
+    createUser: async ({ email, password, temporaryPassword }, userType, suppressEmail) => {
       await cognito.adminCreateUser({
         UserPoolId: userPoolId,
         Username: email,
         TemporaryPassword: temporaryPassword,
         MessageAction: (password || suppressEmail) ? MessageActionType.SUPPRESS : undefined,
       });
+
+      if (userType) {
+        await cognito.adminAddUserToGroup({
+          UserPoolId: userPoolId,
+          Username: email,
+          GroupName: userType,
+        });
+      }
 
       if (password) {
         return cognito.adminSetUserPassword({

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { notificationActions } from '@household/web/state/notification/notification.actions';
 import { concatMap, map, of, tap } from 'rxjs';
-import { NotificationService } from '@household/web/app/shared/notification.service';
+import { NotificationService } from '@household/web/services/notification.service';
 
 @Injectable()
 export class NotificationEffects {

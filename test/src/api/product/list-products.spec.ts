@@ -3,6 +3,10 @@ import { Category, Product } from '@household/shared/types/types';
 import { productDataFactory } from './data-factory';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { CategoryType } from '@household/shared/enums';
+import { forbidUsers } from '@household/test/api/utils';
+import { entries } from '@household/shared/common/utils';
+
+const permissionMap = forbidUsers();
 
 describe('GET /product/v1/products', () => {
   let productDocument1: Product.Document;
@@ -38,30 +42,43 @@ describe('GET /product/v1/products', () => {
     });
   });
 
-  describe('called as an admin', () => {
-    it('should get a list of products', () => {
-      cy.saveProductDocuments([
-        productDocument1,
-        productDocument2,
-      ])
-        .saveCategoryDocuments([
-          categoryDocument1,
-          categoryDocument2,
-        ])
-        .authenticate('admin')
-        .requestGetProductList()
-        .expectOkResponse()
-        .expectValidResponseSchema(schema)
-        .validateProductListResponse([
-          {
-            fullName: categoryDocument1.name,
-            products: [productDocument1],
-          },
-          {
-            fullName: categoryDocument2.name,
-            products: [productDocument2],
-          },
-        ]);
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
+    describe(`called as ${userType}`, () => {
+      if (!isAllowed) {
+        it('should return forbidden', () => {
+          cy.authenticate(userType)
+            .requestGetProductList()
+            .expectForbiddenResponse();
+        });
+      } else {
+        it('should get a list of products', () => {
+          cy.saveProductDocuments([
+            productDocument1,
+            productDocument2,
+          ])
+            .saveCategoryDocuments([
+              categoryDocument1,
+              categoryDocument2,
+            ])
+            .authenticate(userType)
+            .requestGetProductList()
+            .expectOkResponse()
+            .expectValidResponseSchema(schema)
+            .validateProductListResponse([
+              {
+                fullName: categoryDocument1.name,
+                products: [productDocument1],
+              },
+              {
+                fullName: categoryDocument2.name,
+                products: [productDocument2],
+              },
+            ]);
+        });
+      }
     });
   });
 });

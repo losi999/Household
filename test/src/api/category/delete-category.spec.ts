@@ -1,5 +1,5 @@
 import { createCategoryId } from '@household/shared/common/test-data-factory';
-import { getCategoryId, getProductId } from '@household/shared/common/utils';
+import { entries, getCategoryId, getProductId } from '@household/shared/common/utils';
 import { AccountType, CategoryType } from '@household/shared/enums';
 import { Account, Category, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
@@ -9,6 +9,9 @@ import { deferredTransactionDataFactory } from '@household/test/api/transaction/
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
+import { allowUsers } from '@household/test/api/utils';
+
+const permissionMap = allowUsers('editor') ;
 
 describe('DELETE /category/v1/categories/{categoryId}', () => {
   let categoryDocument: Category.Document;
@@ -25,500 +28,513 @@ describe('DELETE /category/v1/categories/{categoryId}', () => {
     });
   });
 
-  describe('called as an admin', () => {
-    it('should delete category', () => {
-      cy.saveCategoryDocument(categoryDocument)
-        .authenticate('admin')
-        .requestDeleteCategory(getCategoryId(categoryDocument))
-        .expectNoContentResponse()
-        .validateCategoryDeleted(getCategoryId(categoryDocument));
-    });
-
-    describe('children should be reassigned', () => {
-      let childCategory: Category.Document;
-      let grandChildCategory: Category.Document;
-
-      beforeEach(() => {
-        childCategory = categoryDataFactory.document({
-          parentCategory: categoryDocument,
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
+    describe(`called as ${userType}`, () => {
+      if (!isAllowed) {
+        it('should return forbidden', () => {
+          cy.authenticate(userType)
+            .requestDeleteCategory(createCategoryId())
+            .expectForbiddenResponse();
+        });
+      } else {
+        it('should delete category', () => {
+          cy.saveCategoryDocument(categoryDocument)
+            .authenticate(userType)
+            .requestDeleteCategory(getCategoryId(categoryDocument))
+            .expectNoContentResponse()
+            .validateCategoryDeleted(getCategoryId(categoryDocument));
         });
 
-        grandChildCategory = categoryDataFactory.document({
-          parentCategory: childCategory,
-        });
-      });
+        describe('children should be reassigned', () => {
+          let childCategory: Category.Document;
+          let grandChildCategory: Category.Document;
 
-      it('to root if did not have parent', () => {
-        cy.saveCategoryDocuments([
-          categoryDocument,
-          childCategory,
-          grandChildCategory,
-        ])
-          .authenticate('admin')
-          .requestDeleteCategory(getCategoryId(categoryDocument))
-          .expectNoContentResponse()
-          .validateCategoryDeleted(getCategoryId(categoryDocument))
-          .validateCategoryParentReassign(childCategory)
-          .validateCategoryParentReassign(grandChildCategory, getCategoryId(childCategory));
-      });
+          beforeEach(() => {
+            childCategory = categoryDataFactory.document({
+              parentCategory: categoryDocument,
+            });
 
-      it('to parent if had parent', () => {
-        cy.saveCategoryDocuments([
-          categoryDocument,
-          childCategory,
-          grandChildCategory,
-        ])
-          .authenticate('admin')
-          .requestDeleteCategory(getCategoryId(childCategory))
-          .expectNoContentResponse()
-          .validateCategoryDeleted(getCategoryId(childCategory))
-          .validateCategoryParentReassign(grandChildCategory, getCategoryId(categoryDocument));
-      });
-    });
-
-    describe('in related transactions', () => {
-      let unrelatedCategoryDocument: Category.Document;
-      let paymentTransactionDocument: Transaction.PaymentDocument;
-      let deferredTransactionDocument: Transaction.DeferredDocument;
-      let reimbursementTransactionDocument: Transaction.ReimbursementDocument;
-      let splitTransactionDocument: Transaction.SplitDocument;
-      let unrelatedPaymentTransactionDocument: Transaction.PaymentDocument;
-      let unrelatedDeferredTransactionDocument: Transaction.DeferredDocument;
-      let unrelatedReimbursementTransactionDocument: Transaction.ReimbursementDocument;
-      let accountDocument: Account.Document;
-      let loanAccountDocument: Account.Document;
-
-      beforeEach(() => {
-        accountDocument = accountDataFactory.document();
-        loanAccountDocument = accountDataFactory.document({
-          accountType: AccountType.Loan,
-        });
-      });
-
-      it('category should be unset if category is deleted', () => {
-        unrelatedCategoryDocument = categoryDataFactory.document();
-
-        unrelatedPaymentTransactionDocument = paymentTransactionDataFactory.document({
-          account: accountDocument,
-          category: unrelatedCategoryDocument,
-        });
-
-        unrelatedDeferredTransactionDocument = deferredTransactionDataFactory.document({
-          account: accountDocument,
-          category: unrelatedCategoryDocument,
-          loanAccount: loanAccountDocument,
-        });
-
-        unrelatedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
-          account: loanAccountDocument,
-          category: unrelatedCategoryDocument,
-          loanAccount: accountDocument,
-        });
-
-        paymentTransactionDocument = paymentTransactionDataFactory.document({
-          account: accountDocument,
-          category: categoryDocument,
-        });
-
-        deferredTransactionDocument = deferredTransactionDataFactory.document({
-          account: accountDocument,
-          category: categoryDocument,
-          loanAccount: loanAccountDocument,
-        });
-
-        reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
-          account: loanAccountDocument,
-          category: categoryDocument,
-          loanAccount: accountDocument,
-        });
-
-        splitTransactionDocument = splitTransactionDataFactory.document({
-          account: accountDocument,
-          splits: [
-            {
-              category: categoryDocument,
-            },
-            {
-              category: unrelatedCategoryDocument,
-            },
-          ],
-          loans: [
-            {
-              category: categoryDocument,
-              loanAccount: loanAccountDocument,
-            },
-            {
-              category: unrelatedCategoryDocument,
-              loanAccount: loanAccountDocument,
-            },
-          ],
-        });
-
-        cy.saveAccountDocuments([
-          accountDocument,
-          loanAccountDocument,
-        ])
-          .saveCategoryDocuments([
-            categoryDocument,
-            unrelatedCategoryDocument,
-          ])
-          .saveTransactionDocuments([
-            paymentTransactionDocument,
-            splitTransactionDocument,
-            deferredTransactionDocument,
-            reimbursementTransactionDocument,
-            unrelatedPaymentTransactionDocument,
-            unrelatedDeferredTransactionDocument,
-            unrelatedReimbursementTransactionDocument,
-          ])
-          .authenticate('admin')
-          .requestDeleteCategory(getCategoryId(categoryDocument))
-          .expectNoContentResponse()
-          .validateCategoryDeleted(getCategoryId(categoryDocument))
-          .validateRelatedChangesInPaymentDocument(paymentTransactionDocument, {
-            category: {
-              from: categoryDocument,
-            },
-          })
-          .validateRelatedChangesInPaymentDocument(unrelatedPaymentTransactionDocument, {
-            category: {
-              from: categoryDocument,
-            },
-          })
-          .validateRelatedChangesInDeferredDocument(deferredTransactionDocument, {
-            category: {
-              from: categoryDocument,
-            },
-          })
-          .validateRelatedChangesInDeferredDocument(unrelatedDeferredTransactionDocument, {
-            category: {
-              from: categoryDocument,
-            },
-          })
-          .validateRelatedChangesInReimbursementDocument(reimbursementTransactionDocument, {
-            category: {
-              from: categoryDocument,
-            },
-          })
-          .validateRelatedChangesInReimbursementDocument(unrelatedReimbursementTransactionDocument, {
-            category: {
-              from: categoryDocument,
-            },
-          })
-          .validateRelatedChangesInSplitDocument(splitTransactionDocument, {
-            category: {
-              from: categoryDocument,
-            },
+            grandChildCategory = categoryDataFactory.document({
+              parentCategory: childCategory,
+            });
           });
-      });
 
-      it('inventory should be unset if category is deleted', () => {
-        categoryDocument = categoryDataFactory.document({
-          body: {
-            categoryType: CategoryType.Inventory,
-          },
+          it('to root if did not have parent', () => {
+            cy.saveCategoryDocuments([
+              categoryDocument,
+              childCategory,
+              grandChildCategory,
+            ])
+              .authenticate(userType)
+              .requestDeleteCategory(getCategoryId(categoryDocument))
+              .expectNoContentResponse()
+              .validateCategoryDeleted(getCategoryId(categoryDocument))
+              .validateCategoryParentReassign(childCategory)
+              .validateCategoryParentReassign(grandChildCategory, getCategoryId(childCategory));
+          });
+
+          it('to parent if had parent', () => {
+            cy.saveCategoryDocuments([
+              categoryDocument,
+              childCategory,
+              grandChildCategory,
+            ])
+              .authenticate(userType)
+              .requestDeleteCategory(getCategoryId(childCategory))
+              .expectNoContentResponse()
+              .validateCategoryDeleted(getCategoryId(childCategory))
+              .validateCategoryParentReassign(grandChildCategory, getCategoryId(categoryDocument));
+          });
         });
 
-        const productDocument = productDataFactory.document({
-          category: categoryDocument,
-        });
+        describe('in related transactions', () => {
+          let unrelatedCategoryDocument: Category.Document;
+          let paymentTransactionDocument: Transaction.PaymentDocument;
+          let deferredTransactionDocument: Transaction.DeferredDocument;
+          let reimbursementTransactionDocument: Transaction.ReimbursementDocument;
+          let splitTransactionDocument: Transaction.SplitDocument;
+          let unrelatedPaymentTransactionDocument: Transaction.PaymentDocument;
+          let unrelatedDeferredTransactionDocument: Transaction.DeferredDocument;
+          let unrelatedReimbursementTransactionDocument: Transaction.ReimbursementDocument;
+          let accountDocument: Account.Document;
+          let loanAccountDocument: Account.Document;
 
-        unrelatedCategoryDocument = categoryDataFactory.document({
-          body: {
-            categoryType: CategoryType.Inventory,
-          },
-        });
+          beforeEach(() => {
+            accountDocument = accountDataFactory.document();
+            loanAccountDocument = accountDataFactory.document({
+              accountType: AccountType.Loan,
+            });
+          });
 
-        const unrelatedProductDocument = productDataFactory.document({
-          category: unrelatedCategoryDocument,
-        });
+          it('category should be unset if category is deleted', () => {
+            unrelatedCategoryDocument = categoryDataFactory.document();
 
-        unrelatedPaymentTransactionDocument = paymentTransactionDataFactory.document({
-          account: accountDocument,
-          category: unrelatedCategoryDocument,
-          product: unrelatedProductDocument,
-        });
+            unrelatedPaymentTransactionDocument = paymentTransactionDataFactory.document({
+              account: accountDocument,
+              category: unrelatedCategoryDocument,
+            });
 
-        unrelatedDeferredTransactionDocument = deferredTransactionDataFactory.document({
-          account: accountDocument,
-          category: unrelatedCategoryDocument,
-          product: unrelatedProductDocument,
-          loanAccount: loanAccountDocument,
-        });
+            unrelatedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+              account: accountDocument,
+              category: unrelatedCategoryDocument,
+              loanAccount: loanAccountDocument,
+            });
 
-        unrelatedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
-          account: loanAccountDocument,
-          category: unrelatedCategoryDocument,
-          product: unrelatedProductDocument,
-          loanAccount: accountDocument,
-        });
+            unrelatedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+              account: loanAccountDocument,
+              category: unrelatedCategoryDocument,
+              loanAccount: accountDocument,
+            });
 
-        paymentTransactionDocument = paymentTransactionDataFactory.document({
-          account: accountDocument,
-          category: categoryDocument,
-          product: productDocument,
-        });
-
-        deferredTransactionDocument = deferredTransactionDataFactory.document({
-          account: accountDocument,
-          category: categoryDocument,
-          loanAccount: loanAccountDocument,
-          product: productDocument,
-        });
-
-        reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
-          account: loanAccountDocument,
-          category: categoryDocument,
-          loanAccount: accountDocument,
-          product: productDocument,
-        });
-
-        splitTransactionDocument = splitTransactionDataFactory.document({
-          account: accountDocument,
-          splits: [
-            {
+            paymentTransactionDocument = paymentTransactionDataFactory.document({
+              account: accountDocument,
               category: categoryDocument,
-              product: productDocument,
-            },
-            {
+            });
+
+            deferredTransactionDocument = deferredTransactionDataFactory.document({
+              account: accountDocument,
+              category: categoryDocument,
+              loanAccount: loanAccountDocument,
+            });
+
+            reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+              account: loanAccountDocument,
+              category: categoryDocument,
+              loanAccount: accountDocument,
+            });
+
+            splitTransactionDocument = splitTransactionDataFactory.document({
+              account: accountDocument,
+              splits: [
+                {
+                  category: categoryDocument,
+                },
+                {
+                  category: unrelatedCategoryDocument,
+                },
+              ],
+              loans: [
+                {
+                  category: categoryDocument,
+                  loanAccount: loanAccountDocument,
+                },
+                {
+                  category: unrelatedCategoryDocument,
+                  loanAccount: loanAccountDocument,
+                },
+              ],
+            });
+
+            cy.saveAccountDocuments([
+              accountDocument,
+              loanAccountDocument,
+            ])
+              .saveCategoryDocuments([
+                categoryDocument,
+                unrelatedCategoryDocument,
+              ])
+              .saveTransactionDocuments([
+                paymentTransactionDocument,
+                splitTransactionDocument,
+                deferredTransactionDocument,
+                reimbursementTransactionDocument,
+                unrelatedPaymentTransactionDocument,
+                unrelatedDeferredTransactionDocument,
+                unrelatedReimbursementTransactionDocument,
+              ])
+              .authenticate(userType)
+              .requestDeleteCategory(getCategoryId(categoryDocument))
+              .expectNoContentResponse()
+              .validateCategoryDeleted(getCategoryId(categoryDocument))
+              .validateRelatedChangesInPaymentDocument(paymentTransactionDocument, {
+                category: {
+                  from: categoryDocument,
+                },
+              })
+              .validateRelatedChangesInPaymentDocument(unrelatedPaymentTransactionDocument, {
+                category: {
+                  from: categoryDocument,
+                },
+              })
+              .validateRelatedChangesInDeferredDocument(deferredTransactionDocument, {
+                category: {
+                  from: categoryDocument,
+                },
+              })
+              .validateRelatedChangesInDeferredDocument(unrelatedDeferredTransactionDocument, {
+                category: {
+                  from: categoryDocument,
+                },
+              })
+              .validateRelatedChangesInReimbursementDocument(reimbursementTransactionDocument, {
+                category: {
+                  from: categoryDocument,
+                },
+              })
+              .validateRelatedChangesInReimbursementDocument(unrelatedReimbursementTransactionDocument, {
+                category: {
+                  from: categoryDocument,
+                },
+              })
+              .validateRelatedChangesInSplitDocument(splitTransactionDocument, {
+                category: {
+                  from: categoryDocument,
+                },
+              });
+          });
+
+          it('inventory should be unset if category is deleted', () => {
+            categoryDocument = categoryDataFactory.document({
+              body: {
+                categoryType: CategoryType.Inventory,
+              },
+            });
+
+            const productDocument = productDataFactory.document({
+              category: categoryDocument,
+            });
+
+            unrelatedCategoryDocument = categoryDataFactory.document({
+              body: {
+                categoryType: CategoryType.Inventory,
+              },
+            });
+
+            const unrelatedProductDocument = productDataFactory.document({
+              category: unrelatedCategoryDocument,
+            });
+
+            unrelatedPaymentTransactionDocument = paymentTransactionDataFactory.document({
+              account: accountDocument,
               category: unrelatedCategoryDocument,
               product: unrelatedProductDocument,
-            },
-          ],
-          loans: [
-            {
-              category: categoryDocument,
-              product: productDocument,
-              loanAccount: loanAccountDocument,
-            },
-            {
+            });
+
+            unrelatedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+              account: accountDocument,
               category: unrelatedCategoryDocument,
               product: unrelatedProductDocument,
               loanAccount: loanAccountDocument,
-            },
-          ],
-        });
+            });
 
-        cy.saveAccountDocuments([
-          accountDocument,
-          loanAccountDocument,
-        ])
-          .saveCategoryDocuments([
-            categoryDocument,
-            unrelatedCategoryDocument,
-          ])
-          .saveProductDocuments([
-            productDocument,
-            unrelatedProductDocument,
-          ])
-          .saveTransactionDocuments([
-            paymentTransactionDocument,
-            splitTransactionDocument,
-            deferredTransactionDocument,
-            reimbursementTransactionDocument,
-            unrelatedPaymentTransactionDocument,
-            unrelatedDeferredTransactionDocument,
-            unrelatedReimbursementTransactionDocument,
-          ])
-          .authenticate('admin')
-          .requestDeleteCategory(getCategoryId(categoryDocument))
-          .expectNoContentResponse()
-          .validateCategoryDeleted(getCategoryId(categoryDocument))
-          .validateRelatedChangesInPaymentDocument(paymentTransactionDocument, {
-            category: {
-              from: categoryDocument,
-            },
-          })
-          .validateRelatedChangesInPaymentDocument(unrelatedPaymentTransactionDocument, {
-            category: {
-              from: categoryDocument,
-            },
-          })
-          .validateRelatedChangesInDeferredDocument(deferredTransactionDocument, {
-            category: {
-              from: categoryDocument,
-            },
-          })
-          .validateRelatedChangesInDeferredDocument(unrelatedDeferredTransactionDocument, {
-            category: {
-              from: categoryDocument,
-            },
-          })
-          .validateRelatedChangesInReimbursementDocument(reimbursementTransactionDocument, {
-            category: {
-              from: categoryDocument,
-            },
-          })
-          .validateRelatedChangesInReimbursementDocument(unrelatedReimbursementTransactionDocument, {
-            category: {
-              from: categoryDocument,
-            },
-          })
-          .validateRelatedChangesInSplitDocument(splitTransactionDocument, {
-            category: {
-              from: categoryDocument,
-            },
-          });
-      });
-
-      it('invoice should be unset if category is deleted', () => {
-        categoryDocument = categoryDataFactory.document({
-          body: {
-            categoryType: CategoryType.Invoice,
-          },
-        });
-
-        unrelatedCategoryDocument = categoryDataFactory.document({
-          body: {
-            categoryType: CategoryType.Invoice,
-          },
-        });
-
-        unrelatedPaymentTransactionDocument = paymentTransactionDataFactory.document({
-          account: accountDocument,
-          category: unrelatedCategoryDocument,
-        });
-
-        unrelatedDeferredTransactionDocument = deferredTransactionDataFactory.document({
-          account: accountDocument,
-          category: unrelatedCategoryDocument,
-          loanAccount: loanAccountDocument,
-        });
-
-        unrelatedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
-          account: loanAccountDocument,
-          category: unrelatedCategoryDocument,
-          loanAccount: accountDocument,
-        });
-
-        paymentTransactionDocument = paymentTransactionDataFactory.document({
-          account: accountDocument,
-          category: categoryDocument,
-        });
-
-        deferredTransactionDocument = deferredTransactionDataFactory.document({
-          account: accountDocument,
-          category: categoryDocument,
-          loanAccount: loanAccountDocument,
-        });
-
-        reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
-          account: loanAccountDocument,
-          category: categoryDocument,
-          loanAccount: accountDocument,
-        });
-
-        splitTransactionDocument = splitTransactionDataFactory.document({
-          account: accountDocument,
-          splits: [
-            {
-              category: categoryDocument,
-            },
-            {
+            unrelatedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+              account: loanAccountDocument,
               category: unrelatedCategoryDocument,
-            },
-          ],
-          loans: [
-            {
+              product: unrelatedProductDocument,
+              loanAccount: accountDocument,
+            });
+
+            paymentTransactionDocument = paymentTransactionDataFactory.document({
+              account: accountDocument,
+              category: categoryDocument,
+              product: productDocument,
+            });
+
+            deferredTransactionDocument = deferredTransactionDataFactory.document({
+              account: accountDocument,
               category: categoryDocument,
               loanAccount: loanAccountDocument,
-            },
-            {
+              product: productDocument,
+            });
+
+            reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+              account: loanAccountDocument,
+              category: categoryDocument,
+              loanAccount: accountDocument,
+              product: productDocument,
+            });
+
+            splitTransactionDocument = splitTransactionDataFactory.document({
+              account: accountDocument,
+              splits: [
+                {
+                  category: categoryDocument,
+                  product: productDocument,
+                },
+                {
+                  category: unrelatedCategoryDocument,
+                  product: unrelatedProductDocument,
+                },
+              ],
+              loans: [
+                {
+                  category: categoryDocument,
+                  product: productDocument,
+                  loanAccount: loanAccountDocument,
+                },
+                {
+                  category: unrelatedCategoryDocument,
+                  product: unrelatedProductDocument,
+                  loanAccount: loanAccountDocument,
+                },
+              ],
+            });
+
+            cy.saveAccountDocuments([
+              accountDocument,
+              loanAccountDocument,
+            ])
+              .saveCategoryDocuments([
+                categoryDocument,
+                unrelatedCategoryDocument,
+              ])
+              .saveProductDocuments([
+                productDocument,
+                unrelatedProductDocument,
+              ])
+              .saveTransactionDocuments([
+                paymentTransactionDocument,
+                splitTransactionDocument,
+                deferredTransactionDocument,
+                reimbursementTransactionDocument,
+                unrelatedPaymentTransactionDocument,
+                unrelatedDeferredTransactionDocument,
+                unrelatedReimbursementTransactionDocument,
+              ])
+              .authenticate(userType)
+              .requestDeleteCategory(getCategoryId(categoryDocument))
+              .expectNoContentResponse()
+              .validateCategoryDeleted(getCategoryId(categoryDocument))
+              .validateRelatedChangesInPaymentDocument(paymentTransactionDocument, {
+                category: {
+                  from: categoryDocument,
+                },
+              })
+              .validateRelatedChangesInPaymentDocument(unrelatedPaymentTransactionDocument, {
+                category: {
+                  from: categoryDocument,
+                },
+              })
+              .validateRelatedChangesInDeferredDocument(deferredTransactionDocument, {
+                category: {
+                  from: categoryDocument,
+                },
+              })
+              .validateRelatedChangesInDeferredDocument(unrelatedDeferredTransactionDocument, {
+                category: {
+                  from: categoryDocument,
+                },
+              })
+              .validateRelatedChangesInReimbursementDocument(reimbursementTransactionDocument, {
+                category: {
+                  from: categoryDocument,
+                },
+              })
+              .validateRelatedChangesInReimbursementDocument(unrelatedReimbursementTransactionDocument, {
+                category: {
+                  from: categoryDocument,
+                },
+              })
+              .validateRelatedChangesInSplitDocument(splitTransactionDocument, {
+                category: {
+                  from: categoryDocument,
+                },
+              });
+          });
+
+          it('invoice should be unset if category is deleted', () => {
+            categoryDocument = categoryDataFactory.document({
+              body: {
+                categoryType: CategoryType.Invoice,
+              },
+            });
+
+            unrelatedCategoryDocument = categoryDataFactory.document({
+              body: {
+                categoryType: CategoryType.Invoice,
+              },
+            });
+
+            unrelatedPaymentTransactionDocument = paymentTransactionDataFactory.document({
+              account: accountDocument,
+              category: unrelatedCategoryDocument,
+            });
+
+            unrelatedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+              account: accountDocument,
               category: unrelatedCategoryDocument,
               loanAccount: loanAccountDocument,
-            },
-          ],
-        });
+            });
 
-        cy.saveAccountDocuments([
-          accountDocument,
-          loanAccountDocument,
-        ])
-          .saveCategoryDocuments([
-            categoryDocument,
-            unrelatedCategoryDocument,
-          ])
-          .saveTransactionDocuments([
-            paymentTransactionDocument,
-            splitTransactionDocument,
-            deferredTransactionDocument,
-            reimbursementTransactionDocument,
-            unrelatedPaymentTransactionDocument,
-            unrelatedDeferredTransactionDocument,
-            unrelatedReimbursementTransactionDocument,
-          ])
-          .authenticate('admin')
-          .requestDeleteCategory(getCategoryId(categoryDocument))
-          .expectNoContentResponse()
-          .validateCategoryDeleted(getCategoryId(categoryDocument))
-          .validateRelatedChangesInPaymentDocument(paymentTransactionDocument, {
-            category: {
-              from: categoryDocument,
-            },
-          })
-          .validateRelatedChangesInPaymentDocument(unrelatedPaymentTransactionDocument, {
-            category: {
-              from: categoryDocument,
-            },
-          })
-          .validateRelatedChangesInDeferredDocument(deferredTransactionDocument, {
-            category: {
-              from: categoryDocument,
-            },
-          })
-          .validateRelatedChangesInDeferredDocument(unrelatedDeferredTransactionDocument, {
-            category: {
-              from: categoryDocument,
-            },
-          })
-          .validateRelatedChangesInReimbursementDocument(reimbursementTransactionDocument, {
-            category: {
-              from: categoryDocument,
-            },
-          })
-          .validateRelatedChangesInReimbursementDocument(unrelatedReimbursementTransactionDocument, {
-            category: {
-              from: categoryDocument,
-            },
-          })
-          .validateRelatedChangesInSplitDocument(splitTransactionDocument, {
-            category: {
-              from: categoryDocument,
-            },
+            unrelatedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+              account: loanAccountDocument,
+              category: unrelatedCategoryDocument,
+              loanAccount: accountDocument,
+            });
+
+            paymentTransactionDocument = paymentTransactionDataFactory.document({
+              account: accountDocument,
+              category: categoryDocument,
+            });
+
+            deferredTransactionDocument = deferredTransactionDataFactory.document({
+              account: accountDocument,
+              category: categoryDocument,
+              loanAccount: loanAccountDocument,
+            });
+
+            reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+              account: loanAccountDocument,
+              category: categoryDocument,
+              loanAccount: accountDocument,
+            });
+
+            splitTransactionDocument = splitTransactionDataFactory.document({
+              account: accountDocument,
+              splits: [
+                {
+                  category: categoryDocument,
+                },
+                {
+                  category: unrelatedCategoryDocument,
+                },
+              ],
+              loans: [
+                {
+                  category: categoryDocument,
+                  loanAccount: loanAccountDocument,
+                },
+                {
+                  category: unrelatedCategoryDocument,
+                  loanAccount: loanAccountDocument,
+                },
+              ],
+            });
+
+            cy.saveAccountDocuments([
+              accountDocument,
+              loanAccountDocument,
+            ])
+              .saveCategoryDocuments([
+                categoryDocument,
+                unrelatedCategoryDocument,
+              ])
+              .saveTransactionDocuments([
+                paymentTransactionDocument,
+                splitTransactionDocument,
+                deferredTransactionDocument,
+                reimbursementTransactionDocument,
+                unrelatedPaymentTransactionDocument,
+                unrelatedDeferredTransactionDocument,
+                unrelatedReimbursementTransactionDocument,
+              ])
+              .authenticate(userType)
+              .requestDeleteCategory(getCategoryId(categoryDocument))
+              .expectNoContentResponse()
+              .validateCategoryDeleted(getCategoryId(categoryDocument))
+              .validateRelatedChangesInPaymentDocument(paymentTransactionDocument, {
+                category: {
+                  from: categoryDocument,
+                },
+              })
+              .validateRelatedChangesInPaymentDocument(unrelatedPaymentTransactionDocument, {
+                category: {
+                  from: categoryDocument,
+                },
+              })
+              .validateRelatedChangesInDeferredDocument(deferredTransactionDocument, {
+                category: {
+                  from: categoryDocument,
+                },
+              })
+              .validateRelatedChangesInDeferredDocument(unrelatedDeferredTransactionDocument, {
+                category: {
+                  from: categoryDocument,
+                },
+              })
+              .validateRelatedChangesInReimbursementDocument(reimbursementTransactionDocument, {
+                category: {
+                  from: categoryDocument,
+                },
+              })
+              .validateRelatedChangesInReimbursementDocument(unrelatedReimbursementTransactionDocument, {
+                category: {
+                  from: categoryDocument,
+                },
+              })
+              .validateRelatedChangesInSplitDocument(splitTransactionDocument, {
+                category: {
+                  from: categoryDocument,
+                },
+              });
           });
-      });
-    });
-
-    describe('related products', () => {
-      it('should be deleted', () => {
-        categoryDocument = categoryDataFactory.document({
-          body: {
-            categoryType: CategoryType.Inventory,
-          },
-        });
-        const productDocument = productDataFactory.document({
-          category: categoryDocument,
         });
 
-        cy.saveCategoryDocument(categoryDocument)
-          .saveProductDocument(productDocument)
-          .authenticate('admin')
-          .requestDeleteCategory(getCategoryId(categoryDocument))
-          .expectNoContentResponse()
-          .validateCategoryDeleted(getCategoryId(categoryDocument))
-          .validateProductDeleted(getProductId(productDocument));
-      });
-    });
+        describe('related products', () => {
+          it('should be deleted', () => {
+            categoryDocument = categoryDataFactory.document({
+              body: {
+                categoryType: CategoryType.Inventory,
+              },
+            });
+            const productDocument = productDataFactory.document({
+              category: categoryDocument,
+            });
 
-    describe('should return error', () => {
-      describe('if categoryId', () => {
-        it('is not mongo id', () => {
-          cy.authenticate('admin')
-            .requestDeleteCategory(createCategoryId('not-valid'))
-            .expectBadRequestResponse()
-            .expectWrongPropertyPattern('categoryId', 'pathParameters');
+            cy.saveCategoryDocument(categoryDocument)
+              .saveProductDocument(productDocument)
+              .authenticate(userType)
+              .requestDeleteCategory(getCategoryId(categoryDocument))
+              .expectNoContentResponse()
+              .validateCategoryDeleted(getCategoryId(categoryDocument))
+              .validateProductDeleted(getProductId(productDocument));
+          });
         });
-      });
+
+        describe('should return error', () => {
+          describe('if categoryId', () => {
+            it('is not mongo id', () => {
+              cy.authenticate(userType)
+                .requestDeleteCategory(createCategoryId('not-valid'))
+                .expectBadRequestResponse()
+                .expectWrongPropertyPattern('categoryId', 'pathParameters');
+            });
+          });
+        });
+      }
     });
   });
 });

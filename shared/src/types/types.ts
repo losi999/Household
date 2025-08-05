@@ -119,9 +119,9 @@ export namespace Account {
 
   export type Response = Base
   & IsOpen
-  & Balance
   & AccountId
-  & FullName;
+  & FullName
+  & Balance;
 
   export type Report = AccountId
   & FullName
@@ -221,8 +221,7 @@ export namespace Product {
   };
 
   export type Report = ProductId
-  & FullName
-  & Transaction.Quantity;
+  & FullName;
 
   export type Request = Base;
 }
@@ -384,7 +383,7 @@ export namespace Transaction {
   & Description
   & IssuedAt<D> & {
     file: File.Document
-    hasDuplicate?: boolean;
+    potentialDuplicates?: (PaymentDocument<D> | TransferDocument<D> | SplitDocument<D> | DeferredDocument<D> | ReimbursementDocument<D>)[];
   };
 
   type LoanDocument<D extends Date | string = Date> = Internal.Id
@@ -562,7 +561,7 @@ export namespace Transaction {
   & IssuedAt<string>
   & TransactionType<Enum.TransactionType.Draft>
   & {
-    hasDuplicate: boolean;
+    potentialDuplicates: Response[];
   };
 
   export type Response = PaymentResponse | TransferResponse | SplitResponse | DeferredResponse | ReimbursementResponse;
@@ -576,6 +575,7 @@ export namespace Transaction {
   & Project<Project.Report>
   & Recipient<Recipient.Report>
   & Product<Product.Report>
+  & Quantity
   & InvoiceNumber
   & InvoiceDate<string>;
 }
@@ -640,13 +640,18 @@ export namespace Setting {
 
 export namespace User {
   export type Email = {
-    email: string
+    email: string;
+  };
+
+  export type Group = {
+    group: Enum.UserType;
   };
 
   export type Request = Email;
 
   export type Response = Email & {
     status: UserStatusType;
+    groups: Enum.UserType[]
   };
 }
 
@@ -662,6 +667,16 @@ export namespace Auth {
   type IdTokenResponse = {
     idToken: string;
   };
+
+  export namespace ForgotPassword {
+    export type Request = User.Email;
+  }
+
+  export namespace ConfirmForgotPassword {
+    export type Request = Password & {
+      confirmationCode: string;
+    };
+  }
 
   export namespace ConfirmUser {
     export type Request = Password & TemporaryPassword;

@@ -23,9 +23,9 @@ describe('Create user service', () => {
 
     await service({
       body,
-      suppressEmail: undefined,
+      suppressEmail: true,
     });
-    validateFunctionCall(mockIdentityService.functions.createUser, body, undefined);
+    validateFunctionCall(mockIdentityService.functions.createUser, body, undefined, true);
   });
 
   it('should throw error if unable to create user', async () => {
@@ -35,7 +35,7 @@ describe('Create user service', () => {
       body,
       suppressEmail: undefined,
     }).catch(validateError('Error while creating user in cognito', 500));
-    validateFunctionCall(mockIdentityService.functions.createUser, body, undefined);
+    validateFunctionCall(mockIdentityService.functions.createUser, body, undefined, undefined);
     expect.assertions(3);
   });
 });

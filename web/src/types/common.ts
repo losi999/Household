@@ -16,9 +16,7 @@ export type TransactionImportUpdatableFields = {
   loanAccount: Account.Response;
 };
 
-export type ImportedTransaction = Transaction.TransactionId
-& Transaction.Amount
-& Transaction.IssuedAt<string>
+export type ImportedTransaction = Pick<Transaction.DraftResponse, 'transactionId' | 'amount' | 'issuedAt' | 'potentialDuplicates'>
 & Transaction.TransactionType<TransactionType.Draft |TransactionType.Payment | TransactionType.Transfer>
 & Partial<Transaction.Description>
 & Partial<Transaction.Account<Account.Response>>
@@ -26,6 +24,8 @@ export type ImportedTransaction = Transaction.TransactionId
 & Partial<Transaction.Category<Category.Response>>
 & Partial<Transaction.Project<Project.Response>>
 & Partial<Transaction.Recipient<Recipient.Response>>
+& Partial<Transaction.PayingAccount<Account.Response>>
+& Partial<Transaction.OwnerAccount<Account.Response>>
 & {
   loanAccount?: Account.Response;
 };

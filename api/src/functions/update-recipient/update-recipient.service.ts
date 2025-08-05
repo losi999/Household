@@ -8,7 +8,7 @@ export interface IUpdateRecipientService {
     body: Recipient.Request;
     recipientId: Recipient.Id;
     expiresIn: number;
-  }): Promise<void>;
+  }): Promise<unknown>;
 }
 
 export const updateRecipientServiceFactory = (
@@ -16,7 +16,7 @@ export const updateRecipientServiceFactory = (
   recipientDocumentConverter: IRecipientDocumentConverter,
 ): IUpdateRecipientService => {
   return async ({ body, recipientId, expiresIn }) => {
-    const queried = await recipientService.getRecipientById(recipientId).catch(httpErrors.recipient.getById({
+    const queried = await recipientService.findRecipientById(recipientId).catch(httpErrors.recipient.getById({
       recipientId,
     }));
 
@@ -27,7 +27,7 @@ export const updateRecipientServiceFactory = (
 
     const update = recipientDocumentConverter.update(body, expiresIn);
 
-    await recipientService.updateRecipient(recipientId, update).catch(httpErrors.recipient.update({
+    return recipientService.updateRecipient(recipientId, update).catch(httpErrors.recipient.update({
       recipientId,
       update,
     }));

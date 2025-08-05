@@ -4,11 +4,13 @@ import { transactionService } from '@household/shared/dependencies/services/tran
 import { default as index } from '@household/api/handlers/index.handler';
 import { listDeferredTransactionsServiceFactory } from '@household/api/functions/list-deferred-transactions/list-deferred-transactions.service';
 import { deferredTransactionDocumentConverter } from '@household/shared/dependencies/converters/deferred-transaction-document-converter';
+import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';
+import { UserType } from '@household/shared/enums';
 
 const listDeferredTransactionsService = listDeferredTransactionsServiceFactory(transactionService, deferredTransactionDocumentConverter);
 
 export default index({
   handler: handler(listDeferredTransactionsService),
-  before: [],
+  before: [authorizer(UserType.Editor)],
   after: [cors],
 });

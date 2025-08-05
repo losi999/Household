@@ -15,7 +15,7 @@ export interface IUpdateToSplitTransactionService {
     body: Transaction.SplitRequest;
     transactionId: Transaction.Id;
     expiresIn: number;
-  }): Promise<void>;
+  }): Promise<unknown>;
 
 }
 
@@ -29,7 +29,7 @@ export const updateToSplitTransactionServiceFactory = (
   splitTransactionDocumentConverter: ISplitTransactionDocumentConverter,
 ): IUpdateToSplitTransactionService => {
   return async ({ body, transactionId, expiresIn }) => {
-    const queriedDocument = await transactionService.getTransactionById(transactionId).catch(httpErrors.transaction.getById({
+    const queriedDocument = await transactionService.findTransactionById(transactionId).catch(httpErrors.transaction.getById({
       transactionId,
     }));
 
@@ -78,10 +78,10 @@ export const updateToSplitTransactionServiceFactory = (
       recipient,
       productList,
     ] = await Promise.all([
-      accountService.listAccountsByIds(accountIds),
-      categoryService.listCategoriesByIds(categoryIds),
-      projectService.listProjectsByIds(projectIds),
-      recipientService.getRecipientById(recipientId),
+      accountService.findAccountsByIds(accountIds),
+      categoryService.findCategoriesByIds(categoryIds),
+      projectService.findProjectsByIds(projectIds),
+      recipientService.findRecipientById(recipientId),
       productService.listProductsByIds(productIds),
     ]).catch(httpErrors.common.getRelatedData({
       accountIds,
@@ -148,6 +148,6 @@ export const updateToSplitTransactionServiceFactory = (
       recipient,
     }, expiresIn);
 
-    await transactionService.updateTransaction(transactionId, update).catch(httpErrors.transaction.update(update));
+    return transactionService.updateTransaction(transactionId, update).catch(httpErrors.transaction.update(update));
   };
 };

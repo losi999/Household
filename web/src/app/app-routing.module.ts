@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { UserType } from '@household/shared/enums';
 import { ConfirmUserComponent } from '@household/web/app/auth/confirm-user/confirm-user.component';
 import { LoginComponent } from '@household/web/app/auth/login/login.component';
 import { authenticated, unauthenticated } from '@household/web/app/shared/guards';
@@ -22,24 +23,36 @@ const routes: Routes = [
     title: 'Projektek',
     loadChildren: () => import('./project/project.module').then(m => m.ProjectModule),
     canMatch: [authenticated],
+    data: {
+      requiredUserType: UserType.Editor,
+    },
   },
   {
     path: 'products',
     title: 'Termékek',
     loadChildren: () => import('./product/product.module').then(m => m.ProductModule),
     canMatch: [authenticated],
+    data: {
+      requiredUserType: UserType.Editor,
+    },
   },
   {
     path: 'categories',
     title: 'Kategóriák',
     loadChildren: () => import('./category/category.module').then(m => m.CategoryModule),
     canMatch: [authenticated],
+    data: {
+      requiredUserType: UserType.Editor,
+    },
   },
   {
     path: 'recipients',
     title: 'Partnerek',
     loadChildren: () => import('./recipient/recipient.module').then(m => m.RecipientModule),
     canMatch: [authenticated],
+    data: {
+      requiredUserType: UserType.Editor,
+    },
   },
   {
     path: 'reports',
@@ -52,6 +65,9 @@ const routes: Routes = [
     title: 'Importálás',
     loadChildren: () => import('./import/import.module').then(m => m.ImportModule),
     canMatch: [authenticated],
+    data: {
+      requiredUserType: UserType.Editor,
+    },
   },
   {
     path: 'settings',
@@ -64,6 +80,9 @@ const routes: Routes = [
     title: 'Fodrászat',
     loadChildren: () => import('./hairdressing/hairdressing.module').then(m => m.HairdressingModule),
     canMatch: [authenticated],
+    data: {
+      requiredUserType: UserType.Hairdresser,
+    },
   },
   {
     path: '',

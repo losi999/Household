@@ -21,6 +21,10 @@
     "[javascript]": {
       "editor.defaultFormatter": "vscode.typescript-language-features"
     },
+    "[html]": {
+      "editor.defaultFormatter": "vscode.html-language-features",
+      "editor.tabSize": 2
+    },
     "html.format.wrapLineLength": 0
   }
 }

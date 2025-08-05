@@ -1,6 +1,9 @@
+import { entries } from '@household/shared/common/utils';
 import { Account } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
+import { allowUsers } from '@household/test/api/utils';
 
+const permissionMap = allowUsers('editor') ;
 describe('POST account/v1/accounts', () => {
   let request: Account.Request;
 
@@ -16,154 +19,167 @@ describe('POST account/v1/accounts', () => {
     });
   });
 
-  describe('called as an admin', () => {
-    it('should create account', () => {
-      cy.authenticate('admin')
-        .requestCreateAccount(request)
-        .expectCreatedResponse()
-        .validateAccountDocument(request);
-    });
-
-    it('should create account with an existing name for a different owner', () => {
-      const accountDocument = accountDataFactory.document(request);
-
-      request = accountDataFactory.request({
-        name: request.name,
-      });
-
-      cy.saveAccountDocument(accountDocument)
-        .authenticate('admin')
-        .requestCreateAccount(request)
-        .expectCreatedResponse()
-        .validateAccountDocument(request);
-    });
-
-    describe('should return error', () => {
-      describe('if name', () => {
-        it('is missing from body', () => {
-          cy.authenticate('admin')
-            .requestCreateAccount(accountDataFactory.request({
-              name: undefined,
-            }))
-            .expectBadRequestResponse()
-            .expectRequiredProperty('name', 'body');
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
+    describe(`called as ${userType}`, () => {
+      if (!isAllowed) {
+        it('should return forbidden', () => {
+          cy.authenticate(userType)
+            .requestCreateAccount(request)
+            .expectForbiddenResponse();
+        });
+      } else {
+        it('should create account', () => {
+          cy.authenticate(userType)
+            .requestCreateAccount(request)
+            .expectCreatedResponse()
+            .validateAccountDocument(request);
         });
 
-        it('is not string', () => {
-          cy.authenticate('admin')
-            .requestCreateAccount(accountDataFactory.request({
-              name: <any>1,
-            }))
-            .expectBadRequestResponse()
-            .expectWrongPropertyType('name', 'string', 'body');
-        });
-
-        it('is too short', () => {
-          cy.authenticate('admin')
-            .requestCreateAccount(accountDataFactory.request({
-              name: '',
-            }))
-            .expectBadRequestResponse()
-            .expectTooShortProperty('name', 1, 'body');
-        });
-
-        it('is already in used by a different account of the same owner', () => {
+        it('should create account with an existing name for a different owner', () => {
           const accountDocument = accountDataFactory.document(request);
 
+          request = accountDataFactory.request({
+            name: request.name,
+          });
+
           cy.saveAccountDocument(accountDocument)
-            .authenticate('admin')
+            .authenticate(userType)
             .requestCreateAccount(request)
-            .expectBadRequestResponse()
-            .expectMessage('Duplicate account name');
-        });
-      });
-
-      describe('if accountType', () => {
-        it('is missing from body', () => {
-          cy.authenticate('admin')
-            .requestCreateAccount(accountDataFactory.request({
-              accountType: undefined,
-            }))
-            .expectBadRequestResponse()
-            .expectRequiredProperty('accountType', 'body');
+            .expectCreatedResponse()
+            .validateAccountDocument(request);
         });
 
-        it('is not string', () => {
-          cy.authenticate('admin')
-            .requestCreateAccount(accountDataFactory.request({
-              accountType: <any>1,
-            }))
-            .expectBadRequestResponse()
-            .expectWrongPropertyType('accountType', 'string', 'body');
-        });
+        describe('should return error', () => {
+          describe('if name', () => {
+            it('is missing from body', () => {
+              cy.authenticate(userType)
+                .requestCreateAccount(accountDataFactory.request({
+                  name: undefined,
+                }))
+                .expectBadRequestResponse()
+                .expectRequiredProperty('name', 'body');
+            });
 
-        it('is not a valid enum value', () => {
-          cy.authenticate('admin')
-            .requestCreateAccount(accountDataFactory.request({
-              accountType: 'not-account-type' as any,
-            }))
-            .expectBadRequestResponse()
-            .expectWrongEnumValue('accountType', 'body');
-        });
-      });
+            it('is not string', () => {
+              cy.authenticate(userType)
+                .requestCreateAccount(accountDataFactory.request({
+                  name: <any>1,
+                }))
+                .expectBadRequestResponse()
+                .expectWrongPropertyType('name', 'string', 'body');
+            });
 
-      describe('if currency', () => {
-        it('is missing from body', () => {
-          cy.authenticate('admin')
-            .requestCreateAccount(accountDataFactory.request({
-              currency: undefined,
-            }))
-            .expectBadRequestResponse()
-            .expectRequiredProperty('currency', 'body');
-        });
+            it('is too short', () => {
+              cy.authenticate(userType)
+                .requestCreateAccount(accountDataFactory.request({
+                  name: '',
+                }))
+                .expectBadRequestResponse()
+                .expectTooShortProperty('name', 1, 'body');
+            });
 
-        it('is not string', () => {
-          cy.authenticate('admin')
-            .requestCreateAccount(accountDataFactory.request({
-              currency: <any>1,
-            }))
-            .expectBadRequestResponse()
-            .expectWrongPropertyType('currency', 'string', 'body');
-        });
+            it('is already in used by a different account of the same owner', () => {
+              const accountDocument = accountDataFactory.document(request);
 
-        it('is too short', () => {
-          cy.authenticate('admin')
-            .requestCreateAccount(accountDataFactory.request({
-              currency: '',
-            }))
-            .expectBadRequestResponse()
-            .expectTooShortProperty('currency', 1, 'body');
-        });
-      });
+              cy.saveAccountDocument(accountDocument)
+                .authenticate(userType)
+                .requestCreateAccount(request)
+                .expectBadRequestResponse()
+                .expectMessage('Duplicate account name');
+            });
+          });
 
-      describe('if owner', () => {
-        it('is missing from body', () => {
-          cy.authenticate('admin')
-            .requestCreateAccount(accountDataFactory.request({
-              owner: undefined,
-            }))
-            .expectBadRequestResponse()
-            .expectRequiredProperty('owner', 'body');
-        });
+          describe('if accountType', () => {
+            it('is missing from body', () => {
+              cy.authenticate(userType)
+                .requestCreateAccount(accountDataFactory.request({
+                  accountType: undefined,
+                }))
+                .expectBadRequestResponse()
+                .expectRequiredProperty('accountType', 'body');
+            });
 
-        it('is not string', () => {
-          cy.authenticate('admin')
-            .requestCreateAccount(accountDataFactory.request({
-              owner: <any>1,
-            }))
-            .expectBadRequestResponse()
-            .expectWrongPropertyType('owner', 'string', 'body');
-        });
+            it('is not string', () => {
+              cy.authenticate(userType)
+                .requestCreateAccount(accountDataFactory.request({
+                  accountType: <any>1,
+                }))
+                .expectBadRequestResponse()
+                .expectWrongPropertyType('accountType', 'string', 'body');
+            });
 
-        it('is too short', () => {
-          cy.authenticate('admin')
-            .requestCreateAccount(accountDataFactory.request({
-              owner: '',
-            }))
-            .expectBadRequestResponse()
-            .expectTooShortProperty('owner', 1, 'body');
+            it('is not a valid enum value', () => {
+              cy.authenticate(userType)
+                .requestCreateAccount(accountDataFactory.request({
+                  accountType: 'not-account-type' as any,
+                }))
+                .expectBadRequestResponse()
+                .expectWrongEnumValue('accountType', 'body');
+            });
+          });
+
+          describe('if currency', () => {
+            it('is missing from body', () => {
+              cy.authenticate(userType)
+                .requestCreateAccount(accountDataFactory.request({
+                  currency: undefined,
+                }))
+                .expectBadRequestResponse()
+                .expectRequiredProperty('currency', 'body');
+            });
+
+            it('is not string', () => {
+              cy.authenticate(userType)
+                .requestCreateAccount(accountDataFactory.request({
+                  currency: <any>1,
+                }))
+                .expectBadRequestResponse()
+                .expectWrongPropertyType('currency', 'string', 'body');
+            });
+
+            it('is too short', () => {
+              cy.authenticate(userType)
+                .requestCreateAccount(accountDataFactory.request({
+                  currency: '',
+                }))
+                .expectBadRequestResponse()
+                .expectTooShortProperty('currency', 1, 'body');
+            });
+          });
+
+          describe('if owner', () => {
+            it('is missing from body', () => {
+              cy.authenticate(userType)
+                .requestCreateAccount(accountDataFactory.request({
+                  owner: undefined,
+                }))
+                .expectBadRequestResponse()
+                .expectRequiredProperty('owner', 'body');
+            });
+
+            it('is not string', () => {
+              cy.authenticate(userType)
+                .requestCreateAccount(accountDataFactory.request({
+                  owner: <any>1,
+                }))
+                .expectBadRequestResponse()
+                .expectWrongPropertyType('owner', 'string', 'body');
+            });
+
+            it('is too short', () => {
+              cy.authenticate(userType)
+                .requestCreateAccount(accountDataFactory.request({
+                  owner: '',
+                }))
+                .expectBadRequestResponse()
+                .expectTooShortProperty('owner', 1, 'body');
+            });
+          });
         });
-      });
+      }
     });
   });
 });

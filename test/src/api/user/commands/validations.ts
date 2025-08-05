@@ -1,9 +1,10 @@
 import { UserStatusType } from '@aws-sdk/client-cognito-identity-provider';
+import { UserType } from '@household/shared/enums';
 import { Auth, User } from '@household/shared/types/types';
 import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/test/api/types';
 import { expectEmptyObject } from '@household/test/api/utils';
 
-const validateUserInCognito = (req: User.Email& Partial<Auth.Password>) => {
+const validateUserInCognito = (req: User.Email & Partial<Auth.Password>) => {
   cy.log('Get user', req.email)
     .getUser(req)
     .should((user) => {
@@ -13,17 +14,31 @@ const validateUserInCognito = (req: User.Email& Partial<Auth.Password>) => {
     });
 };
 
-const validateUserResponse = (nestedPath: string = '') => (response: User.Response, user: User.Request & Partial<Auth.Password>) => {
-  const { email, status, ...internal } = response;
+const validateUserInGroup = (req: User.Email & User.Group, userType: UserType) => {
+  cy.log('Get user group', req.email)
+    .listGroupsByUser(req.email)
+    .should((groups) => {
+      const group = groups.Groups.find(g => g.GroupName === userType);
+      if (req.group === userType) {
+        expect(group, 'Group').to.be.undefined;
+      } else {
+        expect(group, 'Group').to.not.be.undefined;
+      }      
+    });
+};
+
+const validateUserResponse = (nestedPath: string = '') => (response: User.Response, user: User.Request & Partial<Auth.Password & User.Group>) => {
+  const { email, status, groups, ...internal } = response;
 
   expect(email, `${nestedPath}email`).to.equal(user.email);
   expect(status, `${nestedPath}status`).to.equal(user.password ? UserStatusType.CONFIRMED : UserStatusType.FORCE_CHANGE_PASSWORD);
+  expect(groups, `${nestedPath}groups`).to.deep.equal(user.group ? [user.group] : []);
   expectEmptyObject(internal, nestedPath);
 };
 
 const validateNestedUserResponse = (nestedPath: string, ...rest: Parameters<ReturnType<typeof validateUserResponse>>) => validateUserResponse(nestedPath)(...rest);
 
-const validateUserListResponse = (responses: User.Response[], cognitoUsers: (User.Request & Partial<Auth.Password>)[]) => {
+const validateUserListResponse = (responses: User.Response[], cognitoUsers: (User.Request & Partial<Auth.Password & User.Group>)[]) => {
   cognitoUsers.forEach((user, index) => {
     const response = responses.find(r => r.email === user.email);
     cy.validateNestedUserResponse(`[${index}].`, response, user);
@@ -50,6 +65,7 @@ export const setUserValidationCommands = () => {
 
   Cypress.Commands.addAll({
     validateUserInCognito,
+    validateUserInGroup,
     validateUserDeleted,
     validateNestedUserResponse,
   });
@@ -60,6 +76,7 @@ declare global {
     interface Chainable {
       validateUserDeleted: CommandFunction<typeof validateUserDeleted>;
       validateUserInCognito: CommandFunction<typeof validateUserInCognito>;
+      validateUserInGroup: CommandFunction<typeof validateUserInGroup>;
       validateNestedUserResponse: CommandFunction<typeof validateNestedUserResponse>;
     }
 

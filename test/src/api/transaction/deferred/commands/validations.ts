@@ -1,8 +1,8 @@
-import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/test/api/types';
 import { createDate, getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
 import { expectEmptyObject, expectRemainingProperties } from '@household/test/api/utils';
-import { CategoryType, AccountType } from '@household/shared/enums';
+import { CategoryType } from '@household/shared/enums';
 import { validateCommonResponse, validateInventoryResponse, validateInvoiceResponse } from '@household/test/api/transaction/common/commands/validations';
 
 type Reassignment<T> = {
@@ -63,19 +63,13 @@ const validateTransactionDeferredDocument = (response: Transaction.TransactionId
     });
 };
 
-export const validateTransactionDeferredResponse = (response: Transaction.DeferredResponse, document: Transaction.DeferredDocument, params: {
-  viewingAccountId?: Account.Id;
-  paymentAmount?: number;
-} = {}) => {
+export const validateTransactionDeferredResponse = (response: Transaction.DeferredResponse, document: Transaction.DeferredDocument, paymentAmount?: number) => {
   const { transactionId, amount, issuedAt, transactionType, description, payingAccount, ownerAccount, project, product, recipient, category, billingEndDate, billingStartDate, invoiceNumber, quantity, remainingAmount, isSettled, ...empty } = response;
-  const { paymentAmount, viewingAccountId } = params;
-
-  const viewingAccount = ownerAccount.accountId === viewingAccountId ? ownerAccount : payingAccount;
 
   const expectedRemainingAmount = Math.abs(document.amount) - (paymentAmount ?? 0);
 
   validateCommonResponse({
-    amount: viewingAccount.accountType === AccountType.Loan ? amount * -1 : amount,
+    amount,
     description,
     issuedAt,
     transactionId,
@@ -84,17 +78,17 @@ export const validateTransactionDeferredResponse = (response: Transaction.Deferr
   expect(isSettled, 'isSettled').to.equal(document.isSettled ?? false);
   expect(remainingAmount, 'remainingAmount').to.equal(document.isSettled ? undefined : expectedRemainingAmount);
 
-  cy.validateNestedAccountResponse('payingAccount.', payingAccount, document.payingAccount, document.payingAccount.balance ?? null)
-    .validateNestedAccountResponse('ownerAccount.', ownerAccount, document.ownerAccount, document.ownerAccount.balance ?? null);
+  cy.validateTransactionNestedObject('payingAccount.', payingAccount).validateAccountResponse(document.payingAccount);
+  cy.validateTransactionNestedObject('ownerAccount.', ownerAccount).validateAccountResponse(document.ownerAccount);
 
   if (project) {
-    cy.validateNestedProjectResponse('project.', project, document.project);
+    cy.validateTransactionNestedObject('project', project).validateProjectResponse(document.project);
   } else {
     expect(project, 'project').to.be.undefined;
   }
 
   if (recipient) {
-    cy.validateNestedRecipientResponse('recipient.', recipient, document.recipient);
+    cy.validateTransactionNestedObject('recipient', recipient).validateRecipientResponse(document.recipient);
   } else {
     expect(recipient, 'recipient').to.be.undefined;
   }

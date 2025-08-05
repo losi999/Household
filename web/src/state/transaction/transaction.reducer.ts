@@ -47,22 +47,6 @@ on(transactionApiActions.listDeferredTransactionsCompleted, (_state, { transacti
   };
 }),
 
-on(transactionApiActions.listDraftTransactionsInitiated, (_state) => {
-  return {
-    ..._state,
-    draftTransactionList: undefined,
-  };
-}),
-on(transactionApiActions.listDraftTransactionsCompleted, (_state, { transactions }) => {
-  return {
-    ..._state,
-    draftTransactionList: transactions.map(t => ({
-      ...t,
-      transactionType: 'payment',
-    })),
-  };
-}),
-
 on(transactionApiActions.deleteTransactionCompleted, (_state, { transactionId }) => {
   return {
     ..._state,

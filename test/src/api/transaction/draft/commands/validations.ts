@@ -3,7 +3,7 @@ import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/
 import { getFileId, getTransactionId } from '@household/shared/common/utils';
 import { expectEmptyObject, expectRemainingProperties } from '@household/test/api/utils';
 import { TransactionType } from '@household/shared/enums';
-import { validateCommonResponse } from '@household/test/api/transaction/common/commands/validations';
+import { validateCommonResponse, validateTransactionListResponse } from '@household/test/api/transaction/common/commands/validations';
 
 const validateImportedRevolutDraftDocuments = (fileId: File.Id, ...rows: Import.Revolut[]) => {
   cy.log('Get draft documents by file', fileId)
@@ -12,7 +12,7 @@ const validateImportedRevolutDraftDocuments = (fileId: File.Id, ...rows: Import.
       expect(documents.length, 'number of items').to.equal(rows?.length);
 
       documents.forEach((document, index) => {
-        const { amount, description, issuedAt, transactionType, file, hasDuplicate, ...internal } = document;
+        const { amount, description, issuedAt, transactionType, file, potentialDuplicates, ...internal } = document;
         const row = rows.find(r => description.includes(r.Type));
 
         expect(amount, `[${index}].amount`).to.equal(row.Amount - row.Fee);
@@ -21,7 +21,7 @@ const validateImportedRevolutDraftDocuments = (fileId: File.Id, ...rows: Import.
         expect(transactionType, `[${index}].transactionType`).to.equal(TransactionType.Draft);
         expect(description, `[${index}].description`).to.equal(`${row.Type} ${row.Description} ${row.Currency}`);
         expect(getFileId(file), `[${index}].fileId`).to.equal(fileId);
-        expect(hasDuplicate, `[${index}].hasDuplicate`).to.be.false;
+        expect(potentialDuplicates, `[${index}].potentialDuplicates`).to.be.empty;
 
         expectRemainingProperties(internal);
       });
@@ -35,7 +35,7 @@ const validateImportedOtpDraftDocuments = (fileId: File.Id, ...rows: Import.Otp[
       expect(documents.length, 'number of items').to.equal(rows?.length);
 
       documents.forEach((document, index) => {
-        const { amount, description, issuedAt, transactionType, file, hasDuplicate, ...internal } = document;
+        const { amount, description, issuedAt, transactionType, file, potentialDuplicates, ...internal } = document;
         const row = rows.find(r => description.includes(r['Forgalom típusa']));
 
         expect(amount, `[${index}].amount`).to.equal(row.Összeg);
@@ -43,7 +43,7 @@ const validateImportedOtpDraftDocuments = (fileId: File.Id, ...rows: Import.Otp[
         expect(transactionType, `[${index}].transactionType`).to.equal(TransactionType.Draft);
         expect(description, `[${index}].description`).to.equal(`${row['Forgalom típusa']} ${row['Ellenoldali név']} ${row.Közlemény}`);
         expect(getFileId(file), `[${index}].fileId`).to.equal(fileId);
-        expect(hasDuplicate, `[${index}].hasDuplicate`).to.be.false;
+        expect(potentialDuplicates, `[${index}].potentialDuplicates`).to.be.empty;
 
         expectRemainingProperties(internal);
       });
@@ -57,7 +57,7 @@ const validateImportedErsteDraftDocuments = (fileId: File.Id, ...rows: Import.Er
       expect(documents.length, 'number of items').to.equal(rows?.length);
 
       documents.forEach((document, index) => {
-        const { amount, description, issuedAt, transactionType, file, hasDuplicate, ...internal } = document;
+        const { amount, description, issuedAt, transactionType, file, potentialDuplicates, ...internal } = document;
         const row = rows.find(r => description.includes(r['Kategória']));
 
         expect(amount, `[${index}].amount`).to.equal(row.Összeg);
@@ -65,7 +65,7 @@ const validateImportedErsteDraftDocuments = (fileId: File.Id, ...rows: Import.Er
         expect(transactionType, `[${index}].transactionType`).to.equal(TransactionType.Draft);
         expect(description, `[${index}].description`).to.equal(`${row['Partner név']} ${row.Közlemény} ${row['Kategória']}`);
         expect(getFileId(file), `[${index}].fileId`).to.equal(fileId);
-        expect(hasDuplicate, `[${index}].hasDuplicate`).to.be.false;
+        expect(potentialDuplicates, `[${index}].potentialDuplicates`).to.be.empty;
 
         expectRemainingProperties(internal);
       });
@@ -74,13 +74,13 @@ const validateImportedErsteDraftDocuments = (fileId: File.Id, ...rows: Import.Er
 
 const validateTransactionDraftListResponse = (responses: Transaction.DraftResponse[], ...documents: {
   document: Transaction.DraftDocument;
-  duplicateTransaction?: Transaction.Document;
+  duplicateTransactions?: Transaction.Document[];
 }[]) => {
   expect(responses.length, 'number of items').to.equal(documents.length);
-  documents.forEach(({ document, duplicateTransaction }) => {
+  documents.forEach(({ document, duplicateTransactions }) => {
     const response = responses.find(t => t.transactionId === getTransactionId(document));
 
-    const { transactionId, amount, issuedAt, transactionType, description, hasDuplicate, ...empty } = response;
+    const { transactionId, amount, issuedAt, transactionType, description, potentialDuplicates, ...empty } = response;
 
     validateCommonResponse({
       amount,
@@ -90,7 +90,11 @@ const validateTransactionDraftListResponse = (responses: Transaction.DraftRespon
       transactionType,
     }, document);
 
-    expect(hasDuplicate, 'hasDuplicate').to.equal(!!duplicateTransaction);
+    if (duplicateTransactions?.length > 0) {
+      validateTransactionListResponse(potentialDuplicates, duplicateTransactions, undefined, {});
+    } else {
+      expect(potentialDuplicates, 'potentialDuplicates').to.be.empty;
+    }
 
     expectEmptyObject(empty, 'response');
   });

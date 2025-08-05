@@ -28,7 +28,7 @@ export const updateToTransferTransactionServiceFactory = (
       transferAccountId,
     });
 
-    const queriedDocument = await transactionService.getTransactionById(transactionId).catch(httpErrors.transaction.getById({
+    const queriedDocument = await transactionService.findTransactionById(transactionId).catch(httpErrors.transaction.getById({
       transactionId,
     }));
 
@@ -37,7 +37,7 @@ export const updateToTransferTransactionServiceFactory = (
       transactionId,
     });
 
-    const accounts = await accountService.listAccountsByIds([
+    const accounts = await accountService.findAccountsByIds([
       accountId,
       transferAccountId,
     ]).catch(httpErrors.common.getRelatedData({
@@ -60,7 +60,7 @@ export const updateToTransferTransactionServiceFactory = (
 
     let update: UpdateQuery<Transaction.Document>;
 
-    if (account.accountType === AccountType.Loan || transferAccount.accountType === AccountType.Loan) {
+    if (account.accountType === AccountType.Loan && transferAccount.accountType === AccountType.Loan) {
       body.payments = undefined;
       update = transferTransactionDocumentConverter.update({
         body,

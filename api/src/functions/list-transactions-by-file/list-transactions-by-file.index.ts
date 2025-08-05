@@ -6,12 +6,15 @@ import { listTransactionsByFileServiceFactory } from '@household/api/functions/l
 import { transactionService } from '@household/shared/dependencies/services/transaction-service';
 import { default as index } from '@household/api/handlers/index.handler';
 import { draftTransactionDocumentConverter } from '@household/shared/dependencies/converters/draft-transaction-document-converter';
+import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';
+import { UserType } from '@household/shared/enums';
 
 const listTransactionsByFileService = listTransactionsByFileServiceFactory(transactionService, draftTransactionDocumentConverter);
 
 export default index({
   handler: handler(listTransactionsByFileService),
   before: [
+    authorizer(UserType.Editor),
     apiRequestValidator({
       pathParameters,
     }),

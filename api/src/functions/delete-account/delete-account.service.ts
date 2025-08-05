@@ -5,13 +5,13 @@ import { Account } from '@household/shared/types/types';
 export interface IDeleteAccountService {
   (ctx: {
     accountId: Account.Id;
-  }): Promise<void>;
+  }): Promise<unknown>;
 }
 
 export const deleteAccountServiceFactory = (
   accountService: IAccountService): IDeleteAccountService => {
-  return async ({ accountId }) => {
-    await accountService.deleteAccount(accountId).catch(httpErrors.account.delete({
+  return ({ accountId }) => {
+    return accountService.deleteAccount(accountId).catch(httpErrors.account.delete({
       accountId,
     }));
   };

@@ -1,11 +1,17 @@
 <div class="list-item mat-elevation-z1">
   <div class="datetime">
-    <div class="year" *ngIf="showYear">{{this.transaction.issuedAt | date:'yyyy'}}</div>
-    <div class="date">{{this.transaction.issuedAt | date:'MMM dd.'}}</div>
-    <div class="time">{{this.transaction.issuedAt | date:'HH:mm'}}</div>
+    {{transaction.issuedAt | date: showYear ? 'yyyy. MMMM dd. HH:mm' : 'MMMM d. HH:mm'}}
   </div>
-  <household-transaction-short-details class="details" [category]="category" [project]="project" [recipient]="recipient" [product]="product" [billingStartDate]="billingStartDate" [billingEndDate]="billingEndDate" [description]="transaction.description" [invoiceNumber]="invoiceNumber" [quantity]="quantity" [amount]="remainingAmount" [currency]="viewingAccount.currency" [payingAccount]="payingAccount" [ownerAccount]="ownerAccount" [givingAccount]="givingAccount" [receivingAccount]="receivingAccount" [transferColor]="transferColor" />
-
+  <div class="details">
+    <household-transaction-details-loan [transaction]="transaction" [viewingAccountId]="viewingAccountId" />
+    <household-transaction-details-recipient [transaction]="transaction" />
+    <household-transaction-details-category [transaction]="transaction" />
+    <household-transaction-details-inventory [transaction]="transaction" />
+    <household-transaction-details-invoice [transaction]="transaction" />
+    <household-transaction-details-project [transaction]="transaction" />
+    <household-transaction-details-transfer [transaction]="transaction" />
+    <household-transaction-details-description [transaction]="transaction" />
+  </div>
   <div *ngIf="amount" class="amount" [ngClass]="amount >= 0 ? 'green' : 'red'">{{amount | number:'1.0-2':'hu' }} {{viewingAccount.currency}}
   </div>
   <div class="buttons">
@@ -15,8 +21,8 @@
     <a mat-icon-button color="primary" [routerLink]="['transactions', transaction.transactionId]" href="" target="_blank" [disabled]="isDisabled | async" matTooltip="Részletek">
       <mat-icon>format_list_bulleted</mat-icon>
     </a>
-    <a mat-icon-button color="primary" [routerLink]="['transactions', transaction.transactionId, 'edit', formType]" href="" target="_blank" [disabled]="isDisabled | async" matTooltip="Szerkesztés"> <mat-icon>edit</mat-icon></a>
-    <button mat-icon-button color="warn" (click)="delete()" [disabled]="isDisabled | async" matTooltip="Törlés">
+    <a mat-icon-button color="primary" *householdIsEditor [routerLink]="['transactions', transaction.transactionId, 'edit', formType]" href="" target="_blank" [disabled]="isDisabled | async" matTooltip="Szerkesztés"> <mat-icon>edit</mat-icon></a>
+    <button mat-icon-button color="warn" *householdIsEditor (click)="delete()" [disabled]="isDisabled | async" matTooltip="Törlés">
       <mat-icon>delete</mat-icon>
     </button>
   </div>

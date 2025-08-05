@@ -1,6 +1,5 @@
-import { flattenSplit, populateAggregate } from '@household/shared/common/aggregate-helpers';
+import { matchAnyProperty, populateAggregate, transactionAggregate } from '@household/shared/common/aggregate-helpers';
 import { populate } from '@household/shared/common/utils';
-import { AccountType } from '@household/shared/enums';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { Account, Common, File, Transaction } from '@household/shared/types/types';
 import { PipelineStage, Types, UpdateQuery } from 'mongoose';
@@ -9,6 +8,7 @@ export interface ITransactionService {
   dumpTransactions(): Promise<Transaction.Document[]>;
   saveTransaction(doc: Transaction.Document): Promise<Transaction.Document>;
   saveTransactions(docs: Transaction.Document[]): Promise<any>;
+  findTransactionById(transactionId: Transaction.Id): Promise<Transaction.Document>;
   getTransactionById(transactionId: Transaction.Id): Promise<Transaction.Document>;
   getTransactionByIdAndAccountId(query: Transaction.TransactionId & Account.AccountId): Promise<Transaction.Document>;
   deleteTransaction(transactionId: Transaction.Id): Promise<unknown>;
@@ -31,8 +31,8 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
           .setOptions({
             session,
             lean: true,
-          })
-          .exec();
+          });
+          
       });
     },
     saveTransaction: (doc) => {
@@ -46,6 +46,9 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
           });
         });
       });
+    },
+    findTransactionById: (transactionId) => {
+      return !transactionId ? undefined : mongodbService.transactions.findById(transactionId).lean();
     },
     getTransactionById: (transactionId) => {
       return !transactionId ? undefined : mongodbService.transactions.findById(transactionId)
@@ -68,8 +71,8 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
             'deferredSplits.project',
             'deferredSplits.product'),
           lean: true,
-        })
-        .exec();
+        });
+        
     },
     getTransactionByIdAndAccountId: async ({ transactionId, accountId }) => {
       if (!transactionId) {
@@ -87,462 +90,17 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
           [
             {
               $match: {
-                $and: [
-                  {
-                    _id: new Types.ObjectId(transactionId),
-                  },
-                  {
-                    $or: [
-                      {
-                        account: account._id,
-                      },
-                      {
-                        transferAccount: account._id,
-                      },
-                      {
-                        payingAccount: account._id,
-                      },
-                      {
-                        ownerAccount: account._id,
-                      },
-                      {
-                        'deferredSplits.ownerAccount': account._id,
-                      },
-                    ],
-                  },
-                ],
+                _id: new Types.ObjectId(transactionId),
               },
             },
-            {
-              $lookup: {
-                from: 'transactions',
-                let: {
-                  transactionId: '$_id',
-                  deferredSplits: '$deferredSplits',
-                },
-                as: 'repayments',
-                pipeline: [
-                  {
-                    $unwind: {
-                      path: '$payments',
-                    },
-                  },
-                  {
-                    $match: {
-                      $expr: {
-                        $or: [
-                          {
-                            $eq: [
-                              '$$transactionId',
-                              '$payments.transaction',
-                            ],
-                          },
-                          {
-                            $in: [
-                              '$payments.transaction',
-                              {
-                                $map: {
-                                  input: {
-                                    $ifNull: [
-                                      '$$deferredSplits',
-                                      [],
-                                    ],
-                                  },
-                                  as: 'split',
-                                  in: '$$split._id',
-                                },
-                              },
-                            ],
-                          },
-                        ],
-                      },
-                    },
-                  },
-                  {
-                    $replaceRoot: {
-                      newRoot: '$payments',
-                    },
-                  },
-                ],
-              },
-            },
-            ...populateAggregate('account', 'accounts'),
-            {
-              $lookup: {
-                from: 'projects',
-                localField: 'deferredSplits.project',
-                foreignField: '_id',
-                as: 'projects',
-              },
-            },
-            {
-              $lookup: {
-                from: 'products',
-                localField: 'deferredSplits.product',
-                foreignField: '_id',
-                as: 'products',
-              },
-            },
-            {
-              $lookup: {
-                from: 'accounts',
-                localField: 'deferredSplits.ownerAccount',
-                foreignField: '_id',
-                as: 'accounts',
-              },
-            },
-            {
-              $lookup: {
-                from: 'categories',
-                let: {
-                  categoryIds: {
-                    $map: {
-                      input: '$deferredSplits',
-                      as: 'split',
-                      in: '$$split.category',
-                    },
-                  },
-                },
-                as: 'categories',
-                pipeline: [
-                  {
-                    $match: {
-                      $expr: {
-                        $in: [
-                          '$_id',
-                          {
-                            $ifNull: [
-                              '$$categoryIds',
-                              [],
-                            ],
-                          },
-                        ],
-                      },
-                    },
-                  },
-                  {
-                    $lookup: {
-                      from: 'categories',
-                      localField: 'ancestors',
-                      foreignField: '_id',
-                      as: 'ancestors',
-                    },
-                  },
-                ],
-              },
-            },
-            {
-              $set: {
-                remainingAmount: {
-                  $cond: {
-                    if: {
-                      $and: [
-                        {
-                          $eq: [
-                            '$transactionType',
-                            'deferred',
-                          ],
-                        },
-                        {
-                          $eq: [
-                            '$isSettled',
-                            false,
-                          ],
-                        },
-                      ],
-                    },
-                    then: {
-                      $subtract: [
-                        {
-                          $abs: '$amount',
-                        },
-                        {
-                          $sum: '$repayments.amount',
-                        },
-                      ],
-
-                    },
-                    else: '$$REMOVE',
-                  },
-                },
-                deferredSplits: {
-                  $cond: {
-                    if: {
-                      $ne: [
-                        {
-                          $type: '$deferredSplits',
-                        },
-                        'missing',
-                      ],
-                    },
-                    then: {
-                      $map: {
-                        input: '$deferredSplits',
-                        as: 'split',
-                        in: {
-                          $mergeObjects: [
-                            '$$split',
-                            {
-                              remainingAmount: {
-                                $cond: {
-                                  if: {
-                                    $eq: [
-                                      '$$split.isSettled',
-                                      false,
-                                    ],
-                                  },
-                                  then: {
-                                    $subtract: [
-                                      {
-                                        $abs: '$$split.amount',
-                                      },
-                                      {
-                                        $sum: {
-                                          $map: {
-                                            input: '$repayments',
-                                            as: 'payment',
-                                            in: {
-                                              $cond: {
-                                                if: {
-                                                  $eq: [
-                                                    '$$payment.transaction',
-                                                    '$$split._id',
-                                                  ],
-                                                },
-                                                then: '$$payment.amount',
-                                                else: 0,
-                                              },
-                                            },
-                                          },
-                                        },
-                                      },
-                                    ],
-                                  },
-                                  else: '$$REMOVE',
-                                },
-                              },
-                              payingAccount: '$account',
-                              ownerAccount: {
-                                $first: {
-                                  $filter: {
-                                    input: '$accounts',
-                                    as: 'a',
-                                    cond: {
-                                      $eq: [
-                                        '$$a._id',
-                                        '$$split.ownerAccount',
-                                      ],
-                                    },
-                                  },
-                                },
-                              },
-                              project: {
-                                $first: {
-                                  $filter: {
-                                    input: '$projects',
-                                    as: 'p',
-                                    cond: {
-                                      $eq: [
-                                        '$$p._id',
-                                        '$$split.project',
-                                      ],
-                                    },
-                                  },
-                                },
-                              },
-                              product: {
-                                $first: {
-                                  $filter: {
-                                    input: '$products',
-                                    as: 'p',
-                                    cond: {
-                                      $eq: [
-                                        '$$p._id',
-                                        '$$split.product',
-                                      ],
-                                    },
-                                  },
-                                },
-                              },
-                              category: {
-                                $first: {
-                                  $filter: {
-                                    input: '$categories',
-                                    as: 'c',
-                                    cond: {
-                                      $eq: [
-                                        '$$c._id',
-                                        '$$split.category',
-                                      ],
-                                    },
-                                  },
-                                },
-                              },
-                            },
-                          ],
-                        },
-                      },
-                    },
-                    else: '$$REMOVE',
-                  },
-                },
-              },
-            },
-            {
-              $unset: ['repayments'],
-            },
-            {
-              $lookup: {
-                from: 'projects',
-                localField: 'splits.project',
-                foreignField: '_id',
-                as: 'projects',
-              },
-            },
-            {
-              $lookup: {
-                from: 'products',
-                localField: 'splits.product',
-                foreignField: '_id',
-                as: 'products',
-              },
-            },
-            {
-              $lookup: {
-                from: 'categories',
-                let: {
-                  categoryIds: {
-                    $map: {
-                      input: '$splits',
-                      as: 'split',
-                      in: '$$split.category',
-                    },
-                  },
-                },
-                as: 'categories',
-                pipeline: [
-                  {
-                    $match: {
-                      $expr: {
-                        $in: [
-                          '$_id',
-                          {
-                            $ifNull: [
-                              '$$categoryIds',
-                              [],
-                            ],
-                          },
-                        ],
-                      },
-                    },
-                  },
-                  {
-                    $lookup: {
-                      from: 'categories',
-                      localField: 'ancestors',
-                      foreignField: '_id',
-                      as: 'ancestors',
-                    },
-                  },
-                ],
-              },
-            },
-            {
-              $set: {
-                splits: {
-                  $cond: {
-                    if: {
-                      $ne: [
-                        {
-                          $type: '$splits',
-                        },
-                        'missing',
-                      ],
-                    },
-                    then: {
-                      $map: {
-                        input: '$splits',
-                        as: 'split',
-                        in: {
-                          $mergeObjects: [
-                            '$$split',
-                            {
-                              project: {
-                                $first: {
-                                  $filter: {
-                                    input: '$projects',
-                                    as: 'p',
-                                    cond: {
-                                      $eq: [
-                                        '$$p._id',
-                                        '$$split.project',
-                                      ],
-                                    },
-                                  },
-                                },
-                              },
-                              product: {
-                                $first: {
-                                  $filter: {
-                                    input: '$products',
-                                    as: 'p',
-                                    cond: {
-                                      $eq: [
-                                        '$$p._id',
-                                        '$$split.product',
-                                      ],
-                                    },
-                                  },
-                                },
-                              },
-                              category: {
-                                $first: {
-                                  $filter: {
-                                    input: '$categories',
-                                    as: 'c',
-                                    cond: {
-                                      $eq: [
-                                        '$$c._id',
-                                        '$$split.category',
-                                      ],
-                                    },
-                                  },
-                                },
-                              },
-                            },
-                          ],
-                        },
-                      },
-                    },
-                    else: '$$REMOVE',
-                  },
-                },
-              },
-            },
-            ...populateAggregate('payingAccount', 'accounts'),
-            ...populateAggregate('ownerAccount', 'accounts'),
-            ...populateAggregate('transferAccount', 'accounts'),
-            ...populateAggregate('category', 'categories', [
-              {
-                $lookup: {
-                  from: 'categories',
-                  localField: 'ancestors',
-                  foreignField: '_id',
-                  as: 'ancestors',
-                },
-              },
+            matchAnyProperty(account._id, [
+              'account',
+              'transferAccount',
+              'payingAccount',
+              'ownerAccount',
+              'deferredSplits.ownerAccount',
             ]),
-            ...populateAggregate('project', 'projects'),
-            ...populateAggregate('product', 'products'),
-            ...populateAggregate('recipient', 'recipients'),
-            {
-              $unset: [
-                'projects',
-                'categories',
-                'products',
-                'accounts',
-              ],
-            },
+            ...transactionAggregate,
           ],
         ))[0];
       });
@@ -651,64 +209,35 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
                 transactionType: {
                   $nin: [
                     'transfer',
-                    'loanTransfer',
+                    'draft',
                   ],
                 },
               },
             },
-            ...flattenSplit({
-              _id: '$_id',
-            }),
             {
               $set: {
-                tmp_dupes: {
-                  $filter: {
-                    input: [
-                      {
-                        account: {
-                          $cond: {
-                            if: {
-                              $ne: [
-                                '$transactionType',
-                                'deferred',
-                              ],
-                            },
-                            then: '$account',
-                            else: null,
-                          },
-                        },
-                      },
-                      {
-                        account: '$transferAccount',
-                        amount: {
-                          $ifNull: [
-                            '$transferAmount',
-                            '$amount',
-                          ],
-                        },
-                      },
-                      {
-                        account: '$ownerAccount',
-                      },
-                    ],
-                    cond: {
-                      $ne: [
-                        {
-                          $ifNull: [
-                            '$$this.account',
-                            null,
-                          ],
-                        },
-                        null,
+                tmp_splits: {
+                  $concatArrays: [
+                    {
+                      $ifNull: [
+                        '$splits',
+                        [],
                       ],
                     },
-                  },
+                    {
+                      $ifNull: [
+                        '$deferredSplits',
+                        [],
+                      ],
+                    },
+                  ],
                 },
               },
             },
             {
               $unwind: {
-                path: '$tmp_dupes',
+                path: '$tmp_splits',
+                preserveNullAndEmptyArrays: true,
               },
             },
             {
@@ -716,21 +245,29 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
                 newRoot: {
                   $mergeObjects: [
                     '$$ROOT',
-                    '$tmp_dupes',
+                    '$tmp_splits',
+                    {
+                      _id: '$_id',
+                      account: {
+                        $ifNull: [
+                          '$tmp_splits.ownerAccount',
+                          '$ownerAccount',
+                          '$account',
+                        ], 
+                      },
+                    },
                   ],
                 },
               },
             },
             {
               $unset: [
-                'tmp_dupes',
                 'tmp_splits',
                 'splits',
                 'deferredSplits',
                 'payingAccount',
                 'ownerAccount',
                 'isSettled',
-                'transactionType',
               ],
             },
             match,
@@ -895,27 +432,13 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
         }
 
         return mongodbService.transactions.aggregate([
-          {
-            $match: {
-              $or: [
-                {
-                  account: account._id,
-                },
-                {
-                  transferAccount: account._id,
-                },
-                {
-                  payingAccount: account._id,
-                },
-                {
-                  ownerAccount: account._id,
-                },
-                {
-                  'deferredSplits.ownerAccount': account._id,
-                },
-              ],
-            },
-          },
+          matchAnyProperty(account._id, [
+            'account',
+            'transferAccount',
+            'payingAccount',
+            'ownerAccount',
+            'deferredSplits.ownerAccount',
+          ]),
           {
             $sort: {
               issuedAt: -1,
@@ -927,485 +450,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
           {
             $limit: pageSize,
           },
-          {
-            $lookup: {
-              from: 'transactions',
-              let: {
-                transactionId: '$_id',
-                deferredSplits: '$deferredSplits',
-              },
-              as: 'repayments',
-              pipeline: [
-                {
-                  $unwind: {
-                    path: '$payments',
-                  },
-                },
-                {
-                  $match: {
-                    $expr: {
-                      $or: [
-                        {
-                          $eq: [
-                            '$$transactionId',
-                            '$payments.transaction',
-                          ],
-                        },
-                        {
-                          $in: [
-                            '$payments.transaction',
-                            {
-                              $map: {
-                                input: {
-                                  $ifNull: [
-                                    '$$deferredSplits',
-                                    [],
-                                  ],
-                                },
-                                as: 'split',
-                                in: '$$split._id',
-                              },
-                            },
-                          ],
-                        },
-                      ],
-                    },
-                  },
-                },
-                {
-                  $replaceRoot: {
-                    newRoot: '$payments',
-                  },
-                },
-              ],
-            },
-          },
-          ...populateAggregate('account', 'accounts'),
-          {
-            $lookup: {
-              from: 'projects',
-              localField: 'deferredSplits.project',
-              foreignField: '_id',
-              as: 'projects',
-            },
-          },
-          {
-            $lookup: {
-              from: 'products',
-              localField: 'deferredSplits.product',
-              foreignField: '_id',
-              as: 'products',
-            },
-          },
-          {
-            $lookup: {
-              from: 'accounts',
-              localField: 'deferredSplits.ownerAccount',
-              foreignField: '_id',
-              as: 'accounts',
-            },
-          },
-          {
-            $lookup: {
-              from: 'categories',
-              let: {
-                categoryIds: {
-                  $map: {
-                    input: '$deferredSplits',
-                    as: 'split',
-                    in: '$$split.category',
-                  },
-                },
-              },
-              as: 'categories',
-              pipeline: [
-                {
-                  $match: {
-                    $expr: {
-                      $in: [
-                        '$_id',
-                        {
-                          $ifNull: [
-                            '$$categoryIds',
-                            [],
-                          ],
-                        },
-                      ],
-                    },
-                  },
-                },
-                {
-                  $lookup: {
-                    from: 'categories',
-                    localField: 'ancestors',
-                    foreignField: '_id',
-                    as: 'ancestors',
-                  },
-                },
-              ],
-            },
-          },
-          {
-            $set: {
-              amount: {
-                $cond: {
-                  if: {
-                    $and: [
-                      {
-                        $eq: [
-                          account.accountType,
-                          AccountType.Loan,
-                        ],
-                      },
-                      {
-                        $eq: [
-                          '$transactionType',
-                          'deferred',
-                        ],
-                      },
-                    ],
-                  },
-                  then: {
-                    $multiply: [
-                      -1,
-                      '$amount',
-                    ],
-                  },
-                  else: '$amount',
-                },
-              },
-              splits: {
-                $cond: {
-                  if: {
-                    $and: [
-                      {
-                        $eq: [
-                          '$transactionType',
-                          'split',
-                        ],
-                      },
-                      {
-                        $ne: [
-                          '$account',
-                          account._id,
-                        ],
-                      },
-                    ],
-                  },
-                  then: [],
-                  else: '$splits',
-                },
-              },
-              remainingAmount: {
-                $cond: {
-                  if: {
-                    $and: [
-                      {
-                        $eq: [
-                          '$transactionType',
-                          'deferred',
-                        ],
-                      },
-                      {
-                        $eq: [
-                          '$isSettled',
-                          false,
-                        ],
-                      },
-                    ],
-                  },
-                  then: {
-                    $subtract: [
-                      {
-                        $abs: '$amount',
-                      },
-                      {
-                        $sum: '$repayments.amount',
-                      },
-                    ],
-
-                  },
-                  else: '$$REMOVE',
-                },
-              },
-              deferredSplits: {
-                $cond: {
-                  if: {
-                    $ne: [
-                      {
-                        $type: '$deferredSplits',
-                      },
-                      'missing',
-                    ],
-                  },
-                  then: {
-                    $map: {
-                      input: '$deferredSplits',
-                      as: 'split',
-                      in: {
-                        $mergeObjects: [
-                          '$$split',
-                          {
-                            remainingAmount: {
-                              $cond: {
-                                if: {
-                                  $eq: [
-                                    '$$split.isSettled',
-                                    false,
-                                  ],
-                                },
-                                then: {
-                                  $subtract: [
-                                    {
-                                      $abs: '$$split.amount',
-                                    },
-                                    {
-                                      $sum: {
-                                        $map: {
-                                          input: '$repayments',
-                                          as: 'payment',
-                                          in: {
-                                            $cond: {
-                                              if: {
-                                                $eq: [
-                                                  '$$payment.transaction',
-                                                  '$$split._id',
-                                                ],
-                                              },
-                                              then: '$$payment.amount',
-                                              else: 0,
-                                            },
-                                          },
-                                        },
-                                      },
-                                    },
-                                  ],
-                                },
-                                else: '$$REMOVE',
-                              },
-                            },
-                            payingAccount: '$account',
-                            ownerAccount: {
-                              $first: {
-                                $filter: {
-                                  input: '$accounts',
-                                  as: 'a',
-                                  cond: {
-                                    $eq: [
-                                      '$$a._id',
-                                      '$$split.ownerAccount',
-                                    ],
-                                  },
-                                },
-                              },
-                            },
-                            project: {
-                              $first: {
-                                $filter: {
-                                  input: '$projects',
-                                  as: 'p',
-                                  cond: {
-                                    $eq: [
-                                      '$$p._id',
-                                      '$$split.project',
-                                    ],
-                                  },
-                                },
-                              },
-                            },
-                            product: {
-                              $first: {
-                                $filter: {
-                                  input: '$products',
-                                  as: 'p',
-                                  cond: {
-                                    $eq: [
-                                      '$$p._id',
-                                      '$$split.product',
-                                    ],
-                                  },
-                                },
-                              },
-                            },
-                            category: {
-                              $first: {
-                                $filter: {
-                                  input: '$categories',
-                                  as: 'c',
-                                  cond: {
-                                    $eq: [
-                                      '$$c._id',
-                                      '$$split.category',
-                                    ],
-                                  },
-                                },
-                              },
-                            },
-                          },
-                        ],
-                      },
-                    },
-                  },
-                  else: '$$REMOVE',
-                },
-              },
-            },
-          },
-          {
-            $unset: ['repayments'],
-          },
-          {
-            $lookup: {
-              from: 'projects',
-              localField: 'splits.project',
-              foreignField: '_id',
-              as: 'projects',
-            },
-          },
-          {
-            $lookup: {
-              from: 'products',
-              localField: 'splits.product',
-              foreignField: '_id',
-              as: 'products',
-            },
-          },
-          {
-            $lookup: {
-              from: 'categories',
-              let: {
-                categoryIds: {
-                  $map: {
-                    input: '$splits',
-                    as: 'split',
-                    in: '$$split.category',
-                  },
-                },
-              },
-              as: 'categories',
-              pipeline: [
-                {
-                  $match: {
-                    $expr: {
-                      $in: [
-                        '$_id',
-                        {
-                          $ifNull: [
-                            '$$categoryIds',
-                            [],
-                          ],
-                        },
-                      ],
-                    },
-                  },
-                },
-                {
-                  $lookup: {
-                    from: 'categories',
-                    localField: 'ancestors',
-                    foreignField: '_id',
-                    as: 'ancestors',
-                  },
-                },
-              ],
-            },
-          },
-          {
-            $set: {
-              splits: {
-                $cond: {
-                  if: {
-                    $ne: [
-                      {
-                        $type: '$splits',
-                      },
-                      'missing',
-                    ],
-                  },
-                  then: {
-                    $map: {
-                      input: '$splits',
-                      as: 'split',
-                      in: {
-                        $mergeObjects: [
-                          '$$split',
-                          {
-                            project: {
-                              $first: {
-                                $filter: {
-                                  input: '$projects',
-                                  as: 'p',
-                                  cond: {
-                                    $eq: [
-                                      '$$p._id',
-                                      '$$split.project',
-                                    ],
-                                  },
-                                },
-                              },
-                            },
-                            product: {
-                              $first: {
-                                $filter: {
-                                  input: '$products',
-                                  as: 'p',
-                                  cond: {
-                                    $eq: [
-                                      '$$p._id',
-                                      '$$split.product',
-                                    ],
-                                  },
-                                },
-                              },
-                            },
-                            category: {
-                              $first: {
-                                $filter: {
-                                  input: '$categories',
-                                  as: 'c',
-                                  cond: {
-                                    $eq: [
-                                      '$$c._id',
-                                      '$$split.category',
-                                    ],
-                                  },
-                                },
-                              },
-                            },
-                          },
-                        ],
-                      },
-                    },
-                  },
-                  else: '$$REMOVE',
-                },
-              },
-            },
-          },
-          ...populateAggregate('payingAccount', 'accounts'),
-          ...populateAggregate('ownerAccount', 'accounts'),
-          ...populateAggregate('transferAccount', 'accounts'),
-          ...populateAggregate('category', 'categories', [
-            {
-              $lookup: {
-                from: 'categories',
-                localField: 'ancestors',
-                foreignField: '_id',
-                as: 'ancestors',
-              },
-            },
-          ]),
-          ...populateAggregate('project', 'projects'),
-          ...populateAggregate('product', 'products'),
-          ...populateAggregate('recipient', 'recipients'),
-          {
-            $unset: [
-              'projects',
-              'categories',
-              'products',
-              'accounts',
-            ],
-          },
+          ...transactionAggregate,
         ], {
           session,
         });
@@ -1461,30 +506,15 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
                   },
                 },
               },
-              {
-                $limit: 1,
-              },
+              ...transactionAggregate,
             ],
             as: 'potentialDuplicates',
-          })
-          .addFields({
-            hasDuplicate: {
-              $gt: [
-                {
-                  $size: '$potentialDuplicates',
-                },
-                0,
-              ],
-            },
-          })
-          .project({
-            potentialDuplicates: 0,
           })
           .sort({
             issuedAt: -1,
           })
-          .session(session)
-          .exec();
+          .session(session);
+          
       });
     },
   };

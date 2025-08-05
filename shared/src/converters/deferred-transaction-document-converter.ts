@@ -45,7 +45,7 @@ export const deferredTransactionDocumentConverterFactory = (
     transferAccount: true,
     transferAmount: true,
     file: true,
-    hasDuplicate: true,
+    potentialDuplicates: true,
     payments: true,
     deferredSplits: true,
     splits: true,

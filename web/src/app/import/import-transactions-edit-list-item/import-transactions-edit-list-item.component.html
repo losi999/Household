@@ -1,0 +1,17 @@
+<div class="list-item">
+  <div class="datetime">
+    {{transaction.issuedAt | date: showYear ? 'yyyy. MMMM dd. HH:mm' : 'MMMM d. HH:mm'}}
+  </div>
+
+  <div class="details">
+    <household-transaction-details-row *ngIf="transaction.transactionType === 'draft'" icon="error" class="red" text="Fizető számla nincs megadva!" />
+    <household-transaction-details-transfer *ngIf="transaction.transactionType === 'transfer'" [transaction]="transaction" [twoWayDisplay]="true" />
+    <household-transaction-details-loan *ngIf="transaction.transactionType !== 'transfer'" [transaction]="transaction" />
+    <household-transaction-details-recipient *ngIf="transaction.transactionType !== 'transfer'" [transaction]="transaction" />
+    <household-transaction-details-category *ngIf="transaction.transactionType !== 'transfer'" [transaction]="transaction" />
+    <household-transaction-details-project *ngIf="transaction.transactionType !== 'transfer'" [transaction]="transaction" />
+    <household-transaction-details-description [transaction]="transaction" />
+  </div>
+
+  <div class="amount" [ngClass]="transaction.amount >= 0 ? 'green' : 'red'">{{transaction.amount | number:'1.0-2':'hu' }} {{transaction.account?.currency}}</div>
+</div>

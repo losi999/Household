@@ -7,7 +7,7 @@ const validateProductDocument = (response: Product.ProductId, request: Product.R
   const id = response?.productId;
 
   cy.log('Get product document', id)
-    .getProductDocumentById(id)
+    .findProductDocumentById(id)
     .should((document) => {
       expect(getProductId(document), 'id').to.equal(id);
       const { brand, measurement, unitOfMeasurement, fullName, category, ...internal } = document;
@@ -24,7 +24,7 @@ const validateProductDocument = (response: Product.ProductId, request: Product.R
 const validateProductReassigned = (originalProduct: Product.Document, newCategoryId: Category.Id) => {
   const productId = getProductId(originalProduct);
   cy.log('Get product document', productId)
-    .getProductDocumentById(productId)
+    .findProductDocumentById(productId)
     .should((document) => {
       const { brand, category, fullName, measurement, unitOfMeasurement, ...internal } = document;
 
@@ -39,7 +39,7 @@ const validateProductReassigned = (originalProduct: Product.Document, newCategor
 
 const validateProductDeleted = (productId: Product.Id) => {
   cy.log('Get product document', productId)
-    .getProductDocumentById(productId)
+    .findProductDocumentById(productId)
     .should((document) => {
       expect(document, 'document').to.be.null;
     });

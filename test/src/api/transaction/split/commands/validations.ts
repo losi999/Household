@@ -136,14 +136,14 @@ export const validateTransactionSplitResponse = (response: Transaction.SplitResp
     transactionType,
   }, document);
 
-  cy.validateNestedAccountResponse('account.', account, document.account, document.account.balance ?? null);
+  cy.validateTransactionNestedObject('account', account).validateAccountResponse(document.account);
 
   if (recipient) {
-    cy.validateNestedRecipientResponse('recipient.', recipient, document.recipient);
+    cy.validateTransactionNestedObject('recipient', recipient).validateRecipientResponse(document.recipient);
   } else {
     expect(recipient, 'recipient').to.be.undefined;
   }
-
+  expect(response.splits.length, 'number of splits').to.equal(document.splits.length);
   splits.forEach((split, index) => {
     const documentSplit = document.splits[index];
     const { amount, billingEndDate, billingStartDate, category, description, invoiceNumber, product, project, quantity, ...empty } = split;
@@ -152,7 +152,7 @@ export const validateTransactionSplitResponse = (response: Transaction.SplitResp
     expect(description, `splits[${index}].description`).to.equal(documentSplit.description);
 
     if (project) {
-      cy.validateNestedProjectResponse(`splits[${index}].project.`, project, documentSplit.project);
+      cy.validateTransactionNestedObject(`splits[${index}].project`, project).validateProjectResponse(documentSplit.project);
     } else {
       expect(project, `splits[${index}].project`).to.be.undefined;
     }
@@ -187,6 +187,7 @@ export const validateTransactionSplitResponse = (response: Transaction.SplitResp
     expectEmptyObject(empty, 'response');
   });
 
+  expect(response.deferredSplits.length, 'number of deferred splits').to.equal(document.deferredSplits.length);
   deferredSplits.forEach((split, index) => {
     const documentSplit = document.deferredSplits[index];
     const { amount, billingEndDate, billingStartDate, category, description, invoiceNumber, product, project, quantity, ownerAccount, payingAccount, transactionType, remainingAmount, transactionId, isSettled, ...empty } = split;
@@ -198,11 +199,11 @@ export const validateTransactionSplitResponse = (response: Transaction.SplitResp
     expect(description, `deferredSplits[${index}].description`).to.equal(documentSplit.description);
     expect(isSettled, `deferredSplits[${index}].isSettled`).to.equal(documentSplit.isSettled);
 
-    cy.validateNestedAccountResponse(`deferredSplits[${index}].payingAccount`, payingAccount, documentSplit.payingAccount, documentSplit.payingAccount.balance ?? null)
-      .validateNestedAccountResponse(`deferredSplits[${index}].ownerAccount`, ownerAccount, documentSplit.ownerAccount, documentSplit.ownerAccount.balance ?? null);
+    cy.validateTransactionNestedObject(`deferredSplits[${index}].payingAccount`, payingAccount).validateAccountResponse(documentSplit.payingAccount);
+    cy.validateTransactionNestedObject(`deferredSplits[${index}].ownerAccount`, ownerAccount).validateAccountResponse(documentSplit.ownerAccount);
 
     if (project) {
-      cy.validateNestedProjectResponse(`deferredSplits[${index}].project.`, project, documentSplit.project);
+      cy.validateTransactionNestedObject(`deferredSplits[${index}].project`, project).validateProjectResponse(documentSplit.project);
     } else {
       expect(project, `deferredSplits[${index}].project`).to.be.undefined;
     }

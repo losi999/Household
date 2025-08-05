@@ -1,6 +1,10 @@
 import { default as schema } from '@household/test/api/schemas/setting-response-list';
 import { Setting } from '@household/shared/types/types';
 import { settingDataFactory } from './data-factory';
+import { forbidUsers } from '@household/test/api/utils';
+import { entries } from '@household/shared/common/utils';
+
+const permissionMap = forbidUsers();
 
 describe('GET /setting/v1/settings', () => {
   let settingKey1: Setting.Id;
@@ -23,18 +27,31 @@ describe('GET /setting/v1/settings', () => {
     });
   });
 
-  describe('called as an admin', () => {
-    it('should get a list of settings', () => {
-      cy.updateSettingDocument(settingKey1, settingDataFactory.update(settingRequest1))
-        .updateSettingDocument(settingKey2, settingDataFactory.update(settingRequest2))
-        .authenticate('admin')
-        .requestGetSettingList()
-        .expectOkResponse()
-        .expectValidResponseSchema(schema)
-        .validateSettingListResponse([
-          settingDataFactory.document(settingKey1, settingRequest1),
-          settingDataFactory.document(settingKey2, settingRequest2),
-        ]);
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
+    describe(`called as ${userType}`, () => {
+      if (!isAllowed) {
+        it('should return forbidden', () => {
+          cy.authenticate(userType)
+            .requestGetSettingList()
+            .expectForbiddenResponse();
+        });
+      } else {
+        it('should get a list of settings', () => {
+          cy.updateSettingDocument(settingKey1, settingDataFactory.update(settingRequest1))
+            .updateSettingDocument(settingKey2, settingDataFactory.update(settingRequest2))
+            .authenticate(userType)
+            .requestGetSettingList()
+            .expectOkResponse()
+            .expectValidResponseSchema(schema)
+            .validateSettingListResponse([
+              settingDataFactory.document(settingKey1, settingRequest1),
+              settingDataFactory.document(settingKey2, settingRequest2),
+            ]);
+        });
+      }
     });
   });
 });

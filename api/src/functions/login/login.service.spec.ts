@@ -40,13 +40,11 @@ describe('Login service', () => {
   it('should throw error if unable to login', async () => {
     const body = {} as Auth.Login.Request;
 
-    mockIdentityService.functions.login.mockRejectedValue({
-      message: 'This is a cognito error',
-    });
+    mockIdentityService.functions.login.mockRejectedValue('This is a cognito error');
 
     await service({
       body,
-    }).catch(validateError('This is a cognito error', 500));
+    }).catch(validateError('Error while logging in', 500));
     validateFunctionCall(mockIdentityService.functions.login, body);
     expect.assertions(3);
   });

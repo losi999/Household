@@ -1,7 +1,10 @@
 import { File, Transaction } from '@household/shared/types/types';
 import { fileDataFactory } from './data-factory';
 import { draftTransactionDataFactory } from '@household/test/api/transaction/draft/draft-data-factory';
-import { getFileId, getTransactionId } from '@household/shared/common/utils';
+import { entries, getFileId, getTransactionId } from '@household/shared/common/utils';
+import { allowUsers } from '@household/test/api/utils';
+
+const permissionMap = allowUsers('editor') ;
 
 describe('DELETE /file/v1/files/{fileId}', () => {
   let fileDocument: File.Document;
@@ -22,29 +25,42 @@ describe('DELETE /file/v1/files/{fileId}', () => {
     });
   });
 
-  describe('called as an admin', () => {
-    it('should delete file', () => {
-      cy.saveFileDocument(fileDocument)
-        .saveTransactionDocument(draftDocument)
-        .writeFileToS3(getFileId(fileDocument), 'file', '')
-        .authenticate('admin')
-        .requestDeleteFile(getFileId(fileDocument))
-        .expectNoContentResponse()
-        .validateFileDeleted(getFileId(fileDocument))
-        .validateTransactionDeleted(getTransactionId(draftDocument))
-        .validateFileDeletedFromS3(getFileId(fileDocument));
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
+    describe(`called as ${userType}`, () => {
+      if (!isAllowed) {
+        it('should return forbidden', () => {
+          cy.authenticate(userType)
+            .requestDeleteFile(fileDataFactory.id())
+            .expectForbiddenResponse();
+        });
+      } else {
+        it('should delete file', () => {
+          cy.saveFileDocument(fileDocument)
+            .saveTransactionDocument(draftDocument)
+            .writeFileToS3(getFileId(fileDocument), 'file', '')
+            .authenticate(userType)
+            .requestDeleteFile(getFileId(fileDocument))
+            .expectNoContentResponse()
+            .validateFileDeleted(getFileId(fileDocument))
+            .validateTransactionDeleted(getTransactionId(draftDocument))
+            .validateFileDeletedFromS3(getFileId(fileDocument));
 
-    });
-  });
+        });
 
-  describe('should return error', () => {
-    describe('if fileId', () => {
-      it('is not mongo id', () => {
-        cy.authenticate('admin')
-          .requestDeleteFile(fileDataFactory.id('not-valid'))
-          .expectBadRequestResponse()
-          .expectWrongPropertyPattern('fileId', 'pathParameters');
-      });
+        describe('should return error', () => {
+          describe('if fileId', () => {
+            it('is not mongo id', () => {
+              cy.authenticate(userType)
+                .requestDeleteFile(fileDataFactory.id('not-valid'))
+                .expectBadRequestResponse()
+                .expectWrongPropertyPattern('fileId', 'pathParameters');
+            });
+          });
+        });
+      }
     });
   });
 });

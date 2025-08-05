@@ -10,7 +10,7 @@ export interface IRefreshTokenService {
 
 export const refreshTokenServiceFactory = (identityService: IIdentityService): IRefreshTokenService => {
   return async ({ body }) => {
-    const loginResponse = await identityService.refreshToken(body).catch(httpErrors.common.genericError('Refresh token', body));
+    const loginResponse = await identityService.refreshToken(body).catch(httpErrors.cognito.refreshToken());
 
     return {
       idToken: loginResponse.AuthenticationResult.IdToken,

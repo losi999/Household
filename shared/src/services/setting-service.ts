@@ -23,8 +23,8 @@ export const settingServiceFactory = (mongodbService: IMongodbService): ISetting
     listSettings: () => {
       return mongodbService.inSession((session) => {
         return mongodbService.settings.find()
-          .session(session)
-          .exec();
+          .session(session);
+          
       });
     },
     getSettingByKey: (settingKey) => {
@@ -32,8 +32,8 @@ export const settingServiceFactory = (mongodbService: IMongodbService): ISetting
         return mongodbService.settings.findOne({
           settingKey,
         })
-          .session(session)
-          .exec();
+          .session(session);
+          
       });
     },
   };

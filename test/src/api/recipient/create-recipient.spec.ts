@@ -1,5 +1,9 @@
 import { Recipient } from '@household/shared/types/types';
 import { recipientDataFactory } from './data-factory';
+import { allowUsers } from '@household/test/api/utils';
+import { entries } from '@household/shared/common/utils';
+
+const permissionMap = allowUsers('editor') ;
 
 describe('POST recipient/v1/recipients', () => {
   let request: Recipient.Request;
@@ -16,54 +20,66 @@ describe('POST recipient/v1/recipients', () => {
     });
   });
 
-  describe('called as an admin', () => {
-
-    it('should create recipient', () => {
-      cy.authenticate('admin')
-        .requestCreateRecipient(request)
-        .expectCreatedResponse()
-        .validateRecipientDocument(request);
-    });
-
-    describe('should return error', () => {
-      describe('if name', () => {
-        it('is missing from body', () => {
-          cy.authenticate('admin')
-            .requestCreateRecipient(recipientDataFactory.request({
-              name: undefined,
-            }))
-            .expectBadRequestResponse()
-            .expectRequiredProperty('name', 'body');
-        });
-
-        it('is not string', () => {
-          cy.authenticate('admin')
-            .requestCreateRecipient(recipientDataFactory.request({
-              name: <any>1,
-            }))
-            .expectBadRequestResponse()
-            .expectWrongPropertyType('name', 'string', 'body');
-        });
-
-        it('is too short', () => {
-          cy.authenticate('admin')
-            .requestCreateRecipient(recipientDataFactory.request({
-              name: '',
-            }))
-            .expectBadRequestResponse()
-            .expectTooShortProperty('name', 1, 'body');
-        });
-
-        it('is already in used by a different recipient', () => {
-          const recipientDocument = recipientDataFactory.document(request);
-
-          cy.saveRecipientDocument(recipientDocument)
-            .authenticate('admin')
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
+    describe(`called as ${userType}`, () => {
+      if (!isAllowed) {
+        it('should return forbidden', () => {
+          cy.authenticate(userType)
             .requestCreateRecipient(request)
-            .expectBadRequestResponse()
-            .expectMessage('Duplicate recipient name');
+            .expectForbiddenResponse();
         });
-      });
+      } else {
+        it('should create recipient', () => {
+          cy.authenticate(userType)
+            .requestCreateRecipient(request)
+            .expectCreatedResponse()
+            .validateRecipientDocument(request);
+        });
+
+        describe('should return error', () => {
+          describe('if name', () => {
+            it('is missing from body', () => {
+              cy.authenticate(userType)
+                .requestCreateRecipient(recipientDataFactory.request({
+                  name: undefined,
+                }))
+                .expectBadRequestResponse()
+                .expectRequiredProperty('name', 'body');
+            });
+
+            it('is not string', () => {
+              cy.authenticate(userType)
+                .requestCreateRecipient(recipientDataFactory.request({
+                  name: <any>1,
+                }))
+                .expectBadRequestResponse()
+                .expectWrongPropertyType('name', 'string', 'body');
+            });
+
+            it('is too short', () => {
+              cy.authenticate(userType)
+                .requestCreateRecipient(recipientDataFactory.request({
+                  name: '',
+                }))
+                .expectBadRequestResponse()
+                .expectTooShortProperty('name', 1, 'body');
+            });
+
+            it('is already in used by a different recipient', () => {
+              const recipientDocument = recipientDataFactory.document(request);
+
+              cy.saveRecipientDocument(recipientDocument)
+                .authenticate(userType)
+                .requestCreateRecipient(request)
+                .expectBadRequestResponse()
+                .expectMessage('Duplicate recipient name');
+            });
+          });
+        });
+      }
     });
   });
 });

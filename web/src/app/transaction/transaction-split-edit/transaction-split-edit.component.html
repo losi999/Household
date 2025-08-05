@@ -41,7 +41,14 @@
 
   <div *ngFor="let split of form.controls.splits?.controls; index as i" [formGroup]="split">
     <ng-container *ngIf="split.value.isSaved">
-      <household-transaction-short-details [currency]="form.value.account?.currency" [amount]="split.value.amount" [ownerAccount]="split.value.loanAccount" [category]="split.value.category" [project]="split.value.project" [product]="split.value.product" [quantity]="split.value.quantity" [description]="split.value.description" [billingStartDate]="split.value.billingStartDate" [billingEndDate]="split.value.billingEndDate" [invoiceNumber]="split.value.invoiceNumber" />
+      <mat-divider />
+      <div class="amount" [ngClass]="split.value.amount > 0 ? 'green' : 'red'">{{split.value.amount | number:'1.0-2':'hu'}} {{form.value.account?.currency}}</div>
+      <household-transaction-details-row *ngIf="split.value.loanAccount" icon="forward" [text]="split.value.loanAccount.fullName" rowColor="green" />
+      <household-transaction-details-category [transaction]="split.value" />
+      <household-transaction-details-inventory [transaction]="split.value" />
+      <household-transaction-details-invoice [transaction]="split.value" />
+      <household-transaction-details-project [transaction]="split.value" />
+      <household-transaction-details-description [transaction]="split.value" />
       <div class="split-buttons">
         <button mat-icon-button color="primary" type="button" (click)="editSplit(split, i)">
           <mat-icon>edit</mat-icon>

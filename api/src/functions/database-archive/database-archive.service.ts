@@ -7,7 +7,7 @@ import { IStorageService } from '@household/shared/services/storage-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
 
 export interface IDatabaseArchiveService {
-  (): Promise<void>;
+  (): Promise<unknown>;
 }
 
 export const databaseArchiveServiceFactory = (
@@ -36,7 +36,7 @@ export const databaseArchiveServiceFactory = (
     ]);
     const folderName = new Date().toISOString();
 
-    await Promise.all([
+    return Promise.all([
       storageService.writeFile('accounts.json', JSON.stringify(accounts), folderName),
       storageService.writeFile('projects.json', JSON.stringify(projects), folderName),
       storageService.writeFile('categories.json', JSON.stringify(categories), folderName),

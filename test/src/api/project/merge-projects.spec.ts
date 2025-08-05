@@ -1,4 +1,4 @@
-import { getProjectId } from '@household/shared/common/utils';
+import { entries, getProjectId } from '@household/shared/common/utils';
 import { Account, Project, Transaction } from '@household/shared/types/types';
 import { splitTransactionDataFactory } from '../transaction/split/split-data-factory';
 import { paymentTransactionDataFactory } from '../transaction/payment/payment-data-factory';
@@ -7,6 +7,9 @@ import { accountDataFactory } from '../account/data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { AccountType } from '@household/shared/enums';
+import { allowUsers } from '@household/test/api/utils';
+
+const permissionMap = allowUsers('editor') ;
 
 describe('POST project/v1/projects/{projectId}/merge', () => {
   let accountDocument: Account.Document;
@@ -104,133 +107,146 @@ describe('POST project/v1/projects/{projectId}/merge', () => {
     });
   });
 
-  describe('called as an admin', () => {
-    it('should merge projects', () => {
-      cy.saveAccountDocuments([
-        accountDocument,
-        loanAccountDocument,
-      ])
-        .saveProjectDocuments([
-          sourceProjectDocument,
-          targetProjectDocument,
-          unrelatedProjectDocument,
-        ])
-        .saveTransactionDocuments([
-          paymentTransactionDocument,
-          splitTransactionDocument,
-          deferredTransactionDocument,
-          reimbursementTransactionDocument,
-          unrelatedPaymentTransactionDocument,
-          unrelatedDeferredTransactionDocument,
-          unrelatedReimbursementTransactionDocument,
-        ])
-        .authenticate('admin')
-        .requestMergeProjects(getProjectId(targetProjectDocument), [getProjectId(sourceProjectDocument)])
-        .expectCreatedResponse()
-        .validateProjectDeleted(getProjectId(sourceProjectDocument))
-        .validateRelatedChangesInPaymentDocument(paymentTransactionDocument, {
-          project: {
-            from: getProjectId(sourceProjectDocument),
-            to: getProjectId(targetProjectDocument),
-          },
-        })
-        .validateRelatedChangesInPaymentDocument(unrelatedPaymentTransactionDocument, {
-          project: {
-            from: getProjectId(sourceProjectDocument),
-            to: getProjectId(targetProjectDocument),
-          },
-        })
-        .validateRelatedChangesInDeferredDocument(deferredTransactionDocument, {
-          project: {
-            from: getProjectId(sourceProjectDocument),
-            to: getProjectId(targetProjectDocument),
-          },
-        })
-        .validateRelatedChangesInDeferredDocument(unrelatedDeferredTransactionDocument, {
-          project: {
-            from: getProjectId(sourceProjectDocument),
-            to: getProjectId(targetProjectDocument),
-          },
-        })
-        .validateRelatedChangesInReimbursementDocument(reimbursementTransactionDocument, {
-          project: {
-            from: getProjectId(sourceProjectDocument),
-            to: getProjectId(targetProjectDocument),
-          },
-        })
-        .validateRelatedChangesInReimbursementDocument(unrelatedReimbursementTransactionDocument, {
-          project: {
-            from: getProjectId(sourceProjectDocument),
-            to: getProjectId(targetProjectDocument),
-          },
-        })
-        .validateRelatedChangesInSplitDocument(splitTransactionDocument, {
-          project: {
-            from: getProjectId(sourceProjectDocument),
-            to: getProjectId(targetProjectDocument),
-          },
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
+    describe(`called as ${userType}`, () => {
+      if (!isAllowed) {
+        it('should return forbidden', () => {
+          cy.authenticate(userType)
+            .requestMergeProjects(projectDataFactory.id(), [projectDataFactory.id()])
+            .expectForbiddenResponse();
         });
-    });
-
-    describe('should return error', () => {
-      it('if a source project does not exist', () => {
-        cy.saveProjectDocument(targetProjectDocument)
-          .saveProjectDocument(sourceProjectDocument)
-          .authenticate('admin')
-          .requestMergeProjects(getProjectId(targetProjectDocument), [
-            getProjectId(sourceProjectDocument),
-            projectDataFactory.id(),
+      } else {
+        it('should merge projects', () => {
+          cy.saveAccountDocuments([
+            accountDocument,
+            loanAccountDocument,
           ])
-          .expectBadRequestResponse()
-          .expectMessage('Some of the projects are not found');
-      });
-      describe('if body', () => {
-        it('is not array', () => {
-          cy.authenticate('admin')
-            .requestMergeProjects(projectDataFactory.id(), {} as any)
-            .expectBadRequestResponse()
-            .expectWrongPropertyType('data', 'array', 'body');
+            .saveProjectDocuments([
+              sourceProjectDocument,
+              targetProjectDocument,
+              unrelatedProjectDocument,
+            ])
+            .saveTransactionDocuments([
+              paymentTransactionDocument,
+              splitTransactionDocument,
+              deferredTransactionDocument,
+              reimbursementTransactionDocument,
+              unrelatedPaymentTransactionDocument,
+              unrelatedDeferredTransactionDocument,
+              unrelatedReimbursementTransactionDocument,
+            ])
+            .authenticate(userType)
+            .requestMergeProjects(getProjectId(targetProjectDocument), [getProjectId(sourceProjectDocument)])
+            .expectCreatedResponse()
+            .validateProjectDeleted(getProjectId(sourceProjectDocument))
+            .validateRelatedChangesInPaymentDocument(paymentTransactionDocument, {
+              project: {
+                from: getProjectId(sourceProjectDocument),
+                to: getProjectId(targetProjectDocument),
+              },
+            })
+            .validateRelatedChangesInPaymentDocument(unrelatedPaymentTransactionDocument, {
+              project: {
+                from: getProjectId(sourceProjectDocument),
+                to: getProjectId(targetProjectDocument),
+              },
+            })
+            .validateRelatedChangesInDeferredDocument(deferredTransactionDocument, {
+              project: {
+                from: getProjectId(sourceProjectDocument),
+                to: getProjectId(targetProjectDocument),
+              },
+            })
+            .validateRelatedChangesInDeferredDocument(unrelatedDeferredTransactionDocument, {
+              project: {
+                from: getProjectId(sourceProjectDocument),
+                to: getProjectId(targetProjectDocument),
+              },
+            })
+            .validateRelatedChangesInReimbursementDocument(reimbursementTransactionDocument, {
+              project: {
+                from: getProjectId(sourceProjectDocument),
+                to: getProjectId(targetProjectDocument),
+              },
+            })
+            .validateRelatedChangesInReimbursementDocument(unrelatedReimbursementTransactionDocument, {
+              project: {
+                from: getProjectId(sourceProjectDocument),
+                to: getProjectId(targetProjectDocument),
+              },
+            })
+            .validateRelatedChangesInSplitDocument(splitTransactionDocument, {
+              project: {
+                from: getProjectId(sourceProjectDocument),
+                to: getProjectId(targetProjectDocument),
+              },
+            });
         });
 
-        it('has too few items', () => {
-          cy.authenticate('admin')
-            .requestMergeProjects(projectDataFactory.id(), [])
-            .expectBadRequestResponse()
-            .expectTooFewItemsProperty('data', 1, 'body');
-        });
-      });
+        describe('should return error', () => {
+          it('if a source project does not exist', () => {
+            cy.saveProjectDocument(targetProjectDocument)
+              .saveProjectDocument(sourceProjectDocument)
+              .authenticate(userType)
+              .requestMergeProjects(getProjectId(targetProjectDocument), [
+                getProjectId(sourceProjectDocument),
+                projectDataFactory.id(),
+              ])
+              .expectBadRequestResponse()
+              .expectMessage('Some of the projects are not found');
+          });
+          describe('if body', () => {
+            it('is not array', () => {
+              cy.authenticate(userType)
+                .requestMergeProjects(projectDataFactory.id(), {} as any)
+                .expectBadRequestResponse()
+                .expectWrongPropertyType('data', 'array', 'body');
+            });
 
-      describe('if body[0]', () => {
-        it('is not string', () => {
-          cy.authenticate('admin')
-            .requestMergeProjects(projectDataFactory.id(), [1] as any)
-            .expectBadRequestResponse()
-            .expectWrongPropertyType('data', 'string', 'body');
-        });
+            it('has too few items', () => {
+              cy.authenticate(userType)
+                .requestMergeProjects(projectDataFactory.id(), [])
+                .expectBadRequestResponse()
+                .expectTooFewItemsProperty('data', 1, 'body');
+            });
+          });
 
-        it('is not a valid mongo id', () => {
-          cy.authenticate('admin')
-            .requestMergeProjects(projectDataFactory.id(), [projectDataFactory.id('not-valid')])
-            .expectBadRequestResponse()
-            .expectWrongPropertyPattern('data', 'body');
-        });
-      });
+          describe('if body[0]', () => {
+            it('is not string', () => {
+              cy.authenticate(userType)
+                .requestMergeProjects(projectDataFactory.id(), [1] as any)
+                .expectBadRequestResponse()
+                .expectWrongPropertyType('data', 'string', 'body');
+            });
 
-      describe('if projectId', () => {
-        it('is not a valid mongo id', () => {
-          cy.authenticate('admin')
-            .requestMergeProjects(projectDataFactory.id('not-valid'), [projectDataFactory.id()])
-            .expectBadRequestResponse()
-            .expectWrongPropertyPattern('projectId', 'pathParameters');
-        });
+            it('is not a valid mongo id', () => {
+              cy.authenticate(userType)
+                .requestMergeProjects(projectDataFactory.id(), [projectDataFactory.id('not-valid')])
+                .expectBadRequestResponse()
+                .expectWrongPropertyPattern('data', 'body');
+            });
+          });
 
-        it('does not belong to any project', () => {
-          cy.authenticate('admin')
-            .requestMergeProjects(projectDataFactory.id(), [getProjectId(sourceProjectDocument)])
-            .expectBadRequestResponse()
-            .expectMessage('Some of the projects are not found');
+          describe('if projectId', () => {
+            it('is not a valid mongo id', () => {
+              cy.authenticate(userType)
+                .requestMergeProjects(projectDataFactory.id('not-valid'), [projectDataFactory.id()])
+                .expectBadRequestResponse()
+                .expectWrongPropertyPattern('projectId', 'pathParameters');
+            });
+
+            it('does not belong to any project', () => {
+              cy.authenticate(userType)
+                .requestMergeProjects(projectDataFactory.id(), [getProjectId(sourceProjectDocument)])
+                .expectBadRequestResponse()
+                .expectMessage('Some of the projects are not found');
+            });
+          });
         });
-      });
+      }
     });
   });
 });

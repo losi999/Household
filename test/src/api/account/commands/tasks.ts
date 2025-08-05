@@ -11,14 +11,14 @@ const saveAccountDocuments = (...params: Parameters<IAccountService['saveAccount
   return cy.task<Account.Document[]>('saveAccounts', params);
 };
 
-const getAccountDocumentById = (...params: Parameters<IAccountService['getAccountById']>) => {
-  return cy.task<Account.Document>('getAccountById', params);
+const findAccountDocumentById = (...params: Parameters<IAccountService['findAccountById']>) => {
+  return cy.task<Account.Document>('findAccountById', params);
 };
 
 export const setAccountTaskCommands = () => {
   Cypress.Commands.addAll({
     saveAccountDocument,
-    getAccountDocumentById,
+    findAccountDocumentById,
     saveAccountDocuments,
   });
 };
@@ -28,7 +28,7 @@ declare global {
     interface Chainable {
       saveAccountDocument: CommandFunction<typeof saveAccountDocument>;
       saveAccountDocuments: CommandFunction<typeof saveAccountDocuments>;
-      getAccountDocumentById: CommandFunction<typeof getAccountDocumentById>;
+      findAccountDocumentById: CommandFunction<typeof findAccountDocumentById>;
     }
   }
 }

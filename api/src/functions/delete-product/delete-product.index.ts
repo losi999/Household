@@ -5,12 +5,15 @@ import { apiRequestValidator } from '@household/api/dependencies/handlers/api-re
 import { default as pathParameters } from '@household/shared/schemas/product-id';
 import { productService } from '@household/shared/dependencies/services/product-service';
 import { default as index } from '@household/api/handlers/index.handler';
+import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';
+import { UserType } from '@household/shared/enums';
 
 const deleteProductService = deleteProductServiceFactory(productService);
 
 export default index({
   handler: handler(deleteProductService),
   before: [
+    authorizer(UserType.Editor),
     apiRequestValidator({
       pathParameters,
     }),

@@ -6,11 +6,11 @@ export interface IProjectService {
   dumpProjects(): Promise<Project.Document[]>;
   saveProject(doc: Project.Document): Promise<Project.Document>;
   saveProjects(docs: Project.Document[]): Promise<unknown>;
-  getProjectById(projectId: Project.Id): Promise<Project.Document>;
+  findProjectById(projectId: Project.Id): Promise<Project.Document>;
   deleteProject(projectId: Project.Id): Promise<unknown>;
   updateProject(projectId: Project.Id, updateQuery: UpdateQuery<Project.Document>): Promise<unknown>;
   listProjects(): Promise<Project.Document[]>;
-  listProjectsByIds(projectIds: Project.Id[]): Promise<Project.Document[]>;
+  findProjectsByIds(projectIds: Project.Id[]): Promise<Project.Document[]>;
   mergeProjects(ctx: {
     targetProjectId: Project.Id;
     sourceProjectIds: Project.Id[];
@@ -21,11 +21,9 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
   return {
     dumpProjects: () => {
       return mongodbService.inSession((session) => {
-        return mongodbService.projects.find({}, null, {
-          session,
-        })
-          .lean()
-          .exec();
+        return mongodbService.projects.find({}).session(session)
+          .lean();
+          
       });
     },
     saveProject: (doc) => {
@@ -40,10 +38,10 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
         });
       });
     },
-    getProjectById: async (projectId) => {
+    findProjectById: async (projectId) => {
       return !projectId ? undefined : mongodbService.projects.findById(projectId)
-        .lean()
-        .exec();
+        .lean();
+        
     },
     deleteProject: async (projectId) => {
       return mongodbService.inSession((session) => {
@@ -52,8 +50,8 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
             _id: projectId,
           }, {
             session,
-          })
-            .exec();
+          });
+            
           await mongodbService.transactions.updateMany({
             project: projectId,
           }, {
@@ -63,8 +61,8 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
           }, {
             runValidators: true,
             session,
-          })
-            .exec();
+          });
+            
           await mongodbService.transactions.updateMany({
             'splits.project': projectId,
           }, {
@@ -80,8 +78,8 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
                 'element.project': projectId,
               },
             ],
-          })
-            .exec();
+          });
+            
           await mongodbService.transactions.updateMany({
             'deferredSplits.project': projectId,
           }, {
@@ -97,8 +95,8 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
                 'element.project': projectId,
               },
             ],
-          })
-            .exec();
+          });
+            
         });
       });
     },
@@ -109,28 +107,24 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
     },
     listProjects: () => {
       return mongodbService.inSession((session) => {
-        return mongodbService.projects.find({}, null, {
-          session,
-        })
+        return mongodbService.projects.find({}).session(session)
           .collation({
             locale: 'hu',
           })
           .sort('name')
-          .lean()
-          .exec();
+          .lean();
+          
       });
     },
-    listProjectsByIds: (projectIds) => {
+    findProjectsByIds: (projectIds) => {
       return mongodbService.inSession((session) => {
         return mongodbService.projects.find({
           _id: {
             $in: projectIds,
           },
-        }, null, {
-          session,
-        })
-          .lean()
-          .exec();
+        }).session(session)
+          .lean();
+          
       });
     },
     mergeProjects: ({ targetProjectId, sourceProjectIds }) => {

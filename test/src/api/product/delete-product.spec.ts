@@ -1,4 +1,4 @@
-import { getProductId } from '@household/shared/common/utils';
+import { entries, getProductId } from '@household/shared/common/utils';
 import { AccountType, CategoryType } from '@household/shared/enums';
 import { Account, Category, Product, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
@@ -8,6 +8,9 @@ import { deferredTransactionDataFactory } from '@household/test/api/transaction/
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
+import { allowUsers } from '@household/test/api/utils';
+
+const permissionMap = allowUsers('editor') ;
 
 describe('DELETE /product/v1/products/{productId}', () => {
   let productDocument: Product.Document;
@@ -32,174 +35,186 @@ describe('DELETE /product/v1/products/{productId}', () => {
     });
   });
 
-  describe('called as an admin', () => {
-
-    it('should delete product', () => {
-      cy.saveProductDocument(productDocument)
-        .authenticate('admin')
-        .requestDeleteProduct(getProductId(productDocument))
-        .expectNoContentResponse()
-        .validateProductDeleted(getProductId(productDocument));
-    });
-
-    describe('in related transactions inventory', () => {
-      let unrelatedProductDocument: Product.Document;
-      let paymentTransactionDocument: Transaction.PaymentDocument;
-      let deferredTransactionDocument: Transaction.DeferredDocument;
-      let reimbursementTransactionDocument: Transaction.ReimbursementDocument;
-      let splitTransactionDocument: Transaction.SplitDocument;
-      let unrelatedPaymentTransactionDocument: Transaction.PaymentDocument;
-      let unrelatedDeferredTransactionDocument: Transaction.DeferredDocument;
-      let unrelatedReimbursementTransactionDocument: Transaction.ReimbursementDocument;
-      let accountDocument: Account.Document;
-      let loanAccountDocument: Account.Document;
-
-      beforeEach(() => {
-        accountDocument = accountDataFactory.document();
-        loanAccountDocument = accountDataFactory.document({
-          accountType: AccountType.Loan,
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
+    describe(`called as ${userType}`, () => {
+      if (!isAllowed) {
+        it('should return forbidden', () => {
+          cy.authenticate(userType)
+            .requestDeleteProduct(productDataFactory.id())
+            .expectForbiddenResponse();
+        });
+      } else {
+        it('should delete product', () => {
+          cy.saveProductDocument(productDocument)
+            .authenticate(userType)
+            .requestDeleteProduct(getProductId(productDocument))
+            .expectNoContentResponse()
+            .validateProductDeleted(getProductId(productDocument));
         });
 
-        unrelatedProductDocument = productDataFactory.document({
-          category: categoryDocument,
-        });
+        describe('in related transactions inventory', () => {
+          let unrelatedProductDocument: Product.Document;
+          let paymentTransactionDocument: Transaction.PaymentDocument;
+          let deferredTransactionDocument: Transaction.DeferredDocument;
+          let reimbursementTransactionDocument: Transaction.ReimbursementDocument;
+          let splitTransactionDocument: Transaction.SplitDocument;
+          let unrelatedPaymentTransactionDocument: Transaction.PaymentDocument;
+          let unrelatedDeferredTransactionDocument: Transaction.DeferredDocument;
+          let unrelatedReimbursementTransactionDocument: Transaction.ReimbursementDocument;
+          let accountDocument: Account.Document;
+          let loanAccountDocument: Account.Document;
 
-        paymentTransactionDocument = paymentTransactionDataFactory.document({
-          account: accountDocument,
-          category: categoryDocument,
-          product: productDocument,
-        });
+          beforeEach(() => {
+            accountDocument = accountDataFactory.document();
+            loanAccountDocument = accountDataFactory.document({
+              accountType: AccountType.Loan,
+            });
 
-        unrelatedPaymentTransactionDocument = paymentTransactionDataFactory.document({
-          account: accountDocument,
-          category: categoryDocument,
-          product: unrelatedProductDocument,
-        });
-
-        deferredTransactionDocument = deferredTransactionDataFactory.document({
-          account: accountDocument,
-          category: categoryDocument,
-          product: productDocument,
-          loanAccount: loanAccountDocument,
-        });
-
-        unrelatedDeferredTransactionDocument = deferredTransactionDataFactory.document({
-          account: accountDocument,
-          category: categoryDocument,
-          product: unrelatedProductDocument,
-          loanAccount: loanAccountDocument,
-        });
-
-        reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
-          account: loanAccountDocument,
-          category: categoryDocument,
-          product: productDocument,
-          loanAccount: accountDocument,
-        });
-
-        unrelatedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
-          account: loanAccountDocument,
-          category: categoryDocument,
-          product: unrelatedProductDocument,
-          loanAccount: accountDocument,
-        });
-
-        splitTransactionDocument = splitTransactionDataFactory.document({
-          account: accountDocument,
-          splits: [
-            {
-              product: unrelatedProductDocument,
+            unrelatedProductDocument = productDataFactory.document({
               category: categoryDocument,
-            },
-            {
+            });
+
+            paymentTransactionDocument = paymentTransactionDataFactory.document({
+              account: accountDocument,
+              category: categoryDocument,
               product: productDocument,
+            });
+
+            unrelatedPaymentTransactionDocument = paymentTransactionDataFactory.document({
+              account: accountDocument,
               category: categoryDocument,
-            },
-          ],
-          loans: [
-            {
               product: unrelatedProductDocument,
+            });
+
+            deferredTransactionDocument = deferredTransactionDataFactory.document({
+              account: accountDocument,
               category: categoryDocument,
-              loanAccount: loanAccountDocument,
-            },
-            {
               product: productDocument,
-              category: categoryDocument,
               loanAccount: loanAccountDocument,
-            },
-          ],
-        });
-      });
-      it('should be unset if product is deleted', () => {
-        cy.saveAccountDocuments([
-          accountDocument,
-          loanAccountDocument,
-        ])
-          .saveCategoryDocument(categoryDocument)
-          .saveProductDocuments([
-            productDocument,
-            unrelatedProductDocument,
-          ])
-          .saveTransactionDocuments([
-            paymentTransactionDocument,
-            splitTransactionDocument,
-            deferredTransactionDocument,
-            reimbursementTransactionDocument,
-            unrelatedPaymentTransactionDocument,
-            unrelatedDeferredTransactionDocument,
-            unrelatedReimbursementTransactionDocument,
-          ])
-          .authenticate('admin')
-          .requestDeleteProduct(getProductId(productDocument))
-          .expectNoContentResponse()
-          .validateProductDeleted(getProductId(productDocument))
-          .validateRelatedChangesInPaymentDocument(paymentTransactionDocument, {
-            product: {
-              from: getProductId(productDocument),
-            },
-          })
-          .validateRelatedChangesInPaymentDocument(unrelatedPaymentTransactionDocument, {
-            product: {
-              from: getProductId(productDocument),
-            },
-          })
-          .validateRelatedChangesInDeferredDocument(deferredTransactionDocument, {
-            product: {
-              from: getProductId(productDocument),
-            },
-          })
-          .validateRelatedChangesInDeferredDocument(unrelatedDeferredTransactionDocument, {
-            product: {
-              from: getProductId(productDocument),
-            },
-          })
-          .validateRelatedChangesInReimbursementDocument(reimbursementTransactionDocument, {
-            product: {
-              from: getProductId(productDocument),
-            },
-          })
-          .validateRelatedChangesInReimbursementDocument(unrelatedReimbursementTransactionDocument, {
-            product: {
-              from: getProductId(productDocument),
-            },
-          })
-          .validateRelatedChangesInSplitDocument(splitTransactionDocument, {
-            product: {
-              from: getProductId(productDocument),
-            },
+            });
+
+            unrelatedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+              account: accountDocument,
+              category: categoryDocument,
+              product: unrelatedProductDocument,
+              loanAccount: loanAccountDocument,
+            });
+
+            reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+              account: loanAccountDocument,
+              category: categoryDocument,
+              product: productDocument,
+              loanAccount: accountDocument,
+            });
+
+            unrelatedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+              account: loanAccountDocument,
+              category: categoryDocument,
+              product: unrelatedProductDocument,
+              loanAccount: accountDocument,
+            });
+
+            splitTransactionDocument = splitTransactionDataFactory.document({
+              account: accountDocument,
+              splits: [
+                {
+                  product: unrelatedProductDocument,
+                  category: categoryDocument,
+                },
+                {
+                  product: productDocument,
+                  category: categoryDocument,
+                },
+              ],
+              loans: [
+                {
+                  product: unrelatedProductDocument,
+                  category: categoryDocument,
+                  loanAccount: loanAccountDocument,
+                },
+                {
+                  product: productDocument,
+                  category: categoryDocument,
+                  loanAccount: loanAccountDocument,
+                },
+              ],
+            });
           });
-      });
-    });
-
-    describe('should return error', () => {
-      describe('if productId', () => {
-        it('is not mongo id', () => {
-          cy.authenticate('admin')
-            .requestDeleteProduct(productDataFactory.id('not-valid'))
-            .expectBadRequestResponse()
-            .expectWrongPropertyPattern('productId', 'pathParameters');
+          it('should be unset if product is deleted', () => {
+            cy.saveAccountDocuments([
+              accountDocument,
+              loanAccountDocument,
+            ])
+              .saveCategoryDocument(categoryDocument)
+              .saveProductDocuments([
+                productDocument,
+                unrelatedProductDocument,
+              ])
+              .saveTransactionDocuments([
+                paymentTransactionDocument,
+                splitTransactionDocument,
+                deferredTransactionDocument,
+                reimbursementTransactionDocument,
+                unrelatedPaymentTransactionDocument,
+                unrelatedDeferredTransactionDocument,
+                unrelatedReimbursementTransactionDocument,
+              ])
+              .authenticate(userType)
+              .requestDeleteProduct(getProductId(productDocument))
+              .expectNoContentResponse()
+              .validateProductDeleted(getProductId(productDocument))
+              .validateRelatedChangesInPaymentDocument(paymentTransactionDocument, {
+                product: {
+                  from: getProductId(productDocument),
+                },
+              })
+              .validateRelatedChangesInPaymentDocument(unrelatedPaymentTransactionDocument, {
+                product: {
+                  from: getProductId(productDocument),
+                },
+              })
+              .validateRelatedChangesInDeferredDocument(deferredTransactionDocument, {
+                product: {
+                  from: getProductId(productDocument),
+                },
+              })
+              .validateRelatedChangesInDeferredDocument(unrelatedDeferredTransactionDocument, {
+                product: {
+                  from: getProductId(productDocument),
+                },
+              })
+              .validateRelatedChangesInReimbursementDocument(reimbursementTransactionDocument, {
+                product: {
+                  from: getProductId(productDocument),
+                },
+              })
+              .validateRelatedChangesInReimbursementDocument(unrelatedReimbursementTransactionDocument, {
+                product: {
+                  from: getProductId(productDocument),
+                },
+              })
+              .validateRelatedChangesInSplitDocument(splitTransactionDocument, {
+                product: {
+                  from: getProductId(productDocument),
+                },
+              });
+          });
         });
-      });
+
+        describe('should return error', () => {
+          describe('if productId', () => {
+            it('is not mongo id', () => {
+              cy.authenticate(userType)
+                .requestDeleteProduct(productDataFactory.id('not-valid'))
+                .expectBadRequestResponse()
+                .expectWrongPropertyPattern('productId', 'pathParameters');
+            });
+          });
+        });
+      }
     });
   });
 });

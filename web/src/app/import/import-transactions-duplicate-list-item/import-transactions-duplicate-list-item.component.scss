@@ -1,0 +1,52 @@
+.draft {
+  padding-top: 20px;
+  padding-bottom: 20px !important;
+}
+
+.duplicate {
+  padding: 0 10px;
+}
+
+.duplicate:nth-child(2n+1) {
+  background-color: #e8eaf6;
+}
+
+.list-item {
+  margin: 5px 0;
+  padding: 0 10px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: 15px;
+  row-gap: 5px;
+  grid-template-areas: "datetime amount"
+    "details details";
+
+  &>.details {
+    grid-area: details;
+    min-width: 0;
+  }
+
+  &>.datetime {
+    grid-area: datetime;
+    font-size: 16px;
+  }
+
+  &>.amount {
+    grid-area: amount;
+    align-self: center;
+    justify-self: end;
+    font-size: 20px;
+    font-weight: bold;
+  }
+
+  @media all and (max-width: 639px) {
+    & {
+      column-gap: 5px;
+    }
+
+    &>.amount,
+    &>.datetime {
+      font-size: 14px;
+    }
+  }
+}

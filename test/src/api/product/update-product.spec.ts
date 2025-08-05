@@ -1,8 +1,11 @@
-import { getCategoryId, getProductId } from '@household/shared/common/utils';
+import { entries, getCategoryId, getProductId } from '@household/shared/common/utils';
 import { CategoryType } from '@household/shared/enums';
 import { Category, Product } from '@household/shared/types/types';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { productDataFactory } from '@household/test/api/product/data-factory';
+import { allowUsers } from '@household/test/api/utils';
+
+const permissionMap = allowUsers('editor') ;
 
 describe('PUT /product/v1/products/{productId}', () => {
   let request: Product.Request;
@@ -31,135 +34,147 @@ describe('PUT /product/v1/products/{productId}', () => {
     });
   });
 
-  describe('called as an admin', () => {
-    describe('should update product', () => {
-      it('with complete body', () => {
-        cy
-          .saveProductDocument(productDocument)
-          .authenticate('admin')
-          .requestUpdateProduct(getProductId(productDocument), request)
-          .expectCreatedResponse()
-          .validateProductDocument(request, getCategoryId(categoryDocument));
-      });
-    });
-
-    describe('should return error', () => {
-      describe('if brand', () => {
-        it('is missing from body', () => {
-          cy.authenticate('admin')
-            .requestUpdateProduct(productDataFactory.id(), productDataFactory.request({
-              brand: undefined,
-            }))
-            .expectBadRequestResponse()
-            .expectRequiredProperty('brand', 'body');
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
+    describe(`called as ${userType}`, () => {
+      if (!isAllowed) {
+        it('should return forbidden', () => {
+          cy.authenticate(userType)
+            .requestUpdateProduct(productDataFactory.id(), request)
+            .expectForbiddenResponse();
+        });
+      } else {
+        describe('should update product', () => {
+          it('with complete body', () => {
+            cy
+              .saveProductDocument(productDocument)
+              .authenticate(userType)
+              .requestUpdateProduct(getProductId(productDocument), request)
+              .expectCreatedResponse()
+              .validateProductDocument(request, getCategoryId(categoryDocument));
+          });
         });
 
-        it('is not string', () => {
-          cy.authenticate('admin')
-            .requestUpdateProduct(productDataFactory.id(), productDataFactory.request({
-              brand: <any>1,
-            }))
-            .expectBadRequestResponse()
-            .expectWrongPropertyType('brand', 'string', 'body');
-        });
+        describe('should return error', () => {
+          describe('if brand', () => {
+            it('is missing from body', () => {
+              cy.authenticate(userType)
+                .requestUpdateProduct(productDataFactory.id(), productDataFactory.request({
+                  brand: undefined,
+                }))
+                .expectBadRequestResponse()
+                .expectRequiredProperty('brand', 'body');
+            });
 
-        it('is too short', () => {
-          cy.authenticate('admin')
-            .requestUpdateProduct(productDataFactory.id(), productDataFactory.request({
-              brand: '',
-            }))
-            .expectBadRequestResponse()
-            .expectTooShortProperty('brand', 1, 'body');
-        });
+            it('is not string', () => {
+              cy.authenticate(userType)
+                .requestUpdateProduct(productDataFactory.id(), productDataFactory.request({
+                  brand: <any>1,
+                }))
+                .expectBadRequestResponse()
+                .expectWrongPropertyType('brand', 'string', 'body');
+            });
 
-        it('is already in used by a different product', () => {
-          const duplicateProductDocument = productDataFactory.document({
-            body: request,
-            category: categoryDocument,
+            it('is too short', () => {
+              cy.authenticate(userType)
+                .requestUpdateProduct(productDataFactory.id(), productDataFactory.request({
+                  brand: '',
+                }))
+                .expectBadRequestResponse()
+                .expectTooShortProperty('brand', 1, 'body');
+            });
+
+            it('is already in used by a different product', () => {
+              const duplicateProductDocument = productDataFactory.document({
+                body: request,
+                category: categoryDocument,
+              });
+
+              cy.saveProductDocument(productDocument)
+                .saveProductDocument(duplicateProductDocument)
+                .authenticate(userType)
+                .requestUpdateProduct(getProductId(productDocument), request)
+                .expectBadRequestResponse()
+                .expectMessage('Duplicate product name');
+            });
           });
 
-          cy.saveProductDocument(productDocument)
-            .saveProductDocument(duplicateProductDocument)
-            .authenticate('admin')
-            .requestUpdateProduct(getProductId(productDocument), request)
-            .expectBadRequestResponse()
-            .expectMessage('Duplicate product name');
-        });
-      });
+          describe('if measurement', () => {
+            it('is missing from body', () => {
+              cy.authenticate(userType)
+                .requestUpdateProduct(productDataFactory.id(), productDataFactory.request({
+                  measurement: undefined,
+                }))
+                .expectBadRequestResponse()
+                .expectRequiredProperty('measurement', 'body');
+            });
 
-      describe('if measurement', () => {
-        it('is missing from body', () => {
-          cy.authenticate('admin')
-            .requestUpdateProduct(productDataFactory.id(), productDataFactory.request({
-              measurement: undefined,
-            }))
-            .expectBadRequestResponse()
-            .expectRequiredProperty('measurement', 'body');
-        });
+            it('is not number', () => {
+              cy.authenticate(userType)
+                .requestUpdateProduct(productDataFactory.id(), productDataFactory.request({
+                  measurement: <any>'1',
+                }))
+                .expectBadRequestResponse()
+                .expectWrongPropertyType('measurement', 'number', 'body');
+            });
 
-        it('is not number', () => {
-          cy.authenticate('admin')
-            .requestUpdateProduct(productDataFactory.id(), productDataFactory.request({
-              measurement: <any>'1',
-            }))
-            .expectBadRequestResponse()
-            .expectWrongPropertyType('measurement', 'number', 'body');
-        });
+            it('is too small', () => {
+              cy.authenticate(userType)
+                .requestUpdateProduct(productDataFactory.id(), productDataFactory.request({
+                  measurement: 0,
+                }))
+                .expectBadRequestResponse()
+                .expectTooSmallNumberProperty('measurement', 0, true, 'body');
+            });
+          });
 
-        it('is too small', () => {
-          cy.authenticate('admin')
-            .requestUpdateProduct(productDataFactory.id(), productDataFactory.request({
-              measurement: 0,
-            }))
-            .expectBadRequestResponse()
-            .expectTooSmallNumberProperty('measurement', 0, true, 'body');
-        });
-      });
+          describe('if unitOfMeasurement', () => {
+            it('is missing from body', () => {
+              cy.authenticate(userType)
+                .requestUpdateProduct(productDataFactory.id(), productDataFactory.request({
+                  unitOfMeasurement: undefined,
+                }))
+                .expectBadRequestResponse()
+                .expectRequiredProperty('unitOfMeasurement', 'body');
+            });
 
-      describe('if unitOfMeasurement', () => {
-        it('is missing from body', () => {
-          cy.authenticate('admin')
-            .requestUpdateProduct(productDataFactory.id(), productDataFactory.request({
-              unitOfMeasurement: undefined,
-            }))
-            .expectBadRequestResponse()
-            .expectRequiredProperty('unitOfMeasurement', 'body');
-        });
+            it('is not string', () => {
+              cy.authenticate(userType)
+                .requestUpdateProduct(productDataFactory.id(), productDataFactory.request({
+                  unitOfMeasurement: <any>1,
+                }))
+                .expectBadRequestResponse()
+                .expectWrongPropertyType('unitOfMeasurement', 'string', 'body');
+            });
 
-        it('is not string', () => {
-          cy.authenticate('admin')
-            .requestUpdateProduct(productDataFactory.id(), productDataFactory.request({
-              unitOfMeasurement: <any>1,
-            }))
-            .expectBadRequestResponse()
-            .expectWrongPropertyType('unitOfMeasurement', 'string', 'body');
-        });
+            it('is not a valid enum value', () => {
+              cy.authenticate(userType)
+                .requestUpdateProduct(productDataFactory.id(), productDataFactory.request({
+                  unitOfMeasurement: <any>'not-valid',
+                }))
+                .expectBadRequestResponse()
+                .expectWrongEnumValue('unitOfMeasurement', 'body');
+            });
+          });
 
-        it('is not a valid enum value', () => {
-          cy.authenticate('admin')
-            .requestUpdateProduct(productDataFactory.id(), productDataFactory.request({
-              unitOfMeasurement: <any>'not-valid',
-            }))
-            .expectBadRequestResponse()
-            .expectWrongEnumValue('unitOfMeasurement', 'body');
-        });
-      });
+          describe('if productId', () => {
+            it('is not mongo id', () => {
+              cy.authenticate(userType)
+                .requestUpdateProduct(productDataFactory.id('not-valid'), request)
+                .expectBadRequestResponse()
+                .expectWrongPropertyPattern('productId', 'pathParameters');
+            });
 
-      describe('if productId', () => {
-        it('is not mongo id', () => {
-          cy.authenticate('admin')
-            .requestUpdateProduct(productDataFactory.id('not-valid'), request)
-            .expectBadRequestResponse()
-            .expectWrongPropertyPattern('productId', 'pathParameters');
+            it('does not belong to any product', () => {
+              cy.authenticate(userType)
+                .requestUpdateProduct(productDataFactory.id(), request)
+                .expectNotFoundResponse();
+            });
+          });
         });
-
-        it('does not belong to any product', () => {
-          cy.authenticate('admin')
-            .requestUpdateProduct(productDataFactory.id(), request)
-            .expectNotFoundResponse();
-        });
-      });
+      }
     });
   });
-
 });

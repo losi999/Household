@@ -1,5 +1,5 @@
 import { TransactionType } from '@household/shared/enums';
-import { File, Transaction } from '@household/shared/types/types';
+import { Transaction } from '@household/shared/types/types';
 import { importActions } from '@household/web/state/import/import.actions';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
 import { ImportedTransaction } from '@household/web/types/common';
@@ -8,9 +8,7 @@ import { createReducer, on } from '@ngrx/store';
 export type ImportState = {
   initialDrafts: Transaction.DraftResponse[];
   modifiedTransactions: {
-    [fileId: File.Id]: {
-      [transactionId: Transaction.Id]: ImportedTransaction;
-    }
+    [transactionId: Transaction.Id]: ImportedTransaction;
   }
 };
 
@@ -38,40 +36,57 @@ on(importActions.importPaymentTransactionCompleted, importActions.importTransfer
   };
 }),
 
-on(importActions.applyEditingFields, (_state, { fileId, transactionIds, updatedValues }) => {
+on(importActions.applyEditingFields, (_state, { transactionIds, updatedValues }) => {
   return {
     ..._state,
     modifiedTransactions: {
       ..._state.modifiedTransactions,
-      [fileId]: {
-        ..._state.modifiedTransactions[fileId],
-        ...transactionIds.reduce((accumulator, currentValue) => {
-          const original = _state.modifiedTransactions[fileId]?.[currentValue] ?? _state.initialDrafts.find(t => t.transactionId === currentValue) as ImportedTransaction;
-          const tx: ImportedTransaction = {
-            ...original,
-            ...updatedValues,
-            transactionType: TransactionType.Payment,
-          };
+      ...transactionIds.reduce((accumulator, currentValue) => {
+        const original = _state.modifiedTransactions[currentValue] ?? _state.initialDrafts.find(t => t.transactionId === currentValue) as ImportedTransaction;
+        const tx: ImportedTransaction = {
+          ...original,
+          ...updatedValues,
+        };
 
-          if (tx.transferAccount) {
-            tx.transactionType = TransactionType.Transfer;
-          }
+        tx.payingAccount = tx.account;
+        tx.ownerAccount = tx.loanAccount;
 
-          if (updatedValues.loanAccount) {
-            tx.transactionType = TransactionType.Payment;
-          }
+        if (updatedValues.transferAccount) {
+          tx.transactionType = TransactionType.Transfer;
+        } else {
+          tx.transactionType = TransactionType.Payment;
+        }
 
-          if (!tx.account) {
-            tx.transactionType = TransactionType.Draft;
-          }
+        if (!tx.account) {
+          tx.transactionType = TransactionType.Draft;
+        }
 
-          return {
-            ...accumulator,
-            [currentValue]: tx,
-          };
-        }, {}),
+        return {
+          ...accumulator,
+          [currentValue]: tx,
+        };
+      }, {}),
+    },
+  };
+}),
+
+on(transactionApiActions.deleteTransactionCompleted, (_state, { transactionId }) => {
+  return {
+    ..._state,
+    initialDrafts: _state.initialDrafts.filter(draft => draft.transactionId !== transactionId),
+  };
+}),
+
+on(importActions.deduplicateDraftTransaction, (_state, { transactionId, duplicateTransactionId }) => {
+  const draft = _state.modifiedTransactions[transactionId] ?? _state.initialDrafts.find(d => d.transactionId === transactionId);
+  return {
+    ..._state,
+    modifiedTransactions: {
+      ..._state.modifiedTransactions,
+      [transactionId]: {
+        ...draft,
+        potentialDuplicates: draft.potentialDuplicates.filter(d => d.transactionId !== duplicateTransactionId),
       },
-
     },
   };
 }),
