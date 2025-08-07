@@ -1,8 +1,8 @@
 import { unitsOfMeasurement } from '@household/shared/constants';
 import { Branding } from '@household/shared/types/common';
-import { Types } from 'mongoose';
+import type { Types } from 'mongoose';
 import * as Enum from '@household/shared/enums';
-import { UserStatusType } from '@aws-sdk/client-cognito-identity-provider';
+import type { UserStatusType } from '@aws-sdk/client-cognito-identity-provider';
 
 export namespace Internal {
   export type Id = {
@@ -778,17 +778,35 @@ export namespace Customer {
     customerId: Id;
   };
 
-  type Name = {
+  type Base = {
     name: string;
+    description: string;
+  };
+
+  export type JobName = {
+    name: string;
+  };
+
+  export type Job = JobName & {    
+    duration: number;
+    price: number;
+    description: string;
+  };
+
+  type Jobs = {
+    jobs: Job[]
   };
 
   export type Document = Internal.Id
   & Internal.Timestamps
-  & Name;
+  & Base
+  & Jobs;
 
-  export type Response = CustomerId & Name;
+  export type Response = CustomerId 
+  & Base 
+  & Jobs;
 
-  export type Request = Name;
+  export type Request = Base;
 }
 
 export namespace Common {

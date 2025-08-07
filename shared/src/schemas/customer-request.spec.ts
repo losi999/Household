@@ -28,5 +28,15 @@ describe('Customer schema', () => {
         name: '',
       }), 'name', 1);
     });
+
+    describe('if data.description', () => {
+      tester.type(createCustomerRequest({
+        description: 1 as any,
+      }), 'description', 'string');
+
+      tester.minLength(createCustomerRequest({
+        description: '',
+      }), 'description', 1);
+    });
   });
 });

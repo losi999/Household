@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { EMPTY, exhaustMap } from 'rxjs';
+import { EMPTY, exhaustMap, withLatestFrom } from 'rxjs';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { DialogService } from '@household/web/services/dialog.service';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
@@ -12,10 +12,13 @@ import { productApiActions } from '@household/web/state/product/product.actions'
 import { categoryApiActions } from '@household/web/state/category/category.actions';
 import { recipientApiActions } from '@household/web/state/recipient/recipient.actions';
 import { projectApiActions } from '@household/web/state/project/project.actions';
+import { Store } from '@ngrx/store';
+import { selectCustomer } from '@household/web/state/customer/customer.selector';
+import { customerApiActions } from '@household/web/state/customer/customer.actions';
 
 @Injectable()
-export class DialogEffects {
-  constructor(private actions: Actions, private dialogService: DialogService) {}
+export class DialogEffects { 
+  constructor(private actions: Actions, private dialogService: DialogService, private store: Store) {}
 
   createProject = createEffect(() => {
     return this.actions.pipe(
@@ -238,6 +241,69 @@ export class DialogEffects {
       exhaustMap(({ type, ...account }) => {
         return this.dialogService.openDeleteAccountDialog(account).pipe(dispatchIfConfirmed(accountApiActions.deleteAccountInitiated({
           accountId: account.accountId,
+        })));
+      }),
+    );
+  });
+
+  createCustomer = createEffect(() => {
+    return this.actions.pipe(
+      ofType(dialogActions.createCustomer),
+      exhaustMap(() => {
+        this.dialogService.openCreateCustomerDialog();
+        return EMPTY;
+      }),
+    );
+  }, {
+    dispatch: false,
+  });
+
+  updateCustomer = createEffect(() => {
+    return this.actions.pipe(
+      ofType(dialogActions.updateCustomer),
+      withLatestFrom(this.store.select(selectCustomer)),
+      exhaustMap((params) => {
+        this.dialogService.openEditCustomerDialog(params[1]);
+        return EMPTY;
+      }),
+    );
+  }, {
+    dispatch: false,
+  });
+
+  createCustomerJob = createEffect(() => {
+    return this.actions.pipe(
+      ofType(dialogActions.createCustomerJob),
+      exhaustMap(({ customerId }) => {
+        this.dialogService.openCreateCustomerJobDialog(customerId);
+        return EMPTY;
+      }),
+    );
+  }, {
+    dispatch: false,
+  });
+
+  updateCustomerJob = createEffect(() => {
+    return this.actions.pipe(
+      ofType(dialogActions.updateCustomerJob),
+      exhaustMap(({ type, customerId, ...job }) => {
+        this.dialogService.openEditCustomerJobDialog(customerId, job);
+        return EMPTY;
+      }),
+    );
+  }, {
+    dispatch: false,
+  });
+
+  deleteCustomerJob = createEffect(() => {
+    return this.actions.pipe(
+      ofType(dialogActions.deleteCustomerJob),
+      exhaustMap(({ customerId, name }) => {
+        return this.dialogService.openDeleteCustomerJobDialog({
+          name,
+        }).pipe(dispatchIfConfirmed(customerApiActions.deleteCustomerJobInitiated({
+          customerId,
+          jobName: name,
         })));
       }),
     );

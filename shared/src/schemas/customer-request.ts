@@ -10,6 +10,10 @@ const schema: StrictJSONSchema7<Customer.Request> = {
       type: 'string',
       minLength: 1,
     },
+    description: {
+      type: 'string',
+      minLength: 1,
+    },
   },
 };
 

@@ -444,6 +444,42 @@ paths:
             application/json:
               schema:
                 $ref: "customer.yaml#/components/schemas/CustomerId"
+  /customer/v1/customers/{customerId}/jobs:
+    parameters:
+      - $ref: "#/components/parameters/Path.CustomerId"
+    post:
+      tags:
+        - customer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "customer.yaml#/components/schemas/Job"
+      responses:
+        201:
+          description: Job created
+  /customer/v1/customers/{customerId}/jobs/{jobName}:
+    parameters:
+      - $ref: "#/components/parameters/Path.CustomerId"
+      - $ref: "#/components/parameters/Path.JobName"
+    put:
+      tags:
+        - customer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "customer.yaml#/components/schemas/Job"
+      responses:
+        201:
+          description: Job updated
+    delete:
+      tags:
+        - customer
+      responses:
+        204:
+          description: Job deleted
+
   # /report/v1/reports:
   #   get:
   #     responses:
@@ -945,6 +981,12 @@ components:
         type: string
     Path.SettingKey:
       name: settingKey
+      in: path
+      required: true
+      schema:
+        type: string
+    Path.JobName:
+      name: jobName
       in: path
       required: true
       schema:

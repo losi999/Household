@@ -1,8 +1,12 @@
-import { Customer } from '@household/shared/types/types';
+import { CustomerState } from '@household/web/state/customer/customer.reducer';
 import { createFeatureSelector, createSelector } from '@ngrx/store';
 
-export const selectCustomers = createFeatureSelector<Customer.Response[]>('customers');
+const selectCustomers = createFeatureSelector<CustomerState>('customers');
 
-export const selectCustomerById = (customerId: Customer.Id) => createSelector(selectCustomers, (customers) => {
-  return customers.find(a => a.customerId === customerId);
+export const selectCustomerList = createSelector(selectCustomers, ({ customerList }) => {
+  return customerList;
+});
+
+export const selectCustomer = createSelector(selectCustomers, ({ selectedCustomer }) => {
+  return selectedCustomer;
 });

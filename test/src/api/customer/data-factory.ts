@@ -8,6 +8,12 @@ export const customerDataFactory = (() => {
   const createCustomerRequest: DataFactoryFunction<Customer.Request> = (req) => {
     return {
       name: `${faker.person.firstName()} ${faker.string.uuid()}`,
+      description: faker.word.words({
+        count: {
+          min: 1,
+          max: 5,
+        },
+      }),
       ...req,
     };
   };

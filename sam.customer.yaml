@@ -130,6 +130,54 @@ Resources:
             Auth:
               Authorizer: CognitoAuthorizer
 
+  CreateCustomerJob:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-CreateCustomerJob
+      CodeUri: dist/api/create-customer-job
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CustomerApi
+            Path: /v1/customers/{customerId}/jobs
+            Method: POST
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  DeleteCustomerJob:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-DeleteCustomerJob
+      CodeUri: dist/api/delete-customer-job
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CustomerApi
+            Path: /v1/customers/{customerId}/jobs/{jobName}
+            Method: DELETE
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  UpdateCustomerJob:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-UpdateCustomerJob
+      CodeUri: dist/api/update-customer-job
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CustomerApi
+            Path: /v1/customers/{customerId}/jobs/{jobName}
+            Method: PUT
+            Auth:
+              Authorizer: CognitoAuthorizer
+
   # DeleteCustomer:
   #   Type: AWS::Serverless::Function
   #   Properties:

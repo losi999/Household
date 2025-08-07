@@ -14,7 +14,7 @@ const createCustomerService = createCustomerServiceFactory(customerService, cust
 export default index({
   handler: handler(createCustomerService),
   before: [
-    authorizer(UserType.Editor),
+    authorizer(UserType.Hairdresser),
     apiRequestValidator({
       body,
     }),

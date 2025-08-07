@@ -1,6 +1,6 @@
 import { IMongodbService } from '@household/shared/services/mongodb-service';
+import { DocumentUpdate } from '@household/shared/types/common';
 import { Customer } from '@household/shared/types/types';
-import { UpdateQuery } from 'mongoose';
 
 export interface ICustomerService {
   dumpCustomers(): Promise<Customer.Document[]>;
@@ -8,7 +8,7 @@ export interface ICustomerService {
   saveCustomers(docs: Customer.Document[]): Promise<unknown>;
   findCustomerById(customerId: Customer.Id): Promise<Customer.Document>;
   // deleteCustomer(customerId: Customer.Id): Promise<unknown>;
-  updateCustomer(customerId: Customer.Id, updateQuery: UpdateQuery<Customer.Document>): Promise<unknown>;
+  updateCustomer(customerId: Customer.Id, update: DocumentUpdate<Customer.Document>): Promise<unknown>;
   listCustomers(): Promise<Customer.Document[]>;
   // findCustomersByIds(customerIds: Customer.Id[]): Promise<Customer.Document[]>;
   // mergeCustomers(ctx: {
@@ -66,8 +66,9 @@ export const customerServiceFactory = (mongodbService: IMongodbService): ICustom
     //     });
     //   });
     // },
-    updateCustomer: async (customerId, updateQuery) => {
-      return mongodbService.customers.findByIdAndUpdate(customerId, updateQuery, {
+    updateCustomer: async (customerId, { update, arrayFilters }) => {
+      return mongodbService.customers.findByIdAndUpdate(customerId, update, {
+        arrayFilters,
         runValidators: true,
       });
     },

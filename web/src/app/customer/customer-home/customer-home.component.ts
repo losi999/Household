@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Customer } from '@household/shared/types/types';
 import { customerApiActions } from '@household/web/state/customer/customer.actions';
-import { selectCustomers } from '@household/web/state/customer/customer.selector';
+import { selectCustomerList } from '@household/web/state/customer/customer.selector';
+import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 
@@ -14,17 +15,15 @@ import { Observable } from 'rxjs';
 export class CustomerHomeComponent implements OnInit {
   customers: Observable<Customer.Response[]>;
   
-  constructor(private store: Store) {
-
-  }
+  constructor(private store: Store) { }
 
   ngOnInit(): void {
-    this.customers = this.store.select(selectCustomers);
+    this.customers = this.store.select(selectCustomerList);
 
     this.store.dispatch(customerApiActions.listCustomersInitiated());
   }
 
   create() {
-    
+    this.store.dispatch(dialogActions.createCustomer());
   }
 }

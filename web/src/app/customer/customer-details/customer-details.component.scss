@@ -1,0 +1,29 @@
+.name {
+  font-size: 28px;
+  line-height: normal;
+  margin-bottom: 10px;
+}
+
+.description {
+  font-style: italic;
+}
+
+.jobs {
+  margin-top: 5px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+}
+
+.job-list {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  width: 100%;
+
+  @media (max-width: 329px) {
+    & {
+      grid-template-columns: 1fr;
+    }
+  }
+}

@@ -1,5 +1,5 @@
 import { IUpdateCustomerService, updateCustomerServiceFactory } from '@household/api/functions/update-customer/update-customer.service';
-import { createCustomerRequest, createCustomerDocument, createDocumentUpdate } from '@household/shared/common/test-data-factory';
+import { createCustomerRequest, createCustomerDocument, createDocumentUpdate2 } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getCustomerId } from '@household/shared/common/utils';
 import { ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
@@ -20,8 +20,10 @@ describe('Update customer service', () => {
   const body = createCustomerRequest();
   const queriedDocument = createCustomerDocument();
   const customerId = getCustomerId(queriedDocument);
-  const updateQuery = createDocumentUpdate({
-    name: 'updated',
+  const updateQuery = createDocumentUpdate2({
+    update: {
+      name: 'updated',
+    },
   });
 
   it('should return if customer is updated', async () => {
