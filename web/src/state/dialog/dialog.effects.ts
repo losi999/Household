@@ -15,6 +15,7 @@ import { projectApiActions } from '@household/web/state/project/project.actions'
 import { Store } from '@ngrx/store';
 import { selectCustomer } from '@household/web/state/customer/customer.selector';
 import { customerApiActions } from '@household/web/state/customer/customer.actions';
+import { hairdressingApiActions } from '@household/web/state/hairdressing/hairdressing.actions';
 
 @Injectable()
 export class DialogEffects { 
@@ -304,6 +305,41 @@ export class DialogEffects {
         }).pipe(dispatchIfConfirmed(customerApiActions.deleteCustomerJobInitiated({
           customerId,
           jobName: name,
+        })));
+      }),
+    );
+  });
+
+  createPrice = createEffect(() => {
+    return this.actions.pipe(
+      ofType(dialogActions.createPrice),
+      exhaustMap(() => {
+        this.dialogService.openCreatePriceDialog();
+        return EMPTY;
+      }),
+    );
+  }, {
+    dispatch: false,
+  });
+
+  updatePrice = createEffect(() => {
+    return this.actions.pipe(
+      ofType(dialogActions.updatePrice),
+      exhaustMap(({ type, ...price }) => {
+        this.dialogService.openEditPriceDialog(price);
+        return EMPTY;
+      }),
+    );
+  }, {
+    dispatch: false,
+  });
+
+  deletePrice = createEffect(() => {
+    return this.actions.pipe(
+      ofType(dialogActions.deletePrice),
+      exhaustMap(({ type, ...price }) => {
+        return this.dialogService.openDeletePriceDialog(price).pipe(dispatchIfConfirmed(hairdressingApiActions.deletePriceInitiated({
+          priceId: price.priceId,
         })));
       }),
     );

@@ -17,12 +17,24 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { AmountInputComponent } from '@household/web/app/shared/amount-input/amount-input.component';
 import { MatChipsModule } from '@angular/material/chips';
 import { SplitPipe } from '@household/web/app/shared/split.pipe';
+import { MatListModule } from '@angular/material/list';
+import { HairdressingPriceListComponent } from './hairdressing-price-list/hairdressing-price-list.component';
+import { HairdressingPriceListItemComponent } from './hairdressing-price-list-item/hairdressing-price-list-item.component';
+import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
+import { HairdressingPriceFormComponent } from './hairdressing-price-form/hairdressing-price-form.component';
+import { MatDialogModule } from '@angular/material/dialog';
+import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
+import { HairdressingPriceSubmenuComponent } from './hairdressing-price-submenu/hairdressing-price-submenu.component';
 
 @NgModule({
   declarations: [
     HairdressingIncomeHomeComponent,
     HairdressingIncomeListComponent,
     HairdressingIncomeListItemComponent,
+    HairdressingPriceListComponent,
+    HairdressingPriceListItemComponent,
+    HairdressingPriceFormComponent,
+    HairdressingPriceSubmenuComponent,
   ],
   imports: [
     CommonModule,
@@ -40,6 +52,11 @@ import { SplitPipe } from '@household/web/app/shared/split.pipe';
     MatExpansionModule,
     AmountInputComponent,
     MatChipsModule,
+    MatListModule,
+    MatBottomSheetModule,
+    MatDialogModule,
+    ClearableInputComponent,
+    AmountInputComponent,
   ],
 })
 export class HairdressingModule { }

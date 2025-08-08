@@ -809,6 +809,27 @@ export namespace Customer {
   export type Request = Base;
 }
 
+export namespace Price {
+  export type Id = Branding<string, 'price'>;
+
+  export type PriceId = {
+    priceId: Id;
+  };
+
+  type Base = {
+    name: string;
+    amount: number;
+  };
+
+  export type Document = Internal.Id
+  & Internal.Timestamps
+  & Base;
+
+  export type Request = Base;
+
+  export type Response = PriceId & Base;
+}
+
 export namespace Common {
   export type Pagination<P extends string | number> = {
     pageSize: P;

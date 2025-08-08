@@ -1,0 +1,136 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: "AWS::Serverless-2016-10-31"
+Description: "Household Hairdressing Api"
+Parameters:
+  LambdaRoleArn:
+    Type: String
+  UserPoolArn:
+    Type: String
+  Env:
+    Type: String
+  MongodbConnectionString:
+    Type: String
+  DependenciesLayer:
+    Type: String
+
+Conditions:
+  ShouldUseLayers: !Not [!Equals [!Ref DependenciesLayer, "DependenciesLayer"]]
+
+Globals:
+  Function:
+    Handler: index.default
+    Runtime: nodejs20.x
+    Timeout: 60
+    MemorySize: 512
+    Tracing: Active
+    Tags:
+      Application: !Sub Household-${Env}
+    Layers:
+      - !If [ShouldUseLayers, !Ref DependenciesLayer, !Ref "AWS::NoValue"]
+    Environment:
+      Variables:
+        MONGODB_CONNECTION_STRING: !Ref MongodbConnectionString
+
+Resources:
+  HairdressingApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub Household-${Env}-Hairdressing
+      StageName: hairdressing
+      TracingEnabled: true
+      Cors:
+        AllowMethods: "'*'"
+        AllowHeaders: "'*'"
+        AllowOrigin: "'*'"
+      Auth:
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn: !Ref UserPoolArn
+      GatewayResponses:
+        UNAUTHORIZED:
+          StatusCode: 401
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Headers: "'*'"
+              Access-Control-Allow-Methods: "'*'"
+          ResponseTemplates:
+            application/json: '{ "message": $context.error.messageString }'
+        MISSING_AUTHENTICATION_TOKEN:
+          StatusCode: 404
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Headers: "'*'"
+              Access-Control-Allow-Methods: "'*'"
+          ResponseTemplates:
+            application/json: '{ "message": $context.error.messageString }'
+
+  CreatePrice:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-CreatePrice
+      CodeUri: dist/api/create-price
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref HairdressingApi
+            Path: /v1/prices
+            Method: POST
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  UpdatePrice:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-UpdatePrice
+      CodeUri: dist/api/update-price
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref HairdressingApi
+            Path: /v1/prices/{priceId}
+            Method: PUT
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  ListPrices:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-ListPrices
+      CodeUri: dist/api/list-prices
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref HairdressingApi
+            Path: /v1/prices
+            Method: GET
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  DeletePrice:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-DeletePrice
+      CodeUri: dist/api/delete-price
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref HairdressingApi
+            Path: /v1/prices/{priceId}
+            Method: DELETE
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+Outputs:
+  HairdressingApi:
+    Description: "Household Hairdressing API"
+    Value: !Sub "${HairdressingApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}"

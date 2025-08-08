@@ -6,10 +6,11 @@ import { recipientSchema } from '@household/shared/mongodb-schemas/recipient.sch
 import { categorySchema } from '@household/shared/mongodb-schemas/category.schema';
 import { productSchema } from '@household/shared/mongodb-schemas/product.schema';
 import { transactionSchema } from '@household/shared/mongodb-schemas/transaction.schema';
-import { Recipient, Project, Account, Category, Transaction, Product, File, Setting, Customer } from '@household/shared/types/types';
+import { Recipient, Project, Account, Category, Transaction, Product, File, Setting, Customer, Price } from '@household/shared/types/types';
 import { fileSchema } from '@household/shared/mongodb-schemas/file.schema';
 import { settingSchema } from '@household/shared/mongodb-schemas/setting.schema';
 import { customerSchema } from '@household/shared/mongodb-schemas/customer.schema';
+import { priceSchema } from '@household/shared/mongodb-schemas/price.schema';
 console.log('mongodb service 1');
 
 type CollectionMapping = {
@@ -22,6 +23,7 @@ type CollectionMapping = {
   files: File.Document;
   settings: Setting.Document;
   customers: Customer.Document;
+  prices: Price.Document;
 };
 
 export type IMongodbService = {
@@ -97,5 +99,6 @@ export const mongodbServiceFactory = (mongodbConnectionString: string): IMongodb
     files: connection.model('files', fileSchema),
     settings: connection.model('settings', settingSchema),
     customers: connection.model('customers', customerSchema),
+    prices: connection.model('prices', priceSchema),
   };
 };

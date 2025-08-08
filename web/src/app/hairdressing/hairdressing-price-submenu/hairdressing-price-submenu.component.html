@@ -1,0 +1,11 @@
+<h1>{{price.name}}</h1>
+<mat-action-list>
+  <button mat-list-item type="button" (click)="edit()">
+    <mat-icon matListItemIcon>edit</mat-icon>
+    <div matListItemTitle>Szerkeszés</div>
+  </button>
+  <button mat-list-item type="button" (click)="delete()">
+    <mat-icon matListItemIcon>delete</mat-icon>
+    <div matListItemTitle>Törlés</div>
+  </button>
+</mat-action-list>

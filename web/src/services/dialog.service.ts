@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { Account, Category, Customer, File, Product, Project, Recipient, Transaction, User } from '@household/shared/types/types';
+import { Account, Category, Customer, File, Price, Product, Project, Recipient, Transaction, User } from '@household/shared/types/types';
 import { AccountFormComponent, AccountFormData } from '@household/web/app/account/account-form/account-form.component';
 import { CategoryFormComponent, CategoryFormData } from '@household/web/app/category/category-form/category-form.component';
 import { CategoryMergeDialogComponent, CategoryMergeDialogData } from '@household/web/app/category/category-merge-dialog/category-merge-dialog.component';
 import { CustomerFormComponent, CustomerFormData } from '@household/web/app/customer/customer-form/customer-form.component';
 import { CustomerJobFormComponent, CustomerJobFormData } from '@household/web/app/customer/customer-job-form/customer-job-form.component';
+import { HairdressingPriceFormComponent, HairdressingPriceFormData } from '@household/web/app/hairdressing/hairdressing-price-form/hairdressing-price-form.component';
 import { ImportFileUploadFormComponent } from '@household/web/app/import/import-file-upload-form/import-file-upload-form.component';
 import { ProductFormComponent, ProductFormData } from '@household/web/app/product/product-form/product-form.component';
 import { ProductMergeDialogComponent, ProductMergeDialogData } from '@household/web/app/product/product-merge-dialog/product-merge-dialog.component';
@@ -167,6 +168,20 @@ export class DialogService {
 
   openDeleteCustomerJobDialog({ name }: Customer.JobName) {
     return this.openConfirmationDialog('Törölni akarod ezt a munkát?', name);
+  }
+
+  openCreatePriceDialog(): void {
+    this.dialog.open<HairdressingPriceFormComponent, HairdressingPriceFormData, void>(HairdressingPriceFormComponent);
+  }
+
+  openEditPriceDialog(price: Price.Response): void {
+    this.dialog.open<HairdressingPriceFormComponent, HairdressingPriceFormData, void>(HairdressingPriceFormComponent, {
+      data: price,
+    });
+  }
+
+  openDeletePriceDialog(price: Price.Response) {
+    return this.openConfirmationDialog('Törölni akarod ezt a tételt az árlistából?', price.name);
   }
 
   openImportFileDialog(): void {

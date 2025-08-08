@@ -388,97 +388,6 @@ paths:
             application/json:
               schema:
                 $ref: "recipient.yaml#/components/schemas/RecipientId"
-  /customer/v1/customers:
-    get:
-      tags:
-        - customer
-      responses:
-        200:
-          description: List of customers
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "customer.yaml#/components/schemas/Response"
-    post:
-      tags:
-        - customer
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "customer.yaml#/components/schemas/Request"
-      responses:
-        201:
-          description: Customer id
-          content:
-            application/json:
-              schema:
-                $ref: "customer.yaml#/components/schemas/CustomerId"
-  /customer/v1/customers/{customerId}:
-    parameters:
-      - $ref: "#/components/parameters/Path.CustomerId"
-    get:
-      tags:
-        - customer
-      responses:
-        200:
-          description: Customer details
-          content:
-            application/json:
-              schema:
-                $ref: "customer.yaml#/components/schemas/Response"
-    put:
-      tags:
-        - customer
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "customer.yaml#/components/schemas/Request"
-      responses:
-        200:
-          description: Customer id
-          content:
-            application/json:
-              schema:
-                $ref: "customer.yaml#/components/schemas/CustomerId"
-  /customer/v1/customers/{customerId}/jobs:
-    parameters:
-      - $ref: "#/components/parameters/Path.CustomerId"
-    post:
-      tags:
-        - customer
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "customer.yaml#/components/schemas/Job"
-      responses:
-        201:
-          description: Job created
-  /customer/v1/customers/{customerId}/jobs/{jobName}:
-    parameters:
-      - $ref: "#/components/parameters/Path.CustomerId"
-      - $ref: "#/components/parameters/Path.JobName"
-    put:
-      tags:
-        - customer
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "customer.yaml#/components/schemas/Job"
-      responses:
-        201:
-          description: Job updated
-    delete:
-      tags:
-        - customer
-      responses:
-        204:
-          description: Job deleted
 
   # /report/v1/reports:
   #   get:
@@ -929,6 +838,149 @@ paths:
         200:
           description: User confirmed
 
+  /customer/v1/customers:
+    get:
+      tags:
+        - customer
+      responses:
+        200:
+          description: List of customers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "customer.yaml#/components/schemas/Response"
+    post:
+      tags:
+        - customer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "customer.yaml#/components/schemas/Request"
+      responses:
+        201:
+          description: Customer id
+          content:
+            application/json:
+              schema:
+                $ref: "customer.yaml#/components/schemas/CustomerId"
+  /customer/v1/customers/{customerId}:
+    parameters:
+      - $ref: "#/components/parameters/Path.CustomerId"
+    get:
+      tags:
+        - customer
+      responses:
+        200:
+          description: Customer details
+          content:
+            application/json:
+              schema:
+                $ref: "customer.yaml#/components/schemas/Response"
+    put:
+      tags:
+        - customer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "customer.yaml#/components/schemas/Request"
+      responses:
+        200:
+          description: Customer id
+          content:
+            application/json:
+              schema:
+                $ref: "customer.yaml#/components/schemas/CustomerId"
+  /customer/v1/customers/{customerId}/jobs:
+    parameters:
+      - $ref: "#/components/parameters/Path.CustomerId"
+    post:
+      tags:
+        - customer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "customer.yaml#/components/schemas/Job"
+      responses:
+        201:
+          description: Job created
+  /customer/v1/customers/{customerId}/jobs/{jobName}:
+    parameters:
+      - $ref: "#/components/parameters/Path.CustomerId"
+      - $ref: "#/components/parameters/Path.JobName"
+    put:
+      tags:
+        - customer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "customer.yaml#/components/schemas/Job"
+      responses:
+        201:
+          description: Job updated
+    delete:
+      tags:
+        - customer
+      responses:
+        204:
+          description: Job deleted
+
+  /hairdressing/v1/prices:
+    get:
+      tags:
+        - hairdressing
+      responses:
+        200:
+          description: Price list
+          content:
+            application/json:
+              schema:
+                $ref: "hairdressing.yaml#/components/schemas/Response"
+    post:
+      tags:
+        - hairdressing
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "hairdressing.yaml#/components/schemas/Request"
+      responses:
+        201:
+          description: Created price Id
+          content:
+            application/json:
+              schema:
+                $ref: "hairdressing.yaml#/components/schemas/PriceId"
+  /hairdressing/v1/prices/{priceId}:
+    parameters:
+      - $ref: "#/components/parameters/Path.PriceId"
+    put:
+      tags:
+        - hairdressing
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "hairdressing.yaml#/components/schemas/Request"
+      responses:
+        201:
+          description: Updated price Id
+          content:
+            application/json:
+              schema:
+                $ref: "hairdressing.yaml#/components/schemas/PriceId"
+    delete:
+      tags:
+        - hairdressing
+      responses:
+        204:
+          description: Price deleted
+
 components:
   parameters:
     Path.RecipientId:
@@ -987,6 +1039,12 @@ components:
         type: string
     Path.JobName:
       name: jobName
+      in: path
+      required: true
+      schema:
+        type: string
+    Path.PriceId:
+      name: priceId
       in: path
       required: true
       schema:
