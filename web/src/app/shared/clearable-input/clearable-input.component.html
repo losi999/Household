@@ -3,6 +3,7 @@
   <ng-container [ngSwitch]="type">
     <input *ngSwitchCase="'number'" type="number" matInput [formControl]="input" (blur)="touched?.()">
     <input *ngSwitchCase="'text'" type="text" matInput [formControl]="input" (blur)="touched?.()">
+    <textarea *ngSwitchCase="'area'" matInput [formControl]="input" rows="5" (blur)="touched?.()"></textarea>
   </ng-container>
   <button matSuffix mat-icon-button aria-label="Clear" type="button" (click)="clearValue($event)" tabindex="-1">
     <mat-icon>close</mat-icon>

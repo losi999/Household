@@ -1,4 +1,4 @@
-import { Account, Category, File, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Account, Category, File, Price, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { createReducer, on } from '@ngrx/store';
 import { categoryApiActions } from '@household/web/state/category/category.actions';
 import { progressActions } from '@household/web/state/progress/progress.actions';
@@ -9,10 +9,12 @@ import { accountApiActions } from '@household/web/state/account/account.actions'
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
 import { fileApiActions } from '@household/web/state/file/file.actions';
 import { userApiActions } from '@household/web/state/user/user.actions';
+import { hairdressingApiActions } from '@household/web/state/hairdressing/hairdressing.actions';
 
 export type ProgressState = {
   counter: number;
   inProgressProjects: Project.Id[];
+  inProgressPrices: Price.Id[];
   inProgressCategories: Category.Id[];
   inProgressRecipients: Recipient.Id[];
   inProgressProducts: Product.Id[];
@@ -25,6 +27,7 @@ export type ProgressState = {
 export const progressReducer = createReducer<ProgressState>({
   counter: 0,
   inProgressProjects: [],
+  inProgressPrices: [],
   inProgressRecipients: [],
   inProgressCategories: [],
   inProgressProducts: [],
@@ -253,6 +256,22 @@ on(userApiActions.addUserToGroupCompleted, userApiActions.removeUserFromGroupCom
   return {
     ..._state,
     inProgressUserGroups: _state.inProgressUserGroups.filter(x => x !== `${email}_${group}`),
+  };
+}),
+
+on(hairdressingApiActions.deletePriceInitiated, (_state, { priceId }) => {
+  return {
+    ..._state,
+    inProgressPrices: [
+      ..._state.inProgressPrices,
+      priceId,
+    ],
+  };
+}),
+on(hairdressingApiActions.deletePriceCompleted, hairdressingApiActions.deletePriceFailed, (_state, { priceId }) => {
+  return {
+    ..._state,
+    inProgressPrices: _state.inProgressPrices.filter(p => p !== priceId),
   };
 }),
 );

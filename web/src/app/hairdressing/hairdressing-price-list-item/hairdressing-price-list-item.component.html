@@ -1,0 +1,4 @@
+<button mat-list-item (click)="showMenu()" [disabled]="isDisabled | async">
+  <div matListItemTitle>{{price.name}}</div>
+  <div matListItemLine>{{price.amount}} Ft</div>
+</button>

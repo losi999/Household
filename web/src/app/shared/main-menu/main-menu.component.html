@@ -13,6 +13,8 @@
 </mat-menu>
 
 <mat-menu #hairdressing="matMenu">
+  <button mat-menu-item [routerLink]="['/', 'hairdressing', 'customers']">Vendégek</button>
+  <button mat-menu-item [routerLink]="['/', 'hairdressing', 'prices']">Árlista</button>
   <button mat-menu-item [routerLink]="['/', 'hairdressing', 'income']">Bevétel</button>
 </mat-menu>
 

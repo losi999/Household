@@ -1,0 +1,9 @@
+<household-toolbar title="Árlista">
+  <button mat-icon-button (click)="create()" type="button">
+    <mat-icon>add</mat-icon>
+  </button>
+</household-toolbar>
+
+<mat-action-list>
+  <household-hairdressing-price-list-item *ngFor="let p of prices | async" [price]="p" />
+</mat-action-list>

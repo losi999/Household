@@ -1,0 +1,64 @@
+openapi: "3.1.0"
+info:
+  title: Customer components
+  version: 1.0.0
+components:
+  schemas:
+    CustomerId:
+      type: object
+      required:
+        - customerId
+      properties:
+        customerId:
+          type: string
+          minLength: 1
+    Base:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: string
+          minLength: 1
+
+    Job:
+      type: object
+      required:
+        - name
+        - duration
+        - price
+      properties:
+        name:
+          type: string
+          minLength: 1
+        duration:
+          type: number
+          exclusiveMinimum: 0
+        price:
+          type: number
+          exclusiveMinimum: 0
+        description:
+          type: string
+          minLength: 1
+
+    Jobs:
+      type: object
+      required:
+        - jobs
+      properties:
+        jobs:
+          type: array
+          items:
+            $ref: "#/components/schemas/Job"
+
+    Response:
+      allOf:
+        - $ref: "#/components/schemas/CustomerId"
+        - $ref: "#/components/schemas/Base"
+        - $ref: "#/components/schemas/Jobs"
+    Request:
+      allOf:
+        - $ref: "#/components/schemas/Base"

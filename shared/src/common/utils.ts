@@ -1,5 +1,5 @@
 import { Dictionary } from '@household/shared/types/common';
-import { Account, Category, File, Internal, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Account, Category, Customer, File, Internal, Price, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { PopulateOptions, Types } from 'mongoose';
 
 export const keys = <O extends object>(obj: O): (keyof O)[] => {
@@ -62,6 +62,8 @@ export const getTransactionId = (doc: Transaction.Document | Transaction.RawRepo
 export const getAccountId = (doc: Account.Document | Types.ObjectId): Account.Id => getId(doc) as Account.Id;
 export const getProjectId = (doc: Project.Document | Types.ObjectId): Project.Id => getId(doc) as Project.Id;
 export const getRecipientId = (doc: Recipient.Document | Types.ObjectId): Recipient.Id => getId(doc) as Recipient.Id;
+export const getCustomerId = (doc: Customer.Document | Types.ObjectId): Customer.Id => getId(doc) as Customer.Id;
 export const getProductId = (doc: Product.Document | Types.ObjectId): Product.Id => getId(doc) as Product.Id;
 export const getCategoryId = (doc: Category.Document | Types.ObjectId): Category.Id => getId(doc) as Category.Id;
 export const getFileId = (doc: File.Document | Types.ObjectId): File.Id => getId(doc) as File.Id;
+export const getPriceId = (doc: Price.Document | Types.ObjectId): Price.Id => getId(doc) as Price.Id;

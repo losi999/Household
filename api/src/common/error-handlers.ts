@@ -1,7 +1,7 @@
 import { getCategoryId, getProductId } from '@household/shared/common/utils';
 import { AccountType, CategoryType } from '@household/shared/enums';
 import { HttpError } from '@household/shared/types/common';
-import { Account, Category, Common, File, Product, Project, Recipient, Setting, Transaction, User } from '@household/shared/types/types';
+import { Account, Category, Common, Customer, File, Price, Product, Project, Recipient, Setting, Transaction, User } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
 
 type CatchAndThrow = (error: any) => never;
@@ -496,6 +496,98 @@ export const httpErrors = {
     update: (ctx: Setting.SettingKey & UpdateQuery<Setting.Document>, statusCode = 500): CatchAndThrow => (error) => {
       log('Update setting', ctx, error);
       throw httpError(statusCode, 'Error while updating setting document');
+    },
+  },
+  customer: {
+    save: (doc: Customer.Document, statusCode = 500): CatchAndThrow => (error) => {
+      if (error.code === 11000) {
+        log('Duplicate customer name', doc, error);
+        throw httpError(400, 'Duplicate customer name');
+      }
+
+      log('Save customer', doc, error);
+      throw httpError(statusCode, 'Error while saving customer');
+    },
+    getById: (ctx: Customer.CustomerId, statusCode = 500): CatchAndThrow => (error) => {
+      log('Get customer', ctx, error);
+      throw httpError(statusCode, 'Error while getting customer');
+    },
+    list: (statusCode = 500): CatchAndThrow => (error) => {
+      log('List customers', undefined, error);
+      throw httpError(statusCode, 'Error while listing customers');
+    },
+    notFound: (ctx: Customer.CustomerId & {customer: Customer.Document}, statusCode = 404) => {
+      if (ctx.customerId && !ctx.customer) {
+        log('No customer found', ctx);
+        throw httpError(statusCode, 'No customer found');
+      }
+    },
+    delete: (ctx: Customer.CustomerId, statusCode = 500): CatchAndThrow => (error) => {
+      log('Delete customer', ctx, error);
+      throw httpError(statusCode, 'Error while deleting customer');
+    },
+    update: (ctx: Customer.CustomerId & {update: UpdateQuery<Customer.Document>}, statusCode = 500): CatchAndThrow => (error) => {
+      if (error.code === 11000) {
+        log('Duplicate customer name', ctx, error);
+        throw httpError(400, 'Duplicate customer name');
+      }
+
+      log('Update customer', ctx, error);
+      throw httpError(statusCode, 'Error while updating customer');
+    },
+    duplicateJobName: (ctx: {job: Customer.Job; customer: Customer.Document; jobName?: Customer.JobName['name']}, statusCode = 400) => {
+      if (ctx.job.name !== ctx.jobName && ctx.customer.jobs.some(j => j.name === ctx.job.name)) {
+        log('Duplicate customer job name', ctx);
+        throw httpError(statusCode, 'Duplicate customer job name');
+      }
+    },
+  },
+  price: {
+    save: (doc: Price.Document, statusCode = 500): CatchAndThrow => (error) => {
+      if (error.code === 11000) {
+        log('Duplicate price name', doc, error);
+        throw httpError(400, 'Duplicate price name');
+      }
+
+      log('Save price', doc, error);
+      throw httpError(statusCode, 'Error while saving price');
+    },
+    getById: (ctx: Price.PriceId, statusCode = 500): CatchAndThrow => (error) => {
+      log('Get price', ctx, error);
+      throw httpError(statusCode, 'Error while getting price');
+    },
+    listByIds: (ctx: Price.Id[], statusCode = 500): CatchAndThrow => (error) => {
+      log('List prices by ids', ctx, error);
+      throw httpError(statusCode, 'Error while listing prices by ids');
+    },
+    list: (statusCode = 500): CatchAndThrow => (error) => {
+      log('List prices', undefined, error);
+      throw httpError(statusCode, 'Error while listing prices');
+    },
+    notFound: (ctx: Price.PriceId & {price: Price.Document}, statusCode = 404) => {
+      if (ctx.priceId && !ctx.price) {
+        log('No price found', ctx);
+        throw httpError(statusCode, 'No price found');
+      }
+    },
+    delete: (ctx: Price.PriceId, statusCode = 500): CatchAndThrow => (error) => {
+      log('Delete price', ctx, error);
+      throw httpError(statusCode, 'Error while deleting price');
+    },
+    multipleNotFound: (ctx: { priceIds: Price.Id[]; prices: Price.Document[] }, statusCode = 400) => {
+      if (ctx.priceIds.length !== ctx.prices.length) {
+        log('Some of the prices are not found', ctx);
+        throw httpError(statusCode, 'Some of the prices are not found');
+      }
+    },
+    update: (ctx: Price.PriceId & {update: UpdateQuery<Price.Document>}, statusCode = 500): CatchAndThrow => (error) => {
+      if (error.code === 11000) {
+        log('Duplicate price name', ctx, error);
+        throw httpError(400, 'Duplicate price name');
+      }
+
+      log('Update price', ctx, error);
+      throw httpError(statusCode, 'Error while updating price');
     },
   },
   common: {

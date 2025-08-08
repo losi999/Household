@@ -23,6 +23,7 @@ import { Observable } from 'rxjs';
 export class AmountInputComponent implements OnInit, OnChanges, ControlValueAccessor {
   @Input() max = Number.POSITIVE_INFINITY;
   @Input() signDisabled = false;
+  @Input() signHidden = false;
   @Input() currency: string;
   @Input() newBalance: number;
   @Input() label = 'Összeg';

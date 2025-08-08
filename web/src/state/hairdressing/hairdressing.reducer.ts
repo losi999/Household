@@ -1,8 +1,9 @@
-import { Transaction } from '@household/shared/types/types';
+import { Price, Transaction } from '@household/shared/types/types';
 import { createReducer, on } from '@ngrx/store';
-import { hairdressingActions } from '@household/web/state/hairdressing/hairdressing.actions';
+import { hairdressingActions, hairdressingApiActions } from '@household/web/state/hairdressing/hairdressing.actions';
 
 export type HairdressingState = {
+  priceList?: Price.Response[];
   income?: {
     [month: string]: Transaction.Report[];
   }
@@ -61,6 +62,36 @@ export const hairdressingReducer = createReducer<HairdressingState>({},
           [month]: transactions.filter(t => t.transactionId !== transactionId),
         };
       }, {}),
+    };
+  }),
+
+  on(hairdressingApiActions.listPricesCompleted, (_state, { prices }) => {
+    return {
+      ..._state,
+      priceList: prices,
+    };
+  }),
+
+  on(hairdressingApiActions.createPriceCompleted, hairdressingApiActions.updatePriceCompleted, (_state, { priceId, name, amount }) => {
+  
+    return {
+      ..._state,
+      priceList: _state.priceList.filter(p => p.priceId !== priceId)
+        .concat({
+          priceId,
+          name,
+          amount,
+        })
+        .toSorted((a, b) => a.name.localeCompare(b.name, 'hu', {
+          sensitivity: 'base',
+        })),
+    };
+  }),
+  
+  on(hairdressingApiActions.deletePriceCompleted, (_state, { priceId }) => {
+    return {
+      ..._state,
+      priceList: _state.priceList.filter(p => p.priceId !== priceId),
     };
   }),
 );

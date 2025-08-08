@@ -1,0 +1,25 @@
+<household-toolbar title="Vendégek">
+  <button mat-icon-button (click)="edit()" type="button">
+    <mat-icon>edit</mat-icon>
+  </button>
+
+</household-toolbar>
+<ng-container *ngIf="customer | async as cust">
+  <div class="name">
+    {{cust.name}}
+  </div>
+  <div *ngIf="cust.description" class="description">
+    {{cust.description}}
+  </div>
+  <mat-divider />
+  <div class="jobs">
+    <household-icon-text icon="content_cut" text="Munkák" size="medium" />
+    <button mat-icon-button (click)="addJob()" type="button">
+      <mat-icon>add</mat-icon>
+    </button>
+  </div>
+  <div class="job-list">
+    <household-customer-details-job-item *ngFor="let j of cust.jobs" [job]="j" />
+  </div>
+
+</ng-container>

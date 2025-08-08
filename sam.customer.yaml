@@ -1,0 +1,200 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: "AWS::Serverless-2016-10-31"
+Description: "Household Customer Api"
+Parameters:
+  LambdaRoleArn:
+    Type: String
+  UserPoolArn:
+    Type: String
+  Env:
+    Type: String
+  MongodbConnectionString:
+    Type: String
+  DependenciesLayer:
+    Type: String
+
+Conditions:
+  ShouldUseLayers: !Not [!Equals [!Ref DependenciesLayer, "DependenciesLayer"]]
+
+Globals:
+  Function:
+    Handler: index.default
+    Runtime: nodejs20.x
+    Timeout: 60
+    MemorySize: 512
+    Tracing: Active
+    Tags:
+      Application: !Sub Household-${Env}
+    Layers:
+      - !If [ShouldUseLayers, !Ref DependenciesLayer, !Ref "AWS::NoValue"]
+    Environment:
+      Variables:
+        MONGODB_CONNECTION_STRING: !Ref MongodbConnectionString
+
+Resources:
+  CustomerApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub Household-${Env}-Customer
+      StageName: customer
+      TracingEnabled: true
+      Cors:
+        AllowMethods: "'*'"
+        AllowHeaders: "'*'"
+        AllowOrigin: "'*'"
+      Auth:
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn: !Ref UserPoolArn
+      GatewayResponses:
+        UNAUTHORIZED:
+          StatusCode: 401
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Headers: "'*'"
+              Access-Control-Allow-Methods: "'*'"
+          ResponseTemplates:
+            application/json: '{ "message": $context.error.messageString }'
+        MISSING_AUTHENTICATION_TOKEN:
+          StatusCode: 404
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Headers: "'*'"
+              Access-Control-Allow-Methods: "'*'"
+          ResponseTemplates:
+            application/json: '{ "message": $context.error.messageString }'
+
+  CreateCustomer:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-CreateCustomer
+      CodeUri: dist/api/create-customer
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CustomerApi
+            Path: /v1/customers
+            Method: POST
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  UpdateCustomer:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-UpdateCustomer
+      CodeUri: dist/api/update-customer
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CustomerApi
+            Path: /v1/customers/{customerId}
+            Method: PUT
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  ListCustomers:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-ListCustomers
+      CodeUri: dist/api/list-customers
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CustomerApi
+            Path: /v1/customers
+            Method: GET
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  GetCustomer:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-GetCustomer
+      CodeUri: dist/api/get-customer
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CustomerApi
+            Path: /v1/customers/{customerId}
+            Method: GET
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  CreateCustomerJob:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-CreateCustomerJob
+      CodeUri: dist/api/create-customer-job
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CustomerApi
+            Path: /v1/customers/{customerId}/jobs
+            Method: POST
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  DeleteCustomerJob:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-DeleteCustomerJob
+      CodeUri: dist/api/delete-customer-job
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CustomerApi
+            Path: /v1/customers/{customerId}/jobs/{jobName}
+            Method: DELETE
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  UpdateCustomerJob:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-UpdateCustomerJob
+      CodeUri: dist/api/update-customer-job
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CustomerApi
+            Path: /v1/customers/{customerId}/jobs/{jobName}
+            Method: PUT
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  # DeleteCustomer:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     FunctionName: !Sub Household-${Env}-DeleteCustomer
+  #     CodeUri: dist/api/delete-customer
+  #     Role: !Ref LambdaRoleArn
+  #     Events:
+  #       API:
+  #         Type: Api
+  #         Properties:
+  #           RestApiId: !Ref CustomerApi
+  #           Path: /v1/customers/{customerId}
+  #           Method: DELETE
+  #           Auth:
+  #             Authorizer: CognitoAuthorizer
+
+Outputs:
+  CustomerApi:
+    Description: "Household Customer API"
+    Value: !Sub "${CustomerApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}"

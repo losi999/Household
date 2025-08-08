@@ -1,4 +1,4 @@
-import { Account, Category, File, Product, Project, Recipient, Transaction, User } from '@household/shared/types/types';
+import { Account, Category, Customer, File, Price, Product, Project, Recipient, Transaction, User } from '@household/shared/types/types';
 import { Action, createActionGroup, emptyProps, props } from '@ngrx/store';
 
 export const dialogActions = createActionGroup({
@@ -23,6 +23,14 @@ export const dialogActions = createActionGroup({
     'Create account': emptyProps(),
     'Update account': props<Account.Response>(),
     'Delete account': props<Account.Response>(),
+    'Create customer': emptyProps(),
+    'Update customer': emptyProps(),
+    'Create customer job': props<Customer.CustomerId>(),
+    'Update customer job': props<Customer.CustomerId & Customer.Job>(),
+    'Delete customer job': props<Customer.CustomerId & Customer.JobName>(),
+    'Create price': emptyProps(),
+    'Update price': props<Price.PriceId & Price.Response>(),
+    'Delete price': props<Price.Response>(),
     'Import file': emptyProps(),
     'Delete file': props<File.Response>(),
     'Delete user': props<User.Email>(),

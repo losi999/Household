@@ -1,6 +1,7 @@
 import { generateMongoId } from '@household/shared/common/utils';
 import { AccountType, CategoryType, FileType, TransactionType, UserType } from '@household/shared/enums';
-import { Account, Auth, Category, File, Product, Project, Recipient, Report, Setting, Transaction, User } from '@household/shared/types/types';
+import { DocumentUpdate } from '@household/shared/types/common';
+import { Account, Auth, Category, Customer, File, Price, Product, Project, Recipient, Report, Setting, Transaction, User } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
 
 const amount = -100;
@@ -33,6 +34,14 @@ export const createProductId = (id?: string): Product.Id => {
 
 export const createFileId = (id?: string): File.Id => {
   return (id ?? generateMongoId().toString()) as File.Id;
+};
+
+export const createCustomerId = (id?: string): Customer.Id => {
+  return (id ?? generateMongoId().toString()) as Customer.Id;
+};
+
+export const createPriceId = (id?: string): Price.Id => {
+  return (id ?? generateMongoId().toString()) as Price.Id;
 };
 
 export const createSettingKey = (key?: string): Setting.Id => {
@@ -74,6 +83,36 @@ export const createRecipientDocument: DataFactoryFunction<Recipient.Document> = 
   return {
     _id: generateMongoId(),
     name: 'recipient name',
+    expiresAt: undefined,
+    ...doc,
+  };
+};
+
+export const createCustomerJob: DataFactoryFunction<Customer.Job> = (data) => {
+  return {
+    name: 'vágás',
+    duration: 60,
+    price: 4000,
+    description: 'job description',
+    ...data,
+  };
+};
+
+export const createCustomerDocument: DataFactoryFunction<Customer.Document> = (doc) => {
+  return {
+    _id: generateMongoId(),
+    name: 'customer name',
+    description: 'description for customer',
+    jobs: [createCustomerJob()],
+    expiresAt: undefined,
+    ...doc,
+  };
+};
+export const createPriceDocument: DataFactoryFunction<Price.Document> = (doc) => {
+  return {
+    _id: generateMongoId(),
+    name: 'price name',
+    amount: 3000,
     expiresAt: undefined,
     ...doc,
   };
@@ -278,6 +317,21 @@ export const createCategoryRequest: DataFactoryFunction<Category.Request> = (req
 export const createRecipientRequest: DataFactoryFunction<Recipient.Request> = (req) => {
   return {
     name: 'recipient name',
+    ...req,
+  };
+};
+export const createCustomerRequest: DataFactoryFunction<Customer.Request> = (req) => {
+  return {
+    name: 'customer name',
+    description: 'description for customer',
+    ...req,
+  };
+};
+
+export const createPriceRequest: DataFactoryFunction<Price.Request> = (req) => {
+  return {
+    name: 'price name',
+    amount: 3000,
     ...req,
   };
 };
@@ -531,6 +585,24 @@ export const createRecipientResponse: DataFactoryFunction<Recipient.Response> = 
     ...resp,
   };
 };
+export const createCustomerResponse: DataFactoryFunction<Customer.Response> = (resp) => {
+  return {
+    customerId: createCustomerId(),
+    name: 'customer name',
+    description: 'description for customer',
+    jobs: [createCustomerJob()],
+    ...resp,
+  };
+};
+
+export const createPriceResponse: DataFactoryFunction<Price.Response> = (resp) => {
+  return {
+    priceId: createPriceId(),
+    name: 'price name',
+    amount: 3000,
+    ...resp,
+  };
+};
 
 export const createProductResponse: DataFactoryFunction<Product.Response> = (resp) => {
   return {
@@ -753,6 +825,17 @@ export const createDocumentUpdate: DataFactoryFunction<UpdateQuery<any>> = (upda
   return {
     $set: {
       someProperty: 123,
+    },
+    ...update,
+  };
+};
+
+export const createDocumentUpdate2: DataFactoryFunction<DocumentUpdate<any>> = (update) => {
+  return {
+    update: {
+      $set: {
+        someProperty: 123,
+      },
     },
     ...update,
   };
