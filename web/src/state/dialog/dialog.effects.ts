@@ -272,30 +272,6 @@ export class DialogEffects {
     dispatch: false,
   });
 
-  createCustomerJob = createEffect(() => {
-    return this.actions.pipe(
-      ofType(dialogActions.createCustomerJob),
-      exhaustMap(({ customerId }) => {
-        this.dialogService.openCreateCustomerJobDialog(customerId);
-        return EMPTY;
-      }),
-    );
-  }, {
-    dispatch: false,
-  });
-
-  updateCustomerJob = createEffect(() => {
-    return this.actions.pipe(
-      ofType(dialogActions.updateCustomerJob),
-      exhaustMap(({ type, customerId, ...job }) => {
-        this.dialogService.openEditCustomerJobDialog(customerId, job);
-        return EMPTY;
-      }),
-    );
-  }, {
-    dispatch: false,
-  });
-
   deleteCustomerJob = createEffect(() => {
     return this.actions.pipe(
       ofType(dialogActions.deleteCustomerJob),

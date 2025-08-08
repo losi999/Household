@@ -1,6 +1,5 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Customer } from '@household/shared/types/types';
 import { customerApiActions } from '@household/web/state/customer/customer.actions';
 import { Store } from '@ngrx/store';
@@ -16,6 +15,12 @@ export type CustomerJobFormData = Customer.CustomerId & {
   styleUrl: './customer-job-form.component.scss',
 })
 export class CustomerJobFormComponent implements OnInit {
+  @Output() done = new EventEmitter();
+  @Input() job: Customer.Job;
+  @Input({
+    required: true,
+  }) customerId: Customer.Id;
+
   form: FormGroup<{
     name: FormControl<string>;
     description: FormControl<string>;
@@ -23,25 +28,31 @@ export class CustomerJobFormComponent implements OnInit {
   }>;
   duration: number;
 
-  constructor(private dialogRef: MatDialogRef<CustomerJobFormComponent, void>,
-    private store: Store,
-    @Inject(MAT_DIALOG_DATA) public data: CustomerJobFormData) {
+  constructor(private store: Store) {
   }
   
   ngOnInit(): void {
-    this.duration = this.data.job?.duration ?? 15;
+    this.duration = this.job?.duration ?? this.timeIncrement;
     this.form = new FormGroup({
-      name: new FormControl(this.data.job?.name, [Validators.required]),
-      description: new FormControl(this.data.job?.description),
-      price: new FormControl(this.data.job?.price, [Validators.required]),
+      name: new FormControl(this.job?.name, [Validators.required]),
+      description: new FormControl(this.job?.description),
+      price: new FormControl(this.job?.price, [Validators.required]),
     });
   }
 
-  setDuration(minutes: number) {
+  get timeIncrement() {
+    return 15;
+  }
+
+  onSetDuration(minutes: number) {
     this.duration += minutes;
   }
 
-  save() {
+  onCancel() {
+    this.done.emit();
+  }
+
+  onSave() {
     if (this.form.valid) {
       const request: Customer.Job = {
         name: this.form.value.name,
@@ -50,20 +61,19 @@ export class CustomerJobFormComponent implements OnInit {
         price: this.form.value.price,
       };
 
-      if (this.data.job) {
+      if (this.job) {
         this.store.dispatch(customerApiActions.updateCustomerJobInitiated({
-          customerId: this.data.customerId,
-          jobName: this.data.job.name,
+          customerId: this.customerId,
+          jobName: this.job.name,
           ...request,
         }));
       } else {
         this.store.dispatch(customerApiActions.createCustomerJobInitiated({
-          customerId: this.data.customerId,
+          customerId: this.customerId,
           ...request,
         }));
       }
-  
-      this.dialogRef.close();
+      this.done.emit();
     }
   }
 }

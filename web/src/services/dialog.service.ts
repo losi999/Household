@@ -5,7 +5,6 @@ import { AccountFormComponent, AccountFormData } from '@household/web/app/accoun
 import { CategoryFormComponent, CategoryFormData } from '@household/web/app/category/category-form/category-form.component';
 import { CategoryMergeDialogComponent, CategoryMergeDialogData } from '@household/web/app/category/category-merge-dialog/category-merge-dialog.component';
 import { CustomerFormComponent, CustomerFormData } from '@household/web/app/customer/customer-form/customer-form.component';
-import { CustomerJobFormComponent, CustomerJobFormData } from '@household/web/app/customer/customer-job-form/customer-job-form.component';
 import { HairdressingPriceFormComponent, HairdressingPriceFormData } from '@household/web/app/hairdressing/hairdressing-price-form/hairdressing-price-form.component';
 import { ImportFileUploadFormComponent } from '@household/web/app/import/import-file-upload-form/import-file-upload-form.component';
 import { ProductFormComponent, ProductFormData } from '@household/web/app/product/product-form/product-form.component';
@@ -146,23 +145,6 @@ export class DialogService {
   openEditCustomerDialog(customer: Customer.Response): void {
     this.dialog.open<CustomerFormComponent, CustomerFormData, void>(CustomerFormComponent, {
       data: customer,
-    });
-  }
-
-  openCreateCustomerJobDialog(customerId: Customer.Id): void {
-    this.dialog.open<CustomerJobFormComponent, CustomerJobFormData, void>(CustomerJobFormComponent, {
-      data: {
-        customerId,
-      },
-    });
-  }
-
-  openEditCustomerJobDialog(customerId: Customer.Id, job: Customer.Job): void {
-    this.dialog.open<CustomerJobFormComponent, CustomerJobFormData, void>(CustomerJobFormComponent, {
-      data: {
-        customerId,
-        job,
-      },
     });
   }
 

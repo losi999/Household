@@ -16,6 +16,8 @@ import { Observable } from 'rxjs';
 export class CustomerDetailsComponent implements OnInit {
   customer: Observable<Customer.Response>;
   customerId: Customer.Id;
+  isInEditMode = false;
+  selectedJob: Customer.Job;
 
   constructor (private store: Store, private activatedRoute: ActivatedRoute) { }
   
@@ -29,13 +31,21 @@ export class CustomerDetailsComponent implements OnInit {
     }));
   }
 
-  addJob() {
-    this.store.dispatch(dialogActions.createCustomerJob({
-      customerId: this.customerId,
-    }));
+  onAddJob() {
+    this.isInEditMode = true;
+    this.selectedJob = undefined;
   }
 
-  edit() {
+  onJobEditDonel() {
+    this.isInEditMode = false;
+  }
+
+  onJobEdit(job: Customer.Job) {
+    this.selectedJob = job;
+    this.isInEditMode = true;
+  }
+
+  onEdit() {
     this.store.dispatch(dialogActions.updateCustomer());
   }
 

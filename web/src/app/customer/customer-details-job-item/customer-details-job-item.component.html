@@ -15,11 +15,11 @@
       <mat-icon>more_vert</mat-icon>
     </button>
     <mat-menu #menu="matMenu">
-      <button mat-menu-item (click)="edit()">
+      <button mat-menu-item (click)="onEdit()">
         <mat-icon>edit</mat-icon>
         <span>Szerkesztés</span>
       </button>
-      <button mat-menu-item color="warn" (click)="delete()">
+      <button mat-menu-item color="warn" (click)="onDelete()">
         <mat-icon>delete</mat-icon>
         <span>Törlés</span>
       </button>
