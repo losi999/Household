@@ -4,15 +4,32 @@
     <household-clearable-input formControlName="description" type="area" label="Megjegyzés" />
     <div class="duration">
       <mat-label>Időtartam</mat-label>
-      <button mat-icon-button type="button" (click)="onSetDuration(timeIncrement * -1)" [disabled]="duration === timeIncrement">
+      <button mat-icon-button type="button" (click)="onSetDuration(timeIncrement * -1)" [disabled]="form.value.duration === timeIncrement">
         <mat-icon>remove</mat-icon>
       </button>
-      <span>{{duration | minutesToHour}} óra</span>
+      <span>{{form.value.duration | minutesToHour}} óra</span>
       <button mat-icon-button type="button" (click)="onSetDuration(timeIncrement)">
         <mat-icon>add</mat-icon>
       </button>
     </div>
-    <household-clearable-input formControlName="price" type="number" label="Ár" />
+    <div class="price-list">
+      <ng-container *ngFor="let p of prices | async">
+        <button mat-flat-button *ngIf="selectedPrices.includes(p)" type="button" color="primary" (click)="onRemovePrice(p)">{{p.name}}: {{p.amount}} Ft</button>
+        <button mat-stroked-button *ngIf="!selectedPrices.includes(p)" type="button" (click)="onAddPrice(p)">{{p.name}}: {{p.amount}} Ft</button>
+      </ng-container>
+    </div>
+    <div class="detailed-price" *ngFor="let p of selectedPrices">
+      <span>{{p.name}}</span>
+      <span>{{p.amount}} Ft</span>
+    </div>
+    <ng-container *ngIf="form.value.price">
+      <mat-divider />
+      <div class="detailed-price">
+        <span>Összesen</span>
+        <span>{{form.value.price}} Ft</span>
+      </div>
+    </ng-container>
+
   </div>
   <div>
     <button mat-button>Mentés</button>
