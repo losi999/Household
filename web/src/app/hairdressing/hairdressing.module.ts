@@ -25,6 +25,9 @@ import { HairdressingPriceFormComponent } from './hairdressing-price-form/hairdr
 import { MatDialogModule } from '@angular/material/dialog';
 import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
 import { HairdressingPriceSubmenuComponent } from './hairdressing-price-submenu/hairdressing-price-submenu.component';
+import { HairdressingCalendarHomeComponent } from './hairdressing-calendar-home/hairdressing-calendar-home.component';
+import { HairdressingCalendarDayComponent } from './hairdressing-calendar-day/hairdressing-calendar-day.component';
+import { TimespanPipe } from './timespan.pipe';
 
 @NgModule({
   declarations: [
@@ -35,6 +38,9 @@ import { HairdressingPriceSubmenuComponent } from './hairdressing-price-submenu/
     HairdressingPriceListItemComponent,
     HairdressingPriceFormComponent,
     HairdressingPriceSubmenuComponent,
+    HairdressingCalendarHomeComponent,
+    HairdressingCalendarDayComponent,
+    TimespanPipe,
   ],
   imports: [
     CommonModule,

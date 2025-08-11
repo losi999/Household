@@ -1,0 +1,30 @@
+<household-toolbar title="Naptár">
+</household-toolbar>
+
+<div class="header">
+  <div class="week-stepper">
+    <button mat-flat-button color="primary" type="button" (click)="onChangeWeek(-1)"><mat-icon>arrow_left</mat-icon>Előző hét</button>
+    <button mat-flat-button color="warn" type="button" (click)="onShowToday()">Ma</button>
+    <button mat-flat-button color="primary" type="button" (click)="onChangeWeek(1)">Következő hét <mat-icon>arrow_right</mat-icon></button>
+  </div>
+  <div class="days-of-week">
+    <div class="day"></div>
+    <div class="day" *ngFor="let day of daysOfWeek">
+      <div>
+        {{day.date | date: 'MMM dd.'}}
+      </div>
+      <div>
+        {{day.date | date: 'EEEE'}}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="calendar">
+  <div class="time">
+    <div *ngFor="let h of [].constructor(24); let i = index" [style.grid-row]="i*4+1">
+      {{ i | number: '2.0' }}:00
+    </div>
+  </div>
+  <household-hairdressing-calendar-day *ngFor="let day of daysOfWeek" [day]="day" />
+</div>

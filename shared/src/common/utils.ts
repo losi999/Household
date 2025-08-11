@@ -24,6 +24,9 @@ export const addSeconds = (seconds: number, dateFrom?: Date): Date => {
   }
   return new Date(Date.now() + seconds * 1000);
 };
+export const addMinutes = (days: number, dateFrom?: Date): Date => addSeconds(days * 60, dateFrom);
+export const addHours = (days: number, dateFrom?: Date): Date => addSeconds(days * 60 * 60, dateFrom);
+export const addDays = (days: number, dateFrom?: Date): Date => addSeconds(days * 60 * 60 * 24, dateFrom);
 
 export const toDictionary = <P>(docs: P[], key: keyof P): Dictionary<P> => {
   return docs.reduce((accumulator, currentValue) => {
