@@ -13,11 +13,10 @@
 <ng-template #workday>
   <div class="no-work" [style.grid-row]="1 + '/ span ' + (day.start)"></div>
   <div class="no-work" [style.grid-row]="(day.end + 1) + '/ 97'"></div>
-  <div class="work" *ngFor="let w of day.workEntries" [style.grid-row]="w | timespan">{{w.title}}</div>
-  <div class="personal" *ngFor="let w of day.personalEntries" [style.grid-row]="w | timespan">{{w.title}}</div>
+  <button *ngFor="let e of day.entries" [ngClass]="e.type" [style.grid-row]="e | timespan" (click)="onEntryClick(e)">{{e.title}}</button>
 </ng-template>
 
-<div class="day" (click)="onGridClick($event)" role="button" tabindex="0" (keydown)="null">
+<div class="day">
   <ng-container [ngSwitch]="day.dayType">
     <ng-container *ngSwitchCase="'weekend'" [ngTemplateOutlet]="weekend"></ng-container>
     <ng-container *ngSwitchCase="'personal'" [ngTemplateOutlet]="personal"></ng-container>

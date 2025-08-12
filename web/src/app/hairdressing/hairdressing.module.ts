@@ -28,6 +28,8 @@ import { HairdressingPriceSubmenuComponent } from './hairdressing-price-submenu/
 import { HairdressingCalendarHomeComponent } from './hairdressing-calendar-home/hairdressing-calendar-home.component';
 import { HairdressingCalendarDayComponent } from './hairdressing-calendar-day/hairdressing-calendar-day.component';
 import { TimespanPipe } from './timespan.pipe';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatMenuModule } from '@angular/material/menu';
 
 @NgModule({
   declarations: [
@@ -63,6 +65,8 @@ import { TimespanPipe } from './timespan.pipe';
     MatDialogModule,
     ClearableInputComponent,
     AmountInputComponent,
+    MatTooltipModule,
+    MatMenuModule,
   ],
 })
 export class HairdressingModule { }

@@ -1,4 +1,21 @@
 <household-toolbar title="Naptár">
+  <button mat-icon-button type="button" [matMenuTriggerFor]="menu">
+    <mat-icon>visibility</mat-icon>
+  </button>
+  <mat-menu #menu="matMenu">
+    <button mat-menu-item (click)="onFullDayVisibilityToggle()">
+      <mat-icon>{{isFullDayVisible ? 'visibility' : 'visibility_off'}}</mat-icon>
+      <span>Egész nap</span>
+    </button>
+    <button mat-menu-item (click)="onSaturdayVisibilityToggle()">
+      <mat-icon>{{isSaturdayVisible ? 'visibility' : 'visibility_off'}}</mat-icon>
+      <span>Szombat</span>
+    </button>
+    <button mat-menu-item (click)="onSundayVisibilityToggle()" [disabled]="!isSaturdayVisible">
+      <mat-icon>{{isSundayVisible ? 'visibility' : 'visibility_off'}}</mat-icon>
+      <span>Vasárnap</span>
+    </button>
+  </mat-menu>
 </household-toolbar>
 
 <div class="header">
