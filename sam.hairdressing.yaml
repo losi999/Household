@@ -130,6 +130,38 @@ Resources:
             Auth:
               Authorizer: CognitoAuthorizer
 
+  CreateCalendarEntry:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-CreateCalendarEntry
+      CodeUri: dist/api/create-calendar-entry
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref HairdressingApi
+            Path: /v1/calendar/entries
+            Method: POST
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  ListCalendarEntries:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-ListCalendarEntries
+      CodeUri: dist/api/list-calendar-entries
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref HairdressingApi
+            Path: /v1/calendar/entries
+            Method: GET
+            Auth:
+              Authorizer: CognitoAuthorizer
+
 Outputs:
   HairdressingApi:
     Description: "Household Hairdressing API"

@@ -830,6 +830,44 @@ export namespace Price {
   export type Response = PriceId & Base;
 }
 
+export namespace CalendarEntry {
+  export type Id = Branding<string, 'calendarEntry'>;
+
+  export type CalendarEntryId = {
+    calendarEntryId: Id;
+  };
+
+  export type DateRange = {
+    dateFrom: string;
+    dateTo: string;
+  };
+  
+  type Entry = {
+    title: string;
+    type: Enum.CalendarEntryType;
+    start: number;
+    end: number;
+  };
+
+  type Day<D extends Date | string> = {
+    day: D;
+  };
+
+  export type Request = Entry & Day<string>;
+
+  export type Document = Internal.Id
+  & Internal.Timestamps
+  & Entry
+  & Day<Date>;
+
+  export type Response = Day<string> & {
+    type: 'workday' | 'weekend' | 'personal' | 'holiday';
+    start: number;
+    end: number;
+    entries: (Entry & CalendarEntryId)[];
+  };
+}
+
 export namespace Common {
   export type Pagination<P extends string | number> = {
     pageSize: P;

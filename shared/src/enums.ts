@@ -36,3 +36,9 @@ export enum UserType {
   Editor = 'editor',
   Hairdresser = 'hairdresser',
 }
+
+export enum CalendarEntryType {
+  Work = 'work',
+  Personal = 'personal',
+  Issue = 'issue',
+}

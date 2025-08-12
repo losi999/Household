@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { addDays } from '@household/shared/common/utils';
+import { hairdressingApiActions } from '@household/web/state/hairdressing/hairdressing.actions';
+import { Store } from '@ngrx/store';
 
 const timeToSlot = (hour: number, minute: number) => hour * 4 + minute / 15;
 
@@ -80,12 +82,12 @@ const ENTRIES: Entry[][] = [
       title: 'Nincs meleg víz',
       type: 'issue',
     },
-    // {
-    //   start: timeToSlot(8, 0),
-    //   end: timeToSlot(9, 0),
-    //   title: 'Meleg víz nem kell',
-    //   type: 'work',
-    // },
+    {
+      start: timeToSlot(9, 0),
+      end: timeToSlot(10, 0),
+      title: 'Meleg víz nem kell',
+      type: 'work',
+    },
   ],
   [],
   [],
@@ -103,6 +105,8 @@ export class HairdressingCalendarHomeComponent implements OnInit {
   isSaturdayVisible: boolean;
   isSundayVisible: boolean;
 
+  constructor(private store: Store) {}
+
   private calculateDaysOfWeek (date: Date) {
     this.daysOfWeek = [];
     const day = date.getDay();
@@ -110,7 +114,7 @@ export class HairdressingCalendarHomeComponent implements OnInit {
 
     const monday = new Date(date);
     monday.setDate(date.getDate() + diffToMonday);
-    monday.setHours(0, 0, 0, 0);
+    monday.setUTCHours(0, 0, 0, 0);
 
     for (let i = 0; i < 7; i += 1) {
       const d = new Date(monday);
@@ -127,7 +131,14 @@ export class HairdressingCalendarHomeComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.calculateDaysOfWeek(new Date());    
+    this.calculateDaysOfWeek(new Date());   
+
+    console.log(this.daysOfWeek);
+    
+    this.store.dispatch(hairdressingApiActions.listCalendarEntriesInitiated({
+      dateFrom: this.daysOfWeek[0].date.toISOString().split('T')[0],
+      dateTo: this.daysOfWeek[6].date.toISOString().split('T')[0],
+    }));
   }
 
   onFullDayVisibilityToggle() {

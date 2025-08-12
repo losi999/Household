@@ -1,4 +1,4 @@
-import { Price, Transaction } from '@household/shared/types/types';
+import { CalendarEntry, Price, Transaction } from '@household/shared/types/types';
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
 
 export const hairdressingActions = createActionGroup({
@@ -27,5 +27,7 @@ export const hairdressingApiActions = createActionGroup({
     'Delete price initiated': props<Price.PriceId>(),
     'Delete price completed': props<Price.PriceId>(),
     'Delete price failed': props<Price.PriceId>(),
+    'List calendar entries initiated': props<CalendarEntry.DateRange>(),
+    'List calendar entries completed': props<CalendarEntry.DateRange & {entries: CalendarEntry.Response[]}>(),
   },
 });

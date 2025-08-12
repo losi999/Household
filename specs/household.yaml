@@ -940,7 +940,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "hairdressing.yaml#/components/schemas/Response"
+                $ref: "price.yaml#/components/schemas/Response"
     post:
       tags:
         - hairdressing
@@ -948,14 +948,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "hairdressing.yaml#/components/schemas/Request"
+              $ref: "price.yaml#/components/schemas/Request"
       responses:
         201:
           description: Created price Id
           content:
             application/json:
               schema:
-                $ref: "hairdressing.yaml#/components/schemas/PriceId"
+                $ref: "price.yaml#/components/schemas/PriceId"
   /hairdressing/v1/prices/{priceId}:
     parameters:
       - $ref: "#/components/parameters/Path.PriceId"
@@ -966,20 +966,128 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "hairdressing.yaml#/components/schemas/Request"
+              $ref: "price.yaml#/components/schemas/Request"
       responses:
         201:
           description: Updated price Id
           content:
             application/json:
               schema:
-                $ref: "hairdressing.yaml#/components/schemas/PriceId"
+                $ref: "price.yaml#/components/schemas/PriceId"
     delete:
       tags:
         - hairdressing
       responses:
         204:
           description: Price deleted
+  /hairdressing/v1/calendar/entries:
+    get:
+      parameters:
+        - $ref: "#/components/parameters/Query.DateFrom"
+        - $ref: "#/components/parameters/Query.DateTo"
+      tags:
+        - hairdressing
+      responses:
+        200:
+          description: List of calendar days
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - day
+                    - type
+                    - entries
+                  properties:
+                    day:
+                      type: string
+                      format: date
+                    type:
+                      type: string
+                      enum:
+                        - workday
+                        - weekend
+                        - personal
+                        - holiday
+                    start:
+                      type: integer
+                      minimum: 1
+                      maximum: 96
+                    end:
+                      type: integer
+                      minimum: 1
+                      maximum: 96
+                    entries:
+                      type: array
+                      items:
+                        type: object
+                        required:
+                          - title
+                          - type
+                          - start
+                          - end
+                        properties:
+                          title:
+                            type: string
+                            minLength: 1
+                          type:
+                            type: string
+                            enum:
+                              - work
+                              - personal
+                              - issue
+                          start:
+                            type: integer
+                            minimum: 1
+                            maximum: 96
+                          end:
+                            type: integer
+                            minimum: 1
+                            maximum: 96
+    post:
+      tags:
+        - hairdressing
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - day
+                - title
+                - type
+                - start
+                - end
+              properties:
+                day:
+                  type: string
+                  format: date
+                title:
+                  type: string
+                  minLength: 1
+                type:
+                  type: string
+                  enum:
+                    - work
+                    - personal
+                    - issue
+                start:
+                  type: number
+                  minimum: 1
+                  maximum: 96
+                end:
+                  type: number
+                  minimum: 1
+                  maximum: 96
+      responses:
+        201:
+          description: Calendar entry Id
+          content:
+            application/json:
+              schema:
+                $ref: "calendar-entry.yaml#/components/schemas/CalendarEntryId"
 
 components:
   parameters:
@@ -1074,3 +1182,17 @@ components:
       required: false
       schema:
         type: boolean
+    Query.DateFrom:
+      name: dateFrom
+      in: query
+      required: true
+      schema:
+        type: string
+        format: date
+    Query.DateTo:
+      name: dateTo
+      in: query
+      required: true
+      schema:
+        type: string
+        format: date

@@ -1,6 +1,6 @@
 openapi: "3.1.0"
 info:
-  title: Hairdressing components
+  title: Hairdressing price components
   version: 1.0.0
 components:
   schemas:

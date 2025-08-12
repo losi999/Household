@@ -1,7 +1,7 @@
 import { getCategoryId, getProductId } from '@household/shared/common/utils';
 import { AccountType, CategoryType } from '@household/shared/enums';
 import { HttpError } from '@household/shared/types/common';
-import { Account, Category, Common, Customer, File, Price, Product, Project, Recipient, Setting, Transaction, User } from '@household/shared/types/types';
+import { Account, CalendarEntry, Category, Common, Customer, File, Price, Product, Project, Recipient, Setting, Transaction, User } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
 
 type CatchAndThrow = (error: any) => never;
@@ -589,6 +589,62 @@ export const httpErrors = {
       log('Update price', ctx, error);
       throw httpError(statusCode, 'Error while updating price');
     },
+  },
+  calendarEntry: {
+    save: (doc: CalendarEntry.Document, statusCode = 500): CatchAndThrow => (error) => {
+      log('Save calendar entry', doc, error);
+      throw httpError(statusCode, 'Error while saving calendar entry');
+    },
+    // getById: (ctx: Recipient.RecipientId, statusCode = 500): CatchAndThrow => (error) => {
+    //   log('Get recipient', ctx, error);
+    //   throw httpError(statusCode, 'Error while getting recipient');
+    // },
+    list: (statusCode = 500): CatchAndThrow => (error) => {
+      log('List calendar entries', undefined, error);
+      throw httpError(statusCode, 'Error while listing calendar entries');
+    },
+    // listByIds: (ctx: Recipient.Id[], statusCode = 500): CatchAndThrow => (error) => {
+    //   log('List recipients by ids', ctx, error);
+    //   throw httpError(statusCode, 'Error while listing recipients by ids');
+    // },
+    // notFound: (ctx: Recipient.RecipientId & {recipient: Recipient.Document}, statusCode = 404) => {
+    //   if (ctx.recipientId && !ctx.recipient) {
+    //     log('No recipient found', ctx);
+    //     throw httpError(statusCode, 'No recipient found');
+    //   }
+    // },
+    // multipleNotFound: (ctx: { recipientIds: Recipient.Id[]; recipients: Recipient.Document[] }, statusCode = 400) => {
+    //   if (ctx.recipientIds.length !== ctx.recipients.length) {
+    //     log('Some of the recipients are not found', ctx);
+    //     throw httpError(statusCode, 'Some of the recipients are not found');
+    //   }
+    // },
+    // delete: (ctx: Recipient.RecipientId, statusCode = 500): CatchAndThrow => (error) => {
+    //   log('Delete recipient', ctx, error);
+    //   throw httpError(statusCode, 'Error while deleting recipient');
+    // },
+    // update: (ctx: Recipient.RecipientId & {update: UpdateQuery<Recipient.Document>}, statusCode = 500): CatchAndThrow => (error) => {
+    //   if (error.code === 11000) {
+    //     log('Duplicate recipient name', ctx, error);
+    //     throw httpError(400, 'Duplicate recipient name');
+    //   }
+
+    //   log('Update recipient', ctx, error);
+    //   throw httpError(statusCode, 'Error while updating recipient');
+    // },
+    // mergeTargetAmongSource: (ctx: {target: Recipient.Id; source: Recipient.Id[]}, statusCode = 400) => {
+    //   if (ctx.source.includes(ctx.target)) {
+    //     log('Target recipient is among the source recipient Ids', ctx);
+    //     throw httpError(statusCode, 'Target recipient is among the source recipient Ids');
+    //   }
+    // },
+    // merge: (ctx: {
+    //   targetRecipientId: Recipient.Id;
+    //   sourceRecipientIds: Recipient.Id[];
+    // }, statusCode = 500): CatchAndThrow => (error) => {
+    //   log('Merge recipients', ctx, error);
+    //   throw httpError(statusCode, 'Error while merging recipients');
+    // },
   },
   common: {
     getRelatedData: (ctx: any, statusCode = 500): CatchAndThrow => (error) => {

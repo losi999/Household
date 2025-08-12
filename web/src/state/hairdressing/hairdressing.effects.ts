@@ -295,5 +295,30 @@ export class HairdressingEffects {
       }),
     );
   });
+
+  loadCalendarEntries = createEffect(() => {
+    return this.actions.pipe(
+      ofType(hairdressingApiActions.listCalendarEntriesInitiated),
+      mergeMap(({ dateFrom, dateTo }) => {
+        return this.hairdressingService.listCalendarEntries({
+          dateFrom,
+          dateTo,
+        }).pipe(
+          map((entries) => hairdressingApiActions.listCalendarEntriesCompleted({
+            entries,
+            dateFrom,
+            dateTo,
+          })),
+          catchError(() => {
+            return of(progressActions.processFinished(),
+              notificationActions.showMessage({
+                message: 'Hiba történt',
+              }),
+            );
+          }),
+        );
+      }),
+    );
+  });
 }
 
