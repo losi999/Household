@@ -27,9 +27,7 @@ import { ClearableInputComponent } from '@household/web/app/shared/clearable-inp
 import { HairdressingPriceSubmenuComponent } from './hairdressing-price-submenu/hairdressing-price-submenu.component';
 import { HairdressingCalendarHomeComponent } from './hairdressing-calendar-home/hairdressing-calendar-home.component';
 import { HairdressingCalendarDayComponent } from './hairdressing-calendar-day/hairdressing-calendar-day.component';
-import { TimespanPipe } from './timespan.pipe';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatMenuModule } from '@angular/material/menu';
+import { TimeRangePipe } from './time-range.pipe';
 
 @NgModule({
   declarations: [
@@ -42,7 +40,7 @@ import { MatMenuModule } from '@angular/material/menu';
     HairdressingPriceSubmenuComponent,
     HairdressingCalendarHomeComponent,
     HairdressingCalendarDayComponent,
-    TimespanPipe,
+    TimeRangePipe,
   ],
   imports: [
     CommonModule,
@@ -65,8 +63,6 @@ import { MatMenuModule } from '@angular/material/menu';
     MatDialogModule,
     ClearableInputComponent,
     AmountInputComponent,
-    MatTooltipModule,
-    MatMenuModule,
   ],
 })
 export class HairdressingModule { }

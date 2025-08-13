@@ -10,3 +10,7 @@ export const selectIncomeByMonth = (month: string) => createSelector(selectHaird
 export const selectPriceList = createSelector(selectHairdressing, ({ priceList }) => {
   return priceList;
 });
+
+export const selectCalendarDay = (day: string) => createSelector(selectHairdressing, ({ calendarEntries }) => {
+  return calendarEntries?.[day];
+});

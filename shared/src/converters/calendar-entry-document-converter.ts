@@ -46,11 +46,23 @@ export const calendarEntryDocumentConverterFactory = (): ICalendarEntryDocumentC
 
         const entriesForDay = entries.filter(e => e.day.toISOString() === day);
         const workEntries = entriesForDay.filter(e => e.type === CalendarEntryType.Work);
+        
+        const { start, end } = workEntries.reduce<{start: number; end: number}>((accumulator, currentValue) => {
+          const calculatedStart = currentValue.end - WORKDAY_LENGTH * 4 - 1;
+          const calculatedend = currentValue.start + WORKDAY_START * 4;
+          return {
+            start: calculatedStart > accumulator.start ? calculatedStart : accumulator.start,
+            end: calculatedend < accumulator.end ? calculatedend : accumulator.end,
+          };
+        }, {
+          start: WORKDAY_START * 4,
+          end: WORKDAY_END * 4 + 1,
+        });
 
         days.push({
           day: day.split('T')[0],
-          start: Math.max(WORKDAY_START * 4 + 1, workEntries[workEntries.length - 1]?.end - WORKDAY_LENGTH * 4 || Number.NEGATIVE_INFINITY),
-          end: Math.min(WORKDAY_END * 4 + 1, workEntries[0]?.start + WORKDAY_LENGTH * 4 || Number.POSITIVE_INFINITY),
+          start,
+          end,
           entries: instance.toEntryResponseList(entriesForDay),
           type: [
             0,

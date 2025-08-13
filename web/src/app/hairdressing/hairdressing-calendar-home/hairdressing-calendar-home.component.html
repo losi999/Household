@@ -1,21 +1,4 @@
 <household-toolbar title="Naptár">
-  <button mat-icon-button type="button" [matMenuTriggerFor]="menu">
-    <mat-icon>visibility</mat-icon>
-  </button>
-  <mat-menu #menu="matMenu">
-    <button mat-menu-item (click)="onFullDayVisibilityToggle()">
-      <mat-icon>{{isFullDayVisible ? 'visibility' : 'visibility_off'}}</mat-icon>
-      <span>Egész nap</span>
-    </button>
-    <button mat-menu-item (click)="onSaturdayVisibilityToggle()">
-      <mat-icon>{{isSaturdayVisible ? 'visibility' : 'visibility_off'}}</mat-icon>
-      <span>Szombat</span>
-    </button>
-    <button mat-menu-item (click)="onSundayVisibilityToggle()" [disabled]="!isSaturdayVisible">
-      <mat-icon>{{isSundayVisible ? 'visibility' : 'visibility_off'}}</mat-icon>
-      <span>Vasárnap</span>
-    </button>
-  </mat-menu>
 </household-toolbar>
 
 <div class="header">
@@ -25,13 +8,13 @@
     <button mat-flat-button color="primary" type="button" (click)="onChangeWeek(1)">Következő hét <mat-icon>arrow_right</mat-icon></button>
   </div>
   <div class="days-of-week">
-    <div class="day"></div>
+    <div></div>
     <div class="day" *ngFor="let day of daysOfWeek">
       <div>
-        {{day.date | date: 'MMM dd.'}}
+        {{day | date: 'MMM dd.'}}
       </div>
       <div>
-        {{day.date | date: 'EEEE'}}
+        {{day | date: 'EEEE'}}
       </div>
     </div>
   </div>
@@ -39,8 +22,8 @@
 
 <div class="calendar">
   <div class="time">
-    <div *ngFor="let h of [].constructor(24); let i = index" [style.grid-row]="i*4+1">
-      {{ i | number: '2.0' }}:00
+    <div *ngFor="let hour of (true | timeRange); let i = index" [style.grid-row]="i * 2 + 1">
+      {{ hour }}
     </div>
   </div>
   <household-hairdressing-calendar-day *ngFor="let day of daysOfWeek" [day]="day" />

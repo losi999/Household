@@ -1,6 +1,9 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { addMinutes } from '@household/shared/common/utils';
-import { Day, Entry } from '@household/web/app/hairdressing/hairdressing-calendar-home/hairdressing-calendar-home.component';
+import { CalendarEntry } from '@household/shared/types/types';
+import { selectCalendarDay } from '@household/web/state/hairdressing/hairdressing.selector';
+import { Store } from '@ngrx/store';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'household-hairdressing-calendar-day',
@@ -8,10 +11,17 @@ import { Day, Entry } from '@household/web/app/hairdressing/hairdressing-calenda
   templateUrl: './hairdressing-calendar-day.component.html',
   styleUrl: './hairdressing-calendar-day.component.scss',
 })
-export class HairdressingCalendarDayComponent {
-  @Input() day: Day;
+export class HairdressingCalendarDayComponent implements OnInit {
+  @Input() day: string;
 
-  onEntryClick(entry: Entry) {
+  calendarDay: Observable<any>;
+  
+  constructor(private store: Store) { }
+
+  ngOnInit(): void {
+    this.calendarDay = this.store.select(selectCalendarDay(this.day));
+  }
+  onEntryClick(entry: CalendarEntry.Response) {
     console.log(entry);
   }
 
