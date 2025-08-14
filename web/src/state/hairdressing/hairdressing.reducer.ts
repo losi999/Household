@@ -8,7 +8,7 @@ export type HairdressingState = {
     [month: string]: Transaction.Report[];
   };
   calendarDays?: {
-    [date: string]: Omit<Calendar.Day.Response, 'day'>[];
+    [date: string]: Omit<Calendar.Day.Response, 'day'>;
   }
 };
 
@@ -109,6 +109,26 @@ export const hairdressingReducer = createReducer<HairdressingState>({},
             [day]: currentValue,
           };
         }, {}),
+      },
+    };
+  }),
+
+  on(hairdressingApiActions.createCalendarEntryCompleted, (_state, { calendarEntryId, day, description, end, entryType, start, title }) => {
+    return {
+      ..._state,
+      calendarDays: {
+        ..._state.calendarDays,
+        [day]: {
+          ..._state.calendarDays[day],
+          entries: _state.calendarDays[day].entries.concat({
+            entryType,
+            title,
+            start,
+            end,
+            description,
+            calendarEntryId,
+          }).toSorted((a, b) => a.start > b.start ? 1 : -1),
+        },
       },
     };
   }),

@@ -846,7 +846,7 @@ export namespace Calendar {
   };
 
   export namespace Day {
-    type DayType<T extends Enum.CalendarDayType> = {
+    export type DayType<T extends Enum.CalendarDayType> = {
       dayType: T
     };
     

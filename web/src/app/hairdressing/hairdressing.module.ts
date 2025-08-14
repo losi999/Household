@@ -30,8 +30,6 @@ import { HairdressingCalendarDayComponent } from './hairdressing-calendar-day/ha
 import { TimeRangePipe } from './time-range.pipe';
 import { HairdressingCalendarEntryFormComponent } from './hairdressing-calendar-entry-form/hairdressing-calendar-entry-form.component';
 import { MatTimepickerModule } from '@angular/material/timepicker';
-import { MatSelectModule } from '@angular/material/select';
-import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatMenuModule } from '@angular/material/menu';
 
 @NgModule({
@@ -70,8 +68,6 @@ import { MatMenuModule } from '@angular/material/menu';
     ClearableInputComponent,
     AmountInputComponent,
     MatTimepickerModule,
-    MatSelectModule,
-    MatCheckboxModule,
     MatMenuModule,
   ],
 })

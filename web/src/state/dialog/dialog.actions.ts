@@ -1,3 +1,4 @@
+import { CalendarEntryType } from '@household/shared/enums';
 import { Account, Category, Customer, File, Price, Product, Project, Recipient, Transaction, User } from '@household/shared/types/types';
 import { Action, createActionGroup, emptyProps, props } from '@ngrx/store';
 
@@ -34,7 +35,7 @@ export const dialogActions = createActionGroup({
     'Delete user': props<User.Email>(),
     'Delete draft transactions': props<{transactionIds: Transaction.Id[]}>(),
     'Delete transaction': props<Transaction.TransactionId & {navigationAction?: Action;}>(),
-    'Create calendar entry': emptyProps(),
-    'Update calendar entry': emptyProps(),
+    'Create calendar entry': props<{entryType: CalendarEntryType.Issue | CalendarEntryType.Personal}>(),
+    // 'Update calendar entry': emptyProps(),
   },
 });

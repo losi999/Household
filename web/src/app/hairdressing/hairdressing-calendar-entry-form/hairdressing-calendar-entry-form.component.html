@@ -1,34 +1,28 @@
-<div class="content" [formGroup]="form">
-
-  <household-clearable-input formControlName="title" label="Megnevezés" />
-  <household-clearable-input formControlName="description" type="area" label="Leírás" />
-  <div>
-
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <div mat-dialog-content>
+    <household-clearable-input formControlName="title" label="Megnevezés" />
+    <household-clearable-input formControlName="description" type="area" label="Leírás" />
     <mat-form-field>
-      <mat-label>Típus</mat-label>
-      <mat-select formControlName="entryType">
-        <mat-option [value]="e.key" *ngFor="let e of entryTypes | keyvalue">{{e.value}}</mat-option>
-      </mat-select>
+      <mat-label>Dátum</mat-label>
+      <input matInput [matDatepicker]="picker" formControlName="day" placeholder="Dátum">
+      <mat-datepicker-toggle matPrefix [for]="picker" tabindex="-1" />
+      <mat-datepicker #picker />
+    </mat-form-field>
+    <mat-form-field class="time">
+      <mat-label>Kezdete</mat-label>
+      <input matInput formControlName="start" [matTimepicker]="startPicker">
+      <mat-timepicker-toggle matIconSuffix [for]="startPicker" />
+      <mat-timepicker interval="15min" #startPicker />
+    </mat-form-field>
+    <mat-form-field class="time">
+      <mat-label>Vége</mat-label>
+      <input matInput formControlName="end" [matTimepicker]="endPicker">
+      <mat-timepicker-toggle matIconSuffix [for]="endPicker" />
+      <mat-timepicker interval="15min" #endPicker />
     </mat-form-field>
   </div>
-  <mat-form-field>
-    <mat-label>Dátum</mat-label>
-    <input matInput [matDatepicker]="picker" formControlName="day" placeholder="Dátum">
-    <mat-datepicker-toggle matPrefix [for]="picker" tabindex="-1" />
-    <mat-datepicker #picker />
-  </mat-form-field>
-  <mat-form-field class="time" *ngIf="!form.value.isAllDay">
-    <mat-label>Kezdete</mat-label>
-    <input matInput [matTimepicker]="startPicker">
-    <mat-timepicker-toggle matIconSuffix [for]="startPicker" />
-    <mat-timepicker interval="15min" #startPicker />
-  </mat-form-field>
-  <mat-form-field class="time" *ngIf="!form.value.isAllDay">
-    <mat-label>Vége</mat-label>
-    <input matInput [matTimepicker]="endPicker">
-    <mat-timepicker-toggle matIconSuffix [for]="endPicker" />
-    <mat-timepicker interval="15min" #endPicker />
-  </mat-form-field>
-  <mat-checkbox *ngIf="form.value.entryType === 'personal'" formControlName="isAllDay">Egész napos</mat-checkbox>
-  <button type="button" (click)="onSubmit()">submit</button>
-</div>
+  <div mat-dialog-actions>
+    <button mat-button cdkFocusInitial>Mentés</button>
+    <button mat-button mat-dialog-close type="button">Mégse</button>
+  </div>
+</form>

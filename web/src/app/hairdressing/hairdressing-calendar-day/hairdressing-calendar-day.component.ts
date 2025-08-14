@@ -24,7 +24,7 @@ export class HairdressingCalendarDayComponent implements OnInit {
   }
   onEntryClick(entry: Calendar.Day.Response) {
     console.log(entry);
-    this.store.dispatch(dialogActions.updateCalendarEntry());
+    // this.store.dispatch(dialogActions.updateCalendarEntry());
   }
 
   // onGridClick(event: PointerEvent) {

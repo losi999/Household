@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { CalendarEntryType } from '@household/shared/enums';
 import { Account, Category, Customer, File, Price, Product, Project, Recipient, Transaction, User } from '@household/shared/types/types';
 import { AccountFormComponent, AccountFormData } from '@household/web/app/account/account-form/account-form.component';
 import { CategoryFormComponent, CategoryFormData } from '@household/web/app/category/category-form/category-form.component';
@@ -191,10 +192,12 @@ export class DialogService {
     this.dialog.open<HairdressingCalendarEntryFormComponent, HairdressingCalendarEntryFormData, void>(HairdressingCalendarEntryFormComponent);
   }
 
-  openEditCalendarEntryDialog() {
+  openEditCalendarEntryDialog(entryType: CalendarEntryType.Issue | CalendarEntryType.Personal) {
     this.dialog.open<HairdressingCalendarEntryFormComponent, HairdressingCalendarEntryFormData, any>(HairdressingCalendarEntryFormComponent, {
+      data: {
+        entryType,
+      },
       width: '90vw',
-      height: '80vh',
     });
   }
 }

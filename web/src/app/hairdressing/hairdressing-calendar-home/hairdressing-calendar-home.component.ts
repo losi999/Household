@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { addDays } from '@household/shared/common/utils';
+import { CalendarEntryType } from '@household/shared/enums';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { hairdressingApiActions } from '@household/web/state/hairdressing/hairdressing.actions';
 import { Store } from '@ngrx/store';
@@ -50,18 +51,18 @@ export class HairdressingCalendarHomeComponent implements OnInit {
   }
 
   onCreateWork() {
-    this.store.dispatch(dialogActions.createCalendarEntry());
-  }
-
-  onCreateVacation() {
-    this.store.dispatch(dialogActions.createCalendarEntry());
+    // this.store.dispatch(dialogActions.createCalendarEntry());
   }
 
   onCreatePersonal() {
-    this.store.dispatch(dialogActions.createCalendarEntry());
+    this.store.dispatch(dialogActions.createCalendarEntry({
+      entryType: CalendarEntryType.Personal,
+    }));
   }
 
   onCreateIssue() {
-    this.store.dispatch(dialogActions.createCalendarEntry());
+    this.store.dispatch(dialogActions.createCalendarEntry({
+      entryType: CalendarEntryType.Issue,
+    }));
   }
 }
