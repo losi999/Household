@@ -385,4 +385,28 @@ export class DialogEffects {
       }),
     );
   });
+
+  createCalendarEntry = createEffect(() => {
+    return this.actions.pipe(
+      ofType(dialogActions.createCalendarEntry),
+      exhaustMap(({ type }) => {
+        this.dialogService.openEditCalendarEntryDialog();
+        return EMPTY;
+      }),
+    );
+  }, {
+    dispatch: false,
+  });
+
+  updateCalendarEntry = createEffect(() => {
+    return this.actions.pipe(
+      ofType(dialogActions.updateCalendarEntry),
+      exhaustMap(({ type }) => {
+        this.dialogService.openEditCalendarEntryDialog();
+        return EMPTY;
+      }),
+    );
+  }, {
+    dispatch: false,
+  });
 }

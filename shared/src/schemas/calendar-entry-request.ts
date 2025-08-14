@@ -8,7 +8,7 @@ const schema: StrictJSONSchema7<CalendarEntry.Request> = {
   required: [
     'day',
     'title',
-    'type',
+    'entryType',
     'start',
     'end',
   ],
@@ -21,7 +21,11 @@ const schema: StrictJSONSchema7<CalendarEntry.Request> = {
       type: 'string',
       minLength: 1,
     },
-    type: {
+    description: {
+      type: 'string',
+      minLength: 1,
+    },
+    entryType: {
       type: 'string',
       enum: Object.values(CalendarEntryType),
     },

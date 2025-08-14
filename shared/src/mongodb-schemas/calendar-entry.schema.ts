@@ -12,7 +12,11 @@ export const calendarEntrySchema = new Schema<CalendarEntry.Document>({
     required: true,
     minlength: 1,
   },
-  type: {
+  description: {
+    type: String,
+    minlength: 1,
+  },
+  entryType: {
     type: String,
     required: true,
     enum: [

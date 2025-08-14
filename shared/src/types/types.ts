@@ -844,7 +844,8 @@ export namespace CalendarEntry {
   
   type Entry = {
     title: string;
-    type: Enum.CalendarEntryType;
+    description: string;
+    entryType: Enum.CalendarEntryType;
     start: number;
     end: number;
   };
@@ -861,7 +862,7 @@ export namespace CalendarEntry {
   & Day<Date>;
 
   export type Response = Day<string> & {
-    type: 'workday' | 'weekend' | 'personal' | 'holiday';
+    dayType: 'workday' | 'weekend' | 'personal' | 'holiday';
     start: number;
     end: number;
     entries: (Entry & CalendarEntryId)[];

@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { addMinutes } from '@household/shared/common/utils';
 import { CalendarEntry } from '@household/shared/types/types';
+import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { selectCalendarDay } from '@household/web/state/hairdressing/hairdressing.selector';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
@@ -23,6 +24,7 @@ export class HairdressingCalendarDayComponent implements OnInit {
   }
   onEntryClick(entry: CalendarEntry.Response) {
     console.log(entry);
+    this.store.dispatch(dialogActions.updateCalendarEntry());
   }
 
   // onGridClick(event: PointerEvent) {

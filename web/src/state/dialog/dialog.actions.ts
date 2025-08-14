@@ -34,5 +34,7 @@ export const dialogActions = createActionGroup({
     'Delete user': props<User.Email>(),
     'Delete draft transactions': props<{transactionIds: Transaction.Id[]}>(),
     'Delete transaction': props<Transaction.TransactionId & {navigationAction?: Action;}>(),
+    'Create calendar entry': emptyProps(),
+    'Update calendar entry': emptyProps(),
   },
 });

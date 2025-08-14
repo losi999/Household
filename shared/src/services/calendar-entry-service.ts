@@ -1,16 +1,16 @@
 import { IMongodbService } from '@household/shared/services/mongodb-service';
+import { DocumentUpdate } from '@household/shared/types/common';
 import { CalendarEntry } from '@household/shared/types/types';
-import { UpdateQuery } from 'mongoose';
 
 export interface ICalendarEntryService {
   // dumpCalendarEntries(): Promise<CalendarEntry.Document[]>;
   saveCalendarEntry(doc: CalendarEntry.Document): Promise<CalendarEntry.Document>;
   // saveCalendarEntries(docs: CalendarEntry.Document[]): Promise<unknown>;
-  // findCalendarEntryById(recipientId: CalendarEntry.Id): Promise<CalendarEntry.Document>;
-  // deleteCalendarEntry(recipientId: CalendarEntry.Id): Promise<unknown>;
-  // updateCalendarEntry(recipientId: CalendarEntry.Id, updateQuery: UpdateQuery<CalendarEntry.Document>): Promise<unknown>;
+  findCalendarEntryById(calendarEntryId: CalendarEntry.Id): Promise<CalendarEntry.Document>;
+  // deleteCalendarEntry(calendarEntryId: CalendarEntry.Id): Promise<unknown>;
+  updateCalendarEntry(calendarEntryId: CalendarEntry.Id, updateQuery: DocumentUpdate<CalendarEntry.Document>): Promise<unknown>;
   listCalendarEntries(data: CalendarEntry.DateRange): Promise<CalendarEntry.Document[]>;
-  // findCalendarEntriesByIds(recipientIds: CalendarEntry.Id[]): Promise<CalendarEntry.Document[]>;
+  // findCalendarEntriesByIds(calendarEntryIds: CalendarEntry.Id[]): Promise<CalendarEntry.Document[]>;
 }
 
 export const calendarEntryServiceFactory = (mongodbService: IMongodbService): ICalendarEntryService => {
@@ -35,25 +35,24 @@ export const calendarEntryServiceFactory = (mongodbService: IMongodbService): IC
     //     });
     //   });
     // },
-    // findCalendarEntryById: async (recipientId) => {
-    //   return !recipientId ? undefined : mongodbService.calendarEntries.findById(recipientId)
-    //     .lean();
-        
-    // },
-    // deleteCalendarEntry: async (recipientId) => {
+    findCalendarEntryById: async (calendarEntryId) => {
+      return !calendarEntryId ? undefined : mongodbService.calendarEntries.findById(calendarEntryId)
+        .lean();        
+    },
+    // deleteCalendarEntry: async (calendarEntryId) => {
     //   return mongodbService.inSession((session) => {
     //     return session.withTransaction(async () => {
     //       await mongodbService.calendarEntries.deleteOne({
-    //         _id: recipientId,
+    //         _id: calendarEntryId,
     //       }, {
     //         session,
     //       });
             
     //       await mongodbService.transactions.updateMany({
-    //         recipient: recipientId,
+    //         calendarEntry: calendarEntryId,
     //       }, {
     //         $unset: {
-    //           recipient: 1,
+    //           calendarEntry: 1,
     //         },
     //       }, {
     //         session,
@@ -62,11 +61,11 @@ export const calendarEntryServiceFactory = (mongodbService: IMongodbService): IC
     //     });
     //   });
     // },
-    // updateCalendarEntry: async (recipientId, updateQuery) => {
-    //   return mongodbService.calendarEntries.findByIdAndUpdate(recipientId, updateQuery, {
-    //     runValidators: true,
-    //   });
-    // },
+    updateCalendarEntry: async (calendarEntryId, { update }) => {
+      return mongodbService.calendarEntries.findByIdAndUpdate(calendarEntryId, update, {
+        runValidators: true,
+      });
+    },
     listCalendarEntries: ({ dateFrom, dateTo }) => {
       return mongodbService.inSession(async(session) => {
         return mongodbService.calendarEntries.find({
@@ -86,11 +85,11 @@ export const calendarEntryServiceFactory = (mongodbService: IMongodbService): IC
           
       });
     },
-    // findCalendarEntriesByIds: (recipientIds) => {
+    // findCalendarEntriesByIds: (calendarEntryIds) => {
     //   return mongodbService.inSession(async (session) => {
     //     return mongodbService.calendarEntries.find({
     //       _id: {
-    //         $in: recipientIds,
+    //         $in: calendarEntryIds,
     //       },
     //     }).session(session)
     //       .lean();

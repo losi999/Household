@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { addDays } from '@household/shared/common/utils';
+import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { hairdressingApiActions } from '@household/web/state/hairdressing/hairdressing.actions';
 import { Store } from '@ngrx/store';
 
@@ -46,5 +47,21 @@ export class HairdressingCalendarHomeComponent implements OnInit {
 
   onShowToday() {
     this.calculateDaysOfWeek(new Date());
+  }
+
+  onCreateWork() {
+    this.store.dispatch(dialogActions.createCalendarEntry());
+  }
+
+  onCreateVacation() {
+    this.store.dispatch(dialogActions.createCalendarEntry());
+  }
+
+  onCreatePersonal() {
+    this.store.dispatch(dialogActions.createCalendarEntry());
+  }
+
+  onCreateIssue() {
+    this.store.dispatch(dialogActions.createCalendarEntry());
   }
 }

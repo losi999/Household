@@ -5,6 +5,7 @@ import { AccountFormComponent, AccountFormData } from '@household/web/app/accoun
 import { CategoryFormComponent, CategoryFormData } from '@household/web/app/category/category-form/category-form.component';
 import { CategoryMergeDialogComponent, CategoryMergeDialogData } from '@household/web/app/category/category-merge-dialog/category-merge-dialog.component';
 import { CustomerFormComponent, CustomerFormData } from '@household/web/app/customer/customer-form/customer-form.component';
+import { HairdressingCalendarEntryFormComponent, HairdressingCalendarEntryFormData } from '@household/web/app/hairdressing/hairdressing-calendar-entry-form/hairdressing-calendar-entry-form.component';
 import { HairdressingPriceFormComponent, HairdressingPriceFormData } from '@household/web/app/hairdressing/hairdressing-price-form/hairdressing-price-form.component';
 import { ImportFileUploadFormComponent } from '@household/web/app/import/import-file-upload-form/import-file-upload-form.component';
 import { ProductFormComponent, ProductFormData } from '@household/web/app/product/product-form/product-form.component';
@@ -184,5 +185,16 @@ export class DialogService {
 
   openDeleteTransactionDialog() {
     return this.openConfirmationDialog('Törölni akarod ezt a tranzakciót?');
+  }
+
+  openCreateCalendarEntryDialog() {
+    this.dialog.open<HairdressingCalendarEntryFormComponent, HairdressingCalendarEntryFormData, void>(HairdressingCalendarEntryFormComponent);
+  }
+
+  openEditCalendarEntryDialog() {
+    this.dialog.open<HairdressingCalendarEntryFormComponent, HairdressingCalendarEntryFormData, any>(HairdressingCalendarEntryFormComponent, {
+      width: '90vw',
+      height: '80vh',
+    });
   }
 }

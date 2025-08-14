@@ -2,41 +2,46 @@ import { generateMongoId, getCalendarEntryId } from '@household/shared/common/ut
 import { addSeconds } from '@household/shared/common/utils';
 import { WORKDAY_END, WORKDAY_LENGTH, WORKDAY_START } from '@household/shared/constants';
 import { CalendarEntryType } from '@household/shared/enums';
+import { DocumentUpdate } from '@household/shared/types/common';
 import { CalendarEntry } from '@household/shared/types/types';
-import { UpdateQuery } from 'mongoose';
 
 export interface ICalendarEntryDocumentConverter {
   create(body: CalendarEntry.Request, expiresIn: number, generateId?: boolean): CalendarEntry.Document;
-  // update(body: CalendarEntry.Request, expiresIn: number): UpdateQuery<CalendarEntry.Document>;
+  update(body: CalendarEntry.Request, expiresIn: number): DocumentUpdate<CalendarEntry.Document>;
   toDateRangeResponse(range: CalendarEntry.DateRange, entries: CalendarEntry.Document[]): CalendarEntry.Response[];
   toEntryResponse(doc: CalendarEntry.Document): CalendarEntry.Response['entries'][number];
   toEntryResponseList(docs: CalendarEntry.Document[]): CalendarEntry.Response['entries'];
-
-  // toReport(doc: CalendarEntry.Document): CalendarEntry.Report;
-  // toResponseList(docs: CalendarEntry.Document[]): CalendarEntry.Response[];
 }
 
 export const calendarEntryDocumentConverterFactory = (): ICalendarEntryDocumentConverter => {
   const instance: ICalendarEntryDocumentConverter = {
-    create: ({ day, end, start, title, type }, expiresIn, generateId) => {
+    create: ({ day, end, start, title, entryType: type, description }, expiresIn, generateId) => {
       return {
         title,
-        type,
+        entryType: type,
         start,
         end,
+        description,
         day: new Date(day),
         _id: generateId ? generateMongoId() : undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
-    // update: (body, expiresIn) => {
-    //   return {
-    //     $set: {
-    //       ...body,
-    //       expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
-    //     },
-    //   };
-    // },
+    update: (body, expiresIn) => {
+      return {
+        update: {
+          $set: {
+            ...body,
+            expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
+          },
+          ...(!body.description ? {
+            $unset: {
+              description: true,
+            },
+          } : {}),
+        },
+      };
+    },
     toDateRangeResponse: ({ dateFrom, dateTo }, entries) => {
       const days: CalendarEntry.Response[] = [];
 
@@ -45,7 +50,7 @@ export const calendarEntryDocumentConverterFactory = (): ICalendarEntryDocumentC
         console.log(d);
 
         const entriesForDay = entries.filter(e => e.day.toISOString() === day);
-        const workEntries = entriesForDay.filter(e => e.type === CalendarEntryType.Work);
+        const workEntries = entriesForDay.filter(e => e.entryType === CalendarEntryType.Work);
         
         const { start, end } = workEntries.reduce<{start: number; end: number}>((accumulator, currentValue) => {
           const calculatedStart = currentValue.end - WORKDAY_LENGTH * 4 - 1;
@@ -64,7 +69,7 @@ export const calendarEntryDocumentConverterFactory = (): ICalendarEntryDocumentC
           start,
           end,
           entries: instance.toEntryResponseList(entriesForDay),
-          type: [
+          dayType: [
             0,
             6,
           ].includes(d.getDay()) ? 'weekend' : 'workday',
@@ -73,13 +78,14 @@ export const calendarEntryDocumentConverterFactory = (): ICalendarEntryDocumentC
 
       return days;
     },
-    toEntryResponse: ({ end, start, title, type, _id }) => {
+    toEntryResponse: ({ end, start, title, entryType: type, description, _id }) => {
       return {
         calendarEntryId: getCalendarEntryId(_id),
         end, 
         start, 
         title, 
-        type,
+        entryType: type,
+        description,
       };
     },
     toEntryResponseList: docs => docs.map(d => instance.toEntryResponse(d)),
