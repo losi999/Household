@@ -2,20 +2,20 @@ import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { DocumentUpdate } from '@household/shared/types/common';
 import { Calendar } from '@household/shared/types/types';
 
-export interface ICalendarEntryService {
-  // dumpCalendarEntries(): Promise<CalendarEntry.Document[]>;
-  saveCalendarEntry(doc: Calendar.Entry.Document): Promise<Calendar.Entry.Document>;
-  // saveCalendarEntries(docs: CalendarEntry.Document[]): Promise<unknown>;
-  findCalendarEntryById(calendarEntryId: Calendar.Entry.Id): Promise<Calendar.Entry.Document>;
-  // deleteCalendarEntry(calendarEntryId: CalendarEntry.Id): Promise<unknown>;
-  updateCalendarEntry(calendarEntryId: Calendar.Entry.Id, updateQuery: DocumentUpdate<Calendar.Entry.Document>): Promise<unknown>;
-  listCalendarEntries(data: Calendar.DateRange): Promise<Calendar.Entry.Document[]>;
-  // findCalendarEntriesByIds(calendarEntryIds: CalendarEntry.Id[]): Promise<CalendarEntry.Document[]>;
+export interface ICalendarDayService {
+  // dumpCalendarEntries(): Promise<CalendarDay.Document[]>;
+  // saveCalendarDay(doc: Calendar.Day.Document): Promise<Calendar.Day.Document>;
+  // saveCalendarEntries(docs: CalendarDay.Document[]): Promise<unknown>;
+  // findCalendarDayById(calendarDayId: Calendar.Day.Id): Promise<Calendar.Day.Document>;
+  // deleteCalendarDay(calendarDayId: CalendarDay.Id): Promise<unknown>;
+  updateCalendarDay(day: Calendar.DayProp['day'], updateQuery: DocumentUpdate<Calendar.Day.Document>): Promise<unknown>;
+  listCalendarDays(data: Calendar.DateRange): Promise<Calendar.Day.Document[]>;
+  // findCalendarEntriesByIds(calendarDayIds: CalendarDay.Id[]): Promise<CalendarDay.Document[]>;
 }
 
-export const calendarEntryServiceFactory = (mongodbService: IMongodbService): ICalendarEntryService => {
+export const calendarDayServiceFactory = (mongodbService: IMongodbService): ICalendarDayService => {
 
-  const instance: ICalendarEntryService = {
+  const instance: ICalendarDayService = {
     // dumpCalendarEntries: () => {
     //   return mongodbService.inSession(async(session) => {
     //     return mongodbService.calendarEntries.find({}).session(session)
@@ -23,9 +23,9 @@ export const calendarEntryServiceFactory = (mongodbService: IMongodbService): IC
           
     //   });
     // },
-    saveCalendarEntry: async (doc) => {
-      return mongodbService.calendarEntries.create(doc);
-    },
+    // saveCalendarDay: async (doc) => {
+    //   return mongodbService.calendarEntries.create(doc);
+    // },
     // saveCalendarEntries: (docs) => {
     //   return mongodbService.inSession((session) => {
     //     return session.withTransaction(() => {
@@ -35,24 +35,24 @@ export const calendarEntryServiceFactory = (mongodbService: IMongodbService): IC
     //     });
     //   });
     // },
-    findCalendarEntryById: async (calendarEntryId) => {
-      return !calendarEntryId ? undefined : mongodbService.calendarEntries.findById(calendarEntryId)
-        .lean();        
-    },
-    // deleteCalendarEntry: async (calendarEntryId) => {
+    // findCalendarDayById: async (calendarDayId) => {
+    //   return !calendarDayId ? undefined : mongodbService.calendarEntries.findById(calendarDayId)
+    //     .lean();        
+    // },
+    // deleteCalendarDay: async (calendarDayId) => {
     //   return mongodbService.inSession((session) => {
     //     return session.withTransaction(async () => {
     //       await mongodbService.calendarEntries.deleteOne({
-    //         _id: calendarEntryId,
+    //         _id: calendarDayId,
     //       }, {
     //         session,
     //       });
             
     //       await mongodbService.transactions.updateMany({
-    //         calendarEntry: calendarEntryId,
+    //         calendarDay: calendarDayId,
     //       }, {
     //         $unset: {
-    //           calendarEntry: 1,
+    //           calendarDay: 1,
     //         },
     //       }, {
     //         session,
@@ -61,14 +61,17 @@ export const calendarEntryServiceFactory = (mongodbService: IMongodbService): IC
     //     });
     //   });
     // },
-    updateCalendarEntry: async (calendarEntryId, { update }) => {
-      return mongodbService.calendarEntries.findByIdAndUpdate(calendarEntryId, update, {
+    updateCalendarDay: async (day, { update }) => {
+      return mongodbService.calendarDays.findOneAndUpdate({
+        day,
+      }, update, {
         runValidators: true,
+        upsert: true,
       });
     },
-    listCalendarEntries: ({ dateFrom, dateTo }) => {
+    listCalendarDays: ({ dateFrom, dateTo }) => {
       return mongodbService.inSession(async(session) => {
-        return mongodbService.calendarEntries.find({
+        return mongodbService.calendarDays.find({
           day: {
             $gte: dateFrom,
             $lte: dateTo,
@@ -79,17 +82,16 @@ export const calendarEntryServiceFactory = (mongodbService: IMongodbService): IC
           })
           .sort({
             day: 1,
-            start: 1,
           })
           .lean();
           
       });
     },
-    // findCalendarEntriesByIds: (calendarEntryIds) => {
+    // findCalendarEntriesByIds: (calendarDayIds) => {
     //   return mongodbService.inSession(async (session) => {
     //     return mongodbService.calendarEntries.find({
     //       _id: {
-    //         $in: calendarEntryIds,
+    //         $in: calendarDayIds,
     //       },
     //     }).session(session)
     //       .lean();

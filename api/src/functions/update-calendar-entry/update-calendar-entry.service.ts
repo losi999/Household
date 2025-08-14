@@ -1,12 +1,12 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
 import { ICalendarEntryService } from '@household/shared/services/calendar-entry-service';
-import { CalendarEntry } from '@household/shared/types/types';
+import { Calendar } from '@household/shared/types/types';
 
 export interface IUpdateCalendarEntryService {
   (ctx: {
-    body: CalendarEntry.Request;
-    calendarEntryId: CalendarEntry.Id;
+    body: Calendar.Entry.Request;
+    calendarEntryId: Calendar.Entry.Id;
     expiresIn: number;
   }): Promise<unknown>;
 }

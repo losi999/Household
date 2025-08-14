@@ -30,7 +30,7 @@ export class HairdressingCalendarHomeComponent implements OnInit {
       this.daysOfWeek.push(d.toISOString().split('T')[0]);
     }
 
-    this.store.dispatch(hairdressingApiActions.listCalendarEntriesInitiated({
+    this.store.dispatch(hairdressingApiActions.listCalendarDaysInitiated({
       dateFrom: this.daysOfWeek[0],
       dateTo: this.daysOfWeek[6],
     }));

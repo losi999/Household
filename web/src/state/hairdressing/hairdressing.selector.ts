@@ -11,6 +11,6 @@ export const selectPriceList = createSelector(selectHairdressing, ({ priceList }
   return priceList;
 });
 
-export const selectCalendarDay = (day: string) => createSelector(selectHairdressing, ({ calendarEntries }) => {
+export const selectCalendarDay = (day: string) => createSelector(selectHairdressing, ({ calendarDays: calendarEntries }) => {
   return calendarEntries?.[day];
 });

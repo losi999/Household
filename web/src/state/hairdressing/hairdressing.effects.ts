@@ -298,13 +298,13 @@ export class HairdressingEffects {
 
   loadCalendarEntries = createEffect(() => {
     return this.actions.pipe(
-      ofType(hairdressingApiActions.listCalendarEntriesInitiated),
+      ofType(hairdressingApiActions.listCalendarDaysInitiated),
       mergeMap(({ dateFrom, dateTo }) => {
-        return this.hairdressingService.listCalendarEntries({
+        return this.hairdressingService.listCalendarDays({
           dateFrom,
           dateTo,
         }).pipe(
-          map((entries) => hairdressingApiActions.listCalendarEntriesCompleted({
+          map((entries) => hairdressingApiActions.listCalendarDaysCompleted({
             entries,
             dateFrom,
             dateTo,

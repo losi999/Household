@@ -1,7 +1,7 @@
 import { getCategoryId, getProductId } from '@household/shared/common/utils';
 import { AccountType, CategoryType } from '@household/shared/enums';
 import { HttpError } from '@household/shared/types/common';
-import { Account, CalendarEntry, Category, Common, Customer, File, Price, Product, Project, Recipient, Setting, Transaction, User } from '@household/shared/types/types';
+import { Account, Calendar, Category, Common, Customer, File, Price, Product, Project, Recipient, Setting, Transaction, User } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
 
 type CatchAndThrow = (error: any) => never;
@@ -590,12 +590,22 @@ export const httpErrors = {
       throw httpError(statusCode, 'Error while updating price');
     },
   },
+  calendarDay: {
+    list: (statusCode = 500): CatchAndThrow => (error) => {
+      log('List calendar days', undefined, error);
+      throw httpError(statusCode, 'Error while listing calendar days');
+    },
+    update: (ctx: Calendar.DayProp & {update: UpdateQuery<Calendar.Day.Document>}, statusCode = 500): CatchAndThrow => (error) => {
+      log('Update calendar day', ctx, error);
+      throw httpError(statusCode, 'Error while updating calendar day');
+    },
+  },
   calendarEntry: {
-    save: (doc: CalendarEntry.Document, statusCode = 500): CatchAndThrow => (error) => {
+    save: (doc: Calendar.Entry.Document, statusCode = 500): CatchAndThrow => (error) => {
       log('Save calendar entry', doc, error);
       throw httpError(statusCode, 'Error while saving calendar entry');
     },
-    getById: (ctx: CalendarEntry.CalendarEntryId, statusCode = 500): CatchAndThrow => (error) => {
+    getById: (ctx: Calendar.Entry.CalendarEntryId, statusCode = 500): CatchAndThrow => (error) => {
       log('Get calendar entry', ctx, error);
       throw httpError(statusCode, 'Error while getting calendar entry');
     },
@@ -603,27 +613,17 @@ export const httpErrors = {
       log('List calendar entries', undefined, error);
       throw httpError(statusCode, 'Error while listing calendar entries');
     },
-    // listByIds: (ctx: CalendarEntry.Id[], statusCode = 500): CatchAndThrow => (error) => {
-    //   log('List recipients by ids', ctx, error);
-    //   throw httpError(statusCode, 'Error while listing recipients by ids');
-    // },
-    notFound: (ctx: CalendarEntry.CalendarEntryId & {calendarEntry: CalendarEntry.Document}, statusCode = 404) => {
+    notFound: (ctx: Calendar.Entry.CalendarEntryId & {calendarEntry: Calendar.Entry.Document}, statusCode = 404) => {
       if (ctx.calendarEntryId && !ctx.calendarEntry) {
         log('No calendar entry found', ctx);
         throw httpError(statusCode, 'No calendar entry found');
       }
     },
-    // multipleNotFound: (ctx: { recipientIds: CalendarEntry.Id[]; recipients: CalendarEntry.Document[] }, statusCode = 400) => {
-    //   if (ctx.recipientIds.length !== ctx.recipients.length) {
-    //     log('Some of the recipients are not found', ctx);
-    //     throw httpError(statusCode, 'Some of the recipients are not found');
-    //   }
-    // },
-    // delete: (ctx: CalendarEntry.CalendarEntryId, statusCode = 500): CatchAndThrow => (error) => {
-    //   log('Delete recipient', ctx, error);
-    //   throw httpError(statusCode, 'Error while deleting recipient');
-    // },
-    update: (ctx: CalendarEntry.CalendarEntryId & {update: UpdateQuery<CalendarEntry.Document>}, statusCode = 500): CatchAndThrow => (error) => {
+    delete: (ctx: Calendar.Entry.CalendarEntryId, statusCode = 500): CatchAndThrow => (error) => {
+      log('Delete recipient', ctx, error);
+      throw httpError(statusCode, 'Error while deleting recipient');
+    },
+    update: (ctx: Calendar.Entry.CalendarEntryId & {update: UpdateQuery<Calendar.Entry.Document>}, statusCode = 500): CatchAndThrow => (error) => {
       log('Update calendar entry', ctx, error);
       throw httpError(statusCode, 'Error while updating calendar entry');
     },

@@ -1,20 +1,12 @@
-
 import { StrictJSONSchema7 } from '@household/shared/types/common';
 import { Calendar } from '@household/shared/types/types';
 
-const schema: StrictJSONSchema7<Calendar.DateRange> = {
+const schema: StrictJSONSchema7<Calendar.DayProp> = {
   type: 'object',
   additionalProperties: false,
-  required: [
-    'dateFrom',
-    'dateTo',
-  ],
+  required: ['day'],
   properties: {
-    dateFrom: {
-      type: 'string',
-      format: 'date',
-    },
-    dateTo: {
+    day: {
       type: 'string',
       format: 'date',
     },

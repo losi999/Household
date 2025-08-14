@@ -1,26 +1,17 @@
-import { CalendarEntryType } from '@household/shared/enums';
+import { CalendarDayType } from '@household/shared/enums';
 import { Calendar } from '@household/shared/types/types';
 import { Schema } from 'mongoose';
 
-export const calendarEntrySchema = new Schema<Calendar.Entry.Document>({
+export const calendarDaySchema = new Schema<Calendar.Day.Document>({
   day: {
     type: String,
     required: true,
     index: true,
   },
-  title: {
+  dayType: {
     type: String,
     required: true,
-    minlength: 1,
-  },
-  description: {
-    type: String,
-    minlength: 1,
-  },
-  entryType: {
-    type: String,
-    required: true,
-    enum: Object.values(CalendarEntryType),
+    enum: Object.values(CalendarDayType),
   },
   start: {
     type: Number,
@@ -35,14 +26,10 @@ export const calendarEntrySchema = new Schema<Calendar.Entry.Document>({
     },
   },
 }, {
+  _id: false,
   versionKey: false,
   timestamps: {
     createdAt: true,
     updatedAt: true,
   },
-});
-
-calendarEntrySchema.index({
-  day: 1,
-  start: 1,
 });

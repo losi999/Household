@@ -1,16 +1,13 @@
 import { generateMongoId, getCalendarEntryId } from '@household/shared/common/utils';
 import { addSeconds } from '@household/shared/common/utils';
-import { WORKDAY_END, WORKDAY_LENGTH, WORKDAY_START } from '@household/shared/constants';
-import { CalendarEntryType } from '@household/shared/enums';
 import { DocumentUpdate } from '@household/shared/types/common';
-import { CalendarEntry } from '@household/shared/types/types';
+import { Calendar } from '@household/shared/types/types';
 
 export interface ICalendarEntryDocumentConverter {
-  create(body: CalendarEntry.Request, expiresIn: number, generateId?: boolean): CalendarEntry.Document;
-  update(body: CalendarEntry.Request, expiresIn: number): DocumentUpdate<CalendarEntry.Document>;
-  toDateRangeResponse(range: CalendarEntry.DateRange, entries: CalendarEntry.Document[]): CalendarEntry.Response[];
-  toEntryResponse(doc: CalendarEntry.Document): CalendarEntry.Response['entries'][number];
-  toEntryResponseList(docs: CalendarEntry.Document[]): CalendarEntry.Response['entries'];
+  create(body: Calendar.Entry.Request, expiresIn: number, generateId?: boolean): Calendar.Entry.Document;
+  update(body: Calendar.Entry.Request, expiresIn: number): DocumentUpdate<Calendar.Entry.Document>;
+  toResponse(doc: Calendar.Entry.Document): Calendar.Entry.Response;
+  toResponseList(docs: Calendar.Entry.Document[]): Calendar.Entry.Response[];
 }
 
 export const calendarEntryDocumentConverterFactory = (): ICalendarEntryDocumentConverter => {
@@ -22,7 +19,7 @@ export const calendarEntryDocumentConverterFactory = (): ICalendarEntryDocumentC
         start,
         end,
         description,
-        day: new Date(day),
+        day,
         _id: generateId ? generateMongoId() : undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
@@ -42,43 +39,43 @@ export const calendarEntryDocumentConverterFactory = (): ICalendarEntryDocumentC
         },
       };
     },
-    toDateRangeResponse: ({ dateFrom, dateTo }, entries) => {
-      const days: CalendarEntry.Response[] = [];
+    // toDateRangeResponse: ({ dateFrom, dateTo }, entries) => {
+    //   const days: CalendarEntry.Response[] = [];
 
-      for(let d = new Date(dateFrom); d <= new Date(dateTo); d.setDate(d.getDate() + 1)) {
-        const day = d.toISOString();
-        console.log(d);
+    //   for(let d = new Date(dateFrom); d <= new Date(dateTo); d.setDate(d.getDate() + 1)) {
+    //     const day = d.toISOString();
+    //     console.log(d);
 
-        const entriesForDay = entries.filter(e => e.day.toISOString() === day);
-        const workEntries = entriesForDay.filter(e => e.entryType === CalendarEntryType.Work);
+    //     const entriesForDay = entries.filter(e => e.day.toISOString() === day);
+    //     const workEntries = entriesForDay.filter(e => e.entryType === CalendarEntryType.Work);
         
-        const { start, end } = workEntries.reduce<{start: number; end: number}>((accumulator, currentValue) => {
-          const calculatedStart = currentValue.end - WORKDAY_LENGTH * 4 - 1;
-          const calculatedend = currentValue.start + WORKDAY_START * 4;
-          return {
-            start: calculatedStart > accumulator.start ? calculatedStart : accumulator.start,
-            end: calculatedend < accumulator.end ? calculatedend : accumulator.end,
-          };
-        }, {
-          start: WORKDAY_START * 4,
-          end: WORKDAY_END * 4 + 1,
-        });
+    //     const { start, end } = workEntries.reduce<{start: number; end: number}>((accumulator, currentValue) => {
+    //       const calculatedStart = currentValue.end - WORKDAY_LENGTH * 4 - 1;
+    //       const calculatedend = currentValue.start + WORKDAY_START * 4;
+    //       return {
+    //         start: calculatedStart > accumulator.start ? calculatedStart : accumulator.start,
+    //         end: calculatedend < accumulator.end ? calculatedend : accumulator.end,
+    //       };
+    //     }, {
+    //       start: WORKDAY_START * 4,
+    //       end: WORKDAY_END * 4 + 1,
+    //     });
 
-        days.push({
-          day: day.split('T')[0],
-          start,
-          end,
-          entries: instance.toEntryResponseList(entriesForDay),
-          dayType: [
-            0,
-            6,
-          ].includes(d.getDay()) ? 'weekend' : 'workday',
-        });
-      }
+    //     days.push({
+    //       day: day.split('T')[0],
+    //       start,
+    //       end,
+    //       entries: instance.toEntryResponseList(entriesForDay),
+    //       dayType: [
+    //         0,
+    //         6,
+    //       ].includes(d.getDay()) ? 'weekend' : 'workday',
+    //     });
+    //   }
 
-      return days;
-    },
-    toEntryResponse: ({ end, start, title, entryType: type, description, _id }) => {
+    //   return days;
+    // },
+    toResponse: ({ end, start, title, entryType: type, description, _id }) => {
       return {
         calendarEntryId: getCalendarEntryId(_id),
         end, 
@@ -88,7 +85,7 @@ export const calendarEntryDocumentConverterFactory = (): ICalendarEntryDocumentC
         description,
       };
     },
-    toEntryResponseList: docs => docs.map(d => instance.toEntryResponse(d)),
+    toResponseList: docs => docs.map(d => instance.toResponse(d)),
   };
 
   return instance;

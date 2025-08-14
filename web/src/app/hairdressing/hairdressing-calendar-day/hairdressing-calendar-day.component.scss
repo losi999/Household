@@ -8,7 +8,7 @@
 
 .no-work,
 .holiday,
-.off-day,
+.vacation,
 .issue,
 .personal,
 .work {
@@ -51,7 +51,7 @@
       transparent 12px);
 }
 
-.off-day {
+.vacation {
   background-image: repeating-linear-gradient(-45deg,
       #c8e6c9,
       #c8e6c9 6px,

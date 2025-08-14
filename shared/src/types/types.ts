@@ -830,43 +830,66 @@ export namespace Price {
   export type Response = PriceId & Base;
 }
 
-export namespace CalendarEntry {
-  export type Id = Branding<string, 'calendarEntry'>;
-
-  export type CalendarEntryId = {
-    calendarEntryId: Id;
-  };
-
+export namespace Calendar {
   export type DateRange = {
     dateFrom: string;
     dateTo: string;
   };
+
+  export type DayProp = {
+    day: string;
+  };
+
+  export type Timespan = {
+    start: number;
+    end: number;
+  };
+
+  export namespace Day {
+    type DayType<T extends Enum.CalendarDayType> = {
+      dayType: T
+    };
+    
+    export type VacationRequest = DayType<Enum.CalendarDayType.Vacation>;
   
-  type Entry = {
-    title: string;
-    description: string;
-    entryType: Enum.CalendarEntryType;
-    start: number;
-    end: number;
-  };
+    export type WorkdayRequest = DayType<Enum.CalendarDayType.Workday> & Timespan;
 
-  type Day<D extends Date | string> = {
-    day: D;
-  };
+    export type Request = VacationRequest | WorkdayRequest;
 
-  export type Request = Entry & Day<string>;
+    type Base = DayProp 
+    & ((DayType<Enum.CalendarDayType.Workday> & Timespan) 
+    | DayType<Exclude<Enum.CalendarDayType, Enum.CalendarDayType.Workday>>);
 
-  export type Document = Internal.Id
-  & Internal.Timestamps
-  & Entry
-  & Day<Date>;
+    export type Document = Internal.Timestamps
+    & Base;
 
-  export type Response = Day<string> & {
-    dayType: 'workday' | 'weekend' | 'personal' | 'holiday';
-    start: number;
-    end: number;
-    entries: (Entry & CalendarEntryId)[];
-  };
+    export type Response = Base & {
+      entries: Entry.Response[];
+    };
+  }
+
+  export namespace Entry {
+    export type Id = Branding<string, 'calendarEntry'>;
+
+    export type CalendarEntryId = {
+      calendarEntryId: Id;
+    };
+    
+    type Base = Timespan & {
+      title: string;
+      description: string;
+      entryType: Enum.CalendarEntryType;
+    };
+
+    export type Request = Base & DayProp;
+  
+    export type Document = Internal.Id
+    & Internal.Timestamps
+    & Base
+    & DayProp;
+
+    export type Response = Base & CalendarEntryId;
+  }
 }
 
 export namespace Common {

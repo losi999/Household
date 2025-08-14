@@ -37,6 +37,13 @@ export enum UserType {
   Hairdresser = 'hairdresser',
 }
 
+export enum CalendarDayType {
+  Workday = 'workday',
+  Weekend = 'weekend',
+  Vacation = 'vacation',
+  Holiday = 'holiday',
+}
+
 export enum CalendarEntryType {
   Work = 'work',
   Personal = 'personal',

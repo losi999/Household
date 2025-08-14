@@ -2,13 +2,13 @@ import { httpErrors } from '@household/api/common/error-handlers';
 import { getCalendarEntryId } from '@household/shared/common/utils';
 import { ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
 import { ICalendarEntryService } from '@household/shared/services/calendar-entry-service';
-import { CalendarEntry } from '@household/shared/types/types';
+import { Calendar } from '@household/shared/types/types';
 
 export interface ICreateCalendarEntryService {
   (ctx: {
-    body: CalendarEntry.Request;
+    body: Calendar.Entry.Request;
     expiresIn: number;
-  }): Promise<CalendarEntry.Id>;
+  }): Promise<Calendar.Entry.Id>;
 }
 
 export const createCalendarEntryServiceFactory = (

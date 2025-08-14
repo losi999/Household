@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { CalendarEntry, Price } from '@household/shared/types/types';
+import { Calendar, Price } from '@household/shared/types/types';
 import { environment } from '@household/web/environments/environment';
 
 @Injectable({
@@ -26,8 +26,8 @@ export class HairdressingService {
     return this.httpClient.delete(`${environment.apiUrl}/hairdressing/v1/prices/${priceId}`);
   }
 
-  listCalendarEntries(query: CalendarEntry.DateRange) {
-    return this.httpClient.get<CalendarEntry.Response[]>(`${environment.apiUrl}/hairdressing/v1/calendar/entries`, {
+  listCalendarDays(query: Calendar.DateRange) {
+    return this.httpClient.get<Calendar.Day.Response[]>(`${environment.apiUrl}/hairdressing/v1/calendar/days`, {
       params: query,
     });
   }

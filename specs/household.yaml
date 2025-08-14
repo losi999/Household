@@ -980,7 +980,7 @@ paths:
       responses:
         204:
           description: Price deleted
-  /hairdressing/v1/calendar/entries:
+  /hairdressing/v1/calendar/days:
     get:
       parameters:
         - $ref: "#/components/parameters/Query.DateFrom"
@@ -995,7 +995,25 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "calendar-entry.yaml#/components/schemas/Response"
+                  $ref: "calendar.yaml#/components/schemas/Day.Response"
+  /hairdressing/v1/calendar/days/{day}:
+    parameters:
+      - $ref: "#/components/parameters/Path.Day"
+    put:
+      tags:
+        - hairdressing
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "calendar.yaml#/components/schemas/VacationRequest"
+                - $ref: "calendar.yaml#/components/schemas/WorkdayRequest"
+      responses:
+        204:
+          description: Calendar day updated
+
+  /hairdressing/v1/calendar/entries:
     post:
       tags:
         - hairdressing
@@ -1003,14 +1021,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "calendar-entry.yaml#/components/schemas/Request"
+              $ref: "calendar.yaml#/components/schemas/Entry.Request"
       responses:
         201:
           description: Calendar entry Id
           content:
             application/json:
               schema:
-                $ref: "calendar-entry.yaml#/components/schemas/CalendarEntryId"
+                $ref: "calendar.yaml#/components/schemas/CalendarEntryId"
   /hairdressing/v1/calendar/entries/{calendarEntryId}:
     parameters:
       - $ref: "#/components/parameters/Path.CalendarEntryId"
@@ -1021,14 +1039,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "calendar-entry.yaml#/components/schemas/Request"
+              $ref: "calendar.yaml#/components/schemas/Entry.Request"
       responses:
         201:
           description: Calendar entry Id
           content:
             application/json:
               schema:
-                $ref: "calendar-entry.yaml#/components/schemas/CalendarEntryId"
+                $ref: "calendar.yaml#/components/schemas/CalendarEntryId"
 
 components:
   parameters:
@@ -1104,6 +1122,13 @@ components:
       required: true
       schema:
         type: string
+    Path.Day:
+      name: day
+      in: path
+      required: true
+      schema:
+        type: string
+        format: date
     Path.Email:
       name: email
       in: path

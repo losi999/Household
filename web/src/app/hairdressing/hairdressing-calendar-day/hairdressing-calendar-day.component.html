@@ -8,8 +8,8 @@
   <div class="holiday" [style.grid-row]="'1 / 97'"></div>
 </ng-template>
 
-<ng-template #personal>
-  <div class="off-day" [style.grid-row]="'1 / 97'"></div>
+<ng-template #vacation>
+  <div class="vacation" [style.grid-row]="'1 / 97'"></div>
 </ng-template>
 
 <ng-template #workday>
@@ -18,11 +18,11 @@
 </ng-template>
 
 <div class="day">
-  <ng-container [ngSwitch]="cd?.type">
+  <ng-container [ngSwitch]="cd?.dayType">
     <ng-container *ngSwitchCase="'weekend'" [ngTemplateOutlet]="weekend"></ng-container>
-    <ng-container *ngSwitchCase="'personal'" [ngTemplateOutlet]="personal"></ng-container>
+    <ng-container *ngSwitchCase="'vacation'" [ngTemplateOutlet]="vacation"></ng-container>
     <ng-container *ngSwitchCase="'holiday'" [ngTemplateOutlet]="holiday"></ng-container>
     <ng-container *ngSwitchDefault [ngTemplateOutlet]="workday"></ng-container>
   </ng-container>
-  <button *ngFor="let e of cd?.entries" [ngClass]="e.type" [style.grid-row]="e.start + ' / ' + e.end" (click)="onEntryClick(e)">{{e.title}}</button>
+  <button *ngFor="let e of cd?.entries" [ngClass]="e.entryType" [style.grid-row]="e.start + ' / ' + e.end" (click)="onEntryClick(e)">{{e.title}}</button>
 </div>

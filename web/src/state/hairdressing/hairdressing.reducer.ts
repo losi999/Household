@@ -1,4 +1,4 @@
-import { CalendarEntry, Price, Transaction } from '@household/shared/types/types';
+import { Calendar, Price, Transaction } from '@household/shared/types/types';
 import { createReducer, on } from '@ngrx/store';
 import { hairdressingActions, hairdressingApiActions } from '@household/web/state/hairdressing/hairdressing.actions';
 
@@ -7,8 +7,8 @@ export type HairdressingState = {
   income?: {
     [month: string]: Transaction.Report[];
   };
-  calendarEntries?: {
-    [date: string]: Omit<CalendarEntry.Response, 'day'>[];
+  calendarDays?: {
+    [date: string]: Omit<Calendar.Day.Response, 'day'>[];
   }
 };
 
@@ -98,11 +98,11 @@ export const hairdressingReducer = createReducer<HairdressingState>({},
     };
   }),
 
-  on(hairdressingApiActions.listCalendarEntriesCompleted, (_state, { entries }) => {
+  on(hairdressingApiActions.listCalendarDaysCompleted, (_state, { entries }) => {
     return {
       ..._state,
-      calendarEntries: {
-        ..._state.calendarEntries,        
+      calendarDays: {
+        ..._state.calendarDays,        
         ...entries.reduce((accumulator, { day, ...currentValue }) => {
           return {
             ...accumulator,

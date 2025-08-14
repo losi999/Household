@@ -1,0 +1,35 @@
+// import { default as schema } from '@household/shared/schemas/calendar-entry-id';
+// import { CalendarEntry } from '@household/shared/types/types';
+// import { createCalendarEntryId } from '@household/shared/common/test-data-factory';
+// import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
+
+// describe('CalendarEntry id schema', () => {
+//   const tester = jsonSchemaTesterFactory<CalendarEntry.CalendarEntryId>(schema);
+
+//   tester.validateSuccess({
+//     calendarEntryId: createCalendarEntryId(),
+//   });
+
+//   describe('should deny', () => {
+//     describe('if data', () => {
+//       tester.additionalProperties({
+//         calendarEntryId: createCalendarEntryId(),
+//         extra: 1,
+//       } as any, 'data');
+//     });
+
+//     describe('if data.calendarEntryId', () => {
+//       tester.required({
+//         calendarEntryId: undefined,
+//       }, 'calendarEntryId');
+
+//       tester.type({
+//         calendarEntryId: 1 as any,
+//       }, 'calendarEntryId', 'string');
+
+//       tester.pattern({
+//         calendarEntryId: createCalendarEntryId('not-valid'),
+//       }, 'calendarEntryId');
+//     });
+//   });
+// });

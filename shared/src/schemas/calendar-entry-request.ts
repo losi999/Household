@@ -1,8 +1,8 @@
 import { CalendarEntryType } from '@household/shared/enums';
 import { StrictJSONSchema7 } from '@household/shared/types/common';
-import { CalendarEntry } from '@household/shared/types/types';
+import { Calendar } from '@household/shared/types/types';
 
-const schema: StrictJSONSchema7<CalendarEntry.Request> = {
+const schema: StrictJSONSchema7<Calendar.Entry.Request> = {
   type: 'object',
   additionalProperties: false,
   required: [
