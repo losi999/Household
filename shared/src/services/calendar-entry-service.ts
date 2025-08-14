@@ -7,7 +7,7 @@ export interface ICalendarEntryService {
   saveCalendarEntry(doc: Calendar.Entry.Document): Promise<Calendar.Entry.Document>;
   // saveCalendarEntries(docs: CalendarEntry.Document[]): Promise<unknown>;
   findCalendarEntryById(calendarEntryId: Calendar.Entry.Id): Promise<Calendar.Entry.Document>;
-  // deleteCalendarEntry(calendarEntryId: CalendarEntry.Id): Promise<unknown>;
+  deleteCalendarEntry(calendarEntryId: Calendar.Entry.Id): Promise<unknown>;
   updateCalendarEntry(calendarEntryId: Calendar.Entry.Id, updateQuery: DocumentUpdate<Calendar.Entry.Document>): Promise<unknown>;
   listCalendarEntries(data: Calendar.DateRange): Promise<Calendar.Entry.Document[]>;
   // findCalendarEntriesByIds(calendarEntryIds: CalendarEntry.Id[]): Promise<CalendarEntry.Document[]>;
@@ -39,28 +39,15 @@ export const calendarEntryServiceFactory = (mongodbService: IMongodbService): IC
       return !calendarEntryId ? undefined : mongodbService.calendarEntries.findById(calendarEntryId)
         .lean();        
     },
-    // deleteCalendarEntry: async (calendarEntryId) => {
-    //   return mongodbService.inSession((session) => {
-    //     return session.withTransaction(async () => {
-    //       await mongodbService.calendarEntries.deleteOne({
-    //         _id: calendarEntryId,
-    //       }, {
-    //         session,
-    //       });
-            
-    //       await mongodbService.transactions.updateMany({
-    //         calendarEntry: calendarEntryId,
-    //       }, {
-    //         $unset: {
-    //           calendarEntry: 1,
-    //         },
-    //       }, {
-    //         session,
-    //       });
-            
-    //     });
-    //   });
-    // },
+    deleteCalendarEntry: async (calendarEntryId) => {
+      return mongodbService.inSession((session) => {
+        return mongodbService.calendarEntries.deleteOne({
+          _id: calendarEntryId,
+        }, {
+          session,
+        });          
+      });
+    },
     updateCalendarEntry: async (calendarEntryId, { update }) => {
       return mongodbService.calendarEntries.findByIdAndUpdate(calendarEntryId, update, {
         runValidators: true,

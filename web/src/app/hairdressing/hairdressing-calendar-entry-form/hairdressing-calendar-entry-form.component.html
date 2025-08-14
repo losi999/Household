@@ -22,7 +22,8 @@
     </mat-form-field>
   </div>
   <div mat-dialog-actions>
-    <button mat-button cdkFocusInitial>Mentés</button>
-    <button mat-button mat-dialog-close type="button">Mégse</button>
+    <button mat-flat-button color="primary" cdkFocusInitial>Mentés</button>
+    <button mat-flat-button mat-dialog-close type="button">Mégse</button>
+    <button mat-flat-button color="warn" type="button" *ngIf="entry.calendarEntryId" (click)="onDelete()">Törlés</button>
   </div>
 </form>

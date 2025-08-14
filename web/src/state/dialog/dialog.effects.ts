@@ -390,7 +390,7 @@ export class DialogEffects {
     return this.actions.pipe(
       ofType(dialogActions.createCalendarEntry),
       exhaustMap(({ entryType }) => {
-        this.dialogService.openEditCalendarEntryDialog(entryType);
+        this.dialogService.openCreateCalendarEntryDialog(entryType);
         return EMPTY;
       }),
     );
@@ -398,15 +398,15 @@ export class DialogEffects {
     dispatch: false,
   });
 
-  // updateCalendarEntry = createEffect(() => {
-  //   return this.actions.pipe(
-  //     ofType(dialogActions.updateCalendarEntry),
-  //     exhaustMap(({ entryType }) => {
-  //       this.dialogService.openEditCalendarEntryDialog(entryType);
-  //       return EMPTY;
-  //     }),
-  //   );
-  // }, {
-  //   dispatch: false,
-  // });
+  updateCalendarEntry = createEffect(() => {
+    return this.actions.pipe(
+      ofType(dialogActions.updateCalendarEntry),
+      exhaustMap(({ type, day, ...entry }) => {
+        this.dialogService.openEditCalendarEntryDialog(day, entry);
+        return EMPTY;
+      }),
+    );
+  }, {
+    dispatch: false,
+  });
 }

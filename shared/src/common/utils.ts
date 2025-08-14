@@ -32,6 +32,12 @@ export const numberToGivenDigits = (number: number, length: number = 2) => numbe
 export const dateToISODateString = (date: Date) => `${date.getFullYear()}-${numberToGivenDigits(date.getMonth() + 1)}-${numberToGivenDigits(date.getDate())}`;
 
 export const dateToTimeSlot = (date: Date) => date.getHours() * 4 + Math.floor(date.getMinutes() / 15) + 1;
+export const timeSlotToDate = (slot: number): Date => {
+  const date = new Date();
+  date.setHours(Math.floor(slot / 4));
+  date.setMinutes((slot % 4 - 1) * 15);
+  return date;
+};
 
 export const toDictionary = <P>(docs: P[], key: keyof P): Dictionary<P> => {
   return docs.reduce((accumulator, currentValue) => {

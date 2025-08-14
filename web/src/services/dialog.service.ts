@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { CalendarEntryType } from '@household/shared/enums';
-import { Account, Category, Customer, File, Price, Product, Project, Recipient, Transaction, User } from '@household/shared/types/types';
+import { Account, Calendar, Category, Customer, File, Price, Product, Project, Recipient, Transaction, User } from '@household/shared/types/types';
 import { AccountFormComponent, AccountFormData } from '@household/web/app/account/account-form/account-form.component';
 import { CategoryFormComponent, CategoryFormData } from '@household/web/app/category/category-form/category-form.component';
 import { CategoryMergeDialogComponent, CategoryMergeDialogData } from '@household/web/app/category/category-merge-dialog/category-merge-dialog.component';
@@ -188,16 +188,26 @@ export class DialogService {
     return this.openConfirmationDialog('Törölni akarod ezt a tranzakciót?');
   }
 
-  openCreateCalendarEntryDialog() {
-    this.dialog.open<HairdressingCalendarEntryFormComponent, HairdressingCalendarEntryFormData, void>(HairdressingCalendarEntryFormComponent);
-  }
-
-  openEditCalendarEntryDialog(entryType: CalendarEntryType.Issue | CalendarEntryType.Personal) {
-    this.dialog.open<HairdressingCalendarEntryFormComponent, HairdressingCalendarEntryFormData, any>(HairdressingCalendarEntryFormComponent, {
+  openCreateCalendarEntryDialog(entryType: CalendarEntryType.Issue | CalendarEntryType.Personal) {
+    this.dialog.open<HairdressingCalendarEntryFormComponent, HairdressingCalendarEntryFormData, void>(HairdressingCalendarEntryFormComponent, {
       data: {
         entryType,
       },
       width: '90vw',
     });
+  }
+
+  openEditCalendarEntryDialog(day: Calendar.DayProp['day'], entry: Calendar.Entry.PersonalEntryResponse | Calendar.Entry.IssueEntryResponse) {
+    this.dialog.open<HairdressingCalendarEntryFormComponent, HairdressingCalendarEntryFormData, any>(HairdressingCalendarEntryFormComponent, {
+      data: {
+        day,
+        ...entry,
+      },
+      width: '90vw',
+    });
+  }
+
+  openDeleteCalendarEntryDialog(entry: Calendar.Entry.Response) {
+    return this.openConfirmationDialog('Törölni akarod ezt a bejegyzést a naptárból?', entry.title);
   }
 }

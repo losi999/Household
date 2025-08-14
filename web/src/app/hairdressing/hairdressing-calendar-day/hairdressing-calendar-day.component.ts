@@ -1,5 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { addMinutes } from '@household/shared/common/utils';
+import { CalendarEntryType } from '@household/shared/enums';
 import { Calendar } from '@household/shared/types/types';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { selectCalendarDay } from '@household/web/state/hairdressing/hairdressing.selector';
@@ -22,9 +23,16 @@ export class HairdressingCalendarDayComponent implements OnInit {
   ngOnInit(): void {
     this.calendarDay = this.store.select(selectCalendarDay(this.day));
   }
-  onEntryClick(entry: Calendar.Day.Response) {
-    console.log(entry);
-    // this.store.dispatch(dialogActions.updateCalendarEntry());
+  onEntryClick(entry: Calendar.Entry.Response) {
+    switch(entry.entryType) {
+      case CalendarEntryType.Issue:
+      case CalendarEntryType.Personal: {
+        this.store.dispatch(dialogActions.updateCalendarEntry({
+          ...entry,
+          day: this.day,
+        }));    
+      } break;
+    }
   }
 
   // onGridClick(event: PointerEvent) {

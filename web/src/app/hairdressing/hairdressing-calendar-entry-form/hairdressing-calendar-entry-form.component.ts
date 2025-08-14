@@ -1,14 +1,16 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { addHours, addMinutes, dateToISODateString, dateToTimeSlot } from '@household/shared/common/utils';
+import { addHours, createDate, dateToISODateString, dateToTimeSlot, timeSlotToDate } from '@household/shared/common/utils';
 import { CalendarEntryType } from '@household/shared/enums';
+import { Calendar } from '@household/shared/types/types';
+import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { hairdressingApiActions } from '@household/web/state/hairdressing/hairdressing.actions';
 import { Store } from '@ngrx/store';
 
-export type HairdressingCalendarEntryFormData = {
-  entryType: CalendarEntryType.Issue | CalendarEntryType.Personal;
-};
+type EntryResponse = Calendar.Entry.IssueEntryResponse | Calendar.Entry.PersonalEntryResponse;
+
+export type HairdressingCalendarEntryFormData = Partial<Omit<EntryResponse, 'entryType'>> & Pick<EntryResponse, 'entryType'> & Partial<Calendar.DayProp>;
 
 @Component({
   selector: 'household-hairdressing-calendar-entry-form',
@@ -27,33 +29,46 @@ export class HairdressingCalendarEntryFormComponent implements OnInit {
 
   constructor(private dialogRef: MatDialogRef<HairdressingCalendarEntryFormComponent, void>,
     private store: Store,
-    @Inject(MAT_DIALOG_DATA) public data: HairdressingCalendarEntryFormData) { }
+    @Inject(MAT_DIALOG_DATA) public entry: HairdressingCalendarEntryFormData) { }
 
   ngOnInit(): void {
     const now = new Date();
     now.setMinutes(Math.floor(now.getMinutes() / 15) * 15);
     const end = addHours(1, now);
     this.form = new FormGroup({
-      title: new FormControl(null, [Validators.required]),
-      description: new FormControl(null),
-      day: new FormControl(now, [Validators.required]),
-      start: new FormControl(now, [Validators.required]),
-      end: new FormControl(end, [Validators.required]),
+      title: new FormControl(this.entry?.title, [Validators.required]),
+      description: new FormControl(this.entry.description),
+      day: new FormControl(createDate(this.entry.day) ?? now, [Validators.required]),
+      start: new FormControl(this.entry.start ? timeSlotToDate(this.entry.start) : now, [Validators.required]),
+      end: new FormControl(this.entry.end ? timeSlotToDate(this.entry.end) : end, [Validators.required]),
     });
   }
 
   onSubmit() {
     if (this.form.valid) {
-      this.store.dispatch(hairdressingApiActions.createCalendarEntryInitiated({
+      const request: Calendar.Entry.Request = {
         title: this.form.value.title,
         description: this.form.value.description ?? undefined,
-        entryType: this.data.entryType,
+        entryType: this.entry.entryType,
         day: dateToISODateString(this.form.value.day),
         start: dateToTimeSlot(this.form.value.start),
         end: dateToTimeSlot(this.form.value.end),
-      }));
+      };
+
+      if (this.entry.calendarEntryId) {
+        this.store.dispatch(hairdressingApiActions.updateCalendarEntryInitiated({
+          calendarEntryId: this.entry.calendarEntryId,
+          ...request,
+        }));
+      } else {
+        this.store.dispatch(hairdressingApiActions.createCalendarEntryInitiated(request));
+      }
 
       this.dialogRef.close();
     }
+  }
+
+  onDelete() {
+    // this.store.dispatch(dialogActions.deleteCalendarEntry(this.entry));
   }
 }

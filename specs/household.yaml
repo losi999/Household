@@ -1047,6 +1047,12 @@ paths:
             application/json:
               schema:
                 $ref: "calendar.yaml#/components/schemas/CalendarEntryId"
+    delete:
+      tags:
+        - hairdressing
+      responses:
+        204:
+          description: Calendar entry deleted
 
 components:
   parameters:

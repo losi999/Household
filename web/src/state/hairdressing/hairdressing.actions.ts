@@ -31,5 +31,7 @@ export const hairdressingApiActions = createActionGroup({
     'List calendar days completed': props<Calendar.DateRange & {entries: Calendar.Day.Response[]}>(),
     'Create calendar entry initiated': props<Calendar.Entry.Request>(),
     'Create calendar entry completed': props<Calendar.Entry.CalendarEntryId & Calendar.Entry.Request>(),
+    'Update calendar entry initiated': props<Calendar.Entry.CalendarEntryId & Calendar.Entry.Request>(),
+    'Update calendar entry completed': props<Calendar.Entry.CalendarEntryId & Calendar.Entry.Request>(),
   },
 });

@@ -113,21 +113,22 @@ export const hairdressingReducer = createReducer<HairdressingState>({},
     };
   }),
 
-  on(hairdressingApiActions.createCalendarEntryCompleted, (_state, { calendarEntryId, day, description, end, entryType, start, title }) => {
+  on(hairdressingApiActions.createCalendarEntryCompleted, hairdressingApiActions.updateCalendarEntryCompleted, (_state, { calendarEntryId, day, description, end, entryType, start, title }) => {
     return {
       ..._state,
       calendarDays: {
         ..._state.calendarDays,
         [day]: {
           ..._state.calendarDays[day],
-          entries: _state.calendarDays[day].entries.concat({
+          entries: _state.calendarDays[day].entries.filter(e => e.calendarEntryId !== calendarEntryId).concat({
             entryType,
             title,
             start,
             end,
             description,
             calendarEntryId,
-          }).toSorted((a, b) => a.start > b.start ? 1 : -1),
+          })
+            .toSorted((a, b) => a.start > b.start ? 1 : -1),
         },
       },
     };

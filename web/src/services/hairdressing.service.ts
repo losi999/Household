@@ -35,4 +35,8 @@ export class HairdressingService {
   createCalendarEntry(body: Calendar.Entry.Request) {
     return this.httpClient.post<Calendar.Entry.CalendarEntryId>(`${environment.apiUrl}/hairdressing/v1/calendar/entries`, body);
   }
+
+  updateCalendarEntry(calendarEntryId: Calendar.Entry.Id, body: Calendar.Entry.Request) {
+    return this.httpClient.put<Calendar.Entry.CalendarEntryId>(`${environment.apiUrl}/hairdressing/v1/calendar/entries/${calendarEntryId}`, body);
+  }
 }

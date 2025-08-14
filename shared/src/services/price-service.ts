@@ -26,10 +26,8 @@ export const priceServiceFactory = (mongodbService: IMongodbService): IPriceServ
     },
     savePrices: (docs) => {
       return mongodbService.inSession((session) => {
-        return session.withTransaction(() => {
-          return mongodbService.prices.insertMany(docs, {
-            session,
-          });
+        return mongodbService.prices.insertMany(docs, {
+          session,
         });
       });
     },
@@ -40,8 +38,8 @@ export const priceServiceFactory = (mongodbService: IMongodbService): IPriceServ
     },
     deletePrice: async (priceId) => {
       return mongodbService.inSession((session) => {
-        return session.withTransaction(async () => {
-          await mongodbService.prices.deleteOne({
+        return session.withTransaction(() => {
+          return mongodbService.prices.deleteOne({
             _id: priceId,
           }, {
             session,

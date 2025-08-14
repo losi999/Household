@@ -888,7 +888,11 @@ export namespace Calendar {
     & Base
     & DayProp;
 
-    export type Response = Base & CalendarEntryId;
+    export type PersonalEntryResponse= Base & CalendarEntryId;
+    export type IssueEntryResponse= Base & CalendarEntryId;
+    export type WorkEntryResponse = Base & CalendarEntryId;
+
+    export type Response = PersonalEntryResponse | IssueEntryResponse | WorkEntryResponse;
   }
 }
 
