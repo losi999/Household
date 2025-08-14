@@ -342,7 +342,7 @@ export class HairdressingEffects {
     );
   });
   
-  updateteCalendarEntry = createEffect(() => {
+  updateCalendarEntry = createEffect(() => {
     return this.actions.pipe(
       ofType(hairdressingApiActions.updateCalendarEntryInitiated),
       mergeMap(({ type, calendarEntryId, ...request }) => {
@@ -350,6 +350,27 @@ export class HairdressingEffects {
           map(({ calendarEntryId }) => hairdressingApiActions.updateCalendarEntryCompleted({
             calendarEntryId,
             ...request,
+          })),
+          catchError(() => {
+            return of(progressActions.processFinished(),
+              notificationActions.showMessage({
+                message: 'Hiba történt',
+              }),
+            );
+          }),
+        );
+      }),
+    );
+  });
+  
+  deleteCalendarEntry = createEffect(() => {
+    return this.actions.pipe(
+      ofType(hairdressingApiActions.deleteCalendarEntryInitiated),
+      mergeMap(({ calendarEntryId, day }) => {
+        return this.hairdressingService.deleteCalendarEntry(calendarEntryId).pipe(
+          map(() => hairdressingApiActions.deleteCalendarEntryCompleted({
+            calendarEntryId,
+            day,
           })),
           catchError(() => {
             return of(progressActions.processFinished(),

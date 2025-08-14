@@ -133,4 +133,17 @@ export const hairdressingReducer = createReducer<HairdressingState>({},
       },
     };
   }),
+
+  on(hairdressingApiActions.deleteCalendarEntryCompleted, (_state, { calendarEntryId, day }) => {
+    return {
+      ..._state,
+      calendarDays: {
+        ..._state.calendarDays,
+        [day]: {
+          ..._state.calendarDays[day],
+          entries: _state.calendarDays[day].entries.filter(e => e.calendarEntryId !== calendarEntryId),
+        },
+      },
+    };
+  }),
 );

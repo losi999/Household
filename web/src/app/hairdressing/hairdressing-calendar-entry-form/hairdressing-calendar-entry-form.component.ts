@@ -2,7 +2,6 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { addHours, createDate, dateToISODateString, dateToTimeSlot, timeSlotToDate } from '@household/shared/common/utils';
-import { CalendarEntryType } from '@household/shared/enums';
 import { Calendar } from '@household/shared/types/types';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { hairdressingApiActions } from '@household/web/state/hairdressing/hairdressing.actions';
@@ -69,6 +68,10 @@ export class HairdressingCalendarEntryFormComponent implements OnInit {
   }
 
   onDelete() {
-    // this.store.dispatch(dialogActions.deleteCalendarEntry(this.entry));
+    this.store.dispatch(dialogActions.deleteCalendarEntry({
+      calendarEntryId: this.entry.calendarEntryId,
+      title: this.entry.title,
+      day: this.entry.day,
+    }));
   }
 }

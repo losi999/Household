@@ -39,4 +39,8 @@ export class HairdressingService {
   updateCalendarEntry(calendarEntryId: Calendar.Entry.Id, body: Calendar.Entry.Request) {
     return this.httpClient.put<Calendar.Entry.CalendarEntryId>(`${environment.apiUrl}/hairdressing/v1/calendar/entries/${calendarEntryId}`, body);
   }
+
+  deleteCalendarEntry(calendarEntryId: Calendar.Entry.Id) {
+    return this.httpClient.delete(`${environment.apiUrl}/hairdressing/v1/calendar/entries/${calendarEntryId}`);
+  }
 }

@@ -37,6 +37,6 @@ export const dialogActions = createActionGroup({
     'Delete transaction': props<Transaction.TransactionId & {navigationAction?: Action;}>(),
     'Create calendar entry': props<{entryType: CalendarEntryType.Issue | CalendarEntryType.Personal}>(),
     'Update calendar entry': props<Calendar.Entry.Response & Calendar.DayProp>(),
-    'Delete calendar entry': props<Calendar.Entry.Response>(),
+    'Delete calendar entry': props<Pick<Calendar.Entry.Response, 'calendarEntryId' | 'title'> & Calendar.DayProp>(),
   },
 });

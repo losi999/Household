@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { EMPTY, exhaustMap, withLatestFrom } from 'rxjs';
+import { EMPTY, exhaustMap, tap, withLatestFrom } from 'rxjs';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { DialogService } from '@household/web/services/dialog.service';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
@@ -408,5 +408,22 @@ export class DialogEffects {
     );
   }, {
     dispatch: false,
+  });
+
+  deleteCalendarEntry = createEffect(() => {
+    return this.actions.pipe(
+      ofType(dialogActions.deleteCalendarEntry),
+      exhaustMap(({ calendarEntryId, title, day }) => {
+        return this.dialogService.openDeleteCalendarEntryDialog(title).pipe(dispatchIfConfirmed(
+          hairdressingApiActions.deleteCalendarEntryInitiated({
+            calendarEntryId,
+            day,
+          }),
+        ),
+        tap(() => {
+          this.dialogService.closeAll();
+        }));
+      }),
+    );
   });
 }

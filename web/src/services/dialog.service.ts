@@ -33,6 +33,10 @@ export class DialogService {
     }).afterClosed();
   }
 
+  closeAll() {
+    this.dialog.closeAll();
+  }
+
   openCreateProjectDialog(): void {
     this.dialog.open<ProjectFormComponent, ProjectFormData, void>(ProjectFormComponent);
   }
@@ -207,7 +211,7 @@ export class DialogService {
     });
   }
 
-  openDeleteCalendarEntryDialog(entry: Calendar.Entry.Response) {
-    return this.openConfirmationDialog('Törölni akarod ezt a bejegyzést a naptárból?', entry.title);
+  openDeleteCalendarEntryDialog(title: Calendar.Entry.Response['title']) {
+    return this.openConfirmationDialog('Törölni akarod ezt a bejegyzést a naptárból?', title);
   }
 }
