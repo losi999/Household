@@ -30,6 +30,7 @@ export const addDays = (days: number, dateFrom?: Date): Date => addSeconds(days 
 
 export const numberToGivenDigits = (number: number, length: number = 2) => number.toString().padStart(length, '0');
 export const dateToISODateString = (date: Date) => `${date.getFullYear()}-${numberToGivenDigits(date.getMonth() + 1)}-${numberToGivenDigits(date.getDate())}`;
+export const dateToISOTimeString = (date: Date) => `${numberToGivenDigits(date.getHours())}:${numberToGivenDigits(date.getMinutes())}`;
 
 export const dateToTimeSlot = (date: Date) => date.getHours() * 4 + Math.floor(date.getMinutes() / 15) + 1;
 export const timeSlotToDate = (slot: number): Date => {

@@ -16,6 +16,7 @@ import { Store } from '@ngrx/store';
 import { selectCustomer } from '@household/web/state/customer/customer.selector';
 import { customerApiActions } from '@household/web/state/customer/customer.actions';
 import { hairdressingApiActions } from '@household/web/state/hairdressing/hairdressing.actions';
+import { CalendarDayType } from '@household/shared/enums';
 
 @Injectable()
 export class DialogEffects { 
@@ -425,5 +426,31 @@ export class DialogEffects {
         }));
       }),
     );
+  });
+
+  setVacationDay = createEffect(() => {
+    return this.actions.pipe(
+      ofType(dialogActions.setVacationDay),
+      exhaustMap(({ day }) => {
+        return this.dialogService.openSetVacationDayDialog(day).pipe(dispatchIfConfirmed(
+          hairdressingApiActions.updateCalendarDayInitiated({
+            day,
+            dayType: CalendarDayType.Vacation,
+          }),
+        ));
+      }),
+    );
+  });
+
+  setWorkDay = createEffect(() => {
+    return this.actions.pipe(
+      ofType(dialogActions.setWorkDay),
+      exhaustMap(({ type, ...day }) => {
+        this.dialogService.openSetWorkDayDialog(day);
+        return EMPTY;
+      }),
+    );
+  }, {
+    dispatch: false,
   });
 }

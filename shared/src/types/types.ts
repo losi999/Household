@@ -863,9 +863,18 @@ export namespace Calendar {
     export type Document = Internal.Timestamps
     & Base;
 
-    export type Response = Base & {
-      entries: Entry.Response[];
+    type ResponseBase = DayProp & {
+      entries: Entry.Response[]
     };
+
+    type WorkdayResponse = DayType<Enum.CalendarDayType.Workday> & Timespan & ResponseBase;
+    type WeekendResponse = DayType<Enum.CalendarDayType.Weekend> & Timespan & ResponseBase;
+    type VacationResponse = DayType<Enum.CalendarDayType.Vacation> & ResponseBase;
+    export type HolidayResponse = DayType<Enum.CalendarDayType.Holiday> & ResponseBase;
+
+    export type Response = WorkdayResponse | VacationResponse | HolidayResponse | WeekendResponse;
+
+    type E = Exclude<Response, HolidayResponse>;
   }
 
   export namespace Entry {

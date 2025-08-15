@@ -3,8 +3,7 @@
     <mat-icon>add</mat-icon>
   </button>
   <mat-menu #new="matMenu">
-    <!-- <button mat-menu-item (click)="onCreateWork()">Munka</button>
-    <button mat-menu-item (click)="onCreateVacation()">Szabadság</button> -->
+    <!-- <button mat-menu-item (click)="onCreateWork()">Munka</button> -->
     <button mat-menu-item (click)="onCreatePersonal()">Személyes</button>
     <button mat-menu-item (click)="onCreateIssue()">Probléma</button>
   </mat-menu>
@@ -18,12 +17,15 @@
   </div>
   <div class="days-of-week">
     <div></div>
-    <div class="day" *ngFor="let day of daysOfWeek">
+    <div class="day" *ngFor="let d of daysOfWeek | async ">
       <div>
-        {{day | date: 'MMM dd.'}}
+        {{d.day | date: 'MMM dd.'}}
       </div>
       <div>
-        {{day | date: 'EEEE'}}
+        {{d.day | date: 'EEEE'}}
+      </div>
+      <div class="buttons">
+        <button mat-icon-button type="button" *ngIf="d.dayType !== 'holiday'" (click)="onSetWorkDay(d)"><mat-icon>settings</mat-icon></button>
       </div>
     </div>
   </div>
@@ -35,5 +37,5 @@
       {{ hour }}
     </div>
   </div>
-  <household-hairdressing-calendar-day *ngFor="let day of daysOfWeek" [day]="day" />
+  <household-hairdressing-calendar-day *ngFor="let day of daysOfWeek | async" [day]="day" />
 </div>

@@ -8,9 +8,9 @@ describe('HairdressingCalendarEntryFormComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [HairdressingCalendarEntryFormComponent]
+      declarations: [HairdressingCalendarEntryFormComponent],
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(HairdressingCalendarEntryFormComponent);
     component = fixture.componentInstance;

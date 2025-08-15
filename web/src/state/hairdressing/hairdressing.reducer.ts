@@ -1,6 +1,8 @@
 import { Calendar, Price, Transaction } from '@household/shared/types/types';
 import { createReducer, on } from '@ngrx/store';
 import { hairdressingActions, hairdressingApiActions } from '@household/web/state/hairdressing/hairdressing.actions';
+import { CalendarDayType } from '@household/shared/enums';
+import { WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
 
 export type HairdressingState = {
   priceList?: Price.Response[];
@@ -8,7 +10,7 @@ export type HairdressingState = {
     [month: string]: Transaction.Report[];
   };
   calendarDays?: {
-    [date: string]: Omit<Calendar.Day.Response, 'day'>;
+    [date: string]: Calendar.Day.Response;
   }
 };
 
@@ -103,12 +105,76 @@ export const hairdressingReducer = createReducer<HairdressingState>({},
       ..._state,
       calendarDays: {
         ..._state.calendarDays,        
-        ...entries.reduce((accumulator, { day, ...currentValue }) => {
+        ...entries.reduce((accumulator, currentValue) => {
           return {
             ...accumulator,
-            [day]: currentValue,
+            [currentValue.day]: currentValue,
           };
         }, {}),
+      },
+    };
+  }),
+
+  on(hairdressingApiActions.updateCalendarDayCompleted, (_state, { type, day, ...request }) => {
+    const storedDay = _state.calendarDays[day];
+    let newDay: Calendar.Day.Response;
+    if (request.dayType === CalendarDayType.Workday) {
+      newDay = {
+        ...storedDay,
+        dayType: storedDay.dayType === CalendarDayType.Weekend ? CalendarDayType.Weekend : CalendarDayType.Workday,
+        start: request.start,
+        end: request.end,  
+
+      };
+    } else {
+      newDay = {
+        ...storedDay,
+        ...request,
+      };
+    }
+
+    return {
+      ..._state,
+      calendarDays: {
+        ..._state.calendarDays,
+        [day]: newDay,
+      },
+    };
+  }),
+
+  on(hairdressingApiActions.deleteCalendarDayCompleted, (_state, { day }) => {
+    const storedDay = _state.calendarDays[day];
+    let newDay: Calendar.Day.Response;
+    switch(storedDay.dayType) {
+      case CalendarDayType.Vacation: {
+        newDay = {
+          ...storedDay,
+          dayType: CalendarDayType.Workday,
+          start: WORKDAY_START,
+          end: WORKDAY_END,
+        };
+      } break;
+      case CalendarDayType.Workday: {
+        newDay = {
+          ...storedDay,
+          start: WORKDAY_START,
+          end: WORKDAY_END,
+        };
+      } break;
+      case CalendarDayType.Weekend: {
+        newDay = {
+          ...storedDay,
+          start: undefined,
+          end: undefined,
+        };
+      } break;
+    }
+
+    return {
+      ..._state,
+      calendarDays: {
+        ..._state.calendarDays,
+        [day]: newDay,
       },
     };
   }),

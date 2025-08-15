@@ -194,6 +194,22 @@ Resources:
             Auth:
               Authorizer: CognitoAuthorizer
 
+  DeleteCalendarDay:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-DeleteCalendarDay
+      CodeUri: dist/api/delete-calendar-day
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref HairdressingApi
+            Path: /v1/calendar/days/{day}
+            Method: DELETE
+            Auth:
+              Authorizer: CognitoAuthorizer
+
   ListCalendarDays:
     Type: AWS::Serverless::Function
     Properties:

@@ -1,7 +1,11 @@
-@let cd = (calendarDay | async);
-
 <ng-template #weekend>
-  <div class="no-work" [style.grid-row]="'1 / 97'"></div>
+  <ng-container *ngIf="day.start && day.end; else fullDay">
+    <div class="no-work" [style.grid-row]="1 + '/ ' + start"></div>
+    <div class="no-work" [style.grid-row]="end + '/ 97'"></div>
+  </ng-container>
+  <ng-template #fullDay>
+    <div class="no-work" [style.grid-row]="'1 / 97'"></div>
+  </ng-template>
 </ng-template>
 
 <ng-template #holiday>
@@ -13,16 +17,16 @@
 </ng-template>
 
 <ng-template #workday>
-  <div class="no-work" [style.grid-row]="1 + '/ span ' + (cd?.start)"></div>
-  <div class="no-work" [style.grid-row]="(cd?.end) + '/ 97'"></div>
+  <div class="no-work" [style.grid-row]="1 + '/ ' + start"></div>
+  <div class="no-work" [style.grid-row]="end + '/ 97'"></div>
 </ng-template>
 
 <div class="day">
-  <ng-container [ngSwitch]="cd?.dayType">
+  <ng-container [ngSwitch]="day.dayType">
     <ng-container *ngSwitchCase="'weekend'" [ngTemplateOutlet]="weekend"></ng-container>
     <ng-container *ngSwitchCase="'vacation'" [ngTemplateOutlet]="vacation"></ng-container>
     <ng-container *ngSwitchCase="'holiday'" [ngTemplateOutlet]="holiday"></ng-container>
     <ng-container *ngSwitchDefault [ngTemplateOutlet]="workday"></ng-container>
   </ng-container>
-  <button *ngFor="let e of cd?.entries" [ngClass]="e.entryType" [style.grid-row]="e.start + ' / ' + e.end" (click)="onEntryClick(e)">{{e.title}}</button>
+  <button *ngFor="let e of day.entries" [ngClass]="e.entryType" [style.grid-row]="e.start + ' / ' + e.end" (click)="onEntryClick(e)">{{e.title}}</button>
 </div>

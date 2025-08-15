@@ -24,21 +24,21 @@ export const calendarDayDocumentConverterFactory = (calendarEntryDocumentConvert
     return dates;
   };
 
-  const calculateWorkdayLimits = (defaultStart: number, defaultEnd: number, entries: Calendar.Entry.Document[]): {start: number; end: number;} => {
-    const workEntries = entries.filter(e => e.entryType === CalendarEntryType.Work);
+  // const calculateWorkdayLimits = (defaultStart: number, defaultEnd: number, entries: Calendar.Entry.Document[]): {start: number; end: number;} => {
+  //   const workEntries = entries.filter(e => e.entryType === CalendarEntryType.Work);
 
-    return workEntries.reduce<{start: number; end: number}>((accumulator, currentValue) => {
-      const calculatedStart = currentValue.end - WORKDAY_LENGTH * 4 - 1;
-      const calculatedend = currentValue.start + WORKDAY_LENGTH * 4;
-      return {
-        start: calculatedStart > accumulator.start ? calculatedStart : accumulator.start,
-        end: calculatedend < accumulator.end ? calculatedend : accumulator.end,
-      };
-    }, {
-      start: defaultStart,
-      end: defaultEnd,
-    });
-  };
+  //   return workEntries.reduce<{start: number; end: number}>((accumulator, currentValue) => {
+  //     const calculatedStart = currentValue.end - WORKDAY_LENGTH;
+  //     const calculatedend = currentValue.start + WORKDAY_LENGTH;
+  //     return {
+  //       start: calculatedStart > accumulator.start ? calculatedStart : accumulator.start,
+  //       end: calculatedend < accumulator.end ? calculatedend : accumulator.end,
+  //     };
+  //   }, {
+  //     start: defaultStart,
+  //     end: defaultEnd,
+  //   });
+  // };
 
   const instance: ICalendarDayDocumentConverter = {
     update: (body, expiresIn) => {
@@ -58,52 +58,54 @@ export const calendarDayDocumentConverterFactory = (calendarEntryDocumentConvert
       };
     },
     toResponse: ({ dateFrom, dateTo, entries, days }) => {
-
       const response = getDateRangeArray({
         dateFrom,
         dateTo,
       }).map<Calendar.Day.Response>(date => {
+        const isWeekend = [
+          0,
+          6,
+        ].includes(new Date(date).getDay());
         const day = days.find(x => x.day === date);
-        const entriesForDay = entries.filter(e => e.day === date);
+        const entriesForDay = calendarEntryDocumentConverter.toResponseList(entries.filter(e => e.day === date));
 
         if (day?.dayType === CalendarDayType.Vacation || day?.dayType === CalendarDayType.Holiday) {
           return {
             dayType: day.dayType,
             day: date,
-            entries: calendarEntryDocumentConverter.toResponseList(entriesForDay),
+            entries: entriesForDay,
           };
         }
 
         if (day?.dayType === CalendarDayType.Workday) {
-          const { start, end } = calculateWorkdayLimits(day.start, day.end, entriesForDay);
+          // const { start, end } = calculateWorkdayLimits(day.start, day.end, entriesForDay);
 
           return {
             day: date,
-            dayType: CalendarDayType.Workday,
-            end,
-            start,
-            entries: calendarEntryDocumentConverter.toResponseList(entriesForDay),
+            dayType: isWeekend ? CalendarDayType.Weekend : CalendarDayType.Workday,
+            end: day.end,
+            start: day.start,
+            entries: entriesForDay,
           };
         }
 
-        if ([
-          0,
-          6,
-        ].includes(new Date(date).getDay())) {
+        if (isWeekend) {
           return {
             day: date,
             dayType: CalendarDayType.Weekend,
-            entries: calendarEntryDocumentConverter.toResponseList(entriesForDay),
+            entries: entriesForDay,
+            start: undefined,
+            end: undefined,
           };
         }
-        const { start, end } = calculateWorkdayLimits(WORKDAY_START * 4, WORKDAY_END * 4 + 1, entriesForDay);
+        // const { start, end } = calculateWorkdayLimits(WORKDAY_START, WORKDAY_END, entriesForDay);
 
         return {
           day: date,
           dayType: CalendarDayType.Workday,
-          end,
-          start,
-          entries: calendarEntryDocumentConverter.toResponseList(entriesForDay),
+          end: WORKDAY_END,
+          start: WORKDAY_START,
+          entries: entriesForDay,
         };
       });
 

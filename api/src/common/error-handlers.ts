@@ -595,6 +595,10 @@ export const httpErrors = {
       log('List calendar days', undefined, error);
       throw httpError(statusCode, 'Error while listing calendar days');
     },
+    delete: (ctx: Calendar.DayProp, statusCode = 500): CatchAndThrow => (error) => {
+      log('Delete calendar day', ctx, error);
+      throw httpError(statusCode, 'Error while deleting calendar day');
+    },
     update: (ctx: Calendar.DayProp & {update: UpdateQuery<Calendar.Day.Document>}, statusCode = 500): CatchAndThrow => (error) => {
       log('Update calendar day', ctx, error);
       throw httpError(statusCode, 'Error while updating calendar day');
@@ -620,8 +624,8 @@ export const httpErrors = {
       }
     },
     delete: (ctx: Calendar.Entry.CalendarEntryId, statusCode = 500): CatchAndThrow => (error) => {
-      log('Delete recipient', ctx, error);
-      throw httpError(statusCode, 'Error while deleting recipient');
+      log('Delete calendar entry', ctx, error);
+      throw httpError(statusCode, 'Error while deleting calendar entry');
     },
     update: (ctx: Calendar.Entry.CalendarEntryId & {update: UpdateQuery<Calendar.Entry.Document>}, statusCode = 500): CatchAndThrow => (error) => {
       log('Update calendar entry', ctx, error);

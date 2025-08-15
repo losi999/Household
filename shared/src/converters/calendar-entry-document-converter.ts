@@ -39,42 +39,6 @@ export const calendarEntryDocumentConverterFactory = (): ICalendarEntryDocumentC
         },
       };
     },
-    // toDateRangeResponse: ({ dateFrom, dateTo }, entries) => {
-    //   const days: CalendarEntry.Response[] = [];
-
-    //   for(let d = new Date(dateFrom); d <= new Date(dateTo); d.setDate(d.getDate() + 1)) {
-    //     const day = d.toISOString();
-    //     console.log(d);
-
-    //     const entriesForDay = entries.filter(e => e.day.toISOString() === day);
-    //     const workEntries = entriesForDay.filter(e => e.entryType === CalendarEntryType.Work);
-        
-    //     const { start, end } = workEntries.reduce<{start: number; end: number}>((accumulator, currentValue) => {
-    //       const calculatedStart = currentValue.end - WORKDAY_LENGTH * 4 - 1;
-    //       const calculatedend = currentValue.start + WORKDAY_START * 4;
-    //       return {
-    //         start: calculatedStart > accumulator.start ? calculatedStart : accumulator.start,
-    //         end: calculatedend < accumulator.end ? calculatedend : accumulator.end,
-    //       };
-    //     }, {
-    //       start: WORKDAY_START * 4,
-    //       end: WORKDAY_END * 4 + 1,
-    //     });
-
-    //     days.push({
-    //       day: day.split('T')[0],
-    //       start,
-    //       end,
-    //       entries: instance.toEntryResponseList(entriesForDay),
-    //       dayType: [
-    //         0,
-    //         6,
-    //       ].includes(d.getDay()) ? 'weekend' : 'workday',
-    //     });
-    //   }
-
-    //   return days;
-    // },
     toResponse: ({ end, start, title, entryType: type, description, _id }) => {
       return {
         calendarEntryId: getCalendarEntryId(_id),

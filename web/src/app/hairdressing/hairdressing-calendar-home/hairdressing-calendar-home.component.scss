@@ -19,6 +19,12 @@
 
     .day {
       text-align: center;
+      display: flex;
+      flex-direction: column;
+
+      .buttons {
+        align-self: center;
+      }
     }
   }
 }

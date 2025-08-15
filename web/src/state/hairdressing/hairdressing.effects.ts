@@ -296,7 +296,7 @@ export class HairdressingEffects {
     );
   });
 
-  loadCalendarEntries = createEffect(() => {
+  loadCalendarDays = createEffect(() => {
     return this.actions.pipe(
       ofType(hairdressingApiActions.listCalendarDaysInitiated),
       mergeMap(({ dateFrom, dateTo }) => {
@@ -308,6 +308,47 @@ export class HairdressingEffects {
             entries,
             dateFrom,
             dateTo,
+          })),
+          catchError(() => {
+            return of(progressActions.processFinished(),
+              notificationActions.showMessage({
+                message: 'Hiba történt',
+              }),
+            );
+          }),
+        );
+      }),
+    );
+  });
+
+  updateCalendarDay = createEffect(() => {
+    return this.actions.pipe(
+      ofType(hairdressingApiActions.updateCalendarDayInitiated),
+      mergeMap(({ type, day, ...request }) => {
+        return this.hairdressingService.updateCalendarDay(day, request).pipe(
+          map(() => hairdressingApiActions.updateCalendarDayCompleted({
+            day,
+            ...request,
+          })),
+          catchError(() => {
+            return of(progressActions.processFinished(),
+              notificationActions.showMessage({
+                message: 'Hiba történt',
+              }),
+            );
+          }),
+        );
+      }),
+    );
+  });
+
+  deleteCalendarDay = createEffect(() => {
+    return this.actions.pipe(
+      ofType(hairdressingApiActions.deleteCalendarDayInitiated),
+      mergeMap(({ day }) => {
+        return this.hairdressingService.deleteCalendarDay(day).pipe(
+          map(() => hairdressingApiActions.deleteCalendarDayCompleted({
+            day,            
           })),
           catchError(() => {
             return of(progressActions.processFinished(),

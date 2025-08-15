@@ -7,6 +7,7 @@ import { CategoryFormComponent, CategoryFormData } from '@household/web/app/cate
 import { CategoryMergeDialogComponent, CategoryMergeDialogData } from '@household/web/app/category/category-merge-dialog/category-merge-dialog.component';
 import { CustomerFormComponent, CustomerFormData } from '@household/web/app/customer/customer-form/customer-form.component';
 import { HairdressingCalendarEntryFormComponent, HairdressingCalendarEntryFormData } from '@household/web/app/hairdressing/hairdressing-calendar-entry-form/hairdressing-calendar-entry-form.component';
+import { HairdressingCalendarWorkdayDialogComponent, HairdressingCalendarWorkdayDialogData } from '@household/web/app/hairdressing/hairdressing-calendar-workday-dialog/hairdressing-calendar-workday-dialog.component';
 import { HairdressingPriceFormComponent, HairdressingPriceFormData } from '@household/web/app/hairdressing/hairdressing-price-form/hairdressing-price-form.component';
 import { ImportFileUploadFormComponent } from '@household/web/app/import/import-file-upload-form/import-file-upload-form.component';
 import { ProductFormComponent, ProductFormData } from '@household/web/app/product/product-form/product-form.component';
@@ -202,16 +203,32 @@ export class DialogService {
   }
 
   openEditCalendarEntryDialog(day: Calendar.DayProp['day'], entry: Calendar.Entry.PersonalEntryResponse | Calendar.Entry.IssueEntryResponse) {
-    this.dialog.open<HairdressingCalendarEntryFormComponent, HairdressingCalendarEntryFormData, any>(HairdressingCalendarEntryFormComponent, {
+    this.dialog.open<HairdressingCalendarEntryFormComponent, HairdressingCalendarEntryFormData, void>(HairdressingCalendarEntryFormComponent, {
       data: {
         day,
         ...entry,
       },
-      width: '90vw',
+      width: '900px',
     });
   }
 
   openDeleteCalendarEntryDialog(title: Calendar.Entry.Response['title']) {
     return this.openConfirmationDialog('Törölni akarod ezt a bejegyzést a naptárból?', title);
+  }
+
+  openSetVacationDayDialog(day: string) {
+    return this.openConfirmationDialog('Szabadságnak akarod ezt a napot jelölni?', new Date(day).toLocaleString('hu', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      weekday: 'long',
+    }));
+  }
+
+  openSetWorkDayDialog(day: Exclude<Calendar.Day.Response, Calendar.Day.HolidayResponse>) {
+    return this.dialog.open<HairdressingCalendarWorkdayDialogComponent, HairdressingCalendarWorkdayDialogData, void>(HairdressingCalendarWorkdayDialogComponent, {
+      data: day,
+      width: '900px',
+    });
   }
 }

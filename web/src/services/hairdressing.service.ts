@@ -32,6 +32,14 @@ export class HairdressingService {
     });
   }
 
+  updateCalendarDay(day: Calendar.DayProp['day'], body: Calendar.Day.Request) {
+    return this.httpClient.put(`${environment.apiUrl}/hairdressing/v1/calendar/days/${day}`, body);
+  }
+
+  deleteCalendarDay(day: Calendar.DayProp['day']) {
+    return this.httpClient.delete(`${environment.apiUrl}/hairdressing/v1/calendar/days/${day}`);
+  }
+
   createCalendarEntry(body: Calendar.Entry.Request) {
     return this.httpClient.post<Calendar.Entry.CalendarEntryId>(`${environment.apiUrl}/hairdressing/v1/calendar/entries`, body);
   }

@@ -31,6 +31,11 @@ import { TimeRangePipe } from './time-range.pipe';
 import { HairdressingCalendarEntryFormComponent } from './hairdressing-calendar-entry-form/hairdressing-calendar-entry-form.component';
 import { MatTimepickerModule } from '@angular/material/timepicker';
 import { MatMenuModule } from '@angular/material/menu';
+import { HairdressingCalendarWorkdayDialogComponent } from './hairdressing-calendar-workday-dialog/hairdressing-calendar-workday-dialog.component';
+import { MatRadioModule } from '@angular/material/radio';
+import { MatSliderModule } from '@angular/material/slider';
+import { TimeSlotToDatePipe } from './time-slot-to-date.pipe';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 
 @NgModule({
   declarations: [
@@ -45,6 +50,8 @@ import { MatMenuModule } from '@angular/material/menu';
     HairdressingCalendarDayComponent,
     TimeRangePipe,
     HairdressingCalendarEntryFormComponent,
+    HairdressingCalendarWorkdayDialogComponent,
+    TimeSlotToDatePipe,
   ],
   imports: [
     CommonModule,
@@ -69,6 +76,9 @@ import { MatMenuModule } from '@angular/material/menu';
     AmountInputComponent,
     MatTimepickerModule,
     MatMenuModule,
+    MatRadioModule,
+    MatSliderModule,
+    MatButtonToggleModule,
   ],
 })
 export class HairdressingModule { }

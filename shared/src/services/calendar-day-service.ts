@@ -7,7 +7,7 @@ export interface ICalendarDayService {
   // saveCalendarDay(doc: Calendar.Day.Document): Promise<Calendar.Day.Document>;
   // saveCalendarEntries(docs: CalendarDay.Document[]): Promise<unknown>;
   // findCalendarDayById(calendarDayId: Calendar.Day.Id): Promise<Calendar.Day.Document>;
-  // deleteCalendarDay(calendarDayId: CalendarDay.Id): Promise<unknown>;
+  deleteCalendarDay(day: Calendar.DayProp['day']): Promise<unknown>;
   updateCalendarDay(day: Calendar.DayProp['day'], updateQuery: DocumentUpdate<Calendar.Day.Document>): Promise<unknown>;
   listCalendarDays(data: Calendar.DateRange): Promise<Calendar.Day.Document[]>;
   // findCalendarEntriesByIds(calendarDayIds: CalendarDay.Id[]): Promise<CalendarDay.Document[]>;
@@ -39,28 +39,15 @@ export const calendarDayServiceFactory = (mongodbService: IMongodbService): ICal
     //   return !calendarDayId ? undefined : mongodbService.calendarEntries.findById(calendarDayId)
     //     .lean();        
     // },
-    // deleteCalendarDay: async (calendarDayId) => {
-    //   return mongodbService.inSession((session) => {
-    //     return session.withTransaction(async () => {
-    //       await mongodbService.calendarEntries.deleteOne({
-    //         _id: calendarDayId,
-    //       }, {
-    //         session,
-    //       });
-            
-    //       await mongodbService.transactions.updateMany({
-    //         calendarDay: calendarDayId,
-    //       }, {
-    //         $unset: {
-    //           calendarDay: 1,
-    //         },
-    //       }, {
-    //         session,
-    //       });
-            
-    //     });
-    //   });
-    // },
+    deleteCalendarDay: async (day) => {
+      return mongodbService.inSession((session) => {
+        return mongodbService.calendarDays.deleteOne({
+          day,
+        }, {
+          session,
+        });
+      });
+    },
     updateCalendarDay: async (day, { update }) => {
       return mongodbService.calendarDays.findOneAndUpdate({
         day,

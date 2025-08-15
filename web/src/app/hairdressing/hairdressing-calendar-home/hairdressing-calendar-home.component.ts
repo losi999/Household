@@ -1,9 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { addDays } from '@household/shared/common/utils';
+import { addDays, dateToISODateString } from '@household/shared/common/utils';
 import { CalendarEntryType } from '@household/shared/enums';
+import { Calendar } from '@household/shared/types/types';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { hairdressingApiActions } from '@household/web/state/hairdressing/hairdressing.actions';
+import { selectCaledarDays } from '@household/web/state/hairdressing/hairdressing.selector';
 import { Store } from '@ngrx/store';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'household-hairdressing-calendar-home',
@@ -12,46 +15,54 @@ import { Store } from '@ngrx/store';
   styleUrl: './hairdressing-calendar-home.component.scss',
 })
 export class HairdressingCalendarHomeComponent implements OnInit {
-  daysOfWeek: string[];
+  daysOfWeek: Observable<Calendar.Day.Response[]>;
+  private weekStart: Date;
 
   constructor(private store: Store) {}
 
-  private calculateDaysOfWeek (date: Date) {
-    this.daysOfWeek = [];
-    const day = date.getDay();
-    const diffToMonday = (day === 0 ? -6 : 1 - day);
+  private loadWeek(date: Date) {
+    const weekday = date.getDay();
+    const diffToMonday = (weekday === 0 ? 6 : weekday - 1);
+    
+    this.weekStart = addDays(-diffToMonday, date);
+    const weekEnd = addDays(-diffToMonday + 6, date);
 
-    const monday = new Date(date);
-    monday.setDate(date.getDate() + diffToMonday);
-    monday.setUTCHours(0, 0, 0, 0);
-
-    for (let i = 0; i < 7; i += 1) {
-      const d = new Date(monday);
-      d.setDate(monday.getDate() + i);
-      this.daysOfWeek.push(d.toISOString().split('T')[0]);
-    }
+    this.daysOfWeek = this.store.select(selectCaledarDays({
+      dateFrom: dateToISODateString(this.weekStart),
+      dateTo: dateToISODateString(weekEnd),
+    }));
 
     this.store.dispatch(hairdressingApiActions.listCalendarDaysInitiated({
-      dateFrom: this.daysOfWeek[0],
-      dateTo: this.daysOfWeek[6],
-    }));
+      dateFrom: dateToISODateString(this.weekStart),
+      dateTo: dateToISODateString(weekEnd),
+    }));     
   }
 
   ngOnInit(): void {
-    this.calculateDaysOfWeek(new Date());       
+    this.loadWeek(new Date());
   }
 
   onChangeWeek(diff: number) {
-    const date = addDays(diff * 7, new Date(this.daysOfWeek[0]));
-    this.calculateDaysOfWeek(date);  
+    const date = addDays(diff * 7, new Date(this.weekStart));
+    this.loadWeek(date);
   }
 
   onShowToday() {
-    this.calculateDaysOfWeek(new Date());
+    this.loadWeek(new Date());
   }
 
   onCreateWork() {
     // this.store.dispatch(dialogActions.createCalendarEntry());
+  }
+
+  onSetVacationDay(day: string) {
+    this.store.dispatch(dialogActions.setVacationDay({
+      day,
+    }));
+  }
+
+  onSetWorkDay(day: Exclude<Calendar.Day.Response, Calendar.Day.HolidayResponse>) {
+    this.store.dispatch(dialogActions.setWorkDay(day));
   }
 
   onCreatePersonal() {
