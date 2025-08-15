@@ -71,7 +71,6 @@ export class HairdressingCalendarEntryFormComponent implements OnInit {
     this.store.dispatch(dialogActions.deleteCalendarEntry({
       calendarEntryId: this.entry.calendarEntryId,
       title: this.entry.title,
-      day: this.entry.day,
     }));
   }
 }

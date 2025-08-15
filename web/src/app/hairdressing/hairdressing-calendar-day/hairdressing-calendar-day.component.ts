@@ -13,6 +13,7 @@ import { Store } from '@ngrx/store';
 })
 export class HairdressingCalendarDayComponent implements OnInit {
   @Input() day: Calendar.Day.Response;
+  @Input() column: number;
   start: number;
   end: number;
   

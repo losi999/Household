@@ -11,9 +11,13 @@
 
 <div class="header">
   <div class="week-stepper">
-    <button mat-flat-button color="primary" type="button" (click)="onChangeWeek(-1)"><mat-icon>arrow_left</mat-icon>Előző hét</button>
+    <button mat-flat-button color="primary" type="button" (click)="onChangeWeek(-1)">
+      <mat-icon>arrow_left</mat-icon>Előző hét
+    </button>
     <button mat-flat-button color="warn" type="button" (click)="onShowToday()">Ma</button>
-    <button mat-flat-button color="primary" type="button" (click)="onChangeWeek(1)">Következő hét <mat-icon>arrow_right</mat-icon></button>
+    <button mat-flat-button color="primary" type="button" (click)="onChangeWeek(1)">Következő hét
+      <mat-icon>arrow_right</mat-icon>
+    </button>
   </div>
   <div class="days-of-week">
     <div></div>
@@ -31,11 +35,13 @@
   </div>
 </div>
 
-<div class="calendar">
-  <div class="time">
-    <div *ngFor="let hour of (true | timeRange); let i = index" [style.grid-row]="i * 2 + 1">
-      {{ hour }}
+<div class="calendar" [style.grid-template-rows]="gridTemplateRows">
+  <ng-container *ngFor="let t of timeRange">
+    <div class="time" [style.grid-row]="t.row">
+      {{ t.hour }}
     </div>
-  </div>
-  <household-hairdressing-calendar-day *ngFor="let day of daysOfWeek | async" [day]="day" />
+  </ng-container>
+  <ng-container *ngFor="let day of daysOfWeek | async; let i = index">
+    <household-hairdressing-calendar-day [day]="day" [column]="i+2" />
+  </ng-container>
 </div>

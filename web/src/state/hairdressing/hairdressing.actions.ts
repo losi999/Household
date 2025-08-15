@@ -37,7 +37,7 @@ export const hairdressingApiActions = createActionGroup({
     'Create calendar entry completed': props<Calendar.Entry.CalendarEntryId & Calendar.Entry.Request>(),
     'Update calendar entry initiated': props<Calendar.Entry.CalendarEntryId & Calendar.Entry.Request>(),
     'Update calendar entry completed': props<Calendar.Entry.CalendarEntryId & Calendar.Entry.Request>(),
-    'Delete calendar entry initiated': props<Calendar.Entry.CalendarEntryId & Calendar.DayProp>(),
-    'Delete calendar entry completed': props<Calendar.Entry.CalendarEntryId & Calendar.DayProp>(),
+    'Delete calendar entry initiated': props<Calendar.Entry.CalendarEntryId>(),
+    'Delete calendar entry completed': props<Calendar.Entry.CalendarEntryId>(),
   },
 });

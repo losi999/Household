@@ -27,7 +27,6 @@ import { ClearableInputComponent } from '@household/web/app/shared/clearable-inp
 import { HairdressingPriceSubmenuComponent } from './hairdressing-price-submenu/hairdressing-price-submenu.component';
 import { HairdressingCalendarHomeComponent } from './hairdressing-calendar-home/hairdressing-calendar-home.component';
 import { HairdressingCalendarDayComponent } from './hairdressing-calendar-day/hairdressing-calendar-day.component';
-import { TimeRangePipe } from './time-range.pipe';
 import { HairdressingCalendarEntryFormComponent } from './hairdressing-calendar-entry-form/hairdressing-calendar-entry-form.component';
 import { MatTimepickerModule } from '@angular/material/timepicker';
 import { MatMenuModule } from '@angular/material/menu';
@@ -48,7 +47,6 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
     HairdressingPriceSubmenuComponent,
     HairdressingCalendarHomeComponent,
     HairdressingCalendarDayComponent,
-    TimeRangePipe,
     HairdressingCalendarEntryFormComponent,
     HairdressingCalendarWorkdayDialogComponent,
     TimeSlotToDatePipe,

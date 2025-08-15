@@ -414,11 +414,10 @@ export class DialogEffects {
   deleteCalendarEntry = createEffect(() => {
     return this.actions.pipe(
       ofType(dialogActions.deleteCalendarEntry),
-      exhaustMap(({ calendarEntryId, title, day }) => {
+      exhaustMap(({ calendarEntryId, title }) => {
         return this.dialogService.openDeleteCalendarEntryDialog(title).pipe(dispatchIfConfirmed(
           hairdressingApiActions.deleteCalendarEntryInitiated({
             calendarEntryId,
-            day,
           }),
         ),
         tap(() => {

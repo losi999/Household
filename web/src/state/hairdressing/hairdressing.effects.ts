@@ -407,11 +407,10 @@ export class HairdressingEffects {
   deleteCalendarEntry = createEffect(() => {
     return this.actions.pipe(
       ofType(hairdressingApiActions.deleteCalendarEntryInitiated),
-      mergeMap(({ calendarEntryId, day }) => {
+      mergeMap(({ calendarEntryId }) => {
         return this.hairdressingService.deleteCalendarEntry(calendarEntryId).pipe(
           map(() => hairdressingApiActions.deleteCalendarEntryCompleted({
-            calendarEntryId,
-            day,
+            calendarEntryId, 
           })),
           catchError(() => {
             return of(progressActions.processFinished(),

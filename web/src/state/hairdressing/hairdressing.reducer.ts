@@ -179,14 +179,14 @@ export const hairdressingReducer = createReducer<HairdressingState>({},
     };
   }),
 
-  on(hairdressingApiActions.createCalendarEntryCompleted, hairdressingApiActions.updateCalendarEntryCompleted, (_state, { calendarEntryId, day, description, end, entryType, start, title }) => {
+  on(hairdressingApiActions.createCalendarEntryCompleted, (_state, { calendarEntryId, day, description, end, entryType, start, title }) => {
     return {
       ..._state,
       calendarDays: {
         ..._state.calendarDays,
         [day]: {
           ..._state.calendarDays[day],
-          entries: _state.calendarDays[day].entries.filter(e => e.calendarEntryId !== calendarEntryId).concat({
+          entries: _state.calendarDays[day].entries.concat({
             entryType,
             title,
             start,
@@ -200,16 +200,52 @@ export const hairdressingReducer = createReducer<HairdressingState>({},
     };
   }),
 
-  on(hairdressingApiActions.deleteCalendarEntryCompleted, (_state, { calendarEntryId, day }) => {
+  on(hairdressingApiActions.updateCalendarEntryCompleted, (_state, { calendarEntryId, day, description, end, entryType, start, title }) => {
     return {
       ..._state,
-      calendarDays: {
-        ..._state.calendarDays,
-        [day]: {
-          ..._state.calendarDays[day],
-          entries: _state.calendarDays[day].entries.filter(e => e.calendarEntryId !== calendarEntryId),
-        },
-      },
+      calendarDays: Object.entries(_state.calendarDays).reduce<HairdressingState['calendarDays']>((accumulator, [
+        date,
+        response,
+      ]) => {
+        let entries = response.entries.filter(e => e.calendarEntryId !== calendarEntryId);
+
+        if (date === day) {
+          entries = entries.concat({
+            entryType,
+            title,
+            start,
+            end,
+            description,
+            calendarEntryId,
+          }).toSorted((a, b) => a.start > b.start ? 1 : -1);
+        }
+
+        return {
+          ...accumulator,
+          [date]: {
+            ...response,
+            entries,
+          },
+        };
+      }, {}),
+    };
+  }),
+
+  on(hairdressingApiActions.deleteCalendarEntryCompleted, (_state, { calendarEntryId }) => {
+    return {
+      ..._state,
+      calendarDays: Object.entries(_state.calendarDays).reduce<HairdressingState['calendarDays']>((accumulator, [
+        date,
+        response,
+      ]) => {
+        return {
+          ...accumulator,
+          [date]: {
+            ...response,
+            entries: response.entries.filter(e => e.calendarEntryId !== calendarEntryId),
+          },
+        };
+      }, {}),
     };
   }),
 );
