@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
 import { HairdressingRoutingModule } from './hairdressing-routing.module';
 import { HairdressingIncomeHomeComponent } from './hairdressing-income-home/hairdressing-income-home.component';
 import { ToolbarComponent } from '@household/web/app/shared/toolbar/toolbar.component';
@@ -35,6 +34,8 @@ import { MatRadioModule } from '@angular/material/radio';
 import { MatSliderModule } from '@angular/material/slider';
 import { TimeSlotToDatePipe } from './time-slot-to-date.pipe';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { CalendarGridRowsPipe } from './calendar-grid-rows.pipe';
+import { CalendarTimeColumnPipe } from './calendar-time-column.pipe';
 
 @NgModule({
   declarations: [
@@ -50,6 +51,8 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
     HairdressingCalendarEntryFormComponent,
     HairdressingCalendarWorkdayDialogComponent,
     TimeSlotToDatePipe,
+    CalendarGridRowsPipe,
+    CalendarTimeColumnPipe,
   ],
   imports: [
     CommonModule,

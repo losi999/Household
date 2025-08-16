@@ -9,39 +9,41 @@
   </mat-menu>
 </household-toolbar>
 
-<div class="header">
-  <div class="week-stepper">
-    <button mat-flat-button color="primary" type="button" (click)="onChangeWeek(-1)">
-      <mat-icon>arrow_left</mat-icon>Előző hét
-    </button>
-    <button mat-flat-button color="warn" type="button" (click)="onShowToday()">Ma</button>
-    <button mat-flat-button color="primary" type="button" (click)="onChangeWeek(1)">Következő hét
-      <mat-icon>arrow_right</mat-icon>
-    </button>
-  </div>
-  <div class="days-of-week">
-    <div></div>
-    <div class="day" *ngFor="let d of daysOfWeek | async ">
-      <div>
-        {{d.day | date: 'MMM dd.'}}
-      </div>
-      <div>
-        {{d.day | date: 'EEEE'}}
-      </div>
-      <div class="buttons">
-        <button mat-icon-button type="button" *ngIf="d.dayType !== 'holiday'" (click)="onSetWorkDay(d)"><mat-icon>settings</mat-icon></button>
+<ng-container *ngIf="week | async as w">
+  <div class="header">
+    <div class="week-stepper">
+      <button mat-flat-button color="primary" type="button" (click)="onChangeWeek(-1)">
+        <mat-icon>arrow_left</mat-icon>Előző hét
+      </button>
+      <button mat-flat-button color="warn" type="button" (click)="onShowToday()">Ma</button>
+      <button mat-flat-button color="primary" type="button" (click)="onChangeWeek(1)">Következő hét
+        <mat-icon>arrow_right</mat-icon>
+      </button>
+    </div>
+    <div class="days-of-week">
+      <div></div>
+      <div class="day" *ngFor="let d of w.days">
+        <div>
+          {{d.day | date: 'MMM dd.'}}
+        </div>
+        <div>
+          {{d.day | date: 'EEEE'}}
+        </div>
+        <div class="buttons">
+          <button mat-icon-button type="button" *ngIf="d.dayType !== 'holiday'" (click)="onSetWorkDay(d)"><mat-icon>settings</mat-icon></button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<div class="calendar" [style.grid-template-rows]="gridTemplateRows">
-  <ng-container *ngFor="let t of timeRange">
-    <div class="time" [style.grid-row]="t.row">
-      {{ t.hour }}
-    </div>
-  </ng-container>
-  <ng-container *ngFor="let day of daysOfWeek | async; let i = index">
-    <household-hairdressing-calendar-day [day]="day" [column]="i+2" />
-  </ng-container>
-</div>
+  <div class="calendar" [style.grid-template-rows]="w | calendarGridRows">
+    <ng-container *ngFor="let t of w | calendarTimeColumn; let i = index">
+      <div *ngIf="t" class="time" [style.grid-row]="i+1">
+        {{ t }}
+      </div>
+    </ng-container>
+    <ng-container *ngFor="let day of w.days; let i = index">
+      <household-hairdressing-calendar-day [day]="day" [column]="i+2" />
+    </ng-container>
+  </div>
+</ng-container>

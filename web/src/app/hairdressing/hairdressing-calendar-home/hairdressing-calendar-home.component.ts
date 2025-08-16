@@ -1,13 +1,18 @@
 import { Component, OnInit } from '@angular/core';
-import { addDays, dateToISODateString, numberToGivenDigits } from '@household/shared/common/utils';
-import { WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
+import { addDays, dateToISODateString } from '@household/shared/common/utils';
 import { CalendarEntryType } from '@household/shared/enums';
 import { Calendar } from '@household/shared/types/types';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { hairdressingApiActions } from '@household/web/state/hairdressing/hairdressing.actions';
-import { selectCaledarDays } from '@household/web/state/hairdressing/hairdressing.selector';
+import { selectCalendarWeek } from '@household/web/state/hairdressing/hairdressing.selector';
 import { Store } from '@ngrx/store';
-import { filter, Observable, take } from 'rxjs';
+import { Observable } from 'rxjs';
+
+export type CalendarWeek = {
+  start: number;
+  end: number;
+  days: Calendar.Day.Response[];
+};
 
 @Component({
   selector: 'household-hairdressing-calendar-home',
@@ -16,13 +21,8 @@ import { filter, Observable, take } from 'rxjs';
   styleUrl: './hairdressing-calendar-home.component.scss',
 })
 export class HairdressingCalendarHomeComponent implements OnInit {
-  daysOfWeek: Observable<Calendar.Day.Response[]>;
+  week: Observable<CalendarWeek>;
   private weekStart: Date;
-  gridTemplateRows: string;
-  timeRange: {
-    hour: string;
-    row: number;
-  }[];
 
   constructor(private store: Store) {}
 
@@ -33,51 +33,7 @@ export class HairdressingCalendarHomeComponent implements OnInit {
     this.weekStart = addDays(-diffToMonday, date);
     const weekEnd = addDays(-diffToMonday + 6, date);
 
-    this.daysOfWeek = this.store.select(selectCaledarDays({
-      dateFrom: dateToISODateString(this.weekStart),
-      dateTo: dateToISODateString(weekEnd),
-    }));
-
-    this.daysOfWeek.pipe(filter(x => x.length > 0), take(1)).subscribe((days) => {
-      this.timeRange = [];
-
-      const { earliestEntryStart, latestEntryEnd } = days.reduce<{
-        earliestEntryStart: number;
-        latestEntryEnd: number;
-      }>((accumulator, currentValue) => {
-        let min = accumulator.earliestEntryStart;
-        let max = accumulator.latestEntryEnd;
-        
-        currentValue.entries.forEach((e) => {
-          if (e.start < min) {
-            min = e.start;
-          }
-          if (e.end > max) {
-            max = e.end;
-          }
-        });
-
-        return {
-          earliestEntryStart: min,
-          latestEntryEnd: max,
-        };
-      }, {
-        earliestEntryStart: WORKDAY_START,
-        latestEntryEnd: WORKDAY_END,
-      });
-      
-      const rowsToHideStart = Math.floor((earliestEntryStart - 1) / 2) * 2;
-      const rowsToHideEnd = 96 - Math.floor((latestEntryEnd) / 2) * 2;
-      
-      this.gridTemplateRows = `repeat(${rowsToHideStart}, auto) repeat(${96 - rowsToHideStart - rowsToHideEnd}, 20px) repeat(${rowsToHideEnd}, auto)`;
-      
-      for (let i = rowsToHideStart; i <= 96 - rowsToHideEnd; i += 2) {
-        this.timeRange.push({
-          hour: `${numberToGivenDigits(Math.floor(i / 4))}:${i % 4 === 0 ? '00' : '30'}`,
-          row: i + 1,
-        });
-      }      
-    });
+    this.week = this.store.select(selectCalendarWeek(date));
 
     this.store.dispatch(hairdressingApiActions.listCalendarDaysInitiated({
       dateFrom: dateToISODateString(this.weekStart),
