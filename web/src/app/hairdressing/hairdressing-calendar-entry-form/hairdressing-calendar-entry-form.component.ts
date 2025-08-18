@@ -1,7 +1,7 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { addHours, createDate, dateToISODateString, dateToTimeSlot, timeSlotToDate } from '@household/shared/common/utils';
+import { createDate, dateToISODateString, dateToTimeSlot } from '@household/shared/common/utils';
 import { Calendar } from '@household/shared/types/types';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { hairdressingApiActions } from '@household/web/state/hairdressing/hairdressing.actions';
@@ -22,8 +22,10 @@ export class HairdressingCalendarEntryFormComponent implements OnInit {
     title: FormControl<string>;
     description: FormControl<string>;
     day: FormControl<Date>;
-    start: FormControl<Date>;
-    end: FormControl<Date>;
+    timeRange: FormControl<{
+      start: number;
+      end: number;
+    }>;
   }>;
 
   constructor(private dialogRef: MatDialogRef<HairdressingCalendarEntryFormComponent, void>,
@@ -33,13 +35,14 @@ export class HairdressingCalendarEntryFormComponent implements OnInit {
   ngOnInit(): void {
     const now = new Date();
     now.setMinutes(Math.floor(now.getMinutes() / 15) * 15);
-    const end = addHours(1, now);
     this.form = new FormGroup({
       title: new FormControl(this.entry?.title, [Validators.required]),
       description: new FormControl(this.entry.description),
       day: new FormControl(createDate(this.entry.day) ?? now, [Validators.required]),
-      start: new FormControl(this.entry.start ? timeSlotToDate(this.entry.start) : now, [Validators.required]),
-      end: new FormControl(this.entry.end ? timeSlotToDate(this.entry.end) : end, [Validators.required]),
+      timeRange: new FormControl({
+        start: this.entry?.start ?? dateToTimeSlot(now),
+        end: this.entry?.end ?? dateToTimeSlot(now) + 4,
+      }), 
     });
   }
 
@@ -50,8 +53,8 @@ export class HairdressingCalendarEntryFormComponent implements OnInit {
         description: this.form.value.description ?? undefined,
         entryType: this.entry.entryType,
         day: dateToISODateString(this.form.value.day),
-        start: dateToTimeSlot(this.form.value.start),
-        end: dateToTimeSlot(this.form.value.end),
+        start: this.form.value.timeRange.start,
+        end: this.form.value.timeRange.end,
       };
 
       if (this.entry.calendarEntryId) {

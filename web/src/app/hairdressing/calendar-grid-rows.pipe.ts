@@ -10,8 +10,14 @@ export class CalendarGridRowsPipe implements PipeTransform {
   transform({ start, end }: CalendarWeek): string {
     const rowsToHideStart = Math.floor((start - 1) / 2) * 2;
     const rowsToHideEnd = 96 - Math.floor((end) / 2) * 2;
-      
-    return `repeat(${rowsToHideStart}, auto) repeat(${96 - rowsToHideStart - rowsToHideEnd}, 20px) repeat(${rowsToHideEnd}, auto)`;
+
+    const parts = [
+      rowsToHideStart > 0 ? `repeat(${rowsToHideStart}, auto)` : '',
+      `repeat(${96 - rowsToHideStart - rowsToHideEnd}, 20px)`,
+      rowsToHideEnd > 0 ? `repeat(${rowsToHideEnd}, auto)` : '',
+    ];
+
+    return parts.join(' ');
   }
 
 }

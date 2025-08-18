@@ -36,6 +36,7 @@ import { TimeSlotToDatePipe } from './time-slot-to-date.pipe';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { CalendarGridRowsPipe } from './calendar-grid-rows.pipe';
 import { CalendarTimeColumnPipe } from './calendar-time-column.pipe';
+import { TimeRangeSliderComponent } from '@household/web/app/hairdressing/time-range-slider/time-range-slider.component';
 
 @NgModule({
   declarations: [
@@ -53,6 +54,7 @@ import { CalendarTimeColumnPipe } from './calendar-time-column.pipe';
     TimeSlotToDatePipe,
     CalendarGridRowsPipe,
     CalendarTimeColumnPipe,
+    TimeRangeSliderComponent,
   ],
   imports: [
     CommonModule,

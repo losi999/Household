@@ -14,11 +14,7 @@
         <mat-radio-button value="afternoon">Délután</mat-radio-button>
         <mat-radio-button value="custom">Egyéni</mat-radio-button>
       </mat-radio-group>
-      <mat-slider min="29" max="85">
-        <input formControlName="start" matSliderStartThumb>
-        <input formControlName="end" matSliderEndThumb>
-      </mat-slider>
-      {{form.value.start | timeSlotToDate}} - {{form.value.end | timeSlotToDate}}
+      <household-time-range-slider formControlName="timeRange" />
     </ng-container>
   </div>
   <div mat-dialog-actions>

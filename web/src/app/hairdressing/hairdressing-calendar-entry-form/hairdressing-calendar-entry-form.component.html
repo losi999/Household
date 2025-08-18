@@ -8,18 +8,7 @@
       <mat-datepicker-toggle matPrefix [for]="picker" tabindex="-1" />
       <mat-datepicker #picker />
     </mat-form-field>
-    <mat-form-field class="time">
-      <mat-label>Kezdete</mat-label>
-      <input matInput formControlName="start" [matTimepicker]="startPicker">
-      <mat-timepicker-toggle matIconSuffix [for]="startPicker" />
-      <mat-timepicker interval="15min" #startPicker />
-    </mat-form-field>
-    <mat-form-field class="time">
-      <mat-label>Vége</mat-label>
-      <input matInput formControlName="end" [matTimepicker]="endPicker">
-      <mat-timepicker-toggle matIconSuffix [for]="endPicker" />
-      <mat-timepicker interval="15min" #endPicker />
-    </mat-form-field>
+    <household-time-range-slider formControlName="timeRange" min="1" max="96" />
   </div>
   <div mat-dialog-actions>
     <button mat-flat-button color="primary" cdkFocusInitial>Mentés</button>
