@@ -30,11 +30,23 @@ components:
       properties:
         start:
           type: integer
-          minimum: 1
+          minimum: 0
           maximum: 96
         end:
           type: integer
-          minimum: 1
+          minimum: 0
+          maximum: 96
+
+    PlannedTimespan:
+      type: object
+      properties:
+        plannedStart:
+          type: integer
+          minimum: 0
+          maximum: 96
+        plannedEnd:
+          type: integer
+          minimum: 0
           maximum: 96
 
     VacationRequest:
@@ -95,11 +107,14 @@ components:
         - oneOf:
             - allOf:
                 - $ref: "#/components/schemas/Timespan"
+                - $ref: "#/components/schemas/PlannedTimespan"
                 - type: object
                   properties:
                     dayType:
                       type: string
-                      const: workday
+                      enum:
+                        - weekend
+                        - workday
             - type: object
               properties:
                 dayType:
@@ -107,7 +122,6 @@ components:
                   enum:
                     - vacation
                     - holiday
-                    - weekend
 
     Entry.Request:
       allOf:

@@ -29,12 +29,12 @@ const workdayRequestSchema: StrictJSONSchema7<Calendar.Day.WorkdayRequest> = {
     },
     start: {
       type: 'integer',
-      minimum: 1,
+      minimum: 0,
       maximum: 96,
     },
     end: {
       type: 'integer',
-      minimum: 1,
+      minimum: 0,
       maximum: 96,
       exclusiveMinimum: {
         $data: '1/start',

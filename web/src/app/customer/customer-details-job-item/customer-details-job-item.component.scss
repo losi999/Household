@@ -2,3 +2,14 @@
   display: flex;
   justify-content: flex-end;
 }
+
+.mat-mdc-card-content {
+  .prices {
+    margin-top: 5px;
+    display: grid;
+    grid-template-columns: 1fr 70px 65px;
+    grid-template-areas: "name quantity amount";
+    column-gap: 5px;
+    text-align: right;
+  }
+}

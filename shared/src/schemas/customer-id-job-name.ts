@@ -3,7 +3,7 @@ import { Customer } from '@household/shared/types/types';
 import { default as mongoId } from '@household/shared/schemas/partials/mongo-id';
 import { default as name } from '@household/shared/schemas/partials/customer-job-name';
 
-const schema: StrictJSONSchema7<Customer.CustomerId & {jobName: Customer.JobName['name']}> = {
+const schema: StrictJSONSchema7<Customer.CustomerId & {jobName: Customer.Job.Name['name']}> = {
   type: 'object',
   additionalProperties: false,
   required: [

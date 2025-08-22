@@ -44,5 +44,19 @@ describe('Price schema', () => {
         amount: 0,
       }), 'amount', 0);
     });
+    
+    describe('if data.unitOfMeasurement', () => {
+      tester.required(createPriceRequest({
+        unitOfMeasurement: undefined,
+      }), 'unitOfMeasurement');
+    
+      tester.type(createPriceRequest({
+        unitOfMeasurement: 1 as any,
+      }), 'unitOfMeasurement', 'string');
+    
+      tester.enum(createPriceRequest({
+        unitOfMeasurement: 'not-enum' as any,
+      }), 'unitOfMeasurement');
+    });
   });
 });

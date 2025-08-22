@@ -28,9 +28,6 @@ export const listCalendarDaysServiceFactory = (
       }).catch(httpErrors.calendarDay.list()),
     ]);
 
-    console.log('entries', entries);
-    console.log('days', days);
-
     return calendarDayDocumentConverter.toResponse({
       dateFrom,
       dateTo,

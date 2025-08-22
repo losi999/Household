@@ -1,6 +1,7 @@
 import { Customer } from '@household/shared/types/types';
 import { createReducer, on } from '@ngrx/store';
 import { customerApiActions } from '@household/web/state/customer/customer.actions';
+import { isPriceBase } from '@household/shared/common/type-guards';
 
 export type CustomerState = {
   customerList?: Customer.Response[];
@@ -73,10 +74,26 @@ export const customerReducer = createReducer<CustomerState>({},
     };
   }),
 
-  on(customerApiActions.createCustomerJobCompleted, (_state, { customerId, duration, name, price, description }) => {
-    const newJob: Customer.Job = {
+  on(customerApiActions.createCustomerJobCompleted, (_state, { customerId, duration, name, prices, description, priceList }) => {
+    const newJob: Customer.Job.Response = {
       name,
-      price,
+      prices: prices.map((p) => {
+        if (isPriceBase(p)) {
+          return {
+            amount: p.amount,
+            name: p.name,
+            priceId: undefined,
+            quantity: undefined,
+            unitOfMeasurement: undefined,
+          };
+        }
+
+        const price = priceList.find(x => x.priceId === p.priceId);
+        return {
+          ...price,
+          quantity: p.quantity,
+        };
+      }),
       duration,
       description,
     };
@@ -119,12 +136,28 @@ export const customerReducer = createReducer<CustomerState>({},
     };
   }),
 
-  on(customerApiActions.updateCustomerJobCompleted, (_state, { customerId, jobName, description, duration, name, price }) => {
+  on(customerApiActions.updateCustomerJobCompleted, (_state, { customerId, jobName, description, duration, name, prices, priceList }) => {
     const jobs = _state.selectedCustomer.jobs.filter(j => j.name !== jobName).concat({
       description,
       duration,
       name,
-      price,
+      prices: prices.map((p) => {
+        if (isPriceBase(p)) {
+          return {
+            amount: p.amount,
+            name: p.name,
+            priceId: undefined,
+            quantity: undefined,
+            unitOfMeasurement: undefined,
+          };
+        }
+
+        const price = priceList.find(x => x.priceId === p.priceId);
+        return {
+          ...price,
+          quantity: p.quantity,
+        };
+      }),
     })
       .toSorted((a, b) => a.name.localeCompare(b.name, 'hu', {
         sensitivity: 'base',

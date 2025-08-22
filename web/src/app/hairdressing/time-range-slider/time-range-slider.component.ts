@@ -1,5 +1,6 @@
 import { Component, forwardRef, Input, OnInit } from '@angular/core';
 import { ControlValueAccessor, FormControl, FormGroup, NG_VALUE_ACCESSOR, Validators } from '@angular/forms';
+import { WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
 
 type Value = {
   start: number;
@@ -20,8 +21,8 @@ type Value = {
   styleUrl: './time-range-slider.component.scss',
 })
 export class TimeRangeSliderComponent implements OnInit, ControlValueAccessor {
-  @Input() min = 29;
-  @Input() max = 85;
+  @Input() min = WORKDAY_START;
+  @Input() max = WORKDAY_END;
   changed: (value: Value) => void;
   touched: () => void;
   isDisabled: boolean;

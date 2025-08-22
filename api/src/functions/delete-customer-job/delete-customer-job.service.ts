@@ -4,7 +4,7 @@ import { ICustomerService } from '@household/shared/services/customer-service';
 import { Customer } from '@household/shared/types/types';
 
 export interface IDeleteCustomerJobService {
-  (ctx: Customer.CustomerId & Customer.JobName): Promise<void>;
+  (ctx: Customer.CustomerId & Customer.Job.Name): Promise<void>;
 }
 
 export const deleteCustomerJobServiceFactory = (

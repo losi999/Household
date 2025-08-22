@@ -1,10 +1,26 @@
 <mat-card appearance="outlined">
   <mat-card-header>
     <mat-card-title>{{job.name}}</mat-card-title>
-    <mat-card-subtitle>{{job.duration | minutesToHour}} óra</mat-card-subtitle>
-    <mat-card-subtitle>{{job.price}} Ft</mat-card-subtitle>
+    <mat-card-subtitle>{{job.duration | timeSlotToTime}} óra</mat-card-subtitle>
+    <mat-card-subtitle>{{total}} Ft</mat-card-subtitle>
   </mat-card-header>
   <mat-card-content>
+    <div class="prices">
+      <ng-container *ngFor="let p of job.prices; let i = index">
+        <div [style.grid-area]="'name'" [style.grid-row]="i + 1">
+          {{p.name}}
+        </div>
+        <div [style.grid-area]="'quantity'" [style.grid-row]="i + 1" [ngSwitch]="p.unitOfMeasurement">
+          <ng-container *ngSwitchCase="'db'">{{p.quantity}}x</ng-container>
+          <ng-container *ngSwitchCase="'g'">{{p.quantity}} g</ng-container>
+          <ng-container *ngSwitchCase="'óra'">{{p.quantity * 60 | minutesToHour}} óra</ng-container>
+        </div>
+        <div [style.grid-area]="'amount'" [style.grid-row]="i + 1">
+          {{p.amount * (p.quantity ?? 1)}} Ft
+        </div>
+      </ng-container>
+    </div>
+    <mat-divider />
     {{job.description}}
   </mat-card-content>
   <mat-card-actions>
@@ -15,6 +31,10 @@
       <mat-icon>more_vert</mat-icon>
     </button>
     <mat-menu #menu="matMenu">
+      <button mat-menu-item (click)="onAddEntry()">
+        <mat-icon>calendar_add_on</mat-icon>
+        <span>Időpont megadása</span>
+      </button>
       <button mat-menu-item (click)="onEdit()">
         <mat-icon>edit</mat-icon>
         <span>Szerkesztés</span>

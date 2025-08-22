@@ -535,7 +535,7 @@ export const httpErrors = {
       log('Update customer', ctx, error);
       throw httpError(statusCode, 'Error while updating customer');
     },
-    duplicateJobName: (ctx: {job: Customer.Job; customer: Customer.Document; jobName?: Customer.JobName['name']}, statusCode = 400) => {
+    duplicateJobName: (ctx: {job: Customer.Job.Request; customer: Customer.Document; jobName?: Customer.Job.Name['name']}, statusCode = 400) => {
       if (ctx.job.name !== ctx.jobName && ctx.customer.jobs.some(j => j.name === ctx.job.name)) {
         log('Duplicate customer job name', ctx);
         throw httpError(statusCode, 'Duplicate customer job name');

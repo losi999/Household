@@ -9,15 +9,15 @@ import { Store } from '@ngrx/store';
 
 type EntryResponse = Calendar.Entry.IssueEntryResponse | Calendar.Entry.PersonalEntryResponse;
 
-export type HairdressingCalendarEntryFormData = Partial<Omit<EntryResponse, 'entryType'>> & Pick<EntryResponse, 'entryType'> & Partial<Calendar.DayProp>;
+export type HairdressingCalendarEntryDialogData = Partial<Omit<EntryResponse, 'entryType'>> & Pick<EntryResponse, 'entryType'> & Partial<Calendar.DayProp>;
 
 @Component({
-  selector: 'household-hairdressing-calendar-entry-form',
+  selector: 'household-hairdressing-calendar-entry-dialog',
   standalone: false,    
-  templateUrl: './hairdressing-calendar-entry-form.component.html',
-  styleUrl: './hairdressing-calendar-entry-form.component.scss',
+  templateUrl: './hairdressing-calendar-entry-dialog.component.html',
+  styleUrl: './hairdressing-calendar-entry-dialog.component.scss',
 })
-export class HairdressingCalendarEntryFormComponent implements OnInit {
+export class HairdressingCalendarEntryDialogComponent implements OnInit {
   form: FormGroup<{
     title: FormControl<string>;
     description: FormControl<string>;
@@ -28,9 +28,9 @@ export class HairdressingCalendarEntryFormComponent implements OnInit {
     }>;
   }>;
 
-  constructor(private dialogRef: MatDialogRef<HairdressingCalendarEntryFormComponent, void>,
+  constructor(private dialogRef: MatDialogRef<HairdressingCalendarEntryDialogComponent, void>,
     private store: Store,
-    @Inject(MAT_DIALOG_DATA) public entry: HairdressingCalendarEntryFormData) { }
+    @Inject(MAT_DIALOG_DATA) public entry: HairdressingCalendarEntryDialogData) { }
 
   ngOnInit(): void {
     const now = new Date();

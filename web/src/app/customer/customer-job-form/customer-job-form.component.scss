@@ -4,15 +4,21 @@
 }
 
 .price-list {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(7, auto);
   gap: 5px;
   margin-bottom: 10px;
 }
 
 .detailed-price {
   display: grid;
-  grid-template-columns: 1fr 100px;
+  grid-template-columns: 1fr 48px 65px 48px 100px 48px;
+  grid-template-areas: "name minus quantity plus amount remove";
   align-items: center;
   text-align: right;
+
+  .quantity {
+    text-align: center;
+    grid-area: quantity;
+  }
 }

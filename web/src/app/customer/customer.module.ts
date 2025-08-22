@@ -22,6 +22,7 @@ import { CustomerJobFormComponent } from './customer-job-form/customer-job-form.
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MinutesToHourPipe } from '@household/web/app/shared/minutes-to-hour.pipe';
+import { HairdressingModule } from '@household/web/app/hairdressing/hairdressing.module';
 
 @NgModule({
   declarations: [
@@ -50,6 +51,7 @@ import { MinutesToHourPipe } from '@household/web/app/shared/minutes-to-hour.pip
     MatFormFieldModule,
     MatInputModule,
     MinutesToHourPipe,
+    HairdressingModule,
   ],
 })
 export class CustomerModule { }

@@ -1,3 +1,4 @@
+import { priceUnitsOfMeasurement } from '@household/shared/constants';
 import { Price } from '@household/shared/types/types';
 import { Schema } from 'mongoose';
 
@@ -10,6 +11,10 @@ export const priceSchema = new Schema<Price.Document>({
   },
   amount: {
     type: Number,
+  },
+  unitOfMeasurement: {
+    type: String,
+    enum: [...priceUnitsOfMeasurement],
   },
   expiresAt: {
     type: Schema.Types.Date,

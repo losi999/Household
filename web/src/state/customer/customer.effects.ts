@@ -1,14 +1,16 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, exhaustMap, groupBy, map, mergeMap, of } from 'rxjs';
+import { catchError, exhaustMap, groupBy, map, mergeMap, of, withLatestFrom } from 'rxjs';
 import { customerApiActions } from '@household/web/state/customer/customer.actions';
 import { CustomerService } from '@household/web/services/customer.service';
 import { progressActions } from '@household/web/state/progress/progress.actions';
 import { notificationActions } from '@household/web/state/notification/notification.actions';
+import { selectPriceList } from '@household/web/state/hairdressing/hairdressing.selector';
+import { Store } from '@ngrx/store';
 
 @Injectable()
 export class CustomerEffects {
-  constructor(private actions: Actions, private customerService: CustomerService) {}
+  constructor(private actions: Actions, private customerService: CustomerService, private store: Store) {}
 
   loadCustomers = createEffect(() => {
     return this.actions.pipe(
@@ -114,10 +116,15 @@ export class CustomerEffects {
   createCustomerJob = createEffect(() => {
     return this.actions.pipe(
       ofType(customerApiActions.createCustomerJobInitiated),
-      mergeMap(({ type, customerId, ...request }) => {
+      withLatestFrom(this.store.select(selectPriceList)),
+      mergeMap(([
+        { type, customerId, ...request },
+        priceList,
+      ]) => {
         return this.customerService.createCustomerJob(customerId, request).pipe(
           map(() => customerApiActions.createCustomerJobCompleted({
             customerId,
+            priceList,
             ...request,
           })),
           catchError((error) => {
@@ -145,12 +152,17 @@ export class CustomerEffects {
     return this.actions.pipe(
       ofType(customerApiActions.updateCustomerJobInitiated),
       groupBy(({ customerId }) => customerId),
-      mergeMap((value) => {
+      withLatestFrom(this.store.select(selectPriceList)),
+      mergeMap(([
+        value,
+        priceList,
+      ]) => {
         return value.pipe(exhaustMap(({ type, customerId, jobName, ...request }) => {
           return this.customerService.updateCustomerJob(customerId, jobName, request).pipe(
             map(() => customerApiActions.updateCustomerJobCompleted({
               jobName,
               customerId,
+              priceList,
               ...request,
             })),
             catchError((error) => {
@@ -210,28 +222,6 @@ export class CustomerEffects {
   //         catchError(() => {
   //           return of(customerApiActions.deleteCustomerFailed({
   //             customerId,
-  //           }), progressActions.processFinished(),
-  //           notificationActions.showMessage({
-  //             message: 'Hiba történt',
-  //           }),
-  //           );
-  //         }),
-  //       );
-  //     }),
-  //   );
-  // });
-
-  // mergeCustomers = createEffect(() => {
-  //   return this.actions.pipe(
-  //     ofType(customerApiActions.mergeCustomersInitiated),
-  //     exhaustMap(({ sourceCustomerIds, targetCustomerId }) => {
-  //       return this.customerService.mergeCustomers(targetCustomerId, sourceCustomerIds).pipe(
-  //         map(() => customerApiActions.mergeCustomersCompleted({
-  //           sourceCustomerIds,
-  //         })),
-  //         catchError(() => {
-  //           return of(customerApiActions.mergeCustomersFailed({
-  //             sourceCustomerIds,
   //           }), progressActions.processFinished(),
   //           notificationActions.showMessage({
   //             message: 'Hiba történt',

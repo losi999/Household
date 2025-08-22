@@ -904,7 +904,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "customer.yaml#/components/schemas/Job"
+              $ref: "customer.yaml#/components/schemas/Job.Request"
       responses:
         201:
           description: Job created
@@ -919,7 +919,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "customer.yaml#/components/schemas/Job"
+              $ref: "customer.yaml#/components/schemas/Job.Request"
       responses:
         201:
           description: Job updated

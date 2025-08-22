@@ -12,7 +12,7 @@ components:
         customerId:
           type: string
           minLength: 1
-    Base:
+    Customer.Base:
       type: object
       required:
         - name
@@ -24,12 +24,11 @@ components:
           type: string
           minLength: 1
 
-    Job:
+    Job.Base:
       type: object
       required:
         - name
         - duration
-        - price
       properties:
         name:
           type: string
@@ -37,12 +36,57 @@ components:
         duration:
           type: number
           exclusiveMinimum: 0
-        price:
-          type: number
-          exclusiveMinimum: 0
         description:
           type: string
           minLength: 1
+
+    Quantity:
+      type: object
+      properties:
+        quantity:
+          type: integer
+          exclusiveMinimum: 0
+
+    Quantity.Required:
+      type: object
+      required:
+        - quantity
+
+    Job.Request:
+      allOf:
+        - $ref: "#/components/schemas/Job.Base"
+        - type: object
+          required:
+            - prices
+          properties:
+            prices:
+              type: array
+              minItems: 1
+              items:
+                oneOf:
+                  - allOf:
+                      - $ref: "price.yaml#/components/schemas/PriceId"
+                      - $ref: "price.yaml#/components/schemas/PriceId.Required"
+                      - $ref: "#/components/schemas/Quantity"
+                      - $ref: "#/components/schemas/Quantity.Required"
+                  - $ref: "price.yaml#/components/schemas/Base"
+
+    Job.Response:
+      allOf:
+        - $ref: "#/components/schemas/Job.Base"
+        - type: object
+          required:
+            - prices
+          properties:
+            prices:
+              type: array
+              minItems: 1
+              items:
+                allOf:
+                  - $ref: "price.yaml#/components/schemas/PriceId"
+                  - $ref: "price.yaml#/components/schemas/Base"
+                  - $ref: "price.yaml#/components/schemas/UnitOfMeasurement"
+                  - $ref: "#/components/schemas/Quantity"
 
     Jobs:
       type: object
@@ -52,13 +96,13 @@ components:
         jobs:
           type: array
           items:
-            $ref: "#/components/schemas/Job"
+            $ref: "#/components/schemas/Job.Response"
 
     Response:
       allOf:
         - $ref: "#/components/schemas/CustomerId"
-        - $ref: "#/components/schemas/Base"
+        - $ref: "#/components/schemas/Customer.Base"
         - $ref: "#/components/schemas/Jobs"
     Request:
       allOf:
-        - $ref: "#/components/schemas/Base"
+        - $ref: "#/components/schemas/Customer.Base"

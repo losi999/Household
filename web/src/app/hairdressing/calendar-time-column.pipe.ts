@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { numberToGivenDigits } from '@household/shared/common/utils';
+import { timeSlotToTimeString } from '@household/shared/common/utils';
 import { CalendarWeek } from '@household/web/app/hairdressing/hairdressing-calendar-home/hairdressing-calendar-home.component';
 
 @Pipe({
@@ -14,9 +14,9 @@ export class CalendarTimeColumnPipe implements PipeTransform {
         length: 96,
       },
       (_, i) => {
-        if (i % 2 === 0 && i + 2 >= start && i <= end) {
+        if (i % 2 === 0 && i + 1 >= start && i - 1 <= end) {
         
-          return `${numberToGivenDigits(Math.floor(i / 4), 2)}:${i % 4 === 0 ? '00' : '30'}`;
+          return timeSlotToTimeString(i);
         }
 
       },

@@ -8,8 +8,8 @@ import { CalendarWeek } from '@household/web/app/hairdressing/hairdressing-calen
 export class CalendarGridRowsPipe implements PipeTransform {
 
   transform({ start, end }: CalendarWeek): string {
-    const rowsToHideStart = Math.floor((start - 1) / 2) * 2;
-    const rowsToHideEnd = 96 - Math.floor((end) / 2) * 2;
+    const rowsToHideStart = Math.floor((start) / 2) * 2;
+    const rowsToHideEnd = 96 - Math.floor((end + 1) / 2) * 2;
 
     const parts = [
       rowsToHideStart > 0 ? `repeat(${rowsToHideStart}, auto)` : '',

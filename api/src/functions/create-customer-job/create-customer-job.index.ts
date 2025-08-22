@@ -9,8 +9,9 @@ import { default as index } from '@household/api/handlers/index.handler';
 import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';
 import { UserType } from '@household/shared/enums';
 import { createCustomerJobServiceFactory } from '@household/api/functions/create-customer-job/create-customer-job.service';
+import { priceService } from '@household/shared/dependencies/services/price-service';
 
-const createCustomerJobService = createCustomerJobServiceFactory(customerService, customerDocumentConverter);
+const createCustomerJobService = createCustomerJobServiceFactory(customerService, customerDocumentConverter, priceService);
 
 export default index({
   handler: handler(createCustomerJobService),

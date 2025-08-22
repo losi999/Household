@@ -12,10 +12,11 @@ export interface IPriceDocumentConverter {
 
 export const priceDocumentConverterFactory = (): IPriceDocumentConverter => {
   const instance: IPriceDocumentConverter = {
-    create: ({ name, amount }, expiresIn, generateId) => {
+    create: ({ name, amount, unitOfMeasurement }, expiresIn, generateId) => {
       return {
         amount,
         name,
+        unitOfMeasurement,
         _id: generateId ? generateMongoId() : undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
@@ -30,10 +31,11 @@ export const priceDocumentConverterFactory = (): IPriceDocumentConverter => {
         },
       };
     },
-    toResponse: ({ amount, _id, name }) => {
+    toResponse: ({ amount, _id, name, unitOfMeasurement }) => {
       return {
         name,
         amount,
+        unitOfMeasurement,
         priceId: getPriceId(_id),
       };
     },

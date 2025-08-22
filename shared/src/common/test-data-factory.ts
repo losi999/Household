@@ -88,11 +88,46 @@ export const createRecipientDocument: DataFactoryFunction<Recipient.Document> = 
   };
 };
 
-export const createCustomerJob: DataFactoryFunction<Customer.Job> = (data) => {
+export const createCustomerJobRequest: DataFactoryFunction<Customer.Job.Request> = (data) => {
   return {
     name: 'vágás',
     duration: 60,
-    price: 4000,
+    prices: [
+      {
+        priceId: createPriceId(),
+        quantity: 1,
+      },
+    ],
+    description: 'job description',
+    ...data,
+  };
+};
+
+export const createCustomerJobDocument: DataFactoryFunction<Customer.Job.Document> = (data) => {
+  return {
+    name: 'vágás',
+    duration: 60,
+    prices: [
+      {
+        price: createPriceDocument(),
+        quantity: 1,
+      },
+    ],
+    description: 'job description',
+    ...data,
+  };
+};
+
+export const createCustomerJobResponse: DataFactoryFunction<Customer.Job.Response> = (data) => {
+  return {
+    name: 'vágás',
+    duration: 60,
+    prices: [
+      {
+        ...createPriceResponse(),
+        quantity: 1,
+      },
+    ],
     description: 'job description',
     ...data,
   };
@@ -103,7 +138,7 @@ export const createCustomerDocument: DataFactoryFunction<Customer.Document> = (d
     _id: generateMongoId(),
     name: 'customer name',
     description: 'description for customer',
-    jobs: [createCustomerJob()],
+    jobs: [createCustomerJobDocument()],
     expiresAt: undefined,
     ...doc,
   };
@@ -113,6 +148,7 @@ export const createPriceDocument: DataFactoryFunction<Price.Document> = (doc) =>
     _id: generateMongoId(),
     name: 'price name',
     amount: 3000,
+    unitOfMeasurement: 'g',
     expiresAt: undefined,
     ...doc,
   };
@@ -332,6 +368,7 @@ export const createPriceRequest: DataFactoryFunction<Price.Request> = (req) => {
   return {
     name: 'price name',
     amount: 3000,
+    unitOfMeasurement: 'g',
     ...req,
   };
 };
@@ -590,7 +627,7 @@ export const createCustomerResponse: DataFactoryFunction<Customer.Response> = (r
     customerId: createCustomerId(),
     name: 'customer name',
     description: 'description for customer',
-    jobs: [createCustomerJob()],
+    jobs: [createCustomerJobResponse()],
     ...resp,
   };
 };
@@ -600,6 +637,7 @@ export const createPriceResponse: DataFactoryFunction<Price.Response> = (resp) =
     priceId: createPriceId(),
     name: 'price name',
     amount: 3000,
+    unitOfMeasurement: 'g',
     ...resp,
   };
 };

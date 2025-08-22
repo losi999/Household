@@ -39,8 +39,8 @@ export class HairdressingCalendarWorkdayDialogComponent implements OnInit {
       dayType: new FormControl<CalendarDayType>(this.day.dayType !== CalendarDayType.Weekend ? this.day.dayType : CalendarDayType.Workday),
       shiftType: new FormControl<ShiftType>(ShiftType.Custom),
       timeRange: new FormControl({
-        start: this.day.dayType === CalendarDayType.Vacation ? WORKDAY_START : this.day.start ?? WORKDAY_START,
-        end: this.day.dayType === CalendarDayType.Vacation ? WORKDAY_END : this.day.end ?? WORKDAY_END,
+        start: this.day.dayType === CalendarDayType.Vacation ? WORKDAY_START : this.day.plannedStart ?? WORKDAY_START,
+        end: this.day.dayType === CalendarDayType.Vacation ? WORKDAY_END : this.day.plannedEnd ?? WORKDAY_END,
       }),
     });
 

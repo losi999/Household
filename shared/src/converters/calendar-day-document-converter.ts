@@ -1,5 +1,5 @@
-import { addSeconds } from '@household/shared/common/utils';
-import { WORKDAY_LENGTH, WORKDAY_START, WORKDAY_END } from '@household/shared/constants';
+import { addSeconds, dateToISODateString } from '@household/shared/common/utils';
+import { WORKDAY_START, WORKDAY_END, WORKDAY_LENGTH } from '@household/shared/constants';
 import { ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
 import { CalendarDayType, CalendarEntryType } from '@household/shared/enums';
 import { DocumentUpdate } from '@household/shared/types/common';
@@ -11,34 +11,34 @@ export interface ICalendarDayDocumentConverter {
 }
 
 export const calendarDayDocumentConverterFactory = (calendarEntryDocumentConverter: ICalendarEntryDocumentConverter): ICalendarDayDocumentConverter => {
-  const getDateRangeArray = ({ dateFrom, dateTo }: Calendar.DateRange) => {
+  const getDateRangeArray = ({ dateFrom, dateTo }: Calendar.DateRange): Date[] => {
     const end = new Date(dateTo);
     const dates = [];
 
     const current = new Date(dateFrom);
     while (current <= end) {
-      dates.push(current.toISOString().split('T')[0]);
+      dates.push(new Date(current));
       current.setDate(current.getDate() + 1);
     }
 
     return dates;
   };
 
-  // const calculateWorkdayLimits = (defaultStart: number, defaultEnd: number, entries: Calendar.Entry.Document[]): {start: number; end: number;} => {
-  //   const workEntries = entries.filter(e => e.entryType === CalendarEntryType.Work);
+  const calculateWorkdayLimits = (defaultStart: number, defaultEnd: number, entries: Calendar.Entry.Response[]): {start: number; end: number;} => {
+    const workEntries = entries.filter(e => e.entryType === CalendarEntryType.Work);
 
-  //   return workEntries.reduce<{start: number; end: number}>((accumulator, currentValue) => {
-  //     const calculatedStart = currentValue.end - WORKDAY_LENGTH;
-  //     const calculatedend = currentValue.start + WORKDAY_LENGTH;
-  //     return {
-  //       start: calculatedStart > accumulator.start ? calculatedStart : accumulator.start,
-  //       end: calculatedend < accumulator.end ? calculatedend : accumulator.end,
-  //     };
-  //   }, {
-  //     start: defaultStart,
-  //     end: defaultEnd,
-  //   });
-  // };
+    return workEntries.reduce<{start: number; end: number}>((accumulator, currentValue) => {
+      const calculatedStart = currentValue.end - WORKDAY_LENGTH;
+      const calculatedend = currentValue.start + WORKDAY_LENGTH;
+      return {
+        start: calculatedStart > accumulator.start ? calculatedStart : accumulator.start,
+        end: calculatedend < accumulator.end ? calculatedend : accumulator.end,
+      };
+    }, {
+      start: defaultStart,
+      end: defaultEnd,
+    });
+  };
 
   const instance: ICalendarDayDocumentConverter = {
     update: (body, expiresIn) => {
@@ -65,47 +65,53 @@ export const calendarDayDocumentConverterFactory = (calendarEntryDocumentConvert
         const isWeekend = [
           0,
           6,
-        ].includes(new Date(date).getDay());
-        const day = days.find(x => x.day === date);
-        const entriesForDay = calendarEntryDocumentConverter.toResponseList(entries.filter(e => e.day === date));
+        ].includes(date.getDay());
+        const dateString = dateToISODateString(date);
+        const day = days.find(x => x.day === dateString);
+        const entriesForDay = calendarEntryDocumentConverter.toResponseList(entries.filter(e => e.day === dateString));
 
         if (day?.dayType === CalendarDayType.Vacation || day?.dayType === CalendarDayType.Holiday) {
           return {
             dayType: day.dayType,
-            day: date,
+            day: dateString,
             entries: entriesForDay,
           };
         }
 
         if (day?.dayType === CalendarDayType.Workday) {
-          // const { start, end } = calculateWorkdayLimits(day.start, day.end, entriesForDay);
-
+          const { start, end } = calculateWorkdayLimits(day.start, day.end, entriesForDay);
           return {
-            day: date,
+            day: dateString,
             dayType: isWeekend ? CalendarDayType.Weekend : CalendarDayType.Workday,
-            end: day.end,
-            start: day.start,
+            end,
+            start,
             entries: entriesForDay,
+            plannedEnd: day.end,
+            plannedStart: day.start,
           };
         }
 
         if (isWeekend) {
           return {
-            day: date,
+            day: dateString,
             dayType: CalendarDayType.Weekend,
             entries: entriesForDay,
             start: undefined,
             end: undefined,
+            plannedEnd: undefined,
+            plannedStart: undefined,
           };
         }
-        // const { start, end } = calculateWorkdayLimits(WORKDAY_START, WORKDAY_END, entriesForDay);
+        const { start, end } = calculateWorkdayLimits(WORKDAY_START, WORKDAY_END, entriesForDay);
 
         return {
-          day: date,
+          day: dateString,
           dayType: CalendarDayType.Workday,
-          end: WORKDAY_END,
-          start: WORKDAY_START,
+          end,
+          start,
           entries: entriesForDay,
+          plannedEnd: WORKDAY_END,
+          plannedStart: WORKDAY_START,
         };
       });
 

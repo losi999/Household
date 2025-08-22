@@ -7,14 +7,9 @@ export interface ICustomerService {
   saveCustomer(doc: Customer.Document): Promise<Customer.Document>;
   saveCustomers(docs: Customer.Document[]): Promise<unknown>;
   findCustomerById(customerId: Customer.Id): Promise<Customer.Document>;
-  // deleteCustomer(customerId: Customer.Id): Promise<unknown>;
+  getCustomerById(customerId: Customer.Id): Promise<Customer.Document>;
   updateCustomer(customerId: Customer.Id, update: DocumentUpdate<Customer.Document>): Promise<unknown>;
   listCustomers(): Promise<Customer.Document[]>;
-  // findCustomersByIds(customerIds: Customer.Id[]): Promise<Customer.Document[]>;
-  // mergeCustomers(ctx: {
-  //   targetCustomerId: Customer.Id;
-  //   sourceCustomerIds: Customer.Id[];
-  // }): Promise<unknown>;
 }
 
 export const customerServiceFactory = (mongodbService: IMongodbService): ICustomerService => {
@@ -44,28 +39,12 @@ export const customerServiceFactory = (mongodbService: IMongodbService): ICustom
         .lean();
         
     },
-    // deleteCustomer: async (customerId) => {
-    //   return mongodbService.inSession((session) => {
-    //     return session.withTransaction(async () => {
-    //       await mongodbService.customers.deleteOne({
-    //         _id: customerId,
-    //       }, {
-    //         session,
-    //       });
-            
-    //       await mongodbService.transactions.updateMany({
-    //         customer: customerId,
-    //       }, {
-    //         $unset: {
-    //           customer: 1,
-    //         },
-    //       }, {
-    //         session,
-    //       });
-            
-    //     });
-    //   });
-    // },
+    getCustomerById: async (customerId) => {
+      return !customerId ? undefined : mongodbService.customers.findById(customerId)
+        .populate('jobs.prices.price')
+        .lean();
+        
+    },
     updateCustomer: async (customerId, { update, arrayFilters }) => {
       return mongodbService.customers.findByIdAndUpdate(customerId, update, {
         arrayFilters,
@@ -75,6 +54,7 @@ export const customerServiceFactory = (mongodbService: IMongodbService): ICustom
     listCustomers: () => {
       return mongodbService.inSession(async(session) => {
         return mongodbService.customers.find({}).session(session)
+          .populate('jobs.prices.price')
           .collation({
             locale: 'hu',
           })
@@ -83,45 +63,6 @@ export const customerServiceFactory = (mongodbService: IMongodbService): ICustom
           
       });
     },
-    // findCustomersByIds: (customerIds) => {
-    //   return mongodbService.inSession(async (session) => {
-    //     return mongodbService.customers.find({
-    //       _id: {
-    //         $in: customerIds,
-    //       },
-    //     }).session(session)
-    //       .lean();
-          
-    //   });
-    // },
-    //   mergeCustomers: ({ targetCustomerId, sourceCustomerIds }) => {
-    //     console.log(sourceCustomerIds);
-    //     return mongodbService.inSession((session) => {
-    //       return session.withTransaction(async () => {
-    //         await mongodbService.customers.deleteMany({
-    //           _id: {
-    //             $in: sourceCustomerIds,
-    //           },
-    //         }, {
-    //           session,
-    //         });
-
-    //         await mongodbService.transactions.updateMany({
-    //           customer: {
-    //             $in: sourceCustomerIds,
-    //           },
-    //         }, {
-    //           $set: {
-    //             customer: targetCustomerId,
-    //           },
-    //         }, {
-    //           runValidators: true,
-    //           session,
-    //         });
-
-  //       });
-  //     });
-  //   },
   };
 
   return instance;

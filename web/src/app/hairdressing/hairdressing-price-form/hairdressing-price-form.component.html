@@ -3,6 +3,14 @@
   <div mat-dialog-content>
     <household-clearable-input formControlName="name" label="Név" />
     <household-amount-input formControlName="amount" currency="Ft" [signHidden]="true" label="Ár" />
+    <mat-form-field appearance="fill">
+      <mat-label>Mértékegység</mat-label>
+      <mat-select name="unitOfMeasurement" formControlName="unitOfMeasurement">
+        <mat-option *ngFor="let u of unitsOfMeasurement" [value]="u">
+          {{u}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
   </div>
   <div mat-dialog-actions>
     <button mat-button cdkFocusInitial>Mentés</button>

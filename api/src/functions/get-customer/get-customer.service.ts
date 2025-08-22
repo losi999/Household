@@ -14,7 +14,7 @@ export const getCustomerServiceFactory = (
   customerDocumentConverter: ICustomerDocumentConverter,
 ): IGetCustomerService => {
   return async ({ customerId }) => {
-    const customer = await customerService.findCustomerById(customerId).catch(httpErrors.customer.getById({
+    const customer = await customerService.getCustomerById(customerId).catch(httpErrors.customer.getById({
       customerId,
     }));
 
@@ -24,6 +24,5 @@ export const getCustomerServiceFactory = (
     });
 
     return customerDocumentConverter.toResponse(customer);
-    return undefined;
   };
 };

@@ -41,9 +41,7 @@ export const calendarEntryServiceFactory = (mongodbService: IMongodbService): IC
     },
     deleteCalendarEntry: async (calendarEntryId) => {
       return mongodbService.inSession((session) => {
-        return mongodbService.calendarEntries.deleteOne({
-          _id: calendarEntryId,
-        }, {
+        return mongodbService.calendarEntries.findByIdAndDelete(calendarEntryId, {
           session,
         });          
       });

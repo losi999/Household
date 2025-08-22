@@ -26,17 +26,18 @@ import { ClearableInputComponent } from '@household/web/app/shared/clearable-inp
 import { HairdressingPriceSubmenuComponent } from './hairdressing-price-submenu/hairdressing-price-submenu.component';
 import { HairdressingCalendarHomeComponent } from './hairdressing-calendar-home/hairdressing-calendar-home.component';
 import { HairdressingCalendarDayComponent } from './hairdressing-calendar-day/hairdressing-calendar-day.component';
-import { HairdressingCalendarEntryFormComponent } from './hairdressing-calendar-entry-form/hairdressing-calendar-entry-form.component';
+import { HairdressingCalendarEntryDialogComponent } from './hairdressing-calendar-entry-dialog/hairdressing-calendar-entry-dialog.component';
 import { MatTimepickerModule } from '@angular/material/timepicker';
 import { MatMenuModule } from '@angular/material/menu';
 import { HairdressingCalendarWorkdayDialogComponent } from './hairdressing-calendar-workday-dialog/hairdressing-calendar-workday-dialog.component';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSliderModule } from '@angular/material/slider';
-import { TimeSlotToDatePipe } from './time-slot-to-date.pipe';
+import { TimeSlotToTimePipe } from './time-slot-to-time.pipe';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { CalendarGridRowsPipe } from './calendar-grid-rows.pipe';
 import { CalendarTimeColumnPipe } from './calendar-time-column.pipe';
 import { TimeRangeSliderComponent } from '@household/web/app/hairdressing/time-range-slider/time-range-slider.component';
+import { MatSelectModule } from '@angular/material/select';
 
 @NgModule({
   declarations: [
@@ -49,9 +50,9 @@ import { TimeRangeSliderComponent } from '@household/web/app/hairdressing/time-r
     HairdressingPriceSubmenuComponent,
     HairdressingCalendarHomeComponent,
     HairdressingCalendarDayComponent,
-    HairdressingCalendarEntryFormComponent,
+    HairdressingCalendarEntryDialogComponent,
     HairdressingCalendarWorkdayDialogComponent,
-    TimeSlotToDatePipe,
+    TimeSlotToTimePipe,
     CalendarGridRowsPipe,
     CalendarTimeColumnPipe,
     TimeRangeSliderComponent,
@@ -82,6 +83,8 @@ import { TimeRangeSliderComponent } from '@household/web/app/hairdressing/time-r
     MatRadioModule,
     MatSliderModule,
     MatButtonToggleModule,
+    MatSelectModule,
   ],
+  exports: [TimeSlotToTimePipe],
 })
 export class HairdressingModule { }

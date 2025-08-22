@@ -6,12 +6,15 @@ components:
   schemas:
     PriceId:
       type: object
-      required:
-        - priceId
       properties:
         priceId:
           type: string
           minLength: 1
+    PriceId.Required:
+      type: object
+      required:
+        - priceId
+
     Base:
       type: object
       required:
@@ -23,12 +26,30 @@ components:
           minLength: 1
         amount:
           type: integer
-          exclusiveMinimum: 0
+
+    UnitOfMeasurement:
+      type: object
+      properties:
+        unitOfMeasurement:
+          type: string
+          enum:
+            - db
+            - g
+            - óra
+    UnitOfMeasurement.Required:
+      type: object
+      required:
+        - unitOfMeasurement
 
     Response:
       allOf:
         - $ref: "#/components/schemas/PriceId"
+        - $ref: "#/components/schemas/PriceId.Required"
         - $ref: "#/components/schemas/Base"
+        - $ref: "#/components/schemas/UnitOfMeasurement"
+        - $ref: "#/components/schemas/UnitOfMeasurement.Required"
     Request:
       allOf:
         - $ref: "#/components/schemas/Base"
+        - $ref: "#/components/schemas/UnitOfMeasurement"
+        - $ref: "#/components/schemas/UnitOfMeasurement.Required"

@@ -18,7 +18,7 @@ export class CustomerDetailsComponent implements OnInit {
   customer: Observable<Customer.Response>;
   customerId: Customer.Id;
   isInEditMode = false;
-  selectedJob: Customer.Job;
+  selectedJob: Customer.Job.Response;
 
   constructor (private store: Store, private activatedRoute: ActivatedRoute) { }
   
@@ -42,7 +42,7 @@ export class CustomerDetailsComponent implements OnInit {
     this.isInEditMode = false;
   }
 
-  onJobEdit(job: Customer.Job) {
+  onJobEdit(job: Customer.Job.Response) {
     this.selectedJob = job;
     this.isInEditMode = true;
   }

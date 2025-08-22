@@ -31,12 +31,12 @@ const schema: StrictJSONSchema7<Calendar.Entry.Request> = {
     },
     start: {
       type: 'integer',
-      minimum: 1,
+      minimum: 0,
       maximum: 96,
     },
     end: {
       type: 'integer',
-      minimum: 1,
+      minimum: 0,
       maximum: 96,
       exclusiveMinimum: {
         $data: '1/start',

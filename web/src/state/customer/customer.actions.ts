@@ -1,4 +1,4 @@
-import { Customer } from '@household/shared/types/types';
+import { Customer, Price } from '@household/shared/types/types';
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
 import {} from '@ngrx/effects';
 
@@ -13,12 +13,12 @@ export const customerApiActions = createActionGroup({
     'Create customer completed': props<Customer.CustomerId & Customer.Request>(),
     'Update customer initiated': props<Customer.CustomerId & Customer.Request>(),
     'Update customer completed': props<Customer.CustomerId & Customer.Request>(),
-    'Create customer job initiated': props<Customer.CustomerId & Customer.Job>(),
-    'Create customer job completed': props<Customer.CustomerId & Customer.Job>(),
-    'Update customer job initiated': props<Customer.CustomerId & {jobName: Customer.JobName['name']} & Customer.Job>(),
-    'Update customer job completed': props<Customer.CustomerId & {jobName: Customer.JobName['name']} & Customer.Job>(),    
-    'Delete customer job initiated': props<Customer.CustomerId & {jobName: Customer.JobName['name']}>(),
-    'Delete customer job completed': props<Customer.CustomerId & {jobName: Customer.JobName['name']}>(),    
+    'Create customer job initiated': props<Customer.CustomerId & Customer.Job.Request>(),
+    'Create customer job completed': props<Customer.CustomerId & Customer.Job.Request & {priceList: Price.Response[]}>(),
+    'Update customer job initiated': props<Customer.CustomerId & {jobName: Customer.Job.Name['name']} & Customer.Job.Request>(),
+    'Update customer job completed': props<Customer.CustomerId & {jobName: Customer.Job.Name['name']} & Customer.Job.Request & {priceList: Price.Response[]}>(),    
+    'Delete customer job initiated': props<Customer.CustomerId & {jobName: Customer.Job.Name['name']}>(),
+    'Delete customer job completed': props<Customer.CustomerId & {jobName: Customer.Job.Name['name']}>(),    
     // 'Delete customer initiated': props<Customer.CustomerId>(),
     // 'Delete customer completed': props<Customer.CustomerId>(),
     // 'Delete customer failed': props<Customer.CustomerId>(),

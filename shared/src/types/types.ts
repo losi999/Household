@@ -1,4 +1,4 @@
-import { unitsOfMeasurement } from '@household/shared/constants';
+import { priceUnitsOfMeasurement, unitsOfMeasurement } from '@household/shared/constants';
 import { Branding } from '@household/shared/types/common';
 import type { Types } from 'mongoose';
 import * as Enum from '@household/shared/enums';
@@ -783,24 +783,45 @@ export namespace Customer {
     description: string;
   };
 
-  export type JobName = {
-    name: string;
-  };
+  export namespace Job {
+    export type Name = {
+      name: string;
+    };
 
-  export type Job = JobName & {    
-    duration: number;
-    price: number;
-    description: string;
-  };
+    type Base = Name & {
+      duration: number;
+      description: string;
+    };
+
+    export type Quantity = {
+      quantity: number;
+    };
+    
+    export type Request = Base & {
+      prices: ((Price.PriceId & Quantity) | Price.Base)[]
+    };
+
+    export type Document = Base & {
+      prices: (({
+        price: Price.Document
+      } & Quantity) | Price.Base)[]
+    };
+
+    export type Response = Base & {
+      prices: (Price.Response & Quantity)[];
+    };
+  }
 
   type Jobs = {
-    jobs: Job[]
+    jobs: Job.Response[]
   };
 
   export type Document = Internal.Id
   & Internal.Timestamps
   & Base
-  & Jobs;
+  & {
+    jobs: Job.Document[];
+  };
 
   export type Response = CustomerId 
   & Base 
@@ -816,18 +837,23 @@ export namespace Price {
     priceId: Id;
   };
 
-  type Base = {
+  type UnitOfMeasurement = {
+    unitOfMeasurement: typeof priceUnitsOfMeasurement[number];
+  };
+
+  export type Base = {
     name: string;
     amount: number;
   };
 
   export type Document = Internal.Id
   & Internal.Timestamps
-  & Base;
+  & Base
+  & UnitOfMeasurement;
 
-  export type Request = Base;
+  export type Request = Base & UnitOfMeasurement;
 
-  export type Response = PriceId & Base;
+  export type Response = PriceId & Base & UnitOfMeasurement;
 }
 
 export namespace Calendar {
@@ -867,14 +893,17 @@ export namespace Calendar {
       entries: Entry.Response[]
     };
 
-    type WorkdayResponse = DayType<Enum.CalendarDayType.Workday> & Timespan & ResponseBase;
-    type WeekendResponse = DayType<Enum.CalendarDayType.Weekend> & Timespan & ResponseBase;
+    type PlannedTimespan = {
+      plannedStart: number;
+      plannedEnd: number;
+    };
+
+    type WorkdayResponse = DayType<Enum.CalendarDayType.Workday> & Timespan & ResponseBase & PlannedTimespan;
+    type WeekendResponse = DayType<Enum.CalendarDayType.Weekend> & Timespan & ResponseBase & PlannedTimespan;
     type VacationResponse = DayType<Enum.CalendarDayType.Vacation> & ResponseBase;
     export type HolidayResponse = DayType<Enum.CalendarDayType.Holiday> & ResponseBase;
 
     export type Response = WorkdayResponse | VacationResponse | HolidayResponse | WeekendResponse;
-
-    type E = Exclude<Response, HolidayResponse>;
   }
 
   export namespace Entry {
@@ -884,10 +913,13 @@ export namespace Calendar {
       calendarEntryId: Id;
     };
     
-    type Base = Timespan & {
-      title: string;
-      description: string;
+    export type EntryType = {
       entryType: Enum.CalendarEntryType;
+    };
+
+    type Base = Timespan & EntryType &{
+      title: string;
+      description: string;      
     };
 
     export type Request = Base & DayProp;

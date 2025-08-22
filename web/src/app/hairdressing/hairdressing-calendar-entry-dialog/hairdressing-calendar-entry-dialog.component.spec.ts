@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { HairdressingCalendarEntryFormComponent } from './hairdressing-calendar-entry-form.component';
+import { HairdressingCalendarEntryDialogComponent } from './hairdressing-calendar-entry-dialog.component';
 
 describe('HairdressingCalendarEntryFormComponent', () => {
-  let component: HairdressingCalendarEntryFormComponent;
-  let fixture: ComponentFixture<HairdressingCalendarEntryFormComponent>;
+  let component: HairdressingCalendarEntryDialogComponent;
+  let fixture: ComponentFixture<HairdressingCalendarEntryDialogComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [HairdressingCalendarEntryFormComponent],
+      declarations: [HairdressingCalendarEntryDialogComponent],
     })
       .compileComponents();
 
-    fixture = TestBed.createComponent(HairdressingCalendarEntryFormComponent);
+    fixture = TestBed.createComponent(HairdressingCalendarEntryDialogComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

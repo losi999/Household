@@ -10,6 +10,7 @@ export interface IPriceService {
   deletePrice(priceId: Price.Id): Promise<unknown>;
   updatePrice(priceId: Price.Id, updateQuery: DocumentUpdate<Price.Document>): Promise<unknown>;
   listPrices(): Promise<Price.Document[]>;
+  findPricesByIds(priceIds: Price.Id[]): Promise<Price.Document[]>;
 }
 
 export const priceServiceFactory = (mongodbService: IMongodbService): IPriceService => {
@@ -60,6 +61,17 @@ export const priceServiceFactory = (mongodbService: IMongodbService): IPriceServ
             locale: 'hu',
           })
           .sort('name')
+          .lean();
+          
+      });
+    },
+    findPricesByIds: async (priceIds) => {
+      return priceIds.length === 0 ? [] : mongodbService.inSession((session) => {
+        return mongodbService.prices.find({
+          _id: {
+            $in: priceIds,
+          },
+        }).session(session)
           .lean();
           
       });

@@ -77,7 +77,7 @@ export const hairdressingReducer = createReducer<HairdressingState>({},
     };
   }),
 
-  on(hairdressingApiActions.createPriceCompleted, hairdressingApiActions.updatePriceCompleted, (_state, { priceId, name, amount }) => {
+  on(hairdressingApiActions.createPriceCompleted, hairdressingApiActions.updatePriceCompleted, (_state, { priceId, name, amount, unitOfMeasurement }) => {
   
     return {
       ..._state,
@@ -86,6 +86,7 @@ export const hairdressingReducer = createReducer<HairdressingState>({},
           priceId,
           name,
           amount,
+          unitOfMeasurement,
         })
         .toSorted((a, b) => a.name.localeCompare(b.name, 'hu', {
           sensitivity: 'base',
@@ -124,6 +125,8 @@ export const hairdressingReducer = createReducer<HairdressingState>({},
         dayType: storedDay.dayType === CalendarDayType.Weekend ? CalendarDayType.Weekend : CalendarDayType.Workday,
         start: request.start,
         end: request.end,  
+        plannedStart: undefined,
+        plannedEnd: undefined,
 
       };
     } else {
@@ -152,6 +155,8 @@ export const hairdressingReducer = createReducer<HairdressingState>({},
           dayType: CalendarDayType.Workday,
           start: WORKDAY_START,
           end: WORKDAY_END,
+          plannedEnd: WORKDAY_END,
+          plannedStart: WORKDAY_START,
         };
       } break;
       case CalendarDayType.Workday: {
