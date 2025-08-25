@@ -796,20 +796,16 @@ export namespace Customer {
     export type Quantity = {
       quantity: number;
     };
+
+    export type Prices<P extends Price.PriceId |{price: Price.Document} | Price.Response> = {
+      prices: ((P & Quantity) | Price.Base)[];
+    };
     
-    export type Request = Base & {
-      prices: ((Price.PriceId & Quantity) | Price.Base)[]
-    };
+    export type Request = Base & Prices<Price.PriceId>;
 
-    export type Document = Base & {
-      prices: (({
-        price: Price.Document
-      } & Quantity) | Price.Base)[]
-    };
+    export type Document = Base & Prices<{price: Price.Document}>;
 
-    export type Response = Base & {
-      prices: (Price.Response & Quantity)[];
-    };
+    export type Response = Base & Prices<Price.Response>;
   }
 
   type Jobs = {
@@ -913,25 +909,56 @@ export namespace Calendar {
       calendarEntryId: Id;
     };
     
-    export type EntryType = {
-      entryType: Enum.CalendarEntryType;
+    export type EntryType<T extends Enum.CalendarEntryType> = {
+      entryType: T;
     };
 
-    type Base = Timespan & EntryType &{
+    type Base = Timespan & {
       title: string;
       description: string;      
     };
 
-    export type Request = Base & DayProp;
+    export type IssueEntryRequest = Base 
+    & DayProp 
+    & EntryType<Enum.CalendarEntryType.Issue>;
+    
+    export type PersonalEntryRequest = Base 
+    & DayProp 
+    & EntryType<Enum.CalendarEntryType.Personal>;
+    
+    export type WorkEntryRequest = Base 
+    & DayProp 
+    & Customer.CustomerId 
+    & Customer.Job.Prices<Price.PriceId>
+    & EntryType<Enum.CalendarEntryType.Work>;
+
+    export type Request = IssueEntryRequest | PersonalEntryRequest | WorkEntryRequest;
   
     export type Document = Internal.Id
     & Internal.Timestamps
     & Base
-    & DayProp;
+    & DayProp
+    & EntryType<Enum.CalendarEntryType>
+    & {
+      customer: Customer.Document;
+    }
+    & Customer.Job.Prices<{price: Price.Document}>;
 
-    export type PersonalEntryResponse= Base & CalendarEntryId;
-    export type IssueEntryResponse= Base & CalendarEntryId;
-    export type WorkEntryResponse = Base & CalendarEntryId;
+    export type PersonalEntryResponse= Base 
+    & CalendarEntryId 
+    & EntryType<Enum.CalendarEntryType.Personal>;
+    
+    export type IssueEntryResponse= Base 
+    & CalendarEntryId 
+    & EntryType<Enum.CalendarEntryType.Issue>; 
+    
+    export type WorkEntryResponse = Base 
+    & CalendarEntryId
+    & {
+      customer: Customer.Response
+    }
+    & Customer.Job.Prices<Price.Response>
+    & EntryType<Enum.CalendarEntryType.Work>;
 
     export type Response = PersonalEntryResponse | IssueEntryResponse | WorkEntryResponse;
   }

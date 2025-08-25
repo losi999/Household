@@ -75,7 +75,6 @@ components:
         - type: object
           required:
             - title
-            - entryType
           properties:
             title:
               type: string
@@ -83,12 +82,41 @@ components:
             description:
               type: string
               minLength: 1
+
+    NonWorkEntry.Response:
+      allOf:
+        - $ref: "#/components/schemas/CalendarEntryId"
+        - $ref: "#/components/schemas/Entry.Base"
+        - type: object
+          required:
+            - entryType
+          properties:
             entryType:
               type: string
               enum:
-                - work
                 - personal
                 - issue
+
+    WorkEntry.Response:
+      allOf:
+        - $ref: "#/components/schemas/CalendarEntryId"
+        - $ref: "#/components/schemas/Entry.Base"
+        - $ref: "customer.yaml#/components/schemas/Prices.Response"
+        - type: object
+          required:
+            - entryType
+            - customer
+          properties:
+            entryType:
+              type: string
+              const: work
+            customer:
+              $ref: "customer.yaml#/components/schemas/Response"
+
+    Entry.Response:
+      oneOf:
+        - $ref: "#/components/schemas/NonWorkEntry.Response"
+        - $ref: "#/components/schemas/WorkEntry.Response"
 
     Day.Response:
       allOf:
@@ -101,9 +129,7 @@ components:
             entries:
               type: array
               items:
-                allOf:
-                  - $ref: "#/components/schemas/CalendarEntryId"
-                  - $ref: "#/components/schemas/Entry.Base"
+                $ref: "#/components/schemas/Entry.Response"
         - oneOf:
             - allOf:
                 - $ref: "#/components/schemas/Timespan"
@@ -123,7 +149,35 @@ components:
                     - vacation
                     - holiday
 
-    Entry.Request:
+    NonWorkEntry.Request:
       allOf:
         - $ref: "#/components/schemas/Entry.Base"
         - $ref: "#/components/schemas/Day"
+        - type: object
+          required:
+            - entryType
+          properties:
+            entryType:
+              type: string
+              enum:
+                - personal
+                - issue
+
+    WorkEntry.Request:
+      allOf:
+        - $ref: "#/components/schemas/Entry.Base"
+        - $ref: "#/components/schemas/Day"
+        - $ref: "customer.yaml#/components/schemas/CustomerId"
+        - $ref: "customer.yaml#/components/schemas/Prices.Request"
+        - type: object
+          required:
+            - entryType
+          properties:
+            entryType:
+              type: string
+              const: work
+
+    Entry.Request:
+      oneOf:
+        - $ref: "#/components/schemas/NonWorkEntry.Request"
+        - $ref: "#/components/schemas/WorkEntry.Request"

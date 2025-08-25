@@ -59,6 +59,8 @@ export const calendarEntryServiceFactory = (mongodbService: IMongodbService): IC
             $lte: dateTo,
           },
         }).session(session)
+          .populate('customer')
+          .populate('prices.price')
           .collation({
             locale: 'hu',
           })

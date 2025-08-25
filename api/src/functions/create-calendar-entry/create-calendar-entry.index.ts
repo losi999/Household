@@ -8,8 +8,10 @@ import { UserType } from '@household/shared/enums';
 import { createCalendarEntryServiceFactory } from '@household/api/functions/create-calendar-entry/create-calendar-entry.service';
 import { calendarEntryDocumentConverter } from '@household/shared/dependencies/converters/calendar-entry-document-converter';
 import { calendarEntryService } from '@household/shared/dependencies/services/calendar-entry-service';
+import { customerService } from '@household/shared/dependencies/services/customer-service';
+import { priceService } from '@household/shared/dependencies/services/price-service';
 
-const createCalendarEntryService = createCalendarEntryServiceFactory(calendarEntryService, calendarEntryDocumentConverter);
+const createCalendarEntryService = createCalendarEntryServiceFactory(calendarEntryService, calendarEntryDocumentConverter, customerService, priceService);
 
 export default index({
   handler: handler(createCalendarEntryService),

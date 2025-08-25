@@ -9,8 +9,10 @@ import { calendarEntryService } from '@household/shared/dependencies/services/ca
 import { default as index } from '@household/api/handlers/index.handler';
 import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';
 import { UserType } from '@household/shared/enums';
+import { customerService } from '@household/shared/dependencies/services/customer-service';
+import { priceService } from '@household/shared/dependencies/services/price-service';
 
-const updateCalendarEntryService = updateCalendarEntryServiceFactory(calendarEntryService, calendarEntryDocumentConverter);
+const updateCalendarEntryService = updateCalendarEntryServiceFactory(calendarEntryService, calendarEntryDocumentConverter, customerService, priceService);
 
 export default index({
   handler: handler(updateCalendarEntryService),
