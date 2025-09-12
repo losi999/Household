@@ -1,7 +1,7 @@
 import { Customer } from '@household/shared/types/types';
 import { Schema } from 'mongoose';
 
-const priceSchema = new Schema<Customer.Job.Document['prices'][number]>({
+export const jobPriceSchema = new Schema<Customer.Job.Document['prices'][number]>({
   price: {
     type: Schema.Types.ObjectId,
     ref: 'prices',
@@ -30,7 +30,7 @@ const jobSchema = new Schema<Customer.Job.Document>({
     required: true,
   },
   prices: {
-    type: [priceSchema],
+    type: [jobPriceSchema],
     required: true,
   },
   description: {

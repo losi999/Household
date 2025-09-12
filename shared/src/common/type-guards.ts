@@ -33,3 +33,7 @@ export const isPriceBase = (price: Customer.Job.Request['prices'][number] | Cust
   Base => {
   return !!(price as Price.Base).name;
 };
+
+export const isListedPrice = (price: Customer.Job.Response['prices'][number]): price is Customer.Job.ListedPrice<Price.Response> => {
+  return !!(price as Customer.Job.ListedPrice<Price.Response>).priceId;
+};

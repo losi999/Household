@@ -6,6 +6,7 @@ import { DocumentUpdate } from '@household/shared/types/common';
 import { Customer, Price } from '@household/shared/types/types';
 
 export interface ICustomerDocumentConverter {
+  createJobPriceList(prices: Customer.Job.Request['prices'], priceDocuments: Price.Document[]): Customer.Job.Document['prices'];
   create(body: Customer.Request, expiresIn: number, generateId?: boolean): Customer.Document;
   update(body: Customer.Request, expiresIn: number): DocumentUpdate<Customer.Document>;
   addJob(job: Customer.Job.Request, priceDocuments: Price.Document[]): DocumentUpdate<Customer.Document>;
@@ -13,15 +14,13 @@ export interface ICustomerDocumentConverter {
   deleteJob(name: Customer.Job.Name['name']): DocumentUpdate<Customer.Document>;
   toResponse(doc: Customer.Document): Customer.Response;
   toResponseList(docs: Customer.Document[]): Customer.Response[];
+  toResponseJobPriceList(docs: Customer.Job.Document['prices']): Customer.Job.Response['prices'];
 }
 
 export const customerDocumentConverterFactory = (priceDocumentConverter: IPriceDocumentConverter): ICustomerDocumentConverter => {
-  const createJobDocument = ({ description, duration, name, prices }: Customer.Job.Request, priceDocuments: Price.Document[]): Customer.Job.Document => {
-    return {
-      name,
-      description,
-      duration,
-      prices: prices.map(req => {
+  const instance: ICustomerDocumentConverter = {
+    createJobPriceList: (prices, priceDocuments) => {
+      return prices.map((req) => {
         if (isPriceBase(req)) {
           return {
             name: req.name,
@@ -33,11 +32,8 @@ export const customerDocumentConverterFactory = (priceDocumentConverter: IPriceD
           price: priceDocuments.find(p => getPriceId(p) === req.priceId),
           quantity: req.quantity,
         };
-      }),
-    };
-  };
-
-  const instance: ICustomerDocumentConverter = {
+      });
+    },
     create: ({ name, description }, expiresIn, generateId) => {
       return {
         name,
@@ -62,20 +58,30 @@ export const customerDocumentConverterFactory = (priceDocumentConverter: IPriceD
         },
       };
     },
-    addJob: (job, priceDocuments) => {
+    addJob: ({ description, duration, name, prices }, priceDocuments) => {
       return {
         update: {
           $push: {
-            jobs: createJobDocument(job, priceDocuments),
+            jobs: {
+              name,
+              duration,
+              description,
+              prices: instance.createJobPriceList(prices, priceDocuments),
+            },
           },
         },
       };
     },
-    updateJob: (jobName, job, priceDocuments) => {
+    updateJob: (jobName, { description, duration, name, prices }, priceDocuments) => {
       return {
         update: {
           $set: {
-            'jobs.$[job]': createJobDocument(job, priceDocuments),
+            'jobs.$[job]': {
+              name,
+              duration,
+              description,
+              prices: instance.createJobPriceList(prices, priceDocuments),
+            },
           },
         },
         arrayFilters: [
@@ -105,22 +111,7 @@ export const customerDocumentConverterFactory = (priceDocumentConverter: IPriceD
             name,
             description, 
             duration,
-            prices: prices.map((p) => {
-              if (isPriceBase(p)) {
-                return {
-                  amount: p.amount,
-                  name: p.name,
-                  priceId: undefined,
-                  quantity: undefined,
-                  unitOfMeasurement: undefined,
-                };
-              }
-
-              return {
-                quantity: p.quantity,
-                ...priceDocumentConverter.toResponse(p.price),
-              };
-            }),
+            prices: instance.toResponseJobPriceList(prices),
           };
         }),
         customerId: getCustomerId(_id),
@@ -131,6 +122,24 @@ export const customerDocumentConverterFactory = (priceDocumentConverter: IPriceD
       };
     },
     toResponseList: docs => docs.map(d => instance.toResponse(d)),
+    toResponseJobPriceList: (docs) => {
+      return docs.map((p) => {
+        if (isPriceBase(p)) {
+          return {
+            amount: p.amount,
+            name: p.name,
+            priceId: undefined,
+            quantity: undefined,
+            unitOfMeasurement: undefined,
+          };
+        }
+
+        return {
+          quantity: p.quantity,
+          ...priceDocumentConverter.toResponse(p.price),
+        };
+      });
+    },
   };
 
   return instance;

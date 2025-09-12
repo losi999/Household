@@ -797,8 +797,10 @@ export namespace Customer {
       quantity: number;
     };
 
-    export type Prices<P extends Price.PriceId |{price: Price.Document} | Price.Response> = {
-      prices: ((P & Quantity) | Price.Base)[];
+    export type ListedPrice<P extends Price.PriceId | {price: Price.Document} | Price.Response> = P & Quantity;
+
+    type Prices<P extends Price.PriceId | {price: Price.Document} | Price.Response> = {
+      prices: (ListedPrice<P> | Price.Base)[];
     };
     
     export type Request = Base & Prices<Price.PriceId>;
@@ -929,7 +931,7 @@ export namespace Calendar {
     export type WorkEntryRequest = Base 
     & DayProp 
     & Customer.CustomerId 
-    & Customer.Job.Prices<Price.PriceId>
+    & Pick<Customer.Job.Request, 'prices'>
     & EntryType<Enum.CalendarEntryType.Work>;
 
     export type Request = IssueEntryRequest | PersonalEntryRequest | WorkEntryRequest;
@@ -942,7 +944,7 @@ export namespace Calendar {
     & {
       customer: Customer.Document;
     }
-    & Customer.Job.Prices<{price: Price.Document}>;
+    & Pick<Customer.Job.Document, 'prices'>;
 
     export type PersonalEntryResponse= Base 
     & CalendarEntryId 
@@ -957,7 +959,7 @@ export namespace Calendar {
     & {
       customer: Customer.Response
     }
-    & Customer.Job.Prices<Price.Response>
+    & Pick<Customer.Job.Response, 'prices'>
     & EntryType<Enum.CalendarEntryType.Work>;
 
     export type Response = PersonalEntryResponse | IssueEntryResponse | WorkEntryResponse;

@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormGroup, FormControl, Validators, FormArray } from '@angular/forms';
+import { isListedPrice } from '@household/shared/common/type-guards';
 import { Customer, Price } from '@household/shared/types/types';
 import { customerApiActions } from '@household/web/state/customer/customer.actions';
 import { selectPriceList } from '@household/web/state/hairdressing/hairdressing.selector';
@@ -62,12 +63,22 @@ export class CustomerJobFormComponent implements OnInit {
         Validators.required,
         Validators.min(1),
       ]),
-      prices: new FormArray(this.job?.prices.map(({ quantity, ...price }) => {
+      prices: new FormArray(this.job?.prices.map((priceResponse) => {
+        if (isListedPrice(priceResponse)) {
+          const { quantity, ...price } = priceResponse;
+          return new FormGroup({
+            price: new FormControl(price),
+            quantity: new FormControl(quantity),
+            amount: new FormControl(null),
+            name: new FormControl(null),
+          });  
+        }
+
         return new FormGroup({
-          price: new FormControl(price.priceId ? price : null),
-          quantity: new FormControl(quantity),
-          amount: new FormControl(!price.priceId ? price.amount : null),
-          name: new FormControl(!price.priceId ? price.name : null),
+          price: new FormControl(null),
+          quantity: new FormControl(null),
+          amount: new FormControl(priceResponse.amount),
+          name: new FormControl(priceResponse.name),
         });
       }) ?? [], [Validators.minLength(1)]),
     });

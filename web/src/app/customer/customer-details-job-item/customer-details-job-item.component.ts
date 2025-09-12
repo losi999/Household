@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { isListedPrice } from '@household/shared/common/type-guards';
 import { Customer } from '@household/shared/types/types';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { Store } from '@ngrx/store';
@@ -19,7 +20,7 @@ export class CustomerDetailsJobItemComponent implements OnInit {
   
   ngOnInit(): void {
     this.total = this.job.prices.reduce((accumulator, currentValue) => {
-      return accumulator + currentValue.amount * (currentValue.quantity ?? 1);
+      return accumulator + currentValue.amount * (isListedPrice(currentValue) ? currentValue.quantity : 1);
     }, 0);
   }
 

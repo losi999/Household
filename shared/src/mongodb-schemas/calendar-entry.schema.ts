@@ -1,25 +1,7 @@
 import { CalendarEntryType } from '@household/shared/enums';
+import { jobPriceSchema } from '@household/shared/mongodb-schemas/customer.schema';
 import { Calendar } from '@household/shared/types/types';
 import { Schema } from 'mongoose';
-
-const priceSchema = new Schema<Calendar.Entry.Document['prices'][number]>({
-  price: {
-    type: Schema.Types.ObjectId,
-    ref: 'prices',
-  },
-  quantity: {
-    type: Number,
-  },
-  name: {
-    type: String,
-  },
-  amount: {
-    type: Number,
-  },
-}, {
-  versionKey: false,
-  _id: false,
-});
 
 export const calendarEntrySchema = new Schema<Calendar.Entry.Document>({
   day: {
@@ -52,7 +34,7 @@ export const calendarEntrySchema = new Schema<Calendar.Entry.Document>({
     ref: 'customers',
   },
   prices: {
-    type: [priceSchema],
+    type: [jobPriceSchema],
     default: undefined,
   },
   expiresAt: {
