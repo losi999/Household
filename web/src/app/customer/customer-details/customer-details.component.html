@@ -2,8 +2,8 @@
   <button mat-icon-button (click)="onEdit()" type="button">
     <mat-icon>edit</mat-icon>
   </button>
-
 </household-toolbar>
+
 <ng-container *ngIf="customer | async as cust">
   <div class="name">
     {{cust.name}}
@@ -14,15 +14,12 @@
   <mat-divider />
   <div class="jobs">
     <household-icon-text icon="content_cut" text="Munkák" size="medium" />
-    <button mat-icon-button (click)="onAddJob()" type="button" *ngIf="!isInEditMode">
+    <button mat-icon-button type="button" (click)="onCreateJob()">
       <mat-icon>add</mat-icon>
     </button>
   </div>
-  <div class="job-list" *ngIf="!isInEditMode">
-    <household-customer-details-job-item *ngFor="let j of cust.jobs" [job]="j" (edit)="onJobEdit($event)" />
-  </div>
-  <div class="job-form" *ngIf="isInEditMode">
-    <household-customer-job-form (done)="onJobEditDonel()" [job]="selectedJob" [customerId]="customerId" />
+  <div class="job-list">
+    <household-customer-details-job-item *ngFor="let j of cust.jobs" [job]="j" />
   </div>
 
 </ng-container>

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { isListedPrice } from '@household/shared/common/type-guards';
 import { Customer } from '@household/shared/types/types';
@@ -13,24 +13,28 @@ import { Store } from '@ngrx/store';
 })
 export class CustomerDetailsJobItemComponent implements OnInit {
   @Input() job: Customer.Job.Response;
-  @Output() edit = new EventEmitter<Customer.Job.Response>();
+  customerId: Customer.Id;
   total: number;
 
   constructor(private store: Store, private activatedRoute: ActivatedRoute) { }
   
   ngOnInit(): void {
+    this.customerId = this.activatedRoute.snapshot.paramMap.get('customerId') as Customer.Id,
     this.total = this.job.prices.reduce((accumulator, currentValue) => {
       return accumulator + currentValue.amount * (isListedPrice(currentValue) ? currentValue.quantity : 1);
     }, 0);
   }
 
   onEdit() {
-    this.edit.emit(this.job);
+    this.store.dispatch(dialogActions.updateCustomerJob({
+      customerId: this.customerId,
+      ...this.job,
+    }));
   }
 
   onDelete() {
     this.store.dispatch(dialogActions.deleteCustomerJob({
-      customerId: this.activatedRoute.snapshot.paramMap.get('customerId') as Customer.Id,
+      customerId: this.customerId,
       name: this.job.name,
     }));
   }

@@ -18,11 +18,11 @@ import { IconTextComponent } from '@household/web/app/shared/icon-text/icon-text
 import { MatCardModule } from '@angular/material/card';
 import { CustomerDetailsJobItemComponent } from './customer-details-job-item/customer-details-job-item.component';
 import { MatMenuModule } from '@angular/material/menu';
-import { CustomerJobFormComponent } from './customer-job-form/customer-job-form.component';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MinutesToHourPipe } from '@household/web/app/shared/minutes-to-hour.pipe';
 import { HairdressingModule } from '@household/web/app/hairdressing/hairdressing.module';
+import { CustomerJobDialogComponent } from './customer-job-dialog/customer-job-dialog.component';
 
 @NgModule({
   declarations: [
@@ -32,7 +32,7 @@ import { HairdressingModule } from '@household/web/app/hairdressing/hairdressing
     CustomerListItemComponent,
     CustomerFormComponent,
     CustomerDetailsJobItemComponent,
-    CustomerJobFormComponent,
+    CustomerJobDialogComponent,
   ],
   imports: [
     CommonModule,

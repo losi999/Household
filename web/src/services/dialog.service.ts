@@ -6,6 +6,7 @@ import { AccountFormComponent, AccountFormData } from '@household/web/app/accoun
 import { CategoryFormComponent, CategoryFormData } from '@household/web/app/category/category-form/category-form.component';
 import { CategoryMergeDialogComponent, CategoryMergeDialogData } from '@household/web/app/category/category-merge-dialog/category-merge-dialog.component';
 import { CustomerFormComponent, CustomerFormData } from '@household/web/app/customer/customer-form/customer-form.component';
+import { CustomerJobDialogComponent, CustomerJobDialogData } from '@household/web/app/customer/customer-job-dialog/customer-job-dialog.component';
 import { HairdressingCalendarEntryDialogComponent, HairdressingCalendarEntryDialogData } from '@household/web/app/hairdressing/hairdressing-calendar-entry-dialog/hairdressing-calendar-entry-dialog.component';
 import { HairdressingCalendarWorkdayDialogComponent, HairdressingCalendarWorkdayDialogData } from '@household/web/app/hairdressing/hairdressing-calendar-workday-dialog/hairdressing-calendar-workday-dialog.component';
 import { HairdressingPriceFormComponent, HairdressingPriceFormData } from '@household/web/app/hairdressing/hairdressing-price-form/hairdressing-price-form.component';
@@ -155,6 +156,27 @@ export class DialogService {
     });
   }
 
+  openCreateCustomerJobDialog(customerId: Customer.Id): void {
+    this.dialog.open<CustomerJobDialogComponent, CustomerJobDialogData, void>(CustomerJobDialogComponent, {
+      data: {
+        customerId,
+      },
+      width: '900px',
+      maxHeight: '90vh',
+    });
+  }
+
+  openEditCustomerJobDialog(customerId: Customer.Id, job: Customer.Job.Response): void {
+    this.dialog.open<CustomerJobDialogComponent, CustomerJobDialogData, void>(CustomerJobDialogComponent, {
+      data: {
+        customerId,
+        job,
+      },
+      width: '900px',
+      maxHeight: '90vh',
+    });
+  }
+
   openDeleteCustomerJobDialog({ name }: Customer.Job.Name) {
     return this.openConfirmationDialog('Törölni akarod ezt a munkát?', name);
   }
@@ -198,7 +220,7 @@ export class DialogService {
       data: {
         entryType,
       },
-      width: '90vw',
+      width: '900px',
     });
   }
 
