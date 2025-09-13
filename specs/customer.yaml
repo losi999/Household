@@ -52,10 +52,15 @@ components:
       required:
         - quantity
 
-    Prices.Request:
+    Prices.Request.Required:
       type: object
       required:
         - prices
+
+    Prices.Request:
+      type: object
+      # required:
+      #   - prices
       properties:
         prices:
           type: array
@@ -88,6 +93,7 @@ components:
       allOf:
         - $ref: "#/components/schemas/Job.Base"
         - $ref: "#/components/schemas/Prices.Request"
+        - $ref: "#/components/schemas/Prices.Request.Required"
 
     Job.Response:
       allOf:

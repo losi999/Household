@@ -911,7 +911,7 @@ export namespace Calendar {
       calendarEntryId: Id;
     };
     
-    export type EntryType<T extends Enum.CalendarEntryType> = {
+    export type EntryType<T extends Enum.CalendarEntryType = Enum.CalendarEntryType> = {
       entryType: T;
     };
 

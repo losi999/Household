@@ -1,5 +1,6 @@
 import { CalendarEntryType } from '@household/shared/enums';
 import { Account, Calendar, Category, Customer, File, Price, Product, Project, Recipient, Transaction, User } from '@household/shared/types/types';
+import { HairdressingCalendarWorkEntryDateTimeDialogData } from '@household/web/app/hairdressing/hairdressing-calendar-work-entry-date-time-dialog/hairdressing-calendar-work-entry-date-time-dialog.component';
 import { Action, createActionGroup, emptyProps, props } from '@ngrx/store';
 
 export const dialogActions = createActionGroup({
@@ -40,6 +41,7 @@ export const dialogActions = createActionGroup({
     'Create calendar entry': props<{entryType: CalendarEntryType.Issue | CalendarEntryType.Personal}>(),
     'Update calendar entry': props<Calendar.Entry.Response & Calendar.DayProp>(),
     'Delete calendar entry': props<Pick<Calendar.Entry.Response, 'calendarEntryId' | 'title'>>(),
+    'Create calendar work entry': props<HairdressingCalendarWorkEntryDateTimeDialogData>(),
     'Set vacation day': props<Calendar.DayProp>(),
     'Set work day': props<Exclude<Calendar.Day.Response, Calendar.Day.HolidayResponse>>(),
   },

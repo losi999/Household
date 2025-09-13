@@ -1,0 +1,19 @@
+<div mat-dialog-title>
+  {{data.job.name}} ({{data.job.duration | timeSlotToTime}} óra)
+</div>
+<div mat-dialog-content>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" id="form">
+    <mat-form-field>
+      <mat-label>Dátum</mat-label>
+      <input matInput [matDatepicker]="picker" formControlName="day" placeholder="Dátum">
+      <mat-datepicker-toggle matPrefix [for]="picker" tabindex="-1" />
+      <mat-datepicker #picker />
+    </mat-form-field>
+    <household-time-range-slider formControlName="timeRange" min="1" max="96" />
+    <mat-error *ngIf="form.value.timeRange.end - form.value.timeRange.start < data.job.duration">Időtartam kevesebb, mint a munkához rögzített!</mat-error>
+  </form>
+</div>
+<div mat-dialog-actions>
+  <button mat-flat-button color="primary" cdkFocusInitial form="form">Mentés</button>
+  <button mat-flat-button mat-dialog-close type="button">Mégse</button>
+</div>

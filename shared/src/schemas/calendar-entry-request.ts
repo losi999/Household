@@ -102,7 +102,7 @@ const workEntryRequestSchema: StrictJSONSchema7<Calendar.Entry.WorkEntryRequest>
     'start',
     'end',
     ...customerId.required,
-    'prices',
+    // 'prices',
   ],
   properties: {
     ...customerId.properties,

@@ -8,6 +8,7 @@ import { CategoryMergeDialogComponent, CategoryMergeDialogData } from '@househol
 import { CustomerFormComponent, CustomerFormData } from '@household/web/app/customer/customer-form/customer-form.component';
 import { CustomerJobDialogComponent, CustomerJobDialogData } from '@household/web/app/customer/customer-job-dialog/customer-job-dialog.component';
 import { HairdressingCalendarEntryDialogComponent, HairdressingCalendarEntryDialogData } from '@household/web/app/hairdressing/hairdressing-calendar-entry-dialog/hairdressing-calendar-entry-dialog.component';
+import { HairdressingCalendarWorkEntryDateTimeDialogComponent, HairdressingCalendarWorkEntryDateTimeDialogData } from '@household/web/app/hairdressing/hairdressing-calendar-work-entry-date-time-dialog/hairdressing-calendar-work-entry-date-time-dialog.component';
 import { HairdressingCalendarWorkdayDialogComponent, HairdressingCalendarWorkdayDialogData } from '@household/web/app/hairdressing/hairdressing-calendar-workday-dialog/hairdressing-calendar-workday-dialog.component';
 import { HairdressingPriceFormComponent, HairdressingPriceFormData } from '@household/web/app/hairdressing/hairdressing-price-form/hairdressing-price-form.component';
 import { ImportFileUploadFormComponent } from '@household/web/app/import/import-file-upload-form/import-file-upload-form.component';
@@ -236,6 +237,13 @@ export class DialogService {
 
   openDeleteCalendarEntryDialog(title: Calendar.Entry.Response['title']) {
     return this.openConfirmationDialog('Törölni akarod ezt a bejegyzést a naptárból?', title);
+  }
+
+  openCalendarWorkEntryDateTimeDialog(data: HairdressingCalendarWorkEntryDateTimeDialogData) {
+    this.dialog.open<HairdressingCalendarWorkEntryDateTimeDialogComponent, HairdressingCalendarWorkEntryDateTimeDialogData, void>(HairdressingCalendarWorkEntryDateTimeDialogComponent, {
+      data,
+      width: '900px',
+    });
   }
 
   openSetVacationDayDialog(day: string) {

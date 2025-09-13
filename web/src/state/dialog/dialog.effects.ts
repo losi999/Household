@@ -451,6 +451,18 @@ export class DialogEffects {
     );
   });
 
+  createCalendarWorkEntry = createEffect(() => {
+    return this.actions.pipe(
+      ofType(dialogActions.createCalendarWorkEntry),
+      exhaustMap(({ type, ...data }) => {
+        this.dialogService.openCalendarWorkEntryDateTimeDialog(data);
+        return EMPTY;
+      }),
+    );
+  }, {
+    dispatch: false,
+  });
+
   setVacationDay = createEffect(() => {
     return this.actions.pipe(
       ofType(dialogActions.setVacationDay),

@@ -38,6 +38,7 @@ import { CalendarGridRowsPipe } from './calendar-grid-rows.pipe';
 import { CalendarTimeColumnPipe } from './calendar-time-column.pipe';
 import { TimeRangeSliderComponent } from '@household/web/app/hairdressing/time-range-slider/time-range-slider.component';
 import { MatSelectModule } from '@angular/material/select';
+import { HairdressingCalendarWorkEntryDateTimeDialogComponent } from './hairdressing-calendar-work-entry-date-time-dialog/hairdressing-calendar-work-entry-date-time-dialog.component';
 
 @NgModule({
   declarations: [
@@ -56,6 +57,7 @@ import { MatSelectModule } from '@angular/material/select';
     CalendarGridRowsPipe,
     CalendarTimeColumnPipe,
     TimeRangeSliderComponent,
+    HairdressingCalendarWorkEntryDateTimeDialogComponent,
   ],
   imports: [
     CommonModule,

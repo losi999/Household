@@ -185,6 +185,10 @@ export const hairdressingReducer = createReducer<HairdressingState>({},
   }),
 
   on(hairdressingApiActions.createCalendarEntryCompleted, (_state, { calendarEntryId, ...request }) => {
+    if (!_state.calendarDays?.[request.day]) {
+      return _state;
+    }
+
     return {
       ..._state,
       calendarDays: {

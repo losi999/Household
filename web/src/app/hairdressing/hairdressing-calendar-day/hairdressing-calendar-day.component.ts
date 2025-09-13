@@ -17,6 +17,7 @@ export class HairdressingCalendarDayComponent {
   constructor(private store: Store) { }
 
   onEntryClick(entry: Calendar.Entry.Response) {
+    console.log(entry);
     switch(entry.entryType) {
       case CalendarEntryType.Issue:
       case CalendarEntryType.Personal: {

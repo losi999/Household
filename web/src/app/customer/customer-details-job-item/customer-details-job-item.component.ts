@@ -40,6 +40,9 @@ export class CustomerDetailsJobItemComponent implements OnInit {
   }
 
   onAddEntry() {
-    console.log(this.job);
+    this.store.dispatch(dialogActions.createCalendarWorkEntry({
+      customerId: this.customerId,
+      job: this.job,
+    }));
   }
 }
