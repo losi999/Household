@@ -113,7 +113,9 @@ export const customerDocumentConverterFactory = (priceDocumentConverter: IPriceD
             duration,
             prices: instance.toResponseJobPriceList(prices),
           };
-        }),
+        }).toSorted((a, b) => a.name.localeCompare(b.name, 'hu', {
+          sensitivity: 'base',
+        })),
         customerId: getCustomerId(_id),
         createdAt: undefined,
         updatedAt: undefined,

@@ -66,7 +66,7 @@ export class CustomerJobDialogComponent implements OnInit {
           amount: new FormControl(priceResponse.amount),
           name: new FormControl(priceResponse.name),
         });
-      }) ?? [], [Validators.minLength(1)]),
+      }) ?? [], [Validators.required]),
     });
     
     this.calculateTotal(this.form.value.prices);
@@ -96,8 +96,6 @@ export class CustomerJobDialogComponent implements OnInit {
   }
       
   onSave() {
-    console.log(this.form);
-    this.form.markAllAsTouched();
     if (this.form.valid) {
       const request: Customer.Job.Request = {
         name: this.form.value.name,

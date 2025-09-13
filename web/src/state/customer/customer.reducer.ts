@@ -75,7 +75,7 @@ export const customerReducer = createReducer<CustomerState>({},
   }),
 
   on(customerApiActions.createCustomerJobCompleted, (_state, { customerId, duration, name, prices, description, priceList }) => {
-    const newJob: Customer.Job.Response = {
+    const jobs = _state.selectedCustomer.jobs.concat({
       name,
       prices: prices.map((p) => {
         if (isPriceBase(p)) {
@@ -96,24 +96,22 @@ export const customerReducer = createReducer<CustomerState>({},
       }),
       duration,
       description,
-    };
+    })
+      .toSorted((a, b) => a.name.localeCompare(b.name, 'hu', {
+        sensitivity: 'base',
+      }));
+
     return {
       ..._state,
       customerList: _state.customerList?.map(c => {
         return c.customerId !== customerId ? c : {
           ...c,
-          jobs: [
-            ...c.jobs,
-            newJob,
-          ],
+          jobs,
         };
       }),
       selectedCustomer: {
         ..._state.selectedCustomer,
-        jobs: [
-          ..._state.selectedCustomer.jobs,
-          newJob,
-        ],
+        jobs,
       },
     };
   }),
