@@ -1,5 +1,4 @@
 import { Component, Input } from '@angular/core';
-import { CalendarEntryType } from '@household/shared/enums';
 import { Calendar } from '@household/shared/types/types';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { Store } from '@ngrx/store';
@@ -17,16 +16,10 @@ export class HairdressingCalendarDayComponent {
   constructor(private store: Store) { }
 
   onEntryClick(entry: Calendar.Entry.Response) {
-    console.log(entry);
-    switch(entry.entryType) {
-      case CalendarEntryType.Issue:
-      case CalendarEntryType.Personal: {
-        this.store.dispatch(dialogActions.updateCalendarEntry({
-          ...entry,
-          day: this.day.day,
-        }));    
-      } break;
-    }
+    this.store.dispatch(dialogActions.updateCalendarEntry({
+      ...entry,
+      day: this.day.day,
+    }));    
   }
 
   // onGridClick(event: PointerEvent) {

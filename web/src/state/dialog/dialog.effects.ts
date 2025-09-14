@@ -427,7 +427,7 @@ export class DialogEffects {
     return this.actions.pipe(
       ofType(dialogActions.updateCalendarEntry),
       exhaustMap(({ type, day, ...entry }) => {
-        this.dialogService.openEditCalendarEntryDialog(day, entry as any);
+        this.dialogService.openEditCalendarEntryDialog(day, entry);
         return EMPTY;
       }),
     );

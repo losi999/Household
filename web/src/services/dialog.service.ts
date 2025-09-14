@@ -225,7 +225,7 @@ export class DialogService {
     });
   }
 
-  openEditCalendarEntryDialog(day: Calendar.DayProp['day'], entry: Calendar.Entry.PersonalEntryResponse | Calendar.Entry.IssueEntryResponse) {
+  openEditCalendarEntryDialog(day: Calendar.DayProp['day'], entry: Calendar.Entry.Response) {
     this.dialog.open<HairdressingCalendarEntryDialogComponent, HairdressingCalendarEntryDialogData, void>(HairdressingCalendarEntryDialogComponent, {
       data: {
         day,

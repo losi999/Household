@@ -1,4 +1,4 @@
-import { Calendar, Price, Transaction } from '@household/shared/types/types';
+import { Calendar, Customer, Price, Transaction } from '@household/shared/types/types';
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
 
 export const hairdressingActions = createActionGroup({
@@ -34,7 +34,7 @@ export const hairdressingApiActions = createActionGroup({
     'Delete calendar day initiated': props<Calendar.DayProp>(),
     'Delete calendar day completed': props<Calendar.DayProp>(),
     'Create calendar entry initiated': props<Calendar.Entry.Request>(),
-    'Create calendar entry completed': props<Calendar.Entry.CalendarEntryId & Calendar.Entry.Request>(),
+    'Create calendar entry completed': props<Calendar.Entry.CalendarEntryId & Calendar.Entry.Request & {customer: Customer.Response }>(),
     'Update calendar entry initiated': props<Calendar.Entry.CalendarEntryId & Calendar.Entry.Request>(),
     'Update calendar entry completed': props<Calendar.Entry.CalendarEntryId & Calendar.Entry.Request>(),
     'Delete calendar entry initiated': props<Calendar.Entry.CalendarEntryId>(),

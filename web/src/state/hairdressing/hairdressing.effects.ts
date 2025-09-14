@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, combineLatest, exhaustMap, groupBy, map, mergeMap, of, switchMap, take } from 'rxjs';
+import { catchError, combineLatest, exhaustMap, groupBy, map, mergeMap, of, switchMap, take, withLatestFrom } from 'rxjs';
 import { progressActions } from '@household/web/state/progress/progress.actions';
 import { notificationActions } from '@household/web/state/notification/notification.actions';
 import { hairdressingActions, hairdressingApiActions } from '@household/web/state/hairdressing/hairdressing.actions';
@@ -10,6 +10,8 @@ import { selectHairdressingIncomeAccountId, selectHairdressingIncomeCategoryId }
 import { takeFirstDefined } from '@household/web/operators/take-first-defined';
 import moment from 'moment';
 import { HairdressingService } from '@household/web/services/hairdressing.service';
+import { selectCustomer } from '@household/web/state/customer/customer.selector';
+import { CalendarEntryType } from '@household/shared/enums';
 
 @Injectable()
 export class HairdressingEffects {
@@ -367,10 +369,19 @@ export class HairdressingEffects {
       ofType(hairdressingApiActions.createCalendarEntryInitiated),
       mergeMap(({ type, ...request }) => {
         return this.hairdressingService.createCalendarEntry(request).pipe(
-          map(({ calendarEntryId }) => hairdressingApiActions.createCalendarEntryCompleted({
-            calendarEntryId,
-            ...request,
-          })),
+          withLatestFrom(request.entryType === CalendarEntryType.Work ? this.store.select(selectCustomer) : of(undefined)),
+          map(([
+            { calendarEntryId },
+            customer,
+          ]) => {
+
+            return hairdressingApiActions.createCalendarEntryCompleted({
+              calendarEntryId,
+              ...request,
+              customer,
+            });
+          }),
+            
           catchError(() => {
             return of(progressActions.processFinished(),
               notificationActions.showMessage({

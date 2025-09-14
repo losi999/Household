@@ -1,8 +1,9 @@
 import { Calendar, Price, Transaction } from '@household/shared/types/types';
 import { createReducer, on } from '@ngrx/store';
 import { hairdressingActions, hairdressingApiActions } from '@household/web/state/hairdressing/hairdressing.actions';
-import { CalendarDayType } from '@household/shared/enums';
+import { CalendarDayType, CalendarEntryType } from '@household/shared/enums';
 import { WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
+import { isListedPrice, isPriceBase } from '@household/shared/common/type-guards';
 
 export type HairdressingState = {
   priceList?: Price.Response[];
@@ -184,9 +185,42 @@ export const hairdressingReducer = createReducer<HairdressingState>({},
     };
   }),
 
-  on(hairdressingApiActions.createCalendarEntryCompleted, (_state, { calendarEntryId, ...request }) => {
+  on(hairdressingApiActions.createCalendarEntryCompleted, (_state, { type, calendarEntryId, customer, ...request }) => {
     if (!_state.calendarDays?.[request.day]) {
       return _state;
+    }
+
+    let entry: Calendar.Entry.Response;
+
+    if (request.entryType === CalendarEntryType.Work) {
+      console.log(request);
+      entry = {
+        calendarEntryId,
+        end: request.end,
+        start: request.start,
+        title: request.title,
+        description: request.description,
+        entryType: request.entryType,
+        prices: request.prices.map((p) => {
+          if (isPriceBase(p)) {
+            return {
+              name: p.name,
+              amount: p.amount,
+            };
+          }
+          
+          return {
+            ..._state.priceList.find(x => x.priceId === p.priceId),
+            quantity: p.quantity,
+          };
+        }),
+        customer,
+      };
+    } else {
+      entry = {
+        ...request,
+        calendarEntryId,
+      };
     }
 
     return {
@@ -195,40 +229,50 @@ export const hairdressingReducer = createReducer<HairdressingState>({},
         ..._state.calendarDays,
         [request.day]: {
           ..._state.calendarDays[request.day],
-          entries: _state.calendarDays[request.day].entries.concat({
-            ...request,
-            calendarEntryId,
-          } as any)
+          entries: _state.calendarDays[request.day].entries.concat(entry)
             .toSorted((a, b) => a.start > b.start ? 1 : -1),
         },
       },
     };
   }),
 
-  on(hairdressingApiActions.updateCalendarEntryCompleted, (_state, { calendarEntryId, day, description, end, entryType, start, title }) => {
+  on(hairdressingApiActions.updateCalendarEntryCompleted, (_state, { type, calendarEntryId, ...request }) => { // TODO recalculate day start/end
     return {
       ..._state,
       calendarDays: Object.entries(_state.calendarDays).reduce<HairdressingState['calendarDays']>((accumulator, [
         date,
-        response,
+        dayResponse,
       ]) => {
-        let entries = response.entries.filter(e => e.calendarEntryId !== calendarEntryId);
+        let entries = dayResponse.entries.filter(e => e.calendarEntryId !== calendarEntryId);
 
-        if (date === day) {
-          entries = entries.concat({
-            entryType,
-            title,
-            start,
-            end,
-            description,
-            calendarEntryId,
-          } as any).toSorted((a, b) => a.start > b.start ? 1 : -1);
+        if (date === request.day) {
+          let entry: Calendar.Entry.Response;
+
+          if (request.entryType === CalendarEntryType.Work) {
+            entry = {
+              calendarEntryId,
+              end: request.end,
+              start: request.start,
+              title: request.title,
+              description: request.description,
+              entryType: request.entryType,
+              prices: undefined, //TODO
+              customer: undefined, //TODO
+            };
+          } else {
+            entry = {
+              ...request,
+              calendarEntryId,
+            };
+          }
+
+          entries = entries.concat(entry).toSorted((a, b) => a.start > b.start ? 1 : -1);
         }
 
         return {
           ...accumulator,
           [date]: {
-            ...response,
+            ...dayResponse,
             entries,
           },
         };
@@ -236,7 +280,7 @@ export const hairdressingReducer = createReducer<HairdressingState>({},
     };
   }),
 
-  on(hairdressingApiActions.deleteCalendarEntryCompleted, (_state, { calendarEntryId }) => {
+  on(hairdressingApiActions.deleteCalendarEntryCompleted, (_state, { calendarEntryId }) => { // TODO recalculate day start/end
     return {
       ..._state,
       calendarDays: Object.entries(_state.calendarDays).reduce<HairdressingState['calendarDays']>((accumulator, [
