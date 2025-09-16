@@ -32,13 +32,14 @@ import { MatMenuModule } from '@angular/material/menu';
 import { HairdressingCalendarWorkdayDialogComponent } from './hairdressing-calendar-workday-dialog/hairdressing-calendar-workday-dialog.component';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSliderModule } from '@angular/material/slider';
-import { TimeSlotToTimePipe } from './time-slot-to-time.pipe';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { CalendarGridRowsPipe } from './calendar-grid-rows.pipe';
 import { CalendarTimeColumnPipe } from './calendar-time-column.pipe';
 import { TimeRangeSliderComponent } from '@household/web/app/hairdressing/time-range-slider/time-range-slider.component';
 import { MatSelectModule } from '@angular/material/select';
 import { HairdressingCalendarWorkEntryDateTimeDialogComponent } from './hairdressing-calendar-work-entry-date-time-dialog/hairdressing-calendar-work-entry-date-time-dialog.component';
+import { CustomerJobAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/customer-job-autocomplete-input/customer-job-autocomplete-input.component';
+import { TimeSlotToTimePipe } from '@household/web/app/shared/time-slot-to-time.pipe';
 
 @NgModule({
   declarations: [
@@ -53,7 +54,6 @@ import { HairdressingCalendarWorkEntryDateTimeDialogComponent } from './hairdres
     HairdressingCalendarDayComponent,
     HairdressingCalendarEntryDialogComponent,
     HairdressingCalendarWorkdayDialogComponent,
-    TimeSlotToTimePipe,
     CalendarGridRowsPipe,
     CalendarTimeColumnPipe,
     TimeRangeSliderComponent,
@@ -86,7 +86,8 @@ import { HairdressingCalendarWorkEntryDateTimeDialogComponent } from './hairdres
     MatSliderModule,
     MatButtonToggleModule,
     MatSelectModule,
+    CustomerJobAutocompleteInputComponent,
+    TimeSlotToTimePipe,
   ],
-  exports: [TimeSlotToTimePipe],
 })
 export class HairdressingModule { }

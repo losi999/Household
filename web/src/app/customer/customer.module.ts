@@ -21,8 +21,8 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MinutesToHourPipe } from '@household/web/app/shared/minutes-to-hour.pipe';
-import { HairdressingModule } from '@household/web/app/hairdressing/hairdressing.module';
 import { CustomerJobDialogComponent } from './customer-job-dialog/customer-job-dialog.component';
+import { TimeSlotToTimePipe } from '@household/web/app/shared/time-slot-to-time.pipe';
 
 @NgModule({
   declarations: [
@@ -51,7 +51,7 @@ import { CustomerJobDialogComponent } from './customer-job-dialog/customer-job-d
     MatFormFieldModule,
     MatInputModule,
     MinutesToHourPipe,
-    HairdressingModule,
+    TimeSlotToTimePipe,
   ],
 })
 export class CustomerModule { }

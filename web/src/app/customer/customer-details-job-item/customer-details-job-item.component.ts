@@ -38,11 +38,4 @@ export class CustomerDetailsJobItemComponent implements OnInit {
       name: this.job.name,
     }));
   }
-
-  onAddEntry() {
-    this.store.dispatch(dialogActions.createCalendarWorkEntry({
-      customerId: this.customerId,
-      job: this.job,
-    }));
-  }
 }

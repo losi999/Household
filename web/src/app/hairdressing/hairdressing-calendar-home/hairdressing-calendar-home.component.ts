@@ -55,7 +55,9 @@ export class HairdressingCalendarHomeComponent implements OnInit {
   }
 
   onCreateWork() {
-    // this.store.dispatch(dialogActions.createCalendarEntry());
+    this.store.dispatch(dialogActions.createCalendarEntry({
+      entryType: CalendarEntryType.Work,
+    }));
   }
 
   onSetVacationDay(day: string) {

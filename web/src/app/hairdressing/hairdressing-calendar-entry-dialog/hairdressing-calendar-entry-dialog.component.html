@@ -1,7 +1,13 @@
 <form [formGroup]="form" (ngSubmit)="onSubmit()">
   <div mat-dialog-content>
-    <household-clearable-input formControlName="title" label="Megnevezés" />
-    <household-clearable-input formControlName="description" type="area" label="Leírás" />
+    {{entry.entryType}}
+    <ng-container *ngIf="entry.entryType === 'work'">
+      <household-customer-job-autocomplete-input label="Munka" formControlName="job" />
+    </ng-container>
+    <ng-container *ngIf="entry.entryType !== 'work' || (form.value.job?.customerId && !form.value.job?.job)">
+      <household-clearable-input formControlName="title" label="Megnevezés" />
+      <household-clearable-input formControlName="description" type="area" label="Leírás" />
+    </ng-container>
     <mat-form-field>
       <mat-label>Dátum</mat-label>
       <input matInput [matDatepicker]="picker" formControlName="day" placeholder="Dátum">
@@ -9,6 +15,9 @@
       <mat-datepicker #picker />
     </mat-form-field>
     <household-time-range-slider formControlName="timeRange" min="1" max="96" />
+    <ng-container *ngIf="entry.entryType === 'work'">
+      <mat-error *ngIf="form.value.timeRange.end - form.value.timeRange.start < form.value.job?.job?.duration">Időtartam kevesebb, mint a munkához rögzített!</mat-error>
+    </ng-container>
   </div>
   <div mat-dialog-actions>
     <button mat-flat-button color="primary" cdkFocusInitial>Mentés</button>

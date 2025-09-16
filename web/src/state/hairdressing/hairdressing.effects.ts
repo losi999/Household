@@ -10,7 +10,7 @@ import { selectHairdressingIncomeAccountId, selectHairdressingIncomeCategoryId }
 import { takeFirstDefined } from '@household/web/operators/take-first-defined';
 import moment from 'moment';
 import { HairdressingService } from '@household/web/services/hairdressing.service';
-import { selectCustomer } from '@household/web/state/customer/customer.selector';
+import { selectCustomerById } from '@household/web/state/customer/customer.selector';
 import { CalendarEntryType } from '@household/shared/enums';
 
 @Injectable()
@@ -369,7 +369,7 @@ export class HairdressingEffects {
       ofType(hairdressingApiActions.createCalendarEntryInitiated),
       mergeMap(({ type, ...request }) => {
         return this.hairdressingService.createCalendarEntry(request).pipe(
-          withLatestFrom(request.entryType === CalendarEntryType.Work ? this.store.select(selectCustomer) : of(undefined)),
+          withLatestFrom(request.entryType === CalendarEntryType.Work ? this.store.select(selectCustomerById(request.customerId)) : of(undefined)),
           map(([
             { calendarEntryId },
             customer,

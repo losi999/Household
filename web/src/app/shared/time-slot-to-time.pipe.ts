@@ -3,7 +3,6 @@ import { timeSlotToTimeString } from '@household/shared/common/utils';
 
 @Pipe({
   name: 'timeSlotToTime',
-  standalone: false,
 })
 export class TimeSlotToTimePipe implements PipeTransform {
 

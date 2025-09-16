@@ -3,7 +3,6 @@ import { createReducer, on } from '@ngrx/store';
 import { hairdressingActions, hairdressingApiActions } from '@household/web/state/hairdressing/hairdressing.actions';
 import { CalendarDayType, CalendarEntryType } from '@household/shared/enums';
 import { WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
-import { isListedPrice, isPriceBase } from '@household/shared/common/type-guards';
 
 export type HairdressingState = {
   priceList?: Price.Response[];
@@ -193,7 +192,6 @@ export const hairdressingReducer = createReducer<HairdressingState>({},
     let entry: Calendar.Entry.Response;
 
     if (request.entryType === CalendarEntryType.Work) {
-      console.log(request);
       entry = {
         calendarEntryId,
         end: request.end,
@@ -201,19 +199,7 @@ export const hairdressingReducer = createReducer<HairdressingState>({},
         title: request.title,
         description: request.description,
         entryType: request.entryType,
-        prices: request.prices.map((p) => {
-          if (isPriceBase(p)) {
-            return {
-              name: p.name,
-              amount: p.amount,
-            };
-          }
-          
-          return {
-            ..._state.priceList.find(x => x.priceId === p.priceId),
-            quantity: p.quantity,
-          };
-        }),
+        prices: customer?.jobs.find(j => j.name === request.title)?.prices,
         customer,
       };
     } else {

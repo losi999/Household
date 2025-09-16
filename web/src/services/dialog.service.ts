@@ -216,7 +216,7 @@ export class DialogService {
     return this.openConfirmationDialog('Törölni akarod ezt a tranzakciót?');
   }
 
-  openCreateCalendarEntryDialog(entryType: CalendarEntryType.Issue | CalendarEntryType.Personal) {
+  openCreateCalendarEntryDialog(entryType: CalendarEntryType) {
     this.dialog.open<HairdressingCalendarEntryDialogComponent, HairdressingCalendarEntryDialogData, void>(HairdressingCalendarEntryDialogComponent, {
       data: {
         entryType,
