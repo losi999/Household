@@ -26,7 +26,7 @@ import { ClearableInputComponent } from '@household/web/app/shared/clearable-inp
 import { HairdressingPriceSubmenuComponent } from './hairdressing-price-submenu/hairdressing-price-submenu.component';
 import { HairdressingCalendarHomeComponent } from './hairdressing-calendar-home/hairdressing-calendar-home.component';
 import { HairdressingCalendarDayComponent } from './hairdressing-calendar-day/hairdressing-calendar-day.component';
-import { HairdressingCalendarEntryDialogComponent } from './hairdressing-calendar-entry-dialog/hairdressing-calendar-entry-dialog.component';
+import { HairdressingCalendarEntryEditDialogComponent } from './hairdressing-calendar-entry-edit-dialog/hairdressing-calendar-entry-edit-dialog.component';
 import { MatTimepickerModule } from '@angular/material/timepicker';
 import { MatMenuModule } from '@angular/material/menu';
 import { HairdressingCalendarWorkdayDialogComponent } from './hairdressing-calendar-workday-dialog/hairdressing-calendar-workday-dialog.component';
@@ -37,7 +37,6 @@ import { CalendarGridRowsPipe } from './calendar-grid-rows.pipe';
 import { CalendarTimeColumnPipe } from './calendar-time-column.pipe';
 import { TimeRangeSliderComponent } from '@household/web/app/hairdressing/time-range-slider/time-range-slider.component';
 import { MatSelectModule } from '@angular/material/select';
-import { HairdressingCalendarWorkEntryDateTimeDialogComponent } from './hairdressing-calendar-work-entry-date-time-dialog/hairdressing-calendar-work-entry-date-time-dialog.component';
 import { CustomerJobAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/customer-job-autocomplete-input/customer-job-autocomplete-input.component';
 import { TimeSlotToTimePipe } from '@household/web/app/shared/time-slot-to-time.pipe';
 
@@ -52,12 +51,11 @@ import { TimeSlotToTimePipe } from '@household/web/app/shared/time-slot-to-time.
     HairdressingPriceSubmenuComponent,
     HairdressingCalendarHomeComponent,
     HairdressingCalendarDayComponent,
-    HairdressingCalendarEntryDialogComponent,
+    HairdressingCalendarEntryEditDialogComponent,
     HairdressingCalendarWorkdayDialogComponent,
     CalendarGridRowsPipe,
     CalendarTimeColumnPipe,
     TimeRangeSliderComponent,
-    HairdressingCalendarWorkEntryDateTimeDialogComponent,
   ],
   imports: [
     CommonModule,

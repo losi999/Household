@@ -11,15 +11,14 @@ import { hairdressingApiActions } from '@household/web/state/hairdressing/hairdr
 import { Store } from '@ngrx/store';
 import { filter } from 'rxjs';
 
-export type HairdressingCalendarEntryDialogData = Partial<Calendar.Entry.Response> & Partial<Calendar.DayProp>;
+export type HairdressingCalendarEntryEditDialogData = Partial<Calendar.Entry.Response> & Partial<Calendar.DayProp>;
 
 @Component({
-  selector: 'household-hairdressing-calendar-entry-dialog',
   standalone: false,    
-  templateUrl: './hairdressing-calendar-entry-dialog.component.html',
-  styleUrl: './hairdressing-calendar-entry-dialog.component.scss',
+  templateUrl: './hairdressing-calendar-entry-edit-dialog.component.html',
+  styleUrl: './hairdressing-calendar-entry-edit-dialog.component.scss',
 })
-export class HairdressingCalendarEntryDialogComponent implements OnInit {
+export class HairdressingCalendarEntryEditDialogComponent implements OnInit {
   form: FormGroup<{
     job: FormControl<Customer.CustomerId & {
       job?: Customer.Job.Response;
@@ -33,9 +32,9 @@ export class HairdressingCalendarEntryDialogComponent implements OnInit {
     }>;
   }>;
 
-  constructor(private dialogRef: MatDialogRef<HairdressingCalendarEntryDialogComponent, void>,
+  constructor(private dialogRef: MatDialogRef<HairdressingCalendarEntryEditDialogComponent, void>,
     private store: Store,
-    @Inject(MAT_DIALOG_DATA) public entry: HairdressingCalendarEntryDialogData) { }
+    @Inject(MAT_DIALOG_DATA) public entry: HairdressingCalendarEntryEditDialogData) { }
 
   ngOnInit(): void {
     console.log(this.entry);

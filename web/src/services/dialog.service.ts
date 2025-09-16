@@ -7,8 +7,7 @@ import { CategoryFormComponent, CategoryFormData } from '@household/web/app/cate
 import { CategoryMergeDialogComponent, CategoryMergeDialogData } from '@household/web/app/category/category-merge-dialog/category-merge-dialog.component';
 import { CustomerFormComponent, CustomerFormData } from '@household/web/app/customer/customer-form/customer-form.component';
 import { CustomerJobDialogComponent, CustomerJobDialogData } from '@household/web/app/customer/customer-job-dialog/customer-job-dialog.component';
-import { HairdressingCalendarEntryDialogComponent, HairdressingCalendarEntryDialogData } from '@household/web/app/hairdressing/hairdressing-calendar-entry-dialog/hairdressing-calendar-entry-dialog.component';
-import { HairdressingCalendarWorkEntryDateTimeDialogComponent, HairdressingCalendarWorkEntryDateTimeDialogData } from '@household/web/app/hairdressing/hairdressing-calendar-work-entry-date-time-dialog/hairdressing-calendar-work-entry-date-time-dialog.component';
+import { HairdressingCalendarEntryEditDialogComponent, HairdressingCalendarEntryEditDialogData } from '@household/web/app/hairdressing/hairdressing-calendar-entry-edit-dialog/hairdressing-calendar-entry-edit-dialog.component';
 import { HairdressingCalendarWorkdayDialogComponent, HairdressingCalendarWorkdayDialogData } from '@household/web/app/hairdressing/hairdressing-calendar-workday-dialog/hairdressing-calendar-workday-dialog.component';
 import { HairdressingPriceFormComponent, HairdressingPriceFormData } from '@household/web/app/hairdressing/hairdressing-price-form/hairdressing-price-form.component';
 import { ImportFileUploadFormComponent } from '@household/web/app/import/import-file-upload-form/import-file-upload-form.component';
@@ -217,7 +216,7 @@ export class DialogService {
   }
 
   openCreateCalendarEntryDialog(entryType: CalendarEntryType) {
-    this.dialog.open<HairdressingCalendarEntryDialogComponent, HairdressingCalendarEntryDialogData, void>(HairdressingCalendarEntryDialogComponent, {
+    this.dialog.open<HairdressingCalendarEntryEditDialogComponent, HairdressingCalendarEntryEditDialogData, void>(HairdressingCalendarEntryEditDialogComponent, {
       data: {
         entryType,
       },
@@ -226,7 +225,7 @@ export class DialogService {
   }
 
   openEditCalendarEntryDialog(day: Calendar.DayProp['day'], entry: Calendar.Entry.Response) {
-    this.dialog.open<HairdressingCalendarEntryDialogComponent, HairdressingCalendarEntryDialogData, void>(HairdressingCalendarEntryDialogComponent, {
+    this.dialog.open<HairdressingCalendarEntryEditDialogComponent, HairdressingCalendarEntryEditDialogData, void>(HairdressingCalendarEntryEditDialogComponent, {
       data: {
         day,
         ...entry,
@@ -237,13 +236,6 @@ export class DialogService {
 
   openDeleteCalendarEntryDialog(title: Calendar.Entry.Response['title']) {
     return this.openConfirmationDialog('Törölni akarod ezt a bejegyzést a naptárból?', title);
-  }
-
-  openCalendarWorkEntryDateTimeDialog(data: HairdressingCalendarWorkEntryDateTimeDialogData) {
-    this.dialog.open<HairdressingCalendarWorkEntryDateTimeDialogComponent, HairdressingCalendarWorkEntryDateTimeDialogData, void>(HairdressingCalendarWorkEntryDateTimeDialogComponent, {
-      data,
-      width: '900px',
-    });
   }
 
   openSetVacationDayDialog(day: string) {
