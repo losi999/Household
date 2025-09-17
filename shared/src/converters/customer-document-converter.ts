@@ -20,7 +20,7 @@ export interface ICustomerDocumentConverter {
 export const customerDocumentConverterFactory = (priceDocumentConverter: IPriceDocumentConverter): ICustomerDocumentConverter => {
   const instance: ICustomerDocumentConverter = {
     createJobPriceList: (prices, priceDocuments) => {
-      return prices.map((req) => {
+      return prices?.map((req) => {
         if (isPriceBase(req)) {
           return {
             name: req.name,

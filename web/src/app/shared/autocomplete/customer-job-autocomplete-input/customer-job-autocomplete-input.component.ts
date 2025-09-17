@@ -14,6 +14,7 @@ import { selectCustomerList } from '@household/web/state/customer/customer.selec
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 import { v4 } from 'uuid';
+import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 
 @Component({
   selector: 'household-customer-job-autocomplete-input',
@@ -100,6 +101,11 @@ export class CustomerJobAutocompleteInputComponent implements OnInit, ControlVal
   clearValue(event: MouseEvent) {
     this.selected.reset();
     this.selected.markAllAsTouched();
+    event.stopPropagation();
+  }
+
+  create(event: MouseEvent) {
+    this.store.dispatch(dialogActions.createCustomer());
     event.stopPropagation();
   }
 }

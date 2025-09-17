@@ -27,7 +27,7 @@ export const createCalendarEntryServiceFactory = (
     if (body.entryType === CalendarEntryType.Work) {
       const customer = await customerService.findCustomerById(body.customerId);
 
-      const priceIds = body.prices.reduce<Price.Id[]>((accumulator, currentValue) => {
+      const priceIds = body.prices?.reduce<Price.Id[]>((accumulator, currentValue) => {
         if (!isPriceBase(currentValue)) {
           return [
             ...accumulator,

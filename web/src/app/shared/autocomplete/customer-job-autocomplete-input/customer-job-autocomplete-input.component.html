@@ -1,8 +1,8 @@
 <form [formGroup]="selected">
   <mat-form-field>
-    <!-- <button mat-icon-button matPrefix color="primary" type="button" (click)="create($event)">
-    <mat-icon>library_add</mat-icon>
-  </button> -->
+    <button mat-icon-button matPrefix color="primary" type="button" (click)="create($event)">
+      <mat-icon>library_add</mat-icon>
+    </button>
     <mat-label>Vendég</mat-label>
     <input type="text" #inp matInput [matAutocomplete]="autocomplete" (blur)="touched?.()" formControlName="customer">
     <mat-autocomplete #autocomplete="matAutocomplete" [displayWith]="displayName" (optionSelected)="optionSelected(inp)">

@@ -66,15 +66,14 @@ export const priceServiceFactory = (mongodbService: IMongodbService): IPriceServ
       });
     },
     findPricesByIds: async (priceIds) => {
-      return priceIds.length === 0 ? [] : mongodbService.inSession((session) => {
+      return priceIds?.length > 0 ? mongodbService.inSession((session) => {
         return mongodbService.prices.find({
           _id: {
             $in: priceIds,
           },
         }).session(session)
           .lean();
-          
-      });
+      }) : [];
     },
   };
 };
