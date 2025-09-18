@@ -16,7 +16,7 @@ export class HairdressingCalendarDayComponent {
   constructor(private store: Store) { }
 
   onEntryClick(entry: Calendar.Entry.Response) {
-    this.store.dispatch(dialogActions.updateCalendarEntry({
+    this.store.dispatch(dialogActions.openCalendarEntry({
       ...entry,
       day: this.day.day,
     }));    

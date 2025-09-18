@@ -43,11 +43,12 @@ import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 export class CustomerJobAutocompleteInputComponent implements OnInit, ControlValueAccessor {
   selected: FormGroup<{
     customer: FormControl<Customer.Response>;
-    jobName: FormControl<string>;
+    job: FormControl<Customer.Job.Response | string>;
   }>;
 
-  changed: (value: Customer.CustomerId & {
-    job?: Customer.Job.Response;
+  changed: (value: {
+    customer: Customer.Response;
+    job: Customer.Job.Response;
   }) => void;
   touched: () => void;
   isDisabled: boolean;
@@ -67,20 +68,32 @@ export class CustomerJobAutocompleteInputComponent implements OnInit, ControlVal
 
     this.selected = new FormGroup({
       customer: new FormControl(null, [Validators.required]),
-      jobName: new FormControl(null, [Validators.required]),
+      job: new FormControl(null, [Validators.required]),
     });
 
-    this.selected.valueChanges.subscribe(({ customer, jobName }) => {
+    this.selected.valueChanges.subscribe(({ customer, job }) => {
       this.changed?.(this.selected.valid ? {
-        job: customer.jobs.find(j => j.name === jobName),
-        customerId: customer.customerId,
+        customer,
+        job: typeof job !== 'string' ? job : undefined,
       } : null);
     });
 
     this.customers = this.store.select(selectCustomerList);
   }
 
-  writeValue(): void { }
+  writeValue(value: {
+    customer: Customer.Response;
+    job: Customer.Job.Response;
+  }): void {
+    if (value) {
+      this.selected.setValue({
+        customer: value.customer,
+        job: value.job ?? this.CUSTOM_JOB,
+      }, {
+        emitEvent: false,
+      });
+    }
+  }
 
   registerOnChange(fn: any): void {
     this.changed = fn;

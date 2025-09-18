@@ -23,6 +23,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MinutesToHourPipe } from '@household/web/app/shared/minutes-to-hour.pipe';
 import { CustomerJobDialogComponent } from './customer-job-dialog/customer-job-dialog.component';
 import { TimeSlotToTimePipe } from '@household/web/app/shared/time-slot-to-time.pipe';
+import { JobPriceSummaryComponent } from '@household/web/app/shared/job-price-summary/job-price-summary.component';
 
 @NgModule({
   declarations: [
@@ -52,6 +53,7 @@ import { TimeSlotToTimePipe } from '@household/web/app/shared/time-slot-to-time.
     MatInputModule,
     MinutesToHourPipe,
     TimeSlotToTimePipe,
+    JobPriceSummaryComponent,
   ],
 })
 export class CustomerModule { }

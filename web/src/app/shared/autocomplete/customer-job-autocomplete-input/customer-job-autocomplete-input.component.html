@@ -17,8 +17,8 @@
   </mat-form-field>
   <mat-form-field *ngIf="selected.value.customer">
     <mat-label>Munka</mat-label>
-    <mat-select formControlName="jobName">
-      <mat-option *ngFor="let job of selected.value.customer.jobs" [value]="job.name">{{job.name}} ({{job.duration | timeSlotToTime}} óra)</mat-option>
+    <mat-select formControlName="job">
+      <mat-option *ngFor="let job of selected.value.customer.jobs" [value]="job">{{job.name}} ({{job.duration | timeSlotToTime}} óra)</mat-option>
       <mat-option [value]="CUSTOM_JOB">Egyéb</mat-option>
     </mat-select>
   </mat-form-field>

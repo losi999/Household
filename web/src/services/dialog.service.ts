@@ -7,6 +7,7 @@ import { CategoryFormComponent, CategoryFormData } from '@household/web/app/cate
 import { CategoryMergeDialogComponent, CategoryMergeDialogData } from '@household/web/app/category/category-merge-dialog/category-merge-dialog.component';
 import { CustomerFormComponent, CustomerFormData } from '@household/web/app/customer/customer-form/customer-form.component';
 import { CustomerJobDialogComponent, CustomerJobDialogData } from '@household/web/app/customer/customer-job-dialog/customer-job-dialog.component';
+import { HairdressingCalendarEntryDetailsDialogComponent, HairdressingCalendarEntryDetailsDialogData } from '@household/web/app/hairdressing/hairdressing-calendar-entry-details-dialog/hairdressing-calendar-entry-details-dialog.component';
 import { HairdressingCalendarEntryEditDialogComponent, HairdressingCalendarEntryEditDialogData } from '@household/web/app/hairdressing/hairdressing-calendar-entry-edit-dialog/hairdressing-calendar-entry-edit-dialog.component';
 import { HairdressingCalendarWorkdayDialogComponent, HairdressingCalendarWorkdayDialogData } from '@household/web/app/hairdressing/hairdressing-calendar-workday-dialog/hairdressing-calendar-workday-dialog.component';
 import { HairdressingPriceFormComponent, HairdressingPriceFormData } from '@household/web/app/hairdressing/hairdressing-price-form/hairdressing-price-form.component';
@@ -226,6 +227,16 @@ export class DialogService {
 
   openEditCalendarEntryDialog(day: Calendar.DayProp['day'], entry: Calendar.Entry.Response) {
     this.dialog.open<HairdressingCalendarEntryEditDialogComponent, HairdressingCalendarEntryEditDialogData, void>(HairdressingCalendarEntryEditDialogComponent, {
+      data: {
+        day,
+        ...entry,
+      },
+      width: '900px',
+    });
+  }
+
+  openCalendarEntryDetailsDialog(day: Calendar.DayProp['day'], entry: Calendar.Entry.Response) {
+    this.dialog.open<HairdressingCalendarEntryDetailsDialogComponent, HairdressingCalendarEntryDetailsDialogData, void>(HairdressingCalendarEntryDetailsDialogComponent, {
       data: {
         day,
         ...entry,

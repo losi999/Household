@@ -20,8 +20,9 @@ export type HairdressingCalendarEntryEditDialogData = Partial<Calendar.Entry.Res
 })
 export class HairdressingCalendarEntryEditDialogComponent implements OnInit {
   form: FormGroup<{
-    job: FormControl<Customer.CustomerId & {
-      job?: Customer.Job.Response;
+    job: FormControl<{
+      customer: Customer.Response;
+      job: Customer.Job.Response;
     }>
     title: FormControl<string>;
     description: FormControl<string>;
@@ -37,8 +38,6 @@ export class HairdressingCalendarEntryEditDialogComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public entry: HairdressingCalendarEntryEditDialogData) { }
 
   ngOnInit(): void {
-    console.log(this.entry);
-
     if (this.entry.entryType === CalendarEntryType.Work) {
       this.store.dispatch(customerApiActions.listCustomersInitiated());
     }
@@ -46,13 +45,16 @@ export class HairdressingCalendarEntryEditDialogComponent implements OnInit {
     const now = new Date();
     now.setMinutes(Math.floor(now.getMinutes() / 15) * 15);
     this.form = new FormGroup({
-      job: new FormControl(null),
-      title: new FormControl(this.entry?.title, [Validators.required]),
+      job: new FormControl(this.entry.entryType === CalendarEntryType.Work && this.entry.customer ? {
+        customer: this.entry.customer,
+        job: this.entry.customer?.jobs?.find(j => j.name === this.entry.title),
+      } : null),
+      title: new FormControl(this.entry.title, [Validators.required]),
       description: new FormControl(this.entry.description),
       day: new FormControl(createDate(this.entry.day) ?? now, [Validators.required]),
       timeRange: new FormControl({
-        start: this.entry?.start ?? dateToTimeSlot(now),
-        end: this.entry?.end ?? dateToTimeSlot(now) + 4,
+        start: this.entry.start ?? dateToTimeSlot(now),
+        end: this.entry.end ?? dateToTimeSlot(now) + 4,
       }), 
     });
 
@@ -65,7 +67,6 @@ export class HairdressingCalendarEntryEditDialogComponent implements OnInit {
   }
 
   onSubmit() {
-    console.log(this.form.value);
     if (this.form.valid) {
       let request: Calendar.Entry.Request;
 
@@ -77,7 +78,7 @@ export class HairdressingCalendarEntryEditDialogComponent implements OnInit {
           end: this.form.value.timeRange.end,
           title: this.form.value.title,
           description: this.form.value.description ?? undefined,
-          customerId: this.form.value.job.customerId,
+          customerId: this.form.value.job.customer.customerId,
           prices: this.form.value.job.job?.prices.map((p) => {
             if (isListedPrice(p)) {
               return {
@@ -102,8 +103,6 @@ export class HairdressingCalendarEntryEditDialogComponent implements OnInit {
           description: this.form.value.description ?? undefined,
         };
       }
-
-      console.log(request);
 
       if (this.entry.calendarEntryId) {
         this.store.dispatch(hairdressingApiActions.updateCalendarEntryInitiated({

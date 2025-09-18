@@ -1,10 +1,9 @@
-<form [formGroup]="form" (ngSubmit)="onSubmit()">
-  <div mat-dialog-content>
-    {{entry.entryType}}
+<div mat-dialog-content>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" id="form">
     <ng-container *ngIf="entry.entryType === 'work'">
       <household-customer-job-autocomplete-input label="Munka" formControlName="job" />
     </ng-container>
-    <ng-container *ngIf="entry.entryType !== 'work' || (form.value.job?.customerId && !form.value.job?.job)">
+    <ng-container *ngIf="entry.entryType !== 'work' || (form.value.job?.customer && !form.value.job?.job)">
       <household-clearable-input formControlName="title" label="Megnevezés" />
       <household-clearable-input formControlName="description" type="area" label="Leírás" />
     </ng-container>
@@ -18,10 +17,10 @@
     <ng-container *ngIf="entry.entryType === 'work'">
       <mat-error *ngIf="form.value.timeRange.end - form.value.timeRange.start < form.value.job?.job?.duration">Időtartam kevesebb, mint a munkához rögzített!</mat-error>
     </ng-container>
-  </div>
-  <div mat-dialog-actions>
-    <button mat-flat-button color="primary" cdkFocusInitial>Mentés</button>
-    <button mat-flat-button mat-dialog-close type="button">Mégse</button>
-    <button mat-flat-button color="warn" type="button" *ngIf="entry.calendarEntryId" (click)="onDelete()">Törlés</button>
-  </div>
-</form>
+  </form>
+</div>
+<div mat-dialog-actions>
+  <button mat-flat-button color="primary" cdkFocusInitial form="form">Mentés</button>
+  <button mat-flat-button mat-dialog-close type="button">Mégse</button>
+  <button mat-flat-button color="warn" type="button" *ngIf="entry.calendarEntryId" (click)="onDelete()">Törlés</button>
+</div>

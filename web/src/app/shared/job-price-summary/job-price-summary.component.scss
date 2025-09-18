@@ -1,0 +1,8 @@
+  .prices {
+    margin-top: 5px;
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    grid-template-areas: "name quantity amount";
+    column-gap: 15px;
+    text-align: right;
+  }

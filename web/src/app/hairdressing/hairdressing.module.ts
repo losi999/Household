@@ -39,6 +39,10 @@ import { TimeRangeSliderComponent } from '@household/web/app/hairdressing/time-r
 import { MatSelectModule } from '@angular/material/select';
 import { CustomerJobAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/customer-job-autocomplete-input/customer-job-autocomplete-input.component';
 import { TimeSlotToTimePipe } from '@household/web/app/shared/time-slot-to-time.pipe';
+import { HairdressingCalendarEntryDetailsDialogComponent } from '@household/web/app/hairdressing/hairdressing-calendar-entry-details-dialog/hairdressing-calendar-entry-details-dialog.component';
+import { IconTextComponent } from '@household/web/app/shared/icon-text/icon-text.component';
+import { MinutesToHourPipe } from '@household/web/app/shared/minutes-to-hour.pipe';
+import { JobPriceSummaryComponent } from '@household/web/app/shared/job-price-summary/job-price-summary.component';
 
 @NgModule({
   declarations: [
@@ -52,6 +56,7 @@ import { TimeSlotToTimePipe } from '@household/web/app/shared/time-slot-to-time.
     HairdressingCalendarHomeComponent,
     HairdressingCalendarDayComponent,
     HairdressingCalendarEntryEditDialogComponent,
+    HairdressingCalendarEntryDetailsDialogComponent,
     HairdressingCalendarWorkdayDialogComponent,
     CalendarGridRowsPipe,
     CalendarTimeColumnPipe,
@@ -86,6 +91,9 @@ import { TimeSlotToTimePipe } from '@household/web/app/shared/time-slot-to-time.
     MatSelectModule,
     CustomerJobAutocompleteInputComponent,
     TimeSlotToTimePipe,
+    IconTextComponent,
+    MinutesToHourPipe,
+    JobPriceSummaryComponent,
   ],
 })
 export class HairdressingModule { }

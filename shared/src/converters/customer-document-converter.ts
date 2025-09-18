@@ -125,7 +125,7 @@ export const customerDocumentConverterFactory = (priceDocumentConverter: IPriceD
     },
     toResponseList: docs => docs.map(d => instance.toResponse(d)),
     toResponseJobPriceList: (docs) => {
-      return docs.map((p) => {
+      return docs?.map((p) => {
         if (isPriceBase(p)) {
           return {
             amount: p.amount,
