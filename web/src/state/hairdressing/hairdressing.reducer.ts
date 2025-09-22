@@ -1,8 +1,29 @@
-import { Calendar, Price, Transaction } from '@household/shared/types/types';
+import { Calendar, Customer, Price, Transaction } from '@household/shared/types/types';
 import { createReducer, on } from '@ngrx/store';
 import { hairdressingActions, hairdressingApiActions } from '@household/web/state/hairdressing/hairdressing.actions';
 import { CalendarDayType, CalendarEntryType } from '@household/shared/enums';
-import { WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
+import { WORKDAY_END, WORKDAY_LENGTH, WORKDAY_START } from '@household/shared/constants';
+import { calculateWorkdayLimits } from '@household/shared/common/utils';
+
+const createCalendarEntryResponseFromRequest = (calendarEntryId: Calendar.Entry.Id, request: Calendar.Entry.Request, customer: Customer.Response): Calendar.Entry.Response => {
+  if (request.entryType === CalendarEntryType.Work) {
+    return {
+      calendarEntryId,
+      end: request.end,
+      start: request.start,
+      title: request.title,
+      description: request.description,
+      entryType: request.entryType,
+      prices: customer?.jobs.find(j => j.name === request.title)?.prices,
+      customer,
+    };
+  } 
+  return {
+    ...request,
+    calendarEntryId,
+  };
+          
+};
 
 export type HairdressingState = {
   priceList?: Price.Response[];
@@ -120,13 +141,13 @@ export const hairdressingReducer = createReducer<HairdressingState>({},
     const storedDay = _state.calendarDays[day];
     let newDay: Calendar.Day.Response;
     if (request.dayType === CalendarDayType.Workday) {
+      const dayLimits = calculateWorkdayLimits(request.start, request.end, storedDay.entries);
       newDay = {
         ...storedDay,
         dayType: storedDay.dayType === CalendarDayType.Weekend ? CalendarDayType.Weekend : CalendarDayType.Workday,
-        start: request.start,
-        end: request.end,  
-        plannedStart: undefined,
-        plannedEnd: undefined,
+        ...dayLimits,
+        plannedStart: request.start,
+        plannedEnd: request.end,
 
       };
     } else {
@@ -150,20 +171,20 @@ export const hairdressingReducer = createReducer<HairdressingState>({},
     let newDay: Calendar.Day.Response;
     switch(storedDay.dayType) {
       case CalendarDayType.Vacation: {
+        const dayLimits = calculateWorkdayLimits(WORKDAY_START, WORKDAY_END, storedDay.entries);
         newDay = {
           ...storedDay,
           dayType: CalendarDayType.Workday,
-          start: WORKDAY_START,
-          end: WORKDAY_END,
+          ...dayLimits,
           plannedEnd: WORKDAY_END,
           plannedStart: WORKDAY_START,
         };
       } break;
       case CalendarDayType.Workday: {
+        const dayLimits = calculateWorkdayLimits(WORKDAY_START, WORKDAY_END, storedDay.entries);
         newDay = {
           ...storedDay,
-          start: WORKDAY_START,
-          end: WORKDAY_END,
+          ...dayLimits,
         };
       } break;
       case CalendarDayType.Weekend: {
@@ -184,81 +205,71 @@ export const hairdressingReducer = createReducer<HairdressingState>({},
     };
   }),
 
-  on(hairdressingApiActions.createCalendarEntryCompleted, (_state, { type, calendarEntryId, customer, ...request }) => {
-    if (!_state.calendarDays?.[request.day]) {
-      return _state;
-    }
-
-    let entry: Calendar.Entry.Response;
-
+  on(hairdressingApiActions.createCalendarEntryCompleted, (_state, { type, calendarEntryId, customer, ...request }) => { 
+    const currentDay = _state.calendarDays[request.day]; 
+    let dayLimits: {start: number; end: number};
+    
     if (request.entryType === CalendarEntryType.Work) {
-      entry = {
-        calendarEntryId,
-        end: request.end,
-        start: request.start,
-        title: request.title,
-        description: request.description,
-        entryType: request.entryType,
-        prices: customer?.jobs.find(j => j.name === request.title)?.prices,
-        customer,
-      };
-    } else {
-      entry = {
-        ...request,
-        calendarEntryId,
-      };
+      switch(currentDay.dayType) {
+        case CalendarDayType.Weekend:
+        case CalendarDayType.Workday: {
+          dayLimits = {
+            start: Math.max(request.end - WORKDAY_LENGTH, currentDay.start) || currentDay.start,
+            end: Math.min(request.start + WORKDAY_LENGTH, currentDay.end) || currentDay.end,
+          };
+        } break;
+      } 
     }
-
     return {
       ..._state,
       calendarDays: {
         ..._state.calendarDays,
         [request.day]: {
-          ..._state.calendarDays[request.day],
-          entries: _state.calendarDays[request.day].entries.concat(entry)
+          ...currentDay,
+          ...dayLimits,
+          entries: currentDay.entries.concat(createCalendarEntryResponseFromRequest(calendarEntryId, request, customer))
             .toSorted((a, b) => a.start > b.start ? 1 : -1),
         },
       },
     };
   }),
 
-  on(hairdressingApiActions.updateCalendarEntryCompleted, (_state, { type, calendarEntryId, ...request }) => { // TODO recalculate day start/end
+  on(hairdressingApiActions.updateCalendarEntryCompleted, (_state, { type, calendarEntryId, customer, ...request }) => {
     return {
       ..._state,
       calendarDays: Object.entries(_state.calendarDays).reduce<HairdressingState['calendarDays']>((accumulator, [
         date,
         dayResponse,
       ]) => {
-        let entries = dayResponse.entries.filter(e => e.calendarEntryId !== calendarEntryId);
+        const index = dayResponse.entries.findIndex(e => e.calendarEntryId === calendarEntryId);
+
+        let shouldRecalculate = false;
+        let entries = dayResponse.entries;
+        if (index >= 0) {
+          entries = entries.toSpliced(index, 1);
+          shouldRecalculate = request.entryType === CalendarEntryType.Work;
+        }
 
         if (date === request.day) {
-          let entry: Calendar.Entry.Response;
+          entries = entries.concat(createCalendarEntryResponseFromRequest(calendarEntryId, request, customer)).toSorted((a, b) => a.start > b.start ? 1 : -1);
+          shouldRecalculate = request.entryType === CalendarEntryType.Work;
+        }
 
-          if (request.entryType === CalendarEntryType.Work) {
-            entry = {
-              calendarEntryId,
-              end: request.end,
-              start: request.start,
-              title: request.title,
-              description: request.description,
-              entryType: request.entryType,
-              prices: undefined, //TODO
-              customer: undefined, //TODO
-            };
-          } else {
-            entry = {
-              ...request,
-              calendarEntryId,
-            };
+        let dayLimits: {start: number; end: number};
+        if (shouldRecalculate) {
+          switch (dayResponse.dayType) {
+            case CalendarDayType.Weekend:
+            case CalendarDayType.Workday: {
+              dayLimits = calculateWorkdayLimits(dayResponse.plannedStart, dayResponse.plannedEnd, entries);
+            } break;
           }
-
-          entries = entries.concat(entry).toSorted((a, b) => a.start > b.start ? 1 : -1);
         }
 
         return {
           ...accumulator,
           [date]: {
             ...dayResponse,
+            ...dayLimits,
             entries,
           },
         };
@@ -266,18 +277,37 @@ export const hairdressingReducer = createReducer<HairdressingState>({},
     };
   }),
 
-  on(hairdressingApiActions.deleteCalendarEntryCompleted, (_state, { calendarEntryId }) => { // TODO recalculate day start/end
+  on(hairdressingApiActions.deleteCalendarEntryCompleted, (_state, { calendarEntryId }) => {
     return {
       ..._state,
       calendarDays: Object.entries(_state.calendarDays).reduce<HairdressingState['calendarDays']>((accumulator, [
         date,
         response,
       ]) => {
+        const index = response.entries.findIndex(e => e.calendarEntryId === calendarEntryId);
+        if (index < 0) {
+          return {
+            ...accumulator,
+            [date]: response,
+          };
+        }
+
+        const entries = response.entries.toSpliced(index, 1);
+
+        let dayLimits: {start: number; end: number};
+        switch (response.dayType) {
+          case CalendarDayType.Weekend:
+          case CalendarDayType.Workday: {
+            dayLimits = calculateWorkdayLimits(response.plannedStart, response.plannedEnd, entries);
+          } break;
+        }
+
         return {
           ...accumulator,
           [date]: {
             ...response,
-            entries: response.entries.filter(e => e.calendarEntryId !== calendarEntryId),
+            ...dayLimits,
+            entries,
           },
         };
       }, {}),

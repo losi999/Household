@@ -1,3 +1,5 @@
+import { WORKDAY_LENGTH } from '@household/shared/constants';
+import { CalendarEntryType } from '@household/shared/enums';
 import { Dictionary } from '@household/shared/types/common';
 import { Account, Calendar, Category, Customer, File, Internal, Price, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { PopulateOptions, Types } from 'mongoose';
@@ -87,3 +89,19 @@ export const getCategoryId = (doc: Category.Document | Types.ObjectId): Category
 export const getFileId = (doc: File.Document | Types.ObjectId): File.Id => getId(doc) as File.Id;
 export const getPriceId = (doc: Price.Document | Types.ObjectId): Price.Id => getId(doc) as Price.Id;
 export const getCalendarEntryId = (doc: Calendar.Entry.Document | Types.ObjectId): Calendar.Entry.Id => getId(doc) as Calendar.Entry.Id;
+
+export const calculateWorkdayLimits = (defaultStart: number, defaultEnd: number, entries: Calendar.Entry.Response[]): {start: number; end: number;} => {
+  const workEntries = entries.filter(e => e.entryType === CalendarEntryType.Work);
+
+  return workEntries.reduce<{start: number; end: number}>((accumulator, currentValue) => {
+    const calculatedStart = currentValue.end - WORKDAY_LENGTH;
+    const calculatedend = currentValue.start + WORKDAY_LENGTH;
+    return {
+      start: calculatedStart > accumulator.start ? calculatedStart : accumulator.start,
+      end: calculatedend < accumulator.end ? calculatedend : accumulator.end,
+    };
+  }, {
+    start: defaultStart,
+    end: defaultEnd,
+  });
+};

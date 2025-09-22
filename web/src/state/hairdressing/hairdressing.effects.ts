@@ -399,9 +399,14 @@ export class HairdressingEffects {
       ofType(hairdressingApiActions.updateCalendarEntryInitiated),
       mergeMap(({ type, calendarEntryId, ...request }) => {
         return this.hairdressingService.updateCalendarEntry(calendarEntryId, request).pipe(
-          map(({ calendarEntryId }) => hairdressingApiActions.updateCalendarEntryCompleted({
+          withLatestFrom(request.entryType === CalendarEntryType.Work ? this.store.select(selectCustomerById(request.customerId)) : of(undefined)), 
+          map(([
+            { calendarEntryId },
+            customer,
+          ]) => hairdressingApiActions.updateCalendarEntryCompleted({
             calendarEntryId,
             ...request,
+            customer,
           })),
           catchError(() => {
             return of(progressActions.processFinished(),

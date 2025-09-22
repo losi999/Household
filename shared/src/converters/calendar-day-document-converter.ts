@@ -1,7 +1,7 @@
-import { addSeconds, dateToISODateString } from '@household/shared/common/utils';
-import { WORKDAY_START, WORKDAY_END, WORKDAY_LENGTH } from '@household/shared/constants';
+import { addSeconds, calculateWorkdayLimits, dateToISODateString } from '@household/shared/common/utils';
+import { WORKDAY_START, WORKDAY_END } from '@household/shared/constants';
 import { ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
-import { CalendarDayType, CalendarEntryType } from '@household/shared/enums';
+import { CalendarDayType } from '@household/shared/enums';
 import { DocumentUpdate } from '@household/shared/types/common';
 import { Calendar } from '@household/shared/types/types';
 
@@ -22,22 +22,6 @@ export const calendarDayDocumentConverterFactory = (calendarEntryDocumentConvert
     }
 
     return dates;
-  };
-
-  const calculateWorkdayLimits = (defaultStart: number, defaultEnd: number, entries: Calendar.Entry.Response[]): {start: number; end: number;} => {
-    const workEntries = entries.filter(e => e.entryType === CalendarEntryType.Work);
-
-    return workEntries.reduce<{start: number; end: number}>((accumulator, currentValue) => {
-      const calculatedStart = currentValue.end - WORKDAY_LENGTH;
-      const calculatedend = currentValue.start + WORKDAY_LENGTH;
-      return {
-        start: calculatedStart > accumulator.start ? calculatedStart : accumulator.start,
-        end: calculatedend < accumulator.end ? calculatedend : accumulator.end,
-      };
-    }, {
-      start: defaultStart,
-      end: defaultEnd,
-    });
   };
 
   const instance: ICalendarDayDocumentConverter = {
