@@ -1,6 +1,11 @@
-import { Component, forwardRef, Input, OnInit } from '@angular/core';
+import { Component, forwardRef, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { ControlValueAccessor, FormControl, FormGroup, NG_VALUE_ACCESSOR, Validators } from '@angular/forms';
+import { dateToISODateString } from '@household/shared/common/utils';
 import { WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
+import { Calendar } from '@household/shared/types/types';
+import { selectCalendarDay } from '@household/web/state/hairdressing/hairdressing.selector';
+import { Store } from '@ngrx/store';
+import { Observable } from 'rxjs';
 
 type Value = {
   start: number;
@@ -20,9 +25,10 @@ type Value = {
   templateUrl: './time-range-slider.component.html',
   styleUrl: './time-range-slider.component.scss',
 })
-export class TimeRangeSliderComponent implements OnInit, ControlValueAccessor {
+export class TimeRangeSliderComponent implements OnInit, ControlValueAccessor, OnChanges {
   @Input() min = WORKDAY_START;
   @Input() max = WORKDAY_END;
+  @Input() day: Date;
   changed: (value: Value) => void;
   touched: () => void;
   isDisabled: boolean;
@@ -31,7 +37,14 @@ export class TimeRangeSliderComponent implements OnInit, ControlValueAccessor {
     end: FormControl<number>;
   }>;
 
-  constructor() { }
+  calendarDay: Observable<Calendar.Day.Response>;
+
+  constructor(private store: Store) { }
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.day) {
+      this.calendarDay = this.store.select(selectCalendarDay(dateToISODateString(this.day)));
+    }
+  }
 
   ngOnInit(): void {
     this.form = new FormGroup({

@@ -14,6 +14,10 @@ export const selectPriceList = createSelector(selectHairdressing, ({ priceList }
   return priceList;
 });
 
+export const selectCalendarDay = (day: string) => createSelector(selectHairdressing, ({ calendarDays }) => {
+  return calendarDays?.[day];
+});
+
 export const selectCalendarWeek = (date: Date) => createSelector<object, HairdressingState, CalendarWeek>(selectHairdressing, ({ calendarDays }) => {
   const weekday = date.getDay();
   const diffToMonday = weekday === 0 ? 6 : weekday - 1;
