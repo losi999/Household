@@ -43,6 +43,7 @@ import { HairdressingCalendarEntryDetailsDialogComponent } from '@household/web/
 import { IconTextComponent } from '@household/web/app/shared/icon-text/icon-text.component';
 import { MinutesToHourPipe } from '@household/web/app/shared/minutes-to-hour.pipe';
 import { JobPriceSummaryComponent } from '@household/web/app/shared/job-price-summary/job-price-summary.component';
+import { HairdressingCalendarHorizontalDayComponent } from './hairdressing-calendar-horizontal-day/hairdressing-calendar-horizontal-day.component';
 
 @NgModule({
   declarations: [
@@ -61,6 +62,7 @@ import { JobPriceSummaryComponent } from '@household/web/app/shared/job-price-su
     CalendarGridRowsPipe,
     CalendarTimeColumnPipe,
     TimeRangeSliderComponent,
+    HairdressingCalendarHorizontalDayComponent,
   ],
   imports: [
     CommonModule,

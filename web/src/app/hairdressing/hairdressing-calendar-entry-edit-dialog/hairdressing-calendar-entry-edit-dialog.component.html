@@ -13,10 +13,14 @@
       <mat-datepicker-toggle matPrefix [for]="picker" tabindex="-1" />
       <mat-datepicker #picker />
     </mat-form-field>
-    <household-time-range-slider formControlName="timeRange" min="0" max="96" [day]="form.value.day" />
+    <household-time-range-slider formControlName="timeRange" min="0" max="96" />
+    <household-hairdressing-calendar-horizontal-day [date]="form.value.day" [timeRange]="form.value.timeRange" [excludedCalendarEntryId]="entry.calendarEntryId" />
     <ng-container *ngIf="entry.entryType === 'work'">
-      <mat-error *ngIf="form.value.timeRange.end - form.value.timeRange.start < form.value.job?.job?.duration">Időtartam kevesebb, mint a munkához rögzített!</mat-error>
+      <mat-error *ngIf="form.value.timeRange.end - form.value.timeRange.start < form.value.job?.job?.duration">Időtartam kevesebb, mint a munkához rögzített</mat-error>
     </ng-container>
+    <mat-error *ngFor="let e of errors | async">
+      {{e}}
+    </mat-error>
   </form>
 </div>
 <div mat-dialog-actions>

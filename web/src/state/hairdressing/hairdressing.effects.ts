@@ -12,6 +12,7 @@ import moment from 'moment';
 import { HairdressingService } from '@household/web/services/hairdressing.service';
 import { selectCustomerById } from '@household/web/state/customer/customer.selector';
 import { CalendarEntryType } from '@household/shared/enums';
+import { dateToISODateString } from '@household/shared/common/utils';
 
 @Injectable()
 export class HairdressingEffects {
@@ -291,6 +292,34 @@ export class HairdressingEffects {
             notificationActions.showMessage({
               message: 'Hiba történt',
             }),
+            );
+          }),
+        );
+      }),
+    );
+  });
+
+  loadCalendarMonth = createEffect(() => {
+    return this.actions.pipe(
+      ofType(hairdressingActions.listCalendarMonth),
+      mergeMap(({ date }) => {
+        const dateFrom = dateToISODateString(new Date(date.getFullYear(), date.getMonth(), 1));
+        const dateTo = dateToISODateString(new Date(date.getFullYear(), date.getMonth() + 1, 0));
+
+        return this.hairdressingService.listCalendarDays({
+          dateFrom,
+          dateTo,
+        }).pipe(
+          map((entries) => hairdressingApiActions.listCalendarDaysCompleted({
+            entries,
+            dateFrom,
+            dateTo,
+          })),
+          catchError(() => {
+            return of(progressActions.processFinished(),
+              notificationActions.showMessage({
+                message: 'Hiba történt',
+              }),
             );
           }),
         );

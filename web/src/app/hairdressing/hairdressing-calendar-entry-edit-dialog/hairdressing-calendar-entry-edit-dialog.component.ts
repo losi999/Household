@@ -3,13 +3,14 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { isListedPrice } from '@household/shared/common/type-guards';
 import { createDate, dateToISODateString, dateToTimeSlot } from '@household/shared/common/utils';
-import { CalendarEntryType } from '@household/shared/enums';
+import { CalendarDayType, CalendarEntryType } from '@household/shared/enums';
 import { Calendar, Customer } from '@household/shared/types/types';
 import { customerApiActions } from '@household/web/state/customer/customer.actions';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
-import { hairdressingApiActions } from '@household/web/state/hairdressing/hairdressing.actions';
+import { hairdressingActions, hairdressingApiActions } from '@household/web/state/hairdressing/hairdressing.actions';
+import { selectCalendarDay } from '@household/web/state/hairdressing/hairdressing.selector';
 import { Store } from '@ngrx/store';
-import { filter } from 'rxjs';
+import { combineLatest, filter, map, Observable, startWith, switchMap, take } from 'rxjs';
 
 export type HairdressingCalendarEntryEditDialogData = Partial<Calendar.Entry.Response> & Partial<Calendar.DayProp>;
 
@@ -32,6 +33,8 @@ export class HairdressingCalendarEntryEditDialogComponent implements OnInit {
       end: number;
     }>;
   }>;
+
+  errors: Observable<string[]>;
 
   constructor(private dialogRef: MatDialogRef<HairdressingCalendarEntryEditDialogComponent, void>,
     private store: Store,
@@ -64,6 +67,72 @@ export class HairdressingCalendarEntryEditDialogComponent implements OnInit {
         description: job?.description,
       });
     });
+
+    this.errors = combineLatest([
+      this.form.controls.day.valueChanges.pipe(startWith(this.form.value.day),
+        switchMap((date) => {
+
+          const obs = this.store.select(selectCalendarDay(dateToISODateString(date)));
+
+          obs.pipe(take(1)).subscribe((value) => {
+            if (!value) {
+              this.store.dispatch(hairdressingActions.listCalendarMonth({
+                date, 
+              }));
+            }
+          });
+
+          return obs;
+        })),
+      this.form.controls.timeRange.valueChanges.pipe(startWith(this.form.value.timeRange)),
+    ]).pipe(
+      map(([
+        day,
+        timeRange,
+      ]) => {
+        if (!day) {
+          return [];
+        }
+        const errors = [];
+
+        if (this.entry.entryType === CalendarEntryType.Work) {
+
+          switch(day.dayType) {
+            case CalendarDayType.Vacation: {
+              errors.push('Ezt a napot szabadságnak jelölted');
+            } break;
+            case CalendarDayType.Holiday: {
+              errors.push('Munkaszüneti nap');
+            } break;
+            case CalendarDayType.Weekend: {
+              errors.push('Hétvége');
+            } break;
+            case CalendarDayType.Workday: {
+              if (timeRange.start < day.start || timeRange.end > day.end) {
+                errors.push('Túlóra');
+              }
+            } break;
+          }
+
+        }
+
+        day.entries.filter(e => !(timeRange.start >= e.end || timeRange.end <= e.start) && e.calendarEntryId !== this.entry.calendarEntryId).forEach((e) => {
+          let entryTypeText: string;
+          switch(e.entryType) {
+            case CalendarEntryType.Work: {
+              entryTypeText = 'munkával';
+            } break;
+            case CalendarEntryType.Issue: {
+              entryTypeText = 'problémával';
+            } break;
+            case CalendarEntryType.Personal: {
+              entryTypeText = 'személyes programmal';
+            } break;
+          }
+          errors.push(`Ütközik az alábbi ${entryTypeText}: ${e.title}`);
+        });
+        return errors;
+      }));
   }
 
   onSubmit() {

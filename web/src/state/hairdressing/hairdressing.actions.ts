@@ -12,6 +12,7 @@ export const hairdressingActions = createActionGroup({
     'Update income completed': props<Pick<Transaction.PaymentRequest, 'issuedAt' | 'amount' | 'description'> & Transaction.TransactionId>(),
     'Delete income initiated': props<Transaction.TransactionId>(),
     'Delete income completed': props<Transaction.TransactionId>(),
+    'List calendar month': props<{date: Date}>(),
   },
 });
 
