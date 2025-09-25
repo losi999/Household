@@ -423,6 +423,27 @@ export class HairdressingEffects {
     );
   });
   
+  getCalendarEntry = createEffect(() => {
+    return this.actions.pipe(
+      ofType(hairdressingApiActions.getCalendarEntryInitiated),
+      mergeMap(({ calendarEntryId }) => {
+        return this.hairdressingService.getCalendarEntry(calendarEntryId).pipe(
+          map((calendarEntry) => hairdressingApiActions.getCalendarEntryCompleted({
+            calendarEntryId,
+            ...calendarEntry,
+          })),
+          catchError(() => {
+            return of(progressActions.processFinished(),
+              notificationActions.showMessage({
+                message: 'Hiba történt',
+              }),
+            );
+          }),
+        );
+      }),
+    );
+  });
+  
   updateCalendarEntry = createEffect(() => {
     return this.actions.pipe(
       ofType(hairdressingApiActions.updateCalendarEntryInitiated),

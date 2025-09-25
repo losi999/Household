@@ -56,3 +56,7 @@ export const selectCalendarWeek = (date: Date) => createSelector<object, Hairdre
     days: [],
   });
 });
+
+export const selectCalendarEntry = createSelector(selectHairdressing, ({ selectedEntry }) => {
+  return selectedEntry;
+});

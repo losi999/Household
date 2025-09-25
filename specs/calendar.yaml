@@ -87,6 +87,7 @@ components:
       allOf:
         - $ref: "#/components/schemas/CalendarEntryId"
         - $ref: "#/components/schemas/Entry.Base"
+        - $ref: "#/components/schemas/Day"
         - type: object
           required:
             - entryType
@@ -101,6 +102,7 @@ components:
       allOf:
         - $ref: "#/components/schemas/CalendarEntryId"
         - $ref: "#/components/schemas/Entry.Base"
+        - $ref: "#/components/schemas/Day"
         - $ref: "customer.yaml#/components/schemas/Prices.Response"
         - type: object
           required:

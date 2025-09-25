@@ -24,6 +24,7 @@ import { MinutesToHourPipe } from '@household/web/app/shared/minutes-to-hour.pip
 import { CustomerJobDialogComponent } from './customer-job-dialog/customer-job-dialog.component';
 import { TimeSlotToTimePipe } from '@household/web/app/shared/time-slot-to-time.pipe';
 import { JobPriceSummaryComponent } from '@household/web/app/shared/job-price-summary/job-price-summary.component';
+import { JobPriceCalculatorComponent } from '@household/web/app/shared/job-price-calculator/job-price-calculator.component';
 
 @NgModule({
   declarations: [
@@ -54,6 +55,7 @@ import { JobPriceSummaryComponent } from '@household/web/app/shared/job-price-su
     MinutesToHourPipe,
     TimeSlotToTimePipe,
     JobPriceSummaryComponent,
+    JobPriceCalculatorComponent,
   ],
 })
 export class CustomerModule { }

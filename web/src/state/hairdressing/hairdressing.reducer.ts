@@ -14,6 +14,7 @@ const createCalendarEntryResponseFromRequest = (calendarEntryId: Calendar.Entry.
       title: request.title,
       description: request.description,
       entryType: request.entryType,
+      day: request.day,
       prices: customer?.jobs.find(j => j.name === request.title)?.prices,
       customer,
     };
@@ -32,7 +33,8 @@ export type HairdressingState = {
   };
   calendarDays?: {
     [date: string]: Calendar.Day.Response;
-  }
+  };
+  selectedEntry?: Calendar.Entry.Response;
 };
 
 export const hairdressingReducer = createReducer<HairdressingState>({},
@@ -311,6 +313,20 @@ export const hairdressingReducer = createReducer<HairdressingState>({},
           },
         };
       }, {}),
+    };
+  }),
+
+  on(hairdressingApiActions.getCalendarEntryInitiated, (_state) => {
+    return {
+      ..._state,
+      selectedEntry: undefined,
+    };
+  }),
+
+  on(hairdressingApiActions.getCalendarEntryCompleted, (_state, calendarEntry) => {
+    return {
+      ..._state,
+      selectedEntry: calendarEntry,
     };
   }),
 );

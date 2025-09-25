@@ -56,7 +56,7 @@ export const calendarEntryDocumentConverterFactory = (customerDocumentConverter:
       };
     },
     toResponse: (doc) => {
-      const { _id, end, start, title, description } = doc;
+      const { _id, end, start, title, description, day } = doc;
 
       if (doc.entryType === CalendarEntryType.Work) {
         return {
@@ -64,6 +64,7 @@ export const calendarEntryDocumentConverterFactory = (customerDocumentConverter:
           end,
           start,
           title,
+          day,
           entryType: doc.entryType,
           description,
           customer: customerDocumentConverter.toResponse(doc.customer),
@@ -75,6 +76,7 @@ export const calendarEntryDocumentConverterFactory = (customerDocumentConverter:
         end,
         start,
         title,
+        day,
         entryType: doc.entryType,
         description,
       };

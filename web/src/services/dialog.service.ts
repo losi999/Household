@@ -225,22 +225,16 @@ export class DialogService {
     });
   }
 
-  openEditCalendarEntryDialog(day: Calendar.DayProp['day'], entry: Calendar.Entry.Response) {
+  openEditCalendarEntryDialog(entry: Calendar.Entry.Response) {
     this.dialog.open<HairdressingCalendarEntryEditDialogComponent, HairdressingCalendarEntryEditDialogData, void>(HairdressingCalendarEntryEditDialogComponent, {
-      data: {
-        day,
-        ...entry,
-      },
+      data: entry,
       width: '900px',
     });
   }
 
-  openCalendarEntryDetailsDialog(day: Calendar.DayProp['day'], entry: Calendar.Entry.Response) {
+  openCalendarEntryDetailsDialog(entry: Calendar.Entry.Response) {
     this.dialog.open<HairdressingCalendarEntryDetailsDialogComponent, HairdressingCalendarEntryDetailsDialogData, void>(HairdressingCalendarEntryDetailsDialogComponent, {
-      data: {
-        day,
-        ...entry,
-      },
+      data: entry,
       width: '900px',
     });
   }

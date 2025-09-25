@@ -1032,6 +1032,16 @@ paths:
   /hairdressing/v1/calendar/entries/{calendarEntryId}:
     parameters:
       - $ref: "#/components/parameters/Path.CalendarEntryId"
+    get:
+      tags:
+        - hairdressing
+      responses:
+        200:
+          description: Calendar entry
+          content:
+            application/json:
+              schema:
+                $ref: "calendar.yaml#/components/schemas/WorkEntry.Response"
     put:
       tags:
         - hairdressing

@@ -4,7 +4,7 @@ import { Calendar } from '@household/shared/types/types';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { Store } from '@ngrx/store';
 
-export type HairdressingCalendarEntryDetailsDialogData = Calendar.Entry.Response & Calendar.DayProp;
+export type HairdressingCalendarEntryDetailsDialogData = Calendar.Entry.Response;
 
 @Component({
   selector: 'household-hairdressing-calendar-entry-details-dialog',

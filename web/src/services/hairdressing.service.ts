@@ -44,6 +44,10 @@ export class HairdressingService {
     return this.httpClient.post<Calendar.Entry.CalendarEntryId>(`${environment.apiUrl}/hairdressing/v1/calendar/entries`, body);
   }
 
+  getCalendarEntry(calendarEntryId: Calendar.Entry.Id) {
+    return this.httpClient.get<Calendar.Entry.Response>(`${environment.apiUrl}/hairdressing/v1/calendar/entries/${calendarEntryId}`);
+  }
+
   updateCalendarEntry(calendarEntryId: Calendar.Entry.Id, body: Calendar.Entry.Request) {
     return this.httpClient.put<Calendar.Entry.CalendarEntryId>(`${environment.apiUrl}/hairdressing/v1/calendar/entries/${calendarEntryId}`, body);
   }

@@ -7,6 +7,7 @@ export interface ICalendarEntryService {
   saveCalendarEntry(doc: Calendar.Entry.Document): Promise<Calendar.Entry.Document>;
   // saveCalendarEntries(docs: CalendarEntry.Document[]): Promise<unknown>;
   findCalendarEntryById(calendarEntryId: Calendar.Entry.Id): Promise<Calendar.Entry.Document>;
+  getCalendarEntryById(calendarEntryId: Calendar.Entry.Id, params?: Partial<Pick<Calendar.Entry.Document, 'entryType'>>): Promise<Calendar.Entry.Document>;
   deleteCalendarEntry(calendarEntryId: Calendar.Entry.Id): Promise<unknown>;
   updateCalendarEntry(calendarEntryId: Calendar.Entry.Id, updateQuery: DocumentUpdate<Calendar.Entry.Document>): Promise<unknown>;
   listCalendarEntries(data: Calendar.DateRange): Promise<Calendar.Entry.Document[]>;
@@ -38,6 +39,17 @@ export const calendarEntryServiceFactory = (mongodbService: IMongodbService): IC
     findCalendarEntryById: async (calendarEntryId) => {
       return !calendarEntryId ? undefined : mongodbService.calendarEntries.findById(calendarEntryId)
         .lean();        
+    },
+    getCalendarEntryById: (calendarEntryId, params = {}) => {
+      return !calendarEntryId ? undefined : mongodbService.inSession(async(session) => {
+        return mongodbService.calendarEntries.findOne({
+          _id: calendarEntryId,
+          ...params,
+        }).session(session)
+          .populate('customer')
+          .populate('prices.price')
+          .lean();          
+      });
     },
     deleteCalendarEntry: async (calendarEntryId) => {
       return mongodbService.inSession((session) => {

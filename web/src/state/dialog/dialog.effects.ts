@@ -426,8 +426,8 @@ export class DialogEffects {
   updateCalendarEntry = createEffect(() => {
     return this.actions.pipe(
       ofType(dialogActions.updateCalendarEntry),
-      exhaustMap(({ type, day, ...entry }) => {
-        this.dialogService.openEditCalendarEntryDialog(day, entry);
+      exhaustMap(({ type, ...entry }) => {
+        this.dialogService.openEditCalendarEntryDialog(entry);
         return EMPTY;
       }),
     );
@@ -454,8 +454,8 @@ export class DialogEffects {
   openCalendarEntry = createEffect(() => {
     return this.actions.pipe(
       ofType(dialogActions.openCalendarEntry),
-      exhaustMap(({ type, day, ...entry }) => {
-        this.dialogService.openCalendarEntryDetailsDialog(day, entry);
+      exhaustMap(({ type, ...entry }) => {
+        this.dialogService.openCalendarEntryDetailsDialog(entry);
         return EMPTY;
       }),
     );

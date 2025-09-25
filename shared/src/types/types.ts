@@ -947,14 +947,17 @@ export namespace Calendar {
     & Pick<Customer.Job.Document, 'prices'>;
 
     export type PersonalEntryResponse= Base 
+    & DayProp
     & CalendarEntryId 
     & EntryType<Enum.CalendarEntryType.Personal>;
     
-    export type IssueEntryResponse= Base 
+    export type IssueEntryResponse = Base 
+    & DayProp
     & CalendarEntryId 
     & EntryType<Enum.CalendarEntryType.Issue>; 
     
     export type WorkEntryResponse = Base 
+    & DayProp
     & CalendarEntryId
     & {
       customer: Customer.Response
