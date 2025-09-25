@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Calendar, Price } from '@household/shared/types/types';
+import { Price } from '@household/shared/types/types';
 import { environment } from '@household/web/environments/environment';
 
 @Injectable({
@@ -25,34 +25,5 @@ export class HairdressingService {
   deletePrice(priceId: Price.Id) {
     return this.httpClient.delete(`${environment.apiUrl}/hairdressing/v1/prices/${priceId}`);
   }
-
-  listCalendarDays(query: Calendar.DateRange) {
-    return this.httpClient.get<Calendar.Day.Response[]>(`${environment.apiUrl}/hairdressing/v1/calendar/days`, {
-      params: query,
-    });
-  }
-
-  updateCalendarDay(day: Calendar.DayProp['day'], body: Calendar.Day.Request) {
-    return this.httpClient.put(`${environment.apiUrl}/hairdressing/v1/calendar/days/${day}`, body);
-  }
-
-  deleteCalendarDay(day: Calendar.DayProp['day']) {
-    return this.httpClient.delete(`${environment.apiUrl}/hairdressing/v1/calendar/days/${day}`);
-  }
-
-  createCalendarEntry(body: Calendar.Entry.Request) {
-    return this.httpClient.post<Calendar.Entry.CalendarEntryId>(`${environment.apiUrl}/hairdressing/v1/calendar/entries`, body);
-  }
-
-  getCalendarEntry(calendarEntryId: Calendar.Entry.Id) {
-    return this.httpClient.get<Calendar.Entry.Response>(`${environment.apiUrl}/hairdressing/v1/calendar/entries/${calendarEntryId}`);
-  }
-
-  updateCalendarEntry(calendarEntryId: Calendar.Entry.Id, body: Calendar.Entry.Request) {
-    return this.httpClient.put<Calendar.Entry.CalendarEntryId>(`${environment.apiUrl}/hairdressing/v1/calendar/entries/${calendarEntryId}`, body);
-  }
-
-  deleteCalendarEntry(calendarEntryId: Calendar.Entry.Id) {
-    return this.httpClient.delete(`${environment.apiUrl}/hairdressing/v1/calendar/entries/${calendarEntryId}`);
-  }
+  
 }

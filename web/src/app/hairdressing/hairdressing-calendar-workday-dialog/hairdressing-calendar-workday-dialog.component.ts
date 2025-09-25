@@ -4,7 +4,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { AFTERNOON_SHIFT_END, AFTERNOON_SHIFT_START, MORNING_SHIFT_END, MORNING_SHIFT_START, WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
 import { CalendarDayType } from '@household/shared/enums';
 import { Calendar } from '@household/shared/types/types';
-import { hairdressingApiActions } from '@household/web/state/hairdressing/hairdressing.actions';
+import { calendarApiActions } from '@household/web/state/calendar/calendar.actions';
 import { Store } from '@ngrx/store';
 
 enum ShiftType{
@@ -77,14 +77,14 @@ export class HairdressingCalendarWorkdayDialogComponent implements OnInit {
   onSubmit() {
     if (this.form.valid) {
       if (this.form.value.dayType === CalendarDayType.Vacation) {
-        this.store.dispatch(hairdressingApiActions.updateCalendarDayInitiated({
+        this.store.dispatch(calendarApiActions.updateCalendarDayInitiated({
           dayType: CalendarDayType.Vacation,
           day: this.day.day,
         }));        
       }
 
       if (this.form.value.dayType === CalendarDayType.Workday) {
-        this.store.dispatch(hairdressingApiActions.updateCalendarDayInitiated({
+        this.store.dispatch(calendarApiActions.updateCalendarDayInitiated({
           dayType: CalendarDayType.Workday,
           day: this.day.day,
           start: this.form.value.timeRange.start,
@@ -97,7 +97,7 @@ export class HairdressingCalendarWorkdayDialogComponent implements OnInit {
   }
 
   onDelete() {
-    this.store.dispatch(hairdressingApiActions.deleteCalendarDayInitiated({
+    this.store.dispatch(calendarApiActions.deleteCalendarDayInitiated({
       day: this.day.day,
     }));
 

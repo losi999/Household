@@ -7,10 +7,10 @@ import { CalendarDayType, CalendarEntryType } from '@household/shared/enums';
 import { Calendar, Customer } from '@household/shared/types/types';
 import { customerApiActions } from '@household/web/state/customer/customer.actions';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
-import { hairdressingActions, hairdressingApiActions } from '@household/web/state/hairdressing/hairdressing.actions';
-import { selectCalendarDay } from '@household/web/state/hairdressing/hairdressing.selector';
+import { selectCalendarDay } from '@household/web/state/calendar/calendar.selector';
 import { Store } from '@ngrx/store';
 import { combineLatest, filter, map, Observable, startWith, switchMap, take } from 'rxjs';
+import { calendarActions, calendarApiActions } from '@household/web/state/calendar/calendar.actions';
 
 export type HairdressingCalendarEntryEditDialogData = Partial<Calendar.Entry.Response> & Partial<Calendar.DayProp>;
 
@@ -76,7 +76,7 @@ export class HairdressingCalendarEntryEditDialogComponent implements OnInit {
 
           obs.pipe(take(1)).subscribe((value) => {
             if (!value) {
-              this.store.dispatch(hairdressingActions.listCalendarMonth({
+              this.store.dispatch(calendarActions.listCalendarMonth({
                 date, 
               }));
             }
@@ -174,12 +174,12 @@ export class HairdressingCalendarEntryEditDialogComponent implements OnInit {
       }
 
       if (this.entry.calendarEntryId) {
-        this.store.dispatch(hairdressingApiActions.updateCalendarEntryInitiated({
+        this.store.dispatch(calendarApiActions.updateCalendarEntryInitiated({
           calendarEntryId: this.entry.calendarEntryId,
           ...request,
         }));
       } else {
-        this.store.dispatch(hairdressingApiActions.createCalendarEntryInitiated(request));
+        this.store.dispatch(calendarApiActions.createCalendarEntryInitiated(request));
       }
 
       this.dialogRef.close();

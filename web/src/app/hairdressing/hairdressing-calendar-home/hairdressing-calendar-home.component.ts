@@ -3,10 +3,10 @@ import { addDays, dateToISODateString } from '@household/shared/common/utils';
 import { CalendarEntryType } from '@household/shared/enums';
 import { Calendar } from '@household/shared/types/types';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
-import { hairdressingApiActions } from '@household/web/state/hairdressing/hairdressing.actions';
-import { selectCalendarWeek } from '@household/web/state/hairdressing/hairdressing.selector';
+import { selectCalendarWeek } from '@household/web/state/calendar/calendar.selector';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
+import { calendarApiActions } from '@household/web/state/calendar/calendar.actions';
 
 export type CalendarWeek = {
   start: number;
@@ -35,7 +35,7 @@ export class HairdressingCalendarHomeComponent implements OnInit {
 
     this.week = this.store.select(selectCalendarWeek(date));
 
-    this.store.dispatch(hairdressingApiActions.listCalendarDaysInitiated({
+    this.store.dispatch(calendarApiActions.listCalendarDaysInitiated({
       dateFrom: dateToISODateString(this.weekStart),
       dateTo: dateToISODateString(weekEnd),
     }));     

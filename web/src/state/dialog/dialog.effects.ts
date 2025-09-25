@@ -17,6 +17,7 @@ import { selectCustomer } from '@household/web/state/customer/customer.selector'
 import { customerApiActions } from '@household/web/state/customer/customer.actions';
 import { hairdressingApiActions } from '@household/web/state/hairdressing/hairdressing.actions';
 import { CalendarDayType } from '@household/shared/enums';
+import { calendarApiActions } from '@household/web/state/calendar/calendar.actions';
 
 @Injectable()
 export class DialogEffects { 
@@ -440,7 +441,7 @@ export class DialogEffects {
       ofType(dialogActions.deleteCalendarEntry),
       exhaustMap(({ calendarEntryId, title }) => {
         return this.dialogService.openDeleteCalendarEntryDialog(title).pipe(dispatchIfConfirmed(
-          hairdressingApiActions.deleteCalendarEntryInitiated({
+          calendarApiActions.deleteCalendarEntryInitiated({
             calendarEntryId,
           }),
         ),
@@ -468,7 +469,7 @@ export class DialogEffects {
       ofType(dialogActions.setVacationDay),
       exhaustMap(({ day }) => {
         return this.dialogService.openSetVacationDayDialog(day).pipe(dispatchIfConfirmed(
-          hairdressingApiActions.updateCalendarDayInitiated({
+          calendarApiActions.updateCalendarDayInitiated({
             day,
             dayType: CalendarDayType.Vacation,
           }),

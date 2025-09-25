@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: "AWS::Serverless-2016-10-31"
-Description: "Household Hairdressing Api"
+Description: "Household Calendar Api"
 Parameters:
   LambdaRoleArn:
     Type: String
@@ -32,11 +32,11 @@ Globals:
         MONGODB_CONNECTION_STRING: !Ref MongodbConnectionString
 
 Resources:
-  HairdressingApi:
+  CalendarApi:
     Type: AWS::Serverless::Api
     Properties:
-      Name: !Sub Household-${Env}-Hairdressing
-      StageName: hairdressing
+      Name: !Sub Household-${Env}-Calendar
+      StageName: calendar
       TracingEnabled: true
       Cors:
         AllowMethods: "'*'"
@@ -66,71 +66,119 @@ Resources:
           ResponseTemplates:
             application/json: '{ "message": $context.error.messageString }'
 
-  CreatePrice:
+  CreateCalendarEntry:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub Household-${Env}-CreatePrice
-      CodeUri: dist/api/create-price
+      FunctionName: !Sub Household-${Env}-CreateCalendarEntry
+      CodeUri: dist/api/create-calendar-entry
       Role: !Ref LambdaRoleArn
       Events:
         API:
           Type: Api
           Properties:
-            RestApiId: !Ref HairdressingApi
-            Path: /v1/prices
+            RestApiId: !Ref CalendarApi
+            Path: /v1/entries
             Method: POST
             Auth:
               Authorizer: CognitoAuthorizer
 
-  UpdatePrice:
+  GetCalendarEntry:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub Household-${Env}-UpdatePrice
-      CodeUri: dist/api/update-price
+      FunctionName: !Sub Household-${Env}-GetCalendarEntry
+      CodeUri: dist/api/get-calendar-entry
       Role: !Ref LambdaRoleArn
       Events:
         API:
           Type: Api
           Properties:
-            RestApiId: !Ref HairdressingApi
-            Path: /v1/prices/{priceId}
-            Method: PUT
-            Auth:
-              Authorizer: CognitoAuthorizer
-
-  ListPrices:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: !Sub Household-${Env}-ListPrices
-      CodeUri: dist/api/list-prices
-      Role: !Ref LambdaRoleArn
-      Events:
-        API:
-          Type: Api
-          Properties:
-            RestApiId: !Ref HairdressingApi
-            Path: /v1/prices
+            RestApiId: !Ref CalendarApi
+            Path: /v1/entries/{calendarEntryId}
             Method: GET
             Auth:
               Authorizer: CognitoAuthorizer
 
-  DeletePrice:
+  UpdateCalendarEntry:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub Household-${Env}-DeletePrice
-      CodeUri: dist/api/delete-price
+      FunctionName: !Sub Household-${Env}-UpdateCalendarEntry
+      CodeUri: dist/api/update-calendar-entry
       Role: !Ref LambdaRoleArn
       Events:
         API:
           Type: Api
           Properties:
-            RestApiId: !Ref HairdressingApi
-            Path: /v1/prices/{priceId}
+            RestApiId: !Ref CalendarApi
+            Path: /v1/entries/{calendarEntryId}
+            Method: PUT
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  DeleteCalendarEntry:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-DeleteCalendarEntry
+      CodeUri: dist/api/delete-calendar-entry
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CalendarApi
+            Path: /v1/entries/{calendarEntryId}
             Method: DELETE
             Auth:
               Authorizer: CognitoAuthorizer
 
+  UpdateCalendarDay:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-UpdateCalendarDay
+      CodeUri: dist/api/update-calendar-day
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CalendarApi
+            Path: /v1/days/{day}
+            Method: PUT
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  DeleteCalendarDay:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-DeleteCalendarDay
+      CodeUri: dist/api/delete-calendar-day
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CalendarApi
+            Path: /v1/days/{day}
+            Method: DELETE
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  ListCalendarDays:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-ListCalendarDays
+      CodeUri: dist/api/list-calendar-days
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CalendarApi
+            Path: /v1/days
+            Method: GET
+            Auth:
+              Authorizer: CognitoAuthorizer
+
 Outputs:
-  HairdressingApi:
-    Description: "Household Hairdressing API"
-    Value: !Sub "${HairdressingApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}"
+  CalendarApi:
+    Description: "Household Calendar API"
+    Value: !Sub "${CalendarApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}"

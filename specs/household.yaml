@@ -980,13 +980,13 @@ paths:
       responses:
         204:
           description: Price deleted
-  /hairdressing/v1/calendar/days:
+  /calendar/v1/days:
     get:
       parameters:
         - $ref: "#/components/parameters/Query.DateFrom"
         - $ref: "#/components/parameters/Query.DateTo"
       tags:
-        - hairdressing
+        - calendar
       responses:
         200:
           description: List of calendar days
@@ -996,12 +996,12 @@ paths:
                 type: array
                 items:
                   $ref: "calendar.yaml#/components/schemas/Day.Response"
-  /hairdressing/v1/calendar/days/{day}:
+  /calendar/v1/days/{day}:
     parameters:
       - $ref: "#/components/parameters/Path.Day"
     put:
       tags:
-        - hairdressing
+        - calendar
       requestBody:
         content:
           application/json:
@@ -1013,10 +1013,10 @@ paths:
         204:
           description: Calendar day updated
 
-  /hairdressing/v1/calendar/entries:
+  /calendar/v1/entries:
     post:
       tags:
-        - hairdressing
+        - calendar
       requestBody:
         content:
           application/json:
@@ -1029,12 +1029,12 @@ paths:
             application/json:
               schema:
                 $ref: "calendar.yaml#/components/schemas/CalendarEntryId"
-  /hairdressing/v1/calendar/entries/{calendarEntryId}:
+  /calendar/v1/entries/{calendarEntryId}:
     parameters:
       - $ref: "#/components/parameters/Path.CalendarEntryId"
     get:
       tags:
-        - hairdressing
+        - calendar
       responses:
         200:
           description: Calendar entry
@@ -1044,7 +1044,7 @@ paths:
                 $ref: "calendar.yaml#/components/schemas/WorkEntry.Response"
     put:
       tags:
-        - hairdressing
+        - calendar
       requestBody:
         content:
           application/json:
@@ -1059,7 +1059,7 @@ paths:
                 $ref: "calendar.yaml#/components/schemas/CalendarEntryId"
     delete:
       tags:
-        - hairdressing
+        - calendar
       responses:
         204:
           description: Calendar entry deleted
