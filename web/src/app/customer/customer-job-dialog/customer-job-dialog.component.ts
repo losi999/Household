@@ -5,7 +5,7 @@ import { isListedPrice } from '@household/shared/common/type-guards';
 import { Customer, Price } from '@household/shared/types/types';
 import { JobPriceCalculatorValue } from '@household/web/app/shared/job-price-calculator/job-price-calculator.component';
 import { customerApiActions } from '@household/web/state/customer/customer.actions';
-import { selectPriceList } from '@household/web/state/hairdressing/hairdressing.selector';
+import { selectPriceList } from '@household/web/state/price/price.selector';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 

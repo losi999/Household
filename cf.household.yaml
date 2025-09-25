@@ -173,16 +173,27 @@ Resources:
         Env: !Ref Env
         MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
 
-  Hairdressing:
+  Price:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: sam.hairdressing.yaml
+      TemplateURL: sam.price.yaml
       Parameters:
         LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
         DependenciesLayer: !GetAtt Infrastructure.Outputs.DependenciesLayer
         UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
         MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
+
+  # Hairdressing:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL: sam.hairdressing.yaml
+  #     Parameters:
+  #       LambdaRoleArn: !GetAtt Infrastructure.Outputs.LambdaRoleArn
+  #       DependenciesLayer: !GetAtt Infrastructure.Outputs.DependenciesLayer
+  #       UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
+  #       Env: !Ref Env
+  #       MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
 
   Api:
     Type: AWS::CloudFront::Distribution
@@ -394,12 +405,30 @@ Resources:
               - PATCH
               - POST
               - DELETE
+          # - ForwardedValues:
+          #     QueryString: true
+          #     Headers:
+          #       - Authorization
+          #   PathPattern: /hairdressing/*
+          #   TargetOriginId: Hairdressing
+          #   ViewerProtocolPolicy: redirect-to-https
+          #   MinTTL: 0
+          #   MaxTTL: 0
+          #   DefaultTTL: 0
+          #   AllowedMethods:
+          #     - GET
+          #     - HEAD
+          #     - OPTIONS
+          #     - PUT
+          #     - PATCH
+          #     - POST
+          #     - DELETE
           - ForwardedValues:
               QueryString: true
               Headers:
                 - Authorization
-            PathPattern: /hairdressing/*
-            TargetOriginId: Hairdressing
+            PathPattern: /calendar/*
+            TargetOriginId: Calendar
             ViewerProtocolPolicy: redirect-to-https
             MinTTL: 0
             MaxTTL: 0
@@ -416,8 +445,8 @@ Resources:
               QueryString: true
               Headers:
                 - Authorization
-            PathPattern: /calendar/*
-            TargetOriginId: Calendar
+            PathPattern: /price/*
+            TargetOriginId: Price
             ViewerProtocolPolicy: redirect-to-https
             MinTTL: 0
             MaxTTL: 0
@@ -471,12 +500,16 @@ Resources:
             Id: Setting
             CustomOriginConfig:
               OriginProtocolPolicy: https-only
-          - DomainName: !GetAtt Hairdressing.Outputs.HairdressingApi
-            Id: Hairdressing
-            CustomOriginConfig:
-              OriginProtocolPolicy: https-only
+          # - DomainName: !GetAtt Hairdressing.Outputs.HairdressingApi
+          #   Id: Hairdressing
+          #   CustomOriginConfig:
+          #     OriginProtocolPolicy: https-only
           - DomainName: !GetAtt Calendar.Outputs.CalendarApi
             Id: Calendar
+            CustomOriginConfig:
+              OriginProtocolPolicy: https-only
+          - DomainName: !GetAtt Price.Outputs.PriceApi
+            Id: Price
             CustomOriginConfig:
               OriginProtocolPolicy: https-only
   ApiDNSRecord:

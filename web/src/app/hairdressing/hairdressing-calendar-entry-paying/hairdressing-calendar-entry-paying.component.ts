@@ -5,7 +5,7 @@ import { isListedPrice } from '@household/shared/common/type-guards';
 import { CalendarEntryType } from '@household/shared/enums';
 import { Calendar } from '@household/shared/types/types';
 import { JobPriceCalculatorValue } from '@household/web/app/shared/job-price-calculator/job-price-calculator.component';
-import { hairdressingApiActions } from '@household/web/state/hairdressing/hairdressing.actions';
+import { priceApiActions } from '@household/web/state/price/price.actions';
 import { selectCalendarEntry } from '@household/web/state/calendar/calendar.selector';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
@@ -26,7 +26,7 @@ export class HairdressingCalendarEntryPayingComponent implements OnInit {
   ngOnInit(): void {
     const calendarEntryId = this.activatedRoute.snapshot.paramMap.get('calendarEntryId') as Calendar.Entry.Id;
     
-    this.store.dispatch(hairdressingApiActions.listPricesInitiated());
+    this.store.dispatch(priceApiActions.listPricesInitiated());
     this.store.dispatch(calendarApiActions.getCalendarEntryInitiated({
       calendarEntryId,
     }));

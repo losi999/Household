@@ -49,6 +49,8 @@ import { customerReducer } from '@household/web/state/customer/customer.reducer'
 import { CustomerEffects } from '@household/web/state/customer/customer.effects';
 import { calendarReducer } from '@household/web/state/calendar/calendar.reducer';
 import { CalendarEffects } from '@household/web/state/calendar/calendar.effects';
+import { priceReducer } from '@household/web/state/price/price.reducer';
+import { PriceEffects } from '@household/web/state/price/price.effects';
 
 registerLocaleData(localeHu);
 
@@ -79,6 +81,7 @@ registerLocaleData(localeHu);
       users: userReducer,
       customers: customerReducer,
       calendar: calendarReducer,
+      price: priceReducer,
     }),
     StoreDevtoolsModule.instrument({
       maxAge: 25,
@@ -102,6 +105,7 @@ registerLocaleData(localeHu);
       AuthEffects,
       CustomerEffects,
       CalendarEffects,
+      PriceEffects,
     ]),
   ],
   providers: [

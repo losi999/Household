@@ -930,10 +930,10 @@ paths:
         204:
           description: Job deleted
 
-  /hairdressing/v1/prices:
+  /price/v1/prices:
     get:
       tags:
-        - hairdressing
+        - price
       responses:
         200:
           description: Price list
@@ -943,7 +943,7 @@ paths:
                 $ref: "price.yaml#/components/schemas/Response"
     post:
       tags:
-        - hairdressing
+        - price
       requestBody:
         content:
           application/json:
@@ -956,12 +956,12 @@ paths:
             application/json:
               schema:
                 $ref: "price.yaml#/components/schemas/PriceId"
-  /hairdressing/v1/prices/{priceId}:
+  /price/v1/prices/{priceId}:
     parameters:
       - $ref: "#/components/parameters/Path.PriceId"
     put:
       tags:
-        - hairdressing
+        - price
       requestBody:
         content:
           application/json:
@@ -976,7 +976,7 @@ paths:
                 $ref: "price.yaml#/components/schemas/PriceId"
     delete:
       tags:
-        - hairdressing
+        - price
       responses:
         204:
           description: Price deleted

@@ -7,7 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { Price } from '@household/shared/types/types';
 import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
 import { MinutesToHourPipe } from '@household/web/app/shared/minutes-to-hour.pipe';
-import { selectPriceList } from '@household/web/state/hairdressing/hairdressing.selector';
+import { selectPriceList } from '@household/web/state/price/price.selector';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs/internal/Observable';
 

@@ -15,9 +15,9 @@ import { projectApiActions } from '@household/web/state/project/project.actions'
 import { Store } from '@ngrx/store';
 import { selectCustomer } from '@household/web/state/customer/customer.selector';
 import { customerApiActions } from '@household/web/state/customer/customer.actions';
-import { hairdressingApiActions } from '@household/web/state/hairdressing/hairdressing.actions';
 import { CalendarDayType } from '@household/shared/enums';
 import { calendarApiActions } from '@household/web/state/calendar/calendar.actions';
+import { priceApiActions } from '@household/web/state/price/price.actions';
 
 @Injectable()
 export class DialogEffects { 
@@ -340,7 +340,7 @@ export class DialogEffects {
     return this.actions.pipe(
       ofType(dialogActions.deletePrice),
       exhaustMap(({ type, ...price }) => {
-        return this.dialogService.openDeletePriceDialog(price).pipe(dispatchIfConfirmed(hairdressingApiActions.deletePriceInitiated({
+        return this.dialogService.openDeletePriceDialog(price).pipe(dispatchIfConfirmed(priceApiActions.deletePriceInitiated({
           priceId: price.priceId,
         })));
       }),

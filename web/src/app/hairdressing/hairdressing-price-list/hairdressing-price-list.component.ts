@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Price } from '@household/shared/types/types';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
-import { hairdressingApiActions } from '@household/web/state/hairdressing/hairdressing.actions';
-import { selectPriceList } from '@household/web/state/hairdressing/hairdressing.selector';
+import { priceApiActions } from '@household/web/state/price/price.actions';
+import { selectPriceList } from '@household/web/state/price/price.selector';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 
@@ -20,7 +20,7 @@ export class HairdressingPriceListComponent implements OnInit {
   ngOnInit(): void {
     this.prices = this.store.select(selectPriceList);
 
-    this.store.dispatch(hairdressingApiActions.listPricesInitiated());
+    this.store.dispatch(priceApiActions.listPricesInitiated());
   }
 
   create() {

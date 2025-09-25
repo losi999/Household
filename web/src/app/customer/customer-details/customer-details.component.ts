@@ -4,7 +4,7 @@ import { Customer } from '@household/shared/types/types';
 import { customerApiActions } from '@household/web/state/customer/customer.actions';
 import { selectCustomer } from '@household/web/state/customer/customer.selector';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
-import { hairdressingApiActions } from '@household/web/state/hairdressing/hairdressing.actions';
+import { priceApiActions } from '@household/web/state/price/price.actions';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 
@@ -28,7 +28,7 @@ export class CustomerDetailsComponent implements OnInit {
     this.store.dispatch(customerApiActions.getCustomerByIdInitiated({
       customerId: this.customerId,
     }));
-    this.store.dispatch(hairdressingApiActions.listPricesInitiated());
+    this.store.dispatch(priceApiActions.listPricesInitiated());
   }
 
   onEdit() {

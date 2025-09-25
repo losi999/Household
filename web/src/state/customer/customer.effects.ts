@@ -5,7 +5,7 @@ import { customerApiActions } from '@household/web/state/customer/customer.actio
 import { CustomerService } from '@household/web/services/customer.service';
 import { progressActions } from '@household/web/state/progress/progress.actions';
 import { notificationActions } from '@household/web/state/notification/notification.actions';
-import { selectPriceList } from '@household/web/state/hairdressing/hairdressing.selector';
+import { selectPriceList } from '@household/web/state/price/price.selector';
 import { Store } from '@ngrx/store';
 
 @Injectable()

@@ -9,7 +9,7 @@ import { accountApiActions } from '@household/web/state/account/account.actions'
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
 import { fileApiActions } from '@household/web/state/file/file.actions';
 import { userApiActions } from '@household/web/state/user/user.actions';
-import { hairdressingApiActions } from '@household/web/state/hairdressing/hairdressing.actions';
+import { priceApiActions } from '@household/web/state/price/price.actions';
 
 export type ProgressState = {
   counter: number;
@@ -259,7 +259,7 @@ on(userApiActions.addUserToGroupCompleted, userApiActions.removeUserFromGroupCom
   };
 }),
 
-on(hairdressingApiActions.deletePriceInitiated, (_state, { priceId }) => {
+on(priceApiActions.deletePriceInitiated, (_state, { priceId }) => {
   return {
     ..._state,
     inProgressPrices: [
@@ -268,7 +268,7 @@ on(hairdressingApiActions.deletePriceInitiated, (_state, { priceId }) => {
     ],
   };
 }),
-on(hairdressingApiActions.deletePriceCompleted, hairdressingApiActions.deletePriceFailed, (_state, { priceId }) => {
+on(priceApiActions.deletePriceCompleted, priceApiActions.deletePriceFailed, (_state, { priceId }) => {
   return {
     ..._state,
     inProgressPrices: _state.inProgressPrices.filter(p => p !== priceId),

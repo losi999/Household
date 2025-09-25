@@ -3,7 +3,7 @@ import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { priceUnitsOfMeasurement } from '@household/shared/constants';
 import { Price } from '@household/shared/types/types';
-import { hairdressingApiActions } from '@household/web/state/hairdressing/hairdressing.actions';
+import { priceApiActions } from '@household/web/state/price/price.actions';
 import { Store } from '@ngrx/store';
 
 export type HairdressingPriceFormData = Price.Response;
@@ -43,12 +43,12 @@ export class HairdressingPriceFormComponent implements OnInit {
         unitOfMeasurement: this.form.value.unitOfMeasurement,
       };
       if (this.price) {
-        this.store.dispatch(hairdressingApiActions.updatePriceInitiated({
+        this.store.dispatch(priceApiActions.updatePriceInitiated({
           priceId: this.price.priceId,
           ...request,
         }));
       } else {
-        this.store.dispatch(hairdressingApiActions.createPriceInitiated(request));
+        this.store.dispatch(priceApiActions.createPriceInitiated(request));
       }
 
       this.dialogRef.close();

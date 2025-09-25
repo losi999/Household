@@ -1,6 +1,5 @@
 import { Customer, Price } from '@household/shared/types/types';
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
-import {} from '@ngrx/effects';
 
 export const customerApiActions = createActionGroup({
   source: 'Customer API',
@@ -19,8 +18,5 @@ export const customerApiActions = createActionGroup({
     'Update customer job completed': props<Customer.CustomerId & {jobName: Customer.Job.Name['name']} & Customer.Job.Request & {priceList: Price.Response[]}>(),    
     'Delete customer job initiated': props<Customer.CustomerId & {jobName: Customer.Job.Name['name']}>(),
     'Delete customer job completed': props<Customer.CustomerId & {jobName: Customer.Job.Name['name']}>(),    
-    // 'Delete customer initiated': props<Customer.CustomerId>(),
-    // 'Delete customer completed': props<Customer.CustomerId>(),
-    // 'Delete customer failed': props<Customer.CustomerId>(),
   },
 });
