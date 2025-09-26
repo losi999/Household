@@ -1,6 +1,6 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { timeSlotToTimeString } from '@household/shared/common/utils';
-import { CalendarWeek } from '@household/web/app/hairdressing/hairdressing-calendar-home/hairdressing-calendar-home.component';
+import { CalendarWeek } from '@household/web/app/hairdressing/calendar/calendar-home/calendar-home.component';
 
 @Pipe({
   name: 'calendarTimeColumn',

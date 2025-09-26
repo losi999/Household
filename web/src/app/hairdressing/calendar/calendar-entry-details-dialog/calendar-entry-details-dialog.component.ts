@@ -4,19 +4,19 @@ import { Calendar } from '@household/shared/types/types';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { Store } from '@ngrx/store';
 
-export type HairdressingCalendarEntryDetailsDialogData = Calendar.Entry.Response;
+export type CalendarEntryDetailsDialogData = Calendar.Entry.Response;
 
 @Component({
-  selector: 'household-hairdressing-calendar-entry-details-dialog',
+  selector: 'household-calendar-entry-details-dialog',
   standalone: false,
-  templateUrl: './hairdressing-calendar-entry-details-dialog.component.html',
-  styleUrl: './hairdressing-calendar-entry-details-dialog.component.scss',
+  templateUrl: './calendar-entry-details-dialog.component.html',
+  styleUrl: './calendar-entry-details-dialog.component.scss',
 })
-export class HairdressingCalendarEntryDetailsDialogComponent {
+export class CalendarEntryDetailsDialogComponent {
 
-  constructor(private dialogRef: MatDialogRef<HairdressingCalendarEntryDetailsDialogComponent, void>,
+  constructor(private dialogRef: MatDialogRef<CalendarEntryDetailsDialogComponent, void>,
     private store: Store,
-    @Inject(MAT_DIALOG_DATA) public entry: HairdressingCalendarEntryDetailsDialogData) { }
+    @Inject(MAT_DIALOG_DATA) public entry: CalendarEntryDetailsDialogData) { }
 
   onEdit() {
     this.store.dispatch(dialogActions.updateCalendarEntry({

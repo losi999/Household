@@ -4,12 +4,13 @@ import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { Store } from '@ngrx/store';
 
 @Component({
-  selector: 'household-hairdressing-calendar-day',
-  standalone: false,  
-  templateUrl: './hairdressing-calendar-day.component.html',
-  styleUrl: './hairdressing-calendar-day.component.scss',
+  selector: 'household-calendar-vertical-day',
+  standalone: false,
+  
+  templateUrl: './calendar-vertical-day.component.html',
+  styleUrl: './calendar-vertical-day.component.scss',
 })
-export class HairdressingCalendarDayComponent {
+export class CalendarVerticalDayComponent {
   @Input() day: Calendar.Day.Response;
   @Input() column: number;
   

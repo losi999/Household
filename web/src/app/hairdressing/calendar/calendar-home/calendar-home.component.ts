@@ -2,12 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { addDays, dateToISODateString } from '@household/shared/common/utils';
 import { CalendarEntryType } from '@household/shared/enums';
 import { Calendar } from '@household/shared/types/types';
-import { dialogActions } from '@household/web/state/dialog/dialog.actions';
+import { calendarApiActions } from '@household/web/state/calendar/calendar.actions';
 import { selectCalendarWeek } from '@household/web/state/calendar/calendar.selector';
+import { customerApiActions } from '@household/web/state/customer/customer.actions';
+import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
-import { calendarApiActions } from '@household/web/state/calendar/calendar.actions';
-import { customerApiActions } from '@household/web/state/customer/customer.actions';
 
 export type CalendarWeek = {
   start: number;
@@ -16,12 +16,13 @@ export type CalendarWeek = {
 };
 
 @Component({
-  selector: 'household-hairdressing-calendar-home',
+  selector: 'household-calendar-home',
   standalone: false,
-  templateUrl: './hairdressing-calendar-home.component.html',
-  styleUrl: './hairdressing-calendar-home.component.scss',
+  
+  templateUrl: './calendar-home.component.html',
+  styleUrl: './calendar-home.component.scss',
 })
-export class HairdressingCalendarHomeComponent implements OnInit {
+export class CalendarHomeComponent implements OnInit {
   week: Observable<CalendarWeek>;
   private weekStart: Date;
 
@@ -83,4 +84,5 @@ export class HairdressingCalendarHomeComponent implements OnInit {
       entryType: CalendarEntryType.Issue,
     }));
   }
+
 }

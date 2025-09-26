@@ -5,24 +5,23 @@ import { Customer } from '@household/shared/types/types';
 import { customerApiActions } from '@household/web/state/customer/customer.actions';
 import { Store } from '@ngrx/store';
 
-export type CustomerFormData = Customer.Response;
+export type CustomerDialogData = Customer.Response;
 
 @Component({
-  selector: 'household-customer-form',
   standalone: false,  
-  templateUrl: './customer-form.component.html',
-  styleUrl: './customer-form.component.scss',
+  templateUrl: './customer-dialog.component.html',
+  styleUrl: './customer-dialog.component.scss',
 })
-export class CustomerFormComponent implements OnInit {
+export class CustomerDialogComponent implements OnInit {
   form: FormGroup<{
     name: FormControl<string>;
     description: FormControl<string>;
     isGroup: FormControl<boolean>;
   }>;
   rating: number;
-  constructor(private dialogRef: MatDialogRef<CustomerFormComponent, void>,
+  constructor(private dialogRef: MatDialogRef<CustomerDialogComponent, void>,
     private store: Store,
-    @Inject(MAT_DIALOG_DATA) public customer: CustomerFormData) { }
+    @Inject(MAT_DIALOG_DATA) public customer: CustomerDialogData) { }
 
   ngOnInit(): void {
     this.rating = this.customer?.rating ?? 3;

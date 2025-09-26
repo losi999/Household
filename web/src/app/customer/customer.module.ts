@@ -11,7 +11,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
 import { AutocompleteFilterPipe } from '@household/web/app/shared/autocomplete/autocomplete-filter.pipe';
 import { ToolbarComponent } from '@household/web/app/shared/toolbar/toolbar.component';
-import { CustomerFormComponent } from './customer-form/customer-form.component';
+import { CustomerDialogComponent } from './customer-dialog/customer-dialog.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatDialogModule } from '@angular/material/dialog';
 import { IconTextComponent } from '@household/web/app/shared/icon-text/icon-text.component';
@@ -33,7 +33,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
     CustomerHomeComponent,
     CustomerListComponent,
     CustomerListItemComponent,
-    CustomerFormComponent,
+    CustomerDialogComponent,
     CustomerDetailsJobItemComponent,
     CustomerJobDialogComponent,
   ],

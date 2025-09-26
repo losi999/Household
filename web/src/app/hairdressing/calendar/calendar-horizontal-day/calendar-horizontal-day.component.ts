@@ -6,12 +6,12 @@ import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 
 @Component({
-  selector: 'household-hairdressing-calendar-horizontal-day',
+  selector: 'household-calendar-horizontal-day',
   standalone: false,
-  templateUrl: './hairdressing-calendar-horizontal-day.component.html',
-  styleUrl: './hairdressing-calendar-horizontal-day.component.scss',
+  templateUrl: './calendar-horizontal-day.component.html',
+  styleUrl: './calendar-horizontal-day.component.scss',
 })
-export class HairdressingCalendarHorizontalDayComponent implements OnChanges {
+export class CalendarHorizontalDayComponent implements OnChanges {
   @Input() excludedCalendarEntryId: Calendar.Entry.Id;
   @Input() date: Date;
   @Input() timeRange: {

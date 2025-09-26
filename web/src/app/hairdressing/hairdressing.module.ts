@@ -24,27 +24,17 @@ import { HairdressingPriceFormComponent } from './hairdressing-price-form/hairdr
 import { MatDialogModule } from '@angular/material/dialog';
 import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
 import { HairdressingPriceSubmenuComponent } from './hairdressing-price-submenu/hairdressing-price-submenu.component';
-import { HairdressingCalendarHomeComponent } from './hairdressing-calendar-home/hairdressing-calendar-home.component';
-import { HairdressingCalendarDayComponent } from './hairdressing-calendar-day/hairdressing-calendar-day.component';
-import { HairdressingCalendarEntryEditDialogComponent } from './hairdressing-calendar-entry-edit-dialog/hairdressing-calendar-entry-edit-dialog.component';
 import { MatTimepickerModule } from '@angular/material/timepicker';
 import { MatMenuModule } from '@angular/material/menu';
-import { HairdressingCalendarWorkdayDialogComponent } from './hairdressing-calendar-workday-dialog/hairdressing-calendar-workday-dialog.component';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSliderModule } from '@angular/material/slider';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
-import { CalendarGridRowsPipe } from './calendar-grid-rows.pipe';
-import { CalendarTimeColumnPipe } from './calendar-time-column.pipe';
-import { TimeRangeSliderComponent } from '@household/web/app/hairdressing/time-range-slider/time-range-slider.component';
 import { MatSelectModule } from '@angular/material/select';
 import { CustomerJobAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/customer-job-autocomplete-input/customer-job-autocomplete-input.component';
 import { TimeSlotToTimePipe } from '@household/web/app/shared/time-slot-to-time.pipe';
-import { HairdressingCalendarEntryDetailsDialogComponent } from '@household/web/app/hairdressing/hairdressing-calendar-entry-details-dialog/hairdressing-calendar-entry-details-dialog.component';
 import { IconTextComponent } from '@household/web/app/shared/icon-text/icon-text.component';
 import { MinutesToHourPipe } from '@household/web/app/shared/minutes-to-hour.pipe';
 import { JobPriceSummaryComponent } from '@household/web/app/shared/job-price-summary/job-price-summary.component';
-import { HairdressingCalendarHorizontalDayComponent } from './hairdressing-calendar-horizontal-day/hairdressing-calendar-horizontal-day.component';
-import { HairdressingCalendarEntryPayingComponent } from './hairdressing-calendar-entry-paying/hairdressing-calendar-entry-paying.component';
 import { JobPriceCalculatorComponent } from '@household/web/app/shared/job-price-calculator/job-price-calculator.component';
 
 @NgModule({
@@ -56,16 +46,6 @@ import { JobPriceCalculatorComponent } from '@household/web/app/shared/job-price
     HairdressingPriceListItemComponent,
     HairdressingPriceFormComponent,
     HairdressingPriceSubmenuComponent,
-    HairdressingCalendarHomeComponent,
-    HairdressingCalendarDayComponent,
-    HairdressingCalendarEntryEditDialogComponent,
-    HairdressingCalendarEntryDetailsDialogComponent,
-    HairdressingCalendarWorkdayDialogComponent,
-    CalendarGridRowsPipe,
-    CalendarTimeColumnPipe,
-    TimeRangeSliderComponent,
-    HairdressingCalendarHorizontalDayComponent,
-    HairdressingCalendarEntryPayingComponent,
   ],
   imports: [
     CommonModule,

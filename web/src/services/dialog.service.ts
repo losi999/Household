@@ -5,11 +5,11 @@ import { Account, Calendar, Category, Customer, File, Price, Product, Project, R
 import { AccountFormComponent, AccountFormData } from '@household/web/app/account/account-form/account-form.component';
 import { CategoryFormComponent, CategoryFormData } from '@household/web/app/category/category-form/category-form.component';
 import { CategoryMergeDialogComponent, CategoryMergeDialogData } from '@household/web/app/category/category-merge-dialog/category-merge-dialog.component';
-import { CustomerFormComponent, CustomerFormData } from '@household/web/app/customer/customer-form/customer-form.component';
+import { CustomerDialogComponent, CustomerDialogData } from '@household/web/app/customer/customer-dialog/customer-dialog.component';
 import { CustomerJobDialogComponent, CustomerJobDialogData } from '@household/web/app/customer/customer-job-dialog/customer-job-dialog.component';
-import { HairdressingCalendarEntryDetailsDialogComponent, HairdressingCalendarEntryDetailsDialogData } from '@household/web/app/hairdressing/hairdressing-calendar-entry-details-dialog/hairdressing-calendar-entry-details-dialog.component';
-import { HairdressingCalendarEntryEditDialogComponent, HairdressingCalendarEntryEditDialogData } from '@household/web/app/hairdressing/hairdressing-calendar-entry-edit-dialog/hairdressing-calendar-entry-edit-dialog.component';
-import { HairdressingCalendarWorkdayDialogComponent, HairdressingCalendarWorkdayDialogData } from '@household/web/app/hairdressing/hairdressing-calendar-workday-dialog/hairdressing-calendar-workday-dialog.component';
+import { CalendarEntryDetailsDialogComponent, CalendarEntryDetailsDialogData } from '@household/web/app/hairdressing/calendar/calendar-entry-details-dialog/calendar-entry-details-dialog.component';
+import { CalendarEntryEditDialogComponent, CalendarEntryEditDialogData } from '@household/web/app/hairdressing/calendar/calendar-entry-edit-dialog/calendar-entry-edit-dialog.component';
+import { CalendarWorkdayDialogComponent, CalendarWorkdayDialogData } from '@household/web/app/hairdressing/calendar/calendar-workday-dialog/calendar-workday-dialog.component';
 import { HairdressingPriceFormComponent, HairdressingPriceFormData } from '@household/web/app/hairdressing/hairdressing-price-form/hairdressing-price-form.component';
 import { ImportFileUploadFormComponent } from '@household/web/app/import/import-file-upload-form/import-file-upload-form.component';
 import { ProductFormComponent, ProductFormData } from '@household/web/app/product/product-form/product-form.component';
@@ -148,11 +148,11 @@ export class DialogService {
   }
 
   openCreateCustomerDialog(): void {
-    this.dialog.open<CustomerFormComponent, CustomerFormData, void>(CustomerFormComponent);
+    this.dialog.open<CustomerDialogComponent, CustomerDialogData, void>(CustomerDialogComponent);
   }
 
   openEditCustomerDialog(customer: Customer.Response): void {
-    this.dialog.open<CustomerFormComponent, CustomerFormData, void>(CustomerFormComponent, {
+    this.dialog.open<CustomerDialogComponent, CustomerDialogData, void>(CustomerDialogComponent, {
       data: customer,
     });
   }
@@ -217,7 +217,7 @@ export class DialogService {
   }
 
   openCreateCalendarEntryDialog(entryType: CalendarEntryType) {
-    this.dialog.open<HairdressingCalendarEntryEditDialogComponent, HairdressingCalendarEntryEditDialogData, void>(HairdressingCalendarEntryEditDialogComponent, {
+    this.dialog.open<CalendarEntryEditDialogComponent, CalendarEntryEditDialogData, void>(CalendarEntryEditDialogComponent, {
       data: {
         entryType,
       },
@@ -226,14 +226,14 @@ export class DialogService {
   }
 
   openEditCalendarEntryDialog(entry: Calendar.Entry.Response) {
-    this.dialog.open<HairdressingCalendarEntryEditDialogComponent, HairdressingCalendarEntryEditDialogData, void>(HairdressingCalendarEntryEditDialogComponent, {
+    this.dialog.open<CalendarEntryEditDialogComponent, CalendarEntryEditDialogData, void>(CalendarEntryEditDialogComponent, {
       data: entry,
       width: '900px',
     });
   }
 
   openCalendarEntryDetailsDialog(entry: Calendar.Entry.Response) {
-    this.dialog.open<HairdressingCalendarEntryDetailsDialogComponent, HairdressingCalendarEntryDetailsDialogData, void>(HairdressingCalendarEntryDetailsDialogComponent, {
+    this.dialog.open<CalendarEntryDetailsDialogComponent, CalendarEntryDetailsDialogData, void>(CalendarEntryDetailsDialogComponent, {
       data: entry,
       width: '900px',
     });
@@ -253,7 +253,7 @@ export class DialogService {
   }
 
   openSetWorkDayDialog(day: Exclude<Calendar.Day.Response, Calendar.Day.HolidayResponse>) {
-    return this.dialog.open<HairdressingCalendarWorkdayDialogComponent, HairdressingCalendarWorkdayDialogData, void>(HairdressingCalendarWorkdayDialogComponent, {
+    return this.dialog.open<CalendarWorkdayDialogComponent, CalendarWorkdayDialogData, void>(CalendarWorkdayDialogComponent, {
       data: day,
       width: '900px',
     });

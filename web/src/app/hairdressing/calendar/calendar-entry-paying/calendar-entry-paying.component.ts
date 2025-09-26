@@ -12,12 +12,12 @@ import { Observable } from 'rxjs';
 import { calendarApiActions } from '@household/web/state/calendar/calendar.actions';
 
 @Component({
-  selector: 'household-hairdressing-calendar-entry-paying',
+  selector: 'household-calendar-entry-paying',
   standalone: false,  
-  templateUrl: './hairdressing-calendar-entry-paying.component.html',
-  styleUrl: './hairdressing-calendar-entry-paying.component.scss',
+  templateUrl: './calendar-entry-paying.component.html',
+  styleUrl: './calendar-entry-paying.component.scss',
 })
-export class HairdressingCalendarEntryPayingComponent implements OnInit {
+export class CalendarEntryPayingComponent implements OnInit {
   entry: Observable<Calendar.Entry.Response>;
   prices: FormControl<JobPriceCalculatorValue[]>;
 

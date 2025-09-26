@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { CalendarWeek } from '@household/web/app/hairdressing/hairdressing-calendar-home/hairdressing-calendar-home.component';
+import { CalendarWeek } from '@household/web/app/hairdressing/calendar/calendar-home/calendar-home.component';
 
 @Pipe({
   name: 'calendarGridRows',

@@ -14,7 +14,7 @@
       <mat-datepicker #picker />
     </mat-form-field>
     <household-time-range-slider formControlName="timeRange" min="0" max="96" />
-    <household-hairdressing-calendar-horizontal-day [date]="form.value.day" [timeRange]="form.value.timeRange" [excludedCalendarEntryId]="entry.calendarEntryId" />
+    <household-calendar-horizontal-day [date]="form.value.day" [timeRange]="form.value.timeRange" [excludedCalendarEntryId]="entry.calendarEntryId" />
     <ng-container *ngIf="entry.entryType === 'work'">
       <mat-error *ngIf="form.value.timeRange.end - form.value.timeRange.start < form.value.job?.job?.duration">Időtartam kevesebb, mint a munkához rögzített</mat-error>
     </ng-container>

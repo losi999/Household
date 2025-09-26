@@ -12,15 +12,14 @@ enum ShiftType{
   Afternoon = 'afternoon',
   Custom = 'custom',
 }
-export type HairdressingCalendarWorkdayDialogData = Exclude<Calendar.Day.Response, Calendar.Day.HolidayResponse>;
+export type CalendarWorkdayDialogData = Exclude<Calendar.Day.Response, Calendar.Day.HolidayResponse>;
 
 @Component({
-  selector: 'household-hairdressing-calendar-workday-dialog',
   standalone: false,  
-  templateUrl: './hairdressing-calendar-workday-dialog.component.html',
-  styleUrl: './hairdressing-calendar-workday-dialog.component.scss',
+  templateUrl: './calendar-workday-dialog.component.html',
+  styleUrl: './calendar-workday-dialog.component.scss',
 })
-export class HairdressingCalendarWorkdayDialogComponent implements OnInit {
+export class CalendarWorkdayDialogComponent implements OnInit {
   form: FormGroup<{
     dayType: FormControl<CalendarDayType>;
     shiftType: FormControl<ShiftType>;
@@ -30,9 +29,9 @@ export class HairdressingCalendarWorkdayDialogComponent implements OnInit {
     }>;
   }>;
 
-  constructor(private dialogRef: MatDialogRef<HairdressingCalendarWorkdayDialogComponent, void>,
+  constructor(private dialogRef: MatDialogRef<CalendarWorkdayDialogComponent, void>,
     private store: Store,
-    @Inject(MAT_DIALOG_DATA) public day: HairdressingCalendarWorkdayDialogData) { }
+    @Inject(MAT_DIALOG_DATA) public day: CalendarWorkdayDialogData) { }
   
   ngOnInit(): void {
     this.form = new FormGroup({

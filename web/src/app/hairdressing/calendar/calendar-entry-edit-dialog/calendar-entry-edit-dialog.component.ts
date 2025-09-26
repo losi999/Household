@@ -11,14 +11,14 @@ import { Store } from '@ngrx/store';
 import { combineLatest, filter, map, Observable, startWith, switchMap, take } from 'rxjs';
 import { calendarActions, calendarApiActions } from '@household/web/state/calendar/calendar.actions';
 
-export type HairdressingCalendarEntryEditDialogData = Partial<Calendar.Entry.Response>;
+export type CalendarEntryEditDialogData = Partial<Calendar.Entry.Response>;
 
 @Component({
   standalone: false,    
-  templateUrl: './hairdressing-calendar-entry-edit-dialog.component.html',
-  styleUrl: './hairdressing-calendar-entry-edit-dialog.component.scss',
+  templateUrl: './calendar-entry-edit-dialog.component.html',
+  styleUrl: './calendar-entry-edit-dialog.component.scss',
 })
-export class HairdressingCalendarEntryEditDialogComponent implements OnInit {
+export class CalendarEntryEditDialogComponent implements OnInit {
   form: FormGroup<{
     job: FormControl<{
       customer: Customer.Response;
@@ -35,9 +35,9 @@ export class HairdressingCalendarEntryEditDialogComponent implements OnInit {
 
   errors: Observable<string[]>;
 
-  constructor(private dialogRef: MatDialogRef<HairdressingCalendarEntryEditDialogComponent, void>,
+  constructor(private dialogRef: MatDialogRef<CalendarEntryEditDialogComponent, void>,
     private store: Store,
-    @Inject(MAT_DIALOG_DATA) public entry: HairdressingCalendarEntryEditDialogData) { }
+    @Inject(MAT_DIALOG_DATA) public entry: CalendarEntryEditDialogData) { }
 
   private setFormFromJob(data: {
     customer: Customer.Response;
