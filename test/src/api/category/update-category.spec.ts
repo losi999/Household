@@ -3,7 +3,7 @@ import { allowUsers } from '@household/test/api/utils';
 import { Category } from '@household/shared/types/types';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
 
-const permissionMap = allowUsers('editor') ;
+const permissionMap = allowUsers('editor');
 
 describe('PUT /category/v1/categories/{categoryId}', () => {
   let categoryDocument: Category.Document;
@@ -216,6 +216,17 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
                   }))
                 .expectBadRequestResponse()
                 .expectMessage('Parent category not found');
+            });
+
+            it('belongs to the category to be updated', () => {
+              cy.saveCategoryDocument(categoryDocument)
+                .authenticate(userType)
+                .requestUpdateCategory(getCategoryId(categoryDocument),
+                  categoryDataFactory.request({
+                    parentCategoryId: getCategoryId(categoryDocument),
+                  }))
+                .expectBadRequestResponse()
+                .expectMessage('Parent category cannot be the category itself');
             });
 
             it('is already a descendent category', () => {

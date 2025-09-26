@@ -34,10 +34,10 @@ export const customerDocumentConverterFactory = (priceDocumentConverter: IPriceD
         };
       });
     },
-    create: ({ name, description }, expiresIn, generateId) => {
+    create: (body, expiresIn, generateId) => {
       return {
-        name,
-        description: description?.trim(),
+        ...body,
+        description: body.description?.trim(),
         jobs: [],
         _id: generateId ? generateMongoId() : undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
@@ -102,11 +102,13 @@ export const customerDocumentConverterFactory = (priceDocumentConverter: IPriceD
         },
       };
     },
-    toResponse: ({ name, description, jobs, _id }) => {
+    toResponse: ({ name, description, jobs, isGroup, rating, _id }) => {
       return {
         name,
+        isGroup,
+        rating,
         description,
-        jobs: jobs.map(({ name, description, duration, prices }) => {
+        jobs: jobs?.map(({ name, description, duration, prices }) => {
           return {
             name,
             description, 
@@ -123,7 +125,7 @@ export const customerDocumentConverterFactory = (priceDocumentConverter: IPriceD
         expiresAt: undefined,
       };
     },
-    toResponseList: docs => docs.map(d => instance.toResponse(d)),
+    toResponseList: docs => docs?.map(d => instance.toResponse(d)),
     toResponseJobPriceList: (docs) => {
       return docs?.map((p) => {
         if (isPriceBase(p)) {

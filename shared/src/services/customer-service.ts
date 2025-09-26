@@ -10,6 +10,7 @@ export interface ICustomerService {
   getCustomerById(customerId: Customer.Id): Promise<Customer.Document>;
   updateCustomer(customerId: Customer.Id, update: DocumentUpdate<Customer.Document>): Promise<unknown>;
   listCustomers(): Promise<Customer.Document[]>;
+  findCustomersByIds(customerIds: Customer.Id[]): Promise<Customer.Document[]>;
 }
 
 export const customerServiceFactory = (mongodbService: IMongodbService): ICustomerService => {
@@ -62,6 +63,17 @@ export const customerServiceFactory = (mongodbService: IMongodbService): ICustom
           .lean();
           
       });
+    },
+    findCustomersByIds: async (customerIds) => {
+      return customerIds?.length ? mongodbService.inSession((session) => {
+        return mongodbService.customers.find({
+          _id: {
+            $in: customerIds,
+          },
+        }).session(session)
+          .lean();
+          
+      }) : undefined;
     },
   };
 

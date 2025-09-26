@@ -12,10 +12,13 @@ components:
         customerId:
           type: string
           minLength: 1
+
     Customer.Base:
       type: object
       required:
         - name
+        - isGroup
+        - rating
       properties:
         name:
           type: string
@@ -23,6 +26,12 @@ components:
         description:
           type: string
           minLength: 1
+        isGroup:
+          type: boolean
+        rating:
+          type: number
+          minimum: 1
+          maximum: 5
 
     Job.Base:
       type: object
@@ -59,8 +68,6 @@ components:
 
     Prices.Request:
       type: object
-      # required:
-      #   - prices
       properties:
         prices:
           type: array
@@ -115,6 +122,7 @@ components:
         - $ref: "#/components/schemas/CustomerId"
         - $ref: "#/components/schemas/Customer.Base"
         - $ref: "#/components/schemas/Jobs"
+
     Request:
       allOf:
         - $ref: "#/components/schemas/Customer.Base"

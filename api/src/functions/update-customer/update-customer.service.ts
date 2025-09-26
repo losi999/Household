@@ -12,11 +12,11 @@ export interface IUpdateCustomerService {
 }
 
 export const updateCustomerServiceFactory = (
-  CustomerService: ICustomerService,
-  CustomerDocumentConverter: ICustomerDocumentConverter,
+  customerService: ICustomerService,
+  customerDocumentConverter: ICustomerDocumentConverter,
 ): IUpdateCustomerService => {
   return async ({ body, customerId, expiresIn }) => {
-    const queried = await CustomerService.findCustomerById(customerId).catch(httpErrors.customer.getById({
+    const queried = await customerService.findCustomerById(customerId).catch(httpErrors.customer.getById({
       customerId,
     }));
 
@@ -25,9 +25,9 @@ export const updateCustomerServiceFactory = (
       customerId,
     });
 
-    const update = CustomerDocumentConverter.update(body, expiresIn);
+    const update = customerDocumentConverter.update(body, expiresIn);
 
-    return CustomerService.updateCustomer(customerId, update).catch(httpErrors.customer.update({
+    return customerService.updateCustomer(customerId, update).catch(httpErrors.customer.update({
       customerId,
       update,
     }));

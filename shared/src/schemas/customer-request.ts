@@ -4,7 +4,11 @@ import { Customer } from '@household/shared/types/types';
 const schema: StrictJSONSchema7<Customer.Request> = {
   type: 'object',
   additionalProperties: false,
-  required: ['name'],
+  required: [
+    'name',
+    'isGroup',
+    'rating',
+  ],
   properties: {
     name: {
       type: 'string',
@@ -13,6 +17,14 @@ const schema: StrictJSONSchema7<Customer.Request> = {
     description: {
       type: 'string',
       minLength: 1,
+    },
+    isGroup: {
+      type: 'boolean',
+    },
+    rating: {
+      type: 'integer',
+      minimum: 1,
+      maximum: 5,
     },
   },
 };

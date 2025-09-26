@@ -7,6 +7,7 @@ import { selectCalendarWeek } from '@household/web/state/calendar/calendar.selec
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 import { calendarApiActions } from '@household/web/state/calendar/calendar.actions';
+import { customerApiActions } from '@household/web/state/customer/customer.actions';
 
 export type CalendarWeek = {
   start: number;
@@ -43,6 +44,7 @@ export class HairdressingCalendarHomeComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadWeek(new Date());
+    this.store.dispatch(customerApiActions.listCustomersInitiated());
   }
 
   onChangeWeek(diff: number) {

@@ -138,6 +138,8 @@ export const createCustomerDocument: DataFactoryFunction<Customer.Document> = (d
     _id: generateMongoId(),
     name: 'customer name',
     description: 'description for customer',
+    rating: 3,
+    isGroup: false,    
     jobs: [createCustomerJobDocument()],
     expiresAt: undefined,
     ...doc,
@@ -360,6 +362,8 @@ export const createCustomerRequest: DataFactoryFunction<Customer.Request> = (req
   return {
     name: 'customer name',
     description: 'description for customer',
+    rating: 3,
+    isGroup: false,
     ...req,
   };
 };
@@ -627,6 +631,8 @@ export const createCustomerResponse: DataFactoryFunction<Customer.Response> = (r
     customerId: createCustomerId(),
     name: 'customer name',
     description: 'description for customer',
+    rating: 3,
+    isGroup: false,
     jobs: [createCustomerJobResponse()],
     ...resp,
   };

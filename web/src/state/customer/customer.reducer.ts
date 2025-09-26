@@ -36,7 +36,7 @@ export const customerReducer = createReducer<CustomerState>({},
       customerList: customers,
     };
   }),
-  on(customerApiActions.createCustomerCompleted, (_state, { customerId, name, description }) => {
+  on(customerApiActions.createCustomerCompleted, (_state, { customerId, name, description, isGroup, rating }) => {
     return {
       ..._state,
       customerList: _state.customerList.filter(p => p.customerId !== customerId)
@@ -44,6 +44,8 @@ export const customerReducer = createReducer<CustomerState>({},
           customerId,
           name,
           description,
+          isGroup,
+          rating,
           jobs: [],
         })
         .toSorted((a, b) => a.name.localeCompare(b.name, 'hu', {
@@ -52,7 +54,7 @@ export const customerReducer = createReducer<CustomerState>({},
     };
   }),
 
-  on(customerApiActions.updateCustomerCompleted, (_state, { customerId, name, description }) => {
+  on(customerApiActions.updateCustomerCompleted, (_state, { customerId, name, description, isGroup, rating }) => {
     return {
       ..._state,
       customerList: _state.customerList?.filter(p => p.customerId !== customerId)
@@ -60,6 +62,8 @@ export const customerReducer = createReducer<CustomerState>({},
           customerId,
           name,
           description,
+          isGroup,
+          rating,
           jobs: _state.selectedCustomer.jobs,
         })
         .toSorted((a, b) => a.name.localeCompare(b.name, 'hu', {
@@ -69,6 +73,9 @@ export const customerReducer = createReducer<CustomerState>({},
         customerId,
         name,
         description,
+        isGroup,
+        rating,
+        blacklistedCustomers: [],
         jobs: _state.selectedCustomer.jobs,
       },
     };

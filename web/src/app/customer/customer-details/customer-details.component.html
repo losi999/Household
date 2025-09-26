@@ -8,6 +8,13 @@
   <div class="name">
     {{cust.name}}
   </div>
+  <div class="rating">
+    <mat-icon [ngClass]="cust.rating === 1 ? 'green' : ''">sentiment_stressed</mat-icon>
+    <mat-icon [ngClass]="cust.rating === 2 ? 'green' : ''">sentiment_dissatisfied</mat-icon>
+    <mat-icon [ngClass]="cust.rating === 3 ? 'green' : ''">sentiment_neutral</mat-icon>
+    <mat-icon [ngClass]="cust.rating === 4 ? 'green' : ''">sentiment_satisfied</mat-icon>
+    <mat-icon [ngClass]="cust.rating === 5 ? 'green' : ''">sentiment_excited</mat-icon>
+  </div>
   <div *ngIf="cust.description" class="description">
     {{cust.description}}
   </div>

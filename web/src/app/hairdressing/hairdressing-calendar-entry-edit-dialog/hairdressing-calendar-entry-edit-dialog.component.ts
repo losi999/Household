@@ -5,14 +5,13 @@ import { isListedPrice } from '@household/shared/common/type-guards';
 import { createDate, dateToISODateString, dateToTimeSlot } from '@household/shared/common/utils';
 import { CalendarDayType, CalendarEntryType } from '@household/shared/enums';
 import { Calendar, Customer } from '@household/shared/types/types';
-import { customerApiActions } from '@household/web/state/customer/customer.actions';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { selectCalendarDay } from '@household/web/state/calendar/calendar.selector';
 import { Store } from '@ngrx/store';
 import { combineLatest, filter, map, Observable, startWith, switchMap, take } from 'rxjs';
 import { calendarActions, calendarApiActions } from '@household/web/state/calendar/calendar.actions';
 
-export type HairdressingCalendarEntryEditDialogData = Partial<Calendar.Entry.Response> & Partial<Calendar.DayProp>;
+export type HairdressingCalendarEntryEditDialogData = Partial<Calendar.Entry.Response>;
 
 @Component({
   standalone: false,    
@@ -40,17 +39,33 @@ export class HairdressingCalendarEntryEditDialogComponent implements OnInit {
     private store: Store,
     @Inject(MAT_DIALOG_DATA) public entry: HairdressingCalendarEntryEditDialogData) { }
 
-  ngOnInit(): void {
-    if (this.entry.entryType === CalendarEntryType.Work) {
-      this.store.dispatch(customerApiActions.listCustomersInitiated());
+  private setFormFromJob(data: {
+    customer: Customer.Response;
+    job: Customer.Job.Response;
+  }): typeof this.form.value {
+    if (!data.job) {
+      return {
+        title: `${data.customer.name}: `,
+      };
     }
 
+    return {
+      title: data.customer.isGroup ? data.job.name : `${data.customer.name}: ${data.job.name}`,
+      description: data.job?.description,
+      timeRange: {
+        start: this.form.value.timeRange.start,
+        end: this.form.value.timeRange.start + data.job.duration,
+      },
+    };
+  }
+
+  ngOnInit(): void {
     const now = new Date();
     now.setMinutes(Math.floor(now.getMinutes() / 15) * 15);
     this.form = new FormGroup({
       job: new FormControl(this.entry.entryType === CalendarEntryType.Work && this.entry.customer ? {
         customer: this.entry.customer,
-        job: this.entry.customer?.jobs?.find(j => j.name === this.entry.title),
+        job: this.entry.customer?.jobs?.find(j => this.entry.title.endsWith(j.name)),
       } : null),
       title: new FormControl(this.entry.title, [Validators.required]),
       description: new FormControl(this.entry.description),
@@ -61,17 +76,13 @@ export class HairdressingCalendarEntryEditDialogComponent implements OnInit {
       }), 
     });
 
-    this.form.controls.job.valueChanges.pipe(filter(x => !!x)).subscribe(({ job }) => {
-      this.form.patchValue({
-        title: job?.name,
-        description: job?.description,
-      });
+    this.form.controls.job.valueChanges.pipe(filter(x => !!x)).subscribe((value) => {
+      this.form.patchValue(this.setFormFromJob(value));
     });
 
     this.errors = combineLatest([
       this.form.controls.day.valueChanges.pipe(startWith(this.form.value.day),
         switchMap((date) => {
-
           const obs = this.store.select(selectCalendarDay(dateToISODateString(date)));
 
           obs.pipe(take(1)).subscribe((value) => {

@@ -25,6 +25,7 @@ import { CustomerJobDialogComponent } from './customer-job-dialog/customer-job-d
 import { TimeSlotToTimePipe } from '@household/web/app/shared/time-slot-to-time.pipe';
 import { JobPriceSummaryComponent } from '@household/web/app/shared/job-price-summary/job-price-summary.component';
 import { JobPriceCalculatorComponent } from '@household/web/app/shared/job-price-calculator/job-price-calculator.component';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 @NgModule({
   declarations: [
@@ -56,6 +57,7 @@ import { JobPriceCalculatorComponent } from '@household/web/app/shared/job-price
     TimeSlotToTimePipe,
     JobPriceSummaryComponent,
     JobPriceCalculatorComponent,
+    MatCheckboxModule,
   ],
 })
 export class CustomerModule { }

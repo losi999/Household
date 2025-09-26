@@ -1,11 +1,31 @@
-<form [formGroup]="form" (ngSubmit)="save()">
-  <h1 mat-dialog-title>{{customer ? 'Szerkesztés' : 'Új'}}</h1>
-  <div mat-dialog-content>
+<h1 mat-dialog-title>{{customer ? 'Szerkesztés' : 'Új'}}</h1>
+<div mat-dialog-content>
+  <form [formGroup]="form" (ngSubmit)="onSave()" id="form">
     <household-clearable-input formControlName="name" label="Név" />
+    <mat-checkbox formControlName="isGroup" color="primary">
+      Több személy tartozik ide?
+    </mat-checkbox>
     <household-clearable-input formControlName="description" type="area" label="Megjegyzés" />
-  </div>
-  <div mat-dialog-actions>
-    <button mat-button cdkFocusInitial>Mentés</button>
-    <button mat-button mat-dialog-close>Mégse</button>
-  </div>
-</form>
+    <div class="rating">
+      <button mat-mini-fab type="button" [color]="rating === 1 ? 'primary' : ''" (click)="onSetRating(1)">
+        <mat-icon>sentiment_stressed</mat-icon>
+      </button>
+      <button mat-mini-fab type="button" [color]="rating === 2 ? 'primary' : ''" (click)="onSetRating(2)">
+        <mat-icon>sentiment_dissatisfied</mat-icon>
+      </button>
+      <button mat-mini-fab type="button" [color]="rating === 3 ? 'primary' : ''" (click)="onSetRating(3)">
+        <mat-icon>sentiment_neutral</mat-icon>
+      </button>
+      <button mat-mini-fab type="button" [color]="rating === 4 ? 'primary' : ''" (click)="onSetRating(4)">
+        <mat-icon>sentiment_satisfied</mat-icon>
+      </button>
+      <button mat-mini-fab type="button" [color]="rating === 5 ? 'primary' : ''" (click)="onSetRating(5)">
+        <mat-icon>sentiment_excited</mat-icon>
+      </button>
+    </div>
+  </form>
+</div>
+<div mat-dialog-actions>
+  <button mat-button cdkFocusInitial form="form">Mentés</button>
+  <button mat-button mat-dialog-close type="button">Mégse</button>
+</div>

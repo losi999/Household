@@ -781,6 +781,8 @@ export namespace Customer {
   type Base = {
     name: string;
     description: string;
+    isGroup: boolean;
+    rating: number;
   };
 
   export namespace Job {

@@ -18,11 +18,6 @@ const httpError = (statusCode: number, message: string): HttpError => ({
 export const httpErrors = {
   transaction: {
     save: (doc: Transaction.Document, statusCode = 500): CatchAndThrow => (error) => {
-      if (error.code === 11000) {
-        log('Duplicate transaction name', doc, error);
-        throw httpError(400, 'Duplicate transaction name'); // TODO ????
-      }
-
       log('Save transaction', doc, error);
       throw httpError(statusCode, 'Error while saving transaction');
     },
@@ -271,6 +266,12 @@ export const httpErrors = {
         throw httpError(statusCode, 'Parent category not found');
       }
     },
+    parentIsSelf: (ctx: Category.CategoryId & Category.ParentCategoryId, statusCode = 400) => { 
+      if (ctx.categoryId === ctx.parentCategoryId) {
+        log('Parent category cannot be the category itself', ctx);
+        throw httpError(statusCode, 'Parent category cannot be the category itself');
+      }
+    },
     parentIsAChild: (parentCategory: Category.Document, categoryId: Category.Id, statusCode = 400) => {
       if (parentCategory?.ancestors.some((category) => getCategoryId(category) === categoryId)) {
         log('Parent category is already a child of the current category', {
@@ -516,10 +517,20 @@ export const httpErrors = {
       log('List customers', undefined, error);
       throw httpError(statusCode, 'Error while listing customers');
     },
+    listByIds: (ctx: Customer.Id[], statusCode = 500): CatchAndThrow => (error) => {
+      log('List customers by ids', ctx, error);
+      throw httpError(statusCode, 'Error while listing customers by ids');
+    },
     notFound: (ctx: Customer.CustomerId & {customer: Customer.Document}, statusCode = 404) => {
       if (ctx.customerId && !ctx.customer) {
         log('No customer found', ctx);
         throw httpError(statusCode, 'No customer found');
+      }
+    },
+    multipleNotFound: (ctx: { customerIds: Customer.Id[]; customers: Customer.Document[] }, statusCode = 400) => {
+      if (ctx.customers?.length !== ctx.customerIds?.length) {
+        log('Some of the customers are not found', ctx);
+        throw httpError(statusCode, 'Some of the customers are not found');
       }
     },
     delete: (ctx: Customer.CustomerId, statusCode = 500): CatchAndThrow => (error) => {

@@ -52,6 +52,12 @@ export const customerSchema = new Schema<Customer.Document>({
     type: String,
     minlength: 1,
   },
+  isGroup: {
+    type: Boolean,
+  },
+  rating: {
+    type: Number,
+  },
   jobs: {
     type: [jobSchema],
     default: [],
