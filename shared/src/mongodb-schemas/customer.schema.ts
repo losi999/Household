@@ -62,6 +62,15 @@ export const customerSchema = new Schema<Customer.Document>({
     type: [jobSchema],
     default: [],
   },
+  blacklistedCustomers: {
+    type: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'customers',
+      },
+    ],
+    default: [],
+  },
   expiresAt: {
     type: Schema.Types.Date,
     index: {

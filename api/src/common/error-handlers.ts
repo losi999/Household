@@ -537,7 +537,8 @@ export const httpErrors = {
       log('Delete customer', ctx, error);
       throw httpError(statusCode, 'Error while deleting customer');
     },
-    update: (ctx: Customer.CustomerId & {update: UpdateQuery<Customer.Document>}, statusCode = 500): CatchAndThrow => (error) => {
+    update: (ctx: Customer.CustomerId & {update: UpdateQuery<Customer.Document>}, statusCode = 500) => httpErrors.customer.updateMultiple([ctx], statusCode),
+    updateMultiple: (ctx: (Customer.CustomerId & {update: UpdateQuery<Customer.Document>})[], statusCode = 500): CatchAndThrow => (error) => {
       if (error.code === 11000) {
         log('Duplicate customer name', ctx, error);
         throw httpError(400, 'Duplicate customer name');
@@ -550,6 +551,15 @@ export const httpErrors = {
       if (ctx.job.name !== ctx.jobName && ctx.customer.jobs.some(j => j.name === ctx.job.name)) {
         log('Duplicate customer job name', ctx);
         throw httpError(statusCode, 'Duplicate customer job name');
+      }
+    },
+    selfBlacklisted: (ctx: {
+      customerIdA: Customer.Id;
+      customerIdB: Customer.Id
+    }, statusCode = 400) => {
+      if (ctx.customerIdA === ctx.customerIdB) {
+        log('Customer cannot be blacklisted with itself', ctx);
+        throw httpError(statusCode, 'Customer cannot be blacklisted with itself');
       }
     },
   },

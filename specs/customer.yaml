@@ -116,12 +116,23 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Job.Response"
-
-    Response:
+    Response.Base:
       allOf:
         - $ref: "#/components/schemas/CustomerId"
         - $ref: "#/components/schemas/Customer.Base"
+
+    Response:
+      allOf:
+        - $ref: "#/components/schemas/Response.Base"
         - $ref: "#/components/schemas/Jobs"
+        - type: object
+          required:
+            - blacklistedCustomers
+          properties:
+            blacklistedCustomers:
+              type: "array"
+              items:
+                $ref: "#/components/schemas/Response.Base"
 
     Request:
       allOf:

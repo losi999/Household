@@ -908,6 +908,39 @@ paths:
       responses:
         201:
           description: Job created
+  /customer/v1/customers/blacklist:
+    put:
+      tags:
+        - customer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              minItems: 2
+              maxItems: 2
+              items:
+                type: string
+                minLength: 1
+      responses:
+        204:
+          description: Customers blacklisted
+    delete:
+      tags:
+        - customer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              minItems: 2
+              maxItems: 2
+              items:
+                type: string
+                minLength: 1
+      responses:
+        204:
+          description: Customer blacklisted deleted
   /customer/v1/customers/{customerId}/jobs/{jobName}:
     parameters:
       - $ref: "#/components/parameters/Path.CustomerId"

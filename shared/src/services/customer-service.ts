@@ -9,6 +9,7 @@ export interface ICustomerService {
   findCustomerById(customerId: Customer.Id): Promise<Customer.Document>;
   getCustomerById(customerId: Customer.Id): Promise<Customer.Document>;
   updateCustomer(customerId: Customer.Id, update: DocumentUpdate<Customer.Document>): Promise<unknown>;
+  updateCustomers(ctx: {customerId: Customer.Id; update: DocumentUpdate<Customer.Document>}[]): Promise<unknown>;
   listCustomers(): Promise<Customer.Document[]>;
   findCustomersByIds(customerIds: Customer.Id[]): Promise<Customer.Document[]>;
 }
@@ -46,6 +47,19 @@ export const customerServiceFactory = (mongodbService: IMongodbService): ICustom
         .lean();
         
     },
+    updateCustomers: async (ctx) => {
+      return mongodbService.inSession((session) => {
+        return session.withTransaction(async () => {
+          return Promise.all(ctx.map(({ customerId, update: { update, arrayFilters } }) => {
+            return mongodbService.customers.findByIdAndUpdate(customerId, update, {
+              arrayFilters,
+              runValidators: true,
+              session,
+            });
+          }));
+        });
+      });
+    },
     updateCustomer: async (customerId, { update, arrayFilters }) => {
       return mongodbService.customers.findByIdAndUpdate(customerId, update, {
         arrayFilters,
@@ -56,6 +70,7 @@ export const customerServiceFactory = (mongodbService: IMongodbService): ICustom
       return mongodbService.inSession(async(session) => {
         return mongodbService.customers.find({}).session(session)
           .populate('jobs.prices.price')
+          .populate('blacklistedCustomers')
           .collation({
             locale: 'hu',
           })

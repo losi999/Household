@@ -141,6 +141,7 @@ export const createCustomerDocument: DataFactoryFunction<Customer.Document> = (d
     rating: 3,
     isGroup: false,    
     jobs: [createCustomerJobDocument()],
+    blacklistedCustomers: [],
     expiresAt: undefined,
     ...doc,
   };
@@ -634,6 +635,7 @@ export const createCustomerResponse: DataFactoryFunction<Customer.Response> = (r
     rating: 3,
     isGroup: false,
     jobs: [createCustomerJobResponse()],
+    blacklistedCustomers: [],
     ...resp,
   };
 };

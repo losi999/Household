@@ -193,7 +193,7 @@ export class DialogService {
   }
 
   openDeletePriceDialog(price: Price.Response) {
-    return this.openConfirmationDialog('Törölni akarod ezt a tételt az árlistából?', price.name);
+    return this.openConfirmationDialog('Törölni akarod ezt a tételt az árlistából? Az összes munka amihez hozzá van rendelve szintén törlődni fog!', price.name);
   }
 
   openImportFileDialog(): void {
@@ -201,7 +201,7 @@ export class DialogService {
   }
 
   openDeleteFileDialog(file: File.Response) {
-    return this.openConfirmationDialog('Törölni akarod ezt a számlát?', file.fileId);
+    return this.openConfirmationDialog('Törölni akarod ezt a fájlt?', file.fileId);
   }
 
   openDeleteUserDialog({ email }: User.Email) {

@@ -9,6 +9,8 @@ export interface ICustomerDocumentConverter {
   createJobPriceList(prices: Customer.Job.Request['prices'], priceDocuments: Price.Document[]): Customer.Job.Document['prices'];
   create(body: Customer.Request, expiresIn: number, generateId?: boolean): Customer.Document;
   update(body: Customer.Request, expiresIn: number): DocumentUpdate<Customer.Document>;
+  addBlacklistedCustomer(customer: Customer.Document): DocumentUpdate<Customer.Document>;
+  removeBlacklistedCustomer(customerId: Customer.Id): DocumentUpdate<Customer.Document>;
   addJob(job: Customer.Job.Request, priceDocuments: Price.Document[]): DocumentUpdate<Customer.Document>;
   updateJob(jobName: string, job: Customer.Job.Request, priceDocuments: Price.Document[]): DocumentUpdate<Customer.Document>;
   deleteJob(name: Customer.Job.Name['name']): DocumentUpdate<Customer.Document>;
@@ -18,6 +20,16 @@ export interface ICustomerDocumentConverter {
 }
 
 export const customerDocumentConverterFactory = (priceDocumentConverter: IPriceDocumentConverter): ICustomerDocumentConverter => {
+  const toResponseBase = ({ name, description, isGroup, rating, _id }: Customer.Document): Omit<Customer.Response, 'blacklistedCustomers' | 'jobs'> => {
+    return {
+      customerId: getCustomerId(_id),
+      name,
+      isGroup,
+      rating,
+      description,
+    };
+  };
+
   const instance: ICustomerDocumentConverter = {
     createJobPriceList: (prices, priceDocuments) => {
       return prices?.map((req) => {
@@ -39,6 +51,7 @@ export const customerDocumentConverterFactory = (priceDocumentConverter: IPriceD
         ...body,
         description: body.description?.trim(),
         jobs: [],
+        blacklistedCustomers: [],
         _id: generateId ? generateMongoId() : undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
@@ -55,6 +68,24 @@ export const customerDocumentConverterFactory = (priceDocumentConverter: IPriceD
               description: true,
             },
           } : {}),
+        },
+      };
+    },
+    addBlacklistedCustomer: (customer) => {
+      return {
+        update: {
+          $addToSet: {
+            blacklistedCustomers: customer,
+          },
+        },
+      };
+    },
+    removeBlacklistedCustomer: (customerId) => {
+      return {
+        update: {
+          $pull: {
+            blacklistedCustomers: customerId,
+          },
         },
       };
     },
@@ -102,13 +133,10 @@ export const customerDocumentConverterFactory = (priceDocumentConverter: IPriceD
         },
       };
     },
-    toResponse: ({ name, description, jobs, isGroup, rating, _id }) => {
+    toResponse: (customer) => {
       return {
-        name,
-        isGroup,
-        rating,
-        description,
-        jobs: jobs?.map(({ name, description, duration, prices }) => {
+        ...toResponseBase(customer),
+        jobs: customer.jobs?.map(({ name, description, duration, prices }) => {
           return {
             name,
             description, 
@@ -117,12 +145,8 @@ export const customerDocumentConverterFactory = (priceDocumentConverter: IPriceD
           };
         }).toSorted((a, b) => a.name.localeCompare(b.name, 'hu', {
           sensitivity: 'base',
-        })),
-        customerId: getCustomerId(_id),
-        createdAt: undefined,
-        updatedAt: undefined,
-        _id: undefined,
-        expiresAt: undefined,
+        })),      
+        blacklistedCustomers: customer.blacklistedCustomers.map(c => toResponseBase(c)),
       };
     },
     toResponseList: docs => docs?.map(d => instance.toResponse(d)),

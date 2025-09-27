@@ -820,12 +820,16 @@ export namespace Customer {
   & Internal.Timestamps
   & Base
   & {
+    blacklistedCustomers: Document[];
     jobs: Job.Document[];
   };
 
   export type Response = CustomerId 
   & Base 
-  & Jobs;
+  & Jobs
+  & {
+    blacklistedCustomers: Omit<Response, 'blacklistedCustomers' | 'jobs'>[];
+  };
 
   export type Request = Base;
 }

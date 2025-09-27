@@ -39,12 +39,28 @@ export const priceServiceFactory = (mongodbService: IMongodbService): IPriceServ
     },
     deletePrice: async (priceId) => {
       return mongodbService.inSession((session) => {
-        return session.withTransaction(() => {
-          return mongodbService.prices.deleteOne({
+        return session.withTransaction(async () => {
+          await mongodbService.prices.deleteOne({
             _id: priceId,
           }, {
             session,
           });            
+
+          return mongodbService.customers.updateMany({
+            'jobs.prices.price': priceId,
+          }, {
+            $pull: {
+              jobs: {
+                prices: {
+                  $elemMatch: {
+                    price: priceId,
+                  },
+                },
+              },
+            },
+          }, {
+            session,
+          });
         });
       });
     },
