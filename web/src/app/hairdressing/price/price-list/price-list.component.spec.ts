@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { BottomSubmenuComponent } from './bottom-submenu.component';
+import { PriceListComponent } from './price-list.component';
 
-describe('BottomSubmenuComponent', () => {
-  let component: BottomSubmenuComponent;
-  let fixture: ComponentFixture<BottomSubmenuComponent>;
+describe('HairdressingPriceListComponent', () => {
+  let component: PriceListComponent;
+  let fixture: ComponentFixture<PriceListComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [BottomSubmenuComponent],
+      declarations: [PriceListComponent],
     })
       .compileComponents();
 
-    fixture = TestBed.createComponent(BottomSubmenuComponent);
+    fixture = TestBed.createComponent(PriceListComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

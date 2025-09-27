@@ -7,12 +7,12 @@ import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 
 @Component({
-  selector: 'household-hairdressing-price-list',
+  selector: 'household-price-list',
   standalone: false,  
-  templateUrl: './hairdressing-price-list.component.html',
-  styleUrl: './hairdressing-price-list.component.scss',
+  templateUrl: './price-list.component.html',
+  styleUrl: './price-list.component.scss',
 })
-export class HairdressingPriceListComponent implements OnInit {
+export class PriceListComponent implements OnInit {
   prices: Observable<Price.Response[]>;
 
   constructor(private store: Store) {}

@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { HairdressingIncomeHomeComponent } from '@household/web/app/hairdressing/hairdressing-income-home/hairdressing-income-home.component';
-import { HairdressingPriceListComponent } from '@household/web/app/hairdressing/hairdressing-price-list/hairdressing-price-list.component';
 
 const routes: Routes = [
   {
@@ -10,7 +9,7 @@ const routes: Routes = [
   },
   {
     path: 'prices',
-    component: HairdressingPriceListComponent,
+    loadChildren: () => import('@household/web/app/hairdressing/price/price.module').then(m => m.PriceModule),
   },
   {
     path: 'calendar',
@@ -18,7 +17,7 @@ const routes: Routes = [
   },
   {
     path: 'customers',
-    loadChildren: () => import('@household/web/app/customer/customer.module').then(m => m.CustomerModule),
+    loadChildren: () => import('@household/web/app/hairdressing/customer/customer.module').then(m => m.CustomerModule),
   },
   {
     path: '**',

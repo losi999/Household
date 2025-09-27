@@ -1,19 +1,19 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { Price } from '@household/shared/types/types';
-import { HairdressingPriceSubmenuComponent, HairdressingPriceSubmenuData, HairdressingPriceSubmenuResult } from '@household/web/app/hairdressing/hairdressing-price-submenu/hairdressing-price-submenu.component';
+import { PriceSubmenuComponent, HairdressingPriceSubmenuData, HairdressingPriceSubmenuResult } from '@household/web/app/hairdressing/price/price-submenu/price-submenu.component';
 import { selectPriceIsInProgress } from '@household/web/state/progress/progress.selector';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 
 @Component({
-  selector: 'household-hairdressing-price-list-item',
+  selector: 'household-price-list-item',
   standalone: false,
   
-  templateUrl: './hairdressing-price-list-item.component.html',
-  styleUrl: './hairdressing-price-list-item.component.scss',
+  templateUrl: './price-list-item.component.html',
+  styleUrl: './price-list-item.component.scss',
 })
-export class HairdressingPriceListItemComponent implements OnInit {
+export class PriceListItemComponent implements OnInit {
   @Input() price: Price.Response;
 
   constructor(
@@ -27,7 +27,7 @@ export class HairdressingPriceListItemComponent implements OnInit {
   }
 
   showMenu() {
-    this.bottomSheet.open<HairdressingPriceSubmenuComponent, HairdressingPriceSubmenuData, HairdressingPriceSubmenuResult>(HairdressingPriceSubmenuComponent, {
+    this.bottomSheet.open<PriceSubmenuComponent, HairdressingPriceSubmenuData, HairdressingPriceSubmenuResult>(PriceSubmenuComponent, {
       data: this.price,
     });
 

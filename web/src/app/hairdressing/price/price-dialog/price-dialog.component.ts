@@ -6,15 +6,14 @@ import { Price } from '@household/shared/types/types';
 import { priceApiActions } from '@household/web/state/price/price.actions';
 import { Store } from '@ngrx/store';
 
-export type HairdressingPriceFormData = Price.Response;
+export type PriceDialogData = Price.Response;
 
 @Component({
-  selector: 'household-hairdressing-price-form',
   standalone: false,  
-  templateUrl: './hairdressing-price-form.component.html',
-  styleUrl: './hairdressing-price-form.component.scss',
+  templateUrl: './price-dialog.component.html',
+  styleUrl: './price-dialog.component.scss',
 })
-export class HairdressingPriceFormComponent implements OnInit {
+export class PriceDialogComponent implements OnInit {
   form: FormGroup<{
     name: FormControl<string>;
     amount: FormControl<number>;
@@ -23,9 +22,9 @@ export class HairdressingPriceFormComponent implements OnInit {
 
   get unitsOfMeasurement() { return priceUnitsOfMeasurement; }
 
-  constructor(private dialogRef: MatDialogRef<HairdressingPriceFormComponent, void>,
+  constructor(private dialogRef: MatDialogRef<PriceDialogComponent, void>,
     private store: Store,
-    @Inject(MAT_DIALOG_DATA) public price: HairdressingPriceFormData) { }
+    @Inject(MAT_DIALOG_DATA) public price: PriceDialogData) { }
 
   ngOnInit(): void {
     this.form = new FormGroup({
@@ -35,7 +34,7 @@ export class HairdressingPriceFormComponent implements OnInit {
     });
   }
 
-  save() {
+  onSave() {
     if (this.form.valid) {
       const request: Price.Request = {
         name: this.form.value.name,

@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CustomerRoutingModule } from '@household/web/app/customer/customer-routing.module';
+import { CustomerRoutingModule } from '@household/web/app/hairdressing/customer/customer-routing.module';
 import { CustomerDetailsComponent } from './customer-details/customer-details.component';
 import { CustomerHomeComponent } from './customer-home/customer-home.component';
 import { CustomerListComponent } from './customer-list/customer-list.component';

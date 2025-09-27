@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { HairdressingPriceFormComponent } from './hairdressing-price-form.component';
+import { PriceDialogComponent } from './price-dialog.component';
 
 describe('HairdressingPriceFormComponent', () => {
-  let component: HairdressingPriceFormComponent;
-  let fixture: ComponentFixture<HairdressingPriceFormComponent>;
+  let component: PriceDialogComponent;
+  let fixture: ComponentFixture<PriceDialogComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [HairdressingPriceFormComponent],
+      declarations: [PriceDialogComponent],
     })
       .compileComponents();
 
-    fixture = TestBed.createComponent(HairdressingPriceFormComponent);
+    fixture = TestBed.createComponent(PriceDialogComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -7,13 +7,12 @@ export type HairdressingPriceSubmenuData = Price.Response;
 export type HairdressingPriceSubmenuResult = void;
 
 @Component({
-  selector: 'household-hairdressing-price-submenu',
   standalone: false,  
-  templateUrl: './hairdressing-price-submenu.component.html',
-  styleUrl: './hairdressing-price-submenu.component.scss',
+  templateUrl: './price-submenu.component.html',
+  styleUrl: './price-submenu.component.scss',
 })
-export class HairdressingPriceSubmenuComponent {
-  constructor(private bottomSheetRef: MatBottomSheetRef<HairdressingPriceSubmenuComponent, HairdressingPriceSubmenuResult>,
+export class PriceSubmenuComponent {
+  constructor(private bottomSheetRef: MatBottomSheetRef<PriceSubmenuComponent, HairdressingPriceSubmenuResult>,
     @Inject(MAT_BOTTOM_SHEET_DATA) public price: HairdressingPriceSubmenuData,
     private store: Store) { }
 

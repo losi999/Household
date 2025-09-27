@@ -6,5 +6,7 @@
     <mat-icon>add</mat-icon>
   </button>
 </household-toolbar>
-<household-clearable-input label="Keresés" #inp />
+<div class="search mat-app-background">
+  <household-clearable-input label="Keresés" #inp />
+</div>
 <household-customer-list [customers]="customers | async | autocompleteFilter: 'name' : inp.value" />

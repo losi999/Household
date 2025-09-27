@@ -5,12 +5,12 @@ import { Account, Calendar, Category, Customer, File, Price, Product, Project, R
 import { AccountFormComponent, AccountFormData } from '@household/web/app/account/account-form/account-form.component';
 import { CategoryFormComponent, CategoryFormData } from '@household/web/app/category/category-form/category-form.component';
 import { CategoryMergeDialogComponent, CategoryMergeDialogData } from '@household/web/app/category/category-merge-dialog/category-merge-dialog.component';
-import { CustomerDialogComponent, CustomerDialogData } from '@household/web/app/customer/customer-dialog/customer-dialog.component';
-import { CustomerJobDialogComponent, CustomerJobDialogData } from '@household/web/app/customer/customer-job-dialog/customer-job-dialog.component';
+import { CustomerDialogComponent, CustomerDialogData } from '@household/web/app/hairdressing/customer/customer-dialog/customer-dialog.component';
+import { CustomerJobDialogComponent, CustomerJobDialogData } from '@household/web/app/hairdressing/customer/customer-job-dialog/customer-job-dialog.component';
 import { CalendarEntryDetailsDialogComponent, CalendarEntryDetailsDialogData } from '@household/web/app/hairdressing/calendar/calendar-entry-details-dialog/calendar-entry-details-dialog.component';
 import { CalendarEntryEditDialogComponent, CalendarEntryEditDialogData } from '@household/web/app/hairdressing/calendar/calendar-entry-edit-dialog/calendar-entry-edit-dialog.component';
 import { CalendarWorkdayDialogComponent, CalendarWorkdayDialogData } from '@household/web/app/hairdressing/calendar/calendar-workday-dialog/calendar-workday-dialog.component';
-import { HairdressingPriceFormComponent, HairdressingPriceFormData } from '@household/web/app/hairdressing/hairdressing-price-form/hairdressing-price-form.component';
+import { PriceDialogComponent, PriceDialogData } from '@household/web/app/hairdressing/price/price-dialog/price-dialog.component';
 import { ImportFileUploadFormComponent } from '@household/web/app/import/import-file-upload-form/import-file-upload-form.component';
 import { ProductFormComponent, ProductFormData } from '@household/web/app/product/product-form/product-form.component';
 import { ProductMergeDialogComponent, ProductMergeDialogData } from '@household/web/app/product/product-merge-dialog/product-merge-dialog.component';
@@ -183,11 +183,11 @@ export class DialogService {
   }
 
   openCreatePriceDialog(): void {
-    this.dialog.open<HairdressingPriceFormComponent, HairdressingPriceFormData, void>(HairdressingPriceFormComponent);
+    this.dialog.open<PriceDialogComponent, PriceDialogData, void>(PriceDialogComponent);
   }
 
   openEditPriceDialog(price: Price.Response): void {
-    this.dialog.open<HairdressingPriceFormComponent, HairdressingPriceFormData, void>(HairdressingPriceFormComponent, {
+    this.dialog.open<PriceDialogComponent, PriceDialogData, void>(PriceDialogComponent, {
       data: price,
     });
   }
