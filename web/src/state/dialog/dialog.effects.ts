@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { EMPTY, exhaustMap, tap, withLatestFrom } from 'rxjs';
+import { EMPTY, exhaustMap, mergeMap, switchMap, tap } from 'rxjs';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { DialogService } from '@household/web/services/dialog.service';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
@@ -13,11 +13,12 @@ import { categoryApiActions } from '@household/web/state/category/category.actio
 import { recipientApiActions } from '@household/web/state/recipient/recipient.actions';
 import { projectApiActions } from '@household/web/state/project/project.actions';
 import { Store } from '@ngrx/store';
-import { selectCustomer } from '@household/web/state/customer/customer.selector';
+import { selectCustomerById } from '@household/web/state/customer/customer.selector';
 import { customerApiActions } from '@household/web/state/customer/customer.actions';
 import { CalendarDayType } from '@household/shared/enums';
 import { calendarApiActions } from '@household/web/state/calendar/calendar.actions';
 import { priceApiActions } from '@household/web/state/price/price.actions';
+import { takeFirstDefined } from '@household/web/operators/take-first-defined';
 
 @Injectable()
 export class DialogEffects { 
@@ -264,9 +265,9 @@ export class DialogEffects {
   updateCustomer = createEffect(() => {
     return this.actions.pipe(
       ofType(dialogActions.updateCustomer),
-      withLatestFrom(this.store.select(selectCustomer)),
-      exhaustMap((params) => {
-        this.dialogService.openEditCustomerDialog(params[1]);
+      switchMap(({ customerId }) => this.store.select(selectCustomerById(customerId))),
+      exhaustMap((customer) => {
+        this.dialogService.openEditCustomerDialog(customer);
         return EMPTY;
       }),
     );
@@ -315,8 +316,9 @@ export class DialogEffects {
   addCustomerToBlacklist = createEffect(() => {
     return this.actions.pipe(
       ofType(dialogActions.addCustomerToBlacklist),
-      exhaustMap(() => {
-        this.dialogService.openAddCustomerToBlacklistDialog();
+      switchMap(({ customerId }) => this.store.select(selectCustomerById(customerId)).pipe(takeFirstDefined())), 
+      exhaustMap((customer) => {
+        this.dialogService.openAddCustomerToBlacklistDialog(customer);
         return EMPTY;
       }),
     );
@@ -327,20 +329,20 @@ export class DialogEffects {
   deleteCustomerFromBlacklist = createEffect(() => {
     return this.actions.pipe(
       ofType(dialogActions.deleteCustomerFromBlacklist),
-      withLatestFrom(this.store.select(selectCustomer)),
-      exhaustMap(([
-        { type, ...customerA },
-        customerB,
-      ]) => {
-        return this.dialogService.openDeleteCustomerFromBlacklistDialog([
-          customerA,
-          customerB,
-        ]).pipe(dispatchIfConfirmed(customerApiActions.deleteCustomerFromBlacklistInitiated({
-          customerIds: [
-            customerA.customerId,
-            customerB.customerId,
-          ],
-        })));
+      exhaustMap(({ customerId, selectedCustomer }) => {
+        return this.store.select(selectCustomerById(customerId)).pipe(
+          takeFirstDefined(), 
+          mergeMap((customer) => {
+            return this.dialogService.openDeleteCustomerFromBlacklistDialog([
+              customer,
+              selectedCustomer,
+            ]).pipe(dispatchIfConfirmed(customerApiActions.deleteCustomerFromBlacklistInitiated({
+              customerIds: [
+                customer.customerId,
+                selectedCustomer.customerId,
+              ],
+            })));
+          }));
       }),
     );
   });

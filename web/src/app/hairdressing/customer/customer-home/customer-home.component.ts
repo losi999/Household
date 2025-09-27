@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Customer } from '@household/shared/types/types';
 import { customerApiActions } from '@household/web/state/customer/customer.actions';
-import { selectCustomerList } from '@household/web/state/customer/customer.selector';
+import { selectCustomers } from '@household/web/state/customer/customer.selector';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
@@ -18,7 +18,7 @@ export class CustomerHomeComponent implements OnInit {
   constructor(private store: Store) { }
 
   ngOnInit(): void {
-    this.customers = this.store.select(selectCustomerList);
+    this.customers = this.store.select(selectCustomers);
 
     this.store.dispatch(customerApiActions.listCustomersInitiated());
   }

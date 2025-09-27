@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Injector, input, Input, OnInit, Self } from '@angular/core';
+import { Component, Injector, Input, OnInit, Self } from '@angular/core';
 import { ControlValueAccessor, FormControl, FormControlDirective, FormControlName, FormGroupDirective, NgControl, ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
@@ -9,8 +9,9 @@ import { MatInputModule } from '@angular/material/input';
 import { Customer } from '@household/shared/types/types';
 import { AutocompleteFilterPipe } from '@household/web/app/shared/autocomplete/autocomplete-filter.pipe';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
-import { selectCustomerList } from '@household/web/state/customer/customer.selector';
+import { selectFilteredCustomers } from '@household/web/state/customer/customer.selector';
 import { Store } from '@ngrx/store';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'household-customer-autocomplete-input',
@@ -38,7 +39,7 @@ export class CustomerAutocompleteInputComponent implements OnInit, ControlValueA
   touched: () => void;
   isDisabled: boolean;
 
-  customers = this.store.select(selectCustomerList);
+  customers: Observable<Customer.Response[]>;
 
   constructor(private injector: Injector, private store: Store, @Self() public ngControl: NgControl) {
     ngControl.valueAccessor = this;
@@ -49,6 +50,8 @@ export class CustomerAutocompleteInputComponent implements OnInit, ControlValueA
   }
 
   ngOnInit(): void {
+    this.customers = this.store.select(selectFilteredCustomers(...this.exclude ?? []));
+
     if (this.ngControl instanceof FormControlName) {
       this.selected = this.injector.get(FormGroupDirective).getControl(this.ngControl);
     } else if (this.ngControl instanceof FormControlDirective) {

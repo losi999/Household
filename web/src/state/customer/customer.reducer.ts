@@ -3,205 +3,145 @@ import { createReducer, on } from '@ngrx/store';
 import { customerApiActions } from '@household/web/state/customer/customer.actions';
 import { isPriceBase } from '@household/shared/common/type-guards';
 
-export type CustomerState = {
-  customerList?: Customer.Response[];
-  selectedCustomer?: Customer.Response;
-};
-
-export const customerReducer = createReducer<CustomerState>({},
-  on(customerApiActions.listCustomersInitiated, (_state) => {
-    return {
-      ..._state,
-      selectedCustomer: undefined,
-    };
-  }),
-
-  on(customerApiActions.getCustomerByIdInitiated, (_state, { customerId }) => {
-    return {
-      ..._state,
-      selectedCustomer: _state.customerList?.find(c => c.customerId === customerId),
-    };
-  }),
-
-  on(customerApiActions.getCustomerByIdCompleted, (_state, { type, ...customer }) => {
-    return {
-      ..._state,
-      selectedCustomer: customer,
-    };
-  }),
-
+export const customerReducer = createReducer<Customer.Response[]>([],
   on(customerApiActions.listCustomersCompleted, (_state, { customers }) => {
-    return {
-      ..._state,
-      customerList: customers,
-    };
+    return customers;
   }),
   on(customerApiActions.createCustomerCompleted, (_state, { customerId, name, description, isGroup, rating }) => {
-    return {
-      ..._state,
-      customerList: _state.customerList.filter(p => p.customerId !== customerId)
-        .concat({
-          customerId,
-          name,
-          description,
-          isGroup,
-          rating,
-          jobs: [],
-          blacklistedCustomers: [],
-        })
-        .toSorted((a, b) => a.name.localeCompare(b.name, 'hu', {
-          sensitivity: 'base',
-        })),
-    };
+    return _state.concat({
+      customerId,
+      name,
+      description,
+      isGroup,
+      rating,
+      jobs: [],
+      blacklistedCustomers: [],
+    })
+      .toSorted((a, b) => a.name.localeCompare(b.name, 'hu', {
+        sensitivity: 'base',
+      }));
   }),
 
-  on(customerApiActions.updateCustomerCompleted, (_state, { customerId, name, description, isGroup, rating }) => {
-    return {
-      ..._state,
-      customerList: _state.customerList?.filter(p => p.customerId !== customerId)
-        .concat({
-          customerId,
-          name,
-          description,
-          isGroup,
-          rating,
-          jobs: _state.selectedCustomer.jobs,
-          blacklistedCustomers: _state.selectedCustomer.blacklistedCustomers,
-        })
-        .toSorted((a, b) => a.name.localeCompare(b.name, 'hu', {
-          sensitivity: 'base',
-        })),
-      selectedCustomer: {
-        customerId,
+  on(customerApiActions.updateCustomerCompleted, (_state, { customerId, name, description, isGroup, rating }) => {   
+    return _state.map((c) => {
+      if (c.customerId !== customerId) {
+        return c;
+      }
+      return {
+        ...c,
         name,
         description,
         isGroup,
         rating,
-        blacklistedCustomers: [],
-        jobs: _state.selectedCustomer.jobs,
-      },
-    };
+      };
+    }).toSorted((a, b) => a.name.localeCompare(b.name, 'hu', {
+      sensitivity: 'base',
+    }));
   }),
 
   on(customerApiActions.createCustomerJobCompleted, (_state, { customerId, duration, name, prices, description, priceList }) => {
-    const jobs = _state.selectedCustomer.jobs.concat({
-      name,
-      prices: prices.map((p) => {
-        if (isPriceBase(p)) {
-          return {
-            amount: p.amount,
-            name: p.name,
-            priceId: undefined,
-            quantity: undefined,
-            unitOfMeasurement: undefined,
-          };
-        }
+    return _state.map((c) => {
+      return c.customerId !== customerId ? c : {
+        ...c,
+        jobs: c.jobs.concat({
+          name,
+          prices: prices.map((p) => {
+            if (isPriceBase(p)) {
+              return {
+                amount: p.amount,
+                name: p.name,
+                priceId: undefined,
+                quantity: undefined,
+                unitOfMeasurement: undefined,
+              };
+            }
 
-        const price = priceList.find(x => x.priceId === p.priceId);
-        return {
-          ...price,
-          quantity: p.quantity,
-        };
-      }),
-      duration,
-      description,
-    })
-      .toSorted((a, b) => a.name.localeCompare(b.name, 'hu', {
-        sensitivity: 'base',
-      }));
-
-    return {
-      ..._state,
-      customerList: _state.customerList?.map(c => {
-        return c.customerId !== customerId ? c : {
-          ...c,
-          jobs,
-        };
-      }),
-      selectedCustomer: {
-        ..._state.selectedCustomer,
-        jobs,
-      },
-    };
+            const price = priceList.find(x => x.priceId === p.priceId);
+            return {
+              ...price,
+              quantity: p.quantity,
+            };
+          }),
+          duration,
+          description,
+        })
+          .toSorted((a, b) => a.name.localeCompare(b.name, 'hu', {
+            sensitivity: 'base',
+          })),
+      };
+    });
   }),
 
-  on(customerApiActions.deleteCustomerJobCompleted, (_state, { customerId, jobName }) => {
-    const jobs = _state.selectedCustomer.jobs.filter(j => j.name !== jobName);
-    
-    return {
-      ..._state,
-      customerList: _state.customerList?.map(c => {
-        return c.customerId !== customerId ? c : {
-          ...c,
-          jobs,
-        };
-      }),
-      selectedCustomer: {
-        ..._state.selectedCustomer,
-        jobs,
-      },
-    };
+  on(customerApiActions.deleteCustomerJobCompleted, (_state, { customerId, jobName }) => {   
+    return _state.map(c => {
+      return c.customerId !== customerId ? c : {
+        ...c,
+        jobs: c.jobs.filter(j => j.name !== jobName),
+      };
+    });
   }),
 
   on(customerApiActions.updateCustomerJobCompleted, (_state, { customerId, jobName, description, duration, name, prices, priceList }) => {
-    const jobs = _state.selectedCustomer.jobs.filter(j => j.name !== jobName).concat({
-      description,
-      duration,
-      name,
-      prices: prices.map((p) => {
-        if (isPriceBase(p)) {
-          return {
-            amount: p.amount,
-            name: p.name,
-            priceId: undefined,
-            quantity: undefined,
-            unitOfMeasurement: undefined,
-          };
-        }
+    return _state.map((c) => {
+      return c.customerId !== customerId ? c : {
+        ...c,
+        jobs: c.jobs.map((j) => {
+          return j.name !== jobName ? j : {
+            name,
+            prices: prices.map((p) => {
+              if (isPriceBase(p)) {
+                return {
+                  amount: p.amount,
+                  name: p.name,
+                  priceId: undefined,
+                  quantity: undefined,
+                  unitOfMeasurement: undefined,
+                };
+              }
 
-        const price = priceList.find(x => x.priceId === p.priceId);
-        return {
-          ...price,
-          quantity: p.quantity,
-        };
-      }),
-    })
-      .toSorted((a, b) => a.name.localeCompare(b.name, 'hu', {
-        sensitivity: 'base',
-      }));
-    
-    return {
-      ..._state,
-      customerList: _state.customerList?.map(c => {
-        return c.customerId !== customerId ? c : {
-          ...c,
-          jobs,
-        };
-      }),
-      selectedCustomer: {
-        ..._state.selectedCustomer,
-        jobs,
-      },
-    };
+              const price = priceList.find(x => x.priceId === p.priceId);
+              return {
+                ...price,
+                quantity: p.quantity,
+              };
+            }),
+            duration,
+            description,
+          };
+        }).toSorted((a, b) => a.name.localeCompare(b.name, 'hu', {
+          sensitivity: 'base',
+        })),
+      };
+    });
+  }),
+
+  on(customerApiActions.addCustomerToBlacklistCompleted, (_state, { customers }) => {
+    return _state.map((customer) => {
+      const index = customers.findIndex((c) => c.customerId === customer.customerId);
+      if (index < 0) {
+        return customer;
+      }
+
+      return {
+        ...customer, 
+        blacklistedCustomers: [
+          ...customer.blacklistedCustomers,
+          index === 0 ? customers[1] : customers[0],
+        ],
+      };
+    });
   }),
 
   on(customerApiActions.deleteCustomerFromBlacklistCompleted, (_state, { customerIds }) => {
-    return {
-      ..._state,
-      customerList: _state.customerList?.map((customer) => {
-        if (!customerIds.includes(customer.customerId)) {
-          return customer;
-        }
+    return _state.map((customer) => {
+      if (!customerIds.includes(customer.customerId)) {
+        return customer;
+      }
 
-        return {
-          ...customer, 
-          blacklistedCustomers: customer.blacklistedCustomers.filter(({ customerId }) => !customerIds.includes(customerId)),
-        };
-      }),
-      selectedCustomer: {
-        ..._state.selectedCustomer,
-        blacklistedCustomers: _state.selectedCustomer.blacklistedCustomers.filter(({ customerId }) => !customerIds.includes(customerId)),
-      },
-    };
+      return {
+        ...customer, 
+        blacklistedCustomers: customer.blacklistedCustomers.filter(({ customerId }) => !customerIds.includes(customerId)),
+      };
+    });
   }),
 );

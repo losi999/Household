@@ -19,7 +19,7 @@ import { ProjectMergeDialogComponent, ProjectMergeDialogData } from '@household/
 import { RecipientFormComponent, RecipientFormData } from '@household/web/app/recipient/recipient-form/recipient-form.component';
 import { RecipientMergeDialogComponent, RecipientMergeDialogData } from '@household/web/app/recipient/recipient-merge-dialog/recipient-merge-dialog.component';
 import { ConfirmationDialogComponent } from '@household/web/app/shared/confirmation-dialog/confirmation-dialog.component';
-import { CustomerAddToBlacklistDialogComponent } from '@household/web/app/hairdressing/customer/customer-add-to-blacklist-dialog/customer-add-to-blacklist-dialog.component';
+import { CustomerAddToBlacklistDialogComponent, CustomerAddToBlacklistDialogData } from '@household/web/app/hairdressing/customer/customer-add-to-blacklist-dialog/customer-add-to-blacklist-dialog.component';
 
 @Injectable({
   providedIn: 'root',
@@ -183,8 +183,16 @@ export class DialogService {
     return this.openConfirmationDialog('Törölni akarod ezt a munkát?', name);
   }
 
-  openAddCustomerToBlacklistDialog() {
-    return this.dialog.open<CustomerAddToBlacklistDialogComponent, void, void>(CustomerAddToBlacklistDialogComponent);
+  openAddCustomerToBlacklistDialog(customer: Customer.Response) {
+    return this.dialog.open<CustomerAddToBlacklistDialogComponent, CustomerAddToBlacklistDialogData, void>(CustomerAddToBlacklistDialogComponent, {
+      data: {
+        customer,
+        excludedCustomerIds: [
+          customer.customerId,
+          ...customer.blacklistedCustomers.map(c => c.customerId),
+        ],
+      },
+    });
   }
 
   openDeleteCustomerFromBlacklistDialog([

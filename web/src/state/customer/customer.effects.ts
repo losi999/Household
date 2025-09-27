@@ -32,24 +32,6 @@ export class CustomerEffects {
     );
   });
 
-  getCustomerById = createEffect(() => {
-    return this.actions.pipe(
-      ofType(customerApiActions.getCustomerByIdInitiated),
-      exhaustMap(({ customerId }) => {
-        return this.customerService.getCustomerById(customerId).pipe(
-          map((customer) => customerApiActions.getCustomerByIdCompleted(customer)),
-          catchError(() => {
-            return of(progressActions.processFinished(),
-              notificationActions.showMessage({
-                message: 'Hiba történt',
-              }),
-            );
-          }),
-        );
-      }),
-    );
-  });
-
   createCustomer = createEffect(() => {
     return this.actions.pipe(
       ofType(customerApiActions.createCustomerInitiated),
@@ -197,6 +179,29 @@ export class CustomerEffects {
             map(() => customerApiActions.deleteCustomerJobCompleted({
               jobName,
               customerId,
+            })),
+            catchError(() => {
+              return of(progressActions.processFinished(),
+                notificationActions.showMessage({
+                  message: 'Hiba történt',
+                }),
+              );
+            }),
+          );
+        }));
+      }),
+    );
+  });
+
+  addCustomerToBlacklist = createEffect(() => {
+    return this.actions.pipe(
+      ofType(customerApiActions.addCustomerToBlacklistInitiated),
+      groupBy(({ customers }) => customers),
+      mergeMap((value) => {
+        return value.pipe(exhaustMap(({ customers }) => {
+          return this.customerService.updateCustomerBlacklist(customers.map(c => c.customerId)).pipe(
+            map(() => customerApiActions.addCustomerToBlacklistCompleted({
+              customers,
             })),
             catchError(() => {
               return of(progressActions.processFinished(),

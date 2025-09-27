@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Customer } from '@household/shared/types/types';
 import { customerApiActions } from '@household/web/state/customer/customer.actions';
-import { selectCustomer } from '@household/web/state/customer/customer.selector';
+import { selectCustomerById } from '@household/web/state/customer/customer.selector';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { priceApiActions } from '@household/web/state/price/price.actions';
 import { Store } from '@ngrx/store';
@@ -23,16 +23,16 @@ export class CustomerDetailsComponent implements OnInit {
   ngOnInit(): void {
     this.customerId = this.activatedRoute.snapshot.paramMap.get('customerId') as Customer.Id;
 
-    this.customer = this.store.select(selectCustomer);
+    this.customer = this.store.select(selectCustomerById(this.customerId));
 
-    this.store.dispatch(customerApiActions.getCustomerByIdInitiated({
-      customerId: this.customerId,
-    }));
+    this.store.dispatch(customerApiActions.listCustomersInitiated());
     this.store.dispatch(priceApiActions.listPricesInitiated());
   }
 
   onEdit() {
-    this.store.dispatch(dialogActions.updateCustomer());
+    this.store.dispatch(dialogActions.updateCustomer({
+      customerId: this.customerId,
+    }));
   }
 
   onCreateJob() {
@@ -42,11 +42,16 @@ export class CustomerDetailsComponent implements OnInit {
   }
 
   onAddToBlacklist() {
-    this.store.dispatch(dialogActions.addCustomerToBlacklist());
+    this.store.dispatch(dialogActions.addCustomerToBlacklist({
+      customerId: this.customerId,
+    }));
   }
 
   onRemoveFromBlacklist(customer: Customer.Response) {
-    this.store.dispatch(dialogActions.deleteCustomerFromBlacklist(customer));
+    this.store.dispatch(dialogActions.deleteCustomerFromBlacklist({
+      customerId: this.customerId,
+      selectedCustomer: customer,
+    }));
   }
 
 }
