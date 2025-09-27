@@ -44,6 +44,7 @@ export const customerServiceFactory = (mongodbService: IMongodbService): ICustom
     getCustomerById: async (customerId) => {
       return !customerId ? undefined : mongodbService.customers.findById(customerId)
         .populate('jobs.prices.price')
+        .populate('blacklistedCustomers')
         .lean();
         
     },

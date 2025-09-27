@@ -18,5 +18,7 @@ export const customerApiActions = createActionGroup({
     'Update customer job completed': props<Customer.CustomerId & {jobName: Customer.Job.Name['name']} & Customer.Job.Request & {priceList: Price.Response[]}>(),    
     'Delete customer job initiated': props<Customer.CustomerId & {jobName: Customer.Job.Name['name']}>(),
     'Delete customer job completed': props<Customer.CustomerId & {jobName: Customer.Job.Name['name']}>(),    
+    'Delete customer from blacklist initiated': props<{customerIds: Customer.Id[]}>(),
+    'Delete customer from blacklist completed': props<{customerIds: Customer.Id[]}>(),
   },
 });

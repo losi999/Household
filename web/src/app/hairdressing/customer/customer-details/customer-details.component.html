@@ -19,7 +19,7 @@
     {{cust.description}}
   </div>
   <mat-divider />
-  <div class="jobs">
+  <div class="section-title">
     <household-icon-text icon="content_cut" text="Munkák" size="medium" />
     <button mat-icon-button type="button" (click)="onCreateJob()">
       <mat-icon>add</mat-icon>
@@ -28,5 +28,24 @@
   <div class="job-list">
     <household-customer-details-job-item *ngFor="let j of cust.jobs" [job]="j" />
   </div>
+  <mat-divider />
+  <div class="section-title">
+    <household-icon-text icon="block" text="Tiltólista" size="medium" />
+    <button mat-icon-button type="button" (click)="onAddToBlacklist()">
+      <mat-icon>add</mat-icon>
+    </button>
+  </div>
+  <div *ngIf="cust.blacklistedCustomers.length === 0">
+    Nincs vendég a tiltólistához adva
+  </div>
+  <div class="customer-blacklist" *ngFor="let c of cust.blacklistedCustomers">
+    <div>
+      {{c.name}}
+    </div>
+    <button mat-icon-button type="button" (click)="onRemoveFromBlacklist(c)">
+      <mat-icon>delete</mat-icon>
+    </button>
+  </div>
+
 
 </ng-container>

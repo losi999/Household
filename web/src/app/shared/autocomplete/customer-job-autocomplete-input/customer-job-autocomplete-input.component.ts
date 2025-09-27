@@ -1,33 +1,27 @@
 import { CommonModule } from '@angular/common';
 import { Component, forwardRef, OnInit } from '@angular/core';
 import { ControlValueAccessor, FormControl, FormGroup, NG_VALUE_ACCESSOR, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { Customer } from '@household/shared/types/types';
 import { TimeSlotToTimePipe } from '@household/web/app/shared/time-slot-to-time.pipe';
-import { AutocompleteFilterPipe } from '@household/web/app/shared/autocomplete/autocomplete-filter.pipe';
 import { selectCustomerList } from '@household/web/state/customer/customer.selector';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 import { v4 } from 'uuid';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
+import { CustomerAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/customer-autocomplete-input/customer-autocomplete-input.component';
 
 @Component({
   selector: 'household-customer-job-autocomplete-input',
   imports: [
+    CustomerAutocompleteInputComponent,
     CommonModule,
     ReactiveFormsModule,
-    MatFormFieldModule,
     MatButtonModule,
-    MatInputModule,
     MatIconModule,
     MatSelectModule,
-    MatAutocompleteModule,
-    AutocompleteFilterPipe,
     TimeSlotToTimePipe,
   ],
   templateUrl: './customer-job-autocomplete-input.component.html',

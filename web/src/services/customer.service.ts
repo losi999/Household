@@ -38,8 +38,14 @@ export class CustomerService {
     return this.httpClient.delete(`${environment.apiUrl}/customer/v1/customers/${customerId}/jobs/${jobName}`);
   }
 
-  // deleteCustomer(recipientId: Customer.Id) {
-  //   return this.httpClient.delete(`${environment.apiUrl}/recipient/v1/recipients/${recipientId}`);
-  // }
+  updateCustomerBlacklist(body: Customer.Id[]) {
+    return this.httpClient.put(`${environment.apiUrl}/customer/v1/customers/blacklist`, body);
+  }
+
+  deleteCustomerBlacklist(body: Customer.Id[]) {
+    return this.httpClient.delete(`${environment.apiUrl}/customer/v1/customers/blacklist`, {
+      body,
+    });
+  }
 
 }

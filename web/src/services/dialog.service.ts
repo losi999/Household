@@ -19,6 +19,7 @@ import { ProjectMergeDialogComponent, ProjectMergeDialogData } from '@household/
 import { RecipientFormComponent, RecipientFormData } from '@household/web/app/recipient/recipient-form/recipient-form.component';
 import { RecipientMergeDialogComponent, RecipientMergeDialogData } from '@household/web/app/recipient/recipient-merge-dialog/recipient-merge-dialog.component';
 import { ConfirmationDialogComponent } from '@household/web/app/shared/confirmation-dialog/confirmation-dialog.component';
+import { CustomerAddToBlacklistDialogComponent } from '@household/web/app/hairdressing/customer/customer-add-to-blacklist-dialog/customer-add-to-blacklist-dialog.component';
 
 @Injectable({
   providedIn: 'root',
@@ -180,6 +181,17 @@ export class DialogService {
 
   openDeleteCustomerJobDialog({ name }: Customer.Job.Name) {
     return this.openConfirmationDialog('Törölni akarod ezt a munkát?', name);
+  }
+
+  openAddCustomerToBlacklistDialog() {
+    return this.dialog.open<CustomerAddToBlacklistDialogComponent, void, void>(CustomerAddToBlacklistDialogComponent);
+  }
+
+  openDeleteCustomerFromBlacklistDialog([
+    customerA,
+    customerB]: Customer.Response[
+  ]) {
+    return this.openConfirmationDialog('Törölni akarod a tiltást közöttük?', `${customerA.name} és ${customerB.name}`);
   }
 
   openCreatePriceDialog(): void {

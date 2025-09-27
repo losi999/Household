@@ -28,6 +28,8 @@ export const dialogActions = createActionGroup({
     'Create customer job': props<Customer.CustomerId>(),
     'Update customer job': props<Customer.CustomerId & Customer.Job.Response>(),
     'Delete customer job': props<Customer.CustomerId & Customer.Job.Name>(),
+    'Add customer to blacklist': emptyProps(),
+    'Delete customer from blacklist': props<Customer.Response>(),
     'Create price': emptyProps(),
     'Update price': props<Price.PriceId & Price.Response>(),
     'Delete price': props<Price.Response>(),

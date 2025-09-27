@@ -26,6 +26,8 @@ import { TimeSlotToTimePipe } from '@household/web/app/shared/time-slot-to-time.
 import { JobPriceSummaryComponent } from '@household/web/app/shared/job-price-summary/job-price-summary.component';
 import { JobPriceCalculatorComponent } from '@household/web/app/shared/job-price-calculator/job-price-calculator.component';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { CustomerAddToBlacklistDialogComponent } from './customer-add-to-blacklist-dialog/customer-add-to-blacklist-dialog.component';
+import { CustomerAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/customer-autocomplete-input/customer-autocomplete-input.component';
 
 @NgModule({
   declarations: [
@@ -36,6 +38,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
     CustomerDialogComponent,
     CustomerDetailsJobItemComponent,
     CustomerJobDialogComponent,
+    CustomerAddToBlacklistDialogComponent,
   ],
   imports: [
     CommonModule,
@@ -58,6 +61,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
     JobPriceSummaryComponent,
     JobPriceCalculatorComponent,
     MatCheckboxModule,
+    CustomerAutocompleteInputComponent,
   ],
 })
 export class CustomerModule { }

@@ -15,7 +15,7 @@
   font-style: italic;
 }
 
-.jobs {
+.section-title {
   height: 48px;
   margin-top: 5px;
   display: grid;
@@ -34,4 +34,12 @@
       grid-template-columns: 1fr;
     }
   }
+}
+
+.customer-blacklist {
+  font-size: large;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+
 }

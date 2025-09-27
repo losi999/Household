@@ -312,6 +312,39 @@ export class DialogEffects {
     );
   });
 
+  addCustomerToBlacklist = createEffect(() => {
+    return this.actions.pipe(
+      ofType(dialogActions.addCustomerToBlacklist),
+      exhaustMap(() => {
+        this.dialogService.openAddCustomerToBlacklistDialog();
+        return EMPTY;
+      }),
+    );
+  }, {
+    dispatch: false,
+  });
+
+  deleteCustomerFromBlacklist = createEffect(() => {
+    return this.actions.pipe(
+      ofType(dialogActions.deleteCustomerFromBlacklist),
+      withLatestFrom(this.store.select(selectCustomer)),
+      exhaustMap(([
+        { type, ...customerA },
+        customerB,
+      ]) => {
+        return this.dialogService.openDeleteCustomerFromBlacklistDialog([
+          customerA,
+          customerB,
+        ]).pipe(dispatchIfConfirmed(customerApiActions.deleteCustomerFromBlacklistInitiated({
+          customerIds: [
+            customerA.customerId,
+            customerB.customerId,
+          ],
+        })));
+      }),
+    );
+  });
+
   createPrice = createEffect(() => {
     return this.actions.pipe(
       ofType(dialogActions.createPrice),

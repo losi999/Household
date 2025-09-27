@@ -1,20 +1,5 @@
 <form [formGroup]="selected">
-  <mat-form-field>
-    <button mat-icon-button matPrefix color="primary" type="button" (click)="create($event)">
-      <mat-icon>library_add</mat-icon>
-    </button>
-    <mat-label>Vendég</mat-label>
-    <input type="text" #inp matInput [matAutocomplete]="autocomplete" (blur)="touched?.()" formControlName="customer">
-    <mat-autocomplete #autocomplete="matAutocomplete" [displayWith]="displayName" (optionSelected)="optionSelected(inp)">
-      <mat-option *ngFor="let customer of customers | async | autocompleteFilter: 'name' : inp.value" [value]="customer">
-        {{customer.name}}
-      </mat-option>
-    </mat-autocomplete>
-    <button matSuffix mat-icon-button aria-label="Clear" type="button" (click)="clearValue($event)" tabindex="-1">
-      <mat-icon>close</mat-icon>
-    </button>
-    <mat-error *ngIf="selected.controls.customer.errors?.required">Kötelező</mat-error>
-  </mat-form-field>
+  <household-customer-autocomplete-input formControlName="customer" label="Vendég" />
   <mat-form-field *ngIf="selected.value.customer">
     <mat-label>Munka</mat-label>
     <mat-select formControlName="job">

@@ -41,4 +41,12 @@ export class CustomerDetailsComponent implements OnInit {
     }));
   }
 
+  onAddToBlacklist() {
+    this.store.dispatch(dialogActions.addCustomerToBlacklist());
+  }
+
+  onRemoveFromBlacklist(customer: Customer.Response) {
+    this.store.dispatch(dialogActions.deleteCustomerFromBlacklist(customer));
+  }
+
 }
