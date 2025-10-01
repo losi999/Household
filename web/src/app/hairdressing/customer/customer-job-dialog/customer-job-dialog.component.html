@@ -2,16 +2,7 @@
   <form [formGroup]="form" (ngSubmit)="onSave()" id="form">
     <household-clearable-input formControlName="name" label="Munka neve" />
     <household-clearable-input formControlName="description" type="area" label="Megjegyzés" />
-    <div class="duration">
-      <mat-label>Időtartam</mat-label>
-      <button mat-icon-button type="button" (click)="onSetDuration(-1)" [disabled]="form.value.duration === 1">
-        <mat-icon>remove</mat-icon>
-      </button>
-      <span>{{form.value.duration | timeSlotToTime}} óra</span>
-      <button mat-icon-button type="button" (click)="onSetDuration(1)">
-        <mat-icon>add</mat-icon>
-      </button>
-    </div>
+    <household-duration-stepper formControlName="duration" />
     <household-job-price-calculator formControlName="prices" />
   </form>
 </div>

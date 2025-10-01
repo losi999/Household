@@ -23,10 +23,8 @@ export class CalendarWorkdayDialogComponent implements OnInit {
   form: FormGroup<{
     dayType: FormControl<CalendarDayType>;
     shiftType: FormControl<ShiftType>;
-    timeRange: FormControl<{
-      start: number;
-      end: number;
-    }>;
+    start: FormControl<number>;
+    end: FormControl<number>;
   }>;
 
   constructor(private dialogRef: MatDialogRef<CalendarWorkdayDialogComponent, void>,
@@ -37,36 +35,28 @@ export class CalendarWorkdayDialogComponent implements OnInit {
     this.form = new FormGroup({
       dayType: new FormControl<CalendarDayType>(this.day.dayType !== CalendarDayType.Weekend ? this.day.dayType : CalendarDayType.Workday),
       shiftType: new FormControl<ShiftType>(ShiftType.Custom),
-      timeRange: new FormControl({
-        start: this.day.dayType === CalendarDayType.Vacation ? WORKDAY_START : this.day.plannedStart ?? WORKDAY_START,
-        end: this.day.dayType === CalendarDayType.Vacation ? WORKDAY_END : this.day.plannedEnd ?? WORKDAY_END,
-      }),
+      start: new FormControl(this.day.dayType === CalendarDayType.Vacation ? WORKDAY_START : this.day.plannedStart ?? WORKDAY_START),
+      end: new FormControl(this.day.dayType === CalendarDayType.Vacation ? WORKDAY_END : this.day.plannedEnd ?? WORKDAY_END),
     });
 
     this.form.controls.shiftType.valueChanges.subscribe((value) => {
       switch (value) {
         case ShiftType.Morning: {
           this.form.patchValue({
-            timeRange: {
-              start: MORNING_SHIFT_START,
-              end: MORNING_SHIFT_END,
-            },
+            start: MORNING_SHIFT_START,
+            end: MORNING_SHIFT_END,
           });
         } break;
         case ShiftType.Afternoon: {
           this.form.patchValue({
-            timeRange: {
-              start: AFTERNOON_SHIFT_START,
-              end: AFTERNOON_SHIFT_END,
-            },
+            start: AFTERNOON_SHIFT_START,
+            end: AFTERNOON_SHIFT_END,
           });
         } break;
         case ShiftType.Custom: {
           this.form.patchValue({
-            timeRange: {
-              start: WORKDAY_START,
-              end: WORKDAY_END,
-            },
+            start: WORKDAY_START,
+            end: WORKDAY_END,
           });
         } break;
       }
@@ -86,8 +76,8 @@ export class CalendarWorkdayDialogComponent implements OnInit {
         this.store.dispatch(calendarApiActions.updateCalendarDayInitiated({
           dayType: CalendarDayType.Workday,
           day: this.day.day,
-          start: this.form.value.timeRange.start,
-          end: this.form.value.timeRange.end,
+          start: this.form.value.start,
+          end: this.form.value.end,
         }));
       }
 

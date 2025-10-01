@@ -30,6 +30,7 @@ import { JobPriceCalculatorComponent } from '@household/web/app/shared/job-price
 import { JobPriceSummaryComponent } from '@household/web/app/shared/job-price-summary/job-price-summary.component';
 import { CalendarEntryPayingComponent } from '@household/web/app/hairdressing/calendar/calendar-entry-paying/calendar-entry-paying.component';
 import { CustomerJobAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/customer-job-autocomplete-input/customer-job-autocomplete-input.component';
+import { DurationStepperComponent } from '@household/web/app/shared/duration-stepper/duration-stepper.component';
 
 @NgModule({
   declarations: [
@@ -66,6 +67,7 @@ import { CustomerJobAutocompleteInputComponent } from '@household/web/app/shared
     ClearableInputComponent,
     JobPriceCalculatorComponent,
     JobPriceSummaryComponent,
+    DurationStepperComponent,
   ],
 })
 export class CalendarModule { }

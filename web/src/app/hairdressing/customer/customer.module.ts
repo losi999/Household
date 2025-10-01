@@ -28,6 +28,7 @@ import { JobPriceCalculatorComponent } from '@household/web/app/shared/job-price
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { CustomerAddToBlacklistDialogComponent } from './customer-add-to-blacklist-dialog/customer-add-to-blacklist-dialog.component';
 import { CustomerAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/customer-autocomplete-input/customer-autocomplete-input.component';
+import { DurationStepperComponent } from '@household/web/app/shared/duration-stepper/duration-stepper.component';
 
 @NgModule({
   declarations: [
@@ -62,6 +63,7 @@ import { CustomerAutocompleteInputComponent } from '@household/web/app/shared/au
     JobPriceCalculatorComponent,
     MatCheckboxModule,
     CustomerAutocompleteInputComponent,
+    DurationStepperComponent,
   ],
 })
 export class CustomerModule { }

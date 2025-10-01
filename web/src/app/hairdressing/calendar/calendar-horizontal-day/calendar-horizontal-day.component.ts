@@ -14,10 +14,8 @@ import { Observable } from 'rxjs';
 export class CalendarHorizontalDayComponent implements OnChanges {
   @Input() excludedCalendarEntryId: Calendar.Entry.Id;
   @Input() date: Date;
-  @Input() timeRange: {
-    start: number;
-    end: number;
-  };
+  @Input() pendingStart: number;
+  @Input() pendingEnd: number;
 
   constructor(private store: Store) { }
 

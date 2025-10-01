@@ -11,6 +11,12 @@
 
 <ng-container *ngIf="week | async as w">
   <div class="header">
+    <div class="proposal" *ngIf="pendingCustomerJob | async as sj">
+      <span>
+        Időpontok keresése... {{sj.customer.isGroup ? sj.name : (sj.customer.name + ': ' + sj.name)}}
+      </span>
+      <button mat-button color="warn" type="button" [routerLink]="['/hairdressing', 'calendar']" [replaceUrl]="true">Mégse</button>
+    </div>
     <div class="week-stepper">
       <button mat-flat-button color="primary" type="button" (click)="onChangeWeek(-1)">
         <mat-icon>arrow_left</mat-icon>Előző hét
@@ -42,8 +48,8 @@
         {{ t }}
       </div>
     </ng-container>
-    <ng-container *ngFor="let day of w.days; let i = index">
-      <household-calendar-vertical-day [day]="day" [column]="i+2" />
+    <ng-container *ngFor="let day of w.days; let i = index; trackBy: trackBy.trackByIndex">
+      <household-calendar-vertical-day [day]="day" [column]="i+2" [pendingCustomerJob]="pendingCustomerJob | async" />
     </ng-container>
   </div>
 </ng-container>

@@ -7,6 +7,14 @@
   top: 64px;
   z-index: 2;
 
+  .proposal {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: larger;
+    margin-bottom: 10px;
+  }
+
   .week-stepper {
     display: flex;
     justify-content: space-between;

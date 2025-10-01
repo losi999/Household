@@ -1,15 +1,7 @@
-.no-work,
-.holiday,
-.vacation,
-.issue,
-.personal,
-.work {
-  grid-column: 1;
-}
-
 .personal,
 .work,
-.issue {
+.issue,
+.pending {
   display: flex;
   justify-content: start;
   align-items: start;
@@ -59,6 +51,12 @@
 
 .work {
   background-color: #3f51b5;
+  border: 2px solid #283593;
+}
+
+.pending {
+  border-radius: 10px;
+  background-color: #c5cae9;
   border: 2px solid #283593;
 }
 

@@ -22,7 +22,7 @@
     <div class="no-work" [style.grid-column]="(day.end + 1) + '/ 97'"></div>
   </ng-template>
 
-  <div class="pending" [style.grid-column]="(timeRange.start + 1) + ' / ' + (timeRange.end + 1)"></div>
+  <div class="pending" [style.grid-column]="(pendingStart + 1) + ' / ' + (pendingEnd + 1)"></div>
   <ng-container [ngSwitch]="day.dayType">
     <ng-container *ngSwitchCase="'weekend'" [ngTemplateOutlet]="weekend"></ng-container>
     <ng-container *ngSwitchCase="'vacation'" [ngTemplateOutlet]="vacation"></ng-container>

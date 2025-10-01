@@ -15,10 +15,11 @@ import { projectApiActions } from '@household/web/state/project/project.actions'
 import { Store } from '@ngrx/store';
 import { selectCustomerById } from '@household/web/state/customer/customer.selector';
 import { customerApiActions } from '@household/web/state/customer/customer.actions';
-import { CalendarDayType } from '@household/shared/enums';
+import { CalendarEntryType } from '@household/shared/enums';
 import { calendarApiActions } from '@household/web/state/calendar/calendar.actions';
 import { priceApiActions } from '@household/web/state/price/price.actions';
 import { takeFirstDefined } from '@household/web/operators/take-first-defined';
+import { isListedPrice } from '@household/shared/common/type-guards';
 
 @Injectable()
 export class DialogEffects { 
@@ -265,7 +266,7 @@ export class DialogEffects {
   updateCustomer = createEffect(() => {
     return this.actions.pipe(
       ofType(dialogActions.updateCustomer),
-      switchMap(({ customerId }) => this.store.select(selectCustomerById(customerId))),
+      switchMap(({ customerId }) => this.store.select(selectCustomerById(customerId)).pipe(takeFirstDefined())),
       exhaustMap((customer) => {
         this.dialogService.openEditCustomerDialog(customer);
         return EMPTY;
@@ -499,14 +500,32 @@ export class DialogEffects {
     dispatch: false,
   });
 
-  setVacationDay = createEffect(() => {
+  confirmCalendarEntryProposal = createEffect(() => {
     return this.actions.pipe(
-      ofType(dialogActions.setVacationDay),
-      exhaustMap(({ day }) => {
-        return this.dialogService.openSetVacationDayDialog(day).pipe(dispatchIfConfirmed(
-          calendarApiActions.updateCalendarDayInitiated({
+      ofType(dialogActions.confirmCalendarEntryProposal),
+      exhaustMap(({ day, timeslot, customerJob: { customer, ...job } }) => {
+        return this.dialogService.openConfirmCalendarEntryProposalDialog(job, day, timeslot).pipe(dispatchIfConfirmed(
+          calendarApiActions.createCalendarEntryInitiated({
+            entryType: CalendarEntryType.Work,
             day,
-            dayType: CalendarDayType.Vacation,
+            start: timeslot.start,
+            end: timeslot.end,
+            description: job.description,
+            title: job.name,
+            prices: job.prices.map((p) => {
+              if (isListedPrice(p)) {
+                return {
+                  priceId: p.priceId,
+                  quantity: p.quantity,
+                };
+              }
+              
+              return {
+                name: p.name,
+                amount: p.amount,
+              };
+            }),
+            customerId: customer.customerId,
           }),
         ));
       }),

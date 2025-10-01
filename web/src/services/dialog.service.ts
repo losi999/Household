@@ -20,6 +20,7 @@ import { RecipientFormComponent, RecipientFormData } from '@household/web/app/re
 import { RecipientMergeDialogComponent, RecipientMergeDialogData } from '@household/web/app/recipient/recipient-merge-dialog/recipient-merge-dialog.component';
 import { ConfirmationDialogComponent } from '@household/web/app/shared/confirmation-dialog/confirmation-dialog.component';
 import { CustomerAddToBlacklistDialogComponent, CustomerAddToBlacklistDialogData } from '@household/web/app/hairdressing/customer/customer-add-to-blacklist-dialog/customer-add-to-blacklist-dialog.component';
+import { timeSlotToTimeString } from '@household/shared/common/utils';
 
 @Injectable({
   providedIn: 'root',
@@ -263,13 +264,13 @@ export class DialogService {
     return this.openConfirmationDialog('Törölni akarod ezt a bejegyzést a naptárból?', title);
   }
 
-  openSetVacationDayDialog(day: string) {
-    return this.openConfirmationDialog('Szabadságnak akarod ezt a napot jelölni?', new Date(day).toLocaleString('hu', {
+  openConfirmCalendarEntryProposalDialog(job: Customer.Job.Response, day: string, timeRange: Calendar.Timespan) {
+    return this.openConfirmationDialog('Rögzíted ezt a munkát erre az időpontra?', `${job.name} ${new Date(day).toLocaleString('hu', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
       weekday: 'long',
-    }));
+    })} ${timeSlotToTimeString(timeRange.start)}-${timeSlotToTimeString(timeRange.end)}`);
   }
 
   openSetWorkDayDialog(day: Exclude<Calendar.Day.Response, Calendar.Day.HolidayResponse>) {

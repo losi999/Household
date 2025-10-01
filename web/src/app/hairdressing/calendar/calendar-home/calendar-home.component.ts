@@ -1,13 +1,18 @@
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { addDays, dateToISODateString } from '@household/shared/common/utils';
 import { CalendarEntryType } from '@household/shared/enums';
-import { Calendar } from '@household/shared/types/types';
+import { Calendar, Customer } from '@household/shared/types/types';
+import { takeFirstDefined } from '@household/web/operators/take-first-defined';
+import { TrackByService } from '@household/web/services/track-by.service';
 import { calendarApiActions } from '@household/web/state/calendar/calendar.actions';
 import { selectCalendarWeek } from '@household/web/state/calendar/calendar.selector';
 import { customerApiActions } from '@household/web/state/customer/customer.actions';
+import { selectCustomerJobByIdAndName } from '@household/web/state/customer/customer.selector';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
+import { CustomerJob } from '@household/web/types/common';
 import { Store } from '@ngrx/store';
-import { Observable } from 'rxjs';
+import { mergeMap, Observable, of } from 'rxjs';
 
 export type CalendarWeek = {
   start: number;
@@ -17,16 +22,17 @@ export type CalendarWeek = {
 
 @Component({
   selector: 'household-calendar-home',
-  standalone: false,
-  
+  standalone: false,  
   templateUrl: './calendar-home.component.html',
   styleUrl: './calendar-home.component.scss',
 })
 export class CalendarHomeComponent implements OnInit {
   week: Observable<CalendarWeek>;
-  private weekStart: Date;
+  weekStart: Date;
 
-  constructor(private store: Store) {}
+  pendingCustomerJob: Observable<CustomerJob>;
+
+  constructor(private store: Store, public trackBy: TrackByService, private activatedRoute: ActivatedRoute) {}
 
   private loadWeek(date: Date) {
     const weekday = date.getDay();
@@ -44,8 +50,20 @@ export class CalendarHomeComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    console.log('init');
     this.loadWeek(new Date());
     this.store.dispatch(customerApiActions.listCustomersInitiated());
+
+    this.pendingCustomerJob = this.activatedRoute.queryParams.pipe(mergeMap((value) => {
+      const customerId = value.customerId as Customer.Id;
+      const jobName = value.jobName;
+
+      if (customerId && jobName) {
+        return this.store.select(selectCustomerJobByIdAndName(customerId, jobName)).pipe(
+          takeFirstDefined());
+      }
+      return of(undefined);
+    }));
   }
 
   onChangeWeek(diff: number) {
@@ -60,12 +78,6 @@ export class CalendarHomeComponent implements OnInit {
   onCreateWork() {
     this.store.dispatch(dialogActions.createCalendarEntry({
       entryType: CalendarEntryType.Work,
-    }));
-  }
-
-  onSetVacationDay(day: string) {
-    this.store.dispatch(dialogActions.setVacationDay({
-      day,
     }));
   }
 

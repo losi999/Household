@@ -9,7 +9,7 @@
     {{job.description}}
   </mat-card-content>
   <mat-card-actions>
-    <button mat-flat-button color="primary">
+    <button mat-flat-button color="primary" [routerLink]="['/hairdressing', 'calendar']" [queryParams]="{customerId: customerId, jobName: job.name}">
       <mat-icon>calendar_add_on</mat-icon>
       Időpont keresése</button>
     <button mat-icon-button [matMenuTriggerFor]="menu" color="primary">

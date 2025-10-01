@@ -27,10 +27,8 @@ export class CalendarEntryEditDialogComponent implements OnInit {
     title: FormControl<string>;
     description: FormControl<string>;
     day: FormControl<Date>;
-    timeRange: FormControl<{
-      start: number;
-      end: number;
-    }>;
+    start: FormControl<number>;
+    duration: FormControl<number>;
   }>;
 
   errors: Observable<string[]>;
@@ -51,11 +49,8 @@ export class CalendarEntryEditDialogComponent implements OnInit {
 
     return {
       title: data.customer.isGroup ? data.job.name : `${data.customer.name}: ${data.job.name}`,
-      description: data.job?.description,
-      timeRange: {
-        start: this.form.value.timeRange.start,
-        end: this.form.value.timeRange.start + data.job.duration,
-      },
+      description: data.job.description,
+      duration: data.job.duration,
     };
   }
 
@@ -70,10 +65,8 @@ export class CalendarEntryEditDialogComponent implements OnInit {
       title: new FormControl(this.entry.title, [Validators.required]),
       description: new FormControl(this.entry.description),
       day: new FormControl(createDate(this.entry.day) ?? now, [Validators.required]),
-      timeRange: new FormControl({
-        start: this.entry.start ?? dateToTimeSlot(now),
-        end: this.entry.end ?? dateToTimeSlot(now) + 4,
-      }), 
+      start: new FormControl(this.entry.start ?? dateToTimeSlot(now)),
+      duration: new FormControl(this.entry.end - this.entry.start || 4),
     });
 
     this.form.controls.job.valueChanges.pipe(filter(x => !!x)).subscribe((value) => {
@@ -95,16 +88,20 @@ export class CalendarEntryEditDialogComponent implements OnInit {
 
           return obs;
         })),
-      this.form.controls.timeRange.valueChanges.pipe(startWith(this.form.value.timeRange)),
+      this.form.controls.start.valueChanges.pipe(startWith(this.form.value.start)),
+      this.form.controls.duration.valueChanges.pipe(startWith(this.form.value.duration)),
     ]).pipe(
       map(([
         day,
-        timeRange,
+        start,
+        duration,
       ]) => {
         if (!day) {
           return [];
         }
         const errors = [];
+
+        const end = start + duration;
 
         if (this.entry.entryType === CalendarEntryType.Work) {
 
@@ -119,7 +116,7 @@ export class CalendarEntryEditDialogComponent implements OnInit {
               errors.push('Hétvége');
             } break;
             case CalendarDayType.Workday: {
-              if (timeRange.start < day.start || timeRange.end > day.end) {
+              if (start < day.start || end > day.end) {
                 errors.push('Túlóra');
               }
             } break;
@@ -127,7 +124,7 @@ export class CalendarEntryEditDialogComponent implements OnInit {
 
         }
 
-        day.entries.filter(e => !(timeRange.start >= e.end || timeRange.end <= e.start) && e.calendarEntryId !== this.entry.calendarEntryId).forEach((e) => {
+        day.entries.filter(e => !(start >= e.end || end <= e.start) && e.calendarEntryId !== this.entry.calendarEntryId).forEach((e) => {
           let entryTypeText: string;
           switch(e.entryType) {
             case CalendarEntryType.Work: {
@@ -154,8 +151,8 @@ export class CalendarEntryEditDialogComponent implements OnInit {
         request = {
           entryType: CalendarEntryType.Work,
           day: dateToISODateString(this.form.value.day),
-          start: this.form.value.timeRange.start,
-          end: this.form.value.timeRange.end,
+          start: this.form.value.start,
+          end: this.form.value.start + this.form.value.duration,
           title: this.form.value.title,
           description: this.form.value.description ?? undefined,
           customerId: this.form.value.job.customer.customerId,
@@ -177,8 +174,8 @@ export class CalendarEntryEditDialogComponent implements OnInit {
         request = {
           entryType: this.entry.entryType,
           day: dateToISODateString(this.form.value.day),
-          start: this.form.value.timeRange.start,
-          end: this.form.value.timeRange.end,
+          start: this.form.value.start,
+          end: this.form.value.start + this.form.value.duration,
           title: this.form.value.title,
           description: this.form.value.description ?? undefined,
         };
