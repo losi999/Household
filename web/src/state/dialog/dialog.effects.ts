@@ -20,6 +20,7 @@ import { calendarApiActions } from '@household/web/state/calendar/calendar.actio
 import { priceApiActions } from '@household/web/state/price/price.actions';
 import { takeFirstDefined } from '@household/web/operators/take-first-defined';
 import { isListedPrice } from '@household/shared/common/type-guards';
+import { createWorkEntryTitle } from '@household/shared/common/utils';
 
 @Injectable()
 export class DialogEffects { 
@@ -500,18 +501,31 @@ export class DialogEffects {
     dispatch: false,
   });
 
+  createCalendarEntryWithProposal = createEffect(() => {
+    return this.actions.pipe(
+      ofType(dialogActions.createCalendarEntryWithProposal),
+      exhaustMap(({ customerJob, day, timeInterval }) => {
+        this.dialogService.openCalendarEntryDialogWithProposal(day, customerJob, timeInterval);
+        return EMPTY;
+      }),
+    );
+  }, {
+    dispatch: false,
+  });
+
   confirmCalendarEntryProposal = createEffect(() => {
     return this.actions.pipe(
       ofType(dialogActions.confirmCalendarEntryProposal),
-      exhaustMap(({ day, timeslot, customerJob: { customer, ...job } }) => {
-        return this.dialogService.openConfirmCalendarEntryProposalDialog(job, day, timeslot).pipe(dispatchIfConfirmed(
+      exhaustMap(({ day, timeInterval, customerJob: { customer, ...job } }) => {
+        const title = createWorkEntryTitle(customer, job);
+        return this.dialogService.openConfirmCalendarEntryProposalDialog(title, day, timeInterval).pipe(dispatchIfConfirmed(
           calendarApiActions.createCalendarEntryInitiated({
             entryType: CalendarEntryType.Work,
             day,
-            start: timeslot.start,
-            end: timeslot.end,
+            title,
+            start: timeInterval.start,
+            end: timeInterval.end,
             description: job.description,
-            title: job.name,
             prices: job.prices.map((p) => {
               if (isListedPrice(p)) {
                 return {

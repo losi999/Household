@@ -105,3 +105,12 @@ export const calculateWorkdayLimits = (defaultStart: number, defaultEnd: number,
     end: defaultEnd,
   });
 };
+
+export const createWorkEntryTitle = (customer: Customer.Response, job: Customer.Job.Response) => {
+  if (!job) {
+    return `${customer.name}: `;
+  }
+
+  return customer.isGroup ? job.name : `${customer.name}: ${job.name}`;
+
+};

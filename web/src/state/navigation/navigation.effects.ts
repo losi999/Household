@@ -2,13 +2,14 @@ import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { tap } from 'rxjs';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { authActions } from '@household/web/state/auth/auth.actions';
 import { navigationActions } from '@household/web/state/navigation/navigation.actions';
+import { calendarApiActions } from '@household/web/state/calendar/calendar.actions';
 
 @Injectable()
 export class NavigationEffects {
-  constructor(private actions: Actions, private router: Router) {}
+  constructor(private actions: Actions, private router: Router, private activatedRoute: ActivatedRoute) {}
 
   navigateToTransactionDetails = createEffect(() => {
     return this.actions.pipe(
@@ -35,6 +36,26 @@ export class NavigationEffects {
         this.router.navigate([
           '/accounts',
           accountId,
+        ], {
+          replaceUrl: true,
+        });
+      }),
+    );
+  }, {
+    dispatch: false,
+  });
+
+  navigateToCalendarHome = createEffect(() => {
+    return this.actions.pipe(
+      ofType(calendarApiActions.createCalendarEntryCompleted),
+      tap(() => {
+        if (this.activatedRoute.snapshot.queryParamMap.keys.length === 0) {
+          return; 
+        }
+        
+        this.router.navigate([
+          '/hairdressing',
+          'calendar',
         ], {
           replaceUrl: true,
         });

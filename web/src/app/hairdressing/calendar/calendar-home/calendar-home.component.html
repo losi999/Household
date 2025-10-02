@@ -13,7 +13,7 @@
   <div class="header">
     <div class="proposal" *ngIf="pendingCustomerJob | async as sj">
       <span>
-        Időpontok keresése... {{sj.customer.isGroup ? sj.name : (sj.customer.name + ': ' + sj.name)}}
+        Időpont keresése... {{sj.customer.isGroup ? sj.name : (sj.customer.name + ': ' + sj.name)}} ({{sj.duration | timeSlotToTime}} óra)
       </span>
       <button mat-button color="warn" type="button" [routerLink]="['/hairdressing', 'calendar']" [replaceUrl]="true">Mégse</button>
     </div>

@@ -16,11 +16,11 @@ export class CalendarVerticalDayComponent implements OnChanges {
   @Input() column: number;
 
   @Input() pendingCustomerJob: CustomerJob;
-  proposedTimeslots: Calendar.Timespan[];
+  proposedTimeIntervals: Calendar.TimeInterval[];
   
   constructor(private store: Store) { }
 
-  private calculateProposedTimeslots(): Calendar.Timespan[] {
+  private calculateProposedTimeIntervals(): Calendar.TimeInterval[] {
     if (!this.pendingCustomerJob) {
       return [];
     }
@@ -48,7 +48,7 @@ export class CalendarVerticalDayComponent implements OnChanges {
       }
     });
 
-    const ranges: Calendar.Timespan[] = [];
+    const ranges: Calendar.TimeInterval[] = [];
     let start: number;
 
     for (let i = dayStart; i < dayEnd; i += 1) {
@@ -78,7 +78,7 @@ export class CalendarVerticalDayComponent implements OnChanges {
   }
 
   ngOnChanges(): void {
-    this.proposedTimeslots = this.calculateProposedTimeslots();
+    this.proposedTimeIntervals = this.calculateProposedTimeIntervals();
   }
   
   onEntryClick(entry: Calendar.Entry.Response) {
@@ -88,36 +88,19 @@ export class CalendarVerticalDayComponent implements OnChanges {
     }));    
   }
 
-  onProposalClick(slot: Calendar.Timespan) {
-
-    if (this.pendingCustomerJob.duration === slot.end - slot.start) {
+  onProposalClick(timeInterval: Calendar.TimeInterval) {
+    if (this.pendingCustomerJob.duration === timeInterval.end - timeInterval.start) {
       this.store.dispatch(dialogActions.confirmCalendarEntryProposal({
         day: this.day.day,
-        timeslot: slot,
+        timeInterval: timeInterval,
         customerJob: this.pendingCustomerJob,
       }));
-      console.log('Confirm?');
+    } else {
+      this.store.dispatch(dialogActions.createCalendarEntryWithProposal({
+        customerJob: this.pendingCustomerJob,
+        day: this.day.day,
+        timeInterval: timeInterval,
+      }));
     }
-    console.log(this.day);
-    console.log(this.pendingCustomerJob);
-    console.log(slot);
   }
-
-  // onGridClick(event: PointerEvent) {
-  //   if (event.target !== event.currentTarget) {
-  //     return;
-  //   }
-  //   const gridElement = event.currentTarget as HTMLElement;
-  //   const rect = gridElement.getBoundingClientRect();
-
-  //   const y = event.clientY - rect.top;
-
-  //   const row = Math.floor(y / 20) + 1;
-  //   console.log(row);
-
-  //   if (!this.day.entries.some(e => e.start < row && e.end >= row)) {
-  //     alert(`Kiválasztott időpont: ${addMinutes((row - 1) * 15, this.day.date)}`);
-  //   }
-
-  // }
 }

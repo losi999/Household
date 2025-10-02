@@ -2,7 +2,7 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { isListedPrice } from '@household/shared/common/type-guards';
-import { createDate, dateToISODateString, dateToTimeSlot } from '@household/shared/common/utils';
+import { createDate, createWorkEntryTitle, dateToISODateString, dateToTimeSlot } from '@household/shared/common/utils';
 import { CalendarDayType, CalendarEntryType } from '@household/shared/enums';
 import { Calendar, Customer } from '@household/shared/types/types';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
@@ -37,23 +37,6 @@ export class CalendarEntryEditDialogComponent implements OnInit {
     private store: Store,
     @Inject(MAT_DIALOG_DATA) public entry: CalendarEntryEditDialogData) { }
 
-  private setFormFromJob(data: {
-    customer: Customer.Response;
-    job: Customer.Job.Response;
-  }): typeof this.form.value {
-    if (!data.job) {
-      return {
-        title: `${data.customer.name}: `,
-      };
-    }
-
-    return {
-      title: data.customer.isGroup ? data.job.name : `${data.customer.name}: ${data.job.name}`,
-      description: data.job.description,
-      duration: data.job.duration,
-    };
-  }
-
   ngOnInit(): void {
     const now = new Date();
     now.setMinutes(Math.floor(now.getMinutes() / 15) * 15);
@@ -69,8 +52,12 @@ export class CalendarEntryEditDialogComponent implements OnInit {
       duration: new FormControl(this.entry.end - this.entry.start || 4),
     });
 
-    this.form.controls.job.valueChanges.pipe(filter(x => !!x)).subscribe((value) => {
-      this.form.patchValue(this.setFormFromJob(value));
+    this.form.controls.job.valueChanges.pipe(filter(x => !!x)).subscribe(({ customer, job }) => {
+      this.form.patchValue({
+        title: createWorkEntryTitle(customer, job),
+        description: job?.description,
+        duration: job?.duration ?? 4,
+      });
     });
 
     this.errors = combineLatest([

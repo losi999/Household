@@ -27,5 +27,5 @@
   <ng-container *ngSwitchCase="'holiday'" [ngTemplateOutlet]="holiday"></ng-container>
   <ng-container *ngSwitchDefault [ngTemplateOutlet]="workday"></ng-container>
 </ng-container>
-<button *ngFor="let p of proposedTimeslots" class="pending" [style.grid-row]="(p.start + 1) + ' / ' + (p.end + 1)" [style.grid-column]="column" (click)="onProposalClick(p)">{{p.start | timeSlotToTime}} - {{p.end | timeSlotToTime}}</button>
+<button *ngFor="let p of proposedTimeIntervals" class="pending" [style.grid-row]="(p.start + 1) + ' / ' + (p.end + 1)" [style.grid-column]="column" (click)="onProposalClick(p)">{{p.start | timeSlotToTime}} - {{p.end | timeSlotToTime}}</button>
 <button *ngFor="let e of day.entries" [ngClass]="e.entryType" [style.grid-row]="(e.start + 1) + ' / ' + (e.end + 1)" [style.grid-column]="column" (click)="onEntryClick(e)">{{e.title}}</button>

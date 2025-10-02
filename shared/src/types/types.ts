@@ -870,7 +870,7 @@ export namespace Calendar {
     day: string;
   };
 
-  export type Timespan = {
+  export type TimeInterval = {
     start: number;
     end: number;
   };
@@ -882,12 +882,12 @@ export namespace Calendar {
     
     export type VacationRequest = DayType<Enum.CalendarDayType.Vacation>;
   
-    export type WorkdayRequest = DayType<Enum.CalendarDayType.Workday> & Timespan;
+    export type WorkdayRequest = DayType<Enum.CalendarDayType.Workday> & TimeInterval;
 
     export type Request = VacationRequest | WorkdayRequest;
 
     type Base = DayProp 
-    & ((DayType<Enum.CalendarDayType.Workday> & Timespan) 
+    & ((DayType<Enum.CalendarDayType.Workday> & TimeInterval) 
     | DayType<Exclude<Enum.CalendarDayType, Enum.CalendarDayType.Workday>>);
 
     export type Document = Internal.Timestamps
@@ -902,8 +902,8 @@ export namespace Calendar {
       plannedEnd: number;
     };
 
-    type WorkdayResponse = DayType<Enum.CalendarDayType.Workday> & Timespan & ResponseBase & PlannedTimespan;
-    type WeekendResponse = DayType<Enum.CalendarDayType.Weekend> & Timespan & ResponseBase & PlannedTimespan;
+    type WorkdayResponse = DayType<Enum.CalendarDayType.Workday> & TimeInterval & ResponseBase & PlannedTimespan;
+    type WeekendResponse = DayType<Enum.CalendarDayType.Weekend> & TimeInterval & ResponseBase & PlannedTimespan;
     type VacationResponse = DayType<Enum.CalendarDayType.Vacation> & ResponseBase;
     export type HolidayResponse = DayType<Enum.CalendarDayType.Holiday> & ResponseBase;
 
@@ -921,7 +921,7 @@ export namespace Calendar {
       entryType: T;
     };
 
-    type Base = Timespan & {
+    type Base = TimeInterval & {
       title: string;
       description: string;      
     };

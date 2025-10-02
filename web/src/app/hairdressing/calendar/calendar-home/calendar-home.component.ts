@@ -50,7 +50,6 @@ export class CalendarHomeComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    console.log('init');
     this.loadWeek(new Date());
     this.store.dispatch(customerApiActions.listCustomersInitiated());
 

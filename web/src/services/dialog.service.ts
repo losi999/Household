@@ -20,7 +20,8 @@ import { RecipientFormComponent, RecipientFormData } from '@household/web/app/re
 import { RecipientMergeDialogComponent, RecipientMergeDialogData } from '@household/web/app/recipient/recipient-merge-dialog/recipient-merge-dialog.component';
 import { ConfirmationDialogComponent } from '@household/web/app/shared/confirmation-dialog/confirmation-dialog.component';
 import { CustomerAddToBlacklistDialogComponent, CustomerAddToBlacklistDialogData } from '@household/web/app/hairdressing/customer/customer-add-to-blacklist-dialog/customer-add-to-blacklist-dialog.component';
-import { timeSlotToTimeString } from '@household/shared/common/utils';
+import { createWorkEntryTitle, timeSlotToTimeString } from '@household/shared/common/utils';
+import { CustomerJob } from '@household/web/types/common';
 
 @Injectable({
   providedIn: 'root',
@@ -264,13 +265,29 @@ export class DialogService {
     return this.openConfirmationDialog('Törölni akarod ezt a bejegyzést a naptárból?', title);
   }
 
-  openConfirmCalendarEntryProposalDialog(job: Customer.Job.Response, day: string, timeRange: Calendar.Timespan) {
-    return this.openConfirmationDialog('Rögzíted ezt a munkát erre az időpontra?', `${job.name} ${new Date(day).toLocaleString('hu', {
+  openConfirmCalendarEntryProposalDialog(title: string, day: string, timeInterval: Calendar.TimeInterval) {
+    return this.openConfirmationDialog('Rögzíted ezt a munkát erre az időpontra?', `${title} ${new Date(day).toLocaleString('hu', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
       weekday: 'long',
-    })} ${timeSlotToTimeString(timeRange.start)}-${timeSlotToTimeString(timeRange.end)}`);
+    })} ${timeSlotToTimeString(timeInterval.start)}-${timeSlotToTimeString(timeInterval.end)}`);
+  }
+
+  openCalendarEntryDialogWithProposal(day: string, { customer, ...job }: CustomerJob, timeInterval: Calendar.TimeInterval) {
+    this.dialog.open<CalendarEntryEditDialogComponent, CalendarEntryEditDialogData, void>(CalendarEntryEditDialogComponent, {
+      data: {
+        entryType: CalendarEntryType.Work,
+        customer,
+        day,
+        description: job.description,
+        title: createWorkEntryTitle(customer, job),
+        prices: job.prices,
+        start: timeInterval.start,
+        end: timeInterval.start + job.duration,
+      },
+      width: '900px',
+    });
   }
 
   openSetWorkDayDialog(day: Exclude<Calendar.Day.Response, Calendar.Day.HolidayResponse>) {
