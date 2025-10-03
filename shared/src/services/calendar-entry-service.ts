@@ -1,15 +1,16 @@
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { DocumentUpdate } from '@household/shared/types/common';
-import { Calendar } from '@household/shared/types/types';
+import { Calendar, Transaction } from '@household/shared/types/types';
 
 export interface ICalendarEntryService {
   // dumpCalendarEntries(): Promise<CalendarEntry.Document[]>;
   saveCalendarEntry(doc: Calendar.Entry.Document): Promise<Calendar.Entry.Document>;
   // saveCalendarEntries(docs: CalendarEntry.Document[]): Promise<unknown>;
   findCalendarEntryById(calendarEntryId: Calendar.Entry.Id): Promise<Calendar.Entry.Document>;
-  getCalendarEntryById(calendarEntryId: Calendar.Entry.Id, params?: Partial<Pick<Calendar.Entry.Document, 'entryType'>>): Promise<Calendar.Entry.Document>;
+  getCalendarEntryById(calendarEntryId: Calendar.Entry.Id): Promise<Calendar.Entry.Document>;
   deleteCalendarEntry(calendarEntryId: Calendar.Entry.Id): Promise<unknown>;
   updateCalendarEntry(calendarEntryId: Calendar.Entry.Id, updateQuery: DocumentUpdate<Calendar.Entry.Document>): Promise<unknown>;
+  updateCalendarEntryWithPayment(calendarEntryId: Calendar.Entry.Id, transactionDocument: Transaction.PaymentDocument): Promise<Transaction.Document>;
   listCalendarEntries(data: Calendar.DateRange): Promise<Calendar.Entry.Document[]>;
   // findCalendarEntriesByIds(calendarEntryIds: CalendarEntry.Id[]): Promise<CalendarEntry.Document[]>;
 }
@@ -40,14 +41,12 @@ export const calendarEntryServiceFactory = (mongodbService: IMongodbService): IC
       return !calendarEntryId ? undefined : mongodbService.calendarEntries.findById(calendarEntryId)
         .lean();        
     },
-    getCalendarEntryById: (calendarEntryId, params = {}) => {
+    getCalendarEntryById: (calendarEntryId) => {
       return !calendarEntryId ? undefined : mongodbService.inSession(async(session) => {
-        return mongodbService.calendarEntries.findOne({
-          _id: calendarEntryId,
-          ...params,
-        }).session(session)
+        return mongodbService.calendarEntries.findById(calendarEntryId).session(session)
           .populate('customer')
           .populate('prices.price')
+          .populate('transaction')
           .lean();          
       });
     },
@@ -63,6 +62,25 @@ export const calendarEntryServiceFactory = (mongodbService: IMongodbService): IC
         runValidators: true,
       });
     },
+    updateCalendarEntryWithPayment: async (calendarEntryId, transactionDocument) => {
+      return mongodbService.inSession((session) => {
+        return session.withTransaction(async () => {
+          const [transaction] = await mongodbService.transactions.create([transactionDocument], {
+            session,
+          });
+
+          console.log('A');
+          console.log(transaction);
+
+          await mongodbService.calendarEntries.findByIdAndUpdate(calendarEntryId, {
+            isPaid: true,
+            transaction,
+          });
+
+          return transaction;
+        });
+      });
+    },
     listCalendarEntries: ({ dateFrom, dateTo }) => {
       return mongodbService.inSession(async(session) => {
         return mongodbService.calendarEntries.find({
@@ -73,6 +91,7 @@ export const calendarEntryServiceFactory = (mongodbService: IMongodbService): IC
         }).session(session)
           .populate('customer')
           .populate('prices.price')
+          .populate('transaction')
           .collation({
             locale: 'hu',
           })

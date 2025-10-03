@@ -1096,6 +1096,40 @@ paths:
       responses:
         204:
           description: Calendar entry deleted
+  /calendar/v1/entries/{calendarEntryId}/payment:
+    parameters:
+      - $ref: "#/components/parameters/Path.CalendarEntryId"
+    post:
+      tags:
+        - calendar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - allOf:
+                    - type: object
+                      required:
+                        - paymentType
+                      properties:
+                        paymentType:
+                          type: string
+                          const: "cash"
+                    - $ref: "transaction.yaml#/components/schemas/Amount"
+                - type: object
+                  required:
+                    - paymentType
+                  properties:
+                    paymentType:
+                      type: string
+                      const: "transfer"
+      responses:
+        201:
+          description: Created transaction Id
+          content:
+            application/json:
+              schema:
+                $ref: "transaction.yaml#/components/schemas/TransactionId"
 
 components:
   parameters:

@@ -1,5 +1,5 @@
 import { generateMongoId } from '@household/shared/common/utils';
-import { AccountType, CategoryType, FileType, TransactionType, UserType } from '@household/shared/enums';
+import { AccountType, CategoryType, FileType, SettingKey, TransactionType, UserType } from '@household/shared/enums';
 import { DocumentUpdate } from '@household/shared/types/common';
 import { Account, Auth, Category, Customer, File, Price, Product, Project, Recipient, Report, Setting, Transaction, User } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
@@ -44,8 +44,8 @@ export const createPriceId = (id?: string): Price.Id => {
   return (id ?? generateMongoId().toString()) as Price.Id;
 };
 
-export const createSettingKey = (key?: string): Setting.Id => {
-  return (key ?? 'defaultKey') as Setting.Id;
+export const createSettingKey = (key?: string): SettingKey => {
+  return (key ?? 'defaultKey') as SettingKey;
 };
 
 export const createAccountDocument: DataFactoryFunction<Account.Document> = (doc) => {

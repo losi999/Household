@@ -501,6 +501,18 @@ export class DialogEffects {
     dispatch: false,
   });
 
+  openCashPayment = createEffect(() => {
+    return this.actions.pipe(
+      ofType(dialogActions.openCashPayment),
+      exhaustMap(({ calendarEntryId }) => {
+        this.dialogService.openCashPaymentDialog(calendarEntryId);
+        return EMPTY;
+      }),
+    );
+  }, {
+    dispatch: false,
+  });
+
   createCalendarEntryWithProposal = createEffect(() => {
     return this.actions.pipe(
       ofType(dialogActions.createCalendarEntryWithProposal),

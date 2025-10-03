@@ -31,6 +31,8 @@ import { JobPriceSummaryComponent } from '@household/web/app/shared/job-price-su
 import { CalendarEntryPayingComponent } from '@household/web/app/hairdressing/calendar/calendar-entry-paying/calendar-entry-paying.component';
 import { CustomerJobAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/customer-job-autocomplete-input/customer-job-autocomplete-input.component';
 import { DurationStepperComponent } from '@household/web/app/shared/duration-stepper/duration-stepper.component';
+import { AmountInputComponent } from '@household/web/app/shared/amount-input/amount-input.component';
+import { CalendarCashPaymentDialogComponent } from '@household/web/app/hairdressing/calendar/calendar-cash-payment-dialog/calendar-cash-payment-dialog.component';
 
 @NgModule({
   declarations: [
@@ -44,6 +46,7 @@ import { DurationStepperComponent } from '@household/web/app/shared/duration-ste
     CalendarHorizontalDayComponent,
     CalendarEntryEditDialogComponent,
     CalendarEntryPayingComponent,
+    CalendarCashPaymentDialogComponent,
   ],
   imports: [
     CommonModule,
@@ -68,6 +71,7 @@ import { DurationStepperComponent } from '@household/web/app/shared/duration-ste
     JobPriceCalculatorComponent,
     JobPriceSummaryComponent,
     DurationStepperComponent,
+    AmountInputComponent,
   ],
 })
 export class CalendarModule { }

@@ -49,3 +49,13 @@ export enum CalendarEntryType {
   Personal = 'personal',
   Issue = 'issue',
 }
+
+export enum PaymentType {
+  Cash = 'cash',
+  Transfer = 'transfer',
+}
+
+export enum SettingKey {
+  HairdressingIncomeAccount = 'hairdressingIncomeAccount',
+  HairdressingIncomeCategory = 'hairdressingIncomeCategory',
+}

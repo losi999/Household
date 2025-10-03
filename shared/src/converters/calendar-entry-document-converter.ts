@@ -16,6 +16,7 @@ export interface ICalendarEntryDocumentConverter {
     customer?: Customer.Document;
     prices?: Price.Document[];
   }, expiresIn: number): DocumentUpdate<Calendar.Entry.Document>;
+  updatePaid(): DocumentUpdate<Calendar.Entry.Document>;
   toResponse(doc: Calendar.Entry.Document): Calendar.Entry.Response;
   toResponseList(docs: Calendar.Entry.Document[]): Calendar.Entry.Response[];
 }
@@ -32,6 +33,8 @@ export const calendarEntryDocumentConverterFactory = (customerDocumentConverter:
         end,
         description,
         day,
+        transaction: undefined,
+        isPaid: body.entryType === CalendarEntryType.Work ? false : undefined,
         customer: body.entryType === CalendarEntryType.Work ? customer : undefined,
         prices: body.entryType === CalendarEntryType.Work ? customerDocumentConverter.createJobPriceList(body.prices, prices) : undefined,
         _id: generateId ? generateMongoId() : undefined,
@@ -55,8 +58,17 @@ export const calendarEntryDocumentConverterFactory = (customerDocumentConverter:
         },
       };
     },
+    updatePaid: () => {
+      return {
+        update: {
+          $set: {
+            isPaid: true,
+          },
+        },
+      };
+    },
     toResponse: (doc) => {
-      const { _id, end, start, title, description, day } = doc;
+      const { _id, end, start, title, description, day, isPaid } = doc;
 
       if (doc.entryType === CalendarEntryType.Work) {
         return {
@@ -67,6 +79,7 @@ export const calendarEntryDocumentConverterFactory = (customerDocumentConverter:
           day,
           entryType: doc.entryType,
           description,
+          isPaid,
           customer: customerDocumentConverter.toResponse(doc.customer),
           prices: customerDocumentConverter.toResponseJobPriceList(doc.prices),
         };

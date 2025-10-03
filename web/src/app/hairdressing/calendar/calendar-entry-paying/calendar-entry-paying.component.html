@@ -1,7 +1,6 @@
 <household-toolbar title="Fizetés">
 </household-toolbar>
 <ng-container *ngIf="entry | async as e">
-  <household-icon-text *ngIf="e.entryType === 'work'" icon="person" [text]="e.customer.name" size="medium" />
   <household-icon-text icon="content_cut" [text]="e.title" size="medium" />
   <household-icon-text icon="calendar_month" [text]="e.day | date: 'yyyy. MMMM d.'" size="medium" />
   <household-icon-text icon="alarm" [text]="(e.start | timeSlotToTime) + ' - ' + (e.end | timeSlotToTime)" size="medium" />
@@ -9,5 +8,9 @@
     {{e.description}}
   </div>
   <household-job-price-calculator [formControl]="prices" />
+  <div class="buttons">
+    <button mat-flat-button color="primary" type="button" (click)="onCashPayment()"><mat-icon>payments</mat-icon>Készpénz</button>
+    <button mat-flat-button color="primary" type="button" (click)="onBankPayment()"><mat-icon>account_balance</mat-icon>Utalás</button>
+  </div>
 
 </ng-container>

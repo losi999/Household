@@ -204,5 +204,26 @@ export class CalendarEffects {
       }),
     );
   });
+  
+  payCalendarworkEntry = createEffect(() => {
+    return this.actions.pipe(
+      ofType(calendarApiActions.payCalendarWorkEntryInitiated),
+      mergeMap(({ type, calendarEntryId, ...request }) => {
+        return this.calendarService.payCalendarWorkEntry(calendarEntryId, request).pipe(
+          map(() => calendarApiActions.payCalendarWorkEntryCompleted({
+            calendarEntryId,
+            ...request,
+          })),
+          catchError(() => {
+            return of(progressActions.processFinished(),
+              notificationActions.showMessage({
+                message: 'Hiba történt',
+              }),
+            );
+          }),
+        );
+      }),
+    );
+  });
 }
 

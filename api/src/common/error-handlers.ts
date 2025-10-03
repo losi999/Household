@@ -1,5 +1,5 @@
 import { getCategoryId, getProductId } from '@household/shared/common/utils';
-import { AccountType, CategoryType } from '@household/shared/enums';
+import { AccountType, CalendarEntryType, CategoryType, SettingKey } from '@household/shared/enums';
 import { HttpError } from '@household/shared/types/common';
 import { Account, Calendar, Category, Common, Customer, File, Price, Product, Project, Recipient, Setting, Transaction, User } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
@@ -486,8 +486,8 @@ export const httpErrors = {
     },
   },
   setting: {
-    list: (statusCode = 500): CatchAndThrow => (error) => {
-      log('List settings', undefined, error);
+    list: (ctx?: SettingKey[], statusCode = 500): CatchAndThrow => (error) => {
+      log('List settings', ctx, error);
       throw httpError(statusCode, 'Error while listing settings');
     },
     delete: (ctx: Setting.SettingKey, statusCode = 500): CatchAndThrow => (error) => {
@@ -651,6 +651,22 @@ export const httpErrors = {
     update: (ctx: Calendar.Entry.CalendarEntryId & {update: UpdateQuery<Calendar.Entry.Document>}, statusCode = 500): CatchAndThrow => (error) => {
       log('Update calendar entry', ctx, error);
       throw httpError(statusCode, 'Error while updating calendar entry');
+    },
+    updateWithPayment: (ctx: Calendar.Entry.CalendarEntryId & {transaction: Transaction.PaymentDocument}, statusCode = 500): CatchAndThrow => (error) => {
+      log('Update calendar entry with payment', ctx, error);
+      throw httpError(statusCode, 'Error while updating calendar entry with payment');
+    },
+    wrongType: (ctx: {calendarEntry: Calendar.Entry.Document, expectedType: CalendarEntryType}, statusCode = 400) => {
+      if (ctx.calendarEntry.entryType !== ctx.expectedType) {
+        log(`Calendar entry must be of "${ctx.expectedType}" type`, ctx);
+        throw httpError(statusCode, `Calendar entry must be of "${ctx.expectedType}" type`);
+      }
+    },
+    alreadyPaid: (ctx: Calendar.Entry.Document, statusCode = 400) => {
+      if (ctx.isPaid) {
+        log('Calendar entry is already paid', ctx);
+        throw httpError(statusCode, 'Calendar entry is already paid');
+      }
     },
   },
   common: {

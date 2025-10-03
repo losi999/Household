@@ -619,14 +619,12 @@ export namespace Report {
 }
 
 export namespace Setting {
-  export type Id = Branding<string, 'settings'>;
-
   type Base = {
     value: string | number | boolean;
   };
 
   export type SettingKey = {
-    settingKey: Id;
+    settingKey: Enum.SettingKey;
   };
 
   export type Request = Base;
@@ -926,6 +924,10 @@ export namespace Calendar {
       description: string;      
     };
 
+    type IsPaid = {
+      isPaid: boolean;
+    };
+
     export type IssueEntryRequest = Base 
     & DayProp 
     & EntryType<Enum.CalendarEntryType.Issue>;
@@ -947,7 +949,9 @@ export namespace Calendar {
     & Base
     & DayProp
     & EntryType<Enum.CalendarEntryType>
+    & IsPaid
     & {
+      transaction: Transaction.PaymentDocument;
       customer: Customer.Document;
     }
     & Pick<Customer.Job.Document, 'prices'>;
@@ -965,6 +969,7 @@ export namespace Calendar {
     export type WorkEntryResponse = Base 
     & DayProp
     & CalendarEntryId
+    & IsPaid
     & {
       customer: Customer.Response
     }
@@ -972,6 +977,12 @@ export namespace Calendar {
     & EntryType<Enum.CalendarEntryType.Work>;
 
     export type Response = PersonalEntryResponse | IssueEntryResponse | WorkEntryResponse;
+
+    type PaymentType<P extends Enum.PaymentType> = {
+      paymentType: P;
+    };
+
+    export type PaymentRequest = PaymentType<Enum.PaymentType.Transfer> | (PaymentType<Enum.PaymentType.Cash> & Transaction.Amount);
   }
 }
 

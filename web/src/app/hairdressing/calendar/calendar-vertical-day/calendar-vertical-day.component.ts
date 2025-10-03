@@ -1,4 +1,5 @@
 import { Component, Input, OnChanges } from '@angular/core';
+import { dateToISODateString } from '@household/shared/common/utils';
 import { CalendarDayType, CalendarEntryType } from '@household/shared/enums';
 import { Calendar } from '@household/shared/types/types';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
@@ -25,6 +26,10 @@ export class CalendarVerticalDayComponent implements OnChanges {
       return [];
     }
 
+    if (this.day.day <= dateToISODateString(new Date())) {
+      return [];
+    }
+
     if (this.day.dayType === CalendarDayType.Holiday || this.day.dayType === CalendarDayType.Vacation) {
       return [];
     }
@@ -48,7 +53,7 @@ export class CalendarVerticalDayComponent implements OnChanges {
       }
     });
 
-    const ranges: Calendar.TimeInterval[] = [];
+    const intervals: Calendar.TimeInterval[] = [];
     let start: number;
 
     for (let i = dayStart; i < dayEnd; i += 1) {
@@ -58,7 +63,7 @@ export class CalendarVerticalDayComponent implements OnChanges {
         }
       } else {
         if (start && i - start >= this.pendingCustomerJob.duration) {
-          ranges.push({
+          intervals.push({
             start,
             end: i,
           });
@@ -68,13 +73,13 @@ export class CalendarVerticalDayComponent implements OnChanges {
     }
 
     if (start && dayEnd - start >= this.pendingCustomerJob.duration) {
-      ranges.push({
+      intervals.push({
         start,
         end: dayEnd,
       });
     }
 
-    return ranges;
+    return intervals;
   }
 
   ngOnChanges(): void {

@@ -3,7 +3,6 @@
 <div mat-dialog-content>
   <household-icon-text icon="calendar_month" [text]="entry.day | date: 'yyyy. MMMM d.'" size="medium" />
   <household-icon-text icon="alarm" [text]="(entry.start | timeSlotToTime) + ' - ' + (entry.end | timeSlotToTime)" size="medium" />
-  <household-icon-text *ngIf="entry.entryType === 'work'" icon="person" [text]="entry.customer.name" size="medium" />
   <div *ngIf="entry.description">
     {{entry.description}}
   </div>
@@ -11,7 +10,7 @@
 </div>
 
 <mat-dialog-actions>
-  <button mat-flat-button mat-dialog-close *ngIf="entry.entryType === 'work'" class="pay" type="button" [routerLink]="['hairdressing', 'calendar', 'entries', entry.calendarEntryId, 'paying']">Fizetés</button>
+  <button mat-flat-button mat-dialog-close *ngIf="entry.entryType === 'work' && !entry.isPaid" class="pay" type="button" [routerLink]="['hairdressing', 'calendar', 'entries', entry.calendarEntryId, 'paying']">Fizetés</button>
   <button mat-flat-button color="primary" type="button" (click)="onEdit()">Szerkesztés</button>
   <button mat-flat-button color="warn" type="button" (click)="onDelete()">Törlés</button>
   <button mat-flat-button mat-dialog-close type="button">Bezárás</button>

@@ -22,6 +22,7 @@ import { ConfirmationDialogComponent } from '@household/web/app/shared/confirmat
 import { CustomerAddToBlacklistDialogComponent, CustomerAddToBlacklistDialogData } from '@household/web/app/hairdressing/customer/customer-add-to-blacklist-dialog/customer-add-to-blacklist-dialog.component';
 import { createWorkEntryTitle, timeSlotToTimeString } from '@household/shared/common/utils';
 import { CustomerJob } from '@household/web/types/common';
+import { CalendarCashPaymentDialogComponent, CalendarCashPaymentDialogData } from '@household/web/app/hairdressing/calendar/calendar-cash-payment-dialog/calendar-cash-payment-dialog.component';
 
 @Injectable({
   providedIn: 'root',
@@ -36,6 +37,7 @@ export class DialogService {
         title,
         content,
       },
+      disableClose: true,
     }).afterClosed();
   }
 
@@ -151,12 +153,15 @@ export class DialogService {
   }
 
   openCreateCustomerDialog(): void {
-    this.dialog.open<CustomerDialogComponent, CustomerDialogData, void>(CustomerDialogComponent);
+    this.dialog.open<CustomerDialogComponent, CustomerDialogData, void>(CustomerDialogComponent, {
+      disableClose: true,
+    });
   }
 
   openEditCustomerDialog(customer: Customer.Response): void {
     this.dialog.open<CustomerDialogComponent, CustomerDialogData, void>(CustomerDialogComponent, {
       data: customer,
+      disableClose: true,
     });
   }
 
@@ -167,6 +172,7 @@ export class DialogService {
       },
       width: '900px',
       maxHeight: '90vh',
+      disableClose: true,
     });
   }
 
@@ -178,6 +184,7 @@ export class DialogService {
       },
       width: '900px',
       maxHeight: '90vh',
+      disableClose: true,
     });
   }
 
@@ -194,6 +201,7 @@ export class DialogService {
           ...customer.blacklistedCustomers.map(c => c.customerId),
         ],
       },
+      disableClose: true,
     });
   }
 
@@ -205,12 +213,15 @@ export class DialogService {
   }
 
   openCreatePriceDialog(): void {
-    this.dialog.open<PriceDialogComponent, PriceDialogData, void>(PriceDialogComponent);
+    this.dialog.open<PriceDialogComponent, PriceDialogData, void>(PriceDialogComponent, {
+      disableClose: true,
+    });
   }
 
   openEditPriceDialog(price: Price.Response): void {
     this.dialog.open<PriceDialogComponent, PriceDialogData, void>(PriceDialogComponent, {
       data: price,
+      disableClose: true,
     });
   }
 
@@ -244,6 +255,7 @@ export class DialogService {
         entryType,
       },
       width: '900px',
+      disableClose: true,
     });
   }
 
@@ -251,6 +263,7 @@ export class DialogService {
     this.dialog.open<CalendarEntryEditDialogComponent, CalendarEntryEditDialogData, void>(CalendarEntryEditDialogComponent, {
       data: entry,
       width: '900px',
+      disableClose: true,
     });
   }
 
@@ -287,6 +300,16 @@ export class DialogService {
         end: timeInterval.start + job.duration,
       },
       width: '900px',
+      disableClose: true,
+    });
+  }
+
+  openCashPaymentDialog(calendarEntryId: Calendar.Entry.Id) {
+    this.dialog.open<CalendarCashPaymentDialogComponent, CalendarCashPaymentDialogData, any>(CalendarCashPaymentDialogComponent, {
+      data: {
+        calendarEntryId,
+      },
+      disableClose: true,
     });
   }
 
@@ -294,6 +317,7 @@ export class DialogService {
     return this.dialog.open<CalendarWorkdayDialogComponent, CalendarWorkdayDialogData, void>(CalendarWorkdayDialogComponent, {
       data: day,
       width: '900px',
+      disableClose: true,
     });
   }
 }

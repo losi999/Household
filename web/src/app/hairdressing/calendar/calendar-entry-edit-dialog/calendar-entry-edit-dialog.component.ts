@@ -32,12 +32,30 @@ export class CalendarEntryEditDialogComponent implements OnInit {
   }>;
 
   errors: Observable<string[]>;
+  title: string;
 
   constructor(private dialogRef: MatDialogRef<CalendarEntryEditDialogComponent, void>,
     private store: Store,
     @Inject(MAT_DIALOG_DATA) public entry: CalendarEntryEditDialogData) { }
 
   ngOnInit(): void {
+    switch(this.entry.entryType) {
+      case CalendarEntryType.Issue: {
+        this.title = 'Probléma';
+      } break;
+      case CalendarEntryType.Work: {
+        this.title = 'Munka';
+      } break;
+      case CalendarEntryType.Personal: {
+        this.title = 'Személyes program';
+      } break;
+    }
+    if (this.entry.calendarEntryId) {
+      this.title += ' szerkesztése';
+    } else {
+      this.title += ' rögzítése';
+    }
+
     const now = new Date();
     now.setMinutes(Math.floor(now.getMinutes() / 15) * 15);
     this.form = new FormGroup({
@@ -91,8 +109,7 @@ export class CalendarEntryEditDialogComponent implements OnInit {
         const end = start + duration;
 
         if (this.entry.entryType === CalendarEntryType.Work) {
-
-          switch(day.dayType) {
+          switch (day.dayType) {
             case CalendarDayType.Vacation: {
               errors.push('Ezt a napot szabadságnak jelölted');
             } break;

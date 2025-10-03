@@ -39,4 +39,8 @@ export class CalendarService {
   deleteCalendarEntry(calendarEntryId: Calendar.Entry.Id) {
     return this.httpClient.delete(`${environment.apiUrl}/calendar/v1/entries/${calendarEntryId}`);
   }
+
+  payCalendarWorkEntry(calendarEntryId: Calendar.Entry.Id, body: Calendar.Entry.PaymentRequest) {
+    return this.httpClient.post(`${environment.apiUrl}/calendar/v1/entries/${calendarEntryId}/payment`, body);
+  }
 }

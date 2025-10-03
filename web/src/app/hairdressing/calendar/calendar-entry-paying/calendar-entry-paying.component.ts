@@ -10,6 +10,7 @@ import { selectCalendarEntry } from '@household/web/state/calendar/calendar.sele
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 import { calendarApiActions } from '@household/web/state/calendar/calendar.actions';
+import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 
 @Component({
   selector: 'household-calendar-entry-paying',
@@ -21,14 +22,16 @@ export class CalendarEntryPayingComponent implements OnInit {
   entry: Observable<Calendar.Entry.Response>;
   prices: FormControl<JobPriceCalculatorValue[]>;
 
+  calendarEntryId: Calendar.Entry.Id;
+
   constructor(private store: Store, private activatedRoute: ActivatedRoute) {}
 
   ngOnInit(): void {
-    const calendarEntryId = this.activatedRoute.snapshot.paramMap.get('calendarEntryId') as Calendar.Entry.Id;
+    this.calendarEntryId = this.activatedRoute.snapshot.paramMap.get('calendarEntryId') as Calendar.Entry.Id;
     
     this.store.dispatch(priceApiActions.listPricesInitiated());
     this.store.dispatch(calendarApiActions.getCalendarEntryInitiated({
-      calendarEntryId,
+      calendarEntryId: this.calendarEntryId,
     }));
 
     this.entry = this.store.select(selectCalendarEntry);
@@ -49,6 +52,16 @@ export class CalendarEntryPayingComponent implements OnInit {
         }));
       }
     });
+  }
+
+  onCashPayment() {
+    this.store.dispatch(dialogActions.openCashPayment({
+      calendarEntryId: this.calendarEntryId,
+    }));
+  }
+
+  onBankPayment() {
+
   }
 
 }

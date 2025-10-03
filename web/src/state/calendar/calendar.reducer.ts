@@ -17,6 +17,7 @@ const createCalendarEntryResponseFromRequest = (calendarEntryId: Calendar.Entry.
       day: request.day,
       prices: customer?.jobs.find(j => j.name === request.title)?.prices,
       customer,
+      isPaid: false,
     };
   } 
   return {

@@ -1,6 +1,5 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
-import { CalendarEntryType } from '@household/shared/enums';
 import { ICalendarEntryService } from '@household/shared/services/calendar-entry-service';
 import { Calendar } from '@household/shared/types/types';
 
@@ -13,9 +12,7 @@ export const getCalendarEntryServiceFactory = (
   calendarEntryDocumentConverter: ICalendarEntryDocumentConverter,
 ): IGetCalendarEntryService => {
   return async ({ calendarEntryId }) => {
-    const queried = await calendarEntryService.getCalendarEntryById(calendarEntryId, {
-      entryType: CalendarEntryType.Work,
-    }).catch(httpErrors.calendarEntry.getById({
+    const queried = await calendarEntryService.getCalendarEntryById(calendarEntryId).catch(httpErrors.calendarEntry.getById({
       calendarEntryId,
     }));
 

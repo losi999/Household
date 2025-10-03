@@ -1,0 +1,10 @@
+.buttons {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  column-gap: 10px;
+
+  button {
+    height: 55px;
+  }
+}

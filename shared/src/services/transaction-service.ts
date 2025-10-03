@@ -1,5 +1,6 @@
 import { matchAnyProperty, populateAggregate, transactionAggregate } from '@household/shared/common/aggregate-helpers';
 import { populate } from '@household/shared/common/utils';
+import { TransactionType } from '@household/shared/enums';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { Account, Common, File, Transaction } from '@household/shared/types/types';
 import { PipelineStage, Types, UpdateQuery } from 'mongoose';
@@ -116,13 +117,29 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
 
           });
 
+          if (deleted.transactionType === TransactionType.Payment) {
+            await mongodbService.calendarEntries.updateOne({
+              transaction: transactionId,
+            }, 
+            {
+              $set: {
+                isPaid: false,
+              },
+              $unset: {
+                transaction: 1,
+              },
+            }, {
+              session,
+            });
+          }
+
           let deletedDeferredTransactionIds: Types.ObjectId[];
 
-          if (deleted.transactionType === 'deferred') {
+          if (deleted.transactionType === TransactionType.Deferred) {
             deletedDeferredTransactionIds = [deleted._id];
           }
 
-          if (deleted.transactionType === 'split' && deleted.deferredSplits?.length > 0) {
+          if (deleted.transactionType === TransactionType.Split && deleted.deferredSplits?.length > 0) {
             deletedDeferredTransactionIds = deleted.deferredSplits.map(s => s._id);
           }
 

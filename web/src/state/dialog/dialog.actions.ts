@@ -45,6 +45,7 @@ export const dialogActions = createActionGroup({
     'Confirm calendar entry proposal': props<Calendar.DayProp & {customerJob: CustomerJob; timeInterval: Calendar.TimeInterval}>(),
     'Create calendar entry with proposal': props<Calendar.DayProp & {customerJob: CustomerJob; timeInterval: Calendar.TimeInterval}>(),
     'Open calendar entry': props<Calendar.Entry.Response>(),
+    'Open cash payment': props<Calendar.Entry.CalendarEntryId>(),
     'Set work day': props<Exclude<Calendar.Day.Response, Calendar.Day.HolidayResponse>>(),
   },
 });

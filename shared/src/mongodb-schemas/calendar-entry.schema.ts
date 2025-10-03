@@ -29,6 +29,13 @@ export const calendarEntrySchema = new Schema<Calendar.Entry.Document>({
   end: {
     type: Number,
   },
+  transaction: {
+    type: Schema.Types.ObjectId,
+    ref: 'transactions',
+  },
+  isPaid: {
+    type: Boolean,
+  },
   customer: {
     type: Schema.Types.ObjectId,
     ref: 'customers',

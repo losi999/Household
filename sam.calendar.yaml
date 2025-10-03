@@ -178,6 +178,22 @@ Resources:
             Auth:
               Authorizer: CognitoAuthorizer
 
+  PayCalendarWorkEntry:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-PayCalendarWorkEntry
+      CodeUri: dist/api/pay-calendar-work-entry
+      Role: !Ref LambdaRoleArn
+      Events:
+        API:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CalendarApi
+            Path: /v1/entries/{calendarEntryId}/payment
+            Method: POST
+            Auth:
+              Authorizer: CognitoAuthorizer
+
 Outputs:
   CalendarApi:
     Description: "Household Calendar API"
