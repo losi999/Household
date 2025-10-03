@@ -50,7 +50,9 @@ export class ProductListProductItemComponent implements OnInit {
 
   showMenu() {
     const bottomSheetRef = this.bottomSheet.open<CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult>(CatalogSubmenuComponent, {
-      data: this.product.fullName,
+      data: {
+        title: this.product.fullName,
+      },
     });
 
     bottomSheetRef.afterDismissed().subscribe((result) => {

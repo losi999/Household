@@ -2,7 +2,7 @@ import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { CalendarEntryType } from '@household/shared/enums';
 import { Calendar } from '@household/shared/types/types';
-import { calendarActions } from '@household/web/state/calendar/calendar.actions';
+import { calendarActions } from '@household/web/app/hairdressing/calendar/state/calendar.actions';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { Store } from '@ngrx/store';
 

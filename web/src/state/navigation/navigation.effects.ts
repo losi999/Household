@@ -5,7 +5,7 @@ import { transactionApiActions } from '@household/web/state/transaction/transact
 import { ActivatedRoute, Router } from '@angular/router';
 import { authActions } from '@household/web/state/auth/auth.actions';
 import { navigationActions } from '@household/web/state/navigation/navigation.actions';
-import { calendarApiActions } from '@household/web/state/calendar/calendar.actions';
+import { calendarApiActions } from '@household/web/app/hairdressing/calendar/state/calendar.actions';
 
 @Injectable()
 export class NavigationEffects {

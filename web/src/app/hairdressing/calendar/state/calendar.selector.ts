@@ -1,7 +1,7 @@
 import { addDays, dateToISODateString } from '@household/shared/common/utils';
 import { WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
 import { CalendarWeek } from '@household/web/app/hairdressing/calendar/calendar-home/calendar-home.component';
-import { CalendarState } from '@household/web/state/calendar/calendar.reducer';
+import { CalendarState } from '@household/web/app/hairdressing/calendar/state/calendar.reducer';
 import { createFeatureSelector, createSelector } from '@ngrx/store';
 
 const selectCalendar = createFeatureSelector<CalendarState>('calendar');

@@ -13,11 +13,10 @@ import { categoryApiActions } from '@household/web/state/category/category.actio
 import { recipientApiActions } from '@household/web/state/recipient/recipient.actions';
 import { projectApiActions } from '@household/web/state/project/project.actions';
 import { Store } from '@ngrx/store';
-import { selectCustomerById } from '@household/web/state/customer/customer.selector';
-import { customerApiActions } from '@household/web/state/customer/customer.actions';
+import { selectCustomerById } from '@household/web/app/hairdressing/customer/state/customer.selector';
+import { customerApiActions } from '@household/web/app/hairdressing/customer/state/customer.actions';
 import { CalendarEntryType } from '@household/shared/enums';
-import { calendarActions, calendarApiActions } from '@household/web/state/calendar/calendar.actions';
-import { priceApiActions } from '@household/web/state/price/price.actions';
+import { calendarActions, calendarApiActions } from '@household/web/app/hairdressing/calendar/state/calendar.actions';
 import { takeFirstDefined } from '@household/web/operators/take-first-defined';
 import { isListedPrice } from '@household/shared/common/type-guards';
 import { createWorkEntryTitle } from '@household/shared/common/utils';
@@ -357,41 +356,6 @@ export class DialogEffects {
               ],
             })));
           }));
-      }),
-    );
-  });
-
-  createPrice = createEffect(() => {
-    return this.actions.pipe(
-      ofType(dialogActions.createPrice),
-      exhaustMap(() => {
-        this.dialogService.openCreatePriceDialog();
-        return EMPTY;
-      }),
-    );
-  }, {
-    dispatch: false,
-  });
-
-  updatePrice = createEffect(() => {
-    return this.actions.pipe(
-      ofType(dialogActions.updatePrice),
-      exhaustMap(({ type, ...price }) => {
-        this.dialogService.openEditPriceDialog(price);
-        return EMPTY;
-      }),
-    );
-  }, {
-    dispatch: false,
-  });
-
-  deletePrice = createEffect(() => {
-    return this.actions.pipe(
-      ofType(dialogActions.deletePrice),
-      exhaustMap(({ type, ...price }) => {
-        return this.dialogService.openDeletePriceDialog(price).pipe(dispatchIfConfirmed(priceApiActions.deletePriceInitiated({
-          priceId: price.priceId,
-        })));
       }),
     );
   });

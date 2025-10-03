@@ -29,6 +29,10 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { CustomerAddToBlacklistDialogComponent } from './customer-add-to-blacklist-dialog/customer-add-to-blacklist-dialog.component';
 import { CustomerAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/customer-autocomplete-input/customer-autocomplete-input.component';
 import { DurationStepperComponent } from '@household/web/app/shared/duration-stepper/duration-stepper.component';
+import { CustomerEffects } from '@household/web/app/hairdressing/customer/state/customer.effects';
+import { customerReducer } from '@household/web/app/hairdressing/customer/state/customer.reducer';
+import { EffectsModule } from '@ngrx/effects';
+import { StoreModule } from '@ngrx/store';
 
 @NgModule({
   declarations: [
@@ -63,7 +67,9 @@ import { DurationStepperComponent } from '@household/web/app/shared/duration-ste
     JobPriceCalculatorComponent,
     MatCheckboxModule,
     CustomerAutocompleteInputComponent,
-    DurationStepperComponent,
+    DurationStepperComponent,    
+    StoreModule.forFeature('customers', customerReducer),
+    EffectsModule.forFeature([CustomerEffects]),
   ],
 })
 export class CustomerModule { }

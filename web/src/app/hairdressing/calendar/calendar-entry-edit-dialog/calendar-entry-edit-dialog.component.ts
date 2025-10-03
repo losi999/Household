@@ -6,10 +6,10 @@ import { createDate, createWorkEntryTitle, dateToISODateString, dateToTimeSlot }
 import { CalendarDayType, CalendarEntryType } from '@household/shared/enums';
 import { Calendar, Customer } from '@household/shared/types/types';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
-import { selectCalendarDay } from '@household/web/state/calendar/calendar.selector';
+import { selectCalendarDay } from '@household/web/app/hairdressing/calendar/state/calendar.selector';
 import { Store } from '@ngrx/store';
 import { combineLatest, filter, map, Observable, startWith, switchMap, take } from 'rxjs';
-import { calendarActions, calendarApiActions } from '@household/web/state/calendar/calendar.actions';
+import { calendarActions, calendarApiActions } from '@household/web/app/hairdressing/calendar/state/calendar.actions';
 
 export type CalendarEntryEditDialogData = Partial<Calendar.Entry.Response>;
 

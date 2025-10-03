@@ -3,10 +3,10 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, map, mergeMap, of, withLatestFrom } from 'rxjs';
 import { progressActions } from '@household/web/state/progress/progress.actions';
 import { notificationActions } from '@household/web/state/notification/notification.actions';
-import { calendarActions, calendarApiActions } from '@household/web/state/calendar/calendar.actions';
+import { calendarActions, calendarApiActions } from '@household/web/app/hairdressing/calendar/state/calendar.actions';
 import { Store } from '@ngrx/store';
 import { CalendarService } from '@household/web/services/calendar.service';
-import { selectCustomerById } from '@household/web/state/customer/customer.selector';
+import { selectCustomerById } from '@household/web/app/hairdressing/customer/state/customer.selector';
 import { CalendarEntryType } from '@household/shared/enums';
 import { dateToISODateString } from '@household/shared/common/utils';
 

@@ -9,7 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { Customer } from '@household/shared/types/types';
 import { AutocompleteFilterPipe } from '@household/web/app/shared/autocomplete/autocomplete-filter.pipe';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
-import { selectFilteredCustomers } from '@household/web/state/customer/customer.selector';
+import { selectFilteredCustomers } from '@household/web/app/hairdressing/customer/state/customer.selector';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 

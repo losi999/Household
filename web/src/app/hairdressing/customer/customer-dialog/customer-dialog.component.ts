@@ -2,7 +2,7 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Customer } from '@household/shared/types/types';
-import { customerApiActions } from '@household/web/state/customer/customer.actions';
+import { customerApiActions } from '@household/web/app/hairdressing/customer/state/customer.actions';
 import { Store } from '@ngrx/store';
 
 export type CustomerDialogData = Customer.Response;

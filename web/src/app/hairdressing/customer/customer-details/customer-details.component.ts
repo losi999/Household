@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Customer } from '@household/shared/types/types';
-import { customerApiActions } from '@household/web/state/customer/customer.actions';
-import { selectCustomerById } from '@household/web/state/customer/customer.selector';
+import { customerApiActions } from '@household/web/app/hairdressing/customer/state/customer.actions';
+import { selectCustomerById } from '@household/web/app/hairdressing/customer/state/customer.selector';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
-import { priceApiActions } from '@household/web/state/price/price.actions';
+import { priceApiActions } from '@household/web/app/hairdressing/price/state/price.actions';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 

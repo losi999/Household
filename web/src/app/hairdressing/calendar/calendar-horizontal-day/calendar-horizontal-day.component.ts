@@ -1,7 +1,7 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { dateToISODateString } from '@household/shared/common/utils';
 import { Calendar } from '@household/shared/types/types';
-import { selectCalendarDay } from '@household/web/state/calendar/calendar.selector';
+import { selectCalendarDay } from '@household/web/app/hairdressing/calendar/state/calendar.selector';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 

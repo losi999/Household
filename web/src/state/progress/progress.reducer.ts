@@ -9,7 +9,7 @@ import { accountApiActions } from '@household/web/state/account/account.actions'
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
 import { fileApiActions } from '@household/web/state/file/file.actions';
 import { userApiActions } from '@household/web/state/user/user.actions';
-import { priceApiActions } from '@household/web/state/price/price.actions';
+import { priceApiActions } from '@household/web/app/hairdressing/price/state/price.actions';
 
 export type ProgressState = {
   counter: number;

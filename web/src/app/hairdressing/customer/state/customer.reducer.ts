@@ -1,6 +1,6 @@
 import { Customer } from '@household/shared/types/types';
 import { createReducer, on } from '@ngrx/store';
-import { customerApiActions } from '@household/web/state/customer/customer.actions';
+import { customerApiActions } from '@household/web/app/hairdressing/customer/state/customer.actions';
 import { isPriceBase } from '@household/shared/common/type-guards';
 
 export const customerReducer = createReducer<Customer.Response[]>([],

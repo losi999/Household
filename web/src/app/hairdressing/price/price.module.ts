@@ -4,7 +4,6 @@ import { PriceRoutingModule } from '@household/web/app/hairdressing/price/price-
 import { PriceDialogComponent } from '@household/web/app/hairdressing/price/price-dialog/price-dialog.component';
 import { PriceListItemComponent } from '@household/web/app/hairdressing/price/price-list-item/price-list-item.component';
 import { PriceListComponent } from '@household/web/app/hairdressing/price/price-list/price-list.component';
-import { PriceSubmenuComponent } from '@household/web/app/hairdressing/price/price-submenu/price-submenu.component';
 import { ToolbarComponent } from '@household/web/app/shared/toolbar/toolbar.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -17,13 +16,16 @@ import { MatInputModule } from '@angular/material/input';
 import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
 import { AmountInputComponent } from '@household/web/app/shared/amount-input/amount-input.component';
 import { MatSelectModule } from '@angular/material/select';
+import { PriceEffects } from '@household/web/app/hairdressing/price/state/price.effects';
+import { priceReducer } from '@household/web/app/hairdressing/price/state/price.reducer';
+import { EffectsModule } from '@ngrx/effects';
+import { StoreModule } from '@ngrx/store';
 
 @NgModule({
   declarations: [
     PriceListComponent,
     PriceListItemComponent,
     PriceDialogComponent,
-    PriceSubmenuComponent,
   ],
   imports: [
     CommonModule,
@@ -40,6 +42,8 @@ import { MatSelectModule } from '@angular/material/select';
     ClearableInputComponent,
     AmountInputComponent,
     MatSelectModule,
+    StoreModule.forFeature('prices', priceReducer),
+    EffectsModule.forFeature([PriceEffects]),
   ],
 })
 export class PriceModule { }

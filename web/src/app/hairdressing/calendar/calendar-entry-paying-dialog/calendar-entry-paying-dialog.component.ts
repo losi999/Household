@@ -5,7 +5,7 @@ import { isListedPrice } from '@household/shared/common/type-guards';
 import { PaymentType } from '@household/shared/enums';
 import { Calendar } from '@household/shared/types/types';
 import { JobPriceCalculatorValue } from '@household/web/app/shared/job-price-calculator/job-price-calculator.component';
-import { calendarApiActions } from '@household/web/state/calendar/calendar.actions';
+import { calendarApiActions } from '@household/web/app/hairdressing/calendar/state/calendar.actions';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { Store } from '@ngrx/store';
 

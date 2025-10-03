@@ -1,6 +1,6 @@
 import { Calendar, Customer } from '@household/shared/types/types';
 import { createReducer, on } from '@ngrx/store';
-import { calendarApiActions } from '@household/web/state/calendar/calendar.actions';
+import { calendarApiActions } from '@household/web/app/hairdressing/calendar/state/calendar.actions';
 import { CalendarDayType, CalendarEntryType } from '@household/shared/enums';
 import { WORKDAY_END, WORKDAY_LENGTH, WORKDAY_START } from '@household/shared/constants';
 import { calculateWorkdayLimits } from '@household/shared/common/utils';

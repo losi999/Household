@@ -1,16 +1,94 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, exhaustMap, groupBy, map, mergeMap, of } from 'rxjs';
+import { catchError, exhaustMap, filter, groupBy, map, mergeMap, of } from 'rxjs';
 import { progressActions } from '@household/web/state/progress/progress.actions';
 import { notificationActions } from '@household/web/state/notification/notification.actions';
-import { priceApiActions } from '@household/web/state/price/price.actions';
+import { priceActions, priceApiActions } from '@household/web/app/hairdressing/price/state/price.actions';
 import { PriceService } from '@household/web/services/price.service';
+import { DialogService } from '@household/web/services/dialog.service';
+import { MatDialog } from '@angular/material/dialog';
+import { PriceDialogComponent, PriceDialogData, PriceDialogResult } from '@household/web/app/hairdressing/price/price-dialog/price-dialog.component';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult } from '@household/web/app/shared/catalog-submenu/catalog-submenu.component';
 
 @Injectable()
 export class PriceEffects {
-  constructor(private actions: Actions, private priceService: PriceService) {}
+  constructor(private actions: Actions, private priceService: PriceService, private dialog: MatDialog, private dialogService: DialogService, private bottomSheet: MatBottomSheet) {}
 
-  loadPrices = createEffect(() => {
+  openCreatePriceDialog = createEffect(() => {
+    return this.actions.pipe(
+      ofType(priceActions.createPrice),
+      exhaustMap(() => {
+        return this.dialog.open<PriceDialogComponent, PriceDialogData, PriceDialogResult>(PriceDialogComponent, {
+          disableClose: true,
+        }).afterClosed();
+      }),
+      filter(req => !!req),
+      map((request) => {
+        return priceApiActions.createPriceInitiated(request);
+      }),
+    );
+  });
+  
+  openUpdatePriceDialog = createEffect(() => {
+    return this.actions.pipe(
+      ofType(priceActions.updatePrice),
+      exhaustMap(({ type, ...price }) => {
+        return this.dialog.open<PriceDialogComponent, PriceDialogData, PriceDialogResult>(PriceDialogComponent, {
+          data: price,
+          disableClose: true,
+        }).afterClosed()
+          .pipe(filter(req => !!req),
+            map((request) => {
+              return priceApiActions.updatePriceInitiated({
+                priceId: price.priceId,
+                ...request,
+              });
+            }));
+      }),      
+    );
+  });
+  
+  openDeletePriceDialog = createEffect(() => {
+    return this.actions.pipe(
+      ofType(priceActions.deletePrice),
+      exhaustMap(({ type, ...price }) => {
+        return this.dialogService.openConfirmationDialog({
+          title: 'Törölni akarod ezt a tételt az árlistából? Az összes munka amihez hozzá van rendelve szintén törlődni fog!',
+          content: price.name,
+        }).pipe(
+          filter(confirmed => confirmed),
+          map(() => priceApiActions.deletePriceInitiated({
+            priceId: price.priceId,
+          })));
+      }),
+    );
+  });
+
+  openPriceListItemSubmenu = createEffect(() => {
+    return this.actions.pipe(
+      ofType(priceActions.openPriceListItemSubmenu),
+      exhaustMap(({ type, ...price }) => {
+        return this.bottomSheet.open<CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult>(CatalogSubmenuComponent, {
+          data: {
+            title: price.name,
+            hideMerge: true,
+          },
+        }).afterDismissed()
+          .pipe(
+            filter(value => !!value),
+            map((value) => {
+              switch(value) {
+                case 'edit': return priceActions.updatePrice(price);
+                case 'delete': return priceActions.deletePrice(price);
+              }
+            }),
+          );
+      }),
+    );
+  });
+
+  listPrices = createEffect(() => {
     return this.actions.pipe(
       ofType(priceApiActions.listPricesInitiated),
       exhaustMap(() => {

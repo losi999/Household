@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, exhaustMap, groupBy, map, mergeMap, of, withLatestFrom } from 'rxjs';
-import { customerApiActions } from '@household/web/state/customer/customer.actions';
+import { customerApiActions } from '@household/web/app/hairdressing/customer/state/customer.actions';
 import { CustomerService } from '@household/web/services/customer.service';
 import { progressActions } from '@household/web/state/progress/progress.actions';
 import { notificationActions } from '@household/web/state/notification/notification.actions';
-import { selectPriceList } from '@household/web/state/price/price.selector';
+import { selectPrices } from '@household/web/app/hairdressing/price/state/price.selector';
 import { Store } from '@ngrx/store';
 
 @Injectable()
@@ -98,7 +98,7 @@ export class CustomerEffects {
   createCustomerJob = createEffect(() => {
     return this.actions.pipe(
       ofType(customerApiActions.createCustomerJobInitiated),
-      withLatestFrom(this.store.select(selectPriceList)),
+      withLatestFrom(this.store.select(selectPrices)),
       mergeMap(([
         { type, customerId, ...request },
         priceList,
@@ -134,7 +134,7 @@ export class CustomerEffects {
     return this.actions.pipe(
       ofType(customerApiActions.updateCustomerJobInitiated),
       groupBy(({ customerId }) => customerId),
-      withLatestFrom(this.store.select(selectPriceList)),
+      withLatestFrom(this.store.select(selectPrices)),
       mergeMap(([
         value,
         priceList,

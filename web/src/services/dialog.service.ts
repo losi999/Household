@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { CalendarEntryType } from '@household/shared/enums';
-import { Account, Calendar, Category, Customer, File, Price, Product, Project, Recipient, Transaction, User } from '@household/shared/types/types';
+import { Account, Calendar, Category, Customer, File, Product, Project, Recipient, Transaction, User } from '@household/shared/types/types';
 import { AccountFormComponent, AccountFormData } from '@household/web/app/account/account-form/account-form.component';
 import { CategoryFormComponent, CategoryFormData } from '@household/web/app/category/category-form/category-form.component';
 import { CategoryMergeDialogComponent, CategoryMergeDialogData } from '@household/web/app/category/category-merge-dialog/category-merge-dialog.component';
@@ -10,7 +10,6 @@ import { CustomerJobDialogComponent, CustomerJobDialogData } from '@household/we
 import { CalendarEntryDetailsDialogComponent, CalendarEntryDetailsDialogData } from '@household/web/app/hairdressing/calendar/calendar-entry-details-dialog/calendar-entry-details-dialog.component';
 import { CalendarEntryEditDialogComponent, CalendarEntryEditDialogData } from '@household/web/app/hairdressing/calendar/calendar-entry-edit-dialog/calendar-entry-edit-dialog.component';
 import { CalendarWorkdayDialogComponent, CalendarWorkdayDialogData } from '@household/web/app/hairdressing/calendar/calendar-workday-dialog/calendar-workday-dialog.component';
-import { PriceDialogComponent, PriceDialogData } from '@household/web/app/hairdressing/price/price-dialog/price-dialog.component';
 import { ImportFileUploadFormComponent } from '@household/web/app/import/import-file-upload-form/import-file-upload-form.component';
 import { ProductFormComponent, ProductFormData } from '@household/web/app/product/product-form/product-form.component';
 import { ProductMergeDialogComponent, ProductMergeDialogData } from '@household/web/app/product/product-merge-dialog/product-merge-dialog.component';
@@ -32,7 +31,7 @@ export class DialogService {
 
   constructor(private dialog: MatDialog) { }
 
-  private openConfirmationDialog(title: string, content?: string) {
+  private openConfirmationDialog_(title: string, content?: string) {
     return this.dialog.open(ConfirmationDialogComponent, {
       data: {
         title,
@@ -46,6 +45,14 @@ export class DialogService {
     this.dialog.closeAll();
   }
 
+  openConfirmationDialog(data: {title: string; 
+    content?: string}) {
+    return this.dialog.open(ConfirmationDialogComponent, {
+      data,
+      disableClose: true,
+    }).afterClosed();
+  }
+
   openCreateProjectDialog(): void {
     this.dialog.open<ProjectFormComponent, ProjectFormData, void>(ProjectFormComponent);
   }
@@ -57,7 +64,7 @@ export class DialogService {
   }
 
   openDeleteProjectDialog(project: Project.Response) {
-    return this.openConfirmationDialog('Törölni akarod ezt a projektet?', project.name);
+    return this.openConfirmationDialog_('Törölni akarod ezt a projektet?', project.name);
   }
 
   openMergeProjectsDialog(project: Project.Response) {
@@ -77,7 +84,7 @@ export class DialogService {
   }
 
   openDeleteRecipientDialog(recipient: Recipient.Response) {
-    return this.openConfirmationDialog('Törölni akarod ezt a partnert?', recipient.name);
+    return this.openConfirmationDialog_('Törölni akarod ezt a partnert?', recipient.name);
   }
 
   openMergeRecipientsDialog(recipient: Recipient.Response) {
@@ -99,7 +106,7 @@ export class DialogService {
   }
 
   openDeleteCategoryDialog(category: Category.Response) {
-    return this.openConfirmationDialog('Törölni akarod ezt a kategóriát?', category.name);
+    return this.openConfirmationDialog_('Törölni akarod ezt a kategóriát?', category.name);
   }
 
   openMergeCategoriesDialog(category: Category.Response) {
@@ -127,7 +134,7 @@ export class DialogService {
   }
 
   openDeleteProductDialog(product: Product.Response) {
-    return this.openConfirmationDialog('Törölni akarod ezt a terméket?', product.fullName);
+    return this.openConfirmationDialog_('Törölni akarod ezt a terméket?', product.fullName);
   }
 
   openMergeProductsDialog(product: Product.Response, categoryId: Category.Id) {
@@ -150,7 +157,7 @@ export class DialogService {
   }
 
   openDeleteAccountDialog(account: Account.Response) {
-    return this.openConfirmationDialog('Törölni akarod ezt a számlát?', account.name);
+    return this.openConfirmationDialog_('Törölni akarod ezt a számlát?', account.name);
   }
 
   openCreateCustomerDialog(): void {
@@ -190,7 +197,7 @@ export class DialogService {
   }
 
   openDeleteCustomerJobDialog({ name }: Customer.Job.Name) {
-    return this.openConfirmationDialog('Törölni akarod ezt a munkát?', name);
+    return this.openConfirmationDialog_('Törölni akarod ezt a munkát?', name);
   }
 
   openAddCustomerToBlacklistDialog(customer: Customer.Response) {
@@ -210,24 +217,7 @@ export class DialogService {
     customerA,
     customerB]: Customer.Response[
   ]) {
-    return this.openConfirmationDialog('Törölni akarod a tiltást közöttük?', `${customerA.name} és ${customerB.name}`);
-  }
-
-  openCreatePriceDialog(): void {
-    this.dialog.open<PriceDialogComponent, PriceDialogData, void>(PriceDialogComponent, {
-      disableClose: true,
-    });
-  }
-
-  openEditPriceDialog(price: Price.Response): void {
-    this.dialog.open<PriceDialogComponent, PriceDialogData, void>(PriceDialogComponent, {
-      data: price,
-      disableClose: true,
-    });
-  }
-
-  openDeletePriceDialog(price: Price.Response) {
-    return this.openConfirmationDialog('Törölni akarod ezt a tételt az árlistából? Az összes munka amihez hozzá van rendelve szintén törlődni fog!', price.name);
+    return this.openConfirmationDialog_('Törölni akarod a tiltást közöttük?', `${customerA.name} és ${customerB.name}`);
   }
 
   openImportFileDialog(): void {
@@ -235,19 +225,19 @@ export class DialogService {
   }
 
   openDeleteFileDialog(file: File.Response) {
-    return this.openConfirmationDialog('Törölni akarod ezt a fájlt?', file.fileId);
+    return this.openConfirmationDialog_('Törölni akarod ezt a fájlt?', file.fileId);
   }
 
   openDeleteUserDialog({ email }: User.Email) {
-    return this.openConfirmationDialog('Törölni akarod ezt a felhasználót?', email);
+    return this.openConfirmationDialog_('Törölni akarod ezt a felhasználót?', email);
   }
 
   openDeleteDraftTransactionsDialog(transactionIds: Transaction.Id[]) {
-    return this.openConfirmationDialog(`Törölni akarsz ${transactionIds.length} tranzakciót?`);
+    return this.openConfirmationDialog_(`Törölni akarsz ${transactionIds.length} tranzakciót?`);
   }
 
   openDeleteTransactionDialog() {
-    return this.openConfirmationDialog('Törölni akarod ezt a tranzakciót?');
+    return this.openConfirmationDialog_('Törölni akarod ezt a tranzakciót?');
   }
 
   openCreateCalendarEntryDialog(entryType: CalendarEntryType) {
@@ -276,11 +266,11 @@ export class DialogService {
   }
 
   openDeleteCalendarEntryDialog(title: Calendar.Entry.Response['title']) {
-    return this.openConfirmationDialog('Törölni akarod ezt a bejegyzést a naptárból?', title);
+    return this.openConfirmationDialog_('Törölni akarod ezt a bejegyzést a naptárból?', title);
   }
 
   openConfirmCalendarEntryProposalDialog(title: string, day: string, timeInterval: Calendar.TimeInterval) {
-    return this.openConfirmationDialog('Rögzíted ezt a munkát erre az időpontra?', `${title} ${new Date(day).toLocaleString('hu', {
+    return this.openConfirmationDialog_('Rögzíted ezt a munkát erre az időpontra?', `${title} ${new Date(day).toLocaleString('hu', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',

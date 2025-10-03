@@ -3,10 +3,9 @@ import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { priceUnitsOfMeasurement } from '@household/shared/constants';
 import { Price } from '@household/shared/types/types';
-import { priceApiActions } from '@household/web/state/price/price.actions';
-import { Store } from '@ngrx/store';
 
 export type PriceDialogData = Price.Response;
+export type PriceDialogResult = Price.Request;
 
 @Component({
   standalone: false,  
@@ -22,8 +21,7 @@ export class PriceDialogComponent implements OnInit {
 
   get unitsOfMeasurement() { return priceUnitsOfMeasurement; }
 
-  constructor(private dialogRef: MatDialogRef<PriceDialogComponent, void>,
-    private store: Store,
+  constructor(private dialogRef: MatDialogRef<PriceDialogComponent, PriceDialogResult>,
     @Inject(MAT_DIALOG_DATA) public price: PriceDialogData) { }
 
   ngOnInit(): void {
@@ -36,22 +34,11 @@ export class PriceDialogComponent implements OnInit {
 
   onSave() {
     if (this.form.valid) {
-      const request: Price.Request = {
+      this.dialogRef.close({
         name: this.form.value.name,
         amount: this.form.value.amount ?? undefined,
         unitOfMeasurement: this.form.value.unitOfMeasurement,
-      };
-      if (this.price) {
-        this.store.dispatch(priceApiActions.updatePriceInitiated({
-          priceId: this.price.priceId,
-          ...request,
-        }));
-      } else {
-        this.store.dispatch(priceApiActions.createPriceInitiated(request));
-      }
-
-      this.dialogRef.close();
+      });
     }
   }
-
 }

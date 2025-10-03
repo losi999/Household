@@ -33,6 +33,10 @@ import { DurationStepperComponent } from '@household/web/app/shared/duration-ste
 import { AmountInputComponent } from '@household/web/app/shared/amount-input/amount-input.component';
 import { CalendarCashPaymentDialogComponent } from '@household/web/app/hairdressing/calendar/calendar-cash-payment-dialog/calendar-cash-payment-dialog.component';
 import { CalendarEntryPayingDialogComponent } from './calendar-entry-paying-dialog/calendar-entry-paying-dialog.component';
+import { StoreModule } from '@ngrx/store';
+import { calendarReducer } from '@household/web/app/hairdressing/calendar/state/calendar.reducer';
+import { EffectsModule } from '@ngrx/effects';
+import { CalendarEffects } from '@household/web/app/hairdressing/calendar/state/calendar.effects';
 
 @NgModule({
   declarations: [
@@ -72,6 +76,8 @@ import { CalendarEntryPayingDialogComponent } from './calendar-entry-paying-dial
     JobPriceSummaryComponent,
     DurationStepperComponent,
     AmountInputComponent,
+    StoreModule.forFeature('calendar', calendarReducer),
+    EffectsModule.forFeature([CalendarEffects]),
   ],
 })
 export class CalendarModule { }

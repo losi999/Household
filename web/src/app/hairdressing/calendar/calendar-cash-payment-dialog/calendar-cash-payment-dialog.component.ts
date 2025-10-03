@@ -3,7 +3,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { PaymentType } from '@household/shared/enums';
 import { Calendar } from '@household/shared/types/types';
-import { calendarApiActions } from '@household/web/state/calendar/calendar.actions';
+import { calendarApiActions } from '@household/web/app/hairdressing/calendar/state/calendar.actions';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { Store } from '@ngrx/store';
 

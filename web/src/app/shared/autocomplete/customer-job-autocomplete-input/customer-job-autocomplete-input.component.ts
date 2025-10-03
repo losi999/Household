@@ -6,7 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { Customer } from '@household/shared/types/types';
 import { TimeSlotToTimePipe } from '@household/web/app/shared/time-slot-to-time.pipe';
-import { selectCustomers } from '@household/web/state/customer/customer.selector';
+import { selectCustomers } from '@household/web/app/hairdressing/customer/state/customer.selector';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 import { v4 } from 'uuid';

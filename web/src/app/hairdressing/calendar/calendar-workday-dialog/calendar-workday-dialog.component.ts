@@ -4,7 +4,8 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { AFTERNOON_SHIFT_END, AFTERNOON_SHIFT_START, MORNING_SHIFT_END, MORNING_SHIFT_START, WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
 import { CalendarDayType } from '@household/shared/enums';
 import { Calendar } from '@household/shared/types/types';
-import { calendarApiActions } from '@household/web/state/calendar/calendar.actions';
+import { calendarApiActions } from '@household/web/app/hairdressing/calendar/state/calendar.actions';
+
 import { Store } from '@ngrx/store';
 
 enum ShiftType{

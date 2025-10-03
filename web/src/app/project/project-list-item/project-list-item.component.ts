@@ -40,7 +40,9 @@ export class ProjectListItemComponent implements OnInit {
 
   showMenu() {
     const bottomSheetRef = this.bottomSheet.open<CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult>(CatalogSubmenuComponent, {
-      data: this.project.name,
+      data: {
+        title: this.project.name,
+      },
     });
 
     bottomSheetRef.afterDismissed().subscribe((result) => {

@@ -1,6 +1,16 @@
 import { Price } from '@household/shared/types/types';
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
 
+export const priceActions = createActionGroup({
+  source: 'Price',
+  events: {
+    'Create price': emptyProps(),
+    'Update price': props<Price.PriceId & Price.Response>(),
+    'Delete price': props<Price.Response>(),
+    'Open price list item submenu': props<Price.Response>(),
+  },
+});
+
 export const priceApiActions = createActionGroup({
   source: 'Price API',
   events: {
