@@ -48,7 +48,3 @@ export const selectCalendarWeek = (date: Date) => createSelector<object, Calenda
     days: [],
   });
 });
-
-export const selectCalendarEntry = createSelector(selectCalendar, ({ selectedEntry }) => {
-  return selectedEntry;
-});

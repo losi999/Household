@@ -16,7 +16,7 @@ import { Store } from '@ngrx/store';
 import { selectCustomerById } from '@household/web/state/customer/customer.selector';
 import { customerApiActions } from '@household/web/state/customer/customer.actions';
 import { CalendarEntryType } from '@household/shared/enums';
-import { calendarApiActions } from '@household/web/state/calendar/calendar.actions';
+import { calendarActions, calendarApiActions } from '@household/web/state/calendar/calendar.actions';
 import { priceApiActions } from '@household/web/state/price/price.actions';
 import { takeFirstDefined } from '@household/web/operators/take-first-defined';
 import { isListedPrice } from '@household/shared/common/type-guards';
@@ -25,6 +25,18 @@ import { createWorkEntryTitle } from '@household/shared/common/utils';
 @Injectable()
 export class DialogEffects { 
   constructor(private actions: Actions, private dialogService: DialogService, private store: Store) {}
+
+  closeAll = createEffect(() => {
+    return this.actions.pipe(
+      ofType(dialogActions.closeAll),
+      exhaustMap(() => {
+        this.dialogService.closeAll();
+        return EMPTY;
+      }),
+    );
+  }, {
+    dispatch: false,
+  });
 
   createProject = createEffect(() => {
     return this.actions.pipe(
@@ -501,11 +513,23 @@ export class DialogEffects {
     dispatch: false,
   });
 
+  openEntryPayingDialog = createEffect(() => {
+    return this.actions.pipe(
+      ofType(calendarActions.openPayingDialog),
+      exhaustMap(({ type, ...calendarEntry }) => {
+        this.dialogService.openCalendarEntryPayingDialog(calendarEntry);
+        return EMPTY;
+      }),
+    );
+  }, {
+    dispatch: false,
+  });
+
   openCashPayment = createEffect(() => {
     return this.actions.pipe(
       ofType(dialogActions.openCashPayment),
-      exhaustMap(({ calendarEntryId }) => {
-        this.dialogService.openCashPaymentDialog(calendarEntryId);
+      exhaustMap(({ type, ...calendarEntry }) => {
+        this.dialogService.openCashPaymentDialog(calendarEntry);
         return EMPTY;
       }),
     );

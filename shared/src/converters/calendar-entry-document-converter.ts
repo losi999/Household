@@ -54,7 +54,7 @@ export const calendarEntryDocumentConverterFactory = (customerDocumentConverter:
             $unset: {
               description: true,
             },
-          } : {}),
+          } : {}), // TODO unset prices
         },
       };
     },

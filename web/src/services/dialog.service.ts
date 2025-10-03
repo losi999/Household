@@ -23,6 +23,7 @@ import { CustomerAddToBlacklistDialogComponent, CustomerAddToBlacklistDialogData
 import { createWorkEntryTitle, timeSlotToTimeString } from '@household/shared/common/utils';
 import { CustomerJob } from '@household/web/types/common';
 import { CalendarCashPaymentDialogComponent, CalendarCashPaymentDialogData } from '@household/web/app/hairdressing/calendar/calendar-cash-payment-dialog/calendar-cash-payment-dialog.component';
+import { CalendarEntryPayingDialogComponent } from '@household/web/app/hairdressing/calendar/calendar-entry-paying-dialog/calendar-entry-paying-dialog.component';
 
 @Injectable({
   providedIn: 'root',
@@ -304,11 +305,18 @@ export class DialogService {
     });
   }
 
-  openCashPaymentDialog(calendarEntryId: Calendar.Entry.Id) {
+  openCalendarEntryPayingDialog(calendarEntry: Calendar.Entry.WorkEntryResponse) {
+    this.dialog.open(CalendarEntryPayingDialogComponent, {
+      data: calendarEntry,
+      width: '900px',
+      maxHeight: '90vh',
+      disableClose: true,
+    });
+  }
+
+  openCashPaymentDialog(calendarEntry: Calendar.Entry.WorkEntryResponse) {
     this.dialog.open<CalendarCashPaymentDialogComponent, CalendarCashPaymentDialogData, any>(CalendarCashPaymentDialogComponent, {
-      data: {
-        calendarEntryId,
-      },
+      data: calendarEntry,
       disableClose: true,
     });
   }

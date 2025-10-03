@@ -69,9 +69,6 @@ export const calendarEntryServiceFactory = (mongodbService: IMongodbService): IC
             session,
           });
 
-          console.log('A');
-          console.log(transaction);
-
           await mongodbService.calendarEntries.findByIdAndUpdate(calendarEntryId, {
             isPaid: true,
             transaction,

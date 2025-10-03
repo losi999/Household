@@ -5,6 +5,7 @@ import { Action, createActionGroup, emptyProps, props } from '@ngrx/store';
 export const dialogActions = createActionGroup({
   source: 'Dialog',
   events: {
+    'Close all': emptyProps(),
     'Create project': emptyProps(),
     'Update project': props<Project.Response>(),
     'Delete project': props<Project.Response>(),
@@ -45,7 +46,7 @@ export const dialogActions = createActionGroup({
     'Confirm calendar entry proposal': props<Calendar.DayProp & {customerJob: CustomerJob; timeInterval: Calendar.TimeInterval}>(),
     'Create calendar entry with proposal': props<Calendar.DayProp & {customerJob: CustomerJob; timeInterval: Calendar.TimeInterval}>(),
     'Open calendar entry': props<Calendar.Entry.Response>(),
-    'Open cash payment': props<Calendar.Entry.CalendarEntryId>(),
+    'Open cash payment': props<Calendar.Entry.WorkEntryResponse>(),
     'Set work day': props<Exclude<Calendar.Day.Response, Calendar.Day.HolidayResponse>>(),
   },
 });

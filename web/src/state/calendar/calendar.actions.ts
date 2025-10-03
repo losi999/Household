@@ -5,6 +5,7 @@ export const calendarActions = createActionGroup({
   source: 'Calendar',
   events: {
     'List calendar month': props<{date: Date}>(),
+    'Open paying dialog': props<Calendar.Entry.WorkEntryResponse>(),
   },
 });
 
@@ -19,13 +20,11 @@ export const calendarApiActions = createActionGroup({
     'Delete calendar day completed': props<Calendar.DayProp>(),
     'Create calendar entry initiated': props<Calendar.Entry.Request>(),
     'Create calendar entry completed': props<Calendar.Entry.CalendarEntryId & Calendar.Entry.Request & {customer: Customer.Response }>(),
-    'Get calendar entry initiated': props<Calendar.Entry.CalendarEntryId>(),
-    'Get calendar entry completed': props<Calendar.Entry.CalendarEntryId & Calendar.Entry.Response>(),
     'Update calendar entry initiated': props<Calendar.Entry.CalendarEntryId & Calendar.Entry.Request>(),
     'Update calendar entry completed': props<Calendar.Entry.CalendarEntryId & Calendar.Entry.Request & {customer: Customer.Response }>(),
     'Delete calendar entry initiated': props<Calendar.Entry.CalendarEntryId>(),
     'Delete calendar entry completed': props<Calendar.Entry.CalendarEntryId>(),
-    'Pay calendar work entry initiated': props<Calendar.Entry.CalendarEntryId & Calendar.Entry.PaymentRequest>(),
-    'Pay calendar work entry completed': props<Calendar.Entry.CalendarEntryId & Calendar.Entry.PaymentRequest>(),
+    'Pay calendar work entry initiated': props<Calendar.Entry.CalendarEntryId & Calendar.DayProp & Calendar.Entry.PaymentRequest>(),
+    'Pay calendar work entry completed': props<Calendar.Entry.CalendarEntryId & Calendar.DayProp>(),
   },
 });

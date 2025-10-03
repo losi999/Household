@@ -138,27 +138,6 @@ export class CalendarEffects {
     );
   });
   
-  getCalendarEntry = createEffect(() => {
-    return this.actions.pipe(
-      ofType(calendarApiActions.getCalendarEntryInitiated),
-      mergeMap(({ calendarEntryId }) => {
-        return this.calendarService.getCalendarEntry(calendarEntryId).pipe(
-          map((calendarEntry) => calendarApiActions.getCalendarEntryCompleted({
-            calendarEntryId,
-            ...calendarEntry,
-          })),
-          catchError(() => {
-            return of(progressActions.processFinished(),
-              notificationActions.showMessage({
-                message: 'Hiba történt',
-              }),
-            );
-          }),
-        );
-      }),
-    );
-  });
-  
   updateCalendarEntry = createEffect(() => {
     return this.actions.pipe(
       ofType(calendarApiActions.updateCalendarEntryInitiated),
@@ -208,12 +187,14 @@ export class CalendarEffects {
   payCalendarworkEntry = createEffect(() => {
     return this.actions.pipe(
       ofType(calendarApiActions.payCalendarWorkEntryInitiated),
-      mergeMap(({ type, calendarEntryId, ...request }) => {
+      mergeMap(({ type, calendarEntryId, day, ...request }) => {
         return this.calendarService.payCalendarWorkEntry(calendarEntryId, request).pipe(
-          map(() => calendarApiActions.payCalendarWorkEntryCompleted({
-            calendarEntryId,
-            ...request,
-          })),
+          map(() => 
+            calendarApiActions.payCalendarWorkEntryCompleted({
+              calendarEntryId,
+              day,
+            }),
+          ),
           catchError(() => {
             return of(progressActions.processFinished(),
               notificationActions.showMessage({

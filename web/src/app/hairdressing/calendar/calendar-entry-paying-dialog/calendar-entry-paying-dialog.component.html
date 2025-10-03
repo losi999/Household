@@ -1,0 +1,14 @@
+<div mat-dialog-title>{{entry.title}}</div>
+<div mat-dialog-content>
+  <household-icon-text icon="calendar_month" [text]="entry.day | date: 'yyyy. MMMM d.'" size="medium" />
+  <household-icon-text icon="alarm" [text]="(entry.start | timeSlotToTime) + ' - ' + (entry.end | timeSlotToTime)" size="medium" />
+  <div *ngIf="entry.description">
+    {{entry.description}}
+  </div>
+  <household-job-price-calculator [formControl]="prices" />
+</div>
+<div mat-dialog-actions>
+  <button mat-flat-button color="primary" type="button" (click)="onCashPayment()"><mat-icon>payments</mat-icon>Készpénz</button>
+  <button mat-flat-button color="primary" type="button" (click)="onBankPayment()"><mat-icon>account_balance</mat-icon>Utalás</button>
+  <button mat-flat-button mat-dialog-close type="button">Mégse</button>
+</div>

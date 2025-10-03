@@ -31,7 +31,6 @@ export type CalendarState = {
   calendarDays?: {
     [date: string]: Calendar.Day.Response;
   };
-  selectedEntry?: Calendar.Entry.Response;
 };
 
 export const calendarReducer = createReducer<CalendarState>({},
@@ -227,17 +226,25 @@ export const calendarReducer = createReducer<CalendarState>({},
     };
   }),
 
-  on(calendarApiActions.getCalendarEntryInitiated, (_state) => {
+  on(calendarApiActions.payCalendarWorkEntryCompleted, (_state, { calendarEntryId, day }) => {
     return {
       ..._state,
-      selectedEntry: undefined,
-    };
-  }),
+      calendarDays: {
+        ..._state.calendarDays,
+        [day]: {
+          ..._state.calendarDays[day],
+          entries: _state.calendarDays[day].entries.map(e => {
+            if (e.calendarEntryId !== calendarEntryId) {
+              return e;
+            }
 
-  on(calendarApiActions.getCalendarEntryCompleted, (_state, calendarEntry) => {
-    return {
-      ..._state,
-      selectedEntry: calendarEntry,
+            return {
+              ...e,
+              isPaid: true,
+            };
+          }),
+        },
+      },
     };
   }),
 );

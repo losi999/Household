@@ -10,6 +10,7 @@ import { selectCalendarWeek } from '@household/web/state/calendar/calendar.selec
 import { customerApiActions } from '@household/web/state/customer/customer.actions';
 import { selectCustomerJobByIdAndName } from '@household/web/state/customer/customer.selector';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
+import { priceApiActions } from '@household/web/state/price/price.actions';
 import { CustomerJob } from '@household/web/types/common';
 import { Store } from '@ngrx/store';
 import { mergeMap, Observable, of } from 'rxjs';
@@ -52,6 +53,7 @@ export class CalendarHomeComponent implements OnInit {
   ngOnInit(): void {
     this.loadWeek(new Date());
     this.store.dispatch(customerApiActions.listCustomersInitiated());
+    this.store.dispatch(priceApiActions.listPricesInitiated());
 
     this.pendingCustomerJob = this.activatedRoute.queryParams.pipe(mergeMap((value) => {
       const customerId = value.customerId as Customer.Id;

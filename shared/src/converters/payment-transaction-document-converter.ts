@@ -1,4 +1,4 @@
-import { generateMongoId, getAccountId, getCategoryId, timeSlotToTimeString } from '@household/shared/common/utils';
+import { generateMongoId, getAccountId, getCategoryId } from '@household/shared/common/utils';
 import { addSeconds, createDate, getTransactionId } from '@household/shared/common/utils';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
@@ -80,13 +80,19 @@ export const paymentTransactionDocumentConverterFactory = (
       };
     },
     createFromEntry: ({ account, category, amount, calendarEntry }) => {
+      const issuedAt = moment.tz(calendarEntry.day, 'Europe/Budapest'); 
+      issuedAt.set({
+        hour: Math.floor(calendarEntry.end / 4),
+        minute: (calendarEntry.end % 4) * 15,
+      });
+
       return instance.create({
         account,
         body: {
           accountId: getAccountId(account),
           amount,
           categoryId: getCategoryId(category),
-          issuedAt: moment.tz(`${calendarEntry.day}T${timeSlotToTimeString(calendarEntry.end)}`, 'Europe/Budapest').utc()
+          issuedAt: issuedAt.utc()
             .toISOString(),
           description: calendarEntry.title,
           productId: undefined,

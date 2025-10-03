@@ -22,7 +22,6 @@ export const createCalendarEntryServiceFactory = (
   priceService: IPriceService,
 ): ICreateCalendarEntryService => {
   return async ({ body, expiresIn }) => {
-
     let document: Calendar.Entry.Document;
     if (body.entryType === CalendarEntryType.Work) {
       const customer = await customerService.findCustomerById(body.customerId);
@@ -39,6 +38,11 @@ export const createCalendarEntryServiceFactory = (
       }, []);
 
       const prices = await priceService.findPricesByIds(priceIds);
+      
+      httpErrors.price.multipleNotFound({
+        priceIds,
+        prices,
+      });
 
       document = calendarEntryDocumentConverter.create({
         body,

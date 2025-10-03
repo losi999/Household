@@ -18,6 +18,7 @@ export class CalendarVerticalDayComponent implements OnChanges {
 
   @Input() pendingCustomerJob: CustomerJob;
   proposedTimeIntervals: Calendar.TimeInterval[];
+  isInThePast: boolean;
   
   constructor(private store: Store) { }
 
@@ -26,7 +27,7 @@ export class CalendarVerticalDayComponent implements OnChanges {
       return [];
     }
 
-    if (this.day.day <= dateToISODateString(new Date())) {
+    if (this.isInThePast) {
       return [];
     }
 
@@ -83,6 +84,7 @@ export class CalendarVerticalDayComponent implements OnChanges {
   }
 
   ngOnChanges(): void {
+    this.isInThePast = this.day.day <= dateToISODateString(new Date());
     this.proposedTimeIntervals = this.calculateProposedTimeIntervals();
   }
   

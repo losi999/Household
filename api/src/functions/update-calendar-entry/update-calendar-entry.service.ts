@@ -31,11 +31,12 @@ export const updateCalendarEntryServiceFactory = (
       calendarEntry: queried,
       calendarEntryId,
     });
+    
     let update: DocumentUpdate<Calendar.Entry.Document>;
     if (body.entryType === CalendarEntryType.Work) {
       const customer = await customerService.findCustomerById(body.customerId);
 
-      const priceIds = body.prices.reduce<Price.Id[]>((accumulator, currentValue) => {
+      const priceIds = body.prices?.reduce<Price.Id[]>((accumulator, currentValue) => {
         if (!isPriceBase(currentValue)) {
           return [
             ...accumulator,
@@ -47,6 +48,11 @@ export const updateCalendarEntryServiceFactory = (
       }, []);
 
       const prices = await priceService.findPricesByIds(priceIds);
+
+      httpErrors.price.multipleNotFound({
+        priceIds,
+        prices,
+      });
 
       update = calendarEntryDocumentConverter.update({
         body,
