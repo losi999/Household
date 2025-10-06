@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Customer } from '@household/shared/types/types';
-import { dialogActions } from '@household/web/state/dialog/dialog.actions';
+import { customerActions } from '@household/web/app/hairdressing/customer/state/customer.actions';
 import { Store } from '@ngrx/store';
 
 @Component({
@@ -21,14 +21,14 @@ export class CustomerDetailsJobItemComponent implements OnInit {
   }
 
   onEdit() {
-    this.store.dispatch(dialogActions.updateCustomerJob({
+    this.store.dispatch(customerActions.updateCustomerJob({
       customerId: this.customerId,
       ...this.job,
     }));
   }
 
   onDelete() {
-    this.store.dispatch(dialogActions.deleteCustomerJob({
+    this.store.dispatch(customerActions.deleteCustomerJob({
       customerId: this.customerId,
       name: this.job.name,
     }));

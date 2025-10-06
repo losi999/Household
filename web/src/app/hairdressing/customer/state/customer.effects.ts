@@ -1,240 +1,166 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, exhaustMap, groupBy, map, mergeMap, of, withLatestFrom } from 'rxjs';
-import { customerApiActions } from '@household/web/app/hairdressing/customer/state/customer.actions';
-import { CustomerService } from '@household/web/services/customer.service';
-import { progressActions } from '@household/web/state/progress/progress.actions';
-import { notificationActions } from '@household/web/state/notification/notification.actions';
-import { selectPrices } from '@household/web/app/hairdressing/price/state/price.selector';
+import { exhaustMap, filter, map, mergeMap, switchMap } from 'rxjs';
+import { customerActions, customerApiActions } from '@household/web/app/hairdressing/customer/state/customer.actions';
 import { Store } from '@ngrx/store';
+import { DialogService } from '@household/web/services/dialog.service';
+import { selectCustomerById } from '@household/web/app/hairdressing/customer/state/customer.selector';
+import { takeFirstDefined } from '@household/web/operators/take-first-defined';
+import { MatDialog } from '@angular/material/dialog';
+import { CustomerDialogComponent, CustomerDialogData, CustomerDialogResult } from '@household/web/app/hairdressing/customer/customer-dialog/customer-dialog.component';
+import { CustomerJobDialogComponent, CustomerJobDialogData, CustomerJobDialogResult } from '@household/web/app/hairdressing/customer/customer-job-dialog/customer-job-dialog.component';
+import { CustomerAddToBlacklistDialogComponent, CustomerAddToBlacklistDialogData, CustomerAddToBlacklistDialogResult } from '@household/web/app/hairdressing/customer/customer-add-to-blacklist-dialog/customer-add-to-blacklist-dialog.component';
 
 @Injectable()
 export class CustomerEffects {
-  constructor(private actions: Actions, private customerService: CustomerService, private store: Store) {}
+  constructor(private actions: Actions, private dialog: MatDialog, private dialogService: DialogService, private store: Store) {}
 
-  loadCustomers = createEffect(() => {
+  openCreateCustomerDialog = createEffect(() => {
     return this.actions.pipe(
-      ofType(customerApiActions.listCustomersInitiated),
+      ofType(customerActions.createCustomer),
       exhaustMap(() => {
-        return this.customerService.listCustomers().pipe(
-          map((customers) => customerApiActions.listCustomersCompleted({
-            customers,
-          })),
-          catchError(() => {
-            return of(progressActions.processFinished(),
-              notificationActions.showMessage({
-                message: 'Hiba történt',
-              }),
-            );
-          }),
-        );
+        return this.dialog.open<CustomerDialogComponent, CustomerDialogData, CustomerDialogResult>(CustomerDialogComponent, {
+          disableClose: true,
+        }).afterClosed();
+      }),
+      filter(req => !!req),
+      map((request) => {
+        return customerApiActions.createCustomerInitiated(request);
       }),
     );
   });
-
-  createCustomer = createEffect(() => {
+  
+  openUpdateCustomerDialog = createEffect(() => {
     return this.actions.pipe(
-      ofType(customerApiActions.createCustomerInitiated),
-      mergeMap(({ type, ...request }) => {
-        return this.customerService.createCustomer(request).pipe(
-          map(({ customerId }) => customerApiActions.createCustomerCompleted({
+      ofType(customerActions.updateCustomer),
+      switchMap(({ customerId }) => this.store.select(selectCustomerById(customerId)).pipe(takeFirstDefined())),
+      exhaustMap((customer) => {
+        return this.dialog.open<CustomerDialogComponent, CustomerDialogData, CustomerDialogResult>(CustomerDialogComponent, {
+          data: customer,
+          disableClose: true,
+        }).afterClosed()
+          .pipe(filter(req => !!req),
+            map((request) => {
+              return customerApiActions.updateCustomerInitiated({
+                customerId: customer.customerId,
+                ...request,
+              });
+            }));
+      }),
+    );
+  });
+  
+  openCreateCustomerJobDialog = createEffect(() => {
+    return this.actions.pipe(
+      ofType(customerActions.createCustomerJob),
+      exhaustMap(({ customerId }) => {
+        return this.dialog.open<CustomerJobDialogComponent, CustomerJobDialogData, CustomerJobDialogResult>(CustomerJobDialogComponent, {
+          data: {
             customerId,
-            ...request,
-          })),
-          catchError((error) => {
-            let errorMessage: string;
-            switch(error.error?.message) {
-              case 'Duplicate customer name': {
-                errorMessage = `Vendég (${request.name}) már létezik!`;
-              } break;
-              default: {
-                errorMessage = 'Hiba történt';
-              }
-            }
-            return of(progressActions.processFinished(),
-              notificationActions.showMessage({
-                message: errorMessage,
-              }),
-            );
-          }),
-        );
+          },
+          width: '900px',
+          maxHeight: '90vh',
+          disableClose: true,
+        }).afterClosed();
+      }),
+      filter(req => !!req),
+      map(({ customerId, jobName, ...request }) => {
+        return customerApiActions.createCustomerJobInitiated({
+          customerId, 
+          ...request,
+        });
       }),
     );
   });
-
-  updateCustomer = createEffect(() => {
+  
+  openUpdateCustomerJobDialog = createEffect(() => {
     return this.actions.pipe(
-      ofType(customerApiActions.updateCustomerInitiated),
-      groupBy(({ customerId }) => customerId),
-      mergeMap((value) => {
-        return value.pipe(exhaustMap(({ type, customerId, ...request }) => {
-          return this.customerService.updateCustomer(customerId, request).pipe(
-            map(({ customerId }) => customerApiActions.updateCustomerCompleted({
-              customerId,
-              ...request,
-            })),
-            catchError((error) => {
-              let errorMessage: string;
-              switch(error.error?.message) {
-                case 'Duplicate customer name': {
-                  errorMessage = `Partner (${request.name}) már létezik!`;
-                } break;
-                default: {
-                  errorMessage = 'Hiba történt';
-                }
-              }
-              return of(progressActions.processFinished(),
-                notificationActions.showMessage({
-                  message: errorMessage,
-                }),
-              );
-            }),
-          );
-        }));
-      }),
-    );
-  });
-
-  createCustomerJob = createEffect(() => {
-    return this.actions.pipe(
-      ofType(customerApiActions.createCustomerJobInitiated),
-      withLatestFrom(this.store.select(selectPrices)),
-      mergeMap(([
-        { type, customerId, ...request },
-        priceList,
-      ]) => {
-        return this.customerService.createCustomerJob(customerId, request).pipe(
-          map(() => customerApiActions.createCustomerJobCompleted({
+      ofType(customerActions.updateCustomerJob),
+      exhaustMap(({ customerId, ...job }) => {
+        return this.dialog.open<CustomerJobDialogComponent, CustomerJobDialogData, CustomerJobDialogResult>(CustomerJobDialogComponent, {
+          data: {
             customerId,
-            priceList,
-            ...request,
-          })),
-          catchError((error) => {
-            let errorMessage: string;
-            switch(error.error?.message) {
-              case 'Duplicate customer name': {
-                errorMessage = `Vendég (${request.name}) már létezik!`;
-              } break;
-              default: {
-                errorMessage = 'Hiba történt';
-              }
-            }
-            return of(progressActions.processFinished(),
-              notificationActions.showMessage({
-                message: errorMessage,
-              }),
-            );
-          }),
-        );
+            job,
+          },
+          width: '900px',
+          maxHeight: '90vh',
+          disableClose: true,
+        }).afterClosed()
+          .pipe(
+            filter(req => !!req),
+            map(({ customerId, jobName, ...request }) => {
+              return customerApiActions.updateCustomerJobInitiated({
+                customerId,
+                jobName,
+                ...request,
+              });
+            }),
+          );
       }),
     );
   });
-
-  updateCustomerJob = createEffect(() => {
+  
+  openDeleteCustomerJobDialog = createEffect(() => {
     return this.actions.pipe(
-      ofType(customerApiActions.updateCustomerJobInitiated),
-      groupBy(({ customerId }) => customerId),
-      withLatestFrom(this.store.select(selectPrices)),
-      mergeMap(([
-        value,
-        priceList,
-      ]) => {
-        return value.pipe(exhaustMap(({ type, customerId, jobName, ...request }) => {
-          return this.customerService.updateCustomerJob(customerId, jobName, request).pipe(
-            map(() => customerApiActions.updateCustomerJobCompleted({
-              jobName,
-              customerId,
-              priceList,
-              ...request,
-            })),
-            catchError((error) => {
-              let errorMessage: string;
-              switch(error.error?.message) {
-                case 'Duplicate customer name': {
-                  errorMessage = `Partner (${request.name}) már létezik!`;
-                } break;
-                default: {
-                  errorMessage = 'Hiba történt';
-                }
-              }
-              return of(progressActions.processFinished(),
-                notificationActions.showMessage({
-                  message: errorMessage,
-                }),
-              );
-            }),
-          );
-        }));
+      ofType(customerActions.deleteCustomerJob),
+      exhaustMap(({ customerId, name }) => {
+        return this.dialogService.openConfirmationDialog({
+          title: 'Törölni akarod ezt a munkát?', 
+          content: name,
+        }).pipe(
+          filter(confirmed => confirmed),
+          map(() => customerApiActions.deleteCustomerJobInitiated({
+            customerId,
+            jobName: name,
+          })));
       }),
     );
   });
-
-  deleteCustomerJob = createEffect(() => {
+  
+  openAddCustomerToBlacklistDialog = createEffect(() => {
     return this.actions.pipe(
-      ofType(customerApiActions.deleteCustomerJobInitiated),
-      groupBy(({ customerId }) => customerId),
-      mergeMap((value) => {
-        return value.pipe(exhaustMap(({ customerId, jobName }) => {
-          return this.customerService.deleteCustomerJob(customerId, jobName).pipe(
-            map(() => customerApiActions.deleteCustomerJobCompleted({
-              jobName,
-              customerId,
-            })),
-            catchError(() => {
-              return of(progressActions.processFinished(),
-                notificationActions.showMessage({
-                  message: 'Hiba történt',
-                }),
-              );
-            }),
-          );
-        }));
+      ofType(customerActions.addCustomerToBlacklist),
+      switchMap(({ customerId }) => this.store.select(selectCustomerById(customerId)).pipe(takeFirstDefined())), 
+      exhaustMap((customer) => {
+        return this.dialog.open<CustomerAddToBlacklistDialogComponent, CustomerAddToBlacklistDialogData, CustomerAddToBlacklistDialogResult>(CustomerAddToBlacklistDialogComponent, {
+          data: {
+            customer,
+            excludedCustomerIds: [
+              customer.customerId,
+              ...customer.blacklistedCustomers.map(c => c.customerId),
+            ],
+          },
+          disableClose: true,
+        }).afterClosed();
+      }),
+      filter(req => !!req),
+      map((customers) => {
+        return customerApiActions.addCustomerToBlacklistInitiated({
+          customers,
+        });
       }),
     );
   });
-
-  addCustomerToBlacklist = createEffect(() => {
+  
+  openDeleteCustomerFromBlacklistDialog = createEffect(() => {
     return this.actions.pipe(
-      ofType(customerApiActions.addCustomerToBlacklistInitiated),
-      groupBy(({ customers }) => customers),
-      mergeMap((value) => {
-        return value.pipe(exhaustMap(({ customers }) => {
-          return this.customerService.updateCustomerBlacklist(customers.map(c => c.customerId)).pipe(
-            map(() => customerApiActions.addCustomerToBlacklistCompleted({
-              customers,
-            })),
-            catchError(() => {
-              return of(progressActions.processFinished(),
-                notificationActions.showMessage({
-                  message: 'Hiba történt',
-                }),
-              );
-            }),
-          );
-        }));
-      }),
-    );
-  });
-
-  deleteCustomerFromBlacklist = createEffect(() => {
-    return this.actions.pipe(
-      ofType(customerApiActions.deleteCustomerFromBlacklistInitiated),
-      groupBy(({ customerIds }) => customerIds),
-      mergeMap((value) => {
-        return value.pipe(exhaustMap(({ customerIds }) => {
-          return this.customerService.deleteCustomerBlacklist(customerIds).pipe(
-            map(() => customerApiActions.deleteCustomerFromBlacklistCompleted({
-              customerIds,
-            })),
-            catchError(() => {
-              return of(progressActions.processFinished(),
-                notificationActions.showMessage({
-                  message: 'Hiba történt',
-                }),
-              );
-            }),
-          );
-        }));
+      ofType(customerActions.deleteCustomerFromBlacklist),
+      exhaustMap(({ customerId, selectedCustomer }) => {
+        return this.store.select(selectCustomerById(customerId)).pipe(
+          takeFirstDefined(), 
+          mergeMap((customer) => {
+            return this.dialogService.openConfirmationDialog({
+              title: 'Törölni akarod a tiltást közöttük?',
+              content: `${customer.name} és ${selectedCustomer.name}`,
+            }).pipe(
+              filter(confirmed => confirmed),
+              map(() => customerApiActions.deleteCustomerFromBlacklistInitiated({
+                customerIds: [
+                  customer.customerId,
+                  selectedCustomer.customerId,
+                ],
+              })));
+          }));
       }),
     );
   });

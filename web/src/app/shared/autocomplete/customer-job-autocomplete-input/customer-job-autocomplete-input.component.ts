@@ -12,6 +12,7 @@ import { Observable } from 'rxjs';
 import { v4 } from 'uuid';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { CustomerAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/customer-autocomplete-input/customer-autocomplete-input.component';
+import { customerActions } from '@household/web/app/hairdressing/customer/state/customer.actions';
 
 @Component({
   selector: 'household-customer-job-autocomplete-input',
@@ -112,7 +113,7 @@ export class CustomerJobAutocompleteInputComponent implements OnInit, ControlVal
   }
 
   create(event: MouseEvent) {
-    this.store.dispatch(dialogActions.createCustomer());
+    this.store.dispatch(customerActions.createCustomer());
     event.stopPropagation();
   }
 }

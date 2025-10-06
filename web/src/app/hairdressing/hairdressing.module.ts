@@ -16,6 +16,12 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { AmountInputComponent } from '@household/web/app/shared/amount-input/amount-input.component';
 import { MatChipsModule } from '@angular/material/chips';
 import { SplitPipe } from '@household/web/app/shared/split.pipe';
+import { EffectsModule } from '@ngrx/effects';
+import { PriceApiEffects } from '@household/web/app/hairdressing/price/state/price-api.effects';
+import { CustomerApiEffects } from '@household/web/app/hairdressing/customer/state/customer-api.effects';
+import { StoreModule } from '@ngrx/store';
+import { priceReducer } from '@household/web/app/hairdressing/price/state/price.reducer';
+import { customerReducer } from '@household/web/app/hairdressing/customer/state/customer.reducer';
 
 @NgModule({
   declarations: [
@@ -38,6 +44,12 @@ import { SplitPipe } from '@household/web/app/shared/split.pipe';
     AmountInputComponent,
     MatChipsModule,
     SplitPipe,
+    EffectsModule.forFeature([
+      PriceApiEffects,
+      CustomerApiEffects,
+    ]),
+    StoreModule.forFeature('prices', priceReducer),
+    StoreModule.forFeature('customers', customerReducer),
   ],
 })
 export class HairdressingModule { }

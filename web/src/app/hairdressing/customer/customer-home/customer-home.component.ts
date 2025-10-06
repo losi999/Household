@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Customer } from '@household/shared/types/types';
-import { customerApiActions } from '@household/web/app/hairdressing/customer/state/customer.actions';
+import { customerActions, customerApiActions } from '@household/web/app/hairdressing/customer/state/customer.actions';
 import { selectCustomers } from '@household/web/app/hairdressing/customer/state/customer.selector';
-import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 
@@ -24,6 +23,6 @@ export class CustomerHomeComponent implements OnInit {
   }
 
   create() {
-    this.store.dispatch(dialogActions.createCustomer());
+    this.store.dispatch(customerActions.createCustomer());
   }
 }

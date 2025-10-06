@@ -8,10 +8,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { Customer } from '@household/shared/types/types';
 import { AutocompleteFilterPipe } from '@household/web/app/shared/autocomplete/autocomplete-filter.pipe';
-import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { selectFilteredCustomers } from '@household/web/app/hairdressing/customer/state/customer.selector';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
+import { customerActions } from '@household/web/app/hairdressing/customer/state/customer.actions';
 
 @Component({
   selector: 'household-customer-autocomplete-input',
@@ -84,7 +84,7 @@ export class CustomerAutocompleteInputComponent implements OnInit, ControlValueA
   }
 
   create(event: MouseEvent) {
-    this.store.dispatch(dialogActions.createCustomer());
+    this.store.dispatch(customerActions.createCustomer());
     event.stopPropagation();
   }
 }

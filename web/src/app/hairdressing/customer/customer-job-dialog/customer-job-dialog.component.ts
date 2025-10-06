@@ -4,7 +4,6 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { isListedPrice } from '@household/shared/common/type-guards';
 import { Customer, Price } from '@household/shared/types/types';
 import { JobPriceCalculatorValue } from '@household/web/app/shared/job-price-calculator/job-price-calculator.component';
-import { customerApiActions } from '@household/web/app/hairdressing/customer/state/customer.actions';
 import { selectPrices } from '@household/web/app/hairdressing/price/state/price.selector';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
@@ -12,9 +11,9 @@ import { Observable } from 'rxjs';
 export type CustomerJobDialogData = Customer.CustomerId & {
   job?: Customer.Job.Response
 };
+export type CustomerJobDialogResult = Customer.CustomerId & Customer.Job.Request & {jobName: Customer.Job.Name['name']};
 
 @Component({
-  selector: 'household-customer-job-dialog',
   standalone: false,  
   templateUrl: './customer-job-dialog.component.html',
   styleUrl: './customer-job-dialog.component.scss',
@@ -29,7 +28,7 @@ export class CustomerJobDialogComponent implements OnInit {
   prices: Observable<Price.Response[]>;
   total: number;
   
-  constructor(private dialogRef: MatDialogRef<CustomerJobDialogComponent, void>,
+  constructor(private dialogRef: MatDialogRef<CustomerJobDialogComponent, CustomerJobDialogResult>,
     private store: Store,
     @Inject(MAT_DIALOG_DATA) public data: CustomerJobDialogData) { }
 
@@ -74,7 +73,7 @@ export class CustomerJobDialogComponent implements OnInit {
       
   onSave() {
     if (this.form.valid) {
-      const request: Customer.Job.Request = {
+      this.dialogRef.close({
         name: this.form.value.name,
         description: this.form.value.description?.trim() ?? undefined,
         duration: this.form.value.duration,
@@ -91,22 +90,9 @@ export class CustomerJobDialogComponent implements OnInit {
             amount: p.amount,
           };
         }),
-      };
-    
-      if (this.data.job) {
-        this.store.dispatch(customerApiActions.updateCustomerJobInitiated({
-          customerId: this.data.customerId,
-          jobName: this.data.job.name,
-          ...request,
-        }));
-      } else {
-        this.store.dispatch(customerApiActions.createCustomerJobInitiated({
-          customerId: this.data.customerId,
-          ...request,
-        }));
-      }
-
-      this.dialogRef.close();
+        customerId: this.data.customerId,
+        jobName: this.data.job?.name,
+      });
     }
   }
 }

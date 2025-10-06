@@ -1,9 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Customer } from '@household/shared/types/types';
-import { customerApiActions } from '@household/web/app/hairdressing/customer/state/customer.actions';
+import { customerActions, customerApiActions } from '@household/web/app/hairdressing/customer/state/customer.actions';
 import { selectCustomerById } from '@household/web/app/hairdressing/customer/state/customer.selector';
-import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { priceApiActions } from '@household/web/app/hairdressing/price/state/price.actions';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
@@ -30,25 +29,25 @@ export class CustomerDetailsComponent implements OnInit {
   }
 
   onEdit() {
-    this.store.dispatch(dialogActions.updateCustomer({
+    this.store.dispatch(customerActions.updateCustomer({
       customerId: this.customerId,
     }));
   }
 
   onCreateJob() {
-    this.store.dispatch(dialogActions.createCustomerJob({
+    this.store.dispatch(customerActions.createCustomerJob({
       customerId: this.customerId,
     }));
   }
 
   onAddToBlacklist() {
-    this.store.dispatch(dialogActions.addCustomerToBlacklist({
+    this.store.dispatch(customerActions.addCustomerToBlacklist({
       customerId: this.customerId,
     }));
   }
 
   onRemoveFromBlacklist(customer: Customer.Response) {
-    this.store.dispatch(dialogActions.deleteCustomerFromBlacklist({
+    this.store.dispatch(customerActions.deleteCustomerFromBlacklist({
       customerId: this.customerId,
       selectedCustomer: customer,
     }));

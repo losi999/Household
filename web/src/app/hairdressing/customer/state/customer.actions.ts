@@ -1,6 +1,19 @@
 import { Customer, Price } from '@household/shared/types/types';
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
 
+export const customerActions = createActionGroup({
+  source: 'Customer',
+  events: {
+    'Create customer': emptyProps(),
+    'Update customer': props<Customer.CustomerId>(),
+    'Create customer job': props<Customer.CustomerId>(),
+    'Update customer job': props<Customer.CustomerId & Customer.Job.Response>(),
+    'Delete customer job': props<Customer.CustomerId & Customer.Job.Name>(),
+    'Add customer to blacklist': props<Customer.CustomerId>(),
+    'Delete customer from blacklist': props<Customer.CustomerId & {selectedCustomer: Customer.Response}>(),
+  },
+});
+
 export const customerApiActions = createActionGroup({
   source: 'Customer API',
   events: {

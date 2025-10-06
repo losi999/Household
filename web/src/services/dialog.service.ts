@@ -1,12 +1,10 @@
 import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { CalendarEntryType } from '@household/shared/enums';
-import { Account, Calendar, Category, Customer, File, Product, Project, Recipient, Transaction, User } from '@household/shared/types/types';
+import { Account, Calendar, Category, File, Product, Project, Recipient, Transaction, User } from '@household/shared/types/types';
 import { AccountFormComponent, AccountFormData } from '@household/web/app/account/account-form/account-form.component';
 import { CategoryFormComponent, CategoryFormData } from '@household/web/app/category/category-form/category-form.component';
 import { CategoryMergeDialogComponent, CategoryMergeDialogData } from '@household/web/app/category/category-merge-dialog/category-merge-dialog.component';
-import { CustomerDialogComponent, CustomerDialogData } from '@household/web/app/hairdressing/customer/customer-dialog/customer-dialog.component';
-import { CustomerJobDialogComponent, CustomerJobDialogData } from '@household/web/app/hairdressing/customer/customer-job-dialog/customer-job-dialog.component';
 import { CalendarEntryDetailsDialogComponent, CalendarEntryDetailsDialogData } from '@household/web/app/hairdressing/calendar/calendar-entry-details-dialog/calendar-entry-details-dialog.component';
 import { CalendarEntryEditDialogComponent, CalendarEntryEditDialogData } from '@household/web/app/hairdressing/calendar/calendar-entry-edit-dialog/calendar-entry-edit-dialog.component';
 import { CalendarWorkdayDialogComponent, CalendarWorkdayDialogData } from '@household/web/app/hairdressing/calendar/calendar-workday-dialog/calendar-workday-dialog.component';
@@ -18,7 +16,6 @@ import { ProjectMergeDialogComponent, ProjectMergeDialogData } from '@household/
 import { RecipientFormComponent, RecipientFormData } from '@household/web/app/recipient/recipient-form/recipient-form.component';
 import { RecipientMergeDialogComponent, RecipientMergeDialogData } from '@household/web/app/recipient/recipient-merge-dialog/recipient-merge-dialog.component';
 import { ConfirmationDialogComponent } from '@household/web/app/shared/confirmation-dialog/confirmation-dialog.component';
-import { CustomerAddToBlacklistDialogComponent, CustomerAddToBlacklistDialogData } from '@household/web/app/hairdressing/customer/customer-add-to-blacklist-dialog/customer-add-to-blacklist-dialog.component';
 import { createWorkEntryTitle, timeSlotToTimeString } from '@household/shared/common/utils';
 import { CustomerJob } from '@household/web/types/common';
 import { CalendarCashPaymentDialogComponent, CalendarCashPaymentDialogData } from '@household/web/app/hairdressing/calendar/calendar-cash-payment-dialog/calendar-cash-payment-dialog.component';
@@ -158,66 +155,6 @@ export class DialogService {
 
   openDeleteAccountDialog(account: Account.Response) {
     return this.openConfirmationDialog_('Törölni akarod ezt a számlát?', account.name);
-  }
-
-  openCreateCustomerDialog(): void {
-    this.dialog.open<CustomerDialogComponent, CustomerDialogData, void>(CustomerDialogComponent, {
-      disableClose: true,
-    });
-  }
-
-  openEditCustomerDialog(customer: Customer.Response): void {
-    this.dialog.open<CustomerDialogComponent, CustomerDialogData, void>(CustomerDialogComponent, {
-      data: customer,
-      disableClose: true,
-    });
-  }
-
-  openCreateCustomerJobDialog(customerId: Customer.Id): void {
-    this.dialog.open<CustomerJobDialogComponent, CustomerJobDialogData, void>(CustomerJobDialogComponent, {
-      data: {
-        customerId,
-      },
-      width: '900px',
-      maxHeight: '90vh',
-      disableClose: true,
-    });
-  }
-
-  openEditCustomerJobDialog(customerId: Customer.Id, job: Customer.Job.Response): void {
-    this.dialog.open<CustomerJobDialogComponent, CustomerJobDialogData, void>(CustomerJobDialogComponent, {
-      data: {
-        customerId,
-        job,
-      },
-      width: '900px',
-      maxHeight: '90vh',
-      disableClose: true,
-    });
-  }
-
-  openDeleteCustomerJobDialog({ name }: Customer.Job.Name) {
-    return this.openConfirmationDialog_('Törölni akarod ezt a munkát?', name);
-  }
-
-  openAddCustomerToBlacklistDialog(customer: Customer.Response) {
-    return this.dialog.open<CustomerAddToBlacklistDialogComponent, CustomerAddToBlacklistDialogData, void>(CustomerAddToBlacklistDialogComponent, {
-      data: {
-        customer,
-        excludedCustomerIds: [
-          customer.customerId,
-          ...customer.blacklistedCustomers.map(c => c.customerId),
-        ],
-      },
-      disableClose: true,
-    });
-  }
-
-  openDeleteCustomerFromBlacklistDialog([
-    customerA,
-    customerB]: Customer.Response[
-  ]) {
-    return this.openConfirmationDialog_('Törölni akarod a tiltást közöttük?', `${customerA.name} és ${customerB.name}`);
   }
 
   openImportFileDialog(): void {

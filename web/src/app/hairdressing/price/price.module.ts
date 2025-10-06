@@ -17,9 +17,7 @@ import { ClearableInputComponent } from '@household/web/app/shared/clearable-inp
 import { AmountInputComponent } from '@household/web/app/shared/amount-input/amount-input.component';
 import { MatSelectModule } from '@angular/material/select';
 import { PriceEffects } from '@household/web/app/hairdressing/price/state/price.effects';
-import { priceReducer } from '@household/web/app/hairdressing/price/state/price.reducer';
 import { EffectsModule } from '@ngrx/effects';
-import { StoreModule } from '@ngrx/store';
 
 @NgModule({
   declarations: [
@@ -42,7 +40,6 @@ import { StoreModule } from '@ngrx/store';
     ClearableInputComponent,
     AmountInputComponent,
     MatSelectModule,
-    StoreModule.forFeature('prices', priceReducer),
     EffectsModule.forFeature([PriceEffects]),
   ],
 })

@@ -2,13 +2,13 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Customer } from '@household/shared/types/types';
-import { customerApiActions } from '@household/web/app/hairdressing/customer/state/customer.actions';
-import { Store } from '@ngrx/store';
 
 export type CustomerAddToBlacklistDialogData = {
   customer: Customer.Response;
   excludedCustomerIds: Customer.Id[];
 };
+
+export type CustomerAddToBlacklistDialogResult = Customer.Response[];
 
 @Component({
   standalone: false,  
@@ -20,8 +20,7 @@ export class CustomerAddToBlacklistDialogComponent implements OnInit {
     customer: FormControl<Customer.Response>;
   }>; 
 
-  constructor(private dialogRef: MatDialogRef<CustomerAddToBlacklistDialogComponent, void>,
-    private store: Store,
+  constructor(private dialogRef: MatDialogRef<CustomerAddToBlacklistDialogComponent, CustomerAddToBlacklistDialogResult>,
     @Inject(MAT_DIALOG_DATA) public data: CustomerAddToBlacklistDialogData) { }
 
   ngOnInit(): void {
@@ -32,16 +31,11 @@ export class CustomerAddToBlacklistDialogComponent implements OnInit {
   }
 
   onSave() {
-    console.log(this.form);
     if (this.form.valid) {
-      this.store.dispatch(customerApiActions.addCustomerToBlacklistInitiated({
-        customers: [
-          this.data.customer,
-          this.form.value.customer,
-        ],
-      }));
-
-      this.dialogRef.close();
+      this.dialogRef.close([
+        this.data.customer,
+        this.form.value.customer,
+      ]);
     }
   }
 }
