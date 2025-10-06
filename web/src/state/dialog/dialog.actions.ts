@@ -1,5 +1,4 @@
-import { Account, Calendar, Category, Customer, File, Price, Product, Project, Recipient, Transaction, User } from '@household/shared/types/types';
-import { CustomerJob } from '@household/web/types/common';
+import { Account, Category, File, Product, Project, Recipient, Transaction, User } from '@household/shared/types/types';
 import { Action, createActionGroup, emptyProps, props } from '@ngrx/store';
 
 export const dialogActions = createActionGroup({
@@ -30,13 +29,5 @@ export const dialogActions = createActionGroup({
     'Delete user': props<User.Email>(),
     'Delete draft transactions': props<{transactionIds: Transaction.Id[]}>(),
     'Delete transaction': props<Transaction.TransactionId & {navigationAction?: Action;}>(),
-    'Create calendar entry': props<Calendar.Entry.EntryType>(),
-    'Update calendar entry': props<Calendar.Entry.Response>(),
-    'Delete calendar entry': props<Pick<Calendar.Entry.Response, 'calendarEntryId' | 'title'>>(),
-    'Confirm calendar entry proposal': props<Calendar.DayProp & {customerJob: CustomerJob; timeInterval: Calendar.TimeInterval}>(),
-    'Create calendar entry with proposal': props<Calendar.DayProp & {customerJob: CustomerJob; timeInterval: Calendar.TimeInterval}>(),
-    'Open calendar entry': props<Calendar.Entry.Response>(),
-    'Open cash payment': props<Calendar.Entry.WorkEntryResponse>(),
-    'Set work day': props<Exclude<Calendar.Day.Response, Calendar.Day.HolidayResponse>>(),
   },
 });

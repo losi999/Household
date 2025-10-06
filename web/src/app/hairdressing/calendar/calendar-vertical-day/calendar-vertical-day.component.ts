@@ -2,7 +2,7 @@ import { Component, Input, OnChanges } from '@angular/core';
 import { dateToISODateString } from '@household/shared/common/utils';
 import { CalendarDayType, CalendarEntryType } from '@household/shared/enums';
 import { Calendar } from '@household/shared/types/types';
-import { dialogActions } from '@household/web/state/dialog/dialog.actions';
+import { calendarActions } from '@household/web/app/hairdressing/calendar/state/calendar.actions';
 import { CustomerJob } from '@household/web/types/common';
 import { Store } from '@ngrx/store';
 
@@ -89,7 +89,7 @@ export class CalendarVerticalDayComponent implements OnChanges {
   }
   
   onEntryClick(entry: Calendar.Entry.Response) {
-    this.store.dispatch(dialogActions.openCalendarEntry({
+    this.store.dispatch(calendarActions.viewCalendarEntry({
       ...entry,
       day: this.day.day,
     }));    
@@ -97,13 +97,13 @@ export class CalendarVerticalDayComponent implements OnChanges {
 
   onProposalClick(timeInterval: Calendar.TimeInterval) {
     if (this.pendingCustomerJob.duration === timeInterval.end - timeInterval.start) {
-      this.store.dispatch(dialogActions.confirmCalendarEntryProposal({
+      this.store.dispatch(calendarActions.confirmCalendarEntryProposal({
         day: this.day.day,
         timeInterval: timeInterval,
         customerJob: this.pendingCustomerJob,
       }));
     } else {
-      this.store.dispatch(dialogActions.createCalendarEntryWithProposal({
+      this.store.dispatch(calendarActions.createCalendarEntryWithProposal({
         customerJob: this.pendingCustomerJob,
         day: this.day.day,
         timeInterval: timeInterval,

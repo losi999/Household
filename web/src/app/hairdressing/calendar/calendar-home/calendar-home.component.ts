@@ -5,11 +5,10 @@ import { CalendarEntryType } from '@household/shared/enums';
 import { Calendar, Customer } from '@household/shared/types/types';
 import { takeFirstDefined } from '@household/web/operators/take-first-defined';
 import { TrackByService } from '@household/web/services/track-by.service';
-import { calendarApiActions } from '@household/web/app/hairdressing/calendar/state/calendar.actions';
+import { calendarActions, calendarApiActions } from '@household/web/app/hairdressing/calendar/state/calendar.actions';
 import { selectCalendarWeek } from '@household/web/app/hairdressing/calendar/state/calendar.selector';
 import { customerApiActions } from '@household/web/app/hairdressing/customer/state/customer.actions';
 import { selectCustomerJobByIdAndName } from '@household/web/app/hairdressing/customer/state/customer.selector';
-import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { priceApiActions } from '@household/web/app/hairdressing/price/state/price.actions';
 import { CustomerJob } from '@household/web/types/common';
 import { Store } from '@ngrx/store';
@@ -77,23 +76,23 @@ export class CalendarHomeComponent implements OnInit {
   }
 
   onCreateWork() {
-    this.store.dispatch(dialogActions.createCalendarEntry({
+    this.store.dispatch(calendarActions.createCalendarEntry({
       entryType: CalendarEntryType.Work,
     }));
   }
 
   onSetWorkDay(day: Exclude<Calendar.Day.Response, Calendar.Day.HolidayResponse>) {
-    this.store.dispatch(dialogActions.setWorkDay(day));
+    this.store.dispatch(calendarActions.setWorkDay(day));
   }
 
   onCreatePersonal() {
-    this.store.dispatch(dialogActions.createCalendarEntry({
+    this.store.dispatch(calendarActions.createCalendarEntry({
       entryType: CalendarEntryType.Personal,
     }));
   }
 
   onCreateIssue() {
-    this.store.dispatch(dialogActions.createCalendarEntry({
+    this.store.dispatch(calendarActions.createCalendarEntry({
       entryType: CalendarEntryType.Issue,
     }));
   }

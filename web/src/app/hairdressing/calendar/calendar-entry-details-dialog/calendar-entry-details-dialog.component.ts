@@ -1,12 +1,9 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { CalendarEntryType } from '@household/shared/enums';
 import { Calendar } from '@household/shared/types/types';
-import { calendarActions } from '@household/web/app/hairdressing/calendar/state/calendar.actions';
-import { dialogActions } from '@household/web/state/dialog/dialog.actions';
-import { Store } from '@ngrx/store';
 
 export type CalendarEntryDetailsDialogData = Calendar.Entry.Response;
+export type CalendarEntryDetailsDialogResult = 'edit' | 'delete' | 'pay';
 
 @Component({
   selector: 'household-calendar-entry-details-dialog',
@@ -16,28 +13,18 @@ export type CalendarEntryDetailsDialogData = Calendar.Entry.Response;
 })
 export class CalendarEntryDetailsDialogComponent {
 
-  constructor(private dialogRef: MatDialogRef<CalendarEntryDetailsDialogComponent, void>,
-    private store: Store,
+  constructor(private dialogRef: MatDialogRef<CalendarEntryDetailsDialogComponent, CalendarEntryDetailsDialogResult>,
     @Inject(MAT_DIALOG_DATA) public entry: CalendarEntryDetailsDialogData) { }
 
   onEdit() {
-    this.store.dispatch(dialogActions.updateCalendarEntry({
-      ...this.entry,
-    }));
-
-    this.dialogRef.close();
+    this.dialogRef.close('edit');
   }
 
   onDelete() {
-    this.store.dispatch(dialogActions.deleteCalendarEntry({
-      calendarEntryId: this.entry.calendarEntryId,
-      title: this.entry.title,
-    }));
+    this.dialogRef.close('delete');
   }
 
   onPaying() {
-    if (this.entry.entryType === CalendarEntryType.Work) {
-      this.store.dispatch(calendarActions.openPayingDialog(this.entry));
-    }
+    this.dialogRef.close('pay');
   }
 }

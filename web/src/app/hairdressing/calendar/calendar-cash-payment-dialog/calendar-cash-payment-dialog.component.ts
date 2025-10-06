@@ -3,11 +3,9 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { PaymentType } from '@household/shared/enums';
 import { Calendar } from '@household/shared/types/types';
-import { calendarApiActions } from '@household/web/app/hairdressing/calendar/state/calendar.actions';
-import { dialogActions } from '@household/web/state/dialog/dialog.actions';
-import { Store } from '@ngrx/store';
 
 export type CalendarCashPaymentDialogData = Calendar.Entry.WorkEntryResponse;
+export type CalendarCashPaymentDialogResult = Calendar.Entry.PaymentRequest;
 
 @Component({
   standalone: false,
@@ -19,8 +17,7 @@ export class CalendarCashPaymentDialogComponent implements OnInit {
     amount: FormControl<number>
   }>;
 
-  constructor(private dialogRef: MatDialogRef<CalendarCashPaymentDialogComponent, void>,
-    private store: Store, 
+  constructor(private dialogRef: MatDialogRef<CalendarCashPaymentDialogComponent, CalendarCashPaymentDialogResult>,
     @Inject(MAT_DIALOG_DATA) public entry: CalendarCashPaymentDialogData) {}
   
   ngOnInit(): void {
@@ -30,15 +27,10 @@ export class CalendarCashPaymentDialogComponent implements OnInit {
   }
   onSave() {
     if (this.form.valid) {
-      this.store.dispatch(dialogActions.closeAll());
-      this.store.dispatch(calendarApiActions.payCalendarWorkEntryInitiated({
-        calendarEntryId: this.entry.calendarEntryId,
+      this.dialogRef.close({
         paymentType: PaymentType.Cash,
         amount: this.form.value.amount,
-        day: this.entry.day,
-      }));
-
-      this.dialogRef.close();
+      });
     }
   }
 }

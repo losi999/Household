@@ -6,6 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { authActions } from '@household/web/state/auth/auth.actions';
 import { navigationActions } from '@household/web/state/navigation/navigation.actions';
 import { calendarApiActions } from '@household/web/app/hairdressing/calendar/state/calendar.actions';
+import { CalendarEntryType } from '@household/shared/enums';
 
 @Injectable()
 export class NavigationEffects {
@@ -48,17 +49,15 @@ export class NavigationEffects {
   navigateToCalendarHome = createEffect(() => {
     return this.actions.pipe(
       ofType(calendarApiActions.createCalendarEntryCompleted),
-      tap(() => {
-        if (this.activatedRoute.snapshot.queryParamMap.keys.length === 0) {
-          return; 
-        }
-        
-        this.router.navigate([
-          '/hairdressing',
-          'calendar',
-        ], {
-          replaceUrl: true,
-        });
+      tap((value) => {
+        if (value.entryType === CalendarEntryType.Work && this.activatedRoute.snapshot.queryParams.customerId === value.customerId) {
+          this.router.navigate([
+            '/hairdressing',
+            'calendar',
+          ], {
+            replaceUrl: true,
+          });
+        }        
       }),
     );
   }, {

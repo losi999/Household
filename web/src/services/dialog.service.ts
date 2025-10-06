@@ -1,13 +1,9 @@
 import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { CalendarEntryType } from '@household/shared/enums';
-import { Account, Calendar, Category, File, Product, Project, Recipient, Transaction, User } from '@household/shared/types/types';
+import { Account, Category, File, Product, Project, Recipient, Transaction, User } from '@household/shared/types/types';
 import { AccountFormComponent, AccountFormData } from '@household/web/app/account/account-form/account-form.component';
 import { CategoryFormComponent, CategoryFormData } from '@household/web/app/category/category-form/category-form.component';
 import { CategoryMergeDialogComponent, CategoryMergeDialogData } from '@household/web/app/category/category-merge-dialog/category-merge-dialog.component';
-import { CalendarEntryDetailsDialogComponent, CalendarEntryDetailsDialogData } from '@household/web/app/hairdressing/calendar/calendar-entry-details-dialog/calendar-entry-details-dialog.component';
-import { CalendarEntryEditDialogComponent, CalendarEntryEditDialogData } from '@household/web/app/hairdressing/calendar/calendar-entry-edit-dialog/calendar-entry-edit-dialog.component';
-import { CalendarWorkdayDialogComponent, CalendarWorkdayDialogData } from '@household/web/app/hairdressing/calendar/calendar-workday-dialog/calendar-workday-dialog.component';
 import { ImportFileUploadFormComponent } from '@household/web/app/import/import-file-upload-form/import-file-upload-form.component';
 import { ProductFormComponent, ProductFormData } from '@household/web/app/product/product-form/product-form.component';
 import { ProductMergeDialogComponent, ProductMergeDialogData } from '@household/web/app/product/product-merge-dialog/product-merge-dialog.component';
@@ -16,10 +12,6 @@ import { ProjectMergeDialogComponent, ProjectMergeDialogData } from '@household/
 import { RecipientFormComponent, RecipientFormData } from '@household/web/app/recipient/recipient-form/recipient-form.component';
 import { RecipientMergeDialogComponent, RecipientMergeDialogData } from '@household/web/app/recipient/recipient-merge-dialog/recipient-merge-dialog.component';
 import { ConfirmationDialogComponent } from '@household/web/app/shared/confirmation-dialog/confirmation-dialog.component';
-import { createWorkEntryTitle, timeSlotToTimeString } from '@household/shared/common/utils';
-import { CustomerJob } from '@household/web/types/common';
-import { CalendarCashPaymentDialogComponent, CalendarCashPaymentDialogData } from '@household/web/app/hairdressing/calendar/calendar-cash-payment-dialog/calendar-cash-payment-dialog.component';
-import { CalendarEntryPayingDialogComponent } from '@household/web/app/hairdressing/calendar/calendar-entry-paying-dialog/calendar-entry-paying-dialog.component';
 
 @Injectable({
   providedIn: 'root',
@@ -175,84 +167,5 @@ export class DialogService {
 
   openDeleteTransactionDialog() {
     return this.openConfirmationDialog_('Törölni akarod ezt a tranzakciót?');
-  }
-
-  openCreateCalendarEntryDialog(entryType: CalendarEntryType) {
-    this.dialog.open<CalendarEntryEditDialogComponent, CalendarEntryEditDialogData, void>(CalendarEntryEditDialogComponent, {
-      data: {
-        entryType,
-      },
-      width: '900px',
-      disableClose: true,
-    });
-  }
-
-  openEditCalendarEntryDialog(entry: Calendar.Entry.Response) {
-    this.dialog.open<CalendarEntryEditDialogComponent, CalendarEntryEditDialogData, void>(CalendarEntryEditDialogComponent, {
-      data: entry,
-      width: '900px',
-      disableClose: true,
-    });
-  }
-
-  openCalendarEntryDetailsDialog(entry: Calendar.Entry.Response) {
-    this.dialog.open<CalendarEntryDetailsDialogComponent, CalendarEntryDetailsDialogData, void>(CalendarEntryDetailsDialogComponent, {
-      data: entry,
-      width: '900px',
-    });
-  }
-
-  openDeleteCalendarEntryDialog(title: Calendar.Entry.Response['title']) {
-    return this.openConfirmationDialog_('Törölni akarod ezt a bejegyzést a naptárból?', title);
-  }
-
-  openConfirmCalendarEntryProposalDialog(title: string, day: string, timeInterval: Calendar.TimeInterval) {
-    return this.openConfirmationDialog_('Rögzíted ezt a munkát erre az időpontra?', `${title} ${new Date(day).toLocaleString('hu', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      weekday: 'long',
-    })} ${timeSlotToTimeString(timeInterval.start)}-${timeSlotToTimeString(timeInterval.end)}`);
-  }
-
-  openCalendarEntryDialogWithProposal(day: string, { customer, ...job }: CustomerJob, timeInterval: Calendar.TimeInterval) {
-    this.dialog.open<CalendarEntryEditDialogComponent, CalendarEntryEditDialogData, void>(CalendarEntryEditDialogComponent, {
-      data: {
-        entryType: CalendarEntryType.Work,
-        customer,
-        day,
-        description: job.description,
-        title: createWorkEntryTitle(customer, job),
-        prices: job.prices,
-        start: timeInterval.start,
-        end: timeInterval.start + job.duration,
-      },
-      width: '900px',
-      disableClose: true,
-    });
-  }
-
-  openCalendarEntryPayingDialog(calendarEntry: Calendar.Entry.WorkEntryResponse) {
-    this.dialog.open(CalendarEntryPayingDialogComponent, {
-      data: calendarEntry,
-      width: '900px',
-      maxHeight: '90vh',
-      disableClose: true,
-    });
-  }
-
-  openCashPaymentDialog(calendarEntry: Calendar.Entry.WorkEntryResponse) {
-    this.dialog.open<CalendarCashPaymentDialogComponent, CalendarCashPaymentDialogData, any>(CalendarCashPaymentDialogComponent, {
-      data: calendarEntry,
-      disableClose: true,
-    });
-  }
-
-  openSetWorkDayDialog(day: Exclude<Calendar.Day.Response, Calendar.Day.HolidayResponse>) {
-    return this.dialog.open<CalendarWorkdayDialogComponent, CalendarWorkdayDialogData, void>(CalendarWorkdayDialogComponent, {
-      data: day,
-      width: '900px',
-      disableClose: true,
-    });
   }
 }

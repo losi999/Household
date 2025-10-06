@@ -5,13 +5,13 @@ import { isListedPrice } from '@household/shared/common/type-guards';
 import { createDate, createWorkEntryTitle, dateToISODateString, dateToTimeSlot } from '@household/shared/common/utils';
 import { CalendarDayType, CalendarEntryType } from '@household/shared/enums';
 import { Calendar, Customer } from '@household/shared/types/types';
-import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { selectCalendarDay } from '@household/web/app/hairdressing/calendar/state/calendar.selector';
 import { Store } from '@ngrx/store';
 import { combineLatest, filter, map, Observable, startWith, switchMap, take } from 'rxjs';
-import { calendarActions, calendarApiActions } from '@household/web/app/hairdressing/calendar/state/calendar.actions';
+import { calendarActions } from '@household/web/app/hairdressing/calendar/state/calendar.actions';
 
 export type CalendarEntryEditDialogData = Partial<Calendar.Entry.Response>;
+export type CalendarEntryEditDialogResult = Calendar.Entry.Request;
 
 @Component({
   standalone: false,    
@@ -34,7 +34,7 @@ export class CalendarEntryEditDialogComponent implements OnInit {
   errors: Observable<string[]>;
   title: string;
 
-  constructor(private dialogRef: MatDialogRef<CalendarEntryEditDialogComponent, void>,
+  constructor(private dialogRef: MatDialogRef<CalendarEntryEditDialogComponent, CalendarEntryEditDialogResult>,
     private store: Store,
     @Inject(MAT_DIALOG_DATA) public entry: CalendarEntryEditDialogData) { }
 
@@ -149,10 +149,8 @@ export class CalendarEntryEditDialogComponent implements OnInit {
 
   onSubmit() {
     if (this.form.valid) {
-      let request: Calendar.Entry.Request;
-
       if (this.entry.entryType === CalendarEntryType.Work) {
-        request = {
+        this.dialogRef.close({
           entryType: CalendarEntryType.Work,
           day: dateToISODateString(this.form.value.day),
           start: this.form.value.start,
@@ -173,35 +171,17 @@ export class CalendarEntryEditDialogComponent implements OnInit {
               amount: p.amount,
             };
           }),
-        };
+        });
       } else {
-        request = {
+        this.dialogRef.close({
           entryType: this.entry.entryType,
           day: dateToISODateString(this.form.value.day),
           start: this.form.value.start,
           end: this.form.value.start + this.form.value.duration,
           title: this.form.value.title,
           description: this.form.value.description ?? undefined,
-        };
+        });
       }
-
-      if (this.entry.calendarEntryId) {
-        this.store.dispatch(calendarApiActions.updateCalendarEntryInitiated({
-          calendarEntryId: this.entry.calendarEntryId,
-          ...request,
-        }));
-      } else {
-        this.store.dispatch(calendarApiActions.createCalendarEntryInitiated(request));
-      }
-
-      this.dialogRef.close();
     }
-  }
-
-  onDelete() {
-    this.store.dispatch(dialogActions.deleteCalendarEntry({
-      calendarEntryId: this.entry.calendarEntryId,
-      title: this.entry.title,
-    }));
   }
 }

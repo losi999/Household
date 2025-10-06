@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { EMPTY, exhaustMap, mergeMap, switchMap, tap } from 'rxjs';
+import { EMPTY, exhaustMap } from 'rxjs';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { DialogService } from '@household/web/services/dialog.service';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
@@ -12,18 +12,10 @@ import { productApiActions } from '@household/web/state/product/product.actions'
 import { categoryApiActions } from '@household/web/state/category/category.actions';
 import { recipientApiActions } from '@household/web/state/recipient/recipient.actions';
 import { projectApiActions } from '@household/web/state/project/project.actions';
-import { Store } from '@ngrx/store';
-import { selectCustomerById } from '@household/web/app/hairdressing/customer/state/customer.selector';
-import { customerApiActions } from '@household/web/app/hairdressing/customer/state/customer.actions';
-import { CalendarEntryType } from '@household/shared/enums';
-import { calendarActions, calendarApiActions } from '@household/web/app/hairdressing/calendar/state/calendar.actions';
-import { takeFirstDefined } from '@household/web/operators/take-first-defined';
-import { isListedPrice } from '@household/shared/common/type-guards';
-import { createWorkEntryTitle } from '@household/shared/common/utils';
 
 @Injectable()
 export class DialogEffects { 
-  constructor(private actions: Actions, private dialogService: DialogService, private store: Store) {}
+  constructor(private actions: Actions, private dialogService: DialogService) {}
 
   closeAll = createEffect(() => {
     return this.actions.pipe(
@@ -326,138 +318,5 @@ export class DialogEffects {
         );
       }),
     );
-  });
-
-  createCalendarEntry = createEffect(() => {
-    return this.actions.pipe(
-      ofType(dialogActions.createCalendarEntry),
-      exhaustMap(({ entryType }) => {
-        this.dialogService.openCreateCalendarEntryDialog(entryType);
-        return EMPTY;
-      }),
-    );
-  }, {
-    dispatch: false,
-  });
-
-  updateCalendarEntry = createEffect(() => {
-    return this.actions.pipe(
-      ofType(dialogActions.updateCalendarEntry),
-      exhaustMap(({ type, ...entry }) => {
-        this.dialogService.openEditCalendarEntryDialog(entry);
-        return EMPTY;
-      }),
-    );
-  }, {
-    dispatch: false,
-  });
-
-  deleteCalendarEntry = createEffect(() => {
-    return this.actions.pipe(
-      ofType(dialogActions.deleteCalendarEntry),
-      exhaustMap(({ calendarEntryId, title }) => {
-        return this.dialogService.openDeleteCalendarEntryDialog(title).pipe(dispatchIfConfirmed(
-          calendarApiActions.deleteCalendarEntryInitiated({
-            calendarEntryId,
-          }),
-        ),
-        tap(() => {
-          this.dialogService.closeAll();
-        }));
-      }),
-    );
-  });
-
-  openCalendarEntry = createEffect(() => {
-    return this.actions.pipe(
-      ofType(dialogActions.openCalendarEntry),
-      exhaustMap(({ type, ...entry }) => {
-        this.dialogService.openCalendarEntryDetailsDialog(entry);
-        return EMPTY;
-      }),
-    );
-  }, {
-    dispatch: false,
-  });
-
-  openEntryPayingDialog = createEffect(() => {
-    return this.actions.pipe(
-      ofType(calendarActions.openPayingDialog),
-      exhaustMap(({ type, ...calendarEntry }) => {
-        this.dialogService.openCalendarEntryPayingDialog(calendarEntry);
-        return EMPTY;
-      }),
-    );
-  }, {
-    dispatch: false,
-  });
-
-  openCashPayment = createEffect(() => {
-    return this.actions.pipe(
-      ofType(dialogActions.openCashPayment),
-      exhaustMap(({ type, ...calendarEntry }) => {
-        this.dialogService.openCashPaymentDialog(calendarEntry);
-        return EMPTY;
-      }),
-    );
-  }, {
-    dispatch: false,
-  });
-
-  createCalendarEntryWithProposal = createEffect(() => {
-    return this.actions.pipe(
-      ofType(dialogActions.createCalendarEntryWithProposal),
-      exhaustMap(({ customerJob, day, timeInterval }) => {
-        this.dialogService.openCalendarEntryDialogWithProposal(day, customerJob, timeInterval);
-        return EMPTY;
-      }),
-    );
-  }, {
-    dispatch: false,
-  });
-
-  confirmCalendarEntryProposal = createEffect(() => {
-    return this.actions.pipe(
-      ofType(dialogActions.confirmCalendarEntryProposal),
-      exhaustMap(({ day, timeInterval, customerJob: { customer, ...job } }) => {
-        const title = createWorkEntryTitle(customer, job);
-        return this.dialogService.openConfirmCalendarEntryProposalDialog(title, day, timeInterval).pipe(dispatchIfConfirmed(
-          calendarApiActions.createCalendarEntryInitiated({
-            entryType: CalendarEntryType.Work,
-            day,
-            title,
-            start: timeInterval.start,
-            end: timeInterval.end,
-            description: job.description,
-            prices: job.prices.map((p) => {
-              if (isListedPrice(p)) {
-                return {
-                  priceId: p.priceId,
-                  quantity: p.quantity,
-                };
-              }
-              
-              return {
-                name: p.name,
-                amount: p.amount,
-              };
-            }),
-            customerId: customer.customerId,
-          }),
-        ));
-      }),
-    );
-  });
-
-  setWorkDay = createEffect(() => {
-    return this.actions.pipe(
-      ofType(dialogActions.setWorkDay),
-      exhaustMap(({ type, ...day }) => {
-        this.dialogService.openSetWorkDayDialog(day);
-        return EMPTY;
-      }),
-    );
-  }, {
-    dispatch: false,
   });
 }

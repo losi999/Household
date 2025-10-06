@@ -1,206 +1,282 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, map, mergeMap, of, withLatestFrom } from 'rxjs';
-import { progressActions } from '@household/web/state/progress/progress.actions';
-import { notificationActions } from '@household/web/state/notification/notification.actions';
+import { exhaustMap, filter, map } from 'rxjs';
 import { calendarActions, calendarApiActions } from '@household/web/app/hairdressing/calendar/state/calendar.actions';
 import { Store } from '@ngrx/store';
-import { CalendarService } from '@household/web/services/calendar.service';
-import { selectCustomerById } from '@household/web/app/hairdressing/customer/state/customer.selector';
-import { CalendarEntryType } from '@household/shared/enums';
-import { dateToISODateString } from '@household/shared/common/utils';
+import { CalendarDayType, CalendarEntryType, PaymentType } from '@household/shared/enums';
+import { createWorkEntryTitle, dateToISODateString, timeSlotToTimeString } from '@household/shared/common/utils';
+import { CalendarWorkdayDialogComponent, CalendarWorkdayDialogData, CalendarWorkdayDialogResult } from '@household/web/app/hairdressing/calendar/calendar-workday-dialog/calendar-workday-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
+import { DialogService } from '@household/web/services/dialog.service';
+import { CalendarEntryDetailsDialogComponent, CalendarEntryDetailsDialogData, CalendarEntryDetailsDialogResult } from '@household/web/app/hairdressing/calendar/calendar-entry-details-dialog/calendar-entry-details-dialog.component';
+import { CalendarEntryEditDialogComponent, CalendarEntryEditDialogData, CalendarEntryEditDialogResult } from '@household/web/app/hairdressing/calendar/calendar-entry-edit-dialog/calendar-entry-edit-dialog.component';
+import { CalendarCashPaymentDialogComponent, CalendarCashPaymentDialogData, CalendarCashPaymentDialogResult } from '@household/web/app/hairdressing/calendar/calendar-cash-payment-dialog/calendar-cash-payment-dialog.component';
+import { CalendarEntryPayingDialogComponent, CalendarEntryPayingDialogData, CalendarEntryPayingDialogResult } from '@household/web/app/hairdressing/calendar/calendar-entry-paying-dialog/calendar-entry-paying-dialog.component';
+import { isListedPrice } from '@household/shared/common/type-guards';
 
 @Injectable()
 export class CalendarEffects {
-  constructor(private actions: Actions, private store: Store, private calendarService: CalendarService) {}
+  constructor(private actions: Actions, private dialog: MatDialog, private dialogService: DialogService, private store: Store) {}
 
-  loadCalendarMonth = createEffect(() => {
+  listCalendarMonth = createEffect(() => {
     return this.actions.pipe(
       ofType(calendarActions.listCalendarMonth),
-      mergeMap(({ date }) => {
+      map(({ date }) => {
         const dateFrom = dateToISODateString(new Date(date.getFullYear(), date.getMonth(), 1));
         const dateTo = dateToISODateString(new Date(date.getFullYear(), date.getMonth() + 1, 0));
 
-        return this.calendarService.listCalendarDays({
+        return calendarApiActions.listCalendarDaysInitiated({
           dateFrom,
           dateTo,
-        }).pipe(
-          map((entries) => calendarApiActions.listCalendarDaysCompleted({
-            entries,
-            dateFrom,
-            dateTo,
-          })),
-          catchError(() => {
-            return of(progressActions.processFinished(),
-              notificationActions.showMessage({
-                message: 'Hiba történt',
-              }),
-            );
-          }),
-        );
+        });
       }),
     );
   });
 
-  loadCalendarDays = createEffect(() => {
+  openSetWorkDayDialog = createEffect(() => {
     return this.actions.pipe(
-      ofType(calendarApiActions.listCalendarDaysInitiated),
-      mergeMap(({ dateFrom, dateTo }) => {
-        return this.calendarService.listCalendarDays({
-          dateFrom,
-          dateTo,
-        }).pipe(
-          map((entries) => calendarApiActions.listCalendarDaysCompleted({
-            entries,
-            dateFrom,
-            dateTo,
-          })),
-          catchError(() => {
-            return of(progressActions.processFinished(),
-              notificationActions.showMessage({
-                message: 'Hiba történt',
-              }),
-            );
-          }),
-        );
+      ofType(calendarActions.setWorkDay),
+      exhaustMap(({ type, ...day }) => {
+        return this.dialog.open<CalendarWorkdayDialogComponent, CalendarWorkdayDialogData, CalendarWorkdayDialogResult>(CalendarWorkdayDialogComponent, {
+          data: day,
+          width: '900px',
+          disableClose: true,
+        }).afterClosed();
+      }),
+      filter(req => !!req),
+      map((value) => {
+        if (!value.dayType) {
+          return calendarApiActions.deleteCalendarDayInitiated({
+            day: value.day,
+          });
+        }
+
+        switch(value.dayType) {
+          case CalendarDayType.Vacation: {
+            return calendarApiActions.updateCalendarDayInitiated({
+              dayType: CalendarDayType.Vacation,
+              day: value.day,
+            });
+          }
+          case CalendarDayType.Workday: {
+            return calendarApiActions.updateCalendarDayInitiated({
+              dayType: CalendarDayType.Workday,
+              day: value.day,
+              start: value.start,
+              end: value.end,
+            });
+          }
+        }
       }),
     );
   });
 
-  updateCalendarDay = createEffect(() => {
+  openCalendarEntryDialog = createEffect(() => {
     return this.actions.pipe(
-      ofType(calendarApiActions.updateCalendarDayInitiated),
-      mergeMap(({ type, day, ...request }) => {
-        return this.calendarService.updateCalendarDay(day, request).pipe(
-          map(() => calendarApiActions.updateCalendarDayCompleted({
-            day,
-            ...request,
-          })),
-          catchError(() => {
-            return of(progressActions.processFinished(),
-              notificationActions.showMessage({
-                message: 'Hiba történt',
-              }),
-            );
-          }),
-        );
+      ofType(calendarActions.viewCalendarEntry),
+      exhaustMap(({ type, ...entry }) => {
+        return this.dialog.open<CalendarEntryDetailsDialogComponent, CalendarEntryDetailsDialogData, CalendarEntryDetailsDialogResult>(CalendarEntryDetailsDialogComponent, {
+          data: entry,
+          width: '900px',
+        }).afterClosed()
+          .pipe(
+            filter(result => !!result),
+            map((result) => {
+              switch(result) {
+                case 'edit': {
+                  return calendarActions.updateCalendarEntry(entry);
+                }
+                case 'delete': {
+                  return calendarActions.deleteCalendarEntry({
+                    calendarEntryId: entry.calendarEntryId,
+                    title: entry.title,
+                  });
+                }
+                case 'pay': {
+                  if (entry.entryType === CalendarEntryType.Work)
+                  {return calendarActions.payCalendarWorkEntry(entry);}
+                }
+              }
+            }),
+          );
       }),
     );
   });
 
-  deleteCalendarDay = createEffect(() => {
+  openCreateCalendarEntryDialog = createEffect(() => {
     return this.actions.pipe(
-      ofType(calendarApiActions.deleteCalendarDayInitiated),
-      mergeMap(({ day }) => {
-        return this.calendarService.deleteCalendarDay(day).pipe(
-          map(() => calendarApiActions.deleteCalendarDayCompleted({
-            day,            
-          })),
-          catchError(() => {
-            return of(progressActions.processFinished(),
-              notificationActions.showMessage({
-                message: 'Hiba történt',
-              }),
-            );
-          }),
-        );
+      ofType(calendarActions.createCalendarEntry),
+      exhaustMap(({ entryType }) => {
+        return this.dialog.open<CalendarEntryEditDialogComponent, CalendarEntryEditDialogData, CalendarEntryEditDialogResult>(CalendarEntryEditDialogComponent, {
+          data: {
+            entryType,
+          },
+          width: '900px',
+          disableClose: true,
+        }).afterClosed();
+      }),
+      filter(req => !!req),
+      map((request) => {
+        return calendarApiActions.createCalendarEntryInitiated(request);
+      }),
+    );
+  });
+
+  openUpdateCalendarEntryDialog = createEffect(() => {
+    return this.actions.pipe(
+      ofType(calendarActions.updateCalendarEntry),
+      exhaustMap(({ type, ...entry }) => {
+        return this.dialog.open<CalendarEntryEditDialogComponent, CalendarEntryEditDialogData, CalendarEntryEditDialogResult>(CalendarEntryEditDialogComponent, {
+          data: entry,
+          width: '900px',
+          disableClose: true,
+        }).afterClosed()
+          .pipe(filter(req => !!req),
+            map((request) => {
+              return calendarApiActions.updateCalendarEntryInitiated({
+                calendarEntryId: entry.calendarEntryId,
+                ...request,
+              });
+            }));
       }),
     );
   });
   
-  createCalendarEntry = createEffect(() => {
+  openDeleteCalendarEntryDialog = createEffect(() => {
     return this.actions.pipe(
-      ofType(calendarApiActions.createCalendarEntryInitiated),
-      mergeMap(({ type, ...request }) => {
-        return this.calendarService.createCalendarEntry(request).pipe(
-          withLatestFrom(request.entryType === CalendarEntryType.Work ? this.store.select(selectCustomerById(request.customerId)) : of(undefined)),
-          map(([
-            { calendarEntryId },
-            customer,
-          ]) => {
-
-            return calendarApiActions.createCalendarEntryCompleted({
+      ofType(calendarActions.deleteCalendarEntry),
+      exhaustMap(({ calendarEntryId, title }) => {
+        return this.dialogService.openConfirmationDialog({
+          title: 'Törölni akarod ezt a bejegyzést a naptárból?', 
+          content: title,
+        }).pipe(
+          filter(confirmed => confirmed),
+          map(() => {
+            return calendarApiActions.deleteCalendarEntryInitiated({
               calendarEntryId,
-              ...request,
-              customer,
             });
           }),
-            
-          catchError(() => {
-            return of(progressActions.processFinished(),
-              notificationActions.showMessage({
-                message: 'Hiba történt',
-              }),
-            );
-          }),
         );
       }),
     );
   });
-  
-  updateCalendarEntry = createEffect(() => {
+
+  openWorkEntryPayingDialog = createEffect(() => {
     return this.actions.pipe(
-      ofType(calendarApiActions.updateCalendarEntryInitiated),
-      mergeMap(({ type, calendarEntryId, ...request }) => {
-        return this.calendarService.updateCalendarEntry(calendarEntryId, request).pipe(
-          withLatestFrom(request.entryType === CalendarEntryType.Work ? this.store.select(selectCustomerById(request.customerId)) : of(undefined)), 
-          map(([
-            { calendarEntryId },
-            customer,
-          ]) => calendarApiActions.updateCalendarEntryCompleted({
-            calendarEntryId,
-            ...request,
-            customer,
-          })),
-          catchError(() => {
-            return of(progressActions.processFinished(),
-              notificationActions.showMessage({
-                message: 'Hiba történt',
-              }),
-            );
-          }),
-        );
-      }),
-    );
-  });
-  
-  deleteCalendarEntry = createEffect(() => {
-    return this.actions.pipe(
-      ofType(calendarApiActions.deleteCalendarEntryInitiated),
-      mergeMap(({ calendarEntryId }) => {
-        return this.calendarService.deleteCalendarEntry(calendarEntryId).pipe(
-          map(() => calendarApiActions.deleteCalendarEntryCompleted({
-            calendarEntryId, 
-          })),
-          catchError(() => {
-            return of(progressActions.processFinished(),
-              notificationActions.showMessage({
-                message: 'Hiba történt',
-              }),
-            );
-          }),
-        );
-      }),
-    );
-  });
-  
-  payCalendarworkEntry = createEffect(() => {
-    return this.actions.pipe(
-      ofType(calendarApiActions.payCalendarWorkEntryInitiated),
-      mergeMap(({ type, calendarEntryId, day, ...request }) => {
-        return this.calendarService.payCalendarWorkEntry(calendarEntryId, request).pipe(
-          map(() => 
-            calendarApiActions.payCalendarWorkEntryCompleted({
-              calendarEntryId,
-              day,
+      ofType(calendarActions.payCalendarWorkEntry),
+      exhaustMap(({ type, ...calendarEntry }) => {
+        return this.dialog.open<CalendarEntryPayingDialogComponent, CalendarEntryPayingDialogData, CalendarEntryPayingDialogResult>(CalendarEntryPayingDialogComponent, {
+          data: calendarEntry,
+          width: '900px',
+          maxHeight: '90vh',
+          disableClose: true,
+        }).afterClosed()
+          .pipe(filter(req => !!req),
+            map((paymentType) => {
+              switch(paymentType) {
+                case PaymentType.Transfer: {
+                  return calendarApiActions.payCalendarWorkEntryInitiated({
+                    calendarEntryId: calendarEntry.calendarEntryId,
+                    paymentType,
+                    day: calendarEntry.day,
+                  });
+                }
+                case PaymentType.Cash: {
+                  return calendarActions.setCashPaymentDialog(calendarEntry);
+                }
+              }
+
             }),
-          ),
-          catchError(() => {
-            return of(progressActions.processFinished(),
-              notificationActions.showMessage({
-                message: 'Hiba történt',
+          );
+      }),
+    );
+  });
+
+  openCashPaymentDialog = createEffect(() => {
+    return this.actions.pipe(
+      ofType(calendarActions.setCashPaymentDialog),
+      exhaustMap(({ type, ...calendarEntry }) => {
+        return this.dialog.open<CalendarCashPaymentDialogComponent, CalendarCashPaymentDialogData, CalendarCashPaymentDialogResult>(CalendarCashPaymentDialogComponent, {
+          data: calendarEntry,
+          disableClose: true,
+        }).afterClosed()
+          .pipe(filter(req => !!req),
+            map((request) => {
+              console.log(request);
+              return calendarApiActions.payCalendarWorkEntryInitiated({
+                calendarEntryId: calendarEntry.calendarEntryId,
+                day: calendarEntry.day,
+                ...request,
+              });
+            }));
+      }),
+    );
+  });
+
+  createCalendarEntryWithProposal = createEffect(() => {
+    return this.actions.pipe(
+      ofType(calendarActions.createCalendarEntryWithProposal),
+      exhaustMap(({ customerJob: { customer, ...job }, day, timeInterval }) => {
+        return this.dialog.open<CalendarEntryEditDialogComponent, CalendarEntryEditDialogData, CalendarEntryEditDialogResult>(CalendarEntryEditDialogComponent, {
+          data: {
+            entryType: CalendarEntryType.Work,
+            customer,
+            day,
+            description: job.description,
+            title: createWorkEntryTitle(customer, job),
+            prices: job.prices,
+            start: timeInterval.start,
+            end: timeInterval.start + job.duration,
+          },
+          width: '900px',
+          disableClose: true,
+        }).afterClosed();
+      }),
+      filter(req => !!req),
+      map((request) => {
+        return calendarApiActions.createCalendarEntryInitiated(request);
+      }),
+    );
+  });
+
+  confirmCalendarEntryProposal = createEffect(() => {
+    return this.actions.pipe(
+      ofType(calendarActions.confirmCalendarEntryProposal),
+      exhaustMap(({ day, timeInterval, customerJob: { customer, ...job } }) => {
+        const title = createWorkEntryTitle(customer, job);
+        return this.dialogService.openConfirmationDialog({
+          title: 'Rögzíted ezt a munkát erre az időpontra?',
+          content: `${title} ${new Date(day).toLocaleString('hu', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            weekday: 'long',
+          })} ${timeSlotToTimeString(timeInterval.start)}-${timeSlotToTimeString(timeInterval.end)}`,
+        }).pipe(
+          filter(confirmed => confirmed),
+          map(() => {
+            return calendarApiActions.createCalendarEntryInitiated({
+              entryType: CalendarEntryType.Work,
+              day,
+              title,
+              start: timeInterval.start,
+              end: timeInterval.end,
+              description: job.description,
+              prices: job.prices.map((p) => {
+                if (isListedPrice(p)) {
+                  return {
+                    priceId: p.priceId,
+                    quantity: p.quantity,
+                  };
+                }
+              
+                return {
+                  name: p.name,
+                  amount: p.amount,
+                };
               }),
-            );
+              customerId: customer.customerId,
+            });
           }),
         );
       }),

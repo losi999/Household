@@ -7,8 +7,8 @@ import { ToolbarComponent } from '@household/web/app/shared/toolbar/toolbar.comp
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-import { CalendarTimeColumnPipe } from '@household/web/app/hairdressing/calendar/calendar-time-column.pipe';
-import { CalendarGridRowsPipe } from '@household/web/app/hairdressing/calendar/calendar-grid-rows.pipe';
+import { CalendarTimeColumnPipe } from '@household/web/app/hairdressing/calendar/pipes/calendar-time-column.pipe';
+import { CalendarGridRowsPipe } from '@household/web/app/hairdressing/calendar/pipes/calendar-grid-rows.pipe';
 import { TimeRangeSliderComponent } from '@household/web/app/hairdressing/calendar/time-range-slider/time-range-slider.component';
 import { MatSliderModule } from '@angular/material/slider';
 import { TimeSlotToTimePipe } from '@household/web/app/shared/time-slot-to-time.pipe';
@@ -33,8 +33,6 @@ import { DurationStepperComponent } from '@household/web/app/shared/duration-ste
 import { AmountInputComponent } from '@household/web/app/shared/amount-input/amount-input.component';
 import { CalendarCashPaymentDialogComponent } from '@household/web/app/hairdressing/calendar/calendar-cash-payment-dialog/calendar-cash-payment-dialog.component';
 import { CalendarEntryPayingDialogComponent } from './calendar-entry-paying-dialog/calendar-entry-paying-dialog.component';
-import { StoreModule } from '@ngrx/store';
-import { calendarReducer } from '@household/web/app/hairdressing/calendar/state/calendar.reducer';
 import { EffectsModule } from '@ngrx/effects';
 import { CalendarEffects } from '@household/web/app/hairdressing/calendar/state/calendar.effects';
 
@@ -76,7 +74,6 @@ import { CalendarEffects } from '@household/web/app/hairdressing/calendar/state/
     JobPriceSummaryComponent,
     DurationStepperComponent,
     AmountInputComponent,
-    StoreModule.forFeature('calendar', calendarReducer),
     EffectsModule.forFeature([CalendarEffects]),
   ],
 })

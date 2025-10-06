@@ -5,11 +5,9 @@ import { isListedPrice } from '@household/shared/common/type-guards';
 import { PaymentType } from '@household/shared/enums';
 import { Calendar } from '@household/shared/types/types';
 import { JobPriceCalculatorValue } from '@household/web/app/shared/job-price-calculator/job-price-calculator.component';
-import { calendarApiActions } from '@household/web/app/hairdressing/calendar/state/calendar.actions';
-import { dialogActions } from '@household/web/state/dialog/dialog.actions';
-import { Store } from '@ngrx/store';
 
 export type CalendarEntryPayingDialogData = Calendar.Entry.WorkEntryResponse;
+export type CalendarEntryPayingDialogResult = PaymentType;
 
 @Component({
   standalone: false,  
@@ -19,8 +17,7 @@ export type CalendarEntryPayingDialogData = Calendar.Entry.WorkEntryResponse;
 export class CalendarEntryPayingDialogComponent implements OnInit {
   prices: FormControl<JobPriceCalculatorValue[]>;
 
-  constructor(private dialogRef: MatDialogRef<CalendarEntryPayingDialogComponent, void>,
-    private store: Store, 
+  constructor(private dialogRef: MatDialogRef<CalendarEntryPayingDialogComponent, CalendarEntryPayingDialogResult>,
     @Inject(MAT_DIALOG_DATA) public entry: CalendarEntryPayingDialogData) {}
   
   ngOnInit(): void {
@@ -42,16 +39,10 @@ export class CalendarEntryPayingDialogComponent implements OnInit {
   }
 
   onCashPayment() {
-    this.store.dispatch(dialogActions.openCashPayment(this.entry));
+    this.dialogRef.close(PaymentType.Cash);
   }
   
   onBankPayment() {
-    this.store.dispatch(calendarApiActions.payCalendarWorkEntryInitiated({
-      calendarEntryId: this.entry.calendarEntryId,
-      paymentType: PaymentType.Transfer,
-      day: this.entry.day,
-    }));
-  
-    this.dialogRef.close();
+    this.dialogRef.close(PaymentType.Transfer);
   }
 }

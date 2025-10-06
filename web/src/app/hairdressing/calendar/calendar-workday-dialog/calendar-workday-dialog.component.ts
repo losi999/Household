@@ -4,9 +4,6 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { AFTERNOON_SHIFT_END, AFTERNOON_SHIFT_START, MORNING_SHIFT_END, MORNING_SHIFT_START, WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
 import { CalendarDayType } from '@household/shared/enums';
 import { Calendar } from '@household/shared/types/types';
-import { calendarApiActions } from '@household/web/app/hairdressing/calendar/state/calendar.actions';
-
-import { Store } from '@ngrx/store';
 
 enum ShiftType{
   Morning = 'morning',
@@ -14,6 +11,7 @@ enum ShiftType{
   Custom = 'custom',
 }
 export type CalendarWorkdayDialogData = Exclude<Calendar.Day.Response, Calendar.Day.HolidayResponse>;
+export type CalendarWorkdayDialogResult = Calendar.DayProp & Partial<Calendar.Day.Request>;
 
 @Component({
   standalone: false,  
@@ -28,8 +26,7 @@ export class CalendarWorkdayDialogComponent implements OnInit {
     end: FormControl<number>;
   }>;
 
-  constructor(private dialogRef: MatDialogRef<CalendarWorkdayDialogComponent, void>,
-    private store: Store,
+  constructor(private dialogRef: MatDialogRef<CalendarWorkdayDialogComponent, CalendarWorkdayDialogResult>,
     @Inject(MAT_DIALOG_DATA) public day: CalendarWorkdayDialogData) { }
   
   ngOnInit(): void {
@@ -67,30 +64,26 @@ export class CalendarWorkdayDialogComponent implements OnInit {
   onSubmit() {
     if (this.form.valid) {
       if (this.form.value.dayType === CalendarDayType.Vacation) {
-        this.store.dispatch(calendarApiActions.updateCalendarDayInitiated({
+        this.dialogRef.close({
           dayType: CalendarDayType.Vacation,
-          day: this.day.day,
-        }));        
+          day: this.day.day,          
+        });     
       }
 
       if (this.form.value.dayType === CalendarDayType.Workday) {
-        this.store.dispatch(calendarApiActions.updateCalendarDayInitiated({
+        this.dialogRef.close({
           dayType: CalendarDayType.Workday,
           day: this.day.day,
           start: this.form.value.start,
           end: this.form.value.end,
-        }));
+        });
       }
-
-      this.dialogRef.close();
     }
   }
 
   onDelete() {
-    this.store.dispatch(calendarApiActions.deleteCalendarDayInitiated({
+    this.dialogRef.close({
       day: this.day.day,
-    }));
-
-    this.dialogRef.close();
+    });
   }
 }

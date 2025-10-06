@@ -1,11 +1,20 @@
 import { Calendar, Customer } from '@household/shared/types/types';
+import { CustomerJob } from '@household/web/types/common';
 import { createActionGroup, props } from '@ngrx/store';
 
 export const calendarActions = createActionGroup({
   source: 'Calendar',
   events: {
     'List calendar month': props<{date: Date}>(),
-    'Open paying dialog': props<Calendar.Entry.WorkEntryResponse>(),
+    'Pay calendar work entry': props<Calendar.Entry.WorkEntryResponse>(),
+    'View calendar entry': props<Calendar.Entry.Response>(),
+    'Set work day': props<Exclude<Calendar.Day.Response, Calendar.Day.HolidayResponse>>(),
+    'Create calendar entry': props<Calendar.Entry.EntryType>(),
+    'Update calendar entry': props<Calendar.Entry.Response>(),
+    'Delete calendar entry': props<Pick<Calendar.Entry.Response, 'calendarEntryId' | 'title'>>(),
+    'Set cash payment dialog': props<Calendar.Entry.WorkEntryResponse>(),
+    'Confirm calendar entry proposal': props<Calendar.DayProp & {customerJob: CustomerJob; timeInterval: Calendar.TimeInterval}>(),
+    'Create calendar entry with proposal': props<Calendar.DayProp & {customerJob: CustomerJob; timeInterval: Calendar.TimeInterval}>(),
   },
 });
 
