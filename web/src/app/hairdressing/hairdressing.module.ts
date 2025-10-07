@@ -24,6 +24,7 @@ import { priceReducer } from '@household/web/app/hairdressing/price/state/price.
 import { customerReducer } from '@household/web/app/hairdressing/customer/state/customer.reducer';
 import { CalendarApiEffects } from '@household/web/app/hairdressing/calendar/state/calendar-api.effects';
 import { calendarReducer } from '@household/web/app/hairdressing/calendar/state/calendar.reducer';
+import { CustomerEffects } from '@household/web/app/hairdressing/customer/state/customer.effects';
 
 @NgModule({
   declarations: [
@@ -49,6 +50,7 @@ import { calendarReducer } from '@household/web/app/hairdressing/calendar/state/
     EffectsModule.forFeature([
       PriceApiEffects,
       CustomerApiEffects,
+      CustomerEffects,
       CalendarApiEffects,
     ]),
     StoreModule.forFeature('prices', priceReducer),

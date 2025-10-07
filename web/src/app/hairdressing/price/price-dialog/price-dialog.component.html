@@ -1,6 +1,6 @@
 <h1 mat-dialog-title>{{price ? 'Szerkesztés' : 'Új'}}</h1>
 <div mat-dialog-content>
-  <form [formGroup]="form" (ngSubmit)="onSave()" id="form">
+  <form [formGroup]="form" (ngSubmit)="onSave()" id="price-form">
     <household-clearable-input formControlName="name" label="Név" />
     <household-amount-input formControlName="amount" currency="Ft" [signHidden]="true" label="Ár" />
     <mat-form-field appearance="fill">
@@ -14,6 +14,6 @@
   </form>
 </div>
 <div mat-dialog-actions>
-  <button mat-button cdkFocusInitial form="form">Mentés</button>
+  <button mat-button cdkFocusInitial form="price-form">Mentés</button>
   <button mat-button type="button" mat-dialog-close>Mégse</button>
 </div>

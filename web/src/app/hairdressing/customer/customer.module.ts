@@ -29,8 +29,6 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { CustomerAddToBlacklistDialogComponent } from './customer-add-to-blacklist-dialog/customer-add-to-blacklist-dialog.component';
 import { CustomerAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/customer-autocomplete-input/customer-autocomplete-input.component';
 import { DurationStepperComponent } from '@household/web/app/shared/duration-stepper/duration-stepper.component';
-import { EffectsModule } from '@ngrx/effects';
-import { CustomerEffects } from '@household/web/app/hairdressing/customer/state/customer.effects';
 import { UpcomingEntriesPipe } from './pipes/upcoming-entries.pipe';
 import { PastEntriesPipe } from './pipes/past-entries.pipe';
 import { MatPaginatorModule } from '@angular/material/paginator';
@@ -73,7 +71,6 @@ import { PaginatePipe } from '@household/web/app/shared/pipes/paginate.pipe';
     CustomerAutocompleteInputComponent,
     DurationStepperComponent,    
     MatPaginatorModule,
-    EffectsModule.forFeature([CustomerEffects]),
     PaginatePipe,
   ],
 })

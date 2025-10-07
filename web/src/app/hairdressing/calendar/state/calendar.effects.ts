@@ -217,7 +217,6 @@ export class CalendarEffects {
         }).afterClosed()
           .pipe(filter(req => !!req),
             map((request) => {
-              console.log(request);
               return calendarApiActions.payCalendarWorkEntryInitiated({
                 calendarEntryId: calendarEntry.calendarEntryId,
                 day: calendarEntry.day,

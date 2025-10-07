@@ -9,6 +9,7 @@ import { selectCalendarDay } from '@household/web/app/hairdressing/calendar/stat
 import { Store } from '@ngrx/store';
 import { combineLatest, filter, map, Observable, startWith, switchMap, take } from 'rxjs';
 import { calendarActions } from '@household/web/app/hairdressing/calendar/state/calendar.actions';
+import { v4 } from 'uuid';
 
 export type CalendarEntryEditDialogData = Partial<Calendar.Entry.Response>;
 export type CalendarEntryEditDialogResult = Calendar.Entry.Request;
@@ -20,10 +21,8 @@ export type CalendarEntryEditDialogResult = Calendar.Entry.Request;
 })
 export class CalendarEntryEditDialogComponent implements OnInit {
   form: FormGroup<{
-    job: FormControl<{
-      customer: Customer.Response;
-      job: Customer.Job.Response;
-    }>
+    customer: FormControl<Customer.Response>;
+    job: FormControl<Customer.Job.Response | string>;
     title: FormControl<string>;
     description: FormControl<string>;
     day: FormControl<Date>;
@@ -33,12 +32,15 @@ export class CalendarEntryEditDialogComponent implements OnInit {
 
   errors: Observable<string[]>;
   title: string;
+  CUSTOM_JOB: string;
 
   constructor(private dialogRef: MatDialogRef<CalendarEntryEditDialogComponent, CalendarEntryEditDialogResult>,
     private store: Store,
     @Inject(MAT_DIALOG_DATA) public entry: CalendarEntryEditDialogData) { }
 
   ngOnInit(): void {
+    this.CUSTOM_JOB = v4();
+
     switch(this.entry.entryType) {
       case CalendarEntryType.Issue: {
         this.title = 'Probléma';
@@ -58,11 +60,18 @@ export class CalendarEntryEditDialogComponent implements OnInit {
 
     const now = new Date();
     now.setMinutes(Math.floor(now.getMinutes() / 15) * 15);
+
+    let customer: Customer.Response = null;
+    let job: Customer.Job.Response | string = null;
+
+    if (this.entry.entryType === CalendarEntryType.Work && this.entry.calendarEntryId) {
+      customer = this.entry.customer;
+      job = this.entry.customer?.jobs.find(j => this.entry.title.endsWith(j.name)) ?? this.CUSTOM_JOB;
+    }
+
     this.form = new FormGroup({
-      job: new FormControl(this.entry.entryType === CalendarEntryType.Work && this.entry.customer ? {
-        customer: this.entry.customer,
-        job: this.entry.customer?.jobs?.find(j => this.entry.title.endsWith(j.name)),
-      } : null),
+      customer: new FormControl(customer),
+      job: new FormControl(job),
       title: new FormControl(this.entry.title, [Validators.required]),
       description: new FormControl(this.entry.description),
       day: new FormControl(createDate(this.entry.day) ?? now, [Validators.required]),
@@ -70,12 +79,18 @@ export class CalendarEntryEditDialogComponent implements OnInit {
       duration: new FormControl(this.entry.end - this.entry.start || 4),
     });
 
-    this.form.controls.job.valueChanges.pipe(filter(x => !!x)).subscribe(({ customer, job }) => {
-      this.form.patchValue({
-        title: createWorkEntryTitle(customer, job),
-        description: job?.description,
-        duration: job?.duration ?? 4,
-      });
+    this.form.controls.job.valueChanges.pipe(filter(x => !!x)).subscribe((job) => {
+      if (typeof job === 'string') {
+        this.form.patchValue({
+          title: createWorkEntryTitle(this.form.value.customer),
+        });  
+      } else { 
+        this.form.patchValue({
+          title: createWorkEntryTitle(this.form.value.customer, job),
+          description: job?.description,
+          duration: job?.duration ?? 4,
+        });
+      }
     });
 
     this.errors = combineLatest([
@@ -157,8 +172,8 @@ export class CalendarEntryEditDialogComponent implements OnInit {
           end: this.form.value.start + this.form.value.duration,
           title: this.form.value.title,
           description: this.form.value.description ?? undefined,
-          customerId: this.form.value.job.customer.customerId,
-          prices: this.form.value.job.job?.prices.map((p) => {
+          customerId: this.form.value.customer.customerId,
+          prices: typeof this.form.value.job === 'string' ? undefined : this.form.value.job?.prices.map((p) => {
             if (isListedPrice(p)) {
               return {
                 priceId: p.priceId,

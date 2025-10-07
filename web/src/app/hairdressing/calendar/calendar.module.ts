@@ -28,13 +28,14 @@ import { MatInputModule } from '@angular/material/input';
 import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
 import { JobPriceCalculatorComponent } from '@household/web/app/shared/job-price-calculator/job-price-calculator.component';
 import { JobPriceSummaryComponent } from '@household/web/app/shared/job-price-summary/job-price-summary.component';
-import { CustomerJobAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/customer-job-autocomplete-input/customer-job-autocomplete-input.component';
 import { DurationStepperComponent } from '@household/web/app/shared/duration-stepper/duration-stepper.component';
 import { AmountInputComponent } from '@household/web/app/shared/amount-input/amount-input.component';
 import { CalendarCashPaymentDialogComponent } from '@household/web/app/hairdressing/calendar/calendar-cash-payment-dialog/calendar-cash-payment-dialog.component';
 import { CalendarEntryPayingDialogComponent } from './calendar-entry-paying-dialog/calendar-entry-paying-dialog.component';
 import { EffectsModule } from '@ngrx/effects';
 import { CalendarEffects } from '@household/web/app/hairdressing/calendar/state/calendar.effects';
+import { CustomerAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/customer-autocomplete-input/customer-autocomplete-input.component';
+import { MatSelectModule } from '@angular/material/select';
 
 @NgModule({
   declarations: [
@@ -68,7 +69,8 @@ import { CalendarEffects } from '@household/web/app/hairdressing/calendar/state/
     MatDatepickerModule,
     MatFormFieldModule,
     MatInputModule,
-    CustomerJobAutocompleteInputComponent,
+    CustomerAutocompleteInputComponent,
+    MatSelectModule,
     ClearableInputComponent,
     JobPriceCalculatorComponent,
     JobPriceSummaryComponent,

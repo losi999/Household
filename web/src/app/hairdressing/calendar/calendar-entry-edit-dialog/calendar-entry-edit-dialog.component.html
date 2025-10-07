@@ -1,10 +1,17 @@
 <div mat-dialog-title>{{title}}</div>
 <div mat-dialog-content>
-  <form [formGroup]="form" (ngSubmit)="onSubmit()" id="form">
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" id="calendar-entry-form">
     <ng-container *ngIf="entry.entryType === 'work'">
-      <household-customer-job-autocomplete-input label="Munka" formControlName="job" />
+      <household-customer-autocomplete-input formControlName="customer" label="Vendég" />
+      <mat-form-field *ngIf="form.value.customer">
+        <mat-label>Munka</mat-label>
+        <mat-select formControlName="job">
+          <mat-option *ngFor="let job of form.value.customer.jobs" [value]="job">{{job.name}} ({{job.duration | timeSlotToTime}} óra)</mat-option>
+          <mat-option [value]="CUSTOM_JOB">Egyéb</mat-option>
+        </mat-select>
+      </mat-form-field>
     </ng-container>
-    <ng-container *ngIf="entry.entryType !== 'work' || (form.value.job?.customer && !form.value.job?.job)">
+    <ng-container *ngIf="entry.entryType !== 'work' || (form.value.customer && form.value.job === CUSTOM_JOB)">
       <household-clearable-input formControlName="title" label="Megnevezés" />
       <household-clearable-input formControlName="description" type="area" label="Leírás" />
     </ng-container>
@@ -21,7 +28,7 @@
     {{form.value.start | timeSlotToTime}} - {{form.value.start + form.value.duration | timeSlotToTime}}
     <household-calendar-horizontal-day [date]="form.value.day" [pendingStart]="form.value.start" [pendingEnd]="form.value.start+form.value.duration" [excludedCalendarEntryId]="entry.calendarEntryId" />
     <ng-container *ngIf="entry.entryType === 'work'">
-      <mat-error *ngIf="form.value.duration < form.value.job?.job?.duration">Időtartam kevesebb, mint a munkához rögzített</mat-error>
+      <mat-error *ngIf="form.value.duration < form.value.job?.duration">Időtartam kevesebb, mint a munkához rögzített</mat-error>
     </ng-container>
     <mat-error *ngFor="let e of errors | async">
       {{e}}
@@ -29,6 +36,6 @@
   </form>
 </div>
 <div mat-dialog-actions>
-  <button mat-flat-button color="primary" cdkFocusInitial form="form">Mentés</button>
+  <button mat-flat-button color="primary" cdkFocusInitial form="calendar-entry-form">Mentés</button>
   <button mat-flat-button mat-dialog-close type="button">Mégse</button>
 </div>

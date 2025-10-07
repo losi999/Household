@@ -10,8 +10,8 @@
 </div>
 
 <mat-dialog-actions>
-  <button mat-flat-button mat-dialog-close *ngIf="entry.entryType === 'work' && !entry.isPaid" class="pay" type="button" (click)="onPaying()">Fizetés</button>
-  <button mat-flat-button *ngIf="entry.entryType !== 'work' || !entry.isPaid" color="primary" type="button" (click)="onEdit()">Szerkesztés</button>
-  <button mat-flat-button *ngIf="entry.entryType !== 'work' || !entry.isPaid" color="warn" type="button" (click)="onDelete()">Törlés</button>
+  <button mat-flat-button mat-dialog-close="pay" *ngIf="entry.entryType === 'work' && !entry.isPaid" class="pay" type="button">Fizetés</button>
+  <button mat-flat-button mat-dialog-close="edit" *ngIf="entry.entryType !== 'work' || !entry.isPaid" color="primary" type="button">Szerkesztés</button>
+  <button mat-flat-button mat-dialog-close="delete" *ngIf="entry.entryType !== 'work' || !entry.isPaid" color="warn" type="button">Törlés</button>
   <button mat-flat-button mat-dialog-close type="button">Bezárás</button>
 </mat-dialog-actions>
