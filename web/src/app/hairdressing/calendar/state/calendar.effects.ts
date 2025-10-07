@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { exhaustMap, filter, map } from 'rxjs';
 import { calendarActions, calendarApiActions } from '@household/web/app/hairdressing/calendar/state/calendar.actions';
-import { Store } from '@ngrx/store';
 import { CalendarDayType, CalendarEntryType, PaymentType } from '@household/shared/enums';
 import { addDays, createWorkEntryTitle, dateToISODateString, timeSlotToTimeString } from '@household/shared/common/utils';
 import { CalendarWorkdayDialogComponent, CalendarWorkdayDialogData, CalendarWorkdayDialogResult } from '@household/web/app/hairdressing/calendar/calendar-workday-dialog/calendar-workday-dialog.component';
@@ -16,7 +15,7 @@ import { isListedPrice } from '@household/shared/common/type-guards';
 
 @Injectable()
 export class CalendarEffects {
-  constructor(private actions: Actions, private dialog: MatDialog, private dialogService: DialogService, private store: Store) {}
+  constructor(private actions: Actions, private dialog: MatDialog, private dialogService: DialogService) {}
 
   listCalendarWeek = createEffect(() => {
     return this.actions.pipe(
@@ -98,16 +97,16 @@ export class CalendarEffects {
             filter(result => !!result),
             map((result) => {
               switch(result) {
-                case 'edit': {
+                case CalendarEntryDetailsDialogResult.Edit: {
                   return calendarActions.updateCalendarEntry(entry);
                 }
-                case 'delete': {
+                case CalendarEntryDetailsDialogResult.Delete: {
                   return calendarActions.deleteCalendarEntry({
                     calendarEntryId: entry.calendarEntryId,
                     title: entry.title,
                   });
                 }
-                case 'pay': {
+                case CalendarEntryDetailsDialogResult.Pay: {
                   if (entry.entryType === CalendarEntryType.Work)
                   {return calendarActions.payCalendarWorkEntry(entry);}
                 }

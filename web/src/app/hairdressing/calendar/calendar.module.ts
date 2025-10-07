@@ -9,7 +9,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { CalendarTimeColumnPipe } from '@household/web/app/hairdressing/calendar/pipes/calendar-time-column.pipe';
 import { CalendarGridRowsPipe } from '@household/web/app/hairdressing/calendar/pipes/calendar-grid-rows.pipe';
-import { TimeRangeSliderComponent } from '@household/web/app/hairdressing/calendar/time-range-slider/time-range-slider.component';
 import { MatSliderModule } from '@angular/material/slider';
 import { TimeSlotToTimePipe } from '@household/web/app/shared/pipes/time-slot-to-time.pipe';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -43,7 +42,6 @@ import { MatSelectModule } from '@angular/material/select';
     CalendarVerticalDayComponent,
     CalendarTimeColumnPipe,
     CalendarGridRowsPipe,
-    TimeRangeSliderComponent,
     CalendarWorkdayDialogComponent,
     CalendarEntryDetailsDialogComponent,
     CalendarHorizontalDayComponent,

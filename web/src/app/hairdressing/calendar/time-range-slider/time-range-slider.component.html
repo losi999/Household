@@ -1,7 +1,0 @@
-<form [formGroup]="form">
-  <mat-slider [min]="min" [max]="max">
-    <input formControlName="start" matSliderStartThumb>
-    <input formControlName="end" matSliderEndThumb>
-  </mat-slider>
-  {{form.value.start | timeSlotToTime}} - {{form.value.end | timeSlotToTime}} (időtartam: {{(form.value.end - form.value.start) | timeSlotToTime}} óra)
-</form>
