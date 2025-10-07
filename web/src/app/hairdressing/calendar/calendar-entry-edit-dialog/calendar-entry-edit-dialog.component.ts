@@ -64,9 +64,9 @@ export class CalendarEntryEditDialogComponent implements OnInit {
     let customer: Customer.Response = null;
     let job: Customer.Job.Response | string = null;
 
-    if (this.entry.entryType === CalendarEntryType.Work && this.entry.calendarEntryId) {
+    if (this.entry.entryType === CalendarEntryType.Work && this.entry.customer) {
       customer = this.entry.customer;
-      job = this.entry.customer?.jobs.find(j => this.entry.title.endsWith(j.name)) ?? this.CUSTOM_JOB;
+      job = this.entry.customer.jobs.find(j => this.entry.title.endsWith(j.name)) ?? this.CUSTOM_JOB;
     }
 
     this.form = new FormGroup({
@@ -79,7 +79,7 @@ export class CalendarEntryEditDialogComponent implements OnInit {
       duration: new FormControl(this.entry.end - this.entry.start || 4),
     });
 
-    this.form.controls.job.valueChanges.pipe(filter(x => !!x)).subscribe((job) => {
+    this.form.controls.job.valueChanges.pipe(filter(x => !!x)).subscribe((job) => { 
       if (typeof job === 'string') {
         this.form.patchValue({
           title: createWorkEntryTitle(this.form.value.customer),

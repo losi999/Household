@@ -76,8 +76,8 @@ export class PriceEffects {
             filter(value => !!value),
             map((value) => {
               switch(value) {
-                case 'edit': return priceActions.updatePrice(price);
-                case 'delete': return priceActions.deletePrice(price);
+                case CatalogSubmenuResult.Edit: return priceActions.updatePrice(price);
+                case CatalogSubmenuResult.Merge: return priceActions.deletePrice(price);
               }
             }),
           );

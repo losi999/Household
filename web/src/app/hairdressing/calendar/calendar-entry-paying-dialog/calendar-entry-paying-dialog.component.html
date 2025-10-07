@@ -8,7 +8,7 @@
   <household-job-price-calculator [formControl]="prices" />
 </div>
 <div mat-dialog-actions>
-  <button mat-flat-button color="primary" type="button" (click)="onCashPayment()"><mat-icon>payments</mat-icon>Készpénz</button>
-  <button mat-flat-button color="primary" type="button" (click)="onBankPayment()"><mat-icon>account_balance</mat-icon>Utalás</button>
+  <button mat-flat-button mat-dialog-close="cash" color="primary" type="button"><mat-icon>payments</mat-icon>Készpénz</button>
+  <button mat-flat-button mat-dialog-close="transfer" color="primary" type="button"><mat-icon>account_balance</mat-icon>Utalás</button>
   <button mat-flat-button mat-dialog-close type="button">Mégse</button>
 </div>

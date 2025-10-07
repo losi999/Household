@@ -12,7 +12,7 @@ import { Store } from '@ngrx/store';
 export class CustomerApiEffects {
   constructor(private actions: Actions, private customerService: CustomerService, private store: Store) {}
 
-  loadCustomers = createEffect(() => {
+  listCustomers = createEffect(() => {
     return this.actions.pipe(
       ofType(customerApiActions.listCustomersInitiated),
       exhaustMap(() => {
@@ -77,7 +77,7 @@ export class CustomerApiEffects {
               let errorMessage: string;
               switch(error.error?.message) {
                 case 'Duplicate customer name': {
-                  errorMessage = `Partner (${request.name}) már létezik!`;
+                  errorMessage = `Vendég (${request.name}) már létezik!`;
                 } break;
                 default: {
                   errorMessage = 'Hiba történt';
@@ -112,8 +112,8 @@ export class CustomerApiEffects {
           catchError((error) => {
             let errorMessage: string;
             switch(error.error?.message) {
-              case 'Duplicate customer name': {
-                errorMessage = `Vendég (${request.name}) már létezik!`;
+              case 'Duplicate customer job name': {
+                errorMessage = `Munka (${request.name}) már létezik!`;
               } break;
               default: {
                 errorMessage = 'Hiba történt';
@@ -150,8 +150,8 @@ export class CustomerApiEffects {
             catchError((error) => {
               let errorMessage: string;
               switch(error.error?.message) {
-                case 'Duplicate customer name': {
-                  errorMessage = `Partner (${request.name}) már létezik!`;
+                case 'Duplicate customer job name': {
+                  errorMessage = `Munka (${request.name}) már létezik!`;
                 } break;
                 default: {
                   errorMessage = 'Hiba történt';

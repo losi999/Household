@@ -22,7 +22,7 @@ export class CustomerHomeComponent implements OnInit {
     this.store.dispatch(customerApiActions.listCustomersInitiated());
   }
 
-  create() {
+  onCreate() {
     this.store.dispatch(customerActions.createCustomer());
   }
 }

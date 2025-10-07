@@ -20,15 +20,17 @@
   </div>
   <mat-divider />
   <ng-container *ngIf="cust.workEntries | upcomingEntries as upcoming">
-    <div class="section-title" *ngIf="upcoming.length > 0">
-      <household-icon-text icon="calendar_clock" text="Következő időpontok" size="medium" />
-    </div>
-    <mat-list>
-      <mat-list-item *ngFor="let e of upcoming">
-        <span matListItemTitle>{{e.day | date: 'yyyy. MMMM d.'}} {{e.start | timeSlotToTime}}-{{e.end | timeSlotToTime}}</span>
-        <span matListItemLine>{{e.title}}</span>
-      </mat-list-item>
-    </mat-list>
+    <ng-container *ngIf="upcoming.length > 0">
+      <div class="section-title">
+        <household-icon-text icon="calendar_clock" text="Következő időpontok" size="medium" />
+      </div>
+      <mat-list>
+        <mat-list-item *ngFor="let e of upcoming">
+          <span matListItemTitle>{{e.day | date: 'yyyy. MMMM d.'}} {{e.start | timeSlotToTime}}-{{e.end | timeSlotToTime}}</span>
+          <span matListItemLine>{{e.title}}</span>
+        </mat-list-item>
+      </mat-list>
+    </ng-container>
   </ng-container>
   <div class="section-title">
     <household-icon-text icon="content_cut" text="Munkák" size="medium" />
@@ -41,17 +43,18 @@
   </div>
   <mat-divider />
   <ng-container *ngIf="cust.workEntries | pastEntries as past">
-    <div class="section-title" *ngIf="past.length > 0">
-      <household-icon-text icon="calendar_check" text="Korábbi időpontok" size="medium" />
-    </div>
-    <mat-paginator #paginator [length]="past.length" [hidePageSize]="true" pageSize="5" />
-    <mat-list>
-      <mat-list-item *ngFor="let e of past | paginate: paginator.pageIndex: 5">
-        <span matListItemTitle>{{e.day | date: 'yyyy. MMMM d.'}} {{e.start | timeSlotToTime}}-{{e.end | timeSlotToTime}}</span>
-        <span matListItemLine>{{e.title}}</span>
-      </mat-list-item>
-    </mat-list>
-
+    <ng-container *ngIf="past.length > 0">
+      <div class="section-title">
+        <household-icon-text icon="calendar_check" text="Korábbi időpontok" size="medium" />
+      </div>
+      <mat-paginator #paginator [length]="past.length" [hidePageSize]="true" pageSize="5" />
+      <mat-list>
+        <mat-list-item *ngFor="let e of past | paginate: paginator.pageIndex: 5">
+          <span matListItemTitle>{{e.day | date: 'yyyy. MMMM d.'}} {{e.start | timeSlotToTime}}-{{e.end | timeSlotToTime}}</span>
+          <span matListItemLine>{{e.title}}</span>
+        </mat-list-item>
+      </mat-list>
+    </ng-container>
   </ng-container>
   <mat-divider />
   <div class="section-title">
@@ -71,6 +74,4 @@
       <mat-icon>delete</mat-icon>
     </button>
   </div>
-
-
 </ng-container>

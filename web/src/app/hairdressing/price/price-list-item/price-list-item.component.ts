@@ -7,8 +7,7 @@ import { Observable } from 'rxjs';
 
 @Component({
   selector: 'household-price-list-item',
-  standalone: false,
-  
+  standalone: false,  
   templateUrl: './price-list-item.component.html',
   styleUrl: './price-list-item.component.scss',
 })
@@ -23,7 +22,7 @@ export class PriceListItemComponent implements OnInit {
     this.isDisabled = this.store.select(selectPriceIsInProgress(this.price.priceId));
   }
 
-  showMenu() {
+  onShowMenu() {
     this.store.dispatch(priceActions.openPriceListItemSubmenu(this.price));
   }
 }

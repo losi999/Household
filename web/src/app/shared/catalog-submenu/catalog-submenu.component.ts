@@ -3,13 +3,18 @@ import { Component, Inject } from '@angular/core';
 import { MatBottomSheetRef, MAT_BOTTOM_SHEET_DATA } from '@angular/material/bottom-sheet';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
+
 export type CatalogSubmenuData = {
   title: string;
   hideEdit?: boolean;
   hideDelete?: boolean;
   hideMerge?: boolean;
 };
-export type CatalogSubmenuResult = 'edit' | 'delete' | 'merge';
+export enum CatalogSubmenuResult {
+  Edit= 'edit',
+  Delete = 'delete',
+  Merge = 'merge',
+}
 
 @Component({
   selector: 'household-catalog-submenu',

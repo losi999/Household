@@ -155,9 +155,9 @@ export class JobPriceCalculatorComponent implements OnInit, ControlValueAccessor
     });
   }
     
-  onRemoveAmount(control: PriceFormGroup) {
-    control.patchValue({
-      amount: control.value.amount - 100,
+  onRemoveAmount(group: PriceFormGroup) {
+    group.patchValue({
+      amount: group.value.amount - 100,
     });
   }
 }

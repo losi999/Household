@@ -12,6 +12,7 @@ import { ProjectMergeDialogComponent, ProjectMergeDialogData } from '@household/
 import { RecipientFormComponent, RecipientFormData } from '@household/web/app/recipient/recipient-form/recipient-form.component';
 import { RecipientMergeDialogComponent, RecipientMergeDialogData } from '@household/web/app/recipient/recipient-merge-dialog/recipient-merge-dialog.component';
 import { ConfirmationDialogComponent } from '@household/web/app/shared/confirmation-dialog/confirmation-dialog.component';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -35,7 +36,7 @@ export class DialogService {
   }
 
   openConfirmationDialog(data: {title: string; 
-    content?: string}) {
+    content?: string}): Observable<boolean> {
     return this.dialog.open(ConfirmationDialogComponent, {
       data,
       disableClose: true,

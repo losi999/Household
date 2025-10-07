@@ -42,7 +42,11 @@ export const customerReducer = createReducer<Customer.Response[]>([],
 
   on(customerApiActions.createCustomerJobCompleted, (_state, { customerId, duration, name, prices, description, priceList }) => {
     return _state.map((c) => {
-      return c.customerId !== customerId ? c : {
+      if (c.customerId !== customerId) {
+        return c;
+      }
+
+      return {
         ...c,
         jobs: c.jobs.concat({
           name,
@@ -75,7 +79,11 @@ export const customerReducer = createReducer<Customer.Response[]>([],
 
   on(customerApiActions.deleteCustomerJobCompleted, (_state, { customerId, jobName }) => {   
     return _state.map(c => {
-      return c.customerId !== customerId ? c : {
+      if (c.customerId !== customerId) {
+        return c;
+      }
+      
+      return {
         ...c,
         jobs: c.jobs.filter(j => j.name !== jobName),
       };
@@ -84,10 +92,18 @@ export const customerReducer = createReducer<Customer.Response[]>([],
 
   on(customerApiActions.updateCustomerJobCompleted, (_state, { customerId, jobName, description, duration, name, prices, priceList }) => {
     return _state.map((c) => {
-      return c.customerId !== customerId ? c : {
+      if (c.customerId !== customerId) {
+        return c;
+      }
+
+      return {
         ...c,
         jobs: c.jobs.map((j) => {
-          return j.name !== jobName ? j : {
+          if (j.name !== jobName) {
+            return j;
+          }
+
+          return {
             name,
             prices: prices.map((p) => {
               if (isPriceBase(p)) {
@@ -116,33 +132,55 @@ export const customerReducer = createReducer<Customer.Response[]>([],
     });
   }),
 
-  on(customerApiActions.addCustomerToBlacklistCompleted, (_state, { customers }) => {
+  on(customerApiActions.addCustomerToBlacklistCompleted, (_state, { customers: [
+    customerA,
+    customerB,
+  ] }) => {
     return _state.map((customer) => {
-      const index = customers.findIndex((c) => c.customerId === customer.customerId);
-      if (index < 0) {
-        return customer;
+      if (customer.customerId === customerA.customerId) {
+        return {
+          ...customer, 
+          blacklistedCustomers: [
+            ...customer.blacklistedCustomers,
+            customerB,
+          ],
+        };
       }
 
-      return {
-        ...customer, 
-        blacklistedCustomers: [
-          ...customer.blacklistedCustomers,
-          index === 0 ? customers[1] : customers[0],
-        ],
-      };
+      if (customer.customerId === customerB.customerId) {
+        return {
+          ...customer, 
+          blacklistedCustomers: [
+            ...customer.blacklistedCustomers,
+            customerA,
+          ],
+        };
+      }
+
+      return customer;
     });
   }),
 
-  on(customerApiActions.deleteCustomerFromBlacklistCompleted, (_state, { customerIds }) => {
+  on(customerApiActions.deleteCustomerFromBlacklistCompleted, (_state, { customerIds: [
+    customerIdA,
+    customerIdB,
+  ] }) => {
     return _state.map((customer) => {
-      if (!customerIds.includes(customer.customerId)) {
-        return customer;
+      if (customer.customerId === customerIdA) {
+        return {
+          ...customer, 
+          blacklistedCustomers: customer.blacklistedCustomers.filter(({ customerId }) => customerId !== customerIdB),
+        };  
       }
 
-      return {
-        ...customer, 
-        blacklistedCustomers: customer.blacklistedCustomers.filter(({ customerId }) => !customerIds.includes(customerId)),
-      };
+      if (customer.customerId === customerIdB) {
+        return {
+          ...customer, 
+          blacklistedCustomers: customer.blacklistedCustomers.filter(({ customerId }) => customerId !== customerIdA),
+        };  
+      }
+
+      return customer;
     });
   }),
 );

@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { Price } from '@household/shared/types/types';
-import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { priceActions, priceApiActions } from '@household/web/app/hairdressing/price/state/price.actions';
 import { selectPrices } from '@household/web/app/hairdressing/price/state/price.selector';
 import { Store } from '@ngrx/store';
@@ -23,7 +22,7 @@ export class PriceListComponent implements OnInit {
     this.store.dispatch(priceApiActions.listPricesInitiated());
   }
 
-  create() {
+  onCreate() {
     this.store.dispatch(priceActions.createPrice());
   }
 }

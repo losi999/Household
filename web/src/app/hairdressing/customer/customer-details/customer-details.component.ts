@@ -8,7 +8,6 @@ import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 
 @Component({
-  selector: 'household-customer-details',
   standalone: false,  
   templateUrl: './customer-details.component.html',
   styleUrl: './customer-details.component.scss',

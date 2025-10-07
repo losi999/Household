@@ -8,10 +8,15 @@ import { selectPrices } from '@household/web/app/hairdressing/price/state/price.
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 
-export type CustomerJobDialogData = Customer.CustomerId & {
+export type CustomerJobDialogData = Customer.CustomerId 
+& {
   job?: Customer.Job.Response
 };
-export type CustomerJobDialogResult = Customer.CustomerId & Customer.Job.Request & {jobName: Customer.Job.Name['name']};
+export type CustomerJobDialogResult = Customer.CustomerId 
+& Customer.Job.Request 
+& {
+  jobName: Customer.Job.Name['name']
+};
 
 @Component({
   standalone: false,  

@@ -24,7 +24,6 @@ export class CustomerAddToBlacklistDialogComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: CustomerAddToBlacklistDialogData) { }
 
   ngOnInit(): void {
-    console.log(this.data);
     this.form = new FormGroup({
       customer: new FormControl(null, [Validators.required]),
     });
