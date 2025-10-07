@@ -3,7 +3,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { MatDividerModule } from '@angular/material/divider';
 import { isListedPrice } from '@household/shared/common/type-guards';
 import { Customer } from '@household/shared/types/types';
-import { MinutesToHourPipe } from '@household/web/app/shared/minutes-to-hour.pipe';
+import { MinutesToHourPipe } from '@household/web/app/shared/pipes/minutes-to-hour.pipe';
 
 @Component({
   selector: 'household-job-price-summary',

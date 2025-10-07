@@ -663,7 +663,7 @@ export const httpErrors = {
       }
     },
     alreadyPaid: (ctx: Calendar.Entry.Document, statusCode = 400) => {
-      if (ctx.isPaid) {
+      if (ctx?.isPaid) {
         log('Calendar entry is already paid', ctx);
         throw httpError(statusCode, 'Calendar entry is already paid');
       }

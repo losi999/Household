@@ -20,9 +20,9 @@ import { CustomerDetailsJobItemComponent } from './customer-details-job-item/cus
 import { MatMenuModule } from '@angular/material/menu';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MinutesToHourPipe } from '@household/web/app/shared/minutes-to-hour.pipe';
+import { MinutesToHourPipe } from '@household/web/app/shared/pipes/minutes-to-hour.pipe';
 import { CustomerJobDialogComponent } from './customer-job-dialog/customer-job-dialog.component';
-import { TimeSlotToTimePipe } from '@household/web/app/shared/time-slot-to-time.pipe';
+import { TimeSlotToTimePipe } from '@household/web/app/shared/pipes/time-slot-to-time.pipe';
 import { JobPriceSummaryComponent } from '@household/web/app/shared/job-price-summary/job-price-summary.component';
 import { JobPriceCalculatorComponent } from '@household/web/app/shared/job-price-calculator/job-price-calculator.component';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -31,6 +31,10 @@ import { CustomerAutocompleteInputComponent } from '@household/web/app/shared/au
 import { DurationStepperComponent } from '@household/web/app/shared/duration-stepper/duration-stepper.component';
 import { EffectsModule } from '@ngrx/effects';
 import { CustomerEffects } from '@household/web/app/hairdressing/customer/state/customer.effects';
+import { UpcomingEntriesPipe } from './pipes/upcoming-entries.pipe';
+import { PastEntriesPipe } from './pipes/past-entries.pipe';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { PaginatePipe } from '@household/web/app/shared/pipes/paginate.pipe';
 
 @NgModule({
   declarations: [
@@ -42,6 +46,8 @@ import { CustomerEffects } from '@household/web/app/hairdressing/customer/state/
     CustomerDetailsJobItemComponent,
     CustomerJobDialogComponent,
     CustomerAddToBlacklistDialogComponent,
+    UpcomingEntriesPipe,
+    PastEntriesPipe,
   ],
   imports: [
     CommonModule,
@@ -66,7 +72,9 @@ import { CustomerEffects } from '@household/web/app/hairdressing/customer/state/
     MatCheckboxModule,
     CustomerAutocompleteInputComponent,
     DurationStepperComponent,    
+    MatPaginatorModule,
     EffectsModule.forFeature([CustomerEffects]),
+    PaginatePipe,
   ],
 })
 export class CustomerModule { }

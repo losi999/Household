@@ -22,7 +22,7 @@ components:
           type: string
           format: date
 
-    Timespan:
+    TimeInterval:
       type: object
       required:
         - start
@@ -37,7 +37,7 @@ components:
           minimum: 0
           maximum: 96
 
-    PlannedTimespan:
+    PlannedTimeInterval:
       type: object
       properties:
         plannedStart:
@@ -60,7 +60,7 @@ components:
 
     WorkdayRequest:
       allOf:
-        - $ref: "#/components/schemas/Timespan"
+        - $ref: "#/components/schemas/TimeInterval"
         - type: object
           required:
             - dayType
@@ -71,7 +71,7 @@ components:
 
     Entry.Base:
       allOf:
-        - $ref: "#/components/schemas/Timespan"
+        - $ref: "#/components/schemas/TimeInterval"
         - type: object
           required:
             - title
@@ -83,11 +83,15 @@ components:
               type: string
               minLength: 1
 
-    NonWorkEntry.Response:
+    Entry.ResponseBase:
       allOf:
         - $ref: "#/components/schemas/CalendarEntryId"
         - $ref: "#/components/schemas/Entry.Base"
         - $ref: "#/components/schemas/Day"
+
+    NonWorkEntry.Response:
+      allOf:
+        - $ref: "#/components/schemas/Entry.ResponseBase"
         - type: object
           required:
             - entryType
@@ -100,9 +104,7 @@ components:
 
     WorkEntry.Response:
       allOf:
-        - $ref: "#/components/schemas/CalendarEntryId"
-        - $ref: "#/components/schemas/Entry.Base"
-        - $ref: "#/components/schemas/Day"
+        - $ref: "#/components/schemas/Entry.ResponseBase"
         - $ref: "customer.yaml#/components/schemas/Prices.Response"
         - type: object
           required:
@@ -134,8 +136,8 @@ components:
                 $ref: "#/components/schemas/Entry.Response"
         - oneOf:
             - allOf:
-                - $ref: "#/components/schemas/Timespan"
-                - $ref: "#/components/schemas/PlannedTimespan"
+                - $ref: "#/components/schemas/TimeInterval"
+                - $ref: "#/components/schemas/PlannedTimeInterval"
                 - type: object
                   properties:
                     dayType:

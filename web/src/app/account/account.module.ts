@@ -26,7 +26,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { AccountBalanceCalculatorComponent } from './account-balance-calculator/account-balance-calculator.component';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { IsEditorDirective } from '@household/web/app/shared/is-editor.directive';
+import { IsEditorDirective } from '@household/web/app/shared/directives/is-editor.directive';
 import { MatCardModule } from '@angular/material/card';
 
 @NgModule({

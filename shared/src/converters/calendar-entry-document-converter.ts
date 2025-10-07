@@ -17,6 +17,7 @@ export interface ICalendarEntryDocumentConverter {
     prices?: Price.Document[];
   }, expiresIn: number): DocumentUpdate<Calendar.Entry.Document>;
   updatePaid(): DocumentUpdate<Calendar.Entry.Document>;
+  toResponseBase(doc: Calendar.Entry.Document): Calendar.Entry.ResponseBase;
   toResponse(doc: Calendar.Entry.Document): Calendar.Entry.Response;
   toResponseList(docs: Calendar.Entry.Document[]): Calendar.Entry.Response[];
 }
@@ -67,31 +68,29 @@ export const calendarEntryDocumentConverterFactory = (customerDocumentConverter:
         },
       };
     },
+    toResponseBase: ({ _id, day, description, end, start, title }) => {
+      return {
+        calendarEntryId: getCalendarEntryId(_id),
+        day,
+        title,
+        description,
+        start,
+        end,
+      };
+    },
     toResponse: (doc) => {
-      const { _id, end, start, title, description, day, isPaid } = doc;
-
       if (doc.entryType === CalendarEntryType.Work) {
         return {
-          calendarEntryId: getCalendarEntryId(_id),
-          end,
-          start,
-          title,
-          day,
+          ...instance.toResponseBase(doc),
           entryType: doc.entryType,
-          description,
-          isPaid,
+          isPaid: doc.isPaid,
           customer: customerDocumentConverter.toResponse(doc.customer),
           prices: customerDocumentConverter.toResponseJobPriceList(doc.prices),
         };
       }
       return {
-        calendarEntryId: getCalendarEntryId(_id),
-        end,
-        start,
-        title,
-        day,
+        ...instance.toResponseBase(doc),
         entryType: doc.entryType,
-        description,
       };
     },
     toResponseList: docs => docs.map(d => instance.toResponse(d)),

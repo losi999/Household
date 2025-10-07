@@ -5,6 +5,7 @@ import { createActionGroup, props } from '@ngrx/store';
 export const calendarActions = createActionGroup({
   source: 'Calendar',
   events: {
+    'List calendar week': props<{weekStart: Date}>(),
     'List calendar month': props<{date: Date}>(),
     'Pay calendar work entry': props<Calendar.Entry.WorkEntryResponse>(),
     'View calendar entry': props<Calendar.Entry.Response>(),

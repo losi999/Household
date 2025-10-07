@@ -12,6 +12,24 @@ import { CalendarEntryType } from '@household/shared/enums';
 export class NavigationEffects {
   constructor(private actions: Actions, private router: Router, private activatedRoute: ActivatedRoute) {}
 
+  changeCalendarWeek = createEffect(() => {
+    return this.actions.pipe(
+      ofType(navigationActions.changeCalendarWeek),
+      tap(({ weekStart }) => {
+        this.router.navigate([], {
+          relativeTo: this.activatedRoute,
+          queryParams: {
+            weekStart, 
+          },
+          queryParamsHandling: 'merge',
+          replaceUrl: true,
+        });
+      }),
+    );
+  }, {
+    dispatch: false,
+  });
+
   navigateToTransactionDetails = createEffect(() => {
     return this.actions.pipe(
       ofType(transactionApiActions.createPaymentTransactionCompleted, transactionApiActions.createSplitTransactionCompleted, transactionApiActions.createTransferTransactionCompleted, transactionApiActions.updatePaymentTransactionCompleted, transactionApiActions.updateSplitTransactionCompleted, transactionApiActions.updateTransferTransactionCompleted),

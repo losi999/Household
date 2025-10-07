@@ -4,7 +4,7 @@ import { exhaustMap, filter, map } from 'rxjs';
 import { calendarActions, calendarApiActions } from '@household/web/app/hairdressing/calendar/state/calendar.actions';
 import { Store } from '@ngrx/store';
 import { CalendarDayType, CalendarEntryType, PaymentType } from '@household/shared/enums';
-import { createWorkEntryTitle, dateToISODateString, timeSlotToTimeString } from '@household/shared/common/utils';
+import { addDays, createWorkEntryTitle, dateToISODateString, timeSlotToTimeString } from '@household/shared/common/utils';
 import { CalendarWorkdayDialogComponent, CalendarWorkdayDialogData, CalendarWorkdayDialogResult } from '@household/web/app/hairdressing/calendar/calendar-workday-dialog/calendar-workday-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogService } from '@household/web/services/dialog.service';
@@ -17,6 +17,21 @@ import { isListedPrice } from '@household/shared/common/type-guards';
 @Injectable()
 export class CalendarEffects {
   constructor(private actions: Actions, private dialog: MatDialog, private dialogService: DialogService, private store: Store) {}
+
+  listCalendarWeek = createEffect(() => {
+    return this.actions.pipe(
+      ofType(calendarActions.listCalendarWeek),
+      map(({ weekStart }) => {
+        const dateFrom = dateToISODateString(weekStart);
+        const dateTo = dateToISODateString(addDays(6, weekStart));
+
+        return calendarApiActions.listCalendarDaysInitiated({
+          dateFrom,
+          dateTo,
+        });
+      }),
+    );
+  });
 
   listCalendarMonth = createEffect(() => {
     return this.actions.pipe(

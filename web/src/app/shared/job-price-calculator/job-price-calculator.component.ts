@@ -6,7 +6,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { Price } from '@household/shared/types/types';
 import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
-import { MinutesToHourPipe } from '@household/web/app/shared/minutes-to-hour.pipe';
+import { MinutesToHourPipe } from '@household/web/app/shared/pipes/minutes-to-hour.pipe';
 import { selectPrices } from '@household/web/app/hairdressing/price/state/price.selector';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs/internal/Observable';

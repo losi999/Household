@@ -799,7 +799,7 @@ export namespace Customer {
 
     export type ListedPrice<P extends Price.PriceId | {price: Price.Document} | Price.Response> = P & Quantity;
 
-    type Prices<P extends Price.PriceId | {price: Price.Document} | Price.Response> = {
+    export type Prices<P extends Price.PriceId | {price: Price.Document} | Price.Response> = {
       prices: (ListedPrice<P> | Price.Base)[];
     };
     
@@ -822,11 +822,13 @@ export namespace Customer {
     jobs: Job.Document[];
   };
 
-  export type Response = CustomerId 
-  & Base 
+  export type ResponseBase = CustomerId 
+  & Base; 
+  export type Response = ResponseBase
   & Jobs
   & {
-    blacklistedCustomers: Omit<Response, 'blacklistedCustomers' | 'jobs'>[];
+    blacklistedCustomers: ResponseBase[];
+    workEntries: Calendar.Entry.ResponseBase[]
   };
 
   export type Request = Base;
@@ -956,24 +958,22 @@ export namespace Calendar {
     }
     & Pick<Customer.Job.Document, 'prices'>;
 
-    export type PersonalEntryResponse= Base 
+    export type ResponseBase = Base 
     & DayProp
-    & CalendarEntryId 
+    & CalendarEntryId; 
+
+    export type PersonalEntryResponse = ResponseBase
     & EntryType<Enum.CalendarEntryType.Personal>;
     
-    export type IssueEntryResponse = Base 
-    & DayProp
-    & CalendarEntryId 
+    export type IssueEntryResponse = ResponseBase
     & EntryType<Enum.CalendarEntryType.Issue>; 
-    
-    export type WorkEntryResponse = Base 
-    & DayProp
-    & CalendarEntryId
+
+    export type WorkEntryResponse = ResponseBase
+    & Pick<Customer.Job.Response, 'prices'>   
     & IsPaid
     & {
       customer: Customer.Response
     }
-    & Pick<Customer.Job.Response, 'prices'>
     & EntryType<Enum.CalendarEntryType.Work>;
 
     export type Response = PersonalEntryResponse | IssueEntryResponse | WorkEntryResponse;

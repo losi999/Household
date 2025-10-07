@@ -1,6 +1,8 @@
+import { getCustomerId } from '@household/shared/common/utils';
+import { CalendarEntryType } from '@household/shared/enums';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { DocumentUpdate } from '@household/shared/types/common';
-import { Calendar, Transaction } from '@household/shared/types/types';
+import { Calendar, Customer, Transaction } from '@household/shared/types/types';
 
 export interface ICalendarEntryService {
   // dumpCalendarEntries(): Promise<CalendarEntry.Document[]>;
@@ -12,6 +14,8 @@ export interface ICalendarEntryService {
   updateCalendarEntry(calendarEntryId: Calendar.Entry.Id, updateQuery: DocumentUpdate<Calendar.Entry.Document>): Promise<unknown>;
   updateCalendarEntryWithPayment(calendarEntryId: Calendar.Entry.Id, transactionDocument: Transaction.PaymentDocument): Promise<Transaction.Document>;
   listCalendarEntries(data: Calendar.DateRange): Promise<Calendar.Entry.Document[]>;
+  listCalendarWorkEntriesByCustomerId(customerId: Customer.Id): Promise<Calendar.Entry.Document[]>;
+  listCalendarWorkEntriesGroupedByCustomer(): Promise<{[customerId: Customer.Id]: Calendar.Entry.Document[]}>;
   // findCalendarEntriesByIds(calendarEntryIds: CalendarEntry.Id[]): Promise<CalendarEntry.Document[]>;
 }
 
@@ -98,6 +102,43 @@ export const calendarEntryServiceFactory = (mongodbService: IMongodbService): IC
           })
           .lean();
           
+      });
+    },
+    listCalendarWorkEntriesByCustomerId: (customerId) => {
+      return mongodbService.inSession((session) => {
+        return mongodbService.calendarEntries.find({
+          customer: customerId,
+        })
+          .session(session)
+          .sort({
+            day: -1,
+            start: -1,
+          })
+          .populate('prices.price');
+      });
+    },
+    listCalendarWorkEntriesGroupedByCustomer: () => {
+      return mongodbService.inSession(async (session) => {
+        const entries = await mongodbService.calendarEntries.find({
+          entryType: CalendarEntryType.Work,
+        }).session(session)
+          .sort({
+            day: -1,
+            start: -1,
+          })
+          .populate('prices.price');
+
+        return entries.reduce<{[customerId: Customer.Id]: Calendar.Entry.Document[]}>((accumulator, currentValue) => {
+          const customerId = getCustomerId(currentValue.customer);
+
+          return {
+            ...accumulator,
+            [customerId]: [
+              ...accumulator[customerId] ?? [],
+              currentValue,
+            ],
+          };
+        }, {});
       });
     },
     // findCalendarEntriesByIds: (calendarEntryIds) => {

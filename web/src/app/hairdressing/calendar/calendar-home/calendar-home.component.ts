@@ -5,7 +5,7 @@ import { CalendarEntryType } from '@household/shared/enums';
 import { Calendar, Customer } from '@household/shared/types/types';
 import { takeFirstDefined } from '@household/web/operators/take-first-defined';
 import { TrackByService } from '@household/web/services/track-by.service';
-import { calendarActions, calendarApiActions } from '@household/web/app/hairdressing/calendar/state/calendar.actions';
+import { calendarActions } from '@household/web/app/hairdressing/calendar/state/calendar.actions';
 import { selectCalendarWeek } from '@household/web/app/hairdressing/calendar/state/calendar.selector';
 import { customerApiActions } from '@household/web/app/hairdressing/customer/state/customer.actions';
 import { selectCustomerJobByIdAndName } from '@household/web/app/hairdressing/customer/state/customer.selector';
@@ -13,6 +13,7 @@ import { priceApiActions } from '@household/web/app/hairdressing/price/state/pri
 import { CustomerJob } from '@household/web/types/common';
 import { Store } from '@ngrx/store';
 import { mergeMap, Observable, of } from 'rxjs';
+import { navigationActions } from '@household/web/state/navigation/navigation.actions';
 
 export type CalendarWeek = {
   start: number;
@@ -34,25 +35,35 @@ export class CalendarHomeComponent implements OnInit {
 
   constructor(private store: Store, public trackBy: TrackByService, private activatedRoute: ActivatedRoute) {}
 
-  private loadWeek(date: Date) {
-    const weekday = date.getDay();
-    const diffToMonday = (weekday === 0 ? 6 : weekday - 1);
-    
-    this.weekStart = addDays(-diffToMonday, date);
-    const weekEnd = addDays(-diffToMonday + 6, date);
+  private currentWeekStart: Date;
 
-    this.week = this.store.select(selectCalendarWeek(date));
+  private loadWeek() {
+    this.week = this.store.select(selectCalendarWeek(this.weekStart));
 
-    this.store.dispatch(calendarApiActions.listCalendarDaysInitiated({
-      dateFrom: dateToISODateString(this.weekStart),
-      dateTo: dateToISODateString(weekEnd),
-    }));     
+    this.store.dispatch(calendarActions.listCalendarWeek({
+      weekStart: this.weekStart,
+    }));  
   }
 
   ngOnInit(): void {
-    this.loadWeek(new Date());
+    const now = new Date();
+    const weekday = now.getDay();
+    const diffToMonday = (weekday === 0 ? 6 : weekday - 1);
+    
+    this.currentWeekStart = addDays(-diffToMonday, now);
+    
     this.store.dispatch(customerApiActions.listCustomersInitiated());
     this.store.dispatch(priceApiActions.listPricesInitiated());
+
+    this.activatedRoute.queryParams.subscribe((value) => {
+      if (value.weekStart) {
+        this.weekStart = new Date(value.weekStart);
+      } else {
+        this.weekStart = this.currentWeekStart;
+      }
+
+      this.loadWeek();
+    });
 
     this.pendingCustomerJob = this.activatedRoute.queryParams.pipe(mergeMap((value) => {
       const customerId = value.customerId as Customer.Id;
@@ -67,12 +78,13 @@ export class CalendarHomeComponent implements OnInit {
   }
 
   onChangeWeek(diff: number) {
-    const date = addDays(diff * 7, new Date(this.weekStart));
-    this.loadWeek(date);
+    this.store.dispatch(navigationActions.changeCalendarWeek({
+      weekStart: dateToISODateString(addDays(diff * 7, this.weekStart)), 
+    }));
   }
 
   onShowToday() {
-    this.loadWeek(new Date());
+    this.store.dispatch(navigationActions.changeCalendarWeek({}));
   }
 
   onCreateWork() {

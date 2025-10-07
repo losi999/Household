@@ -7,5 +7,6 @@ export const navigationActions = createActionGroup({
     'Logged in homepage': emptyProps(),
     'Logged out homepage': emptyProps(),
     'Transaction list of account': props<Account.AccountId>(),
+    'Change calendar week': props<{weekStart?: string}>(),
   },
 });

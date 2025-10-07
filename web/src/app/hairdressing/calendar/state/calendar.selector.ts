@@ -10,13 +10,11 @@ export const selectCalendarDay = (day: string) => createSelector(selectCalendar,
   return calendarDays?.[day];
 });
 
-export const selectCalendarWeek = (date: Date) => createSelector<object, CalendarState, CalendarWeek>(selectCalendar, ({ calendarDays }) => {
-  const weekday = date.getDay();
-  const diffToMonday = weekday === 0 ? 6 : weekday - 1;
+export const selectCalendarWeek = (weekStart: Date) => createSelector<object, CalendarState, CalendarWeek>(selectCalendar, ({ calendarDays }) => {
   return Array.from({
     length: 7, 
   }, (_, i) => i).reduce<CalendarWeek>((accumulator, _, index) => {
-    const d = dateToISODateString(addDays(index - diffToMonday, date));
+    const d = dateToISODateString(addDays(index, weekStart));
     const day = calendarDays?.[d];
 
     if (day) {

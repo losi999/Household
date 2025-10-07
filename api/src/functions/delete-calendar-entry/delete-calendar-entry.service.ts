@@ -10,7 +10,13 @@ export interface IDeleteCalendarEntryService {
 
 export const deleteCalendarEntryServiceFactory = (
   calendarEntryService: ICalendarEntryService): IDeleteCalendarEntryService => {
-  return ({ calendarEntryId }) => {
+  return async ({ calendarEntryId }) => {
+    const queried = await calendarEntryService.findCalendarEntryById(calendarEntryId).catch(httpErrors.calendarEntry.getById({
+      calendarEntryId,
+    }));
+
+    httpErrors.calendarEntry.alreadyPaid(queried);
+
     return calendarEntryService.deleteCalendarEntry(calendarEntryId).catch(httpErrors.calendarEntry.delete({
       calendarEntryId,
     }));

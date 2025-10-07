@@ -11,7 +11,7 @@ import { CalendarTimeColumnPipe } from '@household/web/app/hairdressing/calendar
 import { CalendarGridRowsPipe } from '@household/web/app/hairdressing/calendar/pipes/calendar-grid-rows.pipe';
 import { TimeRangeSliderComponent } from '@household/web/app/hairdressing/calendar/time-range-slider/time-range-slider.component';
 import { MatSliderModule } from '@angular/material/slider';
-import { TimeSlotToTimePipe } from '@household/web/app/shared/time-slot-to-time.pipe';
+import { TimeSlotToTimePipe } from '@household/web/app/shared/pipes/time-slot-to-time.pipe';
 import { ReactiveFormsModule } from '@angular/forms';
 import { CalendarWorkdayDialogComponent } from './calendar-workday-dialog/calendar-workday-dialog.component';
 import { MatDialogModule } from '@angular/material/dialog';
