@@ -9,47 +9,52 @@
   </mat-menu>
 </household-toolbar>
 
-<ng-container *ngIf="week | async as w">
-  <div class="header">
-    <div class="proposal" *ngIf="pendingCustomerJob | async as sj">
-      <span>
-        Időpont keresése... {{sj.customer.isGroup ? sj.name : (sj.customer.name + ': ' + sj.name)}} ({{sj.duration | timeSlotToTime}} óra)
-      </span>
-      <button mat-button color="warn" type="button" [routerLink]="['/hairdressing', 'calendar']" [replaceUrl]="true">Mégse</button>
-    </div>
-    <div class="week-stepper">
-      <button mat-flat-button color="primary" type="button" (click)="onChangeWeek(-1)">
-        <mat-icon>arrow_left</mat-icon>Előző hét
-      </button>
-      <button mat-flat-button color="warn" type="button" (click)="onShowToday()">Ma</button>
-      <button mat-flat-button color="primary" type="button" (click)="onChangeWeek(1)">Következő hét
-        <mat-icon>arrow_right</mat-icon>
-      </button>
-    </div>
-    <div class="days-of-week">
-      <div></div>
-      <div class="day" *ngFor="let d of w.days">
-        <div>
-          {{d.day | date: 'MMM dd.'}}
-        </div>
-        <div>
-          {{d.day | date: 'EEEE'}}
-        </div>
-        <div class="buttons">
-          <button mat-icon-button type="button" *ngIf="d.dayType !== 'holiday'" (click)="onSetWorkDay(d)"><mat-icon>settings</mat-icon></button>
-        </div>
-      </div>
-    </div>
+<div class="header">
+  @let pending = pendingCustomerJob | async;
+  @if (pending) {
+  <div class="proposal">
+    <span>
+      Időpont keresése... {{pending.customer.isGroup ? pending.name : (pending.customer.name + ': ' + pending.name)}} ({{pending.duration | timeSlotToTime}} óra)
+    </span>
+    <button mat-icon-button color="warn" type="button" [routerLink]="[]" [queryParams]="{ customerId: null, jobName: null }" queryParamsHandling="merge" [replaceUrl]="true"><mat-icon>close</mat-icon></button>
   </div>
+  }
+  <div class="week-stepper">
+    <button mat-flat-button color="primary" type="button" (click)="onChangeWeek(-1)">
+      <mat-icon>arrow_left</mat-icon>Előző hét
+    </button>
+    <button mat-flat-button color="warn" type="button" (click)="onShowToday()">Ma</button>
+    <button mat-flat-button color="primary" type="button" (click)="onChangeWeek(1)">Következő hét
+      <mat-icon>arrow_right</mat-icon>
+    </button>
+  </div>
+  <div class="days-of-week">
+    <div></div>
+    @for (d of weekStart | daysOfWeek; track $index) {
+    <div class="day">
+      <div [style.grid-column]="1">
+        {{d | date: 'MMM dd.'}}
+      </div>
+      <div [style.grid-column]="1">
+        {{d | date: 'EEEE'}}
+      </div>
+      @let dayResponse = (week | async).days[(d | date: 'YYYY-MM-dd')];
+      @if (dayResponse && dayResponse.dayType !== 'holiday') {
+      <button mat-icon-button type="button" (click)="onSetWorkDay(dayResponse)"><mat-icon>settings</mat-icon></button>
+      }
+    </div>
+    }
+  </div>
+</div>
 
-  <div class="calendar" [style.grid-template-rows]="w | calendarGridRows">
-    <ng-container *ngFor="let t of w | calendarTimeColumn; let i = index">
-      <div *ngIf="t" class="time" [style.grid-row]="i+1">
-        {{ t }}
-      </div>
-    </ng-container>
-    <ng-container *ngFor="let day of w.days; let i = index; trackBy: trackBy.trackByIndex">
-      <household-calendar-vertical-day [day]="day" [column]="i+2" [pendingCustomerJob]="pendingCustomerJob | async" />
-    </ng-container>
+@let w = week | async;
+<div class="calendar" [style.grid-template-rows]="w | calendarGridRows">
+  @for (t of w | calendarTimeColumn; let i = $index; track $index) {
+  <div *ngIf="t" class="time" [style.grid-row]="i+1">
+    {{ t }}
   </div>
-</ng-container>
+  }
+  @for (day of w.days | keyvalue; let i = $index; track $index) {
+  <household-calendar-vertical-day [day]="day.value" [column]="i+2" [pendingCustomerJob]="pendingCustomerJob | async" />
+  }
+</div>

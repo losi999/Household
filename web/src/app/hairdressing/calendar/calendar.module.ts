@@ -35,6 +35,7 @@ import { EffectsModule } from '@ngrx/effects';
 import { CalendarEffects } from '@household/web/app/hairdressing/calendar/state/calendar.effects';
 import { CustomerAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/customer-autocomplete-input/customer-autocomplete-input.component';
 import { MatSelectModule } from '@angular/material/select';
+import { DaysOfWeekPipe } from './pipes/days-of-week.pipe';
 
 @NgModule({
   declarations: [
@@ -48,6 +49,7 @@ import { MatSelectModule } from '@angular/material/select';
     CalendarEntryEditDialogComponent,
     CalendarCashPaymentDialogComponent,
     CalendarEntryPayingDialogComponent,
+    DaysOfWeekPipe,
   ],
   imports: [
     CommonModule,

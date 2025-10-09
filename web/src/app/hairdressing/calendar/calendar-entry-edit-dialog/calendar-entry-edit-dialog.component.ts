@@ -96,7 +96,7 @@ export class CalendarEntryEditDialogComponent implements OnInit {
     this.errors = combineLatest([
       this.form.controls.day.valueChanges.pipe(startWith(this.form.value.day),
         switchMap((date) => {
-          const obs = this.store.select(selectCalendarDay(dateToISODateString(date)));
+          const obs = this.store.select(selectCalendarDay(date));
 
           obs.pipe(take(1)).subscribe((value) => {
             if (!value) {

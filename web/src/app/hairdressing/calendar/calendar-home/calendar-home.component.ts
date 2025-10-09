@@ -18,7 +18,9 @@ import { navigationActions } from '@household/web/state/navigation/navigation.ac
 export type CalendarWeek = {
   start: number;
   end: number;
-  days: Calendar.Day.Response[];
+  days: {
+    [date: string]: Calendar.Day.Response;
+  };
 };
 
 @Component({

@@ -1,5 +1,4 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { dateToISODateString } from '@household/shared/common/utils';
 import { Calendar } from '@household/shared/types/types';
 import { selectCalendarDay } from '@household/web/app/hairdressing/calendar/state/calendar.selector';
 import { Store } from '@ngrx/store';
@@ -23,7 +22,7 @@ export class CalendarHorizontalDayComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.date) {
-      this.calendarDay = this.store.select(selectCalendarDay(dateToISODateString(this.date)));
+      this.calendarDay = this.store.select(selectCalendarDay(this.date));
     }
   }
 }

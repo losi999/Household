@@ -47,7 +47,7 @@ export const updateCalendarEntryServiceFactory = (
         }
       
         return accumulator;
-      }, []);
+      }, []) ?? [];
 
       const prices = await priceService.findPricesByIds(priceIds);
 

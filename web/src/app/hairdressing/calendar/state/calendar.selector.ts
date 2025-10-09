@@ -6,8 +6,8 @@ import { createFeatureSelector, createSelector } from '@ngrx/store';
 
 const selectCalendar = createFeatureSelector<CalendarState>('calendar');
 
-export const selectCalendarDay = (day: string) => createSelector(selectCalendar, (calendarDays) => {
-  return calendarDays?.[day];
+export const selectCalendarDay = (date: Date) => createSelector(selectCalendar, (calendarDays) => {
+  return calendarDays?.[dateToISODateString(date)];
 });
 
 export const selectCalendarWeek = (weekStart: Date) => createSelector<object, CalendarState, CalendarWeek>(selectCalendar, (calendarDays) => {
@@ -32,10 +32,10 @@ export const selectCalendarWeek = (weekStart: Date) => createSelector<object, Ca
       return {
         start: min,
         end: max,
-        days: [
+        days: {
           ...accumulator.days,
-          day,
-        ],
+          [d]: day,
+        },
       };
     }
 
@@ -43,6 +43,6 @@ export const selectCalendarWeek = (weekStart: Date) => createSelector<object, Ca
   }, {
     start: WORKDAY_START,
     end: WORKDAY_END,
-    days: [],
+    days: {},
   });
 });
