@@ -5,5 +5,7 @@
 </household-toolbar>
 
 <mat-action-list>
-  <household-price-list-item *ngFor="let p of prices | async" [price]="p" />
+  @for (p of prices | async; track $index) {
+  <household-price-list-item [price]="p" />
+  }
 </mat-action-list>

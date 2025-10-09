@@ -1,5 +1,8 @@
 <button mat-list-item (click)="onShowMenu()" [disabled]="isDisabled | async">
   <div matListItemTitle>{{price.name}}</div>
-  <div matListItemLine>{{price.amount}} Ft<ng-container *ngIf="price.unitOfMeasurement !== 'db'"> / {{price.unitOfMeasurement}}</ng-container>
+  <div matListItemLine>{{price.amount}} Ft
+    @if (price.unitOfMeasurement !== 'db') {
+    / {{price.unitOfMeasurement}}
+    }
   </div>
 </button>

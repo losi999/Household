@@ -36,6 +36,9 @@ import { CalendarEffects } from '@household/web/app/hairdressing/calendar/state/
 import { CustomerAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/customer-autocomplete-input/customer-autocomplete-input.component';
 import { MatSelectModule } from '@angular/material/select';
 import { DaysOfWeekPipe } from './pipes/days-of-week.pipe';
+import { DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
+import { CalendarDateAdapter } from '@household/web/app/hairdressing/calendar/calendar-date-adapter';
+import { EntryWarningsPipe } from './pipes/entry-warnings.pipe';
 
 @NgModule({
   declarations: [
@@ -50,6 +53,7 @@ import { DaysOfWeekPipe } from './pipes/days-of-week.pipe';
     CalendarCashPaymentDialogComponent,
     CalendarEntryPayingDialogComponent,
     DaysOfWeekPipe,
+    EntryWarningsPipe,
   ],
   imports: [
     CommonModule,
@@ -77,6 +81,36 @@ import { DaysOfWeekPipe } from './pipes/days-of-week.pipe';
     DurationStepperComponent,
     AmountInputComponent,
     EffectsModule.forFeature([CalendarEffects]),
+  ],
+  providers: [
+    {
+      provide: DateAdapter,
+      useClass: CalendarDateAdapter, 
+    },
+    {
+      provide: MAT_DATE_FORMATS,
+      useValue: {
+        parse: {
+          dateInput: 'YYYY.MM.DD', 
+        },
+        display: {
+          dateInput: 'input',
+          monthYearLabel: {
+            year: 'numeric',
+            month: 'short', 
+          },
+          dateA11yLabel: {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric', 
+          },
+          monthYearA11yLabel: {
+            year: 'numeric',
+            month: 'long', 
+          },
+        },
+      }, 
+    },
   ],
 })
 export class CalendarModule { }

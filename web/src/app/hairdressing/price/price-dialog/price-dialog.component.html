@@ -6,9 +6,11 @@
     <mat-form-field appearance="fill">
       <mat-label>Mértékegység</mat-label>
       <mat-select name="unitOfMeasurement" formControlName="unitOfMeasurement">
-        <mat-option *ngFor="let u of unitsOfMeasurement" [value]="u">
+        @for (u of unitsOfMeasurement; track $index) {
+        <mat-option [value]="u">
           {{u}}
         </mat-option>
+        }
       </mat-select>
     </mat-form-field>
   </form>

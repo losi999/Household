@@ -3,11 +3,11 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { isListedPrice } from '@household/shared/common/type-guards';
 import { createDate, createWorkEntryTitle, dateToISODateString, dateToTimeSlot } from '@household/shared/common/utils';
-import { CalendarDayType, CalendarEntryType } from '@household/shared/enums';
+import { CalendarEntryType } from '@household/shared/enums';
 import { Calendar, Customer } from '@household/shared/types/types';
 import { selectCalendarDay } from '@household/web/app/hairdressing/calendar/state/calendar.selector';
 import { Store } from '@ngrx/store';
-import { combineLatest, filter, map, Observable, startWith, switchMap, take } from 'rxjs';
+import { filter, Observable, startWith, switchMap, take } from 'rxjs';
 import { calendarActions } from '@household/web/app/hairdressing/calendar/state/calendar.actions';
 import { v4 } from 'uuid';
 
@@ -22,7 +22,7 @@ export type CalendarEntryEditDialogResult = Calendar.Entry.Request;
 export class CalendarEntryEditDialogComponent implements OnInit {
   form: FormGroup<{
     customer: FormControl<Customer.Response>;
-    job: FormControl<Customer.Job.Response | string>;
+    job: FormControl<Customer.Job.Response>;
     title: FormControl<string>;
     description: FormControl<string>;
     day: FormControl<Date>;
@@ -30,16 +30,22 @@ export class CalendarEntryEditDialogComponent implements OnInit {
     duration: FormControl<number>;
   }>;
 
+  calendarDay: Observable<Calendar.Day.Response>;
   errors: Observable<string[]>;
   title: string;
-  CUSTOM_JOB: string;
+  CUSTOM_JOB: Customer.Job.Response;
 
   constructor(private dialogRef: MatDialogRef<CalendarEntryEditDialogComponent, CalendarEntryEditDialogResult>,
     private store: Store,
     @Inject(MAT_DIALOG_DATA) public entry: CalendarEntryEditDialogData) { }
 
   ngOnInit(): void {
-    this.CUSTOM_JOB = v4();
+    this.CUSTOM_JOB = {
+      name: v4(),
+      duration: 0,
+      description: undefined,
+      prices: undefined,
+    };
 
     switch(this.entry.entryType) {
       case CalendarEntryType.Issue: {
@@ -62,7 +68,7 @@ export class CalendarEntryEditDialogComponent implements OnInit {
     now.setMinutes(Math.floor(now.getMinutes() / 15) * 15);
 
     let customer: Customer.Response = null;
-    let job: Customer.Job.Response | string = null;
+    let job: Customer.Job.Response = null;
 
     if (this.entry.entryType === CalendarEntryType.Work && this.entry.customer) {
       customer = this.entry.customer;
@@ -70,8 +76,8 @@ export class CalendarEntryEditDialogComponent implements OnInit {
     }
 
     this.form = new FormGroup({
-      customer: new FormControl(customer),
-      job: new FormControl(job),
+      customer: new FormControl(customer, this.entry.entryType === CalendarEntryType.Work ? [Validators.required] : []),
+      job: new FormControl(job, this.entry.entryType === CalendarEntryType.Work ? [Validators.required] : []),
       title: new FormControl(this.entry.title, [Validators.required]),
       description: new FormControl(this.entry.description),
       day: new FormControl(createDate(this.entry.day) ?? now, [Validators.required]),
@@ -79,8 +85,16 @@ export class CalendarEntryEditDialogComponent implements OnInit {
       duration: new FormControl(this.entry.end - this.entry.start || 4),
     });
 
+    this.form.controls.customer.valueChanges.subscribe(() => {
+      this.form.patchValue({
+        job: null,
+      }, {
+        emitEvent: false,
+      });
+    });
+
     this.form.controls.job.valueChanges.pipe(filter(x => !!x)).subscribe((job) => { 
-      if (typeof job === 'string') {
+      if (job.name === this.CUSTOM_JOB.name) {
         this.form.patchValue({
           title: createWorkEntryTitle(this.form.value.customer),
         });  
@@ -93,73 +107,19 @@ export class CalendarEntryEditDialogComponent implements OnInit {
       }
     });
 
-    this.errors = combineLatest([
-      this.form.controls.day.valueChanges.pipe(startWith(this.form.value.day),
-        switchMap((date) => {
-          const obs = this.store.select(selectCalendarDay(date));
+    this.calendarDay = this.form.controls.day.valueChanges.pipe(startWith(this.form.value.day), switchMap((date) => {
+      const obs = this.store.select(selectCalendarDay(date));
 
-          obs.pipe(take(1)).subscribe((value) => {
-            if (!value) {
-              this.store.dispatch(calendarActions.listCalendarMonth({
-                date, 
-              }));
-            }
-          });
-
-          return obs;
-        })),
-      this.form.controls.start.valueChanges.pipe(startWith(this.form.value.start)),
-      this.form.controls.duration.valueChanges.pipe(startWith(this.form.value.duration)),
-    ]).pipe(
-      map(([
-        day,
-        start,
-        duration,
-      ]) => {
-        if (!day) {
-          return [];
+      obs.pipe(take(1)).subscribe((value) => {
+        if (!value) {
+          this.store.dispatch(calendarActions.listCalendarMonth({
+            date, 
+          }));
         }
-        const errors = [];
+      });
 
-        const end = start + duration;
-
-        if (this.entry.entryType === CalendarEntryType.Work) {
-          switch (day.dayType) {
-            case CalendarDayType.Vacation: {
-              errors.push('Ezt a napot szabadságnak jelölted');
-            } break;
-            case CalendarDayType.Holiday: {
-              errors.push('Munkaszüneti nap');
-            } break;
-            case CalendarDayType.Weekend: {
-              errors.push('Hétvége');
-            } break;
-            case CalendarDayType.Workday: {
-              if (start < day.start || end > day.end) {
-                errors.push('Túlóra');
-              }
-            } break;
-          }
-
-        }
-
-        day.entries.filter(e => !(start >= e.end || end <= e.start) && e.calendarEntryId !== this.entry.calendarEntryId).forEach((e) => {
-          let entryTypeText: string;
-          switch(e.entryType) {
-            case CalendarEntryType.Work: {
-              entryTypeText = 'munkával';
-            } break;
-            case CalendarEntryType.Issue: {
-              entryTypeText = 'problémával';
-            } break;
-            case CalendarEntryType.Personal: {
-              entryTypeText = 'személyes programmal';
-            } break;
-          }
-          errors.push(`Ütközik az alábbi ${entryTypeText}: ${e.title}`);
-        });
-        return errors;
-      }));
+      return obs;
+    }));
   }
 
   onSubmit() {
@@ -173,7 +133,7 @@ export class CalendarEntryEditDialogComponent implements OnInit {
           title: this.form.value.title,
           description: this.form.value.description ?? undefined,
           customerId: this.form.value.customer.customerId,
-          prices: typeof this.form.value.job === 'string' ? undefined : this.form.value.job?.prices.map((p) => {
+          prices: this.form.value.job.name === this.CUSTOM_JOB.name ? undefined : this.form.value.job?.prices.map((p) => {
             if (isListedPrice(p)) {
               return {
                 priceId: p.priceId,

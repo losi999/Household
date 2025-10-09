@@ -50,9 +50,11 @@
 @let w = week | async;
 <div class="calendar" [style.grid-template-rows]="w | calendarGridRows">
   @for (t of w | calendarTimeColumn; let i = $index; track $index) {
-  <div *ngIf="t" class="time" [style.grid-row]="i+1">
+  @if (t) {
+  <div class="time" [style.grid-row]="i+1">
     {{ t }}
   </div>
+  }
   }
   @for (day of w.days | keyvalue; let i = $index; track $index) {
   <household-calendar-vertical-day [day]="day.value" [column]="i+2" [pendingCustomerJob]="pendingCustomerJob | async" />

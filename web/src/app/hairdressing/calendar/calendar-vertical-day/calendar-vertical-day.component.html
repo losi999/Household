@@ -1,36 +1,31 @@
-<ng-template #weekend>
-  <ng-container *ngIf="day.start && day.end; else fullDay">
-    <div class="no-work" [style.grid-row]="1 + '/ ' + (day.start + 1)" [style.grid-column]="column"></div>
-    <div class="no-work" [style.grid-row]="(day.end + 1) + '/ 97'" [style.grid-column]="column"></div>
-  </ng-container>
-  <ng-template #fullDay>
-    <div class="no-work" [style.grid-row]="'1 / 97'" [style.grid-column]="column"></div>
-  </ng-template>
-</ng-template>
-
-<ng-template #holiday>
-  <div class="holiday" [style.grid-row]="'1 / 97'" [style.grid-column]="column"></div>
-</ng-template>
-
-<ng-template #vacation>
-  <div class="vacation" [style.grid-row]="'1 / 97'" [style.grid-column]="column"></div>
-</ng-template>
-
-<ng-template #workday>
-  <div class="no-work" [style.grid-row]="1 + '/ ' + (day.start + 1)" [style.grid-column]="column"></div>
-  <div class="no-work" [style.grid-row]="(day.end + 1) + '/ 97'" [style.grid-column]="column"></div>
-</ng-template>
-
-<ng-container [ngSwitch]="day.dayType">
-  <ng-container *ngSwitchCase="'weekend'" [ngTemplateOutlet]="weekend"></ng-container>
-  <ng-container *ngSwitchCase="'vacation'" [ngTemplateOutlet]="vacation"></ng-container>
-  <ng-container *ngSwitchCase="'holiday'" [ngTemplateOutlet]="holiday"></ng-container>
-  <ng-container *ngSwitchDefault [ngTemplateOutlet]="workday"></ng-container>
-</ng-container>
-<button *ngFor="let p of proposedTimeIntervals" class="pending" [style.grid-row]="(p.start + 1) + ' / ' + (p.end + 1)" [style.grid-column]="column" (click)="onProposalClick(p)">{{p.start | timeSlotToTime}} - {{p.end | timeSlotToTime}}</button>
-<button *ngFor="let e of day.entries" [ngClass]="e.entryType" [style.grid-row]="(e.start + 1) + ' / ' + (e.end + 1)" [style.grid-column]="column" (click)="onEntryClick(e)">
-  <ng-container *ngIf="e.entryType === 'work' && isInThePast && !e.isPaid">
-    <mat-icon class="badge">attach_money</mat-icon>
-  </ng-container>
+@switch (day.dayType) {
+@case ('weekend') {
+@if (day.start && day.end) {
+<div class="no-work" [style.grid-row]="1 + '/ ' + (day.start + 1)" [style.grid-column]="column"></div>
+<div class="no-work" [style.grid-row]="(day.end + 1) + '/ 97'" [style.grid-column]="column"></div>
+} @else {
+<div class="no-work" [style.grid-row]="'1 / 97'" [style.grid-column]="column"></div>
+}
+}
+@case ('vacation') {
+<div class="vacation" [style.grid-row]="'1 / 97'" [style.grid-column]="column"></div>
+}
+@case ('holiday') {
+<div class="holiday" [style.grid-row]="'1 / 97'" [style.grid-column]="column"></div>
+}
+@default {
+<div class="no-work" [style.grid-row]="1 + '/ ' + (day.start + 1)" [style.grid-column]="column"></div>
+<div class="no-work" [style.grid-row]="(day.end + 1) + '/ 97'" [style.grid-column]="column"></div>
+}
+}
+@for (p of proposedTimeIntervals; track $index) {
+<button class="pending" [style.grid-row]="(p.start + 1) + ' / ' + (p.end + 1)" [style.grid-column]="column" (click)="onProposalClick(p)">{{p.start | timeSlotToTime}} - {{p.end | timeSlotToTime}}</button>
+}
+@for (e of day.entries; track $index) {
+<button [ngClass]="e.entryType" [style.grid-row]="(e.start + 1) + ' / ' + (e.end + 1)" [style.grid-column]="column" (click)="onEntryClick(e)">
+  @if (e.entryType === 'work' && isInThePast && !e.isPaid) {
+  <mat-icon class="badge">attach_money</mat-icon>
+  }
   {{e.title}}
 </button>
+}

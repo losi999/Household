@@ -1,35 +1,31 @@
-<div *ngIf="calendarDay | async as day" class="day">
-  <ng-template #weekend>
-    <ng-container *ngIf="day.start && day.end; else fullDay">
-      <div class="no-work" [style.grid-column]="1 + '/ ' + (day.start + 1)"></div>
-      <div class="no-work" [style.grid-column]="(day.end + 1) + '/ 97'"></div>
-    </ng-container>
-    <ng-template #fullDay>
-      <div class="no-work" [style.grid-column]="'1 / 97'"></div>
-    </ng-template>
-  </ng-template>
-
-  <ng-template #holiday>
-    <div class="holiday" [style.grid-column]="'1 / 97'"></div>
-  </ng-template>
-
-  <ng-template #vacation>
-    <div class="vacation" [style.grid-column]="'1 / 97'"></div>
-  </ng-template>
-
-  <ng-template #workday>
-    <div class="no-work" [style.grid-column]="1 + '/ ' + (day.start + 1)"></div>
-    <div class="no-work" [style.grid-column]="(day.end + 1) + '/ 97'"></div>
-  </ng-template>
-
+@let day = calendarDay | async;
+@if (day) {
+<div class="day">
   <div class="pending" [style.grid-column]="(pendingStart + 1) + ' / ' + (pendingEnd + 1)"></div>
-  <ng-container [ngSwitch]="day.dayType">
-    <ng-container *ngSwitchCase="'weekend'" [ngTemplateOutlet]="weekend"></ng-container>
-    <ng-container *ngSwitchCase="'vacation'" [ngTemplateOutlet]="vacation"></ng-container>
-    <ng-container *ngSwitchCase="'holiday'" [ngTemplateOutlet]="holiday"></ng-container>
-    <ng-container *ngSwitchDefault [ngTemplateOutlet]="workday"></ng-container>
-  </ng-container>
-  <ng-container *ngFor="let e of day.entries">
-    <div *ngIf="e.calendarEntryId !== excludedCalendarEntryId" [ngClass]="e.entryType" [style.grid-column]="(e.start + 1) + ' / ' + (e.end + 1)"></div>
-  </ng-container>
+  @switch (day.dayType) {
+  @case ('weekend') {
+  @if (day.start && day.end) {
+  <div class="no-work" [style.grid-column]="1 + '/ ' + (day.start + 1)"></div>
+  <div class="no-work" [style.grid-column]="(day.end + 1) + '/ 97'"></div>
+  } @else {
+  <div class="no-work" [style.grid-column]="'1 / 97'"></div>
+  }
+  }
+  @case ('vacation') {
+  <div class="vacation" [style.grid-column]="'1 / 97'"></div>
+  }
+  @case ('holiday') {
+  <div class="holiday" [style.grid-column]="'1 / 97'"></div>
+  }
+  @default {
+  <div class="no-work" [style.grid-column]="1 + '/ ' + (day.start + 1)"></div>
+  <div class="no-work" [style.grid-column]="(day.end + 1) + '/ 97'"></div>
+  }
+  }
+  @for (e of day.entries; track $index) {
+  @if (e.calendarEntryId !== excludedCalendarEntryId) {
+  <div [ngClass]="e.entryType" [style.grid-column]="(e.start + 1) + ' / ' + (e.end + 1)"></div>
+  }
+  }
 </div>
+}

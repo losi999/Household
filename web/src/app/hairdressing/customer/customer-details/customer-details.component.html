@@ -3,76 +3,86 @@
     <mat-icon>edit</mat-icon>
   </button>
 </household-toolbar>
-
-<ng-container *ngIf="customer | async as cust">
-  <div class="name">
-    {{cust.name}}
+@let cust = customer | async;
+@if (cust) {
+<div class="name">
+  {{cust.name}}
+</div>
+<div class="rating">
+  <mat-icon [ngClass]="cust.rating === 1 ? 'green' : ''">sentiment_stressed</mat-icon>
+  <mat-icon [ngClass]="cust.rating === 2 ? 'green' : ''">sentiment_dissatisfied</mat-icon>
+  <mat-icon [ngClass]="cust.rating === 3 ? 'green' : ''">sentiment_neutral</mat-icon>
+  <mat-icon [ngClass]="cust.rating === 4 ? 'green' : ''">sentiment_satisfied</mat-icon>
+  <mat-icon [ngClass]="cust.rating === 5 ? 'green' : ''">sentiment_excited</mat-icon>
+</div>
+@if (cust.description) {
+<div class="description">
+  {{cust.description}}
+</div>
+}
+<mat-divider />
+@let upcoming = cust.workEntries | upcomingEntries;
+@if (upcoming.length > 0 ) {
+<div class="section-title">
+  <household-icon-text icon="calendar_clock" text="Következő időpontok" size="medium" />
+</div>
+<mat-paginator #upcomingPaginator [length]="upcoming.length" [hidePageSize]="true" pageSize="3" />
+<mat-list>
+  @for (e of upcoming | paginate: upcomingPaginator.pageIndex: upcomingPaginator.pageSize; track $index) {
+  <mat-list-item>
+    <span matListItemTitle>{{e.day | date: 'yyyy. MMMM d., EEEE'}} {{e.start | timeSlotToTime}}-{{e.end | timeSlotToTime}}</span>
+    <span matListItemLine>{{e.title}}</span>
+  </mat-list-item>
+  }
+</mat-list>
+}
+<div class="section-title">
+  <household-icon-text icon="content_cut" text="Munkák" size="medium" />
+  <button mat-icon-button type="button" (click)="onCreateJob()">
+    <mat-icon>add</mat-icon>
+  </button>
+</div>
+<div class="job-list">
+  @for (j of cust.jobs; track $index) {
+  <household-customer-details-job-item [job]="j" />
+  }
+</div>
+<mat-divider />
+@let past = cust.workEntries | pastEntries;
+@if (past.length > 0) {
+<div class="section-title">
+  <household-icon-text icon="calendar_check" text="Korábbi időpontok" size="medium" />
+</div>
+<mat-paginator #pastPaginator [length]="past.length" [hidePageSize]="true" pageSize="5" />
+<mat-list>
+  @for (e of past | paginate: pastPaginator.pageIndex: pastPaginator.pageSize; track $index) {
+  <mat-list-item>
+    <span matListItemTitle>{{e.day | date: 'yyyy. MMMM d.'}} {{e.start | timeSlotToTime}}-{{e.end | timeSlotToTime}}</span>
+    <span matListItemLine>{{e.title}}</span>
+  </mat-list-item>
+  }
+</mat-list>
+}
+<mat-divider />
+<div class="section-title">
+  <household-icon-text icon="block" text="Tiltólista" size="medium" />
+  <button mat-icon-button type="button" (click)="onAddToBlacklist()">
+    <mat-icon>add</mat-icon>
+  </button>
+</div>
+@if (cust.blacklistedCustomers.length === 0) {
+<div>
+  Nincs vendég a tiltólistához adva
+</div>
+}
+@for (c of cust.blacklistedCustomers; track $index) {
+<div class="customer-blacklist">
+  <div>
+    {{c.name}}
   </div>
-  <div class="rating">
-    <mat-icon [ngClass]="cust.rating === 1 ? 'green' : ''">sentiment_stressed</mat-icon>
-    <mat-icon [ngClass]="cust.rating === 2 ? 'green' : ''">sentiment_dissatisfied</mat-icon>
-    <mat-icon [ngClass]="cust.rating === 3 ? 'green' : ''">sentiment_neutral</mat-icon>
-    <mat-icon [ngClass]="cust.rating === 4 ? 'green' : ''">sentiment_satisfied</mat-icon>
-    <mat-icon [ngClass]="cust.rating === 5 ? 'green' : ''">sentiment_excited</mat-icon>
-  </div>
-  <div *ngIf="cust.description" class="description">
-    {{cust.description}}
-  </div>
-  <mat-divider />
-  <ng-container *ngIf="cust.workEntries | upcomingEntries as upcoming">
-    <ng-container *ngIf="upcoming.length > 0">
-      <div class="section-title">
-        <household-icon-text icon="calendar_clock" text="Következő időpontok" size="medium" />
-      </div>
-      <mat-paginator #upcomingPaginator [length]="upcoming.length" [hidePageSize]="true" pageSize="3" />
-      <mat-list>
-        <mat-list-item *ngFor="let e of upcoming | paginate: upcomingPaginator.pageIndex: upcomingPaginator.pageSize">
-          <span matListItemTitle>{{e.day | date: 'yyyy. MMMM d.'}} {{e.start | timeSlotToTime}}-{{e.end | timeSlotToTime}}</span>
-          <span matListItemLine>{{e.title}}</span>
-        </mat-list-item>
-      </mat-list>
-    </ng-container>
-  </ng-container>
-  <div class="section-title">
-    <household-icon-text icon="content_cut" text="Munkák" size="medium" />
-    <button mat-icon-button type="button" (click)="onCreateJob()">
-      <mat-icon>add</mat-icon>
-    </button>
-  </div>
-  <div class="job-list">
-    <household-customer-details-job-item *ngFor="let j of cust.jobs" [job]="j" />
-  </div>
-  <mat-divider />
-  <ng-container *ngIf="cust.workEntries | pastEntries as past">
-    <ng-container *ngIf="past.length > 0">
-      <div class="section-title">
-        <household-icon-text icon="calendar_check" text="Korábbi időpontok" size="medium" />
-      </div>
-      <mat-paginator #pastPaginator [length]="past.length" [hidePageSize]="true" pageSize="5" />
-      <mat-list>
-        <mat-list-item *ngFor="let e of past | paginate: pastPaginator.pageIndex: pastPaginator.pageSize">
-          <span matListItemTitle>{{e.day | date: 'yyyy. MMMM d.'}} {{e.start | timeSlotToTime}}-{{e.end | timeSlotToTime}}</span>
-          <span matListItemLine>{{e.title}}</span>
-        </mat-list-item>
-      </mat-list>
-    </ng-container>
-  </ng-container>
-  <mat-divider />
-  <div class="section-title">
-    <household-icon-text icon="block" text="Tiltólista" size="medium" />
-    <button mat-icon-button type="button" (click)="onAddToBlacklist()">
-      <mat-icon>add</mat-icon>
-    </button>
-  </div>
-  <div *ngIf="cust.blacklistedCustomers.length === 0">
-    Nincs vendég a tiltólistához adva
-  </div>
-  <div class="customer-blacklist" *ngFor="let c of cust.blacklistedCustomers">
-    <div>
-      {{c.name}}
-    </div>
-    <button mat-icon-button type="button" color="warn" (click)="onRemoveFromBlacklist(c)">
-      <mat-icon>delete</mat-icon>
-    </button>
-  </div>
-</ng-container>
+  <button mat-icon-button type="button" color="warn" (click)="onRemoveFromBlacklist(c)">
+    <mat-icon>delete</mat-icon>
+  </button>
+</div>
+}
+}

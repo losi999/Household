@@ -8,18 +8,18 @@
       <mat-button-toggle [disabled]="day.dayType === 'weekend'" value="vacation">Szabadság</mat-button-toggle>
     </mat-button-toggle-group>
     <mat-divider />
-    <ng-container *ngIf="form.value.dayType === 'workday'">
-      <mat-radio-group formControlName="shiftType">
-        <mat-radio-button value="morning">Délelőtt</mat-radio-button>
-        <mat-radio-button value="afternoon">Délután</mat-radio-button>
-        <mat-radio-button value="custom">Egyéni</mat-radio-button>
-      </mat-radio-group>
-      <mat-slider min="28" max="84">
-        <input formControlName="start" matSliderStartThumb>
-        <input formControlName="end" matSliderEndThumb>
-      </mat-slider>
-      {{form.value.start | timeSlotToTime}} - {{form.value.end | timeSlotToTime}} (időtartam: {{(form.value.end - form.value.start) | timeSlotToTime}} óra)
-    </ng-container>
+    @if (form.value.dayType === 'workday') {
+    <mat-radio-group formControlName="shiftType">
+      <mat-radio-button value="morning">Délelőtt</mat-radio-button>
+      <mat-radio-button value="afternoon">Délután</mat-radio-button>
+      <mat-radio-button value="custom">Egyéni</mat-radio-button>
+    </mat-radio-group>
+    <mat-slider min="28" max="84">
+      <input formControlName="start" matSliderStartThumb>
+      <input formControlName="end" matSliderEndThumb>
+    </mat-slider>
+    {{form.value.start | timeSlotToTime}} - {{form.value.end | timeSlotToTime}} (időtartam: {{(form.value.end - form.value.start) | timeSlotToTime}} óra)
+    }
   </div>
   <div mat-dialog-actions>
     <button mat-flat-button color="primary" cdkFocusInitial>Mentés</button>

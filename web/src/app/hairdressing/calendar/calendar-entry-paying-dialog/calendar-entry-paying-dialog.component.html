@@ -2,9 +2,11 @@
 <div mat-dialog-content>
   <household-icon-text icon="calendar_month" [text]="entry.day | date: 'yyyy. MMMM d.'" size="medium" />
   <household-icon-text icon="alarm" [text]="(entry.start | timeSlotToTime) + ' - ' + (entry.end | timeSlotToTime)" size="medium" />
-  <div *ngIf="entry.description">
+  @if (entry.description) {
+  <div>
     {{entry.description}}
   </div>
+  }
   <household-job-price-calculator [formControl]="prices" />
 </div>
 <div mat-dialog-actions>
