@@ -3,7 +3,6 @@ import { Category, Product } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
 
 export interface IProductService {
-  dumpProducts(): Promise<Product.Document[]>;
   saveProduct(doc: Product.Document): Promise<Product.Document>;
   saveProducts(docs: Product.Document[]): Promise<unknown>;
   findProductById(productId: Product.Id): Promise<Product.Document>;
@@ -20,16 +19,6 @@ export interface IProductService {
 export const productServiceFactory = (mongodbService: IMongodbService): IProductService => {
 
   const instance: IProductService = {
-    dumpProducts: () => {
-      return mongodbService.inSession((session) => {
-        return mongodbService.products.find({})
-          .setOptions({
-            session,
-            lean: true,
-          });
-          
-      });
-    },
     listProducts: () => {
       return mongodbService.inSession((session) => {
         return mongodbService.products.aggregate([

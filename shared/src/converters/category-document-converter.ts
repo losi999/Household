@@ -40,11 +40,10 @@ export const categoryDocumentConverterFactory = (): ICategoryDocumentConverter =
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
-    update: ({ body: { categoryType, name }, parentCategory }, expiresIn) => {
+    update: ({ body, parentCategory }, expiresIn) => {
       const update: UpdateQuery<Category.Document> = {
         $set: {
-          categoryType,
-          name,
+          ...body,
           ancestors: parentCategory ? [
             ...parentCategory.ancestors,
             parentCategory,

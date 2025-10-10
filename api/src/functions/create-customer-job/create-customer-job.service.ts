@@ -41,7 +41,7 @@ export const createCustomerJobServiceFactory = (
       return accumulator;
     }, []);
 
-    const priceDocuments = await priceService.findPricesByIds(priceIds);
+    const priceDocuments = await priceService.findPricesByIds(priceIds).catch(httpErrors.price.listByIds(priceIds));
 
     const update = customerDocumentConverter.addJob(body, priceDocuments); 
 

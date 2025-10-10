@@ -5,7 +5,6 @@ import { DocumentUpdate } from '@household/shared/types/common';
 import { Calendar, Customer, Transaction } from '@household/shared/types/types';
 
 export interface ICalendarEntryService {
-  // dumpCalendarEntries(): Promise<CalendarEntry.Document[]>;
   saveCalendarEntry(doc: Calendar.Entry.Document): Promise<Calendar.Entry.Document>;
   // saveCalendarEntries(docs: CalendarEntry.Document[]): Promise<unknown>;
   findCalendarEntryById(calendarEntryId: Calendar.Entry.Id): Promise<Calendar.Entry.Document>;
@@ -22,13 +21,6 @@ export interface ICalendarEntryService {
 export const calendarEntryServiceFactory = (mongodbService: IMongodbService): ICalendarEntryService => {
 
   const instance: ICalendarEntryService = {
-    // dumpCalendarEntries: () => {
-    //   return mongodbService.inSession(async(session) => {
-    //     return mongodbService.calendarEntries.find({}).session(session)
-    //       .lean();
-          
-    //   });
-    // },
     saveCalendarEntry: async (doc) => {
       return mongodbService.calendarEntries.create(doc);
     },

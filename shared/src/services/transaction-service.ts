@@ -6,7 +6,6 @@ import { Account, Common, File, Transaction } from '@household/shared/types/type
 import { PipelineStage, Types, UpdateQuery } from 'mongoose';
 
 export interface ITransactionService {
-  dumpTransactions(): Promise<Transaction.Document[]>;
   saveTransaction(doc: Transaction.Document): Promise<Transaction.Document>;
   saveTransactions(docs: Transaction.Document[]): Promise<any>;
   findTransactionById(transactionId: Transaction.Id): Promise<Transaction.Document>;
@@ -26,16 +25,6 @@ export interface ITransactionService {
 export const transactionServiceFactory = (mongodbService: IMongodbService): ITransactionService => {
 
   const instance: ITransactionService = {
-    dumpTransactions: () => {
-      return mongodbService.inSession((session) => {
-        return mongodbService.transactions.find({})
-          .setOptions({
-            session,
-            lean: true,
-          });
-          
-      });
-    },
     saveTransaction: (doc) => {
       return mongodbService.transactions.create(doc);
     },

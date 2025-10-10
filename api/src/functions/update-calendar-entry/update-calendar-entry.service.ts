@@ -36,7 +36,9 @@ export const updateCalendarEntryServiceFactory = (
     
     let update: DocumentUpdate<Calendar.Entry.Document>;
     if (body.entryType === CalendarEntryType.Work) {
-      const customer = await customerService.findCustomerById(body.customerId);
+      const customer = await customerService.findCustomerById(body.customerId).catch(httpErrors.customer.getById({
+        customerId: body.customerId,
+      }));
 
       const priceIds = body.prices?.reduce<Price.Id[]>((accumulator, currentValue) => {
         if (!isPriceBase(currentValue)) {
@@ -49,7 +51,7 @@ export const updateCalendarEntryServiceFactory = (
         return accumulator;
       }, []) ?? [];
 
-      const prices = await priceService.findPricesByIds(priceIds);
+      const prices = await priceService.findPricesByIds(priceIds).catch(httpErrors.price.listByIds(priceIds));
 
       httpErrors.price.multipleNotFound({
         priceIds,

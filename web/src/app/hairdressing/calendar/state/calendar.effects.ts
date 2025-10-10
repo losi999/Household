@@ -107,8 +107,9 @@ export class CalendarEffects {
                   });
                 }
                 case CalendarEntryDetailsDialogResult.Pay: {
-                  if (entry.entryType === CalendarEntryType.Work)
-                  {return calendarActions.payCalendarWorkEntry(entry);}
+                  if (entry.entryType === CalendarEntryType.Work) {
+                    return calendarActions.payCalendarWorkEntry(entry);
+                  }
                 }
               }
             }),

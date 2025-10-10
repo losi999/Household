@@ -8,7 +8,7 @@ import { Customer, Price } from '@household/shared/types/types';
 export interface IUpdateCustomerJobService {
   (ctx: {
     body: Customer.Job.Request
-  } & Customer.CustomerId & Customer.Job.Name): Promise<void>;
+  } & Customer.CustomerId & Customer.Job.Name): Promise<unknown>;
 }
 
 export const updateCustomerJobServiceFactory = (
@@ -42,11 +42,11 @@ export const updateCustomerJobServiceFactory = (
       return accumulator;
     }, []);
 
-    const priceDocuments = await priceService.findPricesByIds(priceIds);
+    const priceDocuments = await priceService.findPricesByIds(priceIds).catch(httpErrors.price.listByIds(priceIds));
 
     const update = customerDocumentConverter.updateJob(name, body, priceDocuments); 
 
-    await customerService.updateCustomer(customerId, update).catch(httpErrors.customer.update({
+    return customerService.updateCustomer(customerId, update).catch(httpErrors.customer.update({
       customerId,
       update,
     }));

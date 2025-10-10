@@ -31,7 +31,6 @@ export class CalendarEntryEditDialogComponent implements OnInit {
   }>;
 
   calendarDay: Observable<Calendar.Day.Response>;
-  errors: Observable<string[]>;
   title: string;
   CUSTOM_JOB: Customer.Job.Response;
 

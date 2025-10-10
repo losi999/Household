@@ -15,8 +15,8 @@ import { Store } from '@ngrx/store';
 export class CalendarVerticalDayComponent implements OnChanges {
   @Input() day: Calendar.Day.Response;
   @Input() column: number;
-
   @Input() pendingCustomerJob: CustomerJob;
+  
   proposedTimeIntervals: Calendar.TimeInterval[];
   isInThePast: boolean;
   

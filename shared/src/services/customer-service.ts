@@ -3,7 +3,6 @@ import { DocumentUpdate } from '@household/shared/types/common';
 import { Customer } from '@household/shared/types/types';
 
 export interface ICustomerService {
-  dumpCustomers(): Promise<Customer.Document[]>;
   saveCustomer(doc: Customer.Document): Promise<Customer.Document>;
   saveCustomers(docs: Customer.Document[]): Promise<unknown>;
   findCustomerById(customerId: Customer.Id): Promise<Customer.Document>;
@@ -17,13 +16,7 @@ export interface ICustomerService {
 export const customerServiceFactory = (mongodbService: IMongodbService): ICustomerService => {
 
   const instance: ICustomerService = {
-    dumpCustomers: () => {
-      return mongodbService.inSession(async(session) => {
-        return mongodbService.customers.find({}).session(session)
-          .lean();
-          
-      });
-    },
+
     saveCustomer: async (doc) => {
       return mongodbService.customers.create(doc);
     },

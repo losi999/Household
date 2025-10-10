@@ -35,6 +35,7 @@ export type IMongodbService = {
 } & {
   inSession<T>(fn: (session: ClientSession) => Promise<T>): Promise<T>;
   syncIndexes(): Promise<unknown>;
+  dump(): Promise<{[K in keyof CollectionMapping]: CollectionMapping[K][]}>
 };
 
 let connection: Connection;
@@ -86,7 +87,7 @@ export const mongodbServiceFactory = (mongodbConnectionString: string): IMongodb
     console.log('post create connect', connection?.readyState);
   }
 
-  return {
+  const instance: IMongodbService = {
     inSession: async (fn) => {
       const session = await connection.startSession();
       const result = await fn(session);
@@ -94,6 +95,36 @@ export const mongodbServiceFactory = (mongodbConnectionString: string): IMongodb
       return result;
     },
     syncIndexes: () => connection.syncIndexes(),
+    dump: async () => {
+      return instance.inSession(async(session) => {
+        return {
+          accounts: await instance.accounts.find({}).session(session)
+            .lean(),
+          recipients: await instance.recipients.find({}).session(session)
+            .lean(),
+          projects: await instance.projects.find({}).session(session)
+            .lean(),
+          transactions: await instance.transactions.find({}).session(session)
+            .lean(),
+          categories: await instance.categories.find({}).session(session)
+            .lean(),
+          products: await instance.products.find({}).session(session)
+            .lean(),
+          files: await instance.files.find({}).session(session)
+            .lean(),
+          settings: await instance.settings.find({}).session(session)
+            .lean(),
+          customers: await instance.customers.find({}).session(session)
+            .lean(),
+          prices: await instance.prices.find({}).session(session)
+            .lean(),
+          calendarEntries: await instance.calendarEntries.find({}).session(session)
+            .lean(),
+          calendarDays: await instance.calendarDays.find({}).session(session)
+            .lean(),
+        };
+      });
+    },
     recipients: connection.model('recipients', recipientSchema),
     projects: connection.model('projects', projectSchema),
     transactions: connection.model('transactions', transactionSchema),
@@ -106,5 +137,8 @@ export const mongodbServiceFactory = (mongodbConnectionString: string): IMongodb
     prices: connection.model('prices', priceSchema),
     calendarEntries: connection.model('calendarEntries', calendarEntrySchema),
     calendarDays: connection.model('calendarDays', calendarDaySchema),
+    
   };
+
+  return instance;
 };

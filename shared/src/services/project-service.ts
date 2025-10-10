@@ -3,7 +3,6 @@ import { Project } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
 
 export interface IProjectService {
-  dumpProjects(): Promise<Project.Document[]>;
   saveProject(doc: Project.Document): Promise<Project.Document>;
   saveProjects(docs: Project.Document[]): Promise<unknown>;
   findProjectById(projectId: Project.Id): Promise<Project.Document>;
@@ -19,13 +18,6 @@ export interface IProjectService {
 
 export const projectServiceFactory = (mongodbService: IMongodbService): IProjectService => {
   return {
-    dumpProjects: () => {
-      return mongodbService.inSession((session) => {
-        return mongodbService.projects.find({}).session(session)
-          .lean();
-          
-      });
-    },
     saveProject: (doc) => {
       return mongodbService.projects.create(doc);
     },

@@ -3,7 +3,6 @@ import { DocumentUpdate } from '@household/shared/types/common';
 import { Price } from '@household/shared/types/types';
 
 export interface IPriceService {
-  dumpPrices(): Promise<Price.Document[]>;
   savePrice(doc: Price.Document): Promise<Price.Document>;
   savePrices(docs: Price.Document[]): Promise<unknown>;
   findPriceById(priceId: Price.Id): Promise<Price.Document>;
@@ -15,13 +14,6 @@ export interface IPriceService {
 
 export const priceServiceFactory = (mongodbService: IMongodbService): IPriceService => {
   return {
-    dumpPrices: () => {
-      return mongodbService.inSession((session) => {
-        return mongodbService.prices.find({}).session(session)
-          .lean();
-          
-      });
-    },
     savePrice: (doc) => {
       return mongodbService.prices.create(doc);
     },
