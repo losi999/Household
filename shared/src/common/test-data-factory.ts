@@ -1,8 +1,8 @@
 import { generateMongoId } from '@household/shared/common/utils';
-import { AccountType, CategoryType, FileType, SettingKey, TransactionType, UserType } from '@household/shared/enums';
+import { AccountType, CalendarDayType, CalendarEntryType, CategoryType, FileType, PaymentType, SettingKey, TransactionType, UserType } from '@household/shared/enums';
 import { DocumentUpdate } from '@household/shared/types/common';
-import { Account, Auth, Category, Customer, File, Price, Product, Project, Recipient, Report, Setting, Transaction, User } from '@household/shared/types/types';
-import { UpdateQuery } from 'mongoose';
+import { Account, Auth, Calendar, Category, Customer, File, Price, Product, Project, Recipient, Report, Setting, Transaction, User } from '@household/shared/types/types';
+import type { UpdateQuery } from 'mongoose';
 
 const amount = -100;
 
@@ -36,12 +36,8 @@ export const createFileId = (id?: string): File.Id => {
   return (id ?? generateMongoId().toString()) as File.Id;
 };
 
-export const createCustomerId = (id?: string): Customer.Id => {
-  return (id ?? generateMongoId().toString()) as Customer.Id;
-};
-
-export const createPriceId = (id?: string): Price.Id => {
-  return (id ?? generateMongoId().toString()) as Price.Id;
+export const createCalendarEntryId = (id?: string): Calendar.Entry.Id => {
+  return (id ?? generateMongoId().toString()) as Calendar.Entry.Id;
 };
 
 export const createSettingKey = (key?: string): SettingKey => {
@@ -88,36 +84,6 @@ export const createRecipientDocument: DataFactoryFunction<Recipient.Document> = 
   };
 };
 
-export const createCustomerJobRequest: DataFactoryFunction<Customer.Job.Request> = (data) => {
-  return {
-    name: 'vágás',
-    duration: 60,
-    prices: [
-      {
-        priceId: createPriceId(),
-        quantity: 1,
-      },
-    ],
-    description: 'job description',
-    ...data,
-  };
-};
-
-export const createCustomerJobDocument: DataFactoryFunction<Customer.Job.Document> = (data) => {
-  return {
-    name: 'vágás',
-    duration: 60,
-    prices: [
-      {
-        price: createPriceDocument(),
-        quantity: 1,
-      },
-    ],
-    description: 'job description',
-    ...data,
-  };
-};
-
 export const createCustomerJobResponse: DataFactoryFunction<Customer.Job.Response> = (data) => {
   return {
     name: 'vágás',
@@ -130,30 +96,6 @@ export const createCustomerJobResponse: DataFactoryFunction<Customer.Job.Respons
     ],
     description: 'job description',
     ...data,
-  };
-};
-
-export const createCustomerDocument: DataFactoryFunction<Customer.Document> = (doc) => {
-  return {
-    _id: generateMongoId(),
-    name: 'customer name',
-    description: 'description for customer',
-    rating: 3,
-    isGroup: false,    
-    jobs: [createCustomerJobDocument()],
-    blacklistedCustomers: [],
-    expiresAt: undefined,
-    ...doc,
-  };
-};
-export const createPriceDocument: DataFactoryFunction<Price.Document> = (doc) => {
-  return {
-    _id: generateMongoId(),
-    name: 'price name',
-    amount: 3000,
-    unitOfMeasurement: 'g',
-    expiresAt: undefined,
-    ...doc,
   };
 };
 
@@ -359,21 +301,76 @@ export const createRecipientRequest: DataFactoryFunction<Recipient.Request> = (r
     ...req,
   };
 };
-export const createCustomerRequest: DataFactoryFunction<Customer.Request> = (req) => {
+
+export const createCalendarWorkdayRequest: DataFactoryFunction<Calendar.Day.WorkdayRequest> = (req) => {
   return {
-    name: 'customer name',
-    description: 'description for customer',
-    rating: 3,
-    isGroup: false,
+    dayType: CalendarDayType.Workday,
+    end: 50,
+    start: 10,
     ...req,
   };
 };
 
-export const createPriceRequest: DataFactoryFunction<Price.Request> = (req) => {
+export const createCalendarVacationRequest: DataFactoryFunction<Calendar.Day.VacationRequest> = (req) => {
   return {
-    name: 'price name',
+    dayType: CalendarDayType.Vacation,
+    ...req,
+  };
+};
+
+export const createCalendarPersonalEntryRequest: DataFactoryFunction<Calendar.Entry.PersonalEntryRequest> = (req) => {
+  return {
+    day: '2025-10-10',
+    description: 'entry description',
+    title: 'entry title',
+    end: 50,
+    start: 10,
+    entryType: CalendarEntryType.Personal,
+    ...req,
+  };
+};
+
+export const createCalendarIssueEntryRequest: DataFactoryFunction<Calendar.Entry.IssueEntryRequest> = (req) => {
+  return {
+    day: '2025-10-10',
+    description: 'entry description',
+    title: 'entry title',
+    end: 50,
+    start: 10,
+    entryType: CalendarEntryType.Issue,
+    ...req,
+  };
+};
+
+export const createCalendarWorkEntryRequest: DataFactoryFunction<Calendar.Entry.WorkEntryRequest> = (req) => {
+  return {
+    day: '2025-10-10',
+    description: 'entry description',
+    title: 'entry title',
+    end: 50,
+    start: 10,
+    entryType: CalendarEntryType.Work,
+    customerId: createCustomerId(),
+    prices: [
+      createListedPriceRequest(),
+      createPriceBase(),
+    ],
+    ...req,
+  };
+};
+
+export const createListedPriceRequest: DataFactoryFunction<Customer.Job.ListedPrice<Price.PriceId>> = (req) => {
+  return {
+    priceId: createPriceId(),
+    quantity: 2,
+    ...req,
+  };
+};
+
+export const createCalendarEntryPaymentRequest: DataFactoryFunction<Calendar.Entry.PaymentRequest> = (req) => {
+  return {
     amount: 3000,
-    unitOfMeasurement: 'g',
+    paymentType: PaymentType.Cash,
     ...req,
   };
 };
@@ -627,29 +624,6 @@ export const createRecipientResponse: DataFactoryFunction<Recipient.Response> = 
     ...resp,
   };
 };
-export const createCustomerResponse: DataFactoryFunction<Customer.Response> = (resp) => {
-  return {
-    customerId: createCustomerId(),
-    name: 'customer name',
-    description: 'description for customer',
-    rating: 3,
-    isGroup: false,
-    jobs: [createCustomerJobResponse()],
-    blacklistedCustomers: [],
-    workEntries: [],
-    ...resp,
-  };
-};
-
-export const createPriceResponse: DataFactoryFunction<Price.Response> = (resp) => {
-  return {
-    priceId: createPriceId(),
-    name: 'price name',
-    amount: 3000,
-    unitOfMeasurement: 'g',
-    ...resp,
-  };
-};
 
 export const createProductResponse: DataFactoryFunction<Product.Response> = (resp) => {
   return {
@@ -895,4 +869,135 @@ export const createUserResponse: DataFactoryFunction<User.Response> = (resp) => 
     groups: [UserType.Editor],
     ...resp,
   };
+};
+
+const createPriceId = (id?: string): Price.Id => {
+  return (id ?? generateMongoId().toString()) as Price.Id;
+};
+
+const createPriceBase: DataFactoryFunction<Price.Base> = (req) => {
+  return {
+    name: 'price name',
+    amount: 3000,
+    ...req,
+  };
+};
+
+const createPriceRequest: DataFactoryFunction<Price.Request> = (req) => {
+  return {
+    name: 'price name',
+    amount: 3000,
+    unitOfMeasurement: 'db',
+    ...req,
+  };
+};
+
+const createPriceDocument: DataFactoryFunction<Price.Document> = (doc) => {
+  return {
+    _id: generateMongoId(),
+    name: 'price name',
+    amount: 3000,
+    unitOfMeasurement: 'db',
+    expiresAt: undefined,
+    ...doc,
+  };
+};
+
+const createPriceResponse: DataFactoryFunction<Price.Response> = (resp) => {
+  return {
+    priceId: createPriceId(),
+    name: 'price name',
+    amount: 3000,
+    unitOfMeasurement: 'db',
+    ...resp,
+  };
+};
+
+export const priceDataFactory = {
+  id: createPriceId,
+  base: createPriceBase,
+  request: createPriceRequest,
+  document: createPriceDocument,
+  response: createPriceResponse,
+};
+
+const createCustomerId = (id?: string): Customer.Id => {
+  return (id ?? generateMongoId().toString()) as Customer.Id;
+};
+
+const createCustomerRequest: DataFactoryFunction<Customer.Request> = (req) => {
+  return {
+    name: 'customer name',
+    description: 'customer description',
+    rating: 3,
+    isGroup: false,
+    ...req,
+  };
+};
+
+const createCustomerDocument: DataFactoryFunction<Customer.Document> = (doc) => {
+  return {
+    _id: generateMongoId(),
+    name: 'customer name',
+    description: 'customer description',
+    rating: 3,
+    isGroup: false,
+    jobs: [createCustomerJobDocument()],
+    blacklistedCustomers: [],
+    expiresAt: undefined,
+    ...doc,
+  };
+};
+
+const createCustomerResponse: DataFactoryFunction<Customer.Response> = (resp) => {
+  return {
+    customerId: createCustomerId(),
+    name: 'customer name',
+    description: 'customer description',
+    rating: 3,
+    isGroup: false,
+    jobs: [createCustomerJobResponse()],
+    blacklistedCustomers: [],
+    workEntries: [],
+    ...resp,
+  };
+};
+
+const createCustomerJobRequest: DataFactoryFunction<Customer.Job.Request> = (data) => {
+  return {
+    name: 'job name',
+    duration: 4,
+    prices: [
+      {
+        priceId: createPriceId(),
+        quantity: 1,
+      },
+    ],
+    description: 'job description',
+    ...data,
+  };
+};
+
+const createCustomerJobDocument: DataFactoryFunction<Customer.Job.Document> = (data) => {
+  return {
+    name: 'job name',
+    duration: 5,
+    prices: [
+      {
+        price: createPriceDocument(),
+        quantity: 1,
+      },
+    ],
+    description: 'job description',
+    ...data,
+  };
+};
+
+export const customerDataFactory = {
+  id: createCustomerId,
+  request: createCustomerRequest,
+  document: createCustomerDocument,
+  response: createCustomerResponse,
+  jobRequest: createCustomerJobRequest,
+  jobDocument: createCustomerJobDocument,
 };

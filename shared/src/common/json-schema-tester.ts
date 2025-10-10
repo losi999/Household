@@ -72,10 +72,22 @@ export const jsonSchemaTesterFactory = <T extends object>(schema: JSONSchema7) =
         expect(result).toContain(`${propertyName} must be equal to one of the allowed values`);
       });
     },
+    const: (data: T, propertyName: string) => {
+      it('is not the expected constant value', () => {
+        const result = validatorService.validate(data, schema);
+        expect(result).toContain(`${propertyName} must be equal to constant`);
+      });
+    },
     minimum: (data: T, propertyName: string, minimum: number) => {
       it('is too small', () => {
         const result = validatorService.validate(data, schema);
         expect(result).toContain(`${propertyName} must be >= ${minimum}`);
+      });
+    },
+    maximum: (data: T, propertyName: string, maximum: number) => {
+      it('is too large', () => {
+        const result = validatorService.validate(data, schema);
+        expect(result).toContain(`${propertyName} must be <= ${maximum}`);
       });
     },
     exclusiveMinimum: (data: T, propertyName: string, minimum: number) => {
@@ -94,6 +106,12 @@ export const jsonSchemaTesterFactory = <T extends object>(schema: JSONSchema7) =
       it('has too few item', () => {
         const result = validatorService.validate(data, schema);
         expect(result).toContain(`${propertyName} must NOT have fewer than ${minItems} items`);
+      });
+    },
+    maxItems: (data: T, propertyName: string, maxItems: number) => {
+      it('has too many item', () => {
+        const result = validatorService.validate(data, schema);
+        expect(result).toContain(`${propertyName} must NOT have more than ${maxItems} items`);
       });
     },
     formatExclusiveMinimum: (data: T, propertyName: string) => {

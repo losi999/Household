@@ -1,3 +1,5 @@
+import { keys } from '@household/shared/common/utils';
+
 export type Mock<T> = {
   service: T;
   functions: {
@@ -39,6 +41,17 @@ export const validateError = (message: string, statusCode?: number) => (error: a
   if (statusCode) {
     expect(error.statusCode).toEqual(statusCode);
   }
+};
+
+export const validateInternalProperties = (internal: object) => {
+  keys(internal).forEach((key) => {
+    expect([
+      '_id',
+      'createdAt',
+      'expiresAt',
+      'updatedAt',
+    ]).toContain(key);
+  });
 };
 
 export const awsResolvedValue = (data?: any) => ({

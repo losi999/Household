@@ -141,6 +141,7 @@ const workEntryRequestSchema: StrictJSONSchema7<Calendar.Entry.WorkEntryRequest>
         oneOf: [
           {
             type: 'object',
+            additionalProperties: false,
             required: [
               ...priceId.required,
               ...quantity.required,
@@ -152,6 +153,7 @@ const workEntryRequestSchema: StrictJSONSchema7<Calendar.Entry.WorkEntryRequest>
           }, 
           {
             type: 'object',
+            additionalProperties: false,
             required: [...priceBase.required],
             properties: {
               ...priceBase.properties,
