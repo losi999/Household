@@ -1,50 +1,80 @@
-// import { ICreateCustomerService, createCustomerServiceFactory } from '@household/api/functions/create-customer/create-customer.service';
-// import { createCustomerRequest, createCustomerDocument } from '@household/shared/common/test-data-factory';
-// import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
-// import { getCustomerId } from '@household/shared/common/utils';
-// import { ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
-// import { ICustomerService } from '@household/shared/services/customer-service';
+import { IDeleteCustomerJobService, deleteCustomerJobServiceFactory } from '@household/api/functions/delete-customer-job/delete-customer-job.service';
+import { createDocumentUpdate2, customerDataFactory } from '@household/shared/common/test-data-factory';
+import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
+import { ICustomerService } from '@household/shared/services/customer-service';
 
-// describe('Create customer service', () => {
-//   let service: ICreateCustomerService;
-//   let mockCustomerService: Mock<ICustomerService>;
-//   let mockCustomerDocumentConverter: Mock<ICustomerDocumentConverter>;
-//   beforeEach(() => {
-//     mockCustomerService = createMockService('saveCustomer');
-//     mockCustomerDocumentConverter = createMockService('create');
+describe('Delete customer job service', () => {
+  let service: IDeleteCustomerJobService;
+  let mockCustomerService: Mock<ICustomerService>;
+  let mockCustomerDocumentConverter: Mock<ICustomerDocumentConverter>;
+  beforeEach(() => {
+    mockCustomerService = createMockService('findCustomerById', 'updateCustomer');
+    mockCustomerDocumentConverter = createMockService('deleteJob');
 
-//     service = createCustomerServiceFactory(mockCustomerService.service, mockCustomerDocumentConverter.service);
-//   });
+    service = deleteCustomerJobServiceFactory(mockCustomerService.service, mockCustomerDocumentConverter.service);
+  });
+  
+  const queriedCustomerDocument = customerDataFactory.document();
+  const customerId = customerDataFactory.id();
+  const name = 'job name';
+  const documentUpdate = createDocumentUpdate2();
 
-//   const body = createCustomerRequest();
-//   const convertedCustomerDocument = createCustomerDocument();
-//   const customerId = getCustomerId(convertedCustomerDocument);
+  it('should return new id', async () => {
+    mockCustomerService.functions.findCustomerById.mockResolvedValue(queriedCustomerDocument);
+    mockCustomerDocumentConverter.functions.deleteJob.mockReturnValue(documentUpdate);
+    mockCustomerService.functions.updateCustomer.mockResolvedValue(undefined);
 
-//   it('should return new id', async () => {
-//     mockCustomerDocumentConverter.functions.create.mockReturnValue(convertedCustomerDocument);
-//     mockCustomerService.functions.saveCustomer.mockResolvedValue(convertedCustomerDocument);
+    await service({
+      customerId,
+      name,
+    });
+    validateFunctionCall(mockCustomerService.functions.findCustomerById, customerId);
+    validateFunctionCall(mockCustomerDocumentConverter.functions.deleteJob, name);
+    validateFunctionCall(mockCustomerService.functions.updateCustomer, customerId, documentUpdate);
+    expect.assertions(3);
+  });
 
-//     const result = await service({
-//       body,
-//       expiresIn: undefined,
-//     });
-//     expect(result).toEqual(customerId.toString()),
-//     validateFunctionCall(mockCustomerDocumentConverter.functions.create, body, undefined);
-//     validateFunctionCall(mockCustomerService.functions.saveCustomer, convertedCustomerDocument);
-//     expect.assertions(3);
-//   });
-//   describe('should throw error', () => {
-//     it('if unable to save document', async () => {
-//       mockCustomerDocumentConverter.functions.create.mockReturnValue(convertedCustomerDocument);
-//       mockCustomerService.functions.saveCustomer.mockRejectedValue('this is a mongo error');
+  describe('should throw error', () => {
+    it('if unable to query document', async () => {
+      mockCustomerService.functions.findCustomerById.mockRejectedValue('this is a mongo error');
 
-//       await service({
-//         body,
-//         expiresIn: undefined,
-//       }).catch(validateError('Error while saving customer', 500));
-//       validateFunctionCall(mockCustomerDocumentConverter.functions.create, body, undefined);
-//       validateFunctionCall(mockCustomerService.functions.saveCustomer, convertedCustomerDocument);
-//       expect.assertions(4);
-//     });
-//   });
-// });
+      await service({
+        customerId,
+        name,
+      }).catch(validateError('Error while getting customer', 500));
+      validateFunctionCall(mockCustomerService.functions.findCustomerById, customerId);
+      validateFunctionCall(mockCustomerDocumentConverter.functions.deleteJob);
+      validateFunctionCall(mockCustomerService.functions.updateCustomer);
+      expect.assertions(5);
+    });
+
+    it('if customer not found', async () => {
+      mockCustomerService.functions.findCustomerById.mockResolvedValue(undefined);
+
+      await service({
+        customerId,
+        name,
+      }).catch(validateError('No customer found', 404));
+      validateFunctionCall(mockCustomerService.functions.findCustomerById, customerId);
+      validateFunctionCall(mockCustomerDocumentConverter.functions.deleteJob);
+      validateFunctionCall(mockCustomerService.functions.updateCustomer);
+      expect.assertions(5);
+    });
+
+    it('if unable to update document', async () => {
+      mockCustomerService.functions.findCustomerById.mockResolvedValue(queriedCustomerDocument);
+      mockCustomerDocumentConverter.functions.deleteJob.mockReturnValue(documentUpdate);
+      mockCustomerService.functions.updateCustomer.mockRejectedValue('this is a mongo error');
+
+      await service({
+        customerId,
+        name,
+      }).catch(validateError('Error while updating customer', 500));
+      validateFunctionCall(mockCustomerService.functions.findCustomerById, customerId);
+      validateFunctionCall(mockCustomerDocumentConverter.functions.deleteJob, name);
+      validateFunctionCall(mockCustomerService.functions.updateCustomer, customerId, documentUpdate);
+      expect.assertions(5);
+    });
+  });
+});

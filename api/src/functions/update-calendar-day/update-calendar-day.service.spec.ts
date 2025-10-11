@@ -1,88 +1,53 @@
-// import { IUpdateRecipientService, updateRecipientServiceFactory } from '@household/api/functions/update-recipient/update-recipient.service';
-// import { createRecipientRequest, createRecipientDocument, createDocumentUpdate } from '@household/shared/common/test-data-factory';
-// import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
-// import { getRecipientId } from '@household/shared/common/utils';
-// import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
-// import { IRecipientService } from '@household/shared/services/recipient-service';
 
-// describe('Update recipient service', () => {
-//   let service: IUpdateRecipientService;
-//   let mockRecipientService: Mock<IRecipientService>;
-//   let mockRecipientDocumentConverter: Mock<IRecipientDocumentConverter>;
+import { IUpdateCalendarDayService, updateCalendarDayServiceFactory } from '@household/api/functions/update-calendar-day/update-calendar-day.service';
+import { calendarDayDataFactory, createDocumentUpdate2 } from '@household/shared/common/test-data-factory';
+import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { ICalendarDayDocumentConverter } from '@household/shared/converters/calendar-day-document-converter';
+import { ICalendarDayService } from '@household/shared/services/calendar-day-service';
 
-//   beforeEach(() => {
-//     mockRecipientService = createMockService('findRecipientById', 'updateRecipient');
-//     mockRecipientDocumentConverter = createMockService('update');
+describe('Update calendar day service', () => {
+  let service: IUpdateCalendarDayService;
+  let mockCalendarDayService: Mock<ICalendarDayService>;
+  let mockCalendarDayDocumentConverter: Mock<ICalendarDayDocumentConverter>;
 
-//     service = updateRecipientServiceFactory(mockRecipientService.service, mockRecipientDocumentConverter.service);
-//   });
+  beforeEach(() => {
+    mockCalendarDayService = createMockService('updateCalendarDay');
+    mockCalendarDayDocumentConverter = createMockService('update');
 
-//   const body = createRecipientRequest();
-//   const queriedDocument = createRecipientDocument();
-//   const recipientId = getRecipientId(queriedDocument);
-//   const updateQuery = createDocumentUpdate({
-//     name: 'updated',
-//   });
+    service = updateCalendarDayServiceFactory(mockCalendarDayService.service, mockCalendarDayDocumentConverter.service);
+  });
 
-//   it('should return if recipient is updated', async () => {
-//     mockRecipientService.functions.findRecipientById.mockResolvedValue(queriedDocument);
-//     mockRecipientDocumentConverter.functions.update.mockReturnValue(updateQuery);
-//     mockRecipientService.functions.updateRecipient.mockResolvedValue(undefined);
+  const body = calendarDayDataFactory.request();
+  const day = '2025-10-11';
+  const updateQuery = createDocumentUpdate2();
 
-//     await service({
-//       body,
-//       recipientId,
-//       expiresIn: undefined,
-//     });
-//     validateFunctionCall(mockRecipientService.functions.findRecipientById, recipientId);
-//     validateFunctionCall(mockRecipientDocumentConverter.functions.update, body, undefined);
-//     validateFunctionCall(mockRecipientService.functions.updateRecipient, recipientId, updateQuery);
-//     expect.assertions(3);
-//   });
+  it('should return if calendar day is updated', async () => {
+    mockCalendarDayDocumentConverter.functions.update.mockReturnValue(updateQuery);
+    mockCalendarDayService.functions.updateCalendarDay.mockResolvedValue(undefined);
 
-//   describe('should throw error', () => {
-//     it('if unable to query recipient', async () => {
-//       mockRecipientService.functions.findRecipientById.mockRejectedValue('this is a mongo error');
+    await service({
+      body,
+      day,
+      expiresIn: undefined,
+    });
+    validateFunctionCall(mockCalendarDayDocumentConverter.functions.update, body, undefined);
+    validateFunctionCall(mockCalendarDayService.functions.updateCalendarDay, day, updateQuery);
+    expect.assertions(2);
+  });
 
-//       await service({
-//         body,
-//         recipientId,
-//         expiresIn: undefined,
-//       }).catch(validateError('Error while getting recipient', 500));
-//       validateFunctionCall(mockRecipientService.functions.findRecipientById, recipientId);
-//       validateFunctionCall(mockRecipientDocumentConverter.functions.update);
-//       validateFunctionCall(mockRecipientService.functions.updateRecipient);
-//       expect.assertions(5);
-//     });
+  describe('should throw error', () => {
+    it('if unable to update calendar day', async () => {
+      mockCalendarDayDocumentConverter.functions.update.mockReturnValue(updateQuery);
+      mockCalendarDayService.functions.updateCalendarDay.mockRejectedValue('this is a mongo error');
 
-//     it('if recipient not found', async () => {
-//       mockRecipientService.functions.findRecipientById.mockResolvedValue(undefined);
-
-//       await service({
-//         body,
-//         recipientId,
-//         expiresIn: undefined,
-//       }).catch(validateError('No recipient found', 404));
-//       validateFunctionCall(mockRecipientService.functions.findRecipientById, recipientId);
-//       validateFunctionCall(mockRecipientDocumentConverter.functions.update);
-//       validateFunctionCall(mockRecipientService.functions.updateRecipient);
-//       expect.assertions(5);
-//     });
-
-//     it('if unable to update recipient', async () => {
-//       mockRecipientService.functions.findRecipientById.mockResolvedValue(queriedDocument);
-//       mockRecipientDocumentConverter.functions.update.mockReturnValue(updateQuery);
-//       mockRecipientService.functions.updateRecipient.mockRejectedValue('this is a mongo error');
-
-//       await service({
-//         body,
-//         recipientId,
-//         expiresIn: undefined,
-//       }).catch(validateError('Error while updating recipient', 500));
-//       validateFunctionCall(mockRecipientService.functions.findRecipientById, recipientId);
-//       validateFunctionCall(mockRecipientDocumentConverter.functions.update, body, undefined);
-//       validateFunctionCall(mockRecipientService.functions.updateRecipient, recipientId, updateQuery);
-//       expect.assertions(5);
-//     });
-//   });
-// });
+      await service({
+        body,
+        day,
+        expiresIn: undefined,
+      }).catch(validateError('Error while updating calendar day', 500));
+      validateFunctionCall(mockCalendarDayDocumentConverter.functions.update, body, undefined);
+      validateFunctionCall(mockCalendarDayService.functions.updateCalendarDay, day, updateQuery);
+      expect.assertions(4);
+    });
+  });
+});

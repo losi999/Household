@@ -1,51 +1,350 @@
-// import { ICreatePriceService, createPriceServiceFactory } from '@household/api/functions/create-price/create-price.service';
-// import { createPriceRequest, createPriceDocument } from '@household/shared/common/test-data-factory';
-// import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
-// import { getPriceId } from '@household/shared/common/utils';
-// import { IPriceDocumentConverter } from '@household/shared/converters/price-document-converter';
-// import { IPriceService } from '@household/shared/services/price-service';
+import { IPayCalendarWorkEntryService, payCalendarWorkEntryServiceFactory } from '@household/api/functions/pay-calendar-work-entry/pay-calendar-work-entry.service';
+import { calendarEntryDataFactory, createAccountDocument, createCategoryDocument, createDocumentUpdate2, createPaymentTransactionDocument, createSettingDocument } from '@household/shared/common/test-data-factory';
+import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { getAccountId, getCategoryId, getTransactionId } from '@household/shared/common/utils';
+import { ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
+import { IPaymentTransactionDocumentConverter } from '@household/shared/converters/payment-transaction-document-converter';
+import { CalendarEntryType, PaymentType, SettingKey } from '@household/shared/enums';
+import { IAccountService } from '@household/shared/services/account-service';
+import { ICalendarEntryService } from '@household/shared/services/calendar-entry-service';
+import { ICategoryService } from '@household/shared/services/category-service';
+import { ISettingService } from '@household/shared/services/setting-service';
 
-// describe('Create price service', () => {
-//   let service: ICreatePriceService;
-//   let mockPriceService: Mock<IPriceService>;
-//   let mockPriceDocumentConverter: Mock<IPriceDocumentConverter>;
+describe('Pay calendar work entry service', () => {
+  let service: IPayCalendarWorkEntryService;
+  let mockCalendarEntryService: Mock<ICalendarEntryService>;
+  let mockPaymentTransactionDocumentConverter: Mock<IPaymentTransactionDocumentConverter>;
+  let mockSettingService: Mock<ISettingService>;
+  let mockAccountService: Mock<IAccountService>;
+  let mockCategoryService: Mock<ICategoryService>;
+  let mockCalendarEntryDocumentConverter: Mock<ICalendarEntryDocumentConverter>;
 
-//   beforeEach(() => {
-//     mockPriceService = createMockService('savePrice');
-//     mockPriceDocumentConverter = createMockService('create');
+  beforeEach(() => {
+    mockCalendarEntryService = createMockService('findCalendarEntryById', 'updateCalendarEntry', 'updateCalendarEntryWithPayment');
+    mockPaymentTransactionDocumentConverter = createMockService('createFromEntry');
+    mockSettingService = createMockService('listSettingsByKeys');
+    mockAccountService = createMockService('findAccountById');
+    mockCategoryService = createMockService('findCategoryById');
+    mockCalendarEntryDocumentConverter = createMockService('updatePaid');
 
-//     service = createPriceServiceFactory(mockPriceService.service, mockPriceDocumentConverter.service);
-//   });
+    service = payCalendarWorkEntryServiceFactory(mockCalendarEntryService.service, mockPaymentTransactionDocumentConverter.service, mockSettingService.service, mockAccountService.service, mockCategoryService.service, mockCalendarEntryDocumentConverter.service);
+  });
 
-//   const body = createPriceRequest();
-//   const convertedPriceDocument = createPriceDocument();
-//   const priceId = getPriceId(convertedPriceDocument);
+  const calendarEntryId = calendarEntryDataFactory.id();
+  const queriedCalendarEntry = calendarEntryDataFactory.document({
+    entryType: CalendarEntryType.Work,
+  });
+  
+  describe('payment type is transfer', () => {
+    const documentUpdate = createDocumentUpdate2();
+    const body = calendarEntryDataFactory.paymentRequest({
+      paymentType: PaymentType.Transfer,
+    });
 
-//   it('should return new id', async () => {
-//     mockPriceDocumentConverter.functions.create.mockReturnValue(convertedPriceDocument);
-//     mockPriceService.functions.savePrice.mockResolvedValue(convertedPriceDocument);
+    it('should return', async () => {
+      mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarEntry);
+      mockCalendarEntryDocumentConverter.functions.updatePaid.mockReturnValue(documentUpdate);
+      mockCalendarEntryService.functions.updateCalendarEntry.mockResolvedValue(undefined);
+  
+      const result = await service({
+        body,
+        calendarEntryId,
+      });
+      expect(result).toEqual(undefined);
+      validateFunctionCall(mockCalendarEntryService.functions.findCalendarEntryById, calendarEntryId);
+      expect(mockCalendarEntryDocumentConverter.functions.updatePaid).toHaveBeenCalled();
+      validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntry, calendarEntryId, documentUpdate);
+      validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntryWithPayment);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.createFromEntry);
+      validateFunctionCall(mockSettingService.functions.listSettingsByKeys);
+      validateFunctionCall(mockAccountService.functions.findAccountById);
+      validateFunctionCall(mockCategoryService.functions.findCategoryById);
+      expect.assertions(9);
+    });
 
-//     const result = await service({
-//       body,
-//       expiresIn: undefined,
-//     });
-//     expect(result).toEqual(priceId.toString()),
-//     validateFunctionCall(mockPriceDocumentConverter.functions.create, body, undefined);
-//     validateFunctionCall(mockPriceService.functions.savePrice, convertedPriceDocument);
-//     expect.assertions(3);
-//   });
-//   describe('should throw error', () => {
-//     it('if unable to save document', async () => {
-//       mockPriceDocumentConverter.functions.create.mockReturnValue(convertedPriceDocument);
-//       mockPriceService.functions.savePrice.mockRejectedValue('this is a mongo error');
+    describe('should throw error', () => {
+      it('if unable to get document', async () => {
+        mockCalendarEntryService.functions.findCalendarEntryById.mockRejectedValue('this is a mongo error');
+  
+        await service({
+          body,
+          calendarEntryId,
+        }).catch(validateError('Error while getting calendar entry', 500));
+        validateFunctionCall(mockCalendarEntryService.functions.findCalendarEntryById, calendarEntryId);
+        validateFunctionCall(mockCalendarEntryDocumentConverter.functions.updatePaid);
+        validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntry);
+        validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntryWithPayment);
+        validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.createFromEntry);
+        validateFunctionCall(mockSettingService.functions.listSettingsByKeys);
+        validateFunctionCall(mockAccountService.functions.findAccountById);
+        validateFunctionCall(mockCategoryService.functions.findCategoryById);
+        expect.assertions(10);
+      });
 
-//       await service({
-//         body,
-//         expiresIn: undefined,
-//       }).catch(validateError('Error while saving price', 500));
-//       validateFunctionCall(mockPriceDocumentConverter.functions.create, body, undefined);
-//       validateFunctionCall(mockPriceService.functions.savePrice, convertedPriceDocument);
-//       expect.assertions(4);
-//     });
-//   });
-// });
+      it('if calendar entry not found', async () => {
+        mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(undefined);
+  
+        await service({
+          body,
+          calendarEntryId,
+        }).catch(validateError('No calendar entry found', 404));
+        validateFunctionCall(mockCalendarEntryService.functions.findCalendarEntryById, calendarEntryId);
+        validateFunctionCall(mockCalendarEntryDocumentConverter.functions.updatePaid);
+        validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntry);
+        validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntryWithPayment);
+        validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.createFromEntry);
+        validateFunctionCall(mockSettingService.functions.listSettingsByKeys);
+        validateFunctionCall(mockAccountService.functions.findAccountById);
+        validateFunctionCall(mockCategoryService.functions.findCategoryById);
+        expect.assertions(10);
+      });
+
+      it('if calendar entry is not work type', async () => {
+        mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue({
+          ...queriedCalendarEntry,
+          entryType: CalendarEntryType.Personal,
+        });
+  
+        await service({
+          body,
+          calendarEntryId,
+        }).catch(validateError('Calendar entry must be of "work" type', 400));
+        validateFunctionCall(mockCalendarEntryService.functions.findCalendarEntryById, calendarEntryId);
+        validateFunctionCall(mockCalendarEntryDocumentConverter.functions.updatePaid);
+        validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntry);
+        validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntryWithPayment);
+        validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.createFromEntry);
+        validateFunctionCall(mockSettingService.functions.listSettingsByKeys);
+        validateFunctionCall(mockAccountService.functions.findAccountById);
+        validateFunctionCall(mockCategoryService.functions.findCategoryById);
+        expect.assertions(10);
+      });
+
+      it('if calendar entry is already paid', async () => {
+        mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue({
+          ...queriedCalendarEntry,
+          isPaid: true,
+        });
+  
+        await service({
+          body,
+          calendarEntryId,
+        }).catch(validateError('Calendar entry is already paid', 400));
+        validateFunctionCall(mockCalendarEntryService.functions.findCalendarEntryById, calendarEntryId);
+        validateFunctionCall(mockCalendarEntryDocumentConverter.functions.updatePaid);
+        validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntry);
+        validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntryWithPayment);
+        validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.createFromEntry);
+        validateFunctionCall(mockSettingService.functions.listSettingsByKeys);
+        validateFunctionCall(mockAccountService.functions.findAccountById);
+        validateFunctionCall(mockCategoryService.functions.findCategoryById);
+        expect.assertions(10);
+      });
+
+      it('if unable to update document', async () => {
+        mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarEntry);
+        mockCalendarEntryDocumentConverter.functions.updatePaid.mockReturnValue(documentUpdate);
+        mockCalendarEntryService.functions.updateCalendarEntry.mockRejectedValue('this is a mongo error');
+  
+        await service({
+          body,
+          calendarEntryId,
+        }).catch(validateError('Error while updating calendar entry', 500));
+        validateFunctionCall(mockCalendarEntryService.functions.findCalendarEntryById, calendarEntryId);
+        expect(mockCalendarEntryDocumentConverter.functions.updatePaid).toHaveBeenCalled();
+        validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntry, calendarEntryId, documentUpdate);
+        validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntryWithPayment);
+        validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.createFromEntry);
+        validateFunctionCall(mockSettingService.functions.listSettingsByKeys);
+        validateFunctionCall(mockAccountService.functions.findAccountById);
+        validateFunctionCall(mockCategoryService.functions.findCategoryById);
+        expect.assertions(10);
+      });
+    });
+  });
+
+  describe('payment type is cash', () => {
+    const amount = 5000;
+    const body = calendarEntryDataFactory.paymentRequest({
+      paymentType: PaymentType.Cash,
+      amount,
+    });
+    const queriedAccount = createAccountDocument();
+    const accountId = getAccountId(queriedAccount);
+    const queriedCategory = createCategoryDocument();
+    const categoryId = getCategoryId(queriedCategory);
+    const paymentTransactionDocument = createPaymentTransactionDocument();
+    
+    it('should return transaction Id', async () => {
+      mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarEntry);
+      mockSettingService.functions.listSettingsByKeys.mockResolvedValue([
+        createSettingDocument({
+          settingKey: SettingKey.HairdressingIncomeAccount,
+          value: accountId,
+        }),
+        createSettingDocument({
+          settingKey: SettingKey.HairdressingIncomeCategory,
+          value: categoryId,
+        }),
+      ]);
+      mockAccountService.functions.findAccountById.mockResolvedValue(queriedAccount);
+      mockCategoryService.functions.findCategoryById.mockResolvedValue(queriedCategory);
+      mockPaymentTransactionDocumentConverter.functions.createFromEntry.mockReturnValue(paymentTransactionDocument);
+      mockCalendarEntryService.functions.updateCalendarEntryWithPayment.mockResolvedValue(paymentTransactionDocument);
+
+      const result = await service({
+        body,
+        calendarEntryId,
+      });
+      expect(result).toEqual(getTransactionId(paymentTransactionDocument));
+      validateFunctionCall(mockCalendarEntryService.functions.findCalendarEntryById, calendarEntryId);
+      validateFunctionCall(mockCalendarEntryDocumentConverter.functions.updatePaid);
+      validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntry);
+      validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntryWithPayment, calendarEntryId, paymentTransactionDocument);
+      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.createFromEntry, {
+        account: queriedAccount,
+        calendarEntry: queriedCalendarEntry,
+        category: queriedCategory,
+        amount,
+      });
+      validateFunctionCall(mockSettingService.functions.listSettingsByKeys, [
+        SettingKey.HairdressingIncomeAccount,
+        SettingKey.HairdressingIncomeCategory,
+      ]);
+      validateFunctionCall(mockAccountService.functions.findAccountById, accountId);
+      validateFunctionCall(mockCategoryService.functions.findCategoryById, categoryId);
+      expect.assertions(9);
+    });
+
+    describe('should throw error', () => {
+      it('if unable to get settings', async () => {
+        mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarEntry);
+        mockSettingService.functions.listSettingsByKeys.mockRejectedValue('this is a mongo error');
+
+        await service({
+          body,
+          calendarEntryId,
+        }).catch(validateError('Error while listing settings', 500));
+        validateFunctionCall(mockCalendarEntryService.functions.findCalendarEntryById, calendarEntryId);
+        validateFunctionCall(mockCalendarEntryDocumentConverter.functions.updatePaid);
+        validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntry);
+        validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntryWithPayment);
+        validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.createFromEntry);
+        validateFunctionCall(mockSettingService.functions.listSettingsByKeys, [
+          SettingKey.HairdressingIncomeAccount,
+          SettingKey.HairdressingIncomeCategory,
+        ]);
+        validateFunctionCall(mockAccountService.functions.findAccountById);
+        validateFunctionCall(mockCategoryService.functions.findCategoryById);
+        expect.assertions(10);
+      });
+
+      it('if unable to get account', async () => {
+        mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarEntry);
+        mockSettingService.functions.listSettingsByKeys.mockResolvedValue([
+          createSettingDocument({
+            settingKey: SettingKey.HairdressingIncomeAccount,
+            value: accountId,
+          }),
+          createSettingDocument({
+            settingKey: SettingKey.HairdressingIncomeCategory,
+            value: categoryId,
+          }),
+        ]);
+        mockAccountService.functions.findAccountById.mockRejectedValue('this is a mongo error');
+        mockCategoryService.functions.findCategoryById.mockResolvedValue(queriedCategory);
+
+        await service({
+          body,
+          calendarEntryId,
+        }).catch(validateError('Error while getting account', 500));
+        validateFunctionCall(mockCalendarEntryService.functions.findCalendarEntryById, calendarEntryId);
+        validateFunctionCall(mockCalendarEntryDocumentConverter.functions.updatePaid);
+        validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntry);
+        validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntryWithPayment);
+        validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.createFromEntry);
+        validateFunctionCall(mockSettingService.functions.listSettingsByKeys, [
+          SettingKey.HairdressingIncomeAccount,
+          SettingKey.HairdressingIncomeCategory,
+        ]);
+        validateFunctionCall(mockAccountService.functions.findAccountById, accountId);
+        validateFunctionCall(mockCategoryService.functions.findCategoryById, categoryId);
+        expect.assertions(10);
+      });
+
+      it('if unable to get category', async () => {
+        mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarEntry);
+        mockSettingService.functions.listSettingsByKeys.mockResolvedValue([
+          createSettingDocument({
+            settingKey: SettingKey.HairdressingIncomeAccount,
+            value: accountId,
+          }),
+          createSettingDocument({
+            settingKey: SettingKey.HairdressingIncomeCategory,
+            value: categoryId,
+          }),
+        ]);
+        mockAccountService.functions.findAccountById.mockResolvedValue(queriedAccount);
+        mockCategoryService.functions.findCategoryById.mockRejectedValue('this is a mongo error');
+
+        await service({
+          body,
+          calendarEntryId,
+        }).catch(validateError('Error while getting category', 500));
+        validateFunctionCall(mockCalendarEntryService.functions.findCalendarEntryById, calendarEntryId);
+        validateFunctionCall(mockCalendarEntryDocumentConverter.functions.updatePaid);
+        validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntry);
+        validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntryWithPayment);
+        validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.createFromEntry);
+        validateFunctionCall(mockSettingService.functions.listSettingsByKeys, [
+          SettingKey.HairdressingIncomeAccount,
+          SettingKey.HairdressingIncomeCategory,
+        ]);
+        validateFunctionCall(mockAccountService.functions.findAccountById, accountId);
+        validateFunctionCall(mockCategoryService.functions.findCategoryById, categoryId);
+        expect.assertions(10);
+      });
+
+      it('if unable to update calendar entry', async () => {
+        mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarEntry);
+        mockSettingService.functions.listSettingsByKeys.mockResolvedValue([
+          createSettingDocument({
+            settingKey: SettingKey.HairdressingIncomeAccount,
+            value: accountId,
+          }),
+          createSettingDocument({
+            settingKey: SettingKey.HairdressingIncomeCategory,
+            value: categoryId,
+          }),
+        ]);
+        mockAccountService.functions.findAccountById.mockResolvedValue(queriedAccount);
+        mockCategoryService.functions.findCategoryById.mockResolvedValue(queriedCategory);
+        mockPaymentTransactionDocumentConverter.functions.createFromEntry.mockReturnValue(paymentTransactionDocument);
+        mockCalendarEntryService.functions.updateCalendarEntryWithPayment.mockRejectedValue('this is a mongo error');
+
+        await service({
+          body,
+          calendarEntryId,
+        }).catch(validateError('Error while updating calendar entry with payment', 500));
+        validateFunctionCall(mockCalendarEntryService.functions.findCalendarEntryById, calendarEntryId);
+        validateFunctionCall(mockCalendarEntryDocumentConverter.functions.updatePaid);
+        validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntry);
+        validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntryWithPayment, calendarEntryId, paymentTransactionDocument);
+        validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.createFromEntry, {
+          account: queriedAccount,
+          calendarEntry: queriedCalendarEntry,
+          category: queriedCategory,
+          amount,
+        });
+        validateFunctionCall(mockSettingService.functions.listSettingsByKeys, [
+          SettingKey.HairdressingIncomeAccount,
+          SettingKey.HairdressingIncomeCategory,
+        ]);
+        validateFunctionCall(mockAccountService.functions.findAccountById, accountId);
+        validateFunctionCall(mockCategoryService.functions.findCategoryById, categoryId);
+        expect.assertions(10);
+      });
+    });
+  });
+});
+
