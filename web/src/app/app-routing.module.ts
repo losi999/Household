@@ -21,7 +21,7 @@ const routes: Routes = [
   {
     path: 'projects',
     title: 'Projektek',
-    loadChildren: () => import('./project/project.module').then(m => m.ProjectModule),
+    loadChildren: () => import('@household/web/app/project/project.module').then(m => m.ProjectModule),
     canMatch: [authenticated],
     data: {
       requiredUserType: UserType.Editor,
@@ -30,7 +30,7 @@ const routes: Routes = [
   {
     path: 'products',
     title: 'Termékek',
-    loadChildren: () => import('./product/product.module').then(m => m.ProductModule),
+    loadChildren: () => import('@household/web/app/product/product.module').then(m => m.ProductModule),
     canMatch: [authenticated],
     data: {
       requiredUserType: UserType.Editor,
@@ -39,7 +39,7 @@ const routes: Routes = [
   {
     path: 'categories',
     title: 'Kategóriák',
-    loadChildren: () => import('./category/category.module').then(m => m.CategoryModule),
+    loadChildren: () => import('@household/web/app/category/category.module').then(m => m.CategoryModule),
     canMatch: [authenticated],
     data: {
       requiredUserType: UserType.Editor,
@@ -48,7 +48,7 @@ const routes: Routes = [
   {
     path: 'recipients',
     title: 'Partnerek',
-    loadChildren: () => import('./recipient/recipient.module').then(m => m.RecipientModule),
+    loadChildren: () => import('@household/web/app/recipient/recipient.module').then(m => m.RecipientModule),
     canMatch: [authenticated],
     data: {
       requiredUserType: UserType.Editor,
@@ -57,13 +57,13 @@ const routes: Routes = [
   {
     path: 'reports',
     title: 'Jelentések',
-    loadChildren: () => import('./report/report.module').then(m => m.ReportModule),
+    loadChildren: () => import('@household/web/app/report/report.module').then(m => m.ReportModule),
     canMatch: [authenticated],
   },
   {
     path: 'imports',
     title: 'Importálás',
-    loadChildren: () => import('./import/import.module').then(m => m.ImportModule),
+    loadChildren: () => import('@household/web/app/import/import.module').then(m => m.ImportModule),
     canMatch: [authenticated],
     data: {
       requiredUserType: UserType.Editor,

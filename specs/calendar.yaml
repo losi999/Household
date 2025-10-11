@@ -1,0 +1,187 @@
+openapi: "3.1.0"
+info:
+  title: Hairdressing calendar components
+  version: 1.0.0
+components:
+  schemas:
+    CalendarEntryId:
+      type: object
+      required:
+        - calendarEntryId
+      properties:
+        calendarEntryId:
+          type: string
+          minLength: 1
+
+    Day:
+      type: object
+      required:
+        - day
+      properties:
+        day:
+          type: string
+          format: date
+
+    TimeInterval:
+      type: object
+      required:
+        - start
+        - end
+      properties:
+        start:
+          type: integer
+          minimum: 0
+          maximum: 96
+        end:
+          type: integer
+          minimum: 0
+          maximum: 96
+
+    PlannedTimeInterval:
+      type: object
+      properties:
+        plannedStart:
+          type: integer
+          minimum: 0
+          maximum: 96
+        plannedEnd:
+          type: integer
+          minimum: 0
+          maximum: 96
+
+    VacationRequest:
+      type: object
+      required:
+        - dayType
+      properties:
+        dayType:
+          type: string
+          const: vacation
+
+    WorkdayRequest:
+      allOf:
+        - $ref: "#/components/schemas/TimeInterval"
+        - type: object
+          required:
+            - dayType
+          properties:
+            dayType:
+              type: string
+              const: workday
+
+    Entry.Base:
+      allOf:
+        - $ref: "#/components/schemas/TimeInterval"
+        - type: object
+          required:
+            - title
+          properties:
+            title:
+              type: string
+              minLength: 1
+            description:
+              type: string
+              minLength: 1
+
+    Entry.ResponseBase:
+      allOf:
+        - $ref: "#/components/schemas/CalendarEntryId"
+        - $ref: "#/components/schemas/Entry.Base"
+        - $ref: "#/components/schemas/Day"
+
+    NonWorkEntry.Response:
+      allOf:
+        - $ref: "#/components/schemas/Entry.ResponseBase"
+        - type: object
+          required:
+            - entryType
+          properties:
+            entryType:
+              type: string
+              enum:
+                - personal
+                - issue
+
+    WorkEntry.Response:
+      allOf:
+        - $ref: "#/components/schemas/Entry.ResponseBase"
+        - $ref: "customer.yaml#/components/schemas/Prices.Response"
+        - type: object
+          required:
+            - entryType
+            - customer
+          properties:
+            entryType:
+              type: string
+              const: work
+            customer:
+              $ref: "customer.yaml#/components/schemas/Response"
+
+    Entry.Response:
+      oneOf:
+        - $ref: "#/components/schemas/NonWorkEntry.Response"
+        - $ref: "#/components/schemas/WorkEntry.Response"
+
+    Day.Response:
+      allOf:
+        - $ref: "#/components/schemas/Day"
+        - type: object
+          required:
+            - entries
+            - dayType
+          properties:
+            entries:
+              type: array
+              items:
+                $ref: "#/components/schemas/Entry.Response"
+        - oneOf:
+            - allOf:
+                - $ref: "#/components/schemas/TimeInterval"
+                - $ref: "#/components/schemas/PlannedTimeInterval"
+                - type: object
+                  properties:
+                    dayType:
+                      type: string
+                      enum:
+                        - weekend
+                        - workday
+            - type: object
+              properties:
+                dayType:
+                  type: string
+                  enum:
+                    - vacation
+                    - holiday
+
+    NonWorkEntry.Request:
+      allOf:
+        - $ref: "#/components/schemas/Entry.Base"
+        - $ref: "#/components/schemas/Day"
+        - type: object
+          required:
+            - entryType
+          properties:
+            entryType:
+              type: string
+              enum:
+                - personal
+                - issue
+
+    WorkEntry.Request:
+      allOf:
+        - $ref: "#/components/schemas/Entry.Base"
+        - $ref: "#/components/schemas/Day"
+        - $ref: "customer.yaml#/components/schemas/CustomerId"
+        - $ref: "customer.yaml#/components/schemas/Prices.Request"
+        - type: object
+          required:
+            - entryType
+          properties:
+            entryType:
+              type: string
+              const: work
+
+    Entry.Request:
+      oneOf:
+        - $ref: "#/components/schemas/NonWorkEntry.Request"
+        - $ref: "#/components/schemas/WorkEntry.Request"

@@ -1,7 +1,7 @@
 import { getCategoryId, getProductId } from '@household/shared/common/utils';
-import { AccountType, CategoryType } from '@household/shared/enums';
+import { AccountType, CalendarEntryType, CategoryType, SettingKey } from '@household/shared/enums';
 import { HttpError } from '@household/shared/types/common';
-import { Account, Category, Common, File, Product, Project, Recipient, Setting, Transaction, User } from '@household/shared/types/types';
+import { Account, Calendar, Category, Common, Customer, File, Price, Product, Project, Recipient, Setting, Transaction, User } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
 
 type CatchAndThrow = (error: any) => never;
@@ -18,11 +18,6 @@ const httpError = (statusCode: number, message: string): HttpError => ({
 export const httpErrors = {
   transaction: {
     save: (doc: Transaction.Document, statusCode = 500): CatchAndThrow => (error) => {
-      if (error.code === 11000) {
-        log('Duplicate transaction name', doc, error);
-        throw httpError(400, 'Duplicate transaction name'); // TODO ????
-      }
-
       log('Save transaction', doc, error);
       throw httpError(statusCode, 'Error while saving transaction');
     },
@@ -271,6 +266,12 @@ export const httpErrors = {
         throw httpError(statusCode, 'Parent category not found');
       }
     },
+    parentIsSelf: (ctx: Category.CategoryId & Category.ParentCategoryId, statusCode = 400) => { 
+      if (ctx.categoryId === ctx.parentCategoryId) {
+        log('Parent category cannot be the category itself', ctx);
+        throw httpError(statusCode, 'Parent category cannot be the category itself');
+      }
+    },
     parentIsAChild: (parentCategory: Category.Document, categoryId: Category.Id, statusCode = 400) => {
       if (parentCategory?.ancestors.some((category) => getCategoryId(category) === categoryId)) {
         log('Parent category is already a child of the current category', {
@@ -485,8 +486,8 @@ export const httpErrors = {
     },
   },
   setting: {
-    list: (statusCode = 500): CatchAndThrow => (error) => {
-      log('List settings', undefined, error);
+    list: (ctx?: SettingKey[], statusCode = 500): CatchAndThrow => (error) => {
+      log('List settings', ctx, error);
       throw httpError(statusCode, 'Error while listing settings');
     },
     delete: (ctx: Setting.SettingKey, statusCode = 500): CatchAndThrow => (error) => {
@@ -496,6 +497,176 @@ export const httpErrors = {
     update: (ctx: Setting.SettingKey & UpdateQuery<Setting.Document>, statusCode = 500): CatchAndThrow => (error) => {
       log('Update setting', ctx, error);
       throw httpError(statusCode, 'Error while updating setting document');
+    },
+  },
+  customer: {
+    save: (doc: Customer.Document, statusCode = 500): CatchAndThrow => (error) => {
+      if (error.code === 11000) {
+        log('Duplicate customer name', doc, error);
+        throw httpError(400, 'Duplicate customer name');
+      }
+
+      log('Save customer', doc, error);
+      throw httpError(statusCode, 'Error while saving customer');
+    },
+    getById: (ctx: Customer.CustomerId, statusCode = 500): CatchAndThrow => (error) => {
+      log('Get customer', ctx, error);
+      throw httpError(statusCode, 'Error while getting customer');
+    },
+    list: (statusCode = 500): CatchAndThrow => (error) => {
+      log('List customers', undefined, error);
+      throw httpError(statusCode, 'Error while listing customers');
+    },
+    listByIds: (ctx: Customer.Id[], statusCode = 500): CatchAndThrow => (error) => {
+      log('List customers by ids', ctx, error);
+      throw httpError(statusCode, 'Error while listing customers by ids');
+    },
+    notFound: (ctx: Customer.CustomerId & {customer: Customer.Document}, statusCode = 404) => {
+      if (ctx.customerId && !ctx.customer) {
+        log('No customer found', ctx);
+        throw httpError(statusCode, 'No customer found');
+      }
+    },
+    multipleNotFound: (ctx: { customerIds: Customer.Id[]; customers: Customer.Document[] }, statusCode = 400) => {
+      if (ctx.customers?.length !== ctx.customerIds?.length) {
+        log('Some of the customers are not found', ctx);
+        throw httpError(statusCode, 'Some of the customers are not found');
+      }
+    },
+    delete: (ctx: Customer.CustomerId, statusCode = 500): CatchAndThrow => (error) => {
+      log('Delete customer', ctx, error);
+      throw httpError(statusCode, 'Error while deleting customer');
+    },
+    update: (ctx: Customer.CustomerId & {update: UpdateQuery<Customer.Document>}, statusCode = 500) => httpErrors.customer.updateMultiple([ctx], statusCode),
+    updateMultiple: (ctx: (Customer.CustomerId & {update: UpdateQuery<Customer.Document>})[], statusCode = 500): CatchAndThrow => (error) => {
+      if (error.code === 11000) {
+        log('Duplicate customer name', ctx, error);
+        throw httpError(400, 'Duplicate customer name');
+      }
+
+      log('Update customer', ctx, error);
+      throw httpError(statusCode, 'Error while updating customer');
+    },
+    duplicateJobName: (ctx: {job: Customer.Job.Request; customer: Customer.Document; jobName?: Customer.Job.Name['name']}, statusCode = 400) => {
+      if (ctx.job.name !== ctx.jobName && ctx.customer.jobs.some(j => j.name === ctx.job.name)) {
+        log('Duplicate customer job name', ctx);
+        throw httpError(statusCode, 'Duplicate customer job name');
+      }
+    },
+    selfBlacklisted: (ctx: {
+      customerIdA: Customer.Id;
+      customerIdB: Customer.Id
+    }, statusCode = 400) => {
+      if (ctx.customerIdA === ctx.customerIdB) {
+        log('Customer cannot be blacklisted with itself', ctx);
+        throw httpError(statusCode, 'Customer cannot be blacklisted with itself');
+      }
+    },
+  },
+  price: {
+    save: (doc: Price.Document, statusCode = 500): CatchAndThrow => (error) => {
+      if (error.code === 11000) {
+        log('Duplicate price name', doc, error);
+        throw httpError(400, 'Duplicate price name');
+      }
+
+      log('Save price', doc, error);
+      throw httpError(statusCode, 'Error while saving price');
+    },
+    getById: (ctx: Price.PriceId, statusCode = 500): CatchAndThrow => (error) => {
+      log('Get price', ctx, error);
+      throw httpError(statusCode, 'Error while getting price');
+    },
+    listByIds: (ctx: Price.Id[], statusCode = 500): CatchAndThrow => (error) => {
+      log('List prices by ids', ctx, error);
+      throw httpError(statusCode, 'Error while listing prices by ids');
+    },
+    list: (statusCode = 500): CatchAndThrow => (error) => {
+      log('List prices', undefined, error);
+      throw httpError(statusCode, 'Error while listing prices');
+    },
+    notFound: (ctx: Price.PriceId & {price: Price.Document}, statusCode = 404) => {
+      if (ctx.priceId && !ctx.price) {
+        log('No price found', ctx);
+        throw httpError(statusCode, 'No price found');
+      }
+    },
+    delete: (ctx: Price.PriceId, statusCode = 500): CatchAndThrow => (error) => {
+      log('Delete price', ctx, error);
+      throw httpError(statusCode, 'Error while deleting price');
+    },
+    multipleNotFound: (ctx: { priceIds: Price.Id[]; prices: Price.Document[] }, statusCode = 400) => {
+      if (ctx.priceIds.length !== ctx.prices.length) {
+        log('Some of the prices are not found', ctx);
+        throw httpError(statusCode, 'Some of the prices are not found');
+      }
+    },
+    update: (ctx: Price.PriceId & {update: UpdateQuery<Price.Document>}, statusCode = 500): CatchAndThrow => (error) => {
+      if (error.code === 11000) {
+        log('Duplicate price name', ctx, error);
+        throw httpError(400, 'Duplicate price name');
+      }
+
+      log('Update price', ctx, error);
+      throw httpError(statusCode, 'Error while updating price');
+    },
+  },
+  calendarDay: {
+    list: (statusCode = 500): CatchAndThrow => (error) => {
+      log('List calendar days', undefined, error);
+      throw httpError(statusCode, 'Error while listing calendar days');
+    },
+    delete: (ctx: Calendar.DayProp, statusCode = 500): CatchAndThrow => (error) => {
+      log('Delete calendar day', ctx, error);
+      throw httpError(statusCode, 'Error while deleting calendar day');
+    },
+    update: (ctx: Calendar.DayProp & {update: UpdateQuery<Calendar.Day.Document>}, statusCode = 500): CatchAndThrow => (error) => {
+      log('Update calendar day', ctx, error);
+      throw httpError(statusCode, 'Error while updating calendar day');
+    },
+  },
+  calendarEntry: {
+    save: (doc: Calendar.Entry.Document, statusCode = 500): CatchAndThrow => (error) => {
+      log('Save calendar entry', doc, error);
+      throw httpError(statusCode, 'Error while saving calendar entry');
+    },
+    getById: (ctx: Calendar.Entry.CalendarEntryId, statusCode = 500): CatchAndThrow => (error) => {
+      log('Get calendar entry', ctx, error);
+      throw httpError(statusCode, 'Error while getting calendar entry');
+    },
+    list: (statusCode = 500): CatchAndThrow => (error) => {
+      log('List calendar entries', undefined, error);
+      throw httpError(statusCode, 'Error while listing calendar entries');
+    },
+    notFound: (ctx: Calendar.Entry.CalendarEntryId & {calendarEntry: Calendar.Entry.Document}, statusCode = 404) => {
+      if (ctx.calendarEntryId && !ctx.calendarEntry) {
+        log('No calendar entry found', ctx);
+        throw httpError(statusCode, 'No calendar entry found');
+      }
+    },
+    delete: (ctx: Calendar.Entry.CalendarEntryId, statusCode = 500): CatchAndThrow => (error) => {
+      log('Delete calendar entry', ctx, error);
+      throw httpError(statusCode, 'Error while deleting calendar entry');
+    },
+    update: (ctx: Calendar.Entry.CalendarEntryId & {update: UpdateQuery<Calendar.Entry.Document>}, statusCode = 500): CatchAndThrow => (error) => {
+      log('Update calendar entry', ctx, error);
+      throw httpError(statusCode, 'Error while updating calendar entry');
+    },
+    updateWithPayment: (ctx: Calendar.Entry.CalendarEntryId & {transaction: Transaction.PaymentDocument}, statusCode = 500): CatchAndThrow => (error) => {
+      log('Update calendar entry with payment', ctx, error);
+      throw httpError(statusCode, 'Error while updating calendar entry with payment');
+    },
+    wrongType: (ctx: {calendarEntry: Calendar.Entry.Document, expectedType: CalendarEntryType}, statusCode = 400) => {
+      if (ctx.calendarEntry.entryType !== ctx.expectedType) {
+        log(`Calendar entry must be of "${ctx.expectedType}" type`, ctx);
+        throw httpError(statusCode, `Calendar entry must be of "${ctx.expectedType}" type`);
+      }
+    },
+    alreadyPaid: (ctx: Calendar.Entry.Document, statusCode = 400) => {
+      if (ctx?.isPaid) {
+        log('Calendar entry is already paid', ctx);
+        throw httpError(statusCode, 'Calendar entry is already paid');
+      }
     },
   },
   common: {

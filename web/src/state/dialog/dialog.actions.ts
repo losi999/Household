@@ -4,6 +4,7 @@ import { Action, createActionGroup, emptyProps, props } from '@ngrx/store';
 export const dialogActions = createActionGroup({
   source: 'Dialog',
   events: {
+    'Close all': emptyProps(),
     'Create project': emptyProps(),
     'Update project': props<Project.Response>(),
     'Delete project': props<Project.Response>(),

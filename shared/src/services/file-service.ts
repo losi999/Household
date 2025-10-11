@@ -3,7 +3,6 @@ import { File } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
 
 export interface IFileService {
-  dumpFiles(): Promise<File.Document[]>;
   saveFile(doc: File.Document): Promise<File.Document>;
   findFileById(fileId: File.Id): Promise<File.Document>;
   deleteFile(fileId: File.Id): Promise<unknown>;
@@ -13,13 +12,6 @@ export interface IFileService {
 
 export const fileServiceFactory = (mongodbService: IMongodbService): IFileService => {
   const instance: IFileService = {
-    dumpFiles: () => {
-      return mongodbService.inSession((session) => {
-        return mongodbService.files.find({}).session(session)
-          .lean();
-          
-      });
-    },
     saveFile: (doc) => {
       return mongodbService.files.create(doc);
     },

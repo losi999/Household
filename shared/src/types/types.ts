@@ -1,8 +1,8 @@
-import { unitsOfMeasurement } from '@household/shared/constants';
+import { priceUnitsOfMeasurement, unitsOfMeasurement } from '@household/shared/constants';
 import { Branding } from '@household/shared/types/common';
-import { Types } from 'mongoose';
+import type { Types } from 'mongoose';
 import * as Enum from '@household/shared/enums';
-import { UserStatusType } from '@aws-sdk/client-cognito-identity-provider';
+import type { UserStatusType } from '@aws-sdk/client-cognito-identity-provider';
 
 export namespace Internal {
   export type Id = {
@@ -619,14 +619,12 @@ export namespace Report {
 }
 
 export namespace Setting {
-  export type Id = Branding<string, 'settings'>;
-
   type Base = {
     value: string | number | boolean;
   };
 
   export type SettingKey = {
-    settingKey: Id;
+    settingKey: Enum.SettingKey;
   };
 
   export type Request = Base;
@@ -769,6 +767,223 @@ export namespace Import {
     'Közlemény': string;
     'Kategória': string;
   };
+}
+
+export namespace Customer {
+  export type Id = Branding<string, 'customer'>;
+
+  export type CustomerId = {
+    customerId: Id;
+  };
+
+  type Base = {
+    name: string;
+    description: string;
+    isGroup: boolean;
+    rating: number;
+  };
+
+  export namespace Job {
+    export type Name = {
+      name: string;
+    };
+
+    type Base = Name & {
+      duration: number;
+      description: string;
+    };
+
+    export type Quantity = {
+      quantity: number;
+    };
+
+    export type ListedPrice<P extends Price.PriceId | {price: Price.Document} | Price.Response> = P & Quantity;
+
+    export type Prices<P extends Price.PriceId | {price: Price.Document} | Price.Response> = {
+      prices: (ListedPrice<P> | Price.Base)[];
+    };
+    
+    export type Request = Base & Prices<Price.PriceId>;
+
+    export type Document = Base & Prices<{price: Price.Document}>;
+
+    export type Response = Base & Prices<Price.Response>;
+  }
+
+  type Jobs = {
+    jobs: Job.Response[]
+  };
+
+  export type Document = Internal.Id
+  & Internal.Timestamps
+  & Base
+  & {
+    blacklistedCustomers: Document[];
+    jobs: Job.Document[];
+  };
+
+  export type ResponseBase = CustomerId 
+  & Base; 
+  export type Response = ResponseBase
+  & Jobs
+  & {
+    blacklistedCustomers: ResponseBase[];
+    workEntries: Calendar.Entry.ResponseBase[]
+  };
+
+  export type Request = Base;
+}
+
+export namespace Price {
+  export type Id = Branding<string, 'price'>;
+
+  export type PriceId = {
+    priceId: Id;
+  };
+
+  type UnitOfMeasurement = {
+    unitOfMeasurement: typeof priceUnitsOfMeasurement[number];
+  };
+
+  export type Base = {
+    name: string;
+    amount: number;
+  };
+
+  export type Document = Internal.Id
+  & Internal.Timestamps
+  & Base
+  & UnitOfMeasurement;
+
+  export type Request = Base & UnitOfMeasurement;
+
+  export type Response = PriceId & Base & UnitOfMeasurement;
+}
+
+export namespace Calendar {
+  export type DateRange = {
+    dateFrom: string;
+    dateTo: string;
+  };
+
+  export type DayProp = {
+    day: string;
+  };
+
+  export type TimeInterval = {
+    start: number;
+    end: number;
+  };
+
+  export namespace Day {
+    export type DayType<T extends Enum.CalendarDayType> = {
+      dayType: T
+    };
+    
+    export type VacationRequest = DayType<Enum.CalendarDayType.Vacation>;
+  
+    export type WorkdayRequest = DayType<Enum.CalendarDayType.Workday> & TimeInterval;
+
+    export type Request = VacationRequest | WorkdayRequest;
+
+    type Base = DayProp 
+    & ((DayType<Enum.CalendarDayType.Workday> & TimeInterval) 
+    | DayType<Exclude<Enum.CalendarDayType, Enum.CalendarDayType.Workday>>);
+
+    export type Document = Internal.Timestamps
+    & Base;
+
+    type ResponseBase = DayProp & {
+      entries: Entry.Response[]
+    };
+
+    type PlannedTimespan = {
+      plannedStart: number;
+      plannedEnd: number;
+    };
+
+    type WorkdayResponse = DayType<Enum.CalendarDayType.Workday> & TimeInterval & ResponseBase & PlannedTimespan;
+    type WeekendResponse = DayType<Enum.CalendarDayType.Weekend> & TimeInterval & ResponseBase & PlannedTimespan;
+    type VacationResponse = DayType<Enum.CalendarDayType.Vacation> & ResponseBase;
+    export type HolidayResponse = DayType<Enum.CalendarDayType.Holiday> & ResponseBase;
+
+    export type Response = WorkdayResponse | VacationResponse | HolidayResponse | WeekendResponse;
+  }
+
+  export namespace Entry {
+    export type Id = Branding<string, 'calendarEntry'>;
+
+    export type CalendarEntryId = {
+      calendarEntryId: Id;
+    };
+    
+    export type EntryType<T extends Enum.CalendarEntryType = Enum.CalendarEntryType> = {
+      entryType: T;
+    };
+
+    type Base = TimeInterval & {
+      title: string;
+      description: string;      
+    };
+
+    type IsPaid = {
+      isPaid: boolean;
+    };
+
+    export type IssueEntryRequest = Base 
+    & DayProp 
+    & EntryType<Enum.CalendarEntryType.Issue>;
+    
+    export type PersonalEntryRequest = Base 
+    & DayProp 
+    & EntryType<Enum.CalendarEntryType.Personal>;
+    
+    export type WorkEntryRequest = Base 
+    & DayProp 
+    & Customer.CustomerId 
+    & Pick<Customer.Job.Request, 'prices'>
+    & EntryType<Enum.CalendarEntryType.Work>;
+
+    export type Request = IssueEntryRequest | PersonalEntryRequest | WorkEntryRequest;
+  
+    export type Document = Internal.Id
+    & Internal.Timestamps
+    & Base
+    & DayProp
+    & EntryType<Enum.CalendarEntryType>
+    & IsPaid
+    & {
+      transaction: Transaction.PaymentDocument;
+      customer: Customer.Document;
+    }
+    & Pick<Customer.Job.Document, 'prices'>;
+
+    export type ResponseBase = Base 
+    & DayProp
+    & CalendarEntryId; 
+
+    export type PersonalEntryResponse = ResponseBase
+    & EntryType<Enum.CalendarEntryType.Personal>;
+    
+    export type IssueEntryResponse = ResponseBase
+    & EntryType<Enum.CalendarEntryType.Issue>; 
+
+    export type WorkEntryResponse = ResponseBase
+    & Pick<Customer.Job.Response, 'prices'>   
+    & IsPaid
+    & {
+      customer: Customer.Response
+    }
+    & EntryType<Enum.CalendarEntryType.Work>;
+
+    export type Response = PersonalEntryResponse | IssueEntryResponse | WorkEntryResponse;
+
+    type PaymentType<P extends Enum.PaymentType> = {
+      paymentType: P;
+    };
+
+    export type PaymentRequest = PaymentType<Enum.PaymentType.Transfer> | (PaymentType<Enum.PaymentType.Cash> & Transaction.Amount);
+  }
 }
 
 export namespace Common {

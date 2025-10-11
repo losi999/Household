@@ -1,0 +1,23 @@
+.price-list {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 5px;
+  margin-bottom: 10px;
+
+  button {
+    height: 45px;
+  }
+}
+
+.detailed-price {
+  display: grid;
+  grid-template-columns: 1fr 48px 80px 48px 100px 48px;
+  grid-template-areas: "name minus quantity plus amount remove";
+  align-items: center;
+  text-align: right;
+
+  .quantity {
+    text-align: center;
+    grid-area: quantity;
+  }
+}

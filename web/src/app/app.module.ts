@@ -45,6 +45,7 @@ import { hairdressingReducer } from '@household/web/state/hairdressing/hairdress
 import { userReducer } from '@household/web/state/user/user.reducer';
 import { UserEffects } from '@household/web/state/user/user.effects';
 import { AuthEffects } from '@household/web/state/auth/auth.effects';
+import { MatPaginatorIntl } from '@angular/material/paginator';
 
 registerLocaleData(localeHu);
 
@@ -121,6 +122,20 @@ registerLocaleData(localeHu);
         subscriptSizing: 'dynamic',
         appearance: 'fill',
       },
+    },
+    {
+      provide: MatPaginatorIntl,
+      useFactory: () => {
+        const customPaginatorIntl = new MatPaginatorIntl();
+
+        customPaginatorIntl.getRangeLabel = (page, pageSize, length) => {
+          const startIndex = page * pageSize;
+          const endIndex = Math.min(startIndex + pageSize, length);
+          return `${startIndex + 1} - ${endIndex} / ${length}`;
+        };
+
+        return customPaginatorIntl;
+      }, 
     },
     provideHttpClient(withInterceptorsFromDi()),
   ],

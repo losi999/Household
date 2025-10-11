@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { Account, Category, Setting } from '@household/shared/types/types';
+import { SettingKey } from '@household/shared/enums';
+import { Account, Category } from '@household/shared/types/types';
 import { takeFirstDefined } from '@household/web/operators/take-first-defined';
 import { accountApiActions } from '@household/web/state/account/account.actions';
 import { categoryApiActions } from '@household/web/state/category/category.actions';
@@ -48,7 +49,7 @@ export class SettingsHairdressingComponent implements OnInit {
     this.hairdressingIncomeAccount.valueChanges.subscribe((value) => {
       if (value) {
         this.store.dispatch(settingApiActions.updateSettingInitiated({
-          settingKey: 'hairdressingIncomeAccount' as Setting.Id,
+          settingKey: SettingKey.HairdressingIncomeAccount,
           value: value.accountId,
         }));
       }
@@ -57,7 +58,7 @@ export class SettingsHairdressingComponent implements OnInit {
     this.hairdressingIncomeCategory.valueChanges.subscribe((value) => {
       if (value) {
         this.store.dispatch(settingApiActions.updateSettingInitiated({
-          settingKey: 'hairdressingIncomeCategory' as Setting.Id,
+          settingKey: SettingKey.HairdressingIncomeCategory,
           value: value.categoryId,
         }));
       }

@@ -15,6 +15,11 @@ export const updateCategoryServiceFactory = (
   categoryDocumentConverter: ICategoryDocumentConverter,
 ): IUpdateCategoryService => {
   return async ({ body: { parentCategoryId, ...body }, categoryId, expiresIn }) => {
+    httpErrors.category.parentIsSelf({
+      categoryId,
+      parentCategoryId,
+    });
+
     const [
       queried,
       parentCategory,

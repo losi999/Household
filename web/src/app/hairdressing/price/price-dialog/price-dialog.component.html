@@ -1,0 +1,21 @@
+<h1 mat-dialog-title>{{price ? 'Szerkesztés' : 'Új'}}</h1>
+<div mat-dialog-content>
+  <form [formGroup]="form" (ngSubmit)="onSave()" id="price-form">
+    <household-clearable-input formControlName="name" label="Név" />
+    <household-amount-input formControlName="amount" currency="Ft" [signHidden]="true" label="Ár" />
+    <mat-form-field appearance="fill">
+      <mat-label>Mértékegység</mat-label>
+      <mat-select name="unitOfMeasurement" formControlName="unitOfMeasurement">
+        @for (u of unitsOfMeasurement; track $index) {
+        <mat-option [value]="u">
+          {{u}}
+        </mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </form>
+</div>
+<div mat-dialog-actions>
+  <button mat-button cdkFocusInitial form="price-form">Mentés</button>
+  <button mat-button type="button" mat-dialog-close>Mégse</button>
+</div>

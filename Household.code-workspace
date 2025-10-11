@@ -25,6 +25,18 @@
       "editor.defaultFormatter": "vscode.html-language-features",
       "editor.tabSize": 2
     },
-    "html.format.wrapLineLength": 0
+    "html.format.wrapLineLength": 0,
+    "yaml.customTags": [
+      "!Sub scalar",
+      "!Condition scalar",
+      "!Ref scalar",
+      "!GetAtt scalar",
+      "!Not sequence",
+      "!If sequence",
+      "!And sequence",
+      "!Equals sequence",
+      "!FindInMap sequence",
+      "!Sub sequence",
+    ]
   }
 }

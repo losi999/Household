@@ -5,7 +5,7 @@ import { hairdressingActions } from '@household/web/state/hairdressing/hairdress
 export type HairdressingState = {
   income?: {
     [month: string]: Transaction.Report[];
-  }
+  };
 };
 
 export const hairdressingReducer = createReducer<HairdressingState>({},

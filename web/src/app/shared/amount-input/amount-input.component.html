@@ -1,5 +1,5 @@
 <mat-form-field>
-  <button mat-icon-button matPrefix type="button" (click)="inverseValue($event)" [disabled]="signDisabled">
+  <button mat-icon-button matPrefix *ngIf="!signHidden" type="button" (click)="inverseValue($event)" [disabled]="signDisabled">
     <mat-icon>{{isPositive ? 'add' : 'remove'}}</mat-icon>
   </button>
   <mat-label>{{label}}</mat-label>

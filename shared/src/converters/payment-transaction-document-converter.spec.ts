@@ -1,4 +1,4 @@
-import { createAccountDocument, createAccountResponse, createCategoryDocument, createCategoryResponse, createPaymentTransactionDocument, createPaymentTransactionRequest, createPaymentTransactionResponse, createProjectDocument, createProjectResponse, createRecipientDocument, createRecipientResponse, createProductDocument, createProductResponse } from '@household/shared/common/test-data-factory';
+import { createAccountDocument, createAccountResponse, createCategoryDocument, createCategoryResponse, createPaymentTransactionDocument, createPaymentTransactionRequest, createPaymentTransactionResponse, createProjectDocument, createProjectResponse, createRecipientDocument, createRecipientResponse, createProductDocument, createProductResponse, calendarEntryDataFactory } from '@household/shared/common/test-data-factory';
 import { addSeconds, getTransactionId, getProductId } from '@household/shared/common/utils';
 import { advanceTo, clear } from 'jest-date-mock';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
@@ -199,6 +199,38 @@ describe('Payment transaction document converter', () => {
         quantity: undefined,
         product: undefined,
         issuedAt: now,
+        expiresAt: undefined,
+        _id: undefined,
+      }));
+    });
+  });
+
+  describe('createFromEntry', () => {
+    it('should return document', () => {
+      const calendarEntry = calendarEntryDataFactory.document({
+        day: '2025-10-11',
+        end: 44,
+      });
+      const amount = 5000;
+      const result = converter.createFromEntry({
+        calendarEntry,
+        account,
+        category: regularCategory,
+        amount,
+      });
+      expect(result).toEqual(createPaymentTransactionDocument({
+        account,
+        category: regularCategory,
+        project: undefined,
+        recipient: undefined,
+        amount,
+        description: calendarEntry.title,
+        issuedAt: new Date('2025-10-11T09:00:00.000Z'),
+        quantity: undefined,
+        product: undefined,
+        invoiceNumber: undefined,
+        billingEndDate: undefined,
+        billingStartDate: undefined,
         expiresAt: undefined,
         _id: undefined,
       }));

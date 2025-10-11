@@ -39,7 +39,9 @@ export class RecipientListItemComponent implements OnInit {
 
   showMenu() {
     const bottomSheetRef = this.bottomSheet.open<CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult>(CatalogSubmenuComponent, {
-      data: this.recipient.name,
+      data: {
+        title: this.recipient.name,
+      },
     });
 
     bottomSheetRef.afterDismissed().subscribe((result) => {

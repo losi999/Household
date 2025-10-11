@@ -4,7 +4,6 @@ import { Category } from '@household/shared/types/types';
 import { Types, UpdateQuery } from 'mongoose';
 
 export interface ICategoryService {
-  dumpCategories(): Promise<Category.Document[]>;
   saveCategory(doc: Category.Document): Promise<Category.Document>;
   saveCategories(docs: Category.Document[]): Promise<unknown>;
   findCategoryById(categoryId: Category.Id): Promise<Category.Document>;
@@ -21,13 +20,6 @@ export interface ICategoryService {
 
 export const categoryServiceFactory = (mongodbService: IMongodbService): ICategoryService => {
   const instance: ICategoryService = {
-    dumpCategories: () => {
-      return mongodbService.inSession((session) => {
-        return mongodbService.categories.find({}).session(session)
-          .lean();
-          
-      });
-    },
     saveCategory: (doc) => {
       return mongodbService.categories.create(doc);
     },

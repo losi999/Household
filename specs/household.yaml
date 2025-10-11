@@ -1,4 +1,4 @@
-openapi: "3.0.2"
+openapi: "3.1.0"
 info:
   title: Household API
   version: 1.0.0
@@ -180,7 +180,6 @@ paths:
                   allOf:
                     - $ref: "category.yaml#/components/schemas/FullName"
                     - $ref: "category.yaml#/components/schemas/Products"
-
   /product/v1/products/{productId}:
     parameters:
       - $ref: "#/components/parameters/Path.ProductId"
@@ -225,7 +224,6 @@ paths:
             application/json:
               schema:
                 $ref: "product.yaml#/components/schemas/ProductId"
-
   /project/v1/projects:
     get:
       tags:
@@ -390,6 +388,7 @@ paths:
             application/json:
               schema:
                 $ref: "recipient.yaml#/components/schemas/RecipientId"
+
   # /report/v1/reports:
   #   get:
   #     responses:
@@ -839,10 +838,309 @@ paths:
         200:
           description: User confirmed
 
+  /customer/v1/customers:
+    get:
+      tags:
+        - customer
+      responses:
+        200:
+          description: List of customers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "customer.yaml#/components/schemas/Response"
+    post:
+      tags:
+        - customer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "customer.yaml#/components/schemas/Request"
+      responses:
+        201:
+          description: Customer id
+          content:
+            application/json:
+              schema:
+                $ref: "customer.yaml#/components/schemas/CustomerId"
+  /customer/v1/customers/{customerId}:
+    parameters:
+      - $ref: "#/components/parameters/Path.CustomerId"
+    get:
+      tags:
+        - customer
+      responses:
+        200:
+          description: Customer details
+          content:
+            application/json:
+              schema:
+                $ref: "customer.yaml#/components/schemas/Response"
+    put:
+      tags:
+        - customer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "customer.yaml#/components/schemas/Request"
+      responses:
+        200:
+          description: Customer id
+          content:
+            application/json:
+              schema:
+                $ref: "customer.yaml#/components/schemas/CustomerId"
+  /customer/v1/customers/{customerId}/jobs:
+    parameters:
+      - $ref: "#/components/parameters/Path.CustomerId"
+    post:
+      tags:
+        - customer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "customer.yaml#/components/schemas/Job.Request"
+      responses:
+        201:
+          description: Job created
+  /customer/v1/customers/blacklist:
+    put:
+      tags:
+        - customer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              minItems: 2
+              maxItems: 2
+              items:
+                type: string
+                minLength: 1
+      responses:
+        204:
+          description: Customers blacklisted
+    delete:
+      tags:
+        - customer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              minItems: 2
+              maxItems: 2
+              items:
+                type: string
+                minLength: 1
+      responses:
+        204:
+          description: Customer blacklisted deleted
+  /customer/v1/customers/{customerId}/jobs/{jobName}:
+    parameters:
+      - $ref: "#/components/parameters/Path.CustomerId"
+      - $ref: "#/components/parameters/Path.JobName"
+    put:
+      tags:
+        - customer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "customer.yaml#/components/schemas/Job.Request"
+      responses:
+        201:
+          description: Job updated
+    delete:
+      tags:
+        - customer
+      responses:
+        204:
+          description: Job deleted
+
+  /price/v1/prices:
+    get:
+      tags:
+        - price
+      responses:
+        200:
+          description: Price list
+          content:
+            application/json:
+              schema:
+                $ref: "price.yaml#/components/schemas/Response"
+    post:
+      tags:
+        - price
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "price.yaml#/components/schemas/Request"
+      responses:
+        201:
+          description: Created price Id
+          content:
+            application/json:
+              schema:
+                $ref: "price.yaml#/components/schemas/PriceId"
+  /price/v1/prices/{priceId}:
+    parameters:
+      - $ref: "#/components/parameters/Path.PriceId"
+    put:
+      tags:
+        - price
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "price.yaml#/components/schemas/Request"
+      responses:
+        201:
+          description: Updated price Id
+          content:
+            application/json:
+              schema:
+                $ref: "price.yaml#/components/schemas/PriceId"
+    delete:
+      tags:
+        - price
+      responses:
+        204:
+          description: Price deleted
+  /calendar/v1/days:
+    get:
+      parameters:
+        - $ref: "#/components/parameters/Query.DateFrom"
+        - $ref: "#/components/parameters/Query.DateTo"
+      tags:
+        - calendar
+      responses:
+        200:
+          description: List of calendar days
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "calendar.yaml#/components/schemas/Day.Response"
+  /calendar/v1/days/{day}:
+    parameters:
+      - $ref: "#/components/parameters/Path.Day"
+    put:
+      tags:
+        - calendar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "calendar.yaml#/components/schemas/VacationRequest"
+                - $ref: "calendar.yaml#/components/schemas/WorkdayRequest"
+      responses:
+        204:
+          description: Calendar day updated
+
+  /calendar/v1/entries:
+    post:
+      tags:
+        - calendar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "calendar.yaml#/components/schemas/Entry.Request"
+      responses:
+        201:
+          description: Calendar entry Id
+          content:
+            application/json:
+              schema:
+                $ref: "calendar.yaml#/components/schemas/CalendarEntryId"
+  /calendar/v1/entries/{calendarEntryId}:
+    parameters:
+      - $ref: "#/components/parameters/Path.CalendarEntryId"
+    get:
+      tags:
+        - calendar
+      responses:
+        200:
+          description: Calendar entry
+          content:
+            application/json:
+              schema:
+                $ref: "calendar.yaml#/components/schemas/WorkEntry.Response"
+    put:
+      tags:
+        - calendar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "calendar.yaml#/components/schemas/Entry.Request"
+      responses:
+        201:
+          description: Calendar entry Id
+          content:
+            application/json:
+              schema:
+                $ref: "calendar.yaml#/components/schemas/CalendarEntryId"
+    delete:
+      tags:
+        - calendar
+      responses:
+        204:
+          description: Calendar entry deleted
+  /calendar/v1/entries/{calendarEntryId}/payment:
+    parameters:
+      - $ref: "#/components/parameters/Path.CalendarEntryId"
+    post:
+      tags:
+        - calendar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - allOf:
+                    - type: object
+                      required:
+                        - paymentType
+                      properties:
+                        paymentType:
+                          type: string
+                          const: "cash"
+                    - $ref: "transaction.yaml#/components/schemas/Amount"
+                - type: object
+                  required:
+                    - paymentType
+                  properties:
+                    paymentType:
+                      type: string
+                      const: "transfer"
+      responses:
+        201:
+          description: Created transaction Id
+          content:
+            application/json:
+              schema:
+                $ref: "transaction.yaml#/components/schemas/TransactionId"
+
 components:
   parameters:
     Path.RecipientId:
       name: recipientId
+      in: path
+      required: true
+      schema:
+        type: string
+    Path.CustomerId:
+      name: customerId
       in: path
       required: true
       schema:
@@ -889,6 +1187,31 @@ components:
       required: true
       schema:
         type: string
+    Path.JobName:
+      name: jobName
+      in: path
+      required: true
+      schema:
+        type: string
+    Path.PriceId:
+      name: priceId
+      in: path
+      required: true
+      schema:
+        type: string
+    Path.CalendarEntryId:
+      name: calendarEntryId
+      in: path
+      required: true
+      schema:
+        type: string
+    Path.Day:
+      name: day
+      in: path
+      required: true
+      schema:
+        type: string
+        format: date
     Path.Email:
       name: email
       in: path
@@ -914,3 +1237,17 @@ components:
       required: false
       schema:
         type: boolean
+    Query.DateFrom:
+      name: dateFrom
+      in: query
+      required: true
+      schema:
+        type: string
+        format: date
+    Query.DateTo:
+      name: dateTo
+      in: query
+      required: true
+      schema:
+        type: string
+        format: date

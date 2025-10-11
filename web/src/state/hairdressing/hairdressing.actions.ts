@@ -14,3 +14,8 @@ export const hairdressingActions = createActionGroup({
     'Delete income completed': props<Transaction.TransactionId>(),
   },
 });
+
+export const hairdressingApiActions = createActionGroup({
+  source: 'Hairdressing API',
+  events: {},
+});

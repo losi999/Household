@@ -1,14 +1,14 @@
-<h1>{{title}}</h1>
+<h1>{{config.title}}</h1>
 <mat-action-list>
-  <button mat-list-item type="button" (click)="edit()">
+  <button *ngIf="!config.hideEdit" mat-list-item type="button" (click)="onSelect('edit')">
     <mat-icon matListItemIcon>edit</mat-icon>
     <div matListItemTitle>Szerkeszés</div>
   </button>
-  <button mat-list-item type="button" (click)="merge()">
+  <button *ngIf="!config.hideMerge" mat-list-item type="button" (click)="onSelect('merge')">
     <mat-icon matListItemIcon>merge</mat-icon>
     <div matListItemTitle>Egyesítés</div>
   </button>
-  <button mat-list-item type="button" (click)="delete()">
+  <button *ngIf="!config.hideDelete" mat-list-item type="button" (click)="onSelect('delete')">
     <mat-icon matListItemIcon>delete</mat-icon>
     <div matListItemTitle>Törlés</div>
   </button>
