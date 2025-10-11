@@ -1,105 +1,105 @@
 import { default as schema } from '@household/shared/schemas/calendar-entry-request';
 import { Calendar } from '@household/shared/types/types';
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
-import { createCalendarIssueEntryRequest, createCalendarPersonalEntryRequest, createCalendarWorkEntryRequest, customerDataFactory, createListedPriceRequest, priceDataFactory } from '@household/shared/common/test-data-factory';
+import { customerDataFactory, createListedPriceRequest, priceDataFactory, calendarEntryDataFactory } from '@household/shared/common/test-data-factory';
 import { CalendarEntryType } from '@household/shared/enums';
 
 describe('Calendar personal entry request schema', () => {
   const tester = jsonSchemaTesterFactory<Calendar.Entry.PersonalEntryRequest>(schema);
-  tester.validateSuccess(createCalendarPersonalEntryRequest());
+  tester.validateSuccess(calendarEntryDataFactory.personalRequest());
 
   describe('should deny', () => {
     describe('if data', () => {
       tester.additionalProperties({
-        ...createCalendarPersonalEntryRequest(),
+        ...calendarEntryDataFactory.personalRequest(),
         extra: 1,
       } as any, 'data');
     });
 
     describe('if data.day', () => {
-      tester.required(createCalendarPersonalEntryRequest({
+      tester.required(calendarEntryDataFactory.personalRequest({
         day: undefined,
       }), 'day');
 
-      tester.type(createCalendarPersonalEntryRequest({
+      tester.type(calendarEntryDataFactory.personalRequest({
         day: 1 as any,
       }), 'day', 'string');
 
-      tester.format(createCalendarPersonalEntryRequest({
+      tester.format(calendarEntryDataFactory.personalRequest({
         day: 'not-a-date',
       }), 'day', 'date');
     });
 
     describe('if data.title', () => {
-      tester.required(createCalendarPersonalEntryRequest({
+      tester.required(calendarEntryDataFactory.personalRequest({
         title: undefined,
       }), 'title');
 
-      tester.type(createCalendarPersonalEntryRequest({
+      tester.type(calendarEntryDataFactory.personalRequest({
         title: 1 as any,
       }), 'title', 'string');
 
-      tester.minLength(createCalendarPersonalEntryRequest({
+      tester.minLength(calendarEntryDataFactory.personalRequest({
         title: '',
       }), 'title', 1);
     });
 
     describe('if data.description', () => {
-      tester.type(createCalendarPersonalEntryRequest({
+      tester.type(calendarEntryDataFactory.personalRequest({
         description: 1 as any,
       }), 'description', 'string');
 
-      tester.minLength(createCalendarPersonalEntryRequest({
+      tester.minLength(calendarEntryDataFactory.personalRequest({
         description: '',
       }), 'description', 1);
     });
 
     describe('if data.entryType', () => {
-      tester.type(createCalendarPersonalEntryRequest({
+      tester.type(calendarEntryDataFactory.personalRequest({
         entryType: 1 as any,
       }), 'entryType', 'string');
 
-      tester.const(createCalendarPersonalEntryRequest({
+      tester.const(calendarEntryDataFactory.personalRequest({
         entryType: CalendarEntryType.Work as any,
       }), 'entryType');
     });
 
     describe('if data.start', () => {
-      tester.required(createCalendarPersonalEntryRequest({
+      tester.required(calendarEntryDataFactory.personalRequest({
         start: undefined,
       }), 'start');
 
-      tester.type(createCalendarPersonalEntryRequest({
+      tester.type(calendarEntryDataFactory.personalRequest({
         start: '1' as any,
       }), 'start', 'integer');
 
-      tester.minimum(createCalendarPersonalEntryRequest({
+      tester.minimum(calendarEntryDataFactory.personalRequest({
         start: -1,
       }), 'start', 0);
 
-      tester.maximum(createCalendarPersonalEntryRequest({
+      tester.maximum(calendarEntryDataFactory.personalRequest({
         start: 97,
       }), 'start', 96);
     });
 
     describe('if data.end', () => {
-      tester.required(createCalendarPersonalEntryRequest({
+      tester.required(calendarEntryDataFactory.personalRequest({
         end: undefined,
       }), 'end');
 
-      tester.type(createCalendarPersonalEntryRequest({
+      tester.type(calendarEntryDataFactory.personalRequest({
         end: '1' as any,
       }), 'end', 'integer');
 
-      tester.minimum(createCalendarPersonalEntryRequest({
+      tester.minimum(calendarEntryDataFactory.personalRequest({
         end: -1,
       }), 'end', 0);
 
-      tester.maximum(createCalendarPersonalEntryRequest({
+      tester.maximum(calendarEntryDataFactory.personalRequest({
         end: 97,
       }), 'end', 96);
 
-      tester.exclusiveMinimum(createCalendarPersonalEntryRequest({
+      tester.exclusiveMinimum(calendarEntryDataFactory.personalRequest({
         start: 20,
         end: 10,
       }), 'end', 20);
@@ -109,100 +109,100 @@ describe('Calendar personal entry request schema', () => {
 
 describe('Calendar issue entry request schema', () => {
   const tester = jsonSchemaTesterFactory<Calendar.Entry.IssueEntryRequest>(schema);
-  tester.validateSuccess(createCalendarIssueEntryRequest());
+  tester.validateSuccess(calendarEntryDataFactory.issueRequest());
 
   describe('should deny', () => {
     describe('if data', () => {
       tester.additionalProperties({
-        ...createCalendarIssueEntryRequest(),
+        ...calendarEntryDataFactory.issueRequest(),
         extra: 1,
       } as any, 'data');
     });
 
     describe('if data.day', () => {
-      tester.required(createCalendarIssueEntryRequest({
+      tester.required(calendarEntryDataFactory.issueRequest({
         day: undefined,
       }), 'day');
 
-      tester.type(createCalendarIssueEntryRequest({
+      tester.type(calendarEntryDataFactory.issueRequest({
         day: 1 as any,
       }), 'day', 'string');
 
-      tester.format(createCalendarIssueEntryRequest({
+      tester.format(calendarEntryDataFactory.issueRequest({
         day: 'not-a-date',
       }), 'day', 'date');
     });
 
     describe('if data.title', () => {
-      tester.required(createCalendarIssueEntryRequest({
+      tester.required(calendarEntryDataFactory.issueRequest({
         title: undefined,
       }), 'title');
 
-      tester.type(createCalendarIssueEntryRequest({
+      tester.type(calendarEntryDataFactory.issueRequest({
         title: 1 as any,
       }), 'title', 'string');
 
-      tester.minLength(createCalendarIssueEntryRequest({
+      tester.minLength(calendarEntryDataFactory.issueRequest({
         title: '',
       }), 'title', 1);
     });
 
     describe('if data.description', () => {
-      tester.type(createCalendarIssueEntryRequest({
+      tester.type(calendarEntryDataFactory.issueRequest({
         description: 1 as any,
       }), 'description', 'string');
 
-      tester.minLength(createCalendarIssueEntryRequest({
+      tester.minLength(calendarEntryDataFactory.issueRequest({
         description: '',
       }), 'description', 1);
     });
 
     describe('if data.entryType', () => {
-      tester.type(createCalendarIssueEntryRequest({
+      tester.type(calendarEntryDataFactory.issueRequest({
         entryType: 1 as any,
       }), 'entryType', 'string');
 
-      tester.const(createCalendarIssueEntryRequest({
+      tester.const(calendarEntryDataFactory.issueRequest({
         entryType: CalendarEntryType.Work as any,
       }), 'entryType');
     });
 
     describe('if data.start', () => {
-      tester.required(createCalendarIssueEntryRequest({
+      tester.required(calendarEntryDataFactory.issueRequest({
         start: undefined,
       }), 'start');
 
-      tester.type(createCalendarIssueEntryRequest({
+      tester.type(calendarEntryDataFactory.issueRequest({
         start: '1' as any,
       }), 'start', 'integer');
 
-      tester.minimum(createCalendarIssueEntryRequest({
+      tester.minimum(calendarEntryDataFactory.issueRequest({
         start: -1,
       }), 'start', 0);
 
-      tester.maximum(createCalendarIssueEntryRequest({
+      tester.maximum(calendarEntryDataFactory.issueRequest({
         start: 97,
       }), 'start', 96);
     });
 
     describe('if data.end', () => {
-      tester.required(createCalendarIssueEntryRequest({
+      tester.required(calendarEntryDataFactory.issueRequest({
         end: undefined,
       }), 'end');
 
-      tester.type(createCalendarIssueEntryRequest({
+      tester.type(calendarEntryDataFactory.issueRequest({
         end: '1' as any,
       }), 'end', 'integer');
 
-      tester.minimum(createCalendarIssueEntryRequest({
+      tester.minimum(calendarEntryDataFactory.issueRequest({
         end: -1,
       }), 'end', 0);
 
-      tester.maximum(createCalendarIssueEntryRequest({
+      tester.maximum(calendarEntryDataFactory.issueRequest({
         end: 97,
       }), 'end', 96);
 
-      tester.exclusiveMinimum(createCalendarIssueEntryRequest({
+      tester.exclusiveMinimum(calendarEntryDataFactory.issueRequest({
         start: 20,
         end: 10,
       }), 'end', 20);
@@ -212,134 +212,134 @@ describe('Calendar issue entry request schema', () => {
 
 describe('Calendar work entry request schema', () => {
   const tester = jsonSchemaTesterFactory<Calendar.Entry.WorkEntryRequest>(schema);
-  tester.validateSuccess(createCalendarWorkEntryRequest());
-  tester.validateSuccess(createCalendarWorkEntryRequest({
+  tester.validateSuccess(calendarEntryDataFactory.workRequest());
+  tester.validateSuccess(calendarEntryDataFactory.workRequest({
     prices: undefined,
   }), 'without prices');
 
   describe('should deny', () => {
     describe('if data', () => {
       tester.additionalProperties({
-        ...createCalendarWorkEntryRequest(),
+        ...calendarEntryDataFactory.workRequest(),
         extra: 1,
       } as any, 'data');
     });
 
     describe('if data.day', () => {
-      tester.required(createCalendarWorkEntryRequest({
+      tester.required(calendarEntryDataFactory.workRequest({
         day: undefined,
       }), 'day');
 
-      tester.type(createCalendarWorkEntryRequest({
+      tester.type(calendarEntryDataFactory.workRequest({
         day: 1 as any,
       }), 'day', 'string');
 
-      tester.format(createCalendarWorkEntryRequest({
+      tester.format(calendarEntryDataFactory.workRequest({
         day: 'not-a-date',
       }), 'day', 'date');
     });
 
     describe('if data.title', () => {
-      tester.required(createCalendarWorkEntryRequest({
+      tester.required(calendarEntryDataFactory.workRequest({
         title: undefined,
       }), 'title');
 
-      tester.type(createCalendarWorkEntryRequest({
+      tester.type(calendarEntryDataFactory.workRequest({
         title: 1 as any,
       }), 'title', 'string');
 
-      tester.minLength(createCalendarWorkEntryRequest({
+      tester.minLength(calendarEntryDataFactory.workRequest({
         title: '',
       }), 'title', 1);
     });
 
     describe('if data.description', () => {
-      tester.type(createCalendarWorkEntryRequest({
+      tester.type(calendarEntryDataFactory.workRequest({
         description: 1 as any,
       }), 'description', 'string');
 
-      tester.minLength(createCalendarWorkEntryRequest({
+      tester.minLength(calendarEntryDataFactory.workRequest({
         description: '',
       }), 'description', 1);
     });
 
     describe('if data.entryType', () => {
-      tester.type(createCalendarWorkEntryRequest({
+      tester.type(calendarEntryDataFactory.workRequest({
         entryType: 1 as any,
       }), 'entryType', 'string');
     });
 
     describe('if data.start', () => {
-      tester.required(createCalendarWorkEntryRequest({
+      tester.required(calendarEntryDataFactory.workRequest({
         start: undefined,
       }), 'start');
 
-      tester.type(createCalendarWorkEntryRequest({
+      tester.type(calendarEntryDataFactory.workRequest({
         start: '1' as any,
       }), 'start', 'integer');
 
-      tester.minimum(createCalendarWorkEntryRequest({
+      tester.minimum(calendarEntryDataFactory.workRequest({
         start: -1,
       }), 'start', 0);
 
-      tester.maximum(createCalendarWorkEntryRequest({
+      tester.maximum(calendarEntryDataFactory.workRequest({
         start: 97,
       }), 'start', 96);
     });
 
     describe('if data.end', () => {
-      tester.required(createCalendarWorkEntryRequest({
+      tester.required(calendarEntryDataFactory.workRequest({
         end: undefined,
       }), 'end');
 
-      tester.type(createCalendarWorkEntryRequest({
+      tester.type(calendarEntryDataFactory.workRequest({
         end: '1' as any,
       }), 'end', 'integer');
 
-      tester.minimum(createCalendarWorkEntryRequest({
+      tester.minimum(calendarEntryDataFactory.workRequest({
         end: -1,
       }), 'end', 0);
 
-      tester.maximum(createCalendarWorkEntryRequest({
+      tester.maximum(calendarEntryDataFactory.workRequest({
         end: 97,
       }), 'end', 96);
 
-      tester.exclusiveMinimum(createCalendarWorkEntryRequest({
+      tester.exclusiveMinimum(calendarEntryDataFactory.workRequest({
         start: 20,
         end: 10,
       }), 'end', 20);
     });
 
     describe('if data.customerId', () => {
-      tester.required(createCalendarWorkEntryRequest({
+      tester.required(calendarEntryDataFactory.workRequest({
         customerId: undefined,
       }), 'customerId');
 
-      tester.type(createCalendarWorkEntryRequest({
+      tester.type(calendarEntryDataFactory.workRequest({
         customerId: 1 as any,
       }), 'customerId', 'string');
 
-      tester.pattern(createCalendarWorkEntryRequest({
+      tester.pattern(calendarEntryDataFactory.workRequest({
         customerId: customerDataFactory.id('not-a-mongo-id'),
       }), 'customerId');
     });
 
     describe('if data.prices', () => {
-      tester.type(createCalendarWorkEntryRequest({
+      tester.type(calendarEntryDataFactory.workRequest({
         prices: {} as any,
       }), 'prices', 'array');
       
-      tester.minItems(createCalendarWorkEntryRequest({
+      tester.minItems(calendarEntryDataFactory.workRequest({
         prices: [],
       }), 'prices', 1);
     });
 
     describe('if data.prices[0]', () => {      
-      tester.type(createCalendarWorkEntryRequest({
+      tester.type(calendarEntryDataFactory.workRequest({
         prices: [1 as any],
       }), 'prices/0', 'object');
 
-      tester.additionalProperties(createCalendarWorkEntryRequest({
+      tester.additionalProperties(calendarEntryDataFactory.workRequest({
         prices: [
           {
             ...createListedPriceRequest(),
@@ -348,7 +348,7 @@ describe('Calendar work entry request schema', () => {
         ],
       }), 'prices/0');
 
-      tester.additionalProperties(createCalendarWorkEntryRequest({
+      tester.additionalProperties(calendarEntryDataFactory.workRequest({
         prices: [
           {
             ...priceDataFactory.base(),
@@ -359,7 +359,7 @@ describe('Calendar work entry request schema', () => {
     });
 
     describe('if data.prices[0].priceId', () => {      
-      tester.required(createCalendarWorkEntryRequest({
+      tester.required(calendarEntryDataFactory.workRequest({
         prices: [
           createListedPriceRequest({
             priceId: undefined,
@@ -367,7 +367,7 @@ describe('Calendar work entry request schema', () => {
         ],
       }), 'priceId');
 
-      tester.type(createCalendarWorkEntryRequest({
+      tester.type(calendarEntryDataFactory.workRequest({
         prices: [
           createListedPriceRequest({
             priceId: 1 as any,
@@ -375,7 +375,7 @@ describe('Calendar work entry request schema', () => {
         ],
       }), 'priceId', 'string');
 
-      tester.pattern(createCalendarWorkEntryRequest({
+      tester.pattern(calendarEntryDataFactory.workRequest({
         prices: [
           createListedPriceRequest({
             priceId: priceDataFactory.id('not-mongo-id'),
@@ -385,7 +385,7 @@ describe('Calendar work entry request schema', () => {
     });
 
     describe('if data.prices[0].quantity', () => {      
-      tester.required(createCalendarWorkEntryRequest({
+      tester.required(calendarEntryDataFactory.workRequest({
         prices: [
           createListedPriceRequest({
             quantity: undefined,
@@ -393,7 +393,7 @@ describe('Calendar work entry request schema', () => {
         ],
       }), 'quantity');
 
-      tester.type(createCalendarWorkEntryRequest({
+      tester.type(calendarEntryDataFactory.workRequest({
         prices: [
           createListedPriceRequest({
             quantity: '1' as any,
@@ -401,7 +401,7 @@ describe('Calendar work entry request schema', () => {
         ],
       }), 'quantity', 'number');
 
-      tester.exclusiveMinimum(createCalendarWorkEntryRequest({
+      tester.exclusiveMinimum(calendarEntryDataFactory.workRequest({
         prices: [
           createListedPriceRequest({
             quantity: 0,
@@ -411,7 +411,7 @@ describe('Calendar work entry request schema', () => {
     });
 
     describe('if data.prices[0].name', () => {      
-      tester.required(createCalendarWorkEntryRequest({
+      tester.required(calendarEntryDataFactory.workRequest({
         prices: [
           priceDataFactory.base({
             name: undefined,
@@ -419,7 +419,7 @@ describe('Calendar work entry request schema', () => {
         ],
       }), 'name');
 
-      tester.type(createCalendarWorkEntryRequest({
+      tester.type(calendarEntryDataFactory.workRequest({
         prices: [
           priceDataFactory.base({
             name: 1 as any,
@@ -427,7 +427,7 @@ describe('Calendar work entry request schema', () => {
         ],
       }), 'name', 'string');
 
-      tester.minLength(createCalendarWorkEntryRequest({
+      tester.minLength(calendarEntryDataFactory.workRequest({
         prices: [
           priceDataFactory.base({
             name: '',
@@ -437,7 +437,7 @@ describe('Calendar work entry request schema', () => {
     });
 
     describe('if data.prices[0].amount', () => {      
-      tester.required(createCalendarWorkEntryRequest({
+      tester.required(calendarEntryDataFactory.workRequest({
         prices: [
           priceDataFactory.base({
             amount: undefined,
@@ -445,7 +445,7 @@ describe('Calendar work entry request schema', () => {
         ],
       }), 'amount');
 
-      tester.type(createCalendarWorkEntryRequest({
+      tester.type(calendarEntryDataFactory.workRequest({
         prices: [
           priceDataFactory.base({
             amount: '1' as any,

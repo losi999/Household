@@ -1,58 +1,57 @@
-// import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
-// import { default as handler } from '@household/api/functions/create-customer/create-customer.handler';
-// import { ICreateCustomerService } from '@household/api/functions/create-customer/create-customer.service';
-// import { createCustomerId, createCustomerRequest } from '@household/shared/common/test-data-factory';
-// import { headerExpiresIn } from '@household/shared/constants';
+import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { default as handler } from '@household/api/functions/update-customer-job/update-customer-job.handler';
+import { IUpdateCustomerJobService } from '@household/api/functions/update-customer-job/update-customer-job.service';
+import { customerDataFactory } from '@household/shared/common/test-data-factory';
 
-// describe('Create customer handler', () => {
-//   let mockCreateCustomerService: MockBusinessService<ICreateCustomerService>;
-//   let handlerFunction: ReturnType<typeof handler>;
+describe('Update customer job handler', () => {
+  let mockUpdateCustomerJobService: MockBusinessService<IUpdateCustomerJobService>;
+  let handlerFunction: ReturnType<typeof handler>;
 
-//   beforeEach(() => {
-//     mockCreateCustomerService = jest.fn();
-//     handlerFunction = handler(mockCreateCustomerService);
-//   });
+  beforeEach(() => {
+    mockUpdateCustomerJobService = jest.fn();
+    handlerFunction = handler(mockUpdateCustomerJobService);
+  });
 
-//   const body = createCustomerRequest();
-//   const expiresIn = 3600;
-//   const handlerEvent = {
-//     body: JSON.stringify(body),
-//     headers: {
-//       [headerExpiresIn]: `${expiresIn}`,
-//     } as AWSLambda.APIGatewayProxyEventHeaders,
-//   } as AWSLambda.APIGatewayProxyEvent;
+  const customerId = customerDataFactory.id();
+  const body = customerDataFactory.jobRequest();
+  const jobName = 'job name';
+  const handlerEvent = {
+    body: JSON.stringify(body),
+    pathParameters: {
+      customerId,
+      jobName,
+    } as AWSLambda.APIGatewayProxyEventPathParameters,
+  } as AWSLambda.APIGatewayProxyEvent;
 
-//   it('should handle business service error', async () => {
+  it('should handle business service error', async () => {
+    const statusCode = 418;
+    const message = 'This is an error';
+    mockUpdateCustomerJobService.mockRejectedValue({
+      statusCode,
+      message,
+    });
 
-//     const statusCode = 418;
-//     const message = 'This is an error';
-//     mockCreateCustomerService.mockRejectedValue({
-//       statusCode,
-//       message,
-//     });
+    const response = await handlerFunction(handlerEvent, undefined, undefined) as AWSLambda.APIGatewayProxyResult;
+    validateFunctionCall(mockUpdateCustomerJobService, {
+      body,
+      customerId,
+      name: jobName,
+    });
+    expect(response.statusCode).toEqual(statusCode);
+    expect(JSON.parse(response.body).message).toEqual(message);
+    expect.assertions(3);
+  });
 
-//     const response = await handlerFunction(handlerEvent, undefined, undefined) as AWSLambda.APIGatewayProxyResult;
-//     validateFunctionCall(mockCreateCustomerService, {
-//       body,
-//       expiresIn,
-//     });
-//     expect(response.statusCode).toEqual(statusCode);
-//     expect(JSON.parse(response.body).message).toEqual(message);
-//     expect.assertions(3);
-//   });
+  it('should respond with success', async () => {
+    mockUpdateCustomerJobService.mockResolvedValue(undefined);
 
-//   it('should respond with success', async () => {
-//     const customerId = createCustomerId();
-
-//     mockCreateCustomerService.mockResolvedValue(customerId);
-
-//     const response = await handlerFunction(handlerEvent, undefined, undefined) as AWSLambda.APIGatewayProxyResult;
-//     validateFunctionCall(mockCreateCustomerService, {
-//       body,
-//       expiresIn,
-//     });
-//     expect(response.statusCode).toEqual(201);
-//     expect(JSON.parse(response.body).customerId).toEqual(customerId);
-//     expect.assertions(3);
-//   });
-// });
+    const response = await handlerFunction(handlerEvent, undefined, undefined) as AWSLambda.APIGatewayProxyResult;
+    validateFunctionCall(mockUpdateCustomerJobService, {
+      body,
+      customerId,
+      name: jobName,
+    });
+    expect(response.statusCode).toEqual(204);
+    expect.assertions(2);
+  });
+});

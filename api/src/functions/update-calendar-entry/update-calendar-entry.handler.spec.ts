@@ -1,61 +1,61 @@
-// import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
-// import { default as handler } from '@household/api/functions/update-recipient/update-recipient.handler';
-// import { IUpdateRecipientService } from '@household/api/functions/update-recipient/update-recipient.service';
-// import { createRecipientId, createRecipientRequest } from '@household/shared/common/test-data-factory';
-// import { headerExpiresIn } from '@household/shared/constants';
+import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { default as handler } from '@household/api/functions/update-calendar-entry/update-calendar-entry.handler';
+import { IUpdateCalendarEntryService } from '@household/api/functions/update-calendar-entry/update-calendar-entry.service';
+import { calendarEntryDataFactory } from '@household/shared/common/test-data-factory';
+import { headerExpiresIn } from '@household/shared/constants';
 
-// describe('Update recipient handler', () => {
-//   let mockUpdateRecipientService: MockBusinessService<IUpdateRecipientService>;
-//   let handlerFunction: ReturnType<typeof handler>;
+describe('Update calendar entry handler', () => {
+  let mockUpdateCalendarEntryService: MockBusinessService<IUpdateCalendarEntryService>;
+  let handlerFunction: ReturnType<typeof handler>;
 
-//   beforeEach(() => {
-//     mockUpdateRecipientService = jest.fn();
-//     handlerFunction = handler(mockUpdateRecipientService);
-//   });
+  beforeEach(() => {
+    mockUpdateCalendarEntryService = jest.fn();
+    handlerFunction = handler(mockUpdateCalendarEntryService);
+  });
 
-//   const recipientId = createRecipientId();
-//   const body = createRecipientRequest();
-//   const expiresIn = 3600;
-//   const handlerEvent = {
-//     body: JSON.stringify(body),
-//     pathParameters: {
-//       recipientId,
-//     } as AWSLambda.APIGatewayProxyEventPathParameters,
-//     headers: {
-//       [headerExpiresIn]: `${expiresIn}`,
-//     } as AWSLambda.APIGatewayProxyEventHeaders,
-//   } as AWSLambda.APIGatewayProxyEvent;
+  const calendarEntryId = calendarEntryDataFactory.id();
+  const body = calendarEntryDataFactory.workRequest();
+  const expiresIn = 3600;
+  const handlerEvent = {
+    body: JSON.stringify(body),
+    pathParameters: {
+      calendarEntryId,
+    } as AWSLambda.APIGatewayProxyEventPathParameters,
+    headers: {
+      [headerExpiresIn]: `${expiresIn}`,
+    } as AWSLambda.APIGatewayProxyEventHeaders,
+  } as AWSLambda.APIGatewayProxyEvent;
 
-//   it('should handle business service error', async () => {
-//     const statusCode = 418;
-//     const message = 'This is an error';
-//     mockUpdateRecipientService.mockRejectedValue({
-//       statusCode,
-//       message,
-//     });
+  it('should handle business service error', async () => {
+    const statusCode = 418;
+    const message = 'This is an error';
+    mockUpdateCalendarEntryService.mockRejectedValue({
+      statusCode,
+      message,
+    });
 
-//     const response = await handlerFunction(handlerEvent, undefined, undefined) as AWSLambda.APIGatewayProxyResult;
-//     validateFunctionCall(mockUpdateRecipientService, {
-//       recipientId,
-//       body,
-//       expiresIn,
-//     });
-//     expect(response.statusCode).toEqual(statusCode);
-//     expect(JSON.parse(response.body).message).toEqual(message);
-//     expect.assertions(3);
-//   });
+    const response = await handlerFunction(handlerEvent, undefined, undefined) as AWSLambda.APIGatewayProxyResult;
+    validateFunctionCall(mockUpdateCalendarEntryService, {
+      calendarEntryId,
+      body,
+      expiresIn,
+    });
+    expect(response.statusCode).toEqual(statusCode);
+    expect(JSON.parse(response.body).message).toEqual(message);
+    expect.assertions(3);
+  });
 
-//   it('should respond with success', async () => {
-//     mockUpdateRecipientService.mockResolvedValue(undefined);
+  it('should respond with success', async () => {
+    mockUpdateCalendarEntryService.mockResolvedValue(undefined);
 
-//     const response = await handlerFunction(handlerEvent, undefined, undefined) as AWSLambda.APIGatewayProxyResult;
-//     validateFunctionCall(mockUpdateRecipientService, {
-//       recipientId,
-//       body,
-//       expiresIn,
-//     });
-//     expect(response.statusCode).toEqual(201);
-//     expect(JSON.parse(response.body).recipientId).toEqual(recipientId);
-//     expect.assertions(3);
-//   });
-// });
+    const response = await handlerFunction(handlerEvent, undefined, undefined) as AWSLambda.APIGatewayProxyResult;
+    validateFunctionCall(mockUpdateCalendarEntryService, {
+      calendarEntryId,
+      body,
+      expiresIn,
+    });
+    expect(response.statusCode).toEqual(201);
+    expect(JSON.parse(response.body).calendarEntryId).toEqual(calendarEntryId);
+    expect.assertions(3);
+  });
+});

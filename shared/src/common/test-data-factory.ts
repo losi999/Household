@@ -322,14 +322,6 @@ export const createListedPriceRequest: DataFactoryFunction<Customer.Job.ListedPr
   };
 };
 
-export const createCalendarEntryPaymentRequest: DataFactoryFunction<Calendar.Entry.PaymentRequest> = (req) => {
-  return {
-    amount: 3000,
-    paymentType: PaymentType.Cash,
-    ...req,
-  };
-};
-
 export const createProductRequest: DataFactoryFunction<Product.Request> = (req) => {
   return {
     brand: 'product brand',
@@ -1093,6 +1085,14 @@ const createCalendarWorkEntryResponse: DataFactoryFunction<Calendar.Entry.WorkEn
   };
 };
 
+const createCalendarEntryPaymentRequest: DataFactoryFunction<Calendar.Entry.PaymentRequest> = (data) => {
+  return {
+    paymentType: PaymentType.Cash,
+    amount: 3000,
+    ...data,
+  };
+};
+
 export const calendarEntryDataFactory = {
   id: createCalendarEntryId,
   workRequest: createCalendarWorkEntryRequest,
@@ -1103,6 +1103,7 @@ export const calendarEntryDataFactory = {
   personalResponse: createCalendarPersonalEntryResponse,
   issueResponse: createCalendarIssueEntryResponse,
   workResponse: createCalendarWorkEntryResponse,
+  paymentRequest: createCalendarEntryPaymentRequest,
 };
 
 const createCalendarDayRequest: DataFactoryFunction<Calendar.Day.Request> = (data) => {

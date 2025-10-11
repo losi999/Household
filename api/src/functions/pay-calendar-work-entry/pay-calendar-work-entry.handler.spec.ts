@@ -1,58 +1,55 @@
-// import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
-// import { default as handler } from '@household/api/functions/create-price/create-price.handler';
-// import { ICreatePriceService } from '@household/api/functions/create-price/create-price.service';
-// import { createPriceId, createPriceRequest } from '@household/shared/common/test-data-factory';
-// import { headerExpiresIn } from '@household/shared/constants';
+import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { default as handler } from '@household/api/functions/pay-calendar-work-entry/pay-calendar-work-entry.handler';
+import { IPayCalendarWorkEntryService } from '@household/api/functions/pay-calendar-work-entry/pay-calendar-work-entry.service';
+import { createTransactionId, calendarEntryDataFactory } from '@household/shared/common/test-data-factory';
 
-// describe('Create price handler', () => {
-//   let mockCreatePriceService: MockBusinessService<ICreatePriceService>;
-//   let handlerFunction: ReturnType<typeof handler>;
+describe('Create price handler', () => {
+  let mockPayCalendarWorkEntryService: MockBusinessService<IPayCalendarWorkEntryService>;
+  let handlerFunction: ReturnType<typeof handler>;
 
-//   beforeEach(() => {
-//     mockCreatePriceService = jest.fn();
-//     handlerFunction = handler(mockCreatePriceService);
-//   });
+  beforeEach(() => {
+    mockPayCalendarWorkEntryService = jest.fn();
+    handlerFunction = handler(mockPayCalendarWorkEntryService);
+  });
 
-//   const body = createPriceRequest();
-//   const expiresIn = 3600;
-//   const handlerEvent = {
-//     body: JSON.stringify(body),
-//     headers: {
-//       [headerExpiresIn]: `${expiresIn}`,
-//     } as AWSLambda.APIGatewayProxyEventHeaders,
-//   } as AWSLambda.APIGatewayProxyEvent;
+  const body = calendarEntryDataFactory.paymentRequest();
+  const calendarEntryId = calendarEntryDataFactory.id();
+  const transactionId = createTransactionId();
+  const handlerEvent = {
+    body: JSON.stringify(body),
+    pathParameters: {
+      calendarEntryId,
+    } as AWSLambda.APIGatewayProxyEventPathParameters,
+  } as AWSLambda.APIGatewayProxyEvent;
 
-//   it('should handle business service error', async () => {
+  it('should handle business service error', async () => {
+    const statusCode = 418;
+    const message = 'This is an error';
+    mockPayCalendarWorkEntryService.mockRejectedValue({
+      statusCode,
+      message,
+    });
 
-//     const statusCode = 418;
-//     const message = 'This is an error';
-//     mockCreatePriceService.mockRejectedValue({
-//       statusCode,
-//       message,
-//     });
+    const response = await handlerFunction(handlerEvent, undefined, undefined) as AWSLambda.APIGatewayProxyResult;
+    validateFunctionCall(mockPayCalendarWorkEntryService, {
+      body,
+      calendarEntryId,
+    });
+    expect(response.statusCode).toEqual(statusCode);
+    expect(JSON.parse(response.body).message).toEqual(message);
+    expect.assertions(3);
+  });
 
-//     const response = await handlerFunction(handlerEvent, undefined, undefined) as AWSLambda.APIGatewayProxyResult;
-//     validateFunctionCall(mockCreatePriceService, {
-//       body,
-//       expiresIn,
-//     });
-//     expect(response.statusCode).toEqual(statusCode);
-//     expect(JSON.parse(response.body).message).toEqual(message);
-//     expect.assertions(3);
-//   });
+  it('should respond with success', async () => {
+    mockPayCalendarWorkEntryService.mockResolvedValue(transactionId);
 
-//   it('should respond with success', async () => {
-//     const priceId = createPriceId();
-
-//     mockCreatePriceService.mockResolvedValue(priceId);
-
-//     const response = await handlerFunction(handlerEvent, undefined, undefined) as AWSLambda.APIGatewayProxyResult;
-//     validateFunctionCall(mockCreatePriceService, {
-//       body,
-//       expiresIn,
-//     });
-//     expect(response.statusCode).toEqual(201);
-//     expect(JSON.parse(response.body).priceId).toEqual(priceId);
-//     expect.assertions(3);
-//   });
-// });
+    const response = await handlerFunction(handlerEvent, undefined, undefined) as AWSLambda.APIGatewayProxyResult;
+    validateFunctionCall(mockPayCalendarWorkEntryService, {
+      body,
+      calendarEntryId,
+    });
+    expect(response.statusCode).toEqual(201);
+    expect(JSON.parse(response.body).transactionId).toEqual(transactionId);
+    expect.assertions(3);
+  });
+});
