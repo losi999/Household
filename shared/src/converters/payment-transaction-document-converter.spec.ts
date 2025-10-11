@@ -225,7 +225,7 @@ describe('Payment transaction document converter', () => {
         recipient: undefined,
         amount,
         description: calendarEntry.title,
-        issuedAt: new Date(2025, 9, 11, 11, 0, 0),
+        issuedAt: new Date('2025-10-11T09:00:00.000Z'),
         quantity: undefined,
         product: undefined,
         invoiceNumber: undefined,
