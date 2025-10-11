@@ -6,7 +6,7 @@ import { ICustomerDocumentConverter } from '@household/shared/converters/custome
 import { ICustomerService } from '@household/shared/services/customer-service';
 import { IPriceService } from '@household/shared/services/price-service';
 
-describe('Create customer job service', () => {
+describe('Update customer job service', () => {
   let service: IUpdateCustomerJobService;
   let mockCustomerService: Mock<ICustomerService>;
   let mockCustomerDocumentConverter: Mock<ICustomerDocumentConverter>;

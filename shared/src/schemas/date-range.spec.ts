@@ -2,7 +2,7 @@ import { default as schema } from '@household/shared/schemas/date-range';
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 import { Calendar } from '@household/shared/types/types';
 
-describe('Pagination schema', () => {
+describe('Date range schema', () => {
   const tester = jsonSchemaTesterFactory<Calendar.DateRange>(schema);
 
   const dateFrom = '2025-10-10';

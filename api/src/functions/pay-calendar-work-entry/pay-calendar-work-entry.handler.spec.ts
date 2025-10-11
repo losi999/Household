@@ -3,7 +3,7 @@ import { default as handler } from '@household/api/functions/pay-calendar-work-e
 import { IPayCalendarWorkEntryService } from '@household/api/functions/pay-calendar-work-entry/pay-calendar-work-entry.service';
 import { createTransactionId, calendarEntryDataFactory } from '@household/shared/common/test-data-factory';
 
-describe('Create price handler', () => {
+describe('Pay calendar work entry handler', () => {
   let mockPayCalendarWorkEntryService: MockBusinessService<IPayCalendarWorkEntryService>;
   let handlerFunction: ReturnType<typeof handler>;
 

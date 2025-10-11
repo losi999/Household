@@ -38,7 +38,7 @@ describe('Delete calendar entry service', () => {
       expect.assertions(4);
     });
 
-    it('if unable to query document', async () => {
+    it('if calendar entry is already paid', async () => {
       mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue({
         ...queriedCalendarEntry,
         isPaid: true,
