@@ -52,13 +52,13 @@ export const calendarDayDocumentConverterFactory = (calendarEntryDocumentConvert
         ].includes(date.getDay());
         const dateString = dateToISODateString(date);
         const day = days.find(x => x.day === dateString);
-        const entriesForDay = calendarEntryDocumentConverter.toResponseList(entries.filter(e => e.day === dateString));
+        const entriesForDay = entries.filter(e => e.day === dateString);
 
         if (day?.dayType === CalendarDayType.Vacation || day?.dayType === CalendarDayType.Holiday) {
           return {
             dayType: day.dayType,
             day: dateString,
-            entries: entriesForDay,
+            entries: calendarEntryDocumentConverter.toResponseList(entriesForDay),
           };
         }
 
@@ -69,7 +69,7 @@ export const calendarDayDocumentConverterFactory = (calendarEntryDocumentConvert
             dayType: isWeekend ? CalendarDayType.Weekend : CalendarDayType.Workday,
             end,
             start,
-            entries: entriesForDay,
+            entries: calendarEntryDocumentConverter.toResponseList(entriesForDay),
             plannedEnd: day.end,
             plannedStart: day.start,
           };
@@ -79,7 +79,7 @@ export const calendarDayDocumentConverterFactory = (calendarEntryDocumentConvert
           return {
             day: dateString,
             dayType: CalendarDayType.Weekend,
-            entries: entriesForDay,
+            entries: calendarEntryDocumentConverter.toResponseList(entriesForDay),
             start: undefined,
             end: undefined,
             plannedEnd: undefined,
@@ -93,7 +93,7 @@ export const calendarDayDocumentConverterFactory = (calendarEntryDocumentConvert
           dayType: CalendarDayType.Workday,
           end,
           start,
-          entries: entriesForDay,
+          entries: calendarEntryDocumentConverter.toResponseList(entriesForDay),
           plannedEnd: WORKDAY_END,
           plannedStart: WORKDAY_START,
         };

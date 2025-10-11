@@ -1,50 +1,139 @@
-// import { ICreateCustomerService, createCustomerServiceFactory } from '@household/api/functions/create-customer/create-customer.service';
-// import { createCustomerRequest, createCustomerDocument } from '@household/shared/common/test-data-factory';
-// import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
-// import { getCustomerId } from '@household/shared/common/utils';
-// import { ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
-// import { ICustomerService } from '@household/shared/services/customer-service';
+import { IUpdateCustomerBlacklistService, updateCustomerBlacklistServiceFactory } from '@household/api/functions/update-customer-blacklist/update-customer-blacklist.service';
+import { createDocumentUpdate2, customerDataFactory } from '@household/shared/common/test-data-factory';
+import { createMockService, Mock, validateError, validateFunctionCall, validateNthFunctionCall } from '@household/shared/common/unit-testing';
+import { ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
+import { ICustomerService } from '@household/shared/services/customer-service';
 
-// describe('Create customer service', () => {
-//   let service: ICreateCustomerService;
-//   let mockCustomerService: Mock<ICustomerService>;
-//   let mockCustomerDocumentConverter: Mock<ICustomerDocumentConverter>;
-//   beforeEach(() => {
-//     mockCustomerService = createMockService('saveCustomer');
-//     mockCustomerDocumentConverter = createMockService('create');
+describe('Update customer blacklist service', () => {
+  let service: IUpdateCustomerBlacklistService;
+  let mockCustomerService: Mock<ICustomerService>;
+  let mockCustomerDocumentConverter: Mock<ICustomerDocumentConverter>;
+  beforeEach(() => {
+    mockCustomerService = createMockService('findCustomerById', 'updateCustomers');
+    mockCustomerDocumentConverter = createMockService('addBlacklistedCustomer');
 
-//     service = createCustomerServiceFactory(mockCustomerService.service, mockCustomerDocumentConverter.service);
-//   });
+    service = updateCustomerBlacklistServiceFactory(mockCustomerService.service, mockCustomerDocumentConverter.service);
+  });
 
-//   const body = createCustomerRequest();
-//   const convertedCustomerDocument = createCustomerDocument();
-//   const customerId = getCustomerId(convertedCustomerDocument);
+  const customerIdA = customerDataFactory.id();
+  const queriedCustomerA = customerDataFactory.document();
+  const documentUpdateA = createDocumentUpdate2({
+    update: {
+      $set: {
+        update: 'A',
+      },
+    },
+  });
+  const documentUpdateB = createDocumentUpdate2({
+    update: {
+      $set: {
+        update: 'B',
+      },
+    },
+  });
+  const customerIdB = customerDataFactory.id();
+  const queriedCustomerB = customerDataFactory.document();
 
-//   it('should return new id', async () => {
-//     mockCustomerDocumentConverter.functions.create.mockReturnValue(convertedCustomerDocument);
-//     mockCustomerService.functions.saveCustomer.mockResolvedValue(convertedCustomerDocument);
+  const body = [
+    customerIdA,
+    customerIdB,
+  ];
 
-//     const result = await service({
-//       body,
-//       expiresIn: undefined,
-//     });
-//     expect(result).toEqual(customerId.toString()),
-//     validateFunctionCall(mockCustomerDocumentConverter.functions.create, body, undefined);
-//     validateFunctionCall(mockCustomerService.functions.saveCustomer, convertedCustomerDocument);
-//     expect.assertions(3);
-//   });
-//   describe('should throw error', () => {
-//     it('if unable to save document', async () => {
-//       mockCustomerDocumentConverter.functions.create.mockReturnValue(convertedCustomerDocument);
-//       mockCustomerService.functions.saveCustomer.mockRejectedValue('this is a mongo error');
+  it('should return', async () => {
+    mockCustomerService.functions.findCustomerById.mockResolvedValueOnce(queriedCustomerA);
+    mockCustomerService.functions.findCustomerById.mockResolvedValueOnce(queriedCustomerB);
+    mockCustomerDocumentConverter.functions.addBlacklistedCustomer.mockReturnValueOnce(documentUpdateA);
+    mockCustomerDocumentConverter.functions.addBlacklistedCustomer.mockReturnValueOnce(documentUpdateB);
+    mockCustomerService.functions.updateCustomers.mockResolvedValue(undefined);
 
-//       await service({
-//         body,
-//         expiresIn: undefined,
-//       }).catch(validateError('Error while saving customer', 500));
-//       validateFunctionCall(mockCustomerDocumentConverter.functions.create, body, undefined);
-//       validateFunctionCall(mockCustomerService.functions.saveCustomer, convertedCustomerDocument);
-//       expect.assertions(4);
-//     });
-//   });
-// });
+    await service(body);
+    validateNthFunctionCall(mockCustomerService.functions.findCustomerById, 1, customerIdA);
+    validateNthFunctionCall(mockCustomerService.functions.findCustomerById, 2, customerIdB);
+    validateNthFunctionCall(mockCustomerDocumentConverter.functions.addBlacklistedCustomer, 1, queriedCustomerB);
+    validateNthFunctionCall(mockCustomerDocumentConverter.functions.addBlacklistedCustomer, 2, queriedCustomerA);
+    validateFunctionCall(mockCustomerService.functions.updateCustomers, [
+      {
+        customerId: customerIdA,
+        update: documentUpdateA,
+      },
+      {
+        customerId: customerIdB,
+        update: documentUpdateB,
+      },
+    ]);
+    expect.assertions(5);
+  });
+  
+  describe('should throw error', () => {
+    it('if both customerId is the same', async () => {
+      await service([
+        customerIdA,
+        customerIdA,
+      ]).catch(validateError('Customer cannot be blacklisted with itself', 400));
+      validateFunctionCall(mockCustomerService.functions.findCustomerById);
+      validateFunctionCall(mockCustomerDocumentConverter.functions.addBlacklistedCustomer);
+      validateFunctionCall(mockCustomerService.functions.updateCustomers);
+      expect.assertions(5);
+    });
+
+    it('if unable to query customer', async () => {
+      mockCustomerService.functions.findCustomerById.mockRejectedValue('this is a mongo error');
+
+      await service(body).catch(validateError('Error while getting customer', 500));
+      validateNthFunctionCall(mockCustomerService.functions.findCustomerById, 1, customerIdA);
+      validateNthFunctionCall(mockCustomerService.functions.findCustomerById, 2, customerIdB);
+      validateFunctionCall(mockCustomerDocumentConverter.functions.addBlacklistedCustomer);
+      validateFunctionCall(mockCustomerService.functions.updateCustomers);
+      expect.assertions(6);
+    });
+
+    it('if customer A not found', async () => {
+      mockCustomerService.functions.findCustomerById.mockResolvedValueOnce(undefined);
+      mockCustomerService.functions.findCustomerById.mockResolvedValueOnce(queriedCustomerB);
+
+      await service(body).catch(validateError('No customer found', 404));
+      validateNthFunctionCall(mockCustomerService.functions.findCustomerById, 1, customerIdA);
+      validateNthFunctionCall(mockCustomerService.functions.findCustomerById, 2, customerIdB);
+      validateFunctionCall(mockCustomerDocumentConverter.functions.addBlacklistedCustomer);
+      validateFunctionCall(mockCustomerService.functions.updateCustomers);
+      expect.assertions(6);
+    });
+
+    it('if customer B not found', async () => {
+      mockCustomerService.functions.findCustomerById.mockResolvedValueOnce(queriedCustomerA);
+      mockCustomerService.functions.findCustomerById.mockResolvedValueOnce(undefined);
+
+      await service(body).catch(validateError('No customer found', 404));
+      validateNthFunctionCall(mockCustomerService.functions.findCustomerById, 1, customerIdA);
+      validateNthFunctionCall(mockCustomerService.functions.findCustomerById, 2, customerIdB);
+      validateFunctionCall(mockCustomerDocumentConverter.functions.addBlacklistedCustomer);
+      validateFunctionCall(mockCustomerService.functions.updateCustomers);
+      expect.assertions(6);
+    });
+
+    it('if unable to update document', async () => {
+      mockCustomerService.functions.findCustomerById.mockResolvedValueOnce(queriedCustomerA);
+      mockCustomerService.functions.findCustomerById.mockResolvedValueOnce(queriedCustomerB);
+      mockCustomerDocumentConverter.functions.addBlacklistedCustomer.mockReturnValueOnce(documentUpdateA);
+      mockCustomerDocumentConverter.functions.addBlacklistedCustomer.mockReturnValueOnce(documentUpdateB);
+      mockCustomerService.functions.updateCustomers.mockRejectedValue('this is a mongo error');
+
+      await service(body).catch(validateError('Error while updating customer', 500));
+      validateNthFunctionCall(mockCustomerService.functions.findCustomerById, 1, customerIdA);
+      validateNthFunctionCall(mockCustomerService.functions.findCustomerById, 2, customerIdB);
+      validateNthFunctionCall(mockCustomerDocumentConverter.functions.addBlacklistedCustomer, 1, queriedCustomerB);
+      validateNthFunctionCall(mockCustomerDocumentConverter.functions.addBlacklistedCustomer, 2, queriedCustomerA);
+      validateFunctionCall(mockCustomerService.functions.updateCustomers, [
+        {
+          customerId: customerIdA,
+          update: documentUpdateA,
+        },
+        {
+          customerId: customerIdB,
+          update: documentUpdateB,
+        },
+      ]);
+      expect.assertions(7);
+    });
+  });
+});

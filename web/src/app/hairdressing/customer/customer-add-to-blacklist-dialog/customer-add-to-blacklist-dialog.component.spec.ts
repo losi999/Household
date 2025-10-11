@@ -8,9 +8,9 @@ describe('CustomerAddToBlacklistDialogComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [CustomerAddToBlacklistDialogComponent]
+      declarations: [CustomerAddToBlacklistDialogComponent],
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(CustomerAddToBlacklistDialogComponent);
     component = fixture.componentInstance;

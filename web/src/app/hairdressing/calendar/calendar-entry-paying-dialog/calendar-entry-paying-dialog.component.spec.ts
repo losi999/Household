@@ -8,9 +8,9 @@ describe('CalendarEntryPayingDialogComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [CalendarEntryPayingDialogComponent]
+      declarations: [CalendarEntryPayingDialogComponent],
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(CalendarEntryPayingDialogComponent);
     component = fixture.componentInstance;

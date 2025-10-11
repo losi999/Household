@@ -1,56 +1,64 @@
-// import { default as schema } from '@household/shared/schemas/pagination';
-// import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
-// import { Common } from '@household/shared/types/types';
+import { default as schema } from '@household/shared/schemas/date-range';
+import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
+import { Calendar } from '@household/shared/types/types';
 
-// describe('Pagination schema', () => {
-//   const tester = jsonSchemaTesterFactory<Common.Pagination<string>>(schema);
+describe('Date range schema', () => {
+  const tester = jsonSchemaTesterFactory<Calendar.DateRange>(schema);
 
-//   tester.validateSuccess({
-//     pageNumber: '1',
-//     pageSize: '23',
-//   });
+  const dateFrom = '2025-10-10';
+  const dateTo = '2025-10-15';
 
-//   describe('should deny', () => {
-//     describe('if data', () => {
-//       tester.additionalProperties({
-//         pageNumber: '1',
-//         pageSize: '23',
-//         extra: 1,
-//       } as any, 'data');
-//     });
+  tester.validateSuccess({
+    dateFrom,
+    dateTo,
+  });
 
-//     describe('if data.pageNumber', () => {
-//       tester.required({
-//         pageNumber: undefined,
-//         pageSize: '23',
-//       }, 'pageNumber');
+  describe('should deny', () => {
+    describe('if data', () => {
+      tester.additionalProperties({
+        dateFrom, 
+        dateTo,
+        extra: 1,
+      } as any, 'data');
+    });
 
-//       tester.type({
-//         pageNumber: 1 as any,
-//         pageSize: '23',
-//       }, 'pageNumber', 'string');
+    describe('if data.dateFrom', () => {
+      tester.required({
+        dateFrom: undefined, 
+        dateTo,
+      }, 'dateFrom');
 
-//       tester.pattern({
-//         pageNumber: 'asd',
-//         pageSize: '23',
-//       }, 'pageNumber');
-//     });
+      tester.type({
+        dateFrom: 1 as any, 
+        dateTo,
+      }, 'dateFrom', 'string');
 
-//     describe('if data.pageSize', () => {
-//       tester.required({
-//         pageNumber: '1',
-//         pageSize: undefined,
-//       }, 'pageSize');
+      tester.format({
+        dateFrom: 'not-a-date', 
+        dateTo,
+      }, 'dateFrom', 'date');
+    });
 
-//       tester.type({
-//         pageNumber: '1',
-//         pageSize: 23 as any,
-//       }, 'pageSize', 'string');
+    describe('if data.dateTo', () => {
+      tester.required({
+        dateFrom, 
+        dateTo: undefined,
+      }, 'dateTo');
 
-//       tester.pattern({
-//         pageNumber: '1',
-//         pageSize: 'asd',
-//       }, 'pageSize');
-//     });
-//   });
-// });
+      tester.type({
+        dateFrom, 
+        dateTo: 1 as any,
+      }, 'dateTo', 'string');
+
+      tester.format({
+        dateFrom, 
+        dateTo: 'not-a-date',
+      }, 'dateTo', 'date');
+
+      tester.formatExclusiveMinimum({
+        dateFrom,
+        dateTo: '2025-09-10',
+      }, 'dateTo');
+    });
+  });
+});

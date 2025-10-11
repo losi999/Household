@@ -1,35 +1,39 @@
-// import { default as schema } from '@household/shared/schemas/customer-id';
-// import { Customer } from '@household/shared/types/types';
-// import { createCustomerId } from '@household/shared/common/test-data-factory';
-// import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
+import { default as schema } from '@household/shared/schemas/customer-blacklist-request';
+import { Customer } from '@household/shared/types/types';
+import { customerDataFactory } from '@household/shared/common/test-data-factory';
+import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 
-// describe('Customer id schema', () => {
-//   const tester = jsonSchemaTesterFactory<Customer.CustomerId>(schema);
+describe('Customer blacklist request schema', () => {
+  const tester = jsonSchemaTesterFactory<Customer.Id[]>(schema);
 
-//   tester.validateSuccess({
-//     customerId: createCustomerId(),
-//   });
+  tester.validateSuccess([
+    customerDataFactory.id(),
+    customerDataFactory.id(),
+  ]);
 
-//   describe('should deny', () => {
-//     describe('if data', () => {
-//       tester.additionalProperties({
-//         customerId: createCustomerId(),
-//         extra: 1,
-//       } as any, 'data');
-//     });
+  describe('should deny', () => {
+    describe('if data', () => {
+      tester.type({ } as any, 'data', 'array');
 
-//     describe('if data.customerId', () => {
-//       tester.required({
-//         customerId: undefined,
-//       }, 'customerId');
+      tester.minItems([customerDataFactory.id()], 'data', 2);
 
-//       tester.type({
-//         customerId: 1 as any,
-//       }, 'customerId', 'string');
+      tester.maxItems([
+        customerDataFactory.id(),
+        customerDataFactory.id(),
+        customerDataFactory.id(),
+      ], 'data', 2);
+    });
 
-//       tester.pattern({
-//         customerId: createCustomerId('not-valid'),
-//       }, 'customerId');
-//     });
-//   });
-// });
+    describe('if data.[0]', () => {
+      tester.type([
+        1 as any,
+        customerDataFactory.id(),
+      ], 'data/0', 'string');
+
+      tester.pattern([
+        customerDataFactory.id('not-mongo-id'),
+        customerDataFactory.id(),
+      ], 'data/0');
+    });
+  });
+});

@@ -27,6 +27,11 @@ export const payCalendarWorkEntryServiceFactory = (
       calendarEntryId,
     }));
 
+    httpErrors.calendarEntry.notFound({
+      calendarEntry,
+      calendarEntryId,
+    });
+
     httpErrors.calendarEntry.wrongType({
       calendarEntry,
       expectedType: CalendarEntryType.Work,

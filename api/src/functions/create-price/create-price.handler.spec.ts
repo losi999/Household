@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/create-price/create-price.handler';
 import { ICreatePriceService } from '@household/api/functions/create-price/create-price.service';
-import { createPriceId, createPriceRequest } from '@household/shared/common/test-data-factory';
+import { priceDataFactory } from '@household/shared/common/test-data-factory';
 import { headerExpiresIn } from '@household/shared/constants';
 
 describe('Create price handler', () => {
@@ -13,7 +13,7 @@ describe('Create price handler', () => {
     handlerFunction = handler(mockCreatePriceService);
   });
 
-  const body = createPriceRequest();
+  const body = priceDataFactory.request();
   const expiresIn = 3600;
   const handlerEvent = {
     body: JSON.stringify(body),
@@ -42,7 +42,7 @@ describe('Create price handler', () => {
   });
 
   it('should respond with success', async () => {
-    const priceId = createPriceId();
+    const priceId = priceDataFactory.id();
 
     mockCreatePriceService.mockResolvedValue(priceId);
 

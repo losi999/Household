@@ -1,35 +1,34 @@
-// import { default as schema } from '@household/shared/schemas/calendar-entry-id';
-// import { CalendarEntry } from '@household/shared/types/types';
-// import { createCalendarEntryId } from '@household/shared/common/test-data-factory';
-// import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
+import { default as schema } from '@household/shared/schemas/calendar-day';
+import { Calendar } from '@household/shared/types/types';
+import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 
-// describe('CalendarEntry id schema', () => {
-//   const tester = jsonSchemaTesterFactory<CalendarEntry.CalendarEntryId>(schema);
+describe('Calendar day schema', () => {
+  const tester = jsonSchemaTesterFactory<Calendar.DayProp>(schema);
+  const day = '2025-10-10';
+  tester.validateSuccess({
+    day,
+  });
 
-//   tester.validateSuccess({
-//     calendarEntryId: createCalendarEntryId(),
-//   });
+  describe('should deny', () => {
+    describe('if data', () => {
+      tester.additionalProperties({
+        day,
+        extra: 1,
+      } as any, 'data');
+    });
 
-//   describe('should deny', () => {
-//     describe('if data', () => {
-//       tester.additionalProperties({
-//         calendarEntryId: createCalendarEntryId(),
-//         extra: 1,
-//       } as any, 'data');
-//     });
+    describe('if data.day', () => {
+      tester.required({
+        day: undefined,
+      }, 'day');
 
-//     describe('if data.calendarEntryId', () => {
-//       tester.required({
-//         calendarEntryId: undefined,
-//       }, 'calendarEntryId');
+      tester.type({
+        day: 1 as any,
+      }, 'day', 'string');
 
-//       tester.type({
-//         calendarEntryId: 1 as any,
-//       }, 'calendarEntryId', 'string');
-
-//       tester.pattern({
-//         calendarEntryId: createCalendarEntryId('not-valid'),
-//       }, 'calendarEntryId');
-//     });
-//   });
-// });
+      tester.format({
+        day: 'not-a-date',
+      }, 'day', 'date');
+    });
+  });
+});

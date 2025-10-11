@@ -1,88 +1,59 @@
-// import { IUpdateRecipientService, updateRecipientServiceFactory } from '@household/api/functions/update-recipient/update-recipient.service';
-// import { createRecipientRequest, createRecipientDocument, createDocumentUpdate } from '@household/shared/common/test-data-factory';
-// import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
-// import { getRecipientId } from '@household/shared/common/utils';
-// import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
-// import { IRecipientService } from '@household/shared/services/recipient-service';
+import { IGetCalendarEntryService, getCalendarEntryServiceFactory } from '@household/api/functions/get-calendar-entry/get-calendar-entry.service';
+import { calendarEntryDataFactory } from '@household/shared/common/test-data-factory';
+import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
+import { ICalendarEntryService } from '@household/shared/services/calendar-entry-service';
 
-// describe('Update recipient service', () => {
-//   let service: IUpdateRecipientService;
-//   let mockRecipientService: Mock<IRecipientService>;
-//   let mockRecipientDocumentConverter: Mock<IRecipientDocumentConverter>;
+describe('Get calendar entry service', () => {
+  let service: IGetCalendarEntryService;
+  let mockCalendarEntryService: Mock<ICalendarEntryService>;
+  let mockCalendarEntryDocumentConverter: Mock<ICalendarEntryDocumentConverter>;
 
-//   beforeEach(() => {
-//     mockRecipientService = createMockService('findRecipientById', 'updateRecipient');
-//     mockRecipientDocumentConverter = createMockService('update');
+  beforeEach(() => {
+    mockCalendarEntryService = createMockService('getCalendarEntryById');
+    mockCalendarEntryDocumentConverter = createMockService('toResponse');
 
-//     service = updateRecipientServiceFactory(mockRecipientService.service, mockRecipientDocumentConverter.service);
-//   });
+    service = getCalendarEntryServiceFactory(mockCalendarEntryService.service, mockCalendarEntryDocumentConverter.service);
+  });
 
-//   const body = createRecipientRequest();
-//   const queriedDocument = createRecipientDocument();
-//   const recipientId = getRecipientId(queriedDocument);
-//   const updateQuery = createDocumentUpdate({
-//     name: 'updated',
-//   });
+  const queriedDocument = calendarEntryDataFactory.document();
+  const calendarEntryId = calendarEntryDataFactory.id();
+  const convertedResponse = calendarEntryDataFactory.personalResponse();
 
-//   it('should return if recipient is updated', async () => {
-//     mockRecipientService.functions.findRecipientById.mockResolvedValue(queriedDocument);
-//     mockRecipientDocumentConverter.functions.update.mockReturnValue(updateQuery);
-//     mockRecipientService.functions.updateRecipient.mockResolvedValue(undefined);
+  it('should return with response', async () => {
+    mockCalendarEntryService.functions.getCalendarEntryById.mockResolvedValue(queriedDocument);
+    mockCalendarEntryDocumentConverter.functions.toResponse.mockReturnValue(convertedResponse);
 
-//     await service({
-//       body,
-//       recipientId,
-//       expiresIn: undefined,
-//     });
-//     validateFunctionCall(mockRecipientService.functions.findRecipientById, recipientId);
-//     validateFunctionCall(mockRecipientDocumentConverter.functions.update, body, undefined);
-//     validateFunctionCall(mockRecipientService.functions.updateRecipient, recipientId, updateQuery);
-//     expect.assertions(3);
-//   });
+    const result = await service({
+      calendarEntryId,
+    });
+    expect(result).toEqual(convertedResponse);
+    validateFunctionCall(mockCalendarEntryService.functions.getCalendarEntryById, calendarEntryId);
+    validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toResponse, queriedDocument);
+    expect.assertions(3);
+  });
 
-//   describe('should throw error', () => {
-//     it('if unable to query recipient', async () => {
-//       mockRecipientService.functions.findRecipientById.mockRejectedValue('this is a mongo error');
+  describe('should throw error', () => {
+    it('if unable to query calendar entry', async () => {
+      mockCalendarEntryService.functions.getCalendarEntryById.mockRejectedValue('this is a mongo error');
 
-//       await service({
-//         body,
-//         recipientId,
-//         expiresIn: undefined,
-//       }).catch(validateError('Error while getting recipient', 500));
-//       validateFunctionCall(mockRecipientService.functions.findRecipientById, recipientId);
-//       validateFunctionCall(mockRecipientDocumentConverter.functions.update);
-//       validateFunctionCall(mockRecipientService.functions.updateRecipient);
-//       expect.assertions(5);
-//     });
+      await service({
+        calendarEntryId,
+      }).catch(validateError('Error while getting calendar entry', 500));
+      validateFunctionCall(mockCalendarEntryService.functions.getCalendarEntryById, calendarEntryId);
+      validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toResponse);
+      expect.assertions(4);
+    });
 
-//     it('if recipient not found', async () => {
-//       mockRecipientService.functions.findRecipientById.mockResolvedValue(undefined);
+    it('if calendar entry not found', async () => {
+      mockCalendarEntryService.functions.getCalendarEntryById.mockResolvedValue(undefined);
 
-//       await service({
-//         body,
-//         recipientId,
-//         expiresIn: undefined,
-//       }).catch(validateError('No recipient found', 404));
-//       validateFunctionCall(mockRecipientService.functions.findRecipientById, recipientId);
-//       validateFunctionCall(mockRecipientDocumentConverter.functions.update);
-//       validateFunctionCall(mockRecipientService.functions.updateRecipient);
-//       expect.assertions(5);
-//     });
-
-//     it('if unable to update recipient', async () => {
-//       mockRecipientService.functions.findRecipientById.mockResolvedValue(queriedDocument);
-//       mockRecipientDocumentConverter.functions.update.mockReturnValue(updateQuery);
-//       mockRecipientService.functions.updateRecipient.mockRejectedValue('this is a mongo error');
-
-//       await service({
-//         body,
-//         recipientId,
-//         expiresIn: undefined,
-//       }).catch(validateError('Error while updating recipient', 500));
-//       validateFunctionCall(mockRecipientService.functions.findRecipientById, recipientId);
-//       validateFunctionCall(mockRecipientDocumentConverter.functions.update, body, undefined);
-//       validateFunctionCall(mockRecipientService.functions.updateRecipient, recipientId, updateQuery);
-//       expect.assertions(5);
-//     });
-//   });
-// });
+      await service({
+        calendarEntryId,
+      }).catch(validateError('No calendar entry found', 404));
+      validateFunctionCall(mockCalendarEntryService.functions.getCalendarEntryById, calendarEntryId);
+      validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toResponse);
+      expect.assertions(4);
+    });
+  });
+});
