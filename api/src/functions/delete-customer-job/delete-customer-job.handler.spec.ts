@@ -3,13 +3,13 @@ import { default as handler } from '@household/api/functions/delete-customer-job
 import { IDeleteCustomerJobService } from '@household/api/functions/delete-customer-job/delete-customer-job.service';
 import { customerDataFactory } from '@household/shared/common/test-data-factory';
 
-describe('Create customer job handler', () => {
-  let mockCreateCustomerJobService: MockBusinessService<IDeleteCustomerJobService>;
+describe('Delete customer job handler', () => {
+  let mockDeleteCustomerJobService: MockBusinessService<IDeleteCustomerJobService>;
   let handlerFunction: ReturnType<typeof handler>;
 
   beforeEach(() => {
-    mockCreateCustomerJobService = jest.fn();
-    handlerFunction = handler(mockCreateCustomerJobService);
+    mockDeleteCustomerJobService = jest.fn();
+    handlerFunction = handler(mockDeleteCustomerJobService);
   });
 
   const jobName = 'job to delete';
@@ -25,13 +25,13 @@ describe('Create customer job handler', () => {
 
     const statusCode = 418;
     const message = 'This is an error';
-    mockCreateCustomerJobService.mockRejectedValue({
+    mockDeleteCustomerJobService.mockRejectedValue({
       statusCode,
       message,
     });
 
     const response = await handlerFunction(handlerEvent, undefined, undefined) as AWSLambda.APIGatewayProxyResult;
-    validateFunctionCall(mockCreateCustomerJobService, {
+    validateFunctionCall(mockDeleteCustomerJobService, {
       customerId,
       name: jobName,
     });
@@ -41,10 +41,10 @@ describe('Create customer job handler', () => {
   });
 
   it('should respond with success', async () => {
-    mockCreateCustomerJobService.mockResolvedValue(undefined);
+    mockDeleteCustomerJobService.mockResolvedValue(undefined);
 
     const response = await handlerFunction(handlerEvent, undefined, undefined) as AWSLambda.APIGatewayProxyResult;
-    validateFunctionCall(mockCreateCustomerJobService, {
+    validateFunctionCall(mockDeleteCustomerJobService, {
       customerId,
       name: jobName,
     });

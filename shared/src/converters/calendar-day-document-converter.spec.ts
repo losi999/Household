@@ -26,8 +26,7 @@ describe('Calendar day document converter', () => {
 
   describe('update', () => {
     it('should update document (workday)', () => {
-      const body = calendarDayDataFactory.request({
-        dayType: CalendarDayType.Workday,
+      const body = calendarDayDataFactory.workdayRequest({
         start: 10,
         end: 50,
       });
@@ -44,9 +43,7 @@ describe('Calendar day document converter', () => {
     });
     
     it('should update document (vacation)', () => {
-      const body = calendarDayDataFactory.request({
-        dayType: CalendarDayType.Vacation,
-      });
+      const body = calendarDayDataFactory.vacationRequest();
 
       const result = converter.update(body, expiresIn);
       expect(result).toEqual(createDocumentUpdate2({

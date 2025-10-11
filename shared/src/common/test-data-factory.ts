@@ -80,21 +80,6 @@ export const createRecipientDocument: DataFactoryFunction<Recipient.Document> = 
   };
 };
 
-export const createCustomerJobResponse: DataFactoryFunction<Customer.Job.Response> = (data) => {
-  return {
-    name: 'vágás',
-    duration: 60,
-    prices: [
-      {
-        ...createPriceResponse(),
-        quantity: 1,
-      },
-    ],
-    description: 'job description',
-    ...data,
-  };
-};
-
 export const createProductDocument: DataFactoryFunction<Product.Document> = (doc) => {
   return {
     _id: generateMongoId(),
@@ -294,30 +279,6 @@ export const createCategoryRequest: DataFactoryFunction<Category.Request> = (req
 export const createRecipientRequest: DataFactoryFunction<Recipient.Request> = (req) => {
   return {
     name: 'recipient name',
-    ...req,
-  };
-};
-
-export const createCalendarWorkdayRequest: DataFactoryFunction<Calendar.Day.WorkdayRequest> = (req) => {
-  return {
-    dayType: CalendarDayType.Workday,
-    end: 50,
-    start: 10,
-    ...req,
-  };
-};
-
-export const createCalendarVacationRequest: DataFactoryFunction<Calendar.Day.VacationRequest> = (req) => {
-  return {
-    dayType: CalendarDayType.Vacation,
-    ...req,
-  };
-};
-
-export const createListedPriceRequest: DataFactoryFunction<Customer.Job.ListedPrice<Price.PriceId>> = (req) => {
-  return {
-    priceId: createPriceId(),
-    quantity: 2,
     ...req,
   };
 };
@@ -941,6 +902,21 @@ const createCustomerJobDocument: DataFactoryFunction<Customer.Job.Document> = (d
   };
 };
 
+const createCustomerJobResponse: DataFactoryFunction<Customer.Job.Response> = (data) => {
+  return {
+    name: 'vágás',
+    duration: 60,
+    prices: [
+      {
+        ...createPriceResponse(),
+        quantity: 1,
+      },
+    ],
+    description: 'job description',
+    ...data,
+  };
+};
+
 const createCustomeJobPriceDocument: DataFactoryFunction<Customer.Job.Document['prices'][number]> = (data) => {
   return {
     amount: 3000,
@@ -957,6 +933,14 @@ const createCustomeJobPriceResponse: DataFactoryFunction<Customer.Job.Response['
   };
 };
 
+const createCustomerJobPriceRequest: DataFactoryFunction<Customer.Job.ListedPrice<Price.PriceId>> = (req) => {
+  return {
+    priceId: createPriceId(),
+    quantity: 2,
+    ...req,
+  };
+};
+
 export const customerDataFactory = {
   id: createCustomerId,
   request: createCustomerRequest,
@@ -964,6 +948,7 @@ export const customerDataFactory = {
   response: createCustomerResponse,
   jobRequest: createCustomerJobRequest,
   jobDocument: createCustomerJobDocument,
+  jobPriceRequest: createCustomerJobPriceRequest,
   jobPriceDocument: createCustomeJobPriceDocument,
   jobPriceResponse: createCustomeJobPriceResponse,
 };
@@ -1006,7 +991,7 @@ const createCalendarWorkEntryRequest: DataFactoryFunction<Calendar.Entry.WorkEnt
     entryType: CalendarEntryType.Work,
     customerId: createCustomerId(),
     prices: [
-      createListedPriceRequest(),
+      createCustomerJobPriceRequest(),
       createPriceBase(),
     ],
     ...req,
@@ -1106,10 +1091,19 @@ export const calendarEntryDataFactory = {
   paymentRequest: createCalendarEntryPaymentRequest,
 };
 
-const createCalendarDayRequest: DataFactoryFunction<Calendar.Day.Request> = (data) => {
+const createCalendarWorkdayRequest: DataFactoryFunction<Calendar.Day.WorkdayRequest> = (req) => {
+  return {
+    dayType: CalendarDayType.Workday,
+    end: 50,
+    start: 10,
+    ...req,
+  };
+};
+
+const createCalendarVacationRequest: DataFactoryFunction<Calendar.Day.VacationRequest> = (req) => {
   return {
     dayType: CalendarDayType.Vacation,
-    ...(data as Calendar.Day.Request),
+    ...req,
   };
 };
 
@@ -1134,7 +1128,8 @@ const createCalendarDayResponse: DataFactoryFunction<Calendar.Day.Response> = (d
 };
 
 export const calendarDayDataFactory = {
-  request: createCalendarDayRequest,
+  workdayRequest: createCalendarWorkdayRequest,
+  vacationRequest: createCalendarVacationRequest,
   document: createCalendarDayDocument,
   response: createCalendarDayResponse,
 };

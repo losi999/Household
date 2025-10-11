@@ -1,4 +1,4 @@
-import { createDocumentUpdate2, customerDataFactory, priceDataFactory } from '@household/shared/common/test-data-factory';
+import { calendarEntryDataFactory, createDocumentUpdate2, customerDataFactory, priceDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock } from '@household/shared/common/unit-testing';
 import { addSeconds, getCustomerId, getPriceId } from '@household/shared/common/utils';
 import { ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
@@ -15,7 +15,7 @@ describe('Customer document converter', () => {
 
   beforeEach(() => {
     mockPriceDocumentConverter = createMockService('toResponse');
-    mockCalendarEntryDocumentConverter = createMockService();
+    mockCalendarEntryDocumentConverter = createMockService('toResponseBase');
     advanceTo(now);
     converter = customerDocumentConverterFactory(mockPriceDocumentConverter.service, mockCalendarEntryDocumentConverter.service);
   });
@@ -295,10 +295,13 @@ describe('Customer document converter', () => {
       });
       const priceResponse = priceDataFactory.response();
       mockPriceDocumentConverter.functions.toResponse.mockReturnValue(priceResponse);
+      const workEntries = calendarEntryDataFactory.document();
+      const convertedEntries = calendarEntryDataFactory.responseBase();
+      mockCalendarEntryDocumentConverter.functions.toResponseBase.mockReturnValue(convertedEntries);
 
       const { description, isGroup, name, rating } = doc;
 
-      const result = converter.toResponse(doc);
+      const result = converter.toResponse(doc, [workEntries]);
       expect(result).toEqual(customerDataFactory.response({
         description,
         name,
@@ -314,7 +317,7 @@ describe('Customer document converter', () => {
             isGroup: blacklistedCustomer.isGroup,
           },
         ],
-        workEntries: [], // TODO
+        workEntries: [convertedEntries],
         jobs: [
           {
             name: jobA.name,
@@ -371,9 +374,15 @@ describe('Customer document converter', () => {
       const priceResponse = priceDataFactory.response();
       mockPriceDocumentConverter.functions.toResponse.mockReturnValue(priceResponse);
 
+      const workEntries = calendarEntryDataFactory.document();
+      const convertedEntries = calendarEntryDataFactory.responseBase();
+      mockCalendarEntryDocumentConverter.functions.toResponseBase.mockReturnValue(convertedEntries);
+
       const { description, isGroup, name, rating } = doc;
 
-      const result = converter.toResponseList([doc], {});
+      const result = converter.toResponseList([doc], {
+        [getCustomerId(doc)]: [workEntries],
+      });
       expect(result).toEqual([
         customerDataFactory.response({
           description,
@@ -390,7 +399,7 @@ describe('Customer document converter', () => {
               isGroup: blacklistedCustomer.isGroup,
             },
           ],
-          workEntries: [], // TODO
+          workEntries: [convertedEntries], 
           jobs: [
             {
               name: jobA.name,

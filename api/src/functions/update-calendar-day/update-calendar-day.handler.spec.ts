@@ -14,7 +14,7 @@ describe('Update calendar day handler', () => {
   });
 
   const day = '2025-10-11';
-  const body = calendarDayDataFactory.request();
+  const body = calendarDayDataFactory.workdayRequest();
   const expiresIn = 3600;
   const handlerEvent = {
     body: JSON.stringify(body),

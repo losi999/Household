@@ -17,7 +17,7 @@ describe('Update calendar day service', () => {
     service = updateCalendarDayServiceFactory(mockCalendarDayService.service, mockCalendarDayDocumentConverter.service);
   });
 
-  const body = calendarDayDataFactory.request();
+  const body = calendarDayDataFactory.workdayRequest();
   const day = '2025-10-11';
   const updateQuery = createDocumentUpdate2();
 
