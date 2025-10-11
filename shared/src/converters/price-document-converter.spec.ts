@@ -1,5 +1,4 @@
-import { priceDataFactory } from '@household/shared/common/test-data-factory';
-import { validateInternalProperties } from '@household/shared/common/unit-testing';
+import { createDocumentUpdate2, priceDataFactory } from '@household/shared/common/test-data-factory';
 import { addSeconds, getPriceId } from '@household/shared/common/utils';
 import { priceDocumentConverterFactory, IPriceDocumentConverter } from '@household/shared/converters/price-document-converter';
 import { advanceTo, clear } from 'jest-date-mock';
@@ -23,22 +22,22 @@ describe('Price document converter', () => {
     it('should return document', () => {
       const body = priceDataFactory.request();
 
-      const { amount, name, unitOfMeasurement, ...internal } = converter.create(body, undefined);
-      expect(amount).toEqual(body.amount);
-      expect(name).toEqual(body.name);
-      expect(unitOfMeasurement).toEqual(body.unitOfMeasurement);
-      validateInternalProperties(internal);
+      const result = converter.create(body, undefined);
+      expect(result).toEqual(priceDataFactory.document({
+        ...body,
+        _id: undefined,
+      }));
     });
 
     it('should return expiring document', () => {
       const body = priceDataFactory.request();
 
-      const { amount, name, unitOfMeasurement, expiresAt, ...internal } = converter.create(body, expiresIn);
-      expect(amount).toEqual(body.amount);
-      expect(name).toEqual(body.name);
-      expect(unitOfMeasurement).toEqual(body.unitOfMeasurement);
-      expect(expiresAt).toEqual(addSeconds(expiresIn, now));
-      validateInternalProperties(internal);
+      const result = converter.create(body, expiresIn);
+      expect(result).toEqual(priceDataFactory.document({
+        ...body,
+        _id: undefined,
+        expiresAt: addSeconds(expiresIn, now),
+      }));
     });
 
   });
@@ -48,14 +47,17 @@ describe('Price document converter', () => {
       const body = priceDataFactory.request();
 
       const result = converter.update(body, expiresIn);
-      expect(result).toEqual({
-        update: {
-          $set: {
-            ...body,
-            expiresAt: addSeconds(expiresIn, now),
+      expect(result).toEqual(
+        createDocumentUpdate2({
+          update: {
+            $set: {
+              ...body,
+              expiresAt: addSeconds(expiresIn, now),
+            },
+
           },
-        },
-      });
+        }),
+      );
     });
   });
 
@@ -63,12 +65,14 @@ describe('Price document converter', () => {
     it('should return response', () => {
       const doc = priceDataFactory.document();
 
-      const { priceId, amount, name, unitOfMeasurement, ...internal } = converter.toResponse(doc);
-      expect(priceId).toEqual(getPriceId(doc));
-      expect(amount).toEqual(doc.amount);
-      expect(name).toEqual(doc.name);
-      expect(unitOfMeasurement).toEqual(doc.unitOfMeasurement);
-      validateInternalProperties(internal);
+      const { amount, name, unitOfMeasurement } = doc;
+      const result = converter.toResponse(doc);
+      expect(result).toEqual(priceDataFactory.response({
+        amount,
+        name,
+        unitOfMeasurement,
+        priceId: getPriceId(doc),
+      }));
     });
   });
 
@@ -76,12 +80,17 @@ describe('Price document converter', () => {
     it('should return response list', () => {
       const doc = priceDataFactory.document();
 
-      const [{ priceId, amount, name, unitOfMeasurement, ...internal }] = converter.toResponseList([doc]);
-      expect(priceId).toEqual(getPriceId(doc));
-      expect(amount).toEqual(doc.amount);
-      expect(name).toEqual(doc.name);
-      expect(unitOfMeasurement).toEqual(doc.unitOfMeasurement);
-      validateInternalProperties(internal);
+      const { amount, name, unitOfMeasurement } = doc;
+
+      const result = converter.toResponseList([doc]);
+      expect(result).toEqual([
+        priceDataFactory.response({
+          amount,
+          name,
+          unitOfMeasurement,
+          priceId: getPriceId(doc),
+        }),
+      ]);
     });
   });
 });

@@ -90,7 +90,7 @@ export const getFileId = (doc: File.Document | Types.ObjectId): File.Id => getId
 export const getPriceId = (doc: Price.Document | Types.ObjectId): Price.Id => getId(doc) as Price.Id;
 export const getCalendarEntryId = (doc: Calendar.Entry.Document | Types.ObjectId): Calendar.Entry.Id => getId(doc) as Calendar.Entry.Id;
 
-export const calculateWorkdayLimits = (defaultStart: number, defaultEnd: number, entries: Calendar.Entry.Response[]): {start: number; end: number;} => {
+export const calculateWorkdayLimits = (defaultStart: number, defaultEnd: number, entries: Calendar.Entry.Response[] | Calendar.Entry.Document[]): {start: number; end: number;} => {
   const workEntries = entries.filter(e => e.entryType === CalendarEntryType.Work);
 
   return workEntries.reduce<{start: number; end: number}>((accumulator, currentValue) => {

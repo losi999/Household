@@ -1,5 +1,5 @@
-import { customerDataFactory, priceDataFactory } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateInternalProperties } from '@household/shared/common/unit-testing';
+import { createDocumentUpdate2, customerDataFactory, priceDataFactory } from '@household/shared/common/test-data-factory';
+import { createMockService, Mock } from '@household/shared/common/unit-testing';
 import { addSeconds, getCustomerId, getPriceId } from '@household/shared/common/utils';
 import { ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
 import { customerDocumentConverterFactory, ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
@@ -51,28 +51,24 @@ describe('Customer document converter', () => {
     it('should return document', () => {
       const body = customerDataFactory.request();
 
-      const { blacklistedCustomers, description, isGroup, jobs, name, rating, ...internal } = converter.create(body, undefined);
-      expect(description).toEqual(body.description);
-      expect(isGroup).toEqual(body.isGroup);
-      expect(name).toEqual(body.name);
-      expect(rating).toEqual(body.rating);
-      expect(blacklistedCustomers).toEqual([]);
-      expect(jobs).toEqual([]);
-      validateInternalProperties(internal);
+      const result = converter.create(body, undefined);
+      expect(result).toEqual(customerDataFactory.document({
+        ...body,
+        _id: undefined,
+        jobs: [],
+      }));
     });
 
     it('should return expiring document', () => {
       const body = customerDataFactory.request();
 
-      const { blacklistedCustomers, description, isGroup, jobs, name, rating, expiresAt, ...internal } = converter.create(body, expiresIn);
-      expect(description).toEqual(body.description);
-      expect(isGroup).toEqual(body.isGroup);
-      expect(name).toEqual(body.name);
-      expect(rating).toEqual(body.rating);
-      expect(blacklistedCustomers).toEqual([]);
-      expect(jobs).toEqual([]);
-      expect(expiresAt).toEqual(addSeconds(expiresIn, now));
-      validateInternalProperties(internal);
+      const result = converter.create(body, expiresIn);
+      expect(result).toEqual(customerDataFactory.document({
+        ...body,
+        _id: undefined,
+        jobs: [],
+        expiresAt: addSeconds(expiresIn, now),
+      }));
     });
   });
 
@@ -81,21 +77,21 @@ describe('Customer document converter', () => {
       const body = customerDataFactory.request();
 
       const result = converter.update(body, expiresIn);
-      expect(result).toEqual({
+      expect(result).toEqual(createDocumentUpdate2({
         update: {
           $set: {
             ...body,
             expiresAt: addSeconds(expiresIn, now),
           },
         },
-      });
+      }));
     });
 
     it('should unset description', () => {
       const body = customerDataFactory.request({});
       delete body.description;
       const result = converter.update(body, expiresIn);
-      expect(result).toEqual({
+      expect(result).toEqual(createDocumentUpdate2({
         update: {
           $set: {
             ...body,
@@ -105,7 +101,7 @@ describe('Customer document converter', () => {
             description: true,
           },
         },
-      });
+      }));
     });
   });
 
@@ -114,13 +110,13 @@ describe('Customer document converter', () => {
 
     it('should return update', () => {
       const result = converter.addBlacklistedCustomer(customer);
-      expect(result).toEqual({
+      expect(result).toEqual(createDocumentUpdate2({
         update: {
           $addToSet: {
             blacklistedCustomers: customer,
           },
         },
-      });
+      }));
     });
   });
 
@@ -128,13 +124,13 @@ describe('Customer document converter', () => {
     const customerId = customerDataFactory.id();
     it('should return update', () => {
       const result = converter.removeBlacklistedCustomer(customerId);
-      expect(result).toEqual({
+      expect(result).toEqual(createDocumentUpdate2({
         update: {
           $pull: {
             blacklistedCustomers: customerId,
           },
         },
-      });
+      }));
     });
   });
 
@@ -158,15 +154,12 @@ describe('Customer document converter', () => {
     });
 
     it('should return update', () => {
-      const { name, duration, description } = job;
       const result = converter.addJob(job, [priceDocument]);
-      expect(result).toEqual({
+      expect(result).toEqual(createDocumentUpdate2({
         update: {
           $push: {
             jobs: {
-              name,
-              duration,
-              description,
+              ...job,
               prices: [
                 {
                   price: priceDocument,
@@ -180,7 +173,7 @@ describe('Customer document converter', () => {
             },
           },
         },
-      });
+      }));
     });
   });
 
@@ -204,16 +197,12 @@ describe('Customer document converter', () => {
     });
 
     it('should return update', () => {
-      const { name, duration, description } = job;
-
-      const result = converter.updateJob(name, job, [priceDocument]);
-      expect(result).toEqual({
+      const result = converter.updateJob(job.name, job, [priceDocument]);
+      expect(result).toEqual(createDocumentUpdate2({
         update: {
           $set: {
             'jobs.$[job]': {
-              name,
-              duration,
-              description,
+              ...job,
               prices: [
                 {
                   price: priceDocument,
@@ -229,10 +218,10 @@ describe('Customer document converter', () => {
         },
         arrayFilters: [
           {
-            'job.name': name,
+            'job.name': job.name,
           },
         ],
-      });
+      }));
     });
   });
 
@@ -240,7 +229,7 @@ describe('Customer document converter', () => {
     it('should return update', () => {
       const jobName = 'job name';
       const result = converter.deleteJob(jobName);
-      expect(result).toEqual({
+      expect(result).toEqual(createDocumentUpdate2({
         update: {
           $pull: {
             jobs: {
@@ -248,7 +237,7 @@ describe('Customer document converter', () => {
             },
           },
         },
-      });
+      }));
     });
   });
 
@@ -267,11 +256,13 @@ describe('Customer document converter', () => {
         priceBase,
       ]);
       expect(result).toEqual([
-        {
-          ...priceResponse,
+        customerDataFactory.jobPriceResponse({
           quantity,
-        },
-        priceBase,
+          ...priceResponse,
+        }),
+        customerDataFactory.jobPriceResponse({
+          ...priceBase,
+        }),
       ]);
     });
   });
@@ -308,7 +299,7 @@ describe('Customer document converter', () => {
       const { description, isGroup, name, rating } = doc;
 
       const result = converter.toResponse(doc);
-      expect(result).toEqual({
+      expect(result).toEqual(customerDataFactory.response({
         description,
         name,
         isGroup,
@@ -347,7 +338,7 @@ describe('Customer document converter', () => {
             ],
           },
         ],
-      });
+      }));
     });
   });
 
@@ -384,7 +375,7 @@ describe('Customer document converter', () => {
 
       const result = converter.toResponseList([doc], {});
       expect(result).toEqual([
-        {
+        customerDataFactory.response({
           description,
           name,
           isGroup,
@@ -423,7 +414,7 @@ describe('Customer document converter', () => {
               ],
             },
           ],
-        },
+        }),
       ]);
     });
   });

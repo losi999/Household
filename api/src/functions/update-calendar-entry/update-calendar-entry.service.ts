@@ -57,7 +57,6 @@ export const updateCalendarEntryServiceFactory = (
         priceIds,
         prices,
       });
-
       update = calendarEntryDocumentConverter.update({
         body,
         customer,

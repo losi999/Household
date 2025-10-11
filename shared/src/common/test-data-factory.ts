@@ -36,10 +36,6 @@ export const createFileId = (id?: string): File.Id => {
   return (id ?? generateMongoId().toString()) as File.Id;
 };
 
-export const createCalendarEntryId = (id?: string): Calendar.Entry.Id => {
-  return (id ?? generateMongoId().toString()) as Calendar.Entry.Id;
-};
-
 export const createSettingKey = (key?: string): SettingKey => {
   return (key ?? 'defaultKey') as SettingKey;
 };
@@ -314,47 +310,6 @@ export const createCalendarWorkdayRequest: DataFactoryFunction<Calendar.Day.Work
 export const createCalendarVacationRequest: DataFactoryFunction<Calendar.Day.VacationRequest> = (req) => {
   return {
     dayType: CalendarDayType.Vacation,
-    ...req,
-  };
-};
-
-export const createCalendarPersonalEntryRequest: DataFactoryFunction<Calendar.Entry.PersonalEntryRequest> = (req) => {
-  return {
-    day: '2025-10-10',
-    description: 'entry description',
-    title: 'entry title',
-    end: 50,
-    start: 10,
-    entryType: CalendarEntryType.Personal,
-    ...req,
-  };
-};
-
-export const createCalendarIssueEntryRequest: DataFactoryFunction<Calendar.Entry.IssueEntryRequest> = (req) => {
-  return {
-    day: '2025-10-10',
-    description: 'entry description',
-    title: 'entry title',
-    end: 50,
-    start: 10,
-    entryType: CalendarEntryType.Issue,
-    ...req,
-  };
-};
-
-export const createCalendarWorkEntryRequest: DataFactoryFunction<Calendar.Entry.WorkEntryRequest> = (req) => {
-  return {
-    day: '2025-10-10',
-    description: 'entry description',
-    title: 'entry title',
-    end: 50,
-    start: 10,
-    entryType: CalendarEntryType.Work,
-    customerId: createCustomerId(),
-    prices: [
-      createListedPriceRequest(),
-      createPriceBase(),
-    ],
     ...req,
   };
 };
@@ -842,6 +797,7 @@ export const createFileResponse: DataFactoryFunction<File.Response> = (doc) => {
   };
 };
 
+//deprecated
 export const createDocumentUpdate: DataFactoryFunction<UpdateQuery<any>> = (update) => {
   return {
     $set: {
@@ -993,6 +949,22 @@ const createCustomerJobDocument: DataFactoryFunction<Customer.Job.Document> = (d
   };
 };
 
+const createCustomeJobPriceDocument: DataFactoryFunction<Customer.Job.Document['prices'][number]> = (data) => {
+  return {
+    amount: 3000,
+    name: 'price name',
+    ...data,
+  };
+};
+
+const createCustomeJobPriceResponse: DataFactoryFunction<Customer.Job.Response['prices'][number]> = (data) => {
+  return {
+    amount: 3000,
+    name: 'price name',
+    ...data,
+  };
+};
+
 export const customerDataFactory = {
   id: createCustomerId,
   request: createCustomerRequest,
@@ -1000,4 +972,168 @@ export const customerDataFactory = {
   response: createCustomerResponse,
   jobRequest: createCustomerJobRequest,
   jobDocument: createCustomerJobDocument,
+  jobPriceDocument: createCustomeJobPriceDocument,
+  jobPriceResponse: createCustomeJobPriceResponse,
+};
+
+const createCalendarEntryId = (id?: string): Calendar.Entry.Id => {
+  return (id ?? generateMongoId().toString()) as Calendar.Entry.Id;
+};
+
+const createCalendarPersonalEntryRequest: DataFactoryFunction<Calendar.Entry.PersonalEntryRequest> = (req) => {
+  return {
+    day: '2025-10-10',
+    description: 'entry description',
+    title: 'entry title',
+    end: 50,
+    start: 10,
+    entryType: CalendarEntryType.Personal,
+    ...req,
+  };
+};
+
+const createCalendarIssueEntryRequest: DataFactoryFunction<Calendar.Entry.IssueEntryRequest> = (req) => {
+  return {
+    day: '2025-10-10',
+    description: 'entry description',
+    title: 'entry title',
+    end: 50,
+    start: 10,
+    entryType: CalendarEntryType.Issue,
+    ...req,
+  };
+};
+
+const createCalendarWorkEntryRequest: DataFactoryFunction<Calendar.Entry.WorkEntryRequest> = (req) => {
+  return {
+    day: '2025-10-10',
+    description: 'entry description',
+    title: 'entry title',
+    end: 50,
+    start: 10,
+    entryType: CalendarEntryType.Work,
+    customerId: createCustomerId(),
+    prices: [
+      createListedPriceRequest(),
+      createPriceBase(),
+    ],
+    ...req,
+  };
+};
+
+const createCalendarEntryDocument: DataFactoryFunction<Calendar.Entry.Document> = (data) => {
+  return {
+    day: '2025-10-10',
+    description: 'entry description',
+    title: 'entry title',
+    end: 50,
+    start: 10,
+    entryType: CalendarEntryType.Issue,
+    _id: generateMongoId(),
+    customer: undefined,
+    expiresAt: undefined,
+    isPaid: undefined,
+    prices: undefined,
+    transaction: undefined,
+    ...data,
+  };
+};
+
+const createCalendarEntryResponseBase: DataFactoryFunction<Calendar.Entry.ResponseBase> = (data) => {
+  return {
+    calendarEntryId: createCalendarEntryId(),
+    day: '2025-10-10',
+    description: 'entry description',
+    title: 'entry title',
+    end: 50,
+    start: 10,
+    ...data,
+  };
+};
+
+const createCalendarPersonalEntryResponse: DataFactoryFunction<Calendar.Entry.PersonalEntryResponse> = (data) => {
+  return {
+    calendarEntryId: createCalendarEntryId(),
+    day: '2025-10-10',
+    description: 'entry description',
+    title: 'entry title',
+    end: 50,
+    start: 10,
+    entryType: CalendarEntryType.Personal,
+    ...data,
+  };
+};
+
+const createCalendarIssueEntryResponse: DataFactoryFunction<Calendar.Entry.IssueEntryResponse> = (data) => {
+  return {
+    calendarEntryId: createCalendarEntryId(),
+    day: '2025-10-10',
+    description: 'entry description',
+    title: 'entry title',
+    end: 50,
+    start: 10,
+    entryType: CalendarEntryType.Issue,
+    ...data,
+  };
+};
+
+const createCalendarWorkEntryResponse: DataFactoryFunction<Calendar.Entry.WorkEntryResponse> = (data) => {
+  return {
+    calendarEntryId: createCalendarEntryId(),
+    day: '2025-10-10',
+    description: 'entry description',
+    title: 'entry title',
+    end: 50,
+    start: 10,
+    entryType: CalendarEntryType.Work,
+    customer: createCustomerResponse(),
+    isPaid: false,
+    prices: undefined,
+    ...data,
+  };
+};
+
+export const calendarEntryDataFactory = {
+  id: createCalendarEntryId,
+  workRequest: createCalendarWorkEntryRequest,
+  issueRequest: createCalendarIssueEntryRequest,
+  personalRequest: createCalendarPersonalEntryRequest,
+  document: createCalendarEntryDocument,
+  responseBase: createCalendarEntryResponseBase,
+  personalResponse: createCalendarPersonalEntryResponse,
+  issueResponse: createCalendarIssueEntryResponse,
+  workResponse: createCalendarWorkEntryResponse,
+};
+
+const createCalendarDayRequest: DataFactoryFunction<Calendar.Day.Request> = (data) => {
+  return {
+    dayType: CalendarDayType.Vacation,
+    ...(data as Calendar.Day.Request),
+  };
+};
+
+const createCalendarDayDocument: DataFactoryFunction<Calendar.Day.Document> = (data) => {
+  return {
+    dayType: CalendarDayType.Workday,
+    day: '2025-10-11',
+    start: 10,
+    end: 50,
+    expiresAt: undefined,
+    ...data,
+  };
+};
+
+const createCalendarDayResponse: DataFactoryFunction<Calendar.Day.Response> = (data) => {
+  return {
+    dayType: CalendarDayType.Vacation,
+    day: '2025-10-11',
+    entries: [],
+    ...data as Calendar.Day.Response,
+  };
+};
+
+export const calendarDayDataFactory = {
+  request: createCalendarDayRequest,
+  document: createCalendarDayDocument,
+  response: createCalendarDayResponse,
 };

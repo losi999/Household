@@ -4,6 +4,7 @@ import { ICustomerDocumentConverter } from '@household/shared/converters/custome
 import { CalendarEntryType } from '@household/shared/enums';
 import { DocumentUpdate } from '@household/shared/types/common';
 import { Calendar, Customer, Price } from '@household/shared/types/types';
+import { AnyKeys, AnyObject } from 'mongoose';
 
 export interface ICalendarEntryDocumentConverter {
   create(data: { 
@@ -43,19 +44,44 @@ export const calendarEntryDocumentConverterFactory = (customerDocumentConverter:
       };
     },
     update: ({ body, customer, prices }, expiresIn) => {
+      let $set: AnyKeys<Calendar.Entry.Document> & AnyObject;
+      let $unset: AnyKeys<Calendar.Entry.Document> & AnyObject;
+      
+      if (body.entryType === CalendarEntryType.Work) {
+        const { customerId, ...rest } = body;
+        $set = {
+          ...rest,
+          customer,
+        };
+
+        if (body.prices) {
+          $set.prices = customerDocumentConverter.createJobPriceList(body.prices, prices);
+        } else {
+          $unset = {
+            prices: true,
+          };
+        }
+      } else {
+        $set = {
+          ...body,
+        };
+      }
+
+      if (!body.description) {
+        $unset = {
+          ...$unset,
+          description: true,
+        };
+      }
       return {
         update: {
           $set: {
-            ...body,
-            customer: body.entryType === CalendarEntryType.Work ? customer : undefined,
-            prices: body.entryType === CalendarEntryType.Work ? customerDocumentConverter.createJobPriceList(body.prices, prices) : undefined,
+            ...$set,
             expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
           },
-          ...(!body.description ? {
-            $unset: {
-              description: true,
-            },
-          } : {}), // TODO unset prices
+          ...($unset ? {
+            $unset,
+          } : {}),
         },
       };
     },

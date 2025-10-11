@@ -1,95 +1,772 @@
-// import { createDocumentUpdate, createRecipientDocument, createRecipientReport, createRecipientRequest, createRecipientResponse } from '@household/shared/common/test-data-factory';
-// import { addSeconds, getRecipientId } from '@household/shared/common/utils';
-// import { recipientDocumentConverterFactory, IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
-// import { advanceTo, clear } from 'jest-date-mock';
+import { calendarDayDataFactory, calendarEntryDataFactory, createDocumentUpdate2 } from '@household/shared/common/test-data-factory';
+import { createMockService, Mock, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { addSeconds } from '@household/shared/common/utils';
+import { WORKDAY_END, WORKDAY_LENGTH, WORKDAY_START } from '@household/shared/constants';
+import { calendarDayDocumentConverterFactory, ICalendarDayDocumentConverter } from '@household/shared/converters/calendar-day-document-converter';
+import { ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
+import { CalendarDayType, CalendarEntryType } from '@household/shared/enums';
+import { advanceTo, clear } from 'jest-date-mock';
 
-// describe('Recipient document converter', () => {
-//   let converter: IRecipientDocumentConverter;
-//   const now = new Date();
+describe('Calendar day document converter', () => {
+  let converter: ICalendarDayDocumentConverter;
+  let mockCalendarEntryDocumentConverter: Mock<ICalendarEntryDocumentConverter>;
+  const now = new Date();
 
-//   beforeEach(() => {
-//     advanceTo(now);
-//     converter = recipientDocumentConverterFactory();
-//   });
+  beforeEach(() => {
+    advanceTo(now);
+    mockCalendarEntryDocumentConverter = createMockService('toResponseList');
+    converter = calendarDayDocumentConverterFactory(mockCalendarEntryDocumentConverter.service);
+  });
 
-//   afterEach(() => {
-//     clear();
-//   });
+  afterEach(() => {
+    clear();
+  });
 
-//   const name = 'Bolt';
-//   const expiresIn = 3600;
+  const expiresIn = 3600;
 
-//   const body = createRecipientRequest({
-//     name,
-//   });
-//   const queriedDocument = createRecipientDocument({
-//     name,
-//     createdAt: now,
-//     updatedAt: now,
-//   });
+  describe('update', () => {
+    it('should update document (workday)', () => {
+      const body = calendarDayDataFactory.request({
+        dayType: CalendarDayType.Workday,
+        start: 10,
+        end: 50,
+      });
 
-//   describe('create', () => {
-//     it('should return document', () => {
-//       const result = converter.create(body, undefined);
-//       expect(result).toEqual(createRecipientDocument({
-//         name,
-//         expiresAt: undefined,
-//         _id: undefined,
-//       }));
-//     });
+      const result = converter.update(body, expiresIn);
+      expect(result).toEqual(createDocumentUpdate2({
+        update: {
+          $set: {
+            ...body,
+            expiresAt: addSeconds(expiresIn, now),
+          },
+        },
+      }));
+    });
+    
+    it('should update document (vacation)', () => {
+      const body = calendarDayDataFactory.request({
+        dayType: CalendarDayType.Vacation,
+      });
 
-//     it('should return expiring document', () => {
-//       const result = converter.create(body, expiresIn);
-//       expect(result).toEqual(createRecipientDocument({
-//         name,
-//         expiresAt: addSeconds(expiresIn, now),
-//         _id: undefined,
-//       }));
-//     });
+      const result = converter.update(body, expiresIn);
+      expect(result).toEqual(createDocumentUpdate2({
+        update: {
+          $set: {
+            ...body,
+            expiresAt: addSeconds(expiresIn, now),
+          },
+          $unset: {
+            start: true,
+            end: true,            
+          },
+        },
+      }));
+    });
+  });
 
-//   });
+  describe('toResponse', () => {
+    const customWorkdayStart = 30;
+    const customWorkdayEnd = 82;
+    const lateWorkEnd = 80;
+    const earlyWorkStart = 32;
 
-//   describe('update', () => {
-//     it('should update document', () => {
-//       const result = converter.update(body, expiresIn);
-//       expect(result).toEqual(createDocumentUpdate({
-//         $set: {
-//           ...body,
-//           expiresAt: addSeconds(expiresIn, now),
-//         },
-//       }));
-//     });
-//   });
+    describe('not weekend', () => {
+      const day = '2025-10-20';
+      const personalEntry = calendarEntryDataFactory.document({
+        day,
+        entryType: CalendarEntryType.Personal,
+      });
 
-//   describe('toResponse', () => {
-//     it('should return response', () => {
-//       const result = converter.toResponse(queriedDocument);
-//       expect(result).toEqual(createRecipientResponse({
-//         recipientId: getRecipientId(queriedDocument),
-//         name,
-//       }));
-//     });
-//   });
+      const issueEntry = calendarEntryDataFactory.document({
+        day,
+        entryType: CalendarEntryType.Issue,
+      });
 
-//   describe('toResponseList', () => {
-//     it('should return response list', () => {
-//       const result = converter.toResponseList([queriedDocument]);
-//       expect(result).toEqual([
-//         createRecipientResponse({
-//           recipientId: getRecipientId(queriedDocument),
-//           name,
-//         }),
-//       ]);
-//     });
-//   });
+      describe('without work entries', () => {   
+        it('should return workday without custom time limits', () => {
+          mockCalendarEntryDocumentConverter.functions.toResponseList.mockReturnValue([]);
+          
+          const result = converter.toResponse({
+            dateFrom: day,
+            dateTo: day,
+            days: [],
+            entries: [
+              personalEntry,
+              issueEntry,
+            ],
+          });
+          expect(result).toEqual([
+            calendarDayDataFactory.response({
+              day,
+              dayType: CalendarDayType.Workday,
+              plannedStart: WORKDAY_START,
+              plannedEnd: WORKDAY_END,
+              start: WORKDAY_START,
+              end: WORKDAY_END,
+            }),
+          ]);
+          validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toResponseList, [
+            personalEntry,
+            issueEntry,
+          ]);
+        });
 
-//   describe('toReport', () => {
-//     it('should return report', () => {
-//       const result = converter.toReport(queriedDocument);
-//       expect(result).toEqual(createRecipientReport({
-//         recipientId: getRecipientId(queriedDocument),
-//         name,
-//       }));
-//     });
-//   });
-// });
+        it('should return workday with custom time limits', () => {
+
+          mockCalendarEntryDocumentConverter.functions.toResponseList.mockReturnValue([]);
+      
+          const result = converter.toResponse({
+            dateFrom: day,
+            dateTo: day,
+            days: [
+              calendarDayDataFactory.document({
+                day,
+                dayType: CalendarDayType.Workday,
+                start: customWorkdayStart,
+                end: customWorkdayEnd,
+              }),
+            ],
+            entries: [
+              personalEntry,
+              issueEntry,
+            ],
+          });
+          expect(result).toEqual([
+            calendarDayDataFactory.response({
+              day,
+              dayType: CalendarDayType.Workday,
+              plannedStart: customWorkdayStart,
+              plannedEnd: customWorkdayEnd,
+              start: customWorkdayStart,
+              end: customWorkdayEnd,
+            }),
+          ]);
+          validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toResponseList, [
+            personalEntry,
+            issueEntry,
+          ]);
+        });
+
+        it('should return vacation day', () => {
+          mockCalendarEntryDocumentConverter.functions.toResponseList.mockReturnValue([]);
+
+          const result = converter.toResponse({
+            dateFrom: day,
+            dateTo: day,
+            days: [
+              calendarDayDataFactory.document({
+                day,
+                dayType: CalendarDayType.Vacation,
+              }),
+            ],
+            entries: [
+              personalEntry,
+              issueEntry,
+            ],
+          });
+          expect(result).toEqual([
+            calendarDayDataFactory.response({
+              day,
+              dayType: CalendarDayType.Vacation,
+            }),
+          ]);
+          validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toResponseList, [
+            personalEntry,
+            issueEntry,
+          ]);
+        });
+
+        it('should return holiday', () => {
+          mockCalendarEntryDocumentConverter.functions.toResponseList.mockReturnValue([]);
+
+          const result = converter.toResponse({
+            dateFrom: day,
+            dateTo: day,
+            days: [
+              calendarDayDataFactory.document({
+                day,
+                dayType: CalendarDayType.Holiday,
+              }),
+            ],
+            entries: [
+              personalEntry,
+              issueEntry,
+            ],
+          });
+          expect(result).toEqual([
+            calendarDayDataFactory.response({
+              day,
+              dayType: CalendarDayType.Holiday,
+            }),
+          ]);
+          validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toResponseList, [
+            personalEntry,
+            issueEntry,
+          ]);
+        });
+      });
+
+      describe('with work entries', () => {
+        it('should return workday without custom time limits (calculated start time)', () => {
+          const workEntry = calendarEntryDataFactory.document({
+            day,
+            entryType: CalendarEntryType.Work,
+            end: lateWorkEnd,
+            start: lateWorkEnd - 2,
+          });
+          mockCalendarEntryDocumentConverter.functions.toResponseList.mockReturnValue([]);
+          
+          const result = converter.toResponse({
+            dateFrom: day,
+            dateTo: day,
+            days: [],
+            entries: [
+              personalEntry,
+              issueEntry,
+              workEntry,
+            ],
+          });
+          expect(result).toEqual([
+            calendarDayDataFactory.response({
+              day,
+              dayType: CalendarDayType.Workday,
+              plannedStart: WORKDAY_START,
+              plannedEnd: WORKDAY_END,
+              start: lateWorkEnd - WORKDAY_LENGTH,
+              end: WORKDAY_END,
+            }),
+          ]);
+          validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toResponseList, [
+            personalEntry,
+            issueEntry,
+            workEntry,
+          ]);
+        });
+
+        it('should return workday without custom time limits (calculated end time)', () => {
+          const workEntry = calendarEntryDataFactory.document({
+            day,
+            entryType: CalendarEntryType.Work,
+            end: earlyWorkStart + 2,
+            start: earlyWorkStart,
+          });
+          mockCalendarEntryDocumentConverter.functions.toResponseList.mockReturnValue([]);
+          
+          const result = converter.toResponse({
+            dateFrom: day,
+            dateTo: day,
+            days: [],
+            entries: [
+              personalEntry,
+              issueEntry,
+              workEntry,
+            ],
+          });
+          expect(result).toEqual([
+            calendarDayDataFactory.response({
+              day,
+              dayType: CalendarDayType.Workday,
+              plannedStart: WORKDAY_START,
+              plannedEnd: WORKDAY_END,
+              start: WORKDAY_START,
+              end: earlyWorkStart + WORKDAY_LENGTH,
+            }),
+          ]);
+          validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toResponseList, [
+            personalEntry,
+            issueEntry,
+            workEntry,
+          ]);
+        });
+
+        it('should return workday with custom time limits (calculated start time)', () => {
+          const workEntry = calendarEntryDataFactory.document({
+            day,
+            entryType: CalendarEntryType.Work,
+            end: lateWorkEnd,
+            start: lateWorkEnd - 2,
+          });
+          mockCalendarEntryDocumentConverter.functions.toResponseList.mockReturnValue([]);
+          
+          const result = converter.toResponse({
+            dateFrom: day,
+            dateTo: day,
+            days: [
+              calendarDayDataFactory.document({
+                day,
+                dayType: CalendarDayType.Workday,
+                start: customWorkdayStart,
+                end: customWorkdayEnd,
+              }),
+            ],
+            entries: [
+              personalEntry,
+              issueEntry,
+              workEntry,
+            ],
+          });
+          expect(result).toEqual([
+            calendarDayDataFactory.response({
+              day,
+              dayType: CalendarDayType.Workday,
+              plannedStart: customWorkdayStart,
+              plannedEnd: customWorkdayEnd,
+              start: lateWorkEnd - WORKDAY_LENGTH,
+              end: customWorkdayEnd,
+            }),
+          ]);
+          validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toResponseList, [
+            personalEntry,
+            issueEntry,
+            workEntry,
+          ]);
+        });
+
+        it('should return workday with custom time limits (calculated end time)', () => {
+          const workEntry = calendarEntryDataFactory.document({
+            day,
+            entryType: CalendarEntryType.Work,
+            end: earlyWorkStart + 2,
+            start: earlyWorkStart,
+          });
+          mockCalendarEntryDocumentConverter.functions.toResponseList.mockReturnValue([]);
+          
+          const result = converter.toResponse({
+            dateFrom: day,
+            dateTo: day,
+            days: [
+              calendarDayDataFactory.document({
+                day,
+                dayType: CalendarDayType.Workday,
+                start: customWorkdayStart,
+                end: customWorkdayEnd,
+              }),
+            ],
+            entries: [
+              personalEntry,
+              issueEntry,
+              workEntry,
+            ],
+          });
+          expect(result).toEqual([
+            calendarDayDataFactory.response({
+              day,
+              dayType: CalendarDayType.Workday,
+              plannedStart: customWorkdayStart,
+              plannedEnd: customWorkdayEnd,
+              start: customWorkdayStart,
+              end: earlyWorkStart + WORKDAY_LENGTH,
+            }),
+          ]);
+          validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toResponseList, [
+            personalEntry,
+            issueEntry,
+            workEntry,
+          ]);
+        });
+
+        it('should return vacation day', () => {
+          const workEntry = calendarEntryDataFactory.document({
+            day,
+            entryType: CalendarEntryType.Work,
+            end: lateWorkEnd,
+            start: lateWorkEnd - 2,
+          });
+          
+          mockCalendarEntryDocumentConverter.functions.toResponseList.mockReturnValue([]);
+
+          const result = converter.toResponse({
+            dateFrom: day,
+            dateTo: day,
+            days: [
+              calendarDayDataFactory.document({
+                day,
+                dayType: CalendarDayType.Vacation,
+              }),
+            ],
+            entries: [
+              personalEntry,
+              issueEntry,
+              workEntry,
+            ],
+          });
+          expect(result).toEqual([
+            calendarDayDataFactory.response({
+              day,
+              dayType: CalendarDayType.Vacation,
+            }),
+          ]);
+          validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toResponseList, [
+            personalEntry,
+            issueEntry,
+            workEntry,
+          ]);
+        });
+
+        it('should return holiday', () => {
+          const workEntry = calendarEntryDataFactory.document({
+            day,
+            entryType: CalendarEntryType.Work,
+            end: lateWorkEnd,
+            start: lateWorkEnd - 2,
+          });
+          mockCalendarEntryDocumentConverter.functions.toResponseList.mockReturnValue([]);
+
+          const result = converter.toResponse({
+            dateFrom: day,
+            dateTo: day,
+            days: [
+              calendarDayDataFactory.document({
+                day,
+                dayType: CalendarDayType.Holiday,
+              }),
+            ],
+            entries: [
+              personalEntry,
+              issueEntry,
+              workEntry,
+            ],
+          });
+          expect(result).toEqual([
+            calendarDayDataFactory.response({
+              day,
+              dayType: CalendarDayType.Holiday,
+            }),
+          ]);
+          validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toResponseList, [
+            personalEntry,
+            issueEntry,
+            workEntry,
+          ]);
+        });
+      });
+    });
+
+    describe('weekend', () => {
+      const day = '2025-10-25';
+      const personalEntry = calendarEntryDataFactory.document({
+        day,
+        entryType: CalendarEntryType.Personal,
+      });
+
+      const issueEntry = calendarEntryDataFactory.document({
+        day,
+        entryType: CalendarEntryType.Issue,
+      });
+
+      describe('without work entries', () => {
+        it('should return weekend without custom time limits', () => {
+          mockCalendarEntryDocumentConverter.functions.toResponseList.mockReturnValue([]);
+
+          const result = converter.toResponse({
+            dateFrom: day,
+            dateTo: day,
+            days: [],
+            entries: [
+              personalEntry,
+              issueEntry,
+            ],
+          });
+          expect(result).toEqual([
+            calendarDayDataFactory.response({
+              day,
+              dayType: CalendarDayType.Weekend,
+            }),
+          ]);
+          validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toResponseList, [
+            personalEntry,
+            issueEntry,
+          ]);
+        });
+
+        it('should return weekend with custom time limits', () => {
+          mockCalendarEntryDocumentConverter.functions.toResponseList.mockReturnValue([]);
+      
+          const result = converter.toResponse({
+            dateFrom: day,
+            dateTo: day,
+            days: [
+              calendarDayDataFactory.document({
+                day,
+                dayType: CalendarDayType.Workday,
+                start: customWorkdayStart,
+                end: customWorkdayEnd,
+              }),
+            ],
+            entries: [
+              personalEntry,
+              issueEntry,
+            ],
+          });
+          expect(result).toEqual([
+            calendarDayDataFactory.response({
+              day,
+              dayType: CalendarDayType.Weekend,
+              plannedStart: customWorkdayStart,
+              plannedEnd: customWorkdayEnd,
+              start: customWorkdayStart,
+              end: customWorkdayEnd,
+            }),
+          ]);
+          validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toResponseList, [
+            personalEntry,
+            issueEntry,
+          ]);
+        });
+
+        it('should return vacation day', () => {
+          mockCalendarEntryDocumentConverter.functions.toResponseList.mockReturnValue([]);
+
+          const result = converter.toResponse({
+            dateFrom: day,
+            dateTo: day,
+            days: [
+              calendarDayDataFactory.document({
+                day,
+                dayType: CalendarDayType.Vacation,
+              }),
+            ],
+            entries: [
+              personalEntry,
+              issueEntry,
+            ],
+          });
+          expect(result).toEqual([
+            calendarDayDataFactory.response({
+              day,
+              dayType: CalendarDayType.Vacation,
+            }),
+          ]);
+          validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toResponseList, [
+            personalEntry,
+            issueEntry,
+          ]);
+        });
+
+        it('should return holiday', () => {
+          mockCalendarEntryDocumentConverter.functions.toResponseList.mockReturnValue([]);
+
+          const result = converter.toResponse({
+            dateFrom: day,
+            dateTo: day,
+            days: [
+              calendarDayDataFactory.document({
+                day,
+                dayType: CalendarDayType.Holiday,
+              }),
+            ],
+            entries: [
+              personalEntry,
+              issueEntry,
+            ],
+          });
+          expect(result).toEqual([
+            calendarDayDataFactory.response({
+              day,
+              dayType: CalendarDayType.Holiday,
+            }),
+          ]);
+          validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toResponseList, [
+            personalEntry,
+            issueEntry,
+          ]);
+        });
+      });
+
+      describe('with work entries', () => {
+        it('should return weeked without custom time limits', () => {      
+          const workEntry = calendarEntryDataFactory.document({
+            day,
+            entryType: CalendarEntryType.Work,
+            end: earlyWorkStart + 2,
+            start: earlyWorkStart,
+          });
+
+          mockCalendarEntryDocumentConverter.functions.toResponseList.mockReturnValue([]);
+
+          const result = converter.toResponse({
+            dateFrom: day,
+            dateTo: day,
+            days: [],
+            entries: [
+              personalEntry,
+              issueEntry,
+              workEntry,
+            ],
+          });
+          expect(result).toEqual([
+            calendarDayDataFactory.response({
+              day,
+              dayType: CalendarDayType.Weekend,
+            }),
+          ]);
+          validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toResponseList, [
+            personalEntry,
+            issueEntry,
+            workEntry,
+          ]);
+        });
+
+        it('should return weekend with custom time limits (calculated start time)', () => {
+          const workEntry = calendarEntryDataFactory.document({
+            day,
+            entryType: CalendarEntryType.Work,
+            end: lateWorkEnd,
+            start: lateWorkEnd - 2,
+          });
+          mockCalendarEntryDocumentConverter.functions.toResponseList.mockReturnValue([]);
+      
+          const result = converter.toResponse({
+            dateFrom: day,
+            dateTo: day,
+            days: [
+              calendarDayDataFactory.document({
+                day,
+                dayType: CalendarDayType.Workday,
+                start: customWorkdayStart,
+                end: customWorkdayEnd,
+              }),
+            ],
+            entries: [
+              personalEntry,
+              issueEntry,
+              workEntry,
+            ],
+          });
+          expect(result).toEqual([
+            calendarDayDataFactory.response({
+              day,
+              dayType: CalendarDayType.Weekend,
+              plannedStart: customWorkdayStart,
+              plannedEnd: customWorkdayEnd,
+              start: lateWorkEnd - WORKDAY_LENGTH,
+              end: customWorkdayEnd,
+            }),
+          ]);
+          validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toResponseList, [
+            personalEntry,
+            issueEntry,
+            workEntry,
+          ]);
+        });
+
+        it('should return weekend with custom time limits (calculated end time)', () => {
+          const workEntry = calendarEntryDataFactory.document({
+            day,
+            entryType: CalendarEntryType.Work,
+            end: earlyWorkStart + 2,
+            start: earlyWorkStart,
+          });
+          mockCalendarEntryDocumentConverter.functions.toResponseList.mockReturnValue([]);
+      
+          const result = converter.toResponse({
+            dateFrom: day,
+            dateTo: day,
+            days: [
+              calendarDayDataFactory.document({
+                day,
+                dayType: CalendarDayType.Workday,
+                start: customWorkdayStart,
+                end: customWorkdayEnd,
+              }),
+            ],
+            entries: [
+              personalEntry,
+              issueEntry,
+              workEntry,
+            ],
+          });
+          expect(result).toEqual([
+            calendarDayDataFactory.response({
+              day,
+              dayType: CalendarDayType.Weekend,
+              plannedStart: customWorkdayStart,
+              plannedEnd: customWorkdayEnd,
+              start: customWorkdayStart,
+              end: earlyWorkStart + WORKDAY_LENGTH,
+            }),
+          ]);
+          validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toResponseList, [
+            personalEntry,
+            issueEntry,
+            workEntry,
+          ]);
+        });
+
+        it('should return vacation day', () => {
+          const workEntry = calendarEntryDataFactory.document({
+            day,
+            entryType: CalendarEntryType.Work,
+            end: earlyWorkStart + 2,
+            start: earlyWorkStart,
+          });
+          mockCalendarEntryDocumentConverter.functions.toResponseList.mockReturnValue([]);
+
+          const result = converter.toResponse({
+            dateFrom: day,
+            dateTo: day,
+            days: [
+              calendarDayDataFactory.document({
+                day,
+                dayType: CalendarDayType.Vacation,
+              }),
+            ],
+            entries: [
+              personalEntry,
+              issueEntry,
+              workEntry,
+            ],
+          });
+          expect(result).toEqual([
+            calendarDayDataFactory.response({
+              day,
+              dayType: CalendarDayType.Vacation,
+            }),
+          ]);
+          validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toResponseList, [
+            personalEntry,
+            issueEntry,
+            workEntry,
+          ]);
+        });
+
+        it('should return holiday', () => {
+          const workEntry = calendarEntryDataFactory.document({
+            day,
+            entryType: CalendarEntryType.Work,
+            end: earlyWorkStart + 2,
+            start: earlyWorkStart,
+          });
+          mockCalendarEntryDocumentConverter.functions.toResponseList.mockReturnValue([]);
+
+          const result = converter.toResponse({
+            dateFrom: day,
+            dateTo: day,
+            days: [
+              calendarDayDataFactory.document({
+                day,
+                dayType: CalendarDayType.Holiday,
+              }),
+            ],
+            entries: [
+              personalEntry,
+              issueEntry,
+              workEntry,
+            ],
+          });
+          expect(result).toEqual([
+            calendarDayDataFactory.response({
+              day,
+              dayType: CalendarDayType.Holiday,
+            }),
+          ]);
+          validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toResponseList, [
+            personalEntry,
+            issueEntry,
+            workEntry,
+          ]);
+        });
+      });
+    });
+  });
+});
