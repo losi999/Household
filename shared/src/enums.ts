@@ -36,3 +36,26 @@ export enum UserType {
   Editor = 'editor',
   Hairdresser = 'hairdresser',
 }
+
+export enum CalendarDayType {
+  Workday = 'workday',
+  Weekend = 'weekend',
+  Vacation = 'vacation',
+  Holiday = 'holiday',
+}
+
+export enum CalendarEntryType {
+  Work = 'work',
+  Personal = 'personal',
+  Issue = 'issue',
+}
+
+export enum PaymentType {
+  Cash = 'cash',
+  Transfer = 'transfer',
+}
+
+export enum SettingKey {
+  HairdressingIncomeAccount = 'hairdressingIncomeAccount',
+  HairdressingIncomeCategory = 'hairdressingIncomeCategory',
+}

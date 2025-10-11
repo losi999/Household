@@ -1,0 +1,9 @@
+<household-toolbar title="Vendégek">
+  <button mat-icon-button (click)="onCreate()" type="button">
+    <mat-icon>add</mat-icon>
+  </button>
+</household-toolbar>
+<div class="search mat-app-background">
+  <household-clearable-input label="Keresés" #inp />
+</div>
+<household-customer-list [customers]="customers | async | autocompleteFilter: 'name' : inp.value" />

@@ -3,7 +3,6 @@ import { Recipient } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
 
 export interface IRecipientService {
-  dumpRecipients(): Promise<Recipient.Document[]>;
   saveRecipient(doc: Recipient.Document): Promise<Recipient.Document>;
   saveRecipients(docs: Recipient.Document[]): Promise<unknown>;
   findRecipientById(recipientId: Recipient.Id): Promise<Recipient.Document>;
@@ -20,13 +19,6 @@ export interface IRecipientService {
 export const recipientServiceFactory = (mongodbService: IMongodbService): IRecipientService => {
 
   const instance: IRecipientService = {
-    dumpRecipients: () => {
-      return mongodbService.inSession(async(session) => {
-        return mongodbService.recipients.find({}).session(session)
-          .lean();
-          
-      });
-    },
     saveRecipient: async (doc) => {
       return mongodbService.recipients.create(doc);
     },

@@ -1,6 +1,6 @@
 import { FormControl } from '@angular/forms';
 import { TransactionType } from '@household/shared/enums';
-import { Account, Project, Category, Recipient, Transaction } from '@household/shared/types/types';
+import { Account, Project, Category, Recipient, Transaction, Customer } from '@household/shared/types/types';
 
 export type FormGroupify<T> = {
   [P in keyof T]: FormControl<T[P]>
@@ -28,4 +28,8 @@ export type ImportedTransaction = Pick<Transaction.DraftResponse, 'transactionId
 & Partial<Transaction.OwnerAccount<Account.Response>>
 & {
   loanAccount?: Account.Response;
+};
+
+export type CustomerJob = Customer.Job.Response & {
+  customer: Customer.Response
 };

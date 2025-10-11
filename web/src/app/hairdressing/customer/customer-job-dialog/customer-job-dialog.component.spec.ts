@@ -1,0 +1,23 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { CustomerJobDialogComponent } from './customer-job-dialog.component';
+
+describe('CustomerJobDialogComponent', () => {
+  let component: CustomerJobDialogComponent;
+  let fixture: ComponentFixture<CustomerJobDialogComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      declarations: [CustomerJobDialogComponent],
+    })
+      .compileComponents();
+
+    fixture = TestBed.createComponent(CustomerJobDialogComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});

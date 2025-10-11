@@ -39,6 +39,9 @@ import { setTransferTransactionValidationCommands } from '@household/test/api/tr
 import { setDraftTransactionRequestCommands } from '@household/test/api/transaction/draft/commands/requests';
 import { setDraftTransactionTaskCommands } from '@household/test/api/transaction/draft/commands/tasks';
 import { setDraftTransactionValidationCommands } from '@household/test/api/transaction/draft/commands/validations';
+import { setCustomerRequestCommands } from '@household/test/api/customer/commands/requests';
+import { setCustomerTaskCommands } from '@household/test/api/customer/commands/tasks';
+import { setCustomerValidationCommands } from '@household/test/api/customer/commands/validations';
 
 setProjectRequestCommands();
 setProjectTaskCommands();
@@ -49,6 +52,9 @@ setProductTaskCommands();
 setRecipientRequestCommands();
 setRecipientTaskCommands();
 setRecipientValidationCommands();
+setCustomerRequestCommands();
+setCustomerTaskCommands();
+setCustomerValidationCommands();
 setCategoryRequestCommands();
 setCategoryTaskCommands();
 setCategoryValidationCommands();

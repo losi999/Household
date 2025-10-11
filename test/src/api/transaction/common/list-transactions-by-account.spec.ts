@@ -134,12 +134,12 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
               ],
             });
 
-            const payingNotRepayedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+            const payingNotRepaidDeferredTransactionDocument = deferredTransactionDataFactory.document({
               account: accountDocument,
               loanAccount: loanAccountDocument,
             });
 
-            const payingRepayedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+            const payingRepaidDeferredTransactionDocument = deferredTransactionDataFactory.document({
               account: accountDocument,
               loanAccount: loanAccountDocument,
             });
@@ -152,12 +152,12 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
               },
             });
 
-            const owningNotRepayedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+            const owningNotRepaidDeferredTransactionDocument = deferredTransactionDataFactory.document({
               account: transferAccountDocument,
               loanAccount: accountDocument,
             });
 
-            const owningRepayedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+            const owningRepaidDeferredTransactionDocument = deferredTransactionDataFactory.document({
               account: transferAccountDocument,
               loanAccount: accountDocument,
             });
@@ -179,7 +179,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
               account: accountDocument,
               transferAccount: transferAccountDocument,
               transactions: [
-                owningRepayedDeferredTransactionDocument,
+                owningRepaidDeferredTransactionDocument,
                 owningSplitTransactionDocument.deferredSplits[2],
               ],
             });
@@ -188,7 +188,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
               account: transferAccountDocument,
               transferAccount: accountDocument,
               transactions: [
-                payingRepayedDeferredTransactionDocument,
+                payingRepaidDeferredTransactionDocument,
                 payingSplitTransactionDocument.deferredSplits[2],
               ],
             });
@@ -223,11 +223,11 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
                 receivingTransferTransactionDocument,
                 loanTransferTransactionDocument,
                 invertedLoanTransferTransactionDocument,
-                payingNotRepayedDeferredTransactionDocument,
-                payingRepayedDeferredTransactionDocument,
+                payingNotRepaidDeferredTransactionDocument,
+                payingRepaidDeferredTransactionDocument,
                 payingSettledDeferredTransactionDocument,
-                owningNotRepayedDeferredTransactionDocument,
-                owningRepayedDeferredTransactionDocument,
+                owningNotRepaidDeferredTransactionDocument,
+                owningRepaidDeferredTransactionDocument,
                 owningSettledDeferredTransactionDocument,
                 owningReimbursementTransactionDocument,
               ])
@@ -246,17 +246,17 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
                 receivingTransferTransactionDocument,
                 loanTransferTransactionDocument,
                 invertedLoanTransferTransactionDocument,
-                payingNotRepayedDeferredTransactionDocument,
-                payingRepayedDeferredTransactionDocument,
+                payingNotRepaidDeferredTransactionDocument,
+                payingRepaidDeferredTransactionDocument,
                 payingSettledDeferredTransactionDocument,
-                owningNotRepayedDeferredTransactionDocument,
-                owningRepayedDeferredTransactionDocument,
+                owningNotRepaidDeferredTransactionDocument,
+                owningRepaidDeferredTransactionDocument,
                 owningSettledDeferredTransactionDocument,
                 owningReimbursementTransactionDocument,
               ], getAccountId(accountDocument), {
-                [getTransactionId(owningRepayedDeferredTransactionDocument)]: payingTransferTransactionDocument.payments[0].amount,
+                [getTransactionId(owningRepaidDeferredTransactionDocument)]: payingTransferTransactionDocument.payments[0].amount,
                 [getTransactionId(owningSplitTransactionDocument.deferredSplits[2])]: payingTransferTransactionDocument.payments[1].amount,
-                [getTransactionId(payingRepayedDeferredTransactionDocument)]: receivingTransferTransactionDocument.payments[0].amount,
+                [getTransactionId(payingRepaidDeferredTransactionDocument)]: receivingTransferTransactionDocument.payments[0].amount,
                 [getTransactionId(payingSplitTransactionDocument.deferredSplits[2])]: receivingTransferTransactionDocument.payments[1].amount,
               });
           });
@@ -309,12 +309,12 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
               ],
             });
 
-            const owningNotRepayedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+            const owningNotRepaidDeferredTransactionDocument = deferredTransactionDataFactory.document({
               account: accountDocument,
               loanAccount: loanAccountDocument,
             });
 
-            const owningRepayedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+            const owningRepaidDeferredTransactionDocument = deferredTransactionDataFactory.document({
               account: accountDocument,
               loanAccount: loanAccountDocument,
             });
@@ -336,7 +336,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
               account: accountDocument,
               transferAccount: transferAccountDocument,
               transactions: [
-                owningRepayedDeferredTransactionDocument,
+                owningRepaidDeferredTransactionDocument,
                 owningSplitTransactionDocument.deferredSplits[2],
               ],
             });
@@ -369,8 +369,8 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
                 repayingTransferTransactionDocument,
                 loanTransferTransactionDocument,
                 invertedLoanTransferTransactionDocument,
-                owningNotRepayedDeferredTransactionDocument,
-                owningRepayedDeferredTransactionDocument,
+                owningNotRepaidDeferredTransactionDocument,
+                owningRepaidDeferredTransactionDocument,
                 owningSettledDeferredTransactionDocument,
                 payingReimbursementTransactionDocument,
               ])
@@ -385,12 +385,12 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
                 owningSplitTransactionDocument,
                 loanTransferTransactionDocument,
                 invertedLoanTransferTransactionDocument,
-                owningNotRepayedDeferredTransactionDocument,
-                owningRepayedDeferredTransactionDocument,
+                owningNotRepaidDeferredTransactionDocument,
+                owningRepaidDeferredTransactionDocument,
                 owningSettledDeferredTransactionDocument,
                 payingReimbursementTransactionDocument,
               ], getAccountId(loanAccountDocument), {
-                [getTransactionId(owningRepayedDeferredTransactionDocument)]: repayingTransferTransactionDocument.payments[0].amount,
+                [getTransactionId(owningRepaidDeferredTransactionDocument)]: repayingTransferTransactionDocument.payments[0].amount,
                 [getTransactionId(owningSplitTransactionDocument.deferredSplits[2])]: repayingTransferTransactionDocument.payments[1].amount,
               });
           });

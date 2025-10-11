@@ -1,11 +1,11 @@
 import { matchAnyProperty, populateAggregate, transactionAggregate } from '@household/shared/common/aggregate-helpers';
 import { populate } from '@household/shared/common/utils';
+import { TransactionType } from '@household/shared/enums';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { Account, Common, File, Transaction } from '@household/shared/types/types';
 import { PipelineStage, Types, UpdateQuery } from 'mongoose';
 
 export interface ITransactionService {
-  dumpTransactions(): Promise<Transaction.Document[]>;
   saveTransaction(doc: Transaction.Document): Promise<Transaction.Document>;
   saveTransactions(docs: Transaction.Document[]): Promise<any>;
   findTransactionById(transactionId: Transaction.Id): Promise<Transaction.Document>;
@@ -25,16 +25,6 @@ export interface ITransactionService {
 export const transactionServiceFactory = (mongodbService: IMongodbService): ITransactionService => {
 
   const instance: ITransactionService = {
-    dumpTransactions: () => {
-      return mongodbService.inSession((session) => {
-        return mongodbService.transactions.find({})
-          .setOptions({
-            session,
-            lean: true,
-          });
-          
-      });
-    },
     saveTransaction: (doc) => {
       return mongodbService.transactions.create(doc);
     },
@@ -116,13 +106,29 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
 
           });
 
+          if (deleted.transactionType === TransactionType.Payment) {
+            await mongodbService.calendarEntries.updateOne({
+              transaction: transactionId,
+            }, 
+            {
+              $set: {
+                isPaid: false,
+              },
+              $unset: {
+                transaction: 1,
+              },
+            }, {
+              session,
+            });
+          }
+
           let deletedDeferredTransactionIds: Types.ObjectId[];
 
-          if (deleted.transactionType === 'deferred') {
+          if (deleted.transactionType === TransactionType.Deferred) {
             deletedDeferredTransactionIds = [deleted._id];
           }
 
-          if (deleted.transactionType === 'split' && deleted.deferredSplits?.length > 0) {
+          if (deleted.transactionType === TransactionType.Split && deleted.deferredSplits?.length > 0) {
             deletedDeferredTransactionIds = deleted.deferredSplits.map(s => s._id);
           }
 

@@ -6,9 +6,13 @@ import { recipientSchema } from '@household/shared/mongodb-schemas/recipient.sch
 import { categorySchema } from '@household/shared/mongodb-schemas/category.schema';
 import { productSchema } from '@household/shared/mongodb-schemas/product.schema';
 import { transactionSchema } from '@household/shared/mongodb-schemas/transaction.schema';
-import { Recipient, Project, Account, Category, Transaction, Product, File, Setting } from '@household/shared/types/types';
+import { Recipient, Project, Account, Category, Transaction, Product, File, Setting, Customer, Price, Calendar } from '@household/shared/types/types';
 import { fileSchema } from '@household/shared/mongodb-schemas/file.schema';
 import { settingSchema } from '@household/shared/mongodb-schemas/setting.schema';
+import { customerSchema } from '@household/shared/mongodb-schemas/customer.schema';
+import { priceSchema } from '@household/shared/mongodb-schemas/price.schema';
+import { calendarEntrySchema } from '@household/shared/mongodb-schemas/calendar-entry.schema';
+import { calendarDaySchema } from '@household/shared/mongodb-schemas/calendar-day.schema';
 console.log('mongodb service 1');
 
 type CollectionMapping = {
@@ -20,6 +24,10 @@ type CollectionMapping = {
   products: Product.Document;
   files: File.Document;
   settings: Setting.Document;
+  customers: Customer.Document;
+  prices: Price.Document;
+  calendarEntries: Calendar.Entry.Document;
+  calendarDays: Calendar.Day.Document;
 };
 
 export type IMongodbService = {
@@ -27,6 +35,7 @@ export type IMongodbService = {
 } & {
   inSession<T>(fn: (session: ClientSession) => Promise<T>): Promise<T>;
   syncIndexes(): Promise<unknown>;
+  dump(): Promise<{[K in keyof CollectionMapping]: CollectionMapping[K][]}>
 };
 
 let connection: Connection;
@@ -78,7 +87,7 @@ export const mongodbServiceFactory = (mongodbConnectionString: string): IMongodb
     console.log('post create connect', connection?.readyState);
   }
 
-  return {
+  const instance: IMongodbService = {
     inSession: async (fn) => {
       const session = await connection.startSession();
       const result = await fn(session);
@@ -86,6 +95,36 @@ export const mongodbServiceFactory = (mongodbConnectionString: string): IMongodb
       return result;
     },
     syncIndexes: () => connection.syncIndexes(),
+    dump: async () => {
+      return instance.inSession(async(session) => {
+        return {
+          accounts: await instance.accounts.find({}).session(session)
+            .lean(),
+          recipients: await instance.recipients.find({}).session(session)
+            .lean(),
+          projects: await instance.projects.find({}).session(session)
+            .lean(),
+          transactions: await instance.transactions.find({}).session(session)
+            .lean(),
+          categories: await instance.categories.find({}).session(session)
+            .lean(),
+          products: await instance.products.find({}).session(session)
+            .lean(),
+          files: await instance.files.find({}).session(session)
+            .lean(),
+          settings: await instance.settings.find({}).session(session)
+            .lean(),
+          customers: await instance.customers.find({}).session(session)
+            .lean(),
+          prices: await instance.prices.find({}).session(session)
+            .lean(),
+          calendarEntries: await instance.calendarEntries.find({}).session(session)
+            .lean(),
+          calendarDays: await instance.calendarDays.find({}).session(session)
+            .lean(),
+        };
+      });
+    },
     recipients: connection.model('recipients', recipientSchema),
     projects: connection.model('projects', projectSchema),
     transactions: connection.model('transactions', transactionSchema),
@@ -94,5 +133,12 @@ export const mongodbServiceFactory = (mongodbConnectionString: string): IMongodb
     products: connection.model('products', productSchema),
     files: connection.model('files', fileSchema),
     settings: connection.model('settings', settingSchema),
+    customers: connection.model('customers', customerSchema),
+    prices: connection.model('prices', priceSchema),
+    calendarEntries: connection.model('calendarEntries', calendarEntrySchema),
+    calendarDays: connection.model('calendarDays', calendarDaySchema),
+    
   };
+
+  return instance;
 };

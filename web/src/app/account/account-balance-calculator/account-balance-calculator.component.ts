@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { Account } from '@household/shared/types/types';
 import { accountApiActions } from '@household/web/state/account/account.actions';
 import { Store } from '@ngrx/store';
@@ -33,7 +33,7 @@ export class AccountBalanceCalculatorComponent implements OnInit {
   newBalance = 0;
   accountId: Account.Id;
 
-  constructor(private activatedRoute: ActivatedRoute, private store: Store, private router: Router) {
+  constructor(private activatedRoute: ActivatedRoute, private store: Store) {
 
   }
 

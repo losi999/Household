@@ -3,8 +3,18 @@ import { Component, Inject } from '@angular/core';
 import { MatBottomSheetRef, MAT_BOTTOM_SHEET_DATA } from '@angular/material/bottom-sheet';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
-export type CatalogSubmenuData = string;
-export type CatalogSubmenuResult = 'edit' | 'delete' | 'merge';
+
+export type CatalogSubmenuData = {
+  title: string;
+  hideEdit?: boolean;
+  hideDelete?: boolean;
+  hideMerge?: boolean;
+};
+export enum CatalogSubmenuResult {
+  Edit= 'edit',
+  Delete = 'delete',
+  Merge = 'merge',
+}
 
 @Component({
   selector: 'household-catalog-submenu',
@@ -19,18 +29,9 @@ export type CatalogSubmenuResult = 'edit' | 'delete' | 'merge';
 export class CatalogSubmenuComponent {
 
   constructor(private bottomSheetRef: MatBottomSheetRef<CatalogSubmenuComponent, CatalogSubmenuResult>,
-    @Inject(MAT_BOTTOM_SHEET_DATA) public title: CatalogSubmenuData) { }
+    @Inject(MAT_BOTTOM_SHEET_DATA) public config: CatalogSubmenuData) { }
 
-  edit() {
-    this.bottomSheetRef.dismiss('edit');
+  onSelect(action: CatalogSubmenuResult) {
+    this.bottomSheetRef.dismiss(action);
   }
-
-  delete() {
-    this.bottomSheetRef.dismiss('delete');
-  }
-
-  merge() {
-    this.bottomSheetRef.dismiss('merge');
-  }
-
 }

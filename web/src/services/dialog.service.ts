@@ -12,6 +12,7 @@ import { ProjectMergeDialogComponent, ProjectMergeDialogData } from '@household/
 import { RecipientFormComponent, RecipientFormData } from '@household/web/app/recipient/recipient-form/recipient-form.component';
 import { RecipientMergeDialogComponent, RecipientMergeDialogData } from '@household/web/app/recipient/recipient-merge-dialog/recipient-merge-dialog.component';
 import { ConfirmationDialogComponent } from '@household/web/app/shared/confirmation-dialog/confirmation-dialog.component';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -20,12 +21,25 @@ export class DialogService {
 
   constructor(private dialog: MatDialog) { }
 
-  private openConfirmationDialog(title: string, content?: string) {
+  private openConfirmationDialog_(title: string, content?: string) {
     return this.dialog.open(ConfirmationDialogComponent, {
       data: {
         title,
         content,
       },
+      disableClose: true,
+    }).afterClosed();
+  }
+
+  closeAll() {
+    this.dialog.closeAll();
+  }
+
+  openConfirmationDialog(data: {title: string; 
+    content?: string}): Observable<boolean> {
+    return this.dialog.open(ConfirmationDialogComponent, {
+      data,
+      disableClose: true,
     }).afterClosed();
   }
 
@@ -40,7 +54,7 @@ export class DialogService {
   }
 
   openDeleteProjectDialog(project: Project.Response) {
-    return this.openConfirmationDialog('Törölni akarod ezt a projektet?', project.name);
+    return this.openConfirmationDialog_('Törölni akarod ezt a projektet?', project.name);
   }
 
   openMergeProjectsDialog(project: Project.Response) {
@@ -60,7 +74,7 @@ export class DialogService {
   }
 
   openDeleteRecipientDialog(recipient: Recipient.Response) {
-    return this.openConfirmationDialog('Törölni akarod ezt a partnert?', recipient.name);
+    return this.openConfirmationDialog_('Törölni akarod ezt a partnert?', recipient.name);
   }
 
   openMergeRecipientsDialog(recipient: Recipient.Response) {
@@ -82,7 +96,7 @@ export class DialogService {
   }
 
   openDeleteCategoryDialog(category: Category.Response) {
-    return this.openConfirmationDialog('Törölni akarod ezt a kategóriát?', category.name);
+    return this.openConfirmationDialog_('Törölni akarod ezt a kategóriát?', category.name);
   }
 
   openMergeCategoriesDialog(category: Category.Response) {
@@ -110,7 +124,7 @@ export class DialogService {
   }
 
   openDeleteProductDialog(product: Product.Response) {
-    return this.openConfirmationDialog('Törölni akarod ezt a terméket?', product.fullName);
+    return this.openConfirmationDialog_('Törölni akarod ezt a terméket?', product.fullName);
   }
 
   openMergeProductsDialog(product: Product.Response, categoryId: Category.Id) {
@@ -133,7 +147,7 @@ export class DialogService {
   }
 
   openDeleteAccountDialog(account: Account.Response) {
-    return this.openConfirmationDialog('Törölni akarod ezt a számlát?', account.name);
+    return this.openConfirmationDialog_('Törölni akarod ezt a számlát?', account.name);
   }
 
   openImportFileDialog(): void {
@@ -141,18 +155,18 @@ export class DialogService {
   }
 
   openDeleteFileDialog(file: File.Response) {
-    return this.openConfirmationDialog('Törölni akarod ezt a számlát?', file.fileId);
+    return this.openConfirmationDialog_('Törölni akarod ezt a fájlt?', file.fileId);
   }
 
   openDeleteUserDialog({ email }: User.Email) {
-    return this.openConfirmationDialog('Törölni akarod ezt a felhasználót?', email);
+    return this.openConfirmationDialog_('Törölni akarod ezt a felhasználót?', email);
   }
 
   openDeleteDraftTransactionsDialog(transactionIds: Transaction.Id[]) {
-    return this.openConfirmationDialog(`Törölni akarsz ${transactionIds.length} tranzakciót?`);
+    return this.openConfirmationDialog_(`Törölni akarsz ${transactionIds.length} tranzakciót?`);
   }
 
   openDeleteTransactionDialog() {
-    return this.openConfirmationDialog('Törölni akarod ezt a tranzakciót?');
+    return this.openConfirmationDialog_('Törölni akarod ezt a tranzakciót?');
   }
 }

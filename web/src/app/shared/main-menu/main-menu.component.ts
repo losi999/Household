@@ -4,8 +4,8 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { RouterModule } from '@angular/router';
-import { IsEditorDirective } from '@household/web/app/shared/is-editor.directive';
-import { IsHairdresserDirective } from '@household/web/app/shared/is-hairdresser.directive';
+import { IsEditorDirective } from '@household/web/app/shared/directives/is-editor.directive';
+import { IsHairdresserDirective } from '@household/web/app/shared/directives/is-hairdresser.directive';
 import { authActions } from '@household/web/state/auth/auth.actions';
 import { Store } from '@ngrx/store';
 

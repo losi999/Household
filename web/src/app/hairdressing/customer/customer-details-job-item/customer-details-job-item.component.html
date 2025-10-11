@@ -1,0 +1,29 @@
+<mat-card appearance="outlined">
+  <mat-card-header>
+    <mat-card-title>{{job.name}}</mat-card-title>
+    <mat-card-subtitle>{{job.duration | timeSlotToTime}} óra</mat-card-subtitle>
+  </mat-card-header>
+  <mat-card-content>
+    <household-job-price-summary [prices]="job.prices" />
+    <mat-divider />
+    {{job.description}}
+  </mat-card-content>
+  <mat-card-actions>
+    <button mat-flat-button color="primary" [routerLink]="['/hairdressing', 'calendar']" [queryParams]="{customerId: customerId, jobName: job.name}">
+      <mat-icon>calendar_add_on</mat-icon>
+      Időpont keresése</button>
+    <button mat-icon-button [matMenuTriggerFor]="menu" color="primary">
+      <mat-icon>more_vert</mat-icon>
+    </button>
+    <mat-menu #menu="matMenu">
+      <button mat-menu-item (click)="onEdit()">
+        <mat-icon>edit</mat-icon>
+        <span>Szerkesztés</span>
+      </button>
+      <button mat-menu-item color="warn" (click)="onDelete()">
+        <mat-icon>delete</mat-icon>
+        <span>Törlés</span>
+      </button>
+    </mat-menu>
+  </mat-card-actions>
+</mat-card>

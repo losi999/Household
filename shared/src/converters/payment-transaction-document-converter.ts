@@ -1,4 +1,4 @@
-import { generateMongoId } from '@household/shared/common/utils';
+import { generateMongoId, getAccountId, getCategoryId } from '@household/shared/common/utils';
 import { addSeconds, createDate, getTransactionId } from '@household/shared/common/utils';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
@@ -7,8 +7,9 @@ import { IProjectDocumentConverter } from '@household/shared/converters/project-
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
 import { CategoryType, TransactionType } from '@household/shared/enums';
 import { Unset } from '@household/shared/types/common';
-import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Account, Calendar, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
+import { default as moment } from 'moment-timezone';
 
 export interface IPaymentTransactionDocumentConverter {
   create(data: {
@@ -19,6 +20,11 @@ export interface IPaymentTransactionDocumentConverter {
     project: Project.Document;
     product: Product.Document;
   }, expiresIn: number, generateId?: boolean): Transaction.PaymentDocument;
+  createFromEntry(data: {
+    account: Account.Document;
+    category: Category.Document;
+    calendarEntry: Calendar.Entry.Document;
+  } & Transaction.Amount): Transaction.PaymentDocument;
   update(data: {
     body: Transaction.PaymentRequest;
     account: Account.Document;
@@ -72,6 +78,38 @@ export const paymentTransactionDocumentConverterFactory = (
         _id: generateId ? generateMongoId() : undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
+    },
+    createFromEntry: ({ account, category, amount, calendarEntry }) => {
+      const issuedAt = moment.tz(calendarEntry.day, 'Europe/Budapest'); 
+      issuedAt.set({
+        hour: Math.floor(calendarEntry.end / 4),
+        minute: (calendarEntry.end % 4) * 15,
+      });
+
+      return instance.create({
+        account,
+        body: {
+          accountId: getAccountId(account),
+          amount,
+          categoryId: getCategoryId(category),
+          issuedAt: issuedAt.utc()
+            .toISOString(),
+          description: calendarEntry.title,
+          productId: undefined,
+          projectId: undefined,
+          recipientId: undefined,
+          loanAccountId: undefined,
+          quantity: undefined,
+          isSettled: undefined,
+          billingEndDate: undefined,
+          billingStartDate: undefined,
+          invoiceNumber: undefined,
+        },
+        category,
+        product: undefined,
+        project: undefined,
+        recipient: undefined,
+      }, undefined);
     },
     update: ({ body: { issuedAt, quantity, invoiceNumber, billingEndDate, billingStartDate, amount, description }, account, project, category, recipient, product }, expiresIn) => {
       const optionalSet: UpdateQuery<Transaction.Document>['$set'] = {

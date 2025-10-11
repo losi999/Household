@@ -9,10 +9,11 @@ import { Store } from '@ngrx/store';
 import { selectHairdressingIncomeAccountId, selectHairdressingIncomeCategoryId } from '@household/web/state/setting/setting.selector';
 import { takeFirstDefined } from '@household/web/operators/take-first-defined';
 import moment from 'moment';
+import { HairdressingService } from '@household/web/services/hairdressing.service';
 
 @Injectable()
 export class HairdressingEffects {
-  constructor(private actions: Actions, private store: Store, private transactionService: TransactionService) {}
+  constructor(private actions: Actions, private store: Store, private transactionService: TransactionService, private hairdressingService: HairdressingService) {}
 
   loadIncome = createEffect(() => {
     return this.actions.pipe(

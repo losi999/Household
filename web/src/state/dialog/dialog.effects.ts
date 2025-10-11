@@ -14,8 +14,20 @@ import { recipientApiActions } from '@household/web/state/recipient/recipient.ac
 import { projectApiActions } from '@household/web/state/project/project.actions';
 
 @Injectable()
-export class DialogEffects {
+export class DialogEffects { 
   constructor(private actions: Actions, private dialogService: DialogService) {}
+
+  closeAll = createEffect(() => {
+    return this.actions.pipe(
+      ofType(dialogActions.closeAll),
+      exhaustMap(() => {
+        this.dialogService.closeAll();
+        return EMPTY;
+      }),
+    );
+  }, {
+    dispatch: false,
+  });
 
   createProject = createEffect(() => {
     return this.actions.pipe(

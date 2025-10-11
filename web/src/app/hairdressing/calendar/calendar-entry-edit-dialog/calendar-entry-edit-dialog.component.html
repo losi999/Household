@@ -1,0 +1,44 @@
+<div mat-dialog-title>{{title}}</div>
+<div mat-dialog-content>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" id="calendar-entry-form">
+    @if (entry.entryType === 'work') {
+    <household-customer-autocomplete-input formControlName="customer" label="Vendég" />
+    @if (form.value.customer) {
+    <mat-form-field>
+      <mat-label>Munka</mat-label>
+      <mat-select formControlName="job">
+        @for (job of form.value.customer.jobs; track $index) {
+        <mat-option [value]="job">{{job.name}} ({{job.duration | timeSlotToTime}} óra)</mat-option>
+        }
+        <mat-option [value]="CUSTOM_JOB">Egyéb</mat-option>
+      </mat-select>
+    </mat-form-field>
+    }
+    }
+    @if (entry.entryType !== 'work' || (form.value.customer && form.value.job?.name === CUSTOM_JOB.name)) {
+    <household-clearable-input formControlName="title" label="Megnevezés" />
+    <household-clearable-input formControlName="description" type="area" label="Leírás" />
+    }
+    <mat-form-field>
+      <mat-label>Dátum</mat-label>
+      <input matInput [matDatepicker]="picker" formControlName="day" placeholder="Dátum" (click)="picker.open()" readonly>
+      <mat-datepicker-toggle matPrefix [for]="picker" tabindex="-1" />
+      <mat-datepicker #picker />
+    </mat-form-field>
+    <household-duration-stepper formControlName="duration" />
+    <mat-slider min="0" max="96">
+      <input formControlName="start" matSliderThumb>
+    </mat-slider>
+    {{form.value.start | timeSlotToTime}} - {{form.value.start + form.value.duration | timeSlotToTime}}
+    <household-calendar-horizontal-day [date]="form.value.day" [pendingStart]="form.value.start" [pendingEnd]="form.value.start + form.value.duration" [excludedCalendarEntryId]="entry.calendarEntryId" />
+    @for (e of form.value | entryWarnings: (calendarDay | async) : entry; track $index) {
+    <mat-error>
+      {{e}}
+    </mat-error>
+    }
+  </form>
+</div>
+<div mat-dialog-actions>
+  <button mat-flat-button color="primary" cdkFocusInitial form="calendar-entry-form">Mentés</button>
+  <button mat-flat-button mat-dialog-close type="button">Mégse</button>
+</div>

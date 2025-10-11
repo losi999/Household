@@ -1,0 +1,5 @@
+<mat-nav-list>
+  @for (customer of customers; track $index) {
+  <household-customer-list-item [customer]="customer" />
+  }
+</mat-nav-list>

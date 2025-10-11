@@ -1,0 +1,10 @@
+<div class="duration">
+  <mat-label>Időtartam</mat-label>
+  <button mat-icon-button type="button" (click)="onSetDuration(-1)" [disabled]="value === 1">
+    <mat-icon>remove</mat-icon>
+  </button>
+  <span>{{value | timeSlotToTime}} óra</span>
+  <button mat-icon-button type="button" (click)="onSetDuration(1)">
+    <mat-icon>add</mat-icon>
+  </button>
+</div>

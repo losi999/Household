@@ -1,0 +1,144 @@
+openapi: "3.1.0"
+info:
+  title: Customer components
+  version: 1.0.0
+components:
+  schemas:
+    CustomerId:
+      type: object
+      required:
+        - customerId
+      properties:
+        customerId:
+          type: string
+          minLength: 1
+
+    Customer.Base:
+      type: object
+      required:
+        - name
+        - isGroup
+        - rating
+      properties:
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: string
+          minLength: 1
+        isGroup:
+          type: boolean
+        rating:
+          type: number
+          minimum: 1
+          maximum: 5
+
+    Job.Base:
+      type: object
+      required:
+        - name
+        - duration
+      properties:
+        name:
+          type: string
+          minLength: 1
+        duration:
+          type: number
+          exclusiveMinimum: 0
+        description:
+          type: string
+          minLength: 1
+
+    Quantity:
+      type: object
+      properties:
+        quantity:
+          type: integer
+          exclusiveMinimum: 0
+
+    Quantity.Required:
+      type: object
+      required:
+        - quantity
+
+    Prices.Request.Required:
+      type: object
+      required:
+        - prices
+
+    Prices.Request:
+      type: object
+      properties:
+        prices:
+          type: array
+          minItems: 1
+          items:
+            oneOf:
+              - allOf:
+                  - $ref: "price.yaml#/components/schemas/PriceId"
+                  - $ref: "price.yaml#/components/schemas/PriceId.Required"
+                  - $ref: "#/components/schemas/Quantity"
+                  - $ref: "#/components/schemas/Quantity.Required"
+              - $ref: "price.yaml#/components/schemas/Base"
+
+    Prices.Response:
+      type: object
+      required:
+        - prices
+      properties:
+        prices:
+          type: array
+          minItems: 1
+          items:
+            allOf:
+              - $ref: "price.yaml#/components/schemas/PriceId"
+              - $ref: "price.yaml#/components/schemas/Base"
+              - $ref: "price.yaml#/components/schemas/UnitOfMeasurement"
+              - $ref: "#/components/schemas/Quantity"
+
+    Job.Request:
+      allOf:
+        - $ref: "#/components/schemas/Job.Base"
+        - $ref: "#/components/schemas/Prices.Request"
+        - $ref: "#/components/schemas/Prices.Request.Required"
+
+    Job.Response:
+      allOf:
+        - $ref: "#/components/schemas/Job.Base"
+        - $ref: "#/components/schemas/Prices.Response"
+
+    Jobs:
+      type: object
+      required:
+        - jobs
+      properties:
+        jobs:
+          type: array
+          items:
+            $ref: "#/components/schemas/Job.Response"
+    Response.Base:
+      allOf:
+        - $ref: "#/components/schemas/CustomerId"
+        - $ref: "#/components/schemas/Customer.Base"
+
+    Response:
+      allOf:
+        - $ref: "#/components/schemas/Response.Base"
+        - $ref: "#/components/schemas/Jobs"
+        - type: object
+          required:
+            - blacklistedCustomers
+            - workEntries
+          properties:
+            blacklistedCustomers:
+              type: array
+              items:
+                $ref: "#/components/schemas/Response.Base"
+            workEntries:
+              type: array
+              items:
+                $ref: "calendar.yaml#/components/schemas/Entry.ResponseBase"
+
+    Request:
+      allOf:
+        - $ref: "#/components/schemas/Customer.Base"

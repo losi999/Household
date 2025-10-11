@@ -4,7 +4,6 @@ import { Account } from '@household/shared/types/types';
 import { Types, UpdateQuery } from 'mongoose';
 
 export interface IAccountService {
-  dumpAccounts(): Promise<Account.Document[]>;
   saveAccount(doc: Account.Document): Promise<Account.Document>;
   saveAccounts(docs: Account.Document[]): Promise<unknown>;
   findAccountById(accountId: Account.Id): Promise<Account.Document>;
@@ -18,12 +17,6 @@ export interface IAccountService {
 export const accountServiceFactory = (mongodbService: IMongodbService): IAccountService => {
 
   const instance: IAccountService = {
-    dumpAccounts: () => {
-      return mongodbService.inSession((session) => {
-        return mongodbService.accounts.find({}).session(session)
-          .lean();
-      });
-    },
     saveAccount: (doc) => {
       return mongodbService.accounts.create(doc);
     },

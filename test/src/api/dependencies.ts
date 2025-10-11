@@ -13,11 +13,13 @@ import { fileServiceFactory } from '@household/shared/services/file-service';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { s3, s3Client } from '@household/shared/dependencies/aws/s3';
 import { Upload } from '@aws-sdk/lib-storage';
+import { customerServiceFactory } from '@household/shared/services/customer-service';
 
 const mongoDbService = mongodbServiceFactory(process.env.MONGODB_CONNECTION_STRING.replace('{{ENV}}', process.env.ENV));
 
 export const projectService = projectServiceFactory(mongoDbService);
 export const recipientService = recipientServiceFactory(mongoDbService);
+export const customerService = customerServiceFactory(mongoDbService);
 export const accountService = accountServiceFactory(mongoDbService);
 export const categoryService = categoryServiceFactory(mongoDbService);
 export const transactionService = transactionServiceFactory(mongoDbService);

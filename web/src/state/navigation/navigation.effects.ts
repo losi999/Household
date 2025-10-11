@@ -2,13 +2,31 @@ import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { tap } from 'rxjs';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { authActions } from '@household/web/state/auth/auth.actions';
 import { navigationActions } from '@household/web/state/navigation/navigation.actions';
 
 @Injectable()
 export class NavigationEffects {
-  constructor(private actions: Actions, private router: Router) {}
+  constructor(private actions: Actions, private router: Router, private activatedRoute: ActivatedRoute) {}
+
+  changeCalendarWeek = createEffect(() => {
+    return this.actions.pipe(
+      ofType(navigationActions.changeCalendarWeek),
+      tap(({ weekStart }) => {
+        this.router.navigate([], {
+          relativeTo: this.activatedRoute,
+          queryParams: {
+            weekStart, 
+          },
+          queryParamsHandling: 'merge',
+          replaceUrl: true,
+        });
+      }),
+    );
+  }, {
+    dispatch: false,
+  });
 
   navigateToTransactionDetails = createEffect(() => {
     return this.actions.pipe(

@@ -5,11 +5,10 @@ import { transactionApiActions } from '@household/web/state/transaction/transact
 import { TransactionService } from '@household/web/services/transaction.service';
 import { progressActions } from '@household/web/state/progress/progress.actions';
 import { notificationActions } from '@household/web/state/notification/notification.actions';
-import { Router } from '@angular/router';
 
 @Injectable()
 export class TransactionEffects {
-  constructor(private actions: Actions, private transactionService: TransactionService, private router: Router) {}
+  constructor(private actions: Actions, private transactionService: TransactionService) {}
 
   loadTransactions = createEffect(() => {
     return this.actions.pipe(

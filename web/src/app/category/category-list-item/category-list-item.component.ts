@@ -39,7 +39,9 @@ export class CategoryListItemComponent implements OnInit {
 
   showMenu() {
     const bottomSheetRef = this.bottomSheet.open<CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult>(CatalogSubmenuComponent, {
-      data: this.category.name,
+      data: {
+        title: this.category.name,
+      },
     });
 
     bottomSheetRef.afterDismissed().subscribe((result) => {

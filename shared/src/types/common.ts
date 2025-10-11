@@ -1,4 +1,5 @@
 import { JSONSchema7 } from 'json-schema';
+import { QueryOptions, UpdateQuery } from 'mongoose';
 
 export type AnyValueObject<T> = Record<keyof T, any>;
 export type DataFactoryFunction<I, O = I> = (input?: Partial<I>) => O;
@@ -42,3 +43,8 @@ export type HttpError = {
 };
 
 export type Dictionary<P> = {[key: string]: P};
+
+export type DocumentUpdate<D> = {
+  update: UpdateQuery<D>;
+  arrayFilters?: QueryOptions<D>['arrayFilters']
+};

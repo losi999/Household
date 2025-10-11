@@ -21,7 +21,7 @@ import { MatInputModule } from '@angular/material/input';
 })
 export class ClearableInputComponent implements OnInit, ControlValueAccessor {
   @Input() label: string;
-  @Input() type: 'text' | 'number' = 'text';
+  @Input() type: 'text' | 'number' | 'area' = 'text';
 
   input: FormControl<string | number>;
   changed: (value: string | number) => void;
