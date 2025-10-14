@@ -87,6 +87,11 @@ const expectWrongEnumValue = (body: any, propertyName: string, requestPart: stri
   return body;
 };
 
+const expectNotConstantValue = (body: any, propertyName: string, requestPart: string) => {
+  expect(body[requestPart]).to.contain(propertyName).to.contain('must be equal to constant');
+  return body;
+};
+
 const expectTooShortProperty = (body: any, propertyName: string, minLength: number, requestPart: string) => {
   expect(body[requestPart]).to.contain(propertyName).to.contain('fewer').to.contain(minLength);
   return body;
@@ -141,6 +146,7 @@ export const setExpectCommands = () => {
     expectWrongPropertyFormat,
     expectWrongPropertyPattern,
     expectWrongEnumValue,
+    expectNotConstantValue,
     expectTooShortProperty,
     expectTooLongProperty,
     expectTooSmallNumberProperty,
@@ -173,6 +179,7 @@ declare global {
       expectWrongPropertyFormat: CommandFunctionWithPreviousSubject<typeof expectWrongPropertyFormat>;
       expectWrongPropertyPattern: CommandFunctionWithPreviousSubject<typeof expectWrongPropertyPattern>;
       expectWrongEnumValue: CommandFunctionWithPreviousSubject<typeof expectWrongEnumValue>;
+      expectNotConstantValue: CommandFunctionWithPreviousSubject<typeof expectNotConstantValue>;
       expectTooShortProperty: CommandFunctionWithPreviousSubject<typeof expectTooShortProperty>;
       expectTooLongProperty: CommandFunctionWithPreviousSubject<typeof expectTooLongProperty>;
       expectTooSmallNumberProperty: CommandFunctionWithPreviousSubject<typeof expectTooSmallNumberProperty>;

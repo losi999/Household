@@ -889,12 +889,10 @@ export namespace Calendar {
 
     export type Request = VacationRequest | WorkdayRequest;
 
-    type Base = DayProp 
-    & ((DayType<Enum.CalendarDayType.Workday> & TimeInterval) 
-    | DayType<Exclude<Enum.CalendarDayType, Enum.CalendarDayType.Workday>>);
-
     export type Document = Internal.Timestamps
-    & Base;
+    & DayType<Enum.CalendarDayType>
+    & DayProp
+    & TimeInterval;
 
     type ResponseBase = DayProp & {
       entries: Entry.Response[]

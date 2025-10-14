@@ -15,6 +15,8 @@ import { s3, s3Client } from '@household/shared/dependencies/aws/s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { customerServiceFactory } from '@household/shared/services/customer-service';
 import { priceServiceFactory } from '@household/shared/services/price-service';
+import { calendarDayServiceFactory } from '@household/shared/services/calendar-day-service';
+import { calendarEntryServiceFactory } from '@household/shared/services/calendar-entry-service';
 
 const mongoDbService = mongodbServiceFactory(process.env.MONGODB_CONNECTION_STRING.replace('{{ENV}}', process.env.ENV));
 
@@ -28,5 +30,7 @@ export const productService = productServiceFactory(mongoDbService);
 export const settingService = settingServiceFactory(mongoDbService);
 export const fileService = fileServiceFactory(mongoDbService);
 export const priceService = priceServiceFactory(mongoDbService);
+export const calendarDayService = calendarDayServiceFactory(mongoDbService);
+export const calendarEntryService = calendarEntryServiceFactory(mongoDbService);
 export const identityService = identityServiceFactory(process.env.USER_POOL_ID, '', cognito);
 export const storageService = storageServiceFactory(s3, s3Client, getSignedUrl, Upload)(process.env.IMPORT_BUCKET);

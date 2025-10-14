@@ -3,6 +3,8 @@ import { DocumentUpdate } from '@household/shared/types/common';
 import { Calendar } from '@household/shared/types/types';
 
 export interface ICalendarDayService {
+  findCalendarDayByDay(day: Calendar.DayProp['day']): Promise<Calendar.Day.Document>;
+  saveCalendarDay(document: Calendar.Day.Document): Promise<Calendar.Day.Document>;
   deleteCalendarDay(day: Calendar.DayProp['day']): Promise<unknown>;
   updateCalendarDay(day: Calendar.DayProp['day'], updateQuery: DocumentUpdate<Calendar.Day.Document>): Promise<unknown>;
   listCalendarDays(data: Calendar.DateRange): Promise<Calendar.Day.Document[]>;
@@ -11,6 +13,16 @@ export interface ICalendarDayService {
 export const calendarDayServiceFactory = (mongodbService: IMongodbService): ICalendarDayService => {
 
   const instance: ICalendarDayService = {
+    saveCalendarDay: (doc) => {
+      console.log(doc);
+      return mongodbService.calendarDays.create(doc);
+    },
+    findCalendarDayByDay: async(day) => {
+      return !day ? undefined : mongodbService.calendarDays.findOne({
+        day,
+      })
+        .lean();
+    },
     deleteCalendarDay: async (day) => {
       return mongodbService.inSession((session) => {
         return mongodbService.calendarDays.deleteOne({
