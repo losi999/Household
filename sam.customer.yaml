@@ -178,11 +178,11 @@ Resources:
             Auth:
               Authorizer: CognitoAuthorizer
 
-  UpdateCustomerBlacklist:
+  AddCustomerToBlacklist:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub Household-${Env}-UpdateCustomerBlacklist
-      CodeUri: dist/api/update-customer-blacklist
+      FunctionName: !Sub Household-${Env}-AddCustomerToBlacklist
+      CodeUri: dist/api/add-customer-to-blacklist
       Role: !Ref LambdaRoleArn
       Events:
         API:
@@ -194,11 +194,11 @@ Resources:
             Auth:
               Authorizer: CognitoAuthorizer
 
-  DeleteCustomerBlacklist:
+  RemoveCustomerFromBlacklist:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub Household-${Env}-DeleteCustomerBlacklist
-      CodeUri: dist/api/delete-customer-blacklist
+      FunctionName: !Sub Household-${Env}-RemoveCustomerFromBlacklist
+      CodeUri: dist/api/remove-customer-from-blacklist
       Role: !Ref LambdaRoleArn
       Events:
         API:

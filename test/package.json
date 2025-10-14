@@ -16,6 +16,8 @@
     "test:setting": "yarn test --spec \"./src/api/setting/**/*\"",
     "test:user": "yarn test --spec \"./src/api/user/**/*\"",
     "test:file": "yarn test --spec \"./src/api/file/**/*\"",
+    "test:price": "yarn test --spec \"./src/api/price/**/*\"",
+    "test:customer": "yarn test --spec \"./src/api/customer/**/*\"",
     "test:transaction-common": "yarn test --spec \"./src/api/transaction/common/**/*\"",
     "test:transaction-deferred": "yarn test --spec \"./src/api/transaction/deferred/**/*\"",
     "test:transaction-payment": "yarn test --spec \"./src/api/transaction/payment/**/*\"",

@@ -140,7 +140,7 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
                 .expectTooShortProperty('name', 1, 'body');
             });
 
-            it('is already in used by a different category', () => {
+            it('is already in use by a different category', () => {
               const duplicateCategoryDocument = categoryDataFactory.document({
                 body: request,
               });

@@ -776,7 +776,7 @@ export namespace Customer {
     customerId: Id;
   };
 
-  type Base = {
+  export type Base = {
     name: string;
     description: string;
     isGroup: boolean;
@@ -853,7 +853,10 @@ export namespace Price {
   export type Document = Internal.Id
   & Internal.Timestamps
   & Base
-  & UnitOfMeasurement;
+  & UnitOfMeasurement
+  & {
+    isArchived: boolean;
+  };
 
   export type Request = Base & UnitOfMeasurement;
 

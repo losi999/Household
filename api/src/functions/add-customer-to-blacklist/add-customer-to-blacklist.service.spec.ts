@@ -1,18 +1,18 @@
-import { IDeleteCustomerBlacklistService, deleteCustomerBlacklistServiceFactory } from '@household/api/functions/delete-customer-blacklist/delete-customer-blacklist.service';
+import { IAddCustomerToBlacklistService, addCustomerToBlacklistServiceFactory } from '@household/api/functions/add-customer-to-blacklist/add-customer-to-blacklist.service';
 import { createDocumentUpdate2, customerDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall, validateNthFunctionCall } from '@household/shared/common/unit-testing';
 import { ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
 import { ICustomerService } from '@household/shared/services/customer-service';
 
-describe('Delete customer blacklist service', () => {
-  let service: IDeleteCustomerBlacklistService;
+describe('Add customer to blacklist service', () => {
+  let service: IAddCustomerToBlacklistService;
   let mockCustomerService: Mock<ICustomerService>;
   let mockCustomerDocumentConverter: Mock<ICustomerDocumentConverter>;
   beforeEach(() => {
     mockCustomerService = createMockService('findCustomerById', 'updateCustomers');
-    mockCustomerDocumentConverter = createMockService('removeBlacklistedCustomer');
+    mockCustomerDocumentConverter = createMockService('addBlacklistedCustomer');
 
-    service = deleteCustomerBlacklistServiceFactory(mockCustomerService.service, mockCustomerDocumentConverter.service);
+    service = addCustomerToBlacklistServiceFactory(mockCustomerService.service, mockCustomerDocumentConverter.service);
   });
 
   const customerIdA = customerDataFactory.id();
@@ -42,15 +42,15 @@ describe('Delete customer blacklist service', () => {
   it('should return', async () => {
     mockCustomerService.functions.findCustomerById.mockResolvedValueOnce(queriedCustomerA);
     mockCustomerService.functions.findCustomerById.mockResolvedValueOnce(queriedCustomerB);
-    mockCustomerDocumentConverter.functions.removeBlacklistedCustomer.mockReturnValueOnce(documentUpdateA);
-    mockCustomerDocumentConverter.functions.removeBlacklistedCustomer.mockReturnValueOnce(documentUpdateB);
+    mockCustomerDocumentConverter.functions.addBlacklistedCustomer.mockReturnValueOnce(documentUpdateA);
+    mockCustomerDocumentConverter.functions.addBlacklistedCustomer.mockReturnValueOnce(documentUpdateB);
     mockCustomerService.functions.updateCustomers.mockResolvedValue(undefined);
 
     await service(body);
     validateNthFunctionCall(mockCustomerService.functions.findCustomerById, 1, customerIdA);
     validateNthFunctionCall(mockCustomerService.functions.findCustomerById, 2, customerIdB);
-    validateNthFunctionCall(mockCustomerDocumentConverter.functions.removeBlacklistedCustomer, 1, customerIdB);
-    validateNthFunctionCall(mockCustomerDocumentConverter.functions.removeBlacklistedCustomer, 2, customerIdA);
+    validateNthFunctionCall(mockCustomerDocumentConverter.functions.addBlacklistedCustomer, 1, queriedCustomerB);
+    validateNthFunctionCall(mockCustomerDocumentConverter.functions.addBlacklistedCustomer, 2, queriedCustomerA);
     validateFunctionCall(mockCustomerService.functions.updateCustomers, [
       {
         customerId: customerIdA,
@@ -71,7 +71,7 @@ describe('Delete customer blacklist service', () => {
         customerIdA,
       ]).catch(validateError('Customer cannot be blacklisted with itself', 400));
       validateFunctionCall(mockCustomerService.functions.findCustomerById);
-      validateFunctionCall(mockCustomerDocumentConverter.functions.removeBlacklistedCustomer);
+      validateFunctionCall(mockCustomerDocumentConverter.functions.addBlacklistedCustomer);
       validateFunctionCall(mockCustomerService.functions.updateCustomers);
       expect.assertions(5);
     });
@@ -82,7 +82,7 @@ describe('Delete customer blacklist service', () => {
       await service(body).catch(validateError('Error while getting customer', 500));
       validateNthFunctionCall(mockCustomerService.functions.findCustomerById, 1, customerIdA);
       validateNthFunctionCall(mockCustomerService.functions.findCustomerById, 2, customerIdB);
-      validateFunctionCall(mockCustomerDocumentConverter.functions.removeBlacklistedCustomer);
+      validateFunctionCall(mockCustomerDocumentConverter.functions.addBlacklistedCustomer);
       validateFunctionCall(mockCustomerService.functions.updateCustomers);
       expect.assertions(6);
     });
@@ -94,7 +94,7 @@ describe('Delete customer blacklist service', () => {
       await service(body).catch(validateError('No customer found', 404));
       validateNthFunctionCall(mockCustomerService.functions.findCustomerById, 1, customerIdA);
       validateNthFunctionCall(mockCustomerService.functions.findCustomerById, 2, customerIdB);
-      validateFunctionCall(mockCustomerDocumentConverter.functions.removeBlacklistedCustomer);
+      validateFunctionCall(mockCustomerDocumentConverter.functions.addBlacklistedCustomer);
       validateFunctionCall(mockCustomerService.functions.updateCustomers);
       expect.assertions(6);
     });
@@ -106,7 +106,7 @@ describe('Delete customer blacklist service', () => {
       await service(body).catch(validateError('No customer found', 404));
       validateNthFunctionCall(mockCustomerService.functions.findCustomerById, 1, customerIdA);
       validateNthFunctionCall(mockCustomerService.functions.findCustomerById, 2, customerIdB);
-      validateFunctionCall(mockCustomerDocumentConverter.functions.removeBlacklistedCustomer);
+      validateFunctionCall(mockCustomerDocumentConverter.functions.addBlacklistedCustomer);
       validateFunctionCall(mockCustomerService.functions.updateCustomers);
       expect.assertions(6);
     });
@@ -114,15 +114,15 @@ describe('Delete customer blacklist service', () => {
     it('if unable to update document', async () => {
       mockCustomerService.functions.findCustomerById.mockResolvedValueOnce(queriedCustomerA);
       mockCustomerService.functions.findCustomerById.mockResolvedValueOnce(queriedCustomerB);
-      mockCustomerDocumentConverter.functions.removeBlacklistedCustomer.mockReturnValueOnce(documentUpdateA);
-      mockCustomerDocumentConverter.functions.removeBlacklistedCustomer.mockReturnValueOnce(documentUpdateB);
+      mockCustomerDocumentConverter.functions.addBlacklistedCustomer.mockReturnValueOnce(documentUpdateA);
+      mockCustomerDocumentConverter.functions.addBlacklistedCustomer.mockReturnValueOnce(documentUpdateB);
       mockCustomerService.functions.updateCustomers.mockRejectedValue('this is a mongo error');
 
       await service(body).catch(validateError('Error while updating customer', 500));
       validateNthFunctionCall(mockCustomerService.functions.findCustomerById, 1, customerIdA);
       validateNthFunctionCall(mockCustomerService.functions.findCustomerById, 2, customerIdB);
-      validateNthFunctionCall(mockCustomerDocumentConverter.functions.removeBlacklistedCustomer, 1, customerIdB);
-      validateNthFunctionCall(mockCustomerDocumentConverter.functions.removeBlacklistedCustomer, 2, customerIdA);
+      validateNthFunctionCall(mockCustomerDocumentConverter.functions.addBlacklistedCustomer, 1, queriedCustomerB);
+      validateNthFunctionCall(mockCustomerDocumentConverter.functions.addBlacklistedCustomer, 2, queriedCustomerA);
       validateFunctionCall(mockCustomerService.functions.updateCustomers, [
         {
           customerId: customerIdA,

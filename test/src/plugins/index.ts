@@ -1,5 +1,5 @@
 import webpack from '@cypress/webpack-preprocessor';
-import { accountService, categoryService, projectService, recipientService, transactionService, productService, settingService, identityService, fileService, storageService, customerService } from '@household/test/api/dependencies';
+import { accountService, categoryService, projectService, recipientService, transactionService, productService, settingService, identityService, fileService, storageService, customerService, priceService } from '@household/test/api/dependencies';
 
 const setTasksFromService = <T extends Record<keyof T, (...args: any[]) => Promise<any>>>(on: Cypress.PluginEvents, service: T, ...functions: (keyof T)[]) => {
   on('task', functions.reduce((accumulator, currentValue) => {
@@ -23,6 +23,7 @@ export default (on: Cypress.PluginEvents) => {
   };
   on('file:preprocessor', webpack(options));
   setTasksFromService(on, projectService, 'findProjectById', 'saveProject', 'saveProjects');
+  setTasksFromService(on, priceService, 'findPriceById', 'savePrice', 'savePrices');
   setTasksFromService(on, productService, 'saveProduct', 'findProductById', 'saveProducts');
   setTasksFromService(on, recipientService, 'findRecipientById', 'saveRecipient', 'saveRecipients');
   setTasksFromService(on, customerService, 'findCustomerById', 'saveCustomer', 'saveCustomers');

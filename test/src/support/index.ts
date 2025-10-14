@@ -42,6 +42,9 @@ import { setDraftTransactionValidationCommands } from '@household/test/api/trans
 import { setCustomerRequestCommands } from '@household/test/api/customer/commands/requests';
 import { setCustomerTaskCommands } from '@household/test/api/customer/commands/tasks';
 import { setCustomerValidationCommands } from '@household/test/api/customer/commands/validations';
+import { setPriceRequestCommands } from '@household/test/api/price/commands/requests';
+import { setPriceTaskCommands } from '@household/test/api/price/commands/tasks';
+import { setPriceValidationCommands } from '@household/test/api/price/commands/validations';
 
 setProjectRequestCommands();
 setProjectTaskCommands();
@@ -84,5 +87,8 @@ setUserValidationCommands();
 setFileRequestCommands();
 setFileTaskCommands();
 setFileValidationCommands();
+setPriceRequestCommands();
+setPriceTaskCommands();
+setPriceValidationCommands();
 setAuthCommands();
 setExpectCommands();

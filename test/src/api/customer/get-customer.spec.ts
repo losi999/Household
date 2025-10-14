@@ -1,16 +1,36 @@
 import { default as schema } from '@household/test/api/schemas/customer-response';
-import { Customer } from '@household/shared/types/types';
+import { Customer, Price } from '@household/shared/types/types';
 import { entries, getCustomerId } from '@household/shared/common/utils';
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
 import { allowUsers } from '@household/test/api/utils';
+import { priceDataFactory } from '@household/test/api/price/data-factory';
 
 const permissionMap = allowUsers('hairdresser');
 
 describe('GET /customer/v1/customers/{customerId}', () => {
   let customerDocument: Customer.Document;
+  let blacklistedCustomer: Customer.Document;
+  let priceDocument: Price.Document;
 
   beforeEach(() => {
-    customerDocument = customerDataFactory.document();
+    blacklistedCustomer = customerDataFactory.document();
+    priceDocument = priceDataFactory.document();
+
+    customerDocument = customerDataFactory.document({ //TODO work entries
+      blacklistedCustomers: [blacklistedCustomer],
+      jobs: [
+        {
+          prices: {
+            custom: [{}],
+            listed: [
+              {
+                price: priceDocument,
+              },
+            ],
+          },
+        },
+      ],
+    });
   });
 
   describe('called as anonymous', () => {
@@ -34,7 +54,11 @@ describe('GET /customer/v1/customers/{customerId}', () => {
         });
       } else {
         it('should get customer by id', () => {
-          cy.saveCustomerDocument(customerDocument)
+          cy.saveCustomerDocuments([
+            customerDocument,
+            blacklistedCustomer,
+          ])
+            .savePriceDocument(priceDocument)
             .authenticate(userType)
             .requestGetCustomer(getCustomerId(customerDocument))
             .expectOkResponse()

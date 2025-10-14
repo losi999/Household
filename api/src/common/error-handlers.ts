@@ -527,6 +527,12 @@ export const httpErrors = {
         throw httpError(statusCode, 'No customer found');
       }
     },
+    jobNotFound: (ctx: {customer: Customer.Document; jobName: Customer.Job.Request['name']}, statusCode = 404) => {
+      if (ctx.customer.jobs.every(j => j.name !== ctx.jobName)) {
+        log('No customer job found', ctx);
+        throw httpError(statusCode, 'No customer job found');
+      }
+    },
     multipleNotFound: (ctx: { customerIds: Customer.Id[]; customers: Customer.Document[] }, statusCode = 400) => {
       if (ctx.customers?.length !== ctx.customerIds?.length) {
         log('Some of the customers are not found', ctx);
@@ -589,6 +595,12 @@ export const httpErrors = {
       if (ctx.priceId && !ctx.price) {
         log('No price found', ctx);
         throw httpError(statusCode, 'No price found');
+      }
+    },
+    priceIsArchived: (ctx: Price.Document, statusCode = 400) => {
+      if (ctx.isArchived) {
+        log('Price is archived', ctx);
+        throw httpError(statusCode, 'Price is archived');
       }
     },
     delete: (ctx: Price.PriceId, statusCode = 500): CatchAndThrow => (error) => {

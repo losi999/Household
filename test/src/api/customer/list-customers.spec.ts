@@ -1,18 +1,52 @@
 import { default as schema } from '@household/test/api/schemas/customer-response-list';
-import { Customer } from '@household/shared/types/types';
+import { Customer, Price } from '@household/shared/types/types';
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
 import { allowUsers } from '@household/test/api/utils';
 import { entries } from '@household/shared/common/utils';
+import { priceDataFactory } from '@household/test/api/price/data-factory';
 
 const permissionMap = allowUsers('hairdresser');
 
 describe('GET /customer/v1/customers', () => {
   let customerDocument1: Customer.Document;
   let customerDocument2: Customer.Document;
+  let blacklistedCustomer: Customer.Document;
+  let priceDocument: Price.Document;
 
   beforeEach(() => {
-    customerDocument1 = customerDataFactory.document();
-    customerDocument2 = customerDataFactory.document();
+    blacklistedCustomer = customerDataFactory.document();
+    priceDocument = priceDataFactory.document();
+
+    customerDocument1 = customerDataFactory.document({ //TODO work entries
+      blacklistedCustomers: [blacklistedCustomer],
+      jobs: [
+        {
+          prices: {
+            custom: [{}],
+            listed: [
+              {
+                price: priceDocument,
+              },
+            ],
+          },
+        },
+      ],
+    });
+    customerDocument2 = customerDataFactory.document({
+      blacklistedCustomers: [blacklistedCustomer],
+      jobs: [
+        {
+          prices: {
+            custom: [{}],
+            listed: [
+              {
+                price: priceDocument,
+              },
+            ],
+          },
+        },
+      ],
+    });
   });
 
   describe('called as anonymous', () => {
@@ -36,8 +70,12 @@ describe('GET /customer/v1/customers', () => {
         });
       } else {
         it('should get a list of customers', () => {
-          cy.saveCustomerDocument(customerDocument1)
-            .saveCustomerDocument(customerDocument2)
+          cy.saveCustomerDocuments([
+            customerDocument1,
+            customerDocument2,
+            blacklistedCustomer,
+          ])
+            .savePriceDocument(priceDocument)
             .authenticate(userType)
             .requestGetCustomerList()
             .expectOkResponse()

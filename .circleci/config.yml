@@ -292,3 +292,13 @@ workflows:
           testCommand: "file"
           requires:
             - api_test_setup
+      - test:
+          name: test_price
+          testCommand: "price"
+          requires:
+            - api_test_setup
+      - test:
+          name: test_customer
+          testCommand: "customer"
+          requires:
+            - api_test_setup

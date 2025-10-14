@@ -117,6 +117,11 @@ const expectTooFewItemsProperty = (body: any, propertyName: string, minItems: nu
   return body;
 };
 
+const expectTooManyItemsProperty = (body: any, propertyName: string, maxItems: number, requestPart: string) => {
+  expect(body[requestPart]).to.contain(propertyName).to.contain('more').to.contain(maxItems);
+  return body;
+};
+
 export const setExpectCommands = () => {
   Cypress.Commands.addAll<any>({
     prevSubject: true,
@@ -142,6 +147,7 @@ export const setExpectCommands = () => {
     expectTooLargeNumberProperty,
     expectTooEarlyDateProperty,
     expectTooFewItemsProperty,
+    expectTooManyItemsProperty,
     expectMessage,
   });
 };
@@ -173,6 +179,7 @@ declare global {
       expectTooLargeNumberProperty: CommandFunctionWithPreviousSubject<typeof expectTooLargeNumberProperty>;
       expectTooEarlyDateProperty: CommandFunctionWithPreviousSubject<typeof expectTooEarlyDateProperty>;
       expectTooFewItemsProperty: CommandFunctionWithPreviousSubject<typeof expectTooFewItemsProperty>;
+      expectTooManyItemsProperty: CommandFunctionWithPreviousSubject<typeof expectTooManyItemsProperty>;
       expectMessage: CommandFunctionWithPreviousSubject<typeof expectMessage>;
     }
   }

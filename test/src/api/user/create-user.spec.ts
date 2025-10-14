@@ -71,7 +71,7 @@ describe('POST user/v1/users', () => {
                 .expectWrongPropertyFormat('email', 'email', 'body');
             });
 
-            it('is already in used by a different user', () => {
+            it('is already in use by a different user', () => {
               cy.createUser(request, UserType.Editor, true)
                 .authenticate(userType)
                 .requestCreateUser(request)

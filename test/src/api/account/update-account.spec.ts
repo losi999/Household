@@ -87,7 +87,7 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
                 .expectTooShortProperty('name', 1, 'body');
             });
 
-            it('is already in used by a different account of the same owner', () => {
+            it('is already in use by a different account of the same owner', () => {
               const duplicateAccountDocument = accountDataFactory.document(request);
 
               cy.saveAccountDocument(accountDocument)

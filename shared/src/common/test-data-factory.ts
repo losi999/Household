@@ -807,6 +807,7 @@ const createPriceDocument: DataFactoryFunction<Price.Document> = (doc) => {
     name: 'price name',
     amount: 3000,
     unitOfMeasurement: 'db',
+    isArchived: false,
     expiresAt: undefined,
     ...doc,
   };

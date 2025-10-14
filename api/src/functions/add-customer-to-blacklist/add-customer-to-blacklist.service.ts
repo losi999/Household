@@ -3,13 +3,13 @@ import { ICustomerDocumentConverter } from '@household/shared/converters/custome
 import { ICustomerService } from '@household/shared/services/customer-service';
 import { Customer } from '@household/shared/types/types';
 
-export interface IUpdateCustomerBlacklistService {
+export interface IAddCustomerToBlacklistService {
   (ctx: Customer.Id[]): Promise<void>;
 }
 
-export const updateCustomerBlacklistServiceFactory = (
+export const addCustomerToBlacklistServiceFactory = (
   customerService: ICustomerService,
-  customerDocumentConverter: ICustomerDocumentConverter): IUpdateCustomerBlacklistService => {
+  customerDocumentConverter: ICustomerDocumentConverter): IAddCustomerToBlacklistService => {
   return async ([
     customerIdA,
     customerIdB,

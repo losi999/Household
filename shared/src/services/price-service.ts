@@ -15,7 +15,24 @@ export interface IPriceService {
 export const priceServiceFactory = (mongodbService: IMongodbService): IPriceService => {
   return {
     savePrice: (doc) => {
-      return mongodbService.prices.create(doc);
+      return mongodbService.prices.create(doc).catch(async (error) => {
+        if (error.code !== 11000) { 
+          throw error;
+        }
+
+        const { _id, ...restOfDoc } = doc;
+        
+        const res = await mongodbService.prices.findOneAndReplace({
+          ...error.keyValue,
+          isArchived: true,
+        }, restOfDoc);
+
+        if (!res) {
+          throw error;
+        }
+
+        return res;
+      });
     },
     savePrices: (docs) => {
       return mongodbService.inSession((session) => {
@@ -32,27 +49,29 @@ export const priceServiceFactory = (mongodbService: IMongodbService): IPriceServ
     deletePrice: async (priceId) => {
       return mongodbService.inSession((session) => {
         return session.withTransaction(async () => {
-          await mongodbService.prices.deleteOne({
-            _id: priceId,
-          }, {
-            session,
-          });            
+          const [
+            customers,
+            entries,
+          ] = await Promise.all([
+            mongodbService.customers.find({
+              'jobs.prices.price': priceId,
+            }).session(session),
+            mongodbService.calendarEntries.find({
+              'prices.price': priceId,
+            }).session(session),
+          ]);
 
-          return mongodbService.customers.updateMany({
-            'jobs.prices.price': priceId,
-          }, {
-            $pull: {
-              jobs: {
-                prices: {
-                  $elemMatch: {
-                    price: priceId,
-                  },
-                },
-              },
-            },
-          }, {
-            session,
-          });
+          if (customers.length === 0 && entries.length === 0) {
+            await mongodbService.prices.findByIdAndDelete(priceId, {
+              session,
+            });           
+          } else {
+            await mongodbService.prices.findByIdAndUpdate(priceId, {
+              isArchived: true,
+            }, {
+              session,
+            });
+          }
         });
       });
     },
@@ -64,7 +83,9 @@ export const priceServiceFactory = (mongodbService: IMongodbService): IPriceServ
     },
     listPrices: () => {
       return mongodbService.inSession((session) => {
-        return mongodbService.prices.find({}).session(session)
+        return mongodbService.prices.find({
+          isArchived: false,
+        }).session(session)
           .collation({
             locale: 'hu',
           })
