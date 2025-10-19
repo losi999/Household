@@ -9,6 +9,7 @@ const permissionMap = allowUsers('hairdresser');
 describe('PUT /calendar/v1/days/{day}', () => {
   let request: Calendar.Day.Request;
   let day: string;
+  let calendarDayDocument: Calendar.Day.Document;
 
   beforeEach(() => {
     request = calendarDayDataFactory.workdayRequest();
@@ -53,15 +54,11 @@ describe('PUT /calendar/v1/days/{day}', () => {
           });
         });
 
-        describe('should update', () => {
-          let calendarDayDocument: Calendar.Day.Document;
-  
+        describe('should update', () => {  
           it('workday to vacation', () => {
             calendarDayDocument = calendarDayDataFactory.document({
-              body: {
-                dayType: CalendarDayType.Workday,
-              },
               day,
+              dayType: CalendarDayType.Workday,
             });
 
             request = calendarDayDataFactory.vacationRequest();
@@ -75,10 +72,8 @@ describe('PUT /calendar/v1/days/{day}', () => {
           
           it('vacation to workday', () => {
             calendarDayDocument = calendarDayDataFactory.document({
-              body: {
-                dayType: CalendarDayType.Vacation,
-              },
               day,
+              dayType: CalendarDayType.Vacation,
             });
 
             request = calendarDayDataFactory.workdayRequest();
@@ -92,6 +87,21 @@ describe('PUT /calendar/v1/days/{day}', () => {
         });
 
         describe('should return error', () => {
+          it('if holiday is to be updated', () => {
+            calendarDayDocument = calendarDayDataFactory.document({
+              day,
+              dayType: CalendarDayType.Holiday,
+            });
+
+            request = calendarDayDataFactory.workdayRequest();
+
+            cy.saveCalendarDayDocument(calendarDayDocument)
+              .authenticate(userType)
+              .requestUpdateCalendarDay(day, request)
+              .expectBadRequestResponse()
+              .expectMessage('Selected calendar day is a national holiday');
+          });
+          
           describe('if dayType', () => {
             it('is missing from body', () => {
               cy.authenticate(userType)

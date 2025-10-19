@@ -1,14 +1,17 @@
 import { default as schema } from '@household/test/api/schemas/customer-response';
-import { Customer, Price } from '@household/shared/types/types';
+import { Calendar, Customer, Price } from '@household/shared/types/types';
 import { entries, getCustomerId } from '@household/shared/common/utils';
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
 import { allowUsers } from '@household/test/api/utils';
 import { priceDataFactory } from '@household/test/api/price/data-factory';
+import { calendarEntryDataFactory } from '@household/test/api/calendar/data-factory';
+import { CalendarEntryType } from '@household/shared/enums';
 
 const permissionMap = allowUsers('hairdresser');
 
 describe('GET /customer/v1/customers/{customerId}', () => {
   let customerDocument: Customer.Document;
+  let workEntryDocument: Calendar.Entry.Document;
   let blacklistedCustomer: Customer.Document;
   let priceDocument: Price.Document;
 
@@ -30,6 +33,11 @@ describe('GET /customer/v1/customers/{customerId}', () => {
           },
         },
       ],
+    });
+
+    workEntryDocument = calendarEntryDataFactory.document({
+      entryType: CalendarEntryType.Work,
+      customer: customerDocument,
     });
   });
 
@@ -59,6 +67,7 @@ describe('GET /customer/v1/customers/{customerId}', () => {
             blacklistedCustomer,
           ])
             .savePriceDocument(priceDocument)
+            .saveCalendarEntryDocument(workEntryDocument)
             .authenticate(userType)
             .requestGetCustomer(getCustomerId(customerDocument))
             .expectOkResponse()

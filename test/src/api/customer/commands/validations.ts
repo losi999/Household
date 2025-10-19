@@ -251,11 +251,9 @@ const validateCustomerResponse = (response: Customer.Response, document: Custome
 
       if (isListedPrice(jobPriceResponse)) {
         if (!isPriceBase(jobPriceDocument)) {
-          expect(jobPriceResponse.priceId, `job.prices[${i}].priceId`).to.equal(getPriceId(jobPriceDocument.price));
-          expect(jobPriceResponse.name, `job.prices[${i}].name`).to.equal(jobPriceDocument.price.name);
-          expect(jobPriceResponse.amount, `job.prices[${i}].amount`).to.equal(jobPriceDocument.price.amount);
-          expect(jobPriceResponse.unitOfMeasurement, `job.prices[${i}].unitOfMeasurement`).to.equal(jobPriceDocument.price.unitOfMeasurement);
+          const { quantity, ...price } = jobPriceResponse;
           expect(jobPriceResponse.quantity, `job.prices[${i}].quantity`).to.equal(jobPriceDocument.quantity);
+          cy.validateNestedObject(`job.prices[${i}]`, price).validatePriceResponse(jobPriceDocument.price);
         } else {
           expect(true, 'job prices do not match').to.be.false;
         }

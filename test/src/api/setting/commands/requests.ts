@@ -1,8 +1,9 @@
 import { Setting } from '@household/shared/types/types';
 import { headerExpiresIn } from '@household/shared/constants';
 import { CommandFunctionWithPreviousSubject } from '@household/test/api/types';
+import { SettingKey } from '@household/shared/enums';
 
-const requestUpdateSetting = (idToken: string, settingKey: Setting.Id, setting: Setting.Request) => {
+const requestUpdateSetting = (idToken: string, settingKey: SettingKey, setting: Setting.Request) => {
   return cy.request({
     body: setting,
     method: 'POST',

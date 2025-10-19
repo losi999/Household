@@ -82,7 +82,7 @@ export const customerServiceFactory = (mongodbService: IMongodbService): ICustom
         }).session(session)
           .lean();
           
-      }) : undefined;
+      }) : [];
     },
   };
 

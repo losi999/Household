@@ -14,7 +14,6 @@ export const calendarDayServiceFactory = (mongodbService: IMongodbService): ICal
 
   const instance: ICalendarDayService = {
     saveCalendarDay: (doc) => {
-      console.log(doc);
       return mongodbService.calendarDays.create(doc);
     },
     findCalendarDayByDay: async(day) => {

@@ -2,6 +2,7 @@ import { entries } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/api/utils';
 import { Calendar } from '@household/shared/types/types';
 import { calendarDayDataFactory } from '@household/test/api/calendar/data-factory';
+import { CalendarDayType } from '@household/shared/enums';
 
 const permissionMap = allowUsers('hairdresser');
 
@@ -10,11 +11,8 @@ describe('DELETE /calendar/v1/days/{day}', () => {
   let calendarDayDocument: Calendar.Day.Document;
 
   beforeEach(() => {
-    day = calendarDayDataFactory.futureDay();
-
-    calendarDayDocument = calendarDayDataFactory.document({
-      day,
-    });
+    calendarDayDocument = calendarDayDataFactory.document();
+    day = calendarDayDocument.day;
   });
 
   describe('called as anonymous', () => {
@@ -46,6 +44,19 @@ describe('DELETE /calendar/v1/days/{day}', () => {
         });
 
         describe('should return error', () => {
+          it('if holiday is to be deleted', () => {
+            calendarDayDocument = calendarDayDataFactory.document({
+              day,
+              dayType: CalendarDayType.Holiday,
+            });
+
+            cy.saveCalendarDayDocument(calendarDayDocument)
+              .authenticate(userType)
+              .requestDeleteCalendarDay(day)
+              .expectBadRequestResponse()
+              .expectMessage('Selected calendar day is a national holiday');
+          });
+
           describe('if day', () => {
             it('is not date', () => {
               cy.authenticate(userType)

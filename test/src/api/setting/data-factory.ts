@@ -3,6 +3,7 @@ import { DataFactoryFunction } from '@household/shared/types/common';
 import { Setting } from '@household/shared/types/types';
 import { faker } from '@faker-js/faker';
 import { UpdateQuery } from 'mongoose';
+import { SettingKey } from '@household/shared/enums';
 
 export const settingDataFactory = (() => {
   const createSettingRequest: DataFactoryFunction<Setting.Request> = (req) => {
@@ -16,7 +17,7 @@ export const settingDataFactory = (() => {
     return settingDocumentConverter.update(createSettingRequest(req), Cypress.env('EXPIRES_IN'));
   };
 
-  const createSettingDocument = (settingKey: Setting.Id, req: Setting.Request): Setting.Document => {
+  const createSettingDocument = (settingKey: SettingKey, req: Setting.Request): Setting.Document => {
     return {
       settingKey,
       ...req,
@@ -25,7 +26,7 @@ export const settingDataFactory = (() => {
   };
 
   return {
-    key: (key?: string) => (key ?? faker.string.uuid()) as Setting.Id,
+    key: (key?: string) => (key ?? faker.string.uuid()) as SettingKey,
     request: createSettingRequest,
     document: createSettingDocument,
     update: createSettingUpdate,

@@ -1,6 +1,7 @@
 import { Calendar } from '@household/shared/types/types';
 import { CommandFunction } from '@household/test/api/types';
 import { ICalendarDayService } from '@household/shared/services/calendar-day-service';
+import { ICalendarEntryService } from '@household/shared/services/calendar-entry-service';
 
 const saveCalendarDayDocument = (...params: Parameters<ICalendarDayService['saveCalendarDay']>) => {
   return cy.task('saveCalendarDay', params);
@@ -14,12 +15,21 @@ const findCalendarDayDocumentByDay = (...params: Parameters<ICalendarDayService[
   return cy.task<Calendar.Day.Document>('findCalendarDayByDay', params);
 };
 
+const findCalendarEntryDocumentById = (...params: Parameters<ICalendarEntryService['findCalendarEntryById']>) => {
+  return cy.task<Calendar.Entry.Document>('findCalendarEntryById', params);
+};
+
+const saveCalendarEntryDocument = (...params: Parameters<ICalendarEntryService['saveCalendarEntry']>) => {
+  return cy.task<Calendar.Entry.Document>('saveCalendarEntry', params);
+};
+
 export const setCalendarTaskCommands = () => {
 
   Cypress.Commands.addAll({
     findCalendarDayDocumentByDay,
-    //   saveCustomerDocuments,
     saveCalendarDayDocument,
+    findCalendarEntryDocumentById,
+    saveCalendarEntryDocument,
   });
 };
 
@@ -27,8 +37,9 @@ declare global {
   namespace Cypress {
     interface Chainable {
       findCalendarDayDocumentByDay: CommandFunction<typeof findCalendarDayDocumentByDay>;
-      // saveCustomerDocuments: CommandFunction<typeof saveCustomerDocuments>;
-      saveCalendarDayDocument: CommandFunction<typeof saveCalendarDayDocument>
+      findCalendarEntryDocumentById: CommandFunction<typeof findCalendarEntryDocumentById>;
+      saveCalendarDayDocument: CommandFunction<typeof saveCalendarDayDocument>;
+      saveCalendarEntryDocument: CommandFunction<typeof saveCalendarEntryDocument>;
     }
   }
 }

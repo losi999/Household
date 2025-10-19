@@ -168,12 +168,6 @@ const validateTransactionDeleted = (transactionId: Transaction.Id) => {
     });
 };
 
-const validateTransactionNestedObject = (nestedPath: string, object: unknown): Cypress.ChainableResponseBody => {
-  return cy.log(`Validating ${nestedPath}`).wrap(object, {
-    log: false,
-  }) as Cypress.ChainableResponseBody;
-};
-
 export const setCommonTransactionValidationCommands = () => {
   Cypress.Commands.addAll<any>({
     prevSubject: true,
@@ -184,7 +178,6 @@ export const setCommonTransactionValidationCommands = () => {
 
   Cypress.Commands.addAll({
     validateTransactionDeleted,
-    validateTransactionNestedObject,
   });
 };
 
@@ -192,7 +185,6 @@ declare global {
   namespace Cypress {
     interface Chainable {
       validateTransactionDeleted: CommandFunction<typeof validateTransactionDeleted>;
-      validateTransactionNestedObject: CommandFunction<typeof validateTransactionNestedObject>;
     }
 
     interface ChainableResponseBody extends Chainable {

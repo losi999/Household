@@ -48,6 +48,7 @@ import { setPriceValidationCommands } from '@household/test/api/price/commands/v
 import { setCalendarRequestCommands } from '@household/test/api/calendar/commands/requests';
 import { setCalendarTaskCommands } from '@household/test/api/calendar/commands/tasks';
 import { setCalendarValidationCommands } from '@household/test/api/calendar/commands/validations';
+import { setValidationCommands } from '@household/test/api/validation-commands';
 
 setProjectRequestCommands();
 setProjectTaskCommands();
@@ -98,3 +99,4 @@ setCalendarTaskCommands();
 setCalendarValidationCommands();
 setAuthCommands();
 setExpectCommands();
+setValidationCommands();

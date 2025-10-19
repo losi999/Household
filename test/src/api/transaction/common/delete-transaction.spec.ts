@@ -1,7 +1,8 @@
 import { entries, getTransactionId } from '@household/shared/common/utils';
-import { AccountType } from '@household/shared/enums';
+import { AccountType, CalendarEntryType } from '@household/shared/enums';
 import { Account, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
+import { calendarEntryDataFactory } from '@household/test/api/calendar/data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
@@ -85,8 +86,15 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
       } else {
         describe('should delete', () => {
           it('payment transaction', () => {
+            const calendarWorkEntryDocument = calendarEntryDataFactory.document({
+              entryType: CalendarEntryType.Work,
+              customer: undefined,
+              prices: undefined,
+            });
+
             cy.saveAccountDocument(accountDocument)
               .saveTransactionDocument(paymentTransactionDocument)
+              .saveCalendarEntryDocument(calendarWorkEntryDocument)
               .authenticate(userType)
               .requestDeleteTransaction(getTransactionId(paymentTransactionDocument))
               .expectNoContentResponse()

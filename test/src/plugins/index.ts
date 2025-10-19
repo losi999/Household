@@ -30,10 +30,10 @@ export default (on: Cypress.PluginEvents) => {
   setTasksFromService(on, accountService, 'findAccountById', 'saveAccount', 'saveAccounts');
   setTasksFromService(on, categoryService, 'getCategoryById', 'saveCategory', 'saveCategories');
   setTasksFromService(on, transactionService, 'getTransactionByIdAndAccountId', 'saveTransaction', 'getTransactionById', 'saveTransactions', 'listDraftTransactionsByFileId');
-  setTasksFromService(on, settingService, 'updateSetting', 'getSettingByKey');
+  setTasksFromService(on, settingService, 'updateSetting', 'getSettingByKey', 'listSettingsByKeys');
   setTasksFromService(on, fileService, 'findFileById', 'saveFile');
   setTasksFromService(on, calendarDayService, 'findCalendarDayByDay', 'saveCalendarDay');
-  setTasksFromService(on, calendarEntryService);
+  setTasksFromService(on, calendarEntryService, 'findCalendarEntryById', 'saveCalendarEntry');
   setTasksFromService(on, identityService, 'deleteUser', 'getUser', 'createUser', 'listGroupsByUser');
   setTasksFromService(on, storageService, 'checkFile', 'writeFile', 'uploadFile');
 };

@@ -91,7 +91,7 @@ const requestPayCalendarWorkEntry = (idToken: string, calendarEntryId: Calendar.
   return cy.request({
     body,
     method: 'POST',
-    url: `/calendar/v1/${calendarEntryId}/payment`,
+    url: `/calendar/v1/entries/${calendarEntryId}/payment`,
     headers: {
       Authorization: idToken,
       [headerExpiresIn]: Cypress.env('EXPIRES_IN'),

@@ -1,5 +1,5 @@
 import { getCategoryId, getProductId } from '@household/shared/common/utils';
-import { AccountType, CalendarEntryType, CategoryType, SettingKey } from '@household/shared/enums';
+import { AccountType, CalendarDayType, CalendarEntryType, CategoryType, SettingKey } from '@household/shared/enums';
 import { HttpError } from '@household/shared/types/common';
 import { Account, Calendar, Category, Common, Customer, File, Price, Product, Project, Recipient, Setting, Transaction, User } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
@@ -624,6 +624,10 @@ export const httpErrors = {
     },
   },
   calendarDay: {
+    getById: (ctx: Calendar.DayProp, statusCode = 500): CatchAndThrow => (error) => {
+      log('Get calendar day', ctx, error);
+      throw httpError(statusCode, 'Error while getting calendar day');
+    },
     list: (statusCode = 500): CatchAndThrow => (error) => {
       log('List calendar days', undefined, error);
       throw httpError(statusCode, 'Error while listing calendar days');
@@ -636,6 +640,12 @@ export const httpErrors = {
       log('Update calendar day', ctx, error);
       throw httpError(statusCode, 'Error while updating calendar day');
     },
+    isHoliday: (ctx: Calendar.Day.Document, statusCode = 400) => {
+      if (ctx?.dayType === CalendarDayType.Holiday) {
+        log('Selected calendar day is a national holiday', ctx);
+        throw httpError(statusCode, 'Selected calendar day is a national holiday');
+      }
+    }, 
   },
   calendarEntry: {
     save: (doc: Calendar.Entry.Document, statusCode = 500): CatchAndThrow => (error) => {
@@ -667,6 +677,12 @@ export const httpErrors = {
     updateWithPayment: (ctx: Calendar.Entry.CalendarEntryId & {transaction: Transaction.PaymentDocument}, statusCode = 500): CatchAndThrow => (error) => {
       log('Update calendar entry with payment', ctx, error);
       throw httpError(statusCode, 'Error while updating calendar entry with payment');
+    },
+    entryTypeChanged: (ctx: {calendarEntry: Calendar.Entry.Document; request: Calendar.Entry.Request}, statusCode = 400) => {
+      if(ctx.calendarEntry.entryType !== ctx.request.entryType) {
+        log('Entry type cannot be changed', ctx);
+        throw httpError(statusCode, 'Entry type cannot be changed');
+      }
     },
     wrongType: (ctx: {calendarEntry: Calendar.Entry.Document, expectedType: CalendarEntryType}, statusCode = 400) => {
       if (ctx.calendarEntry.entryType !== ctx.expectedType) {

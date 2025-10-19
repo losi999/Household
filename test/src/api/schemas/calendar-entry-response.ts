@@ -1,22 +1,25 @@
-import { CalendarEntryType } from '@household/shared/enums';
-import { default as quantity } from '@household/shared/schemas/partials/customer-job-quantity';
-import { default as priceId } from '@household/shared/schemas/price-id';
-import { default as customerId } from '@household/shared/schemas/customer-id';
-import { default as priceBase } from '@household/shared/schemas/partials/price-base';
 import { StrictJSONSchema7 } from '@household/shared/types/common';
 import { Calendar } from '@household/shared/types/types';
+import { default as quantity } from '@household/shared/schemas/partials/customer-job-quantity';
+import { default as price } from '@household/test/api/schemas/price-response';
+import { default as priceBase } from '@household/shared/schemas/partials/price-base';
+import { default as customer } from '@household/test/api/schemas/customer-response';
+import { default as calendarEntryId } from '@household/shared/schemas/calendar-entry-id';
 import { default as day } from '@household/shared/schemas/calendar-day';
 import { default as base } from '@household/shared/schemas/partials/calendar-entry-base';
+import { CalendarEntryType } from '@household/shared/enums';
 
-const personalEntryRequestSchema: StrictJSONSchema7<Calendar.Entry.PersonalEntryRequest> = {
+const personalEntryResponseSchema: StrictJSONSchema7<Calendar.Entry.PersonalEntryResponse> = {
   type: 'object',
   additionalProperties: false,
   required: [
     ...day.required,
     ...base.required,
     'entryType',
+    ...calendarEntryId.required,
   ],
   properties: {
+    ...calendarEntryId.properties,
     ...day.properties,
     ...base.properties,
     entryType: {
@@ -26,15 +29,17 @@ const personalEntryRequestSchema: StrictJSONSchema7<Calendar.Entry.PersonalEntry
   },
 };
 
-const issueEntryRequestSchema: StrictJSONSchema7<Calendar.Entry.IssueEntryRequest> = {
+const issueEntryResponseSchema: StrictJSONSchema7<Calendar.Entry.IssueEntryResponse> = {
   type: 'object',
   additionalProperties: false,
   required: [
     ...day.required,
     ...base.required,
     'entryType',
+    ...calendarEntryId.required,
   ],
   properties: {
+    ...calendarEntryId.properties,
     ...day.properties,
     ...base.properties,
     entryType: {
@@ -44,22 +49,28 @@ const issueEntryRequestSchema: StrictJSONSchema7<Calendar.Entry.IssueEntryReques
   },
 };
 
-const workEntryRequestSchema: StrictJSONSchema7<Calendar.Entry.WorkEntryRequest> = {
+const workEntryResponseSchema: StrictJSONSchema7<Calendar.Entry.WorkEntryResponse> = {
   type: 'object',
   additionalProperties: false,
   required: [
+    'customer',
     ...day.required,
     ...base.required,
     'entryType',
-    ...customerId.required,
+    'isPaid',
+    ...calendarEntryId.required,
   ],
   properties: {
-    ...customerId.properties,
+    ...calendarEntryId.properties,
+    customer,
     ...day.properties,
     ...base.properties,
     entryType: {
       type: 'string',
       const: CalendarEntryType.Work,
+    },
+    isPaid: {
+      type: 'boolean',
     },
     prices: {
       type: 'array',
@@ -70,14 +81,14 @@ const workEntryRequestSchema: StrictJSONSchema7<Calendar.Entry.WorkEntryRequest>
             type: 'object',
             additionalProperties: false,
             required: [
-              ...priceId.required,
+              ...price.required,
               ...quantity.required,
             ],
             properties: {
-              ...priceId.properties,
+              ...price.properties,
               ...quantity.properties,
             },
-          }, 
+          },
           {
             type: 'object',
             additionalProperties: false,
@@ -96,11 +107,11 @@ const workEntryRequestSchema: StrictJSONSchema7<Calendar.Entry.WorkEntryRequest>
   },
 };
 
-const schema: StrictJSONSchema7<Calendar.Entry.Request> = {
+const schema: StrictJSONSchema7<Calendar.Entry.Response> = {
   oneOf: [
-    personalEntryRequestSchema,
-    issueEntryRequestSchema,
-    workEntryRequestSchema,
+    personalEntryResponseSchema,
+    issueEntryResponseSchema,
+    workEntryResponseSchema,
   ],
 };
 

@@ -922,7 +922,7 @@ export namespace Calendar {
       entryType: T;
     };
 
-    type Base = TimeInterval & {
+    export type Base = TimeInterval & {
       title: string;
       description: string;      
     };
