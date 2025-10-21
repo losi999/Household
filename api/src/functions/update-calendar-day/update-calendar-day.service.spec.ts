@@ -56,7 +56,7 @@ describe('Update calendar day service', () => {
       expect.assertions(5);
     });
 
-    it('if holiday is about to be deleted', async () => {
+    it('if holiday is about to be updated', async () => {
       const queriedDocument = calendarDayDataFactory.document({
         dayType: CalendarDayType.Holiday,
       });

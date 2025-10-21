@@ -302,3 +302,8 @@ workflows:
           testCommand: "customer"
           requires:
             - api_test_setup
+      - test:
+          name: test_calendar
+          testCommand: "calendar"
+          requires:
+            - api_test_setup

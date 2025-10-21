@@ -74,6 +74,23 @@ describe('Update price service', () => {
     });
 
     it('if unable to update price', async () => {
+      mockPriceService.functions.findPriceById.mockResolvedValue({
+        ...queriedDocument,
+        isArchived: true,
+      });
+
+      await service({
+        body,
+        priceId,
+        expiresIn: undefined,
+      }).catch(validateError('Price is archived', 400));
+      validateFunctionCall(mockPriceService.functions.findPriceById, priceId);
+      validateFunctionCall(mockPriceDocumentConverter.functions.update);
+      validateFunctionCall(mockPriceService.functions.updatePrice);
+      expect.assertions(5);
+    });
+
+    it('if unable to update price', async () => {
       mockPriceService.functions.findPriceById.mockResolvedValue(queriedDocument);
       mockPriceDocumentConverter.functions.update.mockReturnValue(updateQuery);
       mockPriceService.functions.updatePrice.mockRejectedValue('this is a mongo error');

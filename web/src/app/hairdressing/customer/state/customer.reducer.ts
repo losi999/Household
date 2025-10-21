@@ -16,7 +16,6 @@ export const customerReducer = createReducer<Customer.Response[]>([],
       rating,
       jobs: [],
       blacklistedCustomers: [],
-      workEntries: [],
     })
       .toSorted((a, b) => a.name.localeCompare(b.name, 'hu', {
         sensitivity: 'base',

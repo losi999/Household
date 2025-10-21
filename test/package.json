@@ -18,6 +18,7 @@
     "test:file": "yarn test --spec \"./src/api/file/**/*\"",
     "test:price": "yarn test --spec \"./src/api/price/**/*\"",
     "test:customer": "yarn test --spec \"./src/api/customer/**/*\"",
+    "test:calendar": "yarn test --spec \"./src/api/calendar/**/*\"",
     "test:transaction-common": "yarn test --spec \"./src/api/transaction/common/**/*\"",
     "test:transaction-deferred": "yarn test --spec \"./src/api/transaction/deferred/**/*\"",
     "test:transaction-payment": "yarn test --spec \"./src/api/transaction/payment/**/*\"",

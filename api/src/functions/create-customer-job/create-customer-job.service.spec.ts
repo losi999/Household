@@ -113,6 +113,21 @@ describe('Create customer job service', () => {
       expect.assertions(6);
     });
 
+    it('if some of the prices are not found', async () => {
+      mockCustomerService.functions.findCustomerById.mockResolvedValue(queriedCustomer);
+      mockPriceService.functions.findPricesByIds.mockResolvedValue([]);
+
+      await service({
+        body,
+        customerId,
+      }).catch(validateError('Some of the prices are not found', 400));
+      validateFunctionCall(mockCustomerService.functions.findCustomerById, customerId);
+      validateFunctionCall(mockPriceService.functions.findPricesByIds, [priceId]);
+      validateFunctionCall(mockCustomerDocumentConverter.functions.addJob);
+      validateFunctionCall(mockCustomerService.functions.updateCustomer);
+      expect.assertions(6);
+    });
+
     it('if unable to update document', async () => {
       mockCustomerService.functions.findCustomerById.mockResolvedValue(queriedCustomer);
       mockPriceService.functions.findPricesByIds.mockResolvedValue([queriedPriceDocument]);
