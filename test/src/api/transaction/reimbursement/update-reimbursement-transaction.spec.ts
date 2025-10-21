@@ -674,7 +674,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/payment (reimbursement
                   billingStartDate: '2022-06-03',
                 }))
                 .expectBadRequestResponse()
-                .expectTooEarlyDateProperty('billingEndDate', 'body');
+                .expectTooEarlyDateProperty('billingEndDate', true, 'body');
             });
           });
 

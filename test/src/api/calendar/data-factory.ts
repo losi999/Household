@@ -43,12 +43,9 @@ export const calendarDayDataFactory = (() => {
     };
   };
 
-  const createCalendarDayDocument = (ctx?: {
-    body?: Omit<Partial<Calendar.Day.Request>, 'dayType'>;
-  } 
-  & Partial<Calendar.DayProp>
-  & Partial<Calendar.Day.DayType<CalendarDayType>>,
-  ): Calendar.Day.Document => {
+  const createCalendarDayDocument = (ctx?: (Partial<Calendar.DayProp> & Calendar.Day.DayType<CalendarDayType.Holiday | CalendarDayType.Vacation>) | (Partial<Calendar.DayProp> & Calendar.Day.DayType<CalendarDayType.Workday> & {
+    body?: Omit<Partial<Calendar.Day.WorkdayRequest>, 'dayType'>
+  })): Calendar.Day.Document => {
     const day = ctx?.day ?? createFutureCalendarDay();
     const dayType = ctx?.dayType ?? CalendarDayType.Workday;
     const expiresAt = addSeconds(Cypress.env('EXPIRES_IN'));
@@ -56,14 +53,14 @@ export const calendarDayDataFactory = (() => {
     if (dayType === CalendarDayType.Workday) {
       return {
         day,
-        ...createCalendarWorkdayRequest(ctx?.body),
+        ...createCalendarWorkdayRequest(),
         expiresAt,
       };
     }
 
     return {
       day,
-      ...createCalendarVacationRequest(ctx?.body),
+      ...createCalendarVacationRequest(),
       dayType,
       expiresAt,  
       end: undefined,

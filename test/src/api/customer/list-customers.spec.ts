@@ -17,7 +17,7 @@ describe('GET /customer/v1/customers', () => {
     blacklistedCustomer = customerDataFactory.document();
     priceDocument = priceDataFactory.document();
 
-    customerDocument1 = customerDataFactory.document({ //TODO work entries
+    customerDocument1 = customerDataFactory.document({
       blacklistedCustomers: [blacklistedCustomer],
       jobs: [
         {

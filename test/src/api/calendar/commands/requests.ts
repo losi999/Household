@@ -75,10 +75,11 @@ const requestDeleteCalendarDay = (idToken: string, day: Calendar.DayProp['day'])
   }) as Cypress.ChainableResponse;
 };
 
-const requestListCalendarDays = (idToken: string) => {
+const requestListCalendarDays = (idToken: string, dateRange: Calendar.DateRange) => {
   return cy.request({
     method: 'GET',
     url: '/calendar/v1/days',
+    qs: dateRange,
     headers: {
       Authorization: idToken,
       [headerExpiresIn]: Cypress.env('EXPIRES_IN'),

@@ -1,224 +1,11 @@
-import { Calendar, Customer, Transaction } from '@household/shared/types/types';
+import { Calendar, Transaction } from '@household/shared/types/types';
 import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/test/api/types';
-import { getAccountId, getCalendarEntryId, getCategoryId, getCustomerId, getPriceId, getTransactionId, timeSlotToTimeString } from '@household/shared/common/utils';
+import { getAccountId, getCalendarEntryId, getCategoryId, getCustomerId, getPriceId, getTransactionId } from '@household/shared/common/utils';
 import { expectEmptyObject, expectRemainingProperties } from '@household/test/api/utils';
 import { isListedPrice, isPriceBase } from '@household/shared/common/type-guards';
 import { CalendarDayType, CalendarEntryType, PaymentType, SettingKey, TransactionType } from '@household/shared/enums';
 import { default as moment } from 'moment-timezone';
-
-// const validateUnchangedCustomerBase = (actual: Customer.Base, expected: Customer.Base) => {
-//   expect(actual.name, 'name').to.equal(expected.name);
-//   expect(actual.description, 'description').to.equal(expected.description);
-//   expect(actual.isGroup, 'isGroup').to.equal(expected.isGroup);
-//   expect(actual.rating, 'rating').to.equal(expected.rating);
-// };
-
-// const validateUnchangedBlacklistedCustomers = (actual: Customer.Document[], expected: Customer.Document[], affectedBlacklistedCustomerId?: Customer.Id) => {
-//   const act = affectedBlacklistedCustomerId ? actual.filter(a => getCustomerId(a) !== affectedBlacklistedCustomerId) : actual;
-//   const exp = affectedBlacklistedCustomerId ? expected.filter(a => getCustomerId(a) !== affectedBlacklistedCustomerId) : expected;
-
-//   expect(act.length, 'number of blacklisted customers not affected').to.equal(exp.length);
-//   act.forEach((a) => {
-//     const customerId = getCustomerId(a);
-//     const e = exp.find(x => getCustomerId(x) === customerId);
-//     expect(e, `customer ${customerId} is still blacklisted`).to.not.be.undefined;
-//   });
-// };
-
-// const validateUnchangedCustomerJobs = (actual: Customer.Job.Document[], expected: Customer.Job.Document[]) => {
-//   expect(actual.length, 'number of customer jobs').to.equal(expected.length);
-//   actual.forEach(({ name, description, duration, prices, ...empty }) => {
-//     const exp = expected.find(e => name === e.name);
-    
-//     expect(name, 'job.name').to.equal(exp.name);
-//     expect(description, 'job.description').to.equal(exp.description);
-//     expect(duration, 'job.duration').to.equal(exp.duration);
-//     expect(prices.length, 'job.prices.length').to.equal(exp.prices.length);
-//     for (let i = 0; i < prices.length; i += 1) {
-//       const actualJobPrice = prices[i];
-//       const expectJobPrice = exp.prices[i];
-
-//       if (isPriceBase(actualJobPrice)) {
-//         if (isPriceBase(expectJobPrice)) {
-//           expect(actualJobPrice.name, 'job.prices.name').to.equal(expectJobPrice.name);
-//           expect(actualJobPrice.amount, 'job.prices.amount').to.equal(expectJobPrice.amount);
-//         } else {
-//           expect(true, 'job prices do not match').to.be.false;
-//         }
-//       } else {
-//         if (!isPriceBase(expectJobPrice)) {
-//           expect(getPriceId(actualJobPrice.price), 'job.prices.priceId').to.equal(getPriceId(expectJobPrice.price));
-//           expect(actualJobPrice.quantity, 'job.prices.quantity').to.equal(expectJobPrice.quantity);
-//         } else {
-//           expect(true, 'job prices do not match').to.be.false;
-//         }
-//       }
-//     }
-//     expectEmptyObject(empty);
-//   });
-// };
-
-// const validateCustomerDocument = (response: Customer.CustomerId, request: Customer.Request, originalDocument?: Pick<Customer.Document, 'blacklistedCustomers' | 'jobs'>) => {
-//   const id = response?.customerId;
-
-//   cy.log('Get customer document', id)
-//     .findCustomerDocumentById(id)
-//     .should((document) => {
-//       expect(getCustomerId(document), '_id').to.equal(id);
-//       const { name, description, isGroup, rating, blacklistedCustomers, jobs, ...internal } = document;
-    
-//       expect(name, 'name').to.equal(request.name);
-//       expect(description, 'description').to.equal(request.description);
-//       expect(isGroup, 'isGroup').to.equal(request.isGroup);
-//       expect(rating, 'rating').to.equal(request.rating);
-//       validateUnchangedCustomerJobs(jobs, originalDocument?.jobs ?? []);
-//       validateUnchangedBlacklistedCustomers(blacklistedCustomers, originalDocument?.blacklistedCustomers ?? []);
-//       expectRemainingProperties(internal);
-//     });
-// };
-
-// const validateCustomerJobCreated = (originalDocument: Customer.Document, jobRequest: Customer.Job.Request) => {
-//   const customerId = getCustomerId(originalDocument);
-
-//   cy.log('Get customer document', customerId)
-//     .findCustomerDocumentById(customerId)
-//     .should((document) => {
-//       expect(getCustomerId(document), '_id').to.equal(customerId);
-//       const { name, description, isGroup, rating, blacklistedCustomers, jobs, ...internal } = document;
-//       const createdJob = jobs.pop();
-
-//       validateUnchangedCustomerBase(document, originalDocument);
-//       validateUnchangedBlacklistedCustomers(blacklistedCustomers, originalDocument.blacklistedCustomers);
-//       validateUnchangedCustomerJobs(jobs, originalDocument.jobs);
-
-//       expect(createdJob.name, 'job.name').to.equal(jobRequest.name);
-//       expect(createdJob.description, 'job.description').to.equal(jobRequest.description);
-//       expect(createdJob.duration, 'job.duration').to.equal(jobRequest.duration);
-//       expect(createdJob.prices.length, 'job.prices.length').to.equal(jobRequest.prices.length);
-//       for (let i = 0; i < createdJob.prices.length; i += 1) {
-//         const jobPriceDocument = createdJob.prices[i];
-//         const jobPriceRequest = jobRequest.prices[i];
-
-//         if (isPriceBase(jobPriceDocument)) {
-//           if (isPriceBase(jobPriceRequest)) {
-//             expect(jobPriceDocument.name, 'job.prices.name').to.equal(jobPriceRequest.name);
-//             expect(jobPriceDocument.amount, 'job.prices.amount').to.equal(jobPriceRequest.amount);
-//           } else {
-//             expect(true, 'job prices do not match').to.be.false;
-//           }
-//         } else {
-//           if (!isPriceBase(jobPriceRequest)) {
-//             expect(getPriceId(jobPriceDocument.price), 'job.prices.priceId').to.equal(jobPriceRequest.priceId);
-//             expect(jobPriceDocument.quantity, 'job.prices.quantity').to.equal(jobPriceRequest.quantity);
-//           } else {
-//             expect(true, 'job prices do not match').to.be.false;
-//           }
-//         }
-//       }
-//       expectRemainingProperties(internal);
-//     });
-// };
-
-// const validateCustomerJobUpdated = (originalDocument: Customer.Document, jobName: string, jobRequest: Customer.Job.Request) => {
-//   const customerId = getCustomerId(originalDocument);
-
-//   cy.log('Get customer document', customerId)
-//     .findCustomerDocumentById(customerId)
-//     .should((document) => {
-//       expect(getCustomerId(document), '_id').to.equal(customerId);
-//       const { name, description, isGroup, rating, blacklistedCustomers, jobs, ...internal } = document;
-
-//       validateUnchangedCustomerBase(document, originalDocument);
-//       validateUnchangedBlacklistedCustomers(blacklistedCustomers, originalDocument.blacklistedCustomers);
-//       validateUnchangedCustomerJobs(jobs.filter(j => j.name !== jobRequest.name), originalDocument.jobs.filter(j => j.name !== jobName));
-      
-//       const updatedJob = jobs.find(j => j.name === jobRequest.name);
-//       expect(updatedJob.name, 'job.name').to.equal(jobRequest.name);
-//       expect(updatedJob.description, 'job.description').to.equal(jobRequest.description);
-//       expect(updatedJob.duration, 'job.duration').to.equal(jobRequest.duration);
-//       expect(updatedJob.prices.length, 'job.prices.length').to.equal(jobRequest.prices.length);
-//       for (let i = 0; i < updatedJob.prices.length; i += 1) {
-//         const jobPriceDocument = updatedJob.prices[i];
-//         const jobPriceRequest = jobRequest.prices[i];
-
-//         if (isPriceBase(jobPriceDocument)) {
-//           if (isPriceBase(jobPriceRequest)) {
-//             expect(jobPriceDocument.name, 'job.prices.name').to.equal(jobPriceRequest.name);
-//             expect(jobPriceDocument.amount, 'job.prices.amount').to.equal(jobPriceRequest.amount);
-//           } else {
-//             expect(true, 'job prices do not match').to.be.false;
-//           }
-//         } else {
-//           if (!isPriceBase(jobPriceRequest)) {
-//             expect(getPriceId(jobPriceDocument.price), 'job.prices.priceId').to.equal(jobPriceRequest.priceId);
-//             expect(jobPriceDocument.quantity, 'job.prices.quantity').to.equal(jobPriceRequest.quantity);
-//           } else {
-//             expect(true, 'job prices do not match').to.be.false;
-//           }
-//         }
-//       }
-//       expectRemainingProperties(internal);
-//     });
-// };
-
-// const validateCustomerJobDeleted = (originalDocument: Customer.Document, jobName: string) => {
-//   const customerId = getCustomerId(originalDocument);
-
-//   cy.log('Get customer document', customerId)
-//     .findCustomerDocumentById(customerId)
-//     .should((document) => {
-//       expect(getCustomerId(document), '_id').to.equal(customerId);
-//       const { name, description, isGroup, rating, blacklistedCustomers, jobs, ...internal } = document;
-
-//       validateUnchangedCustomerBase(document, originalDocument);
-//       validateUnchangedBlacklistedCustomers(blacklistedCustomers, originalDocument.blacklistedCustomers);
-//       validateUnchangedCustomerJobs(jobs, originalDocument.jobs.filter(j => j.name !== jobName));
-      
-//       const deletedJob = jobs.find(j => j.name === jobName);
-//       expect(deletedJob, 'job has been deleted').to.be.undefined;
-//       expectRemainingProperties(internal);
-//     });
-// };
-
-// const validateCustomerAddedToBlacklist = (originalDocument: Customer.Document, blacklistedCustomer: Customer.Document) => {
-//   const customerId = getCustomerId(originalDocument);
-
-//   cy.log('Get customer document', customerId)
-//     .findCustomerDocumentById(customerId)
-//     .should((document) => {
-//       expect(getCustomerId(document), '_id').to.equal(customerId);
-//       const { name, description, isGroup, rating, blacklistedCustomers, jobs, ...internal } = document;
-      
-//       validateUnchangedCustomerBase(document, originalDocument);
-//       validateUnchangedCustomerJobs(jobs, originalDocument.jobs);
-//       validateUnchangedBlacklistedCustomers(blacklistedCustomers, originalDocument.blacklistedCustomers, getCustomerId(blacklistedCustomer));
-      
-//       const addedBlacklistedCustomer = blacklistedCustomers.find(c => getCustomerId(c) === getCustomerId(blacklistedCustomer));
-//       expect(addedBlacklistedCustomer, `customer ${customerId} is added to blacklist`).to.not.be.undefined;
-
-//       expectRemainingProperties(internal);
-//     });
-// };
-
-// const validateCustomerRemovedFromBlacklist = (originalDocument: Customer.Document, blacklistedCustomer: Customer.Document) => {
-//   const customerId = getCustomerId(originalDocument);
-
-//   cy.log('Get customer document', customerId)
-//     .findCustomerDocumentById(customerId)
-//     .should((document) => {
-//       expect(getCustomerId(document), '_id').to.equal(customerId);
-//       const { name, description, isGroup, rating, blacklistedCustomers, jobs, ...internal } = document;
-      
-//       validateUnchangedCustomerBase(document, originalDocument);
-//       validateUnchangedCustomerJobs(jobs, originalDocument.jobs);
-//       validateUnchangedBlacklistedCustomers(blacklistedCustomers, originalDocument.blacklistedCustomers, getCustomerId(blacklistedCustomer));
-      
-//       const removedBlacklistedCustomer = blacklistedCustomers.find(c => getCustomerId(c) === getCustomerId(blacklistedCustomer));
-//       expect(removedBlacklistedCustomer, `customer ${customerId} is removed to blacklist`).to.be.undefined;
-
-//       expectRemainingProperties(internal);
-//     });
-// };
+import { WORKDAY_START, WORKDAY_END } from '@household/shared/constants';
 
 const validateCalendarEntryResponseBase = ({ calendarEntryId, day, description, end, start, title }: Calendar.Entry.ResponseBase, document: Calendar.Entry.Document) => {
   expect(calendarEntryId, 'calendarEntryId').to.equal(getCalendarEntryId(document));
@@ -281,13 +68,13 @@ const validateCalendarEntryResponse = (response: Calendar.Entry.Response, docume
   }
 };
 
-// const validateInCustomerListResponse = (responses: Customer.Response[], document: Customer.Document) => {
-//   const response = responses.find(r => r.customerId === getCustomerId(document));
-//   validateCustomerResponse(response, document);
-//   return cy.wrap(responses, {
-//     log: false,
-//   }) as Cypress.ChainableResponseBody;
-// };
+const validateInCalendarEntryListResponse = (responses: Calendar.Entry.Response[], document: Calendar.Entry.Document) => {
+  const response = responses.find(r => r.calendarEntryId === getCalendarEntryId(document));
+  validateCalendarEntryResponseBase(response, document);
+  return cy.wrap(responses, {
+    log: false,
+  }) as Cypress.ChainableResponseBody;
+};
 
 const validateCalendarEntryDocument = (response: Calendar.Entry.CalendarEntryId, request: Calendar.Entry.Request) => {
   const id = response.calendarEntryId;
@@ -306,8 +93,8 @@ const validateCalendarEntryDocument = (response: Calendar.Entry.CalendarEntryId,
         expect(getCustomerId(customer), 'customer').to.equal(request.customerId);
         expect(isPaid, 'isPaid').to.be.false;
         expect(transaction, 'transaction').to.be.undefined;
-        expect(prices.length, 'prices.length').to.equal(request.prices.length);
-        for (let i = 0; i < prices.length; i += 1) {
+        expect(prices?.length, 'prices.length').to.equal(request.prices?.length);
+        for (let i = 0; i < prices?.length; i += 1) {
           const priceDocument = prices[i];
           const priceRequest = request.prices[i];
 
@@ -455,6 +242,56 @@ const validateCalendarDayDocument = (requestDay: Calendar.DayProp['day'], reques
     });
 };
 
+const validateInCalendarDayResponseList = (responses: Calendar.Day.Response[], dayInput: Calendar.DayProp['day'], calendarEntryDocument: Calendar.Entry.Document, calendarDayDocument?: Calendar.Day.Document) => {
+  const response = responses.find(r => r.day === dayInput);
+  switch(response.dayType) {
+    case CalendarDayType.Workday: {
+      const { day, dayType, end, start, entries, ...empty } = response;
+
+      expect(day, 'day').to.equal(dayInput);
+      expect(dayType, 'dayType').to.equal(CalendarDayType.Workday);
+      expect(start, 'start').to.equal(calendarDayDocument?.start ?? WORKDAY_START);
+      expect(end, 'end').to.equal(calendarDayDocument?.end ?? WORKDAY_END);
+      
+      cy.validateNestedObject('entries', entries).validateInCalendarEntryListResponse(calendarEntryDocument);
+
+      expectEmptyObject(empty);
+    } break;
+    case CalendarDayType.Weekend: {
+      const { day, dayType, end, start, entries, ...empty } = response;
+      expect(day, 'day').to.equal(dayInput);
+      expect(dayType, 'dayType').to.equal(CalendarDayType.Weekend);
+      expect(start, 'start').to.equal(calendarDayDocument?.start ?? undefined);
+      expect(end, 'end').to.equal(calendarDayDocument?.end ?? undefined);
+      
+      cy.validateNestedObject('entries', entries).validateInCalendarEntryListResponse(calendarEntryDocument);
+
+      expectEmptyObject(empty);
+    } break;
+    case CalendarDayType.Holiday:{
+      const { day, dayType, entries, ...empty } = response;
+      expect(day, 'day').to.equal(dayInput);
+      expect(dayType, 'dayType').to.equal(CalendarDayType.Holiday);
+      
+      cy.validateNestedObject('entries', entries).validateInCalendarEntryListResponse(calendarEntryDocument);
+
+      expectEmptyObject(empty);
+    } break;
+    case CalendarDayType.Vacation: {
+      const { day, dayType, entries, ...empty } = response;
+      expect(day, 'day').to.equal(dayInput);
+      expect(dayType, 'dayType').to.equal(CalendarDayType.Vacation);
+      
+      cy.validateNestedObject('entries', entries).validateInCalendarEntryListResponse(calendarEntryDocument);
+
+      expectEmptyObject(empty);
+    } break;
+  }
+  return cy.wrap(responses, {
+    log: false,
+  }) as Cypress.ChainableResponseBody;
+};
+
 const validateCalendarDayDeleted = (day: Calendar.DayProp['day']) => {
   cy.log('Get calendar day document', day)
     .findCalendarDayDocumentByDay(day)
@@ -469,6 +306,8 @@ export const setCalendarValidationCommands = () => {
   }, {
     validateCalendarEntryDocument,
     validateCalendarEntryResponse,
+    validateInCalendarEntryListResponse,
+    validateInCalendarDayResponseList,
   });
   
   Cypress.Commands.addAll({
@@ -493,7 +332,8 @@ declare global {
     interface ChainableResponseBody extends Chainable {
       validateCalendarEntryDocument: CommandFunctionWithPreviousSubject<typeof validateCalendarEntryDocument>;
       validateCalendarEntryResponse: CommandFunctionWithPreviousSubject<typeof validateCalendarEntryResponse>;
-      // validateInCustomerListResponse: CommandFunctionWithPreviousSubject<typeof validateInCustomerListResponse>;
+      validateInCalendarEntryListResponse: CommandFunctionWithPreviousSubject<typeof validateInCalendarEntryListResponse>;
+      validateInCalendarDayResponseList: CommandFunctionWithPreviousSubject<typeof validateInCalendarDayResponseList>;
     }
   }
 }

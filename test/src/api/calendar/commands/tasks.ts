@@ -7,9 +7,9 @@ const saveCalendarDayDocument = (...params: Parameters<ICalendarDayService['save
   return cy.task('saveCalendarDay', params);
 };
 
-// const saveCustomerDocuments = (...params: Parameters<ICalendarDayService['saveCustomers']>) => {
-//   return cy.task('saveCustomers', params);
-// };
+const clearCalendarDay = (...params: Parameters<ICalendarDayService['clearCalendarDay']>) => {
+  return cy.task<Calendar.Day.Document>('clearCalendarDay', params);
+};
 
 const findCalendarDayDocumentByDay = (...params: Parameters<ICalendarDayService['findCalendarDayByDay']>) => {
   return cy.task<Calendar.Day.Document>('findCalendarDayByDay', params);
@@ -30,6 +30,7 @@ export const setCalendarTaskCommands = () => {
     saveCalendarDayDocument,
     findCalendarEntryDocumentById,
     saveCalendarEntryDocument,
+    clearCalendarDay,
   });
 };
 
@@ -40,6 +41,7 @@ declare global {
       findCalendarEntryDocumentById: CommandFunction<typeof findCalendarEntryDocumentById>;
       saveCalendarDayDocument: CommandFunction<typeof saveCalendarDayDocument>;
       saveCalendarEntryDocument: CommandFunction<typeof saveCalendarEntryDocument>;
+      clearCalendarDay: CommandFunction<typeof clearCalendarDay>;
     }
   }
 }

@@ -399,7 +399,7 @@ describe('Calendar work entry request schema', () => {
             quantity: '1' as any,
           }),
         ],
-      }), 'quantity', 'number');
+      }), 'quantity', 'integer');
 
       tester.exclusiveMinimum(calendarEntryDataFactory.workRequest({
         prices: [

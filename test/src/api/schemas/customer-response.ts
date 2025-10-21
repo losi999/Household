@@ -87,9 +87,6 @@ const schema: StrictJSONSchema7<Customer.Response> = {
         },
       },
     },
-    workEntries: {
-      type: 'array',
-    },
   },
 };
 

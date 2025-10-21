@@ -18,7 +18,8 @@ describe('Update customer job service', () => {
 
     service = updateCustomerJobServiceFactory(mockCustomerService.service, mockCustomerDocumentConverter.service, mockPriceService.service);
   });
-
+  
+  const jobName = 'old job name';
   const queriedPriceDocument = priceDataFactory.document();
   const priceId = getPriceId(queriedPriceDocument);
   const body = customerDataFactory.jobRequest({
@@ -31,10 +32,15 @@ describe('Update customer job service', () => {
       priceDataFactory.base(),
     ],
   });
-  const queriedCustomer = customerDataFactory.document();
+  const queriedCustomer = customerDataFactory.document({
+    jobs: [
+      customerDataFactory.jobDocument({
+        name: jobName,
+      }),
+    ],
+  });
   const documentUpdate = createDocumentUpdate2();
   const customerId = customerDataFactory.id();
-  const jobName = 'old job name';
 
   it('should return', async () => {
     mockCustomerService.functions.findCustomerById.mockResolvedValue(queriedCustomer);
@@ -85,7 +91,32 @@ describe('Update customer job service', () => {
       expect.assertions(6);
     });
 
+    it('if no customer job found', async () => {
+      const queriedCustomer = customerDataFactory.document();
+      mockCustomerService.functions.findCustomerById.mockResolvedValue(queriedCustomer);
+
+      await service({
+        body,
+        customerId,
+        name: jobName,
+      }).catch(validateError('No customer job found', 404));
+      validateFunctionCall(mockCustomerService.functions.findCustomerById, customerId);
+      validateFunctionCall(mockPriceService.functions.findPricesByIds);
+      validateFunctionCall(mockCustomerDocumentConverter.functions.updateJob);
+      validateFunctionCall(mockCustomerService.functions.updateCustomer);
+      expect.assertions(6);
+    });
+
     it('if job name already exists', async () => {
+      const queriedCustomer = customerDataFactory.document({
+        jobs: [
+          customerDataFactory.jobDocument(),
+          customerDataFactory.jobDocument({
+            name: jobName,
+          }),
+        ],
+      });
+
       const body = customerDataFactory.jobRequest({
         name: queriedCustomer.jobs[0].name,
       });

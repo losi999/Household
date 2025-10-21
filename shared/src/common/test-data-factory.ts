@@ -868,7 +868,6 @@ const createCustomerResponse: DataFactoryFunction<Customer.Response> = (resp) =>
     isGroup: false,
     jobs: [createCustomerJobResponse()],
     blacklistedCustomers: [],
-    workEntries: [],
     ...resp,
   };
 };

@@ -828,7 +828,6 @@ export namespace Customer {
   & Jobs
   & {
     blacklistedCustomers: ResponseBase[];
-    workEntries: Calendar.Entry.ResponseBase[]
   };
 
   export type Request = Base;
@@ -894,18 +893,13 @@ export namespace Calendar {
     & DayProp
     & TimeInterval;
 
-    type ResponseBase = DayProp & {
+    export type ResponseBase = DayProp & {
       entries: Entry.Response[]
     };
 
-    type PlannedTimespan = {
-      plannedStart: number;
-      plannedEnd: number;
-    };
-
-    type WorkdayResponse = DayType<Enum.CalendarDayType.Workday> & TimeInterval & ResponseBase & PlannedTimespan;
-    type WeekendResponse = DayType<Enum.CalendarDayType.Weekend> & TimeInterval & ResponseBase & PlannedTimespan;
-    type VacationResponse = DayType<Enum.CalendarDayType.Vacation> & ResponseBase;
+    export type WorkdayResponse = DayType<Enum.CalendarDayType.Workday> & TimeInterval & ResponseBase;
+    export type WeekendResponse = DayType<Enum.CalendarDayType.Weekend> & TimeInterval & ResponseBase;
+    export type VacationResponse = DayType<Enum.CalendarDayType.Vacation> & ResponseBase;
     export type HolidayResponse = DayType<Enum.CalendarDayType.Holiday> & ResponseBase;
 
     export type Response = WorkdayResponse | VacationResponse | HolidayResponse | WeekendResponse;

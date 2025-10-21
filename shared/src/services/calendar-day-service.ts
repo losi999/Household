@@ -8,13 +8,18 @@ export interface ICalendarDayService {
   deleteCalendarDay(day: Calendar.DayProp['day']): Promise<unknown>;
   updateCalendarDay(day: Calendar.DayProp['day'], updateQuery: DocumentUpdate<Calendar.Day.Document>): Promise<unknown>;
   listCalendarDays(data: Calendar.DateRange): Promise<Calendar.Day.Document[]>;
+  clearCalendarDay(day: Calendar.DayProp['day']): Promise<unknown>;
 }
 
 export const calendarDayServiceFactory = (mongodbService: IMongodbService): ICalendarDayService => {
 
   const instance: ICalendarDayService = {
     saveCalendarDay: (doc) => {
-      return mongodbService.calendarDays.create(doc);
+      return mongodbService.calendarDays.findOneAndReplace({
+        day: doc.day,
+      }, doc, {
+        upsert: true,
+      });
     },
     findCalendarDayByDay: async(day) => {
       return !day ? undefined : mongodbService.calendarDays.findOne({
@@ -28,6 +33,23 @@ export const calendarDayServiceFactory = (mongodbService: IMongodbService): ICal
           day,
         }, {
           session,
+        });
+      });
+    },
+    clearCalendarDay: async (day) => {
+      return mongodbService.inSession((session) => {
+        return session.withTransaction(async() => {
+          await mongodbService.calendarDays.deleteMany({
+            day,
+          }, {
+            session,
+          });
+
+          await mongodbService.calendarEntries.deleteMany({
+            day,
+          }, {
+            session,
+          });
         });
       });
     },

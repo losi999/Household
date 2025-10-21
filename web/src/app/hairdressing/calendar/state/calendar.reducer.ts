@@ -48,13 +48,13 @@ export const calendarReducer = createReducer<CalendarState>({},
     const storedDay = _state[day];
     let newDay: Calendar.Day.Response;
     if (request.dayType === CalendarDayType.Workday) {
-      const dayLimits = calculateWorkdayLimits(request.start, request.end, storedDay.entries);
+      const dayLimits = calculateWorkdayLimits(request.start, request.end, storedDay.entries); // TODO
       newDay = {
         ...storedDay,
         dayType: storedDay.dayType === CalendarDayType.Weekend ? CalendarDayType.Weekend : CalendarDayType.Workday,
-        ...dayLimits,
-        plannedStart: request.start,
-        plannedEnd: request.end,
+        // ...dayLimits,
+        start: request.start,
+        end: request.end,
 
       };
     } else {
@@ -75,13 +75,13 @@ export const calendarReducer = createReducer<CalendarState>({},
     let newDay: Calendar.Day.Response;
     switch(storedDay.dayType) {
       case CalendarDayType.Vacation: {
-        const dayLimits = calculateWorkdayLimits(WORKDAY_START, WORKDAY_END, storedDay.entries);
+        const dayLimits = calculateWorkdayLimits(WORKDAY_START, WORKDAY_END, storedDay.entries); // TODO
         newDay = {
           ...storedDay,
           dayType: CalendarDayType.Workday,
-          ...dayLimits,
-          plannedEnd: WORKDAY_END,
-          plannedStart: WORKDAY_START,
+          // ...dayLimits,
+          end: WORKDAY_END,
+          start: WORKDAY_START,
         };
       } break;
       case CalendarDayType.Workday: {
@@ -156,7 +156,7 @@ export const calendarReducer = createReducer<CalendarState>({},
         switch (dayResponse.dayType) {
           case CalendarDayType.Weekend:
           case CalendarDayType.Workday: {
-            dayLimits = calculateWorkdayLimits(dayResponse.plannedStart, dayResponse.plannedEnd, entries);
+            // dayLimits = calculateWorkdayLimits(dayResponse.plannedStart, dayResponse.plannedEnd, entries); // TODO
           } break;
         }
       }
@@ -165,7 +165,7 @@ export const calendarReducer = createReducer<CalendarState>({},
         ...accumulator,
         [date]: {
           ...dayResponse,
-          ...dayLimits,
+          // ...dayLimits,
           entries,
         },
       };
@@ -191,7 +191,7 @@ export const calendarReducer = createReducer<CalendarState>({},
       switch (response.dayType) {
         case CalendarDayType.Weekend:
         case CalendarDayType.Workday: {
-          dayLimits = calculateWorkdayLimits(response.plannedStart, response.plannedEnd, entries);
+          // dayLimits = calculateWorkdayLimits(response.plannedStart, response.plannedEnd, entries); // TODO
         } break;
       }
 
@@ -199,7 +199,7 @@ export const calendarReducer = createReducer<CalendarState>({},
         ...accumulator,
         [date]: {
           ...response,
-          ...dayLimits,
+          // ...dayLimits,
           entries,
         },
       };

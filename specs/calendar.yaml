@@ -37,18 +37,6 @@ components:
           minimum: 0
           maximum: 96
 
-    PlannedTimeInterval:
-      type: object
-      properties:
-        plannedStart:
-          type: integer
-          minimum: 0
-          maximum: 96
-        plannedEnd:
-          type: integer
-          minimum: 0
-          maximum: 96
-
     VacationRequest:
       type: object
       required:
@@ -137,7 +125,6 @@ components:
         - oneOf:
             - allOf:
                 - $ref: "#/components/schemas/TimeInterval"
-                - $ref: "#/components/schemas/PlannedTimeInterval"
                 - type: object
                   properties:
                     dayType:

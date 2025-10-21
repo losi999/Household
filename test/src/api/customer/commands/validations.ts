@@ -219,7 +219,7 @@ const validateCustomerRemovedFromBlacklist = (originalDocument: Customer.Documen
 };
 
 const validateCustomerResponse = (response: Customer.Response, document: Customer.Document) => {
-  const { customerId, name, blacklistedCustomers, description, isGroup, jobs, rating, workEntries, ...empty } = response;
+  const { customerId, name, blacklistedCustomers, description, isGroup, jobs, rating, ...empty } = response;
 
   expect(customerId, 'customerId').to.equal(getCustomerId(document));
   expect(name, 'name').to.equal(document.name);
@@ -267,8 +267,6 @@ const validateCustomerResponse = (response: Customer.Response, document: Custome
       }
     }
   });
-
-  //TODO work entries
   expectEmptyObject(empty);
 };
 

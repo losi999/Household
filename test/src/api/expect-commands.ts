@@ -112,8 +112,8 @@ const expectTooLargeNumberProperty = (body: any, propertyName: string, maximum: 
   return body;
 };
 
-const expectTooEarlyDateProperty = (body: any, propertyName: string, requestPart: string) => {
-  expect(body[requestPart]).to.contain(propertyName).to.contain('>');
+const expectTooEarlyDateProperty = (body: any, propertyName: string, isExclusive: boolean, requestPart: string) => {
+  expect(body[requestPart]).to.contain(propertyName).to.contain(isExclusive ? '>' : '>=');
   return body;
 };
 

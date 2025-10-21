@@ -93,17 +93,24 @@ export const getCalendarEntryId = (doc: Calendar.Entry.Document | Types.ObjectId
 export const calculateWorkdayLimits = (defaultStart: number, defaultEnd: number, entries: Calendar.Entry.Response[] | Calendar.Entry.Document[]): {start: number; end: number;} => {
   const workEntries = entries.filter(e => e.entryType === CalendarEntryType.Work);
 
-  return workEntries.reduce<{start: number; end: number}>((accumulator, currentValue) => {
+  const calculated = workEntries.reduce<{start: number; end: number}>((accumulator, currentValue) => {
     const calculatedStart = currentValue.end - WORKDAY_LENGTH;
-    const calculatedend = currentValue.start + WORKDAY_LENGTH;
+    const calculatedEnd = currentValue.start + WORKDAY_LENGTH;
     return {
-      start: calculatedStart > accumulator.start ? calculatedStart : accumulator.start,
-      end: calculatedend < accumulator.end ? calculatedend : accumulator.end,
+      start: (calculatedStart > accumulator.start && calculatedStart < accumulator.end) ? calculatedStart : accumulator.start,
+      end: (calculatedEnd < accumulator.end && calculatedEnd > accumulator.start) ? calculatedEnd : accumulator.end,
     };
   }, {
+    start: 0,
+    end: 96,
+  });
+
+  console.log(calculated);
+
+  return {
     start: defaultStart,
     end: defaultEnd,
-  });
+  };
 };
 
 export const createWorkEntryTitle = (customer: Customer.Response, job?: Customer.Job.Response) => {

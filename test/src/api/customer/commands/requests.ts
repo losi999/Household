@@ -50,6 +50,17 @@ const requestGetCustomerList = (idToken: string) => {
   }) as Cypress.ChainableResponse;
 };
 
+const requestListCustomerWorks = (idToken: string, customerId: Customer.Id) => {
+  return cy.request({
+    method: 'GET',
+    url: `/customer/v1/customers/${customerId}/works`,
+    headers: {
+      Authorization: idToken,
+    },
+    failOnStatusCode: false,
+  }) as Cypress.ChainableResponse;
+};
+
 const requestCreateCustomerJob = (idToken: string, customerId: Customer.Id, job: Customer.Job.Request) => {
   return cy.request({
     body: job,
@@ -127,6 +138,7 @@ export const setCustomerRequestCommands = () => {
     requestAddCustomerToBlacklist,
     requestRemoveCustomerFromBlacklist,
     requestDeleteCustomerJob,
+    requestListCustomerWorks,
   });
 };
 
@@ -135,6 +147,7 @@ declare global {
     interface ChainableRequest extends Chainable {
       requestCreateCustomer: CommandFunctionWithPreviousSubject<typeof requestCreateCustomer>;
       requestGetCustomer: CommandFunctionWithPreviousSubject<typeof requestGetCustomer>;
+      requestListCustomerWorks: CommandFunctionWithPreviousSubject<typeof requestListCustomerWorks>;
       requestUpdateCustomer: CommandFunctionWithPreviousSubject<typeof requestUpdateCustomer>;
       requestGetCustomerList: CommandFunctionWithPreviousSubject<typeof requestGetCustomerList>;
       requestCreateCustomerJob: CommandFunctionWithPreviousSubject<typeof requestCreateCustomerJob>;

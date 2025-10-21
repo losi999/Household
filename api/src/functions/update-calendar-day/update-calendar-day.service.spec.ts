@@ -3,6 +3,7 @@ import { IUpdateCalendarDayService, updateCalendarDayServiceFactory } from '@hou
 import { calendarDayDataFactory, createDocumentUpdate2 } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { ICalendarDayDocumentConverter } from '@household/shared/converters/calendar-day-document-converter';
+import { CalendarDayType } from '@household/shared/enums';
 import { ICalendarDayService } from '@household/shared/services/calendar-day-service';
 
 describe('Update calendar day service', () => {
@@ -11,17 +12,21 @@ describe('Update calendar day service', () => {
   let mockCalendarDayDocumentConverter: Mock<ICalendarDayDocumentConverter>;
 
   beforeEach(() => {
-    mockCalendarDayService = createMockService('updateCalendarDay');
+    mockCalendarDayService = createMockService('findCalendarDayByDay', 'updateCalendarDay');
     mockCalendarDayDocumentConverter = createMockService('update');
 
     service = updateCalendarDayServiceFactory(mockCalendarDayService.service, mockCalendarDayDocumentConverter.service);
   });
-
+  
+  const queriedDocument = calendarDayDataFactory.document({
+    dayType: CalendarDayType.Workday,
+  });
   const body = calendarDayDataFactory.workdayRequest();
   const day = '2025-10-11';
   const updateQuery = createDocumentUpdate2();
 
   it('should return if calendar day is updated', async () => {
+    mockCalendarDayService.functions.findCalendarDayByDay.mockResolvedValue(queriedDocument);
     mockCalendarDayDocumentConverter.functions.update.mockReturnValue(updateQuery);
     mockCalendarDayService.functions.updateCalendarDay.mockResolvedValue(undefined);
 
@@ -30,13 +35,46 @@ describe('Update calendar day service', () => {
       day,
       expiresIn: undefined,
     });
+    validateFunctionCall(mockCalendarDayService.functions.findCalendarDayByDay, day);
     validateFunctionCall(mockCalendarDayDocumentConverter.functions.update, body, undefined);
     validateFunctionCall(mockCalendarDayService.functions.updateCalendarDay, day, updateQuery);
-    expect.assertions(2);
+    expect.assertions(3);
   });
 
   describe('should throw error', () => {
+    it('if unable to query calendar day', async () => {
+      mockCalendarDayService.functions.findCalendarDayByDay.mockRejectedValue('this is a mongo error');
+
+      await service({
+        body,
+        day,
+        expiresIn: undefined,
+      }).catch(validateError('Error while getting calendar day', 500));
+      validateFunctionCall(mockCalendarDayService.functions.findCalendarDayByDay, day);
+      validateFunctionCall(mockCalendarDayDocumentConverter.functions.update);
+      validateFunctionCall(mockCalendarDayService.functions.updateCalendarDay);
+      expect.assertions(5);
+    });
+
+    it('if holiday is about to be deleted', async () => {
+      const queriedDocument = calendarDayDataFactory.document({
+        dayType: CalendarDayType.Holiday,
+      });
+      mockCalendarDayService.functions.findCalendarDayByDay.mockResolvedValue(queriedDocument);
+
+      await service({
+        body,
+        day,
+        expiresIn: undefined,
+      }).catch(validateError('Selected calendar day is a national holiday', 400));
+      validateFunctionCall(mockCalendarDayService.functions.findCalendarDayByDay, day);
+      validateFunctionCall(mockCalendarDayDocumentConverter.functions.update);
+      validateFunctionCall(mockCalendarDayService.functions.updateCalendarDay);
+      expect.assertions(5);
+    });
+
     it('if unable to update calendar day', async () => {
+      mockCalendarDayService.functions.findCalendarDayByDay.mockResolvedValue(queriedDocument);
       mockCalendarDayDocumentConverter.functions.update.mockReturnValue(updateQuery);
       mockCalendarDayService.functions.updateCalendarDay.mockRejectedValue('this is a mongo error');
 
@@ -45,9 +83,10 @@ describe('Update calendar day service', () => {
         day,
         expiresIn: undefined,
       }).catch(validateError('Error while updating calendar day', 500));
+      validateFunctionCall(mockCalendarDayService.functions.findCalendarDayByDay, day);
       validateFunctionCall(mockCalendarDayDocumentConverter.functions.update, body, undefined);
       validateFunctionCall(mockCalendarDayService.functions.updateCalendarDay, day, updateQuery);
-      expect.assertions(4);
+      expect.assertions(5);
     });
   });
 });

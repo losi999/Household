@@ -3,6 +3,7 @@ import { calendarEntryDataFactory, createDocumentUpdate2, customerDataFactory, p
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getCustomerId, getPriceId } from '@household/shared/common/utils';
 import { ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
+import { CalendarEntryType } from '@household/shared/enums';
 import { ICalendarEntryService } from '@household/shared/services/calendar-entry-service';
 import { ICustomerService } from '@household/shared/services/customer-service';
 import { IPriceService } from '@household/shared/services/price-service';
@@ -24,13 +25,21 @@ describe('Update calendar entry service', () => {
   });
 
   const calendarEntryId = calendarEntryDataFactory.id();
-  const queriedCalendarEntry = calendarEntryDataFactory.document();
+  const queriedCalendarIssueEntry = calendarEntryDataFactory.document({
+    entryType: CalendarEntryType.Issue,
+  });
+  const queriedCalendarPersonalEntry = calendarEntryDataFactory.document({
+    entryType: CalendarEntryType.Personal,
+  });
+  const queriedCalendarWorkEntry = calendarEntryDataFactory.document({
+    entryType: CalendarEntryType.Work,
+  });
 
   const updateQuery = createDocumentUpdate2();
 
   it('should return if personal entry is updated', async () => {
     const body = calendarEntryDataFactory.personalRequest();
-    mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarEntry);
+    mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarPersonalEntry);
     mockCalendarEntryDocumentConverter.functions.update.mockReturnValue(updateQuery);
     mockCalendarEntryService.functions.updateCalendarEntry.mockResolvedValue(undefined);
 
@@ -51,7 +60,7 @@ describe('Update calendar entry service', () => {
 
   it('should return if issue entry is updated', async () => {
     const body = calendarEntryDataFactory.issueRequest();
-    mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarEntry);
+    mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarIssueEntry);
     mockCalendarEntryDocumentConverter.functions.update.mockReturnValue(updateQuery);
     mockCalendarEntryService.functions.updateCalendarEntry.mockResolvedValue(undefined);
 
@@ -85,7 +94,7 @@ describe('Update calendar entry service', () => {
         },
       ],
     });
-    mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarEntry);
+    mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarWorkEntry);
     mockCustomerService.functions.findCustomerById.mockResolvedValue(queriedCustomer);
     mockPriceService.functions.findPricesByIds.mockResolvedValue([queriedPrice]);
     mockCalendarEntryDocumentConverter.functions.update.mockReturnValue(updateQuery);
@@ -169,6 +178,23 @@ describe('Update calendar entry service', () => {
       expect.assertions(7);
     });
 
+    it('if calendar entry type is about to be changed', async () => {
+      const body = calendarEntryDataFactory.personalRequest();
+      mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarWorkEntry);
+
+      await service({
+        calendarEntryId,
+        body,
+        expiresIn: undefined,
+      }).catch(validateError('Entry type cannot be changed', 400));
+      validateFunctionCall(mockCalendarEntryService.functions.findCalendarEntryById, calendarEntryId);
+      validateFunctionCall(mockCalendarEntryDocumentConverter.functions.update);
+      validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntry);
+      validateFunctionCall(mockCustomerService.functions.findCustomerById);
+      validateFunctionCall(mockPriceService.functions.findPricesByIds);
+      expect.assertions(7);
+    });
+
     it('if calendar entry is already paid', async () => {
       const queriedCustomer = customerDataFactory.document();
       const customerId = getCustomerId(queriedCustomer);
@@ -185,7 +211,7 @@ describe('Update calendar entry service', () => {
         ],
       });
       mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue({
-        ...queriedCalendarEntry,
+        ...queriedCalendarWorkEntry,
         isPaid: true,
       });
 
@@ -217,7 +243,7 @@ describe('Update calendar entry service', () => {
           },
         ],
       });
-      mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarEntry);
+      mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarWorkEntry);
       mockCustomerService.functions.findCustomerById.mockRejectedValue('this is a mongo error');
 
       await service({
@@ -248,14 +274,14 @@ describe('Update calendar entry service', () => {
           },
         ],
       });
-      mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarEntry);
+      mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarWorkEntry);
       mockCustomerService.functions.findCustomerById.mockResolvedValue(undefined);
 
       await service({
         calendarEntryId,
         body,
         expiresIn: undefined,
-      }).catch(validateError('No customer found', 404));
+      }).catch(validateError('No customer found', 400));
       validateFunctionCall(mockCalendarEntryService.functions.findCalendarEntryById, calendarEntryId);
       validateFunctionCall(mockCalendarEntryDocumentConverter.functions.update);
       validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntry);
@@ -279,7 +305,7 @@ describe('Update calendar entry service', () => {
           },
         ],
       });
-      mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarEntry);
+      mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarWorkEntry);
       mockCustomerService.functions.findCustomerById.mockResolvedValue(queriedCustomer);
       mockPriceService.functions.findPricesByIds.mockRejectedValue('this is a mongo error');
 
@@ -311,7 +337,7 @@ describe('Update calendar entry service', () => {
           },
         ],
       });
-      mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarEntry);
+      mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarWorkEntry);
       mockCustomerService.functions.findCustomerById.mockResolvedValue(queriedCustomer);
       mockPriceService.functions.findPricesByIds.mockResolvedValue([]);
 
@@ -343,7 +369,7 @@ describe('Update calendar entry service', () => {
           },
         ],
       });
-      mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarEntry);
+      mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarWorkEntry);
       mockCustomerService.functions.findCustomerById.mockResolvedValue(queriedCustomer);
       mockPriceService.functions.findPricesByIds.mockResolvedValue([queriedPrice]);
       mockCalendarEntryDocumentConverter.functions.update.mockReturnValue(updateQuery);

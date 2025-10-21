@@ -894,6 +894,22 @@ paths:
             application/json:
               schema:
                 $ref: "customer.yaml#/components/schemas/CustomerId"
+  /customer/v1/customers/{customerId}/works:
+    parameters:
+      - $ref: "#/components/parameters/Path.CustomerId"
+    get:
+      tags:
+        - customer
+      responses:
+        200:
+          description: Customer works
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "calendar.yaml#/components/schemas/Entry.ResponseBase"
+
   /customer/v1/customers/{customerId}/jobs:
     parameters:
       - $ref: "#/components/parameters/Path.CustomerId"

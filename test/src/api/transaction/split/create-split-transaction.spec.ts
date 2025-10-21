@@ -1004,7 +1004,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ]))
                 .expectBadRequestResponse()
-                .expectTooEarlyDateProperty('billingEndDate', 'body');
+                .expectTooEarlyDateProperty('billingEndDate', true, 'body');
             });
           });
 
@@ -1384,7 +1384,7 @@ describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ]))
                 .expectBadRequestResponse()
-                .expectTooEarlyDateProperty('billingEndDate', 'body');
+                .expectTooEarlyDateProperty('billingEndDate', true, 'body');
             });
           });
 

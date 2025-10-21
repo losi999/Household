@@ -149,7 +149,7 @@ describe('Create calendar entry service', () => {
       await service({
         body,
         expiresIn: undefined,
-      }).catch(validateError('No customer found', 404));
+      }).catch(validateError('No customer found', 400));
       validateFunctionCall(mockCalendarEntryDocumentConverter.functions.create);
       validateFunctionCall(mockCalendarEntryService.functions.saveCalendarEntry);
       validateFunctionCall(mockCustomerService.functions.findCustomerById, customerId);

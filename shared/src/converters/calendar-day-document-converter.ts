@@ -1,4 +1,4 @@
-import { addSeconds, calculateWorkdayLimits, dateToISODateString } from '@household/shared/common/utils';
+import { addSeconds, dateToISODateString } from '@household/shared/common/utils';
 import { WORKDAY_START, WORKDAY_END } from '@household/shared/constants';
 import { ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
 import { CalendarDayType } from '@household/shared/enums';
@@ -63,15 +63,12 @@ export const calendarDayDocumentConverterFactory = (calendarEntryDocumentConvert
         }
 
         if (day?.dayType === CalendarDayType.Workday) {
-          const { start, end } = calculateWorkdayLimits(day.start, day.end, entriesForDay);
           return {
             day: dateString,
             dayType: isWeekend ? CalendarDayType.Weekend : CalendarDayType.Workday,
-            end,
-            start,
             entries: calendarEntryDocumentConverter.toResponseList(entriesForDay),
-            plannedEnd: day.end,
-            plannedStart: day.start,
+            start: day.start,
+            end: day.end,
           };
         }
 
@@ -82,20 +79,15 @@ export const calendarDayDocumentConverterFactory = (calendarEntryDocumentConvert
             entries: calendarEntryDocumentConverter.toResponseList(entriesForDay),
             start: undefined,
             end: undefined,
-            plannedEnd: undefined,
-            plannedStart: undefined,
           };
         }
-        const { start, end } = calculateWorkdayLimits(WORKDAY_START, WORKDAY_END, entriesForDay);
 
         return {
           day: dateString,
           dayType: CalendarDayType.Workday,
-          end,
-          start,
           entries: calendarEntryDocumentConverter.toResponseList(entriesForDay),
-          plannedEnd: WORKDAY_END,
-          plannedStart: WORKDAY_START,
+          end: WORKDAY_END,
+          start: WORKDAY_START,
         };
       });
 

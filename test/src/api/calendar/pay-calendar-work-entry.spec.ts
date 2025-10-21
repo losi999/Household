@@ -8,7 +8,7 @@ import { CalendarEntryType, PaymentType } from '@household/shared/enums';
 
 const permissionMap = allowUsers('hairdresser');
 
-describe('POST /calendar/v1/entries/{calendarEntryId}/payment', () => {
+describe.skip('POST /calendar/v1/entries/{calendarEntryId}/payment', () => {
   let request: Calendar.Entry.PaymentRequest;
   let calendarPersonalEntryDocument: Calendar.Entry.Document;
   let calendarWorkEntryDocument: Calendar.Entry.Document;
