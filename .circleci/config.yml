@@ -14,7 +14,6 @@ commands:
           name: Load env config
           command: cat .config >> $BASH_ENV
 orbs:
-  queue: eddiewebb/queue@3.3.3
   sam: circleci/aws-sam-serverless@6.0.3
 
 jobs:
@@ -167,9 +166,6 @@ jobs:
       - image: cypress/base:16.14.2
     working_directory: ~/repo
     steps:
-      - queue/hold:
-          queue: "api-test-queue"
-          max-concurrency: 7
       - attach_workspace:
           at: ~/
       - load-config
@@ -187,8 +183,6 @@ jobs:
           name: Running tests
           working_directory: test
           command: export ENV=$ENV && yarn run test:<<parameters.testCommand>>
-      - queue/exit:
-          queue: "api-test-queue"
       - store_artifacts:
           path: test/cypress/screenshots
           destination: test/cypress/screenshots
@@ -224,6 +218,7 @@ workflows:
             - web_deploy
           filters: pipeline.git.branch != "master" and pipeline.parameters.skip_api_tests != true
       - test:
+          serial-group: api-test
           matrix:
             parameters:
               testCommand:
@@ -233,6 +228,18 @@ workflows:
                   "project",
                   "product",
                   "recipient",
+                  "setting",
+                  "user",
+                  "file",
+                ]
+          requires:
+            - api_test_setup
+      - test:
+          serial-group: api-test
+          matrix:
+            parameters:
+              testCommand:
+                [
                   "transaction-common",
                   "transaction-payment",
                   "transaction-deferred",
@@ -240,13 +247,14 @@ workflows:
                   "transaction-reimbursement",
                   "transaction-transfer",
                   "transaction-draft",
-                  "setting",
-                  "user",
-                  "file",
-                  "price",
-                  "customer",
-                  "calendar",
                 ]
+          requires:
+            - api_test_setup
+      - test:
+          serial-group: api-test
+          matrix:
+            parameters:
+              testCommand: ["price", "customer", "calendar"]
           requires:
             - api_test_setup
       # - test:
