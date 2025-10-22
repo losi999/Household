@@ -38,7 +38,8 @@ describe('PUT /calendar/v1/days/{day}', () => {
       } else {
         describe('should save previously unset day to', () => {
           it('workday', () => {
-            cy.authenticate(userType)
+            cy.clearCalendarDay(day)
+              .authenticate(userType)
               .requestUpdateCalendarDay(day, request)
               .expectNoContentResponse()
               .validateCalendarDayDocument(day, request);
@@ -47,7 +48,8 @@ describe('PUT /calendar/v1/days/{day}', () => {
           it('vacation', () => {
             request = calendarDayDataFactory.vacationRequest();
             
-            cy.authenticate(userType)
+            cy.clearCalendarDay(day)
+              .authenticate(userType)
               .requestUpdateCalendarDay(day, request)
               .expectNoContentResponse()
               .validateCalendarDayDocument(day, request);

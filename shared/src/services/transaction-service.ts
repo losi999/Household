@@ -441,14 +441,8 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
     },
     listTransactionsByAccountId: ({ accountId, pageSize, pageNumber }) => {
       return mongodbService.inSession(async (session) => {
-        const account = await mongodbService.accounts.findById(accountId).session(session);
-
-        if (!account) {
-          return [];
-        }
-
         return mongodbService.transactions.aggregate([
-          matchAnyProperty(account._id, [
+          matchAnyProperty(new Types.ObjectId(accountId), [
             'account',
             'transferAccount',
             'payingAccount',
