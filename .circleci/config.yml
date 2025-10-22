@@ -224,7 +224,7 @@ workflows:
       - test:
           matrix:
             parameters:
-              tesCommand:
+              testCommand:
                 [
                   "account",
                   "category",
