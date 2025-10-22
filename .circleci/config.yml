@@ -218,43 +218,49 @@ workflows:
             - web_deploy
           filters: pipeline.git.branch != "master" and pipeline.parameters.skip_api_tests != true
       - test:
-          serial-group: api-test
+          serial-group: api-test1
           matrix:
             parameters:
-              testCommand:
-                [
-                  "account",
-                  "category",
-                  "project",
-                  "product",
-                  "recipient",
-                  "setting",
-                  "user",
-                  "file",
-                ]
+              testCommand: ["account", "category", "project", "product"]
           requires:
             - api_test_setup
       - test:
-          serial-group: api-test
+          serial-group: api-test2
           matrix:
             parameters:
               testCommand:
                 [
                   "transaction-common",
-                  "transaction-payment",
-                  "transaction-deferred",
                   "transaction-split",
-                  "transaction-reimbursement",
                   "transaction-transfer",
-                  "transaction-draft",
                 ]
           requires:
             - api_test_setup
       - test:
-          serial-group: api-test
+          serial-group: api-test3
           matrix:
             parameters:
               testCommand: ["price", "customer", "calendar"]
+          requires:
+            - api_test_setup
+      - test:
+          serial-group: api-test4
+          matrix:
+            parameters:
+              testCommand: ["recipient", "setting", "user", "file"]
+          requires:
+            - api_test_setup
+      - test:
+          serial-group: api-test5
+          matrix:
+            parameters:
+              testCommand:
+                [
+                  "transaction-payment",
+                  "transaction-deferred",
+                  "transaction-reimbursement",
+                  "transaction-draft",
+                ]
           requires:
             - api_test_setup
       # - test:
