@@ -14,8 +14,9 @@ commands:
           name: Load env config
           command: cat .config >> $BASH_ENV
 orbs:
-  queue: eddiewebb/queue@1.7.0
+  queue: eddiewebb/queue@3.3.3
   sam: circleci/aws-sam-serverless@6.0.3
+
 jobs:
   install:
     docker:
@@ -186,7 +187,8 @@ jobs:
           name: Running tests
           working_directory: test
           command: export ENV=$ENV && yarn run test:<<parameters.testCommand>>
-
+      - queue/exit:
+          queue: "api-test-queue"
       - store_artifacts:
           path: test/cypress/screenshots
           destination: test/cypress/screenshots
