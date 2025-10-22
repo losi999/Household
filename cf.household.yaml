@@ -34,7 +34,7 @@ Resources:
         TestUserPassword: !Ref TestUserPassword
         UserPoolId: !GetAtt Data.Outputs.UserPoolId
         ClientId: !GetAtt Data.Outputs.ClientId
-        MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
+        MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority&tls=true"
 
   File:
     Type: AWS::CloudFormation::Stack
@@ -45,7 +45,7 @@ Resources:
         DependenciesLayer: !GetAtt Infrastructure.Outputs.DependenciesLayer
         UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
-        MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
+        MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority&tls=true"
 
   Data:
     Type: AWS::CloudFormation::Stack
@@ -71,7 +71,7 @@ Resources:
         DependenciesLayer: !GetAtt Infrastructure.Outputs.DependenciesLayer
         UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
-        MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
+        MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority&tls=true"
 
   Recipient:
     Type: AWS::CloudFormation::Stack
@@ -82,7 +82,7 @@ Resources:
         DependenciesLayer: !GetAtt Infrastructure.Outputs.DependenciesLayer
         UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
-        MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
+        MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority&tls=true"
 
   Customer:
     Type: AWS::CloudFormation::Stack
@@ -93,7 +93,7 @@ Resources:
         DependenciesLayer: !GetAtt Infrastructure.Outputs.DependenciesLayer
         UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
-        MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
+        MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority&tls=true"
 
   Account:
     Type: AWS::CloudFormation::Stack
@@ -104,7 +104,7 @@ Resources:
         DependenciesLayer: !GetAtt Infrastructure.Outputs.DependenciesLayer
         UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
-        MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
+        MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority&tls=true"
 
   Category:
     Type: AWS::CloudFormation::Stack
@@ -115,7 +115,7 @@ Resources:
         DependenciesLayer: !GetAtt Infrastructure.Outputs.DependenciesLayer
         UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
-        MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
+        MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority&tls=true"
 
   Product:
     Type: AWS::CloudFormation::Stack
@@ -126,7 +126,7 @@ Resources:
         DependenciesLayer: !GetAtt Infrastructure.Outputs.DependenciesLayer
         UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
-        MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
+        MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority&tls=true"
 
   Transaction:
     Type: AWS::CloudFormation::Stack
@@ -137,7 +137,7 @@ Resources:
         DependenciesLayer: !GetAtt Infrastructure.Outputs.DependenciesLayer
         UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
-        MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
+        MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority&tls=true"
 
   Setting:
     Type: AWS::CloudFormation::Stack
@@ -148,7 +148,7 @@ Resources:
         DependenciesLayer: !GetAtt Infrastructure.Outputs.DependenciesLayer
         UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
-        MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
+        MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority&tls=true"
 
   User:
     Type: AWS::CloudFormation::Stack
@@ -171,7 +171,7 @@ Resources:
         DependenciesLayer: !GetAtt Infrastructure.Outputs.DependenciesLayer
         UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
-        MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
+        MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority&tls=true"
 
   Price:
     Type: AWS::CloudFormation::Stack
@@ -182,7 +182,7 @@ Resources:
         DependenciesLayer: !GetAtt Infrastructure.Outputs.DependenciesLayer
         UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
         Env: !Ref Env
-        MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
+        MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority&tls=true"
 
   # Hairdressing:
   #   Type: AWS::CloudFormation::Stack
@@ -193,7 +193,7 @@ Resources:
   #       DependenciesLayer: !GetAtt Infrastructure.Outputs.DependenciesLayer
   #       UserPoolArn: !GetAtt Data.Outputs.UserPoolArn
   #       Env: !Ref Env
-  #       MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority"
+  #       MongodbConnectionString: !Sub "mongodb+srv://{{resolve:ssm:MongodbUsername:1}}:{{resolve:ssm:MongodbPassword:1}}@{{resolve:ssm:MongodbClusterDomain:1}}/household-${Env}?retryWrites=true&w=majority&tls=true"
 
   Api:
     Type: AWS::CloudFront::Distribution

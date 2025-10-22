@@ -18,8 +18,14 @@ export interface IProjectService {
 
 export const projectServiceFactory = (mongodbService: IMongodbService): IProjectService => {
   return {
-    saveProject: (doc) => {
-      return mongodbService.projects.create(doc);
+    saveProject: async (doc) => {
+      const [project] = await mongodbService.inSession((session) => {
+        return mongodbService.projects.create([doc], {
+          session,
+        });
+      });
+      
+      return project;
     },
     saveProjects: (docs) => {
       return mongodbService.inSession((session) => {
@@ -31,8 +37,13 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
       });
     },
     findProjectById: async (projectId) => {
-      return !projectId ? undefined : mongodbService.projects.findById(projectId)
-        .lean();
+      if (projectId) {
+        return mongodbService.inSession((session) => {
+          return mongodbService.projects.findById(projectId)
+            .session(session)
+            .lean();
+        });
+      }
         
     },
     deleteProject: async (projectId) => {
@@ -93,8 +104,11 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
       });
     },
     updateProject: async (projectId, updateQuery) => {
-      return mongodbService.projects.findByIdAndUpdate(projectId, updateQuery, {
-        runValidators: true,
+      return mongodbService.inSession((session) => {
+        return mongodbService.projects.findByIdAndUpdate(projectId, updateQuery, {
+          runValidators: true,
+          session,
+        });
       });
     },
     listProjects: () => {
@@ -108,7 +122,11 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
           
       });
     },
-    findProjectsByIds: (projectIds) => {
+    findProjectsByIds: async (projectIds) => {
+      if(!projectIds?.length) {
+        return [];
+      }
+
       return mongodbService.inSession((session) => {
         return mongodbService.projects.find({
           _id: {

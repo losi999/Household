@@ -20,7 +20,13 @@ export const recipientServiceFactory = (mongodbService: IMongodbService): IRecip
 
   const instance: IRecipientService = {
     saveRecipient: async (doc) => {
-      return mongodbService.recipients.create(doc);
+      const [recipient] = await mongodbService.inSession((session) => {
+        return mongodbService.recipients.create([doc], {
+          session,
+        });
+      });
+      
+      return recipient;
     },
     saveRecipients: (docs) => {
       return mongodbService.inSession((session) => {
@@ -32,8 +38,13 @@ export const recipientServiceFactory = (mongodbService: IMongodbService): IRecip
       });
     },
     findRecipientById: async (recipientId) => {
-      return !recipientId ? undefined : mongodbService.recipients.findById(recipientId)
-        .lean();
+      if (recipientId) {
+        return mongodbService.inSession((session) => {
+          return mongodbService.recipients.findById(recipientId)
+            .session(session) 
+            .lean();
+        });
+      }
         
     },
     deleteRecipient: async (recipientId) => {
@@ -59,8 +70,11 @@ export const recipientServiceFactory = (mongodbService: IMongodbService): IRecip
       });
     },
     updateRecipient: async (recipientId, updateQuery) => {
-      return mongodbService.recipients.findByIdAndUpdate(recipientId, updateQuery, {
-        runValidators: true,
+      return mongodbService.inSession((session) => {
+        return mongodbService.recipients.findByIdAndUpdate(recipientId, updateQuery, {
+          runValidators: true,
+          session,
+        });
       });
     },
     listRecipients: () => {
@@ -74,7 +88,11 @@ export const recipientServiceFactory = (mongodbService: IMongodbService): IRecip
           
       });
     },
-    findRecipientsByIds: (recipientIds) => {
+    findRecipientsByIds: async (recipientIds) => {
+      if(!recipientIds?.length) {
+        return [];
+      }
+
       return mongodbService.inSession(async (session) => {
         return mongodbService.recipients.find({
           _id: {
@@ -86,7 +104,6 @@ export const recipientServiceFactory = (mongodbService: IMongodbService): IRecip
       });
     },
     mergeRecipients: ({ targetRecipientId, sourceRecipientIds }) => {
-      console.log(sourceRecipientIds);
       return mongodbService.inSession((session) => {
         return session.withTransaction(async () => {
           await mongodbService.recipients.deleteMany({

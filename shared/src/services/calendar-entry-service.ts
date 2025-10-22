@@ -19,7 +19,13 @@ export const calendarEntryServiceFactory = (mongodbService: IMongodbService): IC
 
   const instance: ICalendarEntryService = {
     saveCalendarEntry: async (doc) => {
-      return mongodbService.calendarEntries.create(doc);
+      const [entry] = await mongodbService.inSession((session) => {
+        return mongodbService.calendarEntries.create([doc], {
+          session,
+        });
+      });
+      
+      return entry;
     },
     // saveCalendarEntries: (docs) => {
     //   return mongodbService.inSession((session) => {
@@ -31,17 +37,24 @@ export const calendarEntryServiceFactory = (mongodbService: IMongodbService): IC
     //   });
     // },
     findCalendarEntryById: async (calendarEntryId) => {
-      return !calendarEntryId ? undefined : mongodbService.calendarEntries.findById(calendarEntryId)
-        .lean();        
+      if (calendarEntryId) {
+        return mongodbService.inSession((session) => {
+          return mongodbService.calendarEntries.findById(calendarEntryId)
+            .lean()
+            .session(session);        
+        });
+      }
     },
     getCalendarEntryById: (calendarEntryId) => {
-      return !calendarEntryId ? undefined : mongodbService.inSession(async(session) => {
-        return mongodbService.calendarEntries.findById(calendarEntryId).session(session)
-          .populate('customer')
-          .populate('prices.price')
-          .populate('transaction')
-          .lean();          
-      });
+      if (calendarEntryId) {
+        return mongodbService.inSession(async(session) => {
+          return mongodbService.calendarEntries.findById(calendarEntryId).session(session)
+            .populate('customer')
+            .populate('prices.price')
+            .populate('transaction')
+            .lean();          
+        });
+      }
     },
     deleteCalendarEntry: async (calendarEntryId) => {
       return mongodbService.inSession((session) => {
@@ -51,8 +64,11 @@ export const calendarEntryServiceFactory = (mongodbService: IMongodbService): IC
       });
     },
     updateCalendarEntry: async (calendarEntryId, { update }) => {
-      return mongodbService.calendarEntries.findByIdAndUpdate(calendarEntryId, update, {
-        runValidators: true,
+      return mongodbService.inSession(async(session) => {
+        return mongodbService.calendarEntries.findByIdAndUpdate(calendarEntryId, update, {
+          runValidators: true,
+          session,
+        });
       });
     },
     updateCalendarEntryWithPayment: async (calendarEntryId, transactionDocument) => {
@@ -65,7 +81,7 @@ export const calendarEntryServiceFactory = (mongodbService: IMongodbService): IC
           await mongodbService.calendarEntries.findByIdAndUpdate(calendarEntryId, {
             isPaid: true,
             transaction,
-          });
+          }).session(session);
 
           return transaction;
         });

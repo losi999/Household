@@ -25,8 +25,14 @@ export interface ITransactionService {
 export const transactionServiceFactory = (mongodbService: IMongodbService): ITransactionService => {
 
   const instance: ITransactionService = {
-    saveTransaction: (doc) => {
-      return mongodbService.transactions.create(doc);
+    saveTransaction: async(doc) => {
+      const [transaction] = await mongodbService.inSession((session) => {
+        return mongodbService.transactions.create([doc], {
+          session,
+        });
+      });
+      
+      return transaction;
     },
     saveTransactions: (docs) => {
       return mongodbService.inSession((session) => {
@@ -38,52 +44,55 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
       });
     },
     findTransactionById: (transactionId) => {
-      return !transactionId ? undefined : mongodbService.transactions.findById(transactionId).lean();
+      if (transactionId) {
+        return mongodbService.inSession((session) => {
+          return mongodbService.transactions.findById(transactionId).session(session)
+            .lean();
+        });
+      }
     },
     getTransactionById: (transactionId) => {
-      return !transactionId ? undefined : mongodbService.transactions.findById(transactionId)
-        .setOptions({
-          populate: populate('project',
-            'recipient',
-            'account',
-            'transferAccount',
-            'payingAccount',
-            'ownerAccount',
-            'category',
-            'category.ancestors',
-            'product',
-            'splits.category',
-            'splits.project',
-            'splits.product',
-            'deferredSplits.payingAccount',
-            'deferredSplits.ownerAccount',
-            'deferredSplits.category',
-            'deferredSplits.project',
-            'deferredSplits.product'),
-          lean: true,
+      if (transactionId) {
+        return mongodbService.inSession((session) => {
+          return mongodbService.transactions.findById(transactionId)
+            .setOptions({
+              populate: populate('project',
+                'recipient',
+                'account',
+                'transferAccount',
+                'payingAccount',
+                'ownerAccount',
+                'category',
+                'category.ancestors',
+                'product',
+                'splits.category',
+                'splits.project',
+                'splits.product',
+                'deferredSplits.payingAccount',
+                'deferredSplits.ownerAccount',
+                'deferredSplits.category',
+                'deferredSplits.project',
+                'deferredSplits.product'),
+              lean: true,
+              session,
+            });
         });
-        
+      }        
     },
     getTransactionByIdAndAccountId: async ({ transactionId, accountId }) => {
-      if (!transactionId) {
+      if (!transactionId || !accountId) {
         return undefined;
       }
 
-      return mongodbService.inSession(async (session) => {
-        const account = await mongodbService.accounts.findById(accountId).session(session);
-
-        if (!account) {
-          return undefined;
-        }
-
-        return (await mongodbService.transactions.aggregate<Transaction.Document>(
+      const [transaction] = await mongodbService.inSession(async (session) => {
+        return mongodbService.transactions.aggregate<Transaction.Document>(
           [
             {
               $match: {
                 _id: new Types.ObjectId(transactionId),
               },
             },
-            matchAnyProperty(account._id, [
+            matchAnyProperty(new Types.ObjectId(accountId), [
               'account',
               'transferAccount',
               'payingAccount',
@@ -92,9 +101,10 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
             ]),
             ...transactionAggregate,
           ],
-        ))[0];
+        ).session(session);
       });
-
+      
+      return transaction;
     },
     deleteTransaction: (transactionId) => {
       return mongodbService.inSession((session) => {

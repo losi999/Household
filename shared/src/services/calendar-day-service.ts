@@ -15,17 +15,25 @@ export const calendarDayServiceFactory = (mongodbService: IMongodbService): ICal
 
   const instance: ICalendarDayService = {
     saveCalendarDay: (doc) => {
-      return mongodbService.calendarDays.findOneAndReplace({
-        day: doc.day,
-      }, doc, {
-        upsert: true,
+      return mongodbService.inSession((session) => {
+        return mongodbService.calendarDays.findOneAndReplace({
+          day: doc.day,
+        }, doc, {
+          upsert: true,
+          session,
+        });
       });
     },
     findCalendarDayByDay: async(day) => {
-      return !day ? undefined : mongodbService.calendarDays.findOne({
-        day,
-      })
-        .lean();
+      if (day) {
+        return mongodbService.inSession((session) => {
+          return mongodbService.calendarDays.findOne({
+            day,
+          })
+            .session(session)
+            .lean();
+        });
+      }
     },
     deleteCalendarDay: async (day) => {
       return mongodbService.inSession((session) => {
@@ -54,11 +62,14 @@ export const calendarDayServiceFactory = (mongodbService: IMongodbService): ICal
       });
     },
     updateCalendarDay: async (day, { update }) => {
-      return mongodbService.calendarDays.findOneAndUpdate({
-        day,
-      }, update, {
-        runValidators: true,
-        upsert: true,
+      return mongodbService.inSession((session) => {
+        return mongodbService.calendarDays.findOneAndUpdate({
+          day,
+        }, update, {
+          runValidators: true,
+          upsert: true,
+          session,
+        });
       });
     },
     listCalendarDays: ({ dateFrom, dateTo }) => {

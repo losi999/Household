@@ -15,10 +15,15 @@ export interface IAccountService {
 }
 
 export const accountServiceFactory = (mongodbService: IMongodbService): IAccountService => {
-
   const instance: IAccountService = {
-    saveAccount: (doc) => {
-      return mongodbService.accounts.create(doc);
+    saveAccount: async (doc) => {
+      const [account] = await mongodbService.inSession((session) => {
+        return mongodbService.accounts.create([doc], {
+          session,
+        });
+      });
+      
+      return account;
     },
     saveAccounts: (docs) => {
       return mongodbService.inSession((session) => {
@@ -30,8 +35,13 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
       });
     },
     findAccountById: (accountId) => {
-      return !accountId ? undefined : mongodbService.accounts.findById(accountId)
-        .lean();        
+      if (accountId) {
+        return mongodbService.inSession((session) => {
+          return mongodbService.accounts.findById(accountId)
+            .session(session)
+            .lean();        
+        }); 
+      }
     },
     getAccountById: async (accountId) => {
       if (accountId) {
@@ -158,8 +168,11 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
       });
     },
     updateAccount: async (accountId, updateQuery) => {
-      return mongodbService.accounts.findByIdAndUpdate(accountId, updateQuery, {
-        runValidators: true,
+      return mongodbService.inSession((session) => {
+        return mongodbService.accounts.findByIdAndUpdate(accountId, updateQuery, {
+          runValidators: true,
+          session,
+        });
       });
     },
     listAccounts: () => {
@@ -179,7 +192,11 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
           
       });
     },
-    findAccountsByIds: (accountIds) => {
+    findAccountsByIds: async (accountIds) => {
+      if(!accountIds?.length) {
+        return [];
+      }
+      
       return mongodbService.inSession((session) => {
         return mongodbService.accounts.find({
           _id: {

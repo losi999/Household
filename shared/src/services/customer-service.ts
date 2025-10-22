@@ -16,9 +16,14 @@ export interface ICustomerService {
 export const customerServiceFactory = (mongodbService: IMongodbService): ICustomerService => {
 
   const instance: ICustomerService = {
-
     saveCustomer: async (doc) => {
-      return mongodbService.customers.create(doc);
+      const [customer] = await mongodbService.inSession((session) => {
+        return mongodbService.customers.create([doc], {
+          session,
+        });
+      });
+      
+      return customer;
     },
     saveCustomers: (docs) => {
       return mongodbService.inSession((session) => {
@@ -30,16 +35,24 @@ export const customerServiceFactory = (mongodbService: IMongodbService): ICustom
       });
     },
     findCustomerById: async (customerId) => {
-      return !customerId ? undefined : mongodbService.customers.findById(customerId)
-        .lean();
-        
+      if (customerId) {
+        return mongodbService.inSession((session) => {
+          return mongodbService.customers.findById(customerId)
+            .session(session)
+            .lean();
+        });
+      }        
     },
     getCustomerById: async (customerId) => {
-      return !customerId ? undefined : mongodbService.customers.findById(customerId)
-        .populate('jobs.prices.price')
-        .populate('blacklistedCustomers')
-        .lean();
-        
+      if (customerId) {
+        return mongodbService.inSession((session) => {
+          return mongodbService.customers.findById(customerId)
+            .session(session)
+            .populate('jobs.prices.price')
+            .populate('blacklistedCustomers')
+            .lean();
+        });
+      }        
     },
     updateCustomers: async (ctx) => {
       return mongodbService.inSession((session) => {
@@ -55,9 +68,12 @@ export const customerServiceFactory = (mongodbService: IMongodbService): ICustom
       });
     },
     updateCustomer: async (customerId, { update, arrayFilters }) => {
-      return mongodbService.customers.findByIdAndUpdate(customerId, update, {
-        arrayFilters,
-        runValidators: true,
+      return mongodbService.inSession((session) => {
+        return mongodbService.customers.findByIdAndUpdate(customerId, update, {
+          arrayFilters,
+          runValidators: true,
+          session,
+        });
       });
     },
     listCustomers: () => {
@@ -74,15 +90,18 @@ export const customerServiceFactory = (mongodbService: IMongodbService): ICustom
       });
     },
     findCustomersByIds: async (customerIds) => {
-      return customerIds?.length ? mongodbService.inSession((session) => {
+      if (!customerIds?.length) { 
+        return [];
+      }
+      
+      return mongodbService.inSession((session) => {
         return mongodbService.customers.find({
           _id: {
             $in: customerIds,
           },
         }).session(session)
-          .lean();
-          
-      }) : [];
+          .lean();          
+      });
     },
   };
 

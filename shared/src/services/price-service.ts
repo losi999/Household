@@ -14,25 +14,30 @@ export interface IPriceService {
 
 export const priceServiceFactory = (mongodbService: IMongodbService): IPriceService => {
   return {
-    savePrice: (doc) => {
-      return mongodbService.prices.create(doc).catch(async (error) => {
-        if (error.code !== 11000) { 
-          throw error;
-        }
+    savePrice: async(doc) => {
+      const [price] = await mongodbService.inSession((session) => {
+        return mongodbService.prices.create([doc], {
+          session,
+        }).catch(async (error) => {
+          if (error.code !== 11000) { 
+            throw error;
+          }
 
-        const { _id, ...restOfDoc } = doc;
+          const { _id, ...restOfDoc } = doc;
         
-        const res = await mongodbService.prices.findOneAndReplace({
-          ...error.keyValue,
-          isArchived: true,
-        }, restOfDoc);
+          const res = await mongodbService.prices.findOneAndReplace({
+            ...error.keyValue,
+            isArchived: true,
+          }, restOfDoc).session(session);
 
-        if (!res) {
-          throw error;
-        }
+          if (!res) {
+            throw error;
+          }
 
-        return res;
+          return [res];
+        });
       });
+      return price;
     },
     savePrices: (docs) => {
       return mongodbService.inSession((session) => {
@@ -42,9 +47,13 @@ export const priceServiceFactory = (mongodbService: IMongodbService): IPriceServ
       });
     },
     findPriceById: async (priceId) => {
-      return !priceId ? undefined : mongodbService.prices.findById(priceId)
-        .lean();
-        
+      if (priceId) {
+        return mongodbService.inSession((session) => {
+          return mongodbService.prices.findById(priceId)
+            .session(session)
+            .lean();
+        });       
+      }
     },
     deletePrice: async (priceId) => {
       return mongodbService.inSession((session) => {
@@ -76,9 +85,12 @@ export const priceServiceFactory = (mongodbService: IMongodbService): IPriceServ
       });
     },
     updatePrice: async (priceId, { update, arrayFilters }) => {
-      return mongodbService.prices.findByIdAndUpdate(priceId, update, {
-        arrayFilters,
-        runValidators: true,
+      return mongodbService.inSession((session) => {
+        return mongodbService.prices.findByIdAndUpdate(priceId, update, {
+          arrayFilters,
+          runValidators: true,
+          session,
+        });
       });
     },
     listPrices: () => {
@@ -95,14 +107,18 @@ export const priceServiceFactory = (mongodbService: IMongodbService): IPriceServ
       });
     },
     findPricesByIds: async (priceIds) => {
-      return priceIds?.length > 0 ? mongodbService.inSession((session) => {
+      if (!priceIds?.length) {
+        return [];
+      }
+      
+      return mongodbService.inSession((session) => {
         return mongodbService.prices.find({
           _id: {
             $in: priceIds,
           },
         }).session(session)
           .lean();
-      }) : [];
+      });
     },
   };
 };

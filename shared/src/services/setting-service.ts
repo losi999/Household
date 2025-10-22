@@ -13,14 +13,17 @@ export interface ISettingService {
 export const settingServiceFactory = (mongodbService: IMongodbService): ISettingService => {
   const instance: ISettingService = {
     updateSetting: (settingKey, updateQuery) => {
-      return mongodbService.settings.findOneAndUpdate({
-        settingKey,
-      }, updateQuery,
-      {
-        upsert: true,
-        runValidators: true,
-      },
-      );
+      return mongodbService.inSession((session) => {
+        return mongodbService.settings.findOneAndUpdate({
+          settingKey,
+        }, updateQuery,
+        {
+          upsert: true,
+          runValidators: true,
+          session,
+        },
+        );
+      });
     },
     listSettings: () => {
       return mongodbService.inSession((session) => {
@@ -29,25 +32,29 @@ export const settingServiceFactory = (mongodbService: IMongodbService): ISetting
           
       });
     },
-    listSettingsByKeys: (settingKeys) => {
+    listSettingsByKeys: async (settingKeys) => {
+      if(!settingKeys?.length) {
+        return [];
+      }
+
       return mongodbService.inSession((session) => {
         return mongodbService.settings.find({
           settingKey: {
             $in: settingKeys,
           },
         })
-          .session(session);
-          
+          .session(session);          
       });
     },
     getSettingByKey: (settingKey) => {
-      return mongodbService.inSession((session) => {
-        return mongodbService.settings.findOne({
-          settingKey,
-        })
-          .session(session);
-          
-      });
+      if(settingKey) {
+        return mongodbService.inSession((session) => {
+          return mongodbService.settings.findOne({
+            settingKey,
+          })
+            .session(session);   
+        });
+      }
     },
   };
 
