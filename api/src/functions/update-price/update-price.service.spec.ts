@@ -73,7 +73,7 @@ describe('Update price service', () => {
       expect.assertions(5);
     });
 
-    it('if unable to update price', async () => {
+    it('if price is already archived', async () => {
       mockPriceService.functions.findPriceById.mockResolvedValue({
         ...queriedDocument,
         isArchived: true,
