@@ -212,12 +212,12 @@ describe('Payment transaction document converter', () => {
         end: 44,
       });
       const amount = 5000;
-      const result = converter.createFromEntry({
+      const { _id, ...result } = converter.createFromEntry({
         calendarEntry,
         account,
         category: regularCategory,
         amount,
-      });
+      }, undefined);
       expect(result).toEqual(createPaymentTransactionDocument({
         account,
         category: regularCategory,

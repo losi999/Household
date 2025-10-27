@@ -2,27 +2,28 @@ import { httpErrors } from '@household/api/common/error-handlers';
 import { getTransactionId } from '@household/shared/common/utils';
 import { ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
 import { IPaymentTransactionDocumentConverter } from '@household/shared/converters/payment-transaction-document-converter';
-import { CalendarEntryType, PaymentType, SettingKey } from '@household/shared/enums';
+import { CalendarEntryResolutionStatus, CalendarEntryType, SettingKey } from '@household/shared/enums';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICalendarEntryService } from '@household/shared/services/calendar-entry-service';
 import { ICategoryService } from '@household/shared/services/category-service';
 import { ISettingService } from '@household/shared/services/setting-service';
 import { Account, Calendar, Category, Transaction } from '@household/shared/types/types';
 
-export interface IPayCalendarWorkEntryService {
+export interface IResolveCalendarWorkEntryService {
   (ctx: {
-    body: Calendar.Entry.PaymentRequest;
+    body: Calendar.Entry.ResolutionRequest;
+    expiresIn: number;
   } & Calendar.Entry.CalendarEntryId): Promise<Transaction.Id>;
 }
 
-export const payCalendarWorkEntryServiceFactory = (
+export const resolveCalendarWorkEntryServiceFactory = (
   calendarEntryService: ICalendarEntryService, 
   paymentTransactionDocumentConverter: IPaymentTransactionDocumentConverter, 
   settingService: ISettingService, 
   accountService: IAccountService, 
   categoryService: ICategoryService,
-  calendarEntryDocumentConverter: ICalendarEntryDocumentConverter): IPayCalendarWorkEntryService => {
-  return async ({ body, calendarEntryId }) => {
+  calendarEntryDocumentConverter: ICalendarEntryDocumentConverter): IResolveCalendarWorkEntryService => {
+  return async ({ body, calendarEntryId, expiresIn }) => {
     const calendarEntry = await calendarEntryService.findCalendarEntryById(calendarEntryId).catch(httpErrors.calendarEntry.getById({
       calendarEntryId,
     }));
@@ -37,10 +38,12 @@ export const payCalendarWorkEntryServiceFactory = (
       expectedType: CalendarEntryType.Work,
     });
     
-    httpErrors.calendarEntry.alreadyPaid(calendarEntry);
+    httpErrors.calendarEntry.alreadyResolved(calendarEntry);
 
-    if (body.paymentType === PaymentType.Transfer) {
-      const update = calendarEntryDocumentConverter.updatePaid();
+    if (body.status !== CalendarEntryResolutionStatus.Paid) {
+      const update = calendarEntryDocumentConverter.resolve({
+        body,
+      }, expiresIn);
 
       await calendarEntryService.updateCalendarEntry(calendarEntryId, update).catch(httpErrors.calendarEntry.update({
         calendarEntryId,
@@ -78,13 +81,18 @@ export const payCalendarWorkEntryServiceFactory = (
       calendarEntry,
       category, 
       amount: body.amount,
-    });
+    }, expiresIn);
 
-    const saved = await calendarEntryService.updateCalendarEntryWithPayment(calendarEntryId, transaction).catch(httpErrors.calendarEntry.updateWithPayment({
+    const update = calendarEntryDocumentConverter.resolve({
+      body,
+      transaction,
+    }, expiresIn);
+
+    const saved = await calendarEntryService.updateCalendarEntryWithPayment(calendarEntryId, update).catch(httpErrors.calendarEntry.updateWithPayment({
       calendarEntryId, 
       transaction,
     }));
 
-    return getTransactionId(saved);    
+    return getTransactionId(saved);   
   };
 };

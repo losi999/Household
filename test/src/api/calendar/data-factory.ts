@@ -1,8 +1,8 @@
 import { DataFactoryFunction } from '@household/shared/types/common';
-import { Calendar, Customer, Price } from '@household/shared/types/types';
+import { Calendar, Customer, Price, Transaction } from '@household/shared/types/types';
 import { faker } from '@faker-js/faker';
 import { WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
-import { CalendarDayType, CalendarEntryType, PaymentType } from '@household/shared/enums';
+import { CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType } from '@household/shared/enums';
 import { addSeconds, dateToISODateString, getCustomerId, getPriceId } from '@household/shared/common/utils';
 import { calendarEntryDocumentConverter } from '@household/shared/dependencies/converters/calendar-entry-document-converter';
 import { createId } from '@household/test/api/utils';
@@ -19,6 +19,7 @@ export const calendarDayDataFactory = (() => {
       days: 50,
     }));
   };
+
   const createCalendarWorkdayRequest: DataFactoryFunction<Calendar.Day.WorkdayRequest> = (req) => {
     const start = faker.number.int({
       min: WORKDAY_START,
@@ -36,45 +37,58 @@ export const calendarDayDataFactory = (() => {
     };
   };
 
-  const createCalendarVacationRequest: DataFactoryFunction<Calendar.Day.VacationRequest> = (req) => {
+  const createCalendarVacationRequest = (): Calendar.Day.VacationRequest => {
     return {
       dayType: CalendarDayType.Vacation,
-      ...req,
     };
   };
 
-  const createCalendarDayDocument = (ctx?: (Partial<Calendar.DayProp> & Calendar.Day.DayType<CalendarDayType.Holiday | CalendarDayType.Vacation>) | (Partial<Calendar.DayProp> & Calendar.Day.DayType<CalendarDayType.Workday> & {
-    body?: Omit<Partial<Calendar.Day.WorkdayRequest>, 'dayType'>
-  })): Calendar.Day.Document => {
-    const day = ctx?.day ?? createFutureCalendarDay();
-    const dayType = ctx?.dayType ?? CalendarDayType.Workday;
+  const createCalendarWorkdayDocument = (ctx?: Partial<Calendar.DayProp> & Partial<Calendar.Day.WorkdayRequest>): Calendar.Day.Document => {
+    const { day, ...body } = ctx ?? {};
     const expiresAt = addSeconds(Cypress.env('EXPIRES_IN'));
-
-    if (dayType === CalendarDayType.Workday) {
-      return {
-        day,
-        ...createCalendarWorkdayRequest(),
-        expiresAt,
-      };
-    }
-
     return {
-      day,
-      ...createCalendarVacationRequest(),
-      dayType,
+      day: day ?? createFutureCalendarDay(),
+      ...createCalendarWorkdayRequest(body),
+      expiresAt,
+    };
+  };
+
+  const createCalendarVacationdayDocument = (ctx?: Partial<Calendar.DayProp>): Calendar.Day.Document => {
+    const expiresAt = addSeconds(Cypress.env('EXPIRES_IN'));
+    return {
+      day: createFutureCalendarDay(),
+      dayType: CalendarDayType.Vacation,
       expiresAt,  
       end: undefined,
       start: undefined,
+      ...ctx,
     };
-    
+  };
+
+  const createCalendarHolidayDocument = (ctx?: Partial<Calendar.DayProp>): Calendar.Day.Document => {
+    const expiresAt = addSeconds(Cypress.env('EXPIRES_IN'));
+    return {
+      day: createFutureCalendarDay(),
+      dayType: CalendarDayType.Holiday,
+      expiresAt,  
+      end: undefined,
+      start: undefined,
+      ...ctx,
+    };
   };
 
   return {
-    workdayRequest: createCalendarWorkdayRequest,
-    vacationRequest: createCalendarVacationRequest,
+    request: {
+      work: createCalendarWorkdayRequest,
+      vacation: createCalendarVacationRequest,
+    },
     pastDay: createPastCalendarDay,
     futureDay: createFutureCalendarDay,
-    document: createCalendarDayDocument,
+    document: {
+      work: createCalendarWorkdayDocument,
+      vacation: createCalendarVacationdayDocument,
+      holiday: createCalendarHolidayDocument,
+    },
   };
 })();
 
@@ -183,74 +197,88 @@ export const calendarEntryDataFactory = (() => {
     };
   };
 
-  const createCalendarEntryDocument = (ctx?: {
+  const createCalendarWorkEntryDocument = (ctx?: {
     body?: Omit<Partial<Calendar.Entry.WorkEntryRequest>, 'entryType'>;
-    entryType: CalendarEntryType.Work;
     customer: Customer.Document;
     prices?: {
       custom?: Partial<Price.Base>[];
       listed?: (Partial<Customer.Job.Quantity> & {price: Price.Document})[];
-    } ; 
-  } | {
-    body?: Omit<Partial<Calendar.Entry.PersonalEntryRequest>, 'entryType'>;
-    entryType: CalendarEntryType.Personal;
-  }| {
-    body?: Omit<Partial<Calendar.Entry.IssueEntryRequest>, 'entryType'>;
-    entryType: CalendarEntryType.Issue;
+    };
+    resolution?: {
+      transaction?: Transaction.PaymentDocument;
+    } & Partial<Calendar.Entry.Delay>
+    & Partial<Calendar.Entry.Status<CalendarEntryResolutionStatus>>
   }): Calendar.Entry.Document => {
-    switch (ctx?.entryType) {
-      case CalendarEntryType.Issue: {
-        return calendarEntryDocumentConverter.create({
-          body: createCalendarIssueEntryRequest(ctx?.body),
-        }, Cypress.env('EXPIRES_IN'), true);
-      }
-      case CalendarEntryType.Work: {
-        return calendarEntryDocumentConverter.create({
-          body: createCalendarWorkEntryRequest({
-            body: {
-              ...ctx?.body,
-              customerId: getCustomerId(ctx?.customer),
-            },
-            prices: {
-              custom: ctx?.prices?.custom,
-              listed: ctx?.prices?.listed?.map(({ price, ...rest }) => {
-                return {
-                  priceId: getPriceId(price),
-                  ...rest,
-                };
-              }),
-            },
-          }),
-          customer: ctx?.customer,
-          prices: ctx?.prices?.listed?.map((p) => p.price) ?? [],
-        }, Cypress.env('EXPIRES_IN'), true);
-      }
-      case CalendarEntryType.Personal: 
-      default:{
-        return calendarEntryDocumentConverter.create({
-          body: createCalendarPersonalEntryRequest(ctx?.body),
-        }, Cypress.env('EXPIRES_IN'), true);
-      }
-    }
+
+    return {
+      ...calendarEntryDocumentConverter.create({
+        body: createCalendarWorkEntryRequest({
+          body: {
+            ...ctx?.body,
+            customerId: getCustomerId(ctx?.customer),
+          },
+          prices: {
+            custom: ctx?.prices?.custom,
+            listed: ctx?.prices?.listed?.map(({ price, ...rest }) => {
+              return {
+                priceId: getPriceId(price),
+                ...rest,
+              };
+            }),
+          },
+        }),
+        customer: ctx?.customer,
+        prices: ctx?.prices?.listed?.map((p) => p.price) ?? [],
+      }, Cypress.env('EXPIRES_IN'), true),
+      resolution: ctx?.resolution ? {
+        status: ctx?.resolution.transaction ? CalendarEntryResolutionStatus.Paid : ctx.resolution.status ?? CalendarEntryResolutionStatus.Paid,
+        delay: ctx.resolution.status !== CalendarEntryResolutionStatus.NoShow ? ctx.resolution.delay : undefined,
+      } : undefined,
+      transaction: ctx?.resolution?.transaction,
+    };
   };
 
-  const createPaymentRequest: DataFactoryFunction<Calendar.Entry.PaymentRequest> = (req) => {
+  const createCalendarPersonalEntryDocument = (ctx?: Omit<Partial<Calendar.Entry.PersonalEntryRequest>, 'entryType'>): Calendar.Entry.Document => {
+    return calendarEntryDocumentConverter.create({
+      body: createCalendarPersonalEntryRequest(ctx),
+    }, Cypress.env('EXPIRES_IN'), true);
+  };
+
+  const createCalendarIssueEntryDocument = (ctx?: Omit<Partial<Calendar.Entry.IssueEntryRequest>, 'entryType'>): Calendar.Entry.Document => {
+    return calendarEntryDocumentConverter.create({
+      body: createCalendarIssueEntryRequest(ctx),
+    }, Cypress.env('EXPIRES_IN'), true);
+  };
+
+  const createResolutionRequest: DataFactoryFunction<Calendar.Entry.ResolutionRequest> = (req) => {
+    const status = req?.status ?? CalendarEntryResolutionStatus.Paid;
+    
     return {
-      paymentType: PaymentType.Cash,
-      amount: faker.number.int({
+      status,
+      amount: status === CalendarEntryResolutionStatus.Paid ? faker.number.int({
         min: 1,
         max: 10000,
-      }), 
+      }) : undefined, 
+      delay: status !== CalendarEntryResolutionStatus.NoShow ? faker.number.int({
+        min: 1,
+        max: 30,
+      }) : undefined,
       ...req,
     };
   }; 
 
   return {
-    personalEntryRequest: createCalendarPersonalEntryRequest,
-    issueEntryRequest: createCalendarIssueEntryRequest,
-    workEntryRequest: createCalendarWorkEntryRequest,
-    document: createCalendarEntryDocument,
-    paymentRequest: createPaymentRequest,
+    request: {
+      personal: createCalendarPersonalEntryRequest,
+      issue: createCalendarIssueEntryRequest,
+      work: createCalendarWorkEntryRequest,
+    },
+    document: {
+      personal: createCalendarPersonalEntryDocument,
+      issue: createCalendarIssueEntryDocument,
+      work: createCalendarWorkEntryDocument,
+    },
+    resolutionRequest: createResolutionRequest,
     id: (createId<Calendar.Entry.Id>),
   };
 })();

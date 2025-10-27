@@ -4,7 +4,7 @@ import { Calendar, Customer, Price } from '@household/shared/types/types';
 import { calendarEntryDataFactory } from '@household/test/api/calendar/data-factory';
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
 import { priceDataFactory } from '@household/test/api/price/data-factory';
-import { CalendarEntryType } from '@household/shared/enums';
+import { CalendarEntryResolutionStatus } from '@household/shared/enums';
 
 const permissionMap = allowUsers('hairdresser');
 
@@ -20,20 +20,15 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
     customerDocument = customerDataFactory.document();
     priceDocument = priceDataFactory.document();
 
-    calendarPersonalEntryDocument = calendarEntryDataFactory.document({
-      entryType: CalendarEntryType.Personal,
-    });
+    calendarPersonalEntryDocument = calendarEntryDataFactory.document.personal();
 
-    calendarIssueEntryDocument = calendarEntryDataFactory.document({
-      entryType: CalendarEntryType.Issue,
-    });
+    calendarIssueEntryDocument = calendarEntryDataFactory.document.issue();
 
-    calendarWorkEntryDocument = calendarEntryDataFactory.document({
-      entryType: CalendarEntryType.Work,
+    calendarWorkEntryDocument = calendarEntryDataFactory.document.work({
       customer: customerDocument,
     });
             
-    request = calendarEntryDataFactory.personalEntryRequest();
+    request = calendarEntryDataFactory.request.personal();
   });
 
   describe('called as anonymous', () => {
@@ -58,7 +53,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
       } else {
         describe('should update calendar', () => {
           it('personal entry', () => {
-            request = calendarEntryDataFactory.personalEntryRequest();
+            request = calendarEntryDataFactory.request.personal();
 
             cy.saveCalendarEntryDocument(calendarPersonalEntryDocument)
               .authenticate(userType)
@@ -68,7 +63,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
           });
 
           it('issue entry', () => {            
-            request = calendarEntryDataFactory.issueEntryRequest();
+            request = calendarEntryDataFactory.request.issue();
             
             cy.saveCalendarEntryDocument(calendarIssueEntryDocument)
               .authenticate(userType)
@@ -78,7 +73,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
           });
 
           it('work entry without prices', () => {          
-            request = calendarEntryDataFactory.workEntryRequest({
+            request = calendarEntryDataFactory.request.work({
               body: {
                 customerId: getCustomerId(customerDocument),
               },
@@ -93,7 +88,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
           });
 
           it('work entry with prices', () => {     
-            request = calendarEntryDataFactory.workEntryRequest({
+            request = calendarEntryDataFactory.request.work({
               body: {
                 customerId: getCustomerId(customerDocument),
               },
@@ -120,7 +115,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
         describe('should return error', () => {    
           describe('if trying to update entry type', () => {
             it('from issue to personal', () => {
-              request = calendarEntryDataFactory.personalEntryRequest();
+              request = calendarEntryDataFactory.request.personal();
               
               cy.saveCalendarEntryDocument(calendarIssueEntryDocument)
                 .authenticate(userType)
@@ -130,7 +125,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
             });
 
             it('from issue to work', () => {
-              request = calendarEntryDataFactory.workEntryRequest({
+              request = calendarEntryDataFactory.request.work({
                 body: {
                   customerId: getCustomerId(customerDocument),
                 },
@@ -144,7 +139,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
             });
 
             it('from personal to issue', () => {
-              request = calendarEntryDataFactory.issueEntryRequest();
+              request = calendarEntryDataFactory.request.issue();
               
               cy.saveCalendarEntryDocument(calendarPersonalEntryDocument)
                 .authenticate(userType)
@@ -154,7 +149,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
             });
 
             it('from personal to work', () => {
-              request = calendarEntryDataFactory.workEntryRequest({
+              request = calendarEntryDataFactory.request.work({
                 body: {
                   customerId: getCustomerId(customerDocument),
                 },
@@ -168,7 +163,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
             });
 
             it('from work to issue', () => {
-              request = calendarEntryDataFactory.issueEntryRequest();
+              request = calendarEntryDataFactory.request.issue();
               
               cy.saveCalendarEntryDocument(calendarWorkEntryDocument)
                 .authenticate(userType)
@@ -178,7 +173,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
             });
 
             it('from work to personal', () => {
-              request = calendarEntryDataFactory.personalEntryRequest();
+              request = calendarEntryDataFactory.request.personal();
               
               cy.saveCalendarEntryDocument(calendarWorkEntryDocument)
                 .authenticate(userType)
@@ -188,27 +183,30 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
             });
           });
 
-          it('if work entry is already paid', () => {
-            request = calendarEntryDataFactory.workEntryRequest({
+          it('if work entry is already resolved', () => {
+            calendarWorkEntryDocument = calendarEntryDataFactory.document.work({
+              customer: customerDocument,
+              resolution: {
+                status: CalendarEntryResolutionStatus.Paid,
+              },
+            });  
+            request = calendarEntryDataFactory.request.work({
               body: {
                 customerId: getCustomerId(customerDocument),
               },
             });
               
-            cy.saveCalendarEntryDocument({
-              ...calendarWorkEntryDocument,
-              isPaid: true,
-            })
+            cy.saveCalendarEntryDocument(calendarWorkEntryDocument)
               .authenticate(userType)
               .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), request)
               .expectBadRequestResponse()
-              .expectMessage('Calendar entry is already paid');
+              .expectMessage('Calendar entry is already resolved');
           });
 
           describe('if day', () => {
             it('is missing from body', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                   body: {
                     day: undefined,
                   },
@@ -219,7 +217,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
 
             it('is not string', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                   body: {
                     day: <any>1,
                   },
@@ -230,7 +228,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
 
             it('is not date format', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                   body: {
                     day: 'not-date',
                   },
@@ -243,7 +241,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
           describe('if title', () => {
             it('is missing from body', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                   body: {
                     title: undefined,
                   },
@@ -254,7 +252,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
 
             it('is not string', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                   body: {
                     title: <any>1,
                   },
@@ -265,7 +263,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
 
             it('is too short', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                   body: {
                     title: '',
                   },
@@ -278,7 +276,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
           describe('if description', () => {
             it('is not string', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                   body: {
                     description: <any>1,
                   },
@@ -289,7 +287,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
 
             it('is too short', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                   body: {
                     description: '',
                   },
@@ -302,7 +300,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
           describe('if entryType', () => {
             it('is missing from body', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                   body: {
                     entryType: undefined,
                   },
@@ -313,7 +311,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
 
             it('is not string', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                   body: {
                     entryType: <any>1,
                   },
@@ -324,7 +322,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
 
             it('is not a valid constant value', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                   body: {
                     entryType: 'not-valid-const' as any,
                   },
@@ -337,7 +335,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
           describe('if start', () => {
             it('is missing from body', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                   body: {
                     start: undefined,
                   },
@@ -348,7 +346,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
 
             it('is not integer', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                   body: {
                     start: 1.1,
                   },
@@ -359,7 +357,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
 
             it('is too small', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                   body: {
                     start: -1,
                   },
@@ -370,7 +368,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
 
             it('is too large', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                   body: {
                     start: 97,
                   },
@@ -383,7 +381,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
           describe('if end', () => {
             it('is missing from body', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                   body: {
                     end: undefined,
                   },
@@ -394,7 +392,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
 
             it('is not integer', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                   body: {
                     end: 1.1,
                   },
@@ -405,7 +403,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
 
             it('is too small', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                   body: {
                     start: 20,
                     end: 10,
@@ -417,7 +415,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
 
             it('is too large', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                   body: {
                     end: 97,
                   },
@@ -430,7 +428,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
           describe('if customerId', () => {
             it('is missing from body', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                   body: {
                     customerId: undefined,
                   },
@@ -441,7 +439,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
 
             it('is not string', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                   body: {
                     customerId: <any>1,
                   },
@@ -452,7 +450,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
 
             it('is not mongo id', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                   body: {
                     customerId: customerDataFactory.id('not-mongo-id'),
                   },
@@ -464,7 +462,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
             it('does not belong to any customer', () => {
               cy.saveCalendarEntryDocument(calendarWorkEntryDocument)
                 .authenticate(userType)
-                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                   body: {
                     customerId: customerDataFactory.id(),
                   },
@@ -478,7 +476,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
             it('is not array', () => {
               cy.authenticate(userType)
                 .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), {
-                  ...calendarEntryDataFactory.workEntryRequest(),
+                  ...calendarEntryDataFactory.request.work(),
                   prices: <any>{},
                 })
                 .expectBadRequestResponse()
@@ -488,7 +486,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
             it('has too few items', () => {
               cy.authenticate(userType)
                 .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), {                  
-                  ...calendarEntryDataFactory.workEntryRequest(),
+                  ...calendarEntryDataFactory.request.work(),
                   prices: [],
                 })
                 .expectBadRequestResponse()
@@ -500,7 +498,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
             it('is not object', () => {
               cy.authenticate(userType)
                 .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), {                  
-                  ...calendarEntryDataFactory.workEntryRequest(),
+                  ...calendarEntryDataFactory.request.work(),
                   prices: [1] as any,
                 })
                 .expectBadRequestResponse()
@@ -510,7 +508,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
             it('has additional properties', () => {
               cy.authenticate(userType)
                 .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), {                  
-                  ...calendarEntryDataFactory.workEntryRequest(),
+                  ...calendarEntryDataFactory.request.work(),
                   prices: [
                     {
                       extra: 1,
@@ -525,7 +523,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
           describe('if prices[0].priceId', () => {
             it('is missing', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                   prices: {                  
                     listed: [
                       {
@@ -540,7 +538,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
 
             it('is not string', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                   prices: {                  
                     listed: [
                       {
@@ -555,7 +553,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
 
             it('is not mongo id', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                   prices: {                  
                     listed: [
                       {
@@ -573,7 +571,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                 .saveCustomerDocument(customerDocument)
                 .savePriceDocument(priceDocument)
                 .authenticate(userType)
-                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                   body: {
                     customerId: getCustomerId(customerDocument),
                   },
@@ -593,7 +591,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
           describe('if prices[0].quantity', () => {
             it('is missing', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                   prices: {                  
                     listed: [
                       {
@@ -608,7 +606,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
 
             it('is not integer', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                   prices: {                  
                     listed: [
                       {
@@ -623,7 +621,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
 
             it('is too small', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                   prices: {                  
                     listed: [
                       {
@@ -640,7 +638,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
           describe('if prices[0].name', () => {
             it('is missing', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                   prices: {
                     custom: [
                       {
@@ -655,7 +653,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
 
             it('is not string', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                   prices: {
                     custom: [
                       {
@@ -670,7 +668,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
 
             it('is too short', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                   prices: {
                     custom: [
                       {
@@ -687,7 +685,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
           describe('if prices[0].amount', () => {
             it('is missing', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                   prices: {
                     custom: [
                       {
@@ -702,7 +700,7 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
 
             it('is not integer', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                   prices: {
                     custom: [
                       {
@@ -719,14 +717,14 @@ describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
           describe('if calendarEntryId', () => {
             it('is not mongo id', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarEntry(calendarEntryDataFactory.id('not-mongo-id'), calendarEntryDataFactory.workEntryRequest())
+                .requestUpdateCalendarEntry(calendarEntryDataFactory.id('not-mongo-id'), calendarEntryDataFactory.request.work())
                 .expectBadRequestResponse()
                 .expectWrongPropertyPattern('calendarEntryId', 'pathParameters');
             });
 
             it('does not belong to any calendar entry', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarEntry(calendarEntryDataFactory.id(), calendarEntryDataFactory.workEntryRequest({
+                .requestUpdateCalendarEntry(calendarEntryDataFactory.id(), calendarEntryDataFactory.request.work({
                   body: {
                     customerId: customerDataFactory.id(),
                   },

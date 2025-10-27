@@ -34,7 +34,7 @@ export const calendarApiActions = createActionGroup({
     'Update calendar entry completed': props<Calendar.Entry.CalendarEntryId & Calendar.Entry.Request & {customer: Customer.Response }>(),
     'Delete calendar entry initiated': props<Calendar.Entry.CalendarEntryId>(),
     'Delete calendar entry completed': props<Calendar.Entry.CalendarEntryId>(),
-    'Pay calendar work entry initiated': props<Calendar.Entry.CalendarEntryId & Calendar.DayProp & Calendar.Entry.PaymentRequest>(),
-    'Pay calendar work entry completed': props<Calendar.Entry.CalendarEntryId & Calendar.DayProp>(),
+    'Resolve calendar work entry initiated': props<Calendar.Entry.CalendarEntryId & Calendar.DayProp & Calendar.Entry.ResolutionRequest>(),
+    'Resolve calendar work entry completed': props<Calendar.Entry.CalendarEntryId & Calendar.DayProp & Calendar.Entry.ResolutionRequest>(),
   },
 });

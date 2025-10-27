@@ -824,6 +824,7 @@ export namespace Customer {
 
   export type ResponseBase = CustomerId 
   & Base; 
+  
   export type Response = ResponseBase
   & Jobs
   & {
@@ -921,10 +922,6 @@ export namespace Calendar {
       description: string;      
     };
 
-    type IsPaid = {
-      isPaid: boolean;
-    };
-
     export type IssueEntryRequest = Base 
     & DayProp 
     & EntryType<Enum.CalendarEntryType.Issue>;
@@ -946,8 +943,8 @@ export namespace Calendar {
     & Base
     & DayProp
     & EntryType<Enum.CalendarEntryType>
-    & IsPaid
     & {
+      resolution: Delay & Status<Enum.CalendarEntryResolutionStatus>;
       transaction: Transaction.PaymentDocument;
       customer: Customer.Document;
     }
@@ -965,19 +962,27 @@ export namespace Calendar {
 
     export type WorkEntryResponse = ResponseBase
     & Pick<Customer.Job.Response, 'prices'>   
-    & IsPaid
     & {
-      customer: Customer.Response
+      customer: Customer.Response;
+      resolution: Delay & Status<Enum.CalendarEntryResolutionStatus>;
     }
     & EntryType<Enum.CalendarEntryType.Work>;
 
     export type Response = PersonalEntryResponse | IssueEntryResponse | WorkEntryResponse;
 
-    type PaymentType<P extends Enum.PaymentType> = {
-      paymentType: P;
+    export type Delay = {
+      delay: number;
     };
 
-    export type PaymentRequest = PaymentType<Enum.PaymentType.Transfer> | (PaymentType<Enum.PaymentType.Cash> & Transaction.Amount);
+    export type Status<S extends Enum.CalendarEntryResolutionStatus>= {
+      status: S
+    }; 
+
+    export type PaidResolutionRequest = Delay & Transaction.Amount & Status<Enum.CalendarEntryResolutionStatus.Paid>;
+    export type PendingTransferResolutionRequest = Delay & Status<Enum.CalendarEntryResolutionStatus.PendingTransfer>;
+    export type NoShowResolutionRequest = Status<Enum.CalendarEntryResolutionStatus.NoShow>;
+
+    export type ResolutionRequest = PaidResolutionRequest | PendingTransferResolutionRequest | NoShowResolutionRequest;
   }
 }
 

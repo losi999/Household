@@ -15,7 +15,7 @@ export const deleteCalendarEntryServiceFactory = (
       calendarEntryId,
     }));
 
-    httpErrors.calendarEntry.alreadyPaid(queried);
+    httpErrors.calendarEntry.alreadyResolved(queried);
 
     return calendarEntryService.deleteCalendarEntry(calendarEntryId).catch(httpErrors.calendarEntry.delete({
       calendarEntryId,

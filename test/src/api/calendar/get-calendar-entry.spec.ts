@@ -3,9 +3,9 @@ import { allowUsers } from '@household/test/api/utils';
 import { Calendar, Customer, Price } from '@household/shared/types/types';
 import { calendarEntryDataFactory } from '@household/test/api/calendar/data-factory';
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
-import { CalendarEntryType } from '@household/shared/enums';
 import { priceDataFactory } from '@household/test/api/price/data-factory';
 import { default as schema } from '@household/test/api/schemas/calendar-entry-response';
+import { CalendarEntryResolutionStatus } from '@household/shared/enums';
 
 const permissionMap = allowUsers('hairdresser');
 
@@ -14,22 +14,32 @@ describe('GET /calendar/v1/entries/{calendarEntryId}', () => {
   let calendarWorkEntryDocument: Calendar.Entry.Document;
   let calendarIssueEntryDocument: Calendar.Entry.Document;
   let customerDocument: Customer.Document;
+  let blacklistedCustomerDocument: Customer.Document;
   let priceDocument: Price.Document;
 
   beforeEach(() => {
-    customerDocument = customerDataFactory.document();
     priceDocument = priceDataFactory.document();
-
-    calendarPersonalEntryDocument = calendarEntryDataFactory.document({
-      entryType: CalendarEntryType.Personal,
+    blacklistedCustomerDocument = customerDataFactory.document();
+    customerDocument = customerDataFactory.document({
+      blacklistedCustomers: [blacklistedCustomerDocument],
+      jobs: [
+        {
+          prices: {
+            listed: [
+              {
+                price: priceDocument,
+              },
+            ],
+          },
+        },
+      ],
     });
 
-    calendarIssueEntryDocument = calendarEntryDataFactory.document({
-      entryType: CalendarEntryType.Issue,
-    });
+    calendarPersonalEntryDocument = calendarEntryDataFactory.document.personal();
 
-    calendarWorkEntryDocument = calendarEntryDataFactory.document({
-      entryType: CalendarEntryType.Work,
+    calendarIssueEntryDocument = calendarEntryDataFactory.document.issue();
+
+    calendarWorkEntryDocument = calendarEntryDataFactory.document.work({
       customer: customerDocument,
       prices: {
         custom: [{}],
@@ -38,6 +48,10 @@ describe('GET /calendar/v1/entries/{calendarEntryId}', () => {
             price: priceDocument,
           },
         ],
+      },
+      resolution: { 
+        status: CalendarEntryResolutionStatus.Paid,
+        delay: 30,
       },
     });
           
@@ -84,7 +98,10 @@ describe('GET /calendar/v1/entries/{calendarEntryId}', () => {
 
           it('work entry', () => {          
             cy.saveCalendarEntryDocument(calendarWorkEntryDocument)
-              .saveCustomerDocument(customerDocument)
+              .saveCustomerDocuments([
+                customerDocument,
+                blacklistedCustomerDocument,
+              ])
               .savePriceDocument(priceDocument)
               .authenticate(userType)
               .requestGetCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument))

@@ -690,10 +690,10 @@ export const httpErrors = {
         throw httpError(statusCode, `Calendar entry must be of "${ctx.expectedType}" type`);
       }
     },
-    alreadyPaid: (ctx: Calendar.Entry.Document, statusCode = 400) => {
-      if (ctx?.isPaid) {
-        log('Calendar entry is already paid', ctx);
-        throw httpError(statusCode, 'Calendar entry is already paid');
+    alreadyResolved: (ctx: Calendar.Entry.Document, statusCode = 400) => {
+      if (ctx?.resolution) {
+        log('Calendar entry is already resolved', ctx);
+        throw httpError(statusCode, 'Calendar entry is already resolved');
       }
     },
   },

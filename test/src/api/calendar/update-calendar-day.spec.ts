@@ -2,7 +2,6 @@ import { entries } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/api/utils';
 import { Calendar } from '@household/shared/types/types';
 import { calendarDayDataFactory } from '@household/test/api/calendar/data-factory';
-import { CalendarDayType } from '@household/shared/enums';
 
 const permissionMap = allowUsers('hairdresser');
 
@@ -12,7 +11,7 @@ describe('PUT /calendar/v1/days/{day}', () => {
   let calendarDayDocument: Calendar.Day.Document;
 
   beforeEach(() => {
-    request = calendarDayDataFactory.workdayRequest();
+    request = calendarDayDataFactory.request.work();
     day = calendarDayDataFactory.futureDay();
   });
 
@@ -46,7 +45,7 @@ describe('PUT /calendar/v1/days/{day}', () => {
           });
           
           it('vacation', () => {
-            request = calendarDayDataFactory.vacationRequest();
+            request = calendarDayDataFactory.request.vacation();
             
             cy.clearCalendarDay(day)
               .authenticate(userType)
@@ -58,12 +57,11 @@ describe('PUT /calendar/v1/days/{day}', () => {
 
         describe('should update', () => {  
           it('workday to vacation', () => {
-            calendarDayDocument = calendarDayDataFactory.document({
+            calendarDayDocument = calendarDayDataFactory.document.work({
               day,
-              dayType: CalendarDayType.Workday,
             });
 
-            request = calendarDayDataFactory.vacationRequest();
+            request = calendarDayDataFactory.request.vacation();
 
             cy.saveCalendarDayDocument(calendarDayDocument)
               .authenticate(userType)
@@ -73,12 +71,11 @@ describe('PUT /calendar/v1/days/{day}', () => {
           });
           
           it('vacation to workday', () => {
-            calendarDayDocument = calendarDayDataFactory.document({
+            calendarDayDocument = calendarDayDataFactory.document.vacation({
               day,
-              dayType: CalendarDayType.Vacation,
             });
 
-            request = calendarDayDataFactory.workdayRequest();
+            request = calendarDayDataFactory.request.work();
 
             cy.saveCalendarDayDocument(calendarDayDocument)
               .authenticate(userType)
@@ -90,12 +87,11 @@ describe('PUT /calendar/v1/days/{day}', () => {
 
         describe('should return error', () => {
           it('if holiday is to be updated', () => {
-            calendarDayDocument = calendarDayDataFactory.document({
+            calendarDayDocument = calendarDayDataFactory.document.holiday({
               day,
-              dayType: CalendarDayType.Holiday,
             });
 
-            request = calendarDayDataFactory.workdayRequest();
+            request = calendarDayDataFactory.request.work();
 
             cy.saveCalendarDayDocument(calendarDayDocument)
               .authenticate(userType)
@@ -107,7 +103,7 @@ describe('PUT /calendar/v1/days/{day}', () => {
           describe('if dayType', () => {
             it('is missing from body', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarDay(day, calendarDayDataFactory.workdayRequest({
+                .requestUpdateCalendarDay(day, calendarDayDataFactory.request.work({
                   dayType: undefined,
                 }))
                 .expectBadRequestResponse()
@@ -116,7 +112,7 @@ describe('PUT /calendar/v1/days/{day}', () => {
 
             it('is not string', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarDay(day, calendarDayDataFactory.workdayRequest({
+                .requestUpdateCalendarDay(day, calendarDayDataFactory.request.work({
                   dayType: <any>1,
                 }))
                 .expectBadRequestResponse()
@@ -125,7 +121,7 @@ describe('PUT /calendar/v1/days/{day}', () => {
 
             it('is not a valid constant value', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarDay(day, calendarDayDataFactory.workdayRequest({
+                .requestUpdateCalendarDay(day, calendarDayDataFactory.request.work({
                   dayType: 'not-valid-const' as any,
                 }))
                 .expectBadRequestResponse()
@@ -136,7 +132,7 @@ describe('PUT /calendar/v1/days/{day}', () => {
           describe('if start', () => {
             it('is missing from body', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarDay(day, calendarDayDataFactory.workdayRequest({
+                .requestUpdateCalendarDay(day, calendarDayDataFactory.request.work({
                   start: undefined,
                 }))
                 .expectBadRequestResponse()
@@ -145,7 +141,7 @@ describe('PUT /calendar/v1/days/{day}', () => {
 
             it('is not integer', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarDay(day, calendarDayDataFactory.workdayRequest({
+                .requestUpdateCalendarDay(day, calendarDayDataFactory.request.work({
                   start: 1.1,
                 }))
                 .expectBadRequestResponse()
@@ -154,7 +150,7 @@ describe('PUT /calendar/v1/days/{day}', () => {
 
             it('is too small', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarDay(day, calendarDayDataFactory.workdayRequest({
+                .requestUpdateCalendarDay(day, calendarDayDataFactory.request.work({
                   start: -1,
                 }))
                 .expectBadRequestResponse()
@@ -163,7 +159,7 @@ describe('PUT /calendar/v1/days/{day}', () => {
 
             it('is too large', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarDay(day, calendarDayDataFactory.workdayRequest({
+                .requestUpdateCalendarDay(day, calendarDayDataFactory.request.work({
                   start: 97,
                 }))
                 .expectBadRequestResponse()
@@ -174,7 +170,7 @@ describe('PUT /calendar/v1/days/{day}', () => {
           describe('if end', () => {
             it('is missing from body', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarDay(day, calendarDayDataFactory.workdayRequest({
+                .requestUpdateCalendarDay(day, calendarDayDataFactory.request.work({
                   end: undefined,
                 }))
                 .expectBadRequestResponse()
@@ -183,7 +179,7 @@ describe('PUT /calendar/v1/days/{day}', () => {
 
             it('is not integer', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarDay(day, calendarDayDataFactory.workdayRequest({
+                .requestUpdateCalendarDay(day, calendarDayDataFactory.request.work({
                   end: 1.1,
                 }))
                 .expectBadRequestResponse()
@@ -192,7 +188,7 @@ describe('PUT /calendar/v1/days/{day}', () => {
 
             it('is too small', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarDay(day, calendarDayDataFactory.workdayRequest({
+                .requestUpdateCalendarDay(day, calendarDayDataFactory.request.work({
                   start: 20,
                   end: 10,
                 }))
@@ -202,7 +198,7 @@ describe('PUT /calendar/v1/days/{day}', () => {
 
             it('is too large', () => {
               cy.authenticate(userType)
-                .requestUpdateCalendarDay(day, calendarDayDataFactory.workdayRequest({
+                .requestUpdateCalendarDay(day, calendarDayDataFactory.request.work({
                   end: 97,
                 }))
                 .expectBadRequestResponse()

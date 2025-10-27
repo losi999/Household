@@ -3,23 +3,68 @@ import { allowUsers } from '@household/test/api/utils';
 import { Calendar, Customer, Price } from '@household/shared/types/types';
 import { calendarDayDataFactory, calendarEntryDataFactory } from '@household/test/api/calendar/data-factory';
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
-import { CalendarDayType, CalendarEntryType } from '@household/shared/enums';
 import { priceDataFactory } from '@household/test/api/price/data-factory';
 import { default as schema } from '@household/test/api/schemas/calendar-day-response-list';
+import { CalendarEntryResolutionStatus } from '@household/shared/enums';
 
 const permissionMap = allowUsers('hairdresser');
 
 describe('GET /calendar/v1/days', () => {
   let customerDocument: Customer.Document;
+  let blacklistedCustomerDocument: Customer.Document;
   let priceDocument: Price.Document;
   let day: string;
-  let calendarEntryDocument: Calendar.Entry.Document;
+  let calendarPersonalEntryDocument: Calendar.Entry.Document;
+  let calendarIssueEntryDocument: Calendar.Entry.Document;
+  let calendarWorkEntryDocument: Calendar.Entry.Document;
   let calendarDayDocument: Calendar.Day.Document;
 
   beforeEach(() => {
+    day = '2025-10-20';
+              
+    priceDocument = priceDataFactory.document();     
+    blacklistedCustomerDocument = customerDataFactory.document();     
+    customerDocument = customerDataFactory.document({
+      blacklistedCustomers: [blacklistedCustomerDocument],
+      jobs: [
+        {
+          prices: {
+            listed: [
+              {
+                price: priceDocument,
+              },
+            ],
+          },
+        },
+      ],
+    });
 
-    customerDocument = customerDataFactory.document();
-    priceDocument = priceDataFactory.document();          
+    calendarPersonalEntryDocument = calendarEntryDataFactory.document.personal({
+      day,
+    });
+
+    calendarIssueEntryDocument = calendarEntryDataFactory.document.issue({
+      day,
+    });
+
+    calendarWorkEntryDocument = calendarEntryDataFactory.document.work({
+      body: {
+        day,
+      },
+      customer: customerDocument,
+      prices: {
+        custom: [{}],
+        listed: [
+          {
+            price: priceDocument,
+          },
+        ],
+      },
+      resolution: { 
+        status: CalendarEntryResolutionStatus.Paid,
+        delay: 30,
+      },
+    });
   });
 
   describe('called as anonymous', () => {
@@ -50,20 +95,10 @@ describe('GET /calendar/v1/days', () => {
       } else {
         describe('should return', () => {
           describe('workday', () => {
-            beforeEach(() => {
-              day = '2025-10-20';
-            });
-
             describe('without custom limits', () => {
               it('with a personal entry', () => {
-                calendarEntryDocument = calendarEntryDataFactory.document({
-                  entryType: CalendarEntryType.Personal,
-                  body: {
-                    day,
-                  },
-                });
                 cy.clearCalendarDay(day)
-                  .saveCalendarEntryDocument(calendarEntryDocument)
+                  .saveCalendarEntryDocument(calendarPersonalEntryDocument)
                   .authenticate(userType)
                   .requestListCalendarDays({
                     dateFrom: day,
@@ -71,18 +106,12 @@ describe('GET /calendar/v1/days', () => {
                   })
                   .expectOkResponse()
                   .expectValidResponseSchema(schema)
-                  .validateInCalendarDayResponseList(day, calendarEntryDocument);
+                  .validateInCalendarDayResponseList(day, calendarPersonalEntryDocument);
               });
 
               it('with an issue entry', () => {
-                calendarEntryDocument = calendarEntryDataFactory.document({
-                  entryType: CalendarEntryType.Issue,
-                  body: {
-                    day,
-                  },
-                });
                 cy.clearCalendarDay(day)
-                  .saveCalendarEntryDocument(calendarEntryDocument)
+                  .saveCalendarEntryDocument(calendarIssueEntryDocument)
                   .authenticate(userType)
                   .requestListCalendarDays({
                     dateFrom: day,
@@ -90,29 +119,17 @@ describe('GET /calendar/v1/days', () => {
                   })
                   .expectOkResponse()
                   .expectValidResponseSchema(schema)
-                  .validateInCalendarDayResponseList(day, calendarEntryDocument);
+                  .validateInCalendarDayResponseList(day, calendarIssueEntryDocument);
               });
 
               it('with a work entry', () => {
-                calendarEntryDocument = calendarEntryDataFactory.document({
-                  entryType: CalendarEntryType.Work,
-                  body: {
-                    day,
-                  },
-                  customer: customerDocument,
-                  prices: {
-                    custom: [{}],
-                    listed: [
-                      {
-                        price: priceDocument,
-                      },
-                    ],
-                  },
-                });
                 cy.clearCalendarDay(day)
-                  .saveCustomerDocument(customerDocument)
+                  .saveCustomerDocuments([
+                    customerDocument,
+                    blacklistedCustomerDocument,
+                  ])
                   .savePriceDocument(priceDocument)
-                  .saveCalendarEntryDocument(calendarEntryDocument)
+                  .saveCalendarEntryDocument(calendarWorkEntryDocument)
                   .authenticate(userType)
                   .requestListCalendarDays({
                     dateFrom: day,
@@ -120,25 +137,21 @@ describe('GET /calendar/v1/days', () => {
                   })
                   .expectOkResponse()
                   .expectValidResponseSchema(schema)
-                  .validateInCalendarDayResponseList(day, calendarEntryDocument);
+                  .validateInCalendarDayResponseList(day, calendarWorkEntryDocument);
               });
             });
 
             describe('with custom limits', () => {
-              it('with a personal entry', () => {
-                calendarDayDocument = calendarDayDataFactory.document({
+              beforeEach(() => {
+                calendarDayDocument = calendarDayDataFactory.document.work({
                   day,
-                  dayType: CalendarDayType.Workday,
                 });
-                calendarEntryDocument = calendarEntryDataFactory.document({
-                  entryType: CalendarEntryType.Personal,
-                  body: {
-                    day,
-                  },
-                });
+              });
+
+              it('with a personal entry', () => {
                 cy.clearCalendarDay(day)
                   .saveCalendarDayDocument(calendarDayDocument)
-                  .saveCalendarEntryDocument(calendarEntryDocument)
+                  .saveCalendarEntryDocument(calendarPersonalEntryDocument)
                   .authenticate(userType)
                   .requestListCalendarDays({
                     dateFrom: day,
@@ -146,23 +159,13 @@ describe('GET /calendar/v1/days', () => {
                   })
                   .expectOkResponse()
                   .expectValidResponseSchema(schema)
-                  .validateInCalendarDayResponseList(day, calendarEntryDocument, calendarDayDocument);
+                  .validateInCalendarDayResponseList(day, calendarPersonalEntryDocument, calendarDayDocument);
               });
 
               it('with an issue entry', () => {
-                calendarDayDocument = calendarDayDataFactory.document({
-                  day,
-                  dayType: CalendarDayType.Workday,
-                });
-                calendarEntryDocument = calendarEntryDataFactory.document({
-                  entryType: CalendarEntryType.Issue,
-                  body: {
-                    day,
-                  },
-                });
                 cy.clearCalendarDay(day)
                   .saveCalendarDayDocument(calendarDayDocument)
-                  .saveCalendarEntryDocument(calendarEntryDocument)
+                  .saveCalendarEntryDocument(calendarIssueEntryDocument)
                   .authenticate(userType)
                   .requestListCalendarDays({
                     dateFrom: day,
@@ -170,35 +173,18 @@ describe('GET /calendar/v1/days', () => {
                   })
                   .expectOkResponse()
                   .expectValidResponseSchema(schema)
-                  .validateInCalendarDayResponseList(day, calendarEntryDocument, calendarDayDocument);
+                  .validateInCalendarDayResponseList(day, calendarIssueEntryDocument, calendarDayDocument);
               });
 
-              it('with a work entry narrowing the limits', () => {
-                calendarDayDocument = calendarDayDataFactory.document({
-                  day,
-                  dayType: CalendarDayType.Workday,
-                  body: {},
-                });
-                calendarEntryDocument = calendarEntryDataFactory.document({
-                  entryType: CalendarEntryType.Work,
-                  body: {
-                    day,
-                  },
-                  customer: customerDocument,
-                  prices: {
-                    custom: [{}],
-                    listed: [
-                      {
-                        price: priceDocument,
-                      },
-                    ],
-                  },
-                });
+              it('with a work entry', () => {
                 cy.clearCalendarDay(day)
-                  .saveCustomerDocument(customerDocument)
+                  .saveCustomerDocuments([
+                    customerDocument,
+                    blacklistedCustomerDocument,
+                  ])
                   .savePriceDocument(priceDocument)
                   .saveCalendarDayDocument(calendarDayDocument)
-                  .saveCalendarEntryDocument(calendarEntryDocument)
+                  .saveCalendarEntryDocument(calendarWorkEntryDocument)
                   .authenticate(userType)
                   .requestListCalendarDays({
                     dateFrom: day,
@@ -206,7 +192,7 @@ describe('GET /calendar/v1/days', () => {
                   })
                   .expectOkResponse()
                   .expectValidResponseSchema(schema)
-                  .validateInCalendarDayResponseList(day, calendarEntryDocument, calendarDayDocument);
+                  .validateInCalendarDayResponseList(day, calendarWorkEntryDocument, calendarDayDocument);
               });
             });
           });
@@ -214,18 +200,39 @@ describe('GET /calendar/v1/days', () => {
           describe('weekend', () => {
             beforeEach(() => {
               day = '2025-10-19';
+
+              calendarPersonalEntryDocument = calendarEntryDataFactory.document.personal({
+                day,
+              });
+
+              calendarIssueEntryDocument = calendarEntryDataFactory.document.issue({
+                day,
+              });
+
+              calendarWorkEntryDocument = calendarEntryDataFactory.document.work({
+                body: {
+                  day,
+                },
+                customer: customerDocument,
+                prices: {
+                  custom: [{}],
+                  listed: [
+                    {
+                      price: priceDocument,
+                    },
+                  ],
+                },
+                resolution: { 
+                  status: CalendarEntryResolutionStatus.Paid,
+                  delay: 30,
+                },
+              });
             });
 
             describe('without custom limits', () => {
               it('with a personal entry', () => {
-                calendarEntryDocument = calendarEntryDataFactory.document({
-                  entryType: CalendarEntryType.Personal,
-                  body: {
-                    day,
-                  },
-                });
                 cy.clearCalendarDay(day)
-                  .saveCalendarEntryDocument(calendarEntryDocument)
+                  .saveCalendarEntryDocument(calendarPersonalEntryDocument)
                   .authenticate(userType)
                   .requestListCalendarDays({
                     dateFrom: day,
@@ -233,18 +240,12 @@ describe('GET /calendar/v1/days', () => {
                   })
                   .expectOkResponse()
                   .expectValidResponseSchema(schema)
-                  .validateInCalendarDayResponseList(day, calendarEntryDocument);
+                  .validateInCalendarDayResponseList(day, calendarPersonalEntryDocument);
               });
 
               it('with an issue entry', () => {
-                calendarEntryDocument = calendarEntryDataFactory.document({
-                  entryType: CalendarEntryType.Issue,
-                  body: {
-                    day,
-                  },
-                });
                 cy.clearCalendarDay(day)
-                  .saveCalendarEntryDocument(calendarEntryDocument)
+                  .saveCalendarEntryDocument(calendarIssueEntryDocument)
                   .authenticate(userType)
                   .requestListCalendarDays({
                     dateFrom: day,
@@ -252,30 +253,17 @@ describe('GET /calendar/v1/days', () => {
                   })
                   .expectOkResponse()
                   .expectValidResponseSchema(schema)
-                  .validateInCalendarDayResponseList(day, calendarEntryDocument);
+                  .validateInCalendarDayResponseList(day, calendarIssueEntryDocument);
               });
 
               it('with a work entry', () => {
-                calendarEntryDocument = calendarEntryDataFactory.document({
-                  entryType: CalendarEntryType.Work,
-                  body: {
-                    day,
-                  },
-                  customer: customerDocument,
-                  prices: {
-                    custom: [{}],
-                    listed: [
-                      {
-                        price: priceDocument,
-                      },
-                    ],
-                  },
-                });
-
                 cy.clearCalendarDay(day)
-                  .saveCustomerDocument(customerDocument)
+                  .saveCustomerDocuments([
+                    customerDocument,
+                    blacklistedCustomerDocument,
+                  ])
                   .savePriceDocument(priceDocument)
-                  .saveCalendarEntryDocument(calendarEntryDocument)
+                  .saveCalendarEntryDocument(calendarWorkEntryDocument)
                   .authenticate(userType)
                   .requestListCalendarDays({
                     dateFrom: day,
@@ -283,25 +271,21 @@ describe('GET /calendar/v1/days', () => {
                   })
                   .expectOkResponse()
                   .expectValidResponseSchema(schema)
-                  .validateInCalendarDayResponseList(day, calendarEntryDocument);
+                  .validateInCalendarDayResponseList(day, calendarWorkEntryDocument);
               });
             });
 
             describe('with custom limits', () => {
-              it('with a personal entry', () => {
-                calendarDayDocument = calendarDayDataFactory.document({
+              beforeEach(() => {
+                calendarDayDocument = calendarDayDataFactory.document.work({
                   day,
-                  dayType: CalendarDayType.Workday,
                 });
-                calendarEntryDocument = calendarEntryDataFactory.document({
-                  entryType: CalendarEntryType.Personal,
-                  body: {
-                    day,
-                  },
-                });
+              });
+
+              it('with a personal entry', () => {
                 cy.clearCalendarDay(day)
                   .saveCalendarDayDocument(calendarDayDocument)
-                  .saveCalendarEntryDocument(calendarEntryDocument)
+                  .saveCalendarEntryDocument(calendarPersonalEntryDocument)
                   .authenticate(userType)
                   .requestListCalendarDays({
                     dateFrom: day,
@@ -309,23 +293,13 @@ describe('GET /calendar/v1/days', () => {
                   })
                   .expectOkResponse()
                   .expectValidResponseSchema(schema)
-                  .validateInCalendarDayResponseList(day, calendarEntryDocument, calendarDayDocument);
+                  .validateInCalendarDayResponseList(day, calendarPersonalEntryDocument, calendarDayDocument);
               });
 
               it('with an issue entry', () => {
-                calendarDayDocument = calendarDayDataFactory.document({
-                  day,
-                  dayType: CalendarDayType.Workday,
-                });
-                calendarEntryDocument = calendarEntryDataFactory.document({
-                  entryType: CalendarEntryType.Issue,
-                  body: {
-                    day,
-                  },
-                });
                 cy.clearCalendarDay(day)
                   .saveCalendarDayDocument(calendarDayDocument)
-                  .saveCalendarEntryDocument(calendarEntryDocument)
+                  .saveCalendarEntryDocument(calendarIssueEntryDocument)
                   .authenticate(userType)
                   .requestListCalendarDays({
                     dateFrom: day,
@@ -333,34 +307,18 @@ describe('GET /calendar/v1/days', () => {
                   })
                   .expectOkResponse()
                   .expectValidResponseSchema(schema)
-                  .validateInCalendarDayResponseList(day, calendarEntryDocument, calendarDayDocument);
+                  .validateInCalendarDayResponseList(day, calendarIssueEntryDocument, calendarDayDocument);
               });
 
               it('with a work entry', () => {
-                calendarDayDocument = calendarDayDataFactory.document({
-                  day,
-                  dayType: CalendarDayType.Workday,
-                });
-                calendarEntryDocument = calendarEntryDataFactory.document({
-                  entryType: CalendarEntryType.Work,
-                  body: {
-                    day,
-                  },
-                  customer: customerDocument,
-                  prices: {
-                    custom: [{}],
-                    listed: [
-                      {
-                        price: priceDocument,
-                      },
-                    ],
-                  },
-                });
                 cy.clearCalendarDay(day)
-                  .saveCustomerDocument(customerDocument)
+                  .saveCustomerDocuments([
+                    customerDocument,
+                    blacklistedCustomerDocument,
+                  ])
                   .savePriceDocument(priceDocument)
                   .saveCalendarDayDocument(calendarDayDocument)
-                  .saveCalendarEntryDocument(calendarEntryDocument)
+                  .saveCalendarEntryDocument(calendarWorkEntryDocument)
                   .authenticate(userType)
                   .requestListCalendarDays({
                     dateFrom: day,
@@ -368,30 +326,21 @@ describe('GET /calendar/v1/days', () => {
                   })
                   .expectOkResponse()
                   .expectValidResponseSchema(schema)
-                  .validateInCalendarDayResponseList(day, calendarEntryDocument, calendarDayDocument);
+                  .validateInCalendarDayResponseList(day, calendarWorkEntryDocument, calendarDayDocument);
               });
             });
           });
 
           describe('holiday', () => {
             beforeEach(() => {
-              day = '2025-10-23';
-            });
-
-            it('with a personal entry', () => {
-              calendarDayDocument = calendarDayDataFactory.document({
+              calendarDayDocument = calendarDayDataFactory.document.holiday({
                 day,
-                dayType: CalendarDayType.Holiday,
               });
-              calendarEntryDocument = calendarEntryDataFactory.document({
-                entryType: CalendarEntryType.Personal,
-                body: {
-                  day,
-                },
-              });
+            });
+            it('with a personal entry', () => {
               cy.clearCalendarDay(day)
                 .saveCalendarDayDocument(calendarDayDocument)
-                .saveCalendarEntryDocument(calendarEntryDocument)
+                .saveCalendarEntryDocument(calendarPersonalEntryDocument)
                 .authenticate(userType)
                 .requestListCalendarDays({
                   dateFrom: day,
@@ -399,23 +348,13 @@ describe('GET /calendar/v1/days', () => {
                 })
                 .expectOkResponse()
                 .expectValidResponseSchema(schema)
-                .validateInCalendarDayResponseList(day, calendarEntryDocument, calendarDayDocument);
+                .validateInCalendarDayResponseList(day, calendarPersonalEntryDocument, calendarDayDocument);
             });
 
             it('with an issue entry', () => {
-              calendarDayDocument = calendarDayDataFactory.document({
-                day,
-                dayType: CalendarDayType.Holiday,
-              });
-              calendarEntryDocument = calendarEntryDataFactory.document({
-                entryType: CalendarEntryType.Issue,
-                body: {
-                  day,
-                },
-              });
               cy.clearCalendarDay(day)
                 .saveCalendarDayDocument(calendarDayDocument)
-                .saveCalendarEntryDocument(calendarEntryDocument)
+                .saveCalendarEntryDocument(calendarIssueEntryDocument)
                 .authenticate(userType)
                 .requestListCalendarDays({
                   dateFrom: day,
@@ -423,34 +362,18 @@ describe('GET /calendar/v1/days', () => {
                 })
                 .expectOkResponse()
                 .expectValidResponseSchema(schema)
-                .validateInCalendarDayResponseList(day, calendarEntryDocument, calendarDayDocument);
+                .validateInCalendarDayResponseList(day, calendarIssueEntryDocument, calendarDayDocument);
             });
 
             it('with a work entry', () => {
-              calendarDayDocument = calendarDayDataFactory.document({
-                day,
-                dayType: CalendarDayType.Holiday,
-              });
-              calendarEntryDocument = calendarEntryDataFactory.document({
-                entryType: CalendarEntryType.Work,
-                body: {
-                  day,
-                },
-                customer: customerDocument,
-                prices: {
-                  custom: [{}],
-                  listed: [
-                    {
-                      price: priceDocument,
-                    },
-                  ],
-                },
-              });
               cy.clearCalendarDay(day)
-                .saveCustomerDocument(customerDocument)
+                .saveCustomerDocuments([
+                  customerDocument,
+                  blacklistedCustomerDocument,
+                ])
                 .savePriceDocument(priceDocument)
                 .saveCalendarDayDocument(calendarDayDocument)
-                .saveCalendarEntryDocument(calendarEntryDocument)
+                .saveCalendarEntryDocument(calendarWorkEntryDocument)
                 .authenticate(userType)
                 .requestListCalendarDays({
                   dateFrom: day,
@@ -458,29 +381,21 @@ describe('GET /calendar/v1/days', () => {
                 })
                 .expectOkResponse()
                 .expectValidResponseSchema(schema)
-                .validateInCalendarDayResponseList(day, calendarEntryDocument, calendarDayDocument);
+                .validateInCalendarDayResponseList(day, calendarWorkEntryDocument, calendarDayDocument);
             });
           });
 
           describe('vacation', () => {
             beforeEach(() => {
-              day = '2025-10-22';
+              calendarDayDocument = calendarDayDataFactory.document.vacation({
+                day,
+              });
             });
 
             it('with a personal entry', () => {
-              calendarDayDocument = calendarDayDataFactory.document({
-                day,
-                dayType: CalendarDayType.Vacation,
-              });
-              calendarEntryDocument = calendarEntryDataFactory.document({
-                entryType: CalendarEntryType.Personal,
-                body: {
-                  day,
-                },
-              });
               cy.clearCalendarDay(day)
                 .saveCalendarDayDocument(calendarDayDocument)
-                .saveCalendarEntryDocument(calendarEntryDocument)
+                .saveCalendarEntryDocument(calendarPersonalEntryDocument)
                 .authenticate(userType)
                 .requestListCalendarDays({
                   dateFrom: day,
@@ -488,23 +403,13 @@ describe('GET /calendar/v1/days', () => {
                 })
                 .expectOkResponse()
                 .expectValidResponseSchema(schema)
-                .validateInCalendarDayResponseList(day, calendarEntryDocument, calendarDayDocument);
+                .validateInCalendarDayResponseList(day, calendarPersonalEntryDocument, calendarDayDocument);
             });
 
             it('with an issue entry', () => {
-              calendarDayDocument = calendarDayDataFactory.document({
-                day,
-                dayType: CalendarDayType.Vacation,
-              });
-              calendarEntryDocument = calendarEntryDataFactory.document({
-                entryType: CalendarEntryType.Issue,
-                body: {
-                  day,
-                },
-              });
               cy.clearCalendarDay(day)
                 .saveCalendarDayDocument(calendarDayDocument)
-                .saveCalendarEntryDocument(calendarEntryDocument)
+                .saveCalendarEntryDocument(calendarIssueEntryDocument)
                 .authenticate(userType)
                 .requestListCalendarDays({
                   dateFrom: day,
@@ -512,34 +417,18 @@ describe('GET /calendar/v1/days', () => {
                 })
                 .expectOkResponse()
                 .expectValidResponseSchema(schema)
-                .validateInCalendarDayResponseList(day, calendarEntryDocument, calendarDayDocument);
+                .validateInCalendarDayResponseList(day, calendarIssueEntryDocument, calendarDayDocument);
             });
 
             it('with a work entry', () => {
-              calendarDayDocument = calendarDayDataFactory.document({
-                day,
-                dayType: CalendarDayType.Vacation,
-              });
-              calendarEntryDocument = calendarEntryDataFactory.document({
-                entryType: CalendarEntryType.Work,
-                body: {
-                  day,
-                },
-                customer: customerDocument,
-                prices: {
-                  custom: [{}],
-                  listed: [
-                    {
-                      price: priceDocument,
-                    },
-                  ],
-                },
-              });
               cy.clearCalendarDay(day)
-                .saveCustomerDocument(customerDocument)
+                .saveCustomerDocuments([
+                  customerDocument,
+                  blacklistedCustomerDocument,
+                ])
                 .savePriceDocument(priceDocument)
                 .saveCalendarDayDocument(calendarDayDocument)
-                .saveCalendarEntryDocument(calendarEntryDocument)
+                .saveCalendarEntryDocument(calendarWorkEntryDocument)
                 .authenticate(userType)
                 .requestListCalendarDays({
                   dateFrom: day,
@@ -547,7 +436,7 @@ describe('GET /calendar/v1/days', () => {
                 })
                 .expectOkResponse()
                 .expectValidResponseSchema(schema)
-                .validateInCalendarDayResponseList(day, calendarEntryDocument, calendarDayDocument);
+                .validateInCalendarDayResponseList(day, calendarWorkEntryDocument, calendarDayDocument);
             });
           });
         });

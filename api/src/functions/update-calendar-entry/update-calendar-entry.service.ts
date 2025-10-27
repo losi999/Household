@@ -37,7 +37,7 @@ export const updateCalendarEntryServiceFactory = (
       request: body,
     });
 
-    httpErrors.calendarEntry.alreadyPaid(queried);
+    httpErrors.calendarEntry.alreadyResolved(queried);
     
     let update: DocumentUpdate<Calendar.Entry.Document>;
     if (body.entryType === CalendarEntryType.Work) {

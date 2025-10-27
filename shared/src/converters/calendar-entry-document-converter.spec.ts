@@ -1,9 +1,9 @@
-import { calendarEntryDataFactory, createDocumentUpdate2, customerDataFactory, priceDataFactory } from '@household/shared/common/test-data-factory';
+import { calendarEntryDataFactory, createDocumentUpdate2, createPaymentTransactionDocument, customerDataFactory, priceDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { addSeconds, getCalendarEntryId } from '@household/shared/common/utils';
 import { calendarEntryDocumentConverterFactory, ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
 import { ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
-import { CalendarEntryType } from '@household/shared/enums';
+import { CalendarEntryResolutionStatus, CalendarEntryType } from '@household/shared/enums';
 import { advanceTo, clear } from 'jest-date-mock';
 
 describe('Calendar entry document converter', () => {
@@ -99,7 +99,6 @@ describe('Calendar entry document converter', () => {
         const { customerId, ...rest } = body;
         expect(result).toEqual(calendarEntryDataFactory.document({
           ...rest,
-          isPaid: false,
           prices: [jobPriceDocument],
           customer: customerDocument,
           _id: undefined,
@@ -123,7 +122,6 @@ describe('Calendar entry document converter', () => {
         const { customerId, ...rest } = body;
         expect(result).toEqual(calendarEntryDataFactory.document({
           ...rest,
-          isPaid: false,
           prices: [jobPriceDocument],
           customer: customerDocument,
           _id: undefined,
@@ -326,13 +324,25 @@ describe('Calendar entry document converter', () => {
     });
   });
 
-  describe('updatePaid', () => {
+  describe('resolve', () => {
     it('should return update', () => {
-      const result = converter.updatePaid();
+      const body = calendarEntryDataFactory.resolutionRequest();
+      const transaction = createPaymentTransactionDocument();
+      const result = converter.resolve({
+        body,
+        transaction,
+      }, expiresIn);
       expect(result).toEqual(createDocumentUpdate2({
         update: {
           $set: {
-            isPaid: true,
+            resolution: {
+              status: body.status,
+              ...(body.status !== CalendarEntryResolutionStatus.NoShow ? {
+                delay: body.delay,
+              } : {}),
+            },
+            transaction,
+            expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
           },
         },
       }));
@@ -413,7 +423,7 @@ describe('Calendar entry document converter', () => {
         mockCustomerDocumentConverter.functions.toResponse.mockReturnValue(customerResponse);
         mockCustomerDocumentConverter.functions.toResponseJobPriceList.mockReturnValue([jobPriceResponse]);
           
-        const { day, description, title, start, end, isPaid } = doc;
+        const { day, description, title, start, end } = doc;
           
         const result = converter.toResponse(doc);
         expect(result).toEqual(calendarEntryDataFactory.workResponse({
@@ -422,7 +432,6 @@ describe('Calendar entry document converter', () => {
           title,
           start,
           end,
-          isPaid,
           calendarEntryId: getCalendarEntryId(doc),
           customer: customerResponse,
           prices: [jobPriceResponse],
@@ -484,7 +493,6 @@ describe('Calendar entry document converter', () => {
           title: workEntryDocument.title,
           start: workEntryDocument.start,
           end: workEntryDocument.end,
-          isPaid: workEntryDocument.isPaid,
           calendarEntryId: getCalendarEntryId(workEntryDocument),
           customer: customerResponse,
           prices: [jobPriceResponse],

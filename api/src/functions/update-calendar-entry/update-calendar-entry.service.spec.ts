@@ -3,7 +3,7 @@ import { calendarEntryDataFactory, createDocumentUpdate2, customerDataFactory, p
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getCustomerId, getPriceId } from '@household/shared/common/utils';
 import { ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
-import { CalendarEntryType } from '@household/shared/enums';
+import { CalendarEntryResolutionStatus, CalendarEntryType } from '@household/shared/enums';
 import { ICalendarEntryService } from '@household/shared/services/calendar-entry-service';
 import { ICustomerService } from '@household/shared/services/customer-service';
 import { IPriceService } from '@household/shared/services/price-service';
@@ -212,14 +212,17 @@ describe('Update calendar entry service', () => {
       });
       mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue({
         ...queriedCalendarWorkEntry,
-        isPaid: true,
+        resolution: {
+          status: CalendarEntryResolutionStatus.Paid,
+          delay: undefined,
+        },
       });
 
       await service({
         calendarEntryId,
         body,
         expiresIn: undefined,
-      }).catch(validateError('Calendar entry is already paid', 400));
+      }).catch(validateError('Calendar entry is already resolved', 400));
       validateFunctionCall(mockCalendarEntryService.functions.findCalendarEntryById, calendarEntryId);
       validateFunctionCall(mockCalendarEntryDocumentConverter.functions.update);
       validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntry);

@@ -7,7 +7,7 @@ import { default as customer } from '@household/test/api/schemas/customer-respon
 import { default as calendarEntryId } from '@household/shared/schemas/calendar-entry-id';
 import { default as day } from '@household/shared/schemas/calendar-day';
 import { default as base } from '@household/shared/schemas/partials/calendar-entry-base';
-import { CalendarEntryType } from '@household/shared/enums';
+import { CalendarEntryResolutionStatus, CalendarEntryType } from '@household/shared/enums';
 
 const personalEntryResponseSchema: StrictJSONSchema7<Calendar.Entry.PersonalEntryResponse> = {
   type: 'object',
@@ -57,7 +57,6 @@ const workEntryResponseSchema: StrictJSONSchema7<Calendar.Entry.WorkEntryRespons
     ...day.required,
     ...base.required,
     'entryType',
-    'isPaid',
     ...calendarEntryId.required,
   ],
   properties: {
@@ -69,8 +68,38 @@ const workEntryResponseSchema: StrictJSONSchema7<Calendar.Entry.WorkEntryRespons
       type: 'string',
       const: CalendarEntryType.Work,
     },
-    isPaid: {
-      type: 'boolean',
+    resolution: {
+      oneOf: [
+        {
+          type: 'object',
+          additionalProperties: false,
+          required: ['status'],
+          properties: {
+            status: {
+              type: 'string',
+              enum: [
+                CalendarEntryResolutionStatus.Paid,
+                CalendarEntryResolutionStatus.PendingTransfer,
+              ],
+            },
+            delay: {
+              type: 'integer',
+              exclusiveMinimum: 0,
+            },
+          },
+        },
+        {
+          type: 'object',
+          additionalProperties: false,
+          required: ['status'],
+          properties: {
+            status: {
+              type: 'string',
+              const: CalendarEntryResolutionStatus.NoShow,
+            },
+          },
+        },
+      ],
     },
     prices: {
       type: 'array',

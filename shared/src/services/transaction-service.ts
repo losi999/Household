@@ -121,10 +121,8 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
               transaction: transactionId,
             }, 
             {
-              $set: {
-                isPaid: false,
-              },
               $unset: {
+                resolution: 1,
                 transaction: 1,
               },
             }, {

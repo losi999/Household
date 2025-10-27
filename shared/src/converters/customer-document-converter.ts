@@ -14,22 +14,13 @@ export interface ICustomerDocumentConverter {
   addJob(job: Customer.Job.Request, priceDocuments: Price.Document[]): DocumentUpdate<Customer.Document>;
   updateJob(jobName: string, job: Customer.Job.Request, priceDocuments: Price.Document[]): DocumentUpdate<Customer.Document>;
   deleteJob(name: Customer.Job.Name['name']): DocumentUpdate<Customer.Document>;
+  toResponseBase(doc: Customer.Document): Customer.ResponseBase;
   toResponse(doc: Customer.Document): Customer.Response;
   toResponseList(docs: Customer.Document[]): Customer.Response[];
   toResponseJobPriceList(docs: Customer.Job.Document['prices']): Customer.Job.Response['prices'];
 }
 
 export const customerDocumentConverterFactory = (priceDocumentConverter: IPriceDocumentConverter): ICustomerDocumentConverter => {
-  const toResponseBase = ({ name, description, isGroup, rating, _id }: Customer.Document): Customer.ResponseBase => {
-    return {
-      customerId: getCustomerId(_id),
-      name,
-      isGroup,
-      rating,
-      description,
-    };
-  };
-
   const instance: ICustomerDocumentConverter = {
     createJobPriceList: (prices, priceDocuments) => {
       return prices?.map((req) => {
@@ -133,9 +124,18 @@ export const customerDocumentConverterFactory = (priceDocumentConverter: IPriceD
         },
       };
     },
+    toResponseBase: ({ name, description, isGroup, rating, _id }) => {
+      return {
+        customerId: getCustomerId(_id),
+        name,
+        isGroup,
+        rating,
+        description,
+      };
+    },
     toResponse: (customer) => {
       return {
-        ...toResponseBase(customer),
+        ...instance.toResponseBase(customer),
         jobs: customer.jobs?.map(({ name, description, duration, prices }) => {
           return {
             name,
@@ -146,7 +146,7 @@ export const customerDocumentConverterFactory = (priceDocumentConverter: IPriceD
         }).toSorted((a, b) => a.name.localeCompare(b.name, 'hu', {
           sensitivity: 'base',
         })),      
-        blacklistedCustomers: customer.blacklistedCustomers.map(c => toResponseBase(c)),
+        blacklistedCustomers: customer.blacklistedCustomers.map(c => instance.toResponseBase(c)),
       };
     },
     toResponseList: (docs) => docs?.map(d => instance.toResponse(d)),
