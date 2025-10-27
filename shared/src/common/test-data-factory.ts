@@ -1,5 +1,5 @@
 import { generateMongoId } from '@household/shared/common/utils';
-import { AccountType, CalendarDayType, CalendarEntryType, CategoryType, FileType, PaymentType, SettingKey, TransactionType, UserType } from '@household/shared/enums';
+import { AccountType, CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType, CategoryType, FileType, SettingKey, TransactionType, UserType } from '@household/shared/enums';
 import { DocumentUpdate } from '@household/shared/types/common';
 import { Account, Auth, Calendar, Category, Customer, File, Price, Product, Project, Recipient, Report, Setting, Transaction, User } from '@household/shared/types/types';
 import type { UpdateQuery } from 'mongoose';
@@ -1009,7 +1009,7 @@ const createCalendarEntryDocument: DataFactoryFunction<Calendar.Entry.Document> 
     _id: generateMongoId(),
     customer: undefined,
     expiresAt: undefined,
-    isPaid: undefined,
+    resolution: undefined,
     prices: undefined,
     transaction: undefined,
     ...data,
@@ -1064,16 +1064,17 @@ const createCalendarWorkEntryResponse: DataFactoryFunction<Calendar.Entry.WorkEn
     start: 10,
     entryType: CalendarEntryType.Work,
     customer: createCustomerResponse(),
-    isPaid: false,
+    resolution: undefined,
     prices: undefined,
     ...data,
   };
 };
 
-const createCalendarEntryPaymentRequest: DataFactoryFunction<Calendar.Entry.PaymentRequest> = (data) => {
+const createCalendarEntryResolutionRequest: DataFactoryFunction<Calendar.Entry.ResolutionRequest> = (data) => {
   return {
-    paymentType: PaymentType.Cash,
+    status: CalendarEntryResolutionStatus.Paid,
     amount: 3000,
+    delay: 15,
     ...data,
   };
 };
@@ -1088,7 +1089,7 @@ export const calendarEntryDataFactory = {
   personalResponse: createCalendarPersonalEntryResponse,
   issueResponse: createCalendarIssueEntryResponse,
   workResponse: createCalendarWorkEntryResponse,
-  paymentRequest: createCalendarEntryPaymentRequest,
+  resolutionRequest: createCalendarEntryResolutionRequest,
 };
 
 const createCalendarWorkdayRequest: DataFactoryFunction<Calendar.Day.WorkdayRequest> = (req) => {

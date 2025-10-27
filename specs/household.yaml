@@ -1090,7 +1090,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "calendar.yaml#/components/schemas/WorkEntry.Response"
+                oneOf:
+                  - $ref: "calendar.yaml#/components/schemas/WorkEntry.Response"
+                  - $ref: "calendar.yaml#/components/schemas/NonWorkEntry.Response"
     put:
       tags:
         - calendar
@@ -1112,7 +1114,7 @@ paths:
       responses:
         204:
           description: Calendar entry deleted
-  /calendar/v1/entries/{calendarEntryId}/payment:
+  /calendar/v1/entries/{calendarEntryId}/resolution:
     parameters:
       - $ref: "#/components/parameters/Path.CalendarEntryId"
     post:
@@ -1122,23 +1124,7 @@ paths:
         content:
           application/json:
             schema:
-              oneOf:
-                - allOf:
-                    - type: object
-                      required:
-                        - paymentType
-                      properties:
-                        paymentType:
-                          type: string
-                          const: "cash"
-                    - $ref: "transaction.yaml#/components/schemas/Amount"
-                - type: object
-                  required:
-                    - paymentType
-                  properties:
-                    paymentType:
-                      type: string
-                      const: "transfer"
+              $ref: "calendar.yaml#/components/schemas/Resolution.Request"
       responses:
         201:
           description: Created transaction Id

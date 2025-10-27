@@ -88,11 +88,11 @@ const requestListCalendarDays = (idToken: string, dateRange: Calendar.DateRange)
   }) as Cypress.ChainableResponse;
 };
 
-const requestPayCalendarWorkEntry = (idToken: string, calendarEntryId: Calendar.Entry.Id, body: Calendar.Entry.PaymentRequest) => {
+const requestResolveCalendarWorkEntry = (idToken: string, calendarEntryId: Calendar.Entry.Id, body: Calendar.Entry.ResolutionRequest) => {
   return cy.request({
     body,
     method: 'POST',
-    url: `/calendar/v1/entries/${calendarEntryId}/payment`,
+    url: `/calendar/v1/entries/${calendarEntryId}/resolution`,
     headers: {
       Authorization: idToken,
       [headerExpiresIn]: Cypress.env('EXPIRES_IN'),
@@ -112,7 +112,7 @@ export const setCalendarRequestCommands = () => {
     requestUpdateCalendarDay,
     requestDeleteCalendarDay,
     requestListCalendarDays,
-    requestPayCalendarWorkEntry,
+    requestResolveCalendarWorkEntry,
   });
 };
 
@@ -126,7 +126,7 @@ declare global {
       requestUpdateCalendarDay: CommandFunctionWithPreviousSubject<typeof requestUpdateCalendarDay>;
       requestDeleteCalendarDay: CommandFunctionWithPreviousSubject<typeof requestDeleteCalendarDay>;
       requestListCalendarDays: CommandFunctionWithPreviousSubject<typeof requestListCalendarDays>;
-      requestPayCalendarWorkEntry: CommandFunctionWithPreviousSubject<typeof requestPayCalendarWorkEntry>;
+      requestResolveCalendarWorkEntry: CommandFunctionWithPreviousSubject<typeof requestResolveCalendarWorkEntry>;
     }
   }
 }

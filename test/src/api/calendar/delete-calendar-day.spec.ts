@@ -2,7 +2,6 @@ import { entries } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/api/utils';
 import { Calendar } from '@household/shared/types/types';
 import { calendarDayDataFactory } from '@household/test/api/calendar/data-factory';
-import { CalendarDayType } from '@household/shared/enums';
 
 const permissionMap = allowUsers('hairdresser');
 
@@ -11,7 +10,7 @@ describe('DELETE /calendar/v1/days/{day}', () => {
   let calendarDayDocument: Calendar.Day.Document;
 
   beforeEach(() => {
-    calendarDayDocument = calendarDayDataFactory.document();
+    calendarDayDocument = calendarDayDataFactory.document.work();
     day = calendarDayDocument.day;
   });
 
@@ -45,9 +44,8 @@ describe('DELETE /calendar/v1/days/{day}', () => {
 
         describe('should return error', () => {
           it('if holiday is to be deleted', () => {
-            calendarDayDocument = calendarDayDataFactory.document({
+            calendarDayDocument = calendarDayDataFactory.document.holiday({
               day,
-              dayType: CalendarDayType.Holiday,
             });
 
             cy.saveCalendarDayDocument(calendarDayDocument)

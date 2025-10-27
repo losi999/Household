@@ -3,7 +3,7 @@ import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/
 import { getAccountId, getCalendarEntryId, getCategoryId, getCustomerId, getPriceId, getTransactionId } from '@household/shared/common/utils';
 import { expectEmptyObject, expectRemainingProperties } from '@household/test/api/utils';
 import { isListedPrice, isPriceBase } from '@household/shared/common/type-guards';
-import { CalendarDayType, CalendarEntryType, PaymentType, SettingKey, TransactionType } from '@household/shared/enums';
+import { CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType, SettingKey, TransactionType } from '@household/shared/enums';
 import { default as moment } from 'moment-timezone';
 import { WORKDAY_START, WORKDAY_END } from '@household/shared/constants';
 
@@ -18,7 +18,7 @@ const validateCalendarEntryResponseBase = ({ calendarEntryId, day, description, 
 
 const validateCalendarEntryResponse = (response: Calendar.Entry.Response, document: Calendar.Entry.Document) => {
   if (response.entryType === CalendarEntryType.Work) {
-    const { calendarEntryId, day, description, end, entryType, start, title, customer, isPaid, prices, ...empty } = response;
+    const { calendarEntryId, day, description, end, entryType, start, title, customer, prices, resolution, ...empty } = response;
     validateCalendarEntryResponseBase({
       calendarEntryId,
       day,
@@ -28,30 +28,31 @@ const validateCalendarEntryResponse = (response: Calendar.Entry.Response, docume
       title,
     }, document);
     expect(entryType, 'entryType').to.equal(document.entryType);
-    expect(isPaid, 'isPaid').to.equal(document.isPaid);
+    expect(resolution.status, 'resolution.status').to.equal(document.resolution?.status);
+    expect(resolution.delay, 'resolution.delay').to.equal(document.resolution?.delay);
+
     cy.validateNestedObject('customer', customer).validateCustomerResponse(document.customer);
-    
-    for (let i = 0; i < prices.length; i += 1) {
-      const priceResponse = prices[i];
+      
+    expect(prices?.length, 'prices.length').to.equal(document.prices?.length);
+    prices?.forEach((priceResponse, i) => {
       const priceDocument = document.prices[i];
 
-      if (isListedPrice(priceResponse)) {
-        if (!isPriceBase(priceDocument)) {
-          const { quantity, ...price } = priceResponse;
-          expect(quantity, `prices[${i}].quantity`).to.equal(priceDocument.quantity);
-          cy.validateNestedObject(`prices[${i}]`, price).validatePriceResponse(priceDocument.price);
-        } else {
-          expect(true, 'job prices do not match').to.be.false;
-        }
-      } else {
-        if (isPriceBase(priceDocument)) {
-          expect(priceResponse.name, `job.prices[${i}].name`).to.equal(priceDocument.name);
-          expect(priceResponse.amount, `job.prices[${i}].name`).to.equal(priceDocument.amount);
-        } else {
-          expect(true, 'job prices do not match').to.be.false;
-        }
+      if (isListedPrice(priceResponse) && !isPriceBase(priceDocument)) {
+        const { quantity, ...price } = priceResponse;
+        expect(quantity, `prices[${i}].quantity`).to.equal(priceDocument.quantity);
+        cy.validateNestedObject(`prices[${i}]`, price).validatePriceResponse(priceDocument.price);
+        return;
       }
-    }
+
+      if (!isListedPrice(priceResponse) && isPriceBase(priceDocument)) {
+        expect(priceResponse.name, `prices[${i}].name`).to.equal(priceDocument.name);
+        expect(priceResponse.amount, `prices[${i}].amount`).to.equal(priceDocument.amount);
+        return;
+      } 
+
+      expect(true, `prices[${i}] do not match`).to.be.false;
+    });
+
     expectEmptyObject(empty);
   } else {
     const { calendarEntryId, day, description, end, entryType, start, title, ...empty } = response;
@@ -70,7 +71,7 @@ const validateCalendarEntryResponse = (response: Calendar.Entry.Response, docume
 
 const validateInCalendarEntryListResponse = (responses: Calendar.Entry.Response[], document: Calendar.Entry.Document) => {
   const response = responses.find(r => r.calendarEntryId === getCalendarEntryId(document));
-  validateCalendarEntryResponseBase(response, document);
+  validateCalendarEntryResponse(response, document);
   return cy.wrap(responses, {
     log: false,
   }) as Cypress.ChainableResponseBody;
@@ -81,7 +82,7 @@ const validateCalendarEntryDocument = (response: Calendar.Entry.CalendarEntryId,
   cy.log('Get calendar entry document', id)
     .findCalendarEntryDocumentById(id)
     .should((document) => {
-      const { customer, day, description, end, entryType, isPaid, prices, start, title, transaction, ...internal } = document;
+      const { customer, day, description, end, entryType, prices, start, title, transaction, resolution, ...internal } = document;
 
       expect(entryType, 'entryType').to.equal(request.entryType);
       expect(day, 'day').to.equal(request.day);
@@ -91,46 +92,44 @@ const validateCalendarEntryDocument = (response: Calendar.Entry.CalendarEntryId,
       expect(description, 'description').to.equal(request.description);
       if (request.entryType === CalendarEntryType.Work) {
         expect(getCustomerId(customer), 'customer').to.equal(request.customerId);
-        expect(isPaid, 'isPaid').to.be.false;
         expect(transaction, 'transaction').to.be.undefined;
+        expect(resolution, 'resolution').to.be.undefined;
         expect(prices?.length, 'prices.length').to.equal(request.prices?.length);
-        for (let i = 0; i < prices?.length; i += 1) {
-          const priceDocument = prices[i];
+
+        prices?.forEach((priceDocument, i) => {
           const priceRequest = request.prices[i];
 
-          if (isPriceBase(priceDocument)) {
-            if (isPriceBase(priceRequest)) {
-              expect(priceDocument.name, `prices[${i}].name`).to.equal(priceRequest.name);
-              expect(priceDocument.amount, `prices[${i}].amount`).to.equal(priceRequest.amount);
-            } else {
-              expect(true, `prices[${i}] do not match`).to.be.false;
-            }
-          } else {
-            if (!isPriceBase(priceRequest)) {
-              expect(getPriceId(priceDocument.price), `prices[${i}].priceId`).to.equal(priceRequest.priceId);
-              expect(priceDocument.quantity, `prices[${i}].quantity`).to.equal(priceRequest.quantity);
-            } else {
-              expect(true, `prices[${i}] do not match`).to.be.false;
-            }
+          if (isPriceBase(priceDocument) && isPriceBase(priceRequest)) {
+            expect(priceDocument.name, `prices[${i}].name`).to.equal(priceRequest.name);
+            expect(priceDocument.amount, `prices[${i}].amount`).to.equal(priceRequest.amount);
+            return;
           }
-        }
+
+          if (!isPriceBase(priceDocument) && !isPriceBase(priceRequest)) {
+            expect(getPriceId(priceDocument.price), `prices[${i}].priceId`).to.equal(priceRequest.priceId);
+            expect(priceDocument.quantity, `prices[${i}].quantity`).to.equal(priceRequest.quantity);
+            return;
+          } 
+
+          expect(true, `prices[${i}] do not match`).to.be.false;
+        });
       } else {
         expect(customer, 'customer').to.be.undefined;
         expect(prices, 'prices').to.be.undefined;
-        expect(isPaid, 'isPaid').to.be.undefined;
         expect(transaction, 'transaction').to.be.undefined;
+        expect(resolution, 'resolution').to.be.undefined;
       }
 
       expectRemainingProperties(internal);
     });
 };
 
-const validateCalendarEntryDocumentPaid = (originalDocument: Calendar.Entry.Document, request: Calendar.Entry.PaymentRequest) => {
+const validateCalendarEntryDocumentResolved = (originalDocument: Calendar.Entry.Document, request: Calendar.Entry.ResolutionRequest) => {
   const calendarEntryId = getCalendarEntryId(originalDocument);
   cy.log('Get calendar entry document', calendarEntryId)
     .findCalendarEntryDocumentById(calendarEntryId)
     .then((document) => { 
-      const { transaction, isPaid, customer, day, description, end, entryType, prices, start, title, ...internal } = document;
+      const { transaction, customer, day, description, end, entryType, prices, start, title, resolution, ...internal } = document;
       
       expect(day, 'day').to.equal(originalDocument.day);
       expect(description, 'description').to.equal(originalDocument.description);
@@ -140,35 +139,36 @@ const validateCalendarEntryDocumentPaid = (originalDocument: Calendar.Entry.Docu
       expect(start, 'start').to.equal(originalDocument.start);
       expect(getCustomerId(customer), 'customer').to.equal(getCustomerId(originalDocument.customer));
       expect(prices?.length, 'prices.length').to.equal(originalDocument.prices?.length);
-      for(let i = 0; i < prices?.length; i += 1) {
-        const actualPrice = prices[i];
+      prices?.forEach((actualPrice, i) => {
         const originalPrice = originalDocument.prices[i];
 
-        if (isPriceBase(actualPrice)) {
-          if (isPriceBase(originalPrice)) {
-            expect(actualPrice.name, `prices[${i}].name`).to.equal(originalPrice.name);
-            expect(actualPrice.amount, `prices[${i}].amount`).to.equal(originalPrice.amount);
-          } else {
-            expect(true, `prices[${i}] do not match`).to.be.false;
-          }
-        } else {
-          if (!isPriceBase(originalPrice)) {
-            expect(getPriceId(actualPrice.price), `prices[${i}].priceId`).to.equal(getPriceId(originalPrice.price));
-            expect(actualPrice.quantity, `prices[${i}].quantity`).to.equal(originalPrice.quantity);
-          } else {
-            expect(true, `prices[${i}] do not match`).to.be.false;
-          }
+        if (isPriceBase(actualPrice) && isPriceBase(originalPrice)) {
+          expect(actualPrice.name, `prices[${i}].name`).to.equal(originalPrice.name);
+          expect(actualPrice.amount, `prices[${i}].amount`).to.equal(originalPrice.amount);
+          return;
         }
-      }
-      
-      expect(isPaid, 'isPaid').to.be.true;
-      if (request.paymentType === PaymentType.Transfer) {
-        expect(transaction, 'transaction').to.be.undefined;
+
+        if (!isPriceBase(actualPrice) && !isPriceBase(originalPrice)) {
+          expect(getPriceId(actualPrice.price), `prices[${i}].priceId`).to.equal(getPriceId(originalPrice.price));
+          expect(actualPrice.quantity, `prices[${i}].quantity`).to.equal(originalPrice.quantity);
+          return;
+        } 
+
+        expect(true, `prices[${i}] do not match`).to.be.false;
+      });
+
+      expect(resolution.status, 'resolution.status').to.equal(request.status);
+      if (request.status !== CalendarEntryResolutionStatus.NoShow) {
+        expect(resolution.delay, 'resolution.delay').to.equal(request.delay);
       } else {
+        expect(resolution.delay, 'resolution.delay').to.be.undefined;
+      }
+
+      if (request.status === CalendarEntryResolutionStatus.Paid) {
         expect(transaction, 'transaction').to.not.be.undefined;
         const transactionId = getTransactionId(transaction);
 
-        return cy.log('Get transaction document', transactionId)
+        cy.log('Get transaction document', transactionId)
           .getTransactionDocumentById(transactionId)
           .then((transactionDocument: Transaction.PaymentDocument) => {
             const { account, amount, billingEndDate, billingStartDate, category, description, invoiceNumber, issuedAt, product, project, quantity, recipient, transactionType } = transactionDocument;
@@ -201,18 +201,51 @@ const validateCalendarEntryDocumentPaid = (originalDocument: Calendar.Entry.Docu
             expect(quantity, 'quantity').to.be.undefined;
             expect(recipient, 'recipient').to.be.undefined;            
           });
-          
+      } else {
+        expect(transaction, 'transaction').to.be.undefined;
       }
 
       expectRemainingProperties(internal);
     });    
 };
 
-const validateRelatedCalendarWorkEntryUnset = (calendarEntryId: Calendar.Entry.Id) => {
+const validateRelatedCalendarWorkEntryUnresolved = (originalDocument: Calendar.Entry.Document) => {
+  const calendarEntryId = getCalendarEntryId(originalDocument);
   cy.log('Get calendar entry document', calendarEntryId)
     .findCalendarEntryDocumentById(calendarEntryId)
     .should((document) => {
+      const { transaction, customer, day, description, end, entryType, prices, start, title, resolution, ...internal } = document;
+      
+      expect(day, 'day').to.equal(originalDocument.day);
+      expect(description, 'description').to.equal(originalDocument.description);
+      expect(end, 'end').to.equal(originalDocument.end);
+      expect(entryType, 'entryType').to.equal(originalDocument.entryType);
+      expect(title, 'title').to.equal(originalDocument.title);
+      expect(start, 'start').to.equal(originalDocument.start);
+      expect(getCustomerId(customer), 'customer').to.equal(getCustomerId(originalDocument.customer));
+      expect(prices?.length, 'prices.length').to.equal(originalDocument.prices?.length);
+      prices?.forEach((actualPrice, i) => {
+        const originalPrice = originalDocument.prices[i];
 
+        if (isPriceBase(actualPrice) && isPriceBase(originalPrice)) {
+          expect(actualPrice.name, `prices[${i}].name`).to.equal(originalPrice.name);
+          expect(actualPrice.amount, `prices[${i}].amount`).to.equal(originalPrice.amount);
+          return;
+        }
+
+        if (!isPriceBase(actualPrice) && !isPriceBase(originalPrice)) {
+          expect(getPriceId(actualPrice.price), `prices[${i}].priceId`).to.equal(getPriceId(originalPrice.price));
+          expect(actualPrice.quantity, `prices[${i}].quantity`).to.equal(originalPrice.quantity);
+          return;
+        } 
+
+        expect(true, `prices[${i}] do not match`).to.be.false;
+      });
+
+      expect(resolution, 'resolution').to.be.undefined;
+      expect(transaction, 'transaction').to.be.undefined;
+      
+      expectRemainingProperties(internal);
     });
 };
 
@@ -314,8 +347,8 @@ export const setCalendarValidationCommands = () => {
     validateCalendarDayDocument,
     validateCalendarDayDeleted,
     validateCalendarEntryDeleted,
-    validateCalendarEntryDocumentPaid,
-    validateRelatedCalendarWorkEntryUnset,
+    validateCalendarEntryDocumentResolved,
+    validateRelatedCalendarWorkEntryUnresolved,
   });
 };
 
@@ -325,8 +358,8 @@ declare global {
       validateCalendarDayDocument: CommandFunction<typeof validateCalendarDayDocument>;
       validateCalendarDayDeleted: CommandFunction<typeof validateCalendarDayDeleted>;
       validateCalendarEntryDeleted: CommandFunction<typeof validateCalendarEntryDeleted>;
-      validateCalendarEntryDocumentPaid: CommandFunction<typeof validateCalendarEntryDocumentPaid>;
-      validateRelatedCalendarWorkEntryUnset: CommandFunction<typeof validateRelatedCalendarWorkEntryUnset>;
+      validateCalendarEntryDocumentResolved: CommandFunction<typeof validateCalendarEntryDocumentResolved>;
+      validateRelatedCalendarWorkEntryUnresolved: CommandFunction<typeof validateRelatedCalendarWorkEntryUnresolved>;
     }
 
     interface ChainableResponseBody extends Chainable {

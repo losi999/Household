@@ -3,7 +3,7 @@ import { allowUsers } from '@household/test/api/utils';
 import { Calendar, Customer } from '@household/shared/types/types';
 import { calendarEntryDataFactory } from '@household/test/api/calendar/data-factory';
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
-import { CalendarEntryType } from '@household/shared/enums';
+import { CalendarEntryResolutionStatus } from '@household/shared/enums';
 
 const permissionMap = allowUsers('hairdresser');
 
@@ -16,16 +16,11 @@ describe('DELETE /calendar/v1/entries/{calendarEntryId}', () => {
   beforeEach(() => {
     customerDocument = customerDataFactory.document();
 
-    calendarPersonalEntryDocument = calendarEntryDataFactory.document({
-      entryType: CalendarEntryType.Personal,
-    });
+    calendarPersonalEntryDocument = calendarEntryDataFactory.document.personal();
 
-    calendarIssueEntryDocument = calendarEntryDataFactory.document({
-      entryType: CalendarEntryType.Issue,
-    });
+    calendarIssueEntryDocument = calendarEntryDataFactory.document.issue();
 
-    calendarWorkEntryDocument = calendarEntryDataFactory.document({
-      entryType: CalendarEntryType.Work,
+    calendarWorkEntryDocument = calendarEntryDataFactory.document.work({
       customer: customerDocument,
     });
           
@@ -79,15 +74,18 @@ describe('DELETE /calendar/v1/entries/{calendarEntryId}', () => {
         });
 
         describe('should return error', () => {    
-          it('if work entry is already paid', () => {             
-            cy.saveCalendarEntryDocument({
-              ...calendarWorkEntryDocument,
-              isPaid: true,
-            })
+          it('if work entry is already resolved', () => {      
+            calendarWorkEntryDocument = calendarEntryDataFactory.document.work({
+              customer: customerDocument,
+              resolution: {
+                status: CalendarEntryResolutionStatus.Paid,
+              },
+            });       
+            cy.saveCalendarEntryDocument(calendarWorkEntryDocument)
               .authenticate(userType)
               .requestDeleteCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument))
               .expectBadRequestResponse()
-              .expectMessage('Calendar entry is already paid');
+              .expectMessage('Calendar entry is already resolved');
           });
 
           describe('if calendarEntryId', () => {

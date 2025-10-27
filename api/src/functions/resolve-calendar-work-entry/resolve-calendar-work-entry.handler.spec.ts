@@ -1,18 +1,20 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
-import { default as handler } from '@household/api/functions/pay-calendar-work-entry/pay-calendar-work-entry.handler';
-import { IPayCalendarWorkEntryService } from '@household/api/functions/pay-calendar-work-entry/pay-calendar-work-entry.service';
+import { default as handler } from '@household/api/functions/resolve-calendar-work-entry/resolve-calendar-work-entry.handler';
+import { IResolveCalendarWorkEntryService } from '@household/api/functions/resolve-calendar-work-entry/resolve-calendar-work-entry.service';
 import { createTransactionId, calendarEntryDataFactory } from '@household/shared/common/test-data-factory';
+import { headerExpiresIn } from '@household/shared/constants';
 
-describe('Pay calendar work entry handler', () => {
-  let mockPayCalendarWorkEntryService: MockBusinessService<IPayCalendarWorkEntryService>;
+describe('Resolve calendar work entry handler', () => {
+  let mockResolveCalendarWorkEntryService: MockBusinessService<IResolveCalendarWorkEntryService>;
   let handlerFunction: ReturnType<typeof handler>;
 
   beforeEach(() => {
-    mockPayCalendarWorkEntryService = jest.fn();
-    handlerFunction = handler(mockPayCalendarWorkEntryService);
+    mockResolveCalendarWorkEntryService = jest.fn();
+    handlerFunction = handler(mockResolveCalendarWorkEntryService);
   });
 
-  const body = calendarEntryDataFactory.paymentRequest();
+  const body = calendarEntryDataFactory.resolutionRequest();
+  const expiresIn = 3600;
   const calendarEntryId = calendarEntryDataFactory.id();
   const transactionId = createTransactionId();
   const handlerEvent = {
@@ -20,20 +22,24 @@ describe('Pay calendar work entry handler', () => {
     pathParameters: {
       calendarEntryId,
     } as AWSLambda.APIGatewayProxyEventPathParameters,
+    headers: {
+      [headerExpiresIn]: `${expiresIn}`,
+    } as AWSLambda.APIGatewayProxyEventHeaders,
   } as AWSLambda.APIGatewayProxyEvent;
 
   it('should handle business service error', async () => {
     const statusCode = 418;
     const message = 'This is an error';
-    mockPayCalendarWorkEntryService.mockRejectedValue({
+    mockResolveCalendarWorkEntryService.mockRejectedValue({
       statusCode,
       message,
     });
 
     const response = await handlerFunction(handlerEvent, undefined, undefined) as AWSLambda.APIGatewayProxyResult;
-    validateFunctionCall(mockPayCalendarWorkEntryService, {
+    validateFunctionCall(mockResolveCalendarWorkEntryService, {
       body,
       calendarEntryId,
+      expiresIn,
     });
     expect(response.statusCode).toEqual(statusCode);
     expect(JSON.parse(response.body).message).toEqual(message);
@@ -41,12 +47,13 @@ describe('Pay calendar work entry handler', () => {
   });
 
   it('should respond with success', async () => {
-    mockPayCalendarWorkEntryService.mockResolvedValue(transactionId);
+    mockResolveCalendarWorkEntryService.mockResolvedValue(transactionId);
 
     const response = await handlerFunction(handlerEvent, undefined, undefined) as AWSLambda.APIGatewayProxyResult;
-    validateFunctionCall(mockPayCalendarWorkEntryService, {
+    validateFunctionCall(mockResolveCalendarWorkEntryService, {
       body,
       calendarEntryId,
+      expiresIn,
     });
     expect(response.statusCode).toEqual(201);
     expect(JSON.parse(response.body).transactionId).toEqual(transactionId);

@@ -1,18 +1,19 @@
 import { errorResponse, createdResponse } from '@household/api/common/response-factory';
-import { IPayCalendarWorkEntryService } from '@household/api/functions/pay-calendar-work-entry/pay-calendar-work-entry.service';
-import { castPathParameters } from '@household/shared/common/aws-utils';
+import { IResolveCalendarWorkEntryService } from '@household/api/functions/resolve-calendar-work-entry/resolve-calendar-work-entry.service';
+import { castPathParameters, getExpiresInHeader } from '@household/shared/common/aws-utils';
 import { Transaction } from '@household/shared/types/types';
 
-export default (payCalendarWorkEntry: IPayCalendarWorkEntryService): AWSLambda.APIGatewayProxyHandler => {
+export default (resolveCalendarWorkEntry: IResolveCalendarWorkEntryService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {
     const body = JSON.parse(event.body);
     const { calendarEntryId } = castPathParameters(event);
 
     let transactionId: Transaction.Id;
     try {
-      transactionId = await payCalendarWorkEntry({
+      transactionId = await resolveCalendarWorkEntry({
         body,
         calendarEntryId,
+        expiresIn: Number(getExpiresInHeader(event)),
       });
     } catch (error) {
       console.error(error);

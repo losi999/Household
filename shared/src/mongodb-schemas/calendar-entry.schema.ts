@@ -1,4 +1,4 @@
-import { CalendarEntryType } from '@household/shared/enums';
+import { CalendarEntryResolutionStatus, CalendarEntryType } from '@household/shared/enums';
 import { jobPriceSchema } from '@household/shared/mongodb-schemas/customer.schema';
 import { Calendar } from '@household/shared/types/types';
 import { Schema } from 'mongoose';
@@ -33,8 +33,15 @@ export const calendarEntrySchema = new Schema<Calendar.Entry.Document>({
     type: Schema.Types.ObjectId,
     ref: 'transactions',
   },
-  isPaid: {
-    type: Boolean,
+  resolution: {
+    status: {
+      type: String,
+      enum: Object.values(CalendarEntryResolutionStatus),
+    },
+    delay: {
+      type: Number,
+    },
+    _id: false,
   },
   customer: {
     type: Schema.Types.ObjectId,

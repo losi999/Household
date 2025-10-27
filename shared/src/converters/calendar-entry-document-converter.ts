@@ -1,9 +1,9 @@
 import { generateMongoId, getCalendarEntryId } from '@household/shared/common/utils';
 import { addSeconds } from '@household/shared/common/utils';
 import { ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
-import { CalendarEntryType } from '@household/shared/enums';
+import { CalendarEntryResolutionStatus, CalendarEntryType } from '@household/shared/enums';
 import { DocumentUpdate } from '@household/shared/types/common';
-import { Calendar, Customer, Price } from '@household/shared/types/types';
+import { Calendar, Customer, Price, Transaction } from '@household/shared/types/types';
 import { AnyKeys, AnyObject } from 'mongoose';
 
 export interface ICalendarEntryDocumentConverter {
@@ -17,7 +17,10 @@ export interface ICalendarEntryDocumentConverter {
     customer?: Customer.Document;
     prices?: Price.Document[];
   }, expiresIn: number): DocumentUpdate<Calendar.Entry.Document>;
-  updatePaid(): DocumentUpdate<Calendar.Entry.Document>;
+  resolve(data: {
+    body: Calendar.Entry.ResolutionRequest;
+    transaction?: Transaction.PaymentDocument;
+  }, expiresIn: number): DocumentUpdate<Calendar.Entry.Document>;
   toResponseBase(doc: Calendar.Entry.Document): Calendar.Entry.ResponseBase;
   toResponse(doc: Calendar.Entry.Document): Calendar.Entry.Response;
   toResponseList(docs: Calendar.Entry.Document[]): Calendar.Entry.Response[];
@@ -36,7 +39,7 @@ export const calendarEntryDocumentConverterFactory = (customerDocumentConverter:
         description,
         day,
         transaction: undefined,
-        isPaid: body.entryType === CalendarEntryType.Work ? false : undefined,
+        resolution: undefined,
         customer: body.entryType === CalendarEntryType.Work ? customer : undefined,
         prices: body.entryType === CalendarEntryType.Work ? customerDocumentConverter.createJobPriceList(body.prices, prices) : undefined,
         _id: generateId ? generateMongoId() : undefined,
@@ -85,11 +88,18 @@ export const calendarEntryDocumentConverterFactory = (customerDocumentConverter:
         },
       };
     },
-    updatePaid: () => {
+    resolve: ({ body, transaction }, expiresIn) => {
       return {
         update: {
           $set: {
-            isPaid: true,
+            resolution: {
+              status: body.status,
+              ...(body.status !== CalendarEntryResolutionStatus.NoShow ? {
+                delay: body.delay,
+              } : {}),
+            },
+            transaction,
+            expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
           },
         },
       };
@@ -109,7 +119,10 @@ export const calendarEntryDocumentConverterFactory = (customerDocumentConverter:
         return {
           ...instance.toResponseBase(doc),
           entryType: doc.entryType,
-          isPaid: doc.isPaid,
+          resolution: doc.resolution ? {
+            delay: doc.resolution.delay,
+            status: doc.resolution.status,
+          } : undefined,
           customer: customerDocumentConverter.toResponse(doc.customer),
           prices: customerDocumentConverter.toResponseJobPriceList(doc.prices),
         };

@@ -1,5 +1,5 @@
 import { entries, getTransactionId } from '@household/shared/common/utils';
-import { AccountType, CalendarEntryType } from '@household/shared/enums';
+import { AccountType } from '@household/shared/enums';
 import { Account, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { calendarEntryDataFactory } from '@household/test/api/calendar/data-factory';
@@ -85,11 +85,13 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
         });
       } else {
         describe('should delete', () => {
-          it('payment transaction', () => {
-            const calendarWorkEntryDocument = calendarEntryDataFactory.document({
-              entryType: CalendarEntryType.Work,
+          it.only('payment transaction', () => {
+            const calendarWorkEntryDocument = calendarEntryDataFactory.document.work({
               customer: undefined,
               prices: undefined,
+              resolution: {
+                transaction: paymentTransactionDocument,
+              },
             });
 
             cy.saveAccountDocument(accountDocument)
@@ -98,7 +100,8 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
               .authenticate(userType)
               .requestDeleteTransaction(getTransactionId(paymentTransactionDocument))
               .expectNoContentResponse()
-              .validateTransactionDeleted(getTransactionId(paymentTransactionDocument));
+              .validateTransactionDeleted(getTransactionId(paymentTransactionDocument))
+              .validateRelatedCalendarWorkEntryUnresolved(calendarWorkEntryDocument);
           });
 
           it('split transaction', () => {
@@ -135,6 +138,7 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
               .expectNoContentResponse()
               .validateTransactionDeleted(getTransactionId(transferTransactionDocument));
           });
+
           it('deferred transaction', () => {
             const repayingTransferTransactionDocument = transferTransactionDataFactory.document({
               account: accountDocument,
