@@ -1,7 +1,7 @@
 import { Calendar, Customer } from '@household/shared/types/types';
 import { createReducer, on } from '@ngrx/store';
 import { calendarApiActions } from '@household/web/app/hairdressing/calendar/state/calendar.actions';
-import { CalendarDayType, CalendarEntryType } from '@household/shared/enums';
+import { CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType } from '@household/shared/enums';
 import { WORKDAY_END, WORKDAY_LENGTH, WORKDAY_START } from '@household/shared/constants';
 import { calculateWorkdayLimits } from '@household/shared/common/utils';
 
@@ -17,7 +17,7 @@ const createCalendarEntryResponseFromRequest = (calendarEntryId: Calendar.Entry.
       day: request.day,
       prices: customer?.jobs.find(j => request.title.endsWith(j.name))?.prices,
       customer,
-      isPaid: false,
+      resolution: undefined,
     };
   } 
   return {
@@ -206,7 +206,7 @@ export const calendarReducer = createReducer<CalendarState>({},
     }, {});
   }),
 
-  on(calendarApiActions.payCalendarWorkEntryCompleted, (_state, { calendarEntryId, day }) => {
+  on(calendarApiActions.resolveCalendarWorkEntryCompleted, (_state, { type, calendarEntryId, day, ...request }) => {
     return {
       ..._state,
       [day]: {
@@ -218,7 +218,10 @@ export const calendarReducer = createReducer<CalendarState>({},
 
           return {
             ...e,
-            isPaid: true,
+            resolution: {
+              status: request.status,
+              delay: request.status !== CalendarEntryResolutionStatus.NoShow ? request.delay : undefined,
+            },
           };
         }),
       },

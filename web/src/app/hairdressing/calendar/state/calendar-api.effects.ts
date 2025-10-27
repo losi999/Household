@@ -155,15 +155,16 @@ export class CalendarApiEffects {
     );
   });
   
-  payCalendarWorkEntry = createEffect(() => {
+  resolveCalendarWorkEntry = createEffect(() => {
     return this.actions.pipe(
-      ofType(calendarApiActions.payCalendarWorkEntryInitiated),
+      ofType(calendarApiActions.resolveCalendarWorkEntryInitiated),
       mergeMap(({ type, calendarEntryId, day, ...request }) => {
-        return this.calendarService.payCalendarWorkEntry(calendarEntryId, request).pipe(
+        return this.calendarService.resolveCalendarWorkEntry(calendarEntryId, request).pipe(
           map(() => 
-            calendarApiActions.payCalendarWorkEntryCompleted({
+            calendarApiActions.resolveCalendarWorkEntryCompleted({
               calendarEntryId,
               day,
+              ...request,
             }),
           ),
           catchError(() => {
