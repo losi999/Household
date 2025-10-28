@@ -1,7 +1,7 @@
 import { default as schema } from '@household/shared/schemas/calendar-entry-request';
 import { Calendar } from '@household/shared/types/types';
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
-import { customerDataFactory, priceDataFactory, calendarEntryDataFactory } from '@household/shared/common/test-data-factory';
+import { customerDataFactory, calendarEntryDataFactory, testDataFactory } from '@household/shared/common/test-data-factory';
 import { CalendarEntryType } from '@household/shared/enums';
 
 describe('Calendar personal entry request schema', () => {
@@ -351,7 +351,7 @@ describe('Calendar work entry request schema', () => {
       tester.additionalProperties(calendarEntryDataFactory.workRequest({
         prices: [
           {
-            ...priceDataFactory.base(),
+            ...testDataFactory.price.base(),
             extra: 1,
           } as any,       
         ],
@@ -378,7 +378,7 @@ describe('Calendar work entry request schema', () => {
       tester.pattern(calendarEntryDataFactory.workRequest({
         prices: [
           customerDataFactory.jobPriceRequest({
-            priceId: priceDataFactory.id('not-mongo-id'),
+            priceId: testDataFactory.price.id('not-mongo-id'),
           }),
         ],
       }), 'priceId');
@@ -413,7 +413,7 @@ describe('Calendar work entry request schema', () => {
     describe('if data.prices[0].name', () => {      
       tester.required(calendarEntryDataFactory.workRequest({
         prices: [
-          priceDataFactory.base({
+          testDataFactory.price.base({
             name: undefined,
           }),
         ],
@@ -421,7 +421,7 @@ describe('Calendar work entry request schema', () => {
 
       tester.type(calendarEntryDataFactory.workRequest({
         prices: [
-          priceDataFactory.base({
+          testDataFactory.price.base({
             name: 1 as any,
           }),
         ],
@@ -429,7 +429,7 @@ describe('Calendar work entry request schema', () => {
 
       tester.minLength(calendarEntryDataFactory.workRequest({
         prices: [
-          priceDataFactory.base({
+          testDataFactory.price.base({
             name: '',
           }),
         ],
@@ -439,7 +439,7 @@ describe('Calendar work entry request schema', () => {
     describe('if data.prices[0].amount', () => {      
       tester.required(calendarEntryDataFactory.workRequest({
         prices: [
-          priceDataFactory.base({
+          testDataFactory.price.base({
             amount: undefined,
           }),
         ],
@@ -447,7 +447,7 @@ describe('Calendar work entry request schema', () => {
 
       tester.type(calendarEntryDataFactory.workRequest({
         prices: [
-          priceDataFactory.base({
+          testDataFactory.price.base({
             amount: '1' as any,
           }),
         ],

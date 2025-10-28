@@ -1,5 +1,5 @@
 import { IUpdateCalendarEntryService, updateCalendarEntryServiceFactory } from '@household/api/functions/update-calendar-entry/update-calendar-entry.service';
-import { calendarEntryDataFactory, createDocumentUpdate2, customerDataFactory, priceDataFactory } from '@household/shared/common/test-data-factory';
+import { calendarEntryDataFactory, createDocumentUpdate2, customerDataFactory, testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getCustomerId, getPriceId } from '@household/shared/common/utils';
 import { ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
@@ -82,7 +82,7 @@ describe('Update calendar entry service', () => {
   it('should return if work entry is updated', async () => {
     const queriedCustomer = customerDataFactory.document();
     const customerId = getCustomerId(queriedCustomer);
-    const queriedPrice = priceDataFactory.document();
+    const queriedPrice = testDataFactory.price.document();
     const priceId = getPriceId(queriedPrice);
 
     const body = calendarEntryDataFactory.workRequest({
@@ -121,7 +121,7 @@ describe('Update calendar entry service', () => {
     it('if unable to query calendar entry', async () => {
       const queriedCustomer = customerDataFactory.document();
       const customerId = getCustomerId(queriedCustomer);
-      const queriedPrice = priceDataFactory.document();
+      const queriedPrice = testDataFactory.price.document();
       const priceId = getPriceId(queriedPrice);
 
       const body = calendarEntryDataFactory.workRequest({
@@ -151,7 +151,7 @@ describe('Update calendar entry service', () => {
     it('if calendar entry not found', async () => {
       const queriedCustomer = customerDataFactory.document();
       const customerId = getCustomerId(queriedCustomer);
-      const queriedPrice = priceDataFactory.document();
+      const queriedPrice = testDataFactory.price.document();
       const priceId = getPriceId(queriedPrice);
 
       const body = calendarEntryDataFactory.workRequest({
@@ -198,7 +198,7 @@ describe('Update calendar entry service', () => {
     it('if calendar entry is already paid', async () => {
       const queriedCustomer = customerDataFactory.document();
       const customerId = getCustomerId(queriedCustomer);
-      const queriedPrice = priceDataFactory.document();
+      const queriedPrice = testDataFactory.price.document();
       const priceId = getPriceId(queriedPrice);
 
       const body = calendarEntryDataFactory.workRequest({
@@ -234,7 +234,7 @@ describe('Update calendar entry service', () => {
     it('if unable to query customer', async () => {
       const queriedCustomer = customerDataFactory.document();
       const customerId = getCustomerId(queriedCustomer);
-      const queriedPrice = priceDataFactory.document();
+      const queriedPrice = testDataFactory.price.document();
       const priceId = getPriceId(queriedPrice);
 
       const body = calendarEntryDataFactory.workRequest({
@@ -265,7 +265,7 @@ describe('Update calendar entry service', () => {
     it('if customer not found', async () => {
       const queriedCustomer = customerDataFactory.document();
       const customerId = getCustomerId(queriedCustomer);
-      const queriedPrice = priceDataFactory.document();
+      const queriedPrice = testDataFactory.price.document();
       const priceId = getPriceId(queriedPrice);
 
       const body = calendarEntryDataFactory.workRequest({
@@ -296,7 +296,7 @@ describe('Update calendar entry service', () => {
     it('if unable to query prices', async () => {
       const queriedCustomer = customerDataFactory.document();
       const customerId = getCustomerId(queriedCustomer);
-      const queriedPrice = priceDataFactory.document();
+      const queriedPrice = testDataFactory.price.document();
       const priceId = getPriceId(queriedPrice);
 
       const body = calendarEntryDataFactory.workRequest({
@@ -328,7 +328,7 @@ describe('Update calendar entry service', () => {
     it('if some of the prices are not found', async () => {
       const queriedCustomer = customerDataFactory.document();
       const customerId = getCustomerId(queriedCustomer);
-      const queriedPrice = priceDataFactory.document();
+      const queriedPrice = testDataFactory.price.document();
       const priceId = getPriceId(queriedPrice);
 
       const body = calendarEntryDataFactory.workRequest({
@@ -360,7 +360,7 @@ describe('Update calendar entry service', () => {
     it('if unable to update calendar entry', async () => {
       const queriedCustomer = customerDataFactory.document();
       const customerId = getCustomerId(queriedCustomer);
-      const queriedPrice = priceDataFactory.document();
+      const queriedPrice = testDataFactory.price.document();
       const priceId = getPriceId(queriedPrice);
 
       const body = calendarEntryDataFactory.workRequest({

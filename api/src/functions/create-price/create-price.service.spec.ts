@@ -1,5 +1,5 @@
 import { ICreatePriceService, createPriceServiceFactory } from '@household/api/functions/create-price/create-price.service';
-import { priceDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getPriceId } from '@household/shared/common/utils';
 import { IPriceDocumentConverter } from '@household/shared/converters/price-document-converter';
@@ -17,8 +17,8 @@ describe('Create price service', () => {
     service = createPriceServiceFactory(mockPriceService.service, mockPriceDocumentConverter.service);
   });
 
-  const body = priceDataFactory.request();
-  const convertedPriceDocument = priceDataFactory.document();
+  const body = testDataFactory.price.request();
+  const convertedPriceDocument = testDataFactory.price.document();
   const priceId = getPriceId(convertedPriceDocument);
 
   it('should return new id', async () => {

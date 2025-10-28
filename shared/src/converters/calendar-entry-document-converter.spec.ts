@@ -1,4 +1,4 @@
-import { calendarEntryDataFactory, createDocumentUpdate2, createPaymentTransactionDocument, customerDataFactory, priceDataFactory } from '@household/shared/common/test-data-factory';
+import { calendarEntryDataFactory, createDocumentUpdate2, createPaymentTransactionDocument, customerDataFactory, testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { addSeconds, getCalendarEntryId } from '@household/shared/common/utils';
 import { calendarEntryDocumentConverterFactory, ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
@@ -85,7 +85,7 @@ describe('Calendar entry document converter', () => {
     describe('work', () => {
       it('should return document', () => {
         const customerDocument = customerDataFactory.document();
-        const priceDocument = priceDataFactory.document();
+        const priceDocument = testDataFactory.price.document();
 
         const jobPriceDocument = customerDataFactory.jobPriceDocument();
         mockCustomerDocumentConverter.functions.createJobPriceList.mockReturnValue([jobPriceDocument]);
@@ -108,7 +108,7 @@ describe('Calendar entry document converter', () => {
       
       it('should return expiring document', () => {      
         const customerDocument = customerDataFactory.document();
-        const priceDocument = priceDataFactory.document();
+        const priceDocument = testDataFactory.price.document();
 
         const jobPriceDocument = customerDataFactory.jobPriceDocument();
         mockCustomerDocumentConverter.functions.createJobPriceList.mockReturnValue([jobPriceDocument]);
@@ -216,7 +216,7 @@ describe('Calendar entry document converter', () => {
     describe('work', () => {
       it('should update document', () => {     
         const customerDocument = customerDataFactory.document();
-        const priceDocument = priceDataFactory.document();
+        const priceDocument = testDataFactory.price.document();
 
         const jobPriceDocument = customerDataFactory.jobPriceDocument();
         mockCustomerDocumentConverter.functions.createJobPriceList.mockReturnValue([jobPriceDocument]);
@@ -242,7 +242,7 @@ describe('Calendar entry document converter', () => {
 
       it('should unset description', () => {
         const customerDocument = customerDataFactory.document();
-        const priceDocument = priceDataFactory.document();
+        const priceDocument = testDataFactory.price.document();
 
         const jobPriceDocument = customerDataFactory.jobPriceDocument();
         mockCustomerDocumentConverter.functions.createJobPriceList.mockReturnValue([jobPriceDocument]);

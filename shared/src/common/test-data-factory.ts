@@ -3,6 +3,10 @@ import { AccountType, CalendarDayType, CalendarEntryResolutionStatus, CalendarEn
 import { DocumentUpdate } from '@household/shared/types/common';
 import { Account, Auth, Calendar, Category, Customer, File, Price, Product, Project, Recipient, Report, Setting, Transaction, User } from '@household/shared/types/types';
 import type { UpdateQuery } from 'mongoose';
+import { faker } from '@faker-js/faker';
+import { priceUnitsOfMeasurement } from '@household/shared/constants';
+
+const createId = <I>(id?: string): I => (id ?? faker.database.mongodbObjectId()) as I;
 
 const amount = -100;
 
@@ -780,23 +784,23 @@ export const createUserResponse: DataFactoryFunction<User.Response> = (resp) => 
   };
 };
 
-const createPriceId = (id?: string): Price.Id => {
-  return (id ?? generateMongoId().toString()) as Price.Id;
-};
+const createPriceId = createId<Price.Id>;
 
 const createPriceBase: DataFactoryFunction<Price.Base> = (req) => {
   return {
-    name: 'price name',
-    amount: 3000,
+    name: `${faker.commerce.department()} ${faker.string.uuid()}`,
+    amount: faker.number.int({
+      min: 1,
+      max: 10000,
+    }),
     ...req,
   };
 };
 
 const createPriceRequest: DataFactoryFunction<Price.Request> = (req) => {
   return {
-    name: 'price name',
-    amount: 3000,
-    unitOfMeasurement: 'db',
+    ...createPriceBase(),
+    unitOfMeasurement: faker.helpers.arrayElement(priceUnitsOfMeasurement),
     ...req,
   };
 };
@@ -804,9 +808,7 @@ const createPriceRequest: DataFactoryFunction<Price.Request> = (req) => {
 const createPriceDocument: DataFactoryFunction<Price.Document> = (doc) => {
   return {
     _id: generateMongoId(),
-    name: 'price name',
-    amount: 3000,
-    unitOfMeasurement: 'db',
+    ...createPriceRequest(),
     isArchived: false,
     expiresAt: undefined,
     ...doc,
@@ -816,19 +818,9 @@ const createPriceDocument: DataFactoryFunction<Price.Document> = (doc) => {
 const createPriceResponse: DataFactoryFunction<Price.Response> = (resp) => {
   return {
     priceId: createPriceId(),
-    name: 'price name',
-    amount: 3000,
-    unitOfMeasurement: 'db',
+    ...createPriceRequest(),
     ...resp,
   };
-};
-
-export const priceDataFactory = {
-  id: createPriceId,
-  base: createPriceBase,
-  request: createPriceRequest,
-  document: createPriceDocument,
-  response: createPriceResponse,
 };
 
 const createCustomerId = (id?: string): Customer.Id => {
@@ -1133,4 +1125,14 @@ export const calendarDayDataFactory = {
   vacationRequest: createCalendarVacationRequest,
   document: createCalendarDayDocument,
   response: createCalendarDayResponse,
+};
+
+export const testDataFactory = {
+  price: {
+    id: createPriceId,
+    base: createPriceBase,
+    request: createPriceRequest,
+    document: createPriceDocument,
+    response: createPriceResponse,
+  },
 };

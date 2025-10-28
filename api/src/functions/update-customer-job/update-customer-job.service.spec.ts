@@ -1,5 +1,5 @@
 import { updateCustomerJobServiceFactory, IUpdateCustomerJobService } from '@household/api/functions/update-customer-job/update-customer-job.service';
-import { createDocumentUpdate2, customerDataFactory, priceDataFactory } from '@household/shared/common/test-data-factory';
+import { createDocumentUpdate2, customerDataFactory, testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getPriceId } from '@household/shared/common/utils';
 import { ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
@@ -20,7 +20,7 @@ describe('Update customer job service', () => {
   });
   
   const jobName = 'old job name';
-  const queriedPriceDocument = priceDataFactory.document();
+  const queriedPriceDocument = testDataFactory.price.document();
   const priceId = getPriceId(queriedPriceDocument);
   const body = customerDataFactory.jobRequest({
     name: 'new job',
@@ -29,7 +29,7 @@ describe('Update customer job service', () => {
         priceId,
         quantity: 1,
       },
-      priceDataFactory.base(),
+      testDataFactory.price.base(),
     ],
   });
   const queriedCustomer = customerDataFactory.document({

@@ -1,5 +1,5 @@
 import { Price } from '@household/shared/types/types';
-import { priceDataFactory } from './data-factory';
+import { priceDataFactory } from '@household/test/api/price/data-factory';
 import { allowUsers } from '@household/test/api/utils';
 import { entries } from '@household/shared/common/utils';
 

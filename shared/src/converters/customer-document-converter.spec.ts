@@ -1,4 +1,4 @@
-import { createDocumentUpdate2, customerDataFactory, priceDataFactory } from '@household/shared/common/test-data-factory';
+import { createDocumentUpdate2, customerDataFactory, testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock } from '@household/shared/common/unit-testing';
 import { addSeconds, getCustomerId, getPriceId } from '@household/shared/common/utils';
 import { customerDocumentConverterFactory, ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
@@ -23,8 +23,8 @@ describe('Customer document converter', () => {
 
   describe('createJobPriceList', () => {
     it('should return document', () => {
-      const priceBase = priceDataFactory.base();
-      const priceDocument = priceDataFactory.document();
+      const priceBase = testDataFactory.price.base();
+      const priceDocument = testDataFactory.price.document();
       const quantity = 1;
 
       const result = converter.createJobPriceList([
@@ -132,7 +132,7 @@ describe('Customer document converter', () => {
   });
 
   describe('addJob', () => {
-    const priceDocument = priceDataFactory.document();
+    const priceDocument = testDataFactory.price.document();
     const priceId = getPriceId(priceDocument);
     const quantity = 1;
     const priceName = 'price name';
@@ -175,7 +175,7 @@ describe('Customer document converter', () => {
   });
 
   describe('updateJob', () => {
-    const priceDocument = priceDataFactory.document();
+    const priceDocument = testDataFactory.price.document();
     const priceId = getPriceId(priceDocument);
     const quantity = 1;
     const priceName = 'price name';
@@ -241,13 +241,13 @@ describe('Customer document converter', () => {
   describe('toResponseJobPriceList', () => {
     it('should return response', () => {
       const quantity = 1;
-      const priceBase = priceDataFactory.base();
-      const priceResponse = priceDataFactory.response();
+      const priceBase = testDataFactory.price.base();
+      const priceResponse = testDataFactory.price.response();
       mockPriceDocumentConverter.functions.toResponse.mockReturnValue(priceResponse);
 
       const result = converter.toResponseJobPriceList([
         {
-          price: priceDataFactory.document(),
+          price: testDataFactory.price.document(),
           quantity,
         },
         priceBase,
@@ -266,8 +266,8 @@ describe('Customer document converter', () => {
 
   describe('toResponse', () => {
     it('should return response', () => {
-      const priceBase = priceDataFactory.base();
-      const priceDocument = priceDataFactory.document();
+      const priceBase = testDataFactory.price.base();
+      const priceDocument = testDataFactory.price.document();
       const jobB = customerDataFactory.jobDocument({
         name: 'B',
         prices: [priceBase],
@@ -290,7 +290,7 @@ describe('Customer document converter', () => {
         ],
         blacklistedCustomers: [blacklistedCustomer],
       });
-      const priceResponse = priceDataFactory.response();
+      const priceResponse = testDataFactory.price.response();
       mockPriceDocumentConverter.functions.toResponse.mockReturnValue(priceResponse);
 
       const { description, isGroup, name, rating } = doc;
@@ -340,8 +340,8 @@ describe('Customer document converter', () => {
 
   describe('toResponseList', () => {
     it('should return response', () => {
-      const priceBase = priceDataFactory.base();
-      const priceDocument = priceDataFactory.document();
+      const priceBase = testDataFactory.price.base();
+      const priceDocument = testDataFactory.price.document();
       const jobB = customerDataFactory.jobDocument({
         name: 'B',
         prices: [priceBase],
@@ -364,7 +364,7 @@ describe('Customer document converter', () => {
         ],
         blacklistedCustomers: [blacklistedCustomer],
       });
-      const priceResponse = priceDataFactory.response();
+      const priceResponse = testDataFactory.price.response();
       mockPriceDocumentConverter.functions.toResponse.mockReturnValue(priceResponse);
 
       const { description, isGroup, name, rating } = doc;

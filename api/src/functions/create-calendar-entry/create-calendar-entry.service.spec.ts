@@ -1,5 +1,5 @@
 import { ICreateCalendarEntryService, createCalendarEntryServiceFactory } from '@household/api/functions/create-calendar-entry/create-calendar-entry.service';
-import { calendarEntryDataFactory, customerDataFactory, priceDataFactory } from '@household/shared/common/test-data-factory';
+import { calendarEntryDataFactory, customerDataFactory, testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getCalendarEntryId, getCustomerId, getPriceId } from '@household/shared/common/utils';
 import { ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
@@ -67,7 +67,7 @@ describe('Create calendar entry service', () => {
   it('should return new id if work entry is created', async () => {
     const queriedCustomer = customerDataFactory.document();
     const customerId = getCustomerId(queriedCustomer);
-    const queriedPrice = priceDataFactory.document();
+    const queriedPrice = testDataFactory.price.document();
     const priceId = getPriceId(queriedPrice);
 
     const body = calendarEntryDataFactory.workRequest({
@@ -104,7 +104,7 @@ describe('Create calendar entry service', () => {
     it('if unable to query customer', async () => {
       const queriedCustomer = customerDataFactory.document();
       const customerId = getCustomerId(queriedCustomer);
-      const queriedPrice = priceDataFactory.document();
+      const queriedPrice = testDataFactory.price.document();
       const priceId = getPriceId(queriedPrice);
 
       const body = calendarEntryDataFactory.workRequest({
@@ -132,7 +132,7 @@ describe('Create calendar entry service', () => {
     it('if customer not found', async () => {
       const queriedCustomer = customerDataFactory.document();
       const customerId = getCustomerId(queriedCustomer);
-      const queriedPrice = priceDataFactory.document();
+      const queriedPrice = testDataFactory.price.document();
       const priceId = getPriceId(queriedPrice);
 
       const body = calendarEntryDataFactory.workRequest({
@@ -160,7 +160,7 @@ describe('Create calendar entry service', () => {
     it('if unable to query prices', async () => {
       const queriedCustomer = customerDataFactory.document();
       const customerId = getCustomerId(queriedCustomer);
-      const queriedPrice = priceDataFactory.document();
+      const queriedPrice = testDataFactory.price.document();
       const priceId = getPriceId(queriedPrice);
 
       const body = calendarEntryDataFactory.workRequest({
@@ -189,7 +189,7 @@ describe('Create calendar entry service', () => {
     it('if some of the prices are not found', async () => {
       const queriedCustomer = customerDataFactory.document();
       const customerId = getCustomerId(queriedCustomer);
-      const queriedPrice = priceDataFactory.document();
+      const queriedPrice = testDataFactory.price.document();
       const priceId = getPriceId(queriedPrice);
 
       const body = calendarEntryDataFactory.workRequest({
@@ -218,7 +218,7 @@ describe('Create calendar entry service', () => {
     it('if unable to save calendar entry', async () => {
       const queriedCustomer = customerDataFactory.document();
       const customerId = getCustomerId(queriedCustomer);
-      const queriedPrice = priceDataFactory.document();
+      const queriedPrice = testDataFactory.price.document();
       const priceId = getPriceId(queriedPrice);
 
       const body = calendarEntryDataFactory.workRequest({
