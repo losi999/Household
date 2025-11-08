@@ -4,9 +4,9 @@
   <div class="pending" [style.grid-column]="(pendingStart + 1) + ' / ' + (pendingEnd + 1)"></div>
   @switch (day.dayType) {
   @case ('weekend') {
-  @if (day.start && day.end) {
-  <div class="no-work" [style.grid-column]="1 + '/ ' + (day.start + 1)"></div>
-  <div class="no-work" [style.grid-column]="(day.end + 1) + '/ 97'"></div>
+  @if (day.calculatedStart && day.calculatedEnd) {
+  <div class="no-work" [style.grid-column]="1 + '/ ' + (day.calculatedStart + 1)"></div>
+  <div class="no-work" [style.grid-column]="(day.calculatedEnd + 1) + '/ 97'"></div>
   } @else {
   <div class="no-work" [style.grid-column]="'1 / 97'"></div>
   }
@@ -18,8 +18,8 @@
   <div class="holiday" [style.grid-column]="'1 / 97'"></div>
   }
   @default {
-  <div class="no-work" [style.grid-column]="1 + '/ ' + (day.start + 1)"></div>
-  <div class="no-work" [style.grid-column]="(day.end + 1) + '/ 97'"></div>
+  <div class="no-work" [style.grid-column]="1 + '/ ' + (day.calculatedStart + 1)"></div>
+  <div class="no-work" [style.grid-column]="(day.calculatedEnd + 1) + '/ 97'"></div>
   }
   }
   @for (e of day.entries; track $index) {

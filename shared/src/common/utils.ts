@@ -1,5 +1,3 @@
-import { WORKDAY_LENGTH } from '@household/shared/constants';
-import { CalendarEntryType } from '@household/shared/enums';
 import { Dictionary } from '@household/shared/types/common';
 import { Account, Calendar, Category, Customer, File, Internal, Price, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { PopulateOptions, Types } from 'mongoose';
@@ -89,29 +87,6 @@ export const getCategoryId = (doc: Category.Document | Types.ObjectId): Category
 export const getFileId = (doc: File.Document | Types.ObjectId): File.Id => getId(doc) as File.Id;
 export const getPriceId = (doc: Price.Document | Types.ObjectId): Price.Id => getId(doc) as Price.Id;
 export const getCalendarEntryId = (doc: Calendar.Entry.Document | Types.ObjectId): Calendar.Entry.Id => getId(doc) as Calendar.Entry.Id;
-
-export const calculateWorkdayLimits = (defaultStart: number, defaultEnd: number, entries: Calendar.Entry.Response[] | Calendar.Entry.Document[]): {start: number; end: number;} => {
-  const workEntries = entries.filter(e => e.entryType === CalendarEntryType.Work);
-
-  const calculated = workEntries.reduce<{start: number; end: number}>((accumulator, currentValue) => {
-    const calculatedStart = currentValue.end - WORKDAY_LENGTH;
-    const calculatedEnd = currentValue.start + WORKDAY_LENGTH;
-    return {
-      start: (calculatedStart > accumulator.start && calculatedStart < accumulator.end) ? calculatedStart : accumulator.start,
-      end: (calculatedEnd < accumulator.end && calculatedEnd > accumulator.start) ? calculatedEnd : accumulator.end,
-    };
-  }, {
-    start: 0,
-    end: 96,
-  });
-
-  console.log(calculated);
-
-  return {
-    start: defaultStart,
-    end: defaultEnd,
-  };
-};
 
 export const createWorkEntryTitle = (customer: Customer.Response, job?: Customer.Job.Response) => {
   if (!job) {
