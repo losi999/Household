@@ -2,52 +2,9 @@ import { Calendar, Customer } from '@household/shared/types/types';
 import { createReducer, on } from '@ngrx/store';
 import { calendarApiActions } from '@household/web/app/hairdressing/calendar/state/calendar.actions';
 import { CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType } from '@household/shared/enums';
-import { WORKDAY_END, WORKDAY_LENGTH, WORKDAY_START } from '@household/shared/constants';
-
-const calculateWorkdayLimits = (day: Calendar.Day.Response): Calendar.TimeInterval => {
-  if (day.dayType === CalendarDayType.Holiday || day.dayType === CalendarDayType.Vacation || !day.start || !day.end) {
-    return {
-      start: undefined,
-      end: undefined,
-    };
-  }
-
-  const workEntries = day.entries.filter(e => e.entryType === CalendarEntryType.Work);
-  if (workEntries.length === 0) {
-    return {
-      start: day.start,
-      end: day.end,
-    };
-  }
-
-  const { start: earliestStart, end: latestEnd } = workEntries.reduce<Calendar.TimeInterval>((accumulator, currentValue) => {
-    return {
-      start: currentValue.start < accumulator.start ? currentValue.start : accumulator.start,
-      end: currentValue.end > accumulator.end ? currentValue.end : accumulator.end,
-    };
-  }, {
-    start: Number.POSITIVE_INFINITY,
-    end: Number.NEGATIVE_INFINITY,
-  });
-
-  const calculatedStart = latestEnd - WORKDAY_LENGTH;
-  const calculatedEnd = earliestStart + WORKDAY_LENGTH;
-
-  const start = Math.max(calculatedStart, day.start);
-  const end = Math.min(calculatedEnd, day.end);
-
-  if (start <= end) {
-    return {
-      start,
-      end,
-    };
-  }
-
-  return {
-    start: undefined,
-    end: undefined,
-  };
-};
+import { WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
+import { calculateWorkdayLimits } from '@household/shared/common/utils';
+import { LimitedCalendarDay } from '@household/web/types/common';
 
 const createCalendarEntryResponseFromRequest = (calendarEntryId: Calendar.Entry.Id, request: Calendar.Entry.Request, customer: Customer.Response): Calendar.Entry.Response => {
   if (request.entryType === CalendarEntryType.Work) {
@@ -72,7 +29,7 @@ const createCalendarEntryResponseFromRequest = (calendarEntryId: Calendar.Entry.
 };
 
 export type CalendarState = {
-  [date: string]: Calendar.Day.Response & {calculatedStart: number; calculatedEnd: number;};
+  [date: string]: LimitedCalendarDay;
 };
 
 export const calendarReducer = createReducer<CalendarState>({},
@@ -96,7 +53,7 @@ export const calendarReducer = createReducer<CalendarState>({},
 
   on(calendarApiActions.updateCalendarDayCompleted, (_state, { type, day, ...request }) => {
     const storedDay = _state[day];
-    let newDay: Calendar.Day.Response;
+    let newDay: LimitedCalendarDay;
     if (request.dayType === CalendarDayType.Vacation) {
       newDay = {
         ...storedDay,
@@ -125,7 +82,7 @@ export const calendarReducer = createReducer<CalendarState>({},
 
   on(calendarApiActions.deleteCalendarDayCompleted, (_state, { day }) => {
     const storedDay = _state[day];
-    let newDay: Calendar.Day.Response;
+    let newDay: LimitedCalendarDay;
     switch(storedDay.dayType) {
       case CalendarDayType.Vacation: {
         newDay = {
@@ -165,7 +122,7 @@ export const calendarReducer = createReducer<CalendarState>({},
   }),
 
   on(calendarApiActions.createCalendarEntryCompleted, (_state, { type, calendarEntryId, customer, ...request }) => { 
-    const newDay: Calendar.Day.Response = {
+    const newDay: LimitedCalendarDay = {
       ..._state[request.day],
       entries: _state[request.day].entries.concat(createCalendarEntryResponseFromRequest(calendarEntryId, request, customer))
         .toSorted((a, b) => a.start > b.start ? 1 : -1),
@@ -209,7 +166,7 @@ export const calendarReducer = createReducer<CalendarState>({},
         };
       }
 
-      const newDay: Calendar.Day.Response = {
+      const newDay: LimitedCalendarDay = {
         ...dayResponse,
         entries,
       };
@@ -240,7 +197,7 @@ export const calendarReducer = createReducer<CalendarState>({},
         };
       }
 
-      const newDay: Calendar.Day.Response = {
+      const newDay: LimitedCalendarDay = {
         ...response,
         entries: response.entries.toSpliced(index, 1),
       };

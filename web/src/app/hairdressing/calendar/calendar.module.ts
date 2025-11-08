@@ -38,6 +38,7 @@ import { DaysOfWeekPipe } from './pipes/days-of-week.pipe';
 import { DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
 import { CalendarDateAdapter } from '@household/web/app/hairdressing/calendar/calendar-date-adapter';
 import { EntryWarningsPipe } from './pipes/entry-warnings.pipe';
+import { RemovePendingEntryPipe } from './pipes/remove-pending-entry.pipe';
 
 @NgModule({
   declarations: [
@@ -52,6 +53,7 @@ import { EntryWarningsPipe } from './pipes/entry-warnings.pipe';
     CalendarEntryPayingDialogComponent,
     DaysOfWeekPipe,
     EntryWarningsPipe,
+    RemovePendingEntryPipe,
   ],
   imports: [
     CommonModule,

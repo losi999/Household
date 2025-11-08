@@ -30,7 +30,7 @@
       <input formControlName="start" matSliderThumb>
     </mat-slider>
     {{form.value.start | timeSlotToTime}} - {{form.value.start + form.value.duration | timeSlotToTime}}
-    <household-calendar-horizontal-day [date]="form.value.day" [pendingStart]="form.value.start" [pendingEnd]="form.value.start + form.value.duration" [excludedCalendarEntryId]="entry.calendarEntryId" />
+    <household-calendar-horizontal-day [date]="form.value.day" [pendingStart]="form.value.start" [pendingEnd]="form.value.start + form.value.duration" [pendingCalendarEntryId]="entry.calendarEntryId" />
     @for (e of form.value | entryWarnings: (calendarDay | async) : entry; track $index) {
     <mat-error>
       {{e}}
