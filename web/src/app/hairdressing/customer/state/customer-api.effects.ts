@@ -32,6 +32,27 @@ export class CustomerApiEffects {
     );
   });
 
+  listCustomerWorks = createEffect(() => {
+    return this.actions.pipe(
+      ofType(customerApiActions.listCustomerWorksInitiated),
+      exhaustMap(({ customerId }) => {
+        return this.customerService.listCustomerWorks(customerId).pipe(
+          map((works) => customerApiActions.listCustomerWorksCompleted({
+            works,
+            customerId,
+          })),
+          catchError(() => {
+            return of(progressActions.processFinished(),
+              notificationActions.showMessage({
+                message: 'Hiba történt',
+              }),
+            );
+          }),
+        );
+      }),
+    );
+  });
+
   createCustomer = createEffect(() => {
     return this.actions.pipe(
       ofType(customerApiActions.createCustomerInitiated),

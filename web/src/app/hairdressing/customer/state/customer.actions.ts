@@ -1,4 +1,4 @@
-import { Customer, Price } from '@household/shared/types/types';
+import { Calendar, Customer, Price } from '@household/shared/types/types';
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
 
 export const customerActions = createActionGroup({
@@ -29,6 +29,8 @@ export const customerApiActions = createActionGroup({
     'Update customer job completed': props<Customer.CustomerId & {jobName: Customer.Job.Name['name']} & Customer.Job.Request & {priceList: Price.Response[]}>(),    
     'Delete customer job initiated': props<Customer.CustomerId & {jobName: Customer.Job.Name['name']}>(),
     'Delete customer job completed': props<Customer.CustomerId & {jobName: Customer.Job.Name['name']}>(),    
+    'List customer works initiated': props<Customer.CustomerId>(),
+    'List customer works completed': props<Customer.CustomerId & {works: Calendar.Entry.ResponseBase[]}>(),
     'Add customer to blacklist initiated': props<{customers: Customer.Response[]}>(),
     'Add customer to blacklist completed': props<{customers: Customer.Response[]}>(),
     'Delete customer from blacklist initiated': props<{customerIds: Customer.Id[]}>(),

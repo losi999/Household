@@ -13,7 +13,7 @@ describe('List customer works handler', () => {
   });
 
   const customerId = testDataFactory.customer.id();
-  const calendarEntry = testDataFactory.calendar.entry.response.base();
+  const calendarEntry = testDataFactory.calendar.entry.response.workBase();
   const handlerEvent = {
     pathParameters: {
       customerId,

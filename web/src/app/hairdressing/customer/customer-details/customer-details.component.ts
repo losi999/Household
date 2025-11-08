@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Customer } from '@household/shared/types/types';
+import { Calendar, Customer } from '@household/shared/types/types';
 import { customerActions, customerApiActions } from '@household/web/app/hairdressing/customer/state/customer.actions';
-import { selectCustomerById } from '@household/web/app/hairdressing/customer/state/customer.selector';
+import { selectCustomerById, selectCustomerWorks } from '@household/web/app/hairdressing/customer/state/customer.selector';
 import { priceApiActions } from '@household/web/app/hairdressing/price/state/price.actions';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
@@ -14,6 +14,7 @@ import { Observable } from 'rxjs';
 })
 export class CustomerDetailsComponent implements OnInit {
   customer: Observable<Customer.Response>;
+  workEntries: Observable<Calendar.Entry.WorkEntryResponseBase[]>;
   customerId: Customer.Id;
 
   constructor (private store: Store, private activatedRoute: ActivatedRoute) { }
@@ -22,8 +23,12 @@ export class CustomerDetailsComponent implements OnInit {
     this.customerId = this.activatedRoute.snapshot.paramMap.get('customerId') as Customer.Id;
 
     this.customer = this.store.select(selectCustomerById(this.customerId));
+    this.workEntries = this.store.select(selectCustomerWorks(this.customerId));
 
     this.store.dispatch(customerApiActions.listCustomersInitiated());
+    this.store.dispatch(customerApiActions.listCustomerWorksInitiated({
+      customerId: this.customerId,
+    }));
     this.store.dispatch(priceApiActions.listPricesInitiated());
   }
 

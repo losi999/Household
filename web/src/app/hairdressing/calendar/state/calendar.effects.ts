@@ -10,7 +10,6 @@ import { DialogService } from '@household/web/services/dialog.service';
 import { CalendarEntryDetailsDialogComponent, CalendarEntryDetailsDialogData, CalendarEntryDetailsDialogResult } from '@household/web/app/hairdressing/calendar/calendar-entry-details-dialog/calendar-entry-details-dialog.component';
 import { CalendarEntryEditDialogComponent, CalendarEntryEditDialogData, CalendarEntryEditDialogResult } from '@household/web/app/hairdressing/calendar/calendar-entry-edit-dialog/calendar-entry-edit-dialog.component';
 import { CalendarEntryPayingDialogComponent, CalendarEntryPayingDialogData, CalendarEntryPayingDialogResult } from '@household/web/app/hairdressing/calendar/calendar-entry-paying-dialog/calendar-entry-paying-dialog.component';
-import { isListedPrice } from '@household/shared/common/type-guards';
 
 @Injectable()
 export class CalendarEffects {
@@ -257,7 +256,7 @@ export class CalendarEffects {
               end: timeInterval.end,
               description: job.description,
               prices: job.prices.map((p) => {
-                if (isListedPrice(p)) {
+                if (p.priceId) {
                   return {
                     priceId: p.priceId,
                     quantity: p.quantity,

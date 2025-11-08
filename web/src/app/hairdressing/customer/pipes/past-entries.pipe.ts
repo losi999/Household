@@ -8,8 +8,8 @@ import { Calendar } from '@household/shared/types/types';
 export class PastEntriesPipe implements PipeTransform {
   transform(entries: Calendar.Entry.ResponseBase[]): unknown {
     const now = new Date().toISOString();
-    return entries.filter(e => {
+    return entries?.filter(e => {
       return e.day < now;
-    });
+    }) ?? [];
   }
 }

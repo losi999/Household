@@ -7,7 +7,7 @@ export default (listCustomerWorks: IListCustomerWorksService): AWSLambda.APIGate
   return async (event) => {
     const { customerId } = castPathParameters(event);
 
-    let calendarEntries: Calendar.Entry.ResponseBase[];
+    let calendarEntries: Calendar.Entry.WorkEntryResponseBase[];
     try {
       calendarEntries = await listCustomerWorks({
         customerId,

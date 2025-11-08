@@ -1,7 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { isListedPrice } from '@household/shared/common/type-guards';
 import { toUndefined } from '@household/shared/common/utils';
 import { CalendarEntryResolutionStatus } from '@household/shared/enums';
 import { Calendar } from '@household/shared/types/types';
@@ -45,7 +44,7 @@ export class CalendarEntryPayingDialogComponent implements OnInit {
     });    
     if (this.entry.prices?.length > 0) {
       this.form.controls.prices.setValue(this.entry.prices.map((p) => {
-        if (isListedPrice(p)) {
+        if (p.priceId) {
           const { quantity, ...price } = p;
           return {
             quantity,

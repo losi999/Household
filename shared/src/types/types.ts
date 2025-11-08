@@ -956,17 +956,20 @@ export namespace Calendar {
     & DayProp
     & CalendarEntryId; 
 
+    export type WorkEntryResponseBase = ResponseBase & {
+      resolution: Delay & Status<Enum.CalendarEntryResolutionStatus>;
+    };
+
     export type PersonalEntryResponse = ResponseBase
     & EntryType<Enum.CalendarEntryType.Personal>;
     
     export type IssueEntryResponse = ResponseBase
     & EntryType<Enum.CalendarEntryType.Issue>; 
 
-    export type WorkEntryResponse = ResponseBase
+    export type WorkEntryResponse = WorkEntryResponseBase
     & Pick<Customer.Job.Response, 'prices'>   
     & {
       customer: Customer.Response;
-      resolution: Delay & Status<Enum.CalendarEntryResolutionStatus>;
     }
     & EntryType<Enum.CalendarEntryType.Work>;
 

@@ -7,7 +7,7 @@ import { Calendar, Customer } from '@household/shared/types/types';
 export interface IListCustomerWorksService {
   (ctx: {
     customerId: Customer.Id;
-  }): Promise<Calendar.Entry.ResponseBase[]>;
+  }): Promise<Calendar.Entry.WorkEntryResponseBase[]>;
 }
 
 export const listCustomerWorksServiceFactory = (
@@ -27,6 +27,6 @@ export const listCustomerWorksServiceFactory = (
 
     const entries = await calendarEntryService.listCalendarWorkEntriesByCustomerId(customerId).catch(httpErrors.calendarEntry.list());
 
-    return entries.map(e => calendarEntryDocumentConverter.toResponseBase(e));
+    return entries.map(e => calendarEntryDocumentConverter.toWorkEntryResponseBase(e));
   };
 };

@@ -1130,6 +1130,16 @@ const createCalendarIssueEntryResponse: DataFactoryFunction<Calendar.Entry.Issue
   };
 };
 
+const createCalendarWorkEntryResponseBase: DataFactoryFunction<Calendar.Entry.WorkEntryResponseBase> = (data) => {
+  const { customerId, prices, ...req } = createCalendarWorkEntryRequest();
+  return {
+    calendarEntryId: createCalendarEntryId(),
+    ...req,
+    resolution: undefined,
+    ...data,
+  };
+};
+
 const createCalendarWorkEntryResponse: DataFactoryFunction<Calendar.Entry.WorkEntryResponse> = (data) => {
   const { customerId, prices, ...req } = createCalendarWorkEntryRequest();
   return {
@@ -1273,6 +1283,7 @@ export const testDataFactory = {
         base: createCalendarEntryResponseBase,
         personal: createCalendarPersonalEntryResponse,
         issue: createCalendarIssueEntryResponse,
+        workBase: createCalendarWorkEntryResponseBase,
         work: createCalendarWorkEntryResponse,
       },
       resolution: {

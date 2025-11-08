@@ -1,7 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { isListedPrice } from '@household/shared/common/type-guards';
 import { Customer, Price } from '@household/shared/types/types';
 import { JobPriceCalculatorValue } from '@household/web/app/shared/job-price-calculator/job-price-calculator.component';
 import { selectPrices } from '@household/web/app/hairdressing/price/state/price.selector';
@@ -48,7 +47,7 @@ export class CustomerJobDialogComponent implements OnInit {
         Validators.min(1),
       ]),
       prices: new FormControl(this.data.job?.prices.map((priceResponse) => {
-        if (isListedPrice(priceResponse)) {
+        if (priceResponse.priceId) {
           const { quantity, ...price } = priceResponse;
           return {
             price,

@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
 import { MatDividerModule } from '@angular/material/divider';
-import { isListedPrice } from '@household/shared/common/type-guards';
 import { Customer } from '@household/shared/types/types';
 import { MinutesToHourPipe } from '@household/web/app/shared/pipes/minutes-to-hour.pipe';
 
@@ -21,7 +20,7 @@ export class JobPriceSummaryComponent implements OnInit {
   
   ngOnInit(): void {
     this.total = this.prices.reduce((accumulator, currentValue) => {
-      return accumulator + currentValue.amount * (isListedPrice(currentValue) ? currentValue.quantity : 1);
+      return accumulator + currentValue.amount * (currentValue.priceId ? currentValue.quantity : 1);
     }, 0);
   }
 }

@@ -117,7 +117,8 @@ export const calendarEntryServiceFactory = (mongodbService: IMongodbService): IC
           .sort({
             day: -1,
             start: -1,
-          });
+          })
+          .lean();
       });
     },
   };
