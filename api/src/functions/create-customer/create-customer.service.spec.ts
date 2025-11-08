@@ -1,5 +1,5 @@
 import { ICreateCustomerService, createCustomerServiceFactory } from '@household/api/functions/create-customer/create-customer.service';
-import { customerDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getCustomerId } from '@household/shared/common/utils';
 import { ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
@@ -16,8 +16,8 @@ describe('Create customer service', () => {
     service = createCustomerServiceFactory(mockCustomerService.service, mockCustomerDocumentConverter.service);
   });
 
-  const body = customerDataFactory.request();
-  const convertedCustomerDocument = customerDataFactory.document();
+  const body = testDataFactory.customer.request();
+  const convertedCustomerDocument = testDataFactory.customer.document();
   const customerId = getCustomerId(convertedCustomerDocument);
 
   it('should return new id', async () => {

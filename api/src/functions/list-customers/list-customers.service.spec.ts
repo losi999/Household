@@ -1,5 +1,5 @@
 import { IListCustomersService, listCustomersServiceFactory } from '@household/api/functions/list-customers/list-customers.service';
-import { customerDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
 import { ICustomerService } from '@household/shared/services/customer-service';
@@ -16,8 +16,8 @@ describe('List customers service', () => {
     service = listCustomersServiceFactory(mockCustomerService.service, mockCustomerDocumentConverter.service);
   });
 
-  const queriedCustomer = customerDataFactory.document();
-  const convertedResponse = customerDataFactory.response();
+  const queriedCustomer = testDataFactory.customer.document();
+  const convertedResponse = testDataFactory.customer.response();
 
   it('should return documents', async () => {
     mockCustomerService.functions.listCustomers.mockResolvedValue([queriedCustomer]);

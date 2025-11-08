@@ -1,5 +1,5 @@
 import { deleteCalendarEntryServiceFactory, IDeleteCalendarEntryService } from '@household/api/functions/delete-calendar-entry/delete-calendar-entry.service';
-import { calendarEntryDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { CalendarEntryResolutionStatus } from '@household/shared/enums';
 import { ICalendarEntryService } from '@household/shared/services/calendar-entry-service';
@@ -13,8 +13,8 @@ describe('Delete calendar entry service', () => {
     service = deleteCalendarEntryServiceFactory(mockCalendarEntryService.service);
   });
 
-  const calendarEntryId = calendarEntryDataFactory.id();
-  const queriedCalendarEntry = calendarEntryDataFactory.document();
+  const calendarEntryId = testDataFactory.calendar.entry.id();
+  const queriedCalendarEntry = testDataFactory.calendar.entry.document();
 
   it('should return if document is deleted', async () => {
     mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarEntry);

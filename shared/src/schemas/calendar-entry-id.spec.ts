@@ -1,19 +1,19 @@
 import { default as schema } from '@household/shared/schemas/calendar-entry-id';
 import { Calendar } from '@household/shared/types/types';
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
-import { calendarEntryDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 describe('Calendar entry id schema', () => {
   const tester = jsonSchemaTesterFactory<Calendar.Entry.CalendarEntryId>(schema);
 
   tester.validateSuccess({
-    calendarEntryId: calendarEntryDataFactory.id(),
+    calendarEntryId: testDataFactory.calendar.entry.id(),
   });
 
   describe('should deny', () => {
     describe('if data', () => {
       tester.additionalProperties({
-        calendarEntryId: calendarEntryDataFactory.id(),
+        calendarEntryId: testDataFactory.calendar.entry.id(),
         extra: 1,
       } as any, 'data');
     });
@@ -28,7 +28,7 @@ describe('Calendar entry id schema', () => {
       }, 'calendarEntryId', 'string');
 
       tester.pattern({
-        calendarEntryId: calendarEntryDataFactory.id('not-valid'),
+        calendarEntryId: testDataFactory.calendar.entry.id('not-valid'),
       }, 'calendarEntryId');
     });
   });

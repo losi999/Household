@@ -2,7 +2,7 @@ import { Calendar, Transaction } from '@household/shared/types/types';
 import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/test/api/types';
 import { getAccountId, getCalendarEntryId, getCategoryId, getCustomerId, getPriceId, getTransactionId } from '@household/shared/common/utils';
 import { expectEmptyObject, expectRemainingProperties } from '@household/test/api/utils';
-import { isListedPrice, isPriceBase } from '@household/shared/common/type-guards';
+import { isPriceBase } from '@household/shared/common/type-guards';
 import { CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType, SettingKey, TransactionType } from '@household/shared/enums';
 import { default as moment } from 'moment-timezone';
 import { WORKDAY_START, WORKDAY_END } from '@household/shared/constants';
@@ -37,20 +37,14 @@ const validateCalendarEntryResponse = (response: Calendar.Entry.Response, docume
     prices?.forEach((priceResponse, i) => {
       const priceDocument = document.prices[i];
 
-      if (isListedPrice(priceResponse) && !isPriceBase(priceDocument)) {
+      if (!isPriceBase(priceDocument)) {
         const { quantity, ...price } = priceResponse;
         expect(quantity, `prices[${i}].quantity`).to.equal(priceDocument.quantity);
         cy.validateNestedObject(`prices[${i}]`, price).validatePriceResponse(priceDocument.price);
-        return;
-      }
-
-      if (!isListedPrice(priceResponse) && isPriceBase(priceDocument)) {
+      } else {
         expect(priceResponse.name, `prices[${i}].name`).to.equal(priceDocument.name);
         expect(priceResponse.amount, `prices[${i}].amount`).to.equal(priceDocument.amount);
-        return;
-      } 
-
-      expect(true, `prices[${i}] do not match`).to.be.false;
+      }
     });
 
     expectEmptyObject(empty);
@@ -67,6 +61,14 @@ const validateCalendarEntryResponse = (response: Calendar.Entry.Response, docume
     expect(entryType, 'entryType').to.equal(document.entryType);
     expectEmptyObject(empty);
   }
+};
+
+const validateInCalendarEntryListResponseBase = (responses: Calendar.Entry.ResponseBase[], document: Calendar.Entry.Document) => {
+  const response = responses.find(r => r.calendarEntryId === getCalendarEntryId(document));
+  validateCalendarEntryResponseBase(response, document);
+  return cy.wrap(responses, {
+    log: false,
+  }) as Cypress.ChainableResponseBody;
 };
 
 const validateInCalendarEntryListResponse = (responses: Calendar.Entry.Response[], document: Calendar.Entry.Document) => {
@@ -340,6 +342,7 @@ export const setCalendarValidationCommands = () => {
     validateCalendarEntryDocument,
     validateCalendarEntryResponse,
     validateInCalendarEntryListResponse,
+    validateInCalendarEntryListResponseBase,
     validateInCalendarDayResponseList,
   });
   
@@ -366,6 +369,7 @@ declare global {
       validateCalendarEntryDocument: CommandFunctionWithPreviousSubject<typeof validateCalendarEntryDocument>;
       validateCalendarEntryResponse: CommandFunctionWithPreviousSubject<typeof validateCalendarEntryResponse>;
       validateInCalendarEntryListResponse: CommandFunctionWithPreviousSubject<typeof validateInCalendarEntryListResponse>;
+      validateInCalendarEntryListResponseBase: CommandFunctionWithPreviousSubject<typeof validateInCalendarEntryListResponseBase>;
       validateInCalendarDayResponseList: CommandFunctionWithPreviousSubject<typeof validateInCalendarDayResponseList>;
     }
   }

@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/resolve-calendar-work-entry/resolve-calendar-work-entry.handler';
 import { IResolveCalendarWorkEntryService } from '@household/api/functions/resolve-calendar-work-entry/resolve-calendar-work-entry.service';
-import { createTransactionId, calendarEntryDataFactory } from '@household/shared/common/test-data-factory';
+import { createTransactionId, testDataFactory } from '@household/shared/common/test-data-factory';
 import { headerExpiresIn } from '@household/shared/constants';
 
 describe('Resolve calendar work entry handler', () => {
@@ -13,9 +13,9 @@ describe('Resolve calendar work entry handler', () => {
     handlerFunction = handler(mockResolveCalendarWorkEntryService);
   });
 
-  const body = calendarEntryDataFactory.resolutionRequest();
+  const body = testDataFactory.calendar.entry.resolution.request();
   const expiresIn = 3600;
-  const calendarEntryId = calendarEntryDataFactory.id();
+  const calendarEntryId = testDataFactory.calendar.entry.id();
   const transactionId = createTransactionId();
   const handlerEvent = {
     body: JSON.stringify(body),

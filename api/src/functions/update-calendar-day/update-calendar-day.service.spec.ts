@@ -1,6 +1,6 @@
 
 import { IUpdateCalendarDayService, updateCalendarDayServiceFactory } from '@household/api/functions/update-calendar-day/update-calendar-day.service';
-import { calendarDayDataFactory, createDocumentUpdate2 } from '@household/shared/common/test-data-factory';
+import { createDocumentUpdate2, testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { ICalendarDayDocumentConverter } from '@household/shared/converters/calendar-day-document-converter';
 import { CalendarDayType } from '@household/shared/enums';
@@ -18,10 +18,10 @@ describe('Update calendar day service', () => {
     service = updateCalendarDayServiceFactory(mockCalendarDayService.service, mockCalendarDayDocumentConverter.service);
   });
   
-  const queriedDocument = calendarDayDataFactory.document({
+  const queriedDocument = testDataFactory.calendar.day.document({
     dayType: CalendarDayType.Workday,
   });
-  const body = calendarDayDataFactory.workdayRequest();
+  const body = testDataFactory.calendar.day.request.workday();
   const day = '2025-10-11';
   const updateQuery = createDocumentUpdate2();
 
@@ -57,7 +57,7 @@ describe('Update calendar day service', () => {
     });
 
     it('if holiday is about to be updated', async () => {
-      const queriedDocument = calendarDayDataFactory.document({
+      const queriedDocument = testDataFactory.calendar.day.document({
         dayType: CalendarDayType.Holiday,
       });
       mockCalendarDayService.functions.findCalendarDayByDay.mockResolvedValue(queriedDocument);

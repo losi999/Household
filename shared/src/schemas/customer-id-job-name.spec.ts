@@ -1,6 +1,6 @@
 import { default as schema } from '@household/shared/schemas/customer-id-job-name';
 import { Customer } from '@household/shared/types/types';
-import { customerDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 
 describe('Customer id and job name schema', () => {
@@ -9,14 +9,14 @@ describe('Customer id and job name schema', () => {
   const jobName = 'vágás';
 
   tester.validateSuccess({
-    customerId: customerDataFactory.id(),
+    customerId: testDataFactory.customer.id(),
     jobName,
   });
 
   describe('should deny', () => {
     describe('if data', () => {
       tester.additionalProperties({
-        customerId: customerDataFactory.id(),
+        customerId: testDataFactory.customer.id(),
         jobName,
         extra: 1,
       } as any, 'data');
@@ -34,24 +34,24 @@ describe('Customer id and job name schema', () => {
       }, 'customerId', 'string');
 
       tester.pattern({
-        customerId: customerDataFactory.id('not-valid'),
+        customerId: testDataFactory.customer.id('not-valid'),
         jobName,
       }, 'customerId');
     });
 
     describe('if data.jobName', () => {
       tester.required({
-        customerId: customerDataFactory.id(),
+        customerId: testDataFactory.customer.id(),
         jobName: undefined,
       }, 'jobName');
 
       tester.type({
-        customerId: customerDataFactory.id(),
+        customerId: testDataFactory.customer.id(),
         jobName: 1 as any,
       }, 'jobName', 'string');
 
       tester.minLength({
-        customerId: customerDataFactory.id(),
+        customerId: testDataFactory.customer.id(),
         jobName: '',
       }, 'jobName', 1);
     });

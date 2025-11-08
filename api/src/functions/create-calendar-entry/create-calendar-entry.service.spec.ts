@@ -1,5 +1,5 @@
 import { ICreateCalendarEntryService, createCalendarEntryServiceFactory } from '@household/api/functions/create-calendar-entry/create-calendar-entry.service';
-import { calendarEntryDataFactory, customerDataFactory, testDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getCalendarEntryId, getCustomerId, getPriceId } from '@household/shared/common/utils';
 import { ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
@@ -23,11 +23,11 @@ describe('Create calendar entry service', () => {
     service = createCalendarEntryServiceFactory(mockCalendarEntryService.service, mockCalendarEntryDocumentConverter.service, mockCustomerService.service, mockPriceService.service);
   });
 
-  const convertedCalendarEntryDocument = calendarEntryDataFactory.document();
+  const convertedCalendarEntryDocument = testDataFactory.calendar.entry.document();
   const calendarEntryId = getCalendarEntryId(convertedCalendarEntryDocument);
 
   it('should return new id if personal entry is created', async () => {
-    const body = calendarEntryDataFactory.personalRequest();
+    const body = testDataFactory.calendar.entry.request.personal();
     mockCalendarEntryDocumentConverter.functions.create.mockReturnValue(convertedCalendarEntryDocument);
     mockCalendarEntryService.functions.saveCalendarEntry.mockResolvedValue(convertedCalendarEntryDocument);
 
@@ -46,7 +46,7 @@ describe('Create calendar entry service', () => {
   });
 
   it('should return new id if issue entry is created', async () => {
-    const body = calendarEntryDataFactory.issueRequest();
+    const body = testDataFactory.calendar.entry.request.issue();
     mockCalendarEntryDocumentConverter.functions.create.mockReturnValue(convertedCalendarEntryDocument);
     mockCalendarEntryService.functions.saveCalendarEntry.mockResolvedValue(convertedCalendarEntryDocument);
 
@@ -65,19 +65,23 @@ describe('Create calendar entry service', () => {
   });
 
   it('should return new id if work entry is created', async () => {
-    const queriedCustomer = customerDataFactory.document();
+    const queriedCustomer = testDataFactory.customer.document();
     const customerId = getCustomerId(queriedCustomer);
     const queriedPrice = testDataFactory.price.document();
     const priceId = getPriceId(queriedPrice);
 
-    const body = calendarEntryDataFactory.workRequest({
-      customerId,
-      prices: [
-        {
-          priceId,
-          quantity: 1,
-        },
-      ],
+    const body = testDataFactory.calendar.entry.request.work({
+      body: {
+        customerId,
+      },
+      prices: {
+        listed: [
+          {
+            priceId,
+            quantity: 1,
+          },
+        ],
+      }, 
     });
     mockCustomerService.functions.findCustomerById.mockResolvedValue(queriedCustomer);
     mockPriceService.functions.findPricesByIds.mockResolvedValue([queriedPrice]);
@@ -102,19 +106,23 @@ describe('Create calendar entry service', () => {
   
   describe('should throw error', () => {
     it('if unable to query customer', async () => {
-      const queriedCustomer = customerDataFactory.document();
+      const queriedCustomer = testDataFactory.customer.document();
       const customerId = getCustomerId(queriedCustomer);
       const queriedPrice = testDataFactory.price.document();
       const priceId = getPriceId(queriedPrice);
 
-      const body = calendarEntryDataFactory.workRequest({
-        customerId,
-        prices: [
-          {
-            priceId,
-            quantity: 1,
-          },
-        ],
+      const body = testDataFactory.calendar.entry.request.work({
+        body: {
+          customerId,
+        },
+        prices: {
+          listed: [
+            {
+              priceId,
+              quantity: 1,
+            },
+          ],
+        }, 
       });
       mockCustomerService.functions.findCustomerById.mockRejectedValue('this is a mongo error');
 
@@ -130,19 +138,23 @@ describe('Create calendar entry service', () => {
     });
 
     it('if customer not found', async () => {
-      const queriedCustomer = customerDataFactory.document();
+      const queriedCustomer = testDataFactory.customer.document();
       const customerId = getCustomerId(queriedCustomer);
       const queriedPrice = testDataFactory.price.document();
       const priceId = getPriceId(queriedPrice);
 
-      const body = calendarEntryDataFactory.workRequest({
-        customerId,
-        prices: [
-          {
-            priceId,
-            quantity: 1,
-          },
-        ],
+      const body = testDataFactory.calendar.entry.request.work({
+        body: {
+          customerId,
+        },
+        prices: {
+          listed: [
+            {
+              priceId,
+              quantity: 1,
+            },
+          ],
+        }, 
       });
       mockCustomerService.functions.findCustomerById.mockResolvedValue(undefined);
 
@@ -158,19 +170,23 @@ describe('Create calendar entry service', () => {
     });
 
     it('if unable to query prices', async () => {
-      const queriedCustomer = customerDataFactory.document();
+      const queriedCustomer = testDataFactory.customer.document();
       const customerId = getCustomerId(queriedCustomer);
       const queriedPrice = testDataFactory.price.document();
       const priceId = getPriceId(queriedPrice);
 
-      const body = calendarEntryDataFactory.workRequest({
-        customerId,
-        prices: [
-          {
-            priceId,
-            quantity: 1,
-          },
-        ],
+      const body = testDataFactory.calendar.entry.request.work({
+        body: {
+          customerId,
+        },
+        prices: {
+          listed: [
+            {
+              priceId,
+              quantity: 1,
+            },
+          ],
+        }, 
       });
       mockCustomerService.functions.findCustomerById.mockResolvedValue(queriedCustomer);
       mockPriceService.functions.findPricesByIds.mockRejectedValue('this is a mongo error');
@@ -187,19 +203,23 @@ describe('Create calendar entry service', () => {
     });
 
     it('if some of the prices are not found', async () => {
-      const queriedCustomer = customerDataFactory.document();
+      const queriedCustomer = testDataFactory.customer.document();
       const customerId = getCustomerId(queriedCustomer);
       const queriedPrice = testDataFactory.price.document();
       const priceId = getPriceId(queriedPrice);
 
-      const body = calendarEntryDataFactory.workRequest({
-        customerId,
-        prices: [
-          {
-            priceId,
-            quantity: 1,
-          },
-        ],
+      const body = testDataFactory.calendar.entry.request.work({
+        body: {
+          customerId,
+        },
+        prices: {
+          listed: [
+            {
+              priceId,
+              quantity: 1,
+            },
+          ],
+        }, 
       });
       mockCustomerService.functions.findCustomerById.mockResolvedValue(queriedCustomer);
       mockPriceService.functions.findPricesByIds.mockResolvedValue([]);
@@ -216,19 +236,23 @@ describe('Create calendar entry service', () => {
     });
 
     it('if unable to save calendar entry', async () => {
-      const queriedCustomer = customerDataFactory.document();
+      const queriedCustomer = testDataFactory.customer.document();
       const customerId = getCustomerId(queriedCustomer);
       const queriedPrice = testDataFactory.price.document();
       const priceId = getPriceId(queriedPrice);
 
-      const body = calendarEntryDataFactory.workRequest({
-        customerId,
-        prices: [
-          {
-            priceId,
-            quantity: 1,
-          },
-        ],
+      const body = testDataFactory.calendar.entry.request.work({
+        body: {
+          customerId,
+        },
+        prices: {
+          listed: [
+            {
+              priceId,
+              quantity: 1,
+            },
+          ],
+        }, 
       });
       mockCustomerService.functions.findCustomerById.mockResolvedValue(queriedCustomer);
       mockPriceService.functions.findPricesByIds.mockResolvedValue([queriedPrice]);

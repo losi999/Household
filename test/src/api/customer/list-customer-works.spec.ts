@@ -4,7 +4,6 @@ import { entries, getCustomerId } from '@household/shared/common/utils';
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
 import { allowUsers } from '@household/test/api/utils';
 import { calendarEntryDataFactory } from '@household/test/api/calendar/data-factory';
-import { CalendarEntryType } from '@household/shared/enums';
 
 const permissionMap = allowUsers('hairdresser');
 
@@ -15,8 +14,7 @@ describe('GET /customer/v1/customers/{customerId}/works', () => {
   beforeEach(() => {
     customerDocument = customerDataFactory.document();
 
-    workEntryDocument = calendarEntryDataFactory.document({
-      entryType: CalendarEntryType.Work,
+    workEntryDocument = calendarEntryDataFactory.document.work({
       customer: customerDocument,
     });
   });
@@ -48,7 +46,7 @@ describe('GET /customer/v1/customers/{customerId}/works', () => {
             .requestListCustomerWorks(getCustomerId(customerDocument))
             .expectOkResponse()
             .expectValidResponseSchema(schema)
-            .validateInCalendarEntryListResponse(workEntryDocument);
+            .validateInCalendarEntryListResponseBase(workEntryDocument);
         });
 
         describe('should return error if customerId', () => {

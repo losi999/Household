@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/get-calendar-entry/get-calendar-entry.handler';
 import { IGetCalendarEntryService } from '@household/api/functions/get-calendar-entry/get-calendar-entry.service';
-import { calendarEntryDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 describe('Get calendar entry handler', () => {
   let mockGetCalendarEntryService: MockBusinessService<IGetCalendarEntryService>;
@@ -12,8 +12,8 @@ describe('Get calendar entry handler', () => {
     handlerFunction = handler(mockGetCalendarEntryService);
   });
 
-  const calendarEntryId = calendarEntryDataFactory.id();
-  const calendarEntry = calendarEntryDataFactory.personalResponse();
+  const calendarEntryId = testDataFactory.calendar.entry.id();
+  const calendarEntry = testDataFactory.calendar.entry.response.personal();
 
   const handlerEvent = {
     pathParameters: {

@@ -1,5 +1,5 @@
 import { IDeleteCalendarDayService, deleteCalendarDayServiceFactory } from '@household/api/functions/delete-calendar-day/delete-calendar-day.service';
-import { calendarDayDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { CalendarDayType } from '@household/shared/enums';
 import { ICalendarDayService } from '@household/shared/services/calendar-day-service';
@@ -13,7 +13,7 @@ describe('Delete calendar day service', () => {
     service = deleteCalendarDayServiceFactory(mockCalendarDayService.service);
   });
 
-  const queriedDocument = calendarDayDataFactory.document({
+  const queriedDocument = testDataFactory.calendar.day.document({
     dayType: CalendarDayType.Workday,
   });
 
@@ -44,7 +44,7 @@ describe('Delete calendar day service', () => {
     });
 
     it('if holiday is about to be deleted', async () => {
-      const queriedDocument = calendarDayDataFactory.document({
+      const queriedDocument = testDataFactory.calendar.day.document({
         dayType: CalendarDayType.Holiday,
       });
       mockCalendarDayService.functions.findCalendarDayByDay.mockResolvedValue(queriedDocument);

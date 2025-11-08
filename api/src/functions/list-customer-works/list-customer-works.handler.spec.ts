@@ -1,6 +1,6 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/list-customer-works/list-customer-works.handler';
-import { calendarEntryDataFactory, customerDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { IListCustomerWorksService } from '@household/api/functions/list-customer-works/list-customer-works.service';
 
 describe('List customer works handler', () => {
@@ -12,8 +12,8 @@ describe('List customer works handler', () => {
     handlerFunction = handler(mockListCustomerWorksService);
   });
 
-  const customerId = customerDataFactory.id();
-  const calendarEntry = calendarEntryDataFactory.responseBase();
+  const customerId = testDataFactory.customer.id();
+  const calendarEntry = testDataFactory.calendar.entry.response.base();
   const handlerEvent = {
     pathParameters: {
       customerId,

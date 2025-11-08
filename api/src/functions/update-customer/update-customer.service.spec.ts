@@ -1,5 +1,5 @@
 import { IUpdateCustomerService, updateCustomerServiceFactory } from '@household/api/functions/update-customer/update-customer.service';
-import { customerDataFactory, createDocumentUpdate2 } from '@household/shared/common/test-data-factory';
+import { testDataFactory, createDocumentUpdate2 } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getCustomerId } from '@household/shared/common/utils';
 import { ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
@@ -17,8 +17,8 @@ describe('Update customer service', () => {
     service = updateCustomerServiceFactory(mockCustomerService.service, mockCustomerDocumentConverter.service);
   });
 
-  const body = customerDataFactory.request();
-  const queriedDocument = customerDataFactory.document();
+  const body = testDataFactory.customer.request();
+  const queriedDocument = testDataFactory.customer.document();
   const customerId = getCustomerId(queriedDocument);
   const updateQuery = createDocumentUpdate2({
     update: {

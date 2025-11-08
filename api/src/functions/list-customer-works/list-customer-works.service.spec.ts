@@ -1,5 +1,5 @@
 import { IListCustomerWorksService, listCustomerWorksServiceFactory } from '@household/api/functions/list-customer-works/list-customer-works.service';
-import { calendarEntryDataFactory, customerDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
 import { ICalendarEntryService } from '@household/shared/services/calendar-entry-service';
@@ -19,10 +19,10 @@ describe('List customer works service', () => {
     service = listCustomerWorksServiceFactory(mockCustomerService.service, mockCalendarEntryService.service, mockCalendarEntryDocumentConverter.service);
   });
 
-  const queriedCustomer = customerDataFactory.document();
-  const customerId = customerDataFactory.id();
-  const queriedEntry = calendarEntryDataFactory.document();
-  const convertedResponse = calendarEntryDataFactory.responseBase();
+  const queriedCustomer = testDataFactory.customer.document();
+  const customerId = testDataFactory.customer.id();
+  const queriedEntry = testDataFactory.calendar.entry.document();
+  const convertedResponse = testDataFactory.calendar.entry.response.base();
 
   it('should return customer works', async () => {
     mockCustomerService.functions.getCustomerById.mockResolvedValue(queriedCustomer);

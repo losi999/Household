@@ -2,7 +2,7 @@ import { Customer } from '@household/shared/types/types';
 import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/test/api/types';
 import { getCustomerId, getPriceId } from '@household/shared/common/utils';
 import { expectEmptyObject, expectRemainingProperties } from '@household/test/api/utils';
-import { isListedPrice, isPriceBase } from '@household/shared/common/type-guards';
+import { isPriceBase } from '@household/shared/common/type-guards';
 
 const validateUnchangedCustomerBase = (actual: Customer.Base, expected: Customer.Base) => {
   expect(actual.name, 'name').to.equal(expected.name);
@@ -249,21 +249,13 @@ const validateCustomerResponse = (response: Customer.Response, document: Custome
       const jobPriceResponse = jobResponse.prices[i];
       const jobPriceDocument = jobDocument.prices[i];
 
-      if (isListedPrice(jobPriceResponse)) {
-        if (!isPriceBase(jobPriceDocument)) {
-          const { quantity, ...price } = jobPriceResponse;
-          expect(jobPriceResponse.quantity, `job.prices[${i}].quantity`).to.equal(jobPriceDocument.quantity);
-          cy.validateNestedObject(`job.prices[${i}]`, price).validatePriceResponse(jobPriceDocument.price);
-        } else {
-          expect(true, 'job prices do not match').to.be.false;
-        }
+      if (!isPriceBase(jobPriceDocument)) {
+        const { quantity, ...price } = jobPriceResponse;
+        expect(jobPriceResponse.quantity, `job.prices[${i}].quantity`).to.equal(jobPriceDocument.quantity);
+        cy.validateNestedObject(`job.prices[${i}]`, price).validatePriceResponse(jobPriceDocument.price);
       } else {
-        if (isPriceBase(jobPriceDocument)) {
-          expect(jobPriceResponse.name, `job.prices[${i}].name`).to.equal(jobPriceDocument.name);
-          expect(jobPriceResponse.amount, `job.prices[${i}].name`).to.equal(jobPriceDocument.amount);
-        } else {
-          expect(true, 'job prices do not match').to.be.false;
-        }
+        expect(jobPriceResponse.name, `job.prices[${i}].name`).to.equal(jobPriceDocument.name);
+        expect(jobPriceResponse.amount, `job.prices[${i}].amount`).to.equal(jobPriceDocument.amount);
       }
     }
   });

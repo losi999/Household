@@ -1,4 +1,4 @@
-import { calendarEntryDataFactory, createDocumentUpdate2, createPaymentTransactionDocument, customerDataFactory, testDataFactory } from '@household/shared/common/test-data-factory';
+import { createDocumentUpdate2, createPaymentTransactionDocument, testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { addSeconds, getCalendarEntryId } from '@household/shared/common/utils';
 import { calendarEntryDocumentConverterFactory, ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
@@ -26,26 +26,26 @@ describe('Calendar entry document converter', () => {
   describe('create', () => {
     describe('personal', () => {
       it('should return document', () => {
-        const body = calendarEntryDataFactory.personalRequest();
+        const body = testDataFactory.calendar.entry.request.personal();
         const result = converter.create({
           body,
           customer: undefined,
           prices: undefined,
         }, undefined);
-        expect(result).toEqual(calendarEntryDataFactory.document({
+        expect(result).toEqual(testDataFactory.calendar.entry.document({
           ...body,
           _id: undefined,
         }));
       });
       
       it('should return expiring document', () => {
-        const body = calendarEntryDataFactory.personalRequest();
+        const body = testDataFactory.calendar.entry.request.personal();
         const result = converter.create({
           body,
           customer: undefined,
           prices: undefined,
         }, expiresIn);
-        expect(result).toEqual(calendarEntryDataFactory.document({
+        expect(result).toEqual(testDataFactory.calendar.entry.document({
           ...body,
           _id: undefined,
           expiresAt: addSeconds(expiresIn, now),
@@ -55,26 +55,26 @@ describe('Calendar entry document converter', () => {
 
     describe('issue', () => {
       it('should return document', () => {
-        const body = calendarEntryDataFactory.issueRequest();
+        const body = testDataFactory.calendar.entry.request.issue();
         const result = converter.create({
           body,
           customer: undefined,
           prices: undefined,
         }, undefined);
-        expect(result).toEqual(calendarEntryDataFactory.document({
+        expect(result).toEqual(testDataFactory.calendar.entry.document({
           ...body,
           _id: undefined,
         }));
       });
       
       it('should return expiring document', () => {
-        const body = calendarEntryDataFactory.issueRequest();
+        const body = testDataFactory.calendar.entry.request.issue();
         const result = converter.create({
           body,
           customer: undefined,
           prices: undefined,
         }, expiresIn);
-        expect(result).toEqual(calendarEntryDataFactory.document({
+        expect(result).toEqual(testDataFactory.calendar.entry.document({
           ...body,
           _id: undefined,
           expiresAt: addSeconds(expiresIn, now),
@@ -84,22 +84,31 @@ describe('Calendar entry document converter', () => {
 
     describe('work', () => {
       it('should return document', () => {
-        const customerDocument = customerDataFactory.document();
+        const customerDocument = testDataFactory.customer.document();
         const priceDocument = testDataFactory.price.document();
+        const quantity = 1;
+        mockCustomerDocumentConverter.functions.createJobPriceList.mockReturnValue([
+          {
+            price: priceDocument,
+            quantity,
+          },
+        ]);
 
-        const jobPriceDocument = customerDataFactory.jobPriceDocument();
-        mockCustomerDocumentConverter.functions.createJobPriceList.mockReturnValue([jobPriceDocument]);
-
-        const body = calendarEntryDataFactory.workRequest();
+        const body = testDataFactory.calendar.entry.request.work();
         const result = converter.create({
           body,
           customer: customerDocument,
           prices: [priceDocument],
         }, undefined);
         const { customerId, ...rest } = body;
-        expect(result).toEqual(calendarEntryDataFactory.document({
+        expect(result).toEqual(testDataFactory.calendar.entry.document({
           ...rest,
-          prices: [jobPriceDocument],
+          prices: [
+            {
+              price: priceDocument,
+              quantity,
+            },
+          ],
           customer: customerDocument,
           _id: undefined,
         }));
@@ -107,22 +116,32 @@ describe('Calendar entry document converter', () => {
       });
       
       it('should return expiring document', () => {      
-        const customerDocument = customerDataFactory.document();
+        const customerDocument = testDataFactory.customer.document();
         const priceDocument = testDataFactory.price.document();
 
-        const jobPriceDocument = customerDataFactory.jobPriceDocument();
-        mockCustomerDocumentConverter.functions.createJobPriceList.mockReturnValue([jobPriceDocument]);
+        const quantity = 1;
+        mockCustomerDocumentConverter.functions.createJobPriceList.mockReturnValue([
+          {
+            price: priceDocument,
+            quantity,
+          },
+        ]);
 
-        const body = calendarEntryDataFactory.workRequest();
+        const body = testDataFactory.calendar.entry.request.work();
         const result = converter.create({
           body,
           customer: customerDocument,
           prices: [priceDocument],
         }, expiresIn);
         const { customerId, ...rest } = body;
-        expect(result).toEqual(calendarEntryDataFactory.document({
+        expect(result).toEqual(testDataFactory.calendar.entry.document({
           ...rest,
-          prices: [jobPriceDocument],
+          prices: [
+            {
+              price: priceDocument,
+              quantity,
+            },
+          ],
           customer: customerDocument,
           _id: undefined,
           expiresAt: addSeconds(expiresIn, now),
@@ -135,7 +154,7 @@ describe('Calendar entry document converter', () => {
   describe('update', () => {
     describe('personal', () => {
       it('should update document', () => {
-        const body = calendarEntryDataFactory.personalRequest();
+        const body = testDataFactory.calendar.entry.request.personal();
         const result = converter.update({
           body,
           customer: undefined,
@@ -152,7 +171,7 @@ describe('Calendar entry document converter', () => {
       });
 
       it('should unset description', () => {
-        const body = calendarEntryDataFactory.personalRequest();
+        const body = testDataFactory.calendar.entry.request.personal();
         delete body.description;
         const result = converter.update({
           body,
@@ -175,7 +194,7 @@ describe('Calendar entry document converter', () => {
 
     describe('issue', () => {
       it('should update document', () => {
-        const body = calendarEntryDataFactory.issueRequest();
+        const body = testDataFactory.calendar.entry.request.issue();
         const result = converter.update({
           body,
           customer: undefined,
@@ -192,7 +211,7 @@ describe('Calendar entry document converter', () => {
       });
 
       it('should unset description', () => {
-        const body = calendarEntryDataFactory.issueRequest();
+        const body = testDataFactory.calendar.entry.request.issue();
         delete body.description;
         const result = converter.update({
           body,
@@ -215,13 +234,21 @@ describe('Calendar entry document converter', () => {
 
     describe('work', () => {
       it('should update document', () => {     
-        const customerDocument = customerDataFactory.document();
+        const customerDocument = testDataFactory.customer.document();
         const priceDocument = testDataFactory.price.document();
+        const quantity = 1;
+        mockCustomerDocumentConverter.functions.createJobPriceList.mockReturnValue([
+          {
+            price: priceDocument,
+            quantity,
+          },
+        ]);
 
-        const jobPriceDocument = customerDataFactory.jobPriceDocument();
-        mockCustomerDocumentConverter.functions.createJobPriceList.mockReturnValue([jobPriceDocument]);
-
-        const body = calendarEntryDataFactory.workRequest();
+        const body = testDataFactory.calendar.entry.request.work({
+          prices: {
+            listed: [{}],
+          },
+        });
         const result = converter.update({
           body,
           customer: customerDocument,
@@ -233,7 +260,12 @@ describe('Calendar entry document converter', () => {
             $set: {
               ...rest,
               customer: customerDocument,
-              prices: [jobPriceDocument],
+              prices: [
+                {
+                  price: priceDocument,
+                  quantity,
+                },
+              ],
               expiresAt: addSeconds(expiresIn, now),
             },
           },
@@ -241,13 +273,22 @@ describe('Calendar entry document converter', () => {
       });
 
       it('should unset description', () => {
-        const customerDocument = customerDataFactory.document();
+        const customerDocument = testDataFactory.customer.document();
         const priceDocument = testDataFactory.price.document();
 
-        const jobPriceDocument = customerDataFactory.jobPriceDocument();
-        mockCustomerDocumentConverter.functions.createJobPriceList.mockReturnValue([jobPriceDocument]);
+        const quantity = 1;
+        mockCustomerDocumentConverter.functions.createJobPriceList.mockReturnValue([
+          {
+            price: priceDocument,
+            quantity,
+          },
+        ]);
 
-        const body = calendarEntryDataFactory.workRequest();
+        const body = testDataFactory.calendar.entry.request.work({
+          prices: {
+            listed: [{}],
+          },
+        });
         delete body.description;
         const result = converter.update({
           body,
@@ -260,7 +301,12 @@ describe('Calendar entry document converter', () => {
             $set: {
               ...rest,
               customer: customerDocument,
-              prices: [jobPriceDocument],
+              prices: [
+                {
+                  price: priceDocument,
+                  quantity,
+                },
+              ],
               expiresAt: addSeconds(expiresIn, now),
             },
             $unset: {
@@ -271,9 +317,9 @@ describe('Calendar entry document converter', () => {
       });
 
       it('should unset prices', () => {
-        const customerDocument = customerDataFactory.document();
+        const customerDocument = testDataFactory.customer.document();
 
-        const body = calendarEntryDataFactory.workRequest();
+        const body = testDataFactory.calendar.entry.request.work();
         delete body.prices;
         const result = converter.update({
           body,
@@ -296,9 +342,9 @@ describe('Calendar entry document converter', () => {
       });
 
       it('should unset description and prices', () => {
-        const customerDocument = customerDataFactory.document();
+        const customerDocument = testDataFactory.customer.document();
 
-        const body = calendarEntryDataFactory.workRequest();
+        const body = testDataFactory.calendar.entry.request.work();
         delete body.description;
         delete body.prices;
         const result = converter.update({
@@ -326,7 +372,7 @@ describe('Calendar entry document converter', () => {
 
   describe('resolve', () => {
     it('should return update', () => {
-      const body = calendarEntryDataFactory.resolutionRequest();
+      const body = testDataFactory.calendar.entry.resolution.request();
       const transaction = createPaymentTransactionDocument();
       const result = converter.resolve({
         body,
@@ -351,12 +397,12 @@ describe('Calendar entry document converter', () => {
 
   describe('toResponseBase', () => {
     it('should return response', () => {
-      const doc = calendarEntryDataFactory.document();
+      const doc = testDataFactory.calendar.entry.document();
 
       const { day, description, title, start, end } = doc;
 
       const result = converter.toResponseBase(doc);
-      expect(result).toEqual(calendarEntryDataFactory.responseBase({
+      expect(result).toEqual(testDataFactory.calendar.entry.response.base({
         day,
         description,
         title,
@@ -370,14 +416,14 @@ describe('Calendar entry document converter', () => {
   describe('toResponse', () => {
     describe('personal', () => {
       it('should return response', () => {
-        const doc = calendarEntryDataFactory.document({
+        const doc = testDataFactory.calendar.entry.document({
           entryType: CalendarEntryType.Personal,
         });
           
         const { day, description, title, start, end } = doc;
           
         const result = converter.toResponse(doc);
-        expect(result).toEqual(calendarEntryDataFactory.personalResponse({
+        expect(result).toEqual(testDataFactory.calendar.entry.response.personal({
           day,
           description,
           title,
@@ -390,14 +436,14 @@ describe('Calendar entry document converter', () => {
 
     describe('issue', () => {
       it('should return response', () => {
-        const doc = calendarEntryDataFactory.document({
+        const doc = testDataFactory.calendar.entry.document({
           entryType: CalendarEntryType.Issue,
         });
           
         const { day, description, title, start, end } = doc;
           
         const result = converter.toResponse(doc);
-        expect(result).toEqual(calendarEntryDataFactory.issueResponse({
+        expect(result).toEqual(testDataFactory.calendar.entry.response.issue({
           day,
           description,
           title,
@@ -410,23 +456,36 @@ describe('Calendar entry document converter', () => {
 
     describe('work', () => {
       it('should return response', () => {
-        const customerDocument = customerDataFactory.document();
-        const customerResponse = customerDataFactory.response();
-        const jobPriceDocument = customerDataFactory.jobPriceDocument();
-        const jobPriceResponse = customerDataFactory.jobPriceResponse();
+        const customerDocument = testDataFactory.customer.document();
+        const customerResponse = testDataFactory.customer.response();
+        const priceDocument = testDataFactory.price.document();
+        const quantity = 1;
+        const customPrice = testDataFactory.price.base();
+        const priceResponse = testDataFactory.price.response();
 
-        const doc = calendarEntryDataFactory.document({
+        const doc = testDataFactory.calendar.entry.document({
           entryType: CalendarEntryType.Work,
           customer: customerDocument,
-          prices: [jobPriceDocument],
+          prices: [
+            {
+              price: priceDocument,
+              quantity,
+            },
+            customPrice,
+          ],
         });
         mockCustomerDocumentConverter.functions.toResponse.mockReturnValue(customerResponse);
-        mockCustomerDocumentConverter.functions.toResponseJobPriceList.mockReturnValue([jobPriceResponse]);
+        mockCustomerDocumentConverter.functions.toResponseJobPriceList.mockReturnValue([
+          {
+            ...priceResponse,
+            quantity,
+          },
+        ]);
           
         const { day, description, title, start, end } = doc;
           
         const result = converter.toResponse(doc);
-        expect(result).toEqual(calendarEntryDataFactory.workResponse({
+        expect(result).toEqual(testDataFactory.calendar.entry.response.work({
           day,
           description,
           title,
@@ -434,36 +493,60 @@ describe('Calendar entry document converter', () => {
           end,
           calendarEntryId: getCalendarEntryId(doc),
           customer: customerResponse,
-          prices: [jobPriceResponse],
+          prices: [
+            {
+              ...priceResponse,
+              quantity,
+            },
+          ],
         }));
         validateFunctionCall(mockCustomerDocumentConverter.functions.toResponse, customerDocument);
-        validateFunctionCall(mockCustomerDocumentConverter.functions.toResponseJobPriceList, [jobPriceDocument]);
+        validateFunctionCall(mockCustomerDocumentConverter.functions.toResponseJobPriceList, [
+          {
+            price: priceDocument,
+            quantity,
+          },
+          customPrice,
+        ]);
       });
     });
   });
 
   describe('toResponseList', () => {
     it('should return response list', () => {
-      const personalEntryDocument = calendarEntryDataFactory.document({
+      const personalEntryDocument = testDataFactory.calendar.entry.document({
         entryType: CalendarEntryType.Personal,
       });
 
-      const issueEntryDocument = calendarEntryDataFactory.document({
+      const issueEntryDocument = testDataFactory.calendar.entry.document({
         entryType: CalendarEntryType.Issue,
       });
 
-      const customerDocument = customerDataFactory.document();
-      const customerResponse = customerDataFactory.response();
-      const jobPriceDocument = customerDataFactory.jobPriceDocument();
-      const jobPriceResponse = customerDataFactory.jobPriceResponse();
+      const customerDocument = testDataFactory.customer.document();
+      const customerResponse = testDataFactory.customer.response();
+      const priceDocument = testDataFactory.price.document();
+      const quantity = 1;
+      const customPrice = testDataFactory.price.base();
+      const priceResponse = testDataFactory.price.response();
 
-      const workEntryDocument = calendarEntryDataFactory.document({
+      const workEntryDocument = testDataFactory.calendar.entry.document({
         entryType: CalendarEntryType.Work,
         customer: customerDocument,
-        prices: [jobPriceDocument],
+        prices: [
+          {
+            price: priceDocument,
+            quantity,
+          },
+          customPrice,
+        ],
       });
       mockCustomerDocumentConverter.functions.toResponse.mockReturnValue(customerResponse);
-      mockCustomerDocumentConverter.functions.toResponseJobPriceList.mockReturnValue([jobPriceResponse]);
+      mockCustomerDocumentConverter.functions.toResponseJobPriceList.mockReturnValue([
+        {
+          ...priceResponse,
+          quantity,
+        },
+      ]);
 
       const result = converter.toResponseList([
         personalEntryDocument,
@@ -471,7 +554,7 @@ describe('Calendar entry document converter', () => {
         workEntryDocument,
       ]);
       expect(result).toEqual([
-        calendarEntryDataFactory.personalResponse({
+        testDataFactory.calendar.entry.response.personal({
           day: personalEntryDocument.day,
           description: personalEntryDocument.description,
           title: personalEntryDocument.title,
@@ -479,7 +562,7 @@ describe('Calendar entry document converter', () => {
           end: personalEntryDocument.end,
           calendarEntryId: getCalendarEntryId(personalEntryDocument),
         }),
-        calendarEntryDataFactory.issueResponse({
+        testDataFactory.calendar.entry.response.issue({
           day: issueEntryDocument.day,
           description: issueEntryDocument.description,
           title: issueEntryDocument.title,
@@ -487,7 +570,7 @@ describe('Calendar entry document converter', () => {
           end: issueEntryDocument.end,
           calendarEntryId: getCalendarEntryId(issueEntryDocument),
         }),
-        calendarEntryDataFactory.workResponse({
+        testDataFactory.calendar.entry.response.work({
           day: workEntryDocument.day,
           description: workEntryDocument.description,
           title: workEntryDocument.title,
@@ -495,8 +578,21 @@ describe('Calendar entry document converter', () => {
           end: workEntryDocument.end,
           calendarEntryId: getCalendarEntryId(workEntryDocument),
           customer: customerResponse,
-          prices: [jobPriceResponse],
+          prices: [
+            {
+              ...priceResponse,
+              quantity,
+            },
+          ],
         }),
+      ]);
+      validateFunctionCall(mockCustomerDocumentConverter.functions.toResponse, customerDocument);
+      validateFunctionCall(mockCustomerDocumentConverter.functions.toResponseJobPriceList, [
+        {
+          price: priceDocument,
+          quantity,
+        },
+        customPrice,
       ]);
     });
   });

@@ -1,5 +1,5 @@
 import { IUpdateCalendarEntryService, updateCalendarEntryServiceFactory } from '@household/api/functions/update-calendar-entry/update-calendar-entry.service';
-import { calendarEntryDataFactory, createDocumentUpdate2, customerDataFactory, testDataFactory } from '@household/shared/common/test-data-factory';
+import { createDocumentUpdate2, testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getCustomerId, getPriceId } from '@household/shared/common/utils';
 import { ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
@@ -24,21 +24,21 @@ describe('Update calendar entry service', () => {
     service = updateCalendarEntryServiceFactory(mockCalendarEntryService.service, mockCalendarEntryDocumentConverter.service, mockCustomerService.service, mockPriceService.service);
   });
 
-  const calendarEntryId = calendarEntryDataFactory.id();
-  const queriedCalendarIssueEntry = calendarEntryDataFactory.document({
+  const calendarEntryId = testDataFactory.calendar.entry.id();
+  const queriedCalendarIssueEntry = testDataFactory.calendar.entry.document({
     entryType: CalendarEntryType.Issue,
   });
-  const queriedCalendarPersonalEntry = calendarEntryDataFactory.document({
+  const queriedCalendarPersonalEntry = testDataFactory.calendar.entry.document({
     entryType: CalendarEntryType.Personal,
   });
-  const queriedCalendarWorkEntry = calendarEntryDataFactory.document({
+  const queriedCalendarWorkEntry = testDataFactory.calendar.entry.document({
     entryType: CalendarEntryType.Work,
   });
 
   const updateQuery = createDocumentUpdate2();
 
   it('should return if personal entry is updated', async () => {
-    const body = calendarEntryDataFactory.personalRequest();
+    const body = testDataFactory.calendar.entry.request.personal();
     mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarPersonalEntry);
     mockCalendarEntryDocumentConverter.functions.update.mockReturnValue(updateQuery);
     mockCalendarEntryService.functions.updateCalendarEntry.mockResolvedValue(undefined);
@@ -59,7 +59,7 @@ describe('Update calendar entry service', () => {
   });
 
   it('should return if issue entry is updated', async () => {
-    const body = calendarEntryDataFactory.issueRequest();
+    const body = testDataFactory.calendar.entry.request.issue();
     mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarIssueEntry);
     mockCalendarEntryDocumentConverter.functions.update.mockReturnValue(updateQuery);
     mockCalendarEntryService.functions.updateCalendarEntry.mockResolvedValue(undefined);
@@ -80,19 +80,23 @@ describe('Update calendar entry service', () => {
   });
 
   it('should return if work entry is updated', async () => {
-    const queriedCustomer = customerDataFactory.document();
+    const queriedCustomer = testDataFactory.customer.document();
     const customerId = getCustomerId(queriedCustomer);
     const queriedPrice = testDataFactory.price.document();
     const priceId = getPriceId(queriedPrice);
 
-    const body = calendarEntryDataFactory.workRequest({
-      customerId,
-      prices: [
-        {
-          priceId,
-          quantity: 1,
-        },
-      ],
+    const body = testDataFactory.calendar.entry.request.work({
+      body: {
+        customerId,
+      },
+      prices: {
+        listed: [
+          {
+            priceId,
+            quantity: 1,
+          },
+        ],
+      },      
     });
     mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarWorkEntry);
     mockCustomerService.functions.findCustomerById.mockResolvedValue(queriedCustomer);
@@ -119,19 +123,23 @@ describe('Update calendar entry service', () => {
 
   describe('should throw error', () => {
     it('if unable to query calendar entry', async () => {
-      const queriedCustomer = customerDataFactory.document();
+      const queriedCustomer = testDataFactory.customer.document();
       const customerId = getCustomerId(queriedCustomer);
       const queriedPrice = testDataFactory.price.document();
       const priceId = getPriceId(queriedPrice);
 
-      const body = calendarEntryDataFactory.workRequest({
-        customerId,
-        prices: [
-          {
-            priceId,
-            quantity: 1,
-          },
-        ],
+      const body = testDataFactory.calendar.entry.request.work({
+        body: {
+          customerId,
+        },
+        prices: {
+          listed: [
+            {
+              priceId,
+              quantity: 1,
+            },
+          ],
+        },      
       });
       mockCalendarEntryService.functions.findCalendarEntryById.mockRejectedValue('this is a mongo error');
 
@@ -149,19 +157,23 @@ describe('Update calendar entry service', () => {
     });
 
     it('if calendar entry not found', async () => {
-      const queriedCustomer = customerDataFactory.document();
+      const queriedCustomer = testDataFactory.customer.document();
       const customerId = getCustomerId(queriedCustomer);
       const queriedPrice = testDataFactory.price.document();
       const priceId = getPriceId(queriedPrice);
 
-      const body = calendarEntryDataFactory.workRequest({
-        customerId,
-        prices: [
-          {
-            priceId,
-            quantity: 1,
-          },
-        ],
+      const body = testDataFactory.calendar.entry.request.work({
+        body: {
+          customerId,
+        },
+        prices: {
+          listed: [
+            {
+              priceId,
+              quantity: 1,
+            },
+          ],
+        },      
       });
       mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(undefined);
 
@@ -179,7 +191,7 @@ describe('Update calendar entry service', () => {
     });
 
     it('if calendar entry type is about to be changed', async () => {
-      const body = calendarEntryDataFactory.personalRequest();
+      const body = testDataFactory.calendar.entry.request.personal();
       mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarWorkEntry);
 
       await service({
@@ -196,19 +208,23 @@ describe('Update calendar entry service', () => {
     });
 
     it('if calendar entry is already paid', async () => {
-      const queriedCustomer = customerDataFactory.document();
+      const queriedCustomer = testDataFactory.customer.document();
       const customerId = getCustomerId(queriedCustomer);
       const queriedPrice = testDataFactory.price.document();
       const priceId = getPriceId(queriedPrice);
 
-      const body = calendarEntryDataFactory.workRequest({
-        customerId,
-        prices: [
-          {
-            priceId,
-            quantity: 1,
-          },
-        ],
+      const body = testDataFactory.calendar.entry.request.work({
+        body: {
+          customerId,
+        },
+        prices: {
+          listed: [
+            {
+              priceId,
+              quantity: 1,
+            },
+          ],
+        },      
       });
       mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue({
         ...queriedCalendarWorkEntry,
@@ -232,19 +248,23 @@ describe('Update calendar entry service', () => {
     });
 
     it('if unable to query customer', async () => {
-      const queriedCustomer = customerDataFactory.document();
+      const queriedCustomer = testDataFactory.customer.document();
       const customerId = getCustomerId(queriedCustomer);
       const queriedPrice = testDataFactory.price.document();
       const priceId = getPriceId(queriedPrice);
 
-      const body = calendarEntryDataFactory.workRequest({
-        customerId,
-        prices: [
-          {
-            priceId,
-            quantity: 1,
-          },
-        ],
+      const body = testDataFactory.calendar.entry.request.work({
+        body: {
+          customerId,
+        },
+        prices: {
+          listed: [
+            {
+              priceId,
+              quantity: 1,
+            },
+          ],
+        },      
       });
       mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarWorkEntry);
       mockCustomerService.functions.findCustomerById.mockRejectedValue('this is a mongo error');
@@ -263,19 +283,23 @@ describe('Update calendar entry service', () => {
     });
 
     it('if customer not found', async () => {
-      const queriedCustomer = customerDataFactory.document();
+      const queriedCustomer = testDataFactory.customer.document();
       const customerId = getCustomerId(queriedCustomer);
       const queriedPrice = testDataFactory.price.document();
       const priceId = getPriceId(queriedPrice);
 
-      const body = calendarEntryDataFactory.workRequest({
-        customerId,
-        prices: [
-          {
-            priceId,
-            quantity: 1,
-          },
-        ],
+      const body = testDataFactory.calendar.entry.request.work({
+        body: {
+          customerId,
+        },
+        prices: {
+          listed: [
+            {
+              priceId,
+              quantity: 1,
+            },
+          ],
+        },      
       });
       mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarWorkEntry);
       mockCustomerService.functions.findCustomerById.mockResolvedValue(undefined);
@@ -294,19 +318,23 @@ describe('Update calendar entry service', () => {
     });
 
     it('if unable to query prices', async () => {
-      const queriedCustomer = customerDataFactory.document();
+      const queriedCustomer = testDataFactory.customer.document();
       const customerId = getCustomerId(queriedCustomer);
       const queriedPrice = testDataFactory.price.document();
       const priceId = getPriceId(queriedPrice);
 
-      const body = calendarEntryDataFactory.workRequest({
-        customerId,
-        prices: [
-          {
-            priceId,
-            quantity: 1,
-          },
-        ],
+      const body = testDataFactory.calendar.entry.request.work({
+        body: {
+          customerId,
+        },
+        prices: {
+          listed: [
+            {
+              priceId,
+              quantity: 1,
+            },
+          ],
+        },      
       });
       mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarWorkEntry);
       mockCustomerService.functions.findCustomerById.mockResolvedValue(queriedCustomer);
@@ -326,19 +354,23 @@ describe('Update calendar entry service', () => {
     });
 
     it('if some of the prices are not found', async () => {
-      const queriedCustomer = customerDataFactory.document();
+      const queriedCustomer = testDataFactory.customer.document();
       const customerId = getCustomerId(queriedCustomer);
       const queriedPrice = testDataFactory.price.document();
       const priceId = getPriceId(queriedPrice);
 
-      const body = calendarEntryDataFactory.workRequest({
-        customerId,
-        prices: [
-          {
-            priceId,
-            quantity: 1,
-          },
-        ],
+      const body = testDataFactory.calendar.entry.request.work({
+        body: {
+          customerId,
+        },
+        prices: {
+          listed: [
+            {
+              priceId,
+              quantity: 1,
+            },
+          ],
+        },      
       });
       mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarWorkEntry);
       mockCustomerService.functions.findCustomerById.mockResolvedValue(queriedCustomer);
@@ -358,19 +390,23 @@ describe('Update calendar entry service', () => {
     });
 
     it('if unable to update calendar entry', async () => {
-      const queriedCustomer = customerDataFactory.document();
+      const queriedCustomer = testDataFactory.customer.document();
       const customerId = getCustomerId(queriedCustomer);
       const queriedPrice = testDataFactory.price.document();
       const priceId = getPriceId(queriedPrice);
 
-      const body = calendarEntryDataFactory.workRequest({
-        customerId,
-        prices: [
-          {
-            priceId,
-            quantity: 1,
-          },
-        ],
+      const body = testDataFactory.calendar.entry.request.work({
+        body: {
+          customerId,
+        },
+        prices: {
+          listed: [
+            {
+              priceId,
+              quantity: 1,
+            },
+          ],
+        },      
       });
       mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarWorkEntry);
       mockCustomerService.functions.findCustomerById.mockResolvedValue(queriedCustomer);

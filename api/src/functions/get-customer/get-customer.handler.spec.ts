@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/get-customer/get-customer.handler';
 import { IGetCustomerService } from '@household/api/functions/get-customer/get-customer.service';
-import { customerDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 describe('Get customer handler', () => {
   let mockGetCustomerService: MockBusinessService<IGetCustomerService>;
@@ -12,8 +12,8 @@ describe('Get customer handler', () => {
     handlerFunction = handler(mockGetCustomerService);
   });
 
-  const customerId = customerDataFactory.id();
-  const customer = customerDataFactory.response();
+  const customerId = testDataFactory.customer.id();
+  const customer = testDataFactory.customer.response();
   const handlerEvent = {
     pathParameters: {
       customerId,

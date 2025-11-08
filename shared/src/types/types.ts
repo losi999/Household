@@ -797,17 +797,19 @@ export namespace Customer {
       quantity: number;
     };
 
-    export type ListedPrice<P extends Price.PriceId | {price: Price.Document} | Price.Response> = P & Quantity;
-
-    export type Prices<P extends Price.PriceId | {price: Price.Document} | Price.Response> = {
-      prices: (ListedPrice<P> | Price.Base)[];
-    };
+    // export type ListedPrice<P extends Price.PriceId | {price: Price.Document} | Price.Response> = P & Quantity;
     
-    export type Request = Base & Prices<Price.PriceId>;
+    export type Request = Base & {
+      prices: ((Price.PriceId & Quantity) | Price.Base)[]
+    };
 
-    export type Document = Base & Prices<{price: Price.Document}>;
+    export type Document = Base & {
+      prices: (({price: Price.Document} & Quantity) | Price.Base)[]
+    };
 
-    export type Response = Base & Prices<Price.Response>;
+    export type Response = Base & {
+      prices: (Price.Response & Quantity)[];
+    };
   }
 
   type Jobs = {

@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/remove-customer-from-blacklist/remove-customer-from-blacklist.handler';
 import { IRemoveCustomerFromBlacklistService } from '@household/api/functions/remove-customer-from-blacklist/remove-customer-from-blacklist.service';
-import { customerDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 describe('Remove customer from blacklist handler', () => {
   let mockRemoveCustomerFromBlacklistService: MockBusinessService<IRemoveCustomerFromBlacklistService>;
@@ -13,8 +13,8 @@ describe('Remove customer from blacklist handler', () => {
   });
 
   const body = [
-    customerDataFactory.id(),
-    customerDataFactory.id(), 
+    testDataFactory.customer.id(),
+    testDataFactory.customer.id(), 
   ];
   const handlerEvent = {
     body: JSON.stringify(body),

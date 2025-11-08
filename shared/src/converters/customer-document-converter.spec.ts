@@ -1,4 +1,4 @@
-import { createDocumentUpdate2, customerDataFactory, testDataFactory } from '@household/shared/common/test-data-factory';
+import { createDocumentUpdate2, testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock } from '@household/shared/common/unit-testing';
 import { addSeconds, getCustomerId, getPriceId } from '@household/shared/common/utils';
 import { customerDocumentConverterFactory, ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
@@ -46,32 +46,34 @@ describe('Customer document converter', () => {
 
   describe('create', () => {
     it('should return document', () => {
-      const body = customerDataFactory.request();
+      const body = testDataFactory.customer.request();
 
       const result = converter.create(body, undefined);
-      expect(result).toEqual(customerDataFactory.document({
-        ...body,
+      expect(result).toEqual({
+        ...testDataFactory.customer.document({
+          body,
+        }),
         _id: undefined,
-        jobs: [],
-      }));
+      });
     });
 
     it('should return expiring document', () => {
-      const body = customerDataFactory.request();
+      const body = testDataFactory.customer.request();
 
       const result = converter.create(body, expiresIn);
-      expect(result).toEqual(customerDataFactory.document({
-        ...body,
+      expect(result).toEqual({
+        ...testDataFactory.customer.document({
+          body,
+        }),
         _id: undefined,
-        jobs: [],
         expiresAt: addSeconds(expiresIn, now),
-      }));
+      });
     });
   });
 
   describe('update', () => {
     it('should update document', () => {
-      const body = customerDataFactory.request();
+      const body = testDataFactory.customer.request();
 
       const result = converter.update(body, expiresIn);
       expect(result).toEqual(createDocumentUpdate2({
@@ -85,7 +87,7 @@ describe('Customer document converter', () => {
     });
 
     it('should unset description', () => {
-      const body = customerDataFactory.request({});
+      const body = testDataFactory.customer.request({});
       delete body.description;
       const result = converter.update(body, expiresIn);
       expect(result).toEqual(createDocumentUpdate2({
@@ -103,7 +105,7 @@ describe('Customer document converter', () => {
   });
 
   describe('addBlacklistedCustomer', () => {
-    const customer = customerDataFactory.document();
+    const customer = testDataFactory.customer.document();
 
     it('should return update', () => {
       const result = converter.addBlacklistedCustomer(customer);
@@ -118,7 +120,7 @@ describe('Customer document converter', () => {
   });
 
   describe('removeBlacklistedCustomer', () => {
-    const customerId = customerDataFactory.id();
+    const customerId = testDataFactory.customer.id();
     it('should return update', () => {
       const result = converter.removeBlacklistedCustomer(customerId);
       expect(result).toEqual(createDocumentUpdate2({
@@ -137,17 +139,21 @@ describe('Customer document converter', () => {
     const quantity = 1;
     const priceName = 'price name';
     const amount = 3000;
-    const job = customerDataFactory.jobRequest({
-      prices: [
-        {
-          priceId,
-          quantity,
-        },
-        {
-          name: priceName,
-          amount,
-        },
-      ],
+    const job = testDataFactory.customer.job.request({
+      prices: {
+        custom: [
+          {
+            name: priceName,
+            amount,
+          },
+        ],
+        listed: [
+          {
+            priceId,
+            quantity,
+          },
+        ],
+      },
     });
 
     it('should return update', () => {
@@ -159,12 +165,12 @@ describe('Customer document converter', () => {
               ...job,
               prices: [
                 {
-                  price: priceDocument,
-                  quantity,
-                },
-                {
                   name: priceName,
                   amount,
+                },
+                {
+                  price: priceDocument,
+                  quantity,
                 },
               ],
             },
@@ -180,17 +186,21 @@ describe('Customer document converter', () => {
     const quantity = 1;
     const priceName = 'price name';
     const amount = 3000;
-    const job = customerDataFactory.jobRequest({
-      prices: [
-        {
-          priceId,
-          quantity,
-        },
-        {
-          name: priceName,
-          amount,
-        },
-      ],
+    const job = testDataFactory.customer.job.request({
+      prices: {
+        custom: [
+          {
+            name: priceName,
+            amount,
+          },
+        ],
+        listed: [
+          {
+            priceId,
+            quantity,
+          },
+        ],
+      },
     });
 
     it('should return update', () => {
@@ -202,12 +212,12 @@ describe('Customer document converter', () => {
               ...job,
               prices: [
                 {
-                  price: priceDocument,
-                  quantity,
-                },
-                {
                   name: priceName,
                   amount,
+                },
+                {
+                  price: priceDocument,
+                  quantity,
                 },
               ],
             },
@@ -253,13 +263,11 @@ describe('Customer document converter', () => {
         priceBase,
       ]);
       expect(result).toEqual([
-        customerDataFactory.jobPriceResponse({
+        {
           quantity,
           ...priceResponse,
-        }),
-        customerDataFactory.jobPriceResponse({
-          ...priceBase,
-        }),
+        },
+        priceBase,
       ]);
     });
   });
@@ -267,36 +275,42 @@ describe('Customer document converter', () => {
   describe('toResponse', () => {
     it('should return response', () => {
       const priceBase = testDataFactory.price.base();
-      const priceDocument = testDataFactory.price.document();
-      const jobB = customerDataFactory.jobDocument({
-        name: 'B',
-        prices: [priceBase],
-      });
       const quantity = 1;
-      const jobA = customerDataFactory.jobDocument({
-        name: 'A',
-        prices: [
-          {
-            price: priceDocument,
-            quantity,
-          },
-        ],
-      });
-      const blacklistedCustomer = customerDataFactory.document();
-      const doc = customerDataFactory.document({
+      const blacklistedCustomer = testDataFactory.customer.document();
+      const doc = testDataFactory.customer.document({
         jobs: [
-          jobB,
-          jobA,
+          {
+            body: {
+              name: 'B',
+            },
+            prices: {
+              custom: [priceBase],
+            },
+          },
+          {
+            body: {
+              name: 'A',
+            },
+            prices: {
+              listed: [
+                {
+                  quantity,
+                },
+              ],
+            },
+          },
         ],
         blacklistedCustomers: [blacklistedCustomer],
       });
+      const jobB = doc.jobs[0];
+      const jobA = doc.jobs[1];
       const priceResponse = testDataFactory.price.response();
       mockPriceDocumentConverter.functions.toResponse.mockReturnValue(priceResponse);
 
       const { description, isGroup, name, rating } = doc;
 
       const result = converter.toResponse(doc);
-      expect(result).toEqual(customerDataFactory.response({
+      expect(result).toEqual(testDataFactory.customer.response({
         description,
         name,
         isGroup,
@@ -330,6 +344,9 @@ describe('Customer document converter', () => {
             prices: [
               {
                 ...priceBase,
+                quantity: undefined,
+                unitOfMeasurement: undefined,
+                priceId: undefined,
               },
             ],
           },
@@ -340,30 +357,36 @@ describe('Customer document converter', () => {
 
   describe('toResponseList', () => {
     it('should return response', () => {
-      const priceBase = testDataFactory.price.base();
-      const priceDocument = testDataFactory.price.document();
-      const jobB = customerDataFactory.jobDocument({
-        name: 'B',
-        prices: [priceBase],
-      });
-      const quantity = 1;
-      const jobA = customerDataFactory.jobDocument({
-        name: 'A',
-        prices: [
-          {
-            price: priceDocument,
-            quantity,
-          },
-        ],
-      });
-      const blacklistedCustomer = customerDataFactory.document();
-      const doc = customerDataFactory.document({
+      const priceBase = testDataFactory.price.base();   
+      const quantity = 1;   
+      const blacklistedCustomer = testDataFactory.customer.document();
+      const doc = testDataFactory.customer.document({
         jobs: [
-          jobB,
-          jobA,
+          {
+            body: {
+              name: 'B',
+            },
+            prices: {
+              custom: [priceBase],
+            },
+          },
+          {
+            body: {
+              name: 'A',
+            },
+            prices: {
+              listed: [
+                {
+                  quantity,
+                },
+              ],
+            },
+          },
         ],
         blacklistedCustomers: [blacklistedCustomer],
       });
+      const jobB = doc.jobs[0];
+      const jobA = doc.jobs[1];
       const priceResponse = testDataFactory.price.response();
       mockPriceDocumentConverter.functions.toResponse.mockReturnValue(priceResponse);
 
@@ -371,7 +394,7 @@ describe('Customer document converter', () => {
 
       const result = converter.toResponseList([doc]);
       expect(result).toEqual([
-        customerDataFactory.response({
+        testDataFactory.customer.response({
           description,
           name,
           isGroup,
@@ -405,6 +428,9 @@ describe('Customer document converter', () => {
               prices: [
                 {
                   ...priceBase,
+                  quantity: undefined,
+                  unitOfMeasurement: undefined,
+                  priceId: undefined,
                 },
               ],
             },

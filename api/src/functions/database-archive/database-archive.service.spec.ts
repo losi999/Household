@@ -1,5 +1,5 @@
 import { IDatabaseArchiveService, databaseArchiveServiceFactory } from '@household/api/functions/database-archive/database-archive.service';
-import { createAccountDocument, createProjectDocument, createRecipientDocument, createPaymentTransactionDocument, createCategoryDocument, createProductDocument, createSettingDocument, createFileDocument, customerDataFactory, calendarDayDataFactory, calendarEntryDataFactory, testDataFactory } from '@household/shared/common/test-data-factory';
+import { createAccountDocument, createProjectDocument, createRecipientDocument, createPaymentTransactionDocument, createCategoryDocument, createProductDocument, createSettingDocument, createFileDocument, testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall, validateNthFunctionCall } from '@household/shared/common/unit-testing';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { IStorageService } from '@household/shared/services/storage-service';
@@ -32,9 +32,9 @@ describe('Database archive service', () => {
   const products = [createProductDocument()];
   const settings = [createSettingDocument()];
   const files = [createFileDocument()];
-  const customers = [customerDataFactory.document()];
-  const calendarDays = [calendarDayDataFactory.document()];
-  const calendarEntries = [calendarEntryDataFactory.document()];
+  const customers = [testDataFactory.customer.document()];
+  const calendarDays = [testDataFactory.calendar.day.document()];
+  const calendarEntries = [testDataFactory.calendar.entry.document()];
   const prices = [testDataFactory.price.document()];
 
   it('should return if data is saved in s3', async () => {

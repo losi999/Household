@@ -1,4 +1,4 @@
-import { calendarDayDataFactory, calendarEntryDataFactory, createDocumentUpdate2 } from '@household/shared/common/test-data-factory';
+import { createDocumentUpdate2, testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { addSeconds } from '@household/shared/common/utils';
 import { WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
@@ -26,7 +26,7 @@ describe('Calendar day document converter', () => {
 
   describe('update', () => {
     it('should update document (workday)', () => {
-      const body = calendarDayDataFactory.workdayRequest({
+      const body = testDataFactory.calendar.day.request.workday({
         start: 10,
         end: 50,
       });
@@ -43,7 +43,7 @@ describe('Calendar day document converter', () => {
     });
     
     it('should update document (vacation)', () => {
-      const body = calendarDayDataFactory.vacationRequest();
+      const body = testDataFactory.calendar.day.request.vacation();
 
       const result = converter.update(body, expiresIn);
       expect(result).toEqual(createDocumentUpdate2({
@@ -67,17 +67,17 @@ describe('Calendar day document converter', () => {
 
     describe('not weekend', () => {
       const day = '2025-10-20';
-      const personalEntry = calendarEntryDataFactory.document({
+      const personalEntry = testDataFactory.calendar.entry.document({
         day,
         entryType: CalendarEntryType.Personal,
       });
 
-      const issueEntry = calendarEntryDataFactory.document({
+      const issueEntry = testDataFactory.calendar.entry.document({
         day,
         entryType: CalendarEntryType.Issue,
       });
 
-      const workEntry = calendarEntryDataFactory.document({
+      const workEntry = testDataFactory.calendar.entry.document({
         day,
         entryType: CalendarEntryType.Work,
       });
@@ -96,9 +96,8 @@ describe('Calendar day document converter', () => {
           ],
         });
         expect(result).toEqual([
-          calendarDayDataFactory.response({
+          testDataFactory.calendar.day.response.workday({
             day,
-            dayType: CalendarDayType.Workday,
             start: WORKDAY_START,
             end: WORKDAY_END,
           }),
@@ -117,7 +116,7 @@ describe('Calendar day document converter', () => {
           dateFrom: day,
           dateTo: day,
           days: [
-            calendarDayDataFactory.document({
+            testDataFactory.calendar.day.document({
               day,
               dayType: CalendarDayType.Workday,
               start: customWorkdayStart,
@@ -131,9 +130,8 @@ describe('Calendar day document converter', () => {
           ],
         });
         expect(result).toEqual([
-          calendarDayDataFactory.response({
+          testDataFactory.calendar.day.response.workday({
             day,
-            dayType: CalendarDayType.Workday,
             start: customWorkdayStart,
             end: customWorkdayEnd,
           }),
@@ -152,7 +150,7 @@ describe('Calendar day document converter', () => {
           dateFrom: day,
           dateTo: day,
           days: [
-            calendarDayDataFactory.document({
+            testDataFactory.calendar.day.document({
               day,
               dayType: CalendarDayType.Vacation,
             }),
@@ -164,9 +162,8 @@ describe('Calendar day document converter', () => {
           ],
         });
         expect(result).toEqual([
-          calendarDayDataFactory.response({
+          testDataFactory.calendar.day.response.vacation({
             day,
-            dayType: CalendarDayType.Vacation,
           }),
         ]);
         validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toResponseList, [
@@ -183,7 +180,7 @@ describe('Calendar day document converter', () => {
           dateFrom: day,
           dateTo: day,
           days: [
-            calendarDayDataFactory.document({
+            testDataFactory.calendar.day.document({
               day,
               dayType: CalendarDayType.Holiday,
             }),
@@ -195,9 +192,8 @@ describe('Calendar day document converter', () => {
           ],
         });
         expect(result).toEqual([
-          calendarDayDataFactory.response({
+          testDataFactory.calendar.day.response.holiday({
             day,
-            dayType: CalendarDayType.Holiday,
           }),
         ]);
         validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toResponseList, [
@@ -210,17 +206,17 @@ describe('Calendar day document converter', () => {
 
     describe('weekend', () => {
       const day = '2025-10-25';
-      const personalEntry = calendarEntryDataFactory.document({
+      const personalEntry = testDataFactory.calendar.entry.document({
         day,
         entryType: CalendarEntryType.Personal,
       });
 
-      const issueEntry = calendarEntryDataFactory.document({
+      const issueEntry = testDataFactory.calendar.entry.document({
         day,
         entryType: CalendarEntryType.Issue,
       });
 
-      const workEntry = calendarEntryDataFactory.document({
+      const workEntry = testDataFactory.calendar.entry.document({
         day,
         entryType: CalendarEntryType.Work,
       });
@@ -239,9 +235,10 @@ describe('Calendar day document converter', () => {
           ],
         });
         expect(result).toEqual([
-          calendarDayDataFactory.response({
+          testDataFactory.calendar.day.response.weekend({
             day,
-            dayType: CalendarDayType.Weekend,
+            start: undefined,
+            end: undefined,
           }),
         ]);
         validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toResponseList, [
@@ -258,7 +255,7 @@ describe('Calendar day document converter', () => {
           dateFrom: day,
           dateTo: day,
           days: [
-            calendarDayDataFactory.document({
+            testDataFactory.calendar.day.document({
               day,
               dayType: CalendarDayType.Workday,
               start: customWorkdayStart,
@@ -272,9 +269,8 @@ describe('Calendar day document converter', () => {
           ],
         });
         expect(result).toEqual([
-          calendarDayDataFactory.response({
+          testDataFactory.calendar.day.response.weekend({
             day,
-            dayType: CalendarDayType.Weekend,
             start: customWorkdayStart,
             end: customWorkdayEnd,
           }),
@@ -293,7 +289,7 @@ describe('Calendar day document converter', () => {
           dateFrom: day,
           dateTo: day,
           days: [
-            calendarDayDataFactory.document({
+            testDataFactory.calendar.day.document({
               day,
               dayType: CalendarDayType.Vacation,
             }),
@@ -305,9 +301,8 @@ describe('Calendar day document converter', () => {
           ],
         });
         expect(result).toEqual([
-          calendarDayDataFactory.response({
+          testDataFactory.calendar.day.response.vacation({
             day,
-            dayType: CalendarDayType.Vacation,
           }),
         ]);
         validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toResponseList, [
@@ -324,7 +319,7 @@ describe('Calendar day document converter', () => {
           dateFrom: day,
           dateTo: day,
           days: [
-            calendarDayDataFactory.document({
+            testDataFactory.calendar.day.document({
               day,
               dayType: CalendarDayType.Holiday,
             }),
@@ -336,9 +331,8 @@ describe('Calendar day document converter', () => {
           ],
         });
         expect(result).toEqual([
-          calendarDayDataFactory.response({
+          testDataFactory.calendar.day.response.holiday({
             day,
-            dayType: CalendarDayType.Holiday,
           }),
         ]);
         validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toResponseList, [

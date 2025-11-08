@@ -1,10 +1,10 @@
-import { generateMongoId } from '@household/shared/common/utils';
+import { dateToISODateString, generateMongoId } from '@household/shared/common/utils';
 import { AccountType, CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType, CategoryType, FileType, SettingKey, TransactionType, UserType } from '@household/shared/enums';
 import { DocumentUpdate } from '@household/shared/types/common';
 import { Account, Auth, Calendar, Category, Customer, File, Price, Product, Project, Recipient, Report, Setting, Transaction, User } from '@household/shared/types/types';
 import type { UpdateQuery } from 'mongoose';
 import { faker } from '@faker-js/faker';
-import { priceUnitsOfMeasurement } from '@household/shared/constants';
+import { priceUnitsOfMeasurement, WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
 
 const createId = <I>(id?: string): I => (id ?? faker.database.mongodbObjectId()) as I;
 
@@ -823,74 +823,142 @@ const createPriceResponse: DataFactoryFunction<Price.Response> = (resp) => {
   };
 };
 
-const createCustomerId = (id?: string): Customer.Id => {
-  return (id ?? generateMongoId().toString()) as Customer.Id;
-};
+const createCustomerId = createId<Customer.Id>;
 
 const createCustomerRequest: DataFactoryFunction<Customer.Request> = (req) => {
   return {
-    name: 'customer name',
-    description: 'customer description',
-    rating: 3,
-    isGroup: false,
+    name: `${faker.person.firstName()} ${faker.string.uuid()}`,
+    description: faker.word.words({
+      count: {
+        min: 1,
+        max: 5,
+      },
+    }),
+    isGroup: faker.datatype.boolean(),
+    rating: faker.number.int({
+      min: 1,
+      max: 5,
+    }),
     ...req,
   };
 };
 
-const createCustomerDocument: DataFactoryFunction<Customer.Document> = (doc) => {
+const createCustomerDocument = (ctx?: {
+  body?: Partial<Customer.Request>
+  jobs?: {
+    body?: Partial<Omit<Customer.Job.Request, 'prices'>>;
+    prices?: {
+      custom?: Partial<Price.Base>[];
+      listed?: Partial<Customer.Job.Quantity & {price?: Price.Document}>[];
+    }; 
+  }[];
+  blacklistedCustomers?: Customer.Document[];
+}): Customer.Document => {
   return {
     _id: generateMongoId(),
-    name: 'customer name',
-    description: 'customer description',
-    rating: 3,
-    isGroup: false,
-    jobs: [createCustomerJobDocument()],
-    blacklistedCustomers: [],
+    ...createCustomerRequest(),
+    jobs: ctx?.jobs?.map<Customer.Job.Document>((j) => {
+      return {
+        ...createCustomerJobRequest(),
+        ...j.body,
+        prices: (j.prices?.custom || j.prices?.listed) ? [
+          ...j.prices.custom?.map((p) => {
+            return {
+              name: faker.commerce.product(),
+              amount: faker.number.int({
+                min: 1,
+                max: 10000,
+              }), 
+              ...p,
+            };
+          }) ?? [],
+          ...j.prices.listed?.map((p) => {
+            return {
+              price: createPriceDocument(),
+              quantity: faker.number.int({
+                min: 1,
+                max: 5,
+              }),
+              ...p,
+            };
+          }) ?? [],
+        ] : [
+          {
+            name: faker.commerce.product(),
+            amount: faker.number.int({
+              min: 1,
+              max: 10000,
+            }), 
+          },
+        ],
+      };
+    }) ?? [],
+    blacklistedCustomers: ctx?.blacklistedCustomers ?? [],
     expiresAt: undefined,
-    ...doc,
+    ...ctx?.body,
   };
 };
 
 const createCustomerResponse: DataFactoryFunction<Customer.Response> = (resp) => {
   return {
     customerId: createCustomerId(),
-    name: 'customer name',
-    description: 'customer description',
-    rating: 3,
-    isGroup: false,
+    ...createCustomerRequest(),
     jobs: [createCustomerJobResponse()],
     blacklistedCustomers: [],
     ...resp,
   };
 };
 
-const createCustomerJobRequest: DataFactoryFunction<Customer.Job.Request> = (data) => {
-  return {
-    name: 'job name',
-    duration: 4,
-    prices: [
-      {
-        priceId: createPriceId(),
-        quantity: 1,
-      },
-    ],
-    description: 'job description',
-    ...data,
+const createCustomerJobRequest = (ctx?: {
+  body?: Partial<Omit<Customer.Job.Request, 'prices'>>;
+  prices?: {
+    custom?: Partial<Price.Base>[];
+    listed?: Partial<Price.PriceId & Customer.Job.Quantity>[];
   };
-};
-
-const createCustomerJobDocument: DataFactoryFunction<Customer.Job.Document> = (data) => {
+}): Customer.Job.Request => {
   return {
-    name: 'job name',
-    duration: 5,
-    prices: [
+    name: `${faker.company.buzzVerb()} ${faker.string.uuid()}`,
+    description: faker.word.words({
+      count: {
+        min: 1,
+        max: 5,
+      },
+    }),
+    duration: faker.number.int({
+      min: 1,
+      max: 96,
+    }),
+    prices: (ctx?.prices?.custom || ctx?.prices?.listed) ? [
+      ...ctx?.prices.custom?.map((p) => {
+        return {
+          name: faker.commerce.product(),
+          amount: faker.number.int({
+            min: 1,
+            max: 10000,
+          }), 
+          ...p,
+        };
+      }) ?? [],
+      ...ctx?.prices.listed?.map((p) => {
+        return {
+          priceId: createPriceId(),
+          quantity: faker.number.int({
+            min: 1,
+            max: 5,
+          }),
+          ...p,
+        };
+      }) ?? [],
+    ] : [
       {
-        price: createPriceDocument(),
-        quantity: 1,
+        name: faker.commerce.product(),
+        amount: faker.number.int({
+          min: 1,
+          max: 10000,
+        }), 
       },
     ],
-    description: 'job description',
-    ...data,
+    ...ctx?.body,
   };
 };
 
@@ -909,40 +977,16 @@ const createCustomerJobResponse: DataFactoryFunction<Customer.Job.Response> = (d
   };
 };
 
-const createCustomeJobPriceDocument: DataFactoryFunction<Customer.Job.Document['prices'][number]> = (data) => {
-  return {
-    amount: 3000,
-    name: 'price name',
-    ...data,
-  };
+const createPastCalendarDay = () => {
+  return dateToISODateString(faker.date.recent({
+    days: 50,
+  }));
 };
 
-const createCustomeJobPriceResponse: DataFactoryFunction<Customer.Job.Response['prices'][number]> = (data) => {
-  return {
-    amount: 3000,
-    name: 'price name',
-    ...data,
-  };
-};
-
-const createCustomerJobPriceRequest: DataFactoryFunction<Customer.Job.ListedPrice<Price.PriceId>> = (req) => {
-  return {
-    priceId: createPriceId(),
-    quantity: 2,
-    ...req,
-  };
-};
-
-export const customerDataFactory = {
-  id: createCustomerId,
-  request: createCustomerRequest,
-  document: createCustomerDocument,
-  response: createCustomerResponse,
-  jobRequest: createCustomerJobRequest,
-  jobDocument: createCustomerJobDocument,
-  jobPriceRequest: createCustomerJobPriceRequest,
-  jobPriceDocument: createCustomeJobPriceDocument,
-  jobPriceResponse: createCustomeJobPriceResponse,
+const createFutureCalendarDay = () => {
+  return dateToISODateString(faker.date.soon({
+    days: 50,
+  }));
 };
 
 const createCalendarEntryId = (id?: string): Calendar.Entry.Id => {
@@ -950,54 +994,107 @@ const createCalendarEntryId = (id?: string): Calendar.Entry.Id => {
 };
 
 const createCalendarPersonalEntryRequest: DataFactoryFunction<Calendar.Entry.PersonalEntryRequest> = (req) => {
+  const start = faker.number.int({
+    min: WORKDAY_START,
+    max: WORKDAY_END - 1,
+  });
   return {
-    day: '2025-10-10',
-    description: 'entry description',
-    title: 'entry title',
-    end: 50,
-    start: 10,
+    day: createFutureCalendarDay(),
+    description: faker.word.words({
+      count: {
+        min: 1,
+        max: 5,
+      },
+    }),
+    start,
+    end: faker.number.int({
+      min: start + 1,
+      max: WORKDAY_END,
+    }),
     entryType: CalendarEntryType.Personal,
+    title: faker.company.buzzVerb(),
     ...req,
   };
 };
 
 const createCalendarIssueEntryRequest: DataFactoryFunction<Calendar.Entry.IssueEntryRequest> = (req) => {
+  const start = faker.number.int({
+    min: WORKDAY_START,
+    max: WORKDAY_END - 1,
+  });
   return {
-    day: '2025-10-10',
-    description: 'entry description',
-    title: 'entry title',
-    end: 50,
-    start: 10,
+    day: createFutureCalendarDay(),
+    description: faker.word.words({
+      count: {
+        min: 1,
+        max: 5,
+      },
+    }),
+    start,
+    end: faker.number.int({
+      min: start + 1,
+      max: WORKDAY_END,
+    }),
     entryType: CalendarEntryType.Issue,
+    title: faker.company.buzzVerb(),
     ...req,
   };
 };
 
-const createCalendarWorkEntryRequest: DataFactoryFunction<Calendar.Entry.WorkEntryRequest> = (req) => {
+const createCalendarWorkEntryRequest = (ctx?: {
+  body?: Partial<Omit<Calendar.Entry.WorkEntryRequest, 'prices'>>;
+  prices?: {
+    custom?: Partial<Price.Base>[];
+    listed?: Partial<Price.PriceId & Customer.Job.Quantity>[];
+  }
+}): Calendar.Entry.WorkEntryRequest => {
+  const start = faker.number.int({
+    min: WORKDAY_START,
+    max: WORKDAY_END - 1,
+  });
+
   return {
-    day: '2025-10-10',
-    description: 'entry description',
-    title: 'entry title',
-    end: 50,
-    start: 10,
+    day: createFutureCalendarDay(),
+    description: faker.word.words({
+      count: {
+        min: 1,
+        max: 5,
+      },
+    }),
+    start,
+    end: faker.number.int({
+      min: start + 1,
+      max: WORKDAY_END,
+    }),
     entryType: CalendarEntryType.Work,
+    title: faker.company.buzzVerb(),
     customerId: createCustomerId(),
-    prices: [
-      createCustomerJobPriceRequest(),
-      createPriceBase(),
-    ],
-    ...req,
+    prices: (ctx?.prices?.custom || ctx?.prices?.listed) ? [
+      ...ctx?.prices.custom?.map((p) => {
+        return {
+          ...createPriceBase(),
+          ...p,
+        };
+      }) ?? [],
+      ...ctx?.prices.listed?.map((p) => {
+        return {
+          priceId: createPriceId(),
+          quantity: faker.number.int({
+            min: 1,
+            max: 5,
+          }),
+          ...p,
+        };
+      }) ?? [],
+    ] : undefined,
+    ...ctx?.body,
   };
 };
 
 const createCalendarEntryDocument: DataFactoryFunction<Calendar.Entry.Document> = (data) => {
+
   return {
-    day: '2025-10-10',
-    description: 'entry description',
-    title: 'entry title',
-    end: 50,
-    start: 10,
-    entryType: CalendarEntryType.Issue,
+    ...createCalendarPersonalEntryRequest(),
     _id: generateMongoId(),
     customer: undefined,
     expiresAt: undefined,
@@ -1009,13 +1106,10 @@ const createCalendarEntryDocument: DataFactoryFunction<Calendar.Entry.Document> 
 };
 
 const createCalendarEntryResponseBase: DataFactoryFunction<Calendar.Entry.ResponseBase> = (data) => {
+  const { entryType, ...base } = createCalendarPersonalEntryRequest();
   return {
     calendarEntryId: createCalendarEntryId(),
-    day: '2025-10-10',
-    description: 'entry description',
-    title: 'entry title',
-    end: 50,
-    start: 10,
+    ...base,
     ...data,
   };
 };
@@ -1023,12 +1117,7 @@ const createCalendarEntryResponseBase: DataFactoryFunction<Calendar.Entry.Respon
 const createCalendarPersonalEntryResponse: DataFactoryFunction<Calendar.Entry.PersonalEntryResponse> = (data) => {
   return {
     calendarEntryId: createCalendarEntryId(),
-    day: '2025-10-10',
-    description: 'entry description',
-    title: 'entry title',
-    end: 50,
-    start: 10,
-    entryType: CalendarEntryType.Personal,
+    ...createCalendarPersonalEntryRequest(),
     ...data,
   };
 };
@@ -1036,25 +1125,16 @@ const createCalendarPersonalEntryResponse: DataFactoryFunction<Calendar.Entry.Pe
 const createCalendarIssueEntryResponse: DataFactoryFunction<Calendar.Entry.IssueEntryResponse> = (data) => {
   return {
     calendarEntryId: createCalendarEntryId(),
-    day: '2025-10-10',
-    description: 'entry description',
-    title: 'entry title',
-    end: 50,
-    start: 10,
-    entryType: CalendarEntryType.Issue,
+    ...createCalendarIssueEntryRequest(),
     ...data,
   };
 };
 
 const createCalendarWorkEntryResponse: DataFactoryFunction<Calendar.Entry.WorkEntryResponse> = (data) => {
+  const { customerId, prices, ...req } = createCalendarWorkEntryRequest();
   return {
     calendarEntryId: createCalendarEntryId(),
-    day: '2025-10-10',
-    description: 'entry description',
-    title: 'entry title',
-    end: 50,
-    start: 10,
-    entryType: CalendarEntryType.Work,
+    ...req,
     customer: createCustomerResponse(),
     resolution: undefined,
     prices: undefined,
@@ -1063,68 +1143,89 @@ const createCalendarWorkEntryResponse: DataFactoryFunction<Calendar.Entry.WorkEn
 };
 
 const createCalendarEntryResolutionRequest: DataFactoryFunction<Calendar.Entry.ResolutionRequest> = (data) => {
+  const status = data?.status ?? CalendarEntryResolutionStatus.Paid;
+    
   return {
-    status: CalendarEntryResolutionStatus.Paid,
-    amount: 3000,
-    delay: 15,
+    status,
+    amount: status === CalendarEntryResolutionStatus.Paid ? faker.number.int({
+      min: 1,
+      max: 10000,
+    }) : undefined, 
+    delay: status !== CalendarEntryResolutionStatus.NoShow ? faker.number.int({
+      min: 1,
+      max: 30,
+    }) : undefined,
     ...data,
   };
 };
 
-export const calendarEntryDataFactory = {
-  id: createCalendarEntryId,
-  workRequest: createCalendarWorkEntryRequest,
-  issueRequest: createCalendarIssueEntryRequest,
-  personalRequest: createCalendarPersonalEntryRequest,
-  document: createCalendarEntryDocument,
-  responseBase: createCalendarEntryResponseBase,
-  personalResponse: createCalendarPersonalEntryResponse,
-  issueResponse: createCalendarIssueEntryResponse,
-  workResponse: createCalendarWorkEntryResponse,
-  resolutionRequest: createCalendarEntryResolutionRequest,
-};
-
 const createCalendarWorkdayRequest: DataFactoryFunction<Calendar.Day.WorkdayRequest> = (req) => {
+  const start = faker.number.int({
+    min: WORKDAY_START,
+    max: WORKDAY_END - 1,
+  });
+
   return {
     dayType: CalendarDayType.Workday,
-    end: 50,
-    start: 10,
+    start,
+    end: faker.number.int({
+      min: start + 1,
+      max: WORKDAY_END,
+    }),
     ...req,
   };
 };
 
-const createCalendarVacationRequest: DataFactoryFunction<Calendar.Day.VacationRequest> = (req) => {
+const createCalendarVacationRequest = (): Calendar.Day.VacationRequest => {
   return {
     dayType: CalendarDayType.Vacation,
-    ...req,
   };
 };
 
 const createCalendarDayDocument: DataFactoryFunction<Calendar.Day.Document> = (data) => {
   return {
-    dayType: CalendarDayType.Workday,
-    day: '2025-10-11',
-    start: 10,
-    end: 50,
+    ...createCalendarWorkdayRequest(),
+    day: createFutureCalendarDay(),
     expiresAt: undefined,
     ...data,
   };
 };
 
-const createCalendarDayResponse: DataFactoryFunction<Calendar.Day.Response> = (data) => {
+const createCalendarWorkdayResponse: DataFactoryFunction<Calendar.Day.WorkdayResponse> = (data) => {
   return {
-    dayType: CalendarDayType.Vacation,
-    day: '2025-10-11',
+    ...createCalendarWorkdayRequest(),
+    day: createPastCalendarDay(),
     entries: [],
-    ...data as Calendar.Day.Response,
+    ...data,
   };
 };
 
-export const calendarDayDataFactory = {
-  workdayRequest: createCalendarWorkdayRequest,
-  vacationRequest: createCalendarVacationRequest,
-  document: createCalendarDayDocument,
-  response: createCalendarDayResponse,
+const createCalendarWeekendResponse: DataFactoryFunction<Calendar.Day.WeekendResponse> = (data) => {
+  return {
+    ...createCalendarWorkdayRequest(),
+    day: createPastCalendarDay(),
+    dayType: CalendarDayType.Weekend,
+    entries: [],
+    ...data,
+  };
+};
+
+const createCalendarVacationResponse: DataFactoryFunction<Calendar.Day.VacationResponse> = (data) => {
+  return {
+    dayType: CalendarDayType.Vacation,
+    day: createPastCalendarDay(),
+    entries: [],
+    ...data,
+  };
+};
+
+const createCalendarHolidayResponse: DataFactoryFunction<Calendar.Day.HolidayResponse> = (data) => {
+  return {
+    dayType: CalendarDayType.Holiday,
+    day: createPastCalendarDay(),
+    entries: [],
+    ...data,
+  };
 };
 
 export const testDataFactory = {
@@ -1134,5 +1235,49 @@ export const testDataFactory = {
     request: createPriceRequest,
     document: createPriceDocument,
     response: createPriceResponse,
+  },
+  customer: {
+    id: createCustomerId,
+    request: createCustomerRequest,
+    document: createCustomerDocument,
+    response: createCustomerResponse,
+    job: {
+      request: createCustomerJobRequest,
+    },
+  },
+  calendar: {
+    day: {
+      pastDay: createPastCalendarDay,
+      futureDay: createFutureCalendarDay,
+      request: {
+        workday: createCalendarWorkdayRequest,
+        vacation: createCalendarVacationRequest,
+      },
+      document: createCalendarDayDocument,
+      response: {
+        vacation: createCalendarVacationResponse,
+        holiday: createCalendarHolidayResponse,
+        workday: createCalendarWorkdayResponse,
+        weekend: createCalendarWeekendResponse,
+      },
+    },
+    entry: {
+      id: createCalendarEntryId,
+      request: {
+        work: createCalendarWorkEntryRequest,
+        issue: createCalendarIssueEntryRequest,
+        personal: createCalendarPersonalEntryRequest,
+      },
+      document: createCalendarEntryDocument,
+      response: {
+        base: createCalendarEntryResponseBase,
+        personal: createCalendarPersonalEntryResponse,
+        issue: createCalendarIssueEntryResponse,
+        work: createCalendarWorkEntryResponse,
+      },
+      resolution: {
+        request: createCalendarEntryResolutionRequest,
+      },
+    },
   },
 };

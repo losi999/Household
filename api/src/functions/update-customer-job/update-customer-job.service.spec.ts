@@ -1,5 +1,5 @@
 import { updateCustomerJobServiceFactory, IUpdateCustomerJobService } from '@household/api/functions/update-customer-job/update-customer-job.service';
-import { createDocumentUpdate2, customerDataFactory, testDataFactory } from '@household/shared/common/test-data-factory';
+import { createDocumentUpdate2, testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getPriceId } from '@household/shared/common/utils';
 import { ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
@@ -22,25 +22,32 @@ describe('Update customer job service', () => {
   const jobName = 'old job name';
   const queriedPriceDocument = testDataFactory.price.document();
   const priceId = getPriceId(queriedPriceDocument);
-  const body = customerDataFactory.jobRequest({
-    name: 'new job',
-    prices: [
-      {
-        priceId,
-        quantity: 1,
-      },
-      testDataFactory.price.base(),
-    ],
+  const body = testDataFactory.customer.job.request({
+    body: {
+
+      name: 'new job',
+    },
+    prices: {
+      custom: [testDataFactory.price.base()],
+      listed: [
+        {
+          priceId,
+          quantity: 1,
+        },
+      ],
+    },
   });
-  const queriedCustomer = customerDataFactory.document({
+  const queriedCustomer = testDataFactory.customer.document({
     jobs: [
-      customerDataFactory.jobDocument({
-        name: jobName,
-      }),
+      {
+        body: {
+          name: jobName,
+        },
+      },
     ],
   });
   const documentUpdate = createDocumentUpdate2();
-  const customerId = customerDataFactory.id();
+  const customerId = testDataFactory.customer.id();
 
   it('should return', async () => {
     mockCustomerService.functions.findCustomerById.mockResolvedValue(queriedCustomer);
@@ -92,7 +99,7 @@ describe('Update customer job service', () => {
     });
 
     it('if no customer job found', async () => {
-      const queriedCustomer = customerDataFactory.document();
+      const queriedCustomer = testDataFactory.customer.document();
       mockCustomerService.functions.findCustomerById.mockResolvedValue(queriedCustomer);
 
       await service({
@@ -108,17 +115,21 @@ describe('Update customer job service', () => {
     });
 
     it('if job name already exists', async () => {
-      const queriedCustomer = customerDataFactory.document({
+      const queriedCustomer = testDataFactory.customer.document({
         jobs: [
-          customerDataFactory.jobDocument(),
-          customerDataFactory.jobDocument({
-            name: jobName,
-          }),
+          {},
+          {
+            body: {
+              name: jobName,
+            },
+          },
         ],
       });
 
-      const body = customerDataFactory.jobRequest({
-        name: queriedCustomer.jobs[0].name,
+      const body = testDataFactory.customer.job.request({
+        body: {
+          name: queriedCustomer.jobs[0].name,
+        },
       });
       mockCustomerService.functions.findCustomerById.mockResolvedValue(queriedCustomer);
 
