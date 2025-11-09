@@ -65,9 +65,9 @@ jobs:
           name: Running API unit tests
           command: yarn test:api
 
-      # - run:
-      #     name: Running Web unit tests
-      #     command: yarn test:web
+      - run:
+          name: Running Web unit tests
+          command: yarn test:web
 
       - store_artifacts:
           path: coverage

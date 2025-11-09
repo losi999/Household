@@ -1,4 +1,4 @@
-import { Account, Calendar, Transaction } from '@household/shared/types/types';
+import { Account, Transaction } from '@household/shared/types/types';
 import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/test/api/types';
 import { createDate, getAccountId, getTransactionId } from '@household/shared/common/utils';
 import { expectEmptyObject, expectRemainingProperties } from '@household/test/api/utils';

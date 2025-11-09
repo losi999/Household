@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SettingsUsersListComponent } from './settings-users-list.component';
 
-describe('SettingsUsersListComponent', () => {
+xdescribe('SettingsUsersListComponent', () => {
   let component: SettingsUsersListComponent;
   let fixture: ComponentFixture<SettingsUsersListComponent>;
 

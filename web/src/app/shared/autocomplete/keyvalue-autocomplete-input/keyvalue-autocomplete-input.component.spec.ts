@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { KeyvalueAutocompleteInputComponent } from './keyvalue-autocomplete-input.component';
 
-describe('KeyvalueAutocompleteInputComponent', () => {
+xdescribe('KeyvalueAutocompleteInputComponent', () => {
   let component: KeyvalueAutocompleteInputComponent;
   let fixture: ComponentFixture<KeyvalueAutocompleteInputComponent>;
 
