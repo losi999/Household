@@ -14,7 +14,7 @@ describe('List customer works service', () => {
   beforeEach(() => {
     mockCustomerService = createMockService('getCustomerById');
     mockCalendarEntryService = createMockService('listCalendarWorkEntriesByCustomerId');
-    mockCalendarEntryDocumentConverter = createMockService('toResponseBase');
+    mockCalendarEntryDocumentConverter = createMockService('toWorkEntryResponseBase');
 
     service = listCustomerWorksServiceFactory(mockCustomerService.service, mockCalendarEntryService.service, mockCalendarEntryDocumentConverter.service);
   });
@@ -22,12 +22,12 @@ describe('List customer works service', () => {
   const queriedCustomer = testDataFactory.customer.document();
   const customerId = testDataFactory.customer.id();
   const queriedEntry = testDataFactory.calendar.entry.document();
-  const convertedResponse = testDataFactory.calendar.entry.response.base();
+  const convertedResponse = testDataFactory.calendar.entry.response.workBase();
 
   it('should return customer works', async () => {
     mockCustomerService.functions.getCustomerById.mockResolvedValue(queriedCustomer);
     mockCalendarEntryService.functions.listCalendarWorkEntriesByCustomerId.mockResolvedValue([queriedEntry]);
-    mockCalendarEntryDocumentConverter.functions.toResponseBase.mockReturnValue(convertedResponse);
+    mockCalendarEntryDocumentConverter.functions.toWorkEntryResponseBase.mockReturnValue(convertedResponse);
 
     const result = await service({
       customerId,
@@ -35,7 +35,7 @@ describe('List customer works service', () => {
     expect(result).toEqual([convertedResponse]);
     validateFunctionCall(mockCustomerService.functions.getCustomerById, customerId);
     validateFunctionCall(mockCalendarEntryService.functions.listCalendarWorkEntriesByCustomerId, customerId);
-    validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toResponseBase, queriedEntry);
+    validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toWorkEntryResponseBase, queriedEntry);
     expect.assertions(4);
   });
 
@@ -48,7 +48,7 @@ describe('List customer works service', () => {
       }).catch(validateError('Error while getting customer', 500));
       validateFunctionCall(mockCustomerService.functions.getCustomerById, customerId);
       validateFunctionCall(mockCalendarEntryService.functions.listCalendarWorkEntriesByCustomerId);
-      validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toResponseBase);
+      validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toWorkEntryResponseBase);
       expect.assertions(5);
     });
 
@@ -60,7 +60,7 @@ describe('List customer works service', () => {
       }).catch(validateError('No customer found', 404));
       validateFunctionCall(mockCustomerService.functions.getCustomerById, customerId);
       validateFunctionCall(mockCalendarEntryService.functions.listCalendarWorkEntriesByCustomerId);
-      validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toResponseBase);
+      validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toWorkEntryResponseBase);
       expect.assertions(5);
     });
 
@@ -73,7 +73,7 @@ describe('List customer works service', () => {
       }).catch(validateError('Error while listing calendar entries', 500));
       validateFunctionCall(mockCustomerService.functions.getCustomerById, customerId);
       validateFunctionCall(mockCalendarEntryService.functions.listCalendarWorkEntriesByCustomerId, customerId);
-      validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toResponseBase);
+      validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toWorkEntryResponseBase);
       expect.assertions(5);
     });
   });
