@@ -64,19 +64,14 @@ jobs:
 
       - browser-tools/install_chrome
 
-      - run:
-          command: |
-            google-chrome --version
-
       # - run:
       #     name: Running API unit tests
       #     command: yarn test:api
 
-      - run:
-          name: Set CHROME_BIN
-          command: |
-            export CHROME_BIN=$(which google-chrome)
-            echo "CHROME_BIN is set to $CHROME_BIN"
+      # - run:
+      #     name: Set CHROME_BIN
+      #     command: |
+      #       export CHROME_BIN=$(which google-chrome)
 
       - run:
           name: Running Web unit tests
