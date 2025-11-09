@@ -62,7 +62,7 @@ jobs:
       - attach_workspace:
           at: ~/
 
-      - browser-tools/install-browser-tools
+      - browser-tools/install_chrome
 
       # - run:
       #     name: Running API unit tests
