@@ -19,15 +19,15 @@ orbs:
 jobs:
   install:
     docker:
-      - image: cimg/node:22.21
+      - image: cimg/node:22.21-browsers
     working_directory: ~/repo
     steps:
       - checkout
       - restore_cache:
           key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}
-      - run:
-          name: Install API dependencies
-          command: yarn
+      # - run:
+      #     name: Install API dependencies
+      #     command: yarn
       - run:
           name: Install web dependencies
           command: yarn
