@@ -15,6 +15,7 @@ commands:
           command: cat .config >> $BASH_ENV
 orbs:
   sam: circleci/aws-sam-serverless@6.0.3
+  browser-tools: circleci/browser-tools@1.1.0
 
 jobs:
   install:
@@ -60,6 +61,8 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
+
+      - browser-tools/install-browser-tools
 
       # - run:
       #     name: Running API unit tests
