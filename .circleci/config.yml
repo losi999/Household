@@ -54,7 +54,22 @@ jobs:
           root: ~/
           paths:
             - repo
-  unit_test:
+  unit_test_api:
+    docker:
+      - image: cimg/node:22.21
+    working_directory: ~/repo
+    steps:
+      - attach_workspace:
+          at: ~/
+
+      - run:
+          name: Running API unit tests
+          command: yarn test:api
+
+      - store_artifacts:
+          path: coverage
+          destination: coverage
+  unit_test_web:
     docker:
       - image: cimg/node:22.21-browsers
     working_directory: ~/repo
@@ -63,15 +78,6 @@ jobs:
           at: ~/
 
       - browser-tools/install_chrome
-
-      # - run:
-      #     name: Running API unit tests
-      #     command: yarn test:api
-
-      # - run:
-      #     name: Set CHROME_BIN
-      #     command: |
-      #       export CHROME_BIN=$(which google-chrome)
 
       - run:
           name: Running Web unit tests
@@ -198,8 +204,12 @@ workflows:
   local:
     jobs:
       - install
-      - unit_test:
-          name: unit_test
+      - unit_test_api:
+          name: unit_test_api
+          requires:
+            - install
+      - unit_test_web:
+          name: unit_test_web
           requires:
             - install
       - lint:
@@ -214,7 +224,8 @@ workflows:
           name: api_deploy
           filters: pipeline.git.branch == "master" or pipeline.git.branch == "development" or pipeline.parameters.deploy
           requires:
-            - unit_test
+            - unit_test_api
+            - unit_test_web
             - lint
             - build
       - web_deploy:
