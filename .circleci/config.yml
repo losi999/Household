@@ -66,6 +66,10 @@ jobs:
       #     command: yarn test:api
 
       - run:
+          name: Set CHROME_BIN
+          command: export CHROME_BIN=$(which google-chrome)
+
+      - run:
           name: Running Web unit tests
           command: yarn test:web
 
