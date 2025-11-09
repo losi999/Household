@@ -67,7 +67,9 @@ jobs:
 
       - run:
           name: Set CHROME_BIN
-          command: export CHROME_BIN=$(which google-chrome)
+          command: |
+            export CHROME_BIN=$(which google-chrome)
+            echo "CHROME_BIN is set to $CHROME_BIN"
 
       - run:
           name: Running Web unit tests
