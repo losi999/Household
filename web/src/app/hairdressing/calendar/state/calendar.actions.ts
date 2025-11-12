@@ -23,7 +23,7 @@ export const calendarApiActions = createActionGroup({
   source: 'Calendar API',
   events: {
     'List calendar days initiated': props<Calendar.DateRange>(),
-    'List calendar days completed': props<Calendar.DateRange & {entries: Calendar.Day.Response[]}>(),
+    'List calendar days completed': props<{days: Calendar.Day.Response[]}>(),
     'Update calendar day initiated': props<Calendar.DayProp & Calendar.Day.Request>(),
     'Update calendar day completed': props<Calendar.DayProp & Calendar.Day.Request>(),
     'Delete calendar day initiated': props<Calendar.DayProp>(),

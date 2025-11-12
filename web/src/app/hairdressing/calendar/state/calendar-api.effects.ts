@@ -16,22 +16,17 @@ export class CalendarApiEffects {
   listCalendarDays = createEffect(() => {
     return this.actions.pipe(
       ofType(calendarApiActions.listCalendarDaysInitiated),
-      mergeMap(({ dateFrom, dateTo }) => {
-        return this.calendarService.listCalendarDays({
-          dateFrom,
-          dateTo,
-        }).pipe(
-          map((entries) => calendarApiActions.listCalendarDaysCompleted({
-            entries,
-            dateFrom,
-            dateTo,
-          })),
-          catchError(() => {
-            return of(progressActions.processFinished(),
-              notificationActions.showMessage({
-                message: 'Hiba történt',
-              }),
-            );
+      mergeMap(({ dateFrom, dateTo }) => this.calendarService.listCalendarDays({
+        dateFrom,
+        dateTo,
+      })),
+      map((days) => calendarApiActions.listCalendarDaysCompleted({
+        days,
+      })),
+      catchError(() => {
+        return of(progressActions.processFinished(),
+          notificationActions.showMessage({
+            message: 'Hiba történt',
           }),
         );
       }),

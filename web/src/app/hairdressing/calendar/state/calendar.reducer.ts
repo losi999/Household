@@ -33,10 +33,10 @@ export type CalendarState = {
 };
 
 export const calendarReducer = createReducer<CalendarState>({},
-  on(calendarApiActions.listCalendarDaysCompleted, (_state, { entries }) => {
+  on(calendarApiActions.listCalendarDaysCompleted, (_state, { days }) => {
     return {
       ..._state,    
-      ...entries.reduce<CalendarState>((accumulator, currentValue) => {
+      ...days.reduce<CalendarState>((accumulator, currentValue) => {
         const { start, end } = calculateWorkdayLimits(currentValue);
 
         return {
@@ -53,20 +53,25 @@ export const calendarReducer = createReducer<CalendarState>({},
 
   on(calendarApiActions.updateCalendarDayCompleted, (_state, { type, day, ...request }) => {
     const storedDay = _state[day];
-    let newDay: LimitedCalendarDay;
     if (request.dayType === CalendarDayType.Vacation) {
-      newDay = {
-        ...storedDay,
-        dayType: CalendarDayType.Vacation,
+      return {
+        ..._state,
+        [day]: {
+          dayType: CalendarDayType.Vacation,
+          day,
+          entries: storedDay.entries,
+          calculatedEnd: undefined,
+          calculatedStart: undefined,
+        },
       };
-    } else {
-      newDay = {
-        ...storedDay,
-        dayType: storedDay.dayType === CalendarDayType.Weekend ? CalendarDayType.Weekend : CalendarDayType.Workday,
-        start: request.start,
-        end: request.end,
-      };
-    }
+    } 
+
+    const newDay: LimitedCalendarDay = {
+      ...storedDay,
+      dayType: storedDay.dayType === CalendarDayType.Weekend ? CalendarDayType.Weekend : CalendarDayType.Workday,
+      start: request.start,
+      end: request.end,
+    };
 
     const { start, end } = calculateWorkdayLimits(newDay);
 
@@ -82,43 +87,40 @@ export const calendarReducer = createReducer<CalendarState>({},
 
   on(calendarApiActions.deleteCalendarDayCompleted, (_state, { day }) => {
     const storedDay = _state[day];
-    let newDay: LimitedCalendarDay;
     switch(storedDay.dayType) {
-      case CalendarDayType.Vacation: {
-        newDay = {
-          ...storedDay,
-          dayType: CalendarDayType.Workday,
-          end: WORKDAY_END,
-          start: WORKDAY_START,
-        };
-      } break;
+      case CalendarDayType.Vacation: 
       case CalendarDayType.Workday: {
-        newDay = {
+        const newDay: LimitedCalendarDay = {
           ...storedDay,
           dayType: CalendarDayType.Workday,
           end: WORKDAY_END,
           start: WORKDAY_START,
         };
-      } break;
-      case CalendarDayType.Weekend: {
-        newDay = {
-          ...storedDay,
-          start: undefined,
-          end: undefined,
+
+        const { start, end } = calculateWorkdayLimits(newDay);
+      
+        return {
+          ..._state,
+          [day]: {
+            ...newDay,
+            calculatedStart: start,
+            calculatedEnd: end,
+          },
         };
-      } break;
+      }
+      case CalendarDayType.Weekend: {
+        return {
+          ..._state,
+          [day]: {
+            ...storedDay,
+            start: undefined,
+            end: undefined,
+            calculatedStart: undefined,
+            calculatedEnd: undefined,
+          },
+        };
+      }
     }
-
-    const { start, end } = calculateWorkdayLimits(newDay);
-
-    return {
-      ..._state,
-      [day]: {
-        ...newDay,
-        calculatedStart: start,
-        calculatedEnd: end,
-      },
-    };
   }),
 
   on(calendarApiActions.createCalendarEntryCompleted, (_state, { type, calendarEntryId, customer, ...request }) => { 
