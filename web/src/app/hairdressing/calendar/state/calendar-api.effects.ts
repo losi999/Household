@@ -84,14 +84,12 @@ export class CalendarApiEffects {
             { calendarEntryId },
             customer,
           ]) => {
-
             return calendarApiActions.createCalendarEntryCompleted({
               calendarEntryId,
               ...request,
               customer,
             });
           }),
-            
           catchError(() => {
             return of(progressActions.processFinished(),
               notificationActions.showMessage({

@@ -254,7 +254,7 @@ const testCases: TestCase[] = [
   },
 ];
 
-fdescribe('Calendar reducer', () => {
+describe('Calendar reducer', () => {
   let initialState: CalendarState;
   beforeEach(() => {
     initialState = {};
