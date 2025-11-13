@@ -1,3 +1,4 @@
+import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { MatDialogRef } from '@angular/material/dialog';
 import { Action } from '@ngrx/store';
 import { Observable, of } from 'rxjs';
@@ -6,6 +7,12 @@ export const returnDialogAfterClosed = <R>(result?: R): MatDialogRef<any, R> => 
   return {
     afterClosed: () => of(result),
   } as MatDialogRef<any, R>;
+};
+
+export const returnBottomSheetAfterDismissed = <R>(result?: R): MatBottomSheetRef<any, R> => {
+  return {
+    afterDismissed: () => of(result),
+  } as MatBottomSheetRef<any, R>;
 };
 
 export const expectEffectNotEmitted = (effect: Observable<any>, additional: () => void) => {
