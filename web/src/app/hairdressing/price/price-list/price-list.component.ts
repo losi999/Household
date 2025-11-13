@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Price } from '@household/shared/types/types';
 import { priceActions, priceApiActions } from '@household/web/app/hairdressing/price/state/price.actions';
-import { selectPrices } from '@household/web/app/hairdressing/price/state/price.selector';
+import { selectPriceList } from '@household/web/app/hairdressing/price/state/price.selector';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 
@@ -17,7 +17,7 @@ export class PriceListComponent implements OnInit {
   constructor(private store: Store) {}
   
   ngOnInit(): void {
-    this.prices = this.store.select(selectPrices);
+    this.prices = this.store.select(selectPriceList);
 
     this.store.dispatch(priceApiActions.listPricesInitiated());
   }

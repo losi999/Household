@@ -7,7 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { Price } from '@household/shared/types/types';
 import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
 import { MinutesToHourPipe } from '@household/web/app/shared/pipes/minutes-to-hour.pipe';
-import { selectPrices } from '@household/web/app/hairdressing/price/state/price.selector';
+import { selectPriceList } from '@household/web/app/hairdressing/price/state/price.selector';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs/internal/Observable';
 
@@ -52,7 +52,7 @@ export class JobPriceCalculatorComponent implements OnInit, ControlValueAccessor
   constructor(private store: Store) {}
 
   ngOnInit(): void {
-    this.prices = this.store.select(selectPrices);
+    this.prices = this.store.select(selectPriceList);
 
     this.form = new FormArray([], [Validators.required]);
 

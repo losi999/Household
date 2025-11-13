@@ -69,8 +69,8 @@ describe('Price API effects', () => {
     });
   });
 
-  describe('On Create prices initiated', () => {
-    it('should dispatch [Price API] Create prices completed', (done) => {
+  describe('On Create price initiated', () => {
+    it('should dispatch [Price API] Create price completed', (done) => {
       const request = testDataFactory.price.request();
       const priceId = testDataFactory.price.id();
       
@@ -129,8 +129,8 @@ describe('Price API effects', () => {
     });
   });
 
-  describe('On Update prices initiated', () => {
-    it('should dispatch [Price API] Update prices completed', (done) => {
+  describe('On Update price initiated', () => {
+    it('should dispatch [Price API] Update price completed', (done) => {
       const request = testDataFactory.price.request();
       const priceId = testDataFactory.price.id();
       
@@ -200,8 +200,8 @@ describe('Price API effects', () => {
     });
   });
 
-  describe('On Delete prices initiated', () => {
-    it('should dispatch [Price API] Delete prices completed', (done) => {
+  describe('On Delete price initiated', () => {
+    it('should dispatch [Price API] Delete price completed', (done) => {
       const priceId = testDataFactory.price.id();
       
       mockPriceService.deletePrice.and.returnValue(of({

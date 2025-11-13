@@ -3,7 +3,7 @@ import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Customer, Price } from '@household/shared/types/types';
 import { JobPriceCalculatorValue } from '@household/web/app/shared/job-price-calculator/job-price-calculator.component';
-import { selectPrices } from '@household/web/app/hairdressing/price/state/price.selector';
+import { selectPriceList } from '@household/web/app/hairdressing/price/state/price.selector';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 
@@ -37,7 +37,7 @@ export class CustomerJobDialogComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: CustomerJobDialogData) { }
 
   ngOnInit(): void {
-    this.prices = this.store.select(selectPrices);
+    this.prices = this.store.select(selectPriceList);
   
     this.form = new FormGroup({
       name: new FormControl(this.data.job?.name, [Validators.required]),
