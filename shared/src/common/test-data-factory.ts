@@ -964,15 +964,26 @@ const createCustomerJobRequest = (ctx?: {
 
 const createCustomerJobResponse: DataFactoryFunction<Customer.Job.Response> = (data) => {
   return {
-    name: 'vágás',
-    duration: 60,
+    name: `${faker.company.buzzVerb()} ${faker.string.uuid()}`,
+    duration: faker.number.int({
+      min: 1,
+      max: 96,
+    }),
     prices: [
       {
         ...createPriceResponse(),
-        quantity: 1,
+        quantity: faker.number.int({
+          min: 1,
+          max: 5,
+        }),
       },
     ],
-    description: 'job description',
+    description: faker.word.words({
+      count: {
+        min: 1,
+        max: 5,
+      },
+    }),
     ...data,
   };
 };
@@ -1253,6 +1264,7 @@ export const testDataFactory = {
     response: createCustomerResponse,
     job: {
       request: createCustomerJobRequest,
+      response: createCustomerJobResponse,
     },
   },
   calendar: {

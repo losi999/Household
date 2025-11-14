@@ -178,7 +178,7 @@ describe('Customer effects', () => {
   describe('On Update customer job', () => {
     it('should dispatch [Customer API] Update customer job initiated', (done) => {
       const request = testDataFactory.customer.job.request();
-      const job = testDataFactory.customer.response().jobs[0];
+      const job = testDataFactory.customer.job.response();
       const customerId = testDataFactory.customer.id();
 
       mockMatDialog.open.and.returnValue(returnDialogAfterClosed<CustomerJobDialogResult>({
@@ -210,7 +210,7 @@ describe('Customer effects', () => {
 
     it('should NOT dispatch if dialog is cancelled', (done) => {
       const customerId = testDataFactory.customer.id();
-      const job = testDataFactory.customer.response().jobs[0];
+      const job = testDataFactory.customer.job.response();
 
       mockMatDialog.open.and.returnValue(returnDialogAfterClosed<CustomerDialogResult>());    
 
@@ -233,7 +233,7 @@ describe('Customer effects', () => {
 
   describe('On Delete customer job', () => {
     it('should dispatch [Customer API] Delete customer job initiated', (done) => {
-      const job = testDataFactory.customer.response().jobs[0];
+      const job = testDataFactory.customer.job.response();
       const customerId = testDataFactory.customer.id();
 
       mockDialogService.openConfirmationDialog.and.returnValue(of(true));
@@ -256,7 +256,7 @@ describe('Customer effects', () => {
     });
 
     it('should NOT dispatch if dialog is cancelled', (done) => {
-      const job = testDataFactory.customer.response().jobs[0];
+      const job = testDataFactory.customer.job.response();
       const customerId = testDataFactory.customer.id();
 
       mockDialogService.openConfirmationDialog.and.returnValue(of(false));  

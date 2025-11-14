@@ -95,22 +95,6 @@ export const customerReducer = createReducer<CustomerState>({},
     };
   }),
 
-  on(customerApiActions.deleteCustomerJobCompleted, (_state, { customerId, jobName }) => {   
-    return {
-      ..._state,
-      customerList: _state.customerList.map(c => {
-        if (c.customerId !== customerId) {
-          return c;
-        }
-      
-        return {
-          ...c,
-          jobs: c.jobs.filter(j => j.name !== jobName),
-        };
-      }),
-    };
-  }),
-
   on(customerApiActions.updateCustomerJobCompleted, (_state, { customerId, jobName, description, duration, name, prices, priceList }) => {
     return {
       ..._state,
@@ -151,6 +135,22 @@ export const customerReducer = createReducer<CustomerState>({},
           }).toSorted((a, b) => a.name.localeCompare(b.name, 'hu', {
             sensitivity: 'base',
           })),
+        };
+      }),
+    };
+  }),
+
+  on(customerApiActions.deleteCustomerJobCompleted, (_state, { customerId, jobName }) => {   
+    return {
+      ..._state,
+      customerList: _state.customerList.map(c => {
+        if (c.customerId !== customerId) {
+          return c;
+        }
+      
+        return {
+          ...c,
+          jobs: c.jobs.filter(j => j.name !== jobName),
         };
       }),
     };
