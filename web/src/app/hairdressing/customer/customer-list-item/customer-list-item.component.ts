@@ -9,5 +9,4 @@ import { Customer } from '@household/shared/types/types';
 })
 export class CustomerListItemComponent {
   @Input() customer: Customer.Response;
-
 }
