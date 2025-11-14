@@ -8,7 +8,7 @@ import { CalendarWeek } from '@household/web/app/hairdressing/calendar/calendar-
 })
 export class CalendarTimeColumnPipe implements PipeTransform {
 
-  transform({ start, end }: CalendarWeek): unknown {
+  transform({ start, end }: Pick<CalendarWeek, 'end' | 'start' >): string[] {
     return Array.from(
       {
         length: 96,
@@ -18,9 +18,7 @@ export class CalendarTimeColumnPipe implements PipeTransform {
         
           return timeSlotToTimeString(i);
         }
-
       },
     );
   }
-
 }

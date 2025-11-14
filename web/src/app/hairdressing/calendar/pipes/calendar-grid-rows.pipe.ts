@@ -7,7 +7,7 @@ import { CalendarWeek } from '@household/web/app/hairdressing/calendar/calendar-
 })
 export class CalendarGridRowsPipe implements PipeTransform {
 
-  transform({ start, end }: CalendarWeek): string {
+  transform({ start, end }: Pick<CalendarWeek, 'end' | 'start' >): string {
     const rowsToHideStart = Math.floor((start) / 2) * 2;
     const rowsToHideEnd = 96 - Math.floor((end + 1) / 2) * 2;
 
@@ -19,5 +19,4 @@ export class CalendarGridRowsPipe implements PipeTransform {
 
     return parts.join(' ');
   }
-
 }

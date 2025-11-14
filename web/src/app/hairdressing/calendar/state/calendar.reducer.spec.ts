@@ -5,254 +5,7 @@ import { CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType } fro
 import { WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
 import { Calendar } from '@household/shared/types/types';
 import { LimitedCalendarDay } from '@household/web/types/common';
-
-type TestCase = {
-  earliestStart: number;
-  latestEnd: number;
-  plannedStart: number;
-  plannedEnd: number;
-  calculatedStart: number;
-  calculatedEnd: number;
-};
-
-const defaultDayLimitTestCases: TestCase[] = [
-  {
-    earliestStart: 52,
-    latestEnd: 60,
-    plannedStart: WORKDAY_START,
-    plannedEnd: WORKDAY_END,
-    calculatedStart: 32,
-    calculatedEnd: 80,
-  },
-  {
-    earliestStart: 32,
-    latestEnd: 52,
-    plannedStart: WORKDAY_START,
-    plannedEnd: WORKDAY_END,
-    calculatedStart: 28,
-    calculatedEnd: 60,
-  },
-  {
-    earliestStart: 60,
-    latestEnd: 80,
-    plannedStart: WORKDAY_START,
-    plannedEnd: WORKDAY_END,
-    calculatedStart: 52,
-    calculatedEnd: 84,
-  },
-  {
-    earliestStart: 40,
-    latestEnd: 72,
-    plannedStart: WORKDAY_START,
-    plannedEnd: WORKDAY_END,
-    calculatedStart: 44,
-    calculatedEnd: 68,
-  },
-];
-
-const testCases: TestCase[] = [
-  ...defaultDayLimitTestCases,
-  {
-    earliestStart: 40,
-    latestEnd: 50,
-    plannedStart: 32,
-    plannedEnd: 48,
-    calculatedStart: 32,
-    calculatedEnd: 48,
-  },
-  {
-    earliestStart: 28,
-    latestEnd: 48,
-    plannedStart: 32,
-    plannedEnd: 64,
-    calculatedStart: 32,
-    calculatedEnd: 56,
-  },
-  {
-    earliestStart: 48,
-    latestEnd: 68,
-    plannedStart: 32,
-    plannedEnd: 64,
-    calculatedStart: 40,
-    calculatedEnd: 64,
-  },
-  {
-    earliestStart: 56,
-    latestEnd: 64,
-    plannedStart: 32,
-    plannedEnd: 48,
-    calculatedStart: 36,
-    calculatedEnd: 48,
-  },
-  {
-    earliestStart: 48,
-    latestEnd: 56,
-    plannedStart: 64,
-    plannedEnd: 80,
-    calculatedStart: 64,
-    calculatedEnd: 76,
-  },
-  {
-    earliestStart: 68,
-    latestEnd: 72,
-    plannedStart: 32,
-    plannedEnd: 40,
-    calculatedStart: undefined,
-    calculatedEnd: undefined,
-  },
-  {
-    earliestStart: 24,
-    latestEnd: 28,
-    plannedStart: 56,
-    plannedEnd: 64,
-    calculatedStart: undefined,
-    calculatedEnd: undefined,
-  },
-  {
-    earliestStart: 68,
-    latestEnd: 72,
-    plannedStart: 48,
-    plannedEnd: 60,
-    calculatedStart: 48,
-    calculatedEnd: 60,
-  },
-  {
-    earliestStart: 24,
-    latestEnd: 28,
-    plannedStart: 36,
-    plannedEnd: 48,
-    calculatedStart: 36,
-    calculatedEnd: 48,
-  },
-  {
-    earliestStart: 40,
-    latestEnd: 60,
-    plannedStart: 44,
-    plannedEnd: 56,
-    calculatedStart: 44,
-    calculatedEnd: 56,
-  },
-  {
-    earliestStart: 44,
-    latestEnd: 56,
-    plannedStart: 40,
-    plannedEnd: 64,
-    calculatedStart: 40,
-    calculatedEnd: 64,
-  },
-  {
-    earliestStart: 40,
-    latestEnd: 72,
-    plannedStart: 42,
-    plannedEnd: 70,
-    calculatedStart: 44,
-    calculatedEnd: 68,
-  },
-  {
-    earliestStart: 40,
-    latestEnd: 72,
-    plannedStart: 48,
-    plannedEnd: 64,
-    calculatedStart: 48,
-    calculatedEnd: 64,
-  },
-  {
-    earliestStart: 40,
-    latestEnd: 72,
-    plannedStart: WORKDAY_START,
-    plannedEnd: 70,
-    calculatedStart: 44,
-    calculatedEnd: 68,
-  },
-  {
-    earliestStart: 40,
-    latestEnd: 72,
-    plannedStart: WORKDAY_START,
-    plannedEnd: 56,
-    calculatedStart: 44,
-    calculatedEnd: 56,
-  },
-  {
-    earliestStart: 40,
-    latestEnd: 72,
-    plannedStart: WORKDAY_START,
-    plannedEnd: 42,
-    calculatedStart: undefined,
-    calculatedEnd: undefined,
-  },
-  {
-    earliestStart: 40,
-    latestEnd: 72,
-    plannedStart: WORKDAY_START,
-    plannedEnd: 36,
-    calculatedStart: undefined,
-    calculatedEnd: undefined,
-  },
-  {
-    earliestStart: 40,
-    latestEnd: 72,
-    plannedStart: 42,
-    plannedEnd: WORKDAY_END,
-    calculatedStart: 44,
-    calculatedEnd: 68,
-  },
-  {
-    earliestStart: 40,
-    latestEnd: 72,
-    plannedStart: 48,
-    plannedEnd: WORKDAY_END,
-    calculatedStart: 48,
-    calculatedEnd: 68,
-  },
-  {
-    earliestStart: 40,
-    latestEnd: 72,
-    plannedStart: 70,
-    plannedEnd: WORKDAY_END,
-    calculatedStart: undefined,
-    calculatedEnd: undefined,
-  },
-  {
-    earliestStart: 40,
-    latestEnd: 72,
-    plannedStart: 76,
-    plannedEnd: WORKDAY_END,
-    calculatedStart: undefined,
-    calculatedEnd: undefined,
-  },
-  {
-    earliestStart: 40,
-    latestEnd: 72,
-    plannedStart: 42,
-    plannedEnd: 64,
-    calculatedStart: 44,
-    calculatedEnd: 64,
-  },
-  {
-    earliestStart: 40,
-    latestEnd: 72,
-    plannedStart: 48,
-    plannedEnd: 70,
-    calculatedStart: 48,
-    calculatedEnd: 68,
-  },
-  {
-    earliestStart: 40,
-    latestEnd: 72,
-    plannedStart: 41,
-    plannedEnd: 42,
-    calculatedStart: undefined,
-    calculatedEnd: undefined,
-  },
-  {
-    earliestStart: 40,
-    latestEnd: 72,
-    plannedStart: 70,
-    plannedEnd: 71,
-    calculatedStart: undefined,
-    calculatedEnd: undefined,
-  },
-];
+import { dayLimitTestCases, defaultDayLimitTestCases } from '@household/web/utils/constant-test-data';
 
 describe('Calendar reducer', () => {
   let initialState: CalendarState;
@@ -399,7 +152,7 @@ describe('Calendar reducer', () => {
       });
 
       describe('with work entry', () => {
-        testCases.forEach(({ earliestStart, latestEnd, plannedStart, plannedEnd, calculatedStart, calculatedEnd }, index) => {
+        dayLimitTestCases.forEach(({ earliestStart, latestEnd, plannedStart, plannedEnd, calculatedStart, calculatedEnd }, index) => {
           it(`should calculate workday limits #${index + 1}: ${earliestStart}-${latestEnd} ${plannedStart}-${plannedEnd} -> ${calculatedStart}-${calculatedEnd}`, () => {
             const dayResponse = testDataFactory.calendar.day.response.workday({
               day,
@@ -566,7 +319,7 @@ describe('Calendar reducer', () => {
       });
 
       describe('with work entry', () => {
-        testCases.forEach(({ earliestStart, latestEnd, plannedStart, plannedEnd, calculatedStart, calculatedEnd }, index) => {
+        dayLimitTestCases.forEach(({ earliestStart, latestEnd, plannedStart, plannedEnd, calculatedStart, calculatedEnd }, index) => {
           it(`should recalculate limits of workday #${index + 1}: ${earliestStart}-${latestEnd} ${plannedStart}-${plannedEnd} -> ${calculatedStart}-${calculatedEnd}`, () => {
             const originalDay = testDataFactory.calendar.day.response.workday({
               day,
@@ -960,7 +713,7 @@ describe('Calendar reducer', () => {
         createPersonalEntryTest();
         createIssueEntryTest();
 
-        testCases.forEach(({ earliestStart, latestEnd, plannedStart, plannedEnd, calculatedStart, calculatedEnd }, index) => {
+        dayLimitTestCases.forEach(({ earliestStart, latestEnd, plannedStart, plannedEnd, calculatedStart, calculatedEnd }, index) => {
 
           it(`should create work entry with limits recalculated #${index + 1}: ${earliestStart}-${latestEnd} ${plannedStart}-${plannedEnd} -> ${calculatedStart}-${calculatedEnd}`, () => {
             originalDay = {
@@ -1240,7 +993,7 @@ describe('Calendar reducer', () => {
           updatePersonalEntryTest();
           updateIssueEntryTest();
 
-          testCases.forEach(({ earliestStart, latestEnd, plannedStart, plannedEnd, calculatedStart, calculatedEnd }, index) => {
+          dayLimitTestCases.forEach(({ earliestStart, latestEnd, plannedStart, plannedEnd, calculatedStart, calculatedEnd }, index) => {
             it(`should update work entry with limits recalculated #${index + 1}: ${earliestStart}-${latestEnd} ${plannedStart}-${plannedEnd} -> ${calculatedStart}-${calculatedEnd}`, () => {
               originalEntry = testDataFactory.calendar.entry.response.work({
                 calendarEntryId,
@@ -1573,7 +1326,7 @@ describe('Calendar reducer', () => {
           updatePersonalEntryTest();
           updateIssueEntryTest();
 
-          testCases.forEach(({ earliestStart, latestEnd, plannedStart, plannedEnd, calculatedStart, calculatedEnd }, index) => {
+          dayLimitTestCases.forEach(({ earliestStart, latestEnd, plannedStart, plannedEnd, calculatedStart, calculatedEnd }, index) => {
             it(`should update work entry with limits recalculated #${index + 1}: ${earliestStart}-${latestEnd} ${plannedStart}-${plannedEnd} -> ${calculatedStart}-${calculatedEnd}`, () => {
               originalEntry = testDataFactory.calendar.entry.response.work({
                 calendarEntryId,
@@ -1830,7 +1583,7 @@ describe('Calendar reducer', () => {
         deletePersonalEntryTest();
         deleteIssueEntryTest();
 
-        testCases.forEach(({ earliestStart, latestEnd, plannedStart, plannedEnd, calculatedStart, calculatedEnd }, index) => {
+        dayLimitTestCases.forEach(({ earliestStart, latestEnd, plannedStart, plannedEnd, calculatedStart, calculatedEnd }, index) => {
           it(`should delete work entry with limits recalculated #${index + 1}: ${earliestStart}-${latestEnd} ${plannedStart}-${plannedEnd} -> ${calculatedStart}-${calculatedEnd}`, () => {
             originalEntry = testDataFactory.calendar.entry.response.work({
               calendarEntryId,
