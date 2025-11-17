@@ -1,16 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { CustomerListComponent } from './customer-list.component';
-import { MatListModule } from '@angular/material/list';
+import { CustomerListComponent } from '@household/web/app/hairdressing/customer/customer-list/customer-list.component';
 import { Customer } from '@household/shared/types/types';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
-import { By } from '@angular/platform-browser';
-import { createStubComponent } from '@household/web/utils/unit-testing';
+import { provideRouter } from '@angular/router';
+import { CustomerListItemComponent } from '@household/web/app/hairdressing/customer/customer-list-item/customer-list-item.component';
+import { elementSelectorFactory, IElementSelector } from '@household/web/testing/element-selector';
 
 describe('CustomerListComponent', () => {
   let component: CustomerListComponent;
   let fixture: ComponentFixture<CustomerListComponent>;
   let customers: Customer.Response[];
-  const customerListItemStubComponent = createStubComponent('household-customer-list-item', ['customer']);
+  let selector: IElementSelector;
 
   beforeEach(async () => {
     customers = [
@@ -19,22 +19,22 @@ describe('CustomerListComponent', () => {
     ];
 
     await TestBed.configureTestingModule({
-      declarations: [CustomerListComponent],
-      imports: [
-        MatListModule,
-        customerListItemStubComponent,
-      ],
+      imports: [CustomerListComponent],
+      providers: [provideRouter([])],
     })
       .compileComponents();
 
     fixture = TestBed.createComponent(CustomerListComponent);
     component = fixture.componentInstance;
     component.customers = customers;
+
+    selector = elementSelectorFactory(fixture.debugElement);
+
     fixture.detectChanges();
   });
 
   it('should create a list item component for each customer', () => {
-    const items = fixture.debugElement.queryAll(By.directive(customerListItemStubComponent));
+    const items = selector.listComponents(CustomerListItemComponent);
     expect(items.length).toEqual(customers.length);
    
     items.forEach((element, i) => {

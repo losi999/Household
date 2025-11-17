@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { CustomerAddToBlacklistDialogComponent } from './customer-add-to-blacklist-dialog.component';
+import { CustomerAddToBlacklistDialogComponent } from '@household/web/app/hairdressing/customer/customer-add-to-blacklist-dialog/customer-add-to-blacklist-dialog.component';
 
 xdescribe('CustomerAddToBlacklistDialogComponent', () => {
   let component: CustomerAddToBlacklistDialogComponent;

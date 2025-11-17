@@ -1,25 +1,21 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MatListModule } from '@angular/material/list';
-import { By } from '@angular/platform-browser';
-import { provideRouter, RouterModule } from '@angular/router';
+import { provideRouter, RouterLink } from '@angular/router';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { Customer } from '@household/shared/types/types';
 import { CustomerListItemComponent } from '@household/web/app/hairdressing/customer/customer-list-item/customer-list-item.component';
+import { IElementSelector, elementSelectorFactory } from '@household/web/testing/element-selector';
 
 describe('CustomerListItemComponent', () => {
   let component: CustomerListItemComponent;
   let fixture: ComponentFixture<CustomerListItemComponent>;
   let customer: Customer.Response;
+  let selector: IElementSelector;
 
   beforeEach(async () => {
     customer = testDataFactory.customer.response();
 
     await TestBed.configureTestingModule({
-      declarations: [CustomerListItemComponent],
-      imports: [
-        MatListModule,
-        RouterModule,
-      ],
+      imports: [CustomerListItemComponent],
       providers: [provideRouter([])],
     })
       .compileComponents();
@@ -27,14 +23,18 @@ describe('CustomerListItemComponent', () => {
     fixture = TestBed.createComponent(CustomerListItemComponent);
     component = fixture.componentInstance;
     component.customer = customer;
+    
+    selector = elementSelectorFactory(fixture.debugElement);
     fixture.detectChanges();
   });
 
   it('should contain a link to customer details page', () => {
-    expect(fixture.debugElement.query(By.css('a')).attributes.href).toContain(customer.customerId);
+    const link = selector.getComponent(RouterLink);
+    expect(link.attributes.href).toContain(customer.customerId);
   });
 
   it('should display customer name', () => {
-    expect(fixture.debugElement.query(By.css('a')).nativeElement.textContent).toEqual(customer.name);
+    const link = selector.getComponent(RouterLink);
+    expect(link.nativeElement.textContent).toEqual(customer.name);
   });
 });

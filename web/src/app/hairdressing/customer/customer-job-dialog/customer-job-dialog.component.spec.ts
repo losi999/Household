@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { CustomerJobDialogComponent } from './customer-job-dialog.component';
+import { CustomerJobDialogComponent } from '@household/web/app/hairdressing/customer/customer-job-dialog/customer-job-dialog.component';
 
 xdescribe('CustomerJobDialogComponent', () => {
   let component: CustomerJobDialogComponent;

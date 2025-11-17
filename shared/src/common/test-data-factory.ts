@@ -1,4 +1,4 @@
-import { dateToISODateString, generateMongoId } from '@household/shared/common/utils';
+import { addDays, dateToISODateString, generateMongoId } from '@household/shared/common/utils';
 import { AccountType, CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType, CategoryType, FileType, SettingKey, TransactionType, UserType } from '@household/shared/enums';
 import { DocumentUpdate } from '@household/shared/types/common';
 import { Account, Auth, Calendar, Category, Customer, File, Price, Product, Project, Recipient, Report, Setting, Transaction, User } from '@household/shared/types/types';
@@ -997,6 +997,7 @@ const createPastCalendarDay = () => {
 const createFutureCalendarDay = () => {
   return dateToISODateString(faker.date.soon({
     days: 50,
+    refDate: addDays(1),
   }));
 };
 

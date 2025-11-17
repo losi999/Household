@@ -18,6 +18,18 @@ describe('Customer API effects', () => {
   let mockCustomerService: jasmine.SpyObj<CustomerService>;
 
   beforeEach(() => {
+    mockCustomerService = jasmine.createSpyObj<CustomerService>([
+      'listCustomers',
+      'listCustomerWorks',
+      'createCustomer',
+      'updateCustomer',
+      'createCustomerJob',
+      'updateCustomerJob',
+      'deleteCustomerJob',
+      'updateCustomerBlacklist',
+      'deleteCustomerBlacklist',
+    ]);
+
     TestBed.configureTestingModule({
       providers: [
         CustomerApiEffects,
@@ -25,24 +37,13 @@ describe('Customer API effects', () => {
         provideMockStore(),
         {
           provide: CustomerService,
-          useValue: jasmine.createSpyObj<CustomerService>('CustomerService', [
-            'listCustomers',
-            'listCustomerWorks',
-            'createCustomer',
-            'updateCustomer',
-            'createCustomerJob',
-            'updateCustomerJob',
-            'deleteCustomerJob',
-            'updateCustomerBlacklist',
-            'deleteCustomerBlacklist',
-          ]), 
+          useValue: mockCustomerService, 
         },
       ],
     });
 
     effects = TestBed.inject(CustomerApiEffects);
     store = TestBed.inject(MockStore);
-    mockCustomerService = TestBed.inject(CustomerService) as jasmine.SpyObj<CustomerService>;
   });
 
   describe('On List customers initiated', () => {

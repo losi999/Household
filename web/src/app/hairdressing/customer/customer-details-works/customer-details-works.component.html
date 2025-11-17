@@ -1,0 +1,12 @@
+@if (works?.length > 0 ) {
+<household-icon-text icon="calendar_clock" [text]="title" size="medium" />
+<mat-paginator #paginator [length]="works.length" [hidePageSize]="true" [pageSize]="pageSize" />
+<mat-list>
+  @for (e of works | paginate: paginator.pageIndex: paginator.pageSize; track $index) {
+  <mat-list-item>
+    <span matListItemTitle>{{e.day | date: 'yyyy. MMMM d., EEEE'}} {{e.start | timeSlotToTime}}-{{e.end | timeSlotToTime}}</span>
+    <span matListItemLine>{{e.title}}</span>
+  </mat-list-item>
+  }
+</mat-list>
+}

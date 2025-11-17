@@ -9,10 +9,10 @@ describe('UpcomingEntriesPipe', () => {
   });
 
   it('should return filtered entries', () => {
-    const pastEntry = testDataFactory.calendar.entry.response.base({
+    const pastEntry = testDataFactory.calendar.entry.response.workBase({
       day: testDataFactory.calendar.day.pastDay(),
     });
-    const futureEntry = testDataFactory.calendar.entry.response.base({
+    const futureEntry = testDataFactory.calendar.entry.response.workBase({
       day: testDataFactory.calendar.day.futureDay(),
     });
 

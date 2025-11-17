@@ -1,11 +1,14 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { Customer, Price } from '@household/shared/types/types';
-import { JobPriceCalculatorValue } from '@household/web/app/shared/job-price-calculator/job-price-calculator.component';
+import { JobPriceCalculatorComponent, JobPriceCalculatorValue } from '@household/web/app/shared/job-price-calculator/job-price-calculator.component';
 import { selectPriceList } from '@household/web/app/hairdressing/price/state/price.selector';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
+import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
+import { DurationStepperComponent } from '@household/web/app/shared/duration-stepper/duration-stepper.component';
+import { MatButtonModule } from '@angular/material/button';
 
 export type CustomerJobDialogData = Customer.CustomerId 
 & {
@@ -18,7 +21,14 @@ export type CustomerJobDialogResult = Customer.CustomerId
 };
 
 @Component({
-  standalone: false,  
+  imports: [
+    ReactiveFormsModule,
+    ClearableInputComponent,
+    DurationStepperComponent,
+    JobPriceCalculatorComponent,
+    MatDialogModule,
+    MatButtonModule,
+  ],  
   templateUrl: './customer-job-dialog.component.html',
   styleUrl: './customer-job-dialog.component.scss',
 })
