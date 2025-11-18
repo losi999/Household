@@ -7,9 +7,8 @@ import { Customer } from '@household/shared/types/types';
 import { CustomerDialogComponent, CustomerDialogResult } from '@household/web/app/hairdressing/customer/customer-dialog/customer-dialog.component';
 import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
 import { elementSelectorFactory, IElementSelector } from '@household/web/testing/element-selector';
-import { setValueOfClearableInput } from '@household/web/testing/utils';
 
-fdescribe('CustomerDialogComponent', () => {
+describe('CustomerDialogComponent', () => {
   let fixture: ComponentFixture<CustomerDialogComponent>;
   let mockMatDialogRef: jasmine.SpyObj<MatDialogRef<CustomerDialogComponent, CustomerDialogResult>>;
   let selector: IElementSelector;
@@ -142,9 +141,9 @@ fdescribe('CustomerDialogComponent', () => {
           isGroup: true,
         });
 
-        setValueOfClearableInput(selector, request.name, 'name');
-        setValueOfClearableInput(selector, request.description, 'description');
-        selector.getComponentByTestId<HTMLButtonElement>('rating').children[request.rating - 1].nativeElement.click();
+        selector.getComponentByTestId<ClearableInputComponent>('name').componentInstance.changed(request.name);
+        selector.getComponentByTestId<ClearableInputComponent>('description').componentInstance.changed(request.description);
+        selector.getElementByTestId('rating').children[request.rating - 1].nativeElement.click();
         selector.getElementByCss<HTMLInputElement>('input[type="checkbox"]', MatCheckbox).nativeElement.click();
 
         fixture.detectChanges();
@@ -212,7 +211,7 @@ fdescribe('CustomerDialogComponent', () => {
       });
 
       it('should display error if form is submitted and its value is empty', () => {
-        setValueOfClearableInput(selector, '', 'name');
+        selector.getComponentByTestId<ClearableInputComponent>('name').componentInstance.changed('');
 
         fixture.detectChanges();
 
@@ -299,9 +298,9 @@ fdescribe('CustomerDialogComponent', () => {
           isGroup: !customer.isGroup,
         });
 
-        setValueOfClearableInput(selector, request.name, 'name');
-        setValueOfClearableInput(selector, request.description, 'description');
-        selector.getComponentByTestId<HTMLButtonElement>('rating').children[request.rating - 1].nativeElement.click();
+        selector.getComponentByTestId<ClearableInputComponent>('name').componentInstance.changed(request.name);
+        selector.getComponentByTestId<ClearableInputComponent>('description').componentInstance.changed(request.description);
+        selector.getElementByTestId('rating').children[request.rating - 1].nativeElement.click();
         selector.getElementByCss<HTMLInputElement>('input[type="checkbox"]', MatCheckbox).nativeElement.click();
 
         fixture.detectChanges();

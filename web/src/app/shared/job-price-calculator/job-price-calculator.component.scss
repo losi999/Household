@@ -12,9 +12,16 @@
 .detailed-price {
   display: grid;
   grid-template-columns: 1fr 48px 80px 48px 100px 48px;
-  grid-template-areas: "name minus quantity plus amount remove";
+  grid-template-areas:
+    "name minus quantity plus amount remove"
+    "error error error error error error";
   align-items: center;
   text-align: right;
+
+  .error {
+    grid-area: error;
+    text-align: left;
+  }
 
   .quantity {
     text-align: center;

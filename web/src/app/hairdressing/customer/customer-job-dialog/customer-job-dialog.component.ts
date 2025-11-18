@@ -76,15 +76,7 @@ export class CustomerJobDialogComponent implements OnInit {
       }) ?? [], [Validators.required]),
     });
   }
-    
-  onSetDuration(diff: number) {
-    this.form.patchValue({
-      duration: this.form.value.duration + diff,
-    }, {
-      emitEvent: false,
-    });
-  }
-      
+
   onSave() {
     if (this.form.valid) {
       this.dialogRef.close({

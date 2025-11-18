@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { Customer } from '@household/shared/types/types';
@@ -17,6 +18,7 @@ import { Observable } from 'rxjs';
   templateUrl: './customer-home.component.html',
   styleUrl: './customer-home.component.scss',
   imports: [
+    ReactiveFormsModule,
     CustomerListComponent,
     ClearableInputComponent,
     MatIconModule,
@@ -28,10 +30,14 @@ import { Observable } from 'rxjs';
 })
 export class CustomerHomeComponent implements OnInit {
   customers: Observable<Customer.Response[]>;
+
+  search: FormControl<string>;
   
   constructor(private store: Store) { }
 
   ngOnInit(): void {
+    this.search = new FormControl();
+
     this.customers = this.store.select(selectCustomerList);
 
     this.store.dispatch(customerApiActions.listCustomersInitiated());

@@ -10,7 +10,7 @@ import { CustomerListComponent } from '@household/web/app/hairdressing/customer/
 import { ToolbarComponent } from '@household/web/app/shared/toolbar/toolbar.component';
 import { MatIconButton } from '@angular/material/button';
 import { elementSelectorFactory, IElementSelector } from '@household/web/testing/element-selector';
-import { setValueOfClearableInput } from '@household/web/testing/utils';
+import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
 
 describe('CustomerHomeComponent', () => {
   let fixture: ComponentFixture<CustomerHomeComponent>;
@@ -83,7 +83,7 @@ describe('CustomerHomeComponent', () => {
   });
 
   it('should filter customers by input value', () => {
-    setValueOfClearableInput(selector, searchedCustomer.name);
+    selector.getComponent(ClearableInputComponent).componentInstance.changed(searchedCustomer.name);
     
     fixture.detectChanges();
 

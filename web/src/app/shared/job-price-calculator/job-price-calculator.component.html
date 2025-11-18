@@ -41,7 +41,10 @@
       </ng-template>
     </ng-container>
     <mat-divider [style.grid-row]="form.controls.length + 1" [style.grid-column]="'1 / 7'" />
-    <span [style.grid-area]="'name'" [style.grid-row]="form.controls.length + 2" [ngClass]="{'red': form.errors?.required}">Összesen</span>
-    <span [style.grid-area]="'amount'" [style.grid-row]="form.controls.length + 2" [ngClass]="{'red': form.errors?.required}">{{total}} Ft</span>
+    <span [style.grid-area]="'name'" [style.grid-row]="form.controls.length + 2">Összesen</span>
+    <span [style.grid-area]="'amount'" [style.grid-row]="form.controls.length + 2">{{total}} Ft</span>
+    @if (form.errors?.required) {
+    <mat-error class="error" [style.grid-row]="form.controls.length + 3">Legalább 1 elem kiválasztása kötelező</mat-error>
+    }
   </div>
 </form>
