@@ -3,14 +3,38 @@ import { DocumentUpdate } from '@household/shared/types/common';
 import { Calendar } from '@household/shared/types/types';
 
 export interface ICalendarDayService {
+  findCalendarDayByDay(day: Calendar.DayProp['day']): Promise<Calendar.Day.Document>;
+  saveCalendarDay(document: Calendar.Day.Document): Promise<Calendar.Day.Document>;
   deleteCalendarDay(day: Calendar.DayProp['day']): Promise<unknown>;
   updateCalendarDay(day: Calendar.DayProp['day'], updateQuery: DocumentUpdate<Calendar.Day.Document>): Promise<unknown>;
   listCalendarDays(data: Calendar.DateRange): Promise<Calendar.Day.Document[]>;
+  clearCalendarDay(day: Calendar.DayProp['day']): Promise<unknown>;
 }
 
 export const calendarDayServiceFactory = (mongodbService: IMongodbService): ICalendarDayService => {
 
   const instance: ICalendarDayService = {
+    saveCalendarDay: (doc) => {
+      return mongodbService.inSession((session) => {
+        return mongodbService.calendarDays.findOneAndReplace({
+          day: doc.day,
+        }, doc, {
+          upsert: true,
+          session,
+        });
+      });
+    },
+    findCalendarDayByDay: async(day) => {
+      if (day) {
+        return mongodbService.inSession((session) => {
+          return mongodbService.calendarDays.findOne({
+            day,
+          })
+            .session(session)
+            .lean();
+        });
+      }
+    },
     deleteCalendarDay: async (day) => {
       return mongodbService.inSession((session) => {
         return mongodbService.calendarDays.deleteOne({
@@ -20,12 +44,32 @@ export const calendarDayServiceFactory = (mongodbService: IMongodbService): ICal
         });
       });
     },
+    clearCalendarDay: async (day) => {
+      return mongodbService.inSession((session) => {
+        return session.withTransaction(async() => {
+          await mongodbService.calendarDays.deleteMany({
+            day,
+          }, {
+            session,
+          });
+
+          await mongodbService.calendarEntries.deleteMany({
+            day,
+          }, {
+            session,
+          });
+        });
+      });
+    },
     updateCalendarDay: async (day, { update }) => {
-      return mongodbService.calendarDays.findOneAndUpdate({
-        day,
-      }, update, {
-        runValidators: true,
-        upsert: true,
+      return mongodbService.inSession((session) => {
+        return mongodbService.calendarDays.findOneAndUpdate({
+          day,
+        }, update, {
+          runValidators: true,
+          upsert: true,
+          session,
+        });
       });
     },
     listCalendarDays: ({ dateFrom, dateTo }) => {

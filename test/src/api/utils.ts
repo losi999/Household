@@ -8,12 +8,12 @@ export const isLocalhost = () => {
 export const createId = <I>(id?: string): I => (id ?? faker.database.mongodbObjectId()) as I;
 
 export const expectRemainingProperties = (internal: object) => {
-  Object.keys(internal).forEach(key => expect(key, `${key} is an internal property`).to.be.oneOf([
+  Object.keys(internal).forEach(key => expect([
     '_id',
     'createdAt',
     'expiresAt',
     'updatedAt',
-  ]));
+  ], `${key} is an internal property`).to.include(key));
 };
 
 export const expectEmptyObject = (obj: object, message?: string) => {

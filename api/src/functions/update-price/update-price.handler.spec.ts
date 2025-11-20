@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/update-price/update-price.handler';
 import { IUpdatePriceService } from '@household/api/functions/update-price/update-price.service';
-import { priceDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { headerExpiresIn } from '@household/shared/constants';
 
 describe('Update price handler', () => {
@@ -13,8 +13,8 @@ describe('Update price handler', () => {
     handlerFunction = handler(mockUpdatePriceService);
   });
 
-  const priceId = priceDataFactory.id();
-  const body = priceDataFactory.request();
+  const priceId = testDataFactory.price.id();
+  const body = testDataFactory.price.request();
   const expiresIn = 3600;
   const handlerEvent = {
     body: JSON.stringify(body),

@@ -20,8 +20,14 @@ export interface ICategoryService {
 
 export const categoryServiceFactory = (mongodbService: IMongodbService): ICategoryService => {
   const instance: ICategoryService = {
-    saveCategory: (doc) => {
-      return mongodbService.categories.create(doc);
+    saveCategory: async(doc) => {
+      const [category] = await mongodbService.inSession((session) => {
+        return mongodbService.categories.create([doc], {
+          session,
+        });
+      });
+      
+      return category;
     },
     saveCategories: (docs) => {
       return mongodbService.inSession((session) => {
@@ -33,15 +39,23 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
       });
     },
     findCategoryById: async (categoryId) => {
-      return !categoryId ? undefined : mongodbService.categories.findById(categoryId)
-        .lean();
-        
+      if (categoryId) {
+        return mongodbService.inSession((session) => {
+          return mongodbService.categories.findById(categoryId)
+            .lean()
+            .session(session);
+        });
+      }        
     },
     getCategoryById: async (categoryId) => {
-      return !categoryId ? undefined : mongodbService.categories.findById(categoryId)
-        .populate('ancestors')
-        .lean();
-        
+      if (categoryId) {
+        return mongodbService.inSession((session) => {
+          return mongodbService.categories.findById(categoryId)
+            .session(session)
+            .populate('ancestors')
+            .lean();
+        });
+      }        
     },
     deleteCategory: async (categoryId) => {
       return mongodbService.inSession((session) => {
@@ -255,11 +269,18 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
       });
     },
     listCategories: () => {
-      return mongodbService.categories.find()
-        .populate('ancestors')
-        .lean();
+      return mongodbService.inSession((session) => {
+        return mongodbService.categories.find()
+          .session(session)
+          .populate('ancestors')
+          .lean();
+      });
     },
-    findCategoriesByIds: (categoryIds) => {
+    findCategoriesByIds: async(categoryIds) => {
+      if (!categoryIds?.length) {
+        return [];
+      }
+      
       return mongodbService.inSession((session) => {
         return mongodbService.categories.find({
           _id: {

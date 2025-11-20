@@ -1,5 +1,5 @@
 import { updateCustomerJobServiceFactory, IUpdateCustomerJobService } from '@household/api/functions/update-customer-job/update-customer-job.service';
-import { createDocumentUpdate2, customerDataFactory, priceDataFactory } from '@household/shared/common/test-data-factory';
+import { createDocumentUpdate2, testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getPriceId } from '@household/shared/common/utils';
 import { ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
@@ -18,23 +18,36 @@ describe('Update customer job service', () => {
 
     service = updateCustomerJobServiceFactory(mockCustomerService.service, mockCustomerDocumentConverter.service, mockPriceService.service);
   });
-
-  const queriedPriceDocument = priceDataFactory.document();
+  
+  const jobName = 'old job name';
+  const queriedPriceDocument = testDataFactory.price.document();
   const priceId = getPriceId(queriedPriceDocument);
-  const body = customerDataFactory.jobRequest({
-    name: 'new job',
-    prices: [
+  const body = testDataFactory.customer.job.request({
+    body: {
+
+      name: 'new job',
+    },
+    prices: {
+      custom: [testDataFactory.price.base()],
+      listed: [
+        {
+          priceId,
+          quantity: 1,
+        },
+      ],
+    },
+  });
+  const queriedCustomer = testDataFactory.customer.document({
+    jobs: [
       {
-        priceId,
-        quantity: 1,
+        body: {
+          name: jobName,
+        },
       },
-      priceDataFactory.base(),
     ],
   });
-  const queriedCustomer = customerDataFactory.document();
   const documentUpdate = createDocumentUpdate2();
-  const customerId = customerDataFactory.id();
-  const jobName = 'old job name';
+  const customerId = testDataFactory.customer.id();
 
   it('should return', async () => {
     mockCustomerService.functions.findCustomerById.mockResolvedValue(queriedCustomer);
@@ -85,9 +98,38 @@ describe('Update customer job service', () => {
       expect.assertions(6);
     });
 
+    it('if no customer job found', async () => {
+      const queriedCustomer = testDataFactory.customer.document();
+      mockCustomerService.functions.findCustomerById.mockResolvedValue(queriedCustomer);
+
+      await service({
+        body,
+        customerId,
+        name: jobName,
+      }).catch(validateError('No customer job found', 404));
+      validateFunctionCall(mockCustomerService.functions.findCustomerById, customerId);
+      validateFunctionCall(mockPriceService.functions.findPricesByIds);
+      validateFunctionCall(mockCustomerDocumentConverter.functions.updateJob);
+      validateFunctionCall(mockCustomerService.functions.updateCustomer);
+      expect.assertions(6);
+    });
+
     it('if job name already exists', async () => {
-      const body = customerDataFactory.jobRequest({
-        name: queriedCustomer.jobs[0].name,
+      const queriedCustomer = testDataFactory.customer.document({
+        jobs: [
+          {},
+          {
+            body: {
+              name: jobName,
+            },
+          },
+        ],
+      });
+
+      const body = testDataFactory.customer.job.request({
+        body: {
+          name: queriedCustomer.jobs[0].name,
+        },
       });
       mockCustomerService.functions.findCustomerById.mockResolvedValue(queriedCustomer);
 
@@ -112,6 +154,22 @@ describe('Update customer job service', () => {
         customerId,
         name: jobName,
       }).catch(validateError('Error while listing prices by ids', 500));
+      validateFunctionCall(mockCustomerService.functions.findCustomerById, customerId);
+      validateFunctionCall(mockPriceService.functions.findPricesByIds, [priceId]);
+      validateFunctionCall(mockCustomerDocumentConverter.functions.updateJob);
+      validateFunctionCall(mockCustomerService.functions.updateCustomer);
+      expect.assertions(6);
+    });
+
+    it('if some of the prices are not found', async () => {
+      mockCustomerService.functions.findCustomerById.mockResolvedValue(queriedCustomer);
+      mockPriceService.functions.findPricesByIds.mockResolvedValue([]);
+
+      await service({
+        body,
+        customerId,
+        name: jobName,
+      }).catch(validateError('Some of the prices are not found', 400));
       validateFunctionCall(mockCustomerService.functions.findCustomerById, customerId);
       validateFunctionCall(mockPriceService.functions.findPricesByIds, [priceId]);
       validateFunctionCall(mockCustomerDocumentConverter.functions.updateJob);

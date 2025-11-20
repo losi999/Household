@@ -1,12 +1,28 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Customer } from '@household/shared/types/types';
 import { customerActions } from '@household/web/app/hairdressing/customer/state/customer.actions';
+import { JobPriceSummaryComponent } from '@household/web/app/shared/job-price-summary/job-price-summary.component';
+import { TimeSlotToTimePipe } from '@household/web/app/shared/pipes/time-slot-to-time.pipe';
 import { Store } from '@ngrx/store';
 
 @Component({
+  imports: [
+    TimeSlotToTimePipe,
+    JobPriceSummaryComponent,
+    RouterLink,
+    MatCardModule,
+    MatDividerModule,
+    MatMenuModule,
+    MatIconModule,
+    MatButtonModule,
+  ],
   selector: 'household-customer-details-job-item',
-  standalone: false,  
   templateUrl: './customer-details-job-item.component.html',
   styleUrl: './customer-details-job-item.component.scss',
 })

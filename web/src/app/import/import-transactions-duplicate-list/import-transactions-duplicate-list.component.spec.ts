@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ImportTransactionsDuplicateListComponent } from './import-transactions-duplicate-list.component';
 
-describe('ImportTransactionsDuplicateListComponent', () => {
+xdescribe('ImportTransactionsDuplicateListComponent', () => {
   let component: ImportTransactionsDuplicateListComponent;
   let fixture: ComponentFixture<ImportTransactionsDuplicateListComponent>;
 

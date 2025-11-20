@@ -7,6 +7,7 @@ export enum CalendarEntryDetailsDialogResult {
   Edit = 'edit',
   Delete = 'delete',
   Pay = 'pay',
+  NoShow = 'noShow',
 }
 
 @Component({

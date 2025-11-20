@@ -12,13 +12,23 @@ export interface IFileService {
 
 export const fileServiceFactory = (mongodbService: IMongodbService): IFileService => {
   const instance: IFileService = {
-    saveFile: (doc) => {
-      return mongodbService.files.create(doc);
+    saveFile: async(doc) => {
+      const [file] = await mongodbService.inSession((session) => {
+        return mongodbService.files.create([doc], {
+          session,
+        });
+      });
+      
+      return file;
     },
     findFileById: async (fileId) => {
-      return !fileId ? undefined : mongodbService.files.findById(fileId)
-        .lean();
-        
+      if (fileId) {
+        return mongodbService.inSession((session) => {
+          return mongodbService.files.findById(fileId)
+            .session(session)
+            .lean();
+        });
+      }        
     },
     deleteFile: async (fileId) => {
       return mongodbService.inSession((session) => {
@@ -36,12 +46,15 @@ export const fileServiceFactory = (mongodbService: IMongodbService): IFileServic
       });
     },
     updateFile: (fileId, updateQuery) => {
-      return mongodbService.files.findByIdAndUpdate(fileId, updateQuery,
-        {
-          returnDocument: 'after',
-          runValidators: true,
-        },
-      );
+      return mongodbService.inSession((session) => {
+        return mongodbService.files.findByIdAndUpdate(fileId, updateQuery,
+          {
+            returnDocument: 'after',
+            runValidators: true,
+            session,
+          },
+        );
+      });
     },
     listFiles: () => {
       return mongodbService.inSession((session) => {

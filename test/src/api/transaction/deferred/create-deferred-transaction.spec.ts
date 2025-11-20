@@ -481,7 +481,7 @@ describe('POST transaction/v1/transactions/payment (deferred)', () => {
                   billingStartDate: '2022-06-03',
                 }))
                 .expectBadRequestResponse()
-                .expectTooEarlyDateProperty('billingEndDate', 'body');
+                .expectTooEarlyDateProperty('billingEndDate', true, 'body');
             });
           });
 

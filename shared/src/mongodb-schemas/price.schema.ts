@@ -16,6 +16,9 @@ export const priceSchema = new Schema<Price.Document>({
     type: String,
     enum: [...priceUnitsOfMeasurement],
   },
+  isArchived: {
+    type: Boolean,
+  },
   expiresAt: {
     type: Schema.Types.Date,
     index: {

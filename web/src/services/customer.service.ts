@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Customer } from '@household/shared/types/types';
+import { Calendar, Customer } from '@household/shared/types/types';
 import { environment } from '@household/web/environments/environment';
 
 @Injectable({
@@ -36,6 +36,10 @@ export class CustomerService {
 
   deleteCustomerJob(customerId: Customer.Id, jobName: Customer.Job.Name['name']) {
     return this.httpClient.delete(`${environment.apiUrl}/customer/v1/customers/${customerId}/jobs/${jobName}`);
+  }
+
+  listCustomerWorks(customerId: Customer.Id) {
+    return this.httpClient.get<Calendar.Entry.ResponseBase[]>(`${environment.apiUrl}/customer/v1/customers/${customerId}/works`);
   }
 
   updateCustomerBlacklist(body: Customer.Id[]) {

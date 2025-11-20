@@ -10,10 +10,15 @@ const getSettingDocumentByKey = (...params: Parameters<ISettingService['getSetti
   return cy.task<Setting.Document>('getSettingByKey', params);
 };
 
+const listSettingDocumentsByKeys = (...params: Parameters<ISettingService['listSettingsByKeys']>) => {
+  return cy.task<Setting.Document[]>('listSettingsByKeys', params);
+};
+
 export const setSettingTaskCommands = () => {
   Cypress.Commands.addAll({
     updateSettingDocument,
     getSettingDocumentByKey,
+    listSettingDocumentsByKeys,
   });
 };
 
@@ -21,7 +26,8 @@ declare global {
   namespace Cypress {
     interface Chainable {
       updateSettingDocument: CommandFunction<typeof updateSettingDocument>;
-      getSettingDocumentByKey: CommandFunction<typeof getSettingDocumentByKey>
+      getSettingDocumentByKey: CommandFunction<typeof getSettingDocumentByKey>;
+      listSettingDocumentsByKeys: CommandFunction<typeof listSettingDocumentsByKeys>;
     }
   }
 }

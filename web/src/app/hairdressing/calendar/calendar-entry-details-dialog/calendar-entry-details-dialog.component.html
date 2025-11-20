@@ -14,12 +14,13 @@
 </div>
 
 <mat-dialog-actions>
-  @if (entry.entryType === 'work' && !entry.isPaid) {
+  @if (entry.entryType === 'work' && !entry.resolution) {
   <button mat-flat-button mat-dialog-close="pay" class="pay" type="button">Fizetés</button>
   }
-  @if (entry.entryType !== 'work' || !entry.isPaid) {
-  <button mat-flat-button mat-dialog-close="edit" color="primary" type="button">Szerkesztés</button>
-  <button mat-flat-button mat-dialog-close="delete" color="warn" type="button">Törlés</button>
+  @if (entry.entryType !== 'work' || !entry.resolution) {
+  <button mat-flat-button mat-dialog-close="delete" color="primary" type="button">Lemondta</button>
+  <button mat-flat-button mat-dialog-close="noShow" color="warn" type="button">Nem jött el</button>
+  <button mat-flat-button mat-dialog-close="edit" style="margin-left: auto;" color="primary" type="button">Szerkesztés</button>
   }
   <button mat-flat-button mat-dialog-close type="button">Bezárás</button>
 </mat-dialog-actions>

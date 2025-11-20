@@ -50,9 +50,10 @@ export enum CalendarEntryType {
   Issue = 'issue',
 }
 
-export enum PaymentType {
-  Cash = 'cash',
-  Transfer = 'transfer',
+export enum CalendarEntryResolutionStatus {
+  Paid = 'paid',
+  NoShow = 'noShow',
+  PendingTransfer = 'pendingTransfer',
 }
 
 export enum SettingKey {

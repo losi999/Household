@@ -37,18 +37,6 @@ components:
           minimum: 0
           maximum: 96
 
-    PlannedTimeInterval:
-      type: object
-      properties:
-        plannedStart:
-          type: integer
-          minimum: 0
-          maximum: 96
-        plannedEnd:
-          type: integer
-          minimum: 0
-          maximum: 96
-
     VacationRequest:
       type: object
       required:
@@ -116,6 +104,20 @@ components:
               const: work
             customer:
               $ref: "customer.yaml#/components/schemas/Response"
+            resolution:
+              allOf:
+                - $ref: "calendar.yaml#/components/schemas/Delay"
+                - $ref: "transaction.yaml#/components/schemas/Amount"
+                - type: object
+                  required:
+                    - status
+                  properties:
+                    status:
+                      type: string
+                      enum:
+                        - paid
+                        - pendingTransfer
+                        - noShow
 
     Entry.Response:
       oneOf:
@@ -137,7 +139,6 @@ components:
         - oneOf:
             - allOf:
                 - $ref: "#/components/schemas/TimeInterval"
-                - $ref: "#/components/schemas/PlannedTimeInterval"
                 - type: object
                   properties:
                     dayType:
@@ -185,3 +186,39 @@ components:
       oneOf:
         - $ref: "#/components/schemas/NonWorkEntry.Request"
         - $ref: "#/components/schemas/WorkEntry.Request"
+
+    Delay:
+      type: object
+      properties:
+        delay:
+          type: integer
+          exclusiveMinimum: 0
+
+    Resolution.Request:
+      oneOf:
+        - allOf:
+            - $ref: "calendar.yaml#/components/schemas/Delay"
+            - $ref: "transaction.yaml#/components/schemas/Amount"
+            - type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  const: paid
+        - allOf:
+            - $ref: "calendar.yaml#/components/schemas/Delay"
+            - type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  const: pendingTransfer
+        - type: object
+          required:
+            - status
+          properties:
+            status:
+              type: string
+              const: noShow

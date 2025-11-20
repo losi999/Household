@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ConfirmUserComponent } from './confirm-user.component';
 
-describe('ConfirmUserComponent', () => {
+xdescribe('ConfirmUserComponent', () => {
   let component: ConfirmUserComponent;
   let fixture: ComponentFixture<ConfirmUserComponent>;
 

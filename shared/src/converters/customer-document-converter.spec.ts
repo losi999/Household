@@ -1,7 +1,6 @@
-import { calendarEntryDataFactory, createDocumentUpdate2, customerDataFactory, priceDataFactory } from '@household/shared/common/test-data-factory';
+import { createDocumentUpdate2, testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock } from '@household/shared/common/unit-testing';
 import { addSeconds, getCustomerId, getPriceId } from '@household/shared/common/utils';
-import { ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
 import { customerDocumentConverterFactory, ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
 import { IPriceDocumentConverter } from '@household/shared/converters/price-document-converter';
 import { advanceTo, clear } from 'jest-date-mock';
@@ -9,15 +8,13 @@ import { advanceTo, clear } from 'jest-date-mock';
 describe('Customer document converter', () => {
   let converter: ICustomerDocumentConverter;
   let mockPriceDocumentConverter: Mock<IPriceDocumentConverter>;
-  let mockCalendarEntryDocumentConverter: Mock<ICalendarEntryDocumentConverter>;
   const now = new Date();
   const expiresIn = 3600;
 
   beforeEach(() => {
     mockPriceDocumentConverter = createMockService('toResponse');
-    mockCalendarEntryDocumentConverter = createMockService('toResponseBase');
     advanceTo(now);
-    converter = customerDocumentConverterFactory(mockPriceDocumentConverter.service, mockCalendarEntryDocumentConverter.service);
+    converter = customerDocumentConverterFactory(mockPriceDocumentConverter.service);
   });
 
   afterEach(() => {
@@ -26,8 +23,8 @@ describe('Customer document converter', () => {
 
   describe('createJobPriceList', () => {
     it('should return document', () => {
-      const priceBase = priceDataFactory.base();
-      const priceDocument = priceDataFactory.document();
+      const priceBase = testDataFactory.price.base();
+      const priceDocument = testDataFactory.price.document();
       const quantity = 1;
 
       const result = converter.createJobPriceList([
@@ -49,32 +46,34 @@ describe('Customer document converter', () => {
 
   describe('create', () => {
     it('should return document', () => {
-      const body = customerDataFactory.request();
+      const body = testDataFactory.customer.request();
 
       const result = converter.create(body, undefined);
-      expect(result).toEqual(customerDataFactory.document({
-        ...body,
+      expect(result).toEqual({
+        ...testDataFactory.customer.document({
+          body,
+        }),
         _id: undefined,
-        jobs: [],
-      }));
+      });
     });
 
     it('should return expiring document', () => {
-      const body = customerDataFactory.request();
+      const body = testDataFactory.customer.request();
 
       const result = converter.create(body, expiresIn);
-      expect(result).toEqual(customerDataFactory.document({
-        ...body,
+      expect(result).toEqual({
+        ...testDataFactory.customer.document({
+          body,
+        }),
         _id: undefined,
-        jobs: [],
         expiresAt: addSeconds(expiresIn, now),
-      }));
+      });
     });
   });
 
   describe('update', () => {
     it('should update document', () => {
-      const body = customerDataFactory.request();
+      const body = testDataFactory.customer.request();
 
       const result = converter.update(body, expiresIn);
       expect(result).toEqual(createDocumentUpdate2({
@@ -88,7 +87,7 @@ describe('Customer document converter', () => {
     });
 
     it('should unset description', () => {
-      const body = customerDataFactory.request({});
+      const body = testDataFactory.customer.request({});
       delete body.description;
       const result = converter.update(body, expiresIn);
       expect(result).toEqual(createDocumentUpdate2({
@@ -106,7 +105,7 @@ describe('Customer document converter', () => {
   });
 
   describe('addBlacklistedCustomer', () => {
-    const customer = customerDataFactory.document();
+    const customer = testDataFactory.customer.document();
 
     it('should return update', () => {
       const result = converter.addBlacklistedCustomer(customer);
@@ -121,7 +120,7 @@ describe('Customer document converter', () => {
   });
 
   describe('removeBlacklistedCustomer', () => {
-    const customerId = customerDataFactory.id();
+    const customerId = testDataFactory.customer.id();
     it('should return update', () => {
       const result = converter.removeBlacklistedCustomer(customerId);
       expect(result).toEqual(createDocumentUpdate2({
@@ -135,22 +134,26 @@ describe('Customer document converter', () => {
   });
 
   describe('addJob', () => {
-    const priceDocument = priceDataFactory.document();
+    const priceDocument = testDataFactory.price.document();
     const priceId = getPriceId(priceDocument);
     const quantity = 1;
     const priceName = 'price name';
     const amount = 3000;
-    const job = customerDataFactory.jobRequest({
-      prices: [
-        {
-          priceId,
-          quantity,
-        },
-        {
-          name: priceName,
-          amount,
-        },
-      ],
+    const job = testDataFactory.customer.job.request({
+      prices: {
+        custom: [
+          {
+            name: priceName,
+            amount,
+          },
+        ],
+        listed: [
+          {
+            priceId,
+            quantity,
+          },
+        ],
+      },
     });
 
     it('should return update', () => {
@@ -162,12 +165,12 @@ describe('Customer document converter', () => {
               ...job,
               prices: [
                 {
-                  price: priceDocument,
-                  quantity,
-                },
-                {
                   name: priceName,
                   amount,
+                },
+                {
+                  price: priceDocument,
+                  quantity,
                 },
               ],
             },
@@ -178,22 +181,26 @@ describe('Customer document converter', () => {
   });
 
   describe('updateJob', () => {
-    const priceDocument = priceDataFactory.document();
+    const priceDocument = testDataFactory.price.document();
     const priceId = getPriceId(priceDocument);
     const quantity = 1;
     const priceName = 'price name';
     const amount = 3000;
-    const job = customerDataFactory.jobRequest({
-      prices: [
-        {
-          priceId,
-          quantity,
-        },
-        {
-          name: priceName,
-          amount,
-        },
-      ],
+    const job = testDataFactory.customer.job.request({
+      prices: {
+        custom: [
+          {
+            name: priceName,
+            amount,
+          },
+        ],
+        listed: [
+          {
+            priceId,
+            quantity,
+          },
+        ],
+      },
     });
 
     it('should return update', () => {
@@ -205,12 +212,12 @@ describe('Customer document converter', () => {
               ...job,
               prices: [
                 {
-                  price: priceDocument,
-                  quantity,
-                },
-                {
                   name: priceName,
                   amount,
+                },
+                {
+                  price: priceDocument,
+                  quantity,
                 },
               ],
             },
@@ -244,65 +251,66 @@ describe('Customer document converter', () => {
   describe('toResponseJobPriceList', () => {
     it('should return response', () => {
       const quantity = 1;
-      const priceBase = priceDataFactory.base();
-      const priceResponse = priceDataFactory.response();
+      const priceBase = testDataFactory.price.base();
+      const priceResponse = testDataFactory.price.response();
       mockPriceDocumentConverter.functions.toResponse.mockReturnValue(priceResponse);
 
       const result = converter.toResponseJobPriceList([
         {
-          price: priceDataFactory.document(),
+          price: testDataFactory.price.document(),
           quantity,
         },
         priceBase,
       ]);
       expect(result).toEqual([
-        customerDataFactory.jobPriceResponse({
+        {
           quantity,
           ...priceResponse,
-        }),
-        customerDataFactory.jobPriceResponse({
-          ...priceBase,
-        }),
+        },
+        priceBase,
       ]);
     });
   });
 
   describe('toResponse', () => {
     it('should return response', () => {
-      const priceBase = priceDataFactory.base();
-      const priceDocument = priceDataFactory.document();
-      const jobB = customerDataFactory.jobDocument({
-        name: 'B',
-        prices: [priceBase],
-      });
+      const priceBase = testDataFactory.price.base();
       const quantity = 1;
-      const jobA = customerDataFactory.jobDocument({
-        name: 'A',
-        prices: [
-          {
-            price: priceDocument,
-            quantity,
-          },
-        ],
-      });
-      const blacklistedCustomer = customerDataFactory.document();
-      const doc = customerDataFactory.document({
+      const blacklistedCustomer = testDataFactory.customer.document();
+      const doc = testDataFactory.customer.document({
         jobs: [
-          jobB,
-          jobA,
+          {
+            body: {
+              name: 'B',
+            },
+            prices: {
+              custom: [priceBase],
+            },
+          },
+          {
+            body: {
+              name: 'A',
+            },
+            prices: {
+              listed: [
+                {
+                  quantity,
+                },
+              ],
+            },
+          },
         ],
         blacklistedCustomers: [blacklistedCustomer],
       });
-      const priceResponse = priceDataFactory.response();
+      const jobB = doc.jobs[0];
+      const jobA = doc.jobs[1];
+      const priceResponse = testDataFactory.price.response();
       mockPriceDocumentConverter.functions.toResponse.mockReturnValue(priceResponse);
-      const workEntries = calendarEntryDataFactory.document();
-      const convertedEntries = calendarEntryDataFactory.responseBase();
-      mockCalendarEntryDocumentConverter.functions.toResponseBase.mockReturnValue(convertedEntries);
 
       const { description, isGroup, name, rating } = doc;
 
-      const result = converter.toResponse(doc, [workEntries]);
-      expect(result).toEqual(customerDataFactory.response({
+      const result = converter.toResponse(doc);
+      expect(result).toEqual(testDataFactory.customer.response({
         description,
         name,
         isGroup,
@@ -317,7 +325,6 @@ describe('Customer document converter', () => {
             isGroup: blacklistedCustomer.isGroup,
           },
         ],
-        workEntries: [convertedEntries],
         jobs: [
           {
             name: jobA.name,
@@ -337,6 +344,9 @@ describe('Customer document converter', () => {
             prices: [
               {
                 ...priceBase,
+                quantity: undefined,
+                unitOfMeasurement: undefined,
+                priceId: undefined,
               },
             ],
           },
@@ -347,44 +357,44 @@ describe('Customer document converter', () => {
 
   describe('toResponseList', () => {
     it('should return response', () => {
-      const priceBase = priceDataFactory.base();
-      const priceDocument = priceDataFactory.document();
-      const jobB = customerDataFactory.jobDocument({
-        name: 'B',
-        prices: [priceBase],
-      });
-      const quantity = 1;
-      const jobA = customerDataFactory.jobDocument({
-        name: 'A',
-        prices: [
-          {
-            price: priceDocument,
-            quantity,
-          },
-        ],
-      });
-      const blacklistedCustomer = customerDataFactory.document();
-      const doc = customerDataFactory.document({
+      const priceBase = testDataFactory.price.base();   
+      const quantity = 1;   
+      const blacklistedCustomer = testDataFactory.customer.document();
+      const doc = testDataFactory.customer.document({
         jobs: [
-          jobB,
-          jobA,
+          {
+            body: {
+              name: 'B',
+            },
+            prices: {
+              custom: [priceBase],
+            },
+          },
+          {
+            body: {
+              name: 'A',
+            },
+            prices: {
+              listed: [
+                {
+                  quantity,
+                },
+              ],
+            },
+          },
         ],
         blacklistedCustomers: [blacklistedCustomer],
       });
-      const priceResponse = priceDataFactory.response();
+      const jobB = doc.jobs[0];
+      const jobA = doc.jobs[1];
+      const priceResponse = testDataFactory.price.response();
       mockPriceDocumentConverter.functions.toResponse.mockReturnValue(priceResponse);
-
-      const workEntries = calendarEntryDataFactory.document();
-      const convertedEntries = calendarEntryDataFactory.responseBase();
-      mockCalendarEntryDocumentConverter.functions.toResponseBase.mockReturnValue(convertedEntries);
 
       const { description, isGroup, name, rating } = doc;
 
-      const result = converter.toResponseList([doc], {
-        [getCustomerId(doc)]: [workEntries],
-      });
+      const result = converter.toResponseList([doc]);
       expect(result).toEqual([
-        customerDataFactory.response({
+        testDataFactory.customer.response({
           description,
           name,
           isGroup,
@@ -399,7 +409,6 @@ describe('Customer document converter', () => {
               isGroup: blacklistedCustomer.isGroup,
             },
           ],
-          workEntries: [convertedEntries], 
           jobs: [
             {
               name: jobA.name,
@@ -419,6 +428,9 @@ describe('Customer document converter', () => {
               prices: [
                 {
                   ...priceBase,
+                  quantity: undefined,
+                  unitOfMeasurement: undefined,
+                  priceId: undefined,
                 },
               ],
             },

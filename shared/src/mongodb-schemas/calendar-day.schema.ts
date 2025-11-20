@@ -26,7 +26,6 @@ export const calendarDaySchema = new Schema<Calendar.Day.Document>({
     },
   },
 }, {
-  _id: false,
   versionKey: false,
   timestamps: {
     createdAt: true,

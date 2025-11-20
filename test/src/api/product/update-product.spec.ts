@@ -86,7 +86,7 @@ describe('PUT /product/v1/products/{productId}', () => {
                 .expectTooShortProperty('brand', 1, 'body');
             });
 
-            it('is already in used by a different product', () => {
+            it('is already in use by a different product', () => {
               const duplicateProductDocument = productDataFactory.document({
                 body: request,
                 category: categoryDocument,

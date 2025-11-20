@@ -81,7 +81,7 @@ describe('POST account/v1/accounts', () => {
                 .expectTooShortProperty('name', 1, 'body');
             });
 
-            it('is already in used by a different account of the same owner', () => {
+            it('is already in use by a different account of the same owner', () => {
               const accountDocument = accountDataFactory.document(request);
 
               cy.saveAccountDocument(accountDocument)

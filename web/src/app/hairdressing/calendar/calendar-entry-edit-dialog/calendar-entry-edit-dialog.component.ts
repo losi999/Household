@@ -1,7 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { isListedPrice } from '@household/shared/common/type-guards';
 import { createDate, createWorkEntryTitle, dateToISODateString, dateToTimeSlot } from '@household/shared/common/utils';
 import { CalendarEntryType } from '@household/shared/enums';
 import { Calendar, Customer } from '@household/shared/types/types';
@@ -133,7 +132,7 @@ export class CalendarEntryEditDialogComponent implements OnInit {
           description: this.form.value.description ?? undefined,
           customerId: this.form.value.customer.customerId,
           prices: this.form.value.job.name === this.CUSTOM_JOB.name ? undefined : this.form.value.job?.prices.map((p) => {
-            if (isListedPrice(p)) {
+            if (p.priceId) {
               return {
                 priceId: p.priceId,
                 quantity: p.quantity,

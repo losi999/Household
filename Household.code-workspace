@@ -37,6 +37,7 @@
       "!Equals sequence",
       "!FindInMap sequence",
       "!Sub sequence",
-    ]
+    ],
+    "angular.enable-strict-mode-prompt": false
   }
 }

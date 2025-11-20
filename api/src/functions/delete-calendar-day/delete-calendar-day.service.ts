@@ -8,7 +8,13 @@ export interface IDeleteCalendarDayService {
 
 export const deleteCalendarDayServiceFactory = (
   calendarDayService: ICalendarDayService): IDeleteCalendarDayService => {
-  return ({ day }) => {
+  return async ({ day }) => {
+    const queried = await calendarDayService.findCalendarDayByDay(day).catch(httpErrors.calendarDay.getById({
+      day,
+    }));
+
+    httpErrors.calendarDay.isHoliday(queried);
+
     return calendarDayService.deleteCalendarDay(day).catch(httpErrors.calendarDay.delete({
       day,
     }));

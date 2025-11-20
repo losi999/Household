@@ -5,10 +5,10 @@
 </household-toolbar>
 @let cust = customer | async;
 @if (cust) {
-<div class="name">
+<div data-testId="name" class="name">
   {{cust.name}}
 </div>
-<div class="rating">
+<div data-testId="rating" class="rating">
   <mat-icon [ngClass]="cust.rating === 1 ? 'green' : ''">sentiment_stressed</mat-icon>
   <mat-icon [ngClass]="cust.rating === 2 ? 'green' : ''">sentiment_dissatisfied</mat-icon>
   <mat-icon [ngClass]="cust.rating === 3 ? 'green' : ''">sentiment_neutral</mat-icon>
@@ -16,29 +16,13 @@
   <mat-icon [ngClass]="cust.rating === 5 ? 'green' : ''">sentiment_excited</mat-icon>
 </div>
 @if (cust.description) {
-<div class="description">
-  {{cust.description}}
-</div>
+<div data-testId="description" class="description">{{cust.description}}</div>
 }
 <mat-divider />
-@let upcoming = cust.workEntries | upcomingEntries;
-@if (upcoming.length > 0 ) {
-<div class="section-title">
-  <household-icon-text icon="calendar_clock" text="Következő időpontok" size="medium" />
-</div>
-<mat-paginator #upcomingPaginator [length]="upcoming.length" [hidePageSize]="true" pageSize="3" />
-<mat-list>
-  @for (e of upcoming | paginate: upcomingPaginator.pageIndex: upcomingPaginator.pageSize; track $index) {
-  <mat-list-item>
-    <span matListItemTitle>{{e.day | date: 'yyyy. MMMM d., EEEE'}} {{e.start | timeSlotToTime}}-{{e.end | timeSlotToTime}}</span>
-    <span matListItemLine>{{e.title}}</span>
-  </mat-list-item>
-  }
-</mat-list>
-}
+<household-customer-details-works data-testId="upcoming-works" [works]="workEntries | async | upcomingEntries" [pageSize]="3" title="Következő időpontok" />
 <div class="section-title">
   <household-icon-text icon="content_cut" text="Munkák" size="medium" />
-  <button mat-icon-button type="button" (click)="onCreateJob()">
+  <button mat-icon-button data-testId="new-job" type="button" (click)="onCreateJob()">
     <mat-icon>add</mat-icon>
   </button>
 </div>
@@ -48,35 +32,21 @@
   }
 </div>
 <mat-divider />
-@let past = cust.workEntries | pastEntries;
-@if (past.length > 0) {
-<div class="section-title">
-  <household-icon-text icon="calendar_check" text="Korábbi időpontok" size="medium" />
-</div>
-<mat-paginator #pastPaginator [length]="past.length" [hidePageSize]="true" pageSize="5" />
-<mat-list>
-  @for (e of past | paginate: pastPaginator.pageIndex: pastPaginator.pageSize; track $index) {
-  <mat-list-item>
-    <span matListItemTitle>{{e.day | date: 'yyyy. MMMM d.'}} {{e.start | timeSlotToTime}}-{{e.end | timeSlotToTime}}</span>
-    <span matListItemLine>{{e.title}}</span>
-  </mat-list-item>
-  }
-</mat-list>
-}
+<household-customer-details-works data-testId="past-works" [works]="workEntries | async | pastEntries" title="Korábbi időpontok" />
 <mat-divider />
 <div class="section-title">
   <household-icon-text icon="block" text="Tiltólista" size="medium" />
-  <button mat-icon-button type="button" (click)="onAddToBlacklist()">
+  <button mat-icon-button data-testId="add-to-blacklist" type="button" (click)="onAddToBlacklist()">
     <mat-icon>add</mat-icon>
   </button>
 </div>
 @if (cust.blacklistedCustomers.length === 0) {
-<div>
+<div data-testId="empty-blacklist">
   Nincs vendég a tiltólistához adva
 </div>
 }
 @for (c of cust.blacklistedCustomers; track $index) {
-<div class="customer-blacklist">
+<div class="customer-blacklist" data-testId="blacklist">
   <div>
     {{c.name}}
   </div>

@@ -1,60 +1,60 @@
 import { default as schema } from '@household/shared/schemas/price-request';
 import { Price } from '@household/shared/types/types';
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
-import { priceDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 describe('Price schema', () => {
   const tester = jsonSchemaTesterFactory<Price.Request>(schema);
   describe('should accept', () => {
-    tester.validateSuccess(priceDataFactory.request());
+    tester.validateSuccess(testDataFactory.price.request());
   });
 
   describe('should deny', () => {
     describe('if data', () => {
       tester.additionalProperties({
-        ...priceDataFactory.request(),
+        ...testDataFactory.price.request(),
         extra: 1,
       } as any, 'data');
     });
 
     describe('if data.name', () => {
-      tester.required(priceDataFactory.request({
+      tester.required(testDataFactory.price.request({
         name: undefined,
       }), 'name');
 
-      tester.type(priceDataFactory.request({
+      tester.type(testDataFactory.price.request({
         name: 1 as any,
       }), 'name', 'string');
 
-      tester.minLength(priceDataFactory.request({
+      tester.minLength(testDataFactory.price.request({
         name: '',
       }), 'name', 1);
     });
 
     describe('if data.amount', () => {
-      tester.required(priceDataFactory.request({
+      tester.required(testDataFactory.price.request({
         amount: undefined,
       }), 'amount');
 
-      tester.type(priceDataFactory.request({
+      tester.type(testDataFactory.price.request({
         amount: '1' as any,
       }), 'amount', 'integer');
 
-      tester.exclusiveMinimum(priceDataFactory.request({
+      tester.exclusiveMinimum(testDataFactory.price.request({
         amount: 0,
       }), 'amount', 0);
     });
     
     describe('if data.unitOfMeasurement', () => {
-      tester.required(priceDataFactory.request({
+      tester.required(testDataFactory.price.request({
         unitOfMeasurement: undefined,
       }), 'unitOfMeasurement');
     
-      tester.type(priceDataFactory.request({
+      tester.type(testDataFactory.price.request({
         unitOfMeasurement: 1 as any,
       }), 'unitOfMeasurement', 'string');
     
-      tester.enum(priceDataFactory.request({
+      tester.enum(testDataFactory.price.request({
         unitOfMeasurement: 'not-enum' as any,
       }), 'unitOfMeasurement');
     });

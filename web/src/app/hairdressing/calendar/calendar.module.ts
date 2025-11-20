@@ -29,7 +29,6 @@ import { JobPriceCalculatorComponent } from '@household/web/app/shared/job-price
 import { JobPriceSummaryComponent } from '@household/web/app/shared/job-price-summary/job-price-summary.component';
 import { DurationStepperComponent } from '@household/web/app/shared/duration-stepper/duration-stepper.component';
 import { AmountInputComponent } from '@household/web/app/shared/amount-input/amount-input.component';
-import { CalendarCashPaymentDialogComponent } from '@household/web/app/hairdressing/calendar/calendar-cash-payment-dialog/calendar-cash-payment-dialog.component';
 import { CalendarEntryPayingDialogComponent } from './calendar-entry-paying-dialog/calendar-entry-paying-dialog.component';
 import { EffectsModule } from '@ngrx/effects';
 import { CalendarEffects } from '@household/web/app/hairdressing/calendar/state/calendar.effects';
@@ -39,6 +38,7 @@ import { DaysOfWeekPipe } from './pipes/days-of-week.pipe';
 import { DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
 import { CalendarDateAdapter } from '@household/web/app/hairdressing/calendar/calendar-date-adapter';
 import { EntryWarningsPipe } from './pipes/entry-warnings.pipe';
+import { RemovePendingEntryPipe } from './pipes/remove-pending-entry.pipe';
 
 @NgModule({
   declarations: [
@@ -50,10 +50,10 @@ import { EntryWarningsPipe } from './pipes/entry-warnings.pipe';
     CalendarEntryDetailsDialogComponent,
     CalendarHorizontalDayComponent,
     CalendarEntryEditDialogComponent,
-    CalendarCashPaymentDialogComponent,
     CalendarEntryPayingDialogComponent,
     DaysOfWeekPipe,
     EntryWarningsPipe,
+    RemovePendingEntryPipe,
   ],
   imports: [
     CommonModule,

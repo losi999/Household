@@ -5,47 +5,24 @@ import { default as customerId } from '@household/shared/schemas/customer-id';
 import { default as priceBase } from '@household/shared/schemas/partials/price-base';
 import { StrictJSONSchema7 } from '@household/shared/types/common';
 import { Calendar } from '@household/shared/types/types';
+import { default as day } from '@household/shared/schemas/calendar-day';
+import { default as base } from '@household/shared/schemas/partials/calendar-entry-base';
 
 const personalEntryRequestSchema: StrictJSONSchema7<Calendar.Entry.PersonalEntryRequest> = {
   type: 'object',
   additionalProperties: false,
   required: [
-    'day',
-    'title',
+    ...day.required,
+    ...base.required,
     'entryType',
-    'start',
-    'end',
   ],
   properties: {
-    day: {
-      type: 'string',
-      format: 'date',
-    },
-    title: {
-      type: 'string',
-      minLength: 1,
-    },
-    description: {
-      type: 'string',
-      minLength: 1,
-    },
+    ...day.properties,
+    ...base.properties,
     entryType: {
       type: 'string',
       const: CalendarEntryType.Personal,
     },
-    start: {
-      type: 'integer',
-      minimum: 0,
-      maximum: 96,
-    },
-    end: {
-      type: 'integer',
-      minimum: 0,
-      maximum: 96,
-      exclusiveMinimum: {
-        $data: '1/start',
-      },
-    } as any,
   },
 };
 
@@ -53,42 +30,17 @@ const issueEntryRequestSchema: StrictJSONSchema7<Calendar.Entry.IssueEntryReques
   type: 'object',
   additionalProperties: false,
   required: [
-    'day',
-    'title',
+    ...day.required,
+    ...base.required,
     'entryType',
-    'start',
-    'end',
   ],
   properties: {
-    day: {
-      type: 'string',
-      format: 'date',
-    },
-    title: {
-      type: 'string',
-      minLength: 1,
-    },
-    description: {
-      type: 'string',
-      minLength: 1,
-    },
+    ...day.properties,
+    ...base.properties,
     entryType: {
       type: 'string',
       const: CalendarEntryType.Issue,
     },
-    start: {
-      type: 'integer',
-      minimum: 0,
-      maximum: 96,
-    },
-    end: {
-      type: 'integer',
-      minimum: 0,
-      maximum: 96,
-      exclusiveMinimum: {
-        $data: '1/start',
-      },
-    } as any,
   },
 };
 
@@ -96,44 +48,19 @@ const workEntryRequestSchema: StrictJSONSchema7<Calendar.Entry.WorkEntryRequest>
   type: 'object',
   additionalProperties: false,
   required: [
-    'day',
-    'title',
+    ...day.required,
+    ...base.required,
     'entryType',
-    'start',
-    'end',
     ...customerId.required,
   ],
   properties: {
     ...customerId.properties,
-    day: {
-      type: 'string',
-      format: 'date',
-    },
-    title: {
-      type: 'string',
-      minLength: 1,
-    },
-    description: {
-      type: 'string',
-      minLength: 1,
-    },
+    ...day.properties,
+    ...base.properties,
     entryType: {
       type: 'string',
       const: CalendarEntryType.Work,
     },
-    start: {
-      type: 'integer',
-      minimum: 0,
-      maximum: 96,
-    },
-    end: {
-      type: 'integer',
-      minimum: 0,
-      maximum: 96,
-      exclusiveMinimum: {
-        $data: '1/start',
-      },
-    } as any,
     prices: {
       type: 'array',
       minItems: 1,

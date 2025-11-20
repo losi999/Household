@@ -1,5 +1,5 @@
 import { IListCalendarDaysService, listCalendarDaysServiceFactory } from '@household/api/functions/list-calendar-days/list-calendar-days.service';
-import { calendarDayDataFactory, calendarEntryDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { ICalendarDayDocumentConverter } from '@household/shared/converters/calendar-day-document-converter';
 import { ICalendarDayService } from '@household/shared/services/calendar-day-service';
@@ -21,9 +21,9 @@ describe('List calendar days service', () => {
 
   const dateFrom = '2025-10-11';
   const dateTo = '2025-10-15';
-  const queriedCalendarEntry = calendarEntryDataFactory.document();
-  const queriedCalendarDay = calendarDayDataFactory.document();
-  const convertedResponse = calendarDayDataFactory.response();
+  const queriedCalendarEntry = testDataFactory.calendar.entry.document();
+  const queriedCalendarDay = testDataFactory.calendar.day.document();
+  const convertedResponse = testDataFactory.calendar.day.response.holiday();
 
   it('should return documents', async () => {
     mockCalendarEntryService.functions.listCalendarEntries.mockResolvedValue([queriedCalendarEntry]);

@@ -1,7 +1,9 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { Customer } from '@household/shared/types/types';
+import { CustomerAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/customer-autocomplete-input/customer-autocomplete-input.component';
 
 export type CustomerAddToBlacklistDialogData = {
   customer: Customer.Response;
@@ -11,7 +13,12 @@ export type CustomerAddToBlacklistDialogData = {
 export type CustomerAddToBlacklistDialogResult = Customer.Response[];
 
 @Component({
-  standalone: false,  
+  imports: [
+    ReactiveFormsModule,
+    MatDialogModule,
+    MatButtonModule,
+    CustomerAutocompleteInputComponent,
+  ],
   templateUrl: './customer-add-to-blacklist-dialog.component.html',
   styleUrl: './customer-add-to-blacklist-dialog.component.scss',
 })

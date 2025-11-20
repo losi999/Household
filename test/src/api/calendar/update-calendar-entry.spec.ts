@@ -1,0 +1,740 @@
+import { entries, getCalendarEntryId, getCustomerId, getPriceId } from '@household/shared/common/utils';
+import { allowUsers } from '@household/test/api/utils';
+import { Calendar, Customer, Price } from '@household/shared/types/types';
+import { calendarEntryDataFactory } from '@household/test/api/calendar/data-factory';
+import { customerDataFactory } from '@household/test/api/customer/data-factory';
+import { priceDataFactory } from '@household/test/api/price/data-factory';
+import { CalendarEntryResolutionStatus } from '@household/shared/enums';
+
+const permissionMap = allowUsers('hairdresser');
+
+describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
+  let request: Calendar.Entry.Request;
+  let calendarPersonalEntryDocument: Calendar.Entry.Document;
+  let calendarWorkEntryDocument: Calendar.Entry.Document;
+  let calendarIssueEntryDocument: Calendar.Entry.Document;
+  let customerDocument: Customer.Document;
+  let priceDocument: Price.Document;
+
+  beforeEach(() => {
+    customerDocument = customerDataFactory.document();
+    priceDocument = priceDataFactory.document();
+
+    calendarPersonalEntryDocument = calendarEntryDataFactory.document.personal();
+
+    calendarIssueEntryDocument = calendarEntryDataFactory.document.issue();
+
+    calendarWorkEntryDocument = calendarEntryDataFactory.document.work({
+      customer: customerDocument,
+    });
+            
+    request = calendarEntryDataFactory.request.personal();
+  });
+
+  describe('called as anonymous', () => {
+    it('should return unauthorized', () => {
+      cy.authenticate('anonymous')
+        .requestUpdateCalendarEntry(calendarEntryDataFactory.id(), request)
+        .expectUnauthorizedResponse();
+    });
+  });
+
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
+    describe(`called as ${userType}`, () => {
+      if (!isAllowed) {
+        it('should return forbidden', () => {
+          cy.authenticate(userType)
+            .requestUpdateCalendarEntry(calendarEntryDataFactory.id(), request)
+            .expectForbiddenResponse();
+        });
+      } else {
+        describe('should update calendar', () => {
+          it('personal entry', () => {
+            request = calendarEntryDataFactory.request.personal();
+
+            cy.saveCalendarEntryDocument(calendarPersonalEntryDocument)
+              .authenticate(userType)
+              .requestUpdateCalendarEntry(getCalendarEntryId(calendarPersonalEntryDocument), request)
+              .expectCreatedResponse()
+              .validateCalendarEntryDocument(request);
+          });
+
+          it('issue entry', () => {            
+            request = calendarEntryDataFactory.request.issue();
+            
+            cy.saveCalendarEntryDocument(calendarIssueEntryDocument)
+              .authenticate(userType)
+              .requestUpdateCalendarEntry(getCalendarEntryId(calendarIssueEntryDocument), request)
+              .expectCreatedResponse()
+              .validateCalendarEntryDocument(request);
+          });
+
+          it('work entry without prices', () => {          
+            request = calendarEntryDataFactory.request.work({
+              body: {
+                customerId: getCustomerId(customerDocument),
+              },
+            });
+            
+            cy.saveCalendarEntryDocument(calendarWorkEntryDocument)
+              .saveCustomerDocument(customerDocument)
+              .authenticate(userType)
+              .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), request)
+              .expectCreatedResponse()
+              .validateCalendarEntryDocument(request);
+          });
+
+          it('work entry with prices', () => {     
+            request = calendarEntryDataFactory.request.work({
+              body: {
+                customerId: getCustomerId(customerDocument),
+              },
+              prices: {
+                listed: [
+                  {
+                    priceId: getPriceId(priceDocument),
+                  },
+                ],
+                custom: [{}],
+              },
+            });
+            
+            cy.saveCalendarEntryDocument(calendarWorkEntryDocument)
+              .saveCustomerDocument(customerDocument)
+              .savePriceDocument(priceDocument)
+              .authenticate(userType)
+              .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), request)
+              .expectCreatedResponse()
+              .validateCalendarEntryDocument(request);
+          });
+        });
+
+        describe('should return error', () => {    
+          describe('if trying to update entry type', () => {
+            it('from issue to personal', () => {
+              request = calendarEntryDataFactory.request.personal();
+              
+              cy.saveCalendarEntryDocument(calendarIssueEntryDocument)
+                .authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarIssueEntryDocument), request)
+                .expectBadRequestResponse()
+                .expectMessage('Entry type cannot be changed');
+            });
+
+            it('from issue to work', () => {
+              request = calendarEntryDataFactory.request.work({
+                body: {
+                  customerId: getCustomerId(customerDocument),
+                },
+              });
+              
+              cy.saveCalendarEntryDocument(calendarIssueEntryDocument)
+                .authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarIssueEntryDocument), request)
+                .expectBadRequestResponse()
+                .expectMessage('Entry type cannot be changed');
+            });
+
+            it('from personal to issue', () => {
+              request = calendarEntryDataFactory.request.issue();
+              
+              cy.saveCalendarEntryDocument(calendarPersonalEntryDocument)
+                .authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarPersonalEntryDocument), request)
+                .expectBadRequestResponse()
+                .expectMessage('Entry type cannot be changed');
+            });
+
+            it('from personal to work', () => {
+              request = calendarEntryDataFactory.request.work({
+                body: {
+                  customerId: getCustomerId(customerDocument),
+                },
+              });
+              
+              cy.saveCalendarEntryDocument(calendarPersonalEntryDocument)
+                .authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarPersonalEntryDocument), request)
+                .expectBadRequestResponse()
+                .expectMessage('Entry type cannot be changed');
+            });
+
+            it('from work to issue', () => {
+              request = calendarEntryDataFactory.request.issue();
+              
+              cy.saveCalendarEntryDocument(calendarWorkEntryDocument)
+                .authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), request)
+                .expectBadRequestResponse()
+                .expectMessage('Entry type cannot be changed');
+            });
+
+            it('from work to personal', () => {
+              request = calendarEntryDataFactory.request.personal();
+              
+              cy.saveCalendarEntryDocument(calendarWorkEntryDocument)
+                .authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), request)
+                .expectBadRequestResponse()
+                .expectMessage('Entry type cannot be changed');
+            });
+          });
+
+          it('if work entry is already resolved', () => {
+            calendarWorkEntryDocument = calendarEntryDataFactory.document.work({
+              customer: customerDocument,
+              resolution: {
+                status: CalendarEntryResolutionStatus.Paid,
+              },
+            });  
+            request = calendarEntryDataFactory.request.work({
+              body: {
+                customerId: getCustomerId(customerDocument),
+              },
+            });
+              
+            cy.saveCalendarEntryDocument(calendarWorkEntryDocument)
+              .authenticate(userType)
+              .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), request)
+              .expectBadRequestResponse()
+              .expectMessage('Calendar entry is already resolved');
+          });
+
+          describe('if day', () => {
+            it('is missing from body', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
+                  body: {
+                    day: undefined,
+                  },
+                }))
+                .expectBadRequestResponse()
+                .expectRequiredProperty('day', 'body');
+            });
+
+            it('is not string', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
+                  body: {
+                    day: <any>1,
+                  },
+                }))
+                .expectBadRequestResponse()
+                .expectWrongPropertyType('day', 'string', 'body');
+            });
+
+            it('is not date format', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
+                  body: {
+                    day: 'not-date',
+                  },
+                }))
+                .expectBadRequestResponse()
+                .expectWrongPropertyFormat('day', 'date', 'body');
+            });
+          }); 
+
+          describe('if title', () => {
+            it('is missing from body', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
+                  body: {
+                    title: undefined,
+                  },
+                }))
+                .expectBadRequestResponse()
+                .expectRequiredProperty('title', 'body');
+            });
+
+            it('is not string', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
+                  body: {
+                    title: <any>1,
+                  },
+                }))
+                .expectBadRequestResponse()
+                .expectWrongPropertyType('title', 'string', 'body');
+            });
+
+            it('is too short', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
+                  body: {
+                    title: '',
+                  },
+                }))
+                .expectBadRequestResponse()
+                .expectTooShortProperty('title', 1, 'body');
+            });
+          }); 
+
+          describe('if description', () => {
+            it('is not string', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
+                  body: {
+                    description: <any>1,
+                  },
+                }))
+                .expectBadRequestResponse()
+                .expectWrongPropertyType('description', 'string', 'body');
+            });
+
+            it('is too short', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
+                  body: {
+                    description: '',
+                  },
+                }))
+                .expectBadRequestResponse()
+                .expectTooShortProperty('description', 1, 'body');
+            });
+          });
+          
+          describe('if entryType', () => {
+            it('is missing from body', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
+                  body: {
+                    entryType: undefined,
+                  },
+                }))
+                .expectBadRequestResponse()
+                .expectRequiredProperty('entryType', 'body');
+            });
+
+            it('is not string', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
+                  body: {
+                    entryType: <any>1,
+                  },
+                }))
+                .expectBadRequestResponse()
+                .expectWrongPropertyType('entryType', 'string', 'body');
+            });
+
+            it('is not a valid constant value', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
+                  body: {
+                    entryType: 'not-valid-const' as any,
+                  },
+                }))
+                .expectBadRequestResponse()
+                .expectNotConstantValue('entryType', 'body');
+            });
+          });
+
+          describe('if start', () => {
+            it('is missing from body', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
+                  body: {
+                    start: undefined,
+                  },
+                }))
+                .expectBadRequestResponse()
+                .expectRequiredProperty('start', 'body');
+            });
+
+            it('is not integer', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
+                  body: {
+                    start: 1.1,
+                  },
+                }))
+                .expectBadRequestResponse()
+                .expectWrongPropertyType('start', 'integer', 'body');
+            });
+
+            it('is too small', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
+                  body: {
+                    start: -1,
+                  },
+                }))
+                .expectBadRequestResponse()
+                .expectTooSmallNumberProperty('start', 0, false, 'body');
+            });
+
+            it('is too large', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
+                  body: {
+                    start: 97,
+                  },
+                }))
+                .expectBadRequestResponse()
+                .expectTooLargeNumberProperty('start', 96, false, 'body');
+            });
+          });
+
+          describe('if end', () => {
+            it('is missing from body', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
+                  body: {
+                    end: undefined,
+                  },
+                }))
+                .expectBadRequestResponse()
+                .expectRequiredProperty('end', 'body');
+            });
+
+            it('is not integer', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
+                  body: {
+                    end: 1.1,
+                  },
+                }))
+                .expectBadRequestResponse()
+                .expectWrongPropertyType('end', 'integer', 'body');
+            });
+
+            it('is too small', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
+                  body: {
+                    start: 20,
+                    end: 10,
+                  },
+                }))
+                .expectBadRequestResponse()
+                .expectTooSmallNumberProperty('end', 0, true, 'body');
+            });
+
+            it('is too large', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
+                  body: {
+                    end: 97,
+                  },
+                }))
+                .expectBadRequestResponse()
+                .expectTooLargeNumberProperty('end', 96, false, 'body');
+            });
+          }); 
+          
+          describe('if customerId', () => {
+            it('is missing from body', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
+                  body: {
+                    customerId: undefined,
+                  },
+                }))
+                .expectBadRequestResponse()
+                .expectRequiredProperty('customerId', 'body');
+            });
+
+            it('is not string', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
+                  body: {
+                    customerId: <any>1,
+                  },
+                }))
+                .expectBadRequestResponse()
+                .expectWrongPropertyType('customerId', 'string', 'body');
+            });
+
+            it('is not mongo id', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
+                  body: {
+                    customerId: customerDataFactory.id('not-mongo-id'),
+                  },
+                }))
+                .expectBadRequestResponse()
+                .expectWrongPropertyPattern('customerId', 'body');
+            });
+
+            it('does not belong to any customer', () => {
+              cy.saveCalendarEntryDocument(calendarWorkEntryDocument)
+                .authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
+                  body: {
+                    customerId: customerDataFactory.id(),
+                  },
+                }))
+                .expectBadRequestResponse()
+                .expectMessage('No customer found');
+            });
+          }); 
+
+          describe('if prices', () => {
+            it('is not array', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), {
+                  ...calendarEntryDataFactory.request.work(),
+                  prices: <any>{},
+                })
+                .expectBadRequestResponse()
+                .expectWrongPropertyType('prices', 'array', 'body');
+            });
+
+            it('has too few items', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), {                  
+                  ...calendarEntryDataFactory.request.work(),
+                  prices: [],
+                })
+                .expectBadRequestResponse()
+                .expectTooFewItemsProperty('prices', 1, 'body');
+            });
+          });
+
+          describe('if prices[0]', () => {
+            it('is not object', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), {                  
+                  ...calendarEntryDataFactory.request.work(),
+                  prices: [1] as any,
+                })
+                .expectBadRequestResponse()
+                .expectWrongPropertyType('prices/0', 'object', 'body');
+            });
+
+            it('has additional properties', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), {                  
+                  ...calendarEntryDataFactory.request.work(),
+                  prices: [
+                    {
+                      extra: 1,
+                    },
+                  ] as any,
+                })
+                .expectBadRequestResponse()
+                .expectAdditionalProperty('prices/0', 'body');
+            });
+          });
+
+          describe('if prices[0].priceId', () => {
+            it('is missing', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
+                  prices: {                  
+                    listed: [
+                      {
+                        priceId: undefined,
+                      },
+                    ],
+                  },
+                }))
+                .expectBadRequestResponse()
+                .expectRequiredProperty('priceId', 'body');
+            });
+
+            it('is not string', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
+                  prices: {                  
+                    listed: [
+                      {
+                        priceId: <any>1,
+                      },
+                    ],
+                  },
+                }))
+                .expectBadRequestResponse()
+                .expectWrongPropertyType('priceId', 'string', 'body');
+            });
+
+            it('is not mongo id', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
+                  prices: {                  
+                    listed: [
+                      {
+                        priceId: priceDataFactory.id('not mongo id'),
+                      },
+                    ],
+                  },
+                }))
+                .expectBadRequestResponse()
+                .expectWrongPropertyPattern('priceId', 'body');
+            });
+
+            it('does not belong to any price', () => {
+              cy.saveCalendarEntryDocument(calendarWorkEntryDocument)
+                .saveCustomerDocument(customerDocument)
+                .savePriceDocument(priceDocument)
+                .authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
+                  body: {
+                    customerId: getCustomerId(customerDocument),
+                  },
+                  prices: {                  
+                    listed: [
+                      {
+                        priceId: priceDataFactory.id(),
+                      },
+                    ],
+                  },
+                }))
+                .expectBadRequestResponse()
+                .expectMessage('Some of the prices are not found');
+            });
+          });
+
+          describe('if prices[0].quantity', () => {
+            it('is missing', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
+                  prices: {                  
+                    listed: [
+                      {
+                        quantity: undefined,
+                      },
+                    ],
+                  },
+                }))
+                .expectBadRequestResponse()
+                .expectRequiredProperty('quantity', 'body');
+            });
+
+            it('is not integer', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
+                  prices: {                  
+                    listed: [
+                      {
+                        quantity: <any>1.1,
+                      },
+                    ],
+                  },
+                }))
+                .expectBadRequestResponse()
+                .expectWrongPropertyType('quantity', 'integer', 'body');
+            });
+
+            it('is too small', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
+                  prices: {                  
+                    listed: [
+                      {
+                        quantity: 0,
+                      },
+                    ],
+                  },
+                }))
+                .expectBadRequestResponse()
+                .expectTooSmallNumberProperty('quantity', 0, true, 'body');
+            });
+          });
+
+          describe('if prices[0].name', () => {
+            it('is missing', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
+                  prices: {
+                    custom: [
+                      {
+                        name: undefined,
+                      },
+                    ],
+                  },
+                }))
+                .expectBadRequestResponse()
+                .expectRequiredProperty('name', 'body');
+            });
+
+            it('is not string', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
+                  prices: {
+                    custom: [
+                      {
+                        name: <any>1,
+                      },
+                    ],
+                  },
+                }))
+                .expectBadRequestResponse()
+                .expectWrongPropertyType('name', 'string', 'body');
+            });
+
+            it('is too short', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
+                  prices: {
+                    custom: [
+                      {
+                        name: '',
+                      },
+                    ],
+                  },
+                }))
+                .expectBadRequestResponse()
+                .expectTooShortProperty('name', 0, 'body');
+            });
+          });
+
+          describe('if prices[0].amount', () => {
+            it('is missing', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
+                  prices: {
+                    custom: [
+                      {
+                        amount: undefined,
+                      },
+                    ],
+                  },
+                }))
+                .expectBadRequestResponse()
+                .expectRequiredProperty('amount', 'body');
+            });
+
+            it('is not integer', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
+                  prices: {
+                    custom: [
+                      {
+                        amount: <any>1.1,
+                      },
+                    ],
+                  },
+                }))
+                .expectBadRequestResponse()
+                .expectWrongPropertyType('amount', 'integer', 'body');
+            });
+          });
+
+          describe('if calendarEntryId', () => {
+            it('is not mongo id', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(calendarEntryDataFactory.id('not-mongo-id'), calendarEntryDataFactory.request.work())
+                .expectBadRequestResponse()
+                .expectWrongPropertyPattern('calendarEntryId', 'pathParameters');
+            });
+
+            it('does not belong to any calendar entry', () => {
+              cy.authenticate(userType)
+                .requestUpdateCalendarEntry(calendarEntryDataFactory.id(), calendarEntryDataFactory.request.work({
+                  body: {
+                    customerId: customerDataFactory.id(),
+                  },
+                }))
+                .expectNotFoundResponse()
+                .expectMessage('No calendar entry found');
+            });
+          }); 
+        });
+      }
+    });
+  });
+});

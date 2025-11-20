@@ -3,13 +3,12 @@ import { Calendar } from '@household/shared/types/types';
 
 @Pipe({
   name: 'pastEntries',
-  standalone: false,
 })
 export class PastEntriesPipe implements PipeTransform {
-  transform(entries: Calendar.Entry.ResponseBase[]): unknown {
+  transform(entries: Calendar.Entry.WorkEntryResponseBase[]): Calendar.Entry.WorkEntryResponseBase[] {
     const now = new Date().toISOString();
-    return entries.filter(e => {
+    return entries?.filter(e => {
       return e.day < now;
-    });
+    }) ?? [];
   }
 }

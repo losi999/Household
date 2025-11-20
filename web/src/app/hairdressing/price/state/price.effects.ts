@@ -51,7 +51,7 @@ export class PriceEffects {
       ofType(priceActions.deletePrice),
       exhaustMap(({ type, ...price }) => {
         return this.dialogService.openConfirmationDialog({
-          title: 'Törölni akarod ezt a tételt az árlistából? Az összes munka amihez hozzá van rendelve szintén törlődni fog!',
+          title: 'Törölni akarod ezt a tételt az árlistából?',
           content: price.name,
         }).pipe(
           filter(confirmed => confirmed),
@@ -77,7 +77,7 @@ export class PriceEffects {
             map((value) => {
               switch(value) {
                 case CatalogSubmenuResult.Edit: return priceActions.updatePrice(price);
-                case CatalogSubmenuResult.Merge: return priceActions.deletePrice(price);
+                case CatalogSubmenuResult.Delete: return priceActions.deletePrice(price);
               }
             }),
           );

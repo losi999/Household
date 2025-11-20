@@ -1,5 +1,7 @@
+import { Injectable } from '@angular/core';
 import { NativeDateAdapter } from '@angular/material/core';
 
+@Injectable()
 export class CalendarDateAdapter extends NativeDateAdapter {
   override format(date: Date): string {
     if (!date) {return '';}

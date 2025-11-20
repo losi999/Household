@@ -80,7 +80,7 @@ describe('POST product/v1/products', () => {
                 .expectTooShortProperty('brand', 1, 'body');
             });
 
-            it('is already in used by a different product', () => {
+            it('is already in use by a different product', () => {
               const productDocument = productDataFactory.document({
                 body: request,
                 category: categoryDocument,

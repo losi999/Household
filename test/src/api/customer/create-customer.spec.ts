@@ -68,14 +68,94 @@ describe('POST customer/v1/customers', () => {
                 .expectTooShortProperty('name', 1, 'body');
             });
 
-            it('is already in used by a different customer', () => {
-              const customerDocument = customerDataFactory.document(request);
+            it('is already in use by a different customer', () => {
+              const customerDocument = customerDataFactory.document({
+                body: request,
+              });
 
               cy.saveCustomerDocument(customerDocument)
                 .authenticate(userType)
                 .requestCreateCustomer(request)
                 .expectBadRequestResponse()
                 .expectMessage('Duplicate customer name');
+            });
+          });
+
+          describe('if description', () => {
+            it('is not string', () => {
+              cy.authenticate(userType)
+                .requestCreateCustomer(customerDataFactory.request({
+                  description: <any>1,
+                }))
+                .expectBadRequestResponse()
+                .expectWrongPropertyType('description', 'string', 'body');
+            });
+
+            it('is too short', () => {
+              cy.authenticate(userType)
+                .requestCreateCustomer(customerDataFactory.request({
+                  description: '',
+                }))
+                .expectBadRequestResponse()
+                .expectTooShortProperty('description', 1, 'body');
+            });
+          });
+
+          describe('if isGroup', () => {
+            it('is missing from body', () => {
+              cy.authenticate(userType)
+                .requestCreateCustomer(customerDataFactory.request({
+                  isGroup: undefined,
+                }))
+                .expectBadRequestResponse()
+                .expectRequiredProperty('isGroup', 'body');
+            });
+
+            it('is not boolean', () => {
+              cy.authenticate(userType)
+                .requestCreateCustomer(customerDataFactory.request({
+                  isGroup: <any>1,
+                }))
+                .expectBadRequestResponse()
+                .expectWrongPropertyType('isGroup', 'boolean', 'body');
+            });
+          });
+
+          describe('if rating', () => {
+            it('is missing from body', () => {
+              cy.authenticate(userType)
+                .requestCreateCustomer(customerDataFactory.request({
+                  rating: undefined,
+                }))
+                .expectBadRequestResponse()
+                .expectRequiredProperty('rating', 'body');
+            });
+
+            it('is not integer', () => {
+              cy.authenticate(userType)
+                .requestCreateCustomer(customerDataFactory.request({
+                  rating: 1.5,
+                }))
+                .expectBadRequestResponse()
+                .expectWrongPropertyType('rating', 'integer', 'body');
+            });
+
+            it('is too small', () => {
+              cy.authenticate(userType)
+                .requestCreateCustomer(customerDataFactory.request({
+                  rating: 0,
+                }))
+                .expectBadRequestResponse()
+                .expectTooSmallNumberProperty('rating', 1, false, 'body');
+            });
+
+            it('is too large', () => {
+              cy.authenticate(userType)
+                .requestCreateCustomer(customerDataFactory.request({
+                  rating: 6,
+                }))
+                .expectBadRequestResponse()
+                .expectTooLargeNumberProperty('rating', 5, false, 'body');
             });
           });
         });

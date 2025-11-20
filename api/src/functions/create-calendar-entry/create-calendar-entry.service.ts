@@ -31,7 +31,7 @@ export const createCalendarEntryServiceFactory = (
       httpErrors.customer.notFound({
         customer,
         customerId: body.customerId,
-      });
+      }, 400);
 
       const priceIds = body.prices?.reduce<Price.Id[]>((accumulator, currentValue) => {
         if (!isPriceBase(currentValue)) {

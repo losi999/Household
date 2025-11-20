@@ -11,7 +11,7 @@ import { Observable } from 'rxjs';
   styleUrl: './calendar-horizontal-day.component.scss',
 })
 export class CalendarHorizontalDayComponent implements OnChanges {
-  @Input() excludedCalendarEntryId: Calendar.Entry.Id;
+  @Input() pendingCalendarEntryId: Calendar.Entry.Id;
   @Input() date: Date;
   @Input() pendingStart: number;
   @Input() pendingEnd: number;

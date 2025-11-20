@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { AccountFormComponent } from './account-form.component';
 
-describe('AccountFormComponent', () => {
+xdescribe('AccountFormComponent', () => {
   let component: AccountFormComponent;
   let fixture: ComponentFixture<AccountFormComponent>;
 

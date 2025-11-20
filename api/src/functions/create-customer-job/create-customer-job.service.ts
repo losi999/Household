@@ -40,9 +40,14 @@ export const createCustomerJobServiceFactory = (
 
       return accumulator;
     }, []);
-
+    
     const priceDocuments = await priceService.findPricesByIds(priceIds).catch(httpErrors.price.listByIds(priceIds));
-
+    
+    httpErrors.price.multipleNotFound({
+      priceIds,
+      prices: priceDocuments,  
+    });
+    
     const update = customerDocumentConverter.addJob(body, priceDocuments); 
 
     await customerService.updateCustomer(customerId, update).catch(httpErrors.customer.update({

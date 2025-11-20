@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/create-calendar-entry/create-calendar-entry.handler';
 import { ICreateCalendarEntryService } from '@household/api/functions/create-calendar-entry/create-calendar-entry.service';
-import { calendarEntryDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { headerExpiresIn } from '@household/shared/constants';
 
 describe('Create calendar entry handler', () => {
@@ -13,8 +13,8 @@ describe('Create calendar entry handler', () => {
     handlerFunction = handler(mockCreateCalendarEntryService);
   });
 
-  const calendarEntryId = calendarEntryDataFactory.id();
-  const body = calendarEntryDataFactory.workRequest();
+  const calendarEntryId = testDataFactory.calendar.entry.id();
+  const body = testDataFactory.calendar.entry.request.work();
   const expiresIn = 3600;
   const handlerEvent = {
     body: JSON.stringify(body),

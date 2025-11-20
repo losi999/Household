@@ -33,8 +33,8 @@ export class CalendarWorkdayDialogComponent implements OnInit {
     this.form = new FormGroup({
       dayType: new FormControl<CalendarDayType>(this.day.dayType !== CalendarDayType.Weekend ? this.day.dayType : CalendarDayType.Workday),
       shiftType: new FormControl<ShiftType>(ShiftType.Custom),
-      start: new FormControl(this.day.dayType === CalendarDayType.Vacation ? WORKDAY_START : this.day.plannedStart ?? WORKDAY_START),
-      end: new FormControl(this.day.dayType === CalendarDayType.Vacation ? WORKDAY_END : this.day.plannedEnd ?? WORKDAY_END),
+      start: new FormControl(this.day.dayType === CalendarDayType.Vacation ? WORKDAY_START : this.day.start ?? WORKDAY_START),
+      end: new FormControl(this.day.dayType === CalendarDayType.Vacation ? WORKDAY_END : this.day.end ?? WORKDAY_END),
     });
 
     this.form.controls.shiftType.valueChanges.subscribe((value) => {

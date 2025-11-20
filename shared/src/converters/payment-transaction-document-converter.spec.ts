@@ -1,4 +1,4 @@
-import { createAccountDocument, createAccountResponse, createCategoryDocument, createCategoryResponse, createPaymentTransactionDocument, createPaymentTransactionRequest, createPaymentTransactionResponse, createProjectDocument, createProjectResponse, createRecipientDocument, createRecipientResponse, createProductDocument, createProductResponse, calendarEntryDataFactory } from '@household/shared/common/test-data-factory';
+import { createAccountDocument, createAccountResponse, createCategoryDocument, createCategoryResponse, createPaymentTransactionDocument, createPaymentTransactionRequest, createPaymentTransactionResponse, createProjectDocument, createProjectResponse, createRecipientDocument, createRecipientResponse, createProductDocument, createProductResponse, testDataFactory } from '@household/shared/common/test-data-factory';
 import { addSeconds, getTransactionId, getProductId } from '@household/shared/common/utils';
 import { advanceTo, clear } from 'jest-date-mock';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
@@ -207,17 +207,17 @@ describe('Payment transaction document converter', () => {
 
   describe('createFromEntry', () => {
     it('should return document', () => {
-      const calendarEntry = calendarEntryDataFactory.document({
+      const calendarEntry = testDataFactory.calendar.entry.document({
         day: '2025-10-11',
         end: 44,
       });
       const amount = 5000;
-      const result = converter.createFromEntry({
+      const { _id, ...result } = converter.createFromEntry({
         calendarEntry,
         account,
         category: regularCategory,
         amount,
-      });
+      }, undefined);
       expect(result).toEqual(createPaymentTransactionDocument({
         account,
         category: regularCategory,

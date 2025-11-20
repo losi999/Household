@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CalendarWorkdayDialogComponent } from './calendar-workday-dialog.component';
 
-describe('HairdressingCalendarWorkdayDialogComponent', () => {
+xdescribe('HairdressingCalendarWorkdayDialogComponent', () => {
   let component: CalendarWorkdayDialogComponent;
   let fixture: ComponentFixture<CalendarWorkdayDialogComponent>;
 

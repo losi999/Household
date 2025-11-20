@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/list-calendar-days/list-calendar-days.handler';
 import { IListCalendarDaysService } from '@household/api/functions/list-calendar-days/list-calendar-days.service';
-import { calendarDayDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 describe('List calendar days handler', () => {
   let mockListCalendarDaysService: MockBusinessService<IListCalendarDaysService>;
@@ -12,7 +12,7 @@ describe('List calendar days handler', () => {
     handlerFunction = handler(mockListCalendarDaysService);
   });
 
-  const calendarDays = [calendarDayDataFactory.response()];
+  const calendarDays = [testDataFactory.calendar.day.response.holiday()];
   const dateFrom = '2025-10-11';
   const dateTo = '2025-10-12';
   const handlerEvent = {

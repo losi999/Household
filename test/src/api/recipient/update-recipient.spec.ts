@@ -72,7 +72,7 @@ describe('PUT /recipient/v1/recipients/{recipientId}', () => {
                 .expectTooShortProperty('name', 1, 'body');
             });
 
-            it('is already in used by a different recipient', () => {
+            it('is already in use by a different recipient', () => {
               const updatedRecipientDocument = recipientDataFactory.document(request);
 
               cy.saveRecipientDocument(recipientDocument)

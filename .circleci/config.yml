@@ -15,10 +15,12 @@ commands:
           command: cat .config >> $BASH_ENV
 orbs:
   sam: circleci/aws-sam-serverless@6.0.3
+  browser-tools: circleci/browser-tools@2.3.2
+
 jobs:
   install:
     docker:
-      - image: cimg/node:22.5
+      - image: cimg/node:22.21
     working_directory: ~/repo
     steps:
       - checkout
@@ -52,9 +54,9 @@ jobs:
           root: ~/
           paths:
             - repo
-  unit_test:
+  unit_test_api:
     docker:
-      - image: cimg/node:22.5
+      - image: cimg/node:22.21
     working_directory: ~/repo
     steps:
       - attach_workspace:
@@ -64,16 +66,29 @@ jobs:
           name: Running API unit tests
           command: yarn test:api
 
-      # - run:
-      #     name: Running Web unit tests
-      #     command: yarn test:web
+      - store_artifacts:
+          path: coverage
+          destination: coverage
+  unit_test_web:
+    docker:
+      - image: cimg/node:22.21-browsers
+    working_directory: ~/repo
+    steps:
+      - attach_workspace:
+          at: ~/
+
+      - browser-tools/install_chrome
+
+      - run:
+          name: Running Web unit tests
+          command: yarn test:web
 
       - store_artifacts:
           path: coverage
           destination: coverage
   lint:
     docker:
-      - image: cimg/node:22.5
+      - image: cimg/node:22.21
     working_directory: ~/repo
     steps:
       - attach_workspace:
@@ -84,7 +99,7 @@ jobs:
           command: yarn lint
   build:
     docker:
-      - image: cimg/node:22.5
+      - image: cimg/node:22.21
     working_directory: ~/repo
     steps:
       - attach_workspace:
@@ -146,7 +161,7 @@ jobs:
       - run: cat .config >> test/.env
       - run:
           name: Getting MongoDB connection string
-          command: echo "MONGODB_CONNECTION_STRING=\"mongodb+srv://$MONGODB_USERNAME:$MONGODB_PASSWORD@$MONGODB_CLUSTER_DOMAIN/household-$ENV?retryWrites=true&w=majority\"" >> test/.env
+          command: echo "MONGODB_CONNECTION_STRING=\"mongodb+srv://$MONGODB_USERNAME:$MONGODB_PASSWORD@$MONGODB_CLUSTER_DOMAIN/household-$ENV?retryWrites=true&w=majority&tls=true\"" >> test/.env
       - run:
           name: Getting Cognito user pool Id
           command: echo "USER_POOL_ID=\"$(aws cloudformation describe-stacks --stack-name Household-$ENV --query 'Stacks[0].Outputs[?OutputKey==`CognitoUserPoolId`].OutputValue' --output text)\"" >> test/.env
@@ -182,7 +197,6 @@ jobs:
           name: Running tests
           working_directory: test
           command: export ENV=$ENV && yarn run test:<<parameters.testCommand>>
-
       - store_artifacts:
           path: test/cypress/screenshots
           destination: test/cypress/screenshots
@@ -190,8 +204,12 @@ workflows:
   local:
     jobs:
       - install
-      - unit_test:
-          name: unit_test
+      - unit_test_api:
+          name: unit_test_api
+          requires:
+            - install
+      - unit_test_web:
+          name: unit_test_web
           requires:
             - install
       - lint:
@@ -206,7 +224,8 @@ workflows:
           name: api_deploy
           filters: pipeline.git.branch == "master" or pipeline.git.branch == "development" or pipeline.parameters.deploy
           requires:
-            - unit_test
+            - unit_test_api
+            - unit_test_web
             - lint
             - build
       - web_deploy:
@@ -218,77 +237,46 @@ workflows:
             - web_deploy
           filters: pipeline.git.branch != "master" and pipeline.parameters.skip_api_tests != true
       - test:
-          name: test_account
-          testCommand: "account"
+          serial-group: api-test1
+          matrix:
+            parameters:
+              testCommand:
+                ["transaction-common", "transaction-payment", "product"]
           requires:
             - api_test_setup
       - test:
-          name: test_category
-          testCommand: "category"
+          serial-group: api-test2
+          matrix:
+            parameters:
+              testCommand: ["customer", "category", "price"]
           requires:
             - api_test_setup
       - test:
-          name: test_project
-          testCommand: "project"
+          serial-group: api-test3
+          matrix:
+            parameters:
+              testCommand: ["calendar", "account", "file"]
           requires:
             - api_test_setup
       - test:
-          name: test_product
-          testCommand: "product"
+          serial-group: api-test4
+          matrix:
+            parameters:
+              testCommand:
+                ["transaction-reimbursement", "project", "transaction-transfer"]
           requires:
             - api_test_setup
       - test:
-          name: test_recipient
-          testCommand: "recipient"
+          serial-group: api-test5
+          matrix:
+            parameters:
+              testCommand: ["transaction-split", "recipient", "setting"]
           requires:
             - api_test_setup
       - test:
-          name: test_transaction_common
-          testCommand: "transaction-common"
-          requires:
-            - api_test_setup
-      - test:
-          name: test_transaction_payment
-          testCommand: "transaction-payment"
-          requires:
-            - api_test_setup
-      - test:
-          name: test_transaction_deferred
-          testCommand: "transaction-deferred"
-          requires:
-            - api_test_setup
-      - test:
-          name: test_transaction_split
-          testCommand: "transaction-split"
-          requires:
-            - api_test_setup
-      - test:
-          name: test_transaction_reimbursement
-          testCommand: "transaction-reimbursement"
-          requires:
-            - api_test_setup
-      - test:
-          name: test_transaction_transfer
-          testCommand: "transaction-transfer"
-          requires:
-            - api_test_setup
-      - test:
-          name: test_transaction_draft
-          testCommand: "transaction-draft"
-          requires:
-            - api_test_setup
-      - test:
-          name: test_setting
-          testCommand: "setting"
-          requires:
-            - api_test_setup
-      - test:
-          name: test_user
-          testCommand: "user"
-          requires:
-            - api_test_setup
-      - test:
-          name: test_file
-          testCommand: "file"
+          serial-group: api-test
+          matrix:
+            parameters:
+              testCommand: ["transaction-deferred", "user", "transaction-draft"]
           requires:
             - api_test_setup

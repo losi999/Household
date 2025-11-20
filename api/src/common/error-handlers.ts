@@ -1,5 +1,5 @@
 import { getCategoryId, getProductId } from '@household/shared/common/utils';
-import { AccountType, CalendarEntryType, CategoryType, SettingKey } from '@household/shared/enums';
+import { AccountType, CalendarDayType, CalendarEntryType, CategoryType, SettingKey } from '@household/shared/enums';
 import { HttpError } from '@household/shared/types/common';
 import { Account, Calendar, Category, Common, Customer, File, Price, Product, Project, Recipient, Setting, Transaction, User } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
@@ -527,6 +527,12 @@ export const httpErrors = {
         throw httpError(statusCode, 'No customer found');
       }
     },
+    jobNotFound: (ctx: {customer: Customer.Document; jobName: Customer.Job.Request['name']}, statusCode = 404) => {
+      if (ctx.customer.jobs.every(j => j.name !== ctx.jobName)) {
+        log('No customer job found', ctx);
+        throw httpError(statusCode, 'No customer job found');
+      }
+    },
     multipleNotFound: (ctx: { customerIds: Customer.Id[]; customers: Customer.Document[] }, statusCode = 400) => {
       if (ctx.customers?.length !== ctx.customerIds?.length) {
         log('Some of the customers are not found', ctx);
@@ -591,6 +597,12 @@ export const httpErrors = {
         throw httpError(statusCode, 'No price found');
       }
     },
+    priceIsArchived: (ctx: Price.Document, statusCode = 400) => {
+      if (ctx.isArchived) {
+        log('Price is archived', ctx);
+        throw httpError(statusCode, 'Price is archived');
+      }
+    },
     delete: (ctx: Price.PriceId, statusCode = 500): CatchAndThrow => (error) => {
       log('Delete price', ctx, error);
       throw httpError(statusCode, 'Error while deleting price');
@@ -612,6 +624,10 @@ export const httpErrors = {
     },
   },
   calendarDay: {
+    getById: (ctx: Calendar.DayProp, statusCode = 500): CatchAndThrow => (error) => {
+      log('Get calendar day', ctx, error);
+      throw httpError(statusCode, 'Error while getting calendar day');
+    },
     list: (statusCode = 500): CatchAndThrow => (error) => {
       log('List calendar days', undefined, error);
       throw httpError(statusCode, 'Error while listing calendar days');
@@ -624,6 +640,12 @@ export const httpErrors = {
       log('Update calendar day', ctx, error);
       throw httpError(statusCode, 'Error while updating calendar day');
     },
+    isHoliday: (ctx: Calendar.Day.Document, statusCode = 400) => {
+      if (ctx?.dayType === CalendarDayType.Holiday) {
+        log('Selected calendar day is a national holiday', ctx);
+        throw httpError(statusCode, 'Selected calendar day is a national holiday');
+      }
+    }, 
   },
   calendarEntry: {
     save: (doc: Calendar.Entry.Document, statusCode = 500): CatchAndThrow => (error) => {
@@ -656,16 +678,22 @@ export const httpErrors = {
       log('Update calendar entry with payment', ctx, error);
       throw httpError(statusCode, 'Error while updating calendar entry with payment');
     },
+    entryTypeChanged: (ctx: {calendarEntry: Calendar.Entry.Document; request: Calendar.Entry.Request}, statusCode = 400) => {
+      if(ctx.calendarEntry.entryType !== ctx.request.entryType) {
+        log('Entry type cannot be changed', ctx);
+        throw httpError(statusCode, 'Entry type cannot be changed');
+      }
+    },
     wrongType: (ctx: {calendarEntry: Calendar.Entry.Document, expectedType: CalendarEntryType}, statusCode = 400) => {
       if (ctx.calendarEntry.entryType !== ctx.expectedType) {
         log(`Calendar entry must be of "${ctx.expectedType}" type`, ctx);
         throw httpError(statusCode, `Calendar entry must be of "${ctx.expectedType}" type`);
       }
     },
-    alreadyPaid: (ctx: Calendar.Entry.Document, statusCode = 400) => {
-      if (ctx?.isPaid) {
-        log('Calendar entry is already paid', ctx);
-        throw httpError(statusCode, 'Calendar entry is already paid');
+    alreadyResolved: (ctx: Calendar.Entry.Document, statusCode = 400) => {
+      if (ctx?.resolution) {
+        log('Calendar entry is already resolved', ctx);
+        throw httpError(statusCode, 'Calendar entry is already resolved');
       }
     },
   },

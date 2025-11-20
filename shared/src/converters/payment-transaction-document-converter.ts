@@ -24,7 +24,7 @@ export interface IPaymentTransactionDocumentConverter {
     account: Account.Document;
     category: Category.Document;
     calendarEntry: Calendar.Entry.Document;
-  } & Transaction.Amount): Transaction.PaymentDocument;
+  } & Transaction.Amount, expiresIn: number): Transaction.PaymentDocument;
   update(data: {
     body: Transaction.PaymentRequest;
     account: Account.Document;
@@ -79,7 +79,7 @@ export const paymentTransactionDocumentConverterFactory = (
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
-    createFromEntry: ({ account, category, amount, calendarEntry }) => {
+    createFromEntry: ({ account, category, amount, calendarEntry }, expiresIn) => {
       const issuedAt = moment.tz(calendarEntry.day, 'Europe/Budapest'); 
       issuedAt.set({
         hour: Math.floor(calendarEntry.end / 4),
@@ -109,7 +109,7 @@ export const paymentTransactionDocumentConverterFactory = (
         product: undefined,
         project: undefined,
         recipient: undefined,
-      }, undefined);
+      }, expiresIn, true);
     },
     update: ({ body: { issuedAt, quantity, invoiceNumber, billingEndDate, billingStartDate, amount, description }, account, project, category, recipient, product }, expiresIn) => {
       const optionalSet: UpdateQuery<Transaction.Document>['$set'] = {

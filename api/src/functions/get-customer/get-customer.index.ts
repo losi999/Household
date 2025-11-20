@@ -8,9 +8,8 @@ import { customerService } from '@household/shared/dependencies/services/custome
 import { default as index } from '@household/api/handlers/index.handler';
 import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';
 import { UserType } from '@household/shared/enums';
-import { calendarEntryService } from '@household/shared/dependencies/services/calendar-entry-service';
 
-const getCustomerService = getCustomerServiceFactory(customerService, calendarEntryService, customerDocumentConverter);
+const getCustomerService = getCustomerServiceFactory(customerService, customerDocumentConverter);
 
 export default index({
   handler: handler(getCustomerService),

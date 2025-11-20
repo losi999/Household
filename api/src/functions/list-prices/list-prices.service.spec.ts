@@ -1,5 +1,5 @@
 import { IListPricesService, listPricesServiceFactory } from '@household/api/functions/list-prices/list-prices.service';
-import { priceDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IPriceDocumentConverter } from '@household/shared/converters/price-document-converter';
 import { IPriceService } from '@household/shared/services/price-service';
@@ -16,8 +16,8 @@ describe('List prices service', () => {
     service = listPricesServiceFactory(mockPriceService.service, mockPriceDocumentConverter.service);
   });
 
-  const queriedDocument = priceDataFactory.document();
-  const convertedResponse = priceDataFactory.response();
+  const queriedDocument = testDataFactory.price.document();
+  const convertedResponse = testDataFactory.price.response();
 
   it('should return documents', async () => {
     mockPriceService.functions.listPrices.mockResolvedValue([queriedDocument]);

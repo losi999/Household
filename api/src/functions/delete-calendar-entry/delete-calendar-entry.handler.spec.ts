@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/delete-calendar-entry/delete-calendar-entry.handler';
 import { IDeleteCalendarEntryService } from '@household/api/functions/delete-calendar-entry/delete-calendar-entry.service';
-import { calendarEntryDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 describe('Delete calendar entry handler', () => {
   let mockDeleteCalendarEntryService: MockBusinessService<IDeleteCalendarEntryService>;
@@ -12,7 +12,7 @@ describe('Delete calendar entry handler', () => {
     handlerFunction = handler(mockDeleteCalendarEntryService);
   });
 
-  const calendarEntryId = calendarEntryDataFactory.id();
+  const calendarEntryId = testDataFactory.calendar.entry.id();
   const handlerEvent = {
     pathParameters: {
       calendarEntryId,

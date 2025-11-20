@@ -1,19 +1,19 @@
 import { default as schema } from '@household/shared/schemas/price-id';
 import { Price } from '@household/shared/types/types';
-import { priceDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 
 describe('Price id schema', () => {
   const tester = jsonSchemaTesterFactory<Price.PriceId>(schema);
 
   tester.validateSuccess({
-    priceId: priceDataFactory.id(),
+    priceId: testDataFactory.price.id(),
   });
 
   describe('should deny', () => {
     describe('if data', () => {
       tester.additionalProperties({
-        priceId: priceDataFactory.id(),
+        priceId: testDataFactory.price.id(),
         extra: 1,
       } as any, 'data');
     });
@@ -28,7 +28,7 @@ describe('Price id schema', () => {
       }, 'priceId', 'string');
 
       tester.pattern({
-        priceId: priceDataFactory.id('not-valid'),
+        priceId: testDataFactory.price.id('not-valid'),
       }, 'priceId');
     });
   });

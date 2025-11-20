@@ -776,7 +776,7 @@ export namespace Customer {
     customerId: Id;
   };
 
-  type Base = {
+  export type Base = {
     name: string;
     description: string;
     isGroup: boolean;
@@ -797,17 +797,19 @@ export namespace Customer {
       quantity: number;
     };
 
-    export type ListedPrice<P extends Price.PriceId | {price: Price.Document} | Price.Response> = P & Quantity;
-
-    export type Prices<P extends Price.PriceId | {price: Price.Document} | Price.Response> = {
-      prices: (ListedPrice<P> | Price.Base)[];
-    };
+    // export type ListedPrice<P extends Price.PriceId | {price: Price.Document} | Price.Response> = P & Quantity;
     
-    export type Request = Base & Prices<Price.PriceId>;
+    export type Request = Base & {
+      prices: ((Price.PriceId & Quantity) | Price.Base)[]
+    };
 
-    export type Document = Base & Prices<{price: Price.Document}>;
+    export type Document = Base & {
+      prices: (({price: Price.Document} & Quantity) | Price.Base)[]
+    };
 
-    export type Response = Base & Prices<Price.Response>;
+    export type Response = Base & {
+      prices: (Price.Response & Quantity)[];
+    };
   }
 
   type Jobs = {
@@ -824,11 +826,11 @@ export namespace Customer {
 
   export type ResponseBase = CustomerId 
   & Base; 
+  
   export type Response = ResponseBase
   & Jobs
   & {
     blacklistedCustomers: ResponseBase[];
-    workEntries: Calendar.Entry.ResponseBase[]
   };
 
   export type Request = Base;
@@ -853,7 +855,10 @@ export namespace Price {
   export type Document = Internal.Id
   & Internal.Timestamps
   & Base
-  & UnitOfMeasurement;
+  & UnitOfMeasurement
+  & {
+    isArchived: boolean;
+  };
 
   export type Request = Base & UnitOfMeasurement;
 
@@ -886,25 +891,18 @@ export namespace Calendar {
 
     export type Request = VacationRequest | WorkdayRequest;
 
-    type Base = DayProp 
-    & ((DayType<Enum.CalendarDayType.Workday> & TimeInterval) 
-    | DayType<Exclude<Enum.CalendarDayType, Enum.CalendarDayType.Workday>>);
-
     export type Document = Internal.Timestamps
-    & Base;
+    & DayType<Enum.CalendarDayType>
+    & DayProp
+    & TimeInterval;
 
-    type ResponseBase = DayProp & {
+    export type ResponseBase = DayProp & {
       entries: Entry.Response[]
     };
 
-    type PlannedTimespan = {
-      plannedStart: number;
-      plannedEnd: number;
-    };
-
-    type WorkdayResponse = DayType<Enum.CalendarDayType.Workday> & TimeInterval & ResponseBase & PlannedTimespan;
-    type WeekendResponse = DayType<Enum.CalendarDayType.Weekend> & TimeInterval & ResponseBase & PlannedTimespan;
-    type VacationResponse = DayType<Enum.CalendarDayType.Vacation> & ResponseBase;
+    export type WorkdayResponse = DayType<Enum.CalendarDayType.Workday> & TimeInterval & ResponseBase;
+    export type WeekendResponse = DayType<Enum.CalendarDayType.Weekend> & TimeInterval & ResponseBase;
+    export type VacationResponse = DayType<Enum.CalendarDayType.Vacation> & ResponseBase;
     export type HolidayResponse = DayType<Enum.CalendarDayType.Holiday> & ResponseBase;
 
     export type Response = WorkdayResponse | VacationResponse | HolidayResponse | WeekendResponse;
@@ -921,13 +919,9 @@ export namespace Calendar {
       entryType: T;
     };
 
-    type Base = TimeInterval & {
+    export type Base = TimeInterval & {
       title: string;
       description: string;      
-    };
-
-    type IsPaid = {
-      isPaid: boolean;
     };
 
     export type IssueEntryRequest = Base 
@@ -951,8 +945,8 @@ export namespace Calendar {
     & Base
     & DayProp
     & EntryType<Enum.CalendarEntryType>
-    & IsPaid
     & {
+      resolution: Delay & Status<Enum.CalendarEntryResolutionStatus>;
       transaction: Transaction.PaymentDocument;
       customer: Customer.Document;
     }
@@ -962,27 +956,38 @@ export namespace Calendar {
     & DayProp
     & CalendarEntryId; 
 
+    export type WorkEntryResponseBase = ResponseBase & {
+      resolution: Delay & Status<Enum.CalendarEntryResolutionStatus>;
+    };
+
     export type PersonalEntryResponse = ResponseBase
     & EntryType<Enum.CalendarEntryType.Personal>;
     
     export type IssueEntryResponse = ResponseBase
     & EntryType<Enum.CalendarEntryType.Issue>; 
 
-    export type WorkEntryResponse = ResponseBase
+    export type WorkEntryResponse = WorkEntryResponseBase
     & Pick<Customer.Job.Response, 'prices'>   
-    & IsPaid
     & {
-      customer: Customer.Response
+      customer: Customer.Response;
     }
     & EntryType<Enum.CalendarEntryType.Work>;
 
     export type Response = PersonalEntryResponse | IssueEntryResponse | WorkEntryResponse;
 
-    type PaymentType<P extends Enum.PaymentType> = {
-      paymentType: P;
+    export type Delay = {
+      delay: number;
     };
 
-    export type PaymentRequest = PaymentType<Enum.PaymentType.Transfer> | (PaymentType<Enum.PaymentType.Cash> & Transaction.Amount);
+    export type Status<S extends Enum.CalendarEntryResolutionStatus>= {
+      status: S
+    }; 
+
+    export type PaidResolutionRequest = Delay & Transaction.Amount & Status<Enum.CalendarEntryResolutionStatus.Paid>;
+    export type PendingTransferResolutionRequest = Delay & Status<Enum.CalendarEntryResolutionStatus.PendingTransfer>;
+    export type NoShowResolutionRequest = Status<Enum.CalendarEntryResolutionStatus.NoShow>;
+
+    export type ResolutionRequest = PaidResolutionRequest | PendingTransferResolutionRequest | NoShowResolutionRequest;
   }
 }
 

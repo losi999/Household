@@ -89,7 +89,7 @@ describe('PUT /project/v1/projects/{projectId}', () => {
                 .expectTooShortProperty('name', 1, 'body');
             });
 
-            it('is already in used by a different project', () => {
+            it('is already in use by a different project', () => {
               const duplicateProjectDocument = projectDataFactory.document(request);
 
               cy.saveProjectDocument(projectDocument)
