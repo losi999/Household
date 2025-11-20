@@ -5,7 +5,6 @@ import { LimitedCalendarDay } from '@household/web/types/common';
 
 @Pipe({
   name: 'removePendingEntry',
-  standalone: false,
 })
 export class RemovePendingEntryPipe implements PipeTransform {
 

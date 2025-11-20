@@ -1,9 +1,14 @@
 import { Component, Input } from '@angular/core';
+import { MatListModule } from '@angular/material/list';
 import { File } from '@household/shared/types/types';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 
 @Component({
   selector: 'household-import-file-list',
-  standalone: false,
+  imports: [
+    NgxSkeletonLoaderModule,
+    MatListModule,
+  ],
   templateUrl: './import-file-list.component.html',
   styleUrl: './import-file-list.component.scss',
 })

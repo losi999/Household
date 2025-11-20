@@ -1,13 +1,22 @@
 import { Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { MatDialogRef } from '@angular/material/dialog';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
 import { File } from '@household/shared/types/types';
 import { fileApiActions } from '@household/web/state/file/file.actions';
 import { Store } from '@ngrx/store';
 
 @Component({
   selector: 'household-import-file-upload-form',
-  standalone: false,
+  imports: [
+    ReactiveFormsModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatButtonModule,
+  ],
   templateUrl: './import-file-upload-form.component.html',
   styleUrl: './import-file-upload-form.component.scss',
 })

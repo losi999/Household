@@ -1,17 +1,24 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { Project } from '@household/shared/types/types';
 import { Store } from '@ngrx/store';
 import { projectApiActions } from '@household/web/state/project/project.actions';
+import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
+import { MatButtonModule } from '@angular/material/button';
 
 export type ProjectFormData = Project.Response;
 
 @Component({
   selector: 'household-project-form',
+  imports: [
+    ReactiveFormsModule,
+    ClearableInputComponent,
+    MatDialogModule, 
+    MatButtonModule,
+  ],
   templateUrl: './project-form.component.html',
   styleUrls: ['./project-form.component.scss'],
-  standalone: false,
 })
 export class ProjectFormComponent implements OnInit {
   form: FormGroup<{

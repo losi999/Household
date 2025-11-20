@@ -3,7 +3,6 @@ import { ImportedTransaction } from '@household/web/types/common';
 
 @Pipe({
   name: 'importFilter',
-  standalone: false,
 })
 export class ImportFilterPipe implements PipeTransform {
 

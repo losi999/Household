@@ -1,9 +1,10 @@
 import { Component, Input } from '@angular/core';
 import { Transaction } from '@household/shared/types/types';
+import { TransactionDetailsRowComponent } from '@household/web/app/transaction/transaction-details-row/transaction-details-row.component';
 
 @Component({
   selector: 'household-transaction-details-category',
-  standalone: false,  
+  imports: [TransactionDetailsRowComponent],  
   templateUrl: './transaction-details-category.component.html',
   styleUrl: './transaction-details-category.component.scss',
 })

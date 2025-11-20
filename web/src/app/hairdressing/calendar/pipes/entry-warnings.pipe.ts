@@ -4,7 +4,6 @@ import { Calendar, Customer } from '@household/shared/types/types';
 
 @Pipe({
   name: 'entryWarnings',
-  standalone: false,
 })
 export class EntryWarningsPipe implements PipeTransform 
 {

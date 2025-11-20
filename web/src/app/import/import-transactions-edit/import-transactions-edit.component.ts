@@ -1,5 +1,5 @@
 import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Transaction } from '@household/shared/types/types';
 import { accountApiActions } from '@household/web/state/account/account.actions';
 import { categoryApiActions } from '@household/web/state/category/category.actions';
@@ -13,12 +13,31 @@ import { FormGroupify, ImportedTransaction, TransactionImportUpdatableFields } f
 import { Store } from '@ngrx/store';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { Observable } from 'rxjs';
+import { MatDividerModule } from '@angular/material/divider';
+import { ImportTransactionsEditListComponent } from '@household/web/app/import/import-transactions-edit-list/import-transactions-edit-list.component';
+import { AsyncPipe, CommonModule } from '@angular/common';
+import { AccountAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/account-autocomplete-input/account-autocomplete-input.component';
+import { RecipientAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/recipient-autocomplete-input/recipient-autocomplete-input.component';
+import { CategoryAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/category-autocomplete-input/category-autocomplete-input.component';
+import { ProjectAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/project-autocomplete-input/project-autocomplete-input.component';
+import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
 
 type FieldName = keyof TransactionImportUpdatableFields;
 
 @Component({
   selector: 'household-import-transactions-edit',
-  standalone: false,
+  imports: [
+    MatDividerModule,
+    ImportTransactionsEditListComponent,
+    AsyncPipe,
+    ReactiveFormsModule,
+    AccountAutocompleteInputComponent,
+    RecipientAutocompleteInputComponent,
+    CategoryAutocompleteInputComponent,
+    ProjectAutocompleteInputComponent,
+    ClearableInputComponent,
+    CommonModule,
+  ],
   templateUrl: './import-transactions-edit.component.html',
   styleUrl: './import-transactions-edit.component.scss',
 })

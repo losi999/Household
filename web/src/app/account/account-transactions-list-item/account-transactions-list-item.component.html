@@ -12,7 +12,8 @@
     <household-transaction-details-transfer [transaction]="transaction" />
     <household-transaction-details-description [transaction]="transaction" />
   </div>
-  <div *ngIf="amount" class="amount" [ngClass]="amount >= 0 ? 'green' : 'red'">{{amount | number:'1.0-2':'hu' }} {{viewingAccount.currency}}
+  @if (amount) {
+  <div class="amount" [ngClass]="amount >= 0 ? 'green' : 'red'">{{amount | number:'1.0-2':'hu' }} {{viewingAccount.currency}}
   </div>
   <div class="buttons">
     <button mat-icon-button *ngIf="transaction.transactionType === 'split'" color="primary" matTooltip="Bontás megtekintése">
@@ -26,4 +27,5 @@
       <mat-icon>delete</mat-icon>
     </button>
   </div>
+  }
 </div>

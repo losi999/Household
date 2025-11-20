@@ -6,12 +6,17 @@ import { CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult } fro
 import { Observable } from 'rxjs';
 import { selectProductIsInProgress } from '@household/web/state/progress/progress.selector';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
+import { MatListModule } from '@angular/material/list';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
   selector: 'household-product-list-product-item',
   templateUrl: './product-list-product-item.component.html',
   styleUrls: ['./product-list-product-item.component.scss'],
-  standalone: false,
+  imports: [
+    MatListModule,
+    AsyncPipe,
+  ],
 })
 export class ProductListProductItemComponent implements OnInit {
   @Input() product: Product.Response;

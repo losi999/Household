@@ -1,6 +1,11 @@
+import { CommonModule } from '@angular/common';
 import { Component, Input, OnChanges, OnDestroy, OnInit, ViewChild, forwardRef } from '@angular/core';
-import { ControlValueAccessor, FormControl, FormRecord, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { MatTree } from '@angular/material/tree';
+import { ControlValueAccessor, FormControl, FormRecord, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatTree, MatTreeModule } from '@angular/material/tree';
+import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
 import { combineLatest, startWith, Subject } from 'rxjs';
 
 export interface Node {
@@ -25,7 +30,15 @@ export type ReportCatalogItemFilterValue<I = string> = {
       useExisting: forwardRef(() => ReportCatalogItemFilterComponent),
     },
   ],
-  standalone: false,
+  imports: [
+    MatSlideToggleModule,
+    ReactiveFormsModule,
+    ClearableInputComponent,
+    MatButtonModule,
+    MatIconModule,
+    MatTreeModule,
+    CommonModule,
+  ],
 })
 export class ReportCatalogItemFilterComponent implements OnInit, OnDestroy, OnChanges, ControlValueAccessor {
   childrenAccessor = (node: Node) => node?.children ?? [];

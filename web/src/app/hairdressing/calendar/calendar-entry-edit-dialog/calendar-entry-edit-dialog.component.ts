@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { createDate, createWorkEntryTitle, dateToISODateString, dateToTimeSlot } from '@household/shared/common/utils';
 import { CalendarEntryType } from '@household/shared/enums';
 import { Calendar, Customer } from '@household/shared/types/types';
@@ -9,12 +9,41 @@ import { Store } from '@ngrx/store';
 import { filter, Observable, startWith, switchMap, take } from 'rxjs';
 import { calendarActions } from '@household/web/app/hairdressing/calendar/state/calendar.actions';
 import { v4 } from 'uuid';
+import { CustomerAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/customer-autocomplete-input/customer-autocomplete-input.component';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { DurationStepperComponent } from '@household/web/app/shared/duration-stepper/duration-stepper.component';
+import { MatSliderModule } from '@angular/material/slider';
+import { CalendarHorizontalDayComponent } from '@household/web/app/hairdressing/calendar/calendar-horizontal-day/calendar-horizontal-day.component';
+import { TimeSlotToTimePipe } from '@household/web/app/shared/pipes/time-slot-to-time.pipe';
+import { AsyncPipe } from '@angular/common';
+import { EntryWarningsPipe } from '@household/web/app/hairdressing/calendar/pipes/entry-warnings.pipe';
+import { MatButtonModule } from '@angular/material/button';
+import { MatInputModule } from '@angular/material/input';
 
 export type CalendarEntryEditDialogData = Partial<Calendar.Entry.Response>;
 export type CalendarEntryEditDialogResult = Calendar.Entry.Request;
 
 @Component({
-  standalone: false,    
+  imports: [
+    MatDialogModule,
+    ReactiveFormsModule,
+    CustomerAutocompleteInputComponent,
+    MatFormFieldModule,
+    MatSelectModule,
+    ClearableInputComponent,
+    MatDatepickerModule,
+    DurationStepperComponent,
+    MatSliderModule,
+    CalendarHorizontalDayComponent,
+    TimeSlotToTimePipe,
+    AsyncPipe,
+    EntryWarningsPipe,
+    MatButtonModule,
+    MatInputModule,
+  ],    
   templateUrl: './calendar-entry-edit-dialog.component.html',
   styleUrl: './calendar-entry-edit-dialog.component.scss',
 })

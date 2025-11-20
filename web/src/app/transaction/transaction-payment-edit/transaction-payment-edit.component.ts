@@ -1,7 +1,7 @@
 import { Component, DestroyRef, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { selectCategoryOfProductId } from '@household/web/state/product/product.selector';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
@@ -18,12 +18,43 @@ import { categoryApiActions } from '@household/web/state/category/category.actio
 import { productApiActions } from '@household/web/state/product/product.actions';
 import { projectApiActions } from '@household/web/state/project/project.actions';
 import { recipientApiActions } from '@household/web/state/recipient/recipient.actions';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { AmountInputComponent } from '@household/web/app/shared/amount-input/amount-input.component';
+import { AccountAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/account-autocomplete-input/account-autocomplete-input.component';
+import { CategoryAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/category-autocomplete-input/category-autocomplete-input.component';
+import { ProductAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/product-autocomplete-input/product-autocomplete-input.component';
+import { ProjectAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/project-autocomplete-input/project-autocomplete-input.component';
+import { RecipientAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/recipient-autocomplete-input/recipient-autocomplete-input.component';
+import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
+import { ToolbarComponent } from '@household/web/app/shared/toolbar/toolbar.component';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
   selector: 'household-transaction-payment-edit',
   templateUrl: './transaction-payment-edit.component.html',
   styleUrl: './transaction-payment-edit.component.scss',
-  standalone: false,
+  imports: [
+    ToolbarComponent,
+    MatIconModule,
+    MatMenuModule,
+    RouterLink,
+    ReactiveFormsModule,
+    AmountInputComponent,
+    AccountAutocompleteInputComponent,
+    MatSlideToggleModule,
+    CategoryAutocompleteInputComponent,
+    MatFormFieldModule,
+    MatDatepickerModule,
+    ClearableInputComponent,
+    ProductAutocompleteInputComponent,
+    RecipientAutocompleteInputComponent,
+    ProjectAutocompleteInputComponent,
+    AsyncPipe,
+  ],
 })
 export class TransactionPaymentEditComponent implements OnInit {
   form: FormGroup<{

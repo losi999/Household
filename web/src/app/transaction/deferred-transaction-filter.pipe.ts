@@ -3,7 +3,6 @@ import { Transaction } from '@household/shared/types/types';
 
 @Pipe({
   name: 'deferredTransactionFilter',
-  standalone: false,
 })
 export class DeferredTransactionFilterPipe implements PipeTransform {
 

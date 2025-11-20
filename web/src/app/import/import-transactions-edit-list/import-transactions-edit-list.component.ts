@@ -1,11 +1,23 @@
 import { Component, forwardRef, Input, OnInit } from '@angular/core';
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatListModule } from '@angular/material/list';
 import { Transaction } from '@household/shared/types/types';
 import { ImportFilterPipe } from '@household/web/app/import/import-filter.pipe';
+import { ImportTransactionsEditListItemComponent } from '@household/web/app/import/import-transactions-edit-list-item/import-transactions-edit-list-item.component';
+import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
 
 @Component({
   selector: 'household-import-transactions-edit-list',
-  standalone: false,  
+  imports: [
+    ClearableInputComponent,
+    MatButtonModule,
+    MatIconModule,
+    MatListModule,
+    ImportTransactionsEditListItemComponent,
+    ImportFilterPipe,
+  ],  
   templateUrl: './import-transactions-edit-list.component.html',
   styleUrl: './import-transactions-edit-list.component.scss',
   providers: [

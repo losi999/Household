@@ -1,1 +1,3 @@
-<household-transaction-details-row *ngIf="transaction?.recipient" icon="store" [text]="transaction.recipient.name" textStyle="bold" />
+@if (transaction.recipient) {
+  <household-transaction-details-row icon="store" [text]="transaction.recipient.name" textStyle="bold" />
+}

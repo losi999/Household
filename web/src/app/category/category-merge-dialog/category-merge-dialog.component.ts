@@ -1,10 +1,13 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { FormGroup, FormControl } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { Category } from '@household/shared/types/types';
 import { Store } from '@ngrx/store';
 import { categoryApiActions } from '@household/web/state/category/category.actions';
 import { selectMergableCategories } from '@household/web/state/category/category.selector';
+import { MatListModule } from '@angular/material/list';
+import { AsyncPipe } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
 
 export type CategoryMergeDialogData = Category.Id;
 
@@ -12,7 +15,13 @@ export type CategoryMergeDialogData = Category.Id;
   selector: 'household-category-merge-dialog',
   templateUrl: './category-merge-dialog.component.html',
   styleUrls: ['./category-merge-dialog.component.scss'],
-  standalone: false,
+  imports: [
+    ReactiveFormsModule,
+    MatDialogModule,
+    MatListModule,
+    AsyncPipe,
+    MatButtonModule,
+  ],
 })
 export class CategoryMergeDialogComponent implements OnInit {
   form: FormGroup<{

@@ -1,13 +1,13 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FormControl, FormGroup, ValidatorFn } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, ValidatorFn } from '@angular/forms';
 import { Account, Category, Product, Project, Recipient, Report, Transaction } from '@household/shared/types/types';
 import { Store } from '@ngrx/store';
 import { map, Observable, Subject } from 'rxjs';
 import { selectAccounts } from '@household/web/state/account/account.selector';
-import { Node, ReportCatalogItemFilterValue } from '@household/web/app/report/report-catalog-item-filter/report-catalog-item-filter.component';
-import { ReportDateRangeFilterValue } from '@household/web/app/report/report-date-range-filter/report-date-range-filter.component';
-import { GroupBy } from '@household/web/app/report/report-list/report-list.component';
+import { Node, ReportCatalogItemFilterComponent, ReportCatalogItemFilterValue } from '@household/web/app/report/report-catalog-item-filter/report-catalog-item-filter.component';
+import { ReportDateRangeFilterComponent, ReportDateRangeFilterValue } from '@household/web/app/report/report-date-range-filter/report-date-range-filter.component';
+import { GroupBy, ReportListComponent } from '@household/web/app/report/report-list/report-list.component';
 import { categoryApiActions } from '@household/web/state/category/category.actions';
 import { selectCategories } from '@household/web/state/category/category.selector';
 import { projectApiActions } from '@household/web/state/project/project.actions';
@@ -18,6 +18,11 @@ import { accountApiActions } from '@household/web/state/account/account.actions'
 import { selectGroupedProducts } from '@household/web/state/product/product.selector';
 import { productApiActions } from '@household/web/state/product/product.actions';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
+import { ToolbarComponent } from '@household/web/app/shared/toolbar/toolbar.component';
+import { MatIconModule } from '@angular/material/icon';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { AsyncPipe, CommonModule } from '@angular/common';
+import { MatChipsModule } from '@angular/material/chips';
 
 const oneFilterRequiredValidator: ValidatorFn = (control) => {
   return Object.values(control.value).every(v => !v || Object.keys(v).length === 0) ? {
@@ -41,7 +46,18 @@ type GroupCriteria ={
   selector: 'household-report-home',
   templateUrl: './report-home.component.html',
   styleUrl: './report-home.component.scss',
-  standalone: false,
+  imports: [
+    ToolbarComponent,
+    MatIconModule,
+    MatExpansionModule,
+    ReactiveFormsModule,
+    ReportDateRangeFilterComponent,
+    ReportCatalogItemFilterComponent,
+    AsyncPipe,
+    CommonModule,
+    MatChipsModule,
+    ReportListComponent,
+  ],
 })
 export class ReportHomeComponent implements OnInit, OnDestroy {
   private destroyed = new Subject<void>();

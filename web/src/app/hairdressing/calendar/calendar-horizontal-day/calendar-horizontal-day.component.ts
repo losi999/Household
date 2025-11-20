@@ -1,12 +1,17 @@
+import { AsyncPipe } from '@angular/common';
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { Calendar } from '@household/shared/types/types';
+import { RemovePendingEntryPipe } from '@household/web/app/hairdressing/calendar/pipes/remove-pending-entry.pipe';
 import { selectCalendarDay } from '@household/web/app/hairdressing/calendar/state/calendar.selector';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 
 @Component({
   selector: 'household-calendar-horizontal-day',
-  standalone: false,
+  imports: [
+    AsyncPipe,
+    RemovePendingEntryPipe,
+  ],
   templateUrl: './calendar-horizontal-day.component.html',
   styleUrl: './calendar-horizontal-day.component.scss',
 })

@@ -1,9 +1,11 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { Recipient } from '@household/shared/types/types';
 import { Store } from '@ngrx/store';
 import { recipientApiActions } from '@household/web/state/recipient/recipient.actions';
+import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
+import { MatButtonModule } from '@angular/material/button';
 
 export type RecipientFormData = Recipient.Response;
 
@@ -11,7 +13,12 @@ export type RecipientFormData = Recipient.Response;
   selector: 'household-recipient-form',
   templateUrl: './recipient-form.component.html',
   styleUrls: ['./recipient-form.component.scss'],
-  standalone: false,
+  imports: [
+    ReactiveFormsModule,
+    MatDialogModule,
+    ClearableInputComponent,
+    MatButtonModule,
+  ],
 })
 export class RecipientFormComponent implements OnInit {
   form: FormGroup<{

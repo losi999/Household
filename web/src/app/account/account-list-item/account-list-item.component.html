@@ -13,10 +13,12 @@
       <mat-icon>more_vert</mat-icon>
     </button>
     <mat-menu #menu="matMenu">
-      <a mat-menu-item color="primary" *ngIf="account.accountType === 'cash'" [routerLink]="['/accounts', account.accountId, 'balance']" [disabled]="isDisabled | async">
+      @if (account.accountType === 'cash') {
+      <a mat-menu-item color="primary" [routerLink]="['/accounts', account.accountId, 'balance']" [disabled]="isDisabled | async">
         <mat-icon>payments</mat-icon>
         <span>Új egyenleg</span>
       </a>
+      }
       <a mat-menu-item color="primary" [routerLink]="['/accounts', account.accountId, 'new', 'payment']" href="" [disabled]="isDisabled | async">
         <mat-icon>post_add</mat-icon>
         <span>Új tranzakció</span>

@@ -12,4 +12,6 @@
 </household-toolbar>
 
 <household-account-transactions-list [transactions]="transactions | async"></household-account-transactions-list>
-<button mat-raised-button color="primary" (click)="loadMore()" *ngIf="(transactions | async).length === maximumItemCount">Betöltés</button>
+@if ((transactions | async).length === maximumItemCount) {
+<button mat-raised-button color="primary" (click)="loadMore()">Betöltés</button>
+}

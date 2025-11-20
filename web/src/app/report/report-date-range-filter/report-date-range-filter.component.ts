@@ -1,5 +1,9 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { FormControl, FormGroup, ValidatorFn } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, ValidatorFn } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
 export type ReportDateRangeFilterValue = {
   include: boolean;
@@ -23,7 +27,13 @@ const dateRangeValidator: ValidatorFn = (control) => {
   selector: 'household-report-date-range-filter',
   templateUrl: './report-date-range-filter.component.html',
   styleUrl: './report-date-range-filter.component.scss',
-  standalone: false,
+  imports: [
+    ReactiveFormsModule,
+    MatSlideToggleModule,
+    MatFormFieldModule,
+    MatDatepickerModule,
+    MatButtonModule,
+  ],
 })
 export class ReportDateRangeFilterComponent implements OnInit {
   @Output() rangeAdded = new EventEmitter<ReportDateRangeFilterValue>();

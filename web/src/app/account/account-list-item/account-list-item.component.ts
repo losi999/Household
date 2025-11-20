@@ -4,12 +4,26 @@ import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 import { selectAccountIsInProgress } from '@household/web/state/progress/progress.selector';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
+import { MatCardModule } from '@angular/material/card';
+import { RouterLink } from '@angular/router';
+import { AsyncPipe, DecimalPipe } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
 
 @Component({
   selector: 'household-account-list-item',
   templateUrl: './account-list-item.component.html',
   styleUrls: ['./account-list-item.component.scss'],
-  standalone: false,
+  imports: [
+    MatCardModule,
+    RouterLink,
+    AsyncPipe,
+    DecimalPipe,
+    MatButtonModule,
+    MatIconModule,
+    MatMenuModule,
+  ],
 })
 export class AccountListItemComponent implements OnInit {
   @Input() account: Account.Response;

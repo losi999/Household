@@ -6,12 +6,17 @@ import { CatalogSubmenuComponent, CatalogSubmenuData, CatalogSubmenuResult } fro
 import { selectProjectIsInProgress } from '@household/web/state/progress/progress.selector';
 import { Observable } from 'rxjs';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
+import { MatListModule } from '@angular/material/list';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
+  imports: [
+    MatListModule,
+    AsyncPipe,
+  ],
   selector: 'household-project-list-item',
   templateUrl: './project-list-item.component.html',
   styleUrls: ['./project-list-item.component.scss'],
-  standalone: false,
 })
 export class ProjectListItemComponent implements OnInit {
   @Input() project: Project.Response;

@@ -1,12 +1,26 @@
+import { DatePipe } from '@angular/common';
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatIconModule } from '@angular/material/icon';
+import { MatChipsModule } from '@angular/material/chips';
 import { Transaction } from '@household/shared/types/types';
+import { AmountInputComponent } from '@household/web/app/shared/amount-input/amount-input.component';
 import { hairdressingActions } from '@household/web/state/hairdressing/hairdressing.actions';
 import { Store } from '@ngrx/store';
+import { SplitPipe } from '@household/web/app/shared/pipes/split.pipe';
 
 @Component({
   selector: 'household-hairdressing-income-list-item',
-  standalone: false,
+  imports: [
+    MatExpansionModule,
+    DatePipe,
+    AmountInputComponent,
+    ReactiveFormsModule,
+    MatIconModule,
+    MatChipsModule,
+    SplitPipe,
+  ],
   templateUrl: './hairdressing-income-list-item.component.html',
   styleUrl: './hairdressing-income-list-item.component.scss',
 })

@@ -1,16 +1,32 @@
+import { DatePipe } from '@angular/common';
 import { Component, Inject, OnInit } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { toUndefined } from '@household/shared/common/utils';
 import { CalendarEntryResolutionStatus } from '@household/shared/enums';
 import { Calendar } from '@household/shared/types/types';
-import { JobPriceCalculatorValue } from '@household/web/app/shared/job-price-calculator/job-price-calculator.component';
+import { AmountInputComponent } from '@household/web/app/shared/amount-input/amount-input.component';
+import { IconTextComponent } from '@household/web/app/shared/icon-text/icon-text.component';
+import { JobPriceCalculatorComponent, JobPriceCalculatorValue } from '@household/web/app/shared/job-price-calculator/job-price-calculator.component';
+import { TimeSlotToTimePipe } from '@household/web/app/shared/pipes/time-slot-to-time.pipe';
 
 export type CalendarEntryPayingDialogData = Calendar.Entry.WorkEntryResponse;
 export type CalendarEntryPayingDialogResult = Calendar.Entry.ResolutionRequest;
 
 @Component({
-  standalone: false,  
+  imports: [
+    MatDialogModule,
+    ReactiveFormsModule,
+    IconTextComponent,
+    DatePipe,
+    TimeSlotToTimePipe,
+    JobPriceCalculatorComponent,
+    AmountInputComponent,
+    MatButtonModule,
+    MatButtonToggleModule,
+  ],  
   templateUrl: './calendar-entry-paying-dialog.component.html',
   styleUrl: './calendar-entry-paying-dialog.component.scss',
 })

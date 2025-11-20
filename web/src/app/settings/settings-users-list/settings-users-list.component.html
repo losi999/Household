@@ -1,3 +1,5 @@
 <div class="container">
-  <household-settings-users-list-item *ngFor="let u of users" [user]="u" />
+  @for (u of users; track $index) {
+  <household-settings-users-list-item [user]="u" />
+  }
 </div>

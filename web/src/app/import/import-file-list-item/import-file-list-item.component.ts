@@ -1,4 +1,9 @@
+import { AsyncPipe, DatePipe } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatListModule } from '@angular/material/list';
+import { RouterLink } from '@angular/router';
 import { File } from '@household/shared/types/types';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { selectFileIsInProgress } from '@household/web/state/progress/progress.selector';
@@ -7,7 +12,14 @@ import { Observable } from 'rxjs';
 
 @Component({
   selector: 'household-import-file-list-item',
-  standalone: false,
+  imports: [
+    MatListModule,
+    RouterLink,
+    AsyncPipe,
+    MatIconModule,
+    DatePipe,
+    MatButtonModule,
+  ],
   templateUrl: './import-file-list-item.component.html',
   styleUrl: './import-file-list-item.component.scss',
 })
