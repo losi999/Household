@@ -4,6 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { Price } from '@household/shared/types/types';
+import { PriceListItemComponent } from '@household/web/app/hairdressing/price/price-list-item/price-list-item.component';
 import { priceActions, priceApiActions } from '@household/web/app/hairdressing/price/state/price.actions';
 import { selectPriceList } from '@household/web/app/hairdressing/price/state/price.selector';
 import { ToolbarComponent } from '@household/web/app/shared/toolbar/toolbar.component';
@@ -14,6 +15,7 @@ import { Observable } from 'rxjs';
   selector: 'household-price-list',
   imports: [
     ToolbarComponent,
+    PriceListItemComponent,
     MatButtonModule,
     MatIconModule,
     MatListModule,

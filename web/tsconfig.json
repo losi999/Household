@@ -1,7 +1,6 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "baseUrl": "./",
     "outDir": "./dist/out-tsc",
     "sourceMap": true,
     "esModuleInterop": true,
@@ -10,13 +9,14 @@
     "skipLibCheck": true,
     "moduleResolution": "bundler",
     "importHelpers": true,
-    "target": "ES2022",
-    "module": "ES2022",
+    "target": "ES2023",
+    "module": "preserve",
     "lib": [
       "es2018",
       "ES2023.Array",
       "dom"
     ],
+    "baseUrl": "./",
     "paths": {
       "@household/shared/*": [
         "../shared/src/*"
@@ -27,6 +27,15 @@
     },
     "useDefineForClassFields": false
   },
+  "files": [],
+  "references": [
+    {
+      "path": "./tsconfig.app.json"
+    },
+    {
+      "path": "./tsconfig.spec.json"
+    }
+  ],
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false
   }

@@ -1,5 +1,4 @@
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 import { UserType } from '@household/shared/enums';
 import { AccountBalanceCalculatorComponent } from '@household/web/app/account/account-balance-calculator/account-balance-calculator.component';
 import { AccountHomeComponent } from '@household/web/app/account/account-home/account-home.component';
@@ -11,7 +10,7 @@ import { TransactionPaymentEditComponent } from '@household/web/app/transaction/
 import { TransactionSplitEditComponent } from '@household/web/app/transaction/transaction-split-edit/transaction-split-edit.component';
 import { TransactionTransferEditComponent } from '@household/web/app/transaction/transaction-transfer-edit/transaction-transfer-edit.component';
 
-const routes: Routes = [
+export const routes: Routes = [
   {
     path: '',
     component: AccountHomeComponent,
@@ -117,9 +116,3 @@ const routes: Routes = [
     },
   },
 ];
-
-@NgModule({
-  imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule],
-})
-export class AccountRoutingModule { }

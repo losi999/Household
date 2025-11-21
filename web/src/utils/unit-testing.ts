@@ -21,7 +21,7 @@ export const expectEffectNotEmitted = (effect: Observable<any>, additional: () =
   effect.subscribe({
     next: () => (emitted = true),
     complete: () => {
-      expect(emitted).toBeFalse();
+      expect(emitted).toBeFalsy();
       additional();
     },
   });
