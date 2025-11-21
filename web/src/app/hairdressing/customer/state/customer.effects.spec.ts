@@ -7,7 +7,7 @@ import { CustomerJobDialogResult } from '@household/web/app/hairdressing/custome
 import { customerActions, customerApiActions } from '@household/web/app/hairdressing/customer/state/customer.actions';
 import { CustomerEffects } from '@household/web/app/hairdressing/customer/state/customer.effects';
 import { DialogService } from '@household/web/services/dialog.service';
-import { expectEffectNotEmitted, returnDialogAfterClosed } from '@household/web/utils/unit-testing';
+import { createMockService, expectEffectNotEmitted, Mock, returnDialogAfterClosed, validateFunctionCall } from '@household/web/utils/unit-testing';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { Observable, of } from 'rxjs';
@@ -15,11 +15,13 @@ import { Observable, of } from 'rxjs';
 describe('Customer effects', () => {
   let actions$: Observable<any>;
   let effects: CustomerEffects;
-  let mockDialogService: jasmine.SpyObj<DialogService>;
-  let mockMatDialog: jasmine.SpyObj<MatDialog>;
+  let mockDialogService: Mock<DialogService>;
+  let mockMatDialog: Mock<MatDialog>;
   let store: MockStore;
 
   beforeEach(() => {
+    mockDialogService = createMockService('openConfirmationDialog');
+    mockMatDialog = createMockService('open');
     TestBed.configureTestingModule({
       providers: [
         CustomerEffects,
@@ -31,54 +33,50 @@ describe('Customer effects', () => {
         }),
         {
           provide: DialogService,
-          useValue: jasmine.createSpyObj<DialogService>('DialogService', ['openConfirmationDialog']), 
+          useValue: mockDialogService,
         },
         {
           provide: MatDialog,
-          useValue: jasmine.createSpyObj<MatDialog>('MatDialog', ['open']), 
+          useValue: mockMatDialog,
         },
       ],
     });
 
     effects = TestBed.inject(CustomerEffects);
-    mockMatDialog = TestBed.inject(MatDialog) as jasmine.SpyObj<MatDialog>;
     store = TestBed.inject(MockStore);
-    mockDialogService = TestBed.inject(DialogService) as jasmine.SpyObj<DialogService>;
   });
 
   describe('On Create customer', () => {
-    it('should dispatch [Customer API] Create customer initiated', (done) => {
+    it('should dispatch [Customer API] Create customer initiated', () => {
       const request = testDataFactory.customer.request();
 
-      mockMatDialog.open.and.returnValue(returnDialogAfterClosed<CustomerDialogResult>(request));
+      mockMatDialog.open.mockReturnValue(returnDialogAfterClosed<CustomerDialogResult>(request));
 
       actions$ = of(customerActions.createCustomer());
 
       effects.openCreateCustomerDialog.subscribe((result) => {
         expect(result).toEqual(customerApiActions.createCustomerInitiated(request));
-        expect(mockMatDialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({ }));
-        done();
+        validateFunctionCall(mockMatDialog.open, expect.anything(), expect.objectContaining({ }));
       });
     });
 
-    it('should NOT dispatch if dialog is cancelled', (done) => {
-      mockMatDialog.open.and.returnValue(returnDialogAfterClosed<CustomerDialogResult>());
+    it('should NOT dispatch if dialog is cancelled', () => {
+      mockMatDialog.open.mockReturnValue(returnDialogAfterClosed<CustomerDialogResult>());
     
       actions$ = of(customerActions.createCustomer());
     
       expectEffectNotEmitted(effects.openCreateCustomerDialog, () => {
-        expect(mockMatDialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({ }));
-        done();
+        validateFunctionCall(mockMatDialog.open, expect.anything(), expect.objectContaining({ }));
       });
     });
   });
 
   describe('On Update customer', () => {
-    it('should dispatch [Customer API] Update customer initiated', (done) => {
+    it('should dispatch [Customer API] Update customer initiated', () => {
       const customerResponse = testDataFactory.customer.response();
       const request = testDataFactory.customer.request();
 
-      mockMatDialog.open.and.returnValue(returnDialogAfterClosed<CustomerDialogResult>(request));
+      mockMatDialog.open.mockReturnValue(returnDialogAfterClosed<CustomerDialogResult>(request));
 
       store.setState({
         customers: {
@@ -95,17 +93,16 @@ describe('Customer effects', () => {
           customerId: customerResponse.customerId,
           ...request,
         }));
-        expect(mockMatDialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
+        validateFunctionCall(mockMatDialog.open, expect.anything(), expect.objectContaining({
           data: customerResponse,
         }));
-        done();
       });
     });
 
-    it('should NOT dispatch if dialog is cancelled', (done) => {
+    it('should NOT dispatch if dialog is cancelled', () => {
       const customerResponse = testDataFactory.customer.response();
 
-      mockMatDialog.open.and.returnValue(returnDialogAfterClosed<CustomerDialogResult>());
+      mockMatDialog.open.mockReturnValue(returnDialogAfterClosed<CustomerDialogResult>());
     
       store.setState({
         customers: {
@@ -118,20 +115,19 @@ describe('Customer effects', () => {
       }));
     
       expectEffectNotEmitted(effects.openUpdateCustomerDialog, () => {
-        expect(mockMatDialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
+        validateFunctionCall(mockMatDialog.open, expect.anything(), expect.objectContaining({
           data: customerResponse,
         }));
-        done();
       });
     });
   });
 
   describe('On Create customer job', () => {
-    it('should dispatch [Customer API] Create customer job initiated', (done) => {
+    it('should dispatch [Customer API] Create customer job initiated', () => {
       const request = testDataFactory.customer.job.request();
       const customerId = testDataFactory.customer.id();
 
-      mockMatDialog.open.and.returnValue(returnDialogAfterClosed<CustomerJobDialogResult>({
+      mockMatDialog.open.mockReturnValue(returnDialogAfterClosed<CustomerJobDialogResult>({
         jobName: undefined,
         ...request,
         customerId,
@@ -146,42 +142,40 @@ describe('Customer effects', () => {
           customerId,
           ...request,
         }));
-        expect(mockMatDialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
+        validateFunctionCall(mockMatDialog.open, expect.anything(), expect.objectContaining({
           data: {
             customerId,
           },
         }));
-        done();
       });
     });
 
-    it('should NOT dispatch if dialog is cancelled', (done) => {
+    it('should NOT dispatch if dialog is cancelled', () => {
       const customerId = testDataFactory.customer.id();
 
-      mockMatDialog.open.and.returnValue(returnDialogAfterClosed<CustomerDialogResult>());    
+      mockMatDialog.open.mockReturnValue(returnDialogAfterClosed<CustomerDialogResult>());    
 
       actions$ = of(customerActions.createCustomerJob({
         customerId,
       }));
     
       expectEffectNotEmitted(effects.openCreateCustomerJobDialog, () => {
-        expect(mockMatDialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
+        validateFunctionCall(mockMatDialog.open, expect.anything(), expect.objectContaining({
           data: {
             customerId,
           },
         }));
-        done();
       });
     });
   });
 
   describe('On Update customer job', () => {
-    it('should dispatch [Customer API] Update customer job initiated', (done) => {
+    it('should dispatch [Customer API] Update customer job initiated', () => {
       const request = testDataFactory.customer.job.request();
       const job = testDataFactory.customer.job.response();
       const customerId = testDataFactory.customer.id();
 
-      mockMatDialog.open.and.returnValue(returnDialogAfterClosed<CustomerJobDialogResult>({
+      mockMatDialog.open.mockReturnValue(returnDialogAfterClosed<CustomerJobDialogResult>({
         jobName: job.name,
         ...request,
         customerId,
@@ -198,21 +192,20 @@ describe('Customer effects', () => {
           jobName: job.name,
           ...request,
         }));
-        expect(mockMatDialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
+        validateFunctionCall(mockMatDialog.open, expect.anything(), expect.objectContaining({
           data: {
             customerId,
             job,
           },
         }));
-        done();
       });
     });
 
-    it('should NOT dispatch if dialog is cancelled', (done) => {
+    it('should NOT dispatch if dialog is cancelled', () => {
       const customerId = testDataFactory.customer.id();
       const job = testDataFactory.customer.job.response();
 
-      mockMatDialog.open.and.returnValue(returnDialogAfterClosed<CustomerDialogResult>());    
+      mockMatDialog.open.mockReturnValue(returnDialogAfterClosed<CustomerDialogResult>());    
 
       actions$ = of(customerActions.updateCustomerJob({
         customerId,
@@ -220,23 +213,22 @@ describe('Customer effects', () => {
       }));
     
       expectEffectNotEmitted(effects.openUpdateCustomerJobDialog, () => {
-        expect(mockMatDialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
+        validateFunctionCall(mockMatDialog.open, expect.anything(), expect.objectContaining({
           data: {
             customerId,
             job,
           },
         }));
-        done();
       });
     });
   });
 
   describe('On Delete customer job', () => {
-    it('should dispatch [Customer API] Delete customer job initiated', (done) => {
+    it('should dispatch [Customer API] Delete customer job initiated', () => {
       const job = testDataFactory.customer.job.response();
       const customerId = testDataFactory.customer.id();
 
-      mockDialogService.openConfirmationDialog.and.returnValue(of(true));
+      mockDialogService.openConfirmationDialog.mockReturnValue(of(true));
 
       actions$ = of(customerActions.deleteCustomerJob({
         customerId,
@@ -248,18 +240,17 @@ describe('Customer effects', () => {
           customerId,
           jobName: job.name,
         }));
-        expect(mockDialogService.openConfirmationDialog).toHaveBeenCalledWith(jasmine.objectContaining({
+        validateFunctionCall(mockDialogService.openConfirmationDialog, expect.objectContaining({
           content: job.name,
         }));
-        done();
       });
     });
 
-    it('should NOT dispatch if dialog is cancelled', (done) => {
+    it('should NOT dispatch if dialog is cancelled', () => {
       const job = testDataFactory.customer.job.response();
       const customerId = testDataFactory.customer.id();
 
-      mockDialogService.openConfirmationDialog.and.returnValue(of(false));  
+      mockDialogService.openConfirmationDialog.mockReturnValue(of(false));  
 
       actions$ = of(customerActions.deleteCustomerJob({
         customerId,
@@ -267,16 +258,15 @@ describe('Customer effects', () => {
       }));
     
       expectEffectNotEmitted(effects.openDeleteCustomerJobDialog, () => {
-        expect(mockDialogService.openConfirmationDialog).toHaveBeenCalledWith(jasmine.objectContaining({
+        validateFunctionCall(mockDialogService.openConfirmationDialog, expect.objectContaining({
           content: job.name,
         }));
-        done();
       });
     });
   });
 
   describe('On Add customer to blacklist', () => {
-    it('should dispatch [Customer API] Add customer to blacklist initiated', (done) => {
+    it('should dispatch [Customer API] Add customer to blacklist initiated', () => {
       const alreadyBlacklistedCustomer = testDataFactory.customer.response();
       const customerA = testDataFactory.customer.response({
         blacklistedCustomers: [alreadyBlacklistedCustomer],
@@ -289,7 +279,7 @@ describe('Customer effects', () => {
         },
       });
 
-      mockMatDialog.open.and.returnValue(returnDialogAfterClosed<CustomerAddToBlacklistDialogResult>([
+      mockMatDialog.open.mockReturnValue(returnDialogAfterClosed<CustomerAddToBlacklistDialogResult>([
         customerA,
         customerB,
       ]));
@@ -305,7 +295,7 @@ describe('Customer effects', () => {
             customerB,
           ],
         }));
-        expect(mockMatDialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
+        validateFunctionCall(mockMatDialog.open, expect.anything(), expect.objectContaining({
           data: {
             customer: customerA,
             excludedCustomerIds: [
@@ -314,11 +304,10 @@ describe('Customer effects', () => {
             ],
           },
         }));
-        done();
       });
     });
 
-    it('should NOT dispatch if dialog is cancelled', (done) => {
+    it('should NOT dispatch if dialog is cancelled', () => {
       const alreadyBlacklistedCustomer = testDataFactory.customer.response();
       const customerA = testDataFactory.customer.response({
         blacklistedCustomers: [alreadyBlacklistedCustomer],
@@ -330,14 +319,14 @@ describe('Customer effects', () => {
         },
       });
 
-      mockMatDialog.open.and.returnValue(returnDialogAfterClosed<CustomerAddToBlacklistDialogResult>());
+      mockMatDialog.open.mockReturnValue(returnDialogAfterClosed<CustomerAddToBlacklistDialogResult>());
 
       actions$ = of(customerActions.addCustomerToBlacklist({
         customerId: customerA.customerId,
       }));
     
       expectEffectNotEmitted(effects.openAddCustomerToBlacklistDialog, () => {
-        expect(mockMatDialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
+        validateFunctionCall(mockMatDialog.open, expect.anything(), expect.objectContaining({
           data: {
             customer: customerA,
             excludedCustomerIds: [
@@ -346,13 +335,12 @@ describe('Customer effects', () => {
             ],
           },
         }));
-        done();
       });
     });
   });
 
   describe('On Remove customer to blacklist', () => {
-    it('should dispatch [Customer API] Remove customer to blacklist initiated', (done) => {
+    it('should dispatch [Customer API] Remove customer to blacklist initiated', () => {
       const customerA = testDataFactory.customer.response();
       const customerB = testDataFactory.customer.response();
 
@@ -362,7 +350,7 @@ describe('Customer effects', () => {
         },
       });
 
-      mockDialogService.openConfirmationDialog.and.returnValue(of(true));
+      mockDialogService.openConfirmationDialog.mockReturnValue(of(true));
 
       actions$ = of(customerActions.deleteCustomerFromBlacklist({
         customerId: customerA.customerId,
@@ -376,14 +364,13 @@ describe('Customer effects', () => {
             customerB.customerId,
           ],
         }));
-        expect(mockDialogService.openConfirmationDialog).toHaveBeenCalledWith(jasmine.objectContaining({
+        validateFunctionCall(mockDialogService.openConfirmationDialog, expect.objectContaining({
           content: `${customerA.name} és ${customerB.name}`,
         }));
-        done();
       });
     });
 
-    it('should NOT dispatch if dialog is cancelled', (done) => {
+    it('should NOT dispatch if dialog is cancelled', () => {
       const customerA = testDataFactory.customer.response();
       const customerB = testDataFactory.customer.response();
 
@@ -393,7 +380,7 @@ describe('Customer effects', () => {
         },
       });
 
-      mockDialogService.openConfirmationDialog.and.returnValue(of(false));
+      mockDialogService.openConfirmationDialog.mockReturnValue(of(false));
 
       actions$ = of(customerActions.deleteCustomerFromBlacklist({
         customerId: customerA.customerId,
@@ -401,10 +388,9 @@ describe('Customer effects', () => {
       }));
     
       expectEffectNotEmitted(effects.openDeleteCustomerFromBlacklistDialog, () => {
-        expect(mockDialogService.openConfirmationDialog).toHaveBeenCalledWith(jasmine.objectContaining({
+        validateFunctionCall(mockDialogService.openConfirmationDialog, expect.objectContaining({
           content: `${customerA.name} és ${customerB.name}`,
         }));
-        done();
       });
     });
   });

@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { AuthInterceptor } from './auth.interceptor';
 
-xdescribe('AuthInterceptor', () => {
+describe.skip('AuthInterceptor', () => {
   beforeEach(() => TestBed.configureTestingModule({
     providers: [AuthInterceptor],
   }));

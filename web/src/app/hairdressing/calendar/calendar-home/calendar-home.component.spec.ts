@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CalendarHomeComponent } from './calendar-home.component';
 
-xdescribe('CalendarHomeComponent', () => {
+describe.skip('CalendarHomeComponent', () => {
   let component: CalendarHomeComponent;
   let fixture: ComponentFixture<CalendarHomeComponent>;
 

@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CategoryFormComponent } from './category-form.component';
 
-xdescribe('CategoryFormComponent', () => {
+describe.skip('CategoryFormComponent', () => {
   let component: CategoryFormComponent;
   let fixture: ComponentFixture<CategoryFormComponent>;
 

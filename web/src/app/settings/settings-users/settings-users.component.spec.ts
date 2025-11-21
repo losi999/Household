@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SettingsUsersComponent } from './settings-users.component';
 
-xdescribe('SettingsUsersComponent', () => {
+describe.skip('SettingsUsersComponent', () => {
   let component: SettingsUsersComponent;
   let fixture: ComponentFixture<SettingsUsersComponent>;
 

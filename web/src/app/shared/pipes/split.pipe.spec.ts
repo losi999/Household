@@ -1,6 +1,6 @@
 import { SplitPipe } from './split.pipe';
 
-xdescribe('SplitPipe', () => {
+describe.skip('SplitPipe', () => {
   it('create an instance', () => {
     const pipe = new SplitPipe();
     expect(pipe).toBeTruthy();

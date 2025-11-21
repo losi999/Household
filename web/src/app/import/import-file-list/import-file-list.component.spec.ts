@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ImportFileListComponent } from './import-file-list.component';
 
-xdescribe('ImportFileListComponent', () => {
+describe.skip('ImportFileListComponent', () => {
   let component: ImportFileListComponent;
   let fixture: ComponentFixture<ImportFileListComponent>;
 

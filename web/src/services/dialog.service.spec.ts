@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { DialogService } from './dialog.service';
 
-xdescribe('DialogService', () => {
+describe.skip('DialogService', () => {
   let service: DialogService;
 
   beforeEach(() => {

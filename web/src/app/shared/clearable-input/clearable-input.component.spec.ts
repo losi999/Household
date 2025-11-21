@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ClearableInputComponent } from './clearable-input.component';
 
-xdescribe('ClearableInputComponent', () => {
+describe.skip('ClearableInputComponent', () => {
   let component: ClearableInputComponent;
   let fixture: ComponentFixture<ClearableInputComponent>;
 

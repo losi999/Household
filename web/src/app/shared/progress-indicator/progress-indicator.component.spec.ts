@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ProgressIndicatorComponent } from './progress-indicator.component';
 
-xdescribe('ProgressIndicatorComponent', () => {
+describe.skip('ProgressIndicatorComponent', () => {
   let component: ProgressIndicatorComponent;
   let fixture: ComponentFixture<ProgressIndicatorComponent>;
 

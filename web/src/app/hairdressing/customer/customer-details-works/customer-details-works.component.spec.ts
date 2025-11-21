@@ -35,8 +35,6 @@ describe('CustomerDetailsWorksComponent', () => {
     component = fixture.componentInstance;
     
     selector = elementSelectorFactory(fixture.debugElement);
-
-    fixture.detectChanges();
   });
 
   describe('title', () => {

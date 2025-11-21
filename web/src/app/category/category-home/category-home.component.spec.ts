@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CategoryHomeComponent } from './category-home.component';
 
-xdescribe('CategoryHomeComponent', () => {
+describe.skip('CategoryHomeComponent', () => {
   let component: CategoryHomeComponent;
   let fixture: ComponentFixture<CategoryHomeComponent>;
 

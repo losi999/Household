@@ -5,41 +5,36 @@ import { priceApiActions } from '@household/web/app/hairdressing/price/state/pri
 import { PriceService } from '@household/web/services/price.service';
 import { notificationActions } from '@household/web/state/notification/notification.actions';
 import { progressActions } from '@household/web/state/progress/progress.actions';
-import { expectEffectMultipleEmission } from '@household/web/utils/unit-testing';
+import { createMockService, expectEffectMultipleEmission, Mock, validateFunctionCall } from '@household/web/utils/unit-testing';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { Observable, of, throwError } from 'rxjs';
 
 describe('Price API effects', () => {
   let actions$: Observable<any>;
   let effects: PriceApiEffects;
-  let mockPriceService: jasmine.SpyObj<PriceService>;
+  let mockPriceService: Mock<PriceService>;
 
   beforeEach(() => {
+    mockPriceService = createMockService('listPrices', 'createPrice', 'updatePrice', 'deletePrice');
     TestBed.configureTestingModule({
       providers: [
         PriceApiEffects,
         provideMockActions(() => actions$),
         {
           provide: PriceService,
-          useValue: jasmine.createSpyObj<PriceService>('PriceService', [
-            'listPrices',
-            'createPrice',
-            'updatePrice',
-            'deletePrice',
-          ]), 
+          useValue: mockPriceService,
         },
       ],
     });
 
     effects = TestBed.inject(PriceApiEffects);
-    mockPriceService = TestBed.inject(PriceService) as jasmine.SpyObj<PriceService>;
   });
 
   describe('On List prices initiated', () => {
-    it('should dispatch [Price API] List prices completed', (done) => {
+    it('should dispatch [Price API] List prices completed', () => {
       const priceResponse = testDataFactory.price.response();
       
-      mockPriceService.listPrices.and.returnValue(of([priceResponse]));
+      mockPriceService.listPrices.mockReturnValue(of([priceResponse]));
 
       actions$ = of(priceApiActions.listPricesInitiated());
 
@@ -48,12 +43,11 @@ describe('Price API effects', () => {
           prices: [priceResponse],
         }));
       });
-      expect(mockPriceService.listPrices).toHaveBeenCalledTimes(1);
-      done();      
+      expect(mockPriceService.listPrices).toHaveBeenCalledTimes(1);      
     });
   
-    it('should dispatch error if unable to get data from API', (done) => { 
-      mockPriceService.listPrices.and.returnValue(throwError(() => new Error('Price API error')));
+    it('should dispatch error if unable to get data from API', () => { 
+      mockPriceService.listPrices.mockReturnValue(throwError(() => new Error('Price API error')));
   
       actions$ = of(priceApiActions.listPricesInitiated());
   
@@ -64,17 +58,16 @@ describe('Price API effects', () => {
         }),
       ], () => {
         expect(mockPriceService.listPrices).toHaveBeenCalledTimes(1);
-        done();
       });
     });
   });
 
   describe('On Create price initiated', () => {
-    it('should dispatch [Price API] Create price completed', (done) => {
+    it('should dispatch [Price API] Create price completed', () => {
       const request = testDataFactory.price.request();
       const priceId = testDataFactory.price.id();
       
-      mockPriceService.createPrice.and.returnValue(of({
+      mockPriceService.createPrice.mockReturnValue(of({
         priceId,
       }));
 
@@ -86,14 +79,13 @@ describe('Price API effects', () => {
           ...request,
         }));
       });
-      expect(mockPriceService.createPrice).toHaveBeenCalledWith(request);
-      done();      
+      validateFunctionCall(mockPriceService.createPrice, request);      
     });
   
-    it('should dispatch duplicate error if price name is already in use', (done) => { 
+    it('should dispatch duplicate error if price name is already in use', () => { 
       const request = testDataFactory.price.request();
       
-      mockPriceService.createPrice.and.returnValue(throwError(() => ({
+      mockPriceService.createPrice.mockReturnValue(throwError(() => ({
         error: new Error('Duplicate price name'),
       })));
 
@@ -105,15 +97,14 @@ describe('Price API effects', () => {
           message: `Árlista elem (${request.name}) már létezik!`,
         }),
       ], () => {
-        expect(mockPriceService.createPrice).toHaveBeenCalledWith(request);
-        done();
+        validateFunctionCall(mockPriceService.createPrice, request);
       });
     });
   
-    it('should dispatch error if unable to get data from API', (done) => { 
+    it('should dispatch error if unable to get data from API', () => { 
       const request = testDataFactory.price.request();
       
-      mockPriceService.createPrice.and.returnValue(throwError(() => new Error('Price API error')));
+      mockPriceService.createPrice.mockReturnValue(throwError(() => new Error('Price API error')));
 
       actions$ = of(priceApiActions.createPriceInitiated(request));
   
@@ -123,18 +114,17 @@ describe('Price API effects', () => {
           message: 'Hiba történt',
         }),
       ], () => {
-        expect(mockPriceService.createPrice).toHaveBeenCalledWith(request);
-        done();
+        validateFunctionCall(mockPriceService.createPrice, request);
       });
     });
   });
 
   describe('On Update price initiated', () => {
-    it('should dispatch [Price API] Update price completed', (done) => {
+    it('should dispatch [Price API] Update price completed', () => {
       const request = testDataFactory.price.request();
       const priceId = testDataFactory.price.id();
       
-      mockPriceService.updatePrice.and.returnValue(of({
+      mockPriceService.updatePrice.mockReturnValue(of({
         priceId,
       }));
 
@@ -149,15 +139,14 @@ describe('Price API effects', () => {
           ...request,
         }));
       });
-      expect(mockPriceService.updatePrice).toHaveBeenCalledWith(priceId, request);
-      done();      
+      validateFunctionCall(mockPriceService.updatePrice, priceId, request);      
     });
   
-    it('should dispatch duplicate error if price name is already in use', (done) => { 
+    it('should dispatch duplicate error if price name is already in use', () => { 
       const request = testDataFactory.price.request();
       const priceId = testDataFactory.price.id();
       
-      mockPriceService.updatePrice.and.returnValue(throwError(() => ({
+      mockPriceService.updatePrice.mockReturnValue(throwError(() => ({
         error: new Error('Duplicate price name'),
       })));
 
@@ -172,16 +161,15 @@ describe('Price API effects', () => {
           message: `Árlista elem (${request.name}) már létezik!`,
         }),
       ], () => {
-        expect(mockPriceService.updatePrice).toHaveBeenCalledWith(priceId, request);
-        done();
+        validateFunctionCall(mockPriceService.updatePrice, priceId, request);
       });
     });
   
-    it('should dispatch error if unable to get data from API', (done) => { 
+    it('should dispatch error if unable to get data from API', () => { 
       const request = testDataFactory.price.request();
       const priceId = testDataFactory.price.id();
       
-      mockPriceService.updatePrice.and.returnValue(throwError(() => new Error('Price API error')));
+      mockPriceService.updatePrice.mockReturnValue(throwError(() => new Error('Price API error')));
 
       actions$ = of(priceApiActions.updatePriceInitiated({
         priceId,
@@ -194,17 +182,16 @@ describe('Price API effects', () => {
           message: 'Hiba történt',
         }),
       ], () => {
-        expect(mockPriceService.updatePrice).toHaveBeenCalledWith(priceId, request);
-        done();
+        validateFunctionCall(mockPriceService.updatePrice, priceId, request);
       });
     });
   });
 
   describe('On Delete price initiated', () => {
-    it('should dispatch [Price API] Delete price completed', (done) => {
+    it('should dispatch [Price API] Delete price completed', () => {
       const priceId = testDataFactory.price.id();
       
-      mockPriceService.deletePrice.and.returnValue(of({
+      mockPriceService.deletePrice.mockReturnValue(of({
         priceId,
       }));
 
@@ -217,14 +204,13 @@ describe('Price API effects', () => {
           priceId,
         }));
       });
-      expect(mockPriceService.deletePrice).toHaveBeenCalledWith(priceId);
-      done();      
+      validateFunctionCall(mockPriceService.deletePrice, priceId);      
     });
   
-    it('should dispatch error if unable to get data from API', (done) => { 
+    it('should dispatch error if unable to get data from API', () => { 
       const priceId = testDataFactory.price.id();
       
-      mockPriceService.deletePrice.and.returnValue(throwError(() => new Error('Price API error')));
+      mockPriceService.deletePrice.mockReturnValue(throwError(() => new Error('Price API error')));
 
       actions$ = of(priceApiActions.deletePriceInitiated({
         priceId,
@@ -239,8 +225,7 @@ describe('Price API effects', () => {
           message: 'Hiba történt',
         }),
       ], () => {
-        expect(mockPriceService.deletePrice).toHaveBeenCalledWith(priceId);
-        done();
+        validateFunctionCall(mockPriceService.deletePrice, priceId);
       });
     });
   });

@@ -9,7 +9,7 @@ import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { CalendarEntryDetailsDialogResult } from '@household/web/app/hairdressing/calendar/calendar-entry-details-dialog/calendar-entry-details-dialog.component';
 import { CalendarWorkdayDialogResult } from '@household/web/app/hairdressing/calendar/calendar-workday-dialog/calendar-workday-dialog.component';
 import { CalendarEntryResolutionStatus, CalendarEntryType } from '@household/shared/enums';
-import { expectEffectNotEmitted, returnDialogAfterClosed } from '@household/web/utils/unit-testing';
+import { createMockService, expectEffectNotEmitted, Mock, returnDialogAfterClosed } from '@household/web/utils/unit-testing';
 import { CalendarEntryEditDialogResult } from '@household/web/app/hairdressing/calendar/calendar-entry-edit-dialog/calendar-entry-edit-dialog.component';
 import { CalendarEntryPayingDialogResult } from '@household/web/app/hairdressing/calendar/calendar-entry-paying-dialog/calendar-entry-paying-dialog.component';
 import { createWorkEntryTitle } from '@household/shared/common/utils';
@@ -17,32 +17,33 @@ import { createWorkEntryTitle } from '@household/shared/common/utils';
 describe('Calendar effects', () => {
   let actions$: Observable<any>;
   let effects: CalendarEffects;
-  let mockDialogService: jasmine.SpyObj<DialogService>;
-  let mockMatDialog: jasmine.SpyObj<MatDialog>;
+  let mockDialogService: Mock<DialogService>;
+  let mockMatDialog: Mock<MatDialog>;
 
   beforeEach(() => {
+    mockDialogService = createMockService('openConfirmationDialog');
+    mockMatDialog = createMockService('open');
+
     TestBed.configureTestingModule({
       providers: [
         CalendarEffects,
         provideMockActions(() => actions$),
         {
           provide: DialogService,
-          useValue: jasmine.createSpyObj<DialogService>('DialogService', ['openConfirmationDialog']), 
+          useValue: mockDialogService,
         },
         {
           provide: MatDialog,
-          useValue: jasmine.createSpyObj<MatDialog>('MatDialog', ['open']), 
+          useValue: mockMatDialog, 
         },
       ],
     });
 
     effects = TestBed.inject(CalendarEffects);
-    mockMatDialog = TestBed.inject(MatDialog) as jasmine.SpyObj<MatDialog>;
-    mockDialogService = TestBed.inject(DialogService) as jasmine.SpyObj<DialogService>;
   });
 
   describe('On List calendar week', () => {
-    it('should dispatch [Calendar API] List calendar days initiated', (done) => {
+    it('should dispatch [Calendar API] List calendar days initiated', () => {
       const weekStart = new Date(2025, 10, 10);
 
       actions$ = of(calendarActions.listCalendarWeek({
@@ -54,13 +55,12 @@ describe('Calendar effects', () => {
           dateFrom: '2025-11-10',
           dateTo: '2025-11-16',
         }));
-        done();
       });
     });
   });
 
   describe('On List calendar month', () => {
-    it('should dispatch [Calendar API] List calendar days initiated', (done) => {
+    it('should dispatch [Calendar API] List calendar days initiated', () => {
       const date = new Date(2025, 10, 10);
 
       actions$ = of(calendarActions.listCalendarMonth({
@@ -72,16 +72,15 @@ describe('Calendar effects', () => {
           dateFrom: '2025-11-01',
           dateTo: '2025-11-30',
         }));
-        done();
       });
     });
   });
 
   describe('On Set work day', () => {
-    it('should dispatch [Calendar API] Delete calendar day initiated', (done) => {
+    it('should dispatch [Calendar API] Delete calendar day initiated', () => {
       const dayResponse = testDataFactory.calendar.day.response.workday();
 
-      mockMatDialog.open.and.returnValue(returnDialogAfterClosed<CalendarWorkdayDialogResult>({
+      mockMatDialog.open.mockReturnValue(returnDialogAfterClosed<CalendarWorkdayDialogResult>({
         day: dayResponse.day,
       }));
 
@@ -93,18 +92,17 @@ describe('Calendar effects', () => {
         expect(result).toEqual(calendarApiActions.deleteCalendarDayInitiated({
           day: dayResponse.day,
         }));
-        expect(mockMatDialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
+        expect(mockMatDialog.open).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
           data: dayResponse,
         }));
-        done();
       });
     });
 
-    it('should dispatch [Calendar API] Update calendar day initiated with vacation', (done) => {
+    it('should dispatch [Calendar API] Update calendar day initiated with vacation', () => {
       const dayResponse = testDataFactory.calendar.day.response.workday();
       const request = testDataFactory.calendar.day.request.vacation();
 
-      mockMatDialog.open.and.returnValue(returnDialogAfterClosed<CalendarWorkdayDialogResult>({
+      mockMatDialog.open.mockReturnValue(returnDialogAfterClosed<CalendarWorkdayDialogResult>({
         day: dayResponse.day,
         ...request,
       }));
@@ -118,18 +116,17 @@ describe('Calendar effects', () => {
           day: dayResponse.day,
           ...request,
         }));
-        expect(mockMatDialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
+        expect(mockMatDialog.open).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
           data: dayResponse,
         }));
-        done();
       });
     });
 
-    it('should dispatch [Calendar API] Update calendar day initiated with workday', (done) => {
+    it('should dispatch [Calendar API] Update calendar day initiated with workday', () => {
       const dayResponse = testDataFactory.calendar.day.response.workday();
       const request = testDataFactory.calendar.day.request.workday();
 
-      mockMatDialog.open.and.returnValue(returnDialogAfterClosed<CalendarWorkdayDialogResult>({
+      mockMatDialog.open.mockReturnValue(returnDialogAfterClosed<CalendarWorkdayDialogResult>({
         day: dayResponse.day,
         ...request,
       }));
@@ -143,36 +140,34 @@ describe('Calendar effects', () => {
           day: dayResponse.day,
           ...request,
         }));
-        expect(mockMatDialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
+        expect(mockMatDialog.open).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
           data: dayResponse,
         }));
-        done();
       });
     });
 
-    it('should NOT dispatch if dialog is cancelled', (done) => {
+    it('should NOT dispatch if dialog is cancelled', () => {
       const dayResponse = testDataFactory.calendar.day.response.workday();
 
-      mockMatDialog.open.and.returnValue(returnDialogAfterClosed<CalendarWorkdayDialogResult>());
+      mockMatDialog.open.mockReturnValue(returnDialogAfterClosed<CalendarWorkdayDialogResult>());
 
       actions$ = of(calendarActions.setWorkDay({
         ...dayResponse,
       }));
 
       expectEffectNotEmitted(effects.openSetWorkDayDialog, () => {
-        expect(mockMatDialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
+        expect(mockMatDialog.open).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
           data: dayResponse,
         }));
-        done();
       });
     });
   });
 
   describe('On View calendar entry', () => {
-    it('should dispatch [Calendar] Update calendar entry', (done) => {
+    it('should dispatch [Calendar] Update calendar entry', () => {
       const entryResponse = testDataFactory.calendar.entry.response.personal();
 
-      mockMatDialog.open.and.returnValue(returnDialogAfterClosed<CalendarEntryDetailsDialogResult>(CalendarEntryDetailsDialogResult.Edit));
+      mockMatDialog.open.mockReturnValue(returnDialogAfterClosed<CalendarEntryDetailsDialogResult>(CalendarEntryDetailsDialogResult.Edit));
 
       actions$ = of(calendarActions.viewCalendarEntry({
         ...entryResponse,
@@ -180,17 +175,16 @@ describe('Calendar effects', () => {
 
       effects.openCalendarEntryDialog.subscribe((result) => {
         expect(result).toEqual(calendarActions.updateCalendarEntry(entryResponse));
-        expect(mockMatDialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
+        expect(mockMatDialog.open).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
           data: entryResponse,
         }));
-        done();
       });
     });
 
-    it('should dispatch [Calendar] Delete calendar entry', (done) => {
+    it('should dispatch [Calendar] Delete calendar entry', () => {
       const entryResponse = testDataFactory.calendar.entry.response.personal();
 
-      mockMatDialog.open.and.returnValue(returnDialogAfterClosed<CalendarEntryDetailsDialogResult>(CalendarEntryDetailsDialogResult.Delete));
+      mockMatDialog.open.mockReturnValue(returnDialogAfterClosed<CalendarEntryDetailsDialogResult>(CalendarEntryDetailsDialogResult.Delete));
 
       actions$ = of(calendarActions.viewCalendarEntry({
         ...entryResponse,
@@ -201,17 +195,16 @@ describe('Calendar effects', () => {
           calendarEntryId: entryResponse.calendarEntryId,
           title: entryResponse.title,
         }));
-        expect(mockMatDialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
+        expect(mockMatDialog.open).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
           data: entryResponse,
         }));
-        done();
       });
     });
 
-    it('should dispatch [Calendar] Pay calendar work entry', (done) => {
+    it('should dispatch [Calendar] Pay calendar work entry', () => {
       const entryResponse = testDataFactory.calendar.entry.response.work();
 
-      mockMatDialog.open.and.returnValue(returnDialogAfterClosed<CalendarEntryDetailsDialogResult>(CalendarEntryDetailsDialogResult.Pay));
+      mockMatDialog.open.mockReturnValue(returnDialogAfterClosed<CalendarEntryDetailsDialogResult>(CalendarEntryDetailsDialogResult.Pay));
 
       actions$ = of(calendarActions.viewCalendarEntry({
         ...entryResponse,
@@ -219,17 +212,16 @@ describe('Calendar effects', () => {
 
       effects.openCalendarEntryDialog.subscribe((result) => {
         expect(result).toEqual(calendarActions.payCalendarWorkEntry(entryResponse));
-        expect(mockMatDialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
+        expect(mockMatDialog.open).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
           data: entryResponse,
         }));
-        done();
       });
     });
 
-    it('should dispatch [Calendar API] Resolve calendar work entry initiated', (done) => {
+    it('should dispatch [Calendar API] Resolve calendar work entry initiated', () => {
       const entryResponse = testDataFactory.calendar.entry.response.work();
 
-      mockMatDialog.open.and.returnValue(returnDialogAfterClosed<CalendarEntryDetailsDialogResult>(CalendarEntryDetailsDialogResult.NoShow));
+      mockMatDialog.open.mockReturnValue(returnDialogAfterClosed<CalendarEntryDetailsDialogResult>(CalendarEntryDetailsDialogResult.NoShow));
 
       actions$ = of(calendarActions.viewCalendarEntry({
         ...entryResponse,
@@ -241,36 +233,34 @@ describe('Calendar effects', () => {
           status: CalendarEntryResolutionStatus.NoShow,
           day: entryResponse.day,
         }));
-        expect(mockMatDialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
+        expect(mockMatDialog.open).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
           data: entryResponse,
         }));
-        done();
       });
     });
 
-    it('should NOT dispatch if dialog is cancelled', (done) => {
+    it('should NOT dispatch if dialog is cancelled', () => {
       const entryResponse = testDataFactory.calendar.entry.response.work();
 
-      mockMatDialog.open.and.returnValue(returnDialogAfterClosed<CalendarEntryDetailsDialogResult>());
+      mockMatDialog.open.mockReturnValue(returnDialogAfterClosed<CalendarEntryDetailsDialogResult>());
 
       actions$ = of(calendarActions.viewCalendarEntry({
         ...entryResponse,
       }));
 
       expectEffectNotEmitted(effects.openCalendarEntryDialog, () => {
-        expect(mockMatDialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
+        expect(mockMatDialog.open).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
           data: entryResponse,
         }));
-        done();
       });
     });
   });
 
   describe('On Create calendar entry', () => {
-    it('should dispatch [Calendar API] Create calendar entry initiated', (done) => {
+    it('should dispatch [Calendar API] Create calendar entry initiated', () => {
       const request = testDataFactory.calendar.entry.request.personal();
 
-      mockMatDialog.open.and.returnValue(returnDialogAfterClosed<CalendarEntryEditDialogResult>(request));
+      mockMatDialog.open.mockReturnValue(returnDialogAfterClosed<CalendarEntryEditDialogResult>(request));
 
       actions$ = of(calendarActions.createCalendarEntry({
         entryType: CalendarEntryType.Personal,
@@ -278,39 +268,37 @@ describe('Calendar effects', () => {
 
       effects.openCreateCalendarEntryDialog.subscribe((result) => {
         expect(result).toEqual(calendarApiActions.createCalendarEntryInitiated(request));
-        expect(mockMatDialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
+        expect(mockMatDialog.open).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
           data: {
             entryType: CalendarEntryType.Personal,
           },
         }));
-        done();
       });
     });
 
-    it('should NOT dispatch if dialog is cancelled', (done) => {
-      mockMatDialog.open.and.returnValue(returnDialogAfterClosed<CalendarEntryEditDialogResult>());
+    it('should NOT dispatch if dialog is cancelled', () => {
+      mockMatDialog.open.mockReturnValue(returnDialogAfterClosed<CalendarEntryEditDialogResult>());
 
       actions$ = of(calendarActions.createCalendarEntry({
         entryType: CalendarEntryType.Personal,
       }));
 
       expectEffectNotEmitted(effects.openCreateCalendarEntryDialog, () => {
-        expect(mockMatDialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
+        expect(mockMatDialog.open).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
           data: {
             entryType: CalendarEntryType.Personal,
           },
         }));
-        done();
       });
     });
   });
 
   describe('On Update calendar entry', () => {
-    it('should dispatch [Calendar API] Update calendar entry initiated', (done) => {
+    it('should dispatch [Calendar API] Update calendar entry initiated', () => {
       const entryResponse = testDataFactory.calendar.entry.response.personal();
       const request = testDataFactory.calendar.entry.request.personal();
 
-      mockMatDialog.open.and.returnValue(returnDialogAfterClosed<CalendarEntryEditDialogResult>(request));
+      mockMatDialog.open.mockReturnValue(returnDialogAfterClosed<CalendarEntryEditDialogResult>(request));
 
       actions$ = of(calendarActions.updateCalendarEntry({
         ...entryResponse,
@@ -321,36 +309,34 @@ describe('Calendar effects', () => {
           calendarEntryId: entryResponse.calendarEntryId,
           ...request,
         }));
-        expect(mockMatDialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
+        expect(mockMatDialog.open).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
           data: entryResponse,
         }));
-        done();
       });
     });
 
-    it('should NOT dispatch if dialog is cancelled', (done) => {
+    it('should NOT dispatch if dialog is cancelled', () => {
       const entryResponse = testDataFactory.calendar.entry.response.personal();
 
-      mockMatDialog.open.and.returnValue(returnDialogAfterClosed<CalendarEntryEditDialogResult>());
+      mockMatDialog.open.mockReturnValue(returnDialogAfterClosed<CalendarEntryEditDialogResult>());
 
       actions$ = of(calendarActions.updateCalendarEntry({
         ...entryResponse,
       }));
 
       expectEffectNotEmitted(effects.openUpdateCalendarEntryDialog, () => {
-        expect(mockMatDialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
+        expect(mockMatDialog.open).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
           data: entryResponse,
         }));
-        done();
       });
     });
   });
 
   describe('On Delete calendar entry', () => {
-    it('should dispatch [Calendar API] Delete calendar entry initiated', (done) => {
+    it('should dispatch [Calendar API] Delete calendar entry initiated', () => {
       const entryResponse = testDataFactory.calendar.entry.response.personal();
 
-      mockDialogService.openConfirmationDialog.and.returnValue(of(true));
+      mockDialogService.openConfirmationDialog.mockReturnValue(of(true));
 
       actions$ = of(calendarActions.deleteCalendarEntry({
         calendarEntryId: entryResponse.calendarEntryId,
@@ -361,17 +347,16 @@ describe('Calendar effects', () => {
         expect(result).toEqual(calendarApiActions.deleteCalendarEntryInitiated({
           calendarEntryId: entryResponse.calendarEntryId,
         }));
-        expect(mockDialogService.openConfirmationDialog).toHaveBeenCalledWith(jasmine.objectContaining({
+        expect(mockDialogService.openConfirmationDialog).toHaveBeenCalledWith(expect.objectContaining({
           content: entryResponse.title,
         }));
-        done();
       });
     });
 
-    it('should NOT dispatch if dialog is cancelled', (done) => {
+    it('should NOT dispatch if dialog is cancelled', () => {
       const entryResponse = testDataFactory.calendar.entry.response.personal();
 
-      mockDialogService.openConfirmationDialog.and.returnValue(of(false));
+      mockDialogService.openConfirmationDialog.mockReturnValue(of(false));
 
       actions$ = of(calendarActions.deleteCalendarEntry({
         calendarEntryId: entryResponse.calendarEntryId,
@@ -379,20 +364,19 @@ describe('Calendar effects', () => {
       }));
 
       expectEffectNotEmitted(effects.openDeleteCalendarEntryDialog, () => {
-        expect(mockDialogService.openConfirmationDialog).toHaveBeenCalledWith(jasmine.objectContaining({
+        expect(mockDialogService.openConfirmationDialog).toHaveBeenCalledWith(expect.objectContaining({
           content: entryResponse.title,
         }));
-        done();
       });
     });
   });
 
   describe('On Pay calendar work entry', () => {
-    it('should dispatch [Calendar API] Resolve calendar work entry initiated', (done) => {
+    it('should dispatch [Calendar API] Resolve calendar work entry initiated', () => {
       const entryResponse = testDataFactory.calendar.entry.response.work();
       const request = testDataFactory.calendar.entry.resolution.request();
 
-      mockMatDialog.open.and.returnValue(returnDialogAfterClosed<CalendarEntryPayingDialogResult>(request));
+      mockMatDialog.open.mockReturnValue(returnDialogAfterClosed<CalendarEntryPayingDialogResult>(request));
 
       actions$ = of(calendarActions.payCalendarWorkEntry(entryResponse));
 
@@ -402,38 +386,36 @@ describe('Calendar effects', () => {
           ...request,
           day: entryResponse.day,
         }));
-        expect(mockMatDialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
+        expect(mockMatDialog.open).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
           data: entryResponse,
         }));
-        done();
       });
     });
 
-    it('should NOT dispatch if dialog is cancelled', (done) => {
+    it('should NOT dispatch if dialog is cancelled', () => {
       const entryResponse = testDataFactory.calendar.entry.response.work();
 
-      mockMatDialog.open.and.returnValue(returnDialogAfterClosed<CalendarEntryPayingDialogResult>());
+      mockMatDialog.open.mockReturnValue(returnDialogAfterClosed<CalendarEntryPayingDialogResult>());
 
       actions$ = of(calendarActions.payCalendarWorkEntry(entryResponse));
 
       expectEffectNotEmitted(effects.openWorkEntryPayingDialog, () => {
-        expect(mockMatDialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
+        expect(mockMatDialog.open).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
           data: entryResponse,
         }));
-        done();
       });
     });
   });
 
   describe('On Create calendar entry with proposal', () => {
-    it('should dispatch [Calendar API] Create calendar entry initiated', (done) => {
+    it('should dispatch [Calendar API] Create calendar entry initiated', () => {
       const request = testDataFactory.calendar.entry.request.work();
       const customer = testDataFactory.customer.response();
       const job = customer.jobs[0];
       const day = testDataFactory.calendar.day.futureDay();
       const start = 10;
 
-      mockMatDialog.open.and.returnValue(returnDialogAfterClosed<CalendarEntryEditDialogResult>(request));
+      mockMatDialog.open.mockReturnValue(returnDialogAfterClosed<CalendarEntryEditDialogResult>(request));
 
       actions$ = of(calendarActions.createCalendarEntryWithProposal({
         day,
@@ -449,7 +431,7 @@ describe('Calendar effects', () => {
 
       effects.createCalendarEntryWithProposal.subscribe((result) => {
         expect(result).toEqual(calendarApiActions.createCalendarEntryInitiated(request));
-        expect(mockMatDialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
+        expect(mockMatDialog.open).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
           data: {
             entryType: CalendarEntryType.Work,
             customer,
@@ -461,17 +443,16 @@ describe('Calendar effects', () => {
             end: start + job.duration,
           },
         }));
-        done();
       });
     });
 
-    it('should NOT dispatch if dialog is cancelled', (done) => {
+    it('should NOT dispatch if dialog is cancelled', () => {
       const customer = testDataFactory.customer.response();
       const job = customer.jobs[0];
       const day = testDataFactory.calendar.day.futureDay();
       const start = 10;
 
-      mockMatDialog.open.and.returnValue(returnDialogAfterClosed<CalendarEntryEditDialogResult>());
+      mockMatDialog.open.mockReturnValue(returnDialogAfterClosed<CalendarEntryEditDialogResult>());
 
       actions$ = of(calendarActions.createCalendarEntryWithProposal({
         day,
@@ -485,7 +466,7 @@ describe('Calendar effects', () => {
         },
       }));
 
-      expectEffectNotEmitted(effects.createCalendarEntryWithProposal, () => { expect(mockMatDialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
+      expectEffectNotEmitted(effects.createCalendarEntryWithProposal, () => { expect(mockMatDialog.open).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
         data: {
           entryType: CalendarEntryType.Work,
           customer,
@@ -497,19 +478,18 @@ describe('Calendar effects', () => {
           end: start + job.duration,
         },
       }));
-      done();
       });
     });
   });
 
   describe('On Confirm calendar entry proposal', () => {
-    it('should dispatch [Calendar API] Create calendar entry initiated', (done) => {
+    it('should dispatch [Calendar API] Create calendar entry initiated', () => {
       const customer = testDataFactory.customer.response();
       const job = customer.jobs[0];
       const day = testDataFactory.calendar.day.futureDay();
       const start = 10;
 
-      mockDialogService.openConfirmationDialog.and.returnValue(of(true));
+      mockDialogService.openConfirmationDialog.mockReturnValue(of(true));
 
       actions$ = of(calendarActions.confirmCalendarEntryProposal({
         day,
@@ -532,19 +512,18 @@ describe('Calendar effects', () => {
           end: start + 1,
           description: job.description,
           entryType: CalendarEntryType.Work,
-          prices: jasmine.any(Array) as any,
+          prices: expect.any(Array) as any,
         }));
-        done();
       });
     });
 
-    it('should NOT dispatch if dialog is cancelled', (done) => {
+    it('should NOT dispatch if dialog is cancelled', () => {
       const customer = testDataFactory.customer.response();
       const job = customer.jobs[0];
       const day = testDataFactory.calendar.day.futureDay();
       const start = 10;
 
-      mockDialogService.openConfirmationDialog.and.returnValue(of(false));
+      mockDialogService.openConfirmationDialog.mockReturnValue(of(false));
 
       actions$ = of(calendarActions.confirmCalendarEntryProposal({
         day,
@@ -557,8 +536,7 @@ describe('Calendar effects', () => {
           end: start + 1,
         },
       }));
-
-      expectEffectNotEmitted(effects.confirmCalendarEntryProposal, done);
+      expectEffectNotEmitted(effects.confirmCalendarEntryProposal);
     });
   });
 

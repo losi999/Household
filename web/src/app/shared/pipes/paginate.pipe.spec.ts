@@ -1,6 +1,6 @@
 import { PaginatePipe } from './paginate.pipe';
 
-xdescribe('PaginatePipe', () => {
+describe.skip('PaginatePipe', () => {
   it('create an instance', () => {
     const pipe = new PaginatePipe();
     expect(pipe).toBeTruthy();

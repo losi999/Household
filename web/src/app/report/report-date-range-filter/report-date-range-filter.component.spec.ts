@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ReportDateRangeFilterComponent } from './report-date-range-filter.component';
 
-xdescribe('ReportDateRangeFilterComponent', () => {
+describe.skip('ReportDateRangeFilterComponent', () => {
   let component: ReportDateRangeFilterComponent;
   let fixture: ComponentFixture<ReportDateRangeFilterComponent>;
 

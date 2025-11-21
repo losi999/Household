@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PriceDialogComponent } from './price-dialog.component';
 
-xdescribe('HairdressingPriceFormComponent', () => {
+describe.skip('HairdressingPriceFormComponent', () => {
   let component: PriceDialogComponent;
   let fixture: ComponentFixture<PriceDialogComponent>;
 

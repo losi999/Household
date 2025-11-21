@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { CalendarService } from './calendar.service';
 
-xdescribe('CalendarService', () => {
+describe.skip('CalendarService', () => {
   let service: CalendarService;
 
   beforeEach(() => {

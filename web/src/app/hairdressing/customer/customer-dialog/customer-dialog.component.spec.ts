@@ -7,14 +7,15 @@ import { Customer } from '@household/shared/types/types';
 import { CustomerDialogComponent, CustomerDialogResult } from '@household/web/app/hairdressing/customer/customer-dialog/customer-dialog.component';
 import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
 import { elementSelectorFactory, IElementSelector } from '@household/web/testing/element-selector';
+import { createMockService, Mock } from '@household/web/utils/unit-testing';
 
 describe('CustomerDialogComponent', () => {
   let fixture: ComponentFixture<CustomerDialogComponent>;
-  let mockMatDialogRef: jasmine.SpyObj<MatDialogRef<CustomerDialogComponent, CustomerDialogResult>>;
+  let mockMatDialogRef: Mock<MatDialogRef<CustomerDialogComponent, CustomerDialogResult>>;
   let selector: IElementSelector;
 
   beforeEach(() => {
-    mockMatDialogRef = jasmine.createSpyObj(['close']);
+    mockMatDialogRef = createMockService('close');
   });
 
   describe('create new customer', () => {
@@ -105,7 +106,7 @@ describe('CustomerDialogComponent', () => {
 
         expect(container.children[0].classes['mat-primary']).toBeUndefined();
         expect(container.children[1].classes['mat-primary']).toBeUndefined();
-        expect(container.children[2].classes['mat-primary']).toBeTrue();
+        expect(container.children[2].classes['mat-primary']).toBe(true);
         expect(container.children[3].classes['mat-primary']).toBeUndefined();
         expect(container.children[4].classes['mat-primary']).toBeUndefined();
       });
@@ -119,7 +120,7 @@ describe('CustomerDialogComponent', () => {
 
           for(let j = 0; j < 5; j += 1) {
             if (j === i) {
-              expect(container.children[j].classes['mat-primary']).toBeTrue();
+              expect(container.children[j].classes['mat-primary']).toBe(true);
 
             } else {
               expect(container.children[j].classes['mat-primary']).toBeUndefined();
@@ -260,7 +261,7 @@ describe('CustomerDialogComponent', () => {
 
         for (let i = 0; i < 5; i += 1) {
           if (i === customer.rating - 1) {
-            expect(container.children[i].classes['mat-primary']).toBeTrue();
+            expect(container.children[i].classes['mat-primary']).toBe(true);
 
           } else {
             expect(container.children[i].classes['mat-primary']).toBeUndefined();
@@ -277,7 +278,7 @@ describe('CustomerDialogComponent', () => {
 
           for (let j = 0; j < 5; j += 1) {
             if (j === i) {
-              expect(container.children[j].classes['mat-primary']).toBeTrue();
+              expect(container.children[j].classes['mat-primary']).toBe(true);
 
             } else {
               expect(container.children[j].classes['mat-primary']).toBeUndefined();

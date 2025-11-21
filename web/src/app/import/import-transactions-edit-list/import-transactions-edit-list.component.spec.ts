@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ImportTransactionsEditListComponent } from './import-transactions-edit-list.component';
 
-xdescribe('ImportTransactionsEditListComponent', () => {
+describe.skip('ImportTransactionsEditListComponent', () => {
   let component: ImportTransactionsEditListComponent;
   let fixture: ComponentFixture<ImportTransactionsEditListComponent>;
 

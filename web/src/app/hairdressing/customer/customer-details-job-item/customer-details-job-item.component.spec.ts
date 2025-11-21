@@ -42,7 +42,7 @@ describe('CustomerDetailsJobItemComponent', () => {
     fixture = TestBed.createComponent(CustomerDetailsJobItemComponent);
     mockStore = TestBed.inject(MockStore);
     
-    spyOn(mockStore, 'dispatch').and.callThrough();
+    vitest.spyOn(mockStore, 'dispatch');
     component = fixture.componentInstance;
 
     component.job = job;
