@@ -19,6 +19,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { HairdressingIncomeListComponent } from '@household/web/app/hairdressing/hairdressing-income-list/hairdressing-income-list.component';
 import { AsyncPipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatInputModule } from '@angular/material/input';
 
 const CUSTOM_DATE_FORMATS: MatDateFormats = {
   parse: {
@@ -36,12 +38,14 @@ const CUSTOM_DATE_FORMATS: MatDateFormats = {
   selector: 'household-hairdressing-income-home',
   imports: [
     ToolbarComponent,
+    MatButtonModule,
+    MatIconModule,
     MatFormFieldModule,
+    MatInputModule,
     MatDatepickerModule,
     HairdressingIncomeListComponent,
     AsyncPipe,
     ReactiveFormsModule,
-    MatIconModule,
   ],
   templateUrl: './hairdressing-income-home.component.html',
   styleUrl: './hairdressing-income-home.component.scss',

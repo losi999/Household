@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { Component, Injector, Input, OnInit, Self } from '@angular/core';
 import { ReactiveFormsModule, ControlValueAccessor, FormControl, NgControl, FormControlName, FormGroupDirective, FormControlDirective } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
@@ -16,7 +16,6 @@ import { Observable } from 'rxjs';
 @Component({
   selector: 'household-category-autocomplete-input',
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     MatFormFieldModule,
     MatButtonModule,
@@ -24,6 +23,7 @@ import { Observable } from 'rxjs';
     MatIconModule,
     MatAutocompleteModule,
     AutocompleteFilterPipe,
+    AsyncPipe,
   ],
   templateUrl: './category-autocomplete-input.component.html',
   styleUrl: './category-autocomplete-input.component.scss',

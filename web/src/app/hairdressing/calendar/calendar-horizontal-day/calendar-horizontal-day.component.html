@@ -1,29 +1,29 @@
-@let day = calendarDay | async | removePendingEntry : pendingCalendarEntryId;
+@let day = calendarDay | async | removePendingEntry: pendingCalendarEntryId;
 @if (day) {
-<div class="day">
-  <div class="pending" [style.grid-column]="(pendingStart + 1) + ' / ' + (pendingEnd + 1)"></div>
-  @switch (day.dayType) {
-  @case ('weekend') {
-  @if (day.calculatedStart && day.calculatedEnd) {
-  <div class="no-work" [style.grid-column]="1 + '/ ' + (day.calculatedStart + 1)"></div>
-  <div class="no-work" [style.grid-column]="(day.calculatedEnd + 1) + '/ 97'"></div>
-  } @else {
-  <div class="no-work" [style.grid-column]="'1 / 97'"></div>
-  }
-  }
-  @case ('vacation') {
-  <div class="vacation" [style.grid-column]="'1 / 97'"></div>
-  }
-  @case ('holiday') {
-  <div class="holiday" [style.grid-column]="'1 / 97'"></div>
-  }
-  @default {
-  <div class="no-work" [style.grid-column]="1 + '/ ' + (day.calculatedStart + 1)"></div>
-  <div class="no-work" [style.grid-column]="(day.calculatedEnd + 1) + '/ 97'"></div>
-  }
-  }
-  @for (e of day.entries; track $index) {
-  <div [ngClass]="e.entryType" [style.grid-column]="(e.start + 1) + ' / ' + (e.end + 1)"></div>
-  }
-</div>
+  <div class="day">
+    <div class="pending" [style.grid-column]="pendingStart + 1 + ' / ' + (pendingEnd + 1)"></div>
+    @switch (day.dayType) {
+      @case ("weekend") {
+        @if (day.calculatedStart && day.calculatedEnd) {
+          <div class="no-work" [style.grid-column]="1 + '/ ' + (day.calculatedStart + 1)"></div>
+          <div class="no-work" [style.grid-column]="day.calculatedEnd + 1 + '/ 97'"></div>
+        } @else {
+          <div class="no-work" [style.grid-column]="'1 / 97'"></div>
+        }
+      }
+      @case ("vacation") {
+        <div class="vacation" [style.grid-column]="'1 / 97'"></div>
+      }
+      @case ("holiday") {
+        <div class="holiday" [style.grid-column]="'1 / 97'"></div>
+      }
+      @default {
+        <div class="no-work" [style.grid-column]="1 + '/ ' + (day.calculatedStart + 1)"></div>
+        <div class="no-work" [style.grid-column]="day.calculatedEnd + 1 + '/ 97'"></div>
+      }
+    }
+    @for (e of day.entries; track $index) {
+      <div [ngClass]="e.entryType" [style.grid-column]="e.start + 1 + ' / ' + (e.end + 1)"></div>
+    }
+  </div>
 }

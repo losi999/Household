@@ -1,31 +1,38 @@
 <div class="price-list">
-  <ng-container *ngFor="let p of prices | async">
-    <button mat-stroked-button type="button" (click)="onAddPrice(p)">{{p.name}}</button>
-  </ng-container>
+  @for (p of prices | async; track $index) {
+    <button mat-stroked-button type="button" (click)="onAddPrice(p)">{{ p.name }}</button>
+  }
   <button mat-flat-button color="primary" type="button" (click)="onAddAdditionalPrice()">Egyéb</button>
 </div>
 <form [formGroup]="form">
   <div class="detailed-price">
-    <ng-container *ngFor="let c of form.controls; let i = index">
-      <ng-container *ngIf="c.value.price; else additionalPrice">
-        <span [style.grid-area]="'name'" [style.grid-row]="i + 1">{{c.value.price.name}}</span>
+    @for (c of form.controls; let i = $index; track $index) {
+      @if (c.value.price) {
+        <span [style.grid-area]="'name'" [style.grid-row]="i + 1">{{ c.value.price.name }}</span>
         <button mat-icon-button type="button" [style.grid-area]="'minus'" [style.grid-row]="i + 1" (click)="onRemoveQuantity(c, i)">
           <mat-icon>remove</mat-icon>
         </button>
-        <span class="quantity" [ngSwitch]="c.value.price.unitOfMeasurement" [style.grid-row]="i + 1">
-          <ng-container *ngSwitchCase="'db'">{{c.value.quantity}}</ng-container>
-          <ng-container *ngSwitchCase="'g'">{{c.value.quantity}} g</ng-container>
-          <ng-container *ngSwitchCase="'óra'">{{c.value.quantity * 60 | minutesToHour}} óra</ng-container>
+        <span class="quantity" [style.grid-row]="i + 1">
+          @switch (c.value.price.unitOfMeasurement) {
+            @case ("db") {
+              {{ c.value.quantity }}
+            }
+            @case ("g") {
+              {{ c.value.quantity }} g
+            }
+            @case ("óra") {
+              {{ c.value.quantity * 60 | minutesToHour }} óra
+            }
+          }
         </span>
         <button mat-icon-button type="button" [style.grid-area]="'plus'" [style.grid-row]="i + 1" (click)="onAddQuantity(c)">
           <mat-icon>add</mat-icon>
         </button>
-        <span [style.grid-area]="'amount'" [style.grid-row]="i + 1">{{c.value.price.amount * c.value.quantity}} Ft</span>
+        <span [style.grid-area]="'amount'" [style.grid-row]="i + 1">{{ c.value.price.amount * c.value.quantity }} Ft</span>
         <button mat-icon-button type="button" color="warn" [style.grid-area]="'remove'" [style.grid-row]="i + 1" (click)="onRemovePrice(i)">
           <mat-icon>delete</mat-icon>
         </button>
-      </ng-container>
-      <ng-template #additionalPrice>
+      } @else {
         <household-clearable-input [formControl]="c.controls.name" label="Megnevezés" [style.grid-area]="'name'" [style.grid-row]="i + 1" />
         <button mat-icon-button type="button" [style.grid-area]="'minus'" [style.grid-row]="i + 1" (click)="onRemoveAmount(c)">
           <mat-icon>remove</mat-icon>
@@ -34,17 +41,17 @@
         <button mat-icon-button type="button" [style.grid-area]="'plus'" [style.grid-row]="i + 1" (click)="onAddAmount(c)">
           <mat-icon>add</mat-icon>
         </button>
-        <span [style.grid-area]="'amount'" [style.grid-row]="i + 1">{{c.value.amount}} Ft</span>
+        <span [style.grid-area]="'amount'" [style.grid-row]="i + 1">{{ c.value.amount }} Ft</span>
         <button mat-icon-button type="button" color="warn" [style.grid-area]="'remove'" [style.grid-row]="i + 1" (click)="onRemovePrice(i)">
           <mat-icon>delete</mat-icon>
         </button>
-      </ng-template>
-    </ng-container>
+      }
+    }
     <mat-divider [style.grid-row]="form.controls.length + 1" [style.grid-column]="'1 / 7'" />
     <span [style.grid-area]="'name'" [style.grid-row]="form.controls.length + 2">Összesen</span>
-    <span [style.grid-area]="'amount'" [style.grid-row]="form.controls.length + 2">{{total}} Ft</span>
+    <span [style.grid-area]="'amount'" [style.grid-row]="form.controls.length + 2">{{ total }} Ft</span>
     @if (form.errors?.required) {
-    <mat-error class="error" [style.grid-row]="form.controls.length + 3">Legalább 1 elem kiválasztása kötelező</mat-error>
+      <mat-error class="error" [style.grid-row]="form.controls.length + 3">Legalább 1 elem kiválasztása kötelező</mat-error>
     }
   </div>
 </form>

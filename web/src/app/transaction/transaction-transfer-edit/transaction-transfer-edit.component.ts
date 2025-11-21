@@ -1,6 +1,7 @@
-import { AsyncPipe } from '@angular/common';
+import { AsyncPipe, DatePipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -12,6 +13,7 @@ import { Account, Transaction } from '@household/shared/types/types';
 import { AmountInputComponent } from '@household/web/app/shared/amount-input/amount-input.component';
 import { AccountAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/account-autocomplete-input/account-autocomplete-input.component';
 import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
+import { DatetimeInputComponent } from '@household/web/app/shared/datetime-input/datetime-input.component';
 import { OrderByPipe } from '@household/web/app/shared/pipes/order-by.pipe';
 import { ToolbarComponent } from '@household/web/app/shared/toolbar/toolbar.component';
 import { DeferredTransactionFilterPipe } from '@household/web/app/transaction/deferred-transaction-filter.pipe';
@@ -37,10 +39,12 @@ import { combineLatest, filter, map } from 'rxjs';
   styleUrl: './transaction-transfer-edit.component.scss',
   imports: [
     ToolbarComponent,
+    MatButtonModule,
     MatIconModule,
     MatMenuModule,
     RouterLink,
     ReactiveFormsModule,
+    DatetimeInputComponent,
     AmountInputComponent,
     AccountAutocompleteInputComponent,
     MatSlideToggleModule,
@@ -50,6 +54,7 @@ import { combineLatest, filter, map } from 'rxjs';
     MatExpansionModule,
     OrderByPipe,
     AsyncPipe,
+    DatePipe,
     DeferredTransactionFilterPipe,
     TransactionDetailsLoanComponent,
     TransactionDetailsRecipientComponent,

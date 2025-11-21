@@ -21,7 +21,7 @@ import { transactionApiActions } from '@household/web/state/transaction/transact
 import { ToolbarComponent } from '@household/web/app/shared/toolbar/toolbar.component';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { AsyncPipe, CommonModule } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { MatChipsModule } from '@angular/material/chips';
 
 const oneFilterRequiredValidator: ValidatorFn = (control) => {
@@ -54,7 +54,6 @@ type GroupCriteria ={
     ReportDateRangeFilterComponent,
     ReportCatalogItemFilterComponent,
     AsyncPipe,
-    CommonModule,
     MatChipsModule,
     ReportListComponent,
   ],

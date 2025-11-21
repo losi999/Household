@@ -1,10 +1,14 @@
+import { DatePipe } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { Transaction } from '@household/shared/types/types';
 import { TransactionDetailsRowComponent } from '@household/web/app/transaction/transaction-details-row/transaction-details-row.component';
 
 @Component({
   selector: 'household-transaction-details-invoice',
-  imports: [TransactionDetailsRowComponent],  
+  imports: [
+    TransactionDetailsRowComponent,
+    DatePipe,
+  ],  
   templateUrl: './transaction-details-invoice.component.html',
   styleUrl: './transaction-details-invoice.component.scss',
 })

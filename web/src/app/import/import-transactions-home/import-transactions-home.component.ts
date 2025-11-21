@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ActivatedRoute } from '@angular/router';
@@ -12,8 +12,8 @@ import { Store } from '@ngrx/store';
 @Component({
   selector: 'household-import-transactions-home',
   imports: [
+    NgTemplateOutlet,
     ToolbarComponent,
-    CommonModule,
     ImportTransactionsEditComponent,
     ImportTransactionsDuplicateListComponent,
     MatTabsModule,

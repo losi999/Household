@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule, MatLabel } from '@angular/material/form-field';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { ActivatedRoute } from '@angular/router';
@@ -18,7 +18,6 @@ import { Store } from '@ngrx/store';
     MatFormFieldModule,
     MatInputModule,
     MatIconModule,
-    MatLabel,
     MatButtonModule,
   ],
   templateUrl: './confirm-user.component.html',

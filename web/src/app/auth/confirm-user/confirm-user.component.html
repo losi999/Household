@@ -2,12 +2,16 @@
 <form [formGroup]="form" (ngSubmit)="submit()">
   <mat-form-field appearance="fill">
     <mat-label>Jelszó</mat-label>
-    <input [type]="passwordVisible ? 'text' : 'password'" matInput formControlName="password">
+    <input [type]="passwordVisible ? 'text' : 'password'" matInput formControlName="password" />
     <button mat-icon-button matSuffix (click)="toggleVisibility($event)">
-      <mat-icon>{{passwordVisible ? 'visibility' : 'visibility_off'}}</mat-icon>
+      <mat-icon>{{ passwordVisible ? "visibility" : "visibility_off" }}</mat-icon>
     </button>
-    <mat-error *ngIf="form.controls.password.errors?.required">Kötelező</mat-error>
-    <mat-error *ngIf="form.controls.password.errors?.minlength">Minimum {{form.controls.password.errors.minlength.requiredLength}} karakternek kell lennie</mat-error>
+    @if (form.controls.password.errors?.required) {
+      <mat-error>Kötelező</mat-error>
+    }
+    @if (form.controls.password.errors?.minlength) {
+      <mat-error>Minimum {{ form.controls.password.errors.minlength.requiredLength }} karakternek kell lennie</mat-error>
+    }
   </mat-form-field>
   <button mat-raised-button color="primary">Regisztráció</button>
 </form>

@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { MatListModule } from '@angular/material/list';
 import { RouterLink } from '@angular/router';
@@ -9,7 +8,6 @@ import { Customer } from '@household/shared/types/types';
   templateUrl: './customer-list-item.component.html',
   styleUrl: './customer-list-item.component.scss',
   imports: [
-    CommonModule,
     MatListModule,
     RouterLink,
   ],

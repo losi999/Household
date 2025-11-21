@@ -12,6 +12,7 @@ import { AccountListComponent } from '@household/web/app/account/account-list/ac
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { IsEditorDirective } from '@household/web/app/shared/directives/is-editor.directive';
 
 @Component({
   selector: 'household-account-home',
@@ -27,6 +28,7 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
     FormsModule,
     AccountListComponent,
     NgxSkeletonLoaderModule,
+    IsEditorDirective,
   ],
 })
 export class AccountHomeComponent implements OnInit {

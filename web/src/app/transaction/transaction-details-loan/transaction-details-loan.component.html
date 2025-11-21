@@ -3,21 +3,23 @@
     @if (transaction.account.accountId === viewingAccountId) {
       @for (l of loans | keyvalue; track $index) {
         <household-transaction-details-row icon="forward" [text]="l.value.accountName" rowColor="green" />
-        <household-transaction-details-row
-          *ngIf="l.value.amount"
-          icon="attach_money"
-          [text]="(l.value.amount | number: '1.0-2' : 'hu') + ' ' + transaction.account.currency"
-          rowColor="green"
-        />
+        @if (l.value.amount) {
+          <household-transaction-details-row
+            icon="attach_money"
+            [text]="(l.value.amount | number: '1.0-2' : 'hu') + ' ' + transaction.account.currency"
+            rowColor="green"
+          />
+        }
       }
     } @else {
       <household-transaction-details-row icon="reply_all" [text]="transaction.account.fullName" rowColor="red" />
-      <household-transaction-details-row
-        *ngIf="loans[viewingAccountId].amount"
-        icon="attach_money"
-        [text]="(loans[viewingAccountId].amount | number: '1.0-2' : 'hu') + ' ' + transaction.account.currency"
-        rowColor="red"
-      />
+      @if (loans[viewingAccountId].amount) {
+        <household-transaction-details-row
+          icon="attach_money"
+          [text]="(loans[viewingAccountId].amount | number: '1.0-2' : 'hu') + ' ' + transaction.account.currency"
+          rowColor="red"
+        />
+      }
     }
   } @else {
     @if (transaction?.payingAccount && transaction?.payingAccount.accountId !== viewingAccountId) {

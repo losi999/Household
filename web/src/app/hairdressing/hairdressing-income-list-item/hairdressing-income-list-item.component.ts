@@ -1,4 +1,4 @@
-import { DatePipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -9,6 +9,7 @@ import { AmountInputComponent } from '@household/web/app/shared/amount-input/amo
 import { hairdressingActions } from '@household/web/state/hairdressing/hairdressing.actions';
 import { Store } from '@ngrx/store';
 import { SplitPipe } from '@household/web/app/shared/pipes/split.pipe';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'household-hairdressing-income-list-item',
@@ -17,9 +18,11 @@ import { SplitPipe } from '@household/web/app/shared/pipes/split.pipe';
     DatePipe,
     AmountInputComponent,
     ReactiveFormsModule,
+    MatButtonModule,
     MatIconModule,
     MatChipsModule,
     SplitPipe,
+    DecimalPipe,
   ],
   templateUrl: './hairdressing-income-list-item.component.html',
   styleUrl: './hairdressing-income-list-item.component.scss',

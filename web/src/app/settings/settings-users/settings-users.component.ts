@@ -2,6 +2,7 @@ import { AsyncPipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { User } from '@household/shared/types/types';
 import { SettingsUsersListComponent } from '@household/web/app/settings/settings-users-list/settings-users-list.component';
 import { userApiActions } from '@household/web/state/user/user.actions';
@@ -13,6 +14,7 @@ import { Observable } from 'rxjs';
   selector: 'household-settings-users',
   imports: [
     MatFormFieldModule,
+    MatInputModule,
     MatButtonModule,
     SettingsUsersListComponent,
     AsyncPipe,

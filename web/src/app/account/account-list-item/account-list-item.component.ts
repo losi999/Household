@@ -10,6 +10,7 @@ import { AsyncPipe, DecimalPipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
+import { IsEditorDirective } from '@household/web/app/shared/directives/is-editor.directive';
 
 @Component({
   selector: 'household-account-list-item',
@@ -23,6 +24,7 @@ import { MatMenuModule } from '@angular/material/menu';
     MatButtonModule,
     MatIconModule,
     MatMenuModule,
+    IsEditorDirective,
   ],
 })
 export class AccountListItemComponent implements OnInit {

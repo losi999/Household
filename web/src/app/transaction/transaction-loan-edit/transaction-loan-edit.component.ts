@@ -1,6 +1,7 @@
 import { Component, DestroyRef, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -16,6 +17,7 @@ import { ProductAutocompleteInputComponent } from '@household/web/app/shared/aut
 import { ProjectAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/project-autocomplete-input/project-autocomplete-input.component';
 import { RecipientAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/recipient-autocomplete-input/recipient-autocomplete-input.component';
 import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
+import { DatetimeInputComponent } from '@household/web/app/shared/datetime-input/datetime-input.component';
 import { ToolbarComponent } from '@household/web/app/shared/toolbar/toolbar.component';
 import { takeFirstDefined } from '@household/web/operators/take-first-defined';
 import { toLoanResponse } from '@household/web/operators/to-loan-response';
@@ -37,10 +39,12 @@ import { switchMap } from 'rxjs';
   styleUrl: './transaction-loan-edit.component.scss',
   imports: [
     ToolbarComponent,
+    MatButtonModule,
     MatIconModule,
     MatMenuModule,
     RouterLink,
     ReactiveFormsModule,
+    DatetimeInputComponent,
     AmountInputComponent,
     AccountAutocompleteInputComponent,
     MatSlideToggleModule,

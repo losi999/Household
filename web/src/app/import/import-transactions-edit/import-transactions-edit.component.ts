@@ -15,7 +15,7 @@ import { BreakpointObserver } from '@angular/cdk/layout';
 import { Observable } from 'rxjs';
 import { MatDividerModule } from '@angular/material/divider';
 import { ImportTransactionsEditListComponent } from '@household/web/app/import/import-transactions-edit-list/import-transactions-edit-list.component';
-import { AsyncPipe, CommonModule } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { AccountAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/account-autocomplete-input/account-autocomplete-input.component';
 import { RecipientAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/recipient-autocomplete-input/recipient-autocomplete-input.component';
 import { CategoryAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/category-autocomplete-input/category-autocomplete-input.component';
@@ -36,7 +36,6 @@ type FieldName = keyof TransactionImportUpdatableFields;
     CategoryAutocompleteInputComponent,
     ProjectAutocompleteInputComponent,
     ClearableInputComponent,
-    CommonModule,
   ],
   templateUrl: './import-transactions-edit.component.html',
   styleUrl: './import-transactions-edit.component.scss',

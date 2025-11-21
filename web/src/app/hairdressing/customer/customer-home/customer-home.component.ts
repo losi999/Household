@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -23,9 +23,9 @@ import { Observable } from 'rxjs';
     ClearableInputComponent,
     MatIconModule,
     ToolbarComponent,
-    CommonModule,
     AutocompleteFilterPipe,
     MatButtonModule,
+    AsyncPipe,
   ],
 })
 export class CustomerHomeComponent implements OnInit {

@@ -1,17 +1,14 @@
-<!-- <ngx-skeleton-loader *ngIf="!transactions?.length" count="10" appearance="line" animation="progress" [theme]="{
-  height: '48px'
-}" /> -->
 @if (transactions?.length) {
-<div>
-  <household-clearable-input label="Szűrés" #inp />
-  <button mat-icon-button color="primary" (click)="selectAll(inp.value)"><mat-icon>done_all</mat-icon></button>
-  <button mat-icon-button color="warn" (click)="deselectAll()"><mat-icon>remove_done</mat-icon></button>
-  <mat-selection-list [formControl]="selectedItems">
-    @for (transaction of transactions | importFilter : inp.value; track $index) {
-    <mat-list-option [value]="transaction.transactionId" class="mat-elevation-z1">
-      <household-import-transactions-edit-list-item [transaction]="transaction" />
-    </mat-list-option>
-    }
-  </mat-selection-list>
-</div>
+  <div>
+    <household-clearable-input label="Szűrés" #inp />
+    <button mat-icon-button color="primary" (click)="selectAll(inp.value)"><mat-icon>done_all</mat-icon></button>
+    <button mat-icon-button color="warn" (click)="deselectAll()"><mat-icon>remove_done</mat-icon></button>
+    <mat-selection-list [formControl]="selectedItems">
+      @for (transaction of transactions | importFilter: inp.value; track $index) {
+        <mat-list-option [value]="transaction.transactionId" class="mat-elevation-z1">
+          <household-import-transactions-edit-list-item [transaction]="transaction" />
+        </mat-list-option>
+      }
+    </mat-selection-list>
+  </div>
 }

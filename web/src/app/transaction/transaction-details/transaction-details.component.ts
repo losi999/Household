@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Account, Transaction } from '@household/shared/types/types';
+import { IsEditorDirective } from '@household/web/app/shared/directives/is-editor.directive';
 import { ToolbarComponent } from '@household/web/app/shared/toolbar/toolbar.component';
 import { TransactionDetailsCategoryComponent } from '@household/web/app/transaction/transaction-details-category/transaction-details-category.component';
 import { TransactionDetailsDescriptionComponent } from '@household/web/app/transaction/transaction-details-description/transaction-details-description.component';
@@ -44,6 +45,7 @@ import { Observable, tap } from 'rxjs';
     TransactionDetailsDescriptionComponent,
     TransactionDetailsRecipientComponent,
     MatDividerModule,    
+    IsEditorDirective,
   ],
 })
 export class TransactionDetailsComponent implements OnInit {

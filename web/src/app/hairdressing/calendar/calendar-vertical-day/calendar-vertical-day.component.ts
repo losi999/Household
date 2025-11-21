@@ -1,3 +1,4 @@
+import { NgClass } from '@angular/common';
 import { Component, Input, OnChanges } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { dateToISODateString } from '@household/shared/common/utils';
@@ -13,6 +14,7 @@ import { Store } from '@ngrx/store';
   imports: [
     TimeSlotToTimePipe,
     MatIconModule,
+    NgClass,
   ],  
   templateUrl: './calendar-vertical-day.component.html',
   styleUrl: './calendar-vertical-day.component.scss',

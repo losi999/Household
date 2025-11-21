@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { MatListModule } from '@angular/material/list';
 import { MatPaginatorModule } from '@angular/material/paginator';
@@ -10,12 +10,12 @@ import { TimeSlotToTimePipe } from '@household/web/app/shared/pipes/time-slot-to
 @Component({
   selector: 'household-customer-details-works',
   imports: [
-    CommonModule,
     IconTextComponent,
     MatPaginatorModule,
     TimeSlotToTimePipe,
     MatListModule,
     PaginatePipe,
+    DatePipe,
   ],
   templateUrl: './customer-details-works.component.html',
   styleUrl: './customer-details-works.component.scss',

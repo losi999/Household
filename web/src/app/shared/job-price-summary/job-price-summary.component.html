@@ -1,19 +1,24 @@
 <div class="prices">
-  <ng-container *ngFor="let p of prices; let i = index">
+  @for (p of prices; let i = $index; track $index) {
     <div [style.grid-area]="'name'" [style.grid-row]="i + 1">
-      {{p.name}}
+      {{ p.name }}
     </div>
-    <div [style.grid-area]="'quantity'" [style.grid-row]="i + 1" [ngSwitch]="p.unitOfMeasurement">
-      <ng-container *ngSwitchCase="'db'">{{p.quantity}}x</ng-container>
-      <ng-container *ngSwitchCase="'g'">{{p.quantity}} g</ng-container>
-      <ng-container *ngSwitchCase="'óra'">{{p.quantity * 60 | minutesToHour}} óra</ng-container>
+
+    <div [style.grid-area]="'quantity'" [style.grid-row]="i + 1">
+      @switch (p.unitOfMeasurement) {
+        @case ("db") {
+          {{ p.quantity }} x
+        }
+        @case ("g") {
+          {{ p.quantity }} g
+        }
+        @case ("óra") {
+          {{ p.quantity * 60 | minutesToHour }} óra
+        }
+      }
     </div>
-    <div [style.grid-area]="'amount'" [style.grid-row]="i + 1">
-      {{p.amount * (p.quantity ?? 1)}} Ft
-    </div>
-  </ng-container>
+    <div [style.grid-area]="'amount'" [style.grid-row]="i + 1">{{ p.amount * (p.quantity ?? 1) }} Ft</div>
+  }
   <mat-divider [style.grid-column]="'span 3'" [style.grid-row]="prices.length + 1" />
-  <div [style.grid-area]="'amount'" [style.grid-row]="prices.length + 2">
-    {{total}} Ft
-  </div>
+  <div [style.grid-area]="'amount'" [style.grid-row]="prices.length + 2">{{ total }} Ft</div>
 </div>

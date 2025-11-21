@@ -1,4 +1,4 @@
-import { CommonModule, DatePipe, DecimalPipe, NgClass } from '@angular/common';
+import { DatePipe, DecimalPipe, NgClass } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
 import { Transaction } from '@household/shared/types/types';
 import { TransactionDetailsCategoryComponent } from '@household/web/app/transaction/transaction-details-category/transaction-details-category.component';
@@ -26,7 +26,6 @@ import { Observable } from 'rxjs';
     TransactionDetailsDescriptionComponent,
     NgClass,
     DecimalPipe,
-    CommonModule,
   ],  
   templateUrl: './import-transactions-edit-list-item.component.html',
   styleUrl: './import-transactions-edit-list-item.component.scss',

@@ -32,6 +32,8 @@ import { RecipientAutocompleteInputComponent } from '@household/web/app/shared/a
 import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
 import { ToolbarComponent } from '@household/web/app/shared/toolbar/toolbar.component';
 import { AsyncPipe } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
+import { DatetimeInputComponent } from '@household/web/app/shared/datetime-input/datetime-input.component';
 
 @Component({
   selector: 'household-transaction-payment-edit',
@@ -40,6 +42,7 @@ import { AsyncPipe } from '@angular/common';
   imports: [
     ToolbarComponent,
     MatIconModule,
+    MatButtonModule,
     MatMenuModule,
     RouterLink,
     ReactiveFormsModule,
@@ -53,6 +56,7 @@ import { AsyncPipe } from '@angular/common';
     ProductAutocompleteInputComponent,
     RecipientAutocompleteInputComponent,
     ProjectAutocompleteInputComponent,
+    DatetimeInputComponent,
     AsyncPipe,
   ],
 })

@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { Component, Input, OnChanges, OnDestroy, OnInit, ViewChild, forwardRef } from '@angular/core';
 import { ControlValueAccessor, FormControl, FormRecord, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -37,7 +36,6 @@ export type ReportCatalogItemFilterValue<I = string> = {
     MatButtonModule,
     MatIconModule,
     MatTreeModule,
-    CommonModule,
   ],
 })
 export class ReportCatalogItemFilterComponent implements OnInit, OnDestroy, OnChanges, ControlValueAccessor {

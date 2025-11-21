@@ -1,4 +1,4 @@
-import { AsyncPipe } from '@angular/common';
+import { AsyncPipe, NgClass } from '@angular/common';
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { Calendar } from '@household/shared/types/types';
 import { RemovePendingEntryPipe } from '@household/web/app/hairdressing/calendar/pipes/remove-pending-entry.pipe';
@@ -11,6 +11,7 @@ import { Observable } from 'rxjs';
   imports: [
     AsyncPipe,
     RemovePendingEntryPipe,
+    NgClass,
   ],
   templateUrl: './calendar-horizontal-day.component.html',
   styleUrl: './calendar-horizontal-day.component.scss',

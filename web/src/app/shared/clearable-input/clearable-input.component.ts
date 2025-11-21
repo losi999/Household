@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { Component, Injector, Input, OnInit, Optional, Self } from '@angular/core';
 import { ControlValueAccessor, FormControl, FormControlDirective, FormControlName, FormGroupDirective, NgControl, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -11,7 +10,6 @@ import { MatInputModule } from '@angular/material/input';
   templateUrl: './clearable-input.component.html',
   styleUrls: ['./clearable-input.component.scss'],
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     MatFormFieldModule,
     MatButtonModule,

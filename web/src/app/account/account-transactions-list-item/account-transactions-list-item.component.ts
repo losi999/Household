@@ -1,4 +1,4 @@
-import { AsyncPipe, DatePipe } from '@angular/common';
+import { AsyncPipe, DatePipe, DecimalPipe, NgClass } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -34,11 +34,13 @@ import { Observable } from 'rxjs';
     TransactionDetailsTransferComponent,
     TransactionDetailsDescriptionComponent,
     RouterLink,
+    DecimalPipe,
     MatButtonModule,
     MatIconModule,
     AsyncPipe,
     IsEditorDirective,
     MatTooltipModule,
+    NgClass,
   ],
 })
 export class AccountTransactionsListItemComponent implements OnInit {

@@ -8,6 +8,7 @@ import { selectCategoryIsInProgress } from '@household/web/state/progress/progre
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { MatListModule } from '@angular/material/list';
 import { AsyncPipe } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'household-category-list-item',
@@ -16,6 +17,7 @@ import { AsyncPipe } from '@angular/common';
   imports: [
     MatListModule,
     AsyncPipe,
+    MatIconModule,
   ],
 })
 export class CategoryListItemComponent implements OnInit {

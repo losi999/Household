@@ -12,37 +12,49 @@
 <div class="header">
   @let pending = pendingCustomerJob | async;
   @if (pending) {
-  <div class="proposal">
-    <span>
-      Időpont keresése... {{pending.customer.isGroup ? pending.name : (pending.customer.name + ': ' + pending.name)}} ({{pending.duration | timeSlotToTime}} óra)
-    </span>
-    <button mat-icon-button color="warn" type="button" [routerLink]="[]" [queryParams]="{ customerId: null, jobName: null }" queryParamsHandling="merge" [replaceUrl]="true"><mat-icon>close</mat-icon></button>
-  </div>
+    <div class="proposal">
+      <span>
+        Időpont keresése... {{ pending.customer.isGroup ? pending.name : pending.customer.name + ": " + pending.name }} ({{
+          pending.duration | timeSlotToTime
+        }}
+        óra)
+      </span>
+      <button
+        mat-icon-button
+        color="warn"
+        type="button"
+        [routerLink]="[]"
+        [queryParams]="{ customerId: null, jobName: null }"
+        queryParamsHandling="merge"
+        [replaceUrl]="true"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
   }
   <div class="week-stepper">
-    <button mat-flat-button color="primary" type="button" (click)="onChangeWeek(-1)">
-      <mat-icon>arrow_left</mat-icon>Előző hét
-    </button>
+    <button mat-flat-button color="primary" type="button" (click)="onChangeWeek(-1)"><mat-icon>arrow_left</mat-icon>Előző hét</button>
     <button mat-flat-button color="warn" type="button" (click)="onShowToday()">Ma</button>
-    <button mat-flat-button color="primary" type="button" (click)="onChangeWeek(1)">Következő hét
+    <button mat-flat-button color="primary" type="button" (click)="onChangeWeek(1)">
+      Következő hét
       <mat-icon>arrow_right</mat-icon>
     </button>
   </div>
   <div class="days-of-week">
     <div></div>
     @for (d of weekStart | daysOfWeek; track $index) {
-    <div class="day">
-      <div [style.grid-column]="1">
-        {{d | date: 'MMM dd.'}}
+      <div class="day">
+        <div [style.grid-column]="1">
+          {{ d | date: "MMM dd." }}
+        </div>
+        <div [style.grid-column]="1">
+          {{ d | date: "EEEE" }}
+        </div>
+        @let dayResponse = (week | async).days[d | date: "yyyy-MM-dd"];
+        @if (dayResponse && dayResponse.dayType !== "holiday") {
+          <button mat-icon-button type="button" (click)="onSetWorkDay(dayResponse)"><mat-icon>settings</mat-icon></button>
+        }
       </div>
-      <div [style.grid-column]="1">
-        {{d | date: 'EEEE'}}
-      </div>
-      @let dayResponse = (week | async).days[(d | date: 'YYYY-MM-dd')];
-      @if (dayResponse && dayResponse.dayType !== 'holiday') {
-      <button mat-icon-button type="button" (click)="onSetWorkDay(dayResponse)"><mat-icon>settings</mat-icon></button>
-      }
-    </div>
     }
   </div>
 </div>
@@ -50,13 +62,13 @@
 @let w = week | async;
 <div class="calendar" [style.grid-template-rows]="w | calendarGridRows">
   @for (t of w | calendarTimeColumn; let i = $index; track $index) {
-  @if (t) {
-  <div class="time" [style.grid-row]="i+1">
-    {{ t }}
-  </div>
-  }
+    @if (t) {
+      <div class="time" [style.grid-row]="i + 1">
+        {{ t }}
+      </div>
+    }
   }
   @for (day of w.days | keyvalue; let i = $index; track $index) {
-  <household-calendar-vertical-day [day]="day.value" [column]="i+2" [pendingCustomerJob]="pendingCustomerJob | async" />
+    <household-calendar-vertical-day [day]="day.value" [column]="i + 2" [pendingCustomerJob]="pendingCustomerJob | async" />
   }
 </div>

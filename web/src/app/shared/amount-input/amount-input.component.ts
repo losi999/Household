@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, Injector, Input, OnChanges, OnInit, Self, SimpleChanges } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ControlValueAccessor, FormControl, FormControlDirective, FormControlName, FormGroupDirective, NgControl, ReactiveFormsModule, TouchedChangeEvent, Validators } from '@angular/forms';
@@ -13,7 +12,6 @@ import { Observable } from 'rxjs';
   templateUrl: './amount-input.component.html',
   styleUrls: ['./amount-input.component.scss'],
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     MatButtonModule,
     MatInputModule,

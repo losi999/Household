@@ -1,12 +1,22 @@
 <mat-form-field>
-  <button mat-icon-button matPrefix *ngIf="!signHidden" type="button" (click)="inverseValue($event)" [disabled]="signDisabled">
-    <mat-icon>{{isPositive ? 'add' : 'remove'}}</mat-icon>
-  </button>
-  <mat-label>{{label}}</mat-label>
-  <input type="number" matInput [formControl]="amount" min="0" (blur)="touched?.()" (input)="touched?.()">
-  <span matTextSuffix>{{currency}}</span>
-  <mat-hint *ngIf="newBalance">Új egyenleg: {{newBalance}} {{currency}}</mat-hint>
-  <mat-error *ngIf="amount.errors?.min">Nem lehet negatív szám</mat-error>
-  <mat-error *ngIf="amount.errors?.max">Túl sok</mat-error>
-  <mat-error *ngIf="amount.errors?.required">Kötelező</mat-error>
+  @if (!signHidden) {
+    <button mat-icon-button matPrefix type="button" (click)="inverseValue($event)" [disabled]="signDisabled">
+      <mat-icon>{{ isPositive ? "add" : "remove" }}</mat-icon>
+    </button>
+  }
+  <mat-label>{{ label }}</mat-label>
+  <input type="number" matInput [formControl]="amount" min="0" (blur)="touched?.()" (input)="touched?.()" />
+  <span matTextSuffix>{{ currency }}</span>
+  @if (newBalance) {
+    <mat-hint>Új egyenleg: {{ newBalance }} {{ currency }}</mat-hint>
+  }
+  @if (amount.errors?.min) {
+    <mat-error>Nem lehet negatív szám</mat-error>
+  }
+  @if (amount.errors?.max) {
+    <mat-error>Túl sok</mat-error>
+  }
+  @if (amount.errors?.required) {
+    <mat-error>Kötelező</mat-error>
+  }
 </mat-form-field>

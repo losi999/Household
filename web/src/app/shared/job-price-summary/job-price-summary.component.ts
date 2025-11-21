@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
 import { MatDividerModule } from '@angular/material/divider';
 import { Customer } from '@household/shared/types/types';
@@ -7,8 +6,7 @@ import { MinutesToHourPipe } from '@household/web/app/shared/pipes/minutes-to-ho
 @Component({
   selector: 'household-job-price-summary',
   imports: [
-    MinutesToHourPipe,
-    CommonModule,
+    MinutesToHourPipe,    
     MatDividerModule,
   ],
   templateUrl: './job-price-summary.component.html',

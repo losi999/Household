@@ -8,7 +8,7 @@ import { selectInventoryCategories } from '@household/web/state/category/categor
 import { productApiActions } from '@household/web/state/product/product.actions';
 import { CategoryAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/category-autocomplete-input/category-autocomplete-input.component';
 import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
-import { MatFormFieldModule, MatLabel } from '@angular/material/form-field';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 
@@ -27,7 +27,6 @@ export type ProductFormData = {
     CategoryAutocompleteInputComponent,
     ClearableInputComponent,
     MatFormFieldModule,
-    MatLabel,
     MatSelectModule,
     MatButtonModule,
   ],

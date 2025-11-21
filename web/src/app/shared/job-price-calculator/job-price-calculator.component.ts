@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { Component, forwardRef, OnInit } from '@angular/core';
 import { ControlValueAccessor, FormArray, FormControl, FormGroup, NG_VALUE_ACCESSOR, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -11,6 +10,7 @@ import { selectPriceList } from '@household/web/app/hairdressing/price/state/pri
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs/internal/Observable';
 import { MatError } from '@angular/material/form-field';
+import { AsyncPipe } from '@angular/common';
 
 export type JobPriceCalculatorValue = PriceFormGroup['value'];
 
@@ -24,7 +24,7 @@ type PriceFormGroup = FormGroup<{
 @Component({
   selector: 'household-job-price-calculator',
   imports: [
-    CommonModule,
+    AsyncPipe,
     MatButtonModule,
     MatIconModule,
     MatDividerModule,

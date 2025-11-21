@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { AsyncPipe, NgClass } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
@@ -22,7 +22,8 @@ import { Observable } from 'rxjs';
     ToolbarComponent,
     MatIconModule,
     MatButtonModule,
-    CommonModule,
+    NgClass,
+    AsyncPipe,
     CustomerDetailsWorksComponent,
     CustomerDetailsJobItemComponent,
     UpcomingEntriesPipe,

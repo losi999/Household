@@ -32,6 +32,15 @@ import { ProjectAutocompleteInputComponent } from '@household/web/app/shared/aut
 import { RecipientAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/recipient-autocomplete-input/recipient-autocomplete-input.component';
 import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
 import { ToolbarComponent } from '@household/web/app/shared/toolbar/toolbar.component';
+import { MatButtonModule } from '@angular/material/button';
+import { DatetimeInputComponent } from '@household/web/app/shared/datetime-input/datetime-input.component';
+import { DecimalPipe, NgClass } from '@angular/common';
+import { MatListModule } from '@angular/material/list';
+import { TransactionDetailsCategoryComponent } from '@household/web/app/transaction/transaction-details-category/transaction-details-category.component';
+import { TransactionDetailsInventoryComponent } from '@household/web/app/transaction/transaction-details-inventory/transaction-details-inventory.component';
+import { TransactionDetailsInvoiceComponent } from '@household/web/app/transaction/transaction-details-invoice/transaction-details-invoice.component';
+import { TransactionDetailsProjectComponent } from '@household/web/app/transaction/transaction-details-project/transaction-details-project.component';
+import { TransactionDetailsDescriptionComponent } from '@household/web/app/transaction/transaction-details-description/transaction-details-description.component';
 
 type SplitFormGroup = FormGroup<{
   amount: FormControl<number>;
@@ -55,20 +64,30 @@ type SplitFormGroup = FormGroup<{
   styleUrl: './transaction-split-edit.component.scss',
   imports: [
     ToolbarComponent,
+    MatButtonModule,
     MatIconModule,
     MatMenuModule,
     RouterLink,
     ReactiveFormsModule,
+    MatListModule,
+    DatetimeInputComponent,
     AmountInputComponent,
     AccountAutocompleteInputComponent,
-    MatSlideToggleModule,
+    RecipientAutocompleteInputComponent,
+    ClearableInputComponent,
+    TransactionDetailsCategoryComponent,
+    TransactionDetailsInventoryComponent,
+    TransactionDetailsInvoiceComponent,
+    TransactionDetailsProjectComponent,
+    TransactionDetailsDescriptionComponent,
     CategoryAutocompleteInputComponent,
     MatFormFieldModule,
-    MatDatepickerModule,
-    ClearableInputComponent,
     ProductAutocompleteInputComponent,
-    RecipientAutocompleteInputComponent,
     ProjectAutocompleteInputComponent,
+    MatSlideToggleModule,
+    MatDatepickerModule,
+    DecimalPipe,
+    NgClass,
   ],
 })
 export class TransactionSplitEditComponent implements OnInit {

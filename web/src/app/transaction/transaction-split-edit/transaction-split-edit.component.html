@@ -54,12 +54,9 @@
         <div class="amount" [ngClass]="split.value.amount > 0 ? 'green' : 'red'">
           {{ split.value.amount | number: "1.0-2" : "hu" }} {{ form.value.account?.currency }}
         </div>
-        <household-transaction-details-row
-          *ngIf="split.value.loanAccount"
-          icon="forward"
-          [text]="split.value.loanAccount.fullName"
-          rowColor="green"
-        />
+        @if (split.value.loanAccount) {
+          <household-transaction-details-row icon="forward" [text]="split.value.loanAccount.fullName" rowColor="green" />
+        }
         <household-transaction-details-category [transaction]="split.value" />
         <household-transaction-details-inventory [transaction]="split.value" />
         <household-transaction-details-invoice [transaction]="split.value" />
