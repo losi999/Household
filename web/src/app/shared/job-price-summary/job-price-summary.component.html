@@ -1,5 +1,5 @@
 <div class="prices">
-  <ng-container *ngFor="let p of prices; let i = index">
+  <ng-container *ngFor="let p of prices(); let i = index">
     <div [style.grid-area]="'name'" [style.grid-row]="i + 1">
       {{p.name}}
     </div>
@@ -12,8 +12,8 @@
       {{p.amount * (p.quantity ?? 1)}} Ft
     </div>
   </ng-container>
-  <mat-divider [style.grid-column]="'span 3'" [style.grid-row]="prices.length + 1" />
-  <div [style.grid-area]="'amount'" [style.grid-row]="prices.length + 2">
-    {{total}} Ft
+  <mat-divider [style.grid-column]="'span 3'" [style.grid-row]="prices().length + 1" />
+  <div [style.grid-area]="'amount'" [style.grid-row]="prices().length + 2">
+    {{total()}} Ft
   </div>
 </div>

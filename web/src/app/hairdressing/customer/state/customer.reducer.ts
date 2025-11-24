@@ -2,9 +2,11 @@ import { Calendar, Customer } from '@household/shared/types/types';
 import { createReducer, on } from '@ngrx/store';
 import { customerApiActions } from '@household/web/app/hairdressing/customer/state/customer.actions';
 import { isPriceBase } from '@household/shared/common/type-guards';
+import { Searchable } from '@household/shared/types/common';
+import { toSearchTerms } from '@household/shared/common/utils';
 
 export type CustomerState = { 
-  customerList?: Customer.Response[];
+  customerList?: Searchable<Customer.Response>[];
   customerWorks?: {
     [customerId: Customer.Id]: Calendar.Entry.WorkEntryResponseBase[];
   };
@@ -14,7 +16,10 @@ export const customerReducer = createReducer<CustomerState>({},
   on(customerApiActions.listCustomersCompleted, (_state, { customers }) => {
     return {
       ..._state,
-      customerList: customers,
+      customerList: customers.map(c => ({
+        ...c,
+        searchTerms: toSearchTerms(c.name),
+      })),
     };
   }),
   on(customerApiActions.createCustomerCompleted, (_state, { customerId, name, description, isGroup, rating }) => {
@@ -23,6 +28,7 @@ export const customerReducer = createReducer<CustomerState>({},
       customerList: _state.customerList.concat({
         customerId,
         name,
+        searchTerms: toSearchTerms(name),
         description,
         isGroup,
         rating,
@@ -45,6 +51,7 @@ export const customerReducer = createReducer<CustomerState>({},
         return {
           ...c,
           name,
+          searchTerms: toSearchTerms(name),
           description,
           isGroup,
           rating,

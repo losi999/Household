@@ -48,3 +48,7 @@ export type DocumentUpdate<D> = {
   update: UpdateQuery<D>;
   arrayFilters?: QueryOptions<D>['arrayFilters']
 };
+
+export type Searchable<T = object> = T & {
+  searchTerms?: string[];
+};

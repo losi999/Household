@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MatCardActions, MatCardTitle } from '@angular/material/card';
 import { provideRouter, RouterLink } from '@angular/router';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { Customer } from '@household/shared/types/types';
@@ -29,12 +30,12 @@ describe('CustomerListItemComponent', () => {
   });
 
   it('should contain a link to customer details page', () => {
-    const link = selector.getComponent(RouterLink);
+    const link = selector.getComponent(RouterLink, MatCardActions);
     expect(link.attributes.href).toContain(customer.customerId);
   });
 
   it('should display customer name', () => {
-    const link = selector.getComponent(RouterLink);
-    expect(link.nativeElement.textContent).toEqual(customer.name);
+    const link = selector.getComponent(MatCardTitle);
+    expect(link.nativeElement.textContent.trim()).toEqual(customer.name);
   });
 });

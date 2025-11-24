@@ -61,7 +61,7 @@ describe('CustomerDetailsJobItemComponent', () => {
   describe('job prices', () => {
     it('should be rendered', () => {
       const element = selector.getComponent(JobPriceSummaryComponent);
-      expect(element.componentInstance.prices).toEqual(job.prices);
+      expect(element.componentInstance.prices()).toEqual(job.prices);
     });
   });
 
