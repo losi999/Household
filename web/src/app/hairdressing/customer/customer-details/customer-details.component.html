@@ -3,7 +3,7 @@
     <mat-icon>edit</mat-icon>
   </button>
 </household-toolbar>
-@let cust = customer | async;
+@let cust = customer();
 @if (cust) {
 <div data-testId="name" class="name">
   {{cust.name}}
@@ -19,7 +19,7 @@
 <div data-testId="description" class="description">{{cust.description}}</div>
 }
 <mat-divider />
-<household-customer-details-works data-testId="upcoming-works" [works]="workEntries | async | upcomingEntries" [pageSize]="3" title="Következő időpontok" />
+<household-customer-details-works data-testId="upcoming-works" [works]="upcomingEntries()" [pageSize]="3" title="Következő időpontok" />
 <div class="section-title">
   <household-icon-text icon="content_cut" text="Munkák" size="medium" />
   <button mat-icon-button data-testId="new-job" type="button" (click)="onCreateJob()">
@@ -32,7 +32,7 @@
   }
 </div>
 <mat-divider />
-<household-customer-details-works data-testId="past-works" [works]="workEntries | async | pastEntries" title="Korábbi időpontok" />
+<household-customer-details-works data-testId="past-works" [works]="pastEntries()" title="Korábbi időpontok" />
 <mat-divider />
 <div class="section-title">
   <household-icon-text icon="block" text="Tiltólista" size="medium" />

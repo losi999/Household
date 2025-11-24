@@ -26,7 +26,7 @@ describe('Customer reducer', () => {
   
       const state = customerReducer(initialState, action);
       expect(state).toEqual({
-        customerList: [customerResponse],
+        customerList: [jasmine.objectContaining(customerResponse)],
       });
     });
   });
@@ -53,12 +53,14 @@ describe('Customer reducer', () => {
       const state = customerReducer(initialState, action);
       expect(state).toEqual({
         customerList: [
-          {
-            customerId,
-            ...request,
-            jobs: [],
-            blacklistedCustomers: [],
-          },
+          jasmine.objectContaining(
+            {
+              customerId,
+              ...request,
+              jobs: [],
+              blacklistedCustomers: [],
+            },
+          ),
           existingCustomer,
         ],
       });
@@ -94,11 +96,12 @@ describe('Customer reducer', () => {
 
       expect(state).toEqual({
         customerList: [
-          {
-            ...originalCustomer,
-            customerId,
-            ...request,
-          },
+          jasmine.objectContaining(
+            {
+              ...originalCustomer,
+              customerId,
+              ...request,
+            }),
           existingCustomer,
         ],
       });

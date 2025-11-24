@@ -5,6 +5,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 
+/**
+ * @deprecated
+ */
 @Component({
   selector: 'household-clearable-input',
   templateUrl: './clearable-input.component.html',
@@ -20,6 +23,7 @@ import { MatInputModule } from '@angular/material/input';
 export class ClearableInputComponent implements OnInit, ControlValueAccessor {
   @Input() label: string;
   @Input() type: 'text' | 'number' | 'area' = 'text';
+  @Input() prefix: string;
 
   input: FormControl<string | number>;
   changed: (value: string | number) => void;

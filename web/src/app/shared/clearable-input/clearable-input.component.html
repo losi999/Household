@@ -1,5 +1,8 @@
 <mat-form-field>
   <mat-label>{{ label }}</mat-label>
+  @if (prefix) {
+  <span matTextPrefix>{{prefix}} &nbsp;</span>
+  }
   @switch (type) {
     @case ("number") {
       <input type="number" matInput [formControl]="input" (blur)="touched?.()" />

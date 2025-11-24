@@ -1,7 +1,13 @@
 import { Component, Input } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { RouterLink } from '@angular/router';
 import { Customer } from '@household/shared/types/types';
+import { IconTextComponent } from '@household/web/app/shared/icon-text/icon-text.component';
+import { TimeSlotToTimePipe } from '@household/web/app/shared/pipes/time-slot-to-time.pipe';
 
 @Component({
   selector: 'household-customer-list-item',
@@ -9,7 +15,13 @@ import { Customer } from '@household/shared/types/types';
   styleUrl: './customer-list-item.component.scss',
   imports: [
     MatListModule,
+    IconTextComponent,
+    MatDividerModule,
+    MatCardModule,
+    MatButtonModule,
     RouterLink,
+    MatIconModule,
+    TimeSlotToTimePipe,
   ],
 })
 export class CustomerListItemComponent {

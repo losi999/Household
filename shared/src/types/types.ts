@@ -776,10 +776,18 @@ export namespace Customer {
     customerId: Id;
   };
 
-  export type Base = {
+  export type Name = {
     name: string;
-    description: string;
+  };
+
+  export type IsGroup = {
     isGroup: boolean;
+  };
+
+  export type Base = Name 
+  & IsGroup 
+  & {
+    description: string;
     rating: number;
   };
 

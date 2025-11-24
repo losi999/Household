@@ -12,18 +12,23 @@ import { MatIconButton } from '@angular/material/button';
 import { elementSelectorFactory, IElementSelector } from '@household/web/testing/element-selector';
 import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
 import { createMockService } from '@household/web/utils/unit-testing';
+import { Searchable } from '@household/shared/types/common';
+import { toSearchTerms } from '@household/shared/common/utils';
 
 describe.skip('CustomerHomeComponent', () => {
   let fixture: ComponentFixture<CustomerHomeComponent>;
-  let customers: Customer.Response[];
+  let customers: Searchable<Customer.Response>[];
   let searchedCustomer: Customer.Response;
   let mockStore: MockStore;
   let selector: IElementSelector;
-
   beforeEach(async () => {
+
     searchedCustomer = testDataFactory.customer.response();
     customers = [
-      searchedCustomer,
+      {
+        ...searchedCustomer,
+        searchTerms: toSearchTerms(searchedCustomer.name),
+      },
       testDataFactory.customer.response(),
     ];
 
@@ -89,7 +94,7 @@ describe.skip('CustomerHomeComponent', () => {
     fixture.detectChanges();
 
     const list = selector.getComponent(CustomerListComponent);
-    expect(list.componentInstance.customers).toEqual([searchedCustomer]);
+    expect(list.componentInstance.customers).toEqual([jasmine.objectContaining(searchedCustomer)]);
     
   });
 });

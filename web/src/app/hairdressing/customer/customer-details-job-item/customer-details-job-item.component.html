@@ -4,9 +4,8 @@
     <mat-card-subtitle>{{job.duration | timeSlotToTime}} óra</mat-card-subtitle>
   </mat-card-header>
   <mat-card-content>
-    <household-job-price-summary [prices]="job.prices" />
-    <mat-divider />
     {{job.description}}
+    <household-job-price-summary [prices]="job.prices" />
   </mat-card-content>
   <mat-card-actions>
     <button mat-flat-button color="primary" data-testId="search-button" [routerLink]="['/hairdressing', 'calendar']" [queryParams]="{customerId: customerId, jobName: job.name}">
