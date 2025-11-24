@@ -50,5 +50,5 @@ export type DocumentUpdate<D> = {
 };
 
 export type Searchable<T = object> = T & {
-  searchTerms: string[];
+  searchTerms?: string[];
 };

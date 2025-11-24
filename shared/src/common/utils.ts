@@ -156,5 +156,5 @@ export const filterSearchable = (items: Searchable[], searchValue: string) => {
   const terms = searchValue.trim().toLowerCase()
     .split(' ');
 
-  return items?.filter(i => i.searchTerms.some(s => terms.every(t => s.includes(t))));
+  return items?.filter(i => i.searchTerms?.some(s => terms.every(t => s.includes(t))));
 };
