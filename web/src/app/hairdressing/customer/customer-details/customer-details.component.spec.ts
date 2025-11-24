@@ -16,7 +16,7 @@ import { CustomerDetailsJobItemComponent } from '@household/web/app/hairdressing
 import { elementSelectorFactory, IElementSelector } from '@household/web/testing/element-selector';
 import { createMockService } from '@household/web/utils/unit-testing';
 
-describe.skip('CustomerDetailsComponent', () => {
+describe('CustomerDetailsComponent', () => {
   let fixture: ComponentFixture<CustomerDetailsComponent>;
   let mockStore: MockStore;
   let customerId: Customer.Id;
@@ -72,7 +72,7 @@ describe.skip('CustomerDetailsComponent', () => {
         },
         {
           provide: AuthService,
-          useValue: createMockService<AuthService>('isLoggedIn'), 
+          useValue: createMockService<AuthService>('isLoggedIn', 'hasUserType'), 
         },
       ],
     })
@@ -112,7 +112,8 @@ describe.skip('CustomerDetailsComponent', () => {
     });
     
     it('(click) should dispatch [Customer] Create customer', () => {
-      const button = selector.getComponent<MatIconButton, HTMLButtonElement>(MatIconButton, ToolbarComponent);
+      const button = selector.getComponentByTestId<MatIconButton, HTMLButtonElement>('edit-customer-button', ToolbarComponent);
+
       button.nativeElement.click();
       
       expect(mockStore.dispatch).toHaveBeenCalledWith(customerActions.updateCustomer({

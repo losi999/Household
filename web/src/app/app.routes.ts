@@ -2,16 +2,8 @@ import { Routes } from '@angular/router';
 import { UserType } from '@household/shared/enums';
 import { ConfirmUserComponent } from '@household/web/app/auth/confirm-user/confirm-user.component';
 import { LoginComponent } from '@household/web/app/auth/login/login.component';
-import { CalendarApiEffects } from '@household/web/app/hairdressing/calendar/state/calendar-api.effects';
-import { calendarReducer } from '@household/web/app/hairdressing/calendar/state/calendar.reducer';
-import { CustomerApiEffects } from '@household/web/app/hairdressing/customer/state/customer-api.effects';
-import { CustomerEffects } from '@household/web/app/hairdressing/customer/state/customer.effects';
-import { customerReducer } from '@household/web/app/hairdressing/customer/state/customer.reducer';
-import { PriceApiEffects } from '@household/web/app/hairdressing/price/state/price-api.effects';
-import { priceReducer } from '@household/web/app/hairdressing/price/state/price.reducer';
+import { hairdressingProviders } from '@household/web/app/hairdressing/hairdressing.providers';
 import { unauthenticated, authenticated } from '@household/web/app/shared/guards';
-import { provideEffects } from '@ngrx/effects';
-import { provideState, provideStore } from '@ngrx/store';
 
 export const routes: Routes = [
   {
@@ -91,17 +83,7 @@ export const routes: Routes = [
     data: {
       requiredUserType: UserType.Hairdresser,
     },
-    providers: [
-      provideEffects([
-        PriceApiEffects,
-        CustomerApiEffects,
-        CustomerEffects,
-        CalendarApiEffects,
-      ]),
-      provideState('prices', priceReducer),
-      provideState('customers', customerReducer),
-      provideState('calendar', calendarReducer),
-    ],
+    providers: hairdressingProviders,
   },
   {
     path: '',

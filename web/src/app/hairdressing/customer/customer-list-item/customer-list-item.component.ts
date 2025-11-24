@@ -1,8 +1,8 @@
-import { Component, Input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { MatListModule } from '@angular/material/list';
 import { RouterLink } from '@angular/router';
 import { Customer } from '@household/shared/types/types';
@@ -23,6 +23,7 @@ import { TimeSlotToTimePipe } from '@household/web/app/shared/pipes/time-slot-to
     MatIconModule,
     TimeSlotToTimePipe,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CustomerListItemComponent {
   @Input() customer: Customer.Response;

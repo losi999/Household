@@ -1,10 +1,10 @@
-import { AsyncPipe } from '@angular/common';
-import { Component, computed, OnInit } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { filterSearchable } from '@household/shared/common/utils';
+import { ChangeDetectionStrategy, Component, computed, OnInit, signal } from '@angular/core';
+import { Field, form } from '@angular/forms/signals';
 import { CustomerListComponent } from '@household/web/app/hairdressing/customer/customer-list/customer-list.component';
 import { customerActions, customerApiActions } from '@household/web/app/hairdressing/customer/state/customer.actions';
 import { selectCustomerList } from '@household/web/app/hairdressing/customer/state/customer.selector';
@@ -22,10 +22,10 @@ import { Store } from '@ngrx/store';
     ClearableInputComponent,
     MatIconModule,
     ToolbarComponent,
-    AutocompleteFilterPipe,
     MatButtonModule,
-    AsyncPipe,
+    Field,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CustomerHomeComponent implements OnInit {
   customers = toSignal(this.store.select(selectCustomerList));
@@ -42,7 +42,7 @@ export class CustomerHomeComponent implements OnInit {
   });
 
   constructor(private store: Store) { }
-
+  
   ngOnInit(): void {
     this.store.dispatch(customerApiActions.listCustomersInitiated());
   }

@@ -1,10 +1,10 @@
 import { Setting } from '@household/shared/types/types';
 import { settingDataFactory } from './data-factory';
-import { allowUsers } from '@household/test/api/utils';
+import { forbidUsers } from '@household/test/api/utils';
 import { entries } from '@household/shared/common/utils';
 import { SettingKey } from '@household/shared/enums';
 
-const permissionMap = allowUsers('editor') ;
+const permissionMap = forbidUsers('viewer');
 
 describe('POST /setting/v1/settings/{settingKey}', () => {
   let request: Setting.Request;

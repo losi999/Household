@@ -1,25 +1,24 @@
-<h1 mat-dialog-title>{{customer ? 'Szerkesztés' : 'Új'}}</h1>
+<h1 mat-dialog-title>{{ customer ? "Szerkesztés" : "Új" }}</h1>
 <div mat-dialog-content>
-  <form [formGroup]="form" (ngSubmit)="onSave()" id="customer-form">
-    <household-clearable-input data-testId="name" formControlName="name" label="Név" />
-    <mat-checkbox formControlName="isGroup" color="primary">
-      Több személy tartozik ide?
-    </mat-checkbox>
-    <household-clearable-input data-testId="description" formControlName="description" type="area" label="Megjegyzés" />
+  <pre>{{ form2().value() | json }}</pre>
+  <form (submit)="onSave($event)" id="customer-form">
+    <household-clearable-input data-testId="name" [field]="form2.name" label="Név" />
+    <mat-checkbox [field]="form2.isGroup" color="primary"> Több személy tartozik ide? </mat-checkbox>
+    <household-clearable-input data-testId="description" [field]="form2.description" type="area" label="Megjegyzés" />
     <div class="rating" data-testId="rating">
-      <button mat-mini-fab type="button" [color]="rating === 1 ? 'primary' : ''" (click)="onSetRating(1)">
+      <button mat-mini-fab type="button" [color]="rating2() === 1 ? 'primary' : ''" (click)="rating2.set(1)">
         <mat-icon>sentiment_stressed</mat-icon>
       </button>
-      <button mat-mini-fab type="button" [color]="rating === 2 ? 'primary' : ''" (click)="onSetRating(2)">
+      <button mat-mini-fab type="button" [color]="rating2() === 2 ? 'primary' : ''" (click)="rating2.set(2)">
         <mat-icon>sentiment_dissatisfied</mat-icon>
       </button>
-      <button mat-mini-fab type="button" [color]="rating === 3 ? 'primary' : ''" (click)="onSetRating(3)">
+      <button mat-mini-fab type="button" [color]="rating2() === 3 ? 'primary' : ''" (click)="rating2.set(3)">
         <mat-icon>sentiment_neutral</mat-icon>
       </button>
-      <button mat-mini-fab type="button" [color]="rating === 4 ? 'primary' : ''" (click)="onSetRating(4)">
+      <button mat-mini-fab type="button" [color]="rating2() === 4 ? 'primary' : ''" (click)="rating2.set(4)">
         <mat-icon>sentiment_satisfied</mat-icon>
       </button>
-      <button mat-mini-fab type="button" [color]="rating === 5 ? 'primary' : ''" (click)="onSetRating(5)">
+      <button mat-mini-fab type="button" [color]="rating2() === 5 ? 'primary' : ''" (click)="rating2.set(5)">
         <mat-icon>sentiment_excited</mat-icon>
       </button>
     </div>

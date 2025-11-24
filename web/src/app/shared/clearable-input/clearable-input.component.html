@@ -5,19 +5,19 @@
   }
   @switch (type) {
     @case ("number") {
-      <input type="number" matInput [formControl]="input" (blur)="touched?.()" />
+      <input type="number" matInput [value]="value()" (input)="value.set($event.target.value)" />
     }
     @case ("text") {
-      <input type="text" matInput [formControl]="input" (blur)="touched?.()" />
+      <input type="text" matInput [value]="value()" (input)="value.set($event.target.value)" />
     }
     @case ("area") {
-      <textarea matInput [formControl]="input" rows="3" (blur)="touched?.()"></textarea>
+      <textarea matInput [value]="value()" (input)="value.set($event.target.value)" rows="3"></textarea>
     }
   }
-  <button matSuffix mat-icon-button aria-label="Clear" type="button" (click)="clearValue($event)" tabindex="-1">
+  <button matSuffix mat-icon-button aria-label="Clear" type="button" (click)="clearValue()" tabindex="-1">
     <mat-icon>close</mat-icon>
   </button>
-  @if (input.errors?.required) {
+  <!-- @if (input.errors?.required) {
     <mat-error>Kötelező</mat-error>
-  }
+  } -->
 </mat-form-field>

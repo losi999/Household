@@ -15,7 +15,7 @@ import { createMockService } from '@household/web/utils/unit-testing';
 import { Searchable } from '@household/shared/types/common';
 import { toSearchTerms } from '@household/shared/common/utils';
 
-describe.skip('CustomerHomeComponent', () => {
+describe('CustomerHomeComponent', () => {
   let fixture: ComponentFixture<CustomerHomeComponent>;
   let customers: Searchable<Customer.Response>[];
   let searchedCustomer: Customer.Response;
@@ -46,7 +46,7 @@ describe.skip('CustomerHomeComponent', () => {
         }),
         {
           provide: AuthService,
-          useValue: createMockService<AuthService>('isLoggedIn'), 
+          useValue: createMockService<AuthService>('isLoggedIn', 'hasUserType'), 
         },
       ],
     })
@@ -75,7 +75,7 @@ describe.skip('CustomerHomeComponent', () => {
     let button: HTMLButtonElement;
     
     beforeEach(() => {
-      button = selector.getComponent<MatIconButton, HTMLButtonElement>(MatIconButton, ToolbarComponent).nativeElement;
+      button = selector.getComponentByTestId<MatIconButton, HTMLButtonElement>('create-customer-button', ToolbarComponent).nativeElement;
     });
 
     it('should be rendered in toolbar', () => {
