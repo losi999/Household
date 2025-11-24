@@ -54,8 +54,8 @@ export const validateTransactionTransferResponse = (response: Transaction.Transf
   });
   expect(transferAmount, 'transferAmount').to.equal(documentTransferAmount);
 
-  cy.validateTransactionNestedObject('account', account).validateAccountResponse(documentAccount);
-  cy.validateTransactionNestedObject('transferAccount', transferAccount).validateAccountResponse(documentTransferAccount);
+  cy.validateNestedObject('account', account).validateAccountResponse(documentAccount);
+  cy.validateNestedObject('transferAccount', transferAccount).validateAccountResponse(documentTransferAccount);
 
   payments?.forEach((p, index) => {
     const documentItem = document.payments[index];

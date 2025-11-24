@@ -1,12 +1,13 @@
+<h1 mat-dialog-title>{{data.job ? 'Szerkesztés' : 'Új'}}</h1>
 <div mat-dialog-content>
   <form [formGroup]="form" (ngSubmit)="onSave()" id="customer-job-form">
-    <household-clearable-input formControlName="name" label="Munka neve" />
-    <household-clearable-input formControlName="description" type="area" label="Megjegyzés" />
+    <household-clearable-input data-testId="name" formControlName="name" label="Munka neve" />
+    <household-clearable-input data-testId="description" formControlName="description" type="area" label="Megjegyzés" />
     <household-duration-stepper formControlName="duration" />
     <household-job-price-calculator formControlName="prices" />
   </form>
 </div>
 <div mat-dialog-actions>
-  <button mat-flat-button color="primary" cdkFocusInitial form="customer-job-form">Mentés</button>
+  <button mat-flat-button color="primary" data-testId="submit-button" cdkFocusInitial form="customer-job-form">Mentés</button>
   <button mat-flat-button mat-dialog-close type="button">Mégse</button>
 </div>

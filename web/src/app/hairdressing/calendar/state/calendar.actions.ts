@@ -23,7 +23,7 @@ export const calendarApiActions = createActionGroup({
   source: 'Calendar API',
   events: {
     'List calendar days initiated': props<Calendar.DateRange>(),
-    'List calendar days completed': props<Calendar.DateRange & {entries: Calendar.Day.Response[]}>(),
+    'List calendar days completed': props<{days: Calendar.Day.Response[]}>(),
     'Update calendar day initiated': props<Calendar.DayProp & Calendar.Day.Request>(),
     'Update calendar day completed': props<Calendar.DayProp & Calendar.Day.Request>(),
     'Delete calendar day initiated': props<Calendar.DayProp>(),
@@ -34,7 +34,7 @@ export const calendarApiActions = createActionGroup({
     'Update calendar entry completed': props<Calendar.Entry.CalendarEntryId & Calendar.Entry.Request & {customer: Customer.Response }>(),
     'Delete calendar entry initiated': props<Calendar.Entry.CalendarEntryId>(),
     'Delete calendar entry completed': props<Calendar.Entry.CalendarEntryId>(),
-    'Pay calendar work entry initiated': props<Calendar.Entry.CalendarEntryId & Calendar.DayProp & Calendar.Entry.PaymentRequest>(),
-    'Pay calendar work entry completed': props<Calendar.Entry.CalendarEntryId & Calendar.DayProp>(),
+    'Resolve calendar work entry initiated': props<Calendar.Entry.CalendarEntryId & Calendar.DayProp & Calendar.Entry.ResolutionRequest>(),
+    'Resolve calendar work entry completed': props<Calendar.Entry.CalendarEntryId & Calendar.DayProp & Calendar.Entry.ResolutionRequest>(),
   },
 });

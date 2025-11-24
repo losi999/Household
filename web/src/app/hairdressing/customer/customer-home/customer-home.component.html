@@ -4,6 +4,6 @@
   </button>
 </household-toolbar>
 <div class="search mat-app-background">
-  <household-clearable-input label="Keresés" #inp />
+  <household-clearable-input label="Keresés" [formControl]="search" />
 </div>
-<household-customer-list [customers]="customers | async | autocompleteFilter: 'name' : inp.value" />
+<household-customer-list [customers]="filteredCustomers()" />

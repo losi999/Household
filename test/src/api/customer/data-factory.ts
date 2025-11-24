@@ -1,29 +1,48 @@
-import { DataFactoryFunction } from '@household/shared/types/common';
-import { Customer } from '@household/shared/types/types';
-import { faker } from '@faker-js/faker';
+import { Customer, Price } from '@household/shared/types/types';
 import { customerDocumentConverter } from '@household/shared/dependencies/converters/customer-document-converter';
-import { createId } from '@household/test/api/utils';
+import { getPriceId } from '@household/shared/common/utils';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 export const customerDataFactory = (() => {
-  const createCustomerRequest: DataFactoryFunction<Customer.Request> = (req) => {
-    return {
-      name: `${faker.person.firstName()} ${faker.string.uuid()}`,
-      description: faker.word.words({
-        count: {
-          min: 1,
-          max: 5,
+  const createCustomerDocument = (ctx?: {
+    body?: Partial<Customer.Request>
+    jobs?: {
+      body?: Partial<Omit<Customer.Job.Request, 'prices'>>;
+      prices?: {
+        custom?: Partial<Price.Base>[];
+        listed?: (Partial<Customer.Job.Quantity> & {price: Price.Document})[];
+      }; 
+    }[];
+    blacklistedCustomers?: Customer.Document[];
+  }): Customer.Document => {
+    const defaultCustomerDocument = customerDocumentConverter.create(testDataFactory.customer.request(ctx?.body), Cypress.env('EXPIRES_IN'), true);
+
+    const jobs = ctx?.jobs?.map<Customer.Job.Document>((j) => {
+      const jobUpdate = customerDocumentConverter.addJob(testDataFactory.customer.job.request({
+        body: j.body,
+        prices: {
+          custom: j.prices?.custom,
+          listed: j.prices?.listed?.map(({ price, ...rest }) => {
+            return {
+              priceId: getPriceId(price),
+              ...rest,
+            };
+          }),
         },
-      }),
-      ...req,
+      }), j.prices?.listed?.map((p) => p.price) ?? []);
+
+      return jobUpdate.update.$push.jobs;
+    }) ?? defaultCustomerDocument.jobs;
+    return {
+      ...defaultCustomerDocument,
+      jobs,
+      blacklistedCustomers: ctx?.blacklistedCustomers ?? defaultCustomerDocument.blacklistedCustomers,
     };
   };
-
-  const createCustomerDocument: DataFactoryFunction<Customer.Request, Customer.Document> = (req) => {
-    return customerDocumentConverter.create(createCustomerRequest(req), Cypress.env('EXPIRES_IN'), true);
-  };
   return {
-    request: createCustomerRequest,
+    request: testDataFactory.customer.request,
     document: createCustomerDocument,
-    id: (createId<Customer.Id>),
+    jobRequest: testDataFactory.customer.job.request,
+    id: testDataFactory.customer.id,
   };
 })();

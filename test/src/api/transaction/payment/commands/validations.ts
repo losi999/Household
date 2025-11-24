@@ -76,16 +76,16 @@ export const validateTransactionPaymentResponse = (response: Transaction.Payment
     transactionType,
   }, document);
 
-  cy.validateTransactionNestedObject('account', account).validateAccountResponse(document.account);
+  cy.validateNestedObject('account', account).validateAccountResponse(document.account);
 
   if (project) {
-    cy.validateTransactionNestedObject('project', project).validateProjectResponse(document.project);
+    cy.validateNestedObject('project', project).validateProjectResponse(document.project);
   } else {
     expect(project, 'project').to.be.undefined;
   }
 
   if (recipient) {
-    cy.validateTransactionNestedObject('recipient', recipient).validateRecipientResponse(document.recipient);
+    cy.validateNestedObject('recipient', recipient).validateRecipientResponse(document.recipient);
   } else {
     expect(recipient, 'recipient').to.be.undefined;
   }

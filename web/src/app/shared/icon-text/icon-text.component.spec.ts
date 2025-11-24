@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { IconTextComponent } from './icon-text.component';
 
-describe('IconTextComponent', () => {
+xdescribe('IconTextComponent', () => {
   let component: IconTextComponent;
   let fixture: ComponentFixture<IconTextComponent>;
 

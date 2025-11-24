@@ -83,7 +83,13 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
       });
     },
     saveProduct: async (doc) => {
-      return mongodbService.products.create(doc);
+      const [product] = await mongodbService.inSession((session) => {
+        return mongodbService.products.create([doc], {
+          session,
+        });
+      });
+      
+      return product;
     },
     saveProducts: (docs) => {
       return mongodbService.inSession((session) => {
@@ -95,13 +101,21 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
       });
     },
     findProductById: async (productId) => {
-      return !productId ? undefined : mongodbService.products.findById(productId)
-        .setOptions({
-          lean: true,
+      if (productId) {
+        return mongodbService.inSession((session) => {
+          return mongodbService.products.findById(productId)
+            .setOptions({
+              lean: true,
+              session,
+            });
         });
-        
+      }        
     },
-    listProductsByIds: (productIds) => {
+    listProductsByIds: async (productIds) => {
+      if(!productIds?.length) {
+        return [];
+      }
+
       return mongodbService.inSession((session) => {
         return mongodbService.products.find({
           _id: {

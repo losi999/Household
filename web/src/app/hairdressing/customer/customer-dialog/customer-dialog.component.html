@@ -1,12 +1,12 @@
 <h1 mat-dialog-title>{{customer ? 'Szerkesztés' : 'Új'}}</h1>
 <div mat-dialog-content>
   <form [formGroup]="form" (ngSubmit)="onSave()" id="customer-form">
-    <household-clearable-input formControlName="name" label="Név" />
+    <household-clearable-input data-testId="name" formControlName="name" label="Név" />
     <mat-checkbox formControlName="isGroup" color="primary">
       Több személy tartozik ide?
     </mat-checkbox>
-    <household-clearable-input formControlName="description" type="area" label="Megjegyzés" />
-    <div class="rating">
+    <household-clearable-input data-testId="description" formControlName="description" type="area" label="Megjegyzés" />
+    <div class="rating" data-testId="rating">
       <button mat-mini-fab type="button" [color]="rating === 1 ? 'primary' : ''" (click)="onSetRating(1)">
         <mat-icon>sentiment_stressed</mat-icon>
       </button>
@@ -26,6 +26,6 @@
   </form>
 </div>
 <div mat-dialog-actions>
-  <button mat-button cdkFocusInitial form="customer-form">Mentés</button>
+  <button mat-button cdkFocusInitial data-testId="submit-button" form="customer-form">Mentés</button>
   <button mat-button mat-dialog-close type="button">Mégse</button>
 </div>

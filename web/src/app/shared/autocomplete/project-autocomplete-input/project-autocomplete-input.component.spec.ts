@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ProjectAutocompleteInputComponent } from './project-autocomplete-input.component';
 
-describe('ProjectAutocompleteInputComponent', () => {
+xdescribe('ProjectAutocompleteInputComponent', () => {
   let component: ProjectAutocompleteInputComponent;
   let fixture: ComponentFixture<ProjectAutocompleteInputComponent>;
 

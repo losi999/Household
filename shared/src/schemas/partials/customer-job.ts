@@ -26,6 +26,7 @@ const schema: StrictJSONSchema7<Customer.Job.Request> = {
         oneOf: [
           {
             type: 'object',
+            additionalProperties: false,
             required: [
               ...priceId.required,
               ...quantity.required,
@@ -37,6 +38,7 @@ const schema: StrictJSONSchema7<Customer.Job.Request> = {
           }, 
           {
             type: 'object',
+            additionalProperties: false,
             required: [...priceBase.required],
             properties: {
               ...priceBase.properties,

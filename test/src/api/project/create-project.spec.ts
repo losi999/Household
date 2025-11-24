@@ -83,7 +83,7 @@ describe('POST project/v1/projects', () => {
                 .expectTooShortProperty('name', 1, 'body');
             });
 
-            it('is already in used by a different project', () => {
+            it('is already in use by a different project', () => {
               const projectDocument = projectDataFactory.document(request);
 
               cy.saveProjectDocument(projectDocument)

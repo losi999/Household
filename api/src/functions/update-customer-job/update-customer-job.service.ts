@@ -25,6 +25,11 @@ export const updateCustomerJobServiceFactory = (
       customer,
     });
 
+    httpErrors.customer.jobNotFound({
+      customer,
+      jobName: name,
+    });
+
     httpErrors.customer.duplicateJobName({
       job: body,
       customer,
@@ -43,6 +48,11 @@ export const updateCustomerJobServiceFactory = (
     }, []);
 
     const priceDocuments = await priceService.findPricesByIds(priceIds).catch(httpErrors.price.listByIds(priceIds));
+
+    httpErrors.price.multipleNotFound({
+      priceIds,
+      prices: priceDocuments,  
+    });
 
     const update = customerDocumentConverter.updateJob(name, body, priceDocuments); 
 

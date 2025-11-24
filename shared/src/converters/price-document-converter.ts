@@ -17,6 +17,7 @@ export const priceDocumentConverterFactory = (): IPriceDocumentConverter => {
         amount,
         name,
         unitOfMeasurement,
+        isArchived: false,
         _id: generateId ? generateMongoId() : undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };

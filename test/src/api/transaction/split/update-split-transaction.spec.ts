@@ -1212,7 +1212,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split (split)', () => 
                   },
                 ]))
                 .expectBadRequestResponse()
-                .expectTooEarlyDateProperty('billingEndDate', 'body');
+                .expectTooEarlyDateProperty('billingEndDate', true, 'body');
             });
           });
 
@@ -1595,7 +1595,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split (split)', () => 
                   },
                 ]))
                 .expectBadRequestResponse()
-                .expectTooEarlyDateProperty('billingEndDate', 'body');
+                .expectTooEarlyDateProperty('billingEndDate', true, 'body');
             });
           });
 

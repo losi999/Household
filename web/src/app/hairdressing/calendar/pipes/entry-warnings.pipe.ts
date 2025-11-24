@@ -10,14 +10,10 @@ export class EntryWarningsPipe implements PipeTransform
 {
 
   transform(value: {
-    customer: Customer.Response;
     job: Customer.Job.Response;
-    title: string;
-    description: string;
-    day: Date;
     start: number;
     duration: number;
-  }, calendarDay: Calendar.Day.Response, entry: Calendar.Entry.Response): unknown {
+  }, calendarDay: Calendar.Day.Response, entry: Calendar.Entry.Response): string[] {
     const errors = [];
     
     const end = value.start + value.duration;

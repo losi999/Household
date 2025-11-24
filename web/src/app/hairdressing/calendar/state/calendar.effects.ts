@@ -2,16 +2,14 @@ import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { exhaustMap, filter, map } from 'rxjs';
 import { calendarActions, calendarApiActions } from '@household/web/app/hairdressing/calendar/state/calendar.actions';
-import { CalendarDayType, CalendarEntryType, PaymentType } from '@household/shared/enums';
+import { CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType } from '@household/shared/enums';
 import { addDays, createWorkEntryTitle, dateToISODateString, timeSlotToTimeString } from '@household/shared/common/utils';
 import { CalendarWorkdayDialogComponent, CalendarWorkdayDialogData, CalendarWorkdayDialogResult } from '@household/web/app/hairdressing/calendar/calendar-workday-dialog/calendar-workday-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogService } from '@household/web/services/dialog.service';
 import { CalendarEntryDetailsDialogComponent, CalendarEntryDetailsDialogData, CalendarEntryDetailsDialogResult } from '@household/web/app/hairdressing/calendar/calendar-entry-details-dialog/calendar-entry-details-dialog.component';
 import { CalendarEntryEditDialogComponent, CalendarEntryEditDialogData, CalendarEntryEditDialogResult } from '@household/web/app/hairdressing/calendar/calendar-entry-edit-dialog/calendar-entry-edit-dialog.component';
-import { CalendarCashPaymentDialogComponent, CalendarCashPaymentDialogData, CalendarCashPaymentDialogResult } from '@household/web/app/hairdressing/calendar/calendar-cash-payment-dialog/calendar-cash-payment-dialog.component';
 import { CalendarEntryPayingDialogComponent, CalendarEntryPayingDialogData, CalendarEntryPayingDialogResult } from '@household/web/app/hairdressing/calendar/calendar-entry-paying-dialog/calendar-entry-paying-dialog.component';
-import { isListedPrice } from '@household/shared/common/type-guards';
 
 @Injectable()
 export class CalendarEffects {
@@ -110,6 +108,15 @@ export class CalendarEffects {
                   if (entry.entryType === CalendarEntryType.Work) {
                     return calendarActions.payCalendarWorkEntry(entry);
                   }
+                } break;
+                case CalendarEntryDetailsDialogResult.NoShow: {
+                  if (entry.entryType === CalendarEntryType.Work) {
+                    return calendarApiActions.resolveCalendarWorkEntryInitiated({
+                      calendarEntryId: entry.calendarEntryId,
+                      status: CalendarEntryResolutionStatus.NoShow,
+                      day: entry.day,
+                    });
+                  }
                 }
               }
             }),
@@ -187,42 +194,14 @@ export class CalendarEffects {
           disableClose: true,
         }).afterClosed()
           .pipe(filter(req => !!req),
-            map((paymentType) => {
-              switch(paymentType) {
-                case PaymentType.Transfer: {
-                  return calendarApiActions.payCalendarWorkEntryInitiated({
-                    calendarEntryId: calendarEntry.calendarEntryId,
-                    paymentType,
-                    day: calendarEntry.day,
-                  });
-                }
-                case PaymentType.Cash: {
-                  return calendarActions.setCashPaymentDialog(calendarEntry);
-                }
-              }
-
+            map((request) => {
+              return calendarApiActions.resolveCalendarWorkEntryInitiated({
+                calendarEntryId: calendarEntry.calendarEntryId,
+                ...request,
+                day: calendarEntry.day,
+              });
             }),
           );
-      }),
-    );
-  });
-
-  openCashPaymentDialog = createEffect(() => {
-    return this.actions.pipe(
-      ofType(calendarActions.setCashPaymentDialog),
-      exhaustMap(({ type, ...calendarEntry }) => {
-        return this.dialog.open<CalendarCashPaymentDialogComponent, CalendarCashPaymentDialogData, CalendarCashPaymentDialogResult>(CalendarCashPaymentDialogComponent, {
-          data: calendarEntry,
-          disableClose: true,
-        }).afterClosed()
-          .pipe(filter(req => !!req),
-            map((request) => {
-              return calendarApiActions.payCalendarWorkEntryInitiated({
-                calendarEntryId: calendarEntry.calendarEntryId,
-                day: calendarEntry.day,
-                ...request,
-              });
-            }));
       }),
     );
   });
@@ -277,7 +256,7 @@ export class CalendarEffects {
               end: timeInterval.end,
               description: job.description,
               prices: job.prices.map((p) => {
-                if (isListedPrice(p)) {
+                if (p.priceId) {
                   return {
                     priceId: p.priceId,
                     quantity: p.quantity,

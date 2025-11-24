@@ -1,68 +1,68 @@
 import { default as schema } from '@household/shared/schemas/customer-request';
 import { Customer } from '@household/shared/types/types';
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
-import { customerDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 describe('Customer schema', () => {
   const tester = jsonSchemaTesterFactory<Customer.Request>(schema);
-  tester.validateSuccess(customerDataFactory.request());
+  tester.validateSuccess(testDataFactory.customer.request());
 
   describe('should deny', () => {
     describe('if data', () => {
       tester.additionalProperties({
-        ...customerDataFactory.request(),
+        ...testDataFactory.customer.request(),
         extra: 1,
       } as any, 'data');
     });
 
     describe('if data.name', () => {
-      tester.required(customerDataFactory.request({
+      tester.required(testDataFactory.customer.request({
         name: undefined,
       }), 'name');
 
-      tester.type(customerDataFactory.request({
+      tester.type(testDataFactory.customer.request({
         name: 1 as any,
       }), 'name', 'string');
 
-      tester.minLength(customerDataFactory.request({
+      tester.minLength(testDataFactory.customer.request({
         name: '',
       }), 'name', 1);
     });
 
     describe('if data.description', () => {
-      tester.type(customerDataFactory.request({
+      tester.type(testDataFactory.customer.request({
         description: 1 as any,
       }), 'description', 'string');
 
-      tester.minLength(customerDataFactory.request({
+      tester.minLength(testDataFactory.customer.request({
         description: '',
       }), 'description', 1);
     });
 
     describe('if data.isGroup', () => {
-      tester.required(customerDataFactory.request({
+      tester.required(testDataFactory.customer.request({
         isGroup: undefined,
       }), 'isGroup');
 
-      tester.type(customerDataFactory.request({
+      tester.type(testDataFactory.customer.request({
         isGroup: 1 as any,
       }), 'isGroup', 'boolean');
     });
 
     describe('if data.rating', () => {
-      tester.required(customerDataFactory.request({
+      tester.required(testDataFactory.customer.request({
         rating: undefined,
       }), 'rating');
 
-      tester.type(customerDataFactory.request({
+      tester.type(testDataFactory.customer.request({
         rating: '1' as any,
       }), 'rating', 'integer');
 
-      tester.minimum(customerDataFactory.request({
+      tester.minimum(testDataFactory.customer.request({
         rating: 0,
       }), 'rating', 1);
 
-      tester.maximum(customerDataFactory.request({
+      tester.maximum(testDataFactory.customer.request({
         rating: 6,
       }), 'rating', 5);
     });

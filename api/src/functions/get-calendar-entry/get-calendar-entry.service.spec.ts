@@ -1,5 +1,5 @@
 import { IGetCalendarEntryService, getCalendarEntryServiceFactory } from '@household/api/functions/get-calendar-entry/get-calendar-entry.service';
-import { calendarEntryDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
 import { ICalendarEntryService } from '@household/shared/services/calendar-entry-service';
@@ -16,9 +16,9 @@ describe('Get calendar entry service', () => {
     service = getCalendarEntryServiceFactory(mockCalendarEntryService.service, mockCalendarEntryDocumentConverter.service);
   });
 
-  const queriedDocument = calendarEntryDataFactory.document();
-  const calendarEntryId = calendarEntryDataFactory.id();
-  const convertedResponse = calendarEntryDataFactory.personalResponse();
+  const queriedDocument = testDataFactory.calendar.entry.document();
+  const calendarEntryId = testDataFactory.calendar.entry.id();
+  const convertedResponse = testDataFactory.calendar.entry.response.personal();
 
   it('should return with response', async () => {
     mockCalendarEntryService.functions.getCalendarEntryById.mockResolvedValue(queriedDocument);

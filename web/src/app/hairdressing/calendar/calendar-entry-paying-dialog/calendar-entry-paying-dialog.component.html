@@ -1,16 +1,25 @@
 <div mat-dialog-title>{{entry.title}}</div>
 <div mat-dialog-content>
-  <household-icon-text icon="calendar_month" [text]="entry.day | date: 'yyyy. MMMM d.'" size="medium" />
-  <household-icon-text icon="alarm" [text]="(entry.start | timeSlotToTime) + ' - ' + (entry.end | timeSlotToTime)" size="medium" />
-  @if (entry.description) {
-  <div>
-    {{entry.description}}
-  </div>
-  }
-  <household-job-price-calculator [formControl]="prices" />
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" id="calendar-entry-paying">
+    <household-icon-text icon="calendar_month" [text]="entry.day | date: 'yyyy. MMMM d.'" size="medium" />
+    <household-icon-text icon="alarm" [text]="(entry.start | timeSlotToTime) + ' - ' + (entry.end | timeSlotToTime)" size="medium" />
+    @if (entry.description) {
+    <div>
+      {{entry.description}}
+    </div>
+    }
+    <household-job-price-calculator formControlName="prices" />
+    <mat-button-toggle-group formControlName="paymentType">
+      <mat-button-toggle value="cash">Készpénz</mat-button-toggle>
+      <mat-button-toggle value="transfer">Utalás</mat-button-toggle>
+    </mat-button-toggle-group>
+    @if (form.value.paymentType === 'cash') {
+    <household-amount-input label="Kapott összeg" currency="Ft" formControlName="amount" [signHidden]="true" />
+    }
+  </form>
 </div>
+
 <div mat-dialog-actions>
-  <button mat-flat-button mat-dialog-close="cash" color="primary" type="button"><mat-icon>payments</mat-icon>Készpénz</button>
-  <button mat-flat-button mat-dialog-close="transfer" color="primary" type="button"><mat-icon>account_balance</mat-icon>Utalás</button>
+  <button mat-flat-button color="primary" cdkFocusInitial form="calendar-entry-paying">Mentés</button>
   <button mat-flat-button mat-dialog-close type="button">Mégse</button>
 </div>

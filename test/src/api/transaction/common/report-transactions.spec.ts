@@ -1138,7 +1138,7 @@ describe('POST /transaction/v1/transactionReports', () => {
                   },
                 ])
                 .expectBadRequestResponse()
-                .expectTooEarlyDateProperty('to', 'body');
+                .expectTooEarlyDateProperty('to', true, 'body');
             });
           });
         });

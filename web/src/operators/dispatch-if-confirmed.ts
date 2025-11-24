@@ -5,7 +5,7 @@ export const dispatchIfConfirmed = (...actions: Action[]) => {
   return pipe(
     mergeMap<boolean, typeof EMPTY | Action[]>((isConfirmed) => {
       if (isConfirmed) {
-        return actions;
+        return actions.filter(x => !!x);
       }
       return EMPTY;
     }),

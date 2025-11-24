@@ -1,8 +1,9 @@
+import { SettingKey } from '@household/shared/enums';
 import { Setting } from '@household/shared/types/types';
 import { CommandFunction, CommandFunctionWithPreviousSubject } from '@household/test/api/types';
 import { expectEmptyObject, expectRemainingProperties } from '@household/test/api/utils';
 
-const validateSettingDocument = (settingKey: Setting.Id, request: Setting.Request) => {
+const validateSettingDocument = (settingKey: SettingKey, request: Setting.Request) => {
   cy.log('Get setting document', settingKey)
     .getSettingDocumentByKey(settingKey)
     .should((document) => {

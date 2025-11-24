@@ -17,7 +17,7 @@ const schema: StrictJSONSchema7<Calendar.DateRange> = {
     dateTo: {
       type: 'string',
       format: 'date',
-      formatExclusiveMinimum: {
+      formatMinimum: {
         $data: '1/dateFrom',
       },
     } as any,

@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/create-customer-job/create-customer-job.handler';
 import { ICreateCustomerJobService } from '@household/api/functions/create-customer-job/create-customer-job.service';
-import { customerDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 describe('Create customer job handler', () => {
   let mockCreateCustomerJobService: MockBusinessService<ICreateCustomerJobService>;
@@ -12,8 +12,8 @@ describe('Create customer job handler', () => {
     handlerFunction = handler(mockCreateCustomerJobService);
   });
 
-  const body = customerDataFactory.jobRequest();
-  const customerId = customerDataFactory.id();
+  const body = testDataFactory.customer.job.request();
+  const customerId = testDataFactory.customer.id();
   const handlerEvent = {
     body: JSON.stringify(body),
     pathParameters: {

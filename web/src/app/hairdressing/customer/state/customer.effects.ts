@@ -76,7 +76,7 @@ export class CustomerEffects {
   openUpdateCustomerJobDialog = createEffect(() => {
     return this.actions.pipe(
       ofType(customerActions.updateCustomerJob),
-      exhaustMap(({ customerId, ...job }) => {
+      exhaustMap(({ type, customerId, ...job }) => {
         return this.dialog.open<CustomerJobDialogComponent, CustomerJobDialogData, CustomerJobDialogResult>(CustomerJobDialogComponent, {
           data: {
             customerId,

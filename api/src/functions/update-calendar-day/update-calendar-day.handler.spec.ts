@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/update-calendar-day/update-calendar-day.handler';
 import { IUpdateCalendarDayService } from '@household/api/functions/update-calendar-day/update-calendar-day.service';
-import { calendarDayDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { headerExpiresIn } from '@household/shared/constants';
 
 describe('Update calendar day handler', () => {
@@ -14,7 +14,7 @@ describe('Update calendar day handler', () => {
   });
 
   const day = '2025-10-11';
-  const body = calendarDayDataFactory.workdayRequest();
+  const body = testDataFactory.calendar.day.request.workday();
   const expiresIn = 3600;
   const handlerEvent = {
     body: JSON.stringify(body),

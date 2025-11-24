@@ -136,10 +136,10 @@ export const validateTransactionSplitResponse = (response: Transaction.SplitResp
     transactionType,
   }, document);
 
-  cy.validateTransactionNestedObject('account', account).validateAccountResponse(document.account);
+  cy.validateNestedObject('account', account).validateAccountResponse(document.account);
 
   if (recipient) {
-    cy.validateTransactionNestedObject('recipient', recipient).validateRecipientResponse(document.recipient);
+    cy.validateNestedObject('recipient', recipient).validateRecipientResponse(document.recipient);
   } else {
     expect(recipient, 'recipient').to.be.undefined;
   }
@@ -152,7 +152,7 @@ export const validateTransactionSplitResponse = (response: Transaction.SplitResp
     expect(description, `splits[${index}].description`).to.equal(documentSplit.description);
 
     if (project) {
-      cy.validateTransactionNestedObject(`splits[${index}].project`, project).validateProjectResponse(documentSplit.project);
+      cy.validateNestedObject(`splits[${index}].project`, project).validateProjectResponse(documentSplit.project);
     } else {
       expect(project, `splits[${index}].project`).to.be.undefined;
     }
@@ -199,11 +199,11 @@ export const validateTransactionSplitResponse = (response: Transaction.SplitResp
     expect(description, `deferredSplits[${index}].description`).to.equal(documentSplit.description);
     expect(isSettled, `deferredSplits[${index}].isSettled`).to.equal(documentSplit.isSettled);
 
-    cy.validateTransactionNestedObject(`deferredSplits[${index}].payingAccount`, payingAccount).validateAccountResponse(documentSplit.payingAccount);
-    cy.validateTransactionNestedObject(`deferredSplits[${index}].ownerAccount`, ownerAccount).validateAccountResponse(documentSplit.ownerAccount);
+    cy.validateNestedObject(`deferredSplits[${index}].payingAccount`, payingAccount).validateAccountResponse(documentSplit.payingAccount);
+    cy.validateNestedObject(`deferredSplits[${index}].ownerAccount`, ownerAccount).validateAccountResponse(documentSplit.ownerAccount);
 
     if (project) {
-      cy.validateTransactionNestedObject(`deferredSplits[${index}].project`, project).validateProjectResponse(documentSplit.project);
+      cy.validateNestedObject(`deferredSplits[${index}].project`, project).validateProjectResponse(documentSplit.project);
     } else {
       expect(project, `deferredSplits[${index}].project`).to.be.undefined;
     }

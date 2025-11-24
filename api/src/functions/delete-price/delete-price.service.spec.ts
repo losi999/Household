@@ -1,5 +1,5 @@
 import { IDeletePriceService, deletePriceServiceFactory } from '@household/api/functions/delete-price/delete-price.service';
-import { priceDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IPriceService } from '@household/shared/services/price-service';
 
@@ -13,7 +13,7 @@ describe('Delete price service', () => {
     service = deletePriceServiceFactory(mockPriceService.service);
   });
 
-  const priceId = priceDataFactory.id();
+  const priceId = testDataFactory.price.id();
 
   it('should return if document is deleted', async () => {
     mockPriceService.functions.deletePrice.mockResolvedValue(undefined);

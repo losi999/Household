@@ -25,6 +25,8 @@ export const updatePriceServiceFactory = (
       priceId,
     });
 
+    httpErrors.price.priceIsArchived(queried);
+
     const update = priceDocumentConverter.update(body, expiresIn);
 
     return priceService.updatePrice(priceId, update).catch(httpErrors.price.update({

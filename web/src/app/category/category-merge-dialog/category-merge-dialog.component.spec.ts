@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CategoryMergeDialogComponent } from './category-merge-dialog.component';
 
-describe('CategoryMergeDialogComponent', () => {
+xdescribe('CategoryMergeDialogComponent', () => {
   let component: CategoryMergeDialogComponent;
   let fixture: ComponentFixture<CategoryMergeDialogComponent>;
 

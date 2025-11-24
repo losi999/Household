@@ -7,10 +7,11 @@ import { TransactionType } from '@household/shared/enums';
 export const fixDate = (doc: Transaction.Document<string>): Transaction.Document => {
   switch(doc?.transactionType) {
     case TransactionType.Draft:
-    case TransactionType.Transfer: return {
-      ...doc,
-      issuedAt: createDate(doc.issuedAt),
-    };
+    case TransactionType.Transfer: 
+      return {
+        ...doc,
+        issuedAt: createDate(doc.issuedAt),
+      };
     case TransactionType.Deferred:
     case TransactionType.Reimbursement:
     case TransactionType.Payment: return {

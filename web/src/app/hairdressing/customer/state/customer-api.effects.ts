@@ -5,7 +5,7 @@ import { customerApiActions } from '@household/web/app/hairdressing/customer/sta
 import { CustomerService } from '@household/web/services/customer.service';
 import { progressActions } from '@household/web/state/progress/progress.actions';
 import { notificationActions } from '@household/web/state/notification/notification.actions';
-import { selectPrices } from '@household/web/app/hairdressing/price/state/price.selector';
+import { selectPriceList } from '@household/web/app/hairdressing/price/state/price.selector';
 import { Store } from '@ngrx/store';
 
 @Injectable()
@@ -19,6 +19,27 @@ export class CustomerApiEffects {
         return this.customerService.listCustomers().pipe(
           map((customers) => customerApiActions.listCustomersCompleted({
             customers,
+          })),
+          catchError(() => {
+            return of(progressActions.processFinished(),
+              notificationActions.showMessage({
+                message: 'Hiba történt',
+              }),
+            );
+          }),
+        );
+      }),
+    );
+  });
+
+  listCustomerWorks = createEffect(() => {
+    return this.actions.pipe(
+      ofType(customerApiActions.listCustomerWorksInitiated),
+      exhaustMap(({ customerId }) => {
+        return this.customerService.listCustomerWorks(customerId).pipe(
+          map((works) => customerApiActions.listCustomerWorksCompleted({
+            works,
+            customerId,
           })),
           catchError(() => {
             return of(progressActions.processFinished(),
@@ -98,7 +119,7 @@ export class CustomerApiEffects {
   createCustomerJob = createEffect(() => {
     return this.actions.pipe(
       ofType(customerApiActions.createCustomerJobInitiated),
-      withLatestFrom(this.store.select(selectPrices)),
+      withLatestFrom(this.store.select(selectPriceList)),
       mergeMap(([
         { type, customerId, ...request },
         priceList,
@@ -134,7 +155,7 @@ export class CustomerApiEffects {
     return this.actions.pipe(
       ofType(customerApiActions.updateCustomerJobInitiated),
       groupBy(({ customerId }) => customerId),
-      withLatestFrom(this.store.select(selectPrices)),
+      withLatestFrom(this.store.select(selectPriceList)),
       mergeMap(([
         value,
         priceList,

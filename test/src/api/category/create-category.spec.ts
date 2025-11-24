@@ -90,7 +90,7 @@ describe('POST category/v1/categories', () => {
                 .expectTooShortProperty('name', 1, 'body');
             });
 
-            it('is already in used by a different category', () => {
+            it('is already in use by a different category', () => {
               const categoryDocument = categoryDataFactory.document({
                 body: request,
               });

@@ -15,6 +15,12 @@ export const updateCalendarDayServiceFactory = (
   calendarDayDocumentConverter: ICalendarDayDocumentConverter,
 ): IUpdateCalendarDayService => {
   return async ({ body, day, expiresIn }) => {
+    const queried = await calendarDayService.findCalendarDayByDay(day).catch(httpErrors.calendarDay.getById({
+      day,
+    }));
+
+    httpErrors.calendarDay.isHoliday(queried);
+
     const update = calendarDayDocumentConverter.update(body, expiresIn);
 
     return calendarDayService.updateCalendarDay(day, update).catch(httpErrors.calendarDay.update({

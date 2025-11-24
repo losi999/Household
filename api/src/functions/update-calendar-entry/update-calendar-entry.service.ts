@@ -32,7 +32,12 @@ export const updateCalendarEntryServiceFactory = (
       calendarEntryId,
     });
 
-    httpErrors.calendarEntry.alreadyPaid(queried);
+    httpErrors.calendarEntry.entryTypeChanged({
+      calendarEntry: queried,
+      request: body,
+    });
+
+    httpErrors.calendarEntry.alreadyResolved(queried);
     
     let update: DocumentUpdate<Calendar.Entry.Document>;
     if (body.entryType === CalendarEntryType.Work) {
@@ -43,7 +48,7 @@ export const updateCalendarEntryServiceFactory = (
       httpErrors.customer.notFound({
         customer,
         customerId: body.customerId,
-      });
+      }, 400);
 
       const priceIds = body.prices?.reduce<Price.Id[]>((accumulator, currentValue) => {
         if (!isPriceBase(currentValue)) {

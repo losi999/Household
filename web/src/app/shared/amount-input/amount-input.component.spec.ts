@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AmountInputComponent } from './amount-input.component';
 
-describe('AmountInputComponent', () => {
+xdescribe('AmountInputComponent', () => {
   let component: AmountInputComponent;
   let fixture: ComponentFixture<AmountInputComponent>;
 

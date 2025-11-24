@@ -29,11 +29,11 @@ export const isInventoryCategory = (category: Category.Response): boolean => {
   return category?.categoryType === CategoryType.Inventory;
 };
 
-export const isPriceBase = (price: Customer.Job.Request['prices'][number] | Customer.Job.Document['prices'][number]): price is Price.
+export const isPriceBase = (price: (Customer.Job.Request | Customer.Job.Document)['prices'][number]): price is Price.
   Base => {
   return !!(price as Price.Base).name;
 };
 
-export const isListedPrice = (price: Customer.Job.Response['prices'][number]): price is Customer.Job.ListedPrice<Price.Response> => {
-  return !!(price as Customer.Job.ListedPrice<Price.Response>).priceId;
-};
+// export const isListedPrice = (price: Customer.Job.Response['prices'][number]): price is Customer.Job.ListedPrice<Price.Response> => {
+//   return !!(price as Customer.Job.ListedPrice<Price.Response>).priceId;
+// };

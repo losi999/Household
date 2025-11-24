@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/create-customer/create-customer.handler';
 import { ICreateCustomerService } from '@household/api/functions/create-customer/create-customer.service';
-import { customerDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { headerExpiresIn } from '@household/shared/constants';
 
 describe('Create customer handler', () => {
@@ -13,7 +13,7 @@ describe('Create customer handler', () => {
     handlerFunction = handler(mockCreateCustomerService);
   });
 
-  const body = customerDataFactory.request();
+  const body = testDataFactory.customer.request();
   const expiresIn = 3600;
   const handlerEvent = {
     body: JSON.stringify(body),
@@ -42,7 +42,7 @@ describe('Create customer handler', () => {
   });
 
   it('should respond with success', async () => {
-    const customerId = customerDataFactory.id();
+    const customerId = testDataFactory.customer.id();
 
     mockCreateCustomerService.mockResolvedValue(customerId);
 

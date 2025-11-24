@@ -7,9 +7,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { Price } from '@household/shared/types/types';
 import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
 import { MinutesToHourPipe } from '@household/web/app/shared/pipes/minutes-to-hour.pipe';
-import { selectPrices } from '@household/web/app/hairdressing/price/state/price.selector';
+import { selectPriceList } from '@household/web/app/hairdressing/price/state/price.selector';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs/internal/Observable';
+import { MatError } from '@angular/material/form-field';
 
 export type JobPriceCalculatorValue = PriceFormGroup['value'];
 
@@ -30,6 +31,7 @@ type PriceFormGroup = FormGroup<{
     ClearableInputComponent,
     ReactiveFormsModule,
     MinutesToHourPipe,
+    MatError,
   ],
   providers: [
     {
@@ -48,23 +50,30 @@ export class JobPriceCalculatorComponent implements OnInit, ControlValueAccessor
   form: FormArray<PriceFormGroup>;
   prices: Observable<Price.Response[]>;  
   total: number;
+
+  private _value: JobPriceCalculatorValue[];
+  get value(): JobPriceCalculatorValue[] {
+    return this._value;
+  }
   
   constructor(private store: Store) {}
 
   ngOnInit(): void {
-    this.prices = this.store.select(selectPrices);
+    this.prices = this.store.select(selectPriceList);
 
     this.form = new FormArray([], [Validators.required]);
 
     this.calculateTotal(this.form.value);
     
     this.form.valueChanges.subscribe((value) => {
+      this._value = value;
       this.calculateTotal(value);
       this.changed?.(value);
     });
   }
 
   writeValue(value: JobPriceCalculatorValue[]): void {
+    this._value = value;
     value.forEach(({ amount, name, price, quantity }) => {
       this.form.push(new FormGroup({
         price: new FormControl(price),

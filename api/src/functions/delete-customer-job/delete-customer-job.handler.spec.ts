@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/delete-customer-job/delete-customer-job.handler';
 import { IDeleteCustomerJobService } from '@household/api/functions/delete-customer-job/delete-customer-job.service';
-import { customerDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 describe('Delete customer job handler', () => {
   let mockDeleteCustomerJobService: MockBusinessService<IDeleteCustomerJobService>;
@@ -13,7 +13,7 @@ describe('Delete customer job handler', () => {
   });
 
   const jobName = 'job to delete';
-  const customerId = customerDataFactory.id();
+  const customerId = testDataFactory.customer.id();
   const handlerEvent = {
     pathParameters: {
       jobName,

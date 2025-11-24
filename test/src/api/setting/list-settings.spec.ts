@@ -3,12 +3,13 @@ import { Setting } from '@household/shared/types/types';
 import { settingDataFactory } from './data-factory';
 import { forbidUsers } from '@household/test/api/utils';
 import { entries } from '@household/shared/common/utils';
+import { SettingKey } from '@household/shared/enums';
 
 const permissionMap = forbidUsers();
 
 describe('GET /setting/v1/settings', () => {
-  let settingKey1: Setting.Id;
-  let settingKey2: Setting.Id;
+  let settingKey1: SettingKey;
+  let settingKey2: SettingKey;
   let settingRequest2: Setting.Request;
   let settingRequest1: Setting.Request;
 

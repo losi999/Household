@@ -1,13 +1,24 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
 import { Customer } from '@household/shared/types/types';
+import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
 
 export type CustomerDialogData = Customer.Response;
 export type CustomerDialogResult = Customer.Request;
 
 @Component({
-  standalone: false,  
+  imports: [
+    ReactiveFormsModule,
+    MatCheckboxModule,
+    ClearableInputComponent,
+    MatIconModule,
+    MatButtonModule,
+    MatDialogModule,
+  ],
   templateUrl: './customer-dialog.component.html',
   styleUrl: './customer-dialog.component.scss',
 })

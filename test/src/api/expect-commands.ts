@@ -87,6 +87,11 @@ const expectWrongEnumValue = (body: any, propertyName: string, requestPart: stri
   return body;
 };
 
+const expectNotConstantValue = (body: any, propertyName: string, requestPart: string) => {
+  expect(body[requestPart]).to.contain(propertyName).to.contain('must be equal to constant');
+  return body;
+};
+
 const expectTooShortProperty = (body: any, propertyName: string, minLength: number, requestPart: string) => {
   expect(body[requestPart]).to.contain(propertyName).to.contain('fewer').to.contain(minLength);
   return body;
@@ -107,13 +112,18 @@ const expectTooLargeNumberProperty = (body: any, propertyName: string, maximum: 
   return body;
 };
 
-const expectTooEarlyDateProperty = (body: any, propertyName: string, requestPart: string) => {
-  expect(body[requestPart]).to.contain(propertyName).to.contain('>');
+const expectTooEarlyDateProperty = (body: any, propertyName: string, isExclusive: boolean, requestPart: string) => {
+  expect(body[requestPart]).to.contain(propertyName).to.contain(isExclusive ? '>' : '>=');
   return body;
 };
 
 const expectTooFewItemsProperty = (body: any, propertyName: string, minItems: number, requestPart: string) => {
   expect(body[requestPart]).to.contain(propertyName).to.contain('fewer').to.contain(minItems);
+  return body;
+};
+
+const expectTooManyItemsProperty = (body: any, propertyName: string, maxItems: number, requestPart: string) => {
+  expect(body[requestPart]).to.contain(propertyName).to.contain('more').to.contain(maxItems);
   return body;
 };
 
@@ -136,12 +146,14 @@ export const setExpectCommands = () => {
     expectWrongPropertyFormat,
     expectWrongPropertyPattern,
     expectWrongEnumValue,
+    expectNotConstantValue,
     expectTooShortProperty,
     expectTooLongProperty,
     expectTooSmallNumberProperty,
     expectTooLargeNumberProperty,
     expectTooEarlyDateProperty,
     expectTooFewItemsProperty,
+    expectTooManyItemsProperty,
     expectMessage,
   });
 };
@@ -167,12 +179,14 @@ declare global {
       expectWrongPropertyFormat: CommandFunctionWithPreviousSubject<typeof expectWrongPropertyFormat>;
       expectWrongPropertyPattern: CommandFunctionWithPreviousSubject<typeof expectWrongPropertyPattern>;
       expectWrongEnumValue: CommandFunctionWithPreviousSubject<typeof expectWrongEnumValue>;
+      expectNotConstantValue: CommandFunctionWithPreviousSubject<typeof expectNotConstantValue>;
       expectTooShortProperty: CommandFunctionWithPreviousSubject<typeof expectTooShortProperty>;
       expectTooLongProperty: CommandFunctionWithPreviousSubject<typeof expectTooLongProperty>;
       expectTooSmallNumberProperty: CommandFunctionWithPreviousSubject<typeof expectTooSmallNumberProperty>;
       expectTooLargeNumberProperty: CommandFunctionWithPreviousSubject<typeof expectTooLargeNumberProperty>;
       expectTooEarlyDateProperty: CommandFunctionWithPreviousSubject<typeof expectTooEarlyDateProperty>;
       expectTooFewItemsProperty: CommandFunctionWithPreviousSubject<typeof expectTooFewItemsProperty>;
+      expectTooManyItemsProperty: CommandFunctionWithPreviousSubject<typeof expectTooManyItemsProperty>;
       expectMessage: CommandFunctionWithPreviousSubject<typeof expectMessage>;
     }
   }

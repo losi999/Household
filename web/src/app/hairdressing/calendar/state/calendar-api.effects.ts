@@ -16,22 +16,17 @@ export class CalendarApiEffects {
   listCalendarDays = createEffect(() => {
     return this.actions.pipe(
       ofType(calendarApiActions.listCalendarDaysInitiated),
-      mergeMap(({ dateFrom, dateTo }) => {
-        return this.calendarService.listCalendarDays({
-          dateFrom,
-          dateTo,
-        }).pipe(
-          map((entries) => calendarApiActions.listCalendarDaysCompleted({
-            entries,
-            dateFrom,
-            dateTo,
-          })),
-          catchError(() => {
-            return of(progressActions.processFinished(),
-              notificationActions.showMessage({
-                message: 'Hiba történt',
-              }),
-            );
+      mergeMap(({ dateFrom, dateTo }) => this.calendarService.listCalendarDays({
+        dateFrom,
+        dateTo,
+      })),
+      map((days) => calendarApiActions.listCalendarDaysCompleted({
+        days,
+      })),
+      catchError(() => {
+        return of(progressActions.processFinished(),
+          notificationActions.showMessage({
+            message: 'Hiba történt',
           }),
         );
       }),
@@ -89,14 +84,12 @@ export class CalendarApiEffects {
             { calendarEntryId },
             customer,
           ]) => {
-
             return calendarApiActions.createCalendarEntryCompleted({
               calendarEntryId,
               ...request,
               customer,
             });
           }),
-            
           catchError(() => {
             return of(progressActions.processFinished(),
               notificationActions.showMessage({
@@ -155,15 +148,16 @@ export class CalendarApiEffects {
     );
   });
   
-  payCalendarWorkEntry = createEffect(() => {
+  resolveCalendarWorkEntry = createEffect(() => {
     return this.actions.pipe(
-      ofType(calendarApiActions.payCalendarWorkEntryInitiated),
+      ofType(calendarApiActions.resolveCalendarWorkEntryInitiated),
       mergeMap(({ type, calendarEntryId, day, ...request }) => {
-        return this.calendarService.payCalendarWorkEntry(calendarEntryId, request).pipe(
+        return this.calendarService.resolveCalendarWorkEntry(calendarEntryId, request).pipe(
           map(() => 
-            calendarApiActions.payCalendarWorkEntryCompleted({
+            calendarApiActions.resolveCalendarWorkEntryCompleted({
               calendarEntryId,
               day,
+              ...request,
             }),
           ),
           catchError(() => {

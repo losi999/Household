@@ -38,7 +38,7 @@
       <div [style.grid-column]="1">
         {{d | date: 'EEEE'}}
       </div>
-      @let dayResponse = (week | async).days[(d | date: 'YYYY-MM-dd')];
+      @let dayResponse = (week | async).days[(d | date: 'yyyy-MM-dd')];
       @if (dayResponse && dayResponse.dayType !== 'holiday') {
       <button mat-icon-button type="button" (click)="onSetWorkDay(dayResponse)"><mat-icon>settings</mat-icon></button>
       }

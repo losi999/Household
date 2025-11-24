@@ -1,6 +1,7 @@
 import { deleteCalendarEntryServiceFactory, IDeleteCalendarEntryService } from '@household/api/functions/delete-calendar-entry/delete-calendar-entry.service';
-import { calendarEntryDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { CalendarEntryResolutionStatus } from '@household/shared/enums';
 import { ICalendarEntryService } from '@household/shared/services/calendar-entry-service';
 
 describe('Delete calendar entry service', () => {
@@ -12,8 +13,8 @@ describe('Delete calendar entry service', () => {
     service = deleteCalendarEntryServiceFactory(mockCalendarEntryService.service);
   });
 
-  const calendarEntryId = calendarEntryDataFactory.id();
-  const queriedCalendarEntry = calendarEntryDataFactory.document();
+  const calendarEntryId = testDataFactory.calendar.entry.id();
+  const queriedCalendarEntry = testDataFactory.calendar.entry.document();
 
   it('should return if document is deleted', async () => {
     mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarEntry);
@@ -38,15 +39,18 @@ describe('Delete calendar entry service', () => {
       expect.assertions(4);
     });
 
-    it('if calendar entry is already paid', async () => {
+    it('if calendar entry is already resolved', async () => {
       mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue({
         ...queriedCalendarEntry,
-        isPaid: true,
+        resolution: {
+          status: CalendarEntryResolutionStatus.Paid,
+          delay: undefined,
+        },
       });
 
       await service({
         calendarEntryId,
-      }).catch(validateError('Calendar entry is already paid', 400));
+      }).catch(validateError('Calendar entry is already resolved', 400));
       validateFunctionCall(mockCalendarEntryService.functions.findCalendarEntryById, calendarEntryId);
       validateFunctionCall(mockCalendarEntryService.functions.deleteCalendarEntry);
       expect.assertions(4);

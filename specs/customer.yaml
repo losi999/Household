@@ -128,16 +128,11 @@ components:
         - type: object
           required:
             - blacklistedCustomers
-            - workEntries
           properties:
             blacklistedCustomers:
               type: array
               items:
                 $ref: "#/components/schemas/Response.Base"
-            workEntries:
-              type: array
-              items:
-                $ref: "calendar.yaml#/components/schemas/Entry.ResponseBase"
 
     Request:
       allOf:
