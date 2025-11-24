@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 import { MatDividerModule } from '@angular/material/divider';
 import { Customer } from '@household/shared/types/types';
 import { MinutesToHourPipe } from '@household/web/app/shared/pipes/minutes-to-hour.pipe';
@@ -14,13 +14,12 @@ import { MinutesToHourPipe } from '@household/web/app/shared/pipes/minutes-to-ho
   templateUrl: './job-price-summary.component.html',
   styleUrl: './job-price-summary.component.scss',
 })
-export class JobPriceSummaryComponent implements OnInit {
-  @Input() prices: Customer.Job.Response['prices'];
-  total: number;
+export class JobPriceSummaryComponent {
+  prices = input<Customer.Job.Response['prices']>();
   
-  ngOnInit(): void {
-    this.total = this.prices.reduce((accumulator, currentValue) => {
+  total = computed<number>(() => {
+    return this.prices().reduce((accumulator, currentValue) => {
       return accumulator + currentValue.amount * (currentValue.priceId ? currentValue.quantity : 1);
     }, 0);
-  }
+  });
 }

@@ -1,7 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -17,7 +16,6 @@ import { Store } from '@ngrx/store';
     JobPriceSummaryComponent,
     RouterLink,
     MatCardModule,
-    MatDividerModule,
     MatMenuModule,
     MatIconModule,
     MatButtonModule,

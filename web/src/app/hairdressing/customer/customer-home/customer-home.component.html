@@ -6,4 +6,4 @@
 <div class="search mat-app-background">
   <household-clearable-input label="Keresés" [formControl]="search" />
 </div>
-<household-customer-list [customers]="customers | async | autocompleteFilter: 'name' : search.value" />
+<household-customer-list [customers]="filteredCustomers()" />
