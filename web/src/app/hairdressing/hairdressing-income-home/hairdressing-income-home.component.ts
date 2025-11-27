@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { FormControl } from '@angular/forms';
-import { MatDatepicker } from '@angular/material/datepicker';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { MatDatepicker, MatDatepickerModule } from '@angular/material/datepicker';
 import { MatDateFormats, MAT_DATE_FORMATS, DateAdapter } from '@angular/material/core';
 import { MomentDateAdapter } from '@angular/material-moment-adapter';
 import 'moment/locale/hu';
@@ -14,6 +14,13 @@ import { accountApiActions } from '@household/web/state/account/account.actions'
 import { selectIncomeByMonth } from '@household/web/state/hairdressing/hairdressing.selector';
 import { selectHairdressingIncomeAccount } from '@household/web/state/setting/setting.selector';
 import { takeFirstDefined } from '@household/web/operators/take-first-defined';
+import { ToolbarComponent } from '@household/web/app/shared/toolbar/toolbar.component';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { HairdressingIncomeListComponent } from '@household/web/app/hairdressing/hairdressing-income-list/hairdressing-income-list.component';
+import { AsyncPipe } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatInputModule } from '@angular/material/input';
 
 const CUSTOM_DATE_FORMATS: MatDateFormats = {
   parse: {
@@ -29,7 +36,17 @@ const CUSTOM_DATE_FORMATS: MatDateFormats = {
 
 @Component({
   selector: 'household-hairdressing-income-home',
-  standalone: false,
+  imports: [
+    ToolbarComponent,
+    MatButtonModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatDatepickerModule,
+    HairdressingIncomeListComponent,
+    AsyncPipe,
+    ReactiveFormsModule,
+  ],
   templateUrl: './hairdressing-income-home.component.html',
   styleUrl: './hairdressing-income-home.component.scss',
   providers: [

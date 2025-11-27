@@ -1,7 +1,29 @@
+import { AsyncPipe, DatePipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Account, Transaction } from '@household/shared/types/types';
+import { AmountInputComponent } from '@household/web/app/shared/amount-input/amount-input.component';
+import { AccountAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/account-autocomplete-input/account-autocomplete-input.component';
+import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
+import { DatetimeInputComponent } from '@household/web/app/shared/datetime-input/datetime-input.component';
+import { OrderByPipe } from '@household/web/app/shared/pipes/order-by.pipe';
+import { ToolbarComponent } from '@household/web/app/shared/toolbar/toolbar.component';
+import { DeferredTransactionFilterPipe } from '@household/web/app/transaction/deferred-transaction-filter.pipe';
+import { TransactionDetailsCategoryComponent } from '@household/web/app/transaction/transaction-details-category/transaction-details-category.component';
+import { TransactionDetailsDescriptionComponent } from '@household/web/app/transaction/transaction-details-description/transaction-details-description.component';
+import { TransactionDetailsInventoryComponent } from '@household/web/app/transaction/transaction-details-inventory/transaction-details-inventory.component';
+import { TransactionDetailsInvoiceComponent } from '@household/web/app/transaction/transaction-details-invoice/transaction-details-invoice.component';
+import { TransactionDetailsLoanComponent } from '@household/web/app/transaction/transaction-details-loan/transaction-details-loan.component';
+import { TransactionDetailsProjectComponent } from '@household/web/app/transaction/transaction-details-project/transaction-details-project.component';
+import { TransactionDetailsRecipientComponent } from '@household/web/app/transaction/transaction-details-recipient/transaction-details-recipient.component';
 import { takeFirstDefined } from '@household/web/operators/take-first-defined';
 import { toTransferResponse } from '@household/web/operators/to-transfer-response';
 import { accountApiActions } from '@household/web/state/account/account.actions';
@@ -15,7 +37,33 @@ import { combineLatest, filter, map } from 'rxjs';
   selector: 'household-transaction-transfer-edit',
   templateUrl: './transaction-transfer-edit.component.html',
   styleUrl: './transaction-transfer-edit.component.scss',
-  standalone: false,
+  imports: [
+    ToolbarComponent,
+    MatButtonModule,
+    MatIconModule,
+    MatMenuModule,
+    RouterLink,
+    ReactiveFormsModule,
+    DatetimeInputComponent,
+    AmountInputComponent,
+    AccountAutocompleteInputComponent,
+    MatSlideToggleModule,
+    MatFormFieldModule,
+    MatDatepickerModule,
+    ClearableInputComponent,
+    MatExpansionModule,
+    OrderByPipe,
+    AsyncPipe,
+    DatePipe,
+    DeferredTransactionFilterPipe,
+    TransactionDetailsLoanComponent,
+    TransactionDetailsRecipientComponent,
+    TransactionDetailsCategoryComponent,
+    TransactionDetailsInventoryComponent,
+    TransactionDetailsInvoiceComponent,
+    TransactionDetailsProjectComponent,
+    TransactionDetailsDescriptionComponent,
+  ],
 })
 export class TransactionTransferEditComponent implements OnInit {
   isDownwardTransfer = true;

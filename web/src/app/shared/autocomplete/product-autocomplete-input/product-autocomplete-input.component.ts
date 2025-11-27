@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { Component, Injector, Input, OnInit, Self } from '@angular/core';
 import { ControlValueAccessor, FormControl, FormControlDirective, FormControlName, FormGroupDirective, NgControl, ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
@@ -16,7 +16,7 @@ import { Store } from '@ngrx/store';
 @Component({
   selector: 'household-product-autocomplete-input',
   imports: [
-    CommonModule,
+    AsyncPipe,
     ReactiveFormsModule,
     MatFormFieldModule,
     MatButtonModule,

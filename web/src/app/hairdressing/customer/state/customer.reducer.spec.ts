@@ -166,10 +166,10 @@ describe('Customer reducer', () => {
                 description: request.description,
                 duration: request.duration,
                 prices: [
-                  jasmine.objectContaining({
+                  expect.objectContaining({
                     name: customPriceName,
                   }),
-                  jasmine.objectContaining(listedPrice),
+                  expect.objectContaining(listedPrice),
                 ],
               },
               existingJob,
@@ -244,10 +244,10 @@ describe('Customer reducer', () => {
                 description: request.description,
                 duration: request.duration,
                 prices: [
-                  jasmine.objectContaining({
+                  expect.objectContaining({
                     name: customPriceName,
                   }),
-                  jasmine.objectContaining(priceResponse),
+                  expect.objectContaining(priceResponse),
                 ],
               },
               existingJob,

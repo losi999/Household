@@ -1,16 +1,20 @@
 <div [formGroup]="form">
   <mat-form-field>
     <mat-label>Tranzakció dátuma</mat-label>
-    <input matInput [matDatepicker]="datePicker" formControlName="date" (blur)="touched?.()">
+    <input matInput [matDatepicker]="datePicker" formControlName="date" (blur)="touched?.()" />
     <mat-datepicker-toggle matPrefix [for]="datePicker" tabindex="-1"></mat-datepicker-toggle>
     <mat-datepicker #datePicker></mat-datepicker>
-    <mat-error *ngIf="form.controls.date.errors?.required">Kötelező</mat-error>
+    @if (form.controls.date.errors?.required) {
+      <mat-error>Kötelező</mat-error>
+    }
   </mat-form-field>
   <mat-form-field>
     <mat-label>Idő</mat-label>
-    <input matInput [matTimepicker]="timePicker" formControlName="time">
+    <input matInput [matTimepicker]="timePicker" formControlName="time" />
     <mat-timepicker-toggle matIconSuffix [for]="timePicker" tabindex="-1" />
     <mat-timepicker #timePicker />
-    <mat-error *ngIf="form.controls.time.errors?.required">Kötelező</mat-error>
+    @if (form.controls.time.errors?.required) {
+      <mat-error>Kötelező</mat-error>
+    }
   </mat-form-field>
 </div>

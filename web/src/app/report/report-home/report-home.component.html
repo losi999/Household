@@ -1,6 +1,4 @@
-<ng-template #showAll>
-  Nincs szűkítve
-</ng-template>
+<ng-template #showAll> Nincs szűkítve </ng-template>
 
 <household-toolbar title="Jelentések">
   <button mat-icon-button type="button" (click)="onSubmit()" [disabled]="form.invalid">
@@ -10,66 +8,79 @@
     <mat-icon>save</mat-icon>
   </button>
 </household-toolbar>
-<div style="padding:24px" [formGroup]="form">
+<div style="padding: 24px" [formGroup]="form">
   <mat-accordion>
     <mat-expansion-panel expanded="true">
       <mat-expansion-panel-header>
-        <mat-panel-title>
-          Dátum
-        </mat-panel-title>
+        <mat-panel-title> Dátum </mat-panel-title>
         <mat-panel-description>
-          <ng-container *ngIf="form.value.issuedAt.length > 0">
-            {{form.value.issuedAt.length}} kiválasztott időszak
-          </ng-container>
+          @if (form.value.issuedAt.length > 0) {
+            {{ form.value.issuedAt.length }} kiválasztott időszak
+          }
         </mat-panel-description>
       </mat-expansion-panel-header>
-      <mat-list *ngIf="form.value.issuedAt">
-        <mat-list-item *ngFor="let range of form.value.issuedAt; index as i">
-          <button mat-icon-button (click)="deleteIssuedAtRange(i)">
-            <mat-icon>close</mat-icon>
-          </button>
-          {{displayRange(range)}}
-        </mat-list-item>
-      </mat-list>
+      @if (form.value.issuedAt) {
+        <mat-list>
+          @for (range of form.value.issuedAt; let i = $index; track $index) {
+            <mat-list-item>
+              <button mat-icon-button (click)="deleteIssuedAtRange(i)">
+                <mat-icon>close</mat-icon>
+              </button>
+              {{ displayRange(range) }}
+            </mat-list-item>
+          }
+        </mat-list>
+      }
       <household-report-date-range-filter (rangeAdded)="issuedAtRangeAdded($event)"></household-report-date-range-filter>
     </mat-expansion-panel>
     <mat-expansion-panel>
       <mat-expansion-panel-header>
-        <mat-panel-title>
-          Számlák
-        </mat-panel-title>
+        <mat-panel-title> Számlák </mat-panel-title>
         <mat-panel-description>
-          <ng-container *ngIf="form.value.accounts; else showAll">
-            {{form.value.accounts.items.length}} száml{{form.value.accounts.include ? 'ára szűkítve' : 'a kizárva'}}
-          </ng-container>
+          @if (form.value.accounts) {
+            {{ form.value.accounts.items.length }} száml{{ form.value.accounts.include ? "ára szűkítve" : "a kizárva" }}
+          } @else {
+            <ng-comptainer *ngTemplateOutlet="showAll" />
+          }
         </mat-panel-description>
       </mat-expansion-panel-header>
-      <household-report-catalog-item-filter formControlName="accounts" [items]="accounts | async" displayPropertyName="fullName" keyPropertyName="accountId" filterType="account">
+      <household-report-catalog-item-filter
+        formControlName="accounts"
+        [items]="accounts | async"
+        displayPropertyName="fullName"
+        keyPropertyName="accountId"
+        filterType="account"
+      >
       </household-report-catalog-item-filter>
     </mat-expansion-panel>
     <mat-expansion-panel>
       <mat-expansion-panel-header>
-        <mat-panel-title>
-          Projektek
-        </mat-panel-title>
+        <mat-panel-title> Projektek </mat-panel-title>
         <mat-panel-description>
-          <ng-container *ngIf="form.value.projects; else showAll">
-            {{form.value.projects.items.length}} projekt{{form.value.projects.include ? 're szűkítve' : ' kizárva'}}
-          </ng-container>
+          @if (form.value.projects) {
+            {{ form.value.projects.items.length }} projekt{{ form.value.projects.include ? "re szűkítve" : " kizárva" }}
+          } @else {
+            <ng-comptainer *ngTemplateOutlet="showAll" />
+          }
         </mat-panel-description>
       </mat-expansion-panel-header>
-      <household-report-catalog-item-filter formControlName="projects" [items]="projects | async" displayPropertyName="name" keyPropertyName="projectId">
+      <household-report-catalog-item-filter
+        formControlName="projects"
+        [items]="projects | async"
+        displayPropertyName="name"
+        keyPropertyName="projectId"
+      >
       </household-report-catalog-item-filter>
     </mat-expansion-panel>
     <mat-expansion-panel>
       <mat-expansion-panel-header>
-        <mat-panel-title>
-          Partnerek
-        </mat-panel-title>
+        <mat-panel-title> Partnerek </mat-panel-title>
         <mat-panel-description>
-          <ng-container *ngIf="form.value.recipients; else showAll">
-            {{form.value.recipients.items.length}} partner{{form.value.recipients.include ? 're szűkítve' : ' kizárva'}}
-          </ng-container>
+          @if (form.value.recipients) {
+            {{ form.value.recipients.items.length }} partner{{ form.value.recipients.include ? "re szűkítve" : " kizárva" }}
+          } @else {
+            <ng-comptainer *ngTemplateOutlet="showAll" />
+          }
         </mat-panel-description>
       </mat-expansion-panel-header>
       <household-report-catalog-item-filter formControlName="recipients" [items]="recipients | async">
@@ -77,13 +88,13 @@
     </mat-expansion-panel>
     <mat-expansion-panel>
       <mat-expansion-panel-header>
-        <mat-panel-title>
-          Kategóriák
-        </mat-panel-title>
+        <mat-panel-title> Kategóriák </mat-panel-title>
         <mat-panel-description>
-          <ng-container *ngIf="form.value.categories; else showAll">
-            {{form.value.categories.items.length}} kategóri{{form.value.categories.include ? 'ára szűkítve' : 'a kizárva'}}
-          </ng-container>
+          @if (form.value.categories) {
+            {{ form.value.categories.items.length }} kategóri{{ form.value.categories.include ? "ára szűkítve" : "a kizárva" }}
+          } @else {
+            <ng-comptainer *ngTemplateOutlet="showAll" />
+          }
         </mat-panel-description>
       </mat-expansion-panel-header>
       <household-report-catalog-item-filter formControlName="categories" [items]="categories | async">
@@ -91,26 +102,34 @@
     </mat-expansion-panel>
     <mat-expansion-panel>
       <mat-expansion-panel-header>
-        <mat-panel-title>
-          Termékek
-        </mat-panel-title>
+        <mat-panel-title> Termékek </mat-panel-title>
         <mat-panel-description>
-          <ng-container *ngIf="form.value.products; else showAll">
-            {{form.value.products.items.length}} termék{{form.value.products.include ? 're szűkítve' : ' kizárva'}}
-          </ng-container>
+          @if (form.value.products) {
+            {{ form.value.products.items.length }} termék{{ form.value.products.include ? "re szűkítve" : " kizárva" }}
+          } @else {
+            <ng-comptainer *ngTemplateOutlet="showAll" />
+          }
         </mat-panel-description>
       </mat-expansion-panel-header>
-      <household-report-catalog-item-filter formControlName="products" [items]="products | async" displayPropertyName="value" keyPropertyName="key" parentPropertyName="parent">
+      <household-report-catalog-item-filter
+        formControlName="products"
+        [items]="products | async"
+        displayPropertyName="value"
+        keyPropertyName="key"
+        parentPropertyName="parent"
+      >
       </household-report-catalog-item-filter>
     </mat-expansion-panel>
     <mat-expansion-panel expandedHeight="30px" collapsedHeight="300px">
       <mat-expansion-panel-header>
-        <mat-panel-title>
-          Csoportosítás
-        </mat-panel-title>
+        <mat-panel-title> Csoportosítás </mat-panel-title>
       </mat-expansion-panel-header>
       <mat-chip-set cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="dropGroup($event)">
-        <mat-chip-option *ngFor="let group of groupCriterias" [selected]="group.isSelected" color="primary" (click)="clickGroup(group)" cdkDrag>{{group.value}}</mat-chip-option>
+        @for (group of groupCriterias; track $index) {
+          <mat-chip-option [selected]="group.isSelected" color="primary" (click)="clickGroup(group)" cdkDrag>{{
+            group.value
+          }}</mat-chip-option>
+        }
       </mat-chip-set>
     </mat-expansion-panel>
   </mat-accordion>

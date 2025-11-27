@@ -4,7 +4,6 @@ import { CalendarWeek } from '@household/web/app/hairdressing/calendar/calendar-
 
 @Pipe({
   name: 'calendarTimeColumn',
-  standalone: false,
 })
 export class CalendarTimeColumnPipe implements PipeTransform {
 

@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { RecipientAutocompleteInputComponent } from './recipient-autocomplete-input.component';
 
-xdescribe('RecipientAutocompleteInputComponent', () => {
+describe.skip('RecipientAutocompleteInputComponent', () => {
   let component: RecipientAutocompleteInputComponent;
   let fixture: ComponentFixture<RecipientAutocompleteInputComponent>;
 

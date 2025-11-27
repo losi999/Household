@@ -1,2 +1,3 @@
-<household-account-transactions-list-item *ngFor="let transaction of transactions" [transaction]="transaction">
-</household-account-transactions-list-item>
+@for (transaction of transactions; track $index) {
+  <household-account-transactions-list-item [transaction]="transaction" />
+}

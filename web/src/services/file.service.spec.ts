@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { FileService } from './file.service';
 
-xdescribe('FileService', () => {
+describe.skip('FileService', () => {
   let service: FileService;
 
   beforeEach(() => {

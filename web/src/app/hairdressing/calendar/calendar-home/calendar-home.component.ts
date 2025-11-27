@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { addDays, dateToISODateString } from '@household/shared/common/utils';
 import { CalendarEntryType } from '@household/shared/enums';
 import { Calendar, Customer } from '@household/shared/types/types';
@@ -14,6 +14,16 @@ import { CustomerJob } from '@household/web/types/common';
 import { Store } from '@ngrx/store';
 import { mergeMap, Observable, of } from 'rxjs';
 import { navigationActions } from '@household/web/state/navigation/navigation.actions';
+import { ToolbarComponent } from '@household/web/app/shared/toolbar/toolbar.component';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
+import { AsyncPipe, DatePipe, KeyValuePipe } from '@angular/common';
+import { TimeSlotToTimePipe } from '@household/web/app/shared/pipes/time-slot-to-time.pipe';
+import { DaysOfWeekPipe } from '@household/web/app/hairdressing/calendar/pipes/days-of-week.pipe';
+import { CalendarTimeColumnPipe } from '@household/web/app/hairdressing/calendar/pipes/calendar-time-column.pipe';
+import { CalendarGridRowsPipe } from '@household/web/app/hairdressing/calendar/pipes/calendar-grid-rows.pipe';
+import { CalendarVerticalDayComponent } from '@household/web/app/hairdressing/calendar/calendar-vertical-day/calendar-vertical-day.component';
 
 export type CalendarWeek = {
   start: number;
@@ -25,7 +35,21 @@ export type CalendarWeek = {
 
 @Component({
   selector: 'household-calendar-home',
-  standalone: false,  
+  imports: [
+    ToolbarComponent,
+    MatButtonModule,
+    MatIconModule,
+    MatMenuModule,
+    AsyncPipe,
+    TimeSlotToTimePipe,
+    DaysOfWeekPipe,
+    RouterLink,
+    DatePipe,
+    CalendarTimeColumnPipe,
+    CalendarGridRowsPipe,
+    KeyValuePipe,
+    CalendarVerticalDayComponent,
+  ],  
   templateUrl: './calendar-home.component.html',
   styleUrl: './calendar-home.component.scss',
 })

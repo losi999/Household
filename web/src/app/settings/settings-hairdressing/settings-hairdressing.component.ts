@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { SettingKey } from '@household/shared/enums';
 import { Account, Category } from '@household/shared/types/types';
+import { AccountAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/account-autocomplete-input/account-autocomplete-input.component';
+import { CategoryAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/category-autocomplete-input/category-autocomplete-input.component';
 import { takeFirstDefined } from '@household/web/operators/take-first-defined';
 import { accountApiActions } from '@household/web/state/account/account.actions';
 import { categoryApiActions } from '@household/web/state/category/category.actions';
@@ -11,7 +13,11 @@ import { Store } from '@ngrx/store';
 
 @Component({
   selector: 'household-settings-hairdressing',
-  standalone: false,
+  imports: [
+    AccountAutocompleteInputComponent,
+    CategoryAutocompleteInputComponent,
+    ReactiveFormsModule,
+  ],
   templateUrl: './settings-hairdressing.component.html',
   styleUrl: './settings-hairdressing.component.scss',
 })

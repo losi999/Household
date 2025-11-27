@@ -1,7 +1,9 @@
 <div [formGroup]="form">
   <h1 mat-dialog-title>{{data.product ? 'Szerkesztés' : 'Új'}}</h1>
   <div mat-dialog-content>
-    <household-category-autocomplete-input *ngIf="!data.product && !data.categoryId" type="inventory" label="Kategória" formControlName="category" hideNewButton="true" />
+    @if (!data.product && !data.categoryId) {
+    <household-category-autocomplete-input type="inventory" label="Kategória" formControlName="category" hideNewButton="true" />
+    }
     <household-clearable-input label="Márka" formControlName="brand">
     </household-clearable-input>
     <household-clearable-input label="Kiszerelés" formControlName="measurement" type="number">
@@ -9,9 +11,11 @@
     <mat-form-field appearance="fill">
       <mat-label>Mértékegység</mat-label>
       <mat-select name="unitOfMeasurement" formControlName="unitOfMeasurement">
-        <mat-option *ngFor="let u of unitsOfMeasurement" [value]="u">
+        @for (u of unitsOfMeasurement;track $index) {
+        <mat-option [value]="u">
           {{u}}
         </mat-option>
+        }
       </mat-select>
     </mat-form-field>
   </div>

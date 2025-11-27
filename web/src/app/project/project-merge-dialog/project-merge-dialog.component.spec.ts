@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ProjectMergeDialogComponent } from './project-merge-dialog.component';
 
-xdescribe('ProjectMergeDialogComponent', () => {
+describe.skip('ProjectMergeDialogComponent', () => {
   let component: ProjectMergeDialogComponent;
   let fixture: ComponentFixture<ProjectMergeDialogComponent>;
 

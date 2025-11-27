@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ImportTransactionsDuplicateListItemComponent } from './import-transactions-duplicate-list-item.component';
 
-xdescribe('ImportTransactionsDuplicateListItemComponent', () => {
+describe.skip('ImportTransactionsDuplicateListItemComponent', () => {
   let component: ImportTransactionsDuplicateListItemComponent;
   let fixture: ComponentFixture<ImportTransactionsDuplicateListItemComponent>;
 

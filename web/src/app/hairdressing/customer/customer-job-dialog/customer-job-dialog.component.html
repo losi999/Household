@@ -1,9 +1,11 @@
-<h1 mat-dialog-title>{{data.job ? 'Szerkesztés' : 'Új'}}</h1>
+<h1 mat-dialog-title>{{ data.job ? "Szerkesztés" : "Új" }}</h1>
 <div mat-dialog-content>
   <form [formGroup]="form" (ngSubmit)="onSave()" id="customer-job-form">
     <household-clearable-input data-testId="name" formControlName="name" label="Munka neve" />
     <household-clearable-input data-testId="description" formControlName="description" type="area" label="Megjegyzés" />
-    <household-duration-stepper formControlName="duration" />
+    <field formControlName="duration">
+      <household-duration-stepper />
+    </field>
     <household-job-price-calculator formControlName="prices" />
   </form>
 </div>

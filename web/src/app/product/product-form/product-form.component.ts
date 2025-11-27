@@ -1,11 +1,16 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { unitsOfMeasurement } from '@household/shared/constants';
 import { Category, Product } from '@household/shared/types/types';
 import { Store } from '@ngrx/store';
 import { selectInventoryCategories } from '@household/web/state/category/category.selector';
 import { productApiActions } from '@household/web/state/product/product.actions';
+import { CategoryAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/category-autocomplete-input/category-autocomplete-input.component';
+import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatButtonModule } from '@angular/material/button';
 
 export type ProductFormData = {
   product: Product.Response;
@@ -16,7 +21,15 @@ export type ProductFormData = {
   selector: 'household-product-form',
   templateUrl: './product-form.component.html',
   styleUrls: ['./product-form.component.scss'],
-  standalone: false,
+  imports: [
+    ReactiveFormsModule,
+    MatDialogModule,
+    CategoryAutocompleteInputComponent,
+    ClearableInputComponent,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatButtonModule,
+  ],
 })
 export class ProductFormComponent implements OnInit {
   form: FormGroup<{

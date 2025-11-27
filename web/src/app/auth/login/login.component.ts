@@ -1,5 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { ToolbarComponent } from '@household/web/app/shared/toolbar/toolbar.component';
 import { authActions } from '@household/web/state/auth/auth.actions';
 import { Store } from '@ngrx/store';
 
@@ -7,7 +11,13 @@ import { Store } from '@ngrx/store';
   selector: 'household-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
-  standalone: false,
+  imports: [
+    ToolbarComponent,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+  ],
 })
 export class LoginComponent implements OnInit {
   form: FormGroup<{

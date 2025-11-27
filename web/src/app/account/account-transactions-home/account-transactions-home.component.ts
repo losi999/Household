@@ -1,17 +1,33 @@
 import { Component, HostListener, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Account } from '@household/shared/types/types';
 import { skip } from 'rxjs/operators';
 import { Store } from '@ngrx/store';
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
 import { transactionsPageSize } from '@household/web/constants';
 import { selectTransactionList } from '@household/web/state/transaction/transaction.selector';
+import { ToolbarComponent } from '@household/web/app/shared/toolbar/toolbar.component';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
+import { AccountTransactionsListComponent } from '@household/web/app/account/account-transactions-list/account-transactions-list.component';
+import { AsyncPipe } from '@angular/common';
+import { IsEditorDirective } from '@household/web/app/shared/directives/is-editor.directive';
 
 @Component({
   selector: 'household-account-transactions-home',
   templateUrl: './account-transactions-home.component.html',
   styleUrls: ['./account-transactions-home.component.scss'],
-  standalone: false,
+  imports: [
+    ToolbarComponent,
+    MatButtonModule,
+    MatIconModule,
+    MatMenuModule,
+    RouterLink,
+    AccountTransactionsListComponent,
+    AsyncPipe,
+    IsEditorDirective,
+  ],
 })
 export class AccountTransactionsHomeComponent implements OnInit {
   accountId: Account.Id;

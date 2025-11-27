@@ -1,2 +1,6 @@
-<household-transaction-details-row *ngIf="transaction?.product" icon="barcode" [text]="transaction.product.fullName" />
-<household-transaction-details-row *ngIf="transaction?.quantity" icon="add_shopping_cart" [text]="transaction.quantity" />
+@if (transaction?.product) {
+<household-transaction-details-row icon="barcode" [text]="transaction.product.fullName" />
+}
+@if (transaction?.quantity) {
+<household-transaction-details-row icon="add_shopping_cart" [text]="transaction.quantity" />
+}

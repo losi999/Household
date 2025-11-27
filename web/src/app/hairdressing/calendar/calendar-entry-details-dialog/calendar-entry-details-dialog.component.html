@@ -1,26 +1,28 @@
-<h2 mat-dialog-title>{{entry.title}}</h2>
+<h2 mat-dialog-title>{{ entry.title }}</h2>
 
 <div mat-dialog-content>
   <household-icon-text icon="calendar_month" [text]="entry.day | date: 'yyyy. MMMM d., EEEE'" size="medium" />
   <household-icon-text icon="alarm" [text]="(entry.start | timeSlotToTime) + ' - ' + (entry.end | timeSlotToTime)" size="medium" />
   @if (entry.description) {
-  <div>
-    {{entry.description}}
-  </div>
+    <div>
+      {{ entry.description }}
+    </div>
   }
-  @if (entry.entryType === 'work' && entry.prices?.length > 0) {
-  <household-job-price-summary [prices]="entry.prices" />
+  @if (entry.entryType === "work" && entry.prices?.length > 0) {
+    <household-job-price-summary [prices]="entry.prices" />
   }
 </div>
 
 <mat-dialog-actions>
-  @if (entry.entryType === 'work' && !entry.resolution) {
-  <button mat-flat-button mat-dialog-close="pay" class="pay" type="button">Fizetés</button>
+  @if (entry.entryType === "work" && !entry.resolution) {
+    <button mat-flat-button mat-dialog-close="pay" class="pay" type="button">Fizetés</button>
+    <button mat-flat-button mat-dialog-close="delete" color="primary" type="button">Lemondta</button>
+    <button mat-flat-button mat-dialog-close="noShow" color="warn" type="button">Nem jött el</button>
+    <button mat-flat-button mat-dialog-close="edit" style="margin-left: auto" color="primary" type="button">Szerkesztés</button>
   }
-  @if (entry.entryType !== 'work' || !entry.resolution) {
-  <button mat-flat-button mat-dialog-close="delete" color="primary" type="button">Lemondta</button>
-  <button mat-flat-button mat-dialog-close="noShow" color="warn" type="button">Nem jött el</button>
-  <button mat-flat-button mat-dialog-close="edit" style="margin-left: auto;" color="primary" type="button">Szerkesztés</button>
+  @if (entry.entryType !== "work") {
+    <button mat-flat-button mat-dialog-close="delete" color="warn" type="button">Törlés</button>
+    <button mat-flat-button mat-dialog-close="edit" color="primary" type="button">Szerkesztés</button>
   }
   <button mat-flat-button mat-dialog-close type="button">Bezárás</button>
 </mat-dialog-actions>

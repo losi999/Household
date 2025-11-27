@@ -1,5 +1,14 @@
 <button mat-list-item (click)="showMenu()" [disabled]="isDisabled | async">
-  <mat-icon matListItemIcon *ngIf="category.categoryType === 'regular'">category</mat-icon>
-  <mat-icon matListItemIcon *ngIf="category.categoryType === 'inventory'">inventory_2</mat-icon>
-  <mat-icon matListItemIcon *ngIf="category.categoryType === 'invoice'">receipt_long</mat-icon>
-  {{category.fullName}}</button>
+  @switch (category.categoryType) {
+    @case ("regular") {
+      <mat-icon matListItemIcon>category</mat-icon>
+    }
+    @case ("inventory") {
+      <mat-icon matListItemIcon>inventory_2</mat-icon>
+    }
+    @case ("invoice") {
+      <mat-icon matListItemIcon>receipt_long</mat-icon>
+    }
+  }
+  {{ category.fullName }}
+</button>

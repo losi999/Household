@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CalendarEntryPayingDialogComponent } from './calendar-entry-paying-dialog.component';
 
-xdescribe('CalendarEntryPayingDialogComponent', () => {
+describe.skip('CalendarEntryPayingDialogComponent', () => {
   let component: CalendarEntryPayingDialogComponent;
   let fixture: ComponentFixture<CalendarEntryPayingDialogComponent>;
 

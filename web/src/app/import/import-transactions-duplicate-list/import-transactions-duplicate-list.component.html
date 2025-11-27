@@ -1,1 +1,3 @@
-<household-import-transactions-duplicate-list-item *ngFor="let transaction of transactions | async" [transaction]="transaction" />
+@for (transaction of transactions | async; track $index) {
+<household-import-transactions-duplicate-list-item [transaction]="transaction" />
+}

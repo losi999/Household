@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { HairdressingIncomeListComponent } from './hairdressing-income-list.component';
 
-xdescribe('HairdressingIncomeListComponent', () => {
+describe.skip('HairdressingIncomeListComponent', () => {
   let component: HairdressingIncomeListComponent;
   let fixture: ComponentFixture<HairdressingIncomeListComponent>;
 

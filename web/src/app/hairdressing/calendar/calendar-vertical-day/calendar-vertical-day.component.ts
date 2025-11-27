@@ -1,14 +1,21 @@
+import { NgClass } from '@angular/common';
 import { Component, Input, OnChanges } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
 import { dateToISODateString } from '@household/shared/common/utils';
 import { CalendarDayType, CalendarEntryType } from '@household/shared/enums';
 import { Calendar } from '@household/shared/types/types';
 import { calendarActions } from '@household/web/app/hairdressing/calendar/state/calendar.actions';
+import { TimeSlotToTimePipe } from '@household/web/app/shared/pipes/time-slot-to-time.pipe';
 import { CustomerJob } from '@household/web/types/common';
 import { Store } from '@ngrx/store';
 
 @Component({
   selector: 'household-calendar-vertical-day',
-  standalone: false,  
+  imports: [
+    TimeSlotToTimePipe,
+    MatIconModule,
+    NgClass,
+  ],  
   templateUrl: './calendar-vertical-day.component.html',
   styleUrl: './calendar-vertical-day.component.scss',
 })

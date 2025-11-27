@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { TransactionService } from './transaction.service';
 
-xdescribe('TransactionService', () => {
+describe.skip('TransactionService', () => {
   let service: TransactionService;
 
   beforeEach(() => {

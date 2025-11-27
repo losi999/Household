@@ -1,11 +1,11 @@
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 import { UserType } from '@household/shared/enums';
 import { ConfirmUserComponent } from '@household/web/app/auth/confirm-user/confirm-user.component';
 import { LoginComponent } from '@household/web/app/auth/login/login.component';
-import { authenticated, unauthenticated } from '@household/web/app/shared/guards';
+import { hairdressingProviders } from '@household/web/app/hairdressing/hairdressing.providers';
+import { unauthenticated, authenticated } from '@household/web/app/shared/guards';
 
-const routes: Routes = [
+export const routes: Routes = [
   {
     path: 'login',
     title: 'Bejelentkezés',
@@ -21,7 +21,7 @@ const routes: Routes = [
   {
     path: 'projects',
     title: 'Projektek',
-    loadChildren: () => import('@household/web/app/project/project.module').then(m => m.ProjectModule),
+    loadChildren: () => import('@household/web/app/project/project.routes').then(r => r.routes),
     canMatch: [authenticated],
     data: {
       requiredUserType: UserType.Editor,
@@ -30,7 +30,7 @@ const routes: Routes = [
   {
     path: 'products',
     title: 'Termékek',
-    loadChildren: () => import('@household/web/app/product/product.module').then(m => m.ProductModule),
+    loadChildren: () => import('@household/web/app/product/product.routes').then(r => r.routes),
     canMatch: [authenticated],
     data: {
       requiredUserType: UserType.Editor,
@@ -39,7 +39,7 @@ const routes: Routes = [
   {
     path: 'categories',
     title: 'Kategóriák',
-    loadChildren: () => import('@household/web/app/category/category.module').then(m => m.CategoryModule),
+    loadChildren: () => import('@household/web/app/category/category.routes').then(r => r.routes),
     canMatch: [authenticated],
     data: {
       requiredUserType: UserType.Editor,
@@ -48,7 +48,7 @@ const routes: Routes = [
   {
     path: 'recipients',
     title: 'Partnerek',
-    loadChildren: () => import('@household/web/app/recipient/recipient.module').then(m => m.RecipientModule),
+    loadChildren: () => import('@household/web/app/recipient/recipient.routes').then(r => r.routes),
     canMatch: [authenticated],
     data: {
       requiredUserType: UserType.Editor,
@@ -57,13 +57,13 @@ const routes: Routes = [
   {
     path: 'reports',
     title: 'Jelentések',
-    loadChildren: () => import('@household/web/app/report/report.module').then(m => m.ReportModule),
+    loadChildren: () => import('@household/web/app/report/report.routes').then(r => r.routes),
     canMatch: [authenticated],
   },
   {
     path: 'imports',
     title: 'Importálás',
-    loadChildren: () => import('@household/web/app/import/import.module').then(m => m.ImportModule),
+    loadChildren: () => import('@household/web/app/import/import.routes').then(r => r.routes),
     canMatch: [authenticated],
     data: {
       requiredUserType: UserType.Editor,
@@ -72,22 +72,23 @@ const routes: Routes = [
   {
     path: 'settings',
     title: 'Beállítások',
-    loadChildren: () => import('./settings/settings.module').then(m => m.SettingsModule),
+    loadChildren: () => import('./settings/settings.routes').then(r => r.routes),
     canMatch: [authenticated],
   },
   {
     path: 'hairdressing',
     title: 'Fodrászat',
-    loadChildren: () => import('./hairdressing/hairdressing.module').then(m => m.HairdressingModule),
+    loadChildren: () => import('./hairdressing/hairdressing.routes').then(r => r.routes),
     canMatch: [authenticated],
     data: {
       requiredUserType: UserType.Hairdresser,
     },
+    providers: hairdressingProviders,
   },
   {
     path: '',
     title: 'Számlák',
-    loadChildren: () => import('./account/account.module').then(m => m.AccountModule),
+    loadChildren: () => import('@household/web/app/account/account.routes').then(r => r.routes),
     canMatch: [authenticated],
   },
   {
@@ -95,13 +96,3 @@ const routes: Routes = [
     redirectTo: '',
   },
 ];
-
-@NgModule({
-  imports: [
-    RouterModule.forRoot(routes, {
-      enableTracing: false,
-    }),
-  ],
-  exports: [RouterModule],
-})
-export class AppRoutingModule { }

@@ -1,6 +1,10 @@
-<ngx-skeleton-loader *ngIf="categories.length === 0" count="10" appearance="line" animation="progress" [theme]="{
-  height: '48px'
-}" />
+@if (categories.length === 0) {
+<ngx-skeleton-loader count="10" appearance="line" animation="progress" [theme]="{
+    height: '48px'
+  }" />
+}
+@for (category of categories; track $index) {
 <mat-action-list>
-  <household-category-list-item *ngFor="let category of categories" [category]="category" [categories]="categories" />
+  <household-category-list-item [category]="category" [categories]="categories" />
 </mat-action-list>
+}

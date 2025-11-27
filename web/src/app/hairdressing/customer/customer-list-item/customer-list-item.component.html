@@ -1,29 +1,33 @@
 <mat-card>
   <mat-card-header>
     <mat-card-title>
-      {{customer.name}}
+      {{ customer.name }}
     </mat-card-title>
     <mat-card-subtitle>
-      {{customer.description}}
+      {{ customer.description }}
     </mat-card-subtitle>
   </mat-card-header>
   <mat-card-content>
     <mat-divider />
-    @if(customer.jobs?.length > 0) {
-    <div class="job-list">
-      <household-icon-text icon="content_cut" size="small" text="Munkák" />
-      <mat-nav-list>
-        @for (job of customer.jobs; track $index) {
-        <a mat-list-item [routerLink]="['/hairdressing', 'calendar']" [queryParams]="{customerId: customer.customerId, jobName: job.name}">
-          <span matListItemTitle>{{job.name}}</span>
-          <span matListItemLine>{{job.duration | timeSlotToTime}} óra</span>
-          <button matIconButton matListItemMeta>
-            <mat-icon>calendar_add_on</mat-icon>
-          </button>
-        </a>
-        }
-      </mat-nav-list>
-    </div>
+    @if (customer.jobs?.length > 0) {
+      <div class="job-list">
+        <household-icon-text icon="content_cut" size="small" text="Munkák" />
+        <mat-nav-list>
+          @for (job of customer.jobs; track $index) {
+            <a
+              mat-list-item
+              [routerLink]="['/hairdressing', 'calendar']"
+              [queryParams]="{ customerId: customer.customerId, jobName: job.name }"
+            >
+              <span matListItemTitle>{{ job.name }}</span>
+              <span matListItemLine>{{ job.duration | timeSlotToTime }} óra</span>
+              <button matIconButton matListItemMeta>
+                <mat-icon>calendar_add_on</mat-icon>
+              </button>
+            </a>
+          }
+        </mat-nav-list>
+      </div>
     }
   </mat-card-content>
   <mat-card-actions>

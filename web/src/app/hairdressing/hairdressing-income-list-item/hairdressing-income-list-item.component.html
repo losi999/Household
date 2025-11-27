@@ -6,17 +6,21 @@
         <div class="date">{{day | date:'MMM dd.'}}</div>
         <div class="date">{{day | date:'EEEE'}}</div>
       </div>
-      <div class="amount green" *ngIf="transaction">{{transaction.amount | number:'1.0-2':'hu'}} {{currency}}</div>
+      @if (transaction) {
+      <div class="amount green">{{transaction.amount | number:'1.0-2':'hu'}} {{currency}}</div>
+      }
     </div>
   </mat-expansion-panel-header>
   <div class="content">
     <household-amount-input class="amount" label="Részösszeg" [formControl]="partialAmount" [currency]="currency" />
     <button mat-icon-button class="add" [disabled]="isInProgress" (click)="add()"><mat-icon>check</mat-icon></button>
     <mat-chip-set class="splits">
-      <mat-chip *ngFor="let s of transaction?.description | split: splitsDelimiter; let i = index" (click)="remove(i)">
+      @for (s of transaction?.description | split: splitsDelimiter; let i = $index; track $index) {
+      <mat-chip (click)="remove(i)">
         {{s}} {{currency}}
         <mat-icon matChipTrailingIcon>cancel</mat-icon>
       </mat-chip>
+      }
     </mat-chip-set>
   </div>
 </mat-expansion-panel>

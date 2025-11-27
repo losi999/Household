@@ -1,6 +1,10 @@
-<ngx-skeleton-loader *ngIf="recipients.length === 0" count="10" appearance="line" animation="progress" [theme]="{
-  height: '48px'
-}" />
+@if (recipients.length === 0) {
+<ngx-skeleton-loader count="10" appearance="line" animation="progress" [theme]="{
+    height: '48px'
+  }" />
+}
 <mat-action-list>
-  <household-recipient-list-item *ngFor="let recipient of recipients" [recipient]="recipient"></household-recipient-list-item>
+  @for (recipient of recipients; track $index) {
+  <household-recipient-list-item [recipient]="recipient" />
+  }
 </mat-action-list>

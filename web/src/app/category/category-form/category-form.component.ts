@@ -1,11 +1,15 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { Category } from '@household/shared/types/types';
 import { Store } from '@ngrx/store';
 import { categoryApiActions } from '@household/web/state/category/category.actions';
 import { selectCategoriesAsParent } from '@household/web/state/category/category.selector';
 import { CategoryType } from '@household/shared/enums';
+import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
+import { CategoryAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/category-autocomplete-input/category-autocomplete-input.component';
+import { MatButtonModule } from '@angular/material/button';
+import { MatRadioModule } from '@angular/material/radio';
 
 export type CategoryFormData = Category.Response;
 
@@ -13,7 +17,14 @@ export type CategoryFormData = Category.Response;
   selector: 'household-category-form',
   templateUrl: './category-form.component.html',
   styleUrls: ['./category-form.component.scss'],
-  standalone: false,
+  imports: [
+    ReactiveFormsModule,
+    MatDialogModule,
+    ClearableInputComponent,
+    CategoryAutocompleteInputComponent,
+    MatButtonModule,
+    MatRadioModule,
+  ],
 })
 export class CategoryFormComponent implements OnInit {
   CategoryType = CategoryType;

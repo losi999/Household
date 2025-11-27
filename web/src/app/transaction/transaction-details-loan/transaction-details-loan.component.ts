@@ -1,10 +1,16 @@
+import { DecimalPipe, KeyValuePipe } from '@angular/common';
 import { Component, Input, OnChanges } from '@angular/core';
 import { TransactionType } from '@household/shared/enums';
 import { Account, Transaction } from '@household/shared/types/types';
+import { TransactionDetailsRowComponent } from '@household/web/app/transaction/transaction-details-row/transaction-details-row.component';
 
 @Component({
   selector: 'household-transaction-details-loan',
-  standalone: false,  
+  imports: [
+    TransactionDetailsRowComponent,
+    KeyValuePipe,
+    DecimalPipe,
+  ],  
   templateUrl: './transaction-details-loan.component.html',
   styleUrl: './transaction-details-loan.component.scss',
 })

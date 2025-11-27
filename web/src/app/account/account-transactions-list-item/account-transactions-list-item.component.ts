@@ -1,6 +1,19 @@
+import { AsyncPipe, DatePipe, DecimalPipe, NgClass } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Account, Transaction } from '@household/shared/types/types';
+import { IsEditorDirective } from '@household/web/app/shared/directives/is-editor.directive';
+import { TransactionDetailsCategoryComponent } from '@household/web/app/transaction/transaction-details-category/transaction-details-category.component';
+import { TransactionDetailsDescriptionComponent } from '@household/web/app/transaction/transaction-details-description/transaction-details-description.component';
+import { TransactionDetailsInventoryComponent } from '@household/web/app/transaction/transaction-details-inventory/transaction-details-inventory.component';
+import { TransactionDetailsInvoiceComponent } from '@household/web/app/transaction/transaction-details-invoice/transaction-details-invoice.component';
+import { TransactionDetailsLoanComponent } from '@household/web/app/transaction/transaction-details-loan/transaction-details-loan.component';
+import { TransactionDetailsProjectComponent } from '@household/web/app/transaction/transaction-details-project/transaction-details-project.component';
+import { TransactionDetailsRecipientComponent } from '@household/web/app/transaction/transaction-details-recipient/transaction-details-recipient.component';
+import { TransactionDetailsTransferComponent } from '@household/web/app/transaction/transaction-details-transfer/transaction-details-transfer.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { selectTransactionIsInProgress } from '@household/web/state/progress/progress.selector';
 import { Store } from '@ngrx/store';
@@ -10,7 +23,25 @@ import { Observable } from 'rxjs';
   selector: 'household-account-transactions-list-item',
   templateUrl: './account-transactions-list-item.component.html',
   styleUrls: ['./account-transactions-list-item.component.scss'],
-  standalone: false,
+  imports: [
+    DatePipe,
+    TransactionDetailsLoanComponent,
+    TransactionDetailsRecipientComponent,
+    TransactionDetailsCategoryComponent,
+    TransactionDetailsInventoryComponent,
+    TransactionDetailsInvoiceComponent,
+    TransactionDetailsProjectComponent,
+    TransactionDetailsTransferComponent,
+    TransactionDetailsDescriptionComponent,
+    RouterLink,
+    DecimalPipe,
+    MatButtonModule,
+    MatIconModule,
+    AsyncPipe,
+    IsEditorDirective,
+    MatTooltipModule,
+    NgClass,
+  ],
 })
 export class AccountTransactionsListItemComponent implements OnInit {
   @Input() transaction: Transaction.Response;

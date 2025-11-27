@@ -1,6 +1,6 @@
 import { ImportFilterPipe } from './import-filter.pipe';
 
-xdescribe('ImportFilterPipe', () => {
+describe.skip('ImportFilterPipe', () => {
   it('create an instance', () => {
     const pipe = new ImportFilterPipe();
     expect(pipe).toBeTruthy();

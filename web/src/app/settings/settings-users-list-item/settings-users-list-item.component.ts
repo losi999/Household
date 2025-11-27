@@ -1,4 +1,9 @@
+import { AsyncPipe, KeyValuePipe } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatIconModule } from '@angular/material/icon';
 import { UserType } from '@household/shared/enums';
 import { User } from '@household/shared/types/types';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
@@ -9,7 +14,14 @@ import { Observable } from 'rxjs';
 
 @Component({
   selector: 'household-settings-users-list-item',
-  standalone: false,  
+  imports: [
+    MatCardModule,
+    MatCheckboxModule,
+    MatIconModule,
+    MatButtonModule,
+    KeyValuePipe,
+    AsyncPipe,
+  ],  
   templateUrl: './settings-users-list-item.component.html',
   styleUrl: './settings-users-list-item.component.scss',
 })

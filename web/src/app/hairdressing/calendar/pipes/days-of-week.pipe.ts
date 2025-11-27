@@ -3,7 +3,6 @@ import { addDays } from '@household/shared/common/utils';
 
 @Pipe({
   name: 'daysOfWeek',
-  standalone: false,
 })
 export class DaysOfWeekPipe implements PipeTransform {
 

@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 
@@ -6,7 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
   selector: 'household-icon-text',
   imports: [
     MatIconModule,
-    CommonModule,
+    NgClass,
   ],
   templateUrl: './icon-text.component.html',
   styleUrl: './icon-text.component.scss',

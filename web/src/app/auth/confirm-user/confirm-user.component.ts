@@ -1,13 +1,25 @@
 import { Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { ActivatedRoute } from '@angular/router';
+import { ToolbarComponent } from '@household/web/app/shared/toolbar/toolbar.component';
 import { authActions } from '@household/web/state/auth/auth.actions';
 import { navigationActions } from '@household/web/state/navigation/navigation.actions';
 import { Store } from '@ngrx/store';
 
 @Component({
   selector: 'household-confirm-user',
-  standalone: false,
+  imports: [
+    ToolbarComponent,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatIconModule,
+    MatButtonModule,
+  ],
   templateUrl: './confirm-user.component.html',
   styleUrl: './confirm-user.component.scss',
 })

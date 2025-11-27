@@ -1,9 +1,24 @@
 import { Component, DestroyRef, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { createDate, toUndefined } from '@household/shared/common/utils';
 import { Account, Project, Recipient, Category, Product, Transaction } from '@household/shared/types/types';
+import { AmountInputComponent } from '@household/web/app/shared/amount-input/amount-input.component';
+import { AccountAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/account-autocomplete-input/account-autocomplete-input.component';
+import { CategoryAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/category-autocomplete-input/category-autocomplete-input.component';
+import { ProductAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/product-autocomplete-input/product-autocomplete-input.component';
+import { ProjectAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/project-autocomplete-input/project-autocomplete-input.component';
+import { RecipientAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/recipient-autocomplete-input/recipient-autocomplete-input.component';
+import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
+import { DatetimeInputComponent } from '@household/web/app/shared/datetime-input/datetime-input.component';
+import { ToolbarComponent } from '@household/web/app/shared/toolbar/toolbar.component';
 import { takeFirstDefined } from '@household/web/operators/take-first-defined';
 import { toLoanResponse } from '@household/web/operators/to-loan-response';
 import { accountApiActions } from '@household/web/state/account/account.actions';
@@ -22,7 +37,25 @@ import { switchMap } from 'rxjs';
   selector: 'household-transaction-loan-edit',
   templateUrl: './transaction-loan-edit.component.html',
   styleUrl: './transaction-loan-edit.component.scss',
-  standalone: false,
+  imports: [
+    ToolbarComponent,
+    MatButtonModule,
+    MatIconModule,
+    MatMenuModule,
+    RouterLink,
+    ReactiveFormsModule,
+    DatetimeInputComponent,
+    AmountInputComponent,
+    AccountAutocompleteInputComponent,
+    MatSlideToggleModule,
+    CategoryAutocompleteInputComponent,
+    MatFormFieldModule,
+    MatDatepickerModule,
+    ClearableInputComponent,
+    ProductAutocompleteInputComponent,
+    RecipientAutocompleteInputComponent,
+    ProjectAutocompleteInputComponent,
+  ],
 })
 export class TransactionLoanEditComponent implements OnInit {
   form: FormGroup<{

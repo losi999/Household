@@ -3,7 +3,6 @@ import { CalendarWeek } from '@household/web/app/hairdressing/calendar/calendar-
 
 @Pipe({
   name: 'calendarGridRows',
-  standalone: false,
 })
 export class CalendarGridRowsPipe implements PipeTransform {
 

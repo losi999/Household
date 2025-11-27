@@ -1,3 +1,5 @@
 <mat-accordion>
-  <household-hairdressing-income-list-item *ngFor="let day of date | daysOfMonth" [day]="day" [currency]="currency" [transaction]="transactionMap?.[day.getDate()]" />
+  @for (day of date | daysOfMonth; track $index) {
+  <household-hairdressing-income-list-item [day]="day" [currency]="currency" [transaction]="transactionMap?.[day.getDate()]" />
+  }
 </mat-accordion>

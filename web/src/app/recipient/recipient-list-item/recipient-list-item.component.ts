@@ -6,12 +6,17 @@ import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 import { selectRecipientIsInProgress } from '@household/web/state/progress/progress.selector';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
+import { MatListModule } from '@angular/material/list';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
   selector: 'household-recipient-list-item',
   templateUrl: './recipient-list-item.component.html',
   styleUrls: ['./recipient-list-item.component.scss'],
-  standalone: false,
+  imports: [
+    MatListModule,
+    AsyncPipe,
+  ],
 })
 export class RecipientListItemComponent implements OnInit {
   @Input() recipient: Recipient.Response;

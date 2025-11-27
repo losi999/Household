@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PriceListItemComponent } from './price-list-item.component';
 
-xdescribe('HairdressingPriceListItemComponent', () => {
+describe.skip('HairdressingPriceListItemComponent', () => {
   let component: PriceListItemComponent;
   let fixture: ComponentFixture<PriceListItemComponent>;
 

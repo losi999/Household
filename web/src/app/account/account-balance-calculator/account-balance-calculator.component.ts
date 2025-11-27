@@ -1,13 +1,28 @@
+import { DecimalPipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Account } from '@household/shared/types/types';
+import { ToolbarComponent } from '@household/web/app/shared/toolbar/toolbar.component';
 import { accountApiActions } from '@household/web/state/account/account.actions';
 import { Store } from '@ngrx/store';
 
 @Component({
   selector: 'household-account-balance-calculator',
-  standalone: false,
+  imports: [
+    ToolbarComponent,
+    MatIconModule,
+    MatButtonModule,
+    RouterLink,
+    ReactiveFormsModule,
+    DecimalPipe,
+    MatFormFieldModule,
+    MatInputModule,
+  ],
   templateUrl: './account-balance-calculator.component.html',
   styleUrl: './account-balance-calculator.component.scss',
 })

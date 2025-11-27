@@ -1,3 +1,5 @@
 <div class="container">
-  <household-account-list-item *ngFor="let account of accounts | openAccountFilter: onlyOpenAccounts" [account]="account" />
+  @for (account of accounts | openAccountFilter: onlyOpenAccounts; track $index) {
+  <household-account-list-item [account]="account" />
+  }
 </div>

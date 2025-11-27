@@ -11,6 +11,7 @@ import { ToolbarComponent } from '@household/web/app/shared/toolbar/toolbar.comp
 import { MatIconButton } from '@angular/material/button';
 import { elementSelectorFactory, IElementSelector } from '@household/web/testing/element-selector';
 import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
+import { createMockService } from '@household/web/utils/unit-testing';
 import { Searchable } from '@household/shared/types/common';
 import { toSearchTerms } from '@household/shared/common/utils';
 
@@ -45,7 +46,7 @@ describe('CustomerHomeComponent', () => {
         }),
         {
           provide: AuthService,
-          useValue: jasmine.createSpyObj<AuthService>('AuthService', [], ['isLoggedIn']), 
+          useValue: createMockService<AuthService>('isLoggedIn', 'hasUserType'), 
         },
       ],
     })
@@ -54,7 +55,7 @@ describe('CustomerHomeComponent', () => {
     fixture = TestBed.createComponent(CustomerHomeComponent);
     mockStore = TestBed.inject(MockStore);
 
-    spyOn(mockStore, 'dispatch').and.callThrough();
+    vitest.spyOn(mockStore, 'dispatch');
     
     selector = elementSelectorFactory(fixture.debugElement);
 
@@ -74,7 +75,7 @@ describe('CustomerHomeComponent', () => {
     let button: HTMLButtonElement;
     
     beforeEach(() => {
-      button = selector.getComponent<MatIconButton, HTMLButtonElement>(MatIconButton, ToolbarComponent).nativeElement;
+      button = selector.getComponentByTestId<MatIconButton, HTMLButtonElement>('create-customer-button', ToolbarComponent).nativeElement;
     });
 
     it('should be rendered in toolbar', () => {

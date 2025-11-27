@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TransactionSplitEditComponent } from './transaction-split-edit.component';
 
-xdescribe('TransactionSplitEditComponent', () => {
+describe.skip('TransactionSplitEditComponent', () => {
   let component: TransactionSplitEditComponent;
   let fixture: ComponentFixture<TransactionSplitEditComponent>;
 

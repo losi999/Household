@@ -9,6 +9,7 @@ import { Observable } from 'rxjs';
 import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
 import { DurationStepperComponent } from '@household/web/app/shared/duration-stepper/duration-stepper.component';
 import { MatButtonModule } from '@angular/material/button';
+import { Field } from '@angular/forms/signals';
 
 export type CustomerJobDialogData = Customer.CustomerId 
 & {

@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { Component, computed, effect, OnInit, Signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
@@ -20,7 +20,7 @@ import { Store } from '@ngrx/store';
     ToolbarComponent,
     MatIconModule,
     MatButtonModule,
-    CommonModule,
+    NgClass,
     CustomerDetailsWorksComponent,
     CustomerDetailsJobItemComponent,
     IconTextComponent,

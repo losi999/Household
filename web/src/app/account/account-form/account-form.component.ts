@@ -1,10 +1,13 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { Account } from '@household/shared/types/types';
 import { Store } from '@ngrx/store';
 import { accountApiActions } from '@household/web/state/account/account.actions';
 import { AccountType } from '@household/shared/enums';
+import { ClearableInputComponent } from '@household/web/app/shared/clearable-input/clearable-input.component';
+import { KeyvalueAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/keyvalue-autocomplete-input/keyvalue-autocomplete-input.component';
+import { MatButtonModule } from '@angular/material/button';
 
 export type AccountFormData = Account.Response;
 
@@ -12,7 +15,13 @@ export type AccountFormData = Account.Response;
   selector: 'household-account-form',
   templateUrl: './account-form.component.html',
   styleUrls: ['./account-form.component.scss'],
-  standalone: false,
+  imports: [
+    ReactiveFormsModule,
+    MatDialogModule,
+    ClearableInputComponent,
+    KeyvalueAutocompleteInputComponent,
+    MatButtonModule,
+  ],
 })
 export class AccountFormComponent implements OnInit {
   form: FormGroup<{

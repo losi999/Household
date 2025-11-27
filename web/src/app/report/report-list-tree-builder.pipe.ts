@@ -4,7 +4,6 @@ import { GroupBy, ReportListTreeNode } from '@household/web/app/report/report-li
 
 @Pipe({
   name: 'reportListTreeBuilder',
-  standalone: false,
 })
 export class ReportListTreeBuilderPipe implements PipeTransform {
 

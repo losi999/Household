@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TransactionDetailsInventoryComponent } from './transaction-details-inventory.component';
 
-xdescribe('TransactionDetailsInventoryComponent', () => {
+describe.skip('TransactionDetailsInventoryComponent', () => {
   let component: TransactionDetailsInventoryComponent;
   let fixture: ComponentFixture<TransactionDetailsInventoryComponent>;
 

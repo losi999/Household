@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CategoryAutocompleteInputComponent } from './category-autocomplete-input.component';
 
-xdescribe('CategoryAutocompleteInputComponent', () => {
+describe.skip('CategoryAutocompleteInputComponent', () => {
   let component: CategoryAutocompleteInputComponent;
   let fixture: ComponentFixture<CategoryAutocompleteInputComponent>;
 

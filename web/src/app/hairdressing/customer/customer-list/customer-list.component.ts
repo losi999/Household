@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { MatListModule } from '@angular/material/list';
 import { Customer } from '@household/shared/types/types';
@@ -10,7 +9,6 @@ import { CustomerListItemComponent } from '@household/web/app/hairdressing/custo
   styleUrl: './customer-list.component.scss',
   imports: [
     MatListModule,
-    CommonModule,
     CustomerListItemComponent,
   ],
 })

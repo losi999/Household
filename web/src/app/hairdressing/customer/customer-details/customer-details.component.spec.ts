@@ -14,6 +14,7 @@ import { MatIconButton } from '@angular/material/button';
 import { CustomerDetailsWorksComponent } from '@household/web/app/hairdressing/customer/customer-details-works/customer-details-works.component';
 import { CustomerDetailsJobItemComponent } from '@household/web/app/hairdressing/customer/customer-details-job-item/customer-details-job-item.component';
 import { elementSelectorFactory, IElementSelector } from '@household/web/testing/element-selector';
+import { createMockService } from '@household/web/utils/unit-testing';
 
 describe('CustomerDetailsComponent', () => {
   let fixture: ComponentFixture<CustomerDetailsComponent>;
@@ -71,7 +72,7 @@ describe('CustomerDetailsComponent', () => {
         },
         {
           provide: AuthService,
-          useValue: jasmine.createSpyObj<AuthService>('AuthService', [], ['isLoggedIn']), 
+          useValue: createMockService<AuthService>('isLoggedIn', 'hasUserType'), 
         },
       ],
     })
@@ -80,7 +81,7 @@ describe('CustomerDetailsComponent', () => {
     fixture = TestBed.createComponent(CustomerDetailsComponent);
     mockStore = TestBed.inject(MockStore);
 
-    spyOn(mockStore, 'dispatch').and.callThrough();
+    vitest.spyOn(mockStore, 'dispatch');
 
     selector = elementSelectorFactory(fixture.debugElement);
 
@@ -111,7 +112,8 @@ describe('CustomerDetailsComponent', () => {
     });
     
     it('(click) should dispatch [Customer] Create customer', () => {
-      const button = selector.getComponent<MatIconButton, HTMLButtonElement>(MatIconButton, ToolbarComponent);
+      const button = selector.getComponentByTestId<MatIconButton, HTMLButtonElement>('edit-customer-button', ToolbarComponent);
+
       button.nativeElement.click();
       
       expect(mockStore.dispatch).toHaveBeenCalledWith(customerActions.updateCustomer({
@@ -146,7 +148,7 @@ describe('CustomerDetailsComponent', () => {
         const element = selector.getComponentByTestId('rating');
         element.children.forEach((child, index) => {
           if (index + 1 === r) {
-            expect(child.classes.green).toBeTrue();
+            expect(child.classes.green).toBe(true);
           } else {
             expect(child.classes.green).toBeUndefined();
           }

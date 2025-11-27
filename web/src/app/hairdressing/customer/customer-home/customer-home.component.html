@@ -1,9 +1,19 @@
 <household-toolbar title="Vendégek">
-  <button mat-icon-button (click)="onCreate()" type="button">
+  <button mat-icon-button data-testId="create-customer-button" (click)="onCreate()" type="button">
     <mat-icon>add</mat-icon>
   </button>
 </household-toolbar>
 <div class="search mat-app-background">
-  <household-clearable-input label="Keresés" [formControl]="search" />
+  <!-- <household-clearable-input label="Keresés" (valueChange)="search.set($event)" /> -->
+  <form (submit)="onSubmit($event)">
+    <!-- <household-clearable-input label="Keresés" [field]="searchForm" /> -->
+    <!-- <household-clearable-input label="Keresés" [field]="form.name" /> -->
+    <household-clearable-input label="Keresés" type="number" [field]="form.age" />
+    <!-- <household-clearable-input label="Keresés" type="area" [field]="form.description" /> -->
+    <button type="submit">submit</button>
+  </form>
+
+  <pre>{{ form().value() | json }}</pre>
+  <pre>{{ form().touched() | json }}</pre>
 </div>
-<household-customer-list [customers]="filteredCustomers()" />
+<!-- <household-customer-list [customers]="filteredCustomers()" /> -->

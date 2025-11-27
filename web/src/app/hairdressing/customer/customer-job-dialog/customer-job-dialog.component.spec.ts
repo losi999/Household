@@ -9,17 +9,18 @@ import { ClearableInputComponent } from '@household/web/app/shared/clearable-inp
 import { DurationStepperComponent } from '@household/web/app/shared/duration-stepper/duration-stepper.component';
 import { JobPriceCalculatorComponent } from '@household/web/app/shared/job-price-calculator/job-price-calculator.component';
 import { elementSelectorFactory, IElementSelector } from '@household/web/testing/element-selector';
+import { createMockService, Mock } from '@household/web/utils/unit-testing';
 import { provideMockStore } from '@ngrx/store/testing';
 
 describe('CustomerJobDialogComponent', () => {
   let fixture: ComponentFixture<CustomerJobDialogComponent>;
-  let mockMatDialogRef: jasmine.SpyObj<MatDialogRef<CustomerJobDialogComponent, CustomerJobDialogResult>>;
+  let mockMatDialogRef: Mock<MatDialogRef<CustomerJobDialogComponent, CustomerJobDialogResult>>;
   let selector: IElementSelector;
   let dialogData: CustomerJobDialogData;
   let customerId: Customer.Id;
 
   beforeEach(() => {
-    mockMatDialogRef = jasmine.createSpyObj(['close']);
+    mockMatDialogRef = createMockService('close');
   
     customerId = testDataFactory.customer.id();
   });
@@ -299,7 +300,7 @@ describe('CustomerJobDialogComponent', () => {
           ]);
         });
 
-        xit('should display error message if nothing is selected', () => {
+        it.skip('should display error message if nothing is selected', () => {
           const calculatorComponent = selector.getComponent(JobPriceCalculatorComponent);
           console.log(calculatorComponent.nativeElement);
           calculatorComponent.componentInstance.changed([]);

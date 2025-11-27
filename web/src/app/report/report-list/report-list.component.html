@@ -1,36 +1,48 @@
 <mat-tree #tree [dataSource]="items | async | reportListTreeBuilder: groupBy" [childrenAccessor]="childrenAccessor">
   <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding>
-    <ng-template #groupNode>
+    @if (node.transactionId) {
+      <a
+        [routerLink]="['/accounts', node.account.accountId, 'transactions', node.transactionId]"
+        class="report-item mat-elevation-z2"
+        href=""
+        target="_blank"
+      >
+        <div class="datetime">
+          {{ node.issuedAt | date: "yyyy. MMMM dd. HH:mm" }}
+        </div>
+        <div class="details">
+          @if (!groupBy.includes("account")) {
+            <household-transaction-details-row icon="reply_all" [text]="node.account.fullName" />
+          }
+          @if (!groupBy.includes("recipient")) {
+            <household-transaction-details-recipient [transaction]="node" />
+          }
+          @if (!groupBy.includes("category")) {
+            <household-transaction-details-category [transaction]="node" />
+          }
+          @if (!groupBy.includes("product")) {
+            <household-transaction-details-inventory [transaction]="node" />
+          }
+          <household-transaction-details-invoice [transaction]="node" />
+          @if (!groupBy.includes("project")) {
+            <household-transaction-details-project [transaction]="node" />
+          }
+          @if (!groupBy.includes("description")) {
+            <household-transaction-details-description [transaction]="node" />
+          }
+        </div>
+        <div class="amount" [ngClass]="node.amount >= 0 ? 'green' : 'red'">{{ node.amount }} {{ node.account.currency }}</div>
+      </a>
+    } @else {
       <button mat-icon-button matTreeNodeToggle>
         <mat-icon>
-          {{tree.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
+          {{ tree.isExpanded(node) ? "expand_more" : "chevron_right" }}
         </mat-icon>
       </button>
       <div>
-        {{node.groupName}}
-        <div class="amount" [ngClass]="node.amount >= 0 ? 'green' : 'red'">{{node.amount}}
-          {{node.currency}}</div>
+        {{ node.groupName }}
+        <div class="amount" [ngClass]="node.amount >= 0 ? 'green' : 'red'">{{ node.amount }} {{ node.currency }}</div>
       </div>
-    </ng-template>
-
-    <ng-container *ngIf="node.transactionId; else groupNode">
-      <a [routerLink]="['/accounts', node.account.accountId, 'transactions', node.transactionId]" class="report-item mat-elevation-z2" href="" target="_blank">
-        <div class="datetime">
-          {{node.issuedAt | date: 'yyyy. MMMM dd. HH:mm'}}
-        </div>
-        <div class="details">
-          <household-transaction-details-row *ngIf="!groupBy.includes('account')" icon="reply_all" [text]="node.account.fullName" />
-          <household-transaction-details-recipient *ngIf="!groupBy.includes('recipient')" [transaction]="node" />
-          <household-transaction-details-category *ngIf="!groupBy.includes('category')" [transaction]="node" />
-          <household-transaction-details-inventory *ngIf="!groupBy.includes('product')" [transaction]="node" />
-          <household-transaction-details-invoice [transaction]="node" />
-          <household-transaction-details-project *ngIf="!groupBy.includes('project')" [transaction]="node" />
-          <household-transaction-details-description *ngIf="!groupBy.includes('description')" [transaction]="node" />
-        </div>
-        <div class="amount" [ngClass]="node.amount >= 0 ? 'green' : 'red'">
-          {{node.amount}} {{node.account.currency}}
-        </div>
-      </a>
-    </ng-container>
+    }
   </mat-tree-node>
 </mat-tree>

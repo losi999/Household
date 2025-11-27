@@ -1,6 +1,20 @@
+import { AsyncPipe, DatePipe, DecimalPipe, NgClass } from '@angular/common';
 import { Component, HostListener, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Account, Transaction } from '@household/shared/types/types';
+import { IsEditorDirective } from '@household/web/app/shared/directives/is-editor.directive';
+import { ToolbarComponent } from '@household/web/app/shared/toolbar/toolbar.component';
+import { TransactionDetailsCategoryComponent } from '@household/web/app/transaction/transaction-details-category/transaction-details-category.component';
+import { TransactionDetailsDescriptionComponent } from '@household/web/app/transaction/transaction-details-description/transaction-details-description.component';
+import { TransactionDetailsInventoryComponent } from '@household/web/app/transaction/transaction-details-inventory/transaction-details-inventory.component';
+import { TransactionDetailsInvoiceComponent } from '@household/web/app/transaction/transaction-details-invoice/transaction-details-invoice.component';
+import { TransactionDetailsLoanComponent } from '@household/web/app/transaction/transaction-details-loan/transaction-details-loan.component';
+import { TransactionDetailsProjectComponent } from '@household/web/app/transaction/transaction-details-project/transaction-details-project.component';
+import { TransactionDetailsRecipientComponent } from '@household/web/app/transaction/transaction-details-recipient/transaction-details-recipient.component';
 import { takeFirstDefined } from '@household/web/operators/take-first-defined';
 import { dialogActions } from '@household/web/state/dialog/dialog.actions';
 import { navigationActions } from '@household/web/state/navigation/navigation.actions';
@@ -13,7 +27,26 @@ import { Observable, tap } from 'rxjs';
   selector: 'household-transaction-details',
   templateUrl: './transaction-details.component.html',
   styleUrls: ['./transaction-details.component.scss'],
-  standalone: false,
+  imports: [
+    ToolbarComponent,
+    MatButtonModule,
+    MatIconModule,
+    MatMenuModule,
+    RouterLink,
+    AsyncPipe,
+    DatePipe,
+    NgClass,
+    DecimalPipe,
+    TransactionDetailsLoanComponent,
+    TransactionDetailsCategoryComponent,
+    TransactionDetailsInventoryComponent,
+    TransactionDetailsInvoiceComponent,
+    TransactionDetailsProjectComponent,
+    TransactionDetailsDescriptionComponent,
+    TransactionDetailsRecipientComponent,
+    MatDividerModule,    
+    IsEditorDirective,
+  ],
 })
 export class TransactionDetailsComponent implements OnInit {
   transaction: Observable<Transaction.Response>;

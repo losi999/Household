@@ -6,7 +6,7 @@ import { selectPriceList } from '@household/web/app/hairdressing/price/state/pri
 import { CustomerService } from '@household/web/services/customer.service';
 import { notificationActions } from '@household/web/state/notification/notification.actions';
 import { progressActions } from '@household/web/state/progress/progress.actions';
-import { expectEffectMultipleEmission } from '@household/web/utils/unit-testing';
+import { createMockService, expectEffectMultipleEmission, Mock, validateFunctionCall } from '@household/web/utils/unit-testing';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { Observable, of, throwError } from 'rxjs';
@@ -15,10 +15,10 @@ describe('Customer API effects', () => {
   let actions$: Observable<any>;
   let effects: CustomerApiEffects;
   let store: MockStore;
-  let mockCustomerService: jasmine.SpyObj<CustomerService>;
+  let mockCustomerService: Mock<CustomerService>;
 
   beforeEach(() => {
-    mockCustomerService = jasmine.createSpyObj<CustomerService>([
+    mockCustomerService = createMockService(
       'listCustomers',
       'listCustomerWorks',
       'createCustomer',
@@ -28,7 +28,7 @@ describe('Customer API effects', () => {
       'deleteCustomerJob',
       'updateCustomerBlacklist',
       'deleteCustomerBlacklist',
-    ]);
+    );
 
     TestBed.configureTestingModule({
       providers: [
@@ -47,10 +47,10 @@ describe('Customer API effects', () => {
   });
 
   describe('On List customers initiated', () => {
-    it('should dispatch [Customer API] List customers completed', (done) => {
+    it('should dispatch [Customer API] List customers completed', () => {
       const customerResponse = testDataFactory.customer.response();
       
-      mockCustomerService.listCustomers.and.returnValue(of([customerResponse]));
+      mockCustomerService.listCustomers.mockReturnValue(of([customerResponse]));
 
       actions$ = of(customerApiActions.listCustomersInitiated());
 
@@ -60,11 +60,10 @@ describe('Customer API effects', () => {
         }));
       });
       expect(mockCustomerService.listCustomers).toHaveBeenCalledTimes(1);
-      done();      
     });
   
-    it('should dispatch error if unable to get data from API', (done) => { 
-      mockCustomerService.listCustomers.and.returnValue(throwError(() => new Error('Customer API error')));
+    it('should dispatch error if unable to get data from API', () => { 
+      mockCustomerService.listCustomers.mockReturnValue(throwError(() => new Error('Customer API error')));
   
       actions$ = of(customerApiActions.listCustomersInitiated());
   
@@ -75,17 +74,16 @@ describe('Customer API effects', () => {
         }),
       ], () => {
         expect(mockCustomerService.listCustomers).toHaveBeenCalledTimes(1);
-        done();
       });
     });
   });
 
   describe('On List customer works initiated', () => {
-    it('should dispatch [Customer API] List customer works completed', (done) => {
+    it('should dispatch [Customer API] List customer works completed', () => {
       const customerId = testDataFactory.customer.id();
       const workResponse = testDataFactory.calendar.entry.response.workBase();
       
-      mockCustomerService.listCustomerWorks.and.returnValue(of([workResponse]));
+      mockCustomerService.listCustomerWorks.mockReturnValue(of([workResponse]));
 
       actions$ = of(customerApiActions.listCustomerWorksInitiated({
         customerId,
@@ -97,14 +95,13 @@ describe('Customer API effects', () => {
           works: [workResponse],
         }));
       });
-      expect(mockCustomerService.listCustomerWorks).toHaveBeenCalledWith(customerId);
-      done();      
+      validateFunctionCall(mockCustomerService.listCustomerWorks, customerId);
     });
   
-    it('should dispatch error if unable to get data from API', (done) => { 
+    it('should dispatch error if unable to get data from API', () => { 
       const customerId = testDataFactory.customer.id();
 
-      mockCustomerService.listCustomerWorks.and.returnValue(throwError(() => new Error('Customer API error')));
+      mockCustomerService.listCustomerWorks.mockReturnValue(throwError(() => new Error('Customer API error')));
   
       actions$ = of(customerApiActions.listCustomerWorksInitiated({
         customerId,
@@ -116,18 +113,17 @@ describe('Customer API effects', () => {
           message: 'Hiba történt',
         }),
       ], () => {
-        expect(mockCustomerService.listCustomerWorks).toHaveBeenCalledWith(customerId);
-        done();
+        validateFunctionCall(mockCustomerService.listCustomerWorks, customerId);
       });
     });
   });
 
   describe('On Create customer initiated', () => {
-    it('should dispatch [Customer API] Create customer completed', (done) => {
+    it('should dispatch [Customer API] Create customer completed', () => {
       const request = testDataFactory.customer.request();
       const customerId = testDataFactory.customer.id();
       
-      mockCustomerService.createCustomer.and.returnValue(of({
+      mockCustomerService.createCustomer.mockReturnValue(of({
         customerId,
       }));
 
@@ -139,14 +135,13 @@ describe('Customer API effects', () => {
           ...request,
         }));
       });
-      expect(mockCustomerService.createCustomer).toHaveBeenCalledWith(request);
-      done();      
+      validateFunctionCall(mockCustomerService.createCustomer, request);
     });
   
-    it('should dispatch duplicate error if customer name is already in use', (done) => { 
+    it('should dispatch duplicate error if customer name is already in use', () => { 
       const request = testDataFactory.customer.request();
       
-      mockCustomerService.createCustomer.and.returnValue(throwError(() => ({
+      mockCustomerService.createCustomer.mockReturnValue(throwError(() => ({
         error: new Error('Duplicate customer name'),
       })));
 
@@ -158,15 +153,14 @@ describe('Customer API effects', () => {
           message: `Vendég (${request.name}) már létezik!`,
         }),
       ], () => {
-        expect(mockCustomerService.createCustomer).toHaveBeenCalledWith(request);
-        done();
+        validateFunctionCall(mockCustomerService.createCustomer, request);
       });
     });
   
-    it('should dispatch error if unable to get data from API', (done) => { 
+    it('should dispatch error if unable to get data from API', () => { 
       const request = testDataFactory.customer.request();
       
-      mockCustomerService.createCustomer.and.returnValue(throwError(() => new Error('Customer API error')));
+      mockCustomerService.createCustomer.mockReturnValue(throwError(() => new Error('Customer API error')));
 
       actions$ = of(customerApiActions.createCustomerInitiated(request));
   
@@ -176,18 +170,17 @@ describe('Customer API effects', () => {
           message: 'Hiba történt',
         }),
       ], () => {
-        expect(mockCustomerService.createCustomer).toHaveBeenCalledWith(request);
-        done();
+        validateFunctionCall(mockCustomerService.createCustomer, request);
       });
     });
   });
 
   describe('On Update customer initiated', () => {
-    it('should dispatch [Customer API] Update customer completed', (done) => {
+    it('should dispatch [Customer API] Update customer completed', () => {
       const request = testDataFactory.customer.request();
       const customerId = testDataFactory.customer.id();
       
-      mockCustomerService.updateCustomer.and.returnValue(of({
+      mockCustomerService.updateCustomer.mockReturnValue(of({
         customerId,
       }));
 
@@ -202,15 +195,14 @@ describe('Customer API effects', () => {
           ...request,
         }));
       });
-      expect(mockCustomerService.updateCustomer).toHaveBeenCalledWith(customerId, request);
-      done();      
+      validateFunctionCall(mockCustomerService.updateCustomer, customerId, request);
     });
   
-    it('should dispatch duplicate error if customer name is already in use', (done) => { 
+    it('should dispatch duplicate error if customer name is already in use', () => { 
       const request = testDataFactory.customer.request();
       const customerId = testDataFactory.customer.id();
       
-      mockCustomerService.updateCustomer.and.returnValue(throwError(() => ({
+      mockCustomerService.updateCustomer.mockReturnValue(throwError(() => ({
         error: new Error('Duplicate customer name'),
       })));
 
@@ -225,16 +217,15 @@ describe('Customer API effects', () => {
           message: `Vendég (${request.name}) már létezik!`,
         }),
       ], () => {
-        expect(mockCustomerService.updateCustomer).toHaveBeenCalledWith(customerId, request);
-        done();
+        validateFunctionCall(mockCustomerService.updateCustomer, customerId, request);
       });
     });
   
-    it('should dispatch error if unable to get data from API', (done) => { 
+    it('should dispatch error if unable to get data from API', () => { 
       const request = testDataFactory.customer.request();
       const customerId = testDataFactory.customer.id();
       
-      mockCustomerService.updateCustomer.and.returnValue(throwError(() => new Error('Customer API error')));
+      mockCustomerService.updateCustomer.mockReturnValue(throwError(() => new Error('Customer API error')));
 
       actions$ = of(customerApiActions.updateCustomerInitiated({
         customerId,
@@ -247,21 +238,20 @@ describe('Customer API effects', () => {
           message: 'Hiba történt',
         }),
       ], () => {
-        expect(mockCustomerService.updateCustomer).toHaveBeenCalledWith(customerId, request);
-        done();
+        validateFunctionCall(mockCustomerService.updateCustomer, customerId, request);
       });
     });
   });
 
   describe('On Create customer job initiated', () => {
-    it('should dispatch [Customer API] Create customer job completed', (done) => {
+    it('should dispatch [Customer API] Create customer job completed', () => {
       const request = testDataFactory.customer.job.request();
       const customerId = testDataFactory.customer.id();
       const priceResponse = testDataFactory.price.response();
       
       store.overrideSelector(selectPriceList, [priceResponse]);
 
-      mockCustomerService.createCustomerJob.and.returnValue(of(undefined));
+      mockCustomerService.createCustomerJob.mockReturnValue(of(undefined));
 
       actions$ = of(customerApiActions.createCustomerJobInitiated({
         customerId,
@@ -275,18 +265,17 @@ describe('Customer API effects', () => {
           ...request,
         }));
       });
-      expect(mockCustomerService.createCustomerJob).toHaveBeenCalledWith(customerId, request);
-      done();      
+      validateFunctionCall(mockCustomerService.createCustomerJob, customerId, request);
     });
   
-    it('should dispatch duplicate error if customer job name is already in use', (done) => { 
+    it('should dispatch duplicate error if customer job name is already in use', () => { 
       const request = testDataFactory.customer.job.request();
       const customerId = testDataFactory.customer.id();
       const priceResponse = testDataFactory.price.response();
       
       store.overrideSelector(selectPriceList, [priceResponse]);
       
-      mockCustomerService.createCustomerJob.and.returnValue(throwError(() => ({
+      mockCustomerService.createCustomerJob.mockReturnValue(throwError(() => ({
         error: new Error('Duplicate customer job name'),
       })));
 
@@ -301,19 +290,18 @@ describe('Customer API effects', () => {
           message: `Munka (${request.name}) már létezik!`,
         }),
       ], () => {
-        expect(mockCustomerService.createCustomerJob).toHaveBeenCalledWith(customerId, request);
-        done();
+        validateFunctionCall(mockCustomerService.createCustomerJob, customerId, request);
       });
     });
   
-    it('should dispatch error if unable to get data from API', (done) => { 
+    it('should dispatch error if unable to get data from API', () => { 
       const request = testDataFactory.customer.job.request();
       const customerId = testDataFactory.customer.id();
       const priceResponse = testDataFactory.price.response();
       
       store.overrideSelector(selectPriceList, [priceResponse]);
       
-      mockCustomerService.createCustomerJob.and.returnValue(throwError(() => new Error('Customer API error')));
+      mockCustomerService.createCustomerJob.mockReturnValue(throwError(() => new Error('Customer API error')));
 
       actions$ = of(customerApiActions.createCustomerJobInitiated({
         customerId,
@@ -326,14 +314,13 @@ describe('Customer API effects', () => {
           message: 'Hiba történt',
         }),
       ], () => {
-        expect(mockCustomerService.createCustomerJob).toHaveBeenCalledWith(customerId, request);
-        done();
+        validateFunctionCall(mockCustomerService.createCustomerJob, customerId, request);
       });
     });
   });
 
   describe('On Update customer job initiated', () => {
-    it('should dispatch [Customer API] Update customer job completed', (done) => {
+    it('should dispatch [Customer API] Update customer job completed', () => {
       const request = testDataFactory.customer.job.request();
       const jobName = 'job name';
       const customerId = testDataFactory.customer.id();
@@ -341,7 +328,7 @@ describe('Customer API effects', () => {
       
       store.overrideSelector(selectPriceList, [priceResponse]);
 
-      mockCustomerService.updateCustomerJob.and.returnValue(of(undefined));
+      mockCustomerService.updateCustomerJob.mockReturnValue(of(undefined));
 
       actions$ = of(customerApiActions.updateCustomerJobInitiated({
         customerId,
@@ -357,11 +344,10 @@ describe('Customer API effects', () => {
           jobName,
         }));
       });
-      expect(mockCustomerService.updateCustomerJob).toHaveBeenCalledWith(customerId, jobName, request);
-      done();      
+      validateFunctionCall(mockCustomerService.updateCustomerJob, customerId, jobName, request);
     });
   
-    it('should dispatch duplicate error if customer job name is already in use', (done) => { 
+    it('should dispatch duplicate error if customer job name is already in use', () => { 
       const request = testDataFactory.customer.job.request();
       const jobName = 'job name';
       const customerId = testDataFactory.customer.id();
@@ -369,7 +355,7 @@ describe('Customer API effects', () => {
       
       store.overrideSelector(selectPriceList, [priceResponse]);
       
-      mockCustomerService.updateCustomerJob.and.returnValue(throwError(() => ({
+      mockCustomerService.updateCustomerJob.mockReturnValue(throwError(() => ({
         error: new Error('Duplicate customer job name'),
       })));
 
@@ -385,12 +371,11 @@ describe('Customer API effects', () => {
           message: `Munka (${request.name}) már létezik!`,
         }),
       ], () => {
-        expect(mockCustomerService.updateCustomerJob).toHaveBeenCalledWith(customerId, jobName, request);
-        done();
+        validateFunctionCall(mockCustomerService.updateCustomerJob, customerId, jobName, request);
       });
     });
   
-    it('should dispatch error if unable to get data from API', (done) => { 
+    it('should dispatch error if unable to get data from API', () => { 
       const request = testDataFactory.customer.job.request();
       const jobName = 'job name';
       const customerId = testDataFactory.customer.id();
@@ -398,7 +383,7 @@ describe('Customer API effects', () => {
       
       store.overrideSelector(selectPriceList, [priceResponse]);
       
-      mockCustomerService.updateCustomerJob.and.returnValue(throwError(() => new Error('Customer API error')));
+      mockCustomerService.updateCustomerJob.mockReturnValue(throwError(() => new Error('Customer API error')));
 
       actions$ = of(customerApiActions.updateCustomerJobInitiated({
         customerId,
@@ -412,18 +397,17 @@ describe('Customer API effects', () => {
           message: 'Hiba történt',
         }),
       ], () => {
-        expect(mockCustomerService.updateCustomerJob).toHaveBeenCalledWith(customerId, jobName, request);
-        done();
+        validateFunctionCall(mockCustomerService.updateCustomerJob, customerId, jobName, request);
       });
     });
   });
 
   describe('On Delete customer job initiated', () => {
-    it('should dispatch [Customer API] Delete customer job completed', (done) => {
+    it('should dispatch [Customer API] Delete customer job completed', () => {
       const jobName = 'job name';
       const customerId = testDataFactory.customer.id();
 
-      mockCustomerService.deleteCustomerJob.and.returnValue(of(undefined));
+      mockCustomerService.deleteCustomerJob.mockReturnValue(of(undefined));
 
       actions$ = of(customerApiActions.deleteCustomerJobInitiated({
         customerId,
@@ -436,15 +420,14 @@ describe('Customer API effects', () => {
           jobName,
         }));
       });
-      expect(mockCustomerService.deleteCustomerJob).toHaveBeenCalledWith(customerId, jobName);
-      done();      
+      validateFunctionCall(mockCustomerService.deleteCustomerJob, customerId, jobName);
     });
   
-    it('should dispatch error if unable to get data from API', (done) => { 
+    it('should dispatch error if unable to get data from API', () => { 
       const jobName = 'job name';
       const customerId = testDataFactory.customer.id();
       
-      mockCustomerService.deleteCustomerJob.and.returnValue(throwError(() => new Error('Customer API error')));
+      mockCustomerService.deleteCustomerJob.mockReturnValue(throwError(() => new Error('Customer API error')));
 
       actions$ = of(customerApiActions.deleteCustomerJobInitiated({
         customerId,
@@ -457,18 +440,17 @@ describe('Customer API effects', () => {
           message: 'Hiba történt',
         }),
       ], () => {
-        expect(mockCustomerService.deleteCustomerJob).toHaveBeenCalledWith(customerId, jobName);
-        done();
+        validateFunctionCall(mockCustomerService.deleteCustomerJob, customerId, jobName);
       });
     });
   });
 
   describe('On Add customer to blacklist initiated', () => {
-    it('should dispatch [Customer API] Add customer to blacklist completed', (done) => {
+    it('should dispatch [Customer API] Add customer to blacklist completed', () => {
       const customerA = testDataFactory.customer.response();
       const customerB = testDataFactory.customer.response();
 
-      mockCustomerService.updateCustomerBlacklist.and.returnValue(of(undefined));
+      mockCustomerService.updateCustomerBlacklist.mockReturnValue(of(undefined));
 
       actions$ = of(customerApiActions.addCustomerToBlacklistInitiated({
         customers: [
@@ -485,18 +467,17 @@ describe('Customer API effects', () => {
           ],
         }));
       });
-      expect(mockCustomerService.updateCustomerBlacklist).toHaveBeenCalledWith([
+      validateFunctionCall(mockCustomerService.updateCustomerBlacklist, [
         customerA.customerId,
         customerB.customerId,
       ]);
-      done();      
     });
   
-    it('should dispatch error if unable to get data from API', (done) => { 
+    it('should dispatch error if unable to get data from API', () => { 
       const customerA = testDataFactory.customer.response();
       const customerB = testDataFactory.customer.response();
       
-      mockCustomerService.updateCustomerBlacklist.and.returnValue(throwError(() => new Error('Customer API error')));
+      mockCustomerService.updateCustomerBlacklist.mockReturnValue(throwError(() => new Error('Customer API error')));
 
       actions$ = of(customerApiActions.addCustomerToBlacklistInitiated({
         customers: [
@@ -511,21 +492,20 @@ describe('Customer API effects', () => {
           message: 'Hiba történt',
         }),
       ], () => {
-        expect(mockCustomerService.updateCustomerBlacklist).toHaveBeenCalledWith([
+        validateFunctionCall(mockCustomerService.updateCustomerBlacklist, [
           customerA.customerId,
           customerB.customerId,
         ]);
-        done();
       });
     });
   });
 
   describe('On Remove customer from blacklist initiated', () => {
-    it('should dispatch [Customer API] Remove customer from blacklist completed', (done) => {
+    it('should dispatch [Customer API] Remove customer from blacklist completed', () => {
       const customerA = testDataFactory.customer.response();
       const customerB = testDataFactory.customer.response();
 
-      mockCustomerService.deleteCustomerBlacklist.and.returnValue(of(undefined));
+      mockCustomerService.deleteCustomerBlacklist.mockReturnValue(of(undefined));
 
       actions$ = of(customerApiActions.deleteCustomerFromBlacklistInitiated({
         customerIds: [
@@ -542,18 +522,17 @@ describe('Customer API effects', () => {
           ],
         }));
       });
-      expect(mockCustomerService.deleteCustomerBlacklist).toHaveBeenCalledWith([
+      validateFunctionCall(mockCustomerService.deleteCustomerBlacklist, [
         customerA.customerId,
         customerB.customerId,
       ]);
-      done();      
     });
   
-    it('should dispatch error if unable to get data from API', (done) => { 
+    it('should dispatch error if unable to get data from API', () => { 
       const customerA = testDataFactory.customer.response();
       const customerB = testDataFactory.customer.response();
       
-      mockCustomerService.deleteCustomerBlacklist.and.returnValue(throwError(() => new Error('Customer API error')));
+      mockCustomerService.deleteCustomerBlacklist.mockReturnValue(throwError(() => new Error('Customer API error')));
 
       actions$ = of(customerApiActions.deleteCustomerFromBlacklistInitiated({
         customerIds: [
@@ -568,11 +547,10 @@ describe('Customer API effects', () => {
           message: 'Hiba történt',
         }),
       ], () => {
-        expect(mockCustomerService.deleteCustomerBlacklist).toHaveBeenCalledWith([
+        validateFunctionCall(mockCustomerService.deleteCustomerBlacklist, [
           customerA.customerId,
           customerB.customerId,
         ]);
-        done();
       });
     });
   });

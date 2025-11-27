@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { Component, Inject } from '@angular/core';
 import { MatBottomSheetRef, MAT_BOTTOM_SHEET_DATA } from '@angular/material/bottom-sheet';
 import { MatIconModule } from '@angular/material/icon';
@@ -21,7 +20,6 @@ export enum CatalogSubmenuResult {
   templateUrl: './catalog-submenu.component.html',
   styleUrls: ['./catalog-submenu.component.scss'],
   imports: [
-    CommonModule,
     MatIconModule,
     MatListModule,
   ],

@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { DurationStepperComponent } from './duration-stepper.component';
 
-xdescribe('DurationStepperComponent', () => {
+describe.skip('DurationStepperComponent', () => {
   let component: DurationStepperComponent;
   let fixture: ComponentFixture<DurationStepperComponent>;
 

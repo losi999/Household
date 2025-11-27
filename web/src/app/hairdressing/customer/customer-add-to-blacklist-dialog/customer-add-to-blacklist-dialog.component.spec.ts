@@ -5,16 +5,17 @@ import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { CustomerAddToBlacklistDialogComponent, CustomerAddToBlacklistDialogData, CustomerAddToBlacklistDialogResult } from '@household/web/app/hairdressing/customer/customer-add-to-blacklist-dialog/customer-add-to-blacklist-dialog.component';
 import { CustomerAutocompleteInputComponent } from '@household/web/app/shared/autocomplete/customer-autocomplete-input/customer-autocomplete-input.component';
 import { elementSelectorFactory, IElementSelector } from '@household/web/testing/element-selector';
+import { createMockService, Mock } from '@household/web/utils/unit-testing';
 import { provideMockStore } from '@ngrx/store/testing';
 
 describe('CustomerAddToBlacklistDialogComponent', () => {
   let fixture: ComponentFixture<CustomerAddToBlacklistDialogComponent>;
-  let mockMatDialogRef: jasmine.SpyObj<MatDialogRef<CustomerAddToBlacklistDialogComponent, CustomerAddToBlacklistDialogResult>>;
+  let mockMatDialogRef: Mock<MatDialogRef<CustomerAddToBlacklistDialogComponent, CustomerAddToBlacklistDialogResult>>;
   let selector: IElementSelector;
   let dialogData: CustomerAddToBlacklistDialogData;
 
   beforeEach(async () => {
-    mockMatDialogRef = jasmine.createSpyObj(['close']);
+    mockMatDialogRef = createMockService('close');
 
     dialogData = {
       customer: testDataFactory.customer.response(),

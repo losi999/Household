@@ -1,4 +1,6 @@
+import { AsyncPipe } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
+import { MatListModule } from '@angular/material/list';
 import { Price } from '@household/shared/types/types';
 import { priceActions } from '@household/web/app/hairdressing/price/state/price.actions';
 import { selectPriceIsInProgress } from '@household/web/state/progress/progress.selector';
@@ -7,7 +9,10 @@ import { Observable } from 'rxjs';
 
 @Component({
   selector: 'household-price-list-item',
-  standalone: false,  
+  imports: [
+    MatListModule,
+    AsyncPipe,
+  ],  
   templateUrl: './price-list-item.component.html',
   styleUrl: './price-list-item.component.scss',
 })

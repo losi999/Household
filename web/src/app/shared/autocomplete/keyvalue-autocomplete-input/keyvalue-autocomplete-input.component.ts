@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { KeyValuePipe } from '@angular/common';
 import { Component, Injector, Input, OnInit, Self } from '@angular/core';
 import { ControlValueAccessor, FormControl, FormControlName, FormGroupDirective, NgControl, ReactiveFormsModule, FormControlDirective } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
@@ -11,7 +11,7 @@ import { AutocompleteFilterPipe } from '@household/web/app/shared/autocomplete/a
 @Component({
   selector: 'household-keyvalue-autocomplete-input',
   imports: [
-    CommonModule,
+    KeyValuePipe,
     ReactiveFormsModule,
     MatFormFieldModule,
     MatButtonModule,

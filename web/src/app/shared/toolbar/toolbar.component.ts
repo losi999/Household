@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MainMenuComponent } from '@household/web/app/shared/main-menu/main-menu.component';
@@ -6,13 +5,14 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { Store } from '@ngrx/store';
 import { selectIsInProgress } from '@household/web/state/progress/progress.selector';
 import { AuthService } from '@household/web/services/auth.service';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
   selector: 'household-toolbar',
   templateUrl: './toolbar.component.html',
   styleUrls: ['./toolbar.component.scss'],
   imports: [
-    CommonModule,
+    AsyncPipe,
     MatToolbarModule,
     MainMenuComponent,
     MatProgressBarModule,

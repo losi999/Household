@@ -15,7 +15,7 @@ const updateSettingsService = updateSettingServiceFactory(settingService, settin
 export default index({
   handler: handler(updateSettingsService),
   before: [
-    authorizer(UserType.Editor),
+    authorizer(UserType.Editor, UserType.Hairdresser),
     apiRequestValidator({
       body,
       pathParameters,

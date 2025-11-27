@@ -17,14 +17,12 @@
         "build": {
           "builder": "@angular/build:application",
           "options": {
+            "browser": "src/main.ts",
+            "tsConfig": "tsconfig.app.json",
             "outputPath": {
               "base": "../dist/web"
             },
             "index": "src/index.html",
-            "polyfills": [
-              "src/polyfills.ts"
-            ],
-            "tsConfig": "tsconfig.app.json",
             "assets": [
               "src/favicon.ico",
               "src/assets"
@@ -37,11 +35,10 @@
             "extractLicenses": false,
             "sourceMap": true,
             "optimization": false,
-            "namedChunks": true,
-            "browser": "src/main.ts"
+            "namedChunks": true
           },
           "configurations": {
-            "localhost-auth": {
+            "localhost": {
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
@@ -159,7 +156,7 @@
           },
           "configurations": {
             "LOCAL": {
-              "buildTarget": "household:build:localhost-auth"
+              "buildTarget": "household:build:localhost"
             }
           }
         },
@@ -170,26 +167,13 @@
           }
         },
         "test": {
-          "builder": "@angular/build:karma",
+          "builder": "@angular/build:unit-test",
           "options": {
-            "polyfills": [
-              "src/polyfills.ts"
-            ],
-            "tsConfig": "tsconfig.spec.json",
-            "inlineStyleLanguage": "scss",
-            "assets": [
-              "src/favicon.ico",
-              "src/assets"
-            ],
-            "styles": [
-              "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
-              "src/styles.scss"
-            ],
-            "scripts": []
+            "buildTarget": "household:build:localhost",
+            "tsConfig": "tsconfig.spec.json"
           },
           "configurations": {
             "CI": {
-              "browsers": "ChromeHeadless",
               "watch": false,
               "progress": false
             }

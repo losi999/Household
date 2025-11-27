@@ -1,9 +1,15 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatRadioModule } from '@angular/material/radio';
+import { MatSliderModule } from '@angular/material/slider';
 import { AFTERNOON_SHIFT_END, AFTERNOON_SHIFT_START, MORNING_SHIFT_END, MORNING_SHIFT_START, WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
 import { CalendarDayType } from '@household/shared/enums';
 import { Calendar } from '@household/shared/types/types';
+import { TimeSlotToTimePipe } from '@household/web/app/shared/pipes/time-slot-to-time.pipe';
 
 enum ShiftType{
   Morning = 'morning',
@@ -14,7 +20,16 @@ export type CalendarWorkdayDialogData = Exclude<Calendar.Day.Response, Calendar.
 export type CalendarWorkdayDialogResult = Calendar.DayProp & Partial<Calendar.Day.Request>;
 
 @Component({
-  standalone: false,  
+  imports: [
+    MatDialogModule,
+    ReactiveFormsModule,
+    MatButtonToggleModule,
+    MatDividerModule,
+    MatRadioModule,
+    MatSliderModule,
+    TimeSlotToTimePipe,
+    MatButtonModule,
+  ],  
   templateUrl: './calendar-workday-dialog.component.html',
   styleUrl: './calendar-workday-dialog.component.scss',
 })

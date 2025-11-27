@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ConfirmationDialogComponent } from './confirmation-dialog.component';
 
-xdescribe('ConfirmationDialogComponent', () => {
+describe.skip('ConfirmationDialogComponent', () => {
   let component: ConfirmationDialogComponent;
   let fixture: ComponentFixture<ConfirmationDialogComponent>;
 

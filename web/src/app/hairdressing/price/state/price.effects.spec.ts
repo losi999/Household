@@ -7,76 +7,75 @@ import { priceActions, priceApiActions } from '@household/web/app/hairdressing/p
 import { PriceEffects } from '@household/web/app/hairdressing/price/state/price.effects';
 import { CatalogSubmenuResult } from '@household/web/app/shared/catalog-submenu/catalog-submenu.component';
 import { DialogService } from '@household/web/services/dialog.service';
-import { expectEffectNotEmitted, returnBottomSheetAfterDismissed, returnDialogAfterClosed } from '@household/web/utils/unit-testing';
+import { createMockService, expectEffectNotEmitted, Mock, returnBottomSheetAfterDismissed, returnDialogAfterClosed } from '@household/web/utils/unit-testing';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { Observable, of } from 'rxjs';
 
 describe('Price effects', () => {
   let actions$: Observable<any>;
   let effects: PriceEffects;
-  let mockDialogService: jasmine.SpyObj<DialogService>;
-  let mockMatDialog: jasmine.SpyObj<MatDialog>;
-  let mockMatBottomSheet: jasmine.SpyObj<MatBottomSheet>;
+  let mockDialogService: Mock<DialogService>;
+  let mockMatDialog: Mock<MatDialog>;
+  let mockMatBottomSheet: Mock<MatBottomSheet>;
 
   beforeEach(() => {
+    mockDialogService = createMockService('openConfirmationDialog');
+    mockMatDialog = createMockService('open');
+    mockMatBottomSheet = createMockService('open');
+
     TestBed.configureTestingModule({
       providers: [
         PriceEffects,
         provideMockActions(() => actions$),
         {
           provide: DialogService,
-          useValue: jasmine.createSpyObj<DialogService>('DialogService', ['openConfirmationDialog']), 
+          useValue: mockDialogService,
         },
         {
           provide: MatDialog,
-          useValue: jasmine.createSpyObj<MatDialog>('MatDialog', ['open']), 
+          useValue: mockMatDialog,
         },
         {
           provide: MatBottomSheet,
-          useValue: jasmine.createSpyObj<MatBottomSheet>('MatBottomSheet', ['open']), 
+          useValue: mockMatBottomSheet,
         },
       ],
     });
 
     effects = TestBed.inject(PriceEffects);
-    mockMatDialog = TestBed.inject(MatDialog) as jasmine.SpyObj<MatDialog>;
-    mockMatBottomSheet = TestBed.inject(MatBottomSheet) as jasmine.SpyObj<MatBottomSheet>;
-    mockDialogService = TestBed.inject(DialogService) as jasmine.SpyObj<DialogService>;
   });
 
   describe('On Create price', () => {
-    it('should dispatch [Price API] Create price initiated', (done) => {
+    it('should dispatch [Price API] Create price initiated', () => {
       const request = testDataFactory.price.request();
 
-      mockMatDialog.open.and.returnValue(returnDialogAfterClosed<PriceDialogResult>(request));
+      mockMatDialog.open.mockReturnValue(returnDialogAfterClosed<PriceDialogResult>(request));
 
       actions$ = of(priceActions.createPrice());
 
       effects.openCreatePriceDialog.subscribe((result) => {
         expect(result).toEqual(priceApiActions.createPriceInitiated(request));
-        expect(mockMatDialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({ }));
-        done();
+        expect(mockMatDialog.open).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ }));
       });
     });
 
-    it('should NOT dispatch if dialog is cancelled', (done) => {
-      mockMatDialog.open.and.returnValue(returnDialogAfterClosed<PriceDialogResult>());
+    it('should NOT dispatch if dialog is cancelled', () => {
+      mockMatDialog.open.mockReturnValue(returnDialogAfterClosed<PriceDialogResult>());
     
       actions$ = of(priceActions.createPrice());
     
       expectEffectNotEmitted(effects.openCreatePriceDialog, () => {
-        expect(mockMatDialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({ }));
-        done();
+        expect(mockMatDialog.open).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ }));
       });
     });
   });
 
   describe('On Update price', () => {
-    it('should dispatch [Price API] Update price initiated', (done) => {
+    it('should dispatch [Price API] Update price initiated', () => {
       const priceResponse = testDataFactory.price.response();
       const request = testDataFactory.price.request();
 
-      mockMatDialog.open.and.returnValue(returnDialogAfterClosed<PriceDialogResult>(request));
+      mockMatDialog.open.mockReturnValue(returnDialogAfterClosed<PriceDialogResult>(request));
 
       actions$ = of(priceActions.updatePrice(priceResponse));
 
@@ -85,34 +84,32 @@ describe('Price effects', () => {
           priceId: priceResponse.priceId,
           ...request,
         }));
-        expect(mockMatDialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
+        expect(mockMatDialog.open).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
           data: priceResponse,
         }));
-        done();
       });
     });
 
-    it('should NOT dispatch if dialog is cancelled', (done) => {
+    it('should NOT dispatch if dialog is cancelled', () => {
       const priceResponse = testDataFactory.price.response();
 
-      mockMatDialog.open.and.returnValue(returnDialogAfterClosed<PriceDialogResult>());
+      mockMatDialog.open.mockReturnValue(returnDialogAfterClosed<PriceDialogResult>());
     
       actions$ = of(priceActions.updatePrice(priceResponse));
     
       expectEffectNotEmitted(effects.openUpdatePriceDialog, () => {
-        expect(mockMatDialog.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
+        expect(mockMatDialog.open).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
           data: priceResponse,
         }));
-        done();
       });
     });
   });
 
   describe('On Delete price', () => {
-    it('should dispatch [Price API] Delete price initiated', (done) => {
+    it('should dispatch [Price API] Delete price initiated', () => {
       const priceResponse = testDataFactory.price.response();
 
-      mockDialogService.openConfirmationDialog.and.returnValue(of(true));
+      mockDialogService.openConfirmationDialog.mockReturnValue(of(true));
 
       actions$ = of(priceActions.deletePrice(priceResponse));
 
@@ -120,83 +117,78 @@ describe('Price effects', () => {
         expect(result).toEqual(priceApiActions.deletePriceInitiated({
           priceId: priceResponse.priceId,
         }));
-        expect(mockDialogService.openConfirmationDialog).toHaveBeenCalledWith(jasmine.objectContaining({
+        expect(mockDialogService.openConfirmationDialog).toHaveBeenCalledWith(expect.objectContaining({
           content: priceResponse.name,
         }));
-        done();
       });
     });
 
-    it('should NOT dispatch if dialog is cancelled', (done) => {
+    it('should NOT dispatch if dialog is cancelled', () => {
       const priceResponse = testDataFactory.price.response();
 
-      mockDialogService.openConfirmationDialog.and.returnValue(of(false));
+      mockDialogService.openConfirmationDialog.mockReturnValue(of(false));
     
       actions$ = of(priceActions.deletePrice(priceResponse));
     
       expectEffectNotEmitted(effects.openDeletePriceDialog, () => {
-        expect(mockDialogService.openConfirmationDialog).toHaveBeenCalledWith(jasmine.objectContaining({
+        expect(mockDialogService.openConfirmationDialog).toHaveBeenCalledWith(expect.objectContaining({
           content: priceResponse.name,
         }));
-        done();
       });
     });
   });
 
   describe('On Price list item submenu', () => {
-    it('should dispatch [Price] Update price', (done) => {
+    it('should dispatch [Price] Update price', () => {
       const priceResponse = testDataFactory.price.response();
 
-      mockMatBottomSheet.open.and.returnValue(returnBottomSheetAfterDismissed<CatalogSubmenuResult>(CatalogSubmenuResult.Edit));
+      mockMatBottomSheet.open.mockReturnValue(returnBottomSheetAfterDismissed<CatalogSubmenuResult>(CatalogSubmenuResult.Edit));
 
       actions$ = of(priceActions.openPriceListItemSubmenu(priceResponse));
 
       effects.openPriceListItemSubmenu.subscribe((result) => {
         expect(result).toEqual(priceActions.updatePrice(priceResponse));
-        expect(mockMatBottomSheet.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
+        expect(mockMatBottomSheet.open).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
           data: {
             title: priceResponse.name,
             hideMerge: true,
           },
         }));
-        done();
       });
     });
 
-    it('should dispatch [Price] Delete price', (done) => {
+    it('should dispatch [Price] Delete price', () => {
       const priceResponse = testDataFactory.price.response();
 
-      mockMatBottomSheet.open.and.returnValue(returnBottomSheetAfterDismissed<CatalogSubmenuResult>(CatalogSubmenuResult.Delete));
+      mockMatBottomSheet.open.mockReturnValue(returnBottomSheetAfterDismissed<CatalogSubmenuResult>(CatalogSubmenuResult.Delete));
 
       actions$ = of(priceActions.openPriceListItemSubmenu(priceResponse));
 
       effects.openPriceListItemSubmenu.subscribe((result) => {
         expect(result).toEqual(priceActions.deletePrice(priceResponse));
-        expect(mockMatBottomSheet.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
+        expect(mockMatBottomSheet.open).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
           data: {
             title: priceResponse.name,
             hideMerge: true,
           },
         }));
-        done();
       });
     });
 
-    it('should NOT dispatch if dialog is cancelled', (done) => {
+    it('should NOT dispatch if dialog is cancelled', () => {
       const priceResponse = testDataFactory.price.response();
 
-      mockMatBottomSheet.open.and.returnValue(returnBottomSheetAfterDismissed<CatalogSubmenuResult>());
+      mockMatBottomSheet.open.mockReturnValue(returnBottomSheetAfterDismissed<CatalogSubmenuResult>());
     
       actions$ = of(priceActions.openPriceListItemSubmenu(priceResponse));
     
       expectEffectNotEmitted(effects.openPriceListItemSubmenu, () => {
-        expect(mockMatBottomSheet.open).toHaveBeenCalledWith(jasmine.anything(), jasmine.objectContaining({
+        expect(mockMatBottomSheet.open).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
           data: {
             title: priceResponse.name,
             hideMerge: true,
           },
         }));
-        done();
       });
     });
   });
