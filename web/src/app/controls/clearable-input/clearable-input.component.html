@@ -1,0 +1,43 @@
+<mat-form-field>
+  <mat-label>{{ label }}</mat-label>
+  @if (prefix) {
+    <span matTextPrefix>{{ prefix }} &nbsp;</span>
+  }
+  @switch (type) {
+    @case ("number") {
+      <input type="number" matInput [required]="required()" (input)="onInput($event)" [errorStateMatcher]="matcher" />
+    }
+    @case ("text") {
+      <input type="text" matInput [field]="form" [errorStateMatcher]="matcher" />
+    }
+    @case ("area") {
+      <textarea matInput [field]="form" rows="3" [errorStateMatcher]="matcher"></textarea>
+    }
+  }
+  <button matSuffix mat-icon-button aria-label="Clear" type="button" (click)="onClearValue()" tabindex="-1">
+    <mat-icon>close</mat-icon>
+  </button>
+  @for (error of errors(); track $index) {
+    <mat-error>
+      @if (error.message) {
+        {{ error.message }}
+      } @else {
+        @switch (error.kind) {
+          @case ("required") {
+            Kötelező
+          }
+          @case ("email") {
+            Email formátum szükséges
+          }
+          @case ("min") {
+            Minimum érték: {{ error.min }}
+          }
+          @default {
+            {{ error.kind }}
+          }
+        }
+      }
+    </mat-error>
+  }
+</mat-form-field>
+<pre>{{ errors() | json }}</pre>

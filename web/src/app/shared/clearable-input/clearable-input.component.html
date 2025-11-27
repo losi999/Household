@@ -1,23 +1,15 @@
 <mat-form-field>
   <mat-label>{{ label }}</mat-label>
   @if (prefix) {
-  <span matTextPrefix>{{prefix}} &nbsp;</span>
+    <span matTextPrefix>{{ prefix }} &nbsp;</span>
   }
-  @switch (type) {
-    @case ("number") {
-      <input type="number" matInput [value]="value()" (input)="value.set($event.target.value)" />
-    }
-    @case ("text") {
-      <input type="text" matInput [value]="value()" (input)="value.set($event.target.value)" />
-    }
-    @case ("area") {
-      <textarea matInput [value]="value()" (input)="value.set($event.target.value)" rows="3"></textarea>
-    }
-  }
-  <button matSuffix mat-icon-button aria-label="Clear" type="button" (click)="clearValue()" tabindex="-1">
+  <ng-container [ngSwitch]="type">
+    <input *ngSwitchCase="'number'" type="number" matInput [formControl]="input" (blur)="touched?.()" />
+    <input *ngSwitchCase="'text'" type="text" matInput [formControl]="input" (blur)="touched?.()" />
+    <textarea *ngSwitchCase="'area'" matInput [formControl]="input" rows="3" (blur)="touched?.()"></textarea>
+  </ng-container>
+  <button matSuffix mat-icon-button aria-label="Clear" type="button" (click)="clearValue($event)" tabindex="-1">
     <mat-icon>close</mat-icon>
   </button>
-  <!-- @if (input.errors?.required) {
-    <mat-error>Kötelező</mat-error>
-  } -->
+  <mat-error *ngIf="input.errors?.required">Kötelező</mat-error>
 </mat-form-field>
