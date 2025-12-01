@@ -1,0 +1,11 @@
+//
+//  Prod.xcconfig
+//  Hairdressing
+//
+//  Created by Laszlo Losonczi on 2025. 11. 28..
+//
+
+// Configuration settings file format documentation can be found at:
+// https://developer.apple.com/documentation/xcode/adding-a-build-configuration-file-to-your-project
+
+API_DOMAIN = householdapi.losi999.hu

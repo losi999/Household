@@ -746,7 +746,7 @@ export const httpErrors = {
     },
     login: (ctx: User.Email, statusCode = 500): CatchAndThrow => (error) => {
       log('Login', ctx, error);
-      throw httpError(statusCode, 'Error while logging in');
+      throw httpError(statusCode, error.message);
     },
     refreshToken: (statusCode = 500): CatchAndThrow => (error) => {
       log('Refresh token', error);
