@@ -8,14 +8,21 @@
 import SwiftUI
 
 struct PriceListItemView: View {
+  @EnvironmentObject private var priceService: PriceService
+  @EnvironmentObject private var dialogService: DialogService
+
   var price: Price.Response
 
   var amountSuffix: String {
-    price.unitOfMeasurement == .db ? "" : " / \(price.unitOfMeasurement.rawValue)"
+    price.unitOfMeasurement == .count ? "" : " / \(price.unitOfMeasurement.rawValue)"
   }
 
   @State var showMenu: Bool = false
   @State var showDeleteConfirmation: Bool = false
+
+  func onDeletePrice(priceId: Price.Id) async throws {
+    try await priceService.deletePrice(priceId: priceId)
+  }
 
   var body: some View {
     VStack(alignment: .leading) {
@@ -40,11 +47,14 @@ struct PriceListItemView: View {
         case .delete:
           showDeleteConfirmation = true
         case .edit:
-          print("editing", price.priceId)
+          dialogService.open() {
+            PriceDialogView(title: "Szerkesztés")
+          }
         default:
           break
         }
       }
+      .presentationCompactAdaptation(.popover)
       .foregroundStyle(.appText)
       .background(.appBackground)
     }
@@ -53,10 +63,11 @@ struct PriceListItemView: View {
       isPresented: $showDeleteConfirmation,
       actions: {
         Button("Igen", role: .destructive) {
-          print("deleting", price.priceId)
+          Task {
+            try await onDeletePrice(priceId: price.priceId)
+          }
         }
         Button("Nem", role: .cancel) {}
-          .foregroundStyle(.white)
       }, message: {
         Text(price.name)
       }

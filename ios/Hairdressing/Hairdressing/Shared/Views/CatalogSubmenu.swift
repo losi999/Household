@@ -27,27 +27,21 @@ struct CatalogSubmenu: View {
         .padding()
 
       if !hideEdit {
-        Button(action: {
+        IconTextButton(label: "Szerkesztés", icon: "pencil") {
           onDismiss(.edit)
-        }, label: {
-          Label("Szerkesztés", systemImage: "pencil")
-        }).padding(.vertical, 5)
+        }
       }
 
       if !hideMerge {
-        Button(action: {
+        IconTextButton(label: "Egyesítés", icon: "arrow.merge") {
           onDismiss(.merge)
-        }, label: {
-          Label("Egyesítés", systemImage: "arrow.merge")
-        }).padding(.vertical, 5)
+        }
       }
       
       if !hideDelete {
-        Button(action: {
+        IconTextButton(label: "Törlés", icon: "trash") {
           onDismiss(.delete)
-        }, label: {
-          Label("Törlés", systemImage: "trash")
-        }).padding(.vertical, 5)
+        }
       }
     }
     .padding()

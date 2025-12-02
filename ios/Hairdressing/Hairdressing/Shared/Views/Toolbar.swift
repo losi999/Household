@@ -12,7 +12,7 @@ struct ToolbarButton {
 }
 
 struct AppToolbar: ViewModifier {
-    @StateObject private var authService = AuthService.shared
+  @EnvironmentObject private var authService: AuthService
     var title: String
     var actionButtons: [ToolbarButton] = []
     

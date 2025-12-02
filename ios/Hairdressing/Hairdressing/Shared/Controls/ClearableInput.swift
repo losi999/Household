@@ -17,8 +17,10 @@ enum ClearableInputType {
 struct ClearableInput : View {
     let title: String
     let type: ClearableInputType
+  
     @Binding var text: String
     @FocusState var isTyping: Bool
+
     var body: some View {
         ZStack(alignment: .leading) {
             Group {
@@ -32,15 +34,15 @@ struct ClearableInput : View {
             .padding(.trailing, 30)
             .textInputAutocapitalization(.never)
             .disableAutocorrection(true)
-            .foregroundColor(.accentColor)
+            .foregroundColor(.appText)
             .keyboardType(.emailAddress)
             .frame(height: 55).focused($isTyping)
-            .background(isTyping ? .blue : .accentColor, in: RoundedRectangle(cornerRadius: 14).stroke(lineWidth: 2))
+            .background(isTyping ? .blue : .appText, in: RoundedRectangle(cornerRadius: 14).stroke(lineWidth: 2))
             HStack {
                 Text(title)
                     .padding(.horizontal, 5)
                     .background(.appBackground.opacity(isTyping || !text.isEmpty ? 1 : 0))
-                    .foregroundStyle(isTyping ? .blue : .accentColor)
+                    .foregroundStyle(isTyping ? .blue : .appText)
                     .padding(.leading).offset(y: isTyping || !text.isEmpty ? -27 : 0)
                 Spacer()
                 if !text.isEmpty {

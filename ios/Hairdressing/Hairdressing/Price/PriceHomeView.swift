@@ -8,16 +8,12 @@
 import SwiftUI
 
 struct PriceHomeView: View {
-  @StateObject private var priceService = PriceService.shared
-
-  @State private var prices: [Price.Response] = []
-
-  @State private var showModal: Bool = false;
+  @EnvironmentObject private var priceService: PriceService
+  @EnvironmentObject private var dialogService: DialogService
 
   func loadPrices() async {
     do {
-      let result = try await priceService.listPrices()
-      prices = result
+      try await priceService.listPrices()
     } catch {
       print(error)
     }
@@ -25,15 +21,7 @@ struct PriceHomeView: View {
 
   var body: some View {
     ZStack{
-      PriceListView(prices: prices)
-    }
-    .sheet(isPresented: $showModal) {
-      PriceDialogView() {
-        showModal.toggle()
-      }
-      .presentationBackground(.appBackground)
-      .presentationDetents([.medium])
-      .interactiveDismissDisabled(true)
+      PriceListView(prices: priceService.prices)
     }
     .onAppear{
       Task {
@@ -42,7 +30,16 @@ struct PriceHomeView: View {
     }
     .appToolbar("Árlista", actionButtons: [
       ToolbarButton(action: {
-        showModal.toggle()
+        dialogService.open() {
+          PriceDialogView(title: "Új")
+        }
+        onClosed: {result in
+          if let result {
+            print("price home", result)
+          } else {
+            print("print home", "no result")
+          }
+        }
       }, label: "plus"),
     ])
 

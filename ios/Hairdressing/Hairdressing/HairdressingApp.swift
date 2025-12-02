@@ -9,20 +9,37 @@ import SwiftUI
 
 @main
 struct HairdressingApp: App {
-    @StateObject private var authService = AuthService.shared
+  @StateObject private var authService: AuthService
+  @StateObject private var priceService: PriceService
+  @StateObject private var dialogService: DialogService
+
+  init () {
+    let keychainService = KeychainService()
+    let httpClient = HttpClient(keychainService: keychainService)
     
-    var body: some Scene {
-        WindowGroup {
-            NavigationStack {
-                ZStack {
-                    Color(.appBackground).ignoresSafeArea()
-                    if authService.isLoggedIn {
-                        PriceHomeView()
-                    } else {
-                        LoginView()
-                    }
-                }
+    _authService = StateObject(wrappedValue: AuthService(httpClient: httpClient, keychainService: keychainService))
+    _priceService = StateObject(wrappedValue: PriceService(httpClient: httpClient))
+    _dialogService = StateObject(wrappedValue: DialogService())
+  }
+
+  var body: some Scene {
+    WindowGroup {
+      ZStack {
+        NavigationStack {
+          ZStack {
+            Color(.appBackground).ignoresSafeArea()
+            if authService.isLoggedIn {
+              PriceHomeView()
+            } else {
+              LoginView()
             }
+          }
         }
+        Dialog()
+      }
+      .environmentObject(authService)
+      .environmentObject(priceService)
+      .environmentObject(dialogService)
     }
+  }
 }

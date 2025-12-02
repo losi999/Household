@@ -12,8 +12,6 @@ import Combine
 final class KeychainService {
     private let keychain = Keychain(service: "losi999.Hairdressing")
     
-    static let shared = KeychainService()
-    
     init() {
         _idToken = try? keychain.get("idToken")
         _refreshToken = try? keychain.get("refreshToken")

@@ -10,7 +10,7 @@ import SwiftUI
 struct LoginView: View {
     @State var email: String = ""
     @State var password: String = ""
-    @StateObject private var authService = AuthService.shared
+  @EnvironmentObject private var authService: AuthService
     
     func onLogin() async {
         do {
