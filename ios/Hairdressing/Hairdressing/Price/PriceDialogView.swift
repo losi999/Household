@@ -37,10 +37,10 @@ struct PriceDialogView: View, Actionable, Titled {
         FilledButton(title: "Mentés", style: .primary) {
           onClosed(
             Price.Request(
-                name: model.name,
-                amount: model.amount,
-                unitOfMeasurement: model.unitOfMeasurement
-              )
+              name: model.name,
+              amount: model.amount,
+              unitOfMeasurement: model.unitOfMeasurement
+            )
           )
         }
         FilledButton(title: "Mégse", style: .secondary) {
@@ -50,17 +50,24 @@ struct PriceDialogView: View, Actionable, Titled {
     )
   }
 
+  @State private var inputText: String = ""
+  @FocusState var isTypingName: Bool
+  @FocusState var isTypingAmount: Bool
+
   var body: some View {
     VStack(alignment: .leading) {
-      Text(model.name).foregroundStyle(.black)
-      TextField("text", text: $model.name)
-        .background(.black)
-        .foregroundStyle(.white)
-      //      Text(amount, format: .number)
-      //      TextField("double", value: $amount, format: .number)
-      //        .keyboardType(.numberPad)
-      //        .background(.black)
-      //        .foregroundStyle(.white)
+      TextInput(
+        title: "Név",
+        text: $model.name,
+        type: .text,
+        validators: [.required, .minLength(3)]
+      )
+      IntegerInput(
+        title: "Ár",
+        value: $model.amount,
+        validators: [.required, .exclusiveMin(0)]
+      )
+
     }
     .frame(width: 400)
   }
