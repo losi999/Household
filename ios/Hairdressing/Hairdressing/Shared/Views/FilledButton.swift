@@ -40,13 +40,14 @@ struct FilledButton: View {
         } else {
           Text(title)
         }
-      }        .fontWeight(.medium)
-        .foregroundStyle(style.colors.foreground)
-        .padding()
-        .background(
-          RoundedRectangle(cornerRadius: 8)
-            .fill(style.colors.background)
-        )
+      }
+      .fontWeight(.medium)
+      .foregroundStyle(style.colors.foreground)
+      .padding()
+      .background(
+        RoundedRectangle(cornerRadius: 8)
+          .fill(style.colors.background)
+      )
     })
     .disabled(isDisabled)
     .scaleEffect(isPressed ? 0.97 : 1.0)

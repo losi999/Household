@@ -7,9 +7,13 @@
 
 import Foundation
 import SwiftUI
+import Combine
 
 protocol Actionable {
   func actions(onClosed: @escaping (Any?) -> Void) -> AnyView
+  
+  associatedtype Model: ObservableObject
+  var model: Model {get}
 }
 
 protocol Titled {

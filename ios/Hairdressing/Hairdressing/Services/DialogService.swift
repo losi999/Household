@@ -13,7 +13,7 @@ final class DialogService: ObservableObject{
   @Published public private(set) var title: String?
   @Published public private(set) var isOpened: Bool = false
   @Published public private(set) var content: AnyView?
-  @Published public private(set) var actions: ((@escaping (Any) -> Void) -> AnyView)?
+  @Published public private(set) var actions: ((@escaping (Any?) -> Void) -> AnyView)?
   var onClosed: ((Any?) -> Void)?
 
   func open(
@@ -29,7 +29,7 @@ final class DialogService: ObservableObject{
       self.title = titled.title
     }
 
-    if let actionable = cont as? Actionable {
+    if let actionable = cont as? any Actionable {
       self.actions = actionable.actions
     }
   }

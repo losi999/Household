@@ -31,7 +31,7 @@ struct PriceHomeView: View {
     .appToolbar("Árlista", actionButtons: [
       ToolbarButton(action: {
         dialogService.open() {
-          PriceDialogView(title: "Új")
+          PriceDialogView(title: "Új", model: PriceDialogViewModel())
         }
         onClosed: {result in
           if let result {

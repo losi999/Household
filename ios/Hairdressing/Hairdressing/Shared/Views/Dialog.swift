@@ -9,6 +9,8 @@ import SwiftUI
 
 struct Dialog: View {
   @EnvironmentObject private var dialogService: DialogService
+  @StateObject private var keyboard = KeyboardResponder()
+
   @State private var offset: CGFloat = 1000
   let duration: Double = 0.25
 
@@ -41,7 +43,7 @@ struct Dialog: View {
           }
           HStack{
             if let actions = dialogService.actions {
-              actions(onClose)
+              AnyView(actions(onClose))
             } else {
               FilledButton(title: "Igen", style: .primary) {
                 onClose(result: true)
@@ -65,6 +67,7 @@ struct Dialog: View {
             offset = 0
           }
         }
+        .offset(y: -keyboard.height / 2)
       }
     }
     .ignoresSafeArea()

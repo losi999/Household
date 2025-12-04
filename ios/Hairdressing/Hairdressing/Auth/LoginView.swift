@@ -27,8 +27,8 @@ struct LoginView: View {
     
     var body: some View {
         VStack{
-            ClearableInput(title: "Felhasználónév", type: .email, text: $email)
-            ClearableInput(title: "Jelszó", type: .password, text: $password)
+//            BorderedInput(title: "Felhasználónév", type: .email, text: $email)
+//            BorderedInput(title: "Jelszó", type: .password, text: $password)
             Button {
                 Task {
                     isDisabled = true

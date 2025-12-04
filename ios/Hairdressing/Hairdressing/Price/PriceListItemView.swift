@@ -48,7 +48,7 @@ struct PriceListItemView: View {
           showDeleteConfirmation = true
         case .edit:
           dialogService.open() {
-            PriceDialogView(title: "Szerkesztés")
+            PriceDialogView(title: "Szerkesztés", model: PriceDialogViewModel(price: price))
           }
         default:
           break
