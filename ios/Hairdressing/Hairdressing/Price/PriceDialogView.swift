@@ -50,24 +50,19 @@ struct PriceDialogView: View, Actionable, Titled {
     )
   }
 
-  @State private var inputText: String = ""
-  @FocusState var isTypingName: Bool
-  @FocusState var isTypingAmount: Bool
-
   var body: some View {
     VStack(alignment: .leading) {
-      TextInput(
+      BorderedInput(
         title: "Név",
-        text: $model.name,
+        value: $model.name,
         type: .text,
         validators: [.required, .minLength(3)]
       )
-      IntegerInput(
+      BorderedInput(
         title: "Ár",
         value: $model.amount,
         validators: [.required, .exclusiveMin(0)]
       )
-
     }
     .frame(width: 400)
   }
