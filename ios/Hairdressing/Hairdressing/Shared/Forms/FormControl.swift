@@ -1,0 +1,64 @@
+//
+//  FormControl.swift
+//  Hairdressing
+//
+//  Created by Laszlo Losonczi on 2025. 12. 08..
+//
+
+import Foundation
+import Combine
+
+protocol Validatable : ObservableObject {
+  var validators: [Validator] { get }
+  func validate(name: String)
+
+  func touch(name: String)
+
+  var errors: [String] {get}
+
+  var isRequired: Bool {get}
+  var isTouched: Bool {get}
+  var isValid: Bool {get}
+}
+
+final class FormControl<Value>: Validatable {
+  @Published var value: Value
+  var validators: [Validator]
+
+  private var cancellables = Set<AnyCancellable>()
+
+  init(_ initialValue: Value, validators: [Validator] = []) {
+    self.value = initialValue
+    self.validators = validators
+    self.isTouched = false
+    self.isValid = true
+    self.errors = []
+  }
+
+  @Published private(set) var errors: [String] = []
+
+  @Published private(set) var isTouched: Bool
+  @Published private(set) var isValid: Bool
+  var isRequired: Bool {
+    validators.contains{v in
+      v is Validators.Required
+    }
+  }
+
+  func touch(name: String) {
+    isTouched = true
+    validate(name: name)
+  }
+
+  func validate(name: String) {
+    errors = []
+    validators.forEach {validator in
+      if let error = validator.validate(value: value) {
+        errors.append(error)
+      }
+    }
+
+    isValid = errors.count == 0
+  }
+}
+

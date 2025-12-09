@@ -30,10 +30,14 @@ struct FilledButton: View {
   let title: String
   var style: ColorStyle
   var icon: String? = nil
-  let action: () -> Void
+  let action: () async throws -> Void
 
   var body: some View {
-    Button(action: action, label: {
+    Button(action: {
+      Task {
+        try await action()
+      }
+    }, label: {
       Group {
         if let icon {
           Label(title, systemImage: icon)

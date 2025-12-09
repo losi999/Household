@@ -31,13 +31,17 @@ struct PriceHomeView: View {
     .appToolbar("Árlista", actionButtons: [
       ToolbarButton(action: {
         dialogService.open() {
-          PriceDialogView(title: "Új", model: PriceDialogViewModel())
+          PriceDialogView(title: "Új", form: PriceDialogForm())
         }
         onClosed: {result in
-          if let result {
-            print("price home", result)
-          } else {
-            print("print home", "no result")
+          if let request = result as? Price.Request {
+            Task {
+              do {
+                try await priceService.createPrice(body: request)
+              } catch {
+                print("ERROR", error)
+              }
+            }
           }
         }
       }, label: "plus"),

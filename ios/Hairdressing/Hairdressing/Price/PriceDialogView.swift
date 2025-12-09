@@ -8,40 +8,58 @@
 import SwiftUI
 import Combine
 
-final class PriceDialogViewModel: ObservableObject {
-  @Published var name: String
-  @Published var amount: Int
-  @Published var unitOfMeasurement: PriceUnitOfMeasurement
+final class PriceDialogForm: FormGroup {
+  @Published var name: FormControl<String>
+  @Published var amount: FormControl<Int>
+  @Published var unitOfMeasurement: FormControl<PriceUnitOfMeasurement>
 
-  init() {
-    name = ""
-    amount = 0
-    unitOfMeasurement = .count
-  }
+  private var cancellables = Set<AnyCancellable>()
 
-  init(price: Price.Response) {
-    name = price.name
-    amount = price.amount
-    unitOfMeasurement = price.unitOfMeasurement
+  init(price: Price.Response? = nil) {
+    name = FormControl(
+      price?.name ?? "",
+      validators: [Validators.Required()])
+    amount = FormControl(
+      price?.amount ?? 0,
+      validators: [Validators.Required(), Validators.ExclusiveMin(min: 0)]
+    )
+    unitOfMeasurement = FormControl(
+      price?.unitOfMeasurement ?? .count,
+      validators: [Validators.Required()]
+    )
+
+    super.init()
+
+    registerControl(name)
+    registerControl(amount)
+    registerControl(unitOfMeasurement)
   }
 }
 
 struct PriceDialogView: View, Actionable, Titled {
 
   var title: String
-  @ObservedObject var model: PriceDialogViewModel
+  @ObservedObject var form: PriceDialogForm
 
   func actions(onClosed: @escaping (Any?) -> Void) -> AnyView {
     AnyView(
       HStack {
         FilledButton(title: "Mentés", style: .primary) {
-          onClosed(
-            Price.Request(
-              name: model.name,
-              amount: model.amount,
-              unitOfMeasurement: model.unitOfMeasurement
+          form.submit()
+          print("FORM", form.isValid)
+          print("NAME", form.name.value)
+          print("AMOUNT", form.amount.value)
+          print("UOM", form.unitOfMeasurement.value.rawValue)
+
+          if form.isValid {
+            onClosed(
+              Price.Request(
+                name: form.name.value,
+                amount: form.amount.value,
+                unitOfMeasurement: form.unitOfMeasurement.value
+              )
             )
-          )
+          }
         }
         FilledButton(title: "Mégse", style: .secondary) {
           onClosed(nil)
@@ -54,20 +72,26 @@ struct PriceDialogView: View, Actionable, Titled {
     VStack(alignment: .leading) {
       BorderedInput(
         title: "Név",
-        value: $model.name,
+        formControl: $form.name,
         type: .text,
-        validators: [.required, .minLength(3)]
       )
+      FormErrors(formControl: form.name)
       BorderedInput(
         title: "Ár",
-        value: $model.amount,
-        validators: [.required, .exclusiveMin(0)]
+        formControl: $form.amount,
       )
+      FormErrors(formControl: form.amount)
+      BorderedPicker(
+        title: "Mértékegység",
+        items: PriceUnitOfMeasurement.allCases,
+        formControl: $form.unitOfMeasurement
+      )
+      FormErrors(formControl: form.unitOfMeasurement)
     }
     .frame(width: 400)
   }
 }
 
 #Preview {
-  PriceDialogView(title: "Új", model: PriceDialogViewModel())
+  PriceDialogView(title: "Új", form: PriceDialogForm())
 }

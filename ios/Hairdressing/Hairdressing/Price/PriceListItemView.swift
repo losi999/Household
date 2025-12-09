@@ -48,7 +48,17 @@ struct PriceListItemView: View {
           showDeleteConfirmation = true
         case .edit:
           dialogService.open() {
-            PriceDialogView(title: "Szerkesztés", model: PriceDialogViewModel(price: price))
+            PriceDialogView(title: "Szerkesztés", form: PriceDialogForm(price: price))
+          } onClosed: { result in
+            if let request = result as? Price.Request {
+              Task {
+                do {
+                  try await priceService.updatePrice(priceId: price.priceId, body: request)
+                } catch {
+                  print("ERROR", error)
+                }
+              }
+            }
           }
         default:
           break

@@ -13,7 +13,7 @@ protocol Actionable {
   func actions(onClosed: @escaping (Any?) -> Void) -> AnyView
   
   associatedtype Model: ObservableObject
-  var model: Model {get}
+  var form: Model {get}
 }
 
 protocol Titled {

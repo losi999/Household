@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 
 enum TextInputType {
   case text
@@ -15,59 +16,44 @@ enum TextInputType {
   case double
 }
 
-enum Validator : Equatable{
-  case required
-  case exclusiveMin(Int)
-  case min(Int)
-  case exclusiveMax(Int)
-  case max(Int)
-  case minLength(Int)
-  case maxLength(Int)
-  case pattern(String)
-}
-
 struct BorderedInput : View {
   let title: String
   var type: TextInputType
-  var validators: [Validator] = []
 
   @State private var textFieldValue: String
   @Binding private var stringValue: String
   @Binding private var integerValue: Int
   @Binding private var doubleValue: Double
+  private var formControl: any Validatable
 
-  init(
-    title: String,
-    value: Binding<String>,
-    type: TextInputType, validators: [Validator] = []
-  ) {
+  init(title: String, formControl: Binding<FormControl<String>>, type: TextInputType) {
     self.title = title
     self.type = type
-    self.validators = validators
-    self._stringValue = value
+    self._stringValue = formControl.value
     self._integerValue = .constant(0)
     self._doubleValue = .constant(0)
-    self.textFieldValue = value.wrappedValue
+    self.textFieldValue = formControl.wrappedValue.value
+    self.formControl = formControl.wrappedValue
   }
 
-  init(title: String, value: Binding<Int>, validators: [Validator] = []) {
+  init(title: String, formControl: Binding<FormControl<Int>>) {
     self.title = title
     self.type = .integer
-    self.validators = validators
-    self._integerValue = value
+    self._integerValue = formControl.value
     self._stringValue = .constant("")
     self._doubleValue = .constant(0)
-    self.textFieldValue = String(value.wrappedValue)
+    self.textFieldValue = String(formControl.wrappedValue.value)
+    self.formControl = formControl.wrappedValue
   }
 
-  init(title: String, value: Binding<Double>, validators: [Validator] = []) {
+  init(title: String, formControl: Binding<FormControl<Double>>) {
     self.title = title
     self.type = .double
-    self.validators = validators
-    self._doubleValue = value
+    self._doubleValue = formControl.value
     self._stringValue = .constant("")
     self._integerValue = .constant(0)
-    self.textFieldValue = value.wrappedValue.formatted(.number)
+    self.textFieldValue = formControl.wrappedValue.value.formatted(.number)
+    self.formControl = formControl.wrappedValue
   }
 
   var keyboardType: UIKeyboardType {
@@ -85,28 +71,8 @@ struct BorderedInput : View {
 
   @FocusState var isTyping: Bool
 
-  private var isRequired: Bool {
-    validators.contains(.required)
-  }
-
-  private var errors: [String] {
-    var errors: [String] = []
-    if isTouched {
-      if isRequired && textFieldValue.isEmpty {
-        errors.append("required")
-      }
-    }
-
-    return errors
-  }
-
-  @State private var isTouched: Bool = false
-  private var isInvalid: Bool {
-    errors.count > 0
-  }
-
   private var highlightColor: Color {
-    if isInvalid && isTouched {
+    if !formControl.isValid && formControl.isTouched {
       return .red
     }
 
@@ -188,10 +154,11 @@ struct BorderedInput : View {
           SecureField("", text: $textFieldValue)
         default:
           TextField("", text: $textFieldValue)
-            .onChange(of: textFieldValue) { _, newValue in
-              updateBinding(with: newValue)
-            }
         }
+      }
+      .onChange(of: textFieldValue) { _, newValue in
+        updateBinding(with: newValue)
+        formControl.validate(name: title)
       }
       .keyboardType(keyboardType)
       .padding(.leading)
@@ -203,7 +170,7 @@ struct BorderedInput : View {
       .focused($isTyping)
       .background(highlightColor, in: RoundedRectangle(cornerRadius: 14).stroke(lineWidth: 2))
       .overlay(alignment: .leading) {
-        Text("\(title)\(isRequired ? "*" : "")")
+        Text("\(title)\(formControl.isRequired ? "*" : "")")
           .padding(.leading)
           .foregroundStyle(highlightColor)
           .offset(y: isTyping || !textFieldValue.isEmpty ? -18 : 0)
@@ -222,13 +189,8 @@ struct BorderedInput : View {
       .animation(.linear(duration: 0.1), value: isTyping)
       .onChange(of: isTyping) {_, newValue in
         if !newValue {
-          isTouched = true
+          formControl.touch(name: title)
         }
-      }
-      ForEach(errors, id: \.self) {error in
-        Text(error)
-          .foregroundStyle(.red)
-          .font(.footnote)
       }
     }
   }

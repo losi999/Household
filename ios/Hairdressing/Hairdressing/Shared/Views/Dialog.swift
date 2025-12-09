@@ -9,7 +9,7 @@ import SwiftUI
 
 struct Dialog: View {
   @EnvironmentObject private var dialogService: DialogService
-  @StateObject private var keyboard = KeyboardResponder()
+//  @StateObject private var keyboard = KeyboardResponder()
 
   @State private var offset: CGFloat = 1000
   let duration: Double = 0.25
@@ -67,7 +67,7 @@ struct Dialog: View {
             offset = 0
           }
         }
-        .offset(y: -keyboard.height / 2)
+//        .offset(y: -keyboard.height / 2)
       }
     }
     .ignoresSafeArea()

@@ -44,7 +44,7 @@ struct Common {
     }
 }
 
-enum PriceUnitOfMeasurement: String, Codable, CaseIterable {
+enum PriceUnitOfMeasurement: String, Codable, CaseIterable, Hashable, PickerOption {
     case count = "db"
     case gram = "g"
     case hour = "óra"
@@ -77,9 +77,9 @@ struct Price {
     
     struct Response: Codable, Identifiable, _PriceId, _Base, _UnitOfMeasurement {
         let priceId: Id
-        let name: String
-        let amount: Int
-        let unitOfMeasurement: PriceUnitOfMeasurement
+        var name: String
+        var amount: Int
+        var unitOfMeasurement: PriceUnitOfMeasurement
         
         var id: String {priceId}
     }
