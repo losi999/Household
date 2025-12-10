@@ -21,7 +21,7 @@ final class AuthService: ObservableObject {
   @Published var idToken: String? = nil
 
   var isLoggedIn: Bool {
-    idToken != nil
+    return idToken != nil
   }
 
   func login(body: Auth.Login.Request) async throws {
@@ -32,12 +32,6 @@ final class AuthService: ObservableObject {
     DispatchQueue.main.async {
       self.idToken = result.idToken
     }
-  }
-
-  func refreshToken() async throws {
-    let result:Auth.RefreshToken.Response = try await httpClient.post("/user/v1/refreshToken", body: Auth.RefreshToken.Request(refreshToken: keychainService.refreshToken!), responseType: Auth.RefreshToken.Response.self)
-
-    keychainService.idToken = result.idToken
   }
 
   func logout() {

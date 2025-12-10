@@ -26,7 +26,7 @@ class FormGroup : ObservableObject {
 
   private  func touchAll() {
     controls.forEach{control in
-      control.touch(name: "")
+      control.touch()
     }
   }
 

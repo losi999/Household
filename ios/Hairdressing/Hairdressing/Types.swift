@@ -44,7 +44,7 @@ struct Common {
     }
 }
 
-enum PriceUnitOfMeasurement: String, Codable, CaseIterable, Hashable, PickerOption {
+enum PriceUnitOfMeasurement: String, Codable, CaseIterable {
     case count = "db"
     case gram = "g"
     case hour = "óra"

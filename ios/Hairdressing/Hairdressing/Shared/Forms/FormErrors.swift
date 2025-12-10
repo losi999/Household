@@ -8,16 +8,25 @@
 import SwiftUI
 import Combine
 
-struct FormErrors<T: Validatable>: View {
+struct FormErrors<T: Validatable>: ViewModifier {
   @ObservedObject var formControl: T
 
-  var body: some View {
-    if formControl.isTouched {
-      ForEach(formControl.errors, id: \.self) {error in
-        Text(error)
-          .foregroundStyle(.red)
-          .font(.footnote)
+  func body(content: Content) -> some View {
+    VStack(alignment: .leading) {
+      content
+      if formControl.isTouched {
+        ForEach(formControl.errors, id: \.self) {error in
+          Text(error)
+            .foregroundStyle(.red)
+            .font(.footnote)
+        }
       }
     }
+  }
+}
+
+extension View {
+  func formErrors<T: Validatable>(formControl: T) -> some View {
+    self.modifier(FormErrors(formControl: formControl))
   }
 }

@@ -10,9 +10,9 @@ import Combine
 
 protocol Validatable : ObservableObject {
   var validators: [Validator] { get }
-  func validate(name: String)
+  func validate()
 
-  func touch(name: String)
+  func touch()
 
   var errors: [String] {get}
 
@@ -45,12 +45,12 @@ final class FormControl<Value>: Validatable {
     }
   }
 
-  func touch(name: String) {
+  func touch() {
     isTouched = true
-    validate(name: name)
+    validate()
   }
 
-  func validate(name: String) {
+  func validate() {
     errors = []
     validators.forEach {validator in
       if let error = validator.validate(value: value) {

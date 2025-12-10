@@ -46,10 +46,6 @@ struct PriceDialogView: View, Actionable, Titled {
       HStack {
         FilledButton(title: "Mentés", style: .primary) {
           form.submit()
-          print("FORM", form.isValid)
-          print("NAME", form.name.value)
-          print("AMOUNT", form.amount.value)
-          print("UOM", form.unitOfMeasurement.value.rawValue)
 
           if form.isValid {
             onClosed(
@@ -70,23 +66,22 @@ struct PriceDialogView: View, Actionable, Titled {
 
   var body: some View {
     VStack(alignment: .leading) {
-      BorderedInput(
+      TextInput(
         title: "Név",
-        formControl: $form.name,
+        formControl: form.name,
         type: .text,
       )
-      FormErrors(formControl: form.name)
-      BorderedInput(
+      .formErrors(formControl: form.name)
+      IntegerInput(
         title: "Ár",
-        formControl: $form.amount,
+        formControl: form.amount,
       )
-      FormErrors(formControl: form.amount)
-      BorderedPicker(
+      .formErrors(formControl: form.amount)
+      EnumPicker(
         title: "Mértékegység",
-        items: PriceUnitOfMeasurement.allCases,
-        formControl: $form.unitOfMeasurement
+        formControl: form.unitOfMeasurement
       )
-      FormErrors(formControl: form.unitOfMeasurement)
+      .formErrors(formControl: form.unitOfMeasurement)
     }
     .frame(width: 400)
   }

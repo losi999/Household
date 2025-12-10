@@ -6,64 +6,79 @@
 //
 
 import SwiftUI
+import Combine
+
+final class LoginForm: FormGroup {
+  @Published var email: FormControl<String>
+  @Published var password: FormControl<String>
+
+  override init() {
+    email = FormControl(
+      "",
+      validators: [Validators.Required(), Validators.Email()]
+    )
+    password = FormControl(
+      "",
+      validators: [Validators.Required()]
+    )
+
+    super.init()
+
+    registerControl(email)
+    registerControl(password)
+  }
+}
 
 struct LoginView: View {
-  @State var email: String = ""
-  @State var password: String = ""
   @EnvironmentObject private var authService: AuthService
 
+  @ObservedObject var form: LoginForm = LoginForm()
+
   func onLogin() async {
-    do {
-      try await authService.login(body: .init(email: email, password: password))
-    } catch let error as Common.Error.Response {
-      print("Login failed: \(error.message)")
-    } catch {
-      print("Unexpected error: \(error)")
+    form.submit()
+
+    if form.isValid {
+      do {
+        try await authService.login(
+          body: Auth.Login.Request(
+            email: form.email.value,
+            password: form.password.value
+          )
+        )
+      } catch let error as Common.Error.Response {
+        print("Login failed: \(error.message)")
+      } catch {
+        print("Unexpected error: \(error)")
+      }
     }
   }
 
-  @State private var isPressed = false
   @State private var isDisabled = false
 
   var body: some View {
     VStack{
-//      BorderedInput(title: "Felhasználónév", value: $email, type: .email)
-//      BorderedInput(title: "Jelszó", value: $password, type: .password)
-      Button {
+      TextInput(
+        title: "Felhasználónév",
+        formControl: form.email,
+        type: .email
+      )
+      .formErrors(formControl: form.email)
+      TextInput(title: "Jelszó", formControl: form.password, type: .password)
+        .formErrors(formControl: form.password)
+      FilledButton(title: "Bejelentkezés", style: .primary)
+      {
         Task {
           isDisabled = true
           await onLogin()
           isDisabled = false
         }
-      } label: {
-        Text("Bejelentkezés")
-          .fontWeight(.medium)
-          .foregroundStyle(.white)
-          .padding()
-          .frame(maxWidth: .infinity)
-          .background(
-            RoundedRectangle(cornerRadius: 8)
-              .fill(.appPrimary)
-          )
       }
-      .disabled(isDisabled)
-      .scaleEffect(isPressed ? 0.97 : 1.0)
-      .animation(.easeInOut(duration: 0.1), value: isPressed)
-      .simultaneousGesture(
-        DragGesture(minimumDistance: 0)
-          .onChanged { _ in
-            isPressed = true
-          }
-          .onEnded { _ in
-            isPressed = false
-          }
-      )
-
     }
     .frame(width: 400)
     .appToolbar("Bejelentkezés")
   }
 }
+
 #Preview {
   LoginView()
 }

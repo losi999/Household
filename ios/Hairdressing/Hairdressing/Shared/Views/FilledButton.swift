@@ -25,19 +25,15 @@ enum ColorStyle {
 
 struct FilledButton: View {
   @State private var isPressed = false
-  @State private var isDisabled = false
+//  @State private var isDisabled = false
 
   let title: String
   var style: ColorStyle
   var icon: String? = nil
-  let action: () async throws -> Void
+  let action: () -> Void
 
   var body: some View {
-    Button(action: {
-      Task {
-        try await action()
-      }
-    }, label: {
+    Button(action: action, label: {
       Group {
         if let icon {
           Label(title, systemImage: icon)
@@ -53,7 +49,6 @@ struct FilledButton: View {
           .fill(style.colors.background)
       )
     })
-    .disabled(isDisabled)
     .scaleEffect(isPressed ? 0.97 : 1.0)
     .animation(.easeInOut(duration: 0.1), value: isPressed)
     .simultaneousGesture(

@@ -115,4 +115,19 @@ struct Validators {
       return nil
     }
   }
+
+  struct Email: Validator {
+    let pattern: Regex = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/.ignoresCase()
+    var message: String {
+      "Email szükséges"
+    }
+
+    func validate(value: Any) -> String? {
+      if let email = value as? String, !email.contains(pattern) {
+        return message
+      }
+
+      return nil
+    }
+  }
 }
