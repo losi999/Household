@@ -50,6 +50,48 @@ enum PriceUnitOfMeasurement: String, Codable, CaseIterable {
     case hour = "óra"
 }
 
+struct Customer {
+  typealias Id = String
+  private protocol _CustomerId {
+    var customerId: Id {get}
+  }
+
+  private protocol _Name {
+    var name: String {get}
+  }
+
+  private protocol _IsGroup {
+    var isGroup: Bool {get}
+  }
+
+  private protocol _Base : _Name, _IsGroup {
+    var description: String? {get}
+    var rating: Int {get}
+  }
+
+  struct CustomerId: Codable, _CustomerId {
+    let customerId: Id
+  }
+
+  struct Request: Codable, _Base {
+    var description: String?
+    var rating: Int
+    var name: String
+    var isGroup: Bool
+  }
+
+  struct Response: Codable, Identifiable, _CustomerId, _Base {
+    let customerId: Id
+    var description: String?
+    var rating: Int
+    var name: String
+    var isGroup: Bool
+
+    var id: String {customerId}
+
+  }
+}
+
 struct Price {
     typealias Id = String
     private protocol _PriceId {

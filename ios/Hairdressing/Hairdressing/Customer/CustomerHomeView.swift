@@ -8,11 +8,27 @@
 import SwiftUI
 
 struct CustomerHomeView: View {
-    var body: some View {
-        Text("Vendégek listája")
-            .appToolbar("Vendégek")
+  @EnvironmentObject private var customerService: CustomerService
+  @EnvironmentObject private var dialogService: DialogService
+
+  func loadCustomers() async {
+    do {
+      try await customerService.listCustomers()
+    } catch {
+      print(error)
     }
+  }
+
+  var body: some View {
+    ZStack{
+      CustomerListView(customers: customerService.customers)
+    }
+    .onAppear{
+      Task {
+        await loadCustomers()
+      }
+    }
+      .appToolbar("Vendégek")
+  }
 }
-#Preview {
-    CustomerHomeView()
-}
+

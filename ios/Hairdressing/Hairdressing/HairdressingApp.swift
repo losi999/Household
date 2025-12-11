@@ -12,6 +12,7 @@ import Combine
 struct HairdressingApp: App {
   @StateObject private var authService: AuthService
   @StateObject private var priceService: PriceService
+  @StateObject private var customerService: CustomerService
   @StateObject private var dialogService: DialogService
 
   init () {
@@ -21,6 +22,7 @@ struct HairdressingApp: App {
     _authService = StateObject(wrappedValue: AuthService(httpClient: httpClient, keychainService: keychainService))
     _priceService = StateObject(wrappedValue: PriceService(httpClient: httpClient))
     _dialogService = StateObject(wrappedValue: DialogService())
+    _customerService = StateObject(wrappedValue: CustomerService(httpClient: httpClient))
   }
 
   var body: some Scene {
@@ -31,7 +33,7 @@ struct HairdressingApp: App {
           Group {
 
             if authService.isLoggedIn {
-              PriceHomeView()
+              CustomerHomeView()
             } else {
               LoginView()
             }
@@ -43,6 +45,7 @@ struct HairdressingApp: App {
       }
       .environmentObject(authService)
       .environmentObject(priceService)
+      .environmentObject(customerService)
       .environmentObject(dialogService)
     }
   }
