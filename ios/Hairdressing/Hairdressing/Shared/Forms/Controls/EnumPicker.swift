@@ -7,10 +7,14 @@
 
 import SwiftUI
 
-struct EnumPicker<T: CaseIterable & Hashable & RawRepresentable<String>>: View {
+struct EnumPicker<T: CaseIterable & Hashable & RawRepresentable<String>>: View, FormInput {
   let title: String
   var items: [T]
-  @ObservedObject private var formControl: FormControl<T>
+  @ObservedObject internal var formControl: FormControl<T>
+
+  var textValue: String {
+    formControl.value.rawValue
+  }
 
   init(
     title: String,
@@ -40,9 +44,5 @@ struct EnumPicker<T: CaseIterable & Hashable & RawRepresentable<String>>: View {
           .foregroundColor(.gray)
       }
     }
-    .formField(
-      title: title,
-      formControl: formControl,
-      textFieldValue: formControl.value.rawValue)
   }
 }

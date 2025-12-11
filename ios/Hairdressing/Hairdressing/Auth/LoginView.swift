@@ -32,7 +32,7 @@ final class LoginForm: FormGroup {
 struct LoginView: View {
   @EnvironmentObject private var authService: AuthService
 
-  @ObservedObject var form: LoginForm = LoginForm()
+  @StateObject var form: LoginForm = LoginForm()
 
   func onLogin() async {
     form.submit()
@@ -57,14 +57,16 @@ struct LoginView: View {
 
   var body: some View {
     VStack{
-      TextInput(
-        title: "Felhasználónév",
-        formControl: form.email,
-        type: .email
-      )
-      .formErrors(formControl: form.email)
-      TextInput(title: "Jelszó", formControl: form.password, type: .password)
-        .formErrors(formControl: form.password)
+      FormField {
+        TextInput(
+          title: "Felhasználónév",
+          formControl: form.email,
+          type: .email
+        )
+      }
+      FormField {
+        TextInput(title: "Jelszó", formControl: form.password, type: .password)
+      }
       FilledButton(title: "Bejelentkezés", style: .primary)
       {
         Task {

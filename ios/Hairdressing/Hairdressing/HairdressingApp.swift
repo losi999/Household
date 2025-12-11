@@ -17,7 +17,7 @@ struct HairdressingApp: App {
   init () {
     let keychainService = KeychainService()
     let httpClient = HttpClient(keychainService: keychainService)
-    
+
     _authService = StateObject(wrappedValue: AuthService(httpClient: httpClient, keychainService: keychainService))
     _priceService = StateObject(wrappedValue: PriceService(httpClient: httpClient))
     _dialogService = StateObject(wrappedValue: DialogService())
@@ -25,10 +25,11 @@ struct HairdressingApp: App {
 
   var body: some Scene {
     WindowGroup {
-      ZStack {
-        NavigationStack {
-          ZStack {
-            Color(.appBackground).ignoresSafeArea()
+      NavigationStack {
+        ZStack {
+          Color(.appBackground)
+          Group {
+
             if authService.isLoggedIn {
               PriceHomeView()
             } else {
@@ -36,6 +37,8 @@ struct HairdressingApp: App {
             }
           }
         }
+      }
+      .overlay(alignment: .center) {
         Dialog()
       }
       .environmentObject(authService)

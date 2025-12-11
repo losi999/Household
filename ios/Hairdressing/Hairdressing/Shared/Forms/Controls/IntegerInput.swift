@@ -7,12 +7,16 @@
 
 import SwiftUI
 
-struct IntegerInput: View {
+struct IntegerInput: View, FormInput {
   let title: String
-  @ObservedObject private var formControl: FormControl<Int>
-  
+  @ObservedObject internal var formControl: FormControl<Int>
+
   @State private var textFieldValue: String
-  
+
+  var textValue: String {
+    textFieldValue
+  }
+
   init(title: String, formControl: FormControl<Int>) {
     self.title = title
     self.formControl = formControl
@@ -54,10 +58,5 @@ struct IntegerInput: View {
       .keyboardType(.numberPad)
       .textInputAutocapitalization(.never)
       .disableAutocorrection(true)
-      .formField(
-        title: title,
-        formControl: formControl,
-        textFieldValue: textFieldValue
-      )
   }
 }

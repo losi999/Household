@@ -7,6 +7,15 @@
 
 import Foundation
 import Combine
+import SwiftUI
+
+protocol FormInput<Value> : View {
+  associatedtype Value
+  var formControl: FormControl<Value> { get }
+  var title: String { get }
+  var textValue: String { get }
+}
+
 
 protocol Validatable : ObservableObject {
   var validators: [Validator] { get }

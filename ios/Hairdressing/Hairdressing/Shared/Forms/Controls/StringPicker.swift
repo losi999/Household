@@ -7,10 +7,14 @@
 
 import SwiftUI
 
-struct StringPicker: View {
+struct StringPicker: View, FormInput {
   let title: String
   var items: [String]
-  @ObservedObject private var formControl: FormControl<String>
+  @ObservedObject internal var formControl: FormControl<String>
+
+  var textValue: String {
+    formControl.value
+  }
 
   init(title: String, items: [String], formControl: FormControl<String>) {
     self.title = title
@@ -37,9 +41,5 @@ struct StringPicker: View {
           .foregroundColor(.gray)
       }
     }
-    .formField(
-      title: title,
-      formControl: formControl,
-      textFieldValue: formControl.value)
   }
 }

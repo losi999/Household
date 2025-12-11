@@ -13,17 +13,22 @@ enum TextInputType {
   case password
 }
 
-struct TextInput: View {
+struct TextInput: View, FormInput {
   let title: String
   var type: TextInputType
-  @ObservedObject private var formControl: FormControl<String>
-  
+  @ObservedObject internal var formControl: FormControl<String>
+
+  var textValue: String {
+    formControl.value
+  }
+
+
   init(title: String, formControl: FormControl<String>, type: TextInputType) {
     self.title = title
     self.formControl = formControl
     self.type = type
   }
-  
+
   var keyboardType: UIKeyboardType {
     switch type {
     case .email:
@@ -32,21 +37,7 @@ struct TextInput: View {
         .default
     }
   }
-  
-  @FocusState var isTyping: Bool
-  
-  private var highlightColor: Color {
-    if !formControl.isValid && formControl.isTouched {
-      return .red
-    }
-    
-    if isTyping {
-      return  .blue
-    }
-    
-    return .appText
-  }
-  
+
   var body: some View {
     Group {
       if type == .password {
@@ -61,10 +52,5 @@ struct TextInput: View {
     .keyboardType(keyboardType)
     .textInputAutocapitalization(.never)
     .disableAutocorrection(true)
-    .formField(
-      title: title,
-      formControl: formControl,
-      textFieldValue: formControl.value
-    )
   }
 }

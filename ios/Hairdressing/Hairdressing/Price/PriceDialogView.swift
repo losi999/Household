@@ -66,22 +66,25 @@ struct PriceDialogView: View, Actionable, Titled {
 
   var body: some View {
     VStack(alignment: .leading) {
-      TextInput(
-        title: "Név",
-        formControl: form.name,
-        type: .text,
-      )
-      .formErrors(formControl: form.name)
-      IntegerInput(
-        title: "Ár",
-        formControl: form.amount,
-      )
-      .formErrors(formControl: form.amount)
-      EnumPicker(
-        title: "Mértékegység",
-        formControl: form.unitOfMeasurement
-      )
-      .formErrors(formControl: form.unitOfMeasurement)
+      FormField {
+        TextInput(
+          title: "Név",
+          formControl: form.name,
+          type: .text,
+        )
+      }
+      FormField {
+        IntegerInput(
+          title: "Ár",
+          formControl: form.amount,
+        )
+      }
+      FormField {
+        EnumPicker(
+          title: "Mértékegység",
+          formControl: form.unitOfMeasurement
+        )
+      }
     }
     .frame(width: 400)
   }
