@@ -1,0 +1,44 @@
+//
+//  AuthService.swift
+//  Hairdressing
+//
+//  Created by Laszlo Losonczi on 2025. 11. 28..
+//
+
+import Foundation
+import Combine
+
+final class AuthService: ObservableObject {
+  private let httpClient: HttpClient
+  private let keychainService: KeychainService
+
+  init(httpClient: HttpClient, keychainService: KeychainService) {
+    self.httpClient = httpClient
+    self.keychainService = keychainService
+    self.idToken = keychainService.idToken
+  }
+
+  @Published var idToken: String? = nil
+
+  var isLoggedIn: Bool {
+    return idToken != nil
+  }
+
+  func login(body: Auth.Login.Request) async throws {
+    let result = try await httpClient.post("/user/v1/login", body: body, responseType: Auth.Login.Response.self)
+
+    keychainService.idToken = result.idToken
+    keychainService.refreshToken = result.refreshToken
+    DispatchQueue.main.async {
+      self.idToken = result.idToken
+    }
+  }
+
+  func logout() {
+    keychainService.idToken = nil
+    keychainService.refreshToken = nil
+    DispatchQueue.main.async {
+      self.idToken = nil
+    }
+  }
+}
