@@ -44,7 +44,7 @@ struct PriceDialogView: View, Actionable, Titled {
   func actions(onClosed: @escaping (Any?) -> Void) -> AnyView {
     AnyView(
       HStack {
-        FilledButton(title: "Mentés", style: .primary) {
+        IconTextButton(label: "Mentés", style: .filled) {
           form.submit()
 
           if form.isValid {
@@ -57,7 +57,7 @@ struct PriceDialogView: View, Actionable, Titled {
             )
           }
         }
-        FilledButton(title: "Mégse", style: .secondary) {
+        IconTextButton(label: "Mégse", color: .danger) {
           onClosed(nil)
         }
       }

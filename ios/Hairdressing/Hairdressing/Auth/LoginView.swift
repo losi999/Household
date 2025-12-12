@@ -67,7 +67,7 @@ struct LoginView: View {
       FormField {
         TextInput(title: "Jelszó", formControl: form.password, type: .password)
       }
-      FilledButton(title: "Bejelentkezés", style: .primary)
+      IconTextButton(label: "Bejelentkezés", style: .filled)
       {
         Task {
           isDisabled = true

@@ -20,15 +20,16 @@ struct CustomerHomeView: View {
   }
 
   var body: some View {
-    ZStack{
+    VStack {
       CustomerListView(customers: customerService.customers)
     }
+    .padding()
     .onAppear{
       Task {
         await loadCustomers()
       }
     }
-      .appToolbar("Vendégek")
+    .appToolbar("Vendégek")
   }
 }
 

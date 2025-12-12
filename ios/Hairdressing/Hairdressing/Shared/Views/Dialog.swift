@@ -40,15 +40,17 @@ struct Dialog: View {
               content
             }.padding()
           }
-          HStack{
+          Group {
             if let actions = dialogService.actions {
               AnyView(actions(onClose))
             } else {
-              FilledButton(title: "Igen", style: .primary) {
-                onClose(result: true)
-              }
-              FilledButton(title: "Nem", style: .secondary) {
-                onClose(result: false)
+              HStack{
+                IconTextButton(label: "Igen", style: .filled) {
+                  onClose(result: true)
+                }
+                IconTextButton(label: "Nem", color: .danger) {
+                  onClose(result: false)
+                }
               }
             }
           }

@@ -27,19 +27,29 @@ struct CatalogSubmenu: View {
         .padding()
 
       if !hideEdit {
-        IconTextButton(label: "Szerkesztés", icon: "pencil") {
+        IconTextButton(
+          label: "Szerkesztés",
+          icon: "pencil",
+          style: .compact,
+          color: .secondary,
+        ) {
           onDismiss(.edit)
         }
       }
 
       if !hideMerge {
-        IconTextButton(label: "Egyesítés", icon: "arrow.merge") {
+        IconTextButton(label: "Egyesítés", icon: "arrow.merge", style: .compact) {
           onDismiss(.merge)
         }
       }
       
       if !hideDelete {
-        IconTextButton(label: "Törlés", icon: "trash") {
+        IconTextButton(
+          label: "Törlés",
+          icon: "trash",
+          style: .compact,
+          color: .danger
+        ) {
           onDismiss(.delete)
         }
       }

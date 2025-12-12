@@ -31,7 +31,6 @@ struct HairdressingApp: App {
         ZStack {
           Color(.appBackground)
           Group {
-
             if authService.isLoggedIn {
               CustomerHomeView()
             } else {
