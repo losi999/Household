@@ -1,6 +1,4 @@
 import { defineConfig } from 'cypress';
-import { config } from 'dotenv';
-config();
 import { default as plugins } from './src/plugins';
 
 export default defineConfig({
@@ -9,8 +7,6 @@ export default defineConfig({
   defaultCommandTimeout: 10000,
   videoCompression: false,
   e2e: {
-    // We've imported your old cypress plugins here.
-    // You may want to clean this up later by importing these.
     setupNodeEvents(on) {
       return plugins(on);
     },

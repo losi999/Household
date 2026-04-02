@@ -1,4 +1,3 @@
-import webpack from '@cypress/webpack-preprocessor';
 import { accountService, categoryService, projectService, recipientService, transactionService, productService, settingService, identityService, fileService, storageService, customerService, priceService, calendarDayService, calendarEntryService } from '@household/test/api/dependencies';
 
 const setTasksFromService = <T extends Record<keyof T, (...args: any[]) => Promise<any>>>(on: Cypress.PluginEvents, service: T, ...functions: (keyof T)[]) => {
@@ -13,15 +12,6 @@ const setTasksFromService = <T extends Record<keyof T, (...args: any[]) => Promi
 };
 
 export default (on: Cypress.PluginEvents) => {
-  // `on` is used to hook into various events Cypress emits
-  // `config` is the resolved Cypress config
-  const options = {
-    // send in the options from your webpack.config.js, so it works the same
-    // as your app's code
-    webpackOptions: require('../../webpack.config'),
-    watchOptions: {},
-  };
-  on('file:preprocessor', webpack(options));
   setTasksFromService(on, projectService, 'findProjectById', 'saveProject', 'saveProjects');
   setTasksFromService(on, priceService, 'findPriceById', 'savePrice', 'savePrices');
   setTasksFromService(on, productService, 'saveProduct', 'findProductById', 'saveProducts');

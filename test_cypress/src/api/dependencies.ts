@@ -16,7 +16,9 @@ import { Upload } from '@aws-sdk/lib-storage';
 import { customerServiceFactory } from '@household/shared/services/customer-service';
 import { priceServiceFactory } from '@household/shared/services/price-service';
 import { calendarDayServiceFactory } from '@household/shared/services/calendar-day-service';
-import { calendarEntryServiceFactory } from '@household/shared/services/calendar-entry-service';
+import { calendarEntryServiceFactory } from '@household/shared/services/calendar-entry-service.js';
+import { config } from 'dotenv';
+config();
 
 const mongoDbService = mongodbServiceFactory(process.env.MONGODB_CONNECTION_STRING.replace('{{ENV}}', process.env.ENV));
 

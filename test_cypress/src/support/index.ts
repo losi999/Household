@@ -1,6 +1,6 @@
 import 'regenerator-runtime/runtime';
-import { setAuthCommands } from '../api/auth/auth-commands';
-import { setExpectCommands } from '../api/expect-commands';
+import { setAuthCommands } from '@household/test/api/auth/auth-commands';
+import { setExpectCommands } from '@household/test/api/expect-commands';
 import { setAccountTaskCommands } from '@household/test/api/account/commands/tasks';
 import { setAccountRequestCommands } from '@household/test/api/account/commands/requests';
 import { setAccountValidationCommands } from '@household/test/api/account/commands/validations';
