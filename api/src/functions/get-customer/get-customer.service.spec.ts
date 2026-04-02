@@ -1,13 +1,13 @@
 import { IGetCustomerService, getCustomerServiceFactory } from '@household/api/functions/get-customer/get-customer.service';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
 import { ICustomerService } from '@household/shared/services/customer-service';
 
 describe('Get customer service', () => {
   let service: IGetCustomerService;
-  let mockCustomerService: Mock<ICustomerService>;
-  let mockCustomerDocumentConverter: Mock<ICustomerDocumentConverter>;
+  let mockCustomerService: MockService<ICustomerService>;
+  let mockCustomerDocumentConverter: MockService<ICustomerDocumentConverter>;
 
   beforeEach(() => {
     mockCustomerService = createMockService('getCustomerById');

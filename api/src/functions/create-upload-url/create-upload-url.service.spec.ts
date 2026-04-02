@@ -1,6 +1,6 @@
 import { ICreateUploadUrlService, createUploadUrlServiceFactory } from '@household/api/functions/create-upload-url/create-upload-url.service';
 import { createFileDocument, createFileRequest } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { generateMongoId } from '@household/shared/common/utils';
 import { IFileDocumentConverter } from '@household/shared/converters/file-document-converter';
 import { FileProcessingStatus } from '@household/shared/enums';
@@ -9,9 +9,9 @@ import { IStorageService } from '@household/shared/services/storage-service';
 
 describe('Create upload URL service', () => {
   let service: ICreateUploadUrlService;
-  let mockFileService: Mock<IFileService>;
-  let mockFileDocumentConverter: Mock<IFileDocumentConverter>;
-  let mockStorageService: Mock<IStorageService>;
+  let mockFileService: MockService<IFileService>;
+  let mockFileDocumentConverter: MockService<IFileDocumentConverter>;
+  let mockStorageService: MockService<IStorageService>;
 
   beforeEach(() => {
     mockFileService = createMockService('saveFile');

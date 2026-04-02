@@ -1,9 +1,8 @@
 import { createAccountDocument, createAccountResponse, createCategoryDocument, createCategoryResponse, createPaymentTransactionDocument, createPaymentTransactionRequest, createPaymentTransactionResponse, createProjectDocument, createProjectResponse, createRecipientDocument, createRecipientResponse, createProductDocument, createProductResponse, testDataFactory } from '@household/shared/common/test-data-factory';
 import { addSeconds, getTransactionId, getProductId } from '@household/shared/common/utils';
-import { advanceTo, clear } from 'jest-date-mock';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
-import { createMockService, Mock, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
@@ -13,11 +12,11 @@ import { CategoryType } from '@household/shared/enums';
 
 describe('Payment transaction document converter', () => {
   let converter: IPaymentTransactionDocumentConverter;
-  let mockAccountDocumentConverter: Mock<IAccountDocumentConverter>;
-  let mockProjectDocumentConverter: Mock<IProjectDocumentConverter>;
-  let mockRecipientDocumentConverter: Mock<IRecipientDocumentConverter>;
-  let mockCategoryDocumentConverter: Mock<ICategoryDocumentConverter>;
-  let mockProductDocumentConverter: Mock<IProductDocumentConverter>;
+  let mockAccountDocumentConverter: MockService<IAccountDocumentConverter>;
+  let mockProjectDocumentConverter: MockService<IProjectDocumentConverter>;
+  let mockRecipientDocumentConverter: MockService<IRecipientDocumentConverter>;
+  let mockCategoryDocumentConverter: MockService<ICategoryDocumentConverter>;
+  let mockProductDocumentConverter: MockService<IProductDocumentConverter>;
   const now = new Date();
 
   beforeEach(() => {
@@ -27,12 +26,12 @@ describe('Payment transaction document converter', () => {
     mockCategoryDocumentConverter = createMockService('toResponse');
     mockProductDocumentConverter = createMockService('toResponse');
 
-    advanceTo(now);
+    vi.useFakeTimers().setSystemTime(now);
     converter = paymentTransactionDocumentConverterFactory(mockAccountDocumentConverter.service, mockProjectDocumentConverter.service, mockCategoryDocumentConverter.service, mockRecipientDocumentConverter.service, mockProductDocumentConverter.service);
   });
 
   afterEach(() => {
-    clear();
+    vi.useRealTimers();
   });
 
   const amount = 12000;

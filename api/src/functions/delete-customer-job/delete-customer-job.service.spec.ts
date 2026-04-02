@@ -1,13 +1,13 @@
 import { IDeleteCustomerJobService, deleteCustomerJobServiceFactory } from '@household/api/functions/delete-customer-job/delete-customer-job.service';
 import { createDocumentUpdate2, testDataFactory } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
 import { ICustomerService } from '@household/shared/services/customer-service';
 
 describe('Delete customer job service', () => {
   let service: IDeleteCustomerJobService;
-  let mockCustomerService: Mock<ICustomerService>;
-  let mockCustomerDocumentConverter: Mock<ICustomerDocumentConverter>;
+  let mockCustomerService: MockService<ICustomerService>;
+  let mockCustomerDocumentConverter: MockService<ICustomerDocumentConverter>;
   beforeEach(() => {
     mockCustomerService = createMockService('findCustomerById', 'updateCustomer');
     mockCustomerDocumentConverter = createMockService('deleteJob');

@@ -1,13 +1,13 @@
 import { IAddCustomerToBlacklistService, addCustomerToBlacklistServiceFactory } from '@household/api/functions/add-customer-to-blacklist/add-customer-to-blacklist.service';
 import { createDocumentUpdate2, testDataFactory } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall, validateNthFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall, validateNthFunctionCall } from '@household/shared/common/unit-testing';
 import { ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
 import { ICustomerService } from '@household/shared/services/customer-service';
 
 describe('Add customer to blacklist service', () => {
   let service: IAddCustomerToBlacklistService;
-  let mockCustomerService: Mock<ICustomerService>;
-  let mockCustomerDocumentConverter: Mock<ICustomerDocumentConverter>;
+  let mockCustomerService: MockService<ICustomerService>;
+  let mockCustomerDocumentConverter: MockService<ICustomerDocumentConverter>;
   beforeEach(() => {
     mockCustomerService = createMockService('findCustomerById', 'updateCustomers');
     mockCustomerDocumentConverter = createMockService('addBlacklistedCustomer');

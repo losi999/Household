@@ -1,13 +1,13 @@
 import { IListPricesService, listPricesServiceFactory } from '@household/api/functions/list-prices/list-prices.service';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IPriceDocumentConverter } from '@household/shared/converters/price-document-converter';
 import { IPriceService } from '@household/shared/services/price-service';
 
 describe('List prices service', () => {
   let service: IListPricesService;
-  let mockPriceService: Mock<IPriceService>;
-  let mockPriceDocumentConverter: Mock<IPriceDocumentConverter>;
+  let mockPriceService: MockService<IPriceService>;
+  let mockPriceDocumentConverter: MockService<IPriceDocumentConverter>;
 
   beforeEach(() => {
     mockPriceService = createMockService('listPrices');

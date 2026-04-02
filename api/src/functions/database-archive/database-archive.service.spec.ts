@@ -1,14 +1,13 @@
 import { IDatabaseArchiveService, databaseArchiveServiceFactory } from '@household/api/functions/database-archive/database-archive.service';
 import { createAccountDocument, createProjectDocument, createRecipientDocument, createPaymentTransactionDocument, createCategoryDocument, createProductDocument, createSettingDocument, createFileDocument, testDataFactory } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall, validateNthFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall, validateNthFunctionCall } from '@household/shared/common/unit-testing';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { IStorageService } from '@household/shared/services/storage-service';
-import { clear, advanceTo } from 'jest-date-mock';
 
 describe('Database archive service', () => {
   let service: IDatabaseArchiveService;
-  let mockMongodbService: Mock<IMongodbService>;
-  let mockStorageService: Mock<IStorageService>;
+  let mockMongodbService: MockService<IMongodbService>;
+  let mockStorageService: MockService<IStorageService>;
 
   const now = new Date();
 
@@ -17,11 +16,11 @@ describe('Database archive service', () => {
     mockStorageService = createMockService('writeFile');
 
     service = databaseArchiveServiceFactory(mockMongodbService.service, mockStorageService.service);
-    advanceTo(now);
+    vi.useFakeTimers().setSystemTime(now);
   });
 
   afterEach(() => {
-    clear();
+    vi.useRealTimers();
   });
 
   const accounts = [createAccountDocument()];

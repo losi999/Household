@@ -1,12 +1,13 @@
 import { listUsersServiceFactory, IListUsersService } from '@household/api/functions/list-users/list-users.service';
 import { IIdentityService } from '@household/shared/services/identity-service';
-import { Mock, createMockService, validateError, validateNthFunctionCall } from '@household/shared/common/unit-testing';
+import { MockService, createMockService, validateError, validateNthFunctionCall } from '@household/shared/common/unit-testing';
 import { createUserResponse } from '@household/shared/common/test-data-factory';
+import { UserType as CognitoUserType} from '@aws-sdk/client-cognito-identity-provider';
 import { UserType } from '@household/shared/enums';
 
 describe('List users service', () => {
   let service: IListUsersService;
-  let mockIdentityService: Mock<IIdentityService>;
+  let mockIdentityService: MockService<IIdentityService>;
 
   beforeEach(() => {
     mockIdentityService = createMockService<IIdentityService>('listUsers', 'listUsersByGroupName');
@@ -17,7 +18,7 @@ describe('List users service', () => {
   const viewerEmail = 'viewer@email.com';
   const hairdresserEmail = 'hairdresser@email.com';
   const status = 'CONFIRMED';
-  const editorUser = {
+  const editorUser: CognitoUserType = {
     UserStatus: status,
     Attributes: [
       {
@@ -26,7 +27,7 @@ describe('List users service', () => {
       },
     ],
   };
-  const viewerUser = {
+  const viewerUser: CognitoUserType = {
     UserStatus: status,
     Attributes: [
       {
@@ -35,7 +36,7 @@ describe('List users service', () => {
       },
     ],
   };
-  const hairdresserUser = {
+  const hairdresserUser: CognitoUserType = {
     UserStatus: status,
     Attributes: [
       {

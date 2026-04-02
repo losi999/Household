@@ -1,7 +1,6 @@
 import { createDocumentUpdate, createProjectDocument, createProjectReport, createProjectRequest, createProjectResponse } from '@household/shared/common/test-data-factory';
 import { addSeconds, getProjectId } from '@household/shared/common/utils';
 import { projectDocumentConverterFactory, IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
-import { advanceTo, clear } from 'jest-date-mock';
 import { Project } from '@household/shared/types/types';
 
 describe('Project document converter', () => {
@@ -9,12 +8,12 @@ describe('Project document converter', () => {
   const now = new Date();
 
   beforeEach(() => {
-    advanceTo(now);
+    vi.useFakeTimers().setSystemTime(now);
     converter = projectDocumentConverterFactory();
   });
 
   afterEach(() => {
-    clear();
+    vi.useRealTimers();
   });
 
   const name = 'Nyaralás';

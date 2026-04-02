@@ -1,14 +1,14 @@
 import { ICreateAccountService, createAccountServiceFactory } from '@household/api/functions/create-account/create-account.service';
 import { createAccountDocument, createAccountRequest } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getAccountId } from '@household/shared/common/utils';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 
 describe('Create account service', () => {
   let service: ICreateAccountService;
-  let mockAccountService: Mock<IAccountService>;
-  let mockAccountDocumentConverter: Mock<IAccountDocumentConverter>;
+  let mockAccountService: MockService<IAccountService>;
+  let mockAccountDocumentConverter: MockService<IAccountDocumentConverter>;
 
   beforeEach(() => {
     mockAccountService = createMockService('saveAccount');

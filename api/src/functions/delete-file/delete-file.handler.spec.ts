@@ -8,7 +8,7 @@ describe('Delete file handler', () => {
   let handlerFunction: ReturnType<typeof handler>;
 
   beforeEach(() => {
-    mockDeleteFileService = jest.fn();
+    mockDeleteFileService = vi.fn();
     handlerFunction = handler(mockDeleteFileService);
   });
 

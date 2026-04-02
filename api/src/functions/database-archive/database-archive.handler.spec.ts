@@ -7,7 +7,7 @@ describe('Database archive handler', () => {
   let handlerFunction: ReturnType<typeof handler>;
 
   beforeEach(() => {
-    mockDatabaseArchiveService = jest.fn();
+    mockDatabaseArchiveService = vi.fn();
     handlerFunction = handler(mockDatabaseArchiveService);
   });
 

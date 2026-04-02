@@ -1,19 +1,18 @@
 import { createSettingDocument, createSettingKey, createSettingRequest, createSettingResponse } from '@household/shared/common/test-data-factory';
 import { addSeconds } from '@household/shared/common/utils';
 import { settingDocumentConverterFactory, ISettingDocumentConverter } from '@household/shared/converters/setting-document-converter';
-import { advanceTo, clear } from 'jest-date-mock';
 
 describe('Setting document converter', () => {
   let converter: ISettingDocumentConverter;
   const now = new Date();
 
   beforeEach(() => {
-    advanceTo(now);
+    vi.useFakeTimers().setSystemTime(now);
     converter = settingDocumentConverterFactory();
   });
 
   afterEach(() => {
-    clear();
+    vi.useRealTimers();
   });
 
   const expiresIn = 3600;

@@ -1,15 +1,15 @@
 import { IListCustomerWorksService, listCustomerWorksServiceFactory } from '@household/api/functions/list-customer-works/list-customer-works.service';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
 import { ICalendarEntryService } from '@household/shared/services/calendar-entry-service';
 import { ICustomerService } from '@household/shared/services/customer-service';
 
 describe('List customer works service', () => {
   let service: IListCustomerWorksService;
-  let mockCustomerService: Mock<ICustomerService>;
-  let mockCalendarEntryService: Mock<ICalendarEntryService>;
-  let mockCalendarEntryDocumentConverter: Mock<ICalendarEntryDocumentConverter>;
+  let mockCustomerService: MockService<ICustomerService>;
+  let mockCalendarEntryService: MockService<ICalendarEntryService>;
+  let mockCalendarEntryDocumentConverter: MockService<ICalendarEntryDocumentConverter>;
 
   beforeEach(() => {
     mockCustomerService = createMockService('getCustomerById');

@@ -1,13 +1,13 @@
 import { IUpdateSettingService, updateSettingServiceFactory } from '@household/api/functions/update-setting/update-setting.service';
 import { createSettingRequest, createSettingDocument, createDocumentUpdate } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { ISettingDocumentConverter } from '@household/shared/converters/setting-document-converter';
 import { ISettingService } from '@household/shared/services/setting-service';
 
 describe('Update setting service', () => {
   let service: IUpdateSettingService;
-  let mockSettingService: Mock<ISettingService>;
-  let mockSettingDocumentConverter: Mock<ISettingDocumentConverter>;
+  let mockSettingService: MockService<ISettingService>;
+  let mockSettingDocumentConverter: MockService<ISettingDocumentConverter>;
 
   beforeEach(() => {
     mockSettingService = createMockService('updateSetting');

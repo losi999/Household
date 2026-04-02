@@ -1,13 +1,13 @@
 import { IListRecipientsService, listRecipientsServiceFactory } from '@household/api/functions/list-recipients/list-recipients.service';
 import { createRecipientDocument, createRecipientResponse } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
 import { IRecipientService } from '@household/shared/services/recipient-service';
 
 describe('List recipients service', () => {
   let service: IListRecipientsService;
-  let mockRecipientService: Mock<IRecipientService>;
-  let mockRecipientDocumentConverter: Mock<IRecipientDocumentConverter>;
+  let mockRecipientService: MockService<IRecipientService>;
+  let mockRecipientDocumentConverter: MockService<IRecipientDocumentConverter>;
 
   beforeEach(() => {
     mockRecipientService = createMockService('listRecipients');

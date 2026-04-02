@@ -1,10 +1,9 @@
 import { createAccountDocument, createCategoryDocument, createPaymentTransactionDocument, createPaymentTransactionResponse, createProjectDocument, createRecipientDocument, createSplitTransactionDocument, createSplitTransactionResponse, createTransferTransactionDocument, createTransferTransactionResponse, createProductDocument, createTransactionReport, createAccountReport, createCategoryReport, createProjectReport, createProductReport, createRecipientReport, createDeferredTransactionDocument, createDeferredTransactionResponse, createReimbursementTransactionDocument, createReimbursementTransactionResponse, createAccountId, createTransactionRawReport } from '@household/shared/common/test-data-factory';
 import { getTransactionId } from '@household/shared/common/utils';
 import { transactionDocumentConverterFactory, ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
-import { advanceTo, clear } from 'jest-date-mock';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
-import { createMockService, Mock, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
@@ -16,16 +15,16 @@ import { ITransferTransactionDocumentConverter } from '@household/shared/convert
 
 describe('Transaction document converter', () => {
   let converter: ITransactionDocumentConverter;
-  let mockAccountDocumentConverter: Mock<IAccountDocumentConverter>;
-  let mockProjectDocumentConverter: Mock<IProjectDocumentConverter>;
-  let mockRecipientDocumentConverter: Mock<IRecipientDocumentConverter>;
-  let mockCategoryDocumentConverter: Mock<ICategoryDocumentConverter>;
-  let mockProductDocumentConverter: Mock<IProductDocumentConverter>;
-  let mockPaymentTransactionDocumentConverter: Mock<IPaymentTransactionDocumentConverter>;
-  let mockSplitTransactionDocumentConverter: Mock<ISplitTransactionDocumentConverter>;
-  let mockDeferredTransactionDocumentConverter: Mock<IDeferredTransactionDocumentConverter>;
-  let mockReimbursementTransactionDocumentConverter: Mock<IReimbursementTransactionDocumentConverter>;
-  let mockTransferTransactionDocumentConverter: Mock<ITransferTransactionDocumentConverter>;
+  let mockAccountDocumentConverter: MockService<IAccountDocumentConverter>;
+  let mockProjectDocumentConverter: MockService<IProjectDocumentConverter>;
+  let mockRecipientDocumentConverter: MockService<IRecipientDocumentConverter>;
+  let mockCategoryDocumentConverter: MockService<ICategoryDocumentConverter>;
+  let mockProductDocumentConverter: MockService<IProductDocumentConverter>;
+  let mockPaymentTransactionDocumentConverter: MockService<IPaymentTransactionDocumentConverter>;
+  let mockSplitTransactionDocumentConverter: MockService<ISplitTransactionDocumentConverter>;
+  let mockDeferredTransactionDocumentConverter: MockService<IDeferredTransactionDocumentConverter>;
+  let mockReimbursementTransactionDocumentConverter: MockService<IReimbursementTransactionDocumentConverter>;
+  let mockTransferTransactionDocumentConverter: MockService<ITransferTransactionDocumentConverter>;
   const now = new Date();
 
   beforeEach(() => {
@@ -39,13 +38,13 @@ describe('Transaction document converter', () => {
     mockDeferredTransactionDocumentConverter = createMockService('toResponse');
     mockReimbursementTransactionDocumentConverter = createMockService('toResponse');
     mockTransferTransactionDocumentConverter = createMockService('toResponse');
-
-    advanceTo(now);
+    vi.useFakeTimers();
+    vi.setSystemTime(now);
     converter = transactionDocumentConverterFactory(mockAccountDocumentConverter.service, mockProjectDocumentConverter.service, mockCategoryDocumentConverter.service, mockRecipientDocumentConverter.service, mockProductDocumentConverter.service, mockPaymentTransactionDocumentConverter.service, mockSplitTransactionDocumentConverter.service, mockDeferredTransactionDocumentConverter.service, mockReimbursementTransactionDocumentConverter.service, mockTransferTransactionDocumentConverter.service);
   });
 
   afterEach(() => {
-    clear();
+    vi.useRealTimers();
   });
 
   const viewingAccountId = createAccountId();

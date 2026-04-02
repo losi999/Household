@@ -1,24 +1,23 @@
 import { createDocumentUpdate2, testDataFactory } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock } from '@household/shared/common/unit-testing';
+import { createMockService, MockService } from '@household/shared/common/unit-testing';
 import { addSeconds, getCustomerId, getPriceId } from '@household/shared/common/utils';
 import { customerDocumentConverterFactory, ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
 import { IPriceDocumentConverter } from '@household/shared/converters/price-document-converter';
-import { advanceTo, clear } from 'jest-date-mock';
 
 describe('Customer document converter', () => {
   let converter: ICustomerDocumentConverter;
-  let mockPriceDocumentConverter: Mock<IPriceDocumentConverter>;
+  let mockPriceDocumentConverter: MockService<IPriceDocumentConverter>;
   const now = new Date();
   const expiresIn = 3600;
 
   beforeEach(() => {
     mockPriceDocumentConverter = createMockService('toResponse');
-    advanceTo(now);
+    vi.useFakeTimers().setSystemTime(now);
     converter = customerDocumentConverterFactory(mockPriceDocumentConverter.service);
   });
 
   afterEach(() => {
-    clear();
+    vi.useRealTimers();
   });
 
   describe('createJobPriceList', () => {

@@ -40,9 +40,17 @@ export type IMongodbService = {
 
 let connection: Connection;
 console.log('mongodb service 2');
-set('debug', (!process.env.ENV || process.env.ENV === 'LOCAL') ? {
-  color: false,
-  shell: true,
+set('debug', (!process.env.ENV || process.env.ENV === 'LOCAL') ? (collectionName, methodName, ...methodArgs) => {
+  const safeArgs = methodArgs.map(({ session, ...arg }) => {
+    try {
+      return JSON.stringify(arg);
+    } catch {
+      console.debug('Could not serialize argument for mongoose debug log', arg);
+      return '[unserializable]';
+    }
+  });
+
+  console.debug(`mongoose: ${collectionName}.${methodName}`, ...safeArgs);
 } : false);
 
 export const mongodbServiceFactory = (mongodbConnectionString: string): IMongodbService => {

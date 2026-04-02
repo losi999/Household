@@ -12,7 +12,7 @@ Resources:
       LayerName: !Sub Household-${Env}-DependenciesLayer
       RetentionPolicy: Delete
       CompatibleRuntimes:
-        - nodejs20.x
+        - nodejs24.x
 
   RumIdentityPool:
     Type: AWS::Cognito::IdentityPool

@@ -1,6 +1,6 @@
 import { IBulkTransactionImporterService, bulkTransactionImporterServiceFactory } from '@household/api/functions/bulk-transaction-importer/bulk-transaction-importer.service';
 import { createDocumentUpdate, createDraftTransactionDocument, createFileDocument, createFileId } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IDraftTransactionDocumentConverter } from '@household/shared/converters/draft-transaction-document-converter';
 import { IFileDocumentConverter } from '@household/shared/converters/file-document-converter';
 import { FileProcessingStatus } from '@household/shared/enums';
@@ -11,12 +11,12 @@ import { ITransactionService } from '@household/shared/services/transaction-serv
 
 describe('Bulk transaction importer service', () => {
   let service: IBulkTransactionImporterService;
-  let mockFileService: Mock<IFileService>;
-  let mockFileDocumentConverter: Mock<IFileDocumentConverter>;
-  let mockStorageService: Mock<IStorageService>;
-  let mockExcelParser: Mock<IExcelParserService>;
-  let mockDraftTransactionDocumentConverter: Mock<IDraftTransactionDocumentConverter>;
-  let mockTransactionService: Mock<ITransactionService>;
+  let mockFileService: MockService<IFileService>;
+  let mockFileDocumentConverter: MockService<IFileDocumentConverter>;
+  let mockStorageService: MockService<IStorageService>;
+  let mockExcelParser: MockService<IExcelParserService>;
+  let mockDraftTransactionDocumentConverter: MockService<IDraftTransactionDocumentConverter>;
+  let mockTransactionService: MockService<ITransactionService>;
 
   beforeEach(() => {
     mockFileService = createMockService('findFileById', 'updateFile');

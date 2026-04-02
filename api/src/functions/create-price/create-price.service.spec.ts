@@ -1,14 +1,14 @@
 import { ICreatePriceService, createPriceServiceFactory } from '@household/api/functions/create-price/create-price.service';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getPriceId } from '@household/shared/common/utils';
 import { IPriceDocumentConverter } from '@household/shared/converters/price-document-converter';
 import { IPriceService } from '@household/shared/services/price-service';
 
 describe('Create price service', () => {
   let service: ICreatePriceService;
-  let mockPriceService: Mock<IPriceService>;
-  let mockPriceDocumentConverter: Mock<IPriceDocumentConverter>;
+  let mockPriceService: MockService<IPriceService>;
+  let mockPriceDocumentConverter: MockService<IPriceDocumentConverter>;
 
   beforeEach(() => {
     mockPriceService = createMockService('savePrice');

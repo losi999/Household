@@ -1,6 +1,6 @@
 import { IReportTransactionsService, reportTransactionsServiceFactory } from '@household/api/functions/report-transactions/report-transactions.service';
 import { createAccountId, createTransactionRawReport, createTransactionReport } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IReportDocumentConverter } from '@household/shared/converters/report-document-converter';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { ITransactionService } from '@household/shared/services/transaction-service';
@@ -9,9 +9,9 @@ import { PipelineStage } from 'mongoose';
 
 describe('Report transactions service', () => {
   let service: IReportTransactionsService;
-  let mockReportDocumentConverter: Mock<IReportDocumentConverter>;
-  let mockTransactionService: Mock<ITransactionService>;
-  let mockTransactionDocumentConverter: Mock<ITransactionDocumentConverter>;
+  let mockReportDocumentConverter: MockService<IReportDocumentConverter>;
+  let mockTransactionService: MockService<ITransactionService>;
+  let mockTransactionDocumentConverter: MockService<ITransactionDocumentConverter>;
 
   beforeEach(() => {
     mockReportDocumentConverter = createMockService('createFilterQuery');

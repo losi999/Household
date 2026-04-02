@@ -1,11 +1,11 @@
 import { IRefreshTokenService, refreshTokenServiceFactory } from '@household/api/functions/refresh-token/refresh-token.service';
 import { IIdentityService } from '@household/shared/services/identity-service';
-import { Mock, createMockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { MockService, createMockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { Auth } from '@household/shared/types/types';
 
 describe('Refresh token service', () => {
   let service: IRefreshTokenService;
-  let mockIdentityService: Mock<IIdentityService>;
+  let mockIdentityService: MockService<IIdentityService>;
 
   beforeEach(() => {
     mockIdentityService = createMockService<IIdentityService>('refreshToken');

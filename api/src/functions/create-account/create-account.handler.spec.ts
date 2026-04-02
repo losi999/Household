@@ -9,7 +9,7 @@ describe('Create account handler', () => {
   let handlerFunction: ReturnType<typeof handler>;
 
   beforeEach(() => {
-    mockCreateAccountService = jest.fn();
+    mockCreateAccountService = vi.fn();
     handlerFunction = handler(mockCreateAccountService);
   });
   const body = createAccountRequest();

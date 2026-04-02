@@ -9,7 +9,7 @@ describe('Create price handler', () => {
   let handlerFunction: ReturnType<typeof handler>;
 
   beforeEach(() => {
-    mockCreatePriceService = jest.fn();
+    mockCreatePriceService = vi.fn();
     handlerFunction = handler(mockCreatePriceService);
   });
 

@@ -8,7 +8,7 @@ describe('List transactions by transaction handler', () => {
   let handlerFunction: ReturnType<typeof handler>;
 
   beforeEach(() => {
-    mockListTransactionsByTransactionService = jest.fn();
+    mockListTransactionsByTransactionService = vi.fn();
     handlerFunction = handler(mockListTransactionsByTransactionService);
   });
 

@@ -1,13 +1,13 @@
 import { IListCategoriesService, listCategoriesServiceFactory } from '@household/api/functions/list-categories/list-categories.service';
 import { createCategoryDocument, createCategoryResponse } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
 import { ICategoryService } from '@household/shared/services/category-service';
 
 describe('List categories service', () => {
   let service: IListCategoriesService;
-  let mockCategoryService: Mock<ICategoryService>;
-  let mockCategoryDocumentConverter: Mock<ICategoryDocumentConverter>;
+  let mockCategoryService: MockService<ICategoryService>;
+  let mockCategoryDocumentConverter: MockService<ICategoryDocumentConverter>;
 
   beforeEach(() => {
     mockCategoryService = createMockService('listCategories');

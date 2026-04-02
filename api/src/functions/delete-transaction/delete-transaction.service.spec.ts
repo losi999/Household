@@ -1,11 +1,11 @@
 import { IDeleteTransactionService, deleteTransactionServiceFactory } from '@household/api/functions/delete-transaction/delete-transaction.service';
 import { createTransactionId } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { ITransactionService } from '@household/shared/services/transaction-service';
 
 describe('Delete transaction service', () => {
   let service: IDeleteTransactionService;
-  let mockTransactionService: Mock<ITransactionService>;
+  let mockTransactionService: MockService<ITransactionService>;
 
   beforeEach(() => {
     mockTransactionService = createMockService('deleteTransaction');

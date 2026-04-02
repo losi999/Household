@@ -1,15 +1,12 @@
 import { default as handler } from '@household/api/handlers/api-request-validator.handler';
+import { createMockService, MockService } from '@household/shared/common/unit-testing';
 import { IValidatorService } from '@household/shared/services/validator-service';
 
 describe('API request validator handler', () => {
-  let mockValidatorService: IValidatorService;
-  let mockValidate: jest.Mock;
+  let mockValidatorService: MockService<IValidatorService>;
 
   beforeEach(() => {
-    mockValidate = jest.fn();
-    mockValidatorService = new (jest.fn<IValidatorService, undefined[]>(() => ({
-      validate: mockValidate,
-    })))();
+    mockValidatorService = createMockService('validate');
 
   });
 
@@ -19,10 +16,10 @@ describe('API request validator handler', () => {
     } as AWSLambda.APIGatewayProxyEvent;
 
     const validationError = 'This is a validation error';
-    mockValidate.mockReturnValue(validationError);
+    mockValidatorService.functions.validate.mockReturnValue(validationError);
 
     try {
-      handler(mockValidatorService)({
+      handler(mockValidatorService.service)({
         body: {},
       })(handlerEvent);
     } catch (error) {
@@ -39,9 +36,9 @@ describe('API request validator handler', () => {
       body: '{}',
     } as AWSLambda.APIGatewayProxyEvent;
 
-    mockValidate.mockReturnValue(undefined);
+    mockValidatorService.functions.validate.mockReturnValue(undefined);
 
-    const result = handler(mockValidatorService)({
+    const result = handler(mockValidatorService.service)({
       body: {},
     })(handlerEvent);
 

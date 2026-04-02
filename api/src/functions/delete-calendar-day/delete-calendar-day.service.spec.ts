@@ -1,12 +1,12 @@
 import { IDeleteCalendarDayService, deleteCalendarDayServiceFactory } from '@household/api/functions/delete-calendar-day/delete-calendar-day.service';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { CalendarDayType } from '@household/shared/enums';
 import { ICalendarDayService } from '@household/shared/services/calendar-day-service';
 
 describe('Delete calendar day service', () => {
   let service: IDeleteCalendarDayService;
-  let mockCalendarDayService: Mock<ICalendarDayService>;
+  let mockCalendarDayService: MockService<ICalendarDayService>;
   beforeEach(() => {
     mockCalendarDayService = createMockService('findCalendarDayByDay', 'deleteCalendarDay');
 

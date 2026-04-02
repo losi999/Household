@@ -1,11 +1,11 @@
 import { removeUserFromGroupServiceFactory, IRemoveUserFromGroup } from '@household/api/functions/remove-user-from-group/remove-user-from-group.service';
 import { IIdentityService } from '@household/shared/services/identity-service';
-import { Mock, createMockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { MockService, createMockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { UserType } from '@household/shared/enums';
 
 describe('Remove user from group service', () => {
   let service: IRemoveUserFromGroup;
-  let mockIdentityService: Mock<IIdentityService>;
+  let mockIdentityService: MockService<IIdentityService>;
 
   beforeEach(() => {
     mockIdentityService = createMockService<IIdentityService>('removeUserFromGroup');

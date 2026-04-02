@@ -1,12 +1,12 @@
 import { IMergeRecipientsService, mergeRecipientsServiceFactory } from '@household/api/functions/merge-recipients/merge-recipients.service';
 import { createRecipientDocument } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getRecipientId } from '@household/shared/common/utils';
 import { IRecipientService } from '@household/shared/services/recipient-service';
 
 describe('Merge recipient service', () => {
   let service: IMergeRecipientsService;
-  let mockRecipientService: Mock<IRecipientService>;
+  let mockRecipientService: MockService<IRecipientService>;
 
   beforeEach(() => {
     mockRecipientService = createMockService('findRecipientsByIds', 'mergeRecipients');

@@ -1,6 +1,6 @@
 import { ICreateCalendarEntryService, createCalendarEntryServiceFactory } from '@household/api/functions/create-calendar-entry/create-calendar-entry.service';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getCalendarEntryId, getCustomerId, getPriceId } from '@household/shared/common/utils';
 import { ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
 import { ICalendarEntryService } from '@household/shared/services/calendar-entry-service';
@@ -9,10 +9,10 @@ import { IPriceService } from '@household/shared/services/price-service';
 
 describe('Create calendar entry service', () => {
   let service: ICreateCalendarEntryService;
-  let mockCalendarEntryService: Mock<ICalendarEntryService>;
-  let mockCalendarEntryDocumentConverter: Mock<ICalendarEntryDocumentConverter>;
-  let mockCustomerService: Mock<ICustomerService>;
-  let mockPriceService: Mock<IPriceService>;
+  let mockCalendarEntryService: MockService<ICalendarEntryService>;
+  let mockCalendarEntryDocumentConverter: MockService<ICalendarEntryDocumentConverter>;
+  let mockCustomerService: MockService<ICustomerService>;
+  let mockPriceService: MockService<IPriceService>;
   
   beforeEach(() => {
     mockCalendarEntryService = createMockService('saveCalendarEntry');

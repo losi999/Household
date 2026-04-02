@@ -1,6 +1,6 @@
 import { ICreateTransferTransactionService, createTransferTransactionServiceFactory } from '@household/api/functions/create-transfer-transaction/create-transfer-transaction.service';
 import { createTransferTransactionRequest, createAccountDocument, createTransferTransactionDocument, createDeferredTransactionDocument } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getAccountId, getTransactionId, toDictionary } from '@household/shared/common/utils';
 import { ITransferTransactionDocumentConverter } from '@household/shared/converters/transfer-transaction-document-converter';
 import { AccountType } from '@household/shared/enums';
@@ -10,9 +10,9 @@ import { Transaction } from '@household/shared/types/types';
 
 describe('Create transfer transaction service', () => {
   let service: ICreateTransferTransactionService;
-  let mockAccountService: Mock<IAccountService>;
-  let mockTransactionService: Mock<ITransactionService>;
-  let mockTransferTransactionDocumentConverter: Mock<ITransferTransactionDocumentConverter>;
+  let mockAccountService: MockService<IAccountService>;
+  let mockTransactionService: MockService<ITransactionService>;
+  let mockTransferTransactionDocumentConverter: MockService<ITransferTransactionDocumentConverter>;
 
   beforeEach(() => {
     mockAccountService = createMockService('findAccountsByIds');

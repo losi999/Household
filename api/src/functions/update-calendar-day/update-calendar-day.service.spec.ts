@@ -1,15 +1,15 @@
 
 import { IUpdateCalendarDayService, updateCalendarDayServiceFactory } from '@household/api/functions/update-calendar-day/update-calendar-day.service';
 import { createDocumentUpdate2, testDataFactory } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { ICalendarDayDocumentConverter } from '@household/shared/converters/calendar-day-document-converter';
 import { CalendarDayType } from '@household/shared/enums';
 import { ICalendarDayService } from '@household/shared/services/calendar-day-service';
 
 describe('Update calendar day service', () => {
   let service: IUpdateCalendarDayService;
-  let mockCalendarDayService: Mock<ICalendarDayService>;
-  let mockCalendarDayDocumentConverter: Mock<ICalendarDayDocumentConverter>;
+  let mockCalendarDayService: MockService<ICalendarDayService>;
+  let mockCalendarDayDocumentConverter: MockService<ICalendarDayDocumentConverter>;
 
   beforeEach(() => {
     mockCalendarDayService = createMockService('findCalendarDayByDay', 'updateCalendarDay');

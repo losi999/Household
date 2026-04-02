@@ -1,19 +1,18 @@
 import { createDocumentUpdate2, testDataFactory } from '@household/shared/common/test-data-factory';
 import { addSeconds, getPriceId } from '@household/shared/common/utils';
 import { priceDocumentConverterFactory, IPriceDocumentConverter } from '@household/shared/converters/price-document-converter';
-import { advanceTo, clear } from 'jest-date-mock';
 
 describe('Price document converter', () => {
   let converter: IPriceDocumentConverter;
   const now = new Date();
 
   beforeEach(() => {
-    advanceTo(now);
+    vi.useFakeTimers().setSystemTime(now);
     converter = priceDocumentConverterFactory();
   });
 
   afterEach(() => {
-    clear();
+    vi.useRealTimers();
   });
 
   const expiresIn = 3600;

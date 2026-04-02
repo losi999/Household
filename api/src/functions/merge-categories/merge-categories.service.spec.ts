@@ -1,12 +1,12 @@
 import { IMergeCategoriesService, mergeCategoriesServiceFactory } from '@household/api/functions/merge-categories/merge-categories.service';
 import { createCategoryDocument } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getCategoryId } from '@household/shared/common/utils';
 import { ICategoryService } from '@household/shared/services/category-service';
 
 describe('Merge category service', () => {
   let service: IMergeCategoriesService;
-  let mockCategoryService: Mock<ICategoryService>;
+  let mockCategoryService: MockService<ICategoryService>;
 
   beforeEach(() => {
     mockCategoryService = createMockService('findCategoriesByIds', 'mergeCategories');

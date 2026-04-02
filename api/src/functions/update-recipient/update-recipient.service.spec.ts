@@ -1,14 +1,14 @@
 import { IUpdateRecipientService, updateRecipientServiceFactory } from '@household/api/functions/update-recipient/update-recipient.service';
 import { createRecipientRequest, createRecipientDocument, createDocumentUpdate } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getRecipientId } from '@household/shared/common/utils';
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
 import { IRecipientService } from '@household/shared/services/recipient-service';
 
 describe('Update recipient service', () => {
   let service: IUpdateRecipientService;
-  let mockRecipientService: Mock<IRecipientService>;
-  let mockRecipientDocumentConverter: Mock<IRecipientDocumentConverter>;
+  let mockRecipientService: MockService<IRecipientService>;
+  let mockRecipientDocumentConverter: MockService<IRecipientDocumentConverter>;
 
   beforeEach(() => {
     mockRecipientService = createMockService('findRecipientById', 'updateRecipient');

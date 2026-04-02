@@ -9,7 +9,7 @@ describe('Update recipient handler', () => {
   let handlerFunction: ReturnType<typeof handler>;
 
   beforeEach(() => {
-    mockUpdateRecipientService = jest.fn();
+    mockUpdateRecipientService = vi.fn();
     handlerFunction = handler(mockUpdateRecipientService);
   });
 

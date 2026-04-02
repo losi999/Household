@@ -1,24 +1,23 @@
 import { createDocumentUpdate2, createPaymentTransactionDocument, testDataFactory } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { addSeconds, getCalendarEntryId } from '@household/shared/common/utils';
 import { calendarEntryDocumentConverterFactory, ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
 import { ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
 import { CalendarEntryResolutionStatus, CalendarEntryType } from '@household/shared/enums';
-import { advanceTo, clear } from 'jest-date-mock';
 
 describe('Calendar entry document converter', () => {
   let converter: ICalendarEntryDocumentConverter;
-  let mockCustomerDocumentConverter: Mock<ICustomerDocumentConverter>;
+  let mockCustomerDocumentConverter: MockService<ICustomerDocumentConverter>;
   const now = new Date();
 
   beforeEach(() => {
-    advanceTo(now);
+    vi.useFakeTimers().setSystemTime(now);
     mockCustomerDocumentConverter = createMockService('createJobPriceList', 'toResponse', 'toResponseJobPriceList');
     converter = calendarEntryDocumentConverterFactory(mockCustomerDocumentConverter.service);
   });
 
   afterEach(() => {
-    clear();
+    vi.useRealTimers();
   });
 
   const expiresIn = 3600;

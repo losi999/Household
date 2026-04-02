@@ -7,7 +7,7 @@ describe('Delete user handler', () => {
   let apiHandler: ReturnType<typeof handler>;
 
   beforeEach(() => {
-    mockDeleteUserService = jest.fn();
+    mockDeleteUserService = vi.fn();
 
     apiHandler = handler(mockDeleteUserService);
   });

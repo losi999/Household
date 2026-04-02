@@ -1,13 +1,13 @@
 import { IGetProjectService, getProjectServiceFactory } from '@household/api/functions/get-project/get-project.service';
 import { createProjectDocument, createProjectResponse } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getProjectId } from '@household/shared/common/utils';
 import { IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
 import { IProjectService } from '@household/shared/services/project-service';
 describe('Get project service', () => {
   let service: IGetProjectService;
-  let mockProjectService: Mock<IProjectService>;
-  let mockProjectDocumentConverter: Mock<IProjectDocumentConverter>;
+  let mockProjectService: MockService<IProjectService>;
+  let mockProjectDocumentConverter: MockService<IProjectDocumentConverter>;
 
   beforeEach(() => {
     mockProjectService = createMockService('findProjectById');

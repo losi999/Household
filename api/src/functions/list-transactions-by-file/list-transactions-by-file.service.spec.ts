@@ -1,13 +1,13 @@
 import { IListTransactionsByFileService, listTransactionsByFileServiceFactory } from '@household/api/functions/list-transactions-by-file/list-transactions-by-file.service';
 import { createDraftTransactionDocument, createDraftTransactionResponse, createFileId } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IDraftTransactionDocumentConverter } from '@household/shared/converters/draft-transaction-document-converter';
 import { ITransactionService } from '@household/shared/services/transaction-service';
 
 describe('List transactions by file service', () => {
   let service: IListTransactionsByFileService;
-  let mockTransactionService: Mock<ITransactionService>;
-  let mockDraftTransactionDocumentConverter: Mock<IDraftTransactionDocumentConverter>;
+  let mockTransactionService: MockService<ITransactionService>;
+  let mockDraftTransactionDocumentConverter: MockService<IDraftTransactionDocumentConverter>;
 
   beforeEach(() => {
     mockTransactionService = createMockService('listDraftTransactionsByFileId');

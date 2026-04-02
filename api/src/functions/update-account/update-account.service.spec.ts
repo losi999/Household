@@ -1,14 +1,14 @@
 import { IUpdateAccountService, updateAccountServiceFactory } from '@household/api/functions/update-account/update-account.service';
 import { createAccountDocument, createAccountRequest, createDocumentUpdate } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getAccountId } from '@household/shared/common/utils';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 
 describe('Update account service', () => {
   let service: IUpdateAccountService;
-  let mockAccountService: Mock<IAccountService>;
-  let mockAccountDocumentConverter: Mock<IAccountDocumentConverter>;
+  let mockAccountService: MockService<IAccountService>;
+  let mockAccountDocumentConverter: MockService<IAccountDocumentConverter>;
 
   beforeEach(() => {
     mockAccountService = createMockService('findAccountById', 'updateAccount');

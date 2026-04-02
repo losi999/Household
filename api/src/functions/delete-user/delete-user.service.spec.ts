@@ -1,10 +1,10 @@
 import { deleteUserServiceFactory, IDeleteUserService } from '@household/api/functions/delete-user/delete-user.service';
 import { IIdentityService } from '@household/shared/services/identity-service';
-import { Mock, createMockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { MockService, createMockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 
 describe('Delete user service', () => {
   let service: IDeleteUserService;
-  let mockIdentityService: Mock<IIdentityService>;
+  let mockIdentityService: MockService<IIdentityService>;
 
   beforeEach(() => {
     mockIdentityService = createMockService<IIdentityService>('deleteUser');

@@ -2,19 +2,18 @@ import { createFileDocument, createFileRequest, createFileResponse } from '@hous
 import { addSeconds, getFileId } from '@household/shared/common/utils';
 import { fileDocumentConverterFactory, IFileDocumentConverter } from '@household/shared/converters/file-document-converter';
 import { FileProcessingStatus, FileType } from '@household/shared/enums';
-import { advanceTo, clear } from 'jest-date-mock';
 
 describe('File document converter', () => {
   let converter: IFileDocumentConverter;
   const now = new Date();
 
   beforeEach(() => {
-    advanceTo(now);
+    vi.useFakeTimers().setSystemTime(now);
     converter = fileDocumentConverterFactory();
   });
 
   afterEach(() => {
-    clear();
+    vi.useRealTimers();
   });
 
   const expiresIn = 3600;

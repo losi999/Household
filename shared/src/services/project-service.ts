@@ -113,13 +113,13 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
     },
     listProjects: () => {
       return mongodbService.inSession((session) => {
-        return mongodbService.projects.find({}).session(session)
+        return mongodbService.projects.find({})
+          .session(session)
           .collation({
             locale: 'hu',
           })
           .sort('name')
           .lean();
-          
       });
     },
     findProjectsByIds: async (projectIds) => {

@@ -9,7 +9,7 @@ describe('Update to split transaction handler', () => {
   let handlerFunction: ReturnType<typeof handler>;
 
   beforeEach(() => {
-    mockUpdateToSplitTransactionService = jest.fn();
+    mockUpdateToSplitTransactionService = vi.fn();
     handlerFunction = handler(mockUpdateToSplitTransactionService);
   });
 

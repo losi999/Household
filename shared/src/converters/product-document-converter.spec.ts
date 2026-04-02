@@ -1,24 +1,23 @@
 import { createCategoryDocument, createCategoryResponse, createDocumentUpdate, createProductDocument, createProductGroupedResponse, createProductReport, createProductRequest, createProductResponse } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock } from '@household/shared/common/unit-testing';
+import { createMockService, MockService } from '@household/shared/common/unit-testing';
 import { addSeconds, getProductId } from '@household/shared/common/utils';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
 import { productDocumentConverterFactory, IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
-import { advanceTo, clear } from 'jest-date-mock';
 
 describe('Product document converter', () => {
   let converter: IProductDocumentConverter;
-  let mockCategoryDocumentConverter: Mock<ICategoryDocumentConverter>;
+  let mockCategoryDocumentConverter: MockService<ICategoryDocumentConverter>;
   const now = new Date();
 
   beforeEach(() => {
     mockCategoryDocumentConverter = createMockService('toResponse');
 
-    advanceTo(now);
+    vi.useFakeTimers().setSystemTime(now);
     converter = productDocumentConverterFactory(mockCategoryDocumentConverter.service);
   });
 
   afterEach(() => {
-    clear();
+    vi.useRealTimers();
   });
 
   const brand = 'tesco';

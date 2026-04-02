@@ -8,7 +8,7 @@ describe('List calendar days handler', () => {
   let handlerFunction: ReturnType<typeof handler>;
 
   beforeEach(() => {
-    mockListCalendarDaysService = jest.fn();
+    mockListCalendarDaysService = vi.fn();
     handlerFunction = handler(mockListCalendarDaysService);
   });
 
