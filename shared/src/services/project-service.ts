@@ -19,8 +19,8 @@ export interface IProjectService {
 export const projectServiceFactory = (mongodbService: IMongodbService): IProjectService => {
   return {
     saveProject: async (doc) => {
-      const [project] = await mongodbService.inSession((session) => {
-        return mongodbService.projects.create([doc], {
+      const [project] = await mongodbService.projects((model, session) => {
+        return model.create([doc], {
           session,
         });
       });
@@ -28,92 +28,87 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
       return project;
     },
     saveProjects: (docs) => {
-      return mongodbService.inSession((session) => {
-        return session.withTransaction(() => {
-          return mongodbService.projects.insertMany(docs, {
-            session,
-          });
+      return mongodbService.inTransaction((models, session) => {
+        return models.projects.insertMany(docs, {
+          session,
         });
       });
     },
     findProjectById: async (projectId) => {
       if (projectId) {
-        return mongodbService.inSession((session) => {
-          return mongodbService.projects.findById(projectId)
+        return mongodbService.projects((model, session) => {
+          return model.findById(projectId)
             .session(session)
             .lean();
         });
-      }
-        
+      }        
     },
     deleteProject: async (projectId) => {
-      return mongodbService.inSession((session) => {
-        return session.withTransaction(async () => {
-          await mongodbService.projects.deleteOne({
-            _id: projectId,
-          }, {
-            session,
-          });
-            
-          await mongodbService.transactions.updateMany({
-            project: projectId,
-          }, {
-            $unset: {
-              project: 1,
-            },
-          }, {
-            runValidators: true,
-            session,
-          });
-            
-          await mongodbService.transactions.updateMany({
-            'splits.project': projectId,
-          }, {
-
-            $unset: {
-              'splits.$[element].project': 1,
-            },
-          }, {
-            session,
-            runValidators: true,
-            arrayFilters: [
-              {
-                'element.project': projectId,
-              },
-            ],
-          });
-            
-          await mongodbService.transactions.updateMany({
-            'deferredSplits.project': projectId,
-          }, {
-
-            $unset: {
-              'deferredSplits.$[element].project': 1,
-            },
-          }, {
-            session,
-            runValidators: true,
-            arrayFilters: [
-              {
-                'element.project': projectId,
-              },
-            ],
-          });
-            
+      return mongodbService.inTransaction(async (models, session) => {
+        await models.projects.deleteOne({
+          _id: projectId,
+        }, {
+          session,
         });
+            
+        await models.transactions.updateMany({
+          project: projectId,
+        }, {
+          $unset: {
+            project: 1,
+          },
+        }, {
+          runValidators: true,
+          session,
+        });
+            
+        await models.transactions.updateMany({
+          'splits.project': projectId,
+        }, {
+
+          $unset: {
+            'splits.$[element].project': 1,
+          },
+        }, {
+          session,
+          runValidators: true,
+          arrayFilters: [
+            {
+              'element.project': projectId,
+            },
+          ],
+        });
+            
+        await models.transactions.updateMany({
+          'deferredSplits.project': projectId,
+        }, {
+
+          $unset: {
+            'deferredSplits.$[element].project': 1,
+          },
+        }, {
+          session,
+          runValidators: true,
+          arrayFilters: [
+            {
+              'element.project': projectId,
+            },
+          ],
+        });
+            
       });
     },
     updateProject: async (projectId, updateQuery) => {
-      return mongodbService.inSession((session) => {
-        return mongodbService.projects.findByIdAndUpdate(projectId, updateQuery, {
+      return mongodbService.projects((model, session) => {
+        return model.findByIdAndUpdate(projectId, updateQuery, {
           runValidators: true,
           session,
         });
       });
     },
     listProjects: () => {
-      return mongodbService.inSession((session) => {
-        return mongodbService.projects.find({})
+      return mongodbService.projects((model, session) => {
+        return model.find({})
           .session(session)
           .collation({
             locale: 'hu',
@@ -127,8 +122,8 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
         return [];
       }
 
-      return mongodbService.inSession((session) => {
-        return mongodbService.projects.find({
+      return mongodbService.projects((model, session) => {
+        return model.find({
           _id: {
             $in: projectIds,
           },
@@ -138,67 +133,65 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
       });
     },
     mergeProjects: ({ targetProjectId, sourceProjectIds }) => {
-      return mongodbService.inSession((session) => {
-        return session.withTransaction(async () => {
-          await mongodbService.projects.deleteMany({
-            _id: {
-              $in: sourceProjectIds,
-            },
-          }, {
-            session,
-          });
+      return mongodbService.inTransaction(async (models, session) => {
+        await models.projects.deleteMany({
+          _id: {
+            $in: sourceProjectIds,
+          },
+        }, {
+          session,
+        });
 
-          await mongodbService.transactions.updateMany({
-            project: {
-              $in: sourceProjectIds,
-            },
-          }, {
-            $set: {
-              project: targetProjectId,
-            },
-          }, {
-            runValidators: true,
-            session,
-          });
+        await models.transactions.updateMany({
+          project: {
+            $in: sourceProjectIds,
+          },
+        }, {
+          $set: {
+            project: targetProjectId,
+          },
+        }, {
+          runValidators: true,
+          session,
+        });
 
-          await mongodbService.transactions.updateMany({
-            'splits.project': {
-              $in: sourceProjectIds,
-            },
-          }, {
-            $set: {
-              'splits.$[element].project': targetProjectId,
-            },
-          }, {
-            session,
-            runValidators: true,
-            arrayFilters: [
-              {
-                'element.project': {
-                  $in: sourceProjectIds,
-                },
+        await models.transactions.updateMany({
+          'splits.project': {
+            $in: sourceProjectIds,
+          },
+        }, {
+          $set: {
+            'splits.$[element].project': targetProjectId,
+          },
+        }, {
+          session,
+          runValidators: true,
+          arrayFilters: [
+            {
+              'element.project': {
+                $in: sourceProjectIds,
               },
-            ],
-          });
-          await mongodbService.transactions.updateMany({
-            'deferredSplits.project': {
-              $in: sourceProjectIds,
             },
-          }, {
-            $set: {
-              'deferredSplits.$[element].project': targetProjectId,
-            },
-          }, {
-            session,
-            runValidators: true,
-            arrayFilters: [
-              {
-                'element.project': {
-                  $in: sourceProjectIds,
-                },
+          ],
+        });
+        await models.transactions.updateMany({
+          'deferredSplits.project': {
+            $in: sourceProjectIds,
+          },
+        }, {
+          $set: {
+            'deferredSplits.$[element].project': targetProjectId,
+          },
+        }, {
+          session,
+          runValidators: true,
+          arrayFilters: [
+            {
+              'element.project': {
+                $in: sourceProjectIds,
               },
-            ],
-          });
+            },
+          ],
         });
       });
     },

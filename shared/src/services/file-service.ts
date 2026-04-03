@@ -13,8 +13,8 @@ export interface IFileService {
 export const fileServiceFactory = (mongodbService: IMongodbService): IFileService => {
   const instance: IFileService = {
     saveFile: async(doc) => {
-      const [file] = await mongodbService.inSession((session) => {
-        return mongodbService.files.create([doc], {
+      const [file] = await mongodbService.files((model, session) => {
+        return model.create([doc], {
           session,
         });
       });
@@ -23,31 +23,29 @@ export const fileServiceFactory = (mongodbService: IMongodbService): IFileServic
     },
     findFileById: async (fileId) => {
       if (fileId) {
-        return mongodbService.inSession((session) => {
-          return mongodbService.files.findById(fileId)
+        return mongodbService.files((model, session) => {
+          return model.findById(fileId)
             .session(session)
             .lean();
         });
       }        
     },
     deleteFile: async (fileId) => {
-      return mongodbService.inSession((session) => {
-        return session.withTransaction(async () => {
-          await mongodbService.files.findByIdAndDelete(fileId, {
-            session,
-          });
+      return mongodbService.inTransaction(async (models, session) => {
+        await models.files.findByIdAndDelete(fileId, {
+          session,
+        });
 
-          await mongodbService.transactions.deleteMany({
-            file: fileId,
-          }, {
-            session,
-          });
+        await models.transactions.deleteMany({
+          file: fileId,
+        }, {
+          session,
         });
       });
     },
     updateFile: (fileId, updateQuery) => {
-      return mongodbService.inSession((session) => {
-        return mongodbService.files.findByIdAndUpdate(fileId, updateQuery,
+      return mongodbService.files((model, session) => {
+        return model.findByIdAndUpdate(fileId, updateQuery,
           {
             returnDocument: 'after',
             runValidators: true,
@@ -57,8 +55,8 @@ export const fileServiceFactory = (mongodbService: IMongodbService): IFileServic
       });
     },
     listFiles: () => {
-      return mongodbService.inSession((session) => {
-        return mongodbService.files.aggregate()
+      return mongodbService.files((model, session) => {
+        return model.aggregate()
           .lookup({
             from: 'transactions',
             localField: '_id',
@@ -77,7 +75,6 @@ export const fileServiceFactory = (mongodbService: IMongodbService): IFileServic
             createdAt: -1,
           })
           .session(session);
-          
       });
     },
   };

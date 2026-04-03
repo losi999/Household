@@ -20,8 +20,8 @@ export const recipientServiceFactory = (mongodbService: IMongodbService): IRecip
 
   const instance: IRecipientService = {
     saveRecipient: async (doc) => {
-      const [recipient] = await mongodbService.inSession((session) => {
-        return mongodbService.recipients.create([doc], {
+      const [recipient] = await mongodbService.recipients((model, session) => {
+        return model.create([doc], {
           session,
         });
       });
@@ -29,18 +29,16 @@ export const recipientServiceFactory = (mongodbService: IMongodbService): IRecip
       return recipient;
     },
     saveRecipients: (docs) => {
-      return mongodbService.inSession((session) => {
-        return session.withTransaction(() => {
-          return mongodbService.recipients.insertMany(docs, {
-            session,
-          });
+      return mongodbService.inTransaction((models, session) => {
+        return models.recipients.insertMany(docs, {
+          session,
         });
       });
     },
     findRecipientById: async (recipientId) => {
       if (recipientId) {
-        return mongodbService.inSession((session) => {
-          return mongodbService.recipients.findById(recipientId)
+        return mongodbService.recipients((model, session) => {
+          return model.findById(recipientId)
             .session(session) 
             .lean();
         });
@@ -48,44 +46,40 @@ export const recipientServiceFactory = (mongodbService: IMongodbService): IRecip
         
     },
     deleteRecipient: async (recipientId) => {
-      return mongodbService.inSession((session) => {
-        return session.withTransaction(async () => {
-          await mongodbService.recipients.deleteOne({
-            _id: recipientId,
-          }, {
-            session,
-          });
-            
-          await mongodbService.transactions.updateMany({
-            recipient: recipientId,
-          }, {
-            $unset: {
-              recipient: 1,
-            },
-          }, {
-            session,
-          });
-            
+      return mongodbService.inTransaction(async (models, session) => {
+        await models.recipients.deleteOne({
+          _id: recipientId,
+        }, {
+          session,
+        });
+          
+        await models.transactions.updateMany({
+          recipient: recipientId,
+        }, {
+          $unset: {
+            recipient: 1,
+          },
+        }, {
+          session,
         });
       });
     },
     updateRecipient: async (recipientId, updateQuery) => {
-      return mongodbService.inSession((session) => {
-        return mongodbService.recipients.findByIdAndUpdate(recipientId, updateQuery, {
+      return mongodbService.recipients((model, session) => {
+        return model.findByIdAndUpdate(recipientId, updateQuery, {
           runValidators: true,
           session,
         });
       });
     },
     listRecipients: () => {
-      return mongodbService.inSession(async(session) => {
-        return mongodbService.recipients.find({}).session(session)
+      return mongodbService.recipients((model, session) => {
+        return model.find({}).session(session)
           .collation({
             locale: 'hu',
           })
           .sort('name')
           .lean();
-          
       });
     },
     findRecipientsByIds: async (recipientIds) => {
@@ -93,40 +87,36 @@ export const recipientServiceFactory = (mongodbService: IMongodbService): IRecip
         return [];
       }
 
-      return mongodbService.inSession(async (session) => {
-        return mongodbService.recipients.find({
+      return mongodbService.recipients((model, session) => {
+        return model.find({
           _id: {
             $in: recipientIds,
           },
         }).session(session)
           .lean();
-          
       });
     },
     mergeRecipients: ({ targetRecipientId, sourceRecipientIds }) => {
-      return mongodbService.inSession((session) => {
-        return session.withTransaction(async () => {
-          await mongodbService.recipients.deleteMany({
-            _id: {
-              $in: sourceRecipientIds,
-            },
-          }, {
-            session,
-          });
+      return mongodbService.inTransaction(async (models, session) => {
+        await models.recipients.deleteMany({
+          _id: {
+            $in: sourceRecipientIds,
+          },
+        }, {
+          session,
+        });
 
-          await mongodbService.transactions.updateMany({
-            recipient: {
-              $in: sourceRecipientIds,
-            },
-          }, {
-            $set: {
-              recipient: targetRecipientId,
-            },
-          }, {
-            runValidators: true,
-            session,
-          });
-
+        await models.transactions.updateMany({
+          recipient: {
+            $in: sourceRecipientIds,
+          },
+        }, {
+          $set: {
+            recipient: targetRecipientId,
+          },
+        }, {
+          runValidators: true,
+          session,
         });
       });
     },

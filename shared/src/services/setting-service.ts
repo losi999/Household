@@ -13,8 +13,8 @@ export interface ISettingService {
 export const settingServiceFactory = (mongodbService: IMongodbService): ISettingService => {
   const instance: ISettingService = {
     updateSetting: (settingKey, updateQuery) => {
-      return mongodbService.inSession((session) => {
-        return mongodbService.settings.findOneAndUpdate({
+      return mongodbService.settings((model, session) => {
+        return model.findOneAndUpdate({
           settingKey,
         }, updateQuery,
         {
@@ -26,10 +26,9 @@ export const settingServiceFactory = (mongodbService: IMongodbService): ISetting
       });
     },
     listSettings: () => {
-      return mongodbService.inSession((session) => {
-        return mongodbService.settings.find()
+      return mongodbService.settings((model, session) => {
+        return model.find()
           .session(session);
-          
       });
     },
     listSettingsByKeys: async (settingKeys) => {
@@ -37,8 +36,8 @@ export const settingServiceFactory = (mongodbService: IMongodbService): ISetting
         return [];
       }
 
-      return mongodbService.inSession((session) => {
-        return mongodbService.settings.find({
+      return mongodbService.settings((model, session) => {
+        return model.find({
           settingKey: {
             $in: settingKeys,
           },
@@ -48,8 +47,8 @@ export const settingServiceFactory = (mongodbService: IMongodbService): ISetting
     },
     getSettingByKey: (settingKey) => {
       if(settingKey) {
-        return mongodbService.inSession((session) => {
-          return mongodbService.settings.findOne({
+        return mongodbService.settings((model, session) => {
+          return model.findOne({
             settingKey,
           })
             .session(session);   

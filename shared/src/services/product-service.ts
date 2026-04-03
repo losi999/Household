@@ -20,8 +20,8 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
 
   const instance: IProductService = {
     listProducts: () => {
-      return mongodbService.inSession((session) => {
-        return mongodbService.products.aggregate([
+      return mongodbService.products((model, session) => {
+        return model.aggregate([
           {
             $sort: {
               fullName: 1,
@@ -83,8 +83,8 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
       });
     },
     saveProduct: async (doc) => {
-      const [product] = await mongodbService.inSession((session) => {
-        return mongodbService.products.create([doc], {
+      const [product] = await mongodbService.products((model, session) => {
+        return model.create([doc], {
           session,
         });
       });
@@ -92,18 +92,16 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
       return product;
     },
     saveProducts: (docs) => {
-      return mongodbService.inSession((session) => {
-        return session.withTransaction(() => {
-          return mongodbService.products.insertMany(docs, {
-            session,
-          });
+      return mongodbService.inTransaction((models, session) => {
+        return models.products.insertMany(docs, {
+          session,
         });
       });
     },
     findProductById: async (productId) => {
       if (productId) {
-        return mongodbService.inSession((session) => {
-          return mongodbService.products.findById(productId)
+        return mongodbService.products((model, session) => {
+          return model.findById(productId)
             .setOptions({
               lean: true,
               session,
@@ -116,8 +114,8 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
         return [];
       }
 
-      return mongodbService.inSession((session) => {
-        return mongodbService.products.find({
+      return mongodbService.products((model, session) => {
+        return model.find({
           _id: {
             $in: productIds,
           },
@@ -127,137 +125,134 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
             session,
             lean: true,
           });
-
       });
     },
     deleteProduct: async (productId) => {
-      return mongodbService.inSession((session) => {
-        return session.withTransaction(async () => {
-          await mongodbService.products.deleteOne({
-            _id: productId,
-          }, {
-            session,
-          });
-            
-          await mongodbService.transactions.updateMany({
-            product: productId,
-          }, {
-            $unset: {
-              product: 1,
-              quantity: 1,
-            },
-          }, {
-            runValidators: true,
-            session,
-          });
-            
-          await mongodbService.transactions.updateMany({
-            'splits.product': productId,
-          }, {
+      return mongodbService.inTransaction(async (models, session) => {
+        await models.products.deleteOne({
+          _id: productId,
+        }, {
+          session,
+        });
+          
+        await models.transactions.updateMany({
+          product: productId,
+        }, {
+          $unset: {
+            product: 1,
+            quantity: 1,
+          },
+        }, {
+          runValidators: true,
+          session,
+        });
+          
+        await models.transactions.updateMany({
+          'splits.product': productId,
+        }, {
 
-            $unset: {
-              'splits.$[element].product': 1,
-              'splits.$[element].quantity': 1,
+          $unset: {
+            'splits.$[element].product': 1,
+            'splits.$[element].quantity': 1,
+          },
+        }, {
+          session,
+          runValidators: true,
+          arrayFilters: [
+            {
+              'element.product': productId,
             },
-          }, {
-            session,
-            runValidators: true,
-            arrayFilters: [
-              {
-                'element.product': productId,
-              },
-            ],
-          });
-            
-          await mongodbService.transactions.updateMany({
-            'deferredSplits.product': productId,
-          }, {
+          ],
+        });
+          
+        await models.transactions.updateMany({
+          'deferredSplits.product': productId,
+        }, {
 
-            $unset: {
-              'deferredSplits.$[element].product': 1,
-              'deferredSplits.$[element].quantity': 1,
+          $unset: {
+            'deferredSplits.$[element].product': 1,
+            'deferredSplits.$[element].quantity': 1,
+          },
+        }, {
+          session,
+          runValidators: true,
+          arrayFilters: [
+            {
+              'element.product': productId,
             },
-          }, {
-            session,
-            runValidators: true,
-            arrayFilters: [
-              {
-                'element.product': productId,
-              },
-            ],
-          });
-            
+          ],
         });
       });
     },
     updateProduct: async (productId, updateQuery) => {
-      return mongodbService.products.findByIdAndUpdate(productId, updateQuery, {
-        runValidators: true,
+      return mongodbService.products((model, session) => {
+        return model.findByIdAndUpdate(productId, updateQuery, {
+          runValidators: true,
+          session,
+        });
       });
     },
     mergeProducts: ({ targetProductId, sourceProductIds }) => {
-      return mongodbService.inSession((session) => {
-        return session.withTransaction(async () => {
-          await mongodbService.products.deleteMany({
-            _id: {
-              $in: sourceProductIds,
-            },
-          }, {
-            session,
-          });
+      return mongodbService.inTransaction(async (models, session) => {
+        await models.products.deleteMany({
+          _id: {
+            $in: sourceProductIds,
+          },
+        }, {
+          session,
+        });
 
-          await mongodbService.transactions.updateMany({
-            product: {
-              $in: sourceProductIds,
-            },
-          }, {
-            $set: {
-              product: targetProductId,
-            },
-          }, {
-            runValidators: true,
-            session,
-          });
+        await models.transactions.updateMany({
+          product: {
+            $in: sourceProductIds,
+          },
+        }, {
+          $set: {
+            product: targetProductId,
+          },
+        }, {
+          runValidators: true,
+          session,
+        });
 
-          await mongodbService.transactions.updateMany({
-            'splits.product': {
-              $in: sourceProductIds,
-            },
-          }, {
-            $set: {
-              'splits.$[element].product': targetProductId,
-            },
-          }, {
-            session,
-            runValidators: true,
-            arrayFilters: [
-              {
-                'element.product': {
-                  $in: sourceProductIds,
-                },
+        await models.transactions.updateMany({
+          'splits.product': {
+            $in: sourceProductIds,
+          },
+        }, {
+          $set: {
+            'splits.$[element].product': targetProductId,
+          },
+        }, {
+          session,
+          runValidators: true,
+          arrayFilters: [
+            {
+              'element.product': {
+                $in: sourceProductIds,
               },
-            ],
-          });
+            },
+          ],
+        });
 
-          await mongodbService.transactions.updateMany({
-            'deferredSplits.product': {
-              $in: sourceProductIds,
-            },
-          }, {
-            $set: {
-              'deferredSplits.$[element].product': targetProductId,
-            },
-          }, {
-            session,
-            runValidators: true,
-            arrayFilters: [
-              {
-                'element.product': {
-                  $in: sourceProductIds,
-                },
+        await models.transactions.updateMany({
+          'deferredSplits.product': {
+            $in: sourceProductIds,
+          },
+        }, {
+          $set: {
+            'deferredSplits.$[element].product': targetProductId,
+          },
+        }, {
+          session,
+          runValidators: true,
+          arrayFilters: [
+            {
+              'element.product': {
+                $in: sourceProductIds,
               },
-            ],
-          });
+            },
+          ],
         });
       });
     },

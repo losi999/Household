@@ -13,7 +13,7 @@
     "types": [
       "vitest/globals",
       "aws-lambda",
-      "node"
+      "node",
     ],
     "noImplicitAny": true,
     "noUnusedLocals": false,
@@ -28,11 +28,15 @@
       ],
       "@household/shared/*": [
         "./shared/src/*"
+      ],
+      "@household/test/*": [
+        "./test/src/*"
       ]
     }
   },
   "include": [
     "api/src",
-    "shared/src"
+    "shared/src",
+    "test"
   ]
 }
