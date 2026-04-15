@@ -14,7 +14,7 @@ export const test = baseTest.extend<ApiFixture>({
   userType: undefined,
   authenticate: async ({ request }, use) => {
     const authenticate = async (userType: User) => {
-      const authRes = await request.post('https://local-householdapi.losi999.hu/user/v1/login', {
+      const authRes = await request.post(`${process.env.BASE_URL}/user/v1/login`, {
         data: {
           email: `losonczil+${userType}@gmail.com`,
           password: 'Password1!',

@@ -8,10 +8,10 @@ import { expect as baseExpect, APIResponse } from '@playwright/test';
 type ProjectApiFixture ={
   requestGetProject(projectId: Project.Id): Promise<APIResponse>;
   requestListProjects(): Promise<APIResponse>;
-  requestCreateProject?(project: Project.Request): Promise<APIResponse>;
-  requestUpdateProject?(projectId: Project.Id, project: Project.Request): Promise<APIResponse>;
-  requestDeleteProject?(projectId: Project.Id): Promise<APIResponse>;
-  requestMergeProjects?(projectId: Project.Id, sourceProjectIds: Project.Id[]): Promise<APIResponse>;
+  requestCreateProject(project: Project.Request): Promise<APIResponse>;
+  requestUpdateProject(projectId: Project.Id, project: Project.Request): Promise<APIResponse>;
+  requestDeleteProject(projectId: Project.Id): Promise<APIResponse>;
+  requestMergeProjects(projectId: Project.Id, sourceProjectIds: Project.Id[]): Promise<APIResponse>;
 };
 
 const validateProjectResponse = (response: Project.Response, document: Project.Document): string => {
@@ -41,7 +41,7 @@ export const test = baseTest.extend<ProjectApiFixture>({
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestGetProject = async (projectId: Project.Id) => {
-      return request.get(`https://local-householdapi.losi999.hu/project/v1/projects/${projectId}`, {
+      return request.get(`${process.env.BASE_URL}/project/v1/projects/${projectId}`, {
         headers: {
           Authorization: authToken,
         },
@@ -54,7 +54,7 @@ export const test = baseTest.extend<ProjectApiFixture>({
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestListProjects = async () => {
-      return request.get('https://local-householdapi.losi999.hu/project/v1/projects', {
+      return request.get(`${process.env.BASE_URL}/project/v1/projects`, {
         headers: {
           Authorization: authToken,
         },
@@ -67,7 +67,7 @@ export const test = baseTest.extend<ProjectApiFixture>({
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestCreateProject = async (project: Project.Request) => {
-      return request.post('https://local-householdapi.losi999.hu/project/v1/projects', {
+      return request.post(`${process.env.BASE_URL}/project/v1/projects`, {
         headers: {
           Authorization: authToken,
           [headerExpiresIn]: process.env.EXPIRES_IN,
@@ -82,7 +82,7 @@ export const test = baseTest.extend<ProjectApiFixture>({
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestUpdateProject = async (projectId: Project.Id, project: Project.Request) => {
-      return request.put(`https://local-householdapi.losi999.hu/project/v1/projects/${projectId}`, {
+      return request.put(`${process.env.BASE_URL}/project/v1/projects/${projectId}`, {
         headers: {
           Authorization: authToken,
           [headerExpiresIn]: process.env.EXPIRES_IN,
@@ -97,7 +97,7 @@ export const test = baseTest.extend<ProjectApiFixture>({
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestDeleteProject = async (projectId: Project.Id) => {
-      return request.delete(`https://local-householdapi.losi999.hu/project/v1/projects/${projectId}`, {
+      return request.delete(`${process.env.BASE_URL}/project/v1/projects/${projectId}`, {
         headers: {
           Authorization: authToken,
         },
@@ -110,7 +110,7 @@ export const test = baseTest.extend<ProjectApiFixture>({
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestMergeProjects = async (projectId: Project.Id, sourceProjectIds: Project.Id[]) => {
-      return request.post(`https://local-householdapi.losi999.hu/project/v1/projects/${projectId}/merge`, {
+      return request.post(`${process.env.BASE_URL}/project/v1/projects/${projectId}/merge`, {
         headers: {
           Authorization: authToken,
         },
