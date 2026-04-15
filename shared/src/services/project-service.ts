@@ -4,7 +4,7 @@ import { UpdateQuery } from 'mongoose';
 
 export interface IProjectService {
   saveProject(doc: Project.Document): Promise<Project.Document>;
-  saveProjects(docs: Project.Document[]): Promise<unknown>;
+  saveProjects(...docs: Project.Document[]): Promise<unknown>;
   findProjectById(projectId: Project.Id): Promise<Project.Document>;
   deleteProject(projectId: Project.Id): Promise<unknown>;
   updateProject(projectId: Project.Id, updateQuery: UpdateQuery<Project.Document>): Promise<unknown>;
@@ -27,7 +27,7 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
       
       return project;
     },
-    saveProjects: (docs) => {
+    saveProjects: (...docs) => {
       return mongodbService.inTransaction((models, session) => {
         return models.projects.insertMany(docs, {
           session,

@@ -5,7 +5,7 @@ import { Types, UpdateQuery } from 'mongoose';
 
 export interface IAccountService {
   saveAccount(doc: Account.Document): Promise<Account.Document>;
-  saveAccounts(docs: Account.Document[]): Promise<unknown>;
+  saveAccounts(...docs: Account.Document[]): Promise<unknown>;
   findAccountById(accountId: Account.Id): Promise<Account.Document>;
   findAccountsByIds(accountIds: Account.Id[]): Promise<Account.Document[]>;
   getAccountById(accountId: Account.Id): Promise<Account.Document>;
@@ -25,7 +25,7 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
       
       return account;
     },
-    saveAccounts: (docs) => {
+    saveAccounts: (...docs) => {
       return mongodbService.inTransaction((models, session) => {
         return models.accounts.insertMany(docs, {
           session,

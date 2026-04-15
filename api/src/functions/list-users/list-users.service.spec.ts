@@ -2,7 +2,7 @@ import { listUsersServiceFactory, IListUsersService } from '@household/api/funct
 import { IIdentityService } from '@household/shared/services/identity-service';
 import { MockService, createMockService, validateError, validateNthFunctionCall } from '@household/shared/common/unit-testing';
 import { createUserResponse } from '@household/shared/common/test-data-factory';
-import { UserType as CognitoUserType} from '@aws-sdk/client-cognito-identity-provider';
+import { UserType as CognitoUserType } from '@aws-sdk/client-cognito-identity-provider';
 import { UserType } from '@household/shared/enums';
 
 describe('List users service', () => {

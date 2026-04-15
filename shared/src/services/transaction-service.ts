@@ -7,8 +7,8 @@ import { PipelineStage, Types, UpdateQuery } from 'mongoose';
 
 export interface ITransactionService {
   saveTransaction(doc: Transaction.Document): Promise<Transaction.Document>;
-  saveTransactions(docs: Transaction.Document[]): Promise<any>;
-  findTransactionById(transactionId: Transaction.Id): Promise<Transaction.Document>;
+  saveTransactions(...docs: Transaction.Document[]): Promise<any>;
+  findTransactionById<T extends Transaction.Document = Transaction.Document>(transactionId: Transaction.Id): Promise<T>;
   getTransactionById(transactionId: Transaction.Id): Promise<Transaction.Document>;
   getTransactionByIdAndAccountId(query: Transaction.TransactionId & Account.AccountId): Promise<Transaction.Document>;
   deleteTransaction(transactionId: Transaction.Id): Promise<unknown>;
@@ -34,18 +34,18 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
       
       return transaction;
     },
-    saveTransactions: (docs) => {
+    saveTransactions: (...docs) => {
       return mongodbService.inTransaction(async (models, session) => {
         return models.transactions.insertMany(docs, {
           session,
         });
       });
     },
-    findTransactionById: (transactionId) => {
+    findTransactionById: <T extends Transaction.Document = Transaction.Document>(transactionId: Transaction.Id): Promise<T> => {
       if (transactionId) {
         return mongodbService.transactions(async (model, session) => {
-          return model.findById(transactionId).session(session)
-            .lean();
+          return await model.findById(transactionId).session(session)
+            .lean() as T;
         });
       }
     },
