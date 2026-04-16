@@ -15,8 +15,8 @@ import { paymentTransactionDataFactory } from '@household/test/api/transaction/p
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
-import { transactionService } from '@household/shared/dependencies/services/transaction-service';
-import { accountService } from '@household/shared/dependencies/services/account-service';
+import { transactionService } from '@household/test/dependencies';
+import { accountService } from '@household/test/dependencies';
 import { mergeExpects } from '@playwright/test';
 
 const expect = mergeExpects(apiExpect, projectApiExpect, paymentTransactionApiExpect, deferredTransactionApiExpect, reimbursementTransactionApiExpect, splitTransactionApiExpect);

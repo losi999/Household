@@ -18,10 +18,10 @@ import { paymentTransactionDataFactory } from '@household/test/api/transaction/p
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
-import { accountService } from '@household/shared/dependencies/services/account-service';
-import { transactionService } from '@household/shared/dependencies/services/transaction-service';
+import { accountService } from '@household/test/dependencies';
+import { transactionService } from '@household/test/dependencies';
 import { productDataFactory } from '@household/test/api/product/data-factory';
-import { productService } from '@household/shared/dependencies/services/product-service';
+import { productService } from '@household/test/dependencies';
 
 const permissionMap = allowUsers('editor');
 
