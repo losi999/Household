@@ -2,7 +2,7 @@ import { accountDocumentConverter } from '@household/shared/dependencies/convert
 import { DataFactoryFunction } from '@household/shared/types/common';
 import { Account } from '@household/shared/types/types';
 import { faker } from '@faker-js/faker';
-import { createId } from '@household/test/api/utils';
+import { createId } from '@household/test/utils';
 import { AccountType } from '@household/shared/enums';
 
 export const accountDataFactory = (() => {

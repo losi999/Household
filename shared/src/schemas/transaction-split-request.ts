@@ -36,9 +36,9 @@ const schema: StrictJSONSchema7<Transaction.SplitRequest> = {
         type: 'object',
         additionalProperties: false,
         required: [ ...amount.required],
-        dependentRequired: {
-          ...invoice.dependentRequired,
-          ...inventory.dependentRequired,
+        dependencies: {
+          ...invoice.dependencies,
+          ...inventory.dependencies,
         },
         properties: {
           ...categoryId.properties,
@@ -61,9 +61,9 @@ const schema: StrictJSONSchema7<Transaction.SplitRequest> = {
           ...amount.required,
           'loanAccountId',
         ],
-        dependentRequired: {
-          ...invoice.dependentRequired,
-          ...inventory.dependentRequired,
+        dependencies: {
+          ...invoice.dependencies,
+          ...inventory.dependencies,
         },
         properties: {
           ...categoryId.properties,

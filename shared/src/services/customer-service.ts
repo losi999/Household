@@ -4,7 +4,7 @@ import { Customer } from '@household/shared/types/types';
 
 export interface ICustomerService {
   saveCustomer(doc: Customer.Document): Promise<Customer.Document>;
-  saveCustomers(docs: Customer.Document[]): Promise<unknown>;
+  saveCustomers(...docs: Customer.Document[]): Promise<unknown>;
   findCustomerById(customerId: Customer.Id): Promise<Customer.Document>;
   getCustomerById(customerId: Customer.Id): Promise<Customer.Document>;
   updateCustomer(customerId: Customer.Id, update: DocumentUpdate<Customer.Document>): Promise<unknown>;

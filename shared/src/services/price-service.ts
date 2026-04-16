@@ -4,7 +4,7 @@ import { Price } from '@household/shared/types/types';
 
 export interface IPriceService {
   savePrice(doc: Price.Document): Promise<Price.Document>;
-  savePrices(docs: Price.Document[]): Promise<unknown>;
+  savePrices(...docs: Price.Document[]): Promise<unknown>;
   findPriceById(priceId: Price.Id): Promise<Price.Document>;
   deletePrice(priceId: Price.Id): Promise<unknown>;
   updatePrice(priceId: Price.Id, updateQuery: DocumentUpdate<Price.Document>): Promise<unknown>;

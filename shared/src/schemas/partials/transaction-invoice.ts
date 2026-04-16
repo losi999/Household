@@ -4,7 +4,7 @@ import { Transaction } from '@household/shared/types/types';
 const schema: StrictJSONSchema7<Transaction.InvoiceDate<string> & Transaction.InvoiceNumber> = {
   type: 'object',
   additionalProperties: false,
-  dependentRequired: {
+  dependencies: {
     billingStartDate: ['billingEndDate'],
     billingEndDate: ['billingStartDate'],
     invoiceNumber: [

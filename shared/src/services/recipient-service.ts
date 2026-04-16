@@ -4,7 +4,7 @@ import { UpdateQuery } from 'mongoose';
 
 export interface IRecipientService {
   saveRecipient(doc: Recipient.Document): Promise<Recipient.Document>;
-  saveRecipients(docs: Recipient.Document[]): Promise<unknown>;
+  saveRecipients(...docs: Recipient.Document[]): Promise<unknown>;
   findRecipientById(recipientId: Recipient.Id): Promise<Recipient.Document>;
   deleteRecipient(recipientId: Recipient.Id): Promise<unknown>;
   updateRecipient(recipientId: Recipient.Id, updateQuery: UpdateQuery<Recipient.Document>): Promise<unknown>;
@@ -28,7 +28,7 @@ export const recipientServiceFactory = (mongodbService: IMongodbService): IRecip
       
       return recipient;
     },
-    saveRecipients: (docs) => {
+    saveRecipients: (...docs) => {
       return mongodbService.inTransaction((models, session) => {
         return models.recipients.insertMany(docs, {
           session,

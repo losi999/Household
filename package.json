@@ -63,43 +63,5 @@
     "typescript": "6.0.2",
     "uuid": "13.0.0",
     "vitest": "4.1.2"
-  },
-  "jest": {
-    "verbose": true,
-    "transform": {
-      "^.+\\.tsx?$": "ts-jest"
-    },
-    "moduleNameMapper": {
-      "^@household/api/(.+)$": "<rootDir>/api/src/$1",
-      "^@household/shared/(.+)$": "<rootDir>/shared/src/$1"
-    },
-    "testRegex": "(api|shared)/src/.*\\.spec\\.ts$",
-    "testEnvironment": "node",
-    "collectCoverage": true,
-    "collectCoverageFrom": [
-      "api/**/*.ts",
-      "shared/**/*.ts",
-      "!shared/src/types/*",
-      "!**/dependencies/**/*.ts",
-      "!**/mongodb-schemas/**/*.ts",
-      "!**/node_modules/**",
-      "!**/*.index.ts",
-      "!api/src/handlers/index.handler.ts",
-      "!shared/src/services/*.ts"
-    ],
-    "coverageReporters": [
-      "html"
-    ],
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js",
-      "jsx",
-      "json",
-      "node"
-    ],
-    "setupFiles": [
-      "jest-date-mock"
-    ]
   }
 }

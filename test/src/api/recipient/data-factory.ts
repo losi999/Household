@@ -2,7 +2,7 @@ import { recipientDocumentConverter } from '@household/shared/dependencies/conve
 import { DataFactoryFunction } from '@household/shared/types/common';
 import { Recipient } from '@household/shared/types/types';
 import { faker } from '@faker-js/faker';
-import { createId } from '@household/test/api/utils';
+import { createId } from '@household/test/utils';
 
 export const recipientDataFactory = (() => {
   const createRecipientRequest: DataFactoryFunction<Recipient.Request> = (req) => {

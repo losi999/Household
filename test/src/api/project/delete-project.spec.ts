@@ -1,5 +1,5 @@
 import { entries, getProjectId, getTransactionId } from '@household/shared/common/utils';
-import { allowUsers } from '@household/test/api/utils';
+import { allowUsers } from '@household/test/utils';
 import { test, expect as projectApiExpect } from '@household/test/fixtures/project-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { expect as paymentTransactionApiExpect } from '@household/test/fixtures/payment-transaction-api.fixture';
@@ -7,7 +7,7 @@ import { expect as deferredTransactionApiExpect } from '@household/test/fixtures
 import { expect as reimbursementTransactionApiExpect } from '@household/test/fixtures/reimbursement-transaction-api.fixture';
 import { expect as splitTransactionApiExpect } from '@household/test/fixtures/split-transaction-api.fixture';
 import { projectDataFactory } from '@household/test/api/project/data-factory';
-import { projectService } from '@household/test/api/dependencies';
+import { projectService } from '@household/test/dependencies';
 import { Account, Project, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { AccountType } from '@household/shared/enums';

@@ -1,7 +1,7 @@
 import { getProjectId } from '@household/shared/common/utils';
 import { headerExpiresIn } from '@household/shared/constants';
 import { Project } from '@household/shared/types/types';
-import { createComparer } from '@household/test/api/utils';
+import { createComparer } from '@household/test/utils';
 import { test as baseTest } from '@household/test/fixtures/api.fixture';
 import { expect as baseExpect, APIResponse } from '@playwright/test';
 
@@ -12,28 +12,6 @@ type ProjectApiFixture ={
   requestUpdateProject(projectId: Project.Id, project: Project.Request): Promise<APIResponse>;
   requestDeleteProject(projectId: Project.Id): Promise<APIResponse>;
   requestMergeProjects(projectId: Project.Id, sourceProjectIds: Project.Id[]): Promise<APIResponse>;
-};
-
-const validateProjectResponse = (response: Project.Response, document: Project.Document): string => {
-  const comparer = createComparer((compare) => {
-    return {
-      projectId: compare(response.projectId, getProjectId(document)),
-      name: compare(response.name, document.name),
-      description: compare(response.description, document.description),
-    };
-  });
-
-  const extraKeys = comparer.extraKeys(response);
-
-  if (extraKeys.length > 0) {
-    return `expected response to have no additional properties, but got extra properties: ${extraKeys.join(', ')}`;
-  }
-
-  const notMatchingProperties = comparer.notMatchingProperties();
-
-  if (notMatchingProperties.length > 0) {
-    return `expected response to match project document, but the following properties did not match: ${notMatchingProperties.join(', ')}`;
-  }
 };
 
 export const test = baseTest.extend<ProjectApiFixture>({
@@ -121,6 +99,28 @@ export const test = baseTest.extend<ProjectApiFixture>({
     await use(requestMergeProjects);  
   },
 });
+
+const validateProjectResponse = (response: Project.Response, document: Project.Document): string => {
+  const comparer = createComparer((compare) => {
+    return {
+      projectId: compare(response.projectId, getProjectId(document)),
+      name: compare(response.name, document.name),
+      description: compare(response.description, document.description),
+    };
+  });
+
+  const extraKeys = comparer.extraKeys(response);
+
+  if (extraKeys.length > 0) {
+    return `expected response to have no additional properties, but got extra properties: ${extraKeys.join(', ')}`;
+  }
+
+  const notMatchingProperties = comparer.notMatchingProperties();
+
+  if (notMatchingProperties.length > 0) {
+    return `expected response to match project document, but the following properties did not match: ${notMatchingProperties.join(', ')}`;
+  }
+};
 
 export const expect = baseExpect.extend({
   async toMatchProjectDocument(received: APIResponse, document: Project.Document) {

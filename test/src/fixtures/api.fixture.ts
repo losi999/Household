@@ -1,5 +1,5 @@
 import { validatorService } from '@household/shared/dependencies/services/validator-service';
-import { User } from '@household/test/api/types';
+import { User } from '@household/test/types';
 import { test as baseTest, expect as baseExpect, APIResponse } from '@playwright/test';
 import { JSONSchema7 } from 'json-schema';
 
@@ -131,5 +131,13 @@ export const expect = baseExpect.extend({
       message: () => `expected response to have too few items validation error for property '${propertyName}' in ${requestPart} with min items '${minItems}', but got ${JSON.stringify(response)}`,
       pass: hasError,
     };  
+  },
+  async toHaveEnumValidationError(received: APIResponse, requestPart: RequestPart, propertyName: string) {
+    const response = await received.json();
+    const hasError = response[requestPart]?.includes(`${propertyName} must be equal to one of the allowed values`);
+    return {
+      message: () => `expected response to have enum validation error for property '${propertyName}' in ${requestPart}, but got ${JSON.stringify(response)}`,
+      pass: hasError,
+    };
   },
 });

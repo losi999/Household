@@ -5,7 +5,7 @@ import { Types, UpdateQuery } from 'mongoose';
 
 export interface ICategoryService {
   saveCategory(doc: Category.Document): Promise<Category.Document>;
-  saveCategories(docs: Category.Document[]): Promise<unknown>;
+  saveCategories(...docs: Category.Document[]): Promise<unknown>;
   findCategoryById(categoryId: Category.Id): Promise<Category.Document>;
   getCategoryById(categoryId: Category.Id): Promise<Category.Document>;
   deleteCategory(categoryId: Category.Id): Promise<unknown>;
@@ -29,7 +29,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
       
       return category;
     },
-    saveCategories: (docs) => {
+    saveCategories: (...docs) => {
       return mongodbService.inTransaction((models, session) => {
         return models.categories.insertMany(docs, {
           session,
@@ -171,7 +171,10 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
               },
             },
           },
-        ]);
+        ], {
+          session,
+          updatePipeline: true,
+        });
 
         await models.transactions.updateMany({
           category: categoryId,
@@ -339,6 +342,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
             },
           ], {
             session,
+            updatePipeline: true,
           });
         }
 

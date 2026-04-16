@@ -79,7 +79,7 @@ describe('Bulk transaction importer service', () => {
         },
         file: queriedFileDocument,
       }, null);
-      validateFunctionCall(mockTransactionService.functions.saveTransactions, [draftTransaction]);
+      validateFunctionCall(mockTransactionService.functions.saveTransactions, draftTransaction);
       validateFunctionCall(mockFileDocumentConverter.functions.updateStatus, FileProcessingStatus.Completed);
       validateFunctionCall(mockFileService.functions.updateFile, fileId, fileDocumentUpdate);
       expect.assertions(7);
@@ -155,7 +155,7 @@ describe('Bulk transaction importer service', () => {
         },
         file: queriedFileDocument,
       }, null);
-      validateFunctionCall(mockTransactionService.functions.saveTransactions, [draftTransaction]);
+      validateFunctionCall(mockTransactionService.functions.saveTransactions, draftTransaction);
       validateFunctionCall(mockFileDocumentConverter.functions.updateStatus);
       validateFunctionCall(mockFileService.functions.updateFile);
       expect.assertions(9);
@@ -195,7 +195,7 @@ describe('Bulk transaction importer service', () => {
         },
         file: queriedFileDocument,
       }, null);
-      validateFunctionCall(mockTransactionService.functions.saveTransactions, [draftTransaction]);
+      validateFunctionCall(mockTransactionService.functions.saveTransactions, draftTransaction);
       validateFunctionCall(mockFileDocumentConverter.functions.updateStatus, FileProcessingStatus.Completed);
       validateFunctionCall(mockFileService.functions.updateFile, fileId, fileDocumentUpdate);
       expect.assertions(9);

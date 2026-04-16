@@ -1,7 +1,7 @@
 import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId } from '@household/shared/common/utils';
 import { Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
-import { Reassignment } from '@household/test/api/types';
-import { createComparer } from '@household/test/api/utils';
+import { Reassignment } from '@household/test/types';
+import { createComparer } from '@household/test/utils';
 import { test as baseTest } from '@household/test/fixtures/api.fixture';
 import { expect as baseExpect } from '@playwright/test';
 
@@ -20,17 +20,20 @@ export const expect = baseExpect.extend({
       let expectedInvoiceNumber: string;
       let expectedBillingStartDate: string;
       let expectedBillingEndDate: string;
+      let expectedProduct: Product.Id;
 
       if (reassignments.category && getCategoryId(originalDocument.category) === getCategoryId(reassignments.category.from)) {
-        expectedInvoiceNumber = reassignments.category.from.categoryType === reassignments.category.to.categoryType ? originalDocument.invoiceNumber : undefined;
-        expectedBillingStartDate = reassignments.category.from.categoryType === reassignments.category.to.categoryType ? originalDocument.billingStartDate?.toISOString() : undefined;
-        expectedBillingEndDate = reassignments.category.from.categoryType === reassignments.category.to.categoryType ? originalDocument.billingEndDate?.toISOString() : undefined;
-        expectedQuantity = reassignments.category.from.categoryType === reassignments.category.to.categoryType ? originalDocument.quantity : undefined;
+        expectedInvoiceNumber = reassignments.category.from.categoryType === reassignments.category.to?.categoryType ? originalDocument.invoiceNumber : undefined;
+        expectedBillingStartDate = reassignments.category.from.categoryType === reassignments.category.to?.categoryType ? originalDocument.billingStartDate?.toISOString() : undefined;
+        expectedBillingEndDate = reassignments.category.from.categoryType === reassignments.category.to?.categoryType ? originalDocument.billingEndDate?.toISOString() : undefined;
+        expectedQuantity = reassignments.category.from.categoryType === reassignments.category.to?.categoryType ? originalDocument.quantity : undefined;
+        expectedProduct = reassignments.category.from.categoryType === reassignments.category.to?.categoryType ? getProductId(originalDocument.product) : undefined;
       } else {
         expectedInvoiceNumber = originalDocument.invoiceNumber;
         expectedBillingStartDate = originalDocument.billingStartDate?.toISOString();
         expectedBillingEndDate = originalDocument.billingEndDate?.toISOString();
         expectedQuantity = getProductId(originalDocument.product) === reassignments.product?.from ? undefined : originalDocument.quantity;
+        expectedProduct = getProductId(originalDocument.product) === reassignments.product?.from ? reassignments.product?.to : getProductId(originalDocument.product);
       }
 
       return {
@@ -41,7 +44,7 @@ export const expect = baseExpect.extend({
         payingAccount: compare(getAccountId(currentDocument.payingAccount), getAccountId(originalDocument.payingAccount)),
         ownerAccount: compare(getAccountId(currentDocument.ownerAccount), getAccountId(originalDocument.ownerAccount)),
         transactionType: compare(currentDocument.transactionType, originalDocument.transactionType),
-        product: compare(getProductId(currentDocument.product), reassignments.product?.from === getProductId(originalDocument.product) ? reassignments.product?.to : getProductId(originalDocument.product)),
+        product: compare(getProductId(currentDocument.product), expectedProduct),
         project: compare(getProjectId(currentDocument.project), reassignments.project?.from === getProjectId(originalDocument.project) ? reassignments.project?.to : getProjectId(originalDocument.project)),
         recipient: compare(getRecipientId(currentDocument.recipient), reassignments.recipient?.from === getRecipientId(originalDocument.recipient) ? reassignments.recipient?.to : getRecipientId(originalDocument.recipient)),
         category: compare(getCategoryId(currentDocument.category), getCategoryId(reassignments.category?.from) === getCategoryId(originalDocument.category) ? getCategoryId(reassignments.category?.to) : getCategoryId(originalDocument.category)),

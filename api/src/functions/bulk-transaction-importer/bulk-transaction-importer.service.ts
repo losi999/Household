@@ -37,7 +37,7 @@ export const bulkTransactionImporterServiceFactory = (fileService: IFileService,
       file: document,
     }, document.expiresAt ? (document.expiresAt?.getTime() - Date.now()) / 1000 : null));
 
-    await transactionService.saveTransactions(drafts).catch(httpErrors.transaction.saveMultiple(drafts));
+    await transactionService.saveTransactions(...drafts).catch(httpErrors.transaction.saveMultiple(drafts));
 
     const update = fileDocumentConverter.updateStatus(FileProcessingStatus.Completed);
 

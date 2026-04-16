@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { entries, keys } from '@household/shared/common/utils';
-import { User, UserPermissionMap } from '@household/test/api/types';
+import { User, UserPermissionMap } from '@household/test/types';
 
 export const createId = <I>(id?: string): I => (id ?? faker.database.mongodbObjectId()) as I;
 

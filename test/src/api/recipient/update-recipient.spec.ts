@@ -1,10 +1,10 @@
 import { entries, getRecipientId } from '@household/shared/common/utils';
-import { allowUsers } from '@household/test/api/utils';
+import { allowUsers } from '@household/test/utils';
 import { test, expect as recipientApiExpect } from '@household/test/fixtures/recipient-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
 import { Recipient } from '@household/shared/types/types';
-import { recipientService } from '@household/test/api/dependencies';
+import { recipientService } from '@household/test/dependencies';
 
 const permissionMap = allowUsers('editor');
 
@@ -92,10 +92,7 @@ test.describe('PUT /recipient/v1/recipients/{recipientId}', () => {
             test('is already in use by a different recipient', async ({ requestUpdateRecipient }) => {
               const duplicateRecipientDocument = recipientDataFactory.document(req);
 
-              await recipientService.saveRecipients([
-                recipientDocument,
-                duplicateRecipientDocument,
-              ]);
+              await recipientService.saveRecipients(recipientDocument, duplicateRecipientDocument);
 
               const res = await requestUpdateRecipient(getRecipientId(recipientDocument), recipientDataFactory.request({
                 name: duplicateRecipientDocument.name,

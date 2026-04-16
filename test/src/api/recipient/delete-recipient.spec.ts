@@ -1,5 +1,5 @@
 import { entries, getRecipientId, getTransactionId } from '@household/shared/common/utils';
-import { allowUsers } from '@household/test/api/utils';
+import { allowUsers } from '@household/test/utils';
 import { test, expect as recipientApiExpect } from '@household/test/fixtures/recipient-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { expect as paymentTransactionApiExpect } from '@household/test/fixtures/payment-transaction-api.fixture';
@@ -7,7 +7,7 @@ import { expect as deferredTransactionApiExpect } from '@household/test/fixtures
 import { expect as reimbursementTransactionApiExpect } from '@household/test/fixtures/reimbursement-transaction-api.fixture';
 import { expect as splitTransactionApiExpect } from '@household/test/fixtures/split-transaction-api.fixture';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
-import { recipientService } from '@household/test/api/dependencies';
+import { recipientService } from '@household/test/dependencies';
 import { Account, Recipient, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { AccountType } from '@household/shared/enums';
@@ -130,10 +130,7 @@ test.describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
 
           test('should be unset if recipient is deleted', async ({ requestDeleteRecipient }) => {
             await accountService.saveAccounts(accountDocument, loanAccountDocument);
-            await recipientService.saveRecipients([
-              recipientDocument,
-              unrelatedRecipientDocument,
-            ]);
+            await recipientService.saveRecipients(recipientDocument, unrelatedRecipientDocument);
             await transactionService.saveTransactions(
               paymentTransactionDocument,
               splitTransactionDocument,

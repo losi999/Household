@@ -1,5 +1,5 @@
 import { entries, getRecipientId, getTransactionId } from '@household/shared/common/utils';
-import { allowUsers } from '@household/test/api/utils';
+import { allowUsers } from '@household/test/utils';
 import { test, expect as recipientApiExpect } from '@household/test/fixtures/recipient-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { expect as paymentTransactionApiExpect } from '@household/test/fixtures/payment-transaction-api.fixture';
@@ -7,7 +7,7 @@ import { expect as deferredTransactionApiExpect } from '@household/test/fixtures
 import { expect as reimbursementTransactionApiExpect } from '@household/test/fixtures/reimbursement-transaction-api.fixture';
 import { expect as splitTransactionApiExpect } from '@household/test/fixtures/split-transaction-api.fixture';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
-import { recipientService } from '@household/test/api/dependencies';
+import { recipientService } from '@household/test/dependencies';
 import { Account, Recipient, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { AccountType } from '@household/shared/enums';
@@ -56,7 +56,7 @@ test.describe('POST /recipient/v1/recipients/{recipientId}/merge', () => {
         });
       } else {
         test('should merge recipients', async ({ requestMergeRecipients }) => {
-          await recipientService.saveRecipients([sourceRecipientDocument, targetRecipientDocument]);
+          await recipientService.saveRecipients(sourceRecipientDocument, targetRecipientDocument);
 
           const res = await requestMergeRecipients(getRecipientId(targetRecipientDocument), [getRecipientId(sourceRecipientDocument)]);
           expect(res).toBeCreatedResponse();
@@ -132,11 +132,11 @@ test.describe('POST /recipient/v1/recipients/{recipientId}/merge', () => {
 
           test('should be replaced if recipient is merged into another recipient', async ({ requestMergeRecipients }) => {
             await accountService.saveAccounts(accountDocument, loanAccountDocument);
-            await recipientService.saveRecipients([
+            await recipientService.saveRecipients(
               sourceRecipientDocument,
               targetRecipientDocument,
               unrelatedRecipientDocument,
-            ]);
+            );
             await transactionService.saveTransactions(
               paymentTransactionDocument,
               deferredTransactionDocument,
@@ -206,7 +206,7 @@ test.describe('POST /recipient/v1/recipients/{recipientId}/merge', () => {
 
         test.describe('should return error', () => {
           test('if a source recipient does not exist', async ({ requestMergeRecipients }) => {
-            await recipientService.saveRecipients([targetRecipientDocument, sourceRecipientDocument]);
+            await recipientService.saveRecipients(targetRecipientDocument, sourceRecipientDocument);
 
             const res = await requestMergeRecipients(getRecipientId(targetRecipientDocument), [
               getRecipientId(sourceRecipientDocument),

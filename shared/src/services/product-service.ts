@@ -4,7 +4,7 @@ import { UpdateQuery } from 'mongoose';
 
 export interface IProductService {
   saveProduct(doc: Product.Document): Promise<Product.Document>;
-  saveProducts(docs: Product.Document[]): Promise<unknown>;
+  saveProducts(...docs: Product.Document[]): Promise<unknown>;
   findProductById(productId: Product.Id): Promise<Product.Document>;
   listProductsByIds(productIds: Product.Id[]): Promise<Product.Document[]>;
   deleteProduct(productId: Product.Id): Promise<unknown>;
@@ -91,7 +91,7 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
       
       return product;
     },
-    saveProducts: (docs) => {
+    saveProducts: (...docs) => {
       return mongodbService.inTransaction((models, session) => {
         return models.products.insertMany(docs, {
           session,

@@ -1,7 +1,7 @@
 import { getRecipientId } from '@household/shared/common/utils';
 import { headerExpiresIn } from '@household/shared/constants';
 import { Recipient } from '@household/shared/types/types';
-import { createComparer } from '@household/test/api/utils';
+import { createComparer } from '@household/test/utils';
 import { test as baseTest } from '@household/test/fixtures/api.fixture';
 import { expect as baseExpect, APIResponse } from '@playwright/test';
 

@@ -1,10 +1,10 @@
 import { entries, getProjectId } from '@household/shared/common/utils';
-import { allowUsers } from '@household/test/api/utils';
+import { allowUsers } from '@household/test/utils';
 import { test, expect as projectApiExpect } from '@household/test/fixtures/project-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { projectDataFactory } from '@household/test/api/project/data-factory';
 import { Project } from '@household/shared/types/types';
-import { projectService } from '@household/test/api/dependencies';
+import { projectService } from '@household/test/dependencies';
 
 const permissionMap = allowUsers('editor');
 
