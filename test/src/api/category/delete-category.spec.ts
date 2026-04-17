@@ -3,10 +3,7 @@ import { entries } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/utils';
 import { test, expect as categoryApiExpect } from '@household/test/fixtures/category-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { expect as paymentTransactionApiExpect } from '@household/test/fixtures/payment-transaction-api.fixture';
-import { expect as deferredTransactionApiExpect } from '@household/test/fixtures/deferred-transaction-api.fixture';
-import { expect as reimbursementTransactionApiExpect } from '@household/test/fixtures/reimbursement-transaction-api.fixture';
-import { expect as splitTransactionApiExpect } from '@household/test/fixtures/split-transaction-api.fixture';
+import { expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
 import { expect as productApiExpect } from '@household/test/fixtures/product-api.fixture';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { Category, Product } from '@household/shared/types/types';
@@ -25,12 +22,12 @@ import { productService } from '@household/test/dependencies';
 
 const permissionMap = allowUsers('editor');
 
-const expect = mergeExpects(categoryApiExpect, apiExpect, paymentTransactionApiExpect, deferredTransactionApiExpect, reimbursementTransactionApiExpect, splitTransactionApiExpect, productApiExpect);
+const expect = mergeExpects(categoryApiExpect, apiExpect, transactionApiExpect, productApiExpect);
 
 test.describe('DELETE /category/v1/categories/{categoryId}', () => {
   let categoryDocument: Category.Document;
 
-  test.beforeEach(() => {
+  test.beforeEach(async () => {
     categoryDocument = categoryDataFactory.document();
   });
 
@@ -69,7 +66,7 @@ test.describe('DELETE /category/v1/categories/{categoryId}', () => {
           let childCategory: Category.Document;
           let grandChildCategory: Category.Document;
 
-          test.beforeEach(() => {
+          test.beforeEach(async () => {
             childCategory = categoryDataFactory.document({
               parentCategory: categoryDocument,
             });

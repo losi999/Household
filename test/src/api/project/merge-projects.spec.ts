@@ -20,17 +20,19 @@ const expect = mergeExpects(apiExpect, projectApiExpect, transactionApiExpect);
 
 const permissionMap = allowUsers('editor');
 
-test.describe('DELETE /project/v1/projects/{projectId}', () => {
+test.describe('POST /project/v1/projects/{projectId}/merge', () => {
 
-  let projectDocument: Project.Document;
+  let sourceProjectDocument: Project.Document;
+  let targetProjectDocument: Project.Document;
 
   test.beforeEach(async () => {
-    projectDocument = projectDataFactory.document();
+    sourceProjectDocument = projectDataFactory.document();
+    targetProjectDocument = projectDataFactory.document();
   });
 
   test.describe('called as anyonymous', () => {
-    test('should return unauthorized', async ({ requestDeleteProject }) => {
-      const res = await requestDeleteProject(projectDataFactory.id());
+    test('should return unauthorized', async ({ requestMergeProjects }) => {
+      const res = await requestMergeProjects(projectDataFactory.id(), [projectDataFactory.id()]);
       expect(res).toBeUnauthorizedResponse();
     });
   });
@@ -45,21 +47,21 @@ test.describe('DELETE /project/v1/projects/{projectId}', () => {
       });
     
       if (!isAllowed) {
-        test('should return forbidden', async ({ requestDeleteProject }) => {
-          const res = await requestDeleteProject(projectDataFactory.id());
+        test('should return forbidden', async ({ requestMergeProjects }) => {
+          const res = await requestMergeProjects(projectDataFactory.id(), [projectDataFactory.id()]);
           expect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should delete project', async ({ requestDeleteProject }) => {
-          await projectService.saveProject(projectDocument);
+        test('should merge projects', async ({ requestMergeProjects }) => {
+          await projectService.saveProjects(sourceProjectDocument, targetProjectDocument);
 
-          const res = await requestDeleteProject(getProjectId(projectDocument));
-          expect(res).toBeNoContentResponse();
+          const res = await requestMergeProjects(getProjectId(targetProjectDocument), [getProjectId(sourceProjectDocument)]);
+          expect(res).toBeCreatedResponse();
           
-          expect(await projectService.findProjectById(getProjectId(projectDocument))).toHaveBeenDeletedFromDatabase();
+          expect(await projectService.findProjectById(getProjectId(sourceProjectDocument))).toHaveBeenDeletedFromDatabase();
         });
 
-        test.describe('in related transactions project', () => {
+        test.describe('in related transactions source project', () => {
           let unrelatedProjectDocument: Project.Document;
           let paymentTransactionDocument: Transaction.PaymentDocument;
           let deferredTransactionDocument: Transaction.DeferredDocument;
@@ -81,18 +83,18 @@ test.describe('DELETE /project/v1/projects/{projectId}', () => {
 
             paymentTransactionDocument = paymentTransactionDataFactory.document({
               account: accountDocument,
-              project: projectDocument,
+              project: sourceProjectDocument,
             });
 
             deferredTransactionDocument = deferredTransactionDataFactory.document({
               account: accountDocument,
-              project: projectDocument,
+              project: sourceProjectDocument,
               loanAccount: loanAccountDocument,
             });
 
             reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
               account: loanAccountDocument,
-              project: projectDocument,
+              project: sourceProjectDocument,
               loanAccount: accountDocument,
             });
 
@@ -120,7 +122,10 @@ test.describe('DELETE /project/v1/projects/{projectId}', () => {
                   project: unrelatedProjectDocument,
                 },
                 {
-                  project: projectDocument,
+                  project: sourceProjectDocument,
+                },
+                {
+                  project: targetProjectDocument,
                 },
               ],
               loans: [
@@ -129,14 +134,18 @@ test.describe('DELETE /project/v1/projects/{projectId}', () => {
                   loanAccount: loanAccountDocument,
                 },
                 {
-                  project: projectDocument,
+                  project: sourceProjectDocument,
+                  loanAccount: loanAccountDocument,
+                },
+                {
+                  project: targetProjectDocument,
                   loanAccount: loanAccountDocument,
                 },
               ],
             });
           });
           
-          test('should be unset if project is deleted', async ({ requestDeleteProject }) => {
+          test('should be unset if project is merged into another project', async ({ requestMergeProjects }) => {
             await accountService.saveAccounts(accountDocument, loanAccountDocument);
             await transactionService.saveTransactions(
               paymentTransactionDocument,
@@ -147,46 +156,55 @@ test.describe('DELETE /project/v1/projects/{projectId}', () => {
               unrelatedReimbursementTransactionDocument,
               splitTransactionDocument,
             );
-            await projectService.saveProjects(projectDocument, unrelatedProjectDocument);
+            await projectService.saveProjects(sourceProjectDocument, targetProjectDocument, unrelatedProjectDocument);
 
-            const res = await requestDeleteProject(getProjectId(projectDocument));
-            expect(res).toBeNoContentResponse();
+            const res = await requestMergeProjects(getProjectId(targetProjectDocument), [getProjectId(sourceProjectDocument)]);
+            expect(res).toBeCreatedResponse();
           
-            expect(await projectService.findProjectById(getProjectId(projectDocument))).toHaveBeenDeletedFromDatabase();
+            expect(await projectService.findProjectById(getProjectId(sourceProjectDocument))).toHaveBeenDeletedFromDatabase();
 
             expect(paymentTransactionDocument).toChangeRelatedDocumentsChangedInPaymentTransaction(await transactionService.findTransactionById(getTransactionId(paymentTransactionDocument)), {
               project: {
-                from: getProjectId(projectDocument),
+                from: getProjectId(sourceProjectDocument),
+                to: getProjectId(targetProjectDocument),
               },
             });
             expect(deferredTransactionDocument).toChangeRelatedDocumentsChangedInDeferredTransaction(await transactionService.findTransactionById(getTransactionId(deferredTransactionDocument)), {
               project: {
-                from: getProjectId(projectDocument),
+                from: getProjectId(sourceProjectDocument),
+                to: getProjectId(targetProjectDocument),
+
               },
             });
             expect(reimbursementTransactionDocument).toChangeRelatedDocumentsChangedInReimbursementTransaction(await transactionService.findTransactionById(getTransactionId(reimbursementTransactionDocument)), {
               project: {
-                from: getProjectId(projectDocument),
+                from: getProjectId(sourceProjectDocument),
+                to: getProjectId(targetProjectDocument),
+
               },
             });
             expect(unrelatedPaymentTransactionDocument).toChangeRelatedDocumentsChangedInPaymentTransaction(await transactionService.findTransactionById(getTransactionId(unrelatedPaymentTransactionDocument)), {
               project: {
-                from: getProjectId(projectDocument),
+                from: getProjectId(sourceProjectDocument),
+                to: getProjectId(targetProjectDocument),
               },
             });
             expect(unrelatedDeferredTransactionDocument).toChangeRelatedDocumentsChangedInDeferredTransaction(await transactionService.findTransactionById(getTransactionId(unrelatedDeferredTransactionDocument)), {
               project: {
-                from: getProjectId(projectDocument),
+                from: getProjectId(sourceProjectDocument),
+                to: getProjectId(targetProjectDocument),
               },
             });
             expect(unrelatedReimbursementTransactionDocument).toChangeRelatedDocumentsChangedInReimbursementTransaction(await transactionService.findTransactionById(getTransactionId(unrelatedReimbursementTransactionDocument)), {
               project: {
-                from: getProjectId(projectDocument),
+                from: getProjectId(sourceProjectDocument),
+                to: getProjectId(targetProjectDocument),
               },
             });
             expect(splitTransactionDocument).toChangeRelatedDocumentsChangedInSplitTransaction(await transactionService.findTransactionById(getTransactionId(splitTransactionDocument)), {
               project: {
-                from: getProjectId(projectDocument),
+                from: getProjectId(sourceProjectDocument),
+                to: getProjectId(targetProjectDocument),
               },
             });
 
@@ -194,12 +212,54 @@ test.describe('DELETE /project/v1/projects/{projectId}', () => {
         });
 
         test.describe('should return error', () => {
+          test('if a source project does not exist', async ({ requestMergeProjects }) => {
+            await projectService.saveProjects(targetProjectDocument);
+
+            const res = await requestMergeProjects(getProjectId(targetProjectDocument), [getProjectId(sourceProjectDocument)]);
+            expect(res).toBeBadRequestResponse();
+            expect(res).toHaveMessage('Some of the projects are not found');
+          });
+
+          test.describe('if body', () => {
+            test('is not array', async ({ requestMergeProjects }) => {
+              const res = await requestMergeProjects(projectDataFactory.id(), {} as any);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'data', 'array');
+            });
+
+            test('has too few items', async ({ requestMergeProjects }) => {
+              const res = await requestMergeProjects(projectDataFactory.id(), []);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooFewItemsValidationError('body', 'data', 1);
+            });
+          });
+
+          test.describe('if body[0]', () => {
+            test('is not string', async ({ requestMergeProjects }) => {
+              const res = await requestMergeProjects(projectDataFactory.id(), [1] as any);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'data/0', 'string');
+            });
+
+            test('is not a valid mongo id', async ({ requestMergeProjects }) => {
+              const res = await requestMergeProjects(projectDataFactory.id(), [projectDataFactory.id('not-valid')]);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('body', 'data/0');
+            });
+          });
+
           test.describe('if projectId', () => {
-            test('is not mongo id', async ({ requestDeleteProject }) => {
-              const res = await requestDeleteProject(projectDataFactory.id('not-mongo-id'));
-              
+            test('is not mongo id', async ({ requestMergeProjects }) => {
+              const res = await requestMergeProjects(projectDataFactory.id('not-mongo-id'), [projectDataFactory.id()]);
+                        
               expect(res).toBeBadRequestResponse();
               expect(res).toHavePatternValidationError('pathParameters', 'projectId');
+            });
+
+            test('does not belong to any project', async ({ requestMergeProjects }) => {
+              const res = await requestMergeProjects(projectDataFactory.id(), [getProjectId(sourceProjectDocument)]);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('Some of the projects are not found');
             });
           });
         });

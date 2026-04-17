@@ -14,7 +14,7 @@ const expect = mergeExpects(projectApiExpect, apiExpect);
 test.describe('POST /project/v1/projects', () => {
   let req: Project.Request;
 
-  test.beforeEach(() => {
+  test.beforeEach(async () => {
     req = projectDataFactory.request();
   });
 

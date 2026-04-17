@@ -1,6 +1,8 @@
+import { getAccountId } from '@household/shared/common/utils';
 import { headerExpiresIn } from '@household/shared/constants';
 import { Account } from '@household/shared/types/types';
 import { test as baseTest, expect as baseExpect } from '@household/test/fixtures/api.fixture';
+import { createComparer } from '@household/test/utils';
 import { APIResponse } from '@playwright/test';
 
 type AccountApiFixture = {
@@ -83,4 +85,83 @@ export const test = baseTest.extend<AccountApiFixture>({
   },
 });
 
-export const expect = baseExpect.extend({});
+const validateAccountResponse = (response: Account.Response, document: Account.Document, expectedBalance?: number): string => {
+  const comparer = createComparer((compare) => {
+    return {
+      accountId: compare(response.accountId, getAccountId(document)),
+      name: compare(response.name, document.name),
+      accountType: compare(response.accountType, document.accountType),
+      currency: compare(response.currency, document.currency),
+      owner: compare(response.owner, document.owner),
+      isOpen: compare(response.isOpen, document.isOpen),
+      fullName: compare(response.fullName, `${document.name} (${document.owner})`),
+      balance: compare(response.balance, expectedBalance),
+    };
+  });
+
+  return comparer.validate(response);
+};
+
+export const expect = baseExpect.extend({
+  async toBeStoredInDatabase(req: Account.Request, document: Account.Document) {
+    if (!document) {
+      return {
+        pass: false,
+        message: () => 'expected account to be stored in database, but it was not found',
+      };
+    }
+  
+    const comparer = createComparer((compare) => {
+      return {
+        name: compare(document.name, req.name),
+        accountType: compare(document.accountType, req.accountType),
+        currency: compare(document.currency, req.currency),
+        owner: compare(document.owner, req.owner),
+        isOpen: compare(document.isOpen, true),
+      };  
+    });
+  
+    const mossage = comparer.validate(document, '_id', 'createdAt', 'expiresAt', 'updatedAt');
+
+    return {
+      pass: !mossage,
+      message: () => mossage,
+    };
+  },
+  toHaveBeenDeletedFromDatabase(document: Account.Document) {
+    return {
+      pass: !document,
+      message: () => `expected account to be deleted from database, but it was found with id ${getAccountId(document)}`,
+    };
+  },
+  async toMatchAccountDocument(received: APIResponse, document: Account.Document, expectedBalance?: number) {
+    const response = await received.json() as Account.Response;
+  
+    const message = validateAccountResponse(response, document, expectedBalance);
+  
+    return {
+      pass: !message,
+      message: () => message,
+    };
+  },
+  async toMatchAccountDocumentInList(received: APIResponse, document: Account.Document, expectedBalance?: number) {
+    const response = await received.json() as Account.Response[];
+  
+    const matchingResponse = response.find(r => r.accountId === getAccountId(document));
+  
+    if (!matchingResponse) {
+      return {
+        pass: false,
+        message: () => `expected response to contain an account with id ${getAccountId(document)}, but it was not found`,
+      };
+    }
+  
+    const message = validateAccountResponse(matchingResponse, document, expectedBalance);
+  
+    return {
+      pass: !message,
+      message: () => message,
+    };
+  }, 
+
+});

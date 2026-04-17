@@ -14,7 +14,7 @@ const expect = mergeExpects(recipientApiExpect, apiExpect);
 test.describe('POST /recipient/v1/recipients', () => {
   let req: Recipient.Request;
 
-  test.beforeEach(() => {
+  test.beforeEach(async () => {
     req = recipientDataFactory.request();
   });
 

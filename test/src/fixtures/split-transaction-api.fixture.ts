@@ -1,5 +1,5 @@
-import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId } from '@household/shared/common/utils';
-import { Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
+import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { Reassignment } from '@household/test/types';
 import { createComparer } from '@household/test/utils';
 import { test as baseTest } from '@household/test/fixtures/api.fixture';
@@ -103,34 +103,69 @@ export const expect = baseExpect.extend({
       };
     });
 
-    const extraKeys = comparer.extraKeys(currentDocument, [
-      '_id',
-      'createdAt',
-      'expiresAt',
-      'updatedAt',
-      'splits', 
-      'deferredSplits',
-    ]);
-
-    if (extraKeys.length > 0) {
-      return {
-        pass: false,
-        message: () => `expected document to have no additional properties, but got extra properties: ${extraKeys.join(', ')}`,
-      };
-    }
-
-    const notMatchingProperties = comparer.notMatchingProperties();
-
-    if (notMatchingProperties.length > 0) {
-      return {
-        pass: false,
-        message: () => `expected document to only contain specified changes, but the following properties did not match: ${notMatchingProperties.join(', ')}`,
-      };
-    }
+    const message = comparer.validate(currentDocument, '_id', 'createdAt', 'expiresAt', 'updatedAt', 'splits', 'deferredSplits');
 
     return {
-      pass: true,
-      message: () => '',
+      pass: !message,
+      message: () => message,
+    };
+  },
+  toHaveBeenConvertedToRegularSplitItems(originalDocument: Transaction.SplitDocument, currentDocument: Transaction.SplitDocument, deletedAccountId: Account.Id) {
+    const comparer = createComparer((compare) => {
+      const splitsComparers = currentDocument.splits.reduce((accumulator, currentValue, index) => {
+        const originalSplit = originalDocument.splits[index] ?? originalDocument.deferredSplits.find(x => getAccountId(x.ownerAccount) === deletedAccountId);
+
+        return {
+          ...accumulator,
+          [`splits.[${index}].amount`]: compare(currentValue.amount, originalSplit.amount),
+          [`splits.[${index}].description`]: compare(currentValue.description, originalSplit.description),
+          [`splits.[${index}].product`]: compare(getProductId(currentValue.product), getProductId(originalSplit.product)),
+          [`splits.[${index}].project`]: compare(getProjectId(currentValue.project), getProjectId(originalSplit.project)),
+          [`splits.[${index}].category`]: compare(getCategoryId(currentValue.category), getCategoryId(originalSplit.category)),
+          [`splits.[${index}].quantity`]: compare(currentValue.quantity, originalSplit.quantity),
+          [`splits.[${index}].billingStartDate`]: compare(currentValue.billingStartDate?.toISOString(), originalSplit.billingStartDate?.toISOString()),
+          [`splits.[${index}].billingEndDate`]: compare(currentValue.billingEndDate?.toISOString(), originalSplit.billingEndDate?.toISOString()),
+          [`splits.[${index}].invoiceNumber`]: compare(currentValue.invoiceNumber, originalSplit.invoiceNumber),
+        };
+      }, {});
+
+      const deferredSplitsComparers = currentDocument.deferredSplits.reduce((accumulator, currentValue, index) => {
+        const originalSplit = originalDocument.deferredSplits.find(s => getTransactionId(s) === getTransactionId(currentValue));
+
+        return {
+          ...accumulator,
+          [`deferredSplits.[${index}].amount`]: compare(currentValue.amount, originalSplit.amount),
+          [`deferredSplits.[${index}].description`]: compare(currentValue.description, originalSplit.description),
+          [`deferredSplits.[${index}].isSettled`]: compare(currentValue.isSettled, originalSplit.isSettled),
+          [`deferredSplits.[${index}].payingAccount`]: compare(getAccountId(currentValue.payingAccount), getAccountId(originalSplit.payingAccount)),
+          [`deferredSplits.[${index}].ownerAccount`]: compare(getAccountId(currentValue.ownerAccount), getAccountId(originalSplit.ownerAccount)),
+          [`deferredSplits.[${index}].product`]: compare(getProductId(currentValue.product), getProductId(originalSplit.product)),
+          [`deferredSplits.[${index}].project`]: compare(getProjectId(currentValue.project), getProjectId(originalSplit.project)),
+          [`deferredSplits.[${index}].category`]: compare(getCategoryId(currentValue.category), getCategoryId(originalSplit.category)),
+          [`deferredSplits.[${index}].quantity`]: compare(currentValue.quantity, originalSplit.quantity),
+          [`deferredSplits.[${index}].billingStartDate`]: compare(currentValue.billingStartDate?.toISOString(), originalSplit.billingStartDate?.toISOString()),
+          [`deferredSplits.[${index}].billingEndDate`]: compare(currentValue.billingEndDate?.toISOString(), originalSplit.billingEndDate?.toISOString()),
+          [`deferredSplits.[${index}].invoiceNumber`]: compare(currentValue.invoiceNumber, originalSplit.invoiceNumber),
+        };
+      }, {});
+
+      return {
+        amount: compare(currentDocument.amount, originalDocument.amount),
+        issuedAt: compare(currentDocument.issuedAt.toISOString(), originalDocument.issuedAt.toISOString()),
+        description: compare(currentDocument.description, originalDocument.description),
+        account: compare(getAccountId(currentDocument.account), getAccountId(originalDocument.account)),
+        transactionType: compare(currentDocument.transactionType, originalDocument.transactionType),
+        recipient: compare(getRecipientId(currentDocument.recipient), getRecipientId(originalDocument.recipient)),
+        ...splitsComparers,
+        ...deferredSplitsComparers,
+      };
+    });
+
+    const message = comparer.validate(currentDocument, '_id', 'createdAt', 'expiresAt', 'updatedAt', 'splits', 'deferredSplits');
+
+    return {
+      pass: !message,
+      message: () => message,
     };
   },
 });

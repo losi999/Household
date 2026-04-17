@@ -46,15 +46,18 @@ export const createComparer = (factory: (compare: <V>(actual: V, expected: V) =>
   });
 
   return {
-    extraKeys: <T extends object>(object: T, internalProperties: (keyof T)[] = []) => {
-      return keys(object).filter(
+    validate: <T extends object>(object: T, ...internalProperties: (keyof T)[]) => {
+      const extraKeys = keys(object).filter(
         (key) => {
           return !(key in normalized) && !internalProperties.includes(key);
         },
       );
-    },
-    notMatchingProperties: () => {
-      return entries(normalized).reduce<string[]>((accumulator, [
+
+      if (extraKeys.length > 0) {
+        return `expected object to have no additional properties, but got extra properties: ${extraKeys.join(', ')}`;
+      }
+
+      const notMatchingProperties = entries(normalized).reduce<string[]>((accumulator, [
         key,
         result,
       ]) => {
@@ -65,7 +68,14 @@ export const createComparer = (factory: (compare: <V>(actual: V, expected: V) =>
           ...accumulator,
           `${key} (expected: ${result.expected}, actual: ${result.actual})`,
         ];
-      }, []); 
+      }, []);
+
+      if (notMatchingProperties.length > 0) {
+        console.table(normalized);
+        return `expected objects to match, but the following properties did not match: ${notMatchingProperties.join(', ')}`;
+      }
+
+      return;
     },
   };
 };

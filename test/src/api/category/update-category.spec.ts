@@ -16,7 +16,7 @@ test.describe('PUT /category/v1/categories/{categoryId}', () => {
   let categoryDocument: Category.Document;
   let req: Category.Request;
 
-  test.beforeEach(() => {
+  test.beforeEach(async () => {
     req = categoryDataFactory.request();
 
     categoryDocument = categoryDataFactory.document();
@@ -59,7 +59,7 @@ test.describe('PUT /category/v1/categories/{categoryId}', () => {
           let grandChildCategory: Category.Document;
           let otherParentCategory: Category.Document;
 
-          test.beforeEach(() => {
+          test.beforeEach(async () => {
             childCategory = categoryDataFactory.document({
               parentCategory: categoryDocument,
             });

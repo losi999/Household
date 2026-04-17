@@ -22,17 +22,7 @@ const validateRecipientResponse = (response: Recipient.Response, document: Recip
     };
   });
 
-  const extraKeys = comparer.extraKeys(response);
-
-  if (extraKeys.length > 0) {
-    return `expected response to have no additional properties, but got extra properties: ${extraKeys.join(', ')}`;
-  }
-
-  const notMatchingProperties = comparer.notMatchingProperties();
-
-  if (notMatchingProperties.length > 0) {
-    return `expected response to match recipient document, but the following properties did not match: ${notMatchingProperties.join(', ')}`;
-  }
+  return comparer.validate(response);
 };
 
 export const test = baseTest.extend<RecipientApiFixture>({
@@ -122,6 +112,27 @@ export const test = baseTest.extend<RecipientApiFixture>({
 });
 
 export const expect = baseExpect.extend({
+  async toBeStoredInDatabase(req: Recipient.Request, document: Recipient.Document) {
+    if (!document) {
+      return {
+        pass: false,
+        message: () => 'expected recipient to be stored in database, but it was not found',
+      };
+    }
+
+    const comparer = createComparer((compare) => {
+      return {
+        name: compare(document.name, req.name),
+      };
+    });
+
+    const message = comparer.validate(document, '_id', 'createdAt', 'expiresAt', 'updatedAt');
+
+    return {
+      pass: !message,
+      message: () => message,
+    };
+  },
   toHaveBeenDeletedFromDatabase(document: Recipient.Document) {
     return {
       pass: !document,
@@ -155,48 +166,6 @@ export const expect = baseExpect.extend({
     return {
       pass: !message,
       message: () => message,
-    };
-  },
-  async toBeStoredInDatabase(req: Recipient.Request, document: Recipient.Document) {
-    if (!document) {
-      return {
-        pass: false,
-        message: () => 'expected recipient to be stored in database, but it was not found',
-      };
-    }
-
-    const comparer = createComparer((compare) => {
-      return {
-        name: compare(document.name, req.name),
-      };
-    });
-
-    const extraKeys = comparer.extraKeys(document, [
-      '_id',
-      'createdAt',
-      'expiresAt',
-      'updatedAt',
-    ]);
-
-    if (extraKeys.length > 0) {
-      return {
-        pass: false,
-        message: () => `expected recipient in database to have no additional properties, but got extra properties: ${extraKeys.join(', ')}`,
-      };
-    }
-
-    const notMatchingProperties = comparer.notMatchingProperties();
-
-    if (notMatchingProperties.length > 0) {
-      return {
-        pass: false,
-        message: () => `expected recipient in database to match request, but the following properties did not match: ${notMatchingProperties.join(', ')}`,
-      };
-    }
-
-    return {
-      pass: true,
-      message: () => '',
     };
   },
 });

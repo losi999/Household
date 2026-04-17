@@ -130,20 +130,7 @@ const validateCategoryResponse = (response: Category.Response, document: Categor
     };
   });
 
-  const extraKeys = comparer.extraKeys(response, [
-    'ancestors',
-    'parentCategory',
-  ]);
-
-  if (extraKeys.length > 0) {
-    return `expected response to have no additional properties, but got extra properties: ${extraKeys.join(', ')}`;
-  }
-
-  const notMatchingProperties = comparer.notMatchingProperties();
-
-  if (notMatchingProperties.length > 0) {
-    return `expected response to match category document, but the following properties did not match: ${notMatchingProperties.join(', ')}`;
-  }
+  return comparer.validate(response, 'ancestors', 'parentCategory');
 };
 
 export const expect = baseExpect.extend({
@@ -174,33 +161,15 @@ export const expect = baseExpect.extend({
       };
     });
 
-    const extraKeys = comparer.extraKeys(document, [
-      '_id',
+    const message = comparer.validate(document, '_id', 
       'createdAt',
       'expiresAt',
       'updatedAt',
-      'ancestors',
-    ]);
-
-    if (extraKeys.length > 0) {
-      return {
-        pass: false,
-        message: () => `expected category in database to have no additional properties, but got extra properties: ${extraKeys.join(', ')}`,
-      };
-    }
-
-    const notMatchingProperties = comparer.notMatchingProperties();
-
-    if (notMatchingProperties.length > 0) {
-      return {
-        pass: false,
-        message: () => `expected category in database to match request, but the following properties did not match: ${notMatchingProperties.join(', ')}`,
-      };
-    }
+      'ancestors');
 
     return {
-      pass: true,
-      message: () => '',
+      pass: !message,
+      message: () => message,
     };
   },
   async toMatchCategoryDocument(received: APIResponse, document: Category.Document, ...ancestorDocuments: Category.Document[]) {
@@ -252,33 +221,11 @@ export const expect = baseExpect.extend({
       };
     });
 
-    const extraKeys = comparer.extraKeys(currentDocument, [
-      '_id',
-      'createdAt',
-      'expiresAt',
-      'updatedAt',
-      'ancestors',
-    ]);
-
-    if (extraKeys.length > 0) {
-      return {
-        pass: false,
-        message: () => `expected category in database to have no additional properties, but got extra properties: ${extraKeys.join(', ')}`,
-      };
-    }
-
-    const notMatchingProperties = comparer.notMatchingProperties();
-
-    if (notMatchingProperties.length > 0) {
-      return {
-        pass: false,
-        message: () => `expected category in database to match request, but the following properties did not match: ${notMatchingProperties.join(', ')}`,
-      };
-    }
+    const message = comparer.validate(currentDocument, '_id', 'createdAt', 'expiresAt', 'updatedAt', 'ancestors');
 
     return {
-      pass: true,
-      message: () => '',
+      pass: !message,
+      message: () => message,
     };
   },
 });

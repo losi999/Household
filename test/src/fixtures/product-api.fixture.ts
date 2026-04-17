@@ -106,33 +106,11 @@ export const expect = baseExpect.extend({
       };
     });
 
-    const extraKeys = comparer.extraKeys(currentDocument, [
-      '_id',
-      'createdAt',
-      'expiresAt',
-      'updatedAt',
-      'category',
-    ]);
-
-    if (extraKeys.length > 0) {
-      return {
-        pass: false,
-        message: () => `expected product in database to have no additional properties, but got extra properties: ${extraKeys.join(', ')}`,
-      };
-    }
-
-    const notMatchingProperties = comparer.notMatchingProperties();
-
-    if (notMatchingProperties.length > 0) {
-      return {
-        pass: false,
-        message: () => `expected product in database to match request, but the following properties did not match: ${notMatchingProperties.join(', ')}`,
-      };
-    }
+    const message = comparer.validate(currentDocument, '_id', 'createdAt', 'expiresAt', 'updatedAt', 'category');
 
     return {
-      pass: true,
-      message: () => '',
+      pass: !message,
+      message: () => message,
     };
   },
 });

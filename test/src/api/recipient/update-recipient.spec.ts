@@ -12,7 +12,7 @@ test.describe('PUT /recipient/v1/recipients/{recipientId}', () => {
   let req: Recipient.Request;
   let recipientDocument: Recipient.Document;
 
-  test.beforeEach(() => {
+  test.beforeEach(async () => {
     req = recipientDataFactory.request();
 
     recipientDocument = recipientDataFactory.document();

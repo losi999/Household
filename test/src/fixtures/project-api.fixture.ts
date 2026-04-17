@@ -109,20 +109,38 @@ const validateProjectResponse = (response: Project.Response, document: Project.D
     };
   });
 
-  const extraKeys = comparer.extraKeys(response);
-
-  if (extraKeys.length > 0) {
-    return `expected response to have no additional properties, but got extra properties: ${extraKeys.join(', ')}`;
-  }
-
-  const notMatchingProperties = comparer.notMatchingProperties();
-
-  if (notMatchingProperties.length > 0) {
-    return `expected response to match project document, but the following properties did not match: ${notMatchingProperties.join(', ')}`;
-  }
+  return comparer.validate(response);
 };
 
 export const expect = baseExpect.extend({
+  async toBeStoredInDatabase(req: Project.Request, document: Project.Document) {
+    if (!document) {
+      return {
+        pass: false,
+        message: () => 'expected project to be stored in database, but it was not found',
+      };
+    }
+
+    const comparer = createComparer((compare) => {
+      return {
+        name: compare(document.name, req.name),
+        description: compare(document.description, req.description),
+      };  
+    });
+
+    const message = comparer.validate(document, '_id', 'createdAt', 'expiresAt', 'updatedAt');
+
+    return {
+      pass: !message,
+      message: () => message,
+    };
+  },
+  toHaveBeenDeletedFromDatabase(document: Project.Document) {
+    return {
+      pass: !document,
+      message: () => `expected project to be deleted from database, but it was found with id ${getProjectId(document)}`,
+    };
+  },
   async toMatchProjectDocument(received: APIResponse, document: Project.Document) {
     const response = await received.json() as Project.Response;
 
@@ -152,54 +170,5 @@ export const expect = baseExpect.extend({
       message: () => message,
     };
   }, 
-  toHaveBeenDeletedFromDatabase(document: Project.Document) {
-    return {
-      pass: !document,
-      message: () => `expected project to be deleted from database, but it was found with id ${getProjectId(document)}`,
-    };
-  },
-  async toBeStoredInDatabase(req: Project.Request, document: Project.Document) {
-    if (!document) {
-      return {
-        pass: false,
-        message: () => 'expected project to be stored in database, but it was not found',
-      };
-    }
-
-    const comparer = createComparer((compare) => {
-      return {
-        name: compare(document.name, req.name),
-        description: compare(document.description, req.description),
-      };  
-    });
-
-    const extraKeys = comparer.extraKeys(document, [
-      '_id',
-      'createdAt',
-      'expiresAt',
-      'updatedAt',
-    ]);
-
-    if (extraKeys.length > 0) {
-      return {
-        pass: false,
-        message: () => `expected project in database to have no additional properties, but got extra properties: ${extraKeys.join(', ')}`,
-      };
-    }
-
-    const notMatchingProperties = comparer.notMatchingProperties();
-
-    if (notMatchingProperties.length > 0) {
-      return {
-        pass: false,
-        message: () => `expected project in database to match request, but the following properties did not match: ${notMatchingProperties.join(', ')}`,
-      };
-    }
-
-    return {
-      pass: true,
-      message: () => '',
-    };
-  },
 
 });

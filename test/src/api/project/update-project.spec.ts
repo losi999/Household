@@ -12,7 +12,7 @@ test.describe('PUT /project/v1/projects/{projectId}', () => {
   let req: Project.Request;
   let projectDocument: Project.Document;
 
-  test.beforeEach(() => {
+  test.beforeEach(async () => {
     req = projectDataFactory.request();
 
     projectDocument = projectDataFactory.document();

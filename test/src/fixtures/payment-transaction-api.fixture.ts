@@ -53,32 +53,38 @@ export const expect = baseExpect.extend({
       };
     });
 
-    const extraKeys = comparer.extraKeys(currentDocument, [
-      '_id',
-      'createdAt',
-      'expiresAt',
-      'updatedAt',
-    ]);
-
-    if (extraKeys.length > 0) {
-      return {
-        pass: false,
-        message: () => `expected document to have no additional properties, but got extra properties: ${extraKeys.join(', ')}`,
-      };
-    }
-
-    const notMatchingProperties = comparer.notMatchingProperties();
-
-    if (notMatchingProperties.length > 0) {
-      return {
-        pass: false,
-        message: () => `expected document to only contain specified changes, but the following properties did not match: ${notMatchingProperties.join(', ')}`,
-      };
-    }
+    const message = comparer.validate(currentDocument, '_id', 'createdAt', 'expiresAt', 'updatedAt');
 
     return {
-      pass: true,
-      message: () => '',
+      pass: !message,
+      message: () => message,
+    };
+  },
+  toBeConvertedToPaymentTransaction(originalDocument: Transaction.DeferredDocument, currentDocument: Transaction.PaymentDocument) {
+
+    const comparer = createComparer((compare) => {
+      return {
+        amount: compare(currentDocument.amount, originalDocument.amount),
+        issuedAt: compare(currentDocument.issuedAt.toISOString(), originalDocument.issuedAt.toISOString()),
+        account: compare(getAccountId(currentDocument.account), getAccountId(originalDocument.payingAccount)),
+        description: compare(currentDocument.description, originalDocument.description),
+        transactionType: compare(currentDocument.transactionType, 'payment'),
+        product: compare(getProductId(currentDocument.product), getProductId(originalDocument.product)),
+        project: compare(getProjectId(currentDocument.project), getProjectId(originalDocument.project)),
+        recipient: compare(getRecipientId(currentDocument.recipient), getRecipientId(originalDocument.recipient)),
+        category: compare(getCategoryId(currentDocument.category), getCategoryId(originalDocument.category)),
+        quantity: compare(currentDocument.quantity, originalDocument.quantity),
+        billingStartDate: compare(currentDocument.billingStartDate?.toISOString(), originalDocument.billingStartDate?.toISOString()),
+        billingEndDate: compare(currentDocument.billingEndDate?.toISOString(), originalDocument.billingEndDate?.toISOString()),
+        invoiceNumber: compare(currentDocument.invoiceNumber, originalDocument.invoiceNumber),
+      };
+    });
+
+    const message = comparer.validate(currentDocument, '_id', 'createdAt', 'expiresAt', 'updatedAt');
+
+    return {
+      pass: !message,
+      message: () => message,
     };
   },
 });

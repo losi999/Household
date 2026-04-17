@@ -18,7 +18,7 @@ test.describe('GET /category/v1/categories/{categoryId}', () => {
   let categoryDocument: Category.Document;
   let childCategoryDocument: Category.Document;
 
-  test.beforeEach(() => {
+  test.beforeEach(async () => {
     categoryDocument = categoryDataFactory.document({
       body: {
         categoryType: CategoryType.Inventory,
