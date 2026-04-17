@@ -109,6 +109,7 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
           },
         ], {
           session,
+          updatePipeline: true,
         });
 
         return models.transactions.updateMany({
@@ -161,6 +162,7 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
         ],
         {
           session,
+          updatePipeline: true,
         });
       });
     },

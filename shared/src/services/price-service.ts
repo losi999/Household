@@ -39,7 +39,7 @@ export const priceServiceFactory = (mongodbService: IMongodbService): IPriceServ
       });
       return price;
     },
-    savePrices: (docs) => {
+    savePrices: (...docs) => {
       return mongodbService.inTransaction((models, session) => {
         return models.prices.insertMany(docs, {
           session,
