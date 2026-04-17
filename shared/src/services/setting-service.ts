@@ -51,7 +51,8 @@ export const settingServiceFactory = (mongodbService: IMongodbService): ISetting
           return model.findOne({
             settingKey,
           })
-            .session(session);   
+            .session(session)
+            .lean();   
         });
       }
     },

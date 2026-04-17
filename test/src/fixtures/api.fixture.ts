@@ -86,7 +86,7 @@ export const expect = baseExpect.extend({
   },
   async toHavePatternValidationError(received: APIResponse, requestPart: RequestPart, propertyName: string) {
     const response = await received.json();
-    const hasError = response[requestPart]?.includes(`${propertyName} must match pattern`);
+    const hasError = new RegExp(`${propertyName} must match pattern`).test(response[requestPart]);
     return {
       message: () => `expected response to have pattern validation error for property '${propertyName}' in ${requestPart}, but got ${JSON.stringify(response)}`,
       pass: hasError,
@@ -94,7 +94,7 @@ export const expect = baseExpect.extend({
   },
   async toHaveRequiredPropertyValidationError(received: APIResponse, requestPart: RequestPart, propertyName: string) {
     const response = await received.json();
-    const hasError = response[requestPart]?.includes(`must have required property '${propertyName}'`);
+    const hasError = new RegExp(`must have required property '${propertyName}'`).test(response[requestPart]);
     return {
       message: () => `expected response to have required property validation error for property '${propertyName}' in ${requestPart}, but got ${JSON.stringify(response)}`,
       pass: hasError,
@@ -102,7 +102,7 @@ export const expect = baseExpect.extend({
   },
   async toHaveAdditionalPropertiesValidationError(received: APIResponse, requestPart: RequestPart, additionalPropertyName: string) {
     const response = await received.json();
-    const hasError = response[requestPart]?.includes(`must NOT have additional properties ${additionalPropertyName}`);
+    const hasError = new RegExp(`must NOT have additional properties ${additionalPropertyName}`).test(response[requestPart]);
     return {
       message: () => `expected response to have additional properties validation error for property '${additionalPropertyName}' in ${requestPart}, but got ${JSON.stringify(response)}`,
       pass: hasError,
@@ -110,7 +110,7 @@ export const expect = baseExpect.extend({
   },
   async toHaveWrongTypeValidationError(received: APIResponse, requestPart: RequestPart, propertyName: string, expectedType: string) {
     const response = await received.json();
-    const hasError = response[requestPart]?.includes(`${propertyName} must be ${expectedType}`);
+    const hasError = new RegExp(`${propertyName} must be ([^,]*,)*${expectedType}([^,]*,)*`).test(response[requestPart]);
     return {
       message: () => `expected response to have wrong type validation error for property '${propertyName}' in ${requestPart} with expected type '${expectedType}', but got ${JSON.stringify(response)}`,
       pass: hasError,
@@ -118,23 +118,55 @@ export const expect = baseExpect.extend({
   },
   async toHaveTooShortValidationError(received: APIResponse, requestPart: RequestPart, propertyName: string, minLength: number) {
     const response = await received.json();
-    const hasError = response[requestPart]?.includes(`${propertyName} must NOT have fewer than ${minLength} characters`);
+    const hasError = new RegExp(`${propertyName} must NOT have fewer than ${minLength} characters`).test(response[requestPart]);
     return {
       message: () => `expected response to have too short validation error for property '${propertyName}' in ${requestPart} with min length '${minLength}', but got ${JSON.stringify(response)}`,
       pass: hasError,
     };
   },
+  async toHaveExclusiveTooSmallValidationError(received: APIResponse, requestPart: RequestPart, propertyName: string, minValue: number) {
+    const response = await received.json();
+    const hasError = new RegExp(`${propertyName} must be > ${minValue}`).test(response[requestPart]);
+    return {
+      message: () => `expected response to have too small validation error for property '${propertyName}' in ${requestPart} with min value '${minValue}', but got ${JSON.stringify(response)}`,
+      pass: hasError,
+    };
+  },
+  async toHaveTooSmallValidationError(received: APIResponse, requestPart: RequestPart, propertyName: string, minValue: number) {
+    const response = await received.json();
+    const hasError = new RegExp(`${propertyName} must be >= ${minValue}`).test(response[requestPart]);
+    return {
+      message: () => `expected response to have too small validation error for property '${propertyName}' in ${requestPart} with min value '${minValue}', but got ${JSON.stringify(response)}`,
+      pass: hasError,
+    };
+  },
+  async toHaveTooLargeValidationError(received: APIResponse, requestPart: RequestPart, propertyName: string, maxValue: number) {
+    const response = await received.json();
+    const hasError = new RegExp(`${propertyName} must be <= ${maxValue}`).test(response[requestPart]);
+    return {
+      message: () => `expected response to have too large validation error for property '${propertyName}' in ${requestPart} with max value '${maxValue}', but got ${JSON.stringify(response)}`,
+      pass: hasError,
+    };
+  },
   async toHaveTooFewItemsValidationError(received: APIResponse, requestPart: RequestPart, propertyName: string, minItems: number) {
     const response = await received.json();
-    const hasError = response[requestPart]?.includes(`${propertyName} must NOT have fewer than ${minItems} items`);
+    const hasError = new RegExp(`${propertyName} must NOT have fewer than ${minItems} items`).test(response[requestPart]);
     return {
       message: () => `expected response to have too few items validation error for property '${propertyName}' in ${requestPart} with min items '${minItems}', but got ${JSON.stringify(response)}`,
       pass: hasError,
     };  
   },
+  async toHaveTooManyItemsValidationError(received: APIResponse, requestPart: RequestPart, propertyName: string, maxItems: number) {
+    const response = await received.json();
+    const hasError = new RegExp(`${propertyName} must NOT have more than ${maxItems} items`).test(response[requestPart]);
+    return {
+      message: () => `expected response to have too many items validation error for property '${propertyName}' in ${requestPart} with max items '${maxItems}', but got ${JSON.stringify(response)}`,
+      pass: hasError,
+    };  
+  },
   async toHaveEnumValidationError(received: APIResponse, requestPart: RequestPart, propertyName: string) {
     const response = await received.json();
-    const hasError = response[requestPart]?.includes(`${propertyName} must be equal to one of the allowed values`);
+    const hasError = new RegExp(`${propertyName} must be equal to one of the allowed values`).test(response[requestPart]);
     return {
       message: () => `expected response to have enum validation error for property '${propertyName}' in ${requestPart}, but got ${JSON.stringify(response)}`,
       pass: hasError,

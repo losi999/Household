@@ -49,7 +49,7 @@ console.log('mongodb service B');
 set('debug', (!process.env.ENV || process.env.ENV === 'LOCAL') ? (collectionName, methodName, ...methodArgs) => {
   const safeArgs = methodArgs.map(({ session, ...arg }) => {
     try {
-      return JSON.stringify(arg);
+      return JSON.stringify(arg, null, 2);
     } catch {
       console.debug('Could not serialize argument for mongoose debug log', arg);
       return '[unserializable]';

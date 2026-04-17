@@ -629,7 +629,8 @@ export namespace Setting {
 
   export type Request = Base;
 
-  export type Document = Base
+  export type Document = Partial<Internal.Id>
+  & Base
   & SettingKey
   & Internal.Timestamps;
 

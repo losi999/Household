@@ -1,6 +1,9 @@
+import { isPriceBase } from '@household/shared/common/type-guards';
+import { getCustomerId, getPriceId } from '@household/shared/common/utils';
 import { headerExpiresIn } from '@household/shared/constants';
 import { Customer } from '@household/shared/types/types';
 import { test as baseTest, expect as baseExpect } from '@household/test/fixtures/api.fixture';
+import { createComparer } from '@household/test/utils';
 import { APIResponse } from '@playwright/test';
 
 type CustomerApiFixture = {
@@ -162,4 +165,545 @@ export const test = baseTest.extend<CustomerApiFixture>({
   },
 });
 
-export const expect = baseExpect.extend({});
+const validateCustomerResponse = (response: Customer.Response, document: Customer.Document): string => {
+  const comparer = createComparer((compare) => {
+    const blacklistedCustomers = response.blacklistedCustomers.reduce((accumulator, currentValue, index) => {
+      return {
+        ...accumulator,
+        [`blacklistedCustomers[${index}].customerId`]: compare(currentValue.customerId, getCustomerId(document.blacklistedCustomers[index])),
+        [`blacklistedCustomers[${index}].description`]: compare(currentValue.description, document.blacklistedCustomers[index].description),
+        [`blacklistedCustomers[${index}].isGroup`]: compare(currentValue.isGroup, document.blacklistedCustomers[index].isGroup),
+        [`blacklistedCustomers[${index}].name`]: compare(currentValue.name, document.blacklistedCustomers[index].name),
+        [`blacklistedCustomers[${index}].rating`]: compare(currentValue.rating, document.blacklistedCustomers[index].rating),
+      };
+    }, {});
+
+    const jobs = response.jobs.reduce((accumulator, currentValue, index) => {
+      const prices = currentValue.prices.reduce((priceAccumulator, currentPrice, priceIndex) => {
+        const jobPriceDocument = document.jobs[index].prices[priceIndex];
+
+        if(isPriceBase(jobPriceDocument)) {
+          return {
+            ...priceAccumulator,
+            [`jobs[${index}].prices[${priceIndex}].name`]: compare(currentPrice.name, jobPriceDocument.name),
+            [`jobs[${index}].prices[${priceIndex}].amount`]: compare(currentPrice.amount, jobPriceDocument.amount),
+          };
+        } 
+        return {
+          ...priceAccumulator,
+          [`jobs[${index}].prices[${priceIndex}].name`]: compare(currentPrice.name, jobPriceDocument.price.name),
+          [`jobs[${index}].prices[${priceIndex}].amount`]: compare(currentPrice.amount, jobPriceDocument.price.amount),
+          [`jobs[${index}].prices[${priceIndex}].unitOfMeasurement`]: compare(currentPrice.unitOfMeasurement, jobPriceDocument.price.unitOfMeasurement),
+          [`jobs[${index}].prices[${priceIndex}].priceId`]: compare(currentPrice.priceId, getPriceId(jobPriceDocument.price)),
+          [`jobs[${index}].prices[${priceIndex}].quantity`]: compare(currentPrice.quantity, jobPriceDocument.quantity),
+        };
+      }, {});
+
+      return {
+        ...accumulator,
+        [`jobs[${index}].name`]: compare(currentValue.name, document.jobs[index].name),
+        [`jobs[${index}].description`]: compare(currentValue.description, document.jobs[index].description),
+        [`jobs[${index}].duration`]: compare(currentValue.duration, document.jobs[index].duration),
+        ...prices,
+      };
+    }, {});
+
+    return {
+      customerId: compare(response.customerId, getCustomerId(document)),
+      name: compare(response.name, document.name),
+      description: compare(response.description, document.description),
+      isGroup: compare(response.isGroup, document.isGroup),
+      rating: compare(response.rating, document.rating),
+      ...blacklistedCustomers,
+      ...jobs,
+    };
+  });
+
+  return comparer.validate(response, 'blacklistedCustomers', 'jobs');
+};
+
+export const expect = baseExpect.extend({
+  toBeStoredInDatabase(req: Customer.Request, currentDocument: Customer.Document, originalDocument?: Customer.Document) {
+    if (!currentDocument) {
+      return {
+        pass: false,
+        message: () => 'expected customer to be stored in database, but it was not found',
+      };
+    }
+  
+    const comparer = createComparer((compare) => {
+      const blacklistedCustomers = currentDocument.blacklistedCustomers.reduce((accumulator, currentValue, index) => {
+        return {
+          ...accumulator,
+          [`blacklistedCustomers[${index}]`]: compare(getCustomerId(currentValue), getCustomerId(originalDocument?.blacklistedCustomers[index])),
+        };
+      }, {});
+
+      const jobs = currentDocument.jobs.reduce((accumulator, currentValue, index) => {  
+        const prices = currentValue.prices.reduce((priceAccumulator, currentPrice, priceIndex) => {
+          const originalPrice = originalDocument?.jobs[index]?.prices[priceIndex];
+
+          if (isPriceBase(currentPrice) && isPriceBase(originalPrice)) {
+            return {
+              ...priceAccumulator,
+              [`jobs[${index}].prices[${priceIndex}].name`]: compare(currentPrice.name, originalPrice.name),
+              [`jobs[${index}].prices[${priceIndex}].amount`]: compare(currentPrice.amount, originalPrice.amount),
+            };
+          } 
+
+          if (!isPriceBase(originalPrice) && !isPriceBase(currentPrice)) {
+            return {
+              ...priceAccumulator,
+              [`jobs[${index}].prices[${priceIndex}].priceId`]: compare(getPriceId(currentPrice.price), getPriceId(originalPrice.price)),
+              [`jobs[${index}].prices[${priceIndex}].quantity`]: compare(currentPrice.quantity, originalPrice.quantity),
+            };
+          }
+
+          return {
+            ...priceAccumulator,
+            [`jobs[${index}].prices[${priceIndex}].priceType`]: compare(isPriceBase(currentPrice) ? 'custom' : 'listed', isPriceBase(originalPrice) ? 'custom' : 'listed'),
+          };
+        }, {});
+
+        return {  
+          ...accumulator,
+          [`jobs[${index}].name`]: compare(currentValue.name, originalDocument?.jobs[index].name),
+          [`jobs[${index}].description`]: compare(currentValue.description, originalDocument?.jobs[index].description),
+          [`jobs[${index}].duration`]: compare(currentValue.duration, originalDocument?.jobs[index].duration),
+          ...prices,
+        };
+      }, {});
+
+      return {
+        name: compare(currentDocument.name, req.name),
+        description: compare(currentDocument.description, req.description),
+        isGroup: compare(currentDocument.isGroup, req.isGroup),
+        rating: compare(currentDocument.rating, req.rating),
+        ...blacklistedCustomers,
+        ...jobs,
+      };  
+    });
+  
+    const message = comparer.validate(currentDocument, '_id', 'createdAt', 'expiresAt', 'updatedAt', 'blacklistedCustomers', 'jobs');
+  
+    return {
+      pass: !message,
+      message: () => message,
+    };
+  },
+  async toMatchCustomerDocument(received: APIResponse, document: Customer.Document) {
+    const response = await received.json() as Customer.Response;
+  
+    const message = validateCustomerResponse(response, document);
+  
+    return {
+      pass: !message,
+      message: () => message,
+    };
+  },
+  async toMatchCustomerDocumentInList(received: APIResponse, document: Customer.Document) {
+    const response = await received.json() as Customer.Response[];
+  
+    const matchingResponse = response.find(r => r.customerId === getCustomerId(document));
+  
+    if (!matchingResponse) {
+      return {
+        pass: false,
+        message: () => `expected response to contain a customer with id ${getCustomerId(document)}, but it was not found`,
+      };
+    }
+  
+    const message = validateCustomerResponse(matchingResponse, document);
+  
+    return {
+      pass: !message,
+      message: () => message,
+    };
+  }, 
+  toHaveBeenAddedToBlacklist(blacklistedCustomer: Customer.Document, originalDocument: Customer.Document, currentDocument: Customer.Document) {
+
+    const comparer = createComparer((compare) => {
+      const blacklistedCustomers = currentDocument.blacklistedCustomers.reduce((accumulator, currentValue, index) => {
+        const expectedCustomer = originalDocument.blacklistedCustomers[index] ?? blacklistedCustomer;
+        return {
+          ...accumulator,
+          [`blacklistedCustomers[${index}]`]: compare(getCustomerId(currentValue), getCustomerId(expectedCustomer)),
+        };
+      }, {});
+
+      const jobs = currentDocument.jobs.reduce((accumulator, currentValue, index) => {  
+        const prices = currentValue.prices.reduce((priceAccumulator, currentPrice, priceIndex) => {
+          const originalPrice = originalDocument?.jobs[index]?.prices[priceIndex];
+
+          if (isPriceBase(currentPrice) && isPriceBase(originalPrice)) {
+            return {
+              ...priceAccumulator,
+              [`jobs[${index}].prices[${priceIndex}].name`]: compare(currentPrice.name, originalPrice.name),
+              [`jobs[${index}].prices[${priceIndex}].amount`]: compare(currentPrice.amount, originalPrice.amount),
+            };
+          } 
+
+          if (!isPriceBase(originalPrice) && !isPriceBase(currentPrice)) {
+            return {
+              ...priceAccumulator,
+              [`jobs[${index}].prices[${priceIndex}].priceId`]: compare(getPriceId(currentPrice.price), getPriceId(originalPrice.price)),
+              [`jobs[${index}].prices[${priceIndex}].quantity`]: compare(currentPrice.quantity, originalPrice.quantity),
+            };
+          }
+
+          return {
+            ...priceAccumulator,
+            [`jobs[${index}].prices[${priceIndex}].priceType`]: compare(isPriceBase(currentPrice) ? 'custom' : 'listed', isPriceBase(originalPrice) ? 'custom' : 'listed'),
+          };
+        }, {});
+
+        return {  
+          ...accumulator,
+          [`jobs[${index}].name`]: compare(currentValue.name, originalDocument?.jobs[index].name),
+          [`jobs[${index}].description`]: compare(currentValue.description, originalDocument?.jobs[index].description),
+          [`jobs[${index}].duration`]: compare(currentValue.duration, originalDocument?.jobs[index].duration),
+          ...prices,
+        };
+      }, {});
+
+      return {
+        name: compare(currentDocument.name, originalDocument.name),
+        description: compare(currentDocument.description, originalDocument.description),
+        isGroup: compare(currentDocument.isGroup, originalDocument.isGroup),
+        rating: compare(currentDocument.rating, originalDocument.rating),
+        ...jobs,
+        ...blacklistedCustomers,
+      };
+    });
+  
+    const message = comparer.validate(currentDocument, '_id', 'createdAt', 'expiresAt', 'updatedAt', 'blacklistedCustomers', 'jobs');
+  
+    return {
+      pass: !message,
+      message: () => message,
+    };
+  },
+  toHaveBeenRemovedFromBlacklist(blacklistedCustomer: Customer.Document, originalDocument: Customer.Document, currentDocument: Customer.Document) {
+
+    const comparer = createComparer((compare) => {
+      const blacklistedCustomers = originalDocument.blacklistedCustomers.filter(c => getCustomerId(c) !== getCustomerId(blacklistedCustomer)).reduce((accumulator, currentValue, index) => {
+        const actualCustomer = currentDocument.blacklistedCustomers[index];
+
+        return {
+          ...accumulator,
+          [`blacklistedCustomers[${index}]`]: compare(getCustomerId(actualCustomer), getCustomerId(currentValue)),
+        };
+      }, {});
+
+      const jobs = currentDocument.jobs.reduce((accumulator, currentValue, index) => {  
+        const prices = currentValue.prices.reduce((priceAccumulator, currentPrice, priceIndex) => {
+          const originalPrice = originalDocument?.jobs[index]?.prices[priceIndex];
+
+          if (isPriceBase(currentPrice) && isPriceBase(originalPrice)) {
+            return {
+              ...priceAccumulator,
+              [`jobs[${index}].prices[${priceIndex}].name`]: compare(currentPrice.name, originalPrice.name),
+              [`jobs[${index}].prices[${priceIndex}].amount`]: compare(currentPrice.amount, originalPrice.amount),
+            };
+          } 
+
+          if (!isPriceBase(originalPrice) && !isPriceBase(currentPrice)) {
+            return {
+              ...priceAccumulator,
+              [`jobs[${index}].prices[${priceIndex}].priceId`]: compare(getPriceId(currentPrice.price), getPriceId(originalPrice.price)),
+              [`jobs[${index}].prices[${priceIndex}].quantity`]: compare(currentPrice.quantity, originalPrice.quantity),
+            };
+          }
+
+          return {
+            ...priceAccumulator,
+            [`jobs[${index}].prices[${priceIndex}].priceType`]: compare(isPriceBase(currentPrice) ? 'custom' : 'listed', isPriceBase(originalPrice) ? 'custom' : 'listed'),
+          };
+        }, {});
+
+        return {  
+          ...accumulator,
+          [`jobs[${index}].name`]: compare(currentValue.name, originalDocument?.jobs[index].name),
+          [`jobs[${index}].description`]: compare(currentValue.description, originalDocument?.jobs[index].description),
+          [`jobs[${index}].duration`]: compare(currentValue.duration, originalDocument?.jobs[index].duration),
+          ...prices,
+        };
+      }, {});
+
+      return {
+        name: compare(currentDocument.name, originalDocument.name),
+        description: compare(currentDocument.description, originalDocument.description),
+        isGroup: compare(currentDocument.isGroup, originalDocument.isGroup),
+        rating: compare(currentDocument.rating, originalDocument.rating),
+        ...jobs,
+        ...blacklistedCustomers,
+      };
+    });
+  
+    const message = comparer.validate(currentDocument, '_id', 'createdAt', 'expiresAt', 'updatedAt', 'blacklistedCustomers', 'jobs');
+  
+    return {
+      pass: !message,
+      message: () => message,
+    };
+  },
+  toHaveBeenAddedToCustomerJobs(req: Customer.Job.Request, originalDocument: Customer.Document, currentDocument: Customer.Document) {
+
+    const comparer = createComparer((compare) => {
+      const blacklistedCustomers = currentDocument.blacklistedCustomers.reduce((accumulator, currentValue, index) => {
+        return {
+          ...accumulator,
+          [`blacklistedCustomers[${index}]`]: compare(getCustomerId(currentValue), getCustomerId(originalDocument?.blacklistedCustomers[index])),
+        };
+      }, {});
+
+      const jobs = currentDocument.jobs.reduce((accumulator, currentValue, index) => {  
+        const originalJob = originalDocument?.jobs[index];
+
+        if (!originalJob) {
+          const prices = currentValue.prices.reduce((priceAccumulator, currentPrice, priceIndex) => {
+            const jobPriceRequest = req.prices[priceIndex];
+            if (isPriceBase(currentPrice) && isPriceBase(jobPriceRequest)) {
+              return {
+                ...priceAccumulator,
+                [`jobs[${index}].prices[${priceIndex}].name`]: compare(currentPrice.name, jobPriceRequest?.name),
+                [`jobs[${index}].prices[${priceIndex}].amount`]: compare(currentPrice.amount, jobPriceRequest?.amount),
+              };
+            } 
+
+            if (!isPriceBase(jobPriceRequest) && !isPriceBase(currentPrice)) {
+              return {
+                ...priceAccumulator,
+                [`jobs[${index}].prices[${priceIndex}].priceId`]: compare(getPriceId(currentPrice.price), jobPriceRequest.priceId),
+                [`jobs[${index}].prices[${priceIndex}].quantity`]: compare(currentPrice.quantity, jobPriceRequest.quantity),
+              };
+            }
+
+            return {
+              ...priceAccumulator,
+              [`jobs[${index}].prices[${priceIndex}].priceType`]: compare(isPriceBase(currentPrice) ? 'custom' : 'listed', isPriceBase(jobPriceRequest) ? 'custom' : 'listed'),
+            };
+          }, {});
+
+          return {  
+            ...accumulator,
+            [`jobs[${index}].name`]: compare(currentValue.name, req.name),
+            [`jobs[${index}].description`]: compare(currentValue.description, req.description),
+            [`jobs[${index}].duration`]: compare(currentValue.duration, req.duration),
+            ...prices,
+          };
+        }
+
+        const prices = currentValue.prices.reduce((priceAccumulator, currentPrice, priceIndex) => {
+          const originalPrice = originalJob?.prices[priceIndex];
+          if (isPriceBase(currentPrice) && isPriceBase(originalPrice)) {
+            return {
+              ...priceAccumulator,
+              [`jobs[${index}].prices[${priceIndex}].name`]: compare(currentPrice.name, originalPrice?.name),
+              [`jobs[${index}].prices[${priceIndex}].amount`]: compare(currentPrice.amount, originalPrice?.amount),
+            };
+          } 
+
+          if (!isPriceBase(originalPrice) && !isPriceBase(currentPrice)) {
+            return {
+              ...priceAccumulator,
+              [`jobs[${index}].prices[${priceIndex}].priceId`]: compare(getPriceId(currentPrice.price), getPriceId(originalPrice.price)),
+              [`jobs[${index}].prices[${priceIndex}].quantity`]: compare(currentPrice.quantity, originalPrice.quantity),
+            };
+          }
+
+          return {
+            ...priceAccumulator,
+            [`jobs[${index}].prices[${priceIndex}].priceType`]: compare(isPriceBase(currentPrice) ? 'custom' : 'listed', isPriceBase(originalPrice) ? 'custom' : 'listed'),
+          };
+        }, {});
+
+        return {  
+          ...accumulator,
+          [`jobs[${index}].name`]: compare(currentValue.name, originalDocument?.jobs[index].name),
+          [`jobs[${index}].description`]: compare(currentValue.description, originalDocument?.jobs[index].description),
+          [`jobs[${index}].duration`]: compare(currentValue.duration, originalDocument?.jobs[index].duration),
+          ...prices,
+        };
+      }, {});
+
+      return {
+        name: compare(currentDocument.name, originalDocument.name),
+        description: compare(currentDocument.description, originalDocument.description),
+        isGroup: compare(currentDocument.isGroup, originalDocument.isGroup),
+        rating: compare(currentDocument.rating, originalDocument.rating),
+        ...blacklistedCustomers,
+        ...jobs,
+      };
+    });
+
+    const message = comparer.validate(currentDocument, '_id', 'createdAt', 'expiresAt', 'updatedAt', 'blacklistedCustomers', 'jobs');
+  
+    return {
+      pass: !message,
+      message: () => message,
+    };
+  },
+  toHaveBeenRemovedFromCustomerJobs(jobName: Customer.Job.Request['name'], originalDocument: Customer.Document, currentDocument: Customer.Document) {
+
+    const originalJobs = originalDocument.jobs.filter(j => j.name !== jobName);
+
+    const comparer = createComparer((compare) => {
+      const blacklistedCustomers = currentDocument.blacklistedCustomers.reduce((accumulator, currentValue, index) => {
+        return {
+          ...accumulator,
+          [`blacklistedCustomers[${index}]`]: compare(getCustomerId(currentValue), getCustomerId(originalDocument?.blacklistedCustomers[index])),
+        };
+      }, {});
+
+      const jobs = currentDocument.jobs.reduce((accumulator, currentValue, index) => {  
+        const originalJob = originalJobs[index];
+
+        const prices = currentValue.prices.reduce((priceAccumulator, currentPrice, priceIndex) => {
+          const originalPrice = originalJob.prices[priceIndex];
+          if (isPriceBase(currentPrice) && isPriceBase(originalPrice)) {
+            return {
+              ...priceAccumulator,
+              [`jobs[${index}].prices[${priceIndex}].name`]: compare(currentPrice.name, originalPrice?.name),
+              [`jobs[${index}].prices[${priceIndex}].amount`]: compare(currentPrice.amount, originalPrice?.amount),
+            };
+          } 
+
+          if (!isPriceBase(originalPrice) && !isPriceBase(currentPrice)) {
+            return {
+              ...priceAccumulator,
+              [`jobs[${index}].prices[${priceIndex}].priceId`]: compare(getPriceId(currentPrice.price), getPriceId(originalPrice.price)),
+              [`jobs[${index}].prices[${priceIndex}].quantity`]: compare(currentPrice.quantity, originalPrice.quantity),
+            };
+          }
+
+          return {
+            ...priceAccumulator,
+            [`jobs[${index}].prices[${priceIndex}].priceType`]: compare(isPriceBase(currentPrice) ? 'custom' : 'listed', isPriceBase(originalPrice) ? 'custom' : 'listed'),
+          };
+        }, {});
+
+        return {  
+          ...accumulator,
+          [`jobs[${index}].name`]: compare(currentValue.name, originalJob?.name),
+          [`jobs[${index}].description`]: compare(currentValue.description, originalJob?.description),
+          [`jobs[${index}].duration`]: compare(currentValue.duration, originalJob?.duration),
+          ...prices,
+        };
+      }, {});
+
+      return {
+        name: compare(currentDocument.name, originalDocument.name),
+        description: compare(currentDocument.description, originalDocument.description),
+        isGroup: compare(currentDocument.isGroup, originalDocument.isGroup),
+        rating: compare(currentDocument.rating, originalDocument.rating),
+        ...blacklistedCustomers,
+        ...jobs,
+      };
+    });
+
+    const message = comparer.validate(currentDocument, '_id', 'createdAt', 'expiresAt', 'updatedAt', 'blacklistedCustomers', 'jobs');
+  
+    return {
+      pass: !message,
+      message: () => message,
+    };
+  },
+  toHaveBeenUpdatedInCustomerJobs(req: Customer.Job.Request, jobName: Customer.Job.Request['name'], originalDocument: Customer.Document, currentDocument: Customer.Document) {
+
+    const comparer = createComparer((compare) => {
+      const blacklistedCustomers = currentDocument.blacklistedCustomers.reduce((accumulator, currentValue, index) => {
+        return {
+          ...accumulator,
+          [`blacklistedCustomers[${index}]`]: compare(getCustomerId(currentValue), getCustomerId(originalDocument?.blacklistedCustomers[index])),
+        };
+      }, {});
+
+      const jobs = currentDocument.jobs.reduce((accumulator, currentValue, index) => {  
+        const originalJob = originalDocument?.jobs[index];
+
+        if (originalJob.name === jobName) {
+          const prices = currentValue.prices.reduce((priceAccumulator, currentPrice, priceIndex) => {
+            const jobPriceRequest = req.prices[priceIndex];
+            if (isPriceBase(currentPrice) && isPriceBase(jobPriceRequest)) {
+              return {
+                ...priceAccumulator,
+                [`jobs[${index}].prices[${priceIndex}].name`]: compare(currentPrice.name, jobPriceRequest?.name),
+                [`jobs[${index}].prices[${priceIndex}].amount`]: compare(currentPrice.amount, jobPriceRequest?.amount),
+              };
+            } 
+
+            if (!isPriceBase(jobPriceRequest) && !isPriceBase(currentPrice)) {
+              return {
+                ...priceAccumulator,
+                [`jobs[${index}].prices[${priceIndex}].priceId`]: compare(getPriceId(currentPrice.price), jobPriceRequest.priceId),
+                [`jobs[${index}].prices[${priceIndex}].quantity`]: compare(currentPrice.quantity, jobPriceRequest.quantity),
+              };
+            }
+
+            return {
+              ...priceAccumulator,
+              [`jobs[${index}].prices[${priceIndex}].priceType`]: compare(isPriceBase(currentPrice) ? 'custom' : 'listed', isPriceBase(jobPriceRequest) ? 'custom' : 'listed'),
+            };
+          }, {});
+
+          return {  
+            ...accumulator,
+            [`jobs[${index}].name`]: compare(currentValue.name, req.name),
+            [`jobs[${index}].description`]: compare(currentValue.description, req.description),
+            [`jobs[${index}].duration`]: compare(currentValue.duration, req.duration),
+            ...prices,
+          };
+        }
+
+        const prices = currentValue.prices.reduce((priceAccumulator, currentPrice, priceIndex) => {
+          const originalPrice = originalJob?.prices[priceIndex];
+          if (isPriceBase(currentPrice) && isPriceBase(originalPrice)) {
+            return {
+              ...priceAccumulator,
+              [`jobs[${index}].prices[${priceIndex}].name`]: compare(currentPrice.name, originalPrice?.name),
+              [`jobs[${index}].prices[${priceIndex}].amount`]: compare(currentPrice.amount, originalPrice?.amount),
+            };
+          } 
+
+          if (!isPriceBase(originalPrice) && !isPriceBase(currentPrice)) {
+            return {
+              ...priceAccumulator,
+              [`jobs[${index}].prices[${priceIndex}].priceId`]: compare(getPriceId(currentPrice.price), getPriceId(originalPrice.price)),
+              [`jobs[${index}].prices[${priceIndex}].quantity`]: compare(currentPrice.quantity, originalPrice.quantity),
+            };
+          }
+
+          return {
+            ...priceAccumulator,
+            [`jobs[${index}].prices[${priceIndex}].priceType`]: compare(isPriceBase(currentPrice) ? 'custom' : 'listed', isPriceBase(originalPrice) ? 'custom' : 'listed'),
+          };
+        }, {});
+
+        return {  
+          ...accumulator,
+          [`jobs[${index}].name`]: compare(currentValue.name, originalDocument?.jobs[index].name),
+          [`jobs[${index}].description`]: compare(currentValue.description, originalDocument?.jobs[index].description),
+          [`jobs[${index}].duration`]: compare(currentValue.duration, originalDocument?.jobs[index].duration),
+          ...prices,
+        };
+      }, {});
+
+      return {
+        name: compare(currentDocument.name, originalDocument.name),
+        description: compare(currentDocument.description, originalDocument.description),
+        isGroup: compare(currentDocument.isGroup, originalDocument.isGroup),
+        rating: compare(currentDocument.rating, originalDocument.rating),
+        ...blacklistedCustomers,
+        ...jobs,
+      };
+    });
+
+    const message = comparer.validate(currentDocument, '_id', 'createdAt', 'expiresAt', 'updatedAt', 'blacklistedCustomers', 'jobs');
+  
+    return {
+      pass: !message,
+      message: () => message,
+    };
+  },
+});

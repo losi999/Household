@@ -25,7 +25,7 @@ export const customerServiceFactory = (mongodbService: IMongodbService): ICustom
       
       return customer;
     },
-    saveCustomers: (docs) => {
+    saveCustomers: (...docs) => {
       return mongodbService.inTransaction((models, session) => {
         return models.customers.insertMany(docs, {
           session,
