@@ -1,6 +1,8 @@
+import { getCalendarEntryId } from '@household/shared/common/utils';
 import { headerExpiresIn } from '@household/shared/constants';
 import { Calendar } from '@household/shared/types/types';
 import { test as baseTest, expect as baseExpect } from '@household/test/fixtures/api.fixture';
+import { createComparer } from '@household/test/utils';
 import { APIResponse } from '@playwright/test';
 
 type CalendarApiFixture = {
@@ -132,4 +134,35 @@ export const test = baseTest.extend<CalendarApiFixture>({
   },
 });
 
-export const expect = baseExpect.extend({});
+export const expect = baseExpect.extend({
+  async toMatchCalendarEntryBaseDocumentInResponseList(received: APIResponse, document: Calendar.Entry.Document) {
+    const response = await received.json() as Calendar.Entry.ResponseBase[];
+    
+    const matchingResponse = response.find(r => r.calendarEntryId === getCalendarEntryId(document));
+
+    if (!matchingResponse) {
+      return {
+        pass: false,
+        message: () => `expected response to contain a calendar entry with id ${getCalendarEntryId(document)}, but it was not found`,
+      };
+    }
+
+    const comparer = createComparer((compare) => {
+      return {
+        calendarEntryId: compare(matchingResponse?.calendarEntryId, getCalendarEntryId(document)),
+        title: compare(matchingResponse?.title, document.title),
+        description: compare(matchingResponse?.description, document.description),
+        start: compare(matchingResponse?.start, document.start),
+        end: compare(matchingResponse?.end, document.end),
+        day: compare(matchingResponse?.day, document.day),
+      };
+    });
+
+    const message = comparer.validate(matchingResponse);
+
+    return {
+      pass: !message,
+      message: () => message,
+    };
+  },
+});

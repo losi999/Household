@@ -32,12 +32,14 @@ export const allowUsers = (...users: User[]): UserPermissionMap => {
   };
 };
 
-type CompareResult<V = any> = {
+export type CompareResult<V = any> = {
   actual: V;
   expected: V;
 };
 
-export const createComparer = (factory: (compare: <V>(actual: V, expected: V) => CompareResult<V>) => Record<string, CompareResult<any>>) => {
+export type CompareFn = <V>(actual: V, expected: V) => CompareResult<V>;
+
+export const createComparer = (factory: (compare: CompareFn) => Record<string, CompareResult<any>>) => {
   const normalized = factory((actual, expected) => {
     return actual === expected ? undefined : {
       actual,
@@ -46,6 +48,7 @@ export const createComparer = (factory: (compare: <V>(actual: V, expected: V) =>
   });
 
   return {
+    normalized,
     validate: <T extends object>(object: T, ...internalProperties: (keyof T)[]) => {
       const extraKeys = keys(object).filter(
         (key) => {
@@ -66,13 +69,12 @@ export const createComparer = (factory: (compare: <V>(actual: V, expected: V) =>
         }
         return [
           ...accumulator,
-          `${key} (expected: ${result.expected}, actual: ${result.actual})`,
+          `${key}\n\texpected: ${result.expected}\n\tactual: ${result.actual}`,
         ];
       }, []);
 
       if (notMatchingProperties.length > 0) {
-        console.table(normalized);
-        return `expected objects to match, but the following properties did not match: ${notMatchingProperties.join(', ')}`;
+        return `expected objects to match, but the following properties did not match:\n${notMatchingProperties.join('\n')}`;
       }
 
       return;
