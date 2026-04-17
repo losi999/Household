@@ -73,9 +73,7 @@ describe('Update to payment transaction service', () => {
 
   const queriedDocument = createTransferTransactionDocument();
   const transactionId = getTransactionId(queriedDocument);
-  const updateQuery = createDocumentUpdate({
-    description: 'updated',
-  });
+  const updateQuery = createDocumentUpdate();
 
   describe('should return', () => {
     it('if updated to payment transaction', async () => {

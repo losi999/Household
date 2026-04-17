@@ -25,9 +25,7 @@ describe('Update to transfer transaction service', () => {
   const queriedAccount = createAccountDocument();
   const queriedTransferAccount = createAccountDocument();
   let body: Transaction.TransferRequest;
-  const updateQuery = createDocumentUpdate({
-    description: 'updated',
-  });
+  const updateQuery = createDocumentUpdate();
   const queriedDocument = createPaymentTransactionDocument();
   const transactionId = getTransactionId(queriedDocument);
 

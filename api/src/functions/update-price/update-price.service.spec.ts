@@ -1,5 +1,5 @@
 import { IUpdatePriceService, updatePriceServiceFactory } from '@household/api/functions/update-price/update-price.service';
-import { createDocumentUpdate2, testDataFactory } from '@household/shared/common/test-data-factory';
+import { createDocumentUpdate, testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getPriceId } from '@household/shared/common/utils';
 import { IPriceDocumentConverter } from '@household/shared/converters/price-document-converter';
@@ -20,7 +20,7 @@ describe('Update price service', () => {
   const body = testDataFactory.price.request();
   const queriedDocument = testDataFactory.price.document();
   const priceId = getPriceId(queriedDocument);
-  const updateQuery = createDocumentUpdate2({
+  const updateQuery = createDocumentUpdate({
     update: {
       $set: {
         name: 'updated',

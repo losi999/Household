@@ -1,13 +1,13 @@
 import { IMongodbService } from '@household/shared/services/mongodb-service';
+import { DocumentUpdate } from '@household/shared/types/common';
 import { Project } from '@household/shared/types/types';
-import { UpdateQuery } from 'mongoose';
 
 export interface IProjectService {
   saveProject(doc: Project.Document): Promise<Project.Document>;
   saveProjects(...docs: Project.Document[]): Promise<unknown>;
   findProjectById(projectId: Project.Id): Promise<Project.Document>;
   deleteProject(projectId: Project.Id): Promise<unknown>;
-  updateProject(projectId: Project.Id, updateQuery: UpdateQuery<Project.Document>): Promise<unknown>;
+  updateProject(projectId: Project.Id, updateQuery: DocumentUpdate<Project.Document>): Promise<unknown>;
   listProjects(): Promise<Project.Document[]>;
   findProjectsByIds(projectIds: Project.Id[]): Promise<Project.Document[]>;
   mergeProjects(ctx: {
@@ -98,9 +98,9 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
             
       });
     },
-    updateProject: async (projectId, updateQuery) => {
+    updateProject: async (projectId, { update }) => {
       return mongodbService.projects((model, session) => {
-        return model.findByIdAndUpdate(projectId, updateQuery, {
+        return model.findByIdAndUpdate(projectId, update, {
           runValidators: true,
           session,
         });

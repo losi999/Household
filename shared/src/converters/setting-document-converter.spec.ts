@@ -1,4 +1,4 @@
-import { createSettingDocument, createSettingKey, createSettingRequest, createSettingResponse } from '@household/shared/common/test-data-factory';
+import { createDocumentUpdate, createSettingDocument, createSettingKey, createSettingRequest, createSettingResponse } from '@household/shared/common/test-data-factory';
 import { addSeconds } from '@household/shared/common/utils';
 import { settingDocumentConverterFactory, ISettingDocumentConverter } from '@household/shared/converters/setting-document-converter';
 
@@ -33,12 +33,14 @@ describe('Setting document converter', () => {
   describe('update', () => {
     it('should update document', () => {
       const result = converter.update(body, expiresIn);
-      expect(result).toEqual({
-        $set: {
-          value,
-          expiresAt: addSeconds(expiresIn),
+      expect(result).toEqual(createDocumentUpdate({
+        update: {
+          $set: {
+            value,
+            expiresAt: addSeconds(expiresIn),
+          },
         },
-      });
+      }));
     });
   });
 

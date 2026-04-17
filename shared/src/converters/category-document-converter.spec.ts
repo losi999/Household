@@ -81,14 +81,16 @@ describe('Category document converter', () => {
         parentCategory: queriedParentCategory,
       }, expiresIn);
       expect(result).toEqual(createDocumentUpdate({
-        $set: {
-          ...body,
-          parentCategoryId: undefined,
-          ancestors: [
-            ...queriedParentCategory.ancestors,
-            queriedParentCategory,
-          ],
-          expiresAt: addSeconds(expiresIn, now),
+        update: {
+          $set: {
+            ...body,
+            parentCategoryId: undefined,
+            ancestors: [
+              ...queriedParentCategory.ancestors,
+              queriedParentCategory,
+            ],
+            expiresAt: addSeconds(expiresIn, now),
+          },
         },
       }));
     });
@@ -99,11 +101,13 @@ describe('Category document converter', () => {
         parentCategory: undefined,
       }, expiresIn);
       expect(result).toEqual(createDocumentUpdate({
-        $set: {
-          ...body,
-          parentCategoryId: undefined,
-          ancestors: [],
-          expiresAt: addSeconds(expiresIn, now),
+        update: {
+          $set: {
+            ...body,
+            parentCategoryId: undefined,
+            ancestors: [],
+            expiresAt: addSeconds(expiresIn, now),
+          },
         },
       }));
     });

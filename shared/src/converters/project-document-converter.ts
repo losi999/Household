@@ -1,11 +1,12 @@
 import { generateMongoId } from '@household/shared/common/utils';
 import { addSeconds, getProjectId } from '@household/shared/common/utils';
+import { DocumentUpdate } from '@household/shared/types/common';
 import { Project } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
 
 export interface IProjectDocumentConverter {
   create(body: Project.Request, expiresIn: number, generateId?: boolean): Project.Document;
-  update(body: Project.Request, expiresIn: number): UpdateQuery<Project.Document>;
+  update(body: Project.Request, expiresIn: number): DocumentUpdate<Project.Document>;
   toResponse(doc: Project.Document): Project.Response;
   toReport(doc: Project.Document): Project.Report;
   toResponseList(docs: Project.Document[]): Project.Response[];
@@ -35,7 +36,9 @@ export const projectDocumentConverterFactory = (): IProjectDocumentConverter => 
         };
       }
 
-      return update;
+      return {
+        update,
+      };
     },
     toResponse: ({ description, _id, name }) => {
       return {

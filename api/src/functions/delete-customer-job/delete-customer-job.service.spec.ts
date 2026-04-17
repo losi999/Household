@@ -1,5 +1,5 @@
 import { IDeleteCustomerJobService, deleteCustomerJobServiceFactory } from '@household/api/functions/delete-customer-job/delete-customer-job.service';
-import { createDocumentUpdate2, testDataFactory } from '@household/shared/common/test-data-factory';
+import { createDocumentUpdate, testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
 import { ICustomerService } from '@household/shared/services/customer-service';
@@ -18,7 +18,7 @@ describe('Delete customer job service', () => {
   const queriedCustomerDocument = testDataFactory.customer.document();
   const customerId = testDataFactory.customer.id();
   const name = 'job name';
-  const documentUpdate = createDocumentUpdate2();
+  const documentUpdate = createDocumentUpdate();
 
   it('should return new id', async () => {
     mockCustomerService.functions.findCustomerById.mockResolvedValue(queriedCustomerDocument);

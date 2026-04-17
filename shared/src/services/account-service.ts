@@ -1,7 +1,8 @@
 import { calculateAccountBalances } from '@household/shared/common/aggregate-helpers';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { Account } from '@household/shared/types/types';
-import { Types, UpdateQuery } from 'mongoose';
+import { DocumentUpdate } from '@household/shared/types/common';
+import { Types } from 'mongoose';
 
 export interface IAccountService {
   saveAccount(doc: Account.Document): Promise<Account.Document>;
@@ -10,7 +11,7 @@ export interface IAccountService {
   findAccountsByIds(accountIds: Account.Id[]): Promise<Account.Document[]>;
   getAccountById(accountId: Account.Id): Promise<Account.Document>;
   deleteAccount(accountId: Account.Id): Promise<unknown>;
-  updateAccount(accountId: Account.Id, updateQuery: UpdateQuery<Account.Document>): Promise<unknown>;
+  updateAccount(accountId: Account.Id, updateQuery: DocumentUpdate<Account.Document>): Promise<unknown>;
   listAccounts(): Promise<Account.Document[]>;
 }
 
@@ -163,9 +164,9 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
         });
       });
     },
-    updateAccount: async (accountId, updateQuery) => {
+    updateAccount: async (accountId, { update }) => {
       return mongodbService.accounts((model, session) => {
-        return model.findByIdAndUpdate(accountId, updateQuery, {
+        return model.findByIdAndUpdate(accountId, update, {
           runValidators: true,
           session,
         });

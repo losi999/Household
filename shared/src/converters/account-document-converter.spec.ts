@@ -77,9 +77,11 @@ describe('Account document converter', () => {
     it('should update document', () => {
       const result = converter.update(body, expiresIn);
       expect(result).toEqual(createDocumentUpdate({
-        $set: {
-          ...body,
-          expiresAt: addSeconds(expiresIn, now),
+        update: {
+          $set: {
+            ...body,
+            expiresAt: addSeconds(expiresIn, now),
+          },
         },
       }));
     });

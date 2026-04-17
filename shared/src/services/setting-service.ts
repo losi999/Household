@@ -1,10 +1,10 @@
+import { DocumentUpdate } from '@household/shared/types/common';
 import { SettingKey } from '@household/shared/enums';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { Setting } from '@household/shared/types/types';
-import { UpdateQuery } from 'mongoose';
 
 export interface ISettingService {
-  updateSetting(key: SettingKey, updateQuery: UpdateQuery<Setting.Document>): Promise<unknown>;
+  updateSetting(key: SettingKey, updateQuery: DocumentUpdate<Setting.Document>): Promise<unknown>;
   listSettings(): Promise<Setting.Document[]>;
   listSettingsByKeys(settingKeys: SettingKey[]): Promise<Setting.Document[]>;
   getSettingByKey(settingKey: SettingKey): Promise<Setting.Document>;
@@ -12,11 +12,11 @@ export interface ISettingService {
 
 export const settingServiceFactory = (mongodbService: IMongodbService): ISettingService => {
   const instance: ISettingService = {
-    updateSetting: (settingKey, updateQuery) => {
+    updateSetting: (settingKey, { update }) => {
       return mongodbService.settings((model, session) => {
         return model.findOneAndUpdate({
           settingKey,
-        }, updateQuery,
+        }, update,
         {
           upsert: true,
           runValidators: true,

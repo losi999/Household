@@ -1,4 +1,4 @@
-import { createDocumentUpdate2, createPaymentTransactionDocument, testDataFactory } from '@household/shared/common/test-data-factory';
+import { createDocumentUpdate, createPaymentTransactionDocument, testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { addSeconds, getCalendarEntryId } from '@household/shared/common/utils';
 import { calendarEntryDocumentConverterFactory, ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
@@ -159,7 +159,7 @@ describe('Calendar entry document converter', () => {
           customer: undefined,
           prices: undefined,
         }, expiresIn);
-        expect(result).toEqual(createDocumentUpdate2({
+        expect(result).toEqual(createDocumentUpdate({
           update: {
             $set: {
               ...body,
@@ -177,7 +177,7 @@ describe('Calendar entry document converter', () => {
           customer: undefined,
           prices: undefined,
         }, expiresIn);
-        expect(result).toEqual(createDocumentUpdate2({
+        expect(result).toEqual(createDocumentUpdate({
           update: {
             $set: {
               ...body,
@@ -199,7 +199,7 @@ describe('Calendar entry document converter', () => {
           customer: undefined,
           prices: undefined,
         }, expiresIn);
-        expect(result).toEqual(createDocumentUpdate2({
+        expect(result).toEqual(createDocumentUpdate({
           update: {
             $set: {
               ...body,
@@ -217,7 +217,7 @@ describe('Calendar entry document converter', () => {
           customer: undefined,
           prices: undefined,
         }, expiresIn);
-        expect(result).toEqual(createDocumentUpdate2({
+        expect(result).toEqual(createDocumentUpdate({
           update: {
             $set: {
               ...body,
@@ -254,7 +254,7 @@ describe('Calendar entry document converter', () => {
           prices: [priceDocument],
         }, expiresIn);
         const { customerId, ...rest } = body;
-        expect(result).toEqual(createDocumentUpdate2({
+        expect(result).toEqual(createDocumentUpdate({
           update: {
             $set: {
               ...rest,
@@ -295,7 +295,7 @@ describe('Calendar entry document converter', () => {
           prices: [priceDocument],
         }, expiresIn);
         const { customerId, ...rest } = body;
-        expect(result).toEqual(createDocumentUpdate2({
+        expect(result).toEqual(createDocumentUpdate({
           update: {
             $set: {
               ...rest,
@@ -326,7 +326,7 @@ describe('Calendar entry document converter', () => {
           prices: [],
         }, expiresIn);
         const { customerId, ...rest } = body;
-        expect(result).toEqual(createDocumentUpdate2({
+        expect(result).toEqual(createDocumentUpdate({
           update: {
             $set: {
               ...rest,
@@ -352,7 +352,7 @@ describe('Calendar entry document converter', () => {
           prices: [],
         }, expiresIn);
         const { customerId, ...rest } = body;
-        expect(result).toEqual(createDocumentUpdate2({
+        expect(result).toEqual(createDocumentUpdate({
           update: {
             $set: {
               ...rest,
@@ -377,7 +377,7 @@ describe('Calendar entry document converter', () => {
         body,
         transaction,
       }, expiresIn);
-      expect(result).toEqual(createDocumentUpdate2({
+      expect(result).toEqual(createDocumentUpdate({
         update: {
           $set: {
             resolution: {

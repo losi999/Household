@@ -20,9 +20,7 @@ describe('Update recipient service', () => {
   const body = createRecipientRequest();
   const queriedDocument = createRecipientDocument();
   const recipientId = getRecipientId(queriedDocument);
-  const updateQuery = createDocumentUpdate({
-    name: 'updated',
-  });
+  const updateQuery = createDocumentUpdate();
 
   it('should return if recipient is updated', async () => {
     mockRecipientService.functions.findRecipientById.mockResolvedValue(queriedDocument);

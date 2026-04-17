@@ -20,9 +20,7 @@ describe('Update project service', () => {
   const body = createProjectRequest();
   const queriedDocument = createProjectDocument();
   const projectId = getProjectId(queriedDocument);
-  const updateQuery = createDocumentUpdate({
-    name: 'updated',
-  });
+  const updateQuery = createDocumentUpdate();
 
   it('should return if project is updated', async () => {
     mockProjectService.functions.findProjectById.mockResolvedValue(queriedDocument);

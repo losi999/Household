@@ -1,6 +1,6 @@
 
 import { IUpdateCalendarDayService, updateCalendarDayServiceFactory } from '@household/api/functions/update-calendar-day/update-calendar-day.service';
-import { createDocumentUpdate2, testDataFactory } from '@household/shared/common/test-data-factory';
+import { createDocumentUpdate, testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { ICalendarDayDocumentConverter } from '@household/shared/converters/calendar-day-document-converter';
 import { CalendarDayType } from '@household/shared/enums';
@@ -23,7 +23,7 @@ describe('Update calendar day service', () => {
   });
   const body = testDataFactory.calendar.day.request.workday();
   const day = '2025-10-11';
-  const updateQuery = createDocumentUpdate2();
+  const updateQuery = createDocumentUpdate();
 
   it('should return if calendar day is updated', async () => {
     mockCalendarDayService.functions.findCalendarDayByDay.mockResolvedValue(queriedDocument);

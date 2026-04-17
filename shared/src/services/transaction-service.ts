@@ -2,8 +2,9 @@ import { matchAnyProperty, populateAggregate, transactionAggregate } from '@hous
 import { populate } from '@household/shared/common/utils';
 import { TransactionType } from '@household/shared/enums';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
+import { DocumentUpdate } from '@household/shared/types/common';
 import { Account, Common, File, Transaction } from '@household/shared/types/types';
-import { PipelineStage, Types, UpdateQuery } from 'mongoose';
+import { PipelineStage, Types } from 'mongoose';
 
 export interface ITransactionService {
   saveTransaction(doc: Transaction.Document): Promise<Transaction.Document>;
@@ -12,7 +13,7 @@ export interface ITransactionService {
   getTransactionById(transactionId: Transaction.Id): Promise<Transaction.Document>;
   getTransactionByIdAndAccountId(query: Transaction.TransactionId & Account.AccountId): Promise<Transaction.Document>;
   deleteTransaction(transactionId: Transaction.Id): Promise<unknown>;
-  updateTransaction(transactionId: Transaction.Id, updateQuery: UpdateQuery<Transaction.Document>): Promise<unknown>;
+  updateTransaction(transactionId: Transaction.Id, updateQuery: DocumentUpdate<Transaction.Document>): Promise<unknown>;
   listTransactions(match: PipelineStage.Match): Promise<Transaction.RawReport[]>;
   listDeferredTransactions(ctx?: {
     deferredTransactionIds?: Transaction.Id[];
@@ -157,7 +158,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
       });
 
     },
-    updateTransaction: async (transactionId, updateQuery) => {
+    updateTransaction: async (transactionId, { update: updateQuery }) => {
       return mongodbService.inTransaction(async (models, session) => {
         const old = await models.transactions.findByIdAndUpdate(transactionId, updateQuery, {
           session,

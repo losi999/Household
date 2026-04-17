@@ -1,6 +1,6 @@
 import { generateMongoId } from '@household/shared/common/utils';
 import { addSeconds, getCategoryId } from '@household/shared/common/utils';
-import { Restrict } from '@household/shared/types/common';
+import { DocumentUpdate, Restrict } from '@household/shared/types/common';
 import { Category } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
 
@@ -12,7 +12,7 @@ export interface ICategoryDocumentConverter {
   update(data: {
     body: Restrict<Category.Request, 'parentCategoryId'>;
     parentCategory: Category.Document;
-  }, expiresIn: number): UpdateQuery<Category.Document>;
+  }, expiresIn: number): DocumentUpdate<Category.Document>;
   toResponse(doc: Category.Document): Category.Response;
   toReport(doc: Category.Document): Category.Report;
   toResponseList(docs: Category.Document[]): Category.Response[];
@@ -52,7 +52,9 @@ export const categoryDocumentConverterFactory = (): ICategoryDocumentConverter =
         },
       };
 
-      return update;
+      return {
+        update,
+      };
     },
     toResponse: (doc) => {
       const parentFullName = doc.ancestors.map(d => d.name).join(':');

@@ -1,5 +1,5 @@
 import { IUpdateCalendarEntryService, updateCalendarEntryServiceFactory } from '@household/api/functions/update-calendar-entry/update-calendar-entry.service';
-import { createDocumentUpdate2, testDataFactory } from '@household/shared/common/test-data-factory';
+import { createDocumentUpdate, testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getCustomerId, getPriceId } from '@household/shared/common/utils';
 import { ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
@@ -35,7 +35,7 @@ describe('Update calendar entry service', () => {
     entryType: CalendarEntryType.Work,
   });
 
-  const updateQuery = createDocumentUpdate2();
+  const updateQuery = createDocumentUpdate();
 
   it('should return if personal entry is updated', async () => {
     const body = testDataFactory.calendar.entry.request.personal();

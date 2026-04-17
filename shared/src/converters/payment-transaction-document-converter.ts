@@ -6,7 +6,7 @@ import { IProductDocumentConverter } from '@household/shared/converters/product-
 import { IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
 import { CategoryType, TransactionType } from '@household/shared/enums';
-import { Unset } from '@household/shared/types/common';
+import { DocumentUpdate, Unset } from '@household/shared/types/common';
 import { Account, Calendar, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
 import { default as moment } from 'moment-timezone';
@@ -32,7 +32,7 @@ export interface IPaymentTransactionDocumentConverter {
     recipient: Recipient.Document;
     project: Project.Document;
     product: Product.Document;
-  }, expiresIn: number): UpdateQuery<Transaction.Document>;
+  }, expiresIn: number): DocumentUpdate<Transaction.Document>;
   toResponse(document: Transaction.PaymentDocument): Transaction.PaymentResponse;
   toResponseList(documents: Transaction.PaymentDocument[]): Transaction.PaymentResponse[];
 }
@@ -125,41 +125,43 @@ export const paymentTransactionDocumentConverterFactory = (
       };
 
       return {
-        $unset: {
-          ...defaultUnset,
-          ...Object.entries(optionalSet).reduce((accumulator, [
-            key,
-            value,
-          ]) => {
-            if (value) {
-              return accumulator;
-            }
+        update: {
+          $unset: {
+            ...defaultUnset,
+            ...Object.entries(optionalSet).reduce((accumulator, [
+              key,
+              value,
+            ]) => {
+              if (value) {
+                return accumulator;
+              }
 
-            return {
-              ...accumulator,
-              [key]: true,
-            };
-          }, {}),
-        },
-        $set: {
-          amount,
-          account,
-          issuedAt: new Date(issuedAt),
-          transactionType,
-          expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
-          ...Object.entries(optionalSet).reduce((accumulator, [
-            key,
-            value,
-          ]) => {
-            if (value) {
               return {
                 ...accumulator,
-                [key]: value,
+                [key]: true,
               };
-            }
+            }, {}),
+          },
+          $set: {
+            amount,
+            account,
+            issuedAt: new Date(issuedAt),
+            transactionType,
+            expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
+            ...Object.entries(optionalSet).reduce((accumulator, [
+              key,
+              value,
+            ]) => {
+              if (value) {
+                return {
+                  ...accumulator,
+                  [key]: value,
+                };
+              }
 
-            return accumulator;
-          }, {}),
+              return accumulator;
+            }, {}),
+          },
         },
       };
     },

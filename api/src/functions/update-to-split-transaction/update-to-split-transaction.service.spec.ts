@@ -55,9 +55,7 @@ describe('Update to split transaction service', () => {
   let body: Transaction.SplitRequest;
   const queriedDocument = createSplitTransactionDocument();
   const transactionId = getTransactionId(queriedDocument);
-  const updateQuery = createDocumentUpdate({
-    description: 'updated',
-  });
+  const updateQuery = createDocumentUpdate();
 
   beforeEach(() => {
     body = createSplitTransactionRequest({

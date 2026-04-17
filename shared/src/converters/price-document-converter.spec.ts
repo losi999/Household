@@ -1,4 +1,4 @@
-import { createDocumentUpdate2, testDataFactory } from '@household/shared/common/test-data-factory';
+import { createDocumentUpdate, testDataFactory } from '@household/shared/common/test-data-factory';
 import { addSeconds, getPriceId } from '@household/shared/common/utils';
 import { priceDocumentConverterFactory, IPriceDocumentConverter } from '@household/shared/converters/price-document-converter';
 
@@ -47,7 +47,7 @@ describe('Price document converter', () => {
 
       const result = converter.update(body, expiresIn);
       expect(result).toEqual(
-        createDocumentUpdate2({
+        createDocumentUpdate({
           update: {
             $set: {
               ...body,

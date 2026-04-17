@@ -20,9 +20,7 @@ describe('Update account service', () => {
   const body = createAccountRequest();
   const queriedDocument = createAccountDocument();
   const accountId = getAccountId(queriedDocument);
-  const updateQuery = createDocumentUpdate({
-    name: 'updated',
-  });
+  const updateQuery = createDocumentUpdate();
 
   it('should return if account is updated', async () => {
     mockAccountService.functions.findAccountById.mockResolvedValue(queriedDocument);

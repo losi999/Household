@@ -1,5 +1,5 @@
 import { IResolveCalendarWorkEntryService, resolveCalendarWorkEntryServiceFactory } from '@household/api/functions/resolve-calendar-work-entry/resolve-calendar-work-entry.service';
-import { createAccountDocument, createCategoryDocument, createDocumentUpdate2, createPaymentTransactionDocument, createSettingDocument, testDataFactory } from '@household/shared/common/test-data-factory';
+import { createAccountDocument, createCategoryDocument, createDocumentUpdate, createPaymentTransactionDocument, createSettingDocument, testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getAccountId, getCategoryId, getTransactionId } from '@household/shared/common/utils';
 import { ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
@@ -34,7 +34,7 @@ describe('Resolve calendar work entry service', () => {
   const queriedCalendarEntry = testDataFactory.calendar.entry.document({
     entryType: CalendarEntryType.Work,
   });
-  const documentUpdate = createDocumentUpdate2();
+  const documentUpdate = createDocumentUpdate();
   
   describe('payment type is transfer', () => {
     const body = testDataFactory.calendar.entry.resolution.request({

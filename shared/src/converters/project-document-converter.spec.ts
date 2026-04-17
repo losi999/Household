@@ -58,9 +58,11 @@ describe('Project document converter', () => {
     it('should update document', () => {
       const result = converter.update(body, expiresIn);
       expect(result).toEqual(createDocumentUpdate({
-        $set: {
-          ...body,
-          expiresAt: addSeconds(expiresIn, now),
+        update: {
+          $set: {
+            ...body,
+            expiresAt: addSeconds(expiresIn, now),
+          },
         },
       }));
     });
@@ -72,12 +74,14 @@ describe('Project document converter', () => {
       };
       const result = converter.update(modifiedBody, expiresIn);
       expect(result).toEqual(createDocumentUpdate({
-        $set: {
-          ...modifiedBody,
-          expiresAt: addSeconds(expiresIn, now),
-        },
-        $unset: {
-          description: true,
+        update: {
+          $set: {
+            ...modifiedBody,
+            expiresAt: addSeconds(expiresIn, now),
+          },
+          $unset: {
+            description: true,
+          },
         },
       }));
     });

@@ -2,7 +2,6 @@ import { addDays, dateToISODateString, generateMongoId } from '@household/shared
 import { AccountType, CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType, CategoryType, FileType, SettingKey, TransactionType, UserType } from '@household/shared/enums';
 import { DocumentUpdate } from '@household/shared/types/common';
 import { Account, Auth, Calendar, Category, Customer, File, Price, Product, Project, Recipient, Report, Setting, Transaction, User } from '@household/shared/types/types';
-import type { UpdateQuery } from 'mongoose';
 import { faker } from '@faker-js/faker';
 import { priceUnitsOfMeasurement, WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
 
@@ -754,17 +753,7 @@ export const createFileResponse: DataFactoryFunction<File.Response> = (doc) => {
   };
 };
 
-//deprecated
-export const createDocumentUpdate: DataFactoryFunction<UpdateQuery<any>> = (update) => {
-  return {
-    $set: {
-      someProperty: 123,
-    },
-    ...update,
-  };
-};
-
-export const createDocumentUpdate2: DataFactoryFunction<DocumentUpdate<any>> = (update) => {
+export const createDocumentUpdate: DataFactoryFunction<DocumentUpdate<any>> = (update) => {
   return {
     update: {
       $set: {

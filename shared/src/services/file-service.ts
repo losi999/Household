@@ -1,12 +1,12 @@
 import { IMongodbService } from '@household/shared/services/mongodb-service';
+import { DocumentUpdate } from '@household/shared/types/common';
 import { File } from '@household/shared/types/types';
-import { UpdateQuery } from 'mongoose';
 
 export interface IFileService {
   saveFile(doc: File.Document): Promise<File.Document>;
   findFileById(fileId: File.Id): Promise<File.Document>;
   deleteFile(fileId: File.Id): Promise<unknown>;
-  updateFile(fileId: File.Id, updateQuery: UpdateQuery<File.Document>): Promise<unknown>;
+  updateFile(fileId: File.Id, updateQuery: DocumentUpdate<File.Document>): Promise<unknown>;
   listFiles(): Promise<File.Document[]>;
 }
 
@@ -43,9 +43,9 @@ export const fileServiceFactory = (mongodbService: IMongodbService): IFileServic
         });
       });
     },
-    updateFile: (fileId, updateQuery) => {
+    updateFile: (fileId, { update }) => {
       return mongodbService.files((model, session) => {
-        return model.findByIdAndUpdate(fileId, updateQuery,
+        return model.findByIdAndUpdate(fileId, update,
           {
             returnDocument: 'after',
             runValidators: true,

@@ -21,9 +21,7 @@ describe('Update category service', () => {
   const queriedDocument = createCategoryDocument();
   const categoryId = getCategoryId(queriedDocument);
   const queriedParentCategory = createCategoryDocument();
-  const updateQuery = createDocumentUpdate({
-    name: 'updated',
-  });
+  const updateQuery = createDocumentUpdate();
 
   describe('should return', () => {
     it('if parent is given', async () => {

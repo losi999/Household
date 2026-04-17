@@ -1,11 +1,11 @@
 import { generateMongoId } from '@household/shared/common/utils';
 import { addSeconds, getRecipientId } from '@household/shared/common/utils';
+import { DocumentUpdate } from '@household/shared/types/common';
 import { Recipient } from '@household/shared/types/types';
-import { UpdateQuery } from 'mongoose';
 
 export interface IRecipientDocumentConverter {
   create(body: Recipient.Request, expiresIn: number, generateId?: boolean): Recipient.Document;
-  update(body: Recipient.Request, expiresIn: number): UpdateQuery<Recipient.Document>;
+  update(body: Recipient.Request, expiresIn: number): DocumentUpdate<Recipient.Document>;
   toResponse(doc: Recipient.Document): Recipient.Response;
   toReport(doc: Recipient.Document): Recipient.Report;
   toResponseList(docs: Recipient.Document[]): Recipient.Response[];
@@ -22,9 +22,11 @@ export const recipientDocumentConverterFactory = (): IRecipientDocumentConverter
     },
     update: (body, expiresIn) => {
       return {
-        $set: {
-          ...body,
-          expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
+        update: {
+          $set: {
+            ...body,
+            expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
+          },
         },
       };
     },

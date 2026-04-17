@@ -19,9 +19,7 @@ describe('Update setting service', () => {
   const body = createSettingRequest();
   const queriedDocument = createSettingDocument();
   const settingKey = queriedDocument.settingKey;
-  const updateQuery = createDocumentUpdate({
-    name: 'updated',
-  });
+  const updateQuery = createDocumentUpdate();
 
   it('should return if setting is updated', async () => {
     mockSettingDocumentConverter.functions.update.mockReturnValue(updateQuery);

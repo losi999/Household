@@ -20,9 +20,7 @@ describe('Update product service', () => {
   const body = createProductRequest();
   const queriedDocument = createProductDocument();
   const productId = getProductId(queriedDocument);
-  const updateQuery = createDocumentUpdate({
-    brand: 'updated',
-  });
+  const updateQuery = createDocumentUpdate();
 
   it('should return if product is updated', async () => {
     mockProductService.functions.findProductById.mockResolvedValue(queriedDocument);

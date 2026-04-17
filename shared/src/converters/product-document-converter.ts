@@ -1,15 +1,15 @@
 import { generateMongoId } from '@household/shared/common/utils';
 import { addSeconds, getProductId } from '@household/shared/common/utils';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
+import { DocumentUpdate } from '@household/shared/types/common';
 import { Category, Product } from '@household/shared/types/types';
-import { UpdateQuery } from 'mongoose';
 
 export interface IProductDocumentConverter {
   create(data: {
     body: Product.Request;
     category: Category.Document
   }, expiresIn: number, generateId?: boolean): Product.Document;
-  update(body: Product.Request, expiresIn: number): UpdateQuery<Product.Document>;
+  update(body: Product.Request, expiresIn: number): DocumentUpdate<Product.Document>;
   toGroupedResponse(category: Category.Document): Product.GroupedResponse;
   toGroupedResponseList(categories: Category.Document[]): Product.GroupedResponse[];
   toResponse(document: Product.Document): Product.Response;
@@ -32,10 +32,12 @@ export const productDocumentConverterFactory = (categoryDocumentConverter: ICate
     },
     update: (body, expiresIn) => {
       return {
-        $set: {
-          ...body,
-          fullName: `${body.brand} ${body.measurement} ${body.unitOfMeasurement}`,
-          expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
+        update: {
+          $set: {
+            ...body,
+            fullName: `${body.brand} ${body.measurement} ${body.unitOfMeasurement}`,
+            expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
+          },
         },
       };
     },

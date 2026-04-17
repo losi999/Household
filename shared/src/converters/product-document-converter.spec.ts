@@ -76,10 +76,12 @@ describe('Product document converter', () => {
     it('should update document', () => {
       const result = converter.update(body, expiresIn);
       expect(result).toEqual(createDocumentUpdate({
-        $set: {
-          ...body,
-          fullName: `${body.brand} ${body.measurement} ${body.unitOfMeasurement}`,
-          expiresAt: addSeconds(expiresIn, now),
+        update: {
+          $set: {
+            ...body,
+            fullName: `${body.brand} ${body.measurement} ${body.unitOfMeasurement}`,
+            expiresAt: addSeconds(expiresIn, now),
+          },
         },
       }));
     });

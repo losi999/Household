@@ -1,4 +1,4 @@
-import { createFileDocument, createFileRequest, createFileResponse } from '@household/shared/common/test-data-factory';
+import { createDocumentUpdate, createFileDocument, createFileRequest, createFileResponse } from '@household/shared/common/test-data-factory';
 import { addSeconds, getFileId } from '@household/shared/common/utils';
 import { fileDocumentConverterFactory, IFileDocumentConverter } from '@household/shared/converters/file-document-converter';
 import { FileProcessingStatus, FileType } from '@household/shared/enums';
@@ -63,11 +63,13 @@ describe('File document converter', () => {
   describe('update status', () => {
     it('should update document', () => {
       const result = converter.updateStatus(FileProcessingStatus.Completed);
-      expect(result).toEqual({
-        $set: {
-          processingStatus: 'completed',
+      expect(result).toEqual(createDocumentUpdate({
+        update: {
+          $set: {
+            processingStatus: 'completed',
+          },
         },
-      });
+      }));
     });
   });
 

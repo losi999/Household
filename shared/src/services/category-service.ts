@@ -1,7 +1,8 @@
+import { DocumentUpdate } from '@household/shared/types/common';
 import { CategoryType } from '@household/shared/enums';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { Category } from '@household/shared/types/types';
-import { Types, UpdateQuery } from 'mongoose';
+import { Types } from 'mongoose';
 
 export interface ICategoryService {
   saveCategory(doc: Category.Document): Promise<Category.Document>;
@@ -9,7 +10,7 @@ export interface ICategoryService {
   findCategoryById(categoryId: Category.Id): Promise<Category.Document>;
   getCategoryById(categoryId: Category.Id): Promise<Category.Document>;
   deleteCategory(categoryId: Category.Id): Promise<unknown>;
-  updateCategory(categoryId: Category.Id, updateQuery: UpdateQuery<Category.Document>): Promise<unknown>;
+  updateCategory(categoryId: Category.Id, updateQuery: DocumentUpdate<Category.Document>): Promise<unknown>;
   listCategories(): Promise<Category.Document[]>;
   findCategoriesByIds(categoryIds: Category.Id[]): Promise<Category.Document[]>;
   mergeCategories(ctx: {
@@ -137,7 +138,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
         });
       });
     },
-    updateCategory: async (categoryId, updateQuery) => {
+    updateCategory: async (categoryId, { update: updateQuery }) => {
       return mongodbService.inTransaction(async (models, session) => {
         const doc = await models.categories.findByIdAndUpdate(categoryId, updateQuery, {
           runValidators: true,
