@@ -124,6 +124,14 @@ export const expect = baseExpect.extend({
       pass: hasError,
     };
   },
+  async toHaveTooLongValidationError(received: APIResponse, requestPart: RequestPart, propertyName: string, maxLength: number) {
+    const response = await received.json();
+    const hasError = new RegExp(`${propertyName} must NOT have more than ${maxLength} characters`).test(response[requestPart]);
+    return {
+      message: () => `expected response to have too long validation error for property '${propertyName}' in ${requestPart} with max length '${maxLength}', but got ${JSON.stringify(response)}`,
+      pass: hasError,
+    };
+  },
   async toHaveExclusiveTooSmallValidationError(received: APIResponse, requestPart: RequestPart, propertyName: string, minValue: number) {
     const response = await received.json();
     const hasError = new RegExp(`${propertyName} must be > ${minValue}`).test(response[requestPart]);
@@ -137,6 +145,14 @@ export const expect = baseExpect.extend({
     const hasError = new RegExp(`${propertyName} must be >= ${minValue}`).test(response[requestPart]);
     return {
       message: () => `expected response to have too small validation error for property '${propertyName}' in ${requestPart} with min value '${minValue}', but got ${JSON.stringify(response)}`,
+      pass: hasError,
+    };
+  },
+  async toHaveExclusiveTooLargeValidationError(received: APIResponse, requestPart: RequestPart, propertyName: string, maxValue: number) {
+    const response = await received.json();
+    const hasError = new RegExp(`${propertyName} must be < ${maxValue}`).test(response[requestPart]);
+    return {
+      message: () => `expected response to have too large validation error for property '${propertyName}' in ${requestPart} with max value '${maxValue}', but got ${JSON.stringify(response)}`,
       pass: hasError,
     };
   },
@@ -179,5 +195,21 @@ export const expect = baseExpect.extend({
       message: () => `expected response to have wrong format validation error for property '${propertyName}' in ${requestPart} with expected format '${expectedFormat}', but got ${JSON.stringify(response)}`,
       pass: hasError,
     };
+  },
+  async toHaveConstantValueValidationError(received: APIResponse, requestPart: RequestPart, propertyName: string) {
+    const response = await received.json();
+    const hasError = new RegExp(`${propertyName} must be equal to constant`).test(response[requestPart]);
+    return {
+      message: () => `expected response to have constant value validation error for property '${propertyName}' in ${requestPart}, but got ${JSON.stringify(response)}`,
+      pass: hasError,
+    };  
+  },
+  async toHaveTooEarlyDateValidationError(received: APIResponse, requestPart: RequestPart, propertyName: string, isExclusive: boolean) {
+    const response = await received.json();
+    const hasError = new RegExp(`${propertyName} must be ${isExclusive ? '>' : '>='} now`).test(response[requestPart]);
+    return {
+      message: () => `expected response to have too early date validation error for property '${propertyName}' in ${requestPart} with exclusivity '${isExclusive}', but got ${JSON.stringify(response)}`,
+      pass: hasError,
+    }; 
   },
 });
