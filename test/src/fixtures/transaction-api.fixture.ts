@@ -7,7 +7,7 @@ import { expect as paymentTransactionApiExpect } from '@household/test/fixtures/
 import { expect as reimbursementTransactionApiExpect } from '@household/test/fixtures/reimbursement-transaction-api.fixture';
 import { expect as splitTransactionApiExpect } from '@household/test/fixtures/split-transaction-api.fixture';
 // import { expect as transferTransactionApiExpect } from '@household/test/fixtures/transfer-transaction-api.fixture';
-// import { expect as draftTransactionApiExpect } from '@household/test/fixtures/draft-transaction-api.fixture';
+import { expect as draftTransactionApiExpect } from '@household/test/fixtures/draft-transaction-api.fixture';
 import { APIResponse, mergeExpects } from '@playwright/test';
 
 type TransactionApiFixture = {
@@ -171,4 +171,4 @@ const transactionApiExpect = baseExpect.extend({
   },
 });
 
-export const expect = mergeExpects(transactionApiExpect, deferredTransactionApiExpect, paymentTransactionApiExpect, reimbursementTransactionApiExpect, splitTransactionApiExpect /*, transferTransactionApiExpect, draftTransactionApiExpect */);
+export const expect = mergeExpects(transactionApiExpect, deferredTransactionApiExpect, paymentTransactionApiExpect, reimbursementTransactionApiExpect, splitTransactionApiExpect /*, transferTransactionApiExpect*/, draftTransactionApiExpect);

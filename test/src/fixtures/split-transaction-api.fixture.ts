@@ -8,7 +8,7 @@ import { expect as baseExpect } from '@playwright/test';
 export const test = baseTest.extend({});
 
 export const expect = baseExpect.extend({
-  toChangeRelatedDocumentsChangedInSplitTransaction(originalDocument: Transaction.SplitDocument, currentDocument: Transaction.SplitDocument, reassignments: {
+  toHaveRelatedDocumentsChangedInSplitTransaction(originalDocument: Transaction.SplitDocument, currentDocument: Transaction.SplitDocument, reassignments: {
     recipient?: Reassignment<Recipient.Id>;
     project?: Reassignment<Project.Id>;
     product?: Reassignment<Product.Id>;
@@ -34,7 +34,7 @@ export const expect = baseExpect.extend({
           expectedInvoiceNumber = originalSplit.invoiceNumber;
           expectedBillingStartDate = originalSplit.billingStartDate?.toISOString();
           expectedBillingEndDate = originalSplit.billingEndDate?.toISOString();
-          expectedQuantity = getProductId(originalSplit.product) === reassignments.product?.from ? undefined : originalSplit.quantity;
+          expectedQuantity = getProductId(originalSplit.product) === reassignments.product?.from && !reassignments.product?.to ? undefined : originalSplit.quantity;
           expectedProduct = getProductId(originalSplit.product) === reassignments.product?.from ? reassignments.product?.to : getProductId(originalSplit.product);
         }
 
@@ -70,7 +70,7 @@ export const expect = baseExpect.extend({
           expectedInvoiceNumber = originalSplit.invoiceNumber;
           expectedBillingStartDate = originalSplit.billingStartDate?.toISOString();
           expectedBillingEndDate = originalSplit.billingEndDate?.toISOString();
-          expectedQuantity = getProductId(originalSplit.product) === reassignments.product?.from ? undefined : originalSplit.quantity;
+          expectedQuantity = getProductId(originalSplit.product) === reassignments.product?.from && !reassignments.product?.to ? undefined : originalSplit.quantity;
           expectedProduct = getProductId(originalSplit.product) === reassignments.product?.from ? reassignments.product?.to : getProductId(originalSplit.product);
         }
 

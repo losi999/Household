@@ -150,49 +150,49 @@ test.describe('POST /recipient/v1/recipients/{recipientId}/merge', () => {
 
             expect(await recipientService.findRecipientById(getRecipientId(sourceRecipientDocument))).toHaveBeenDeletedFromDatabase();
 
-            expect(paymentTransactionDocument).toChangeRelatedDocumentsChangedInPaymentTransaction(await transactionService.findTransactionById(getTransactionId(paymentTransactionDocument)), {
+            expect(paymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await transactionService.findTransactionById(getTransactionId(paymentTransactionDocument)), {
               recipient: {
                 from: getRecipientId(sourceRecipientDocument),
                 to: getRecipientId(targetRecipientDocument),
               },
             });
-            expect(deferredTransactionDocument).toChangeRelatedDocumentsChangedInDeferredTransaction(await transactionService.findTransactionById(getTransactionId(deferredTransactionDocument)), {
+            expect(deferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await transactionService.findTransactionById(getTransactionId(deferredTransactionDocument)), {
               recipient: {
                 from: getRecipientId(sourceRecipientDocument),
                 to: getRecipientId(targetRecipientDocument),
               },
             });
-            expect(reimbursementTransactionDocument).toChangeRelatedDocumentsChangedInReimbursementTransaction(await transactionService.findTransactionById(getTransactionId(reimbursementTransactionDocument)), {
+            expect(reimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await transactionService.findTransactionById(getTransactionId(reimbursementTransactionDocument)), {
               recipient: {
                 from: getRecipientId(sourceRecipientDocument),
                 to: getRecipientId(targetRecipientDocument),
               },
             });
-            expect(unrelatedPaymentTransactionDocument).toChangeRelatedDocumentsChangedInPaymentTransaction(await transactionService.findTransactionById(getTransactionId(unrelatedPaymentTransactionDocument)), {
+            expect(unrelatedPaymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await transactionService.findTransactionById(getTransactionId(unrelatedPaymentTransactionDocument)), {
               recipient: {
                 from: getRecipientId(sourceRecipientDocument),
                 to: getRecipientId(targetRecipientDocument),
               },
             });
-            expect(unrelatedDeferredTransactionDocument).toChangeRelatedDocumentsChangedInDeferredTransaction(await transactionService.findTransactionById(getTransactionId(unrelatedDeferredTransactionDocument)), {
+            expect(unrelatedDeferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await transactionService.findTransactionById(getTransactionId(unrelatedDeferredTransactionDocument)), {
               recipient: {
                 from: getRecipientId(sourceRecipientDocument),
                 to: getRecipientId(targetRecipientDocument),
               },
             });
-            expect(unrelatedReimbursementTransactionDocument).toChangeRelatedDocumentsChangedInReimbursementTransaction(await transactionService.findTransactionById(getTransactionId(unrelatedReimbursementTransactionDocument)), {
+            expect(unrelatedReimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await transactionService.findTransactionById(getTransactionId(unrelatedReimbursementTransactionDocument)), {
               recipient: {
                 from: getRecipientId(sourceRecipientDocument),
                 to: getRecipientId(targetRecipientDocument),
               },
             });
-            expect(splitTransactionDocument).toChangeRelatedDocumentsChangedInSplitTransaction(await transactionService.findTransactionById(getTransactionId(splitTransactionDocument)), {
+            expect(splitTransactionDocument).toHaveRelatedDocumentsChangedInSplitTransaction(await transactionService.findTransactionById(getTransactionId(splitTransactionDocument)), {
               recipient: {
                 from: getRecipientId(sourceRecipientDocument),
                 to: getRecipientId(targetRecipientDocument),
               },
             });
-            expect(unrelatedSplitTransactionDocument).toChangeRelatedDocumentsChangedInSplitTransaction(await transactionService.findTransactionById(getTransactionId(unrelatedSplitTransactionDocument)), {
+            expect(unrelatedSplitTransactionDocument).toHaveRelatedDocumentsChangedInSplitTransaction(await transactionService.findTransactionById(getTransactionId(unrelatedSplitTransactionDocument)), {
               recipient: {
                 from: getRecipientId(sourceRecipientDocument),
                 to: getRecipientId(targetRecipientDocument),

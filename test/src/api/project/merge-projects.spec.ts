@@ -163,45 +163,45 @@ test.describe('POST /project/v1/projects/{projectId}/merge', () => {
           
             expect(await projectService.findProjectById(getProjectId(sourceProjectDocument))).toHaveBeenDeletedFromDatabase();
 
-            expect(paymentTransactionDocument).toChangeRelatedDocumentsChangedInPaymentTransaction(await transactionService.findTransactionById(getTransactionId(paymentTransactionDocument)), {
+            expect(paymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await transactionService.findTransactionById(getTransactionId(paymentTransactionDocument)), {
               project: {
                 from: getProjectId(sourceProjectDocument),
                 to: getProjectId(targetProjectDocument),
               },
             });
-            expect(deferredTransactionDocument).toChangeRelatedDocumentsChangedInDeferredTransaction(await transactionService.findTransactionById(getTransactionId(deferredTransactionDocument)), {
-              project: {
-                from: getProjectId(sourceProjectDocument),
-                to: getProjectId(targetProjectDocument),
-
-              },
-            });
-            expect(reimbursementTransactionDocument).toChangeRelatedDocumentsChangedInReimbursementTransaction(await transactionService.findTransactionById(getTransactionId(reimbursementTransactionDocument)), {
+            expect(deferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await transactionService.findTransactionById(getTransactionId(deferredTransactionDocument)), {
               project: {
                 from: getProjectId(sourceProjectDocument),
                 to: getProjectId(targetProjectDocument),
 
               },
             });
-            expect(unrelatedPaymentTransactionDocument).toChangeRelatedDocumentsChangedInPaymentTransaction(await transactionService.findTransactionById(getTransactionId(unrelatedPaymentTransactionDocument)), {
+            expect(reimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await transactionService.findTransactionById(getTransactionId(reimbursementTransactionDocument)), {
+              project: {
+                from: getProjectId(sourceProjectDocument),
+                to: getProjectId(targetProjectDocument),
+
+              },
+            });
+            expect(unrelatedPaymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await transactionService.findTransactionById(getTransactionId(unrelatedPaymentTransactionDocument)), {
               project: {
                 from: getProjectId(sourceProjectDocument),
                 to: getProjectId(targetProjectDocument),
               },
             });
-            expect(unrelatedDeferredTransactionDocument).toChangeRelatedDocumentsChangedInDeferredTransaction(await transactionService.findTransactionById(getTransactionId(unrelatedDeferredTransactionDocument)), {
+            expect(unrelatedDeferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await transactionService.findTransactionById(getTransactionId(unrelatedDeferredTransactionDocument)), {
               project: {
                 from: getProjectId(sourceProjectDocument),
                 to: getProjectId(targetProjectDocument),
               },
             });
-            expect(unrelatedReimbursementTransactionDocument).toChangeRelatedDocumentsChangedInReimbursementTransaction(await transactionService.findTransactionById(getTransactionId(unrelatedReimbursementTransactionDocument)), {
+            expect(unrelatedReimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await transactionService.findTransactionById(getTransactionId(unrelatedReimbursementTransactionDocument)), {
               project: {
                 from: getProjectId(sourceProjectDocument),
                 to: getProjectId(targetProjectDocument),
               },
             });
-            expect(splitTransactionDocument).toChangeRelatedDocumentsChangedInSplitTransaction(await transactionService.findTransactionById(getTransactionId(splitTransactionDocument)), {
+            expect(splitTransactionDocument).toHaveRelatedDocumentsChangedInSplitTransaction(await transactionService.findTransactionById(getTransactionId(splitTransactionDocument)), {
               project: {
                 from: getProjectId(sourceProjectDocument),
                 to: getProjectId(targetProjectDocument),

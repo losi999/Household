@@ -11,6 +11,12 @@ import { priceServiceFactory } from '@household/shared/services/price-service';
 import { productServiceFactory } from '@household/shared/services/product-service';
 import { settingServiceFactory } from '@household/shared/services/setting-service';
 import { transactionServiceFactory } from '@household/shared/services/transaction-service';
+import { identityServiceFactory } from '@household/shared/services/identity-service';
+import { storageServiceFactory } from '@household/shared/services/storage-service';
+import { cognito } from '@household/shared/dependencies/aws/cognito';
+import { s3, s3Client } from '@household/shared/dependencies/aws/s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { Upload } from '@aws-sdk/lib-storage';
 
 const mongoDbService = await mongodbServiceFactory(process.env.MONGODB_CONNECTION_STRING.replace('{{ENV}}', process.env.ENV));
 
@@ -26,3 +32,5 @@ export const fileService = fileServiceFactory(mongoDbService);
 export const priceService = priceServiceFactory(mongoDbService);
 export const calendarDayService = calendarDayServiceFactory(mongoDbService);
 export const calendarEntryService = calendarEntryServiceFactory(mongoDbService);
+export const identityService = identityServiceFactory(process.env.USER_POOL_ID, '', cognito);
+export const storageService = storageServiceFactory(s3, s3Client, getSignedUrl, Upload)(process.env.IMPORT_BUCKET);

@@ -49,15 +49,17 @@ export const createComparer = (factory: (compare: CompareFn) => Record<string, C
 
   return {
     normalized,
-    validate: <T extends object>(object: T, ...internalProperties: (keyof T)[]) => {
-      const extraKeys = keys(object).filter(
-        (key) => {
-          return !(key in normalized) && !internalProperties.includes(key);
-        },
-      );
+    validate: <T extends object>(object?: T, ...internalProperties: (keyof T)[]) => {
+      if (object) {
+        const extraKeys = keys(object).filter(
+          (key) => {
+            return !(key in normalized) && !internalProperties.includes(key);
+          },
+        );
 
-      if (extraKeys.length > 0) {
-        return `expected object to have no additional properties, but got extra properties: ${extraKeys.join(', ')}`;
+        if (extraKeys.length > 0) {
+          return `expected object to have no additional properties, but got extra properties: ${extraKeys.join(', ')}`;
+        }
       }
 
       const notMatchingProperties = entries(normalized).reduce<string[]>((accumulator, [

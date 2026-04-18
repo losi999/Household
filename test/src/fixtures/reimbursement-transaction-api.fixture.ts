@@ -8,7 +8,7 @@ import { expect as baseExpect } from '@playwright/test';
 export const test = baseTest.extend({});
 
 export const expect = baseExpect.extend({
-  toChangeRelatedDocumentsChangedInReimbursementTransaction(originalDocument: Transaction.ReimbursementDocument, currentDocument: Transaction.ReimbursementDocument, reassignments: {
+  toHaveRelatedDocumentsChangedInReimbursementTransaction(originalDocument: Transaction.ReimbursementDocument, currentDocument: Transaction.ReimbursementDocument, reassignments: {
     recipient?: Reassignment<Recipient.Id>;
     project?: Reassignment<Project.Id>;
     product?: Reassignment<Product.Id>;
@@ -32,7 +32,7 @@ export const expect = baseExpect.extend({
         expectedInvoiceNumber = originalDocument.invoiceNumber;
         expectedBillingStartDate = originalDocument.billingStartDate?.toISOString();
         expectedBillingEndDate = originalDocument.billingEndDate?.toISOString();
-        expectedQuantity = getProductId(originalDocument.product) === reassignments.product?.from ? undefined : originalDocument.quantity;
+        expectedQuantity = getProductId(originalDocument.product) === reassignments.product?.from && !reassignments.product?.to ? undefined : originalDocument.quantity;
         expectedProduct = getProductId(originalDocument.product) === reassignments.product?.from ? reassignments.product?.to : getProductId(originalDocument.product);
       }
 

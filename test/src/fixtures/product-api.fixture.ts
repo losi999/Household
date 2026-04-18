@@ -88,6 +88,31 @@ export const test = baseTest.extend<ProductApiFixture>({
 });
 
 export const expect = baseExpect.extend({
+  async toBeStoredInDatabase(req: Product.Request, document: Product.Document, categoryId: Category.Id) {
+    if (!document) {
+      return {
+        pass: false,
+        message: () => 'expected product to be stored in database, but it was not found',
+      };
+    }
+
+    const comparer = createComparer((compare) => {
+      return {
+        brand: compare(document.brand, req.brand),
+        measurement: compare(document.measurement, req.measurement),
+        unitOfMeasurement: compare(document.unitOfMeasurement, req.unitOfMeasurement),
+        fullName: compare(document.fullName, `${req.brand} ${req.measurement} ${req.unitOfMeasurement}`),
+        categoryId: compare(getCategoryId(document.category), categoryId),
+      };  
+    });
+
+    const message = comparer.validate(document, '_id', 'createdAt', 'expiresAt', 'updatedAt', 'category');
+
+    return {
+      pass: !message,
+      message: () => message,
+    };
+  },
   toHaveBeenDeletedFromDatabase(document: Product.Document) {
     return {
       pass: !document,
@@ -113,4 +138,33 @@ export const expect = baseExpect.extend({
       message: () => message,
     };
   },
+  async toMatchProductDocumentInList(received: APIResponse, document: Product.Document, categoryId: Category.Id) {
+    const response = await received.json() as Product.GroupedResponse[];
+    const categoryResponse = response.find(r => r.categoryId === categoryId);
+    const matchingResponse = categoryResponse?.products.find(r => r.productId === getProductId(document));
+  
+    if (!matchingResponse) {
+      return {
+        pass: false,
+        message: () => `expected response to contain a product with id ${getProductId(document)}, but it was not found`,
+      };
+    }
+
+    const comparer = createComparer((compare) => {
+      return {
+        productId: compare(matchingResponse.productId, getProductId(document)),
+        brand: compare(matchingResponse.brand, document.brand),
+        measurement: compare(matchingResponse.measurement, document.measurement),
+        unitOfMeasurement: compare(matchingResponse.unitOfMeasurement, document.unitOfMeasurement),
+        fullName: compare(matchingResponse.fullName, document.fullName),
+      };
+    });
+
+    const message = comparer.validate(matchingResponse);
+  
+    return {
+      pass: !message,
+      message: () => message,
+    };
+  }, 
 });
