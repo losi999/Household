@@ -172,4 +172,12 @@ export const expect = baseExpect.extend({
       pass: hasError,
     };
   },
+  async toHaveWrongFormatValidationError(received: APIResponse, requestPart: RequestPart, propertyName: string, expectedFormat: string) {
+    const response = await received.json();
+    const hasError = new RegExp(`${propertyName} must match format "${expectedFormat}"`).test(response[requestPart]);
+    return {
+      message: () => `expected response to have wrong format validation error for property '${propertyName}' in ${requestPart} with expected format '${expectedFormat}', but got ${JSON.stringify(response)}`,
+      pass: hasError,
+    };
+  },
 });
