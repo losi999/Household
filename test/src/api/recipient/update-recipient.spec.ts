@@ -59,7 +59,7 @@ test.describe('PUT /recipient/v1/recipients/{recipientId}', () => {
               } as any);
 
               apiExpect(res).toBeBadRequestResponse();
-              apiExpect(res).toHaveAdditionalPropertiesValidationError('body', 'extraProperty');
+              apiExpect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
             });
           });
 

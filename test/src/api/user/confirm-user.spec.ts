@@ -44,6 +44,18 @@ test.describe('POST user/v1/users/{email}/confirm', () => {
         });
       });
 
+      test.describe('if body', () => {
+        test('has additional properties', async ({ requestConfirmUser }) => {
+          const res = await requestConfirmUser(pendingUser.email, {
+            ...request,
+            extraProperty: 'extra',
+          } as any);
+        
+          expect(res).toBeBadRequestResponse();
+          expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
+        });
+      });
+
       test.describe('if password', () => {
         test('is missing from body', async ({ requestConfirmUser }) => {
           const res = await requestConfirmUser(pendingUser.email, userDataFactory.confirmRequest({

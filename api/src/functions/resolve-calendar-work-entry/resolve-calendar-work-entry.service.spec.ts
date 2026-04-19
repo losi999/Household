@@ -221,10 +221,7 @@ describe('Resolve calendar work entry service', () => {
         category: queriedCategory,
         amount,
       }, expiresIn);
-      validateFunctionCall(mockSettingService.functions.listSettingsByKeys, [
-        SettingKey.HairdressingIncomeAccount,
-        SettingKey.HairdressingIncomeCategory,
-      ]);
+      validateFunctionCall(mockSettingService.functions.listSettingsByKeys, SettingKey.HairdressingIncomeAccount, SettingKey.HairdressingIncomeCategory);
       validateFunctionCall(mockAccountService.functions.findAccountById, accountId);
       validateFunctionCall(mockCategoryService.functions.findCategoryById, categoryId);
       expect.assertions(9);
@@ -245,10 +242,7 @@ describe('Resolve calendar work entry service', () => {
         validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntry);
         validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntryWithPayment);
         validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.createFromEntry);
-        validateFunctionCall(mockSettingService.functions.listSettingsByKeys, [
-          SettingKey.HairdressingIncomeAccount,
-          SettingKey.HairdressingIncomeCategory,
-        ]);
+        validateFunctionCall(mockSettingService.functions.listSettingsByKeys, SettingKey.HairdressingIncomeAccount, SettingKey.HairdressingIncomeCategory);
         validateFunctionCall(mockAccountService.functions.findAccountById);
         validateFunctionCall(mockCategoryService.functions.findCategoryById);
         expect.assertions(10);
@@ -279,10 +273,7 @@ describe('Resolve calendar work entry service', () => {
         validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntry);
         validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntryWithPayment);
         validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.createFromEntry);
-        validateFunctionCall(mockSettingService.functions.listSettingsByKeys, [
-          SettingKey.HairdressingIncomeAccount,
-          SettingKey.HairdressingIncomeCategory,
-        ]);
+        validateFunctionCall(mockSettingService.functions.listSettingsByKeys, SettingKey.HairdressingIncomeAccount, SettingKey.HairdressingIncomeCategory);
         validateFunctionCall(mockAccountService.functions.findAccountById, accountId);
         validateFunctionCall(mockCategoryService.functions.findCategoryById, categoryId);
         expect.assertions(10);
@@ -313,10 +304,7 @@ describe('Resolve calendar work entry service', () => {
         validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntry);
         validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntryWithPayment);
         validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.createFromEntry);
-        validateFunctionCall(mockSettingService.functions.listSettingsByKeys, [
-          SettingKey.HairdressingIncomeAccount,
-          SettingKey.HairdressingIncomeCategory,
-        ]);
+        validateFunctionCall(mockSettingService.functions.listSettingsByKeys, SettingKey.HairdressingIncomeAccount, SettingKey.HairdressingIncomeCategory);
         validateFunctionCall(mockAccountService.functions.findAccountById, accountId);
         validateFunctionCall(mockCategoryService.functions.findCategoryById, categoryId);
         expect.assertions(10);
@@ -358,10 +346,7 @@ describe('Resolve calendar work entry service', () => {
           category: queriedCategory,
           amount,
         }, expiresIn);
-        validateFunctionCall(mockSettingService.functions.listSettingsByKeys, [
-          SettingKey.HairdressingIncomeAccount,
-          SettingKey.HairdressingIncomeCategory,
-        ]);
+        validateFunctionCall(mockSettingService.functions.listSettingsByKeys, SettingKey.HairdressingIncomeAccount, SettingKey.HairdressingIncomeCategory);
         validateFunctionCall(mockAccountService.functions.findAccountById, accountId);
         validateFunctionCall(mockCategoryService.functions.findCategoryById, categoryId);
         expect.assertions(10);

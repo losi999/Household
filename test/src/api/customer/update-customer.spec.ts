@@ -81,7 +81,7 @@ test.describe('PUT /customer/v1/customers/{customerId}', () => {
               } as any);
                   
               expect(res).toBeBadRequestResponse();
-              expect(res).toHaveAdditionalPropertiesValidationError('body', 'extraProperty');
+              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
             });
           });
 

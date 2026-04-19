@@ -6,8 +6,8 @@ import { Setting } from '@household/shared/types/types';
 export interface ISettingService {
   updateSetting(key: SettingKey, updateQuery: DocumentUpdate<Setting.Document>): Promise<unknown>;
   listSettings(): Promise<Setting.Document[]>;
-  listSettingsByKeys(settingKeys: SettingKey[]): Promise<Setting.Document[]>;
-  getSettingByKey(settingKey: SettingKey): Promise<Setting.Document>;
+  listSettingsByKeys(...settingKeys: SettingKey[]): Promise<Setting.Document[]>;
+  getSettingByKey<V extends string | number | boolean>(settingKey: SettingKey): Promise<Setting.Document<V>>;
 }
 
 export const settingServiceFactory = (mongodbService: IMongodbService): ISettingService => {
@@ -31,7 +31,7 @@ export const settingServiceFactory = (mongodbService: IMongodbService): ISetting
           .session(session);
       });
     },
-    listSettingsByKeys: async (settingKeys) => {
+    listSettingsByKeys: async (...settingKeys) => {
       if(!settingKeys?.length) {
         return [];
       }
@@ -45,14 +45,16 @@ export const settingServiceFactory = (mongodbService: IMongodbService): ISetting
           .session(session);          
       });
     },
-    getSettingByKey: (settingKey) => {
+    getSettingByKey: <V extends string | number | boolean>(settingKey: SettingKey) => {
       if(settingKey) {
-        return mongodbService.settings((model, session) => {
-          return model.findOne({
+        return mongodbService.settings(async (model, session) => {
+          const ret = await model.findOne({
             settingKey,
           })
             .session(session)
             .lean();   
+
+          return ret as unknown as Setting.Document<V>;
         });
       }
     },

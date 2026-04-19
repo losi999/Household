@@ -247,7 +247,6 @@ const compareCustomerBlacklists = (actual: Customer.Document[], expected: Custom
 };
 
 const compareCustomerJobs = (actual: Customer.Job.Document[], expected: Customer.Job.Document[], request?: Customer.Job.Request, jobName?: Customer.Job.Name['name']): Record<string, CompareResult<any>> => { 
-  console.log('job name', jobName);
   return createComparer((compare) => {
     const jobs = actual.reduce((accumulator, currentValue, index) => {  
       const originalJob = expected[index] && expected[index].name !== jobName ? expected[index] : request;

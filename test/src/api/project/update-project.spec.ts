@@ -77,7 +77,7 @@ test.describe('PUT /project/v1/projects/{projectId}', () => {
               } as any);
   
               apiExpect(res).toBeBadRequestResponse();
-              apiExpect(res).toHaveAdditionalPropertiesValidationError('body', 'extraProperty');
+              apiExpect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
             });
           });
 

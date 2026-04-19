@@ -73,7 +73,7 @@ test.describe('POST /project/v1/projects', () => {
               } as any);
   
               expect(res).toBeBadRequestResponse();
-              expect(res).toHaveAdditionalPropertiesValidationError('body', 'extraProperty');
+              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
             });
           });
 

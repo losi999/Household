@@ -50,6 +50,18 @@ test.describe('POST user/v1/users', () => {
         });
 
         test.describe('should return error', () => {
+          test.describe('if body', () => {
+            test('has additional properties', async ({ requestCreateUser }) => {
+              const res = await requestCreateUser({
+                ...request,
+                extraProperty: 'extra',
+              } as any);
+  
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
+            });
+          });
+
           test.describe('if email', () => {
             test('is missing from body', async ({ requestCreateUser }) => {
               const res = await requestCreateUser(userDataFactory.request({

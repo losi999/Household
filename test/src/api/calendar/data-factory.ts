@@ -2,13 +2,13 @@ import { Calendar, Customer, Price, Transaction } from '@household/shared/types/
 import { CalendarDayType, CalendarEntryResolutionStatus } from '@household/shared/enums';
 import { addSeconds, getCustomerId, getPriceId } from '@household/shared/common/utils';
 import { calendarEntryDocumentConverter } from '@household/shared/dependencies/converters/calendar-entry-document-converter';
-import { createId } from '@household/test/api/utils';
+import { createId } from '@household/test/utils';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 export const calendarDayDataFactory = (() => {
   const createCalendarWorkdayDocument = (ctx?: Partial<Calendar.DayProp> & Partial<Calendar.Day.WorkdayRequest>): Calendar.Day.Document => {
     const { day, ...body } = ctx ?? {};
-    const expiresAt = addSeconds(Cypress.env('EXPIRES_IN'));
+    const expiresAt = addSeconds(Number(process.env.EXPIRES_IN));
     return {
       day: day ?? testDataFactory.calendar.day.futureDay(),
       ...testDataFactory.calendar.day.request.workday(body),
@@ -17,7 +17,7 @@ export const calendarDayDataFactory = (() => {
   };
 
   const createCalendarVacationdayDocument = (ctx?: Partial<Calendar.DayProp>): Calendar.Day.Document => {
-    const expiresAt = addSeconds(Cypress.env('EXPIRES_IN'));
+    const expiresAt = addSeconds(Number(process.env.EXPIRES_IN));
     return {
       day: testDataFactory.calendar.day.futureDay(),
       dayType: CalendarDayType.Vacation,
@@ -29,7 +29,7 @@ export const calendarDayDataFactory = (() => {
   };
 
   const createCalendarHolidayDocument = (ctx?: Partial<Calendar.DayProp>): Calendar.Day.Document => {
-    const expiresAt = addSeconds(Cypress.env('EXPIRES_IN'));
+    const expiresAt = addSeconds(Number(process.env.EXPIRES_IN));
     return {
       day: testDataFactory.calendar.day.futureDay(),
       dayType: CalendarDayType.Holiday,
@@ -85,7 +85,7 @@ export const calendarEntryDataFactory = (() => {
         }),
         customer: ctx?.customer,
         prices: ctx?.prices?.listed?.map((p) => p.price) ?? [],
-      }, Cypress.env('EXPIRES_IN'), true),
+      }, Number(process.env.EXPIRES_IN), true),
       resolution: ctx?.resolution ? {
         status: ctx?.resolution.transaction ? CalendarEntryResolutionStatus.Paid : ctx.resolution.status ?? CalendarEntryResolutionStatus.Paid,
         delay: ctx.resolution.status !== CalendarEntryResolutionStatus.NoShow ? ctx.resolution.delay : undefined,
@@ -97,13 +97,13 @@ export const calendarEntryDataFactory = (() => {
   const createCalendarPersonalEntryDocument = (ctx?: Omit<Partial<Calendar.Entry.PersonalEntryRequest>, 'entryType'>): Calendar.Entry.Document => {
     return calendarEntryDocumentConverter.create({
       body: testDataFactory.calendar.entry.request.personal(ctx),
-    }, Cypress.env('EXPIRES_IN'), true);
+    }, Number(process.env.EXPIRES_IN), true);
   };
 
   const createCalendarIssueEntryDocument = (ctx?: Omit<Partial<Calendar.Entry.IssueEntryRequest>, 'entryType'>): Calendar.Entry.Document => {
     return calendarEntryDocumentConverter.create({
       body: testDataFactory.calendar.entry.request.issue(ctx),
-    }, Cypress.env('EXPIRES_IN'), true);
+    }, Number(process.env.EXPIRES_IN), true);
   };
 
   return {

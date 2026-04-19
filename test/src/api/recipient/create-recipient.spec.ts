@@ -57,7 +57,7 @@ test.describe('POST /recipient/v1/recipients', () => {
               } as any);
             
               expect(res).toBeBadRequestResponse();
-              expect(res).toHaveAdditionalPropertiesValidationError('body', 'extraProperty');
+              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
             });
           });
 

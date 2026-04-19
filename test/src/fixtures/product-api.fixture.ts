@@ -88,7 +88,7 @@ export const test = baseTest.extend<ProductApiFixture>({
 });
 
 export const expect = baseExpect.extend({
-  async toBeStoredInDatabase(req: Product.Request, document: Product.Document, categoryId: Category.Id) {
+  toBeStoredInDatabase(req: Product.Request, document: Product.Document, categoryId: Category.Id) {
     if (!document) {
       return {
         pass: false,

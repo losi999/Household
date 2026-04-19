@@ -100,9 +100,9 @@ export const expect = baseExpect.extend({
       pass: hasError,
     };
   },
-  async toHaveAdditionalPropertiesValidationError(received: APIResponse, requestPart: RequestPart, additionalPropertyName: string) {
+  async toHaveAdditionalPropertiesValidationError(received: APIResponse, requestPart: RequestPart, propertyName: string, additionalPropertyName: string) {
     const response = await received.json();
-    const hasError = new RegExp(`must NOT have additional properties ${additionalPropertyName}`).test(response[requestPart]);
+    const hasError = new RegExp(`${propertyName} must NOT have additional properties ${additionalPropertyName}`).test(response[requestPart]);
     return {
       message: () => `expected response to have additional properties validation error for property '${additionalPropertyName}' in ${requestPart}, but got ${JSON.stringify(response)}`,
       pass: hasError,
@@ -206,7 +206,7 @@ export const expect = baseExpect.extend({
   },
   async toHaveTooEarlyDateValidationError(received: APIResponse, requestPart: RequestPart, propertyName: string, isExclusive: boolean) {
     const response = await received.json();
-    const hasError = new RegExp(`${propertyName} must be ${isExclusive ? '>' : '>='} now`).test(response[requestPart]);
+    const hasError = new RegExp(`${propertyName} should be ${isExclusive ? '>' : '>='}`).test(response[requestPart]);
     return {
       message: () => `expected response to have too early date validation error for property '${propertyName}' in ${requestPart} with exclusivity '${isExclusive}', but got ${JSON.stringify(response)}`,
       pass: hasError,

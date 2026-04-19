@@ -69,7 +69,7 @@ test.describe('POST product/v1/products', () => {
               } as any, categoryDataFactory.id());
           
               expect(res).toBeBadRequestResponse();
-              expect(res).toHaveAdditionalPropertiesValidationError('body', 'extraProperty');
+              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
             });
           });
           

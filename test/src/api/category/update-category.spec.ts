@@ -114,6 +114,18 @@ test.describe('PUT /category/v1/categories/{categoryId}', () => {
         });
 
         test.describe('should return error', () => {
+          test.describe('if body', () => {
+            test('has additional properties', async ({ requestUpdateCategory }) => {
+              const res = await requestUpdateCategory(categoryDataFactory.id(), {
+                ...req,
+                extraProperty: 'extra',
+              } as any);
+          
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
+            });
+          });
+          
           test.describe('if name', () => {
             test('is missing from body', async ({ requestUpdateCategory }) => {
               const res = await requestUpdateCategory(categoryDataFactory.id(), categoryDataFactory.request({

@@ -89,7 +89,7 @@ test.describe('POST customer/v1/customers/{customerId}/jobs', () => {
               } as any);
             
               expect(res).toBeBadRequestResponse();
-              expect(res).toHaveAdditionalPropertiesValidationError('body', 'extraProperty');
+              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
             });
           });
                     
@@ -246,7 +246,7 @@ test.describe('POST customer/v1/customers/{customerId}/jobs', () => {
                 ] as any, 
               });
               expect(res).toBeBadRequestResponse();
-              expect(res).toHaveAdditionalPropertiesValidationError('body', 'extra');
+              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extra');
             });
           });
 

@@ -53,10 +53,8 @@ export const resolveCalendarWorkEntryServiceFactory = (
       return;
     }
 
-    const settings = await settingService.listSettingsByKeys([
-      SettingKey.HairdressingIncomeAccount,
-      SettingKey.HairdressingIncomeCategory,
-    ]).catch(httpErrors.setting.list([
+    const settings = await settingService.listSettingsByKeys(SettingKey.HairdressingIncomeAccount, SettingKey.HairdressingIncomeCategory,
+    ).catch(httpErrors.setting.list([
       SettingKey.HairdressingIncomeAccount,
       SettingKey.HairdressingIncomeCategory,
     ]));

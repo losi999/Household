@@ -53,6 +53,17 @@ test.describe('POST /setting/v1/settings/{settingKey}', () => {
         });
 
         test.describe('should return error', () => {
+          test.describe('if body', () => {
+            test('has additional properties', async ({ requestUpdateSetting }) => {
+              const res = await requestUpdateSetting(settingKey, {
+                ...request,
+                extraProperty: 'extra',
+              } as any);
+          
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
+            });
+          });
           test.describe('if value', () => {
             test('is missing from body', async ({ requestUpdateSetting }) => {
               const res = await requestUpdateSetting(settingKey, settingDataFactory.request({

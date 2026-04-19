@@ -619,8 +619,8 @@ export namespace Report {
 }
 
 export namespace Setting {
-  type Base = {
-    value: string | number | boolean;
+  type Base<V extends string | number | boolean = string | number | boolean> = {
+    value: V;
   };
 
   export type SettingKey = {
@@ -629,8 +629,8 @@ export namespace Setting {
 
   export type Request = Base;
 
-  export type Document = Partial<Internal.Id>
-  & Base
+  export type Document<V extends string | number | boolean = string | number | boolean> = Partial<Internal.Id>
+  & Base<V>
   & SettingKey
   & Internal.Timestamps;
 
@@ -900,7 +900,8 @@ export namespace Calendar {
 
     export type Request = VacationRequest | WorkdayRequest;
 
-    export type Document = Internal.Timestamps
+    export type Document = Partial<Internal.Id>
+    & Internal.Timestamps
     & DayType<Enum.CalendarDayType>
     & DayProp
     & TimeInterval;
