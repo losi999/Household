@@ -1,13 +1,71 @@
-import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
+import { createDate, getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { Reassignment } from '@household/test/types';
 import { createComparer } from '@household/test/utils';
 import { test as baseTest } from '@household/test/fixtures/api.fixture';
-import { expect as baseExpect } from '@playwright/test';
+import { APIResponse, expect as baseExpect } from '@playwright/test';
+import { CategoryType, TransactionType } from '@household/shared/enums';
 
 export const test = baseTest.extend({});
 
 export const expect = baseExpect.extend({
+  toHaveBeenSavedAsSplitTransactionDocument(req: Transaction.SplitRequest, document: Transaction.SplitDocument) {
+    if (!document) {
+      return {
+        pass: false,
+        message: () => 'expected transaction to be stored in database, but it was not found',
+      };
+    }
+
+    const comparer = createComparer((compare) => {
+      return {
+        transactionType: compare(document.transactionType, TransactionType.Split),
+        description: compare(document.description, req.description),
+        amount: compare(document.amount, req.amount),
+        issuedAt: compare(document.issuedAt.toISOString(), createDate(req.issuedAt).toISOString()),
+        account: compare(getAccountId(document.account), req.accountId),
+        recipient: compare(getRecipientId(document.recipient), req.recipientId),
+        ...document.splits.reduce((accumulator, currentValue, index) => {
+          return {
+            ...accumulator,
+            [`splits.[${index}].amount`]: compare(currentValue.amount, req.splits[index].amount),
+            [`splits.[${index}].description`]: compare(currentValue.description, req.splits[index].description),
+            [`splits.[${index}].project`]: compare(getProjectId(currentValue.project), req.splits[index].projectId),
+            [`splits.[${index}].category`]: compare(getCategoryId(currentValue.category), req.splits[index].categoryId),
+            [`splits.[${index}].product`]: compare(getProductId(currentValue.product), currentValue.category?.categoryType === CategoryType.Inventory ? req.splits[index].productId : undefined),
+            [`splits.[${index}].quantity`]: compare(currentValue.quantity, currentValue.category?.categoryType === CategoryType.Inventory ? req.splits[index].quantity : undefined),
+            [`splits.[${index}].billingStartDate`]: compare(currentValue.billingStartDate?.toISOString(), currentValue.category?.categoryType === CategoryType.Invoice ? createDate(req.splits[index].billingStartDate)?.toISOString() : undefined),
+            [`splits.[${index}].billingEndDate`]: compare(currentValue.billingEndDate?.toISOString(), currentValue.category?.categoryType === CategoryType.Invoice ? createDate(req.splits[index].billingEndDate)?.toISOString() : undefined),
+            [`splits.[${index}].invoiceNumber`]: compare(currentValue.invoiceNumber, currentValue.category?.categoryType === CategoryType.Invoice ? req.splits[index].invoiceNumber : undefined),
+          };
+        }, {}),
+        ...document.deferredSplits.reduce((accumulator, currentValue, index) => {
+          return {
+            ...accumulator,
+            [`deferredSplits.[${index}].amount`]: compare(currentValue.amount, req.loans[index].amount),
+            [`deferredSplits.[${index}].description`]: compare(currentValue.description, req.loans[index].description),
+            [`deferredSplits.[${index}].isSettled`]: compare(currentValue.isSettled, req.loans[index].isSettled),
+            [`deferredSplits.[${index}].payingAccount`]: compare(getAccountId(currentValue.payingAccount), req.accountId),
+            [`deferredSplits.[${index}].ownerAccount`]: compare(getAccountId(currentValue.ownerAccount), req.loans[index].loanAccountId),
+            [`deferredSplits.[${index}].project`]: compare(getProjectId(currentValue.project), req.loans[index].projectId),
+            [`deferredSplits.[${index}].category`]: compare(getCategoryId(currentValue.category), req.loans[index].categoryId),
+            [`deferredSplits.[${index}].product`]: compare(getProductId(currentValue.product), currentValue.category?.categoryType === CategoryType.Inventory ? req.loans[index].productId : undefined),
+            [`deferredSplits.[${index}].quantity`]: compare(currentValue.quantity, currentValue.category?.categoryType === CategoryType.Inventory ? req.loans[index].quantity : undefined),
+            [`deferredSplits.[${index}].billingStartDate`]: compare(currentValue.billingStartDate?.toISOString(), currentValue.category?.categoryType === CategoryType.Invoice ? createDate(req.loans[index].billingStartDate)?.toISOString() : undefined),
+            [`deferredSplits.[${index}].billingEndDate`]: compare(currentValue.billingEndDate?.toISOString(), currentValue.category?.categoryType === CategoryType.Invoice ? createDate(req.loans[index].billingEndDate)?.toISOString() : undefined),
+            [`deferredSplits.[${index}].invoiceNumber`]: compare(currentValue.invoiceNumber, currentValue.category?.categoryType === CategoryType.Invoice ? req.loans[index].invoiceNumber : undefined),
+          };
+        }, {}),
+      };  
+    });
+
+    const message = comparer.validate(document, '_id', 'createdAt', 'expiresAt', 'updatedAt', 'splits', 'deferredSplits');
+
+    return {
+      pass: !message,
+      message: () => message,
+    };
+  },
   toHaveRelatedDocumentsChangedInSplitTransaction(originalDocument: Transaction.SplitDocument, currentDocument: Transaction.SplitDocument, reassignments: {
     recipient?: Reassignment<Recipient.Id>;
     project?: Reassignment<Project.Id>;
@@ -163,6 +221,49 @@ export const expect = baseExpect.extend({
 
     const message = comparer.validate(currentDocument, '_id', 'createdAt', 'expiresAt', 'updatedAt', 'splits', 'deferredSplits');
 
+    return {
+      pass: !message,
+      message: () => message,
+    };
+  },
+  async toMatchSplitTransactionDocument(res: APIResponse, document: Transaction.SplitDocument, repayments?: Record<Transaction.Id, number>) {
+    const response = await res.json() as Transaction.SplitResponse;
+  
+    const comparer = createComparer((compare) => {
+      return {
+        transactionId: compare(response.transactionId, getTransactionId(document)),
+        amount: compare(response.amount, document.amount),
+        issuedAt: compare(response.issuedAt, document.issuedAt.toISOString()),
+        description: compare(response.description, document.description),
+        transactionType: compare(response.transactionType, document.transactionType),
+        'account.accountId': compare(response.account.accountId, getAccountId(document.account)),
+        'account.accountType': compare(response.account.accountType, document.account.accountType),
+        'account.balance': compare(response.account.balance, document.account.balance),
+        'account.currency': compare(response.account.currency, document.account.currency),
+        'account.fullName': compare(response.account.fullName, `${document.account.name} (${document.account.owner})`),
+        'account.isOpen': compare(response.account.isOpen, document.account.isOpen),
+        'account.name': compare(response.account.name, document.account.name),
+        'account.owner': compare(response.account.owner, document.account.owner),
+        'recipient.recipientId': compare(response.recipient.recipientId, getRecipientId(document.recipient)),
+        'recipient.name': compare(response.recipient.name, document.recipient.name), 
+        // 'category.categoryId': compare(response.category.categoryId, getCategoryId(document.category)),
+        // 'category.categoryType': compare(response.category.categoryType, document.category.categoryType),
+        // 'category.name': compare(response.category.name, document.category.name),
+        // // 'category.name': compare(response.category.ancestors, document.category.name),
+        // 'category.fullName': compare(response.category.fullName, document.category.name),
+        // 'project.projectId': compare(response.project.projectId, getProjectId(document.project)),
+        // 'project.name': compare(response.project.name, document.project.name),
+        // 'project.description': compare(response.project.description, document.project.description),
+        // // productId: compare(response.productId, getProductId(document.product)),
+        // quantity: compare(response.quantity, document.quantity),
+        // billingStartDate: compare(createDate(response.billingStartDate)?.toISOString(), document.billingStartDate?.toISOString()),
+        // billingEndDate: compare(createDate(response.billingEndDate)?.toISOString(), document.billingEndDate?.toISOString()),
+        // invoiceNumber: compare(response.invoiceNumber, document.invoiceNumber),
+      };
+    });
+  
+    const message = comparer.validate(response, 'account', 'splits', 'deferredSplits', 'recipient');
+  
     return {
       pass: !message,
       message: () => message,

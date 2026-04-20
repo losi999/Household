@@ -990,6 +990,42 @@ const createFutureCalendarDay = () => {
   }));
 };
 
+const createFutureWorkday = () => {
+  const date = faker.date.soon({
+    days: 50,
+    refDate: addDays(1),
+  });
+
+  if (date.getDay() === 6) {
+    return dateToISODateString(addDays(-1, date));
+  }
+
+  if (date.getDay() === 0) {
+    return dateToISODateString(addDays(1, date));
+  }
+
+  return dateToISODateString(date);
+};
+
+const createFutureWeekend = () => {
+  const date = faker.date.soon({
+    days: 50,
+    refDate: addDays(1),
+  });
+
+  const day = date.getDay();
+
+  if (day === 0 || day === 6) {
+    return dateToISODateString(date);
+  }
+
+  const distanceToPreviousSunday = day;
+  const distanceToNextSaturday = 6 - day;
+  const nearestWeekendOffset = distanceToPreviousSunday <= distanceToNextSaturday ? -distanceToPreviousSunday : distanceToNextSaturday;
+
+  return dateToISODateString(addDays(nearestWeekendOffset, date));
+};
+
 const createCalendarEntryId = (id?: string): Calendar.Entry.Id => {
   return (id ?? generateMongoId().toString()) as Calendar.Entry.Id;
 };
@@ -1261,6 +1297,8 @@ export const testDataFactory = {
     day: {
       pastDay: createPastCalendarDay,
       futureDay: createFutureCalendarDay,
+      futureWorkday: createFutureWorkday,
+      futureWeekend: createFutureWeekend,
       request: {
         workday: createCalendarWorkdayRequest,
         vacation: createCalendarVacationRequest,

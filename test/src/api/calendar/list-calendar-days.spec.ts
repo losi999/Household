@@ -26,26 +26,7 @@ test.describe('GET /calendar/v1/days', () => {
   let calendarWorkEntryDocument: Calendar.Entry.Document;
   let calendarDayDocument: Calendar.Day.Document;
 
-  test.beforeEach(async () => {
-    day = calendarDayDataFactory.futureDay();
-              
-    priceDocument = priceDataFactory.document();     
-    blacklistedCustomerDocument = customerDataFactory.document();     
-    customerDocument = customerDataFactory.document({
-      blacklistedCustomers: [blacklistedCustomerDocument],
-      jobs: [
-        {
-          prices: {
-            listed: [
-              {
-                price: priceDocument,
-              },
-            ],
-          },
-        },
-      ],
-    });
-
+  const createEntries = () => {
     calendarPersonalEntryDocument = calendarEntryDataFactory.document.personal({
       day,
     });
@@ -71,6 +52,27 @@ test.describe('GET /calendar/v1/days', () => {
         status: CalendarEntryResolutionStatus.Paid,
         delay: 30,
       },
+    });
+  };
+
+  test.beforeEach(async () => {
+    day = calendarDayDataFactory.futureDay();
+              
+    priceDocument = priceDataFactory.document();     
+    blacklistedCustomerDocument = customerDataFactory.document();     
+    customerDocument = customerDataFactory.document({
+      blacklistedCustomers: [blacklistedCustomerDocument],
+      jobs: [
+        {
+          prices: {
+            listed: [
+              {
+                price: priceDocument,
+              },
+            ],
+          },
+        },
+      ],
     });
   });
 
@@ -101,8 +103,14 @@ test.describe('GET /calendar/v1/days', () => {
           expect(res).toBeForbiddenResponse();
         });
       } else {
-        test.describe('should return', () => {
+        test.describe.serial('should return', () => {
           test.describe('workday', () => {
+            test.beforeEach(() => {
+              day = calendarDayDataFactory.futureWorkday();
+
+              createEntries();
+            });
+
             test.describe('without custom limits', () => {
               test('with a personal entry', async ({ requestListCalendarDays }) => {
                 await calendarDayService.clearCalendarDay(day);
@@ -201,34 +209,9 @@ test.describe('GET /calendar/v1/days', () => {
 
           test.describe('weekend', () => {
             test.beforeEach(async () => {
-              day = '2025-10-19';
+              day = calendarDayDataFactory.futureWeekend();
 
-              calendarPersonalEntryDocument = calendarEntryDataFactory.document.personal({
-                day,
-              });
-
-              calendarIssueEntryDocument = calendarEntryDataFactory.document.issue({
-                day,
-              });
-
-              calendarWorkEntryDocument = calendarEntryDataFactory.document.work({
-                body: {
-                  day,
-                },
-                customer: customerDocument,
-                prices: {
-                  custom: [{}],
-                  listed: [
-                    {
-                      price: priceDocument,
-                    },
-                  ],
-                },
-                resolution: { 
-                  status: CalendarEntryResolutionStatus.Paid,
-                  delay: 30,
-                },
-              });
+              createEntries();
             });
 
             test.describe('without custom limits', () => {
@@ -332,6 +315,8 @@ test.describe('GET /calendar/v1/days', () => {
               calendarDayDocument = calendarDayDataFactory.document.holiday({
                 day,
               });
+
+              createEntries();
             });
             test('with a personal entry', async ({ requestListCalendarDays }) => {
               await calendarDayService.clearCalendarDay(day);
@@ -383,6 +368,8 @@ test.describe('GET /calendar/v1/days', () => {
               calendarDayDocument = calendarDayDataFactory.document.vacation({
                 day,
               });
+
+              createEntries();
             });
 
             test('with a personal entry', async ({ requestListCalendarDays }) => {

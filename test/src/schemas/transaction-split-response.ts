@@ -39,8 +39,8 @@ const schema: StrictJSONSchema7<Transaction.SplitResponse> = {
         type: 'object',
         additionalProperties: false,
         required: [...amount.required],
-        dependentRequired: {
-          ...invoice.dependentRequired,
+        dependencies: {
+          ...invoice.dependencies,
           quantity: ['product'],
           product: ['quantity'],
         },

@@ -23,8 +23,8 @@ const schema: StrictJSONSchema7<Transaction.DeferredResponse> = {
     'ownerAccount',
     'transactionType',
   ],
-  dependentRequired: {
-    ...invoice.dependentRequired,
+  dependencies: {
+    ...invoice.dependencies,
     quantity: ['product'],
     product: ['quantity'],
   },

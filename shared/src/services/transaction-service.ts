@@ -10,7 +10,7 @@ export interface ITransactionService {
   saveTransaction(doc: Transaction.Document): Promise<Transaction.Document>;
   saveTransactions(...docs: Transaction.Document[]): Promise<any>;
   findTransactionById<T extends Transaction.Document = Transaction.Document>(transactionId: Transaction.Id): Promise<T>;
-  getTransactionById(transactionId: Transaction.Id): Promise<Transaction.Document>;
+  getTransactionById<T extends Transaction.Document = Transaction.Document>(transactionId: Transaction.Id): Promise<T>;
   getTransactionByIdAndAccountId(query: Transaction.TransactionId & Account.AccountId): Promise<Transaction.Document>;
   deleteTransaction(transactionId: Transaction.Id): Promise<unknown>;
   updateTransaction(transactionId: Transaction.Id, updateQuery: DocumentUpdate<Transaction.Document>): Promise<unknown>;
@@ -50,10 +50,10 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
         });
       }
     },
-    getTransactionById: (transactionId) => {
+    getTransactionById: <T extends Transaction.Document = Transaction.Document>(transactionId: Transaction.Id): Promise<T> => {
       if (transactionId) {
         return mongodbService.transactions(async (model, session) => {
-          return model.findById(transactionId)
+          return await model.findById(transactionId)
             .setOptions({
               populate: populate('project',
                 'recipient',
@@ -74,7 +74,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
                 'deferredSplits.product'),
               lean: true,
               session,
-            });
+            }) as T;
         });
       }        
     },

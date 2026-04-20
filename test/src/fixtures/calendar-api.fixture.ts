@@ -432,18 +432,54 @@ export const expect = baseExpect.extend({
 
     if (matchingResponse.dayType === CalendarDayType.Workday) {
       const comparer = createComparer((compare) => {
-        const entryResponse = matchingResponse.entries.find(e => e.calendarEntryId === getCalendarEntryId(calendarEntryDocument));
+        const entryResponse = matchingResponse.entries?.find(e => e.calendarEntryId === getCalendarEntryId(calendarEntryDocument));
 
         return {
           day: compare(matchingResponse.day, dayInput),
           dayType: compare(matchingResponse.dayType, CalendarDayType.Workday),
           start: compare(matchingResponse.start, calendarDayDocument?.start ?? WORKDAY_START),
           end: compare(matchingResponse.end, calendarDayDocument?.end ?? WORKDAY_END),
-          // ...validateCalendarEntryResponse(entryResponse, calendarEntryDocument).normalized,
+          ...validateCalendarEntryResponse(entryResponse, calendarEntryDocument).getNormalized('entries.'),
         };
       });
 
-      console.log(comparer.normalized);
+      const message = comparer.validate(matchingResponse, 'entries');  
+      return {
+        pass: !message,
+        message: () => message,
+      };
+    }
+
+    if (matchingResponse.dayType === CalendarDayType.Weekend) {
+      const comparer = createComparer((compare) => {
+        const entryResponse = matchingResponse.entries?.find(e => e.calendarEntryId === getCalendarEntryId(calendarEntryDocument));
+
+        return {
+          day: compare(matchingResponse.day, dayInput),
+          dayType: compare(matchingResponse.dayType, CalendarDayType.Weekend),
+          start: compare(matchingResponse.start, calendarDayDocument?.start ?? undefined),
+          end: compare(matchingResponse.end, calendarDayDocument?.end ?? undefined),
+          ...validateCalendarEntryResponse(entryResponse, calendarEntryDocument).getNormalized('entries.'),
+        };
+      });
+
+      const message = comparer.validate(matchingResponse, 'entries');  
+      return {
+        pass: !message,
+        message: () => message,
+      };
+    }
+
+    if (matchingResponse.dayType === CalendarDayType.Vacation) {
+      const comparer = createComparer((compare) => {
+        const entryResponse = matchingResponse.entries?.find(e => e.calendarEntryId === getCalendarEntryId(calendarEntryDocument));
+
+        return {
+          day: compare(matchingResponse.day, dayInput),
+          dayType: compare(matchingResponse.dayType, CalendarDayType.Vacation),
+          ...validateCalendarEntryResponse(entryResponse, calendarEntryDocument).getNormalized('entries.'),
+        };
+      });
 
       const message = comparer.validate(matchingResponse, 'entries');  
       return {
@@ -453,10 +489,16 @@ export const expect = baseExpect.extend({
     }
 
     const comparer = createComparer((compare) => {
-      return {};
+      const entryResponse = matchingResponse.entries?.find(e => e.calendarEntryId === getCalendarEntryId(calendarEntryDocument));
+
+      return {
+        day: compare(matchingResponse.day, dayInput),
+        dayType: compare(matchingResponse.dayType, CalendarDayType.Holiday),
+        ...validateCalendarEntryResponse(entryResponse, calendarEntryDocument).getNormalized('entries.'),
+      };
     });
 
-    const message = comparer.validate(matchingResponse);  
+    const message = comparer.validate(matchingResponse, 'entries');  
     return {
       pass: !message,
       message: () => message,

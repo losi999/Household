@@ -100,6 +100,14 @@ export const expect = baseExpect.extend({
       pass: hasError,
     };
   },
+  async toHaveDependentRequiredPropertyValidationError(received: APIResponse, requestPart: RequestPart, dependingPropertyName: string, ...dependentPropertyNames: string[]) {
+    const response = await received.json();
+    const hasError = new RegExp(`must have propert${dependentPropertyNames.length === 1 ? 'y' : 'ies'} ${dependentPropertyNames.join(', ')} when property ${dependingPropertyName} is present`).test(response[requestPart]);
+    return {
+      message: () => `expected response to have required property validation error for property '${dependentPropertyNames.join(', ')}' in ${requestPart}, but got ${JSON.stringify(response)}`,
+      pass: hasError,
+    };
+  },
   async toHaveAdditionalPropertiesValidationError(received: APIResponse, requestPart: RequestPart, propertyName: string, additionalPropertyName: string) {
     const response = await received.json();
     const hasError = new RegExp(`${propertyName} must NOT have additional properties ${additionalPropertyName}`).test(response[requestPart]);

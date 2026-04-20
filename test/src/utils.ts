@@ -48,6 +48,17 @@ export const createComparer = (factory: (compare: CompareFn) => Record<string, C
   });
 
   return {
+    getNormalized(prefix?: string) {
+      return prefix ? entries(normalized).reduce((accumulator, [
+        key,
+        value,
+      ]) => {
+        return {
+          ...accumulator,
+          [`${prefix}${key}`]: value,
+        };
+      }, {}) : normalized;
+    },
     normalized,
     validate: <T extends object>(object?: T, ...internalProperties: (keyof T)[]) => {
       if (object) {

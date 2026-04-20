@@ -44,6 +44,8 @@ export const calendarDayDataFactory = (() => {
     request: testDataFactory.calendar.day.request,
     pastDay: testDataFactory.calendar.day.pastDay,
     futureDay: testDataFactory.calendar.day.futureDay,
+    futureWorkday: testDataFactory.calendar.day.futureWorkday,
+    futureWeekend: testDataFactory.calendar.day.futureWeekend,
     document: {
       work: createCalendarWorkdayDocument,
       vacation: createCalendarVacationdayDocument,
