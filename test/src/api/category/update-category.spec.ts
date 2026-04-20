@@ -51,7 +51,7 @@ test.describe('PUT /category/v1/categories/{categoryId}', () => {
           expect(res).toBeCreatedResponse();
 
           const { categoryId } = (await res.json()) as Category.CategoryId;
-          expect(req).toBeStoredInDatabase(await categoryService.getCategoryById(categoryId));
+          expect(req).toHaveBeenSavedAsCategoryDocument(await categoryService.findCategoryById(categoryId));
         });
 
         test.describe('children should be reassigned', () => {
@@ -81,8 +81,8 @@ test.describe('PUT /category/v1/categories/{categoryId}', () => {
             const res = await requestUpdateCategory(getCategoryId(childCategory), req);
             expect(res).toBeCreatedResponse();
 
-            expect(req).toBeStoredInDatabase(await categoryService.getCategoryById(getCategoryId(childCategory)), otherParentCategory, ...otherParentCategory.ancestors);
-            expect(grandChildCategory).toHaveItsParentReassigned(await categoryService.getCategoryById(getCategoryId(grandChildCategory)), await categoryService.getCategoryById(getCategoryId(childCategory)));
+            expect(req).toHaveBeenSavedAsCategoryDocument(await categoryService.findCategoryById(getCategoryId(childCategory)), otherParentCategory, ...otherParentCategory.ancestors);
+            expect(grandChildCategory).toHaveItsParentReassigned(await categoryService.findCategoryById(getCategoryId(grandChildCategory)), await categoryService.findCategoryById(getCategoryId(childCategory)));
           });
 
           test('to root from previously set parent', async ({ requestUpdateCategory }) => {
@@ -95,7 +95,7 @@ test.describe('PUT /category/v1/categories/{categoryId}', () => {
             const res = await requestUpdateCategory(getCategoryId(childCategory), req);
             expect(res).toBeCreatedResponse();
 
-            expect(req).toBeStoredInDatabase(await categoryService.getCategoryById(getCategoryId(childCategory)));
+            expect(req).toHaveBeenSavedAsCategoryDocument(await categoryService.findCategoryById(getCategoryId(childCategory)));
           });
 
           test('to a parent from previously unset value', async ({ requestUpdateCategory }) => {
@@ -107,9 +107,9 @@ test.describe('PUT /category/v1/categories/{categoryId}', () => {
 
             const res = await requestUpdateCategory(getCategoryId(categoryDocument), req);
             expect(res).toBeCreatedResponse();
-            expect(req).toBeStoredInDatabase(await categoryService.getCategoryById(getCategoryId(categoryDocument)), otherParentCategory, ...otherParentCategory.ancestors);
-            expect(childCategory).toHaveItsParentReassigned(await categoryService.getCategoryById(getCategoryId(childCategory)), await categoryService.getCategoryById(getCategoryId(categoryDocument)));
-            expect(grandChildCategory).toHaveItsParentReassigned(await categoryService.getCategoryById(getCategoryId(grandChildCategory)), await categoryService.getCategoryById(getCategoryId(childCategory)));
+            expect(req).toHaveBeenSavedAsCategoryDocument(await categoryService.findCategoryById(getCategoryId(categoryDocument)), otherParentCategory, ...otherParentCategory.ancestors);
+            expect(childCategory).toHaveItsParentReassigned(await categoryService.findCategoryById(getCategoryId(childCategory)), await categoryService.findCategoryById(getCategoryId(categoryDocument)));
+            expect(grandChildCategory).toHaveItsParentReassigned(await categoryService.findCategoryById(getCategoryId(grandChildCategory)), await categoryService.findCategoryById(getCategoryId(childCategory)));
           });
         });
 

@@ -55,7 +55,7 @@ test.describe('POST /category/v1/categories', () => {
           expect(res).toBeCreatedResponse();
 
           const { categoryId } = (await res.json()) as Category.CategoryId;
-          expect(req).toBeStoredInDatabase(await categoryService.getCategoryById(categoryId));
+          expect(req).toHaveBeenSavedAsCategoryDocument(await categoryService.findCategoryById(categoryId));
         });
 
         test('should create category with parent category', async ({ requestCreateCategory }) => {
@@ -69,7 +69,7 @@ test.describe('POST /category/v1/categories', () => {
           expect(res).toBeCreatedResponse();
 
           const { categoryId } = (await res.json()) as Category.CategoryId;
-          expect(req).toBeStoredInDatabase(await categoryService.getCategoryById(categoryId), grandparentCategoryDocument, parentCategoryDocument);
+          expect(req).toHaveBeenSavedAsCategoryDocument(await categoryService.findCategoryById(categoryId), grandparentCategoryDocument, parentCategoryDocument);
         });
 
         test.describe('should return error', () => {

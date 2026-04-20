@@ -73,7 +73,7 @@ test.describe('POST category/v1/categories/{categoryId}/merge', () => {
             const res = await requestMergeCategories(getCategoryId(targetCategoryDocument), [getCategoryId(sourceCategoryDocument)]);
             expect(res).toBeCreatedResponse();
 
-            expect(await categoryService.getCategoryById(getCategoryId(sourceCategoryDocument))).toHaveBeenDeletedFromDatabase();
+            expect(await categoryService.findCategoryById(getCategoryId(sourceCategoryDocument))).toHaveBeenDeletedFromDatabase();
             
             expect(childOfSourceCategoryDocument).toHaveItsParentReassigned(await categoryService.findCategoryById(getCategoryId(childOfSourceCategoryDocument)), targetCategoryDocument);
           });
@@ -101,7 +101,7 @@ test.describe('POST category/v1/categories/{categoryId}/merge', () => {
             const res = await requestMergeCategories(getCategoryId(targetCategoryDocument), [getCategoryId(sourceCategoryDocument)]);
             expect(res).toBeCreatedResponse();
 
-            expect(await categoryService.getCategoryById(getCategoryId(sourceCategoryDocument))).toHaveBeenDeletedFromDatabase();
+            expect(await categoryService.findCategoryById(getCategoryId(sourceCategoryDocument))).toHaveBeenDeletedFromDatabase();
             
             expect(productDocument).toHaveItsCategoryReassigned(await productService.findProductById(getProductId(productDocument)), targetCategoryDocument);
           });
@@ -223,7 +223,7 @@ test.describe('POST category/v1/categories/{categoryId}/merge', () => {
               const res = await requestMergeCategories(getCategoryId(targetCategoryDocument), [getCategoryId(sourceCategoryDocument)]);
               expect(res).toBeCreatedResponse();
 
-              expect(await categoryService.getCategoryById(getCategoryId(sourceCategoryDocument))).toHaveBeenDeletedFromDatabase();
+              expect(await categoryService.findCategoryById(getCategoryId(sourceCategoryDocument))).toHaveBeenDeletedFromDatabase();
               expect(paymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await transactionService.findTransactionById(getTransactionId(paymentTransactionDocument)), {
                 category: {
                   from: sourceCategoryDocument,

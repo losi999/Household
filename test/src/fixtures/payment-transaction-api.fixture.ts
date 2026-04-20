@@ -1,9 +1,12 @@
 import { createDate, getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
 import { Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { Reassignment } from '@household/test/types';
-import { createComparer } from '@household/test/utils';
+import { createComparer as cc } from '@household/test/utils';
 import { APIResponse, expect as baseExpect } from '@playwright/test';
 import { CategoryType, TransactionType } from '@household/shared/enums';
+import { validateProjectResponse } from '@household/test/fixtures/project-api.fixture';
+import { createComparer2 } from '@household/test/comparer';
+import { createComparer } from '@household/test/comparer3';
 
 export const expect = baseExpect.extend({
   toHaveBeenSavedAsPaymentTransactionDocument(req: Transaction.PaymentRequest, document: Transaction.PaymentDocument) {
@@ -14,7 +17,7 @@ export const expect = baseExpect.extend({
       };
     }
 
-    const comparer = createComparer((compare) => {
+    const comparer = cc((compare) => {
       return {
         transactionType: compare(document.transactionType, TransactionType.Payment),
         description: compare(document.description, req.description),
@@ -46,7 +49,7 @@ export const expect = baseExpect.extend({
     category?: Reassignment<Category.Document>;
   }) {
 
-    const comparer = createComparer((compare) => {
+    const comparer = cc((compare) => {
       let expectedQuantity: number;
       let expectedInvoiceNumber: string;
       let expectedBillingStartDate: string;
@@ -93,7 +96,7 @@ export const expect = baseExpect.extend({
   },
   toBeConvertedToPaymentTransaction(originalDocument: Transaction.DeferredDocument, currentDocument: Transaction.PaymentDocument) {
 
-    const comparer = createComparer((compare) => {
+    const comparer = cc((compare) => {
       return {
         amount: compare(currentDocument.amount, originalDocument.amount),
         issuedAt: compare(currentDocument.issuedAt.toISOString(), originalDocument.issuedAt.toISOString()),
@@ -120,45 +123,91 @@ export const expect = baseExpect.extend({
   },
   async toMatchPaymentTransactionDocument(res: APIResponse, document: Transaction.PaymentDocument) {
     const response = await res.json() as Transaction.PaymentResponse;
+    try {
+      const projcomp = createComparer(response.project, {
+        projectId: getProjectId(document.project),
+        description: document.project.description,
+      });
 
-    const comparer = createComparer((compare) => {
+      const comp = createComparer(response, {
+        transactionId: getTransactionId(document),
+        amount: document.amount,
+        issuedAt: document.issuedAt.toISOString(),
+        description: document.description,
+        transactionType: document.transactionType,
+        project: projcomp,
+      });
+
+      const errors = comp.validate();
+      console.log('errors', errors);
       return {
-        transactionId: compare(response.transactionId, getTransactionId(document)),
-        amount: compare(response.amount, document.amount),
-        issuedAt: compare(response.issuedAt, document.issuedAt.toISOString()),
-        description: compare(response.description, document.description),
-        transactionType: compare(response.transactionType, document.transactionType),
-        'account.accountId': compare(response.account.accountId, getAccountId(document.account)),
-        'account.accountType': compare(response.account.accountType, document.account.accountType),
-        'account.balance': compare(response.account.balance, document.account.balance),
-        'account.currency': compare(response.account.currency, document.account.currency),
-        'account.fullName': compare(response.account.fullName, `${document.account.name} (${document.account.owner})`),
-        'account.isOpen': compare(response.account.isOpen, document.account.isOpen),
-        'account.name': compare(response.account.name, document.account.name),
-        'account.owner': compare(response.account.owner, document.account.owner),
-        'category.categoryId': compare(response.category.categoryId, getCategoryId(document.category)),
-        'category.categoryType': compare(response.category.categoryType, document.category.categoryType),
-        'category.name': compare(response.category.name, document.category.name),
-        // 'category.name': compare(response.category.ancestors, document.category.name),
-        'category.fullName': compare(response.category.fullName, document.category.name),
-        'project.projectId': compare(response.project.projectId, getProjectId(document.project)),
-        'project.name': compare(response.project.name, document.project.name),
-        'project.description': compare(response.project.description, document.project.description),
-        'recipient.recipientId': compare(response.recipient.recipientId, getRecipientId(document.recipient)),
-        'recipient.name': compare(response.recipient.name, document.recipient.name), 
-        // productId: compare(response.productId, getProductId(document.product)),
-        quantity: compare(response.quantity, document.quantity),
-        billingStartDate: compare(createDate(response.billingStartDate)?.toISOString(), document.billingStartDate?.toISOString()),
-        billingEndDate: compare(createDate(response.billingEndDate)?.toISOString(), document.billingEndDate?.toISOString()),
-        invoiceNumber: compare(response.invoiceNumber, document.invoiceNumber),
+        pass: false,
+        message: () => errors.join('\n'),
       };
+  
+    } catch (error) {
+      console.log('ERR', error);
+    }
+
+    const comparer = createComparer2({
+      actual: response,
+      factory: (actual, compare) => {
+      
+        return {
+          transactionId: compare(actual.transactionId, getTransactionId(document)),
+          amount: compare(actual.amount, document.amount),
+          issuedAt: compare(actual.issuedAt, document.issuedAt.toISOString()),
+          description: compare(actual.description, document.description),
+          transactionType: compare(actual.transactionType, document.transactionType),
+          // 'account.accountId': compare(actual.account.accountId, getAccountId(document.account)),
+          // 'account.accountType': compare(actual.account.accountType, document.account.accountType),
+          // 'account.balance': compare(actual.account.balance, document.account.balance),
+          // 'account.currency': compare(actual.account.currency, document.account.currency),
+          // 'account.fullName': compare(actual.account.fullName, `${document.account.name} (${document.account.owner})`),
+          // 'account.isOpen': compare(actual.account.isOpen, document.account.isOpen),
+          // 'account.name': compare(response.account.name, document.account.name),
+          // 'account.owner': compare(response.account.owner, document.account.owner),
+          // 'category.categoryId': compare(response.category.categoryId, getCategoryId(document.category)),
+          // 'category.categoryType': compare(response.category.categoryType, document.category.categoryType),
+          // 'category.name': compare(response.category.name, document.category.name),
+          // // 'category.name': compare(response.category.ancestors, document.category.name),
+          // 'category.fullName': compare(response.category.fullName, document.category.name),
+          // ...validateProjectResponse(actual.project, document.project).getNormalized('project.'),
+          // 'project.projectId': compare(response.project.projectId, getProjectId(document.project)),
+          // 'project.name': compare(response.project.name, document.project.name),
+          // 'project.description': compare(response.project.description, document.project.description),
+          // 'recipient.recipientId': compare(response.recipient.recipientId, getRecipientId(document.recipient)),
+          // 'recipient.name': compare(response.recipient.name, document.recipient.name), 
+          // // productId: compare(response.productId, getProductId(document.product)),
+          // quantity: compare(response.quantity, document.quantity),
+          // billingStartDate: compare(createDate(response.billingStartDate)?.toISOString(), document.billingStartDate?.toISOString()),
+          // billingEndDate: compare(createDate(response.billingEndDate)?.toISOString(), document.billingEndDate?.toISOString()),
+          // invoiceNumber: compare(response.invoiceNumber, document.invoiceNumber),
+        };
+      },
     });
 
-    const message = comparer.validate(response, 'account', 'category', 'product', 'recipient', 'project');
+    try {
+      comparer.validate();
 
-    return {
-      pass: !message,
-      message: () => message,
-    };
+      return {
+        pass: true,
+        message: () => '',
+      };
+    } catch (error) {
+      return {
+        pass: false,  
+        message: () => error,
+      };
+    }
+
+    // console.log('normalized', comparer.getNormalized());
+
+    // const message = comparer.validate(response, 'account', 'category', 'product', 'recipient', 'project');
+
+    // return {
+    //   pass: !message,
+    //   message: () => message,
+    // };
   },
 });

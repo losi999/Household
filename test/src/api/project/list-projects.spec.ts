@@ -40,8 +40,8 @@ test.describe('GET /project/v1/projects', () => {
           const res = await requestListProjects();
           apiExpect(res).toBeOkResponse();
           apiExpect(res).toMatchSchema(schema); 
-          projectApiExpect(res).toMatchProjectDocumentInList(projectDocument1);
-          projectApiExpect(res).toMatchProjectDocumentInList(projectDocument2);
+          projectApiExpect(res).toContainMatchingProjectDocument(projectDocument1);
+          projectApiExpect(res).toContainMatchingProjectDocument(projectDocument2);
         });
       }
     });

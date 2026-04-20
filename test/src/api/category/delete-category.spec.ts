@@ -59,7 +59,7 @@ test.describe('DELETE /category/v1/categories/{categoryId}', () => {
           const res = await requestDeleteCategory(getCategoryId(categoryDocument));
           expect(res).toBeNoContentResponse();
 
-          expect(await categoryService.getCategoryById(getCategoryId(categoryDocument))).toHaveBeenDeletedFromDatabase();
+          expect(await categoryService.findCategoryById(getCategoryId(categoryDocument))).toHaveBeenDeletedFromDatabase();
         });
 
         test.describe('children should be reassigned', () => {
@@ -82,9 +82,9 @@ test.describe('DELETE /category/v1/categories/{categoryId}', () => {
             const res = await requestDeleteCategory(getCategoryId(categoryDocument));
             expect(res).toBeNoContentResponse();
 
-            expect(await categoryService.getCategoryById(getCategoryId(categoryDocument))).toHaveBeenDeletedFromDatabase();
-            expect(childCategory).toHaveItsParentReassigned(await categoryService.getCategoryById(getCategoryId(childCategory)));
-            expect(grandChildCategory).toHaveItsParentReassigned(await categoryService.getCategoryById(getCategoryId(grandChildCategory)), await categoryService.getCategoryById(getCategoryId(childCategory)));
+            expect(await categoryService.findCategoryById(getCategoryId(categoryDocument))).toHaveBeenDeletedFromDatabase();
+            expect(childCategory).toHaveItsParentReassigned(await categoryService.findCategoryById(getCategoryId(childCategory)));
+            expect(grandChildCategory).toHaveItsParentReassigned(await categoryService.findCategoryById(getCategoryId(grandChildCategory)), await categoryService.findCategoryById(getCategoryId(childCategory)));
           });
 
           test('to parent if had parent', async ({ requestDeleteCategory }) => {
@@ -93,8 +93,8 @@ test.describe('DELETE /category/v1/categories/{categoryId}', () => {
             const res = await requestDeleteCategory(getCategoryId(childCategory));
             expect(res).toBeNoContentResponse();
 
-            expect(await categoryService.getCategoryById(getCategoryId(childCategory))).toHaveBeenDeletedFromDatabase();
-            expect(grandChildCategory).toHaveItsParentReassigned(await categoryService.getCategoryById(getCategoryId(grandChildCategory)), categoryDocument);
+            expect(await categoryService.findCategoryById(getCategoryId(childCategory))).toHaveBeenDeletedFromDatabase();
+            expect(grandChildCategory).toHaveItsParentReassigned(await categoryService.findCategoryById(getCategoryId(grandChildCategory)), categoryDocument);
           });
         });
 
@@ -206,7 +206,7 @@ test.describe('DELETE /category/v1/categories/{categoryId}', () => {
               const res = await requestDeleteCategory(getCategoryId(categoryDocument));
               expect(res).toBeNoContentResponse();
 
-              expect(await categoryService.getCategoryById(getCategoryId(categoryDocument))).toHaveBeenDeletedFromDatabase();
+              expect(await categoryService.findCategoryById(getCategoryId(categoryDocument))).toHaveBeenDeletedFromDatabase();
               expect(paymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await transactionService.findTransactionById(getTransactionId(paymentTransactionDocument)), {
                 category: {
                   from: categoryDocument,
@@ -263,7 +263,7 @@ test.describe('DELETE /category/v1/categories/{categoryId}', () => {
             const res = await requestDeleteCategory(getCategoryId(categoryDocument));
             expect(res).toBeNoContentResponse();
 
-            expect(await categoryService.getCategoryById(getCategoryId(categoryDocument))).toHaveBeenDeletedFromDatabase();
+            expect(await categoryService.findCategoryById(getCategoryId(categoryDocument))).toHaveBeenDeletedFromDatabase();
             expect(await productService.findProductById(getProductId(productDocument))).toHaveBeenDeletedFromDatabase();
           });
         });

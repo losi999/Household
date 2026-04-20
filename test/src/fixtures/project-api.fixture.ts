@@ -1,9 +1,11 @@
 import { getProjectId } from '@household/shared/common/utils';
 import { headerExpiresIn } from '@household/shared/constants';
 import { Project } from '@household/shared/types/types';
-import { createComparer } from '@household/test/utils';
+import { createComparer as cc } from '@household/test/utils';
 import { test as baseTest } from '@household/test/fixtures/api.fixture';
 import { expect as baseExpect, APIResponse } from '@playwright/test';
+import { createComparer2 } from '@household/test/comparer';
+import { createComparer } from '@household/test/comparer3';
 
 type ProjectApiFixture ={
   requestGetProject(projectId: Project.Id): Promise<APIResponse>;
@@ -100,16 +102,17 @@ export const test = baseTest.extend<ProjectApiFixture>({
   },
 });
 
-const validateProjectResponse = (response: Project.Response, document: Project.Document): string => {
-  const comparer = createComparer((compare) => {
-    return {
-      projectId: compare(response.projectId, getProjectId(document)),
-      name: compare(response.name, document.name),
-      description: compare(response.description, document.description),
-    };
+export const validateProjectResponse = (response: Project.Response, document: Project.Document) => {
+  return createComparer2({
+    actual: response,
+    factory: (actual, compare) => {
+      return {
+        projectId: compare(actual.projectId, getProjectId(document)),
+        // name: compare(actual.name, document.name),
+        description: compare(actual.description, document.description),
+      };
+    },
   });
-
-  return comparer.validate(response);
 };
 
 export const expect = baseExpect.extend({
@@ -121,19 +124,41 @@ export const expect = baseExpect.extend({
       };
     }
 
-    const comparer = createComparer((compare) => {
-      return {
-        name: compare(document.name, req.name),
-        description: compare(document.description, req.description),
-      };  
+    const comp = createComparer(document, {
+      name: req.name,
+      description: req.description,
+    }, '_id', 'createdAt', 'expiresAt', 'updatedAt');
+
+    comp.validate();
+
+    const comparer = createComparer2({
+      actual: document,
+      internalProperties: [
+        '_id',
+        'createdAt',
+        'expiresAt',
+        'updatedAt',
+      ],
+      factory: (actual, compare) => {
+        return {
+          name: compare(actual.name, req.name),
+          description: compare(actual.description, req.description),
+        };
+      },
     });
+    try {
+      comparer.validate();
 
-    const message = comparer.validate(document, '_id', 'createdAt', 'expiresAt', 'updatedAt');
-
-    return {
-      pass: !message,
-      message: () => message,
-    };
+      return {
+        pass: true,
+        message: () => '',
+      };
+    } catch (error) {
+      return {
+        pass: false,
+        message: () => error,
+      };  
+    }
   },
   toHaveBeenDeletedFromDatabase(document: Project.Document) {
     return {
@@ -144,14 +169,22 @@ export const expect = baseExpect.extend({
   async toMatchProjectDocument(received: APIResponse, document: Project.Document) {
     const response = await received.json() as Project.Response;
 
-    const message = validateProjectResponse(response, document);
+    try {
+      validateProjectResponse(response, document).validate();
+      
+      return {
+        pass: true,
+        message: () => '',
+      };
 
-    return {
-      pass: !message,
-      message: () => message,
-    };
+    } catch (error) {
+      return {
+        pass: false,
+        message: () => error,
+      };
+    }
   },
-  async toMatchProjectDocumentInList(received: APIResponse, document: Project.Document) {
+  async toContainMatchingProjectDocument(received: APIResponse, document: Project.Document) {
     const response = await received.json() as Project.Response[];
 
     const matchingResponse = response.find(r => r.projectId === getProjectId(document));
@@ -163,12 +196,20 @@ export const expect = baseExpect.extend({
       };
     }
 
-    const message = validateProjectResponse(matchingResponse, document);
-
-    return {
-      pass: !message,
-      message: () => message,
-    };
+    try {
+      validateProjectResponse(matchingResponse, document).validate();
+      
+      return {
+        pass: true,
+        message: () => '',
+      };
+      
+    } catch (error) {
+      return {
+        pass: false,
+        message: () => error,
+      };
+    }
   }, 
 
 });

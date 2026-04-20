@@ -37,7 +37,7 @@ export type CompareResult<V = any> = {
   expected: V;
 };
 
-export type CompareFn = <V>(actual: V, expected: V) => CompareResult<V>;
+type CompareFn = <V>(actual: V, expected: V) => CompareResult<V>;
 
 export const createComparer = (factory: (compare: CompareFn) => Record<string, CompareResult<any>>) => {
   const normalized = factory((actual, expected) => {
