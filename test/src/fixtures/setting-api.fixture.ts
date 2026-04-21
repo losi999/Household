@@ -1,8 +1,8 @@
 import { headerExpiresIn } from '@household/shared/constants';
 import { SettingKey } from '@household/shared/enums';
 import { Setting } from '@household/shared/types/types';
+import { Comparer } from '@household/test/comparer';
 import { test as baseTest, expect as baseExpect } from '@household/test/fixtures/api.fixture';
-import { createComparer } from '@household/test/utils';
 import { APIResponse } from '@playwright/test';
 
 type SettingApiFixture = {
@@ -42,29 +42,27 @@ export const test = baseTest.extend<SettingApiFixture>({
 });
 
 export const expect = baseExpect.extend({
-  async toBeStoredInDatabase(req: Setting.Request, settingKey: SettingKey, document: Setting.Document) {
+  async toHaveBeenSavedAsSettingDocument(req: Setting.Request, settingKey: SettingKey, document: Setting.Document) {
     if (!document) {
       return {
         pass: false,
-        message: () => 'expected setting to be stored in database, but it was not found',
+        message: () => 'Expected setting to be stored in database, but it was not found',
       };
     }
   
-    const comparer = createComparer((compare) => {
-      return {
-        settingKey: compare(document.settingKey, settingKey),
-        value: compare(document.value, req.value),
-      };  
-    });
+    const comparer = new Comparer(document, {
+      settingKey: settingKey,
+      value: req.value,
+    }, '_id', 'createdAt', 'expiresAt', 'updatedAt');
   
-    const message = comparer.validate(document, '_id', 'createdAt', 'expiresAt', 'updatedAt');
+    const errors = comparer.validate();
   
     return {
-      pass: !message,
-      message: () => message,
+      pass: errors.length === 0,
+      message: () => `Expected setting to be stored in database, but it was not:\n${errors.join('\n')}`,
     };
   },
-  async toMatchSettingDocumentInList(received: APIResponse, document: Setting.Document) {
+  async toContainMatchingSettingDocument(received: APIResponse, document: Setting.Document) {
     const response = await received.json() as Setting.Response[];
   
     const matchingResponse = response.find(r => r.settingKey === document.settingKey);
@@ -72,22 +70,20 @@ export const expect = baseExpect.extend({
     if (!matchingResponse) {
       return {
         pass: false,
-        message: () => `expected response to contain a setting with id ${document.settingKey}, but it was not found`,
+        message: () => `Expected response to contain a setting with id ${document.settingKey}, but it was not found`,
       };
     }
 
-    const comparer = createComparer((compare) => {
-      return {
-        settingKey: compare(matchingResponse.settingKey, document.settingKey),
-        value: compare(matchingResponse.value, document.value),
-      };
+    const comparer = new Comparer(matchingResponse, {
+      settingKey: document.settingKey,
+      value: document.value,
     });
   
-    const message = comparer.validate(matchingResponse);
+    const errors = comparer.validate();
   
     return {
-      pass: !message,
-      message: () => message,
+      pass: errors.length === 0,
+      message: () => `Expected response to match setting document, but it did not:\n${errors.join('\n')}`,
     };
   }, 
 

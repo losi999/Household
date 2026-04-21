@@ -47,7 +47,7 @@ test.describe('PUT /recipient/v1/recipients/{recipientId}', () => {
           apiExpect(res).toBeCreatedResponse();
 
           const { recipientId } = (await res.json()) as Recipient.RecipientId;
-          recipientApiExpect(req).toBeStoredInDatabase(await recipientService.findRecipientById(recipientId));
+          recipientApiExpect(req).toHaveBeenSavedAsRecipientDocument(await recipientService.findRecipientById(recipientId));
         });
 
         test.describe('should return error', () => {

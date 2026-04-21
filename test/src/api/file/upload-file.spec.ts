@@ -48,11 +48,11 @@ test.describe('POST /file/v1/files', () => {
             expect(urlRes).toMatchSchema(schema);
 
             const { fileId, url } = (await urlRes.json()) as File.FileId & File.Url;
-            expect(request).toBeStoredInDatabase(await fileService.findFileById(fileId));
+            expect(request).toHaveBeenSavedAsFileDocument(await fileService.findFileById(fileId));
             
             await requestUploadFile(url);
             const file = await storageService.checkFile(fileId);
-            expect(file).toBeStoredInS3();
+            expect(file).toHaveBeenStoredInS3();
           });
         });
 

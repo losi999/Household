@@ -48,7 +48,7 @@ test.describe('POST /setting/v1/settings/{settingKey}', () => {
             const res = await requestUpdateSetting(settingKey, request);
             expect(res).toBeNoContentResponse();
 
-            expect(request).toBeStoredInDatabase(settingKey, await settingService.getSettingByKey(settingKey));
+            expect(request).toHaveBeenSavedAsSettingDocument(settingKey, await settingService.getSettingByKey(settingKey));
           });
         });
 

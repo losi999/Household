@@ -246,7 +246,7 @@ test.describe('POST customer/v1/customers/{customerId}/jobs', () => {
                 ] as any, 
               });
               expect(res).toBeBadRequestResponse();
-              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extra');
+              expect(res).toHaveAdditionalPropertiesValidationError('body', 'prices/0', 'extra');
             });
           });
 

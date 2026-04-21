@@ -190,7 +190,7 @@ test.describe('POST transaction/v1/transactions/transfer (transfer)', () => {
             const res = await requestCreateTransferTransaction(request);
             expect(res).toBeCreatedResponse();
             const { transactionId } = await res.json() as Transaction.TransactionId;
-            expect(request).toHaveBeenSavedAsTransferTransactionDocument(await transactionService.getTransactionById(transactionId));
+            expect(request).toHaveBeenSavedAsTransferTransactionDocument(await transactionService.getTransactionById(transactionId), [Math.abs(deferredTransactionDocument.amount)]);
           });
 
           test.describe('without optional properties', () => {

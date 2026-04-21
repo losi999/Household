@@ -2,7 +2,7 @@
 import { getCategoryId, getProductId } from '@household/shared/common/utils';
 import { headerExpiresIn } from '@household/shared/constants';
 import { Category, Product } from '@household/shared/types/types';
-import { createComparer } from '@household/test/utils';
+import { Comparer } from '@household/test/comparer';
 import { test as baseTest } from '@household/test/fixtures/api.fixture';
 import { expect as baseExpect, APIResponse } from '@playwright/test';
 
@@ -87,8 +87,18 @@ export const test = baseTest.extend<ProductApiFixture>({
   },
 });
 
+export const validateProductResponse = (response: Product.Response, document: Product.Document) => {
+  return new Comparer(response, {
+    productId: getProductId(document),
+    brand: document?.brand,
+    measurement: document?.measurement,
+    unitOfMeasurement: document?.unitOfMeasurement,
+    fullName: document?.fullName,
+  });
+};
+
 export const expect = baseExpect.extend({
-  toBeStoredInDatabase(req: Product.Request, document: Product.Document, categoryId: Category.Id) {
+  toHaveBeenSavedAsProductDocument(req: Product.Request, document: Product.Document, categoryId: Category.Id) {
     if (!document) {
       return {
         pass: false,
@@ -96,49 +106,46 @@ export const expect = baseExpect.extend({
       };
     }
 
-    const comparer = createComparer((compare) => {
-      return {
-        brand: compare(document.brand, req.brand),
-        measurement: compare(document.measurement, req.measurement),
-        unitOfMeasurement: compare(document.unitOfMeasurement, req.unitOfMeasurement),
-        fullName: compare(document.fullName, `${req.brand} ${req.measurement} ${req.unitOfMeasurement}`),
-        categoryId: compare(getCategoryId(document.category), categoryId),
-      };  
-    });
+    const comparer = new Comparer(document, {
+      brand: req.brand,
+      measurement: req.measurement,
+      unitOfMeasurement: req.unitOfMeasurement,
+      fullName: `${req.brand} ${req.measurement} ${req.unitOfMeasurement}`,
+      category: categoryId,
+    
+    }, '_id', 'createdAt', 'expiresAt', 'updatedAt', 'category');
 
-    const message = comparer.validate(document, '_id', 'createdAt', 'expiresAt', 'updatedAt', 'category');
+    const errors = comparer.validate();
 
     return {
-      pass: !message,
-      message: () => message,
+      pass: !errors.length,
+      message: () => `Expected product to be stored in database, but it was not:\n${errors.join('\n')}`,
     };
   },
   toHaveBeenDeletedFromDatabase(document: Product.Document) {
     return {
       pass: !document,
-      message: () => `expected product to be deleted from database, but it was found with id ${getProductId(document)}`,
+      message: () => `Expected product to be deleted from database, but it was found with id ${getProductId(document)}`,
     };
   },
   toHaveItsCategoryReassigned(originalDocument: Product.Document, currentDocument: Product.Document, expectedCategoryDocument: Category.Document) {
 
-    const comparer = createComparer((compare) => {
-      return {
-        brand: compare(currentDocument.brand, originalDocument.brand),
-        unitOfMeasurement: compare(currentDocument.unitOfMeasurement, originalDocument.unitOfMeasurement),
-        measurement: compare(currentDocument.measurement, originalDocument.measurement),
-        fullName: compare(currentDocument.fullName, originalDocument.fullName),
-        categoryId: compare(getCategoryId(currentDocument.category), getCategoryId(expectedCategoryDocument)),
-      };
-    });
+    const comparer = new Comparer(currentDocument, {
+      brand: originalDocument.brand,
+      unitOfMeasurement: originalDocument.unitOfMeasurement,
+      measurement: originalDocument.measurement,
+      fullName: originalDocument.fullName,
+      category: getCategoryId(expectedCategoryDocument),
+    }, '_id', 'createdAt', 'expiresAt', 'updatedAt');
 
-    const message = comparer.validate(currentDocument, '_id', 'createdAt', 'expiresAt', 'updatedAt', 'category');
+    const errors = comparer.validate();
 
     return {
-      pass: !message,
-      message: () => message,
+      pass: !errors.length,
+      message: () => `Expected product to have its category reassigned, but it did not:\n${errors.join('\n')}`,
     };
   },
-  async toMatchProductDocumentInList(received: APIResponse, document: Product.Document, categoryId: Category.Id) {
+  async toContainMatchingProductDocument(received: APIResponse, document: Product.Document, categoryId: Category.Id) {
     const response = await received.json() as Product.GroupedResponse[];
     const categoryResponse = response.find(r => r.categoryId === categoryId);
     const matchingResponse = categoryResponse?.products.find(r => r.productId === getProductId(document));
@@ -146,25 +153,17 @@ export const expect = baseExpect.extend({
     if (!matchingResponse) {
       return {
         pass: false,
-        message: () => `expected response to contain a product with id ${getProductId(document)}, but it was not found`,
+        message: () => `Expected response to contain a product with id ${getProductId(document)}, but it was not found`,
       };
     }
 
-    const comparer = createComparer((compare) => {
-      return {
-        productId: compare(matchingResponse.productId, getProductId(document)),
-        brand: compare(matchingResponse.brand, document.brand),
-        measurement: compare(matchingResponse.measurement, document.measurement),
-        unitOfMeasurement: compare(matchingResponse.unitOfMeasurement, document.unitOfMeasurement),
-        fullName: compare(matchingResponse.fullName, document.fullName),
-      };
-    });
+    const comparer = validateProductResponse(matchingResponse, document);
 
-    const message = comparer.validate(matchingResponse);
+    const errors = comparer.validate();
   
     return {
-      pass: !message,
-      message: () => message,
+      pass: !errors.length,
+      message: () => `Expected response to match product document, but it did not:\n${errors.join('\n')}`,
     };
   }, 
 });

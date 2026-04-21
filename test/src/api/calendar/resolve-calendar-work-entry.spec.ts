@@ -6,12 +6,15 @@ import { customerDataFactory } from '@household/test/api/customer/data-factory';
 import { priceDataFactory } from '@household/test/api/price/data-factory';
 import { CalendarEntryResolutionStatus, SettingKey } from '@household/shared/enums';
 
+import { expect as paymentTransactionApiExpect } from '@household/test/fixtures/payment-transaction-api.fixture';
 import { test, expect as calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { mergeExpects } from '@playwright/test';
 import { calendarEntryService, customerService, priceService, settingService, transactionService } from '@household/test/dependencies';
+import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
+import { default as moment } from 'moment-timezone';
 
-const expect = mergeExpects(calendarApiExpect, apiExpect);
+const expect = mergeExpects(calendarApiExpect, apiExpect, paymentTransactionApiExpect);
 
 const permissionMap = allowUsers('hairdresser');
 
@@ -97,7 +100,22 @@ test.describe('POST /calendar/v1/entries/{calendarEntryId}/resolution', () => {
 
             const transactionId = updatedCalendarEntryDocument.resolution.status === CalendarEntryResolutionStatus.Paid ? getTransactionId(updatedCalendarEntryDocument.transaction) : undefined;
 
-            expect(calendarWorkEntryDocument).toHaveBeenResolved(updatedCalendarEntryDocument, request, await transactionService.findTransactionById(transactionId), (await settingService.getSettingByKey<Category.Id>(SettingKey.HairdressingIncomeCategory)).value, (await settingService.getSettingByKey<Account.Id>(SettingKey.HairdressingIncomeAccount)).value);
+            expect(calendarWorkEntryDocument).toHaveBeenResolved(updatedCalendarEntryDocument, request, transactionId);
+            
+            const expectedIssuedAt = moment.tz(updatedCalendarEntryDocument.day, 'Europe/Budapest'); 
+            expectedIssuedAt.set({
+              hour: Math.floor(updatedCalendarEntryDocument.end / 4),
+              minute: (updatedCalendarEntryDocument.end % 4) * 15,
+            });
+
+            const paymentRequest = paymentTransactionDataFactory.request({
+              amount: (request as Calendar.Entry.PaidResolutionRequest).amount,
+              issuedAt: expectedIssuedAt.toISOString(),
+              description: calendarWorkEntryDocument.title,
+              accountId: (await settingService.getSettingByKey<Account.Id>(SettingKey.HairdressingIncomeAccount)).value,
+              categoryId: (await settingService.getSettingByKey<Category.Id>(SettingKey.HairdressingIncomeCategory)).value,
+            });
+            expect(paymentRequest).toHaveBeenSavedAsPaymentTransactionDocument(await transactionService.findTransactionById(transactionId));
           });
 
           test('with no show', async ({ requestResolveCalendarWorkEntry }) => {            

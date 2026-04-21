@@ -2,8 +2,8 @@ import { AdminGetUserResponse, AdminListGroupsForUserResponse } from '@aws-sdk/c
 import { headerSuppressEmail } from '@household/shared/constants';
 import { UserType } from '@household/shared/enums';
 import { Auth, User } from '@household/shared/types/types';
+import { Comparer } from '@household/test/comparer';
 import { test as baseTest, expect as baseExpect } from '@household/test/fixtures/api.fixture';
-import { createComparer } from '@household/test/utils';
 import { APIResponse } from '@playwright/test';
 
 type UserApiFixture = {
@@ -98,38 +98,38 @@ export const expect = baseExpect.extend({
   toHaveBeenAddedToGroup(groups: AdminListGroupsForUserResponse, expectedGroup: UserType) {
     const isInGroup = groups.Groups?.some(group => group.GroupName === expectedGroup);
     return {
-      message: () => `expected user to be in group '${expectedGroup}', but was not. Groups: ${JSON.stringify(groups.Groups)}`,
+      message: () => `Expected user to be in group '${expectedGroup}', but was not. Groups: ${JSON.stringify(groups.Groups)}`,
       pass: isInGroup,
     };
   },
   toHaveBeenRemovedFromGroup(groups: AdminListGroupsForUserResponse, expectedGroup: UserType) {
     const isInGroup = groups.Groups?.some(group => group.GroupName === expectedGroup);
     return {
-      message: () => `expected user to not be in group '${expectedGroup}', but was. Groups: ${JSON.stringify(groups.Groups)}`,
+      message: () => `Expected user to not be in group '${expectedGroup}', but was. Groups: ${JSON.stringify(groups.Groups)}`,
       pass: !isInGroup,
     };
   },
   toHaveBeenConfirmed(user: AdminGetUserResponse) {
     const isConfirmed = user.UserStatus === 'CONFIRMED';
     return {
-      message: () => `expected user to be confirmed, but status was '${user.UserStatus}'`,
+      message: () => `Expected user to be confirmed, but status was '${user.UserStatus}'`,
       pass: isConfirmed,
     };
   },
   toHaveBeenCreated(user: AdminGetUserResponse) {
     const isCreated = user.UserStatus === 'FORCE_CHANGE_PASSWORD';
     return {
-      message: () => `expected user to be created, but status was '${user.UserStatus}'`,
+      message: () => `Expected user to be created, but status was '${user.UserStatus}'`,
       pass: isCreated,
     };
   },
   toHaveBeenDeleted(user: AdminGetUserResponse) {
     return {
-      message: () => 'expected user to be deleted, but it was not',
+      message: () => 'Expected user to be deleted, but it was not',
       pass: !user,
     };  
   },
-  async toMatchUserInResponseList(received: APIResponse, user: User.Request & Partial<User.Group & Auth.Password>) {
+  async toContainMatchingUser(received: APIResponse, user: User.Request & Partial<User.Group & Auth.Password>) {
     const response = await received.json() as User.Response[];
 
     const matchingResponse = response.find(u => u.email === user.email);
@@ -137,23 +137,21 @@ export const expect = baseExpect.extend({
     if (!matchingResponse) {
       return {
         pass: false,
-        message: () => `expected response to contain a user with email ${user.email}, but it was not found`,
+        message: () => `Expected response to contain a user with email ${user.email}, but it was not found`,
       };
     }
 
-    const comparer = createComparer((compare) => {
-      return {
-        email: compare(matchingResponse.email, user.email),
-        status: compare(matchingResponse.status, user.password ? 'CONFIRMED' : 'FORCE_CHANGE_PASSWORD'),
-        groups: compare(matchingResponse.groups[0], user.group),
-      };
+    const comparer = new Comparer(matchingResponse, {
+      email: user.email,
+      status: user.password ? 'CONFIRMED' : 'FORCE_CHANGE_PASSWORD',
+      groups: [user.group],
     }); 
 
-    const message = comparer.validate(matchingResponse);
+    const errors = comparer.validate();
 
     return {
-      pass: !message,
-      message: () => message,
+      pass: errors.length === 0,
+      message: () => `Expected response to contain a user with email ${user.email}, but found errors:\n${errors.join('\n')}`,
     };
   },
 });

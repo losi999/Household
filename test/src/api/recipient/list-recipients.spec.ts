@@ -40,8 +40,8 @@ test.describe('GET /recipient/v1/recipients', () => {
           const res = await requestListRecipients();
           apiExpect(res).toBeOkResponse();
           apiExpect(res).toMatchSchema(schema);
-          recipientApiExpect(res).toMatchRecipientDocumentInList(recipientDocument1);
-          recipientApiExpect(res).toMatchRecipientDocumentInList(recipientDocument2);
+          recipientApiExpect(res).toContainMatchingRecipientDocument(recipientDocument1);
+          recipientApiExpect(res).toContainMatchingRecipientDocument(recipientDocument2);
         });
       }
     });

@@ -53,7 +53,7 @@ test.describe('Import file', () => {
       intervals: [3000],
     }).toBe(FileProcessingStatus.Completed);
     expect(revolutFileDocument).toHaveBeenProcessed(await fileService.findFileById(getFileId(revolutFileDocument)));
-    expect(await transactionService.listDraftTransactionsByFileId(getFileId(revolutFileDocument))).toHaveBeenImportedFromRevolutFile(revolutRow);
+    expect(await transactionService.listDraftTransactionsByFileId(getFileId(revolutFileDocument))).toHaveBeenImportedFromRevolutFile(getFileId(revolutFileDocument), revolutRow);
   });
 
   test('should trigger importing of import otp file', async () => {
@@ -65,7 +65,7 @@ test.describe('Import file', () => {
       intervals: [3000],
     }).toBe(FileProcessingStatus.Completed);
     expect(otpFileDocument).toHaveBeenProcessed(await fileService.findFileById(getFileId(otpFileDocument)));
-    expect(await transactionService.listDraftTransactionsByFileId(getFileId(otpFileDocument))).toHaveBeenImportedFromOtpFile(otpRow);
+    expect(await transactionService.listDraftTransactionsByFileId(getFileId(otpFileDocument))).toHaveBeenImportedFromOtpFile(getFileId(otpFileDocument), otpRow);
   });
 
   test('should trigger importing of import erste file', async () => {
@@ -77,6 +77,6 @@ test.describe('Import file', () => {
       intervals: [3000],
     }).toBe(FileProcessingStatus.Completed);
     expect(ersteFileDocument).toHaveBeenProcessed(await fileService.findFileById(getFileId(ersteFileDocument)));
-    expect(await transactionService.listDraftTransactionsByFileId(getFileId(ersteFileDocument))).toHaveBeenImportedFromErsteFile(ersteRow);
+    expect(await transactionService.listDraftTransactionsByFileId(getFileId(ersteFileDocument))).toHaveBeenImportedFromErsteFile(getFileId(ersteFileDocument), ersteRow);
   });
 });

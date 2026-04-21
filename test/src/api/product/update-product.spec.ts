@@ -61,7 +61,7 @@ test.describe('PUT /product/v1/products/{productId}', () => {
             expect(res).toBeCreatedResponse();
 
             const { productId } = (await res.json()) as Product.ProductId;
-            expect(request).toBeStoredInDatabase(await productService.findProductById(productId), getCategoryId(categoryDocument));
+            expect(request).toHaveBeenSavedAsProductDocument(await productService.findProductById(productId), getCategoryId(categoryDocument));
           });
         });
 

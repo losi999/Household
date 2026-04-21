@@ -1,70 +1,113 @@
-import { entries, keys } from '@household/shared/common/utils';
+import { entries, getId } from '@household/shared/common/utils';
+import { Branding } from '@household/shared/types/common';
+import { Internal } from '@household/shared/types/types';
 
-type CompareResult<V = any> = {
-  actual: V;
-  expected: V;
+type Expected<T> = {
+  [P in keyof T]?: 
+  T[P] extends Internal.Id[] ? (Branding<string, any> | Comparer<T[P][number]>)[] :
+    T[P] extends object[] ? Comparer<T[P][number]>[] :
+      T[P] extends (infer U)[] ? U[] :
+        T[P] extends Branding<string, infer U> ? Branding<string, U> :
+          T[P] extends Internal.Id ? Branding<string, any> : 
+            T[P] extends Date ? string :
+              T[P] extends object ? Comparer<T[P]> :
+                T[P];
 };
 
-type CompareFn = <V>(actual: V, expected: V) => CompareResult<V>;
+const isComparer = (value: any): value is Comparer<any> => {
+  return value?.validate instanceof Function;
+};
 
-export const createComparer2 = <D extends object>(ctx: {
-  actual: D;
-  internalProperties?: (keyof D)[];
-  factory: (actual: D, compare: CompareFn) => Record<string, CompareResult<any>>
-}) => {
-  const normalized = ctx.factory(ctx.actual, (actual, expected) => {
-    return actual === expected ? undefined : {
-      actual,
-      expected,
-    };
-  });
+export class Comparer<D extends object> {
+  private actual: D;
+  private expected: Expected<D>;
+  private internalProperties: (keyof D)[];
 
-  const validate = () => {
-    const extraKeys = keys(ctx.actual).filter((key) => {
-      return !ctx.internalProperties?.includes(key) && !(key in normalized);
-    });
+  constructor(actual: D, expected: Expected<D> | (Expected<D> | Comparer<D>)[], ...internalProperties: (keyof D)[]) {
+    this.actual = actual;
+    this.internalProperties = internalProperties;
+    
+    if (Array.isArray(expected)) {
+      this.expected = expected.reduce<Expected<D>>((accumulator, item) => {
+        if (item instanceof Comparer) {
+          return {
+            ...accumulator,
+            ...item.expected,
+          };
+        }
 
-    if (extraKeys.length > 0) {
-      throw `expected object to not have additional properties, but it has additional properties ${extraKeys.join(', ')}`;
-    }
-
-    const notMatchingProperties = entries(normalized).reduce<string[]>((accumulator, [
-      key,
-      result,
-    ]) => {
-      if (!result) {
-        return accumulator;
-      }
-      return [
-        ...accumulator,
-        `${key}\n\texpected: ${result.expected}\n\tactual: ${result.actual}`,
-      ];
-    }, []);
-
-    if (notMatchingProperties.length > 0) {
-      throw `expected objects to match, but the following properties did not match:\n${notMatchingProperties.join('\n')}`;
-    }
-  }; 
-
-  return {
-    getNormalized(prefix?: string) {
-      try {
-        validate();
-        
-      } catch (error) {
-        console.log(error);
-      }
-
-      return prefix ? entries(normalized).reduce((accumulator, [
-        key,
-        value,
-      ]) => {
         return {
           ...accumulator,
-          [`${prefix}${key}`]: value,
+          ...item,
         };
-      }, {}) : normalized;
-    },
-    validate,
-  };
-};
+      }, {});
+    } else {
+      this.expected = expected;
+    }
+  }
+
+  validate(prefix: string = ''): string[] {
+    const errors = entries(this.actual).reduce<string[]>((accumulator, [
+      prop,
+      value,
+    ]) => {
+      if (this.internalProperties.includes(prop)) {
+        return accumulator;
+      }
+
+      const expectedValue = this.expected[prop];
+      const key = `${prefix}${String(prop)}`;
+
+      if (Array.isArray(value) && Array.isArray(expectedValue)) {
+        return [
+          ...accumulator,
+          ...value.flatMap((act, index) => {
+            const expectedItem = expectedValue[index];
+
+            if (isComparer(expectedItem)) {
+              return expectedItem.validate(`${key}[${index}].`);
+            }
+
+            let actualItem: any = act;
+            if (act instanceof Object) {
+              actualItem = getId(act);
+            }
+
+            if (actualItem === expectedItem) {
+              return [];
+            }
+
+            return `${key}[${index}]\n\texpected: ${expectedItem}\n\tactual: ${act}`;
+          }),
+        ];
+      }
+
+      if (isComparer(expectedValue)) {
+        return [
+          ...accumulator,
+          ...expectedValue.validate(`${key}.`),
+        ];
+      }
+
+      let actualValue: any = value; 
+
+      if (value instanceof Date) {
+        actualValue = value.toISOString();
+      } else if (value instanceof Object) {
+        actualValue = getId(value as any);
+      }
+
+      if (actualValue === expectedValue) {
+        return accumulator;
+      }
+
+      return [
+        ...accumulator,
+        `${key}\n\texpected: ${expectedValue}\n\tactual: ${actualValue}`,
+      ];        
+    }, []);
+
+    return errors;
+  }
+}
+

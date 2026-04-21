@@ -1,12 +1,12 @@
 import { isPriceBase } from '@household/shared/common/type-guards';
-import { getAccountId, getCalendarEntryId, getCategoryId, getCustomerId, getPriceId, getProductId, getProjectId, getRecipientId } from '@household/shared/common/utils';
+import { getCalendarEntryId, getCustomerId, getPriceId } from '@household/shared/common/utils';
 import { headerExpiresIn, WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
 import { CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType } from '@household/shared/enums';
-import { Account, Calendar, Category, Transaction } from '@household/shared/types/types';
+import { Calendar, Transaction } from '@household/shared/types/types';
+import { Comparer } from '@household/test/comparer';
 import { test as baseTest, expect as baseExpect } from '@household/test/fixtures/api.fixture';
-import { createComparer } from '@household/test/utils';
+import { validateCustomerJobPriceResponse, validateCustomerResponse } from '@household/test/fixtures/customer-api.fixture';
 import { APIResponse } from '@playwright/test';
-import { default as moment } from 'moment-timezone';
 
 type CalendarApiFixture = {
   requestCreateCalendarEntry(calendarEntry: Calendar.Entry.Request): Promise<APIResponse>;
@@ -136,167 +136,87 @@ export const test = baseTest.extend<CalendarApiFixture>({
     await use(requestResolveCalendarWorkEntry);
   },
 });
+
 const validateCalendarEntryResponse = (response: Calendar.Entry.Response, document: Calendar.Entry.Document) => {
-  if (response.entryType === CalendarEntryType.Work) { 
-    return createComparer((compare) => {
-      return {
-        calendarEntryId: compare(response.calendarEntryId, getCalendarEntryId(document)),
-        title: compare(response.title, document.title),
-        description: compare(response.description, document.description),
-        start: compare(response.start, document.start),
-        end: compare(response.end, document.end),
-        day: compare(response.day, document.day),
-        entryType: compare(response.entryType, document.entryType),
-        'customer.customerId': compare(response.customer.customerId, getCustomerId(document.customer)),
-        'customer.description': compare(response.customer.description, document.customer.description),
-        'customer.name': compare(response.customer.name, document.customer.name),
-        'customer.isGroup': compare(response.customer.isGroup, document.customer.isGroup),
-        'customer.rating': compare(response.customer.rating, document.customer.rating),
-        ...response.customer.blacklistedCustomers.reduce((accumulator, currentValue, index) => {
-          const blacklistedCustomerDocument = document.customer.blacklistedCustomers[index];
-
-          return {
-            ...accumulator,
-            [`customer.blacklistedCustomers[${index}].customerId`]: compare(currentValue.customerId, getCustomerId(blacklistedCustomerDocument)),
-            [`customer.blacklistedCustomers[${index}].description`]: compare(currentValue.description, blacklistedCustomerDocument.description),
-            [`customer.blacklistedCustomers[${index}].name`]: compare(currentValue.name, blacklistedCustomerDocument.name),
-            [`customer.blacklistedCustomers[${index}].isGroup`]: compare(currentValue.isGroup, blacklistedCustomerDocument.isGroup),
-            [`customer.blacklistedCustomers[${index}].rating`]: compare(currentValue.rating, blacklistedCustomerDocument.rating),
-          };
-        }, {}),
-        ...response.customer.jobs.reduce((accumulator, currentValue, index) => {
-          const prices = currentValue.prices.reduce((priceAccumulator, currentPrice, priceIndex) => {
-            const jobPriceDocument = document.customer.jobs[index].prices[priceIndex];
-
-            if(isPriceBase(jobPriceDocument)) {
-              return {
-                ...priceAccumulator,
-                [`jobs[${index}].prices[${priceIndex}].name`]: compare(currentPrice.name, jobPriceDocument.name),
-                [`jobs[${index}].prices[${priceIndex}].amount`]: compare(currentPrice.amount, jobPriceDocument.amount),
-              }; 
-            } 
-            return {
-              ...priceAccumulator,
-              [`jobs[${index}].prices[${priceIndex}].name`]: compare(currentPrice.name, jobPriceDocument.price.name),
-              [`jobs[${index}].prices[${priceIndex}].amount`]: compare(currentPrice.amount, jobPriceDocument.price.amount),
-              [`jobs[${index}].prices[${priceIndex}].unitOfMeasurement`]: compare(currentPrice.unitOfMeasurement, jobPriceDocument.price.unitOfMeasurement),
-              [`jobs[${index}].prices[${priceIndex}].priceId`]: compare(currentPrice.priceId, getPriceId(jobPriceDocument.price)),
-              [`jobs[${index}].prices[${priceIndex}].quantity`]: compare(currentPrice.quantity, jobPriceDocument.quantity),
-            };
-          }, {});
-
-          return {
-            ...accumulator,
-            [`jobs[${index}].name`]: compare(currentValue.name, document.customer.jobs[index].name),
-            [`jobs[${index}].description`]: compare(currentValue.description, document.customer.jobs[index].description),
-            [`jobs[${index}].duration`]: compare(currentValue.duration, document.customer.jobs[index].duration),
-            ...prices,
-          };
-        }, {}),
-        ...response.prices?.reduce((accumulator, currentValue, index) => {
-          const priceDocument = document.prices[index];
-
-          if (isPriceBase(priceDocument)) {
-            return {
-              ...accumulator,
-              [`prices[${index}].name`]: compare(currentValue.name, priceDocument.name),
-              [`prices[${index}].amount`]: compare(currentValue.amount, priceDocument.amount),
-            };
-          }
-
-          return {
-            ...accumulator,
-            [`prices[${index}].priceId`]: compare(currentValue.priceId, getPriceId(priceDocument.price)),
-            [`prices[${index}].quantity`]: compare(currentValue.quantity, priceDocument.quantity),
-            [`prices[${index}].name`]: compare(currentValue.name, priceDocument.price.name),
-            [`prices[${index}].amount`]: compare(currentValue.amount, priceDocument.price.amount),
-            [`prices[${index}].unitOfMeasurement`]: compare(currentValue.unitOfMeasurement, priceDocument.price.unitOfMeasurement),
-          };
-        }, {}),
-      };
+  if (response.entryType === CalendarEntryType.Work && document.entryType === CalendarEntryType.Work) { 
+    return new Comparer(response, {
+      calendarEntryId: getCalendarEntryId(document),
+      title: document.title,
+      description: document.description,
+      start: document.start,
+      end: document.end,
+      day: document.day,
+      entryType: document.entryType,
+      customer: validateCustomerResponse(response.customer, document.customer),
+      resolution: new Comparer(response.resolution, {
+        status: document.resolution.status,
+        delay: document.resolution.delay,
+      }),
+      prices: validateCustomerJobPriceResponse(response.prices, document.prices),
     });
   }
 
-  return createComparer((compare) => {
-    return {
-      calendarEntryId: compare(response.calendarEntryId, getCalendarEntryId(document)),
-      title: compare(response.title, document.title),
-      description: compare(response.description, document.description),
-      start: compare(response.start, document.start),
-      end: compare(response.end, document.end),
-      day: compare(response.day, document.day),
-      entryType: compare(response.entryType, document.entryType),
-    };
+  return new Comparer(response, {
+    calendarEntryId: getCalendarEntryId(document),
+    title: document.title,
+    description: document.description,
+    start: document.start,
+    end: document.end,
+    day: document.day,
+    entryType: document.entryType,
   });
 };
 
 export const expect = baseExpect.extend({
   toHaveBeenSavedAsCalendarDayDocument(req: Calendar.Day.Request, document: Calendar.Day.Document) {
-    const comparer = createComparer((compare) => {
-      return {
-        dayType: compare(document.dayType, req.dayType),
-        start: compare(document.start, req.dayType === CalendarDayType.Workday ? req.start : undefined),
-        end: compare(document.end, req.dayType === CalendarDayType.Workday ? req.end : undefined),
-      };
-    });
+    const comparer = new Comparer(document, {
+      dayType: req.dayType,
+      start: req.dayType === CalendarDayType.Workday ? req.start : undefined,
+      end: req.dayType === CalendarDayType.Workday ? req.end : undefined,
+    }, '_id', 'createdAt', 'updatedAt', 'expiresAt', 'day');
 
-    const message = comparer.validate(document, '_id', 'createdAt', 'updatedAt', 'expiresAt', 'day');
+    const errors = comparer.validate();
 
     return {
-      pass: !message,
-      message: () => message,
+      pass: errors.length === 0,
+      message: () => `Expected document to be saved as calendar day document, but it was not: ${errors.join(', ')}`,
     };
   },
   toHaveBeenSavedAsCalendarEntryDocument(req: Calendar.Entry.Request, document: Calendar.Entry.Document) {
-    const comparer = createComparer((compare) => {
+    const comparer = new Comparer(document, {
+      title: req.title,
+      entryType: req.entryType,
+      description: req.description,
+      start: req.start,
+      end: req.end,
+      day: req.day,
+      resolution: undefined,
+      transaction: undefined,
+      customer: req.entryType === CalendarEntryType.Work ? req.customerId : undefined,
+      prices: req.entryType === CalendarEntryType.Work ? document.prices?.map((priceDocument, index) => {
+        const priceRequest = req.prices[index];
 
-      return {
-        title: compare(document.title, req.title),
-        entryType: compare(document.entryType, req.entryType),
-        description: compare(document.description, req.description),
-        start: compare(document.start, req.start),
-        end: compare(document.end, req.end),
-        day: compare(document.day, req.day),
-        resolution: compare(document.resolution, undefined),
-        transaction: compare(document.transaction, undefined),
-        ...(req.entryType === CalendarEntryType.Work ? {
-          customer: compare(getCustomerId(document.customer), req.customerId),
-          ...document.prices?.reduce((accumulator, currentValue, index) => {
-            const priceRequest = req.prices[index];
+        if (isPriceBase(priceDocument) && isPriceBase(priceRequest)) {
+          return new Comparer(priceDocument, {
+            name: priceRequest.name,
+            amount: priceRequest.amount,
+          });
+        }
 
-            if (isPriceBase(currentValue) && isPriceBase(priceRequest)) {
-              return {
-                ...accumulator,
-                [`prices[${index}].name`]: compare(currentValue.name, priceRequest.name),
-                [`prices[${index}].amount`]: compare(currentValue.amount, priceRequest.amount),
-              };
-            }
+        if (!isPriceBase(priceDocument) && !isPriceBase(priceRequest)) {
+          return new Comparer(priceDocument, {
+            price: priceRequest.priceId,
+            quantity: priceRequest.quantity,
+          });
+        }
+      }) : undefined,
+    }, '_id', 'createdAt', 'updatedAt', 'expiresAt');
 
-            if (!isPriceBase(currentValue) && !isPriceBase(priceRequest)) {
-              return {
-                ...accumulator,
-                [`prices[${index}].priceId`]: compare(getPriceId(currentValue.price), priceRequest.priceId),
-                [`prices[${index}].quantity`]: compare(currentValue.quantity, priceRequest.quantity),
-              };
-            }
-
-            return {
-              ...accumulator,
-              [`prices[${index}].priceType`]: compare(isPriceBase(currentValue) ? 'custom' : 'listed', isPriceBase(priceRequest) ? 'custom' : 'listed'),
-            };
-          }, {}),
-        } : {
-          customer: compare(document.customer, undefined),
-          prices: compare(document.prices, undefined),
-        }),
-      };
-    });
-
-    const message = comparer.validate(document, '_id', 'createdAt', 'updatedAt', 'expiresAt', 'customer', 'prices');
+    const errors = comparer.validate();
 
     return {
-      pass: !message,
-      message: () => message,
+      pass: errors.length === 0,
+      message: () => `Expected document to be saved as calendar day document, but it was not:\n${errors.join('\n')}`,
     };
   },
   toHaveBeenDeletedFromDatabase(document: Calendar.Day.Document | Calendar.Entry.Document) {
@@ -305,7 +225,7 @@ export const expect = baseExpect.extend({
       message: () => `expected document to be deleted from database, but it was found with id ${document._id}`,
     };
   },
-  async toMatchCalendarEntryBaseDocumentInResponseList(received: APIResponse, document: Calendar.Entry.Document) {
+  async toContainMatchingCalendarEntryBaseDocument(received: APIResponse, document: Calendar.Entry.Document) {
     const response = await received.json() as Calendar.Entry.ResponseBase[];
     
     const matchingResponse = response.find(r => r.calendarEntryId === getCalendarEntryId(document));
@@ -317,109 +237,73 @@ export const expect = baseExpect.extend({
       };
     }
 
-    const comparer = createComparer((compare) => {
-      return {
-        calendarEntryId: compare(matchingResponse?.calendarEntryId, getCalendarEntryId(document)),
-        title: compare(matchingResponse?.title, document.title),
-        description: compare(matchingResponse?.description, document.description),
-        start: compare(matchingResponse?.start, document.start),
-        end: compare(matchingResponse?.end, document.end),
-        day: compare(matchingResponse?.day, document.day),
-      };
+    const comparer = new Comparer(matchingResponse, {
+      calendarEntryId: getCalendarEntryId(document),
+      title: document.title,
+      description: document.description,
+      start: document.start,
+      end: document.end,
+      day: document.day,
     });
 
-    const message = comparer.validate(matchingResponse);
+    const errors = comparer.validate();
 
     return {
-      pass: !message,
-      message: () => message,
+      pass: errors.length === 0,
+      message: () => `Expected document to match calendar entry document, but it did not: ${errors.join('\n')}`,
     };
   },
   async toMatchCalendarEntryDocument(received: APIResponse, document: Calendar.Entry.Document) {
     const response = await received.json() as Calendar.Entry.Response;
 
-    const message = validateCalendarEntryResponse(response, document).validate(response as any, 'resolution', 'prices', 'customer'); // TODO
-    return {
-      pass: !message,
-      message: () => message,
+    const errors = validateCalendarEntryResponse(response, document).validate();
+    
+    return {      
+      pass: errors.length === 0,
+      message: () => `Expected document to match calendar entry document, but it did not:\n${errors.join('\n')}`,
     };
   },
-  toHaveBeenResolved(originalDocument: Calendar.Entry.Document, currentDocument: Calendar.Entry.Document, request: Calendar.Entry.ResolutionRequest, transactionDocument?: Transaction.PaymentDocument, categoryId?: Category.Id, accountId?: Account.Id) {
-    const comparer = createComparer((compare) => {
-      let transaction;
-      if (request.status === CalendarEntryResolutionStatus.Paid) {
-        const expectedIssuedAt = moment.tz(currentDocument.day, 'Europe/Budapest'); 
-        expectedIssuedAt.set({
-          hour: Math.floor(currentDocument.end / 4),
-          minute: (currentDocument.end % 4) * 15,
-        });
+  toHaveBeenResolved(originalDocument: Calendar.Entry.Document, currentDocument: Calendar.Entry.Document, request: Calendar.Entry.ResolutionRequest, transactionId?: Transaction.Id) {
+    const comparer = new Comparer(currentDocument, {
+      description: originalDocument.description,
+      start: originalDocument.start,
+      end: originalDocument.end,
+      day: originalDocument.day,
+      title: originalDocument.title,
+      entryType: originalDocument.entryType,  
+      customer: getCustomerId(originalDocument.customer),
+      resolution: new Comparer(currentDocument.resolution, {
+        delay: request.status !== CalendarEntryResolutionStatus.NoShow ? request.delay : undefined,
+        status: request.status,
+      }),
+      prices: currentDocument.prices?.map((currentPrice, index) => {
+        const originalPrice = originalDocument.prices[index];
 
-        transaction = {
-          'transaction.amount': compare(transactionDocument.amount, request.amount),
-          'transaction.transactionType': compare(transactionDocument.transactionType, 'payment'),
-          'transaction.account': compare(getAccountId(transactionDocument.account), accountId),
-          'transaction.category': compare(getCategoryId(transactionDocument.category), categoryId),
-          'transaction.project': compare(getProjectId(transactionDocument.project), undefined),
-          'transaction.recipient': compare(getRecipientId(transactionDocument.recipient), undefined),
-          'transaction.issuedAt': compare(transactionDocument.issuedAt.toISOString(), expectedIssuedAt.toISOString()),
-          'transaction.invoiceNumber': compare(transactionDocument.invoiceNumber, undefined),
-          'transaction.billingStartDate': compare(transactionDocument.billingStartDate?.toISOString(), undefined),
-          'transaction.billingEndDate': compare(transactionDocument.billingEndDate?.toISOString(), undefined),
-          'transaction.quantity': compare(transactionDocument.quantity, undefined),
-          'transaction.product': compare(getProductId(transactionDocument.product), undefined),
-        };
-      } else {
-        transaction = {
-          transaction: compare(currentDocument.transaction, undefined),
-        };
-      }
+        if (isPriceBase(currentPrice) && isPriceBase(originalPrice)) {
+          return new Comparer(currentPrice, {
+            name: originalPrice.name,
+            amount: originalPrice.amount,
+          });
+        }
 
-      return {
-        description: compare(currentDocument.description, originalDocument.description),
-        start: compare(currentDocument.start, originalDocument.start),
-        end: compare(currentDocument.end, originalDocument.end),
-        day: compare(currentDocument.day, originalDocument.day),
-        title: compare(currentDocument.title, originalDocument.title),
-        entryType: compare(currentDocument.entryType, originalDocument.entryType),  
-        customerId: compare(getCustomerId(currentDocument.customer), getCustomerId(originalDocument.customer)),
-        'resolution.delay': compare(currentDocument.resolution.delay, request.status !== CalendarEntryResolutionStatus.NoShow ? request.delay : undefined),
-        'resolution.status': compare(currentDocument.resolution.status, request.status),
-        ...transaction,
-        ...currentDocument.prices?.reduce((accumulator, currentValue, index) => {
-          const originalPrice = originalDocument.prices[index];
+        if (!isPriceBase(currentPrice) && !isPriceBase(originalPrice)) {
+          return new Comparer(currentPrice, {
+            price: getPriceId(originalPrice.price),
+            quantity: originalPrice.quantity,
+          });
+        }
+      }),
+      transaction: currentDocument.resolution?.status === CalendarEntryResolutionStatus.Paid ? transactionId : undefined,
+    }, '_id', 'createdAt', 'updatedAt', 'expiresAt');
 
-          if (isPriceBase(currentValue) && isPriceBase(originalPrice)) {
-            return {
-              ...accumulator,
-              [`prices[${index}].name`]: compare(currentValue.name, originalPrice.name),
-              [`prices[${index}].amount`]: compare(currentValue.amount, originalPrice.amount),
-            };
-          }
-
-          if (!isPriceBase(currentValue) && !isPriceBase(originalPrice)) {
-            return {
-              ...accumulator,
-              [`prices[${index}].priceId`]: compare(getPriceId(currentValue.price), getPriceId(originalPrice.price)),
-              [`prices[${index}].quantity`]: compare(currentValue.quantity, originalPrice.quantity),
-            };
-          }
-
-          return {
-            ...accumulator,
-            [`prices[${index}]`]: compare(currentDocument.prices?.[index], originalDocument.prices?.[index]),
-          };
-        }, {}),
-      };
-    });
-
-    const message = comparer.validate(currentDocument, '_id', 'createdAt', 'updatedAt', 'expiresAt', 'customer', 'prices', 'resolution', 'transaction');
+    const errors = comparer.validate();
 
     return {
-      pass: !message,
-      message: () => message,
+      pass: errors.length === 0,
+      message: () => `Expected document to be resolved correctly, but it was not:\n${errors.join('\n')}`,
     };
   },
-  async toMatchCalendarDayDocumentInResponseList(received: APIResponse, dayInput: Calendar.DayProp['day'], calendarEntryDocument: Calendar.Entry.Document, calendarDayDocument?: Calendar.Day.Document) {
+  async toContainMatchingCalendarDayDocument(received: APIResponse, dayInput: Calendar.DayProp['day'], calendarEntryDocument: Calendar.Entry.Document, calendarDayDocument?: Calendar.Day.Document) {
     const response = await received.json() as Calendar.Day.Response[];
     const matchingResponse = response.find(r => r.day === dayInput);
 
@@ -431,77 +315,70 @@ export const expect = baseExpect.extend({
     }
 
     if (matchingResponse.dayType === CalendarDayType.Workday) {
-      const comparer = createComparer((compare) => {
-        const entryResponse = matchingResponse.entries?.find(e => e.calendarEntryId === getCalendarEntryId(calendarEntryDocument));
+      const entryResponse = matchingResponse.entries?.find(e => e.calendarEntryId === getCalendarEntryId(calendarEntryDocument));
 
-        return {
-          day: compare(matchingResponse.day, dayInput),
-          dayType: compare(matchingResponse.dayType, CalendarDayType.Workday),
-          start: compare(matchingResponse.start, calendarDayDocument?.start ?? WORKDAY_START),
-          end: compare(matchingResponse.end, calendarDayDocument?.end ?? WORKDAY_END),
-          ...validateCalendarEntryResponse(entryResponse, calendarEntryDocument).getNormalized('entries.'),
-        };
+      const comparer = new Comparer(matchingResponse, {
+        day: dayInput,
+        dayType: CalendarDayType.Workday,
+        start: calendarDayDocument?.start ?? WORKDAY_START,
+        end: calendarDayDocument?.end ?? WORKDAY_END,
+        entries: [entryResponse].map(entry => validateCalendarEntryResponse(entry, calendarEntryDocument)),
       });
 
-      const message = comparer.validate(matchingResponse, 'entries');  
+      const errors = comparer.validate();  
+
       return {
-        pass: !message,
-        message: () => message,
+        pass: errors.length === 0,
+        message: () => `Expected response to match calendar entry document, but it did not:\n${errors.join('\n')}`,
       };
     }
 
     if (matchingResponse.dayType === CalendarDayType.Weekend) {
-      const comparer = createComparer((compare) => {
-        const entryResponse = matchingResponse.entries?.find(e => e.calendarEntryId === getCalendarEntryId(calendarEntryDocument));
-
-        return {
-          day: compare(matchingResponse.day, dayInput),
-          dayType: compare(matchingResponse.dayType, CalendarDayType.Weekend),
-          start: compare(matchingResponse.start, calendarDayDocument?.start ?? undefined),
-          end: compare(matchingResponse.end, calendarDayDocument?.end ?? undefined),
-          ...validateCalendarEntryResponse(entryResponse, calendarEntryDocument).getNormalized('entries.'),
-        };
+      const entryResponse = matchingResponse.entries?.find(e => e.calendarEntryId === getCalendarEntryId(calendarEntryDocument));
+      const comparer = new Comparer(matchingResponse, {
+        day: dayInput,
+        dayType: CalendarDayType.Weekend,
+        start: calendarDayDocument?.start ?? undefined,
+        end: calendarDayDocument?.end ?? undefined,
+        entries: [entryResponse].map(entry => validateCalendarEntryResponse(entry, calendarEntryDocument)),
       });
 
-      const message = comparer.validate(matchingResponse, 'entries');  
+      const errors = comparer.validate();  
+      
       return {
-        pass: !message,
-        message: () => message,
+        pass: errors.length === 0,
+        message: () => `Expected response to match calendar entry document, but it did not:\n${errors.join('\n')}`,
       };
     }
 
     if (matchingResponse.dayType === CalendarDayType.Vacation) {
-      const comparer = createComparer((compare) => {
-        const entryResponse = matchingResponse.entries?.find(e => e.calendarEntryId === getCalendarEntryId(calendarEntryDocument));
-
-        return {
-          day: compare(matchingResponse.day, dayInput),
-          dayType: compare(matchingResponse.dayType, CalendarDayType.Vacation),
-          ...validateCalendarEntryResponse(entryResponse, calendarEntryDocument).getNormalized('entries.'),
-        };
+      const entryResponse = matchingResponse.entries?.find(e => e.calendarEntryId === getCalendarEntryId(calendarEntryDocument));
+      const comparer = new Comparer(matchingResponse, {
+        day: dayInput,
+        dayType: CalendarDayType.Vacation,
+        entries: [entryResponse].map(entry => validateCalendarEntryResponse(entry, calendarEntryDocument)),
       });
 
-      const message = comparer.validate(matchingResponse, 'entries');  
+      const errors = comparer.validate();  
+      
       return {
-        pass: !message,
-        message: () => message,
+        pass: errors.length === 0,
+        message: () => `Expected response to match calendar entry document, but it did not:\n${errors.join('\n')}`,
       };
     }
 
-    const comparer = createComparer((compare) => {
-      const entryResponse = matchingResponse.entries?.find(e => e.calendarEntryId === getCalendarEntryId(calendarEntryDocument));
-
-      return {
-        day: compare(matchingResponse.day, dayInput),
-        dayType: compare(matchingResponse.dayType, CalendarDayType.Holiday),
-        ...validateCalendarEntryResponse(entryResponse, calendarEntryDocument).getNormalized('entries.'),
-      };
+    const entryResponse = matchingResponse.entries?.find(e => e.calendarEntryId === getCalendarEntryId(calendarEntryDocument));
+    const comparer = new Comparer(matchingResponse, {
+      day: dayInput,
+      dayType: CalendarDayType.Holiday,
+      entries: [entryResponse].map(entry => validateCalendarEntryResponse(entry, calendarEntryDocument)),
     });
 
-    const message = comparer.validate(matchingResponse, 'entries');  
+    const errors = comparer.validate();  
+      
     return {
-      pass: !message,
-      message: () => message,
+      pass: errors.length === 0,
+      message: () => `Expected response to match calendar entry document, but it did not:\n${errors.join('\n')}`,
     };
 
   },

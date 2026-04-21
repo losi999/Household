@@ -2,7 +2,7 @@ import { getPriceId } from '@household/shared/common/utils';
 import { headerExpiresIn } from '@household/shared/constants';
 import { Price } from '@household/shared/types/types';
 import { test as baseTest, expect as baseExpect } from '@household/test/fixtures/api.fixture';
-import { createComparer } from '@household/test/utils';
+import { Comparer } from '@household/test/comparer';
 import { APIResponse } from '@playwright/test';
 
 type PriceApiFixture = {
@@ -72,54 +72,50 @@ export const test = baseTest.extend<PriceApiFixture>({
 });
 
 export const expect = baseExpect.extend({
-  async toBeStoredInDatabase(req: Price.Request, document: Price.Document) {
+  async toHaveBeenSavedAsPriceDocument(req: Price.Request, document: Price.Document) {
     if (!document) {
       return {
         pass: false,
-        message: () => 'expected price to be stored in database, but it was not found',
+        message: () => 'Expected price to be stored in database, but it was not found',
       };
     }
   
-    const comparer = createComparer((compare) => {
-      return {
-        name: compare(document.name, req.name),
-        amount: compare(document.amount, req.amount),
-        isArchived: compare(document.isArchived, false),
-        unitOfMeasurement: compare(document.unitOfMeasurement, req.unitOfMeasurement),
-      };  
-    });
+    const comparer = new Comparer(document, {
+      name: req.name,
+      amount: req.amount,
+      isArchived: false,
+      unitOfMeasurement: req.unitOfMeasurement,
+    }, '_id', 'createdAt', 'expiresAt', 'updatedAt');
   
-    const message = comparer.validate(document, '_id', 'createdAt', 'expiresAt', 'updatedAt');
+    const errors = comparer.validate();
   
     return {
-      pass: !message,
-      message: () => message,
+      pass: errors.length === 0,
+      message: () => `Expected price to be stored in database, but it was not:\n${errors.join('\n')}`,
     };
   },
   toHaveBeenDeletedFromDatabase(document: Price.Document) {
     return {
       pass: !document,
-      message: () => `expected price to be deleted from database, but it was found with id ${getPriceId(document)}`,
+      message: () => `Expected price to be deleted from database, but it was found with id ${getPriceId(document)}`,
     };
   },
   toHaveBeenArchivedInDatabase(originalDocument: Price.Document, currentDocument: Price.Document) {
-    const comparer = createComparer((compare) => {
-      return {
-        name: compare(currentDocument.name, originalDocument.name),
-        amount: compare(currentDocument.amount, originalDocument.amount),
-        isArchived: compare(currentDocument.isArchived, true),
-        unitOfMeasurement: compare(currentDocument.unitOfMeasurement, originalDocument.unitOfMeasurement),
-      };  
-    });
+    const comparer = new Comparer(currentDocument, {
+      name: originalDocument.name,
+      amount: originalDocument.amount,
+      isArchived: true,
+      unitOfMeasurement: originalDocument.unitOfMeasurement,
+    }, '_id', 'createdAt', 'expiresAt', 'updatedAt');
 
-    const message = comparer.validate(currentDocument, '_id', 'createdAt', 'expiresAt', 'updatedAt');
+    const errors = comparer.validate();
 
     return {
-      pass: !message,
-      message: () => message,
+      pass: errors.length === 0,
+      message: () => `Expected price to be archived in database, but it was not:\n${errors.join('\n')}`,
     };
   },
-  async toMatchPriceDocumentInList(received: APIResponse, document: Price.Document) {
+  async toContainMatchingPriceDocument(received: APIResponse, document: Price.Document) {
     const response = await received.json() as Price.Response[];
   
     const matchingResponse = response.find(r => r.priceId === getPriceId(document));
@@ -127,34 +123,32 @@ export const expect = baseExpect.extend({
     if (!matchingResponse) {
       return {
         pass: false,
-        message: () => `expected response to contain a price with id ${getPriceId(document)}, but it was not found`,
+        message: () => `Expected response to contain a price with id ${getPriceId(document)}, but it was not found`,
       };
     }
 
-    const comparer = createComparer((compare) => {
-      return {
-        priceId: compare(matchingResponse.priceId, getPriceId(document)),
-        name: compare(matchingResponse.name, document.name),
-        amount: compare(matchingResponse.amount, document.amount),
-        unitOfMeasurement: compare(matchingResponse.unitOfMeasurement, document.unitOfMeasurement),
-      };  
+    const comparer = new Comparer(matchingResponse, {
+      priceId: getPriceId(document),
+      name: document.name,
+      amount: document.amount,
+      unitOfMeasurement: document.unitOfMeasurement,
     });
   
-    const message = comparer.validate(matchingResponse);
+    const errors = comparer.validate();
   
     return {
-      pass: !message,
-      message: () => message,
+      pass: errors.length === 0,
+      message: () => `Expected response to match price document, but it did not:\n${errors.join('\n')}`,
     };
   }, 
-  async toNotMatchPriceDocumentInList(received: APIResponse, document: Price.Document) {
+  async toNotContainMatchingPriceDocument(received: APIResponse, document: Price.Document) {
     const response = await received.json() as Price.Response[];
   
     const matchingResponse = response.find(r => r.priceId === getPriceId(document));
   
     return {
       pass: !matchingResponse,
-      message: () => `expected response not to contain a price with id ${getPriceId(document)}, but it was found`,
+      message: () => `Expected response not to contain a price with id ${getPriceId(document)}, but it was found`,
     };
   }, 
 });

@@ -46,7 +46,7 @@ test.describe('POST price/v1/prices', () => {
             expect(res).toBeCreatedResponse();
 
             const { priceId } = (await res.json()) as Price.PriceId;
-            expect(request).toBeStoredInDatabase(await priceService.findPriceById(priceId));
+            expect(request).toHaveBeenSavedAsPriceDocument(await priceService.findPriceById(priceId));
           });
         });
 
@@ -63,7 +63,7 @@ test.describe('POST price/v1/prices', () => {
           expect(res).toBeCreatedResponse();
 
           const { priceId } = (await res.json()) as Price.PriceId;
-          expect(request).toBeStoredInDatabase(await priceService.findPriceById(priceId));
+          expect(request).toHaveBeenSavedAsPriceDocument(await priceService.findPriceById(priceId));
         });
 
         test.describe('should return error', () => {

@@ -52,7 +52,7 @@ test.describe('GET /file/v1/files', () => {
           const res = await requestListFiles();
           expect(res).toBeOkResponse();
           expect(res).toMatchSchema(schema);
-          expect(res).toMatchFileDocumentInList(fileDocument, 1);
+          expect(res).toContainMatchingFileDocument(fileDocument, 1);
         });
       }
     });

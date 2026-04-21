@@ -45,7 +45,7 @@ test.describe('POST /recipient/v1/recipients', () => {
           expect(res).toBeCreatedResponse();
 
           const { recipientId } = (await res.json()) as Recipient.RecipientId;
-          expect(req).toBeStoredInDatabase(await recipientService.findRecipientById(recipientId));
+          expect(req).toHaveBeenSavedAsRecipientDocument(await recipientService.findRecipientById(recipientId));
         });
 
         test.describe('should return error', () => {

@@ -1,7 +1,7 @@
 import { getRecipientId } from '@household/shared/common/utils';
 import { headerExpiresIn } from '@household/shared/constants';
 import { Recipient } from '@household/shared/types/types';
-import { createComparer } from '@household/test/utils';
+import { Comparer } from '@household/test/comparer';
 import { test as baseTest } from '@household/test/fixtures/api.fixture';
 import { expect as baseExpect, APIResponse } from '@playwright/test';
 
@@ -14,15 +14,11 @@ type RecipientApiFixture = {
   requestMergeRecipients(recipientId: Recipient.Id, sourceRecipientIds: Recipient.Id[]): Promise<APIResponse>;
 };
 
-const validateRecipientResponse = (response: Recipient.Response, document: Recipient.Document): string => {
-  const comparer = createComparer((compare) => {
-    return {
-      recipientId: compare(response.recipientId, getRecipientId(document)),
-      name: compare(response.name, document.name),
-    };
+export const validateRecipientResponse = (response: Recipient.Response, document: Recipient.Document) => {
+  return new Comparer(response, {
+    recipientId: getRecipientId(document),
+    name: document?.name,
   });
-
-  return comparer.validate(response);
 };
 
 export const test = baseTest.extend<RecipientApiFixture>({
@@ -112,7 +108,7 @@ export const test = baseTest.extend<RecipientApiFixture>({
 });
 
 export const expect = baseExpect.extend({
-  async toBeStoredInDatabase(req: Recipient.Request, document: Recipient.Document) {
+  async toHaveBeenSavedAsRecipientDocument(req: Recipient.Request, document: Recipient.Document) {
     if (!document) {
       return {
         pass: false,
@@ -120,36 +116,34 @@ export const expect = baseExpect.extend({
       };
     }
 
-    const comparer = createComparer((compare) => {
-      return {
-        name: compare(document.name, req.name),
-      };
-    });
+    const comparer = new Comparer(document, {
+      name: req.name,
+    }, '_id', 'createdAt', 'expiresAt', 'updatedAt');
 
-    const message = comparer.validate(document, '_id', 'createdAt', 'expiresAt', 'updatedAt');
+    const errors = comparer.validate();
 
     return {
-      pass: !message,
-      message: () => message,
+      pass: !errors.length,
+      message: () => `Expected recipient to be stored in database, but it was not:\n${errors.join('\n')}`,
     };
   },
   toHaveBeenDeletedFromDatabase(document: Recipient.Document) {
     return {
       pass: !document,
-      message: () => `expected recipient to be deleted from database, but it was found with id ${getRecipientId(document)}`,
+      message: () => `Expected recipient to be deleted from database, but it was found with id ${getRecipientId(document)}`,
     };
   },
   async toMatchRecipientDocument(received: APIResponse, document: Recipient.Document) {
     const response = await received.json() as Recipient.Response;
 
-    const message = validateRecipientResponse(response, document);
+    const errors = validateRecipientResponse(response, document).validate();
 
     return {
-      pass: !message,
-      message: () => message,
+      pass: !errors.length,
+      message: () => `Expected response to match recipient document, but it did not:\n${errors.join('\n')}`,
     };
   },
-  async toMatchRecipientDocumentInList(received: APIResponse, document: Recipient.Document) {
+  async toContainMatchingRecipientDocument(received: APIResponse, document: Recipient.Document) {
     const response = await received.json() as Recipient.Response[];
 
     const matchingResponse = response.find(r => r.recipientId === getRecipientId(document));
@@ -157,15 +151,15 @@ export const expect = baseExpect.extend({
     if (!matchingResponse) {
       return {
         pass: false,
-        message: () => `expected response to contain a recipient with id ${getRecipientId(document)}, but it was not found`,
+        message: () => `Expected response to contain a recipient with id ${getRecipientId(document)}, but it was not found`,
       };
     }
 
-    const message = validateRecipientResponse(matchingResponse, document);
+    const errors = validateRecipientResponse(matchingResponse, document).validate();
 
     return {
-      pass: !message,
-      message: () => message,
+      pass: !errors.length,
+      message: () => `Expected response to match recipient document, but it did not:\n${errors.join('\n')}`,
     };
   },
 });

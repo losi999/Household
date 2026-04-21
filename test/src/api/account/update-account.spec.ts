@@ -48,7 +48,7 @@ test.describe('PUT /account/v1/accounts/{accountId}', () => {
           expect(res).toBeCreatedResponse();
           
           const { accountId } = (await res.json()) as Account.AccountId;
-          expect(request).toBeStoredInDatabase(await accountService.findAccountById(accountId));
+          expect(request).toHaveBeenSavedAsAccountDocument(await accountService.findAccountById(accountId));
         });
 
         test('should update account with an existing name for a different owner', async ({ requestUpdateAccount }) => {
@@ -62,7 +62,7 @@ test.describe('PUT /account/v1/accounts/{accountId}', () => {
           expect(res).toBeCreatedResponse();
 
           const { accountId } = (await res.json()) as Account.AccountId;
-          expect(request).toBeStoredInDatabase(await accountService.findAccountById(accountId));
+          expect(request).toHaveBeenSavedAsAccountDocument(await accountService.findAccountById(accountId));
         });
         test.describe('should return error', () => {
           test.describe('if body', () => {
@@ -73,7 +73,7 @@ test.describe('PUT /account/v1/accounts/{accountId}', () => {
               } as any);
           
               expect(res).toBeBadRequestResponse();
-              expect(res).toHaveAdditionalPropertiesValidationError('body', 'extraProperty');
+              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
             });
           });
           test.describe('if name', () => {

@@ -68,10 +68,10 @@ test.describe('GET /user/v1/users', () => {
           const res = await requestListUsers();
           expect(res).toBeOkResponse();
           expect(res).toMatchSchema(schema);
-          expect(res).toMatchUserInResponseList(pendingUser);
-          expect(res).toMatchUserInResponseList(editorUser);
-          expect(res).toMatchUserInResponseList(viewerUser);
-          expect(res).toMatchUserInResponseList(hairdresserUser);
+          expect(res).toContainMatchingUser(pendingUser);
+          expect(res).toContainMatchingUser(editorUser);
+          expect(res).toContainMatchingUser(viewerUser);
+          expect(res).toContainMatchingUser(hairdresserUser);
         });
       }
     });

@@ -12,7 +12,7 @@ const expect = mergeExpects(calendarApiExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser');
 
-test.describe('PUT /calendar/v1/days/{day}', () => {
+test.describe.serial('PUT /calendar/v1/days/{day}', () => {
   let request: Calendar.Day.Request;
   let day: string;
   let calendarDayDocument: Calendar.Day.Document;

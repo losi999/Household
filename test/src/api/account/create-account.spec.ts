@@ -43,7 +43,7 @@ test.describe('POST account/v1/accounts', () => {
           expect(res).toBeCreatedResponse();
 
           const { accountId } = (await res.json()) as Account.AccountId;
-          expect(request).toBeStoredInDatabase(await accountService.findAccountById(accountId));
+          expect(request).toHaveBeenSavedAsAccountDocument(await accountService.findAccountById(accountId));
         });
 
         test('should create account with an existing name for a different owner', async ({ requestCreateAccount }) => {
@@ -58,7 +58,7 @@ test.describe('POST account/v1/accounts', () => {
           expect(res).toBeCreatedResponse();
 
           const { accountId } = (await res.json()) as Account.AccountId;
-          expect(request).toBeStoredInDatabase(await accountService.findAccountById(accountId));
+          expect(request).toHaveBeenSavedAsAccountDocument(await accountService.findAccountById(accountId));
         });
 
         test.describe('should return error', () => {
@@ -70,7 +70,7 @@ test.describe('POST account/v1/accounts', () => {
               } as any);
   
               expect(res).toBeBadRequestResponse();
-              expect(res).toHaveAdditionalPropertiesValidationError('body', 'extraProperty');
+              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
             });
           });
 

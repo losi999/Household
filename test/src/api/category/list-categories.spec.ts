@@ -57,8 +57,8 @@ test.describe('GET /category/v1/categories', () => {
           const res = await requestListCategories();
           expect(res).toBeOkResponse();
           expect(res).toMatchSchema(schema);
-          expect(res).toMatchCategoryDocumentInList(parentCategoryDocument);
-          expect(res).toMatchCategoryDocumentInList(childCategoryDocument, parentCategoryDocument);
+          expect(res).toContainMatchingCategoryDocument(parentCategoryDocument);
+          expect(res).toContainMatchingCategoryDocument(childCategoryDocument, parentCategoryDocument);
         });
       }
     });

@@ -3,7 +3,7 @@ import { headerExpiresIn } from '@household/shared/constants';
 import { Category } from '@household/shared/types/types';
 import { test as baseTest } from '@household/test/fixtures/api.fixture';
 import { expect as baseExpect, APIResponse } from '@playwright/test';
-import { createComparer } from '@household/test/comparer3';
+import { Comparer } from '@household/test/comparer';
 
 type CategoryApiFixture = {
   requestGetCategory(categoryId: Category.Id): Promise<APIResponse>;
@@ -100,30 +100,31 @@ export const test = baseTest.extend<CategoryApiFixture>({
   },
 });
 
-const validateCategoryResponse = (response: Category.Response, document: Category.Document, ...ancestorDocuments: Category.Document[]) => {
+export const validateCategoryResponse = (response: Category.Response, document: Category.Document, ...ancestorDocuments: Category.Document[]) => {
   const expectedFullName = [
     ...ancestorDocuments,
     document,
-  ].map(c => c.name).join(':');
+  ].filter(c => !!c).map(c => c.name)
+    .join(':');
   const parentCategoryDocument = ancestorDocuments.at(-1);
   const expectedParentFullName = parentCategoryDocument ? ancestorDocuments.map(a => a.name).join(':') : undefined;
   
-  return createComparer(response, {
+  return new Comparer(response, {
     categoryId: getCategoryId(document),
-    name: document.name,
-    categoryType: document.categoryType,
+    name: document?.name,
+    categoryType: document?.categoryType,
     fullName: expectedFullName,
-    parentCategory: createComparer(response.parentCategory, {
+    parentCategory: new Comparer(response?.parentCategory, {
       categoryId: getCategoryId(parentCategoryDocument),
       name: parentCategoryDocument?.name,
       categoryType: parentCategoryDocument?.categoryType,
       fullName: expectedParentFullName, 
     }),
-    ancestors: response.ancestors.map((ancestor, index) => {
-      return createComparer(ancestor, {
+    ancestors: response?.ancestors.map((ancestor, index) => {
+      return new Comparer(ancestor, {
         categoryId: getCategoryId(ancestorDocuments[index]),
-        name: ancestorDocuments[index].name,
-        categoryType: ancestorDocuments[index].categoryType,
+        name: ancestorDocuments[index]?.name,
+        categoryType: ancestorDocuments[index]?.categoryType,
       });
     }),
   });
@@ -133,18 +134,18 @@ export const expect = baseExpect.extend({
   toHaveBeenDeletedFromDatabase(document: Category.Document) {
     return {
       pass: !document,
-      message: () => `expected category to be deleted from database, but it was found with id ${getCategoryId(document)}`,
+      message: () => `Expected category to be deleted from database, but it was found with id ${getCategoryId(document)}`,
     };
   },
   toHaveBeenSavedAsCategoryDocument(req: Category.Request, document: Category.Document, ...ancestorDocuments: Category.Document[]) {
     if (!document) {
       return {
         pass: false,
-        message: () => 'expected category to be stored in database, but it was not found',
+        message: () => 'Expected category to be stored in database, but it was not found',
       };
     }
 
-    const comparer = createComparer(document, {
+    const comparer = new Comparer(document, {
       name: req.name,
       categoryType: req.categoryType,
       ancestors: ancestorDocuments.map((ancestor) => {
@@ -156,7 +157,7 @@ export const expect = baseExpect.extend({
 
     return {
       pass: errors.length === 0,
-      message: () => errors.join('\n'),
+      message: () => `Expected category to be stored in database, but it was not:\n${errors.join('\n')}`,
     };
   },
   async toMatchCategoryDocument(received: APIResponse, document: Category.Document, ...ancestorDocuments: Category.Document[]) {
@@ -166,10 +167,10 @@ export const expect = baseExpect.extend({
 
     return {
       pass: errors.length === 0,
-      message: () => `Expected response to match category document, but it did not match:\n${errors.join('\n')}`,
+      message: () => `Expected response to match category document, but it did not:\n${errors.join('\n')}`,
     };
   },
-  async toMatchCategoryDocumentInList(received: APIResponse, document: Category.Document, ...ancestorDocuments: Category.Document[]) {
+  async toContainMatchingCategoryDocument(received: APIResponse, document: Category.Document, ...ancestorDocuments: Category.Document[]) {
     const response = await received.json() as Category.Response[];
 
     const matchingResponse = response.find(r => r.categoryId === getCategoryId(document));
@@ -177,7 +178,7 @@ export const expect = baseExpect.extend({
     if (!matchingResponse) {
       return {
         pass: false,
-        message: () => `expected response to contain a category with id ${getCategoryId(document)}, but it was not found`,
+        message: () => `Expected response to contain a category with id ${getCategoryId(document)}, but it was not found`,
       };
     }
 
@@ -185,7 +186,7 @@ export const expect = baseExpect.extend({
 
     return {
       pass: errors.length === 0,
-      message: () => `Expected response to match category document, but it did not match:\n${errors.join('\n')}`,
+      message: () => `Expected response to match category document, but it did not:\n${errors.join('\n')}`,
     };
   },
   toHaveItsParentReassigned(originalDocument: Category.Document, currentDocument: Category.Document, parentCategoryDocument?: Category.Document) {
@@ -195,7 +196,7 @@ export const expect = baseExpect.extend({
       parentCategoryDocument,
     ] : []; 
 
-    const comparer = createComparer(currentDocument, {
+    const comparer = new Comparer(currentDocument, {
       name: originalDocument.name,
       categoryType: originalDocument.categoryType,
       ancestors: expectedAncestors.map((ancestor) => {

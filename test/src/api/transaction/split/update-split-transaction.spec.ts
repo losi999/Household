@@ -181,7 +181,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
             expect(res).toBeCreatedResponse();
             const { transactionId } = await res.json() as Transaction.TransactionId;
             expect(request).toHaveBeenSavedAsSplitTransactionDocument(await transactionService.getTransactionById(transactionId));
-            expect(repayingTransferTransactionDocument).toHaveNotChanged(await transactionService.getTransactionById(getTransactionId(repayingTransferTransactionDocument)));
+            expect(repayingTransferTransactionDocument).toBeTheSame(await transactionService.getTransactionById(getTransactionId(repayingTransferTransactionDocument)));
           });
 
           test.describe('without optional properties', () => {
@@ -580,7 +580,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
               const { transactionId } = await res.json() as Transaction.TransactionId;
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await transactionService.getTransactionById(transactionId));
 
-              expect(repayingTransferTransactionDocument).toHaveBeenDeletedFromPayments(await transactionService.getTransactionById(getTransactionId(repayingTransferTransactionDocument)), getTransactionId(splitDocument.deferredSplits[0]));
+              expect(repayingTransferTransactionDocument).toHavePaymentRemoved(await transactionService.getTransactionById(getTransactionId(repayingTransferTransactionDocument)), getTransactionId(splitDocument.deferredSplits[0]));
             });
           });
         });

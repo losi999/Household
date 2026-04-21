@@ -54,9 +54,9 @@ test.describe('GET /price/v1/prices', () => {
           expect(res).toBeOkResponse();
           expect(res).toMatchSchema(schema);
 
-          expect(res).toMatchPriceDocumentInList(priceDocument1);
-          expect(res).toMatchPriceDocumentInList(priceDocument2);
-          expect(res).toNotMatchPriceDocumentInList(archivedPriceDocument);
+          expect(res).toContainMatchingPriceDocument(priceDocument1);
+          expect(res).toContainMatchingPriceDocument(priceDocument2);
+          expect(res).toNotContainMatchingPriceDocument(archivedPriceDocument);
         });
       }
     });

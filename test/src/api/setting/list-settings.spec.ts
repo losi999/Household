@@ -54,8 +54,8 @@ test.describe('GET /setting/v1/settings', () => {
           expect(res).toBeOkResponse();
           expect(res).toMatchSchema(schema);
 
-          expect(res).toMatchSettingDocumentInList(settingDataFactory.document(settingKey1, settingRequest1));
-          expect(res).toMatchSettingDocumentInList(settingDataFactory.document(settingKey2, settingRequest2));
+          expect(res).toContainMatchingSettingDocument(settingDataFactory.document(settingKey1, settingRequest1));
+          expect(res).toContainMatchingSettingDocument(settingDataFactory.document(settingKey2, settingRequest2));
         });
       }
     });

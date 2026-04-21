@@ -46,7 +46,7 @@ test.describe('POST /project/v1/projects', () => {
             expect(res).toBeCreatedResponse();
 
             const { projectId } = (await res.json()) as Project.ProjectId;
-            expect(req).toBeStoredInDatabase(await projectService.findProjectById(projectId));
+            expect(req).toHaveBeenSavedAsProjectDocument(await projectService.findProjectById(projectId));
           });
 
           test.describe('without optional property in body', () => {
@@ -59,7 +59,7 @@ test.describe('POST /project/v1/projects', () => {
               expect(res).toBeCreatedResponse();
               
               const { projectId } = (await res.json()) as Project.ProjectId;
-              expect(req).toBeStoredInDatabase(await projectService.findProjectById(projectId));
+              expect(req).toHaveBeenSavedAsProjectDocument(await projectService.findProjectById(projectId));
             });
           });
         });

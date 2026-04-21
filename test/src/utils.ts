@@ -1,5 +1,4 @@
 import { faker } from '@faker-js/faker';
-import { entries, keys } from '@household/shared/common/utils';
 import { User, UserPermissionMap } from '@household/test/types';
 
 export const createId = <I>(id?: string): I => (id ?? faker.database.mongodbObjectId()) as I;
@@ -29,68 +28,5 @@ export const allowUsers = (...users: User[]): UserPermissionMap => {
         [currentValue]: true,
       };
     }, {}),
-  };
-};
-
-export type CompareResult<V = any> = {
-  actual: V;
-  expected: V;
-};
-
-type CompareFn = <V>(actual: V, expected: V) => CompareResult<V>;
-
-export const createComparer = (factory: (compare: CompareFn) => Record<string, CompareResult<any>>) => {
-  const normalized = factory((actual, expected) => {
-    return actual === expected ? undefined : {
-      actual,
-      expected,
-    };
-  });
-
-  return {
-    getNormalized(prefix?: string) {
-      return prefix ? entries(normalized).reduce((accumulator, [
-        key,
-        value,
-      ]) => {
-        return {
-          ...accumulator,
-          [`${prefix}${key}`]: value,
-        };
-      }, {}) : normalized;
-    },
-    normalized,
-    validate: <T extends object>(object?: T, ...internalProperties: (keyof T)[]) => {
-      if (object) {
-        const extraKeys = keys(object).filter(
-          (key) => {
-            return !(key in normalized) && !internalProperties.includes(key);
-          },
-        );
-
-        if (extraKeys.length > 0) {
-          return `expected object to have no additional properties, but got extra properties: ${extraKeys.join(', ')}`;
-        }
-      }
-
-      const notMatchingProperties = entries(normalized).reduce<string[]>((accumulator, [
-        key,
-        result,
-      ]) => {
-        if (!result) {
-          return accumulator;
-        }
-        return [
-          ...accumulator,
-          `${key}\n\texpected: ${result.expected}\n\tactual: ${result.actual}`,
-        ];
-      }, []);
-
-      if (notMatchingProperties.length > 0) {
-        return `expected objects to match, but the following properties did not match:\n${notMatchingProperties.join('\n')}`;
-      }
-
-      return;
-    },
   };
 };

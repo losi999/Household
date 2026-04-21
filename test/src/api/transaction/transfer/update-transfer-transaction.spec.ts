@@ -200,7 +200,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfe
             const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), request);
             expect(res).toBeCreatedResponse();
             const { transactionId } = await res.json() as Transaction.TransactionId;
-            expect(request).toHaveBeenSavedAsTransferTransactionDocument(await transactionService.getTransactionById(transactionId));
+            expect(request).toHaveBeenSavedAsTransferTransactionDocument(await transactionService.getTransactionById(transactionId), [Math.abs(deferredTransactionDocument.amount)]);
           });
 
           test.describe('without optional properties', () => {

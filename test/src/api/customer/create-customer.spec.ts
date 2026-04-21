@@ -45,7 +45,7 @@ test.describe('POST customer/v1/customers', () => {
           expect(res).toBeCreatedResponse();
 
           const { customerId } = (await res.json()) as Customer.CustomerId;
-          expect(request).toBeStoredInDatabase(await customerService.findCustomerById(customerId));
+          expect(request).toHaveBeenSavedAsCustomerDocument(await customerService.findCustomerById(customerId));
         });
 
         test.describe('should return error', () => {

@@ -53,7 +53,7 @@ test.describe('GET /customer/v1/customers/{customerId}/works', () => {
           const res = await requestListCustomerWorks(getCustomerId(customerDocument));
           expect(res).toBeOkResponse();
           expect(res).toMatchSchema(schema);
-          expect(res).toMatchCalendarEntryBaseDocumentInResponseList(workEntryDocument);
+          expect(res).toContainMatchingCalendarEntryBaseDocument(workEntryDocument);
         });
 
         test.describe('should return error if customerId', () => {

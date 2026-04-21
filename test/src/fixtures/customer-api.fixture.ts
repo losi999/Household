@@ -1,9 +1,9 @@
 import { hasPriceId, isPriceBase } from '@household/shared/common/type-guards';
 import { getCustomerId, getPriceId } from '@household/shared/common/utils';
 import { headerExpiresIn } from '@household/shared/constants';
-import { Customer } from '@household/shared/types/types';
+import { Customer, Price } from '@household/shared/types/types';
+import { Comparer } from '@household/test/comparer';
 import { test as baseTest, expect as baseExpect } from '@household/test/fixtures/api.fixture';
-import { CompareResult, createComparer } from '@household/test/utils';
 import { APIResponse } from '@playwright/test';
 
 type CustomerApiFixture = {
@@ -165,165 +165,138 @@ export const test = baseTest.extend<CustomerApiFixture>({
   },
 });
 
-const validateCustomerResponse = (response: Customer.Response, document: Customer.Document): string => {
-  const comparer = createComparer((compare) => {
-    const blacklistedCustomers = response.blacklistedCustomers.reduce((accumulator, currentValue, index) => {
-      return {
-        ...accumulator,
-        [`blacklistedCustomers[${index}].customerId`]: compare(currentValue.customerId, getCustomerId(document.blacklistedCustomers[index])),
-        [`blacklistedCustomers[${index}].description`]: compare(currentValue.description, document.blacklistedCustomers[index].description),
-        [`blacklistedCustomers[${index}].isGroup`]: compare(currentValue.isGroup, document.blacklistedCustomers[index].isGroup),
-        [`blacklistedCustomers[${index}].name`]: compare(currentValue.name, document.blacklistedCustomers[index].name),
-        [`blacklistedCustomers[${index}].rating`]: compare(currentValue.rating, document.blacklistedCustomers[index].rating),
-      };
-    }, {});
+export const validateCustomerJobPriceResponse = (priceResponses: (Price.Response & Customer.Job.Quantity)[], priceDocuments: Customer.Job.Document['prices']) => {
+  return priceResponses.map((priceResponse, index) => {
+    const priceDocument = priceDocuments[index];
 
-    const jobs = response.jobs.reduce((accumulator, currentValue, index) => {
-      const prices = currentValue.prices.reduce((priceAccumulator, currentPrice, priceIndex) => {
-        const jobPriceDocument = document.jobs[index].prices[priceIndex];
+    if (isPriceBase(priceDocument)) {
+      return new Comparer(priceResponse, {
+        name: priceDocument.name,
+        amount: priceDocument.amount,
+      });
+    }
 
-        if(isPriceBase(jobPriceDocument)) {
-          return {
-            ...priceAccumulator,
-            [`jobs[${index}].prices[${priceIndex}].name`]: compare(currentPrice.name, jobPriceDocument.name),
-            [`jobs[${index}].prices[${priceIndex}].amount`]: compare(currentPrice.amount, jobPriceDocument.amount),
-          };
-        } 
-        return {
-          ...priceAccumulator,
-          [`jobs[${index}].prices[${priceIndex}].name`]: compare(currentPrice.name, jobPriceDocument.price.name),
-          [`jobs[${index}].prices[${priceIndex}].amount`]: compare(currentPrice.amount, jobPriceDocument.price.amount),
-          [`jobs[${index}].prices[${priceIndex}].unitOfMeasurement`]: compare(currentPrice.unitOfMeasurement, jobPriceDocument.price.unitOfMeasurement),
-          [`jobs[${index}].prices[${priceIndex}].priceId`]: compare(currentPrice.priceId, getPriceId(jobPriceDocument.price)),
-          [`jobs[${index}].prices[${priceIndex}].quantity`]: compare(currentPrice.quantity, jobPriceDocument.quantity),
-        };
-      }, {});
-
-      return {
-        ...accumulator,
-        [`jobs[${index}].name`]: compare(currentValue.name, document.jobs[index].name),
-        [`jobs[${index}].description`]: compare(currentValue.description, document.jobs[index].description),
-        [`jobs[${index}].duration`]: compare(currentValue.duration, document.jobs[index].duration),
-        ...prices,
-      };
-    }, {});
-
-    return {
-      customerId: compare(response.customerId, getCustomerId(document)),
-      name: compare(response.name, document.name),
-      description: compare(response.description, document.description),
-      isGroup: compare(response.isGroup, document.isGroup),
-      rating: compare(response.rating, document.rating),
-      ...blacklistedCustomers,
-      ...jobs,
-    };
+    return new Comparer(priceResponse, {
+      name: priceDocument.price.name,
+      amount: priceDocument.price.amount,
+      unitOfMeasurement: priceDocument.price.unitOfMeasurement,
+      priceId: getPriceId(priceDocument.price),
+      quantity: priceDocument.quantity,
+    });
   });
-
-  return comparer.validate(response, 'blacklistedCustomers', 'jobs');
 };
 
-const compareCustomerBaseProperties = (actual: Customer.Document, expected: Customer.Document | Customer.Request): Record<string, CompareResult<any>> => {
-  return createComparer((compare) => {  
-    return {
-      name: compare(actual.name, expected.name),
-      description: compare(actual.description, expected.description),
-      isGroup: compare(actual.isGroup, expected.isGroup),
-      rating: compare(actual.rating, expected.rating),
-    };
-  }).normalized;
+export const validateCustomerResponse = (response: Customer.Response, document: Customer.Document) => {
+  return new Comparer(response, {
+    customerId: getCustomerId(document),
+    name: document.name,
+    description: document.description,
+    isGroup: document.isGroup,
+    rating: document.rating,
+    blacklistedCustomers: response.blacklistedCustomers.map((blacklistedCustomer, index) => {
+      const doc = document.blacklistedCustomers[index];
+
+      return new Comparer(blacklistedCustomer, {
+        customerId: getCustomerId(doc),
+        name: doc.name,
+        description: doc.description,
+        isGroup: doc.isGroup,
+        rating: doc.rating,
+      });
+    }),
+    jobs: response.jobs.map((job, index) => {
+      const jobDocument = document.jobs[index];
+
+      return new Comparer(job, {
+        name: jobDocument.name,
+        description: jobDocument.description,
+        duration: jobDocument.duration,
+        prices: validateCustomerJobPriceResponse(job.prices, jobDocument.prices), 
+      });
+    }),
+  });
+};
+const compareCustomerBaseProperties = (actual: Customer.Document, expected: Customer.Document | Customer.Request) => {
+  return new Comparer(actual, {
+    name: expected.name,
+    description: expected.description,
+    isGroup: expected.isGroup,
+    rating: expected.rating,
+  });
 };
 
-const compareCustomerBlacklists = (actual: Customer.Document[], expected: Customer.Document[]): Record<string, CompareResult<any>> => {
-  return createComparer((compare) => {
-    return {
-      ...actual.reduce((accumulator, currentValue, index) => {  
-        return {
-          ...accumulator,
-          [`blacklistedCustomers[${index}]`]: compare(getCustomerId(currentValue), getCustomerId(expected[index])),
-        };
-      }, {}),
-    };
-  }).normalized;
+const compareCustomerBlacklists = (actual: Customer.Document, expectedBlacklistedCustomers: Customer.Document[]) => {
+  return new Comparer(actual, {
+    blacklistedCustomers: expectedBlacklistedCustomers.map((blacklistedCustomer) => {
+      return getCustomerId(blacklistedCustomer);
+    }),
+  });
 };
 
-const compareCustomerJobs = (actual: Customer.Job.Document[], expected: Customer.Job.Document[], request?: Customer.Job.Request, jobName?: Customer.Job.Name['name']): Record<string, CompareResult<any>> => { 
-  return createComparer((compare) => {
-    const jobs = actual.reduce((accumulator, currentValue, index) => {  
-      const originalJob = expected[index] && expected[index].name !== jobName ? expected[index] : request;
+const compareCustomerJobs = (actual: Customer.Document, expectedCustomerJobs: Customer.Job.Document[], request?: Customer.Job.Request, jobName?: Customer.Job.Name['name']) => { 
+  return new Comparer(actual, {
+    jobs: actual.jobs.map((actualJob, index) => {
+      const expectedJob = expectedCustomerJobs[index] && expectedCustomerJobs[index].name !== jobName ? expectedCustomerJobs[index] : request;
 
-      const prices = currentValue.prices.reduce((priceAccumulator, currentPrice, priceIndex) => {
-        const originalPrice = originalJob.prices[priceIndex];
+      return new Comparer(actualJob, {
+        name: expectedJob.name,
+        description: expectedJob.description,
+        duration: expectedJob.duration,
+        prices: actualJob.prices.map((actualPrice, priceIndex) => {
+          const expectedPrice = expectedJob.prices[priceIndex];
 
-        if (isPriceBase(currentPrice) && isPriceBase(originalPrice)) {
-          return {
-            ...priceAccumulator,
-            [`jobs[${index}].prices[${priceIndex}].name`]: compare(currentPrice.name, originalPrice.name),
-            [`jobs[${index}].prices[${priceIndex}].amount`]: compare(currentPrice.amount, originalPrice.amount),
-          };
-        } 
+          if (isPriceBase(actualPrice) && isPriceBase(expectedPrice)) {
+            return new Comparer(actualPrice, {
+              name: expectedPrice.name,
+              amount: expectedPrice.amount,
+            });
+          } 
 
-        if (!isPriceBase(currentPrice) && !isPriceBase(originalPrice)) {
-          return {
-            ...priceAccumulator,
-            [`jobs[${index}].prices[${priceIndex}].priceId`]: compare(getPriceId(currentPrice.price), hasPriceId(originalPrice) ? originalPrice.priceId : getPriceId(originalPrice.price)),
-            [`jobs[${index}].prices[${priceIndex}].quantity`]: compare(currentPrice.quantity, originalPrice.quantity),
-          };
-        }
-
-        return {
-          ...priceAccumulator,
-          [`jobs[${index}].prices[${priceIndex}].priceType`]: compare(isPriceBase(currentPrice) ? 'custom' : 'listed', isPriceBase(originalPrice) ? 'custom' : 'listed'),
-        };
-      }, {});
-
-      return {  
-        ...accumulator,
-        [`jobs[${index}].name`]: compare(currentValue.name, originalJob.name),
-        [`jobs[${index}].description`]: compare(currentValue.description, originalJob.description),
-        [`jobs[${index}].duration`]: compare(currentValue.duration, originalJob.duration),
-        ...prices,
-      };
-    }, {});
-
-    return jobs;
-  }).normalized;
+          if (!isPriceBase(actualPrice) && !isPriceBase(expectedPrice)) {
+            return new Comparer(actualPrice, {
+              price: hasPriceId(expectedPrice) ? expectedPrice.priceId : getPriceId(expectedPrice.price),
+              quantity: expectedPrice.quantity,
+            });
+          } 
+        }),
+      });
+    }),
+  });
 };
 
 export const expect = baseExpect.extend({
-  toBeStoredInDatabase(req: Customer.Request, currentDocument: Customer.Document, originalDocument?: Customer.Document) {
+  toHaveBeenSavedAsCustomerDocument(req: Customer.Request, currentDocument: Customer.Document, originalDocument?: Customer.Document) {
     if (!currentDocument) {
       return {
         pass: false,
         message: () => 'expected customer to be stored in database, but it was not found',
       };
     }
+
+    const comparer = new Comparer(currentDocument, [
+      compareCustomerBaseProperties(currentDocument, req),
+      compareCustomerBlacklists(currentDocument, originalDocument?.blacklistedCustomers ?? []),
+      compareCustomerJobs(currentDocument, originalDocument?.jobs ?? []),
+    ], '_id', 'createdAt', 'expiresAt', 'updatedAt');
   
-    const comparer = createComparer(() => {
-      return {
-        ...compareCustomerBaseProperties(currentDocument, req),
-        ...compareCustomerBlacklists(currentDocument.blacklistedCustomers, originalDocument?.blacklistedCustomers ?? []),
-        ...compareCustomerJobs(currentDocument.jobs, originalDocument?.jobs ?? []),
-      };  
-    });
-  
-    const message = comparer.validate(currentDocument, '_id', 'createdAt', 'expiresAt', 'updatedAt', 'blacklistedCustomers', 'jobs');
+    const errors = comparer.validate();
   
     return {
-      pass: !message,
-      message: () => message,
+      pass: errors.length === 0,
+      message: () => `Expected customer to be stored in database, but it was not:\n${errors.join('\n')}`,
     };
   },
   async toMatchCustomerDocument(received: APIResponse, document: Customer.Document) {
     const response = await received.json() as Customer.Response;
   
-    const message = validateCustomerResponse(response, document);
+    const errors = validateCustomerResponse(response, document).validate();
   
     return {
-      pass: !message,
-      message: () => message,
+      pass: errors.length === 0,
+      message: () => `Expected response to match customer document, but it did not:\n${errors.join('\n')}`,
     };
   },
-  async toMatchCustomerDocumentInList(received: APIResponse, document: Customer.Document) {
+  async toContainMatchingCustomerDocument(received: APIResponse, document: Customer.Document) {
     const response = await received.json() as Customer.Response[];
   
     const matchingResponse = response.find(r => r.customerId === getCustomerId(document));
@@ -335,95 +308,84 @@ export const expect = baseExpect.extend({
       };
     }
   
-    const message = validateCustomerResponse(matchingResponse, document);
+    const errors = validateCustomerResponse(matchingResponse, document).validate();
   
     return {
-      pass: !message,
-      message: () => message,
+      pass: errors.length === 0,
+      message: () => `Expected response to match customer document, but it did not:\n${errors.join('\n')}`,
     };
   }, 
   toHaveBeenAddedToBlacklist(blacklistedCustomer: Customer.Document, originalDocument: Customer.Document, currentDocument: Customer.Document) {
-    const comparer = createComparer(() => {
-      return {
-        ...compareCustomerBaseProperties(currentDocument, originalDocument),
-        ...compareCustomerBlacklists(currentDocument.blacklistedCustomers, [
-          ...originalDocument.blacklistedCustomers,
-          blacklistedCustomer,
-        ]),
-        ...compareCustomerJobs(currentDocument.jobs, originalDocument.jobs),
-      };
-    });
+    const comparer = new Comparer(currentDocument, [
+      compareCustomerBaseProperties(currentDocument, originalDocument),
+      compareCustomerBlacklists(currentDocument, [
+        ...originalDocument.blacklistedCustomers,
+        blacklistedCustomer,
+      ]),
+      compareCustomerJobs(currentDocument, originalDocument.jobs),
+    ], '_id', 'createdAt', 'expiresAt', 'updatedAt');
   
-    const message = comparer.validate(currentDocument, '_id', 'createdAt', 'expiresAt', 'updatedAt', 'blacklistedCustomers', 'jobs');
+    const errors = comparer.validate();
   
     return {
-      pass: !message,
-      message: () => message,
+      pass: errors.length === 0,
+      message: () => `Expected customer to be added to blacklist, but it was not:\n${errors.join('\n')}`,
     };
   },
   toHaveBeenRemovedFromBlacklist(blacklistedCustomer: Customer.Document, originalDocument: Customer.Document, currentDocument: Customer.Document) {
-    const comparer = createComparer(() => {
-      return {
-        ...compareCustomerBaseProperties(currentDocument, originalDocument),
-        ...compareCustomerBlacklists(currentDocument.blacklistedCustomers, originalDocument.blacklistedCustomers.filter(c => getCustomerId(c) !== getCustomerId(blacklistedCustomer))),  
-        ...compareCustomerJobs(currentDocument.jobs, originalDocument.jobs),
-      };
-    });
+    const comparer = new Comparer(currentDocument, [
+      compareCustomerBaseProperties(currentDocument, originalDocument),
+      compareCustomerBlacklists(currentDocument, originalDocument.blacklistedCustomers.filter(c => getCustomerId(c) !== getCustomerId(blacklistedCustomer))),
+      compareCustomerJobs(currentDocument, originalDocument.jobs),
+    ], '_id', 'createdAt', 'expiresAt', 'updatedAt');
   
-    const message = comparer.validate(currentDocument, '_id', 'createdAt', 'expiresAt', 'updatedAt', 'blacklistedCustomers', 'jobs');
+    const errors = comparer.validate();
   
     return {
-      pass: !message,
-      message: () => message,
+      pass: errors.length === 0,
+      message: () => `Expected customer to be removed from blacklist, but it was not:\n${errors.join('\n')}`,
     };
   },
   toHaveBeenAddedToCustomerJobs(req: Customer.Job.Request, originalDocument: Customer.Document, currentDocument: Customer.Document) {
-    const comparer = createComparer(() => {
-      return {
-        ...compareCustomerBaseProperties(currentDocument, originalDocument),
-        ...compareCustomerBlacklists(currentDocument.blacklistedCustomers, originalDocument.blacklistedCustomers),
-        ...compareCustomerJobs(currentDocument.jobs, originalDocument.jobs, req),
-      };
-    });
-
-    const message = comparer.validate(currentDocument, '_id', 'createdAt', 'expiresAt', 'updatedAt', 'blacklistedCustomers', 'jobs');
+    const comparer = new Comparer(currentDocument, [
+      compareCustomerBaseProperties(currentDocument, originalDocument),
+      compareCustomerBlacklists(currentDocument, originalDocument.blacklistedCustomers),
+      compareCustomerJobs(currentDocument, originalDocument.jobs, req),
+    ], '_id', 'createdAt', 'expiresAt', 'updatedAt');
+  
+    const errors = comparer.validate();
   
     return {
-      pass: !message,
-      message: () => message,
+      pass: errors.length === 0,
+      message: () => `Expected customer job to be added, but it was not:\n${errors.join('\n')}`,
     };
   },
   toHaveBeenRemovedFromCustomerJobs(jobName: Customer.Job.Request['name'], originalDocument: Customer.Document, currentDocument: Customer.Document) {
-    const comparer = createComparer(() => {
-      return {
-        ...compareCustomerBaseProperties(currentDocument, originalDocument),
-        ...compareCustomerBlacklists(currentDocument.blacklistedCustomers, originalDocument.blacklistedCustomers),
-        ...compareCustomerJobs(currentDocument.jobs, originalDocument.jobs.filter(j => j.name !== jobName)),
-      };
-    });
-
-    const message = comparer.validate(currentDocument, '_id', 'createdAt', 'expiresAt', 'updatedAt', 'blacklistedCustomers', 'jobs');
+    const comparer = new Comparer(currentDocument, [
+      compareCustomerBaseProperties(currentDocument, originalDocument),
+      compareCustomerBlacklists(currentDocument, originalDocument.blacklistedCustomers),
+      compareCustomerJobs(currentDocument, originalDocument.jobs.filter(j => j.name !== jobName)),
+    ], '_id', 'createdAt', 'expiresAt', 'updatedAt');
+  
+    const errors = comparer.validate();
   
     return {
-      pass: !message,
-      message: () => message,
+      pass: errors.length === 0,
+      message: () => `Expected customer job to be removed, but it was not:\n${errors.join('\n')}`,
     };
   },
   toHaveBeenUpdatedInCustomerJobs(req: Customer.Job.Request, jobName: Customer.Job.Request['name'], originalDocument: Customer.Document, currentDocument: Customer.Document) {
-
-    const comparer = createComparer(() => {
-      return {
-        ...compareCustomerBaseProperties(currentDocument, originalDocument),
-        ...compareCustomerBlacklists(currentDocument.blacklistedCustomers, originalDocument.blacklistedCustomers),
-        ...compareCustomerJobs(currentDocument.jobs, originalDocument.jobs, req, jobName),
-      };
-    });
-
-    const message = comparer.validate(currentDocument, '_id', 'createdAt', 'expiresAt', 'updatedAt', 'blacklistedCustomers', 'jobs');
+    const comparer = new Comparer(currentDocument, [
+      compareCustomerBaseProperties(currentDocument, originalDocument),
+      compareCustomerBlacklists(currentDocument, originalDocument.blacklistedCustomers),
+      compareCustomerJobs(currentDocument, originalDocument.jobs, req, jobName),
+    ], '_id', 'createdAt', 'expiresAt', 'updatedAt');
+  
+    const errors = comparer.validate();
   
     return {
-      pass: !message,
-      message: () => message,
+      pass: errors.length === 0,
+      message: () => `Expected customer job to be updated, but it was not:\n${errors.join('\n')}`,
     };
   },
 });

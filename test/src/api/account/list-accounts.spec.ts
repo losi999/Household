@@ -148,8 +148,8 @@ test.describe('GET /account/v1/accounts', () => {
           const res = await requestListAccounts();
           expect(res).toBeOkResponse();
           expect(res).toMatchSchema(schema);
-          expect(res).toMatchAccountDocumentInList(accountDocument, expectedBalance1);
-          expect(res).toMatchAccountDocumentInList(loanAccountDocument, expectedBalance2);
+          expect(res).toContainMatchingAccountDocument(accountDocument, expectedBalance1);
+          expect(res).toContainMatchingAccountDocument(loanAccountDocument, expectedBalance2);
         });
       }
     });

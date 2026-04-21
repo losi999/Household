@@ -1,11 +1,9 @@
 import { getProjectId } from '@household/shared/common/utils';
 import { headerExpiresIn } from '@household/shared/constants';
 import { Project } from '@household/shared/types/types';
-import { createComparer as cc } from '@household/test/utils';
 import { test as baseTest } from '@household/test/fixtures/api.fixture';
 import { expect as baseExpect, APIResponse } from '@playwright/test';
-import { createComparer2 } from '@household/test/comparer';
-import { createComparer } from '@household/test/comparer3';
+import { Comparer } from '@household/test/comparer';
 
 type ProjectApiFixture ={
   requestGetProject(projectId: Project.Id): Promise<APIResponse>;
@@ -103,86 +101,49 @@ export const test = baseTest.extend<ProjectApiFixture>({
 });
 
 export const validateProjectResponse = (response: Project.Response, document: Project.Document) => {
-  return createComparer2({
-    actual: response,
-    factory: (actual, compare) => {
-      return {
-        projectId: compare(actual.projectId, getProjectId(document)),
-        // name: compare(actual.name, document.name),
-        description: compare(actual.description, document.description),
-      };
-    },
+  return new Comparer(response, {
+    projectId: getProjectId(document),
+    name: document?.name,
+    description: document?.description,
   });
 };
 
 export const expect = baseExpect.extend({
-  async toBeStoredInDatabase(req: Project.Request, document: Project.Document) {
+  async toHaveBeenSavedAsProjectDocument(req: Project.Request, document: Project.Document) {
     if (!document) {
       return {
         pass: false,
-        message: () => 'expected project to be stored in database, but it was not found',
+        message: () => 'Expected project to be stored in database, but it was not found',
       };
     }
 
-    const comp = createComparer(document, {
+    const comparer = new Comparer(document, {
       name: req.name,
       description: req.description,
     }, '_id', 'createdAt', 'expiresAt', 'updatedAt');
 
-    comp.validate();
+    const errors = comparer.validate();
 
-    const comparer = createComparer2({
-      actual: document,
-      internalProperties: [
-        '_id',
-        'createdAt',
-        'expiresAt',
-        'updatedAt',
-      ],
-      factory: (actual, compare) => {
-        return {
-          name: compare(actual.name, req.name),
-          description: compare(actual.description, req.description),
-        };
-      },
-    });
-    try {
-      comparer.validate();
-
-      return {
-        pass: true,
-        message: () => '',
-      };
-    } catch (error) {
-      return {
-        pass: false,
-        message: () => error,
-      };  
-    }
+    return {
+      pass: errors.length === 0,
+      message: () => `Expected project to be stored in database, but it was not:\n${errors.join('\n')}`,
+    };
   },
   toHaveBeenDeletedFromDatabase(document: Project.Document) {
     return {
       pass: !document,
-      message: () => `expected project to be deleted from database, but it was found with id ${getProjectId(document)}`,
+      message: () => `Expected project to be deleted from database, but it was found with id ${getProjectId(document)}`,
     };
   },
   async toMatchProjectDocument(received: APIResponse, document: Project.Document) {
     const response = await received.json() as Project.Response;
-
-    try {
-      validateProjectResponse(response, document).validate();
+    
+    const errors = validateProjectResponse(response, document).validate();
       
-      return {
-        pass: true,
-        message: () => '',
-      };
-
-    } catch (error) {
-      return {
-        pass: false,
-        message: () => error,
-      };
-    }
+    return {
+      pass: errors.length === 0,
+      message: () => `Expected response to match project document, but it did not:\n${errors.join('\n')}`,
+    };
   },
   async toContainMatchingProjectDocument(received: APIResponse, document: Project.Document) {
     const response = await received.json() as Project.Response[];
@@ -192,24 +153,16 @@ export const expect = baseExpect.extend({
     if (!matchingResponse) {
       return {
         pass: false,
-        message: () => `expected response to contain a project with id ${getProjectId(document)}, but it was not found`,
+        message: () => `Expected response to contain a project with id ${getProjectId(document)}, but it was not found`,
       };
     }
 
-    try {
-      validateProjectResponse(matchingResponse, document).validate();
+    const errors = validateProjectResponse(matchingResponse, document).validate();
       
-      return {
-        pass: true,
-        message: () => '',
-      };
-      
-    } catch (error) {
-      return {
-        pass: false,
-        message: () => error,
-      };
-    }
+    return {
+      pass: errors.length === 0,
+      message: () => `Expected response to match project document, but it did not:\n${errors.join('\n')}`,
+    };
   }, 
 
 });

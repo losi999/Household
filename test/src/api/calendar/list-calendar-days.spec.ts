@@ -122,7 +122,7 @@ test.describe('GET /calendar/v1/days', () => {
                 });
                 expect(res).toBeOkResponse();
                 expect(res).toMatchSchema(schema);
-                expect(res).toMatchCalendarDayDocumentInResponseList(day, calendarPersonalEntryDocument);
+                expect(res).toContainMatchingCalendarDayDocument(day, calendarPersonalEntryDocument);
               });
 
               test('with an issue entry', async ({ requestListCalendarDays }) => {
@@ -135,7 +135,7 @@ test.describe('GET /calendar/v1/days', () => {
                 });
                 expect(res).toBeOkResponse();
                 expect(res).toMatchSchema(schema);
-                expect(res).toMatchCalendarDayDocumentInResponseList(day, calendarIssueEntryDocument);
+                expect(res).toContainMatchingCalendarDayDocument(day, calendarIssueEntryDocument);
               });
 
               test('with a work entry', async ({ requestListCalendarDays }) => {
@@ -150,7 +150,7 @@ test.describe('GET /calendar/v1/days', () => {
                 });
                 expect(res).toBeOkResponse();
                 expect(res).toMatchSchema(schema);
-                expect(res).toMatchCalendarDayDocumentInResponseList(day, calendarWorkEntryDocument);
+                expect(res).toContainMatchingCalendarDayDocument(day, calendarWorkEntryDocument);
               });
             });
 
@@ -172,7 +172,7 @@ test.describe('GET /calendar/v1/days', () => {
                 });
                 expect(res).toBeOkResponse();
                 expect(res).toMatchSchema(schema);
-                expect(res).toMatchCalendarDayDocumentInResponseList(day, calendarPersonalEntryDocument, calendarDayDocument);
+                expect(res).toContainMatchingCalendarDayDocument(day, calendarPersonalEntryDocument, calendarDayDocument);
               });
 
               test('with an issue entry', async ({ requestListCalendarDays }) => {
@@ -186,7 +186,7 @@ test.describe('GET /calendar/v1/days', () => {
                 });
                 expect(res).toBeOkResponse();
                 expect(res).toMatchSchema(schema);
-                expect(res).toMatchCalendarDayDocumentInResponseList(day, calendarIssueEntryDocument, calendarDayDocument);
+                expect(res).toContainMatchingCalendarDayDocument(day, calendarIssueEntryDocument, calendarDayDocument);
               });
 
               test('with a work entry', async ({ requestListCalendarDays }) => {
@@ -202,7 +202,7 @@ test.describe('GET /calendar/v1/days', () => {
                 });
                 expect(res).toBeOkResponse();
                 expect(res).toMatchSchema(schema);
-                expect(res).toMatchCalendarDayDocumentInResponseList(day, calendarWorkEntryDocument, calendarDayDocument);
+                expect(res).toContainMatchingCalendarDayDocument(day, calendarWorkEntryDocument, calendarDayDocument);
               });
             });
           });
@@ -225,7 +225,7 @@ test.describe('GET /calendar/v1/days', () => {
                 });
                 expect(res).toBeOkResponse();
                 expect(res).toMatchSchema(schema);
-                expect(res).toMatchCalendarDayDocumentInResponseList(day, calendarPersonalEntryDocument);
+                expect(res).toContainMatchingCalendarDayDocument(day, calendarPersonalEntryDocument);
               });
 
               test('with an issue entry', async ({ requestListCalendarDays }) => {
@@ -238,7 +238,7 @@ test.describe('GET /calendar/v1/days', () => {
                 });
                 expect(res).toBeOkResponse();
                 expect(res).toMatchSchema(schema);  
-                expect(res).toMatchCalendarDayDocumentInResponseList(day, calendarIssueEntryDocument);
+                expect(res).toContainMatchingCalendarDayDocument(day, calendarIssueEntryDocument);
               });
 
               test('with a work entry', async ({ requestListCalendarDays }) => {
@@ -253,7 +253,7 @@ test.describe('GET /calendar/v1/days', () => {
                 });
                 expect(res).toBeOkResponse();
                 expect(res).toMatchSchema(schema);
-                expect(res).toMatchCalendarDayDocumentInResponseList(day, calendarWorkEntryDocument);
+                expect(res).toContainMatchingCalendarDayDocument(day, calendarWorkEntryDocument);
               });
             });
 
@@ -275,7 +275,7 @@ test.describe('GET /calendar/v1/days', () => {
                 });
                 expect(res).toBeOkResponse();
                 expect(res).toMatchSchema(schema);
-                expect(res).toMatchCalendarDayDocumentInResponseList(day, calendarPersonalEntryDocument, calendarDayDocument);
+                expect(res).toContainMatchingCalendarDayDocument(day, calendarPersonalEntryDocument, calendarDayDocument);
               });
 
               test('with an issue entry', async ({ requestListCalendarDays }) => {
@@ -289,7 +289,7 @@ test.describe('GET /calendar/v1/days', () => {
                 });
                 expect(res).toBeOkResponse();
                 expect(res).toMatchSchema(schema);
-                expect(res).toMatchCalendarDayDocumentInResponseList(day, calendarIssueEntryDocument, calendarDayDocument);
+                expect(res).toContainMatchingCalendarDayDocument(day, calendarIssueEntryDocument, calendarDayDocument);
               });
 
               test('with a work entry', async ({ requestListCalendarDays }) => {
@@ -305,7 +305,7 @@ test.describe('GET /calendar/v1/days', () => {
                 });
                 expect(res).toBeOkResponse();
                 expect(res).toMatchSchema(schema);
-                expect(res).toMatchCalendarDayDocumentInResponseList(day, calendarWorkEntryDocument, calendarDayDocument);
+                expect(res).toContainMatchingCalendarDayDocument(day, calendarWorkEntryDocument, calendarDayDocument);
               });
             });
           });
@@ -329,7 +329,7 @@ test.describe('GET /calendar/v1/days', () => {
               });
               expect(res).toBeOkResponse();
               expect(res).toMatchSchema(schema);
-              expect(res).toMatchCalendarDayDocumentInResponseList(day, calendarPersonalEntryDocument, calendarDayDocument);
+              expect(res).toContainMatchingCalendarDayDocument(day, calendarPersonalEntryDocument, calendarDayDocument);
             });
 
             test('with an issue entry', async ({ requestListCalendarDays }) => {
@@ -343,7 +343,7 @@ test.describe('GET /calendar/v1/days', () => {
               });
               expect(res).toBeOkResponse();
               expect(res).toMatchSchema(schema);
-              expect(res).toMatchCalendarDayDocumentInResponseList(day, calendarIssueEntryDocument, calendarDayDocument);
+              expect(res).toContainMatchingCalendarDayDocument(day, calendarIssueEntryDocument, calendarDayDocument);
             });
 
             test('with a work entry', async ({ requestListCalendarDays }) => {
@@ -359,7 +359,7 @@ test.describe('GET /calendar/v1/days', () => {
               });
               expect(res).toBeOkResponse();
               expect(res).toMatchSchema(schema);
-              expect(res).toMatchCalendarDayDocumentInResponseList(day, calendarWorkEntryDocument, calendarDayDocument);
+              expect(res).toContainMatchingCalendarDayDocument(day, calendarWorkEntryDocument, calendarDayDocument);
             });
           });
 
@@ -383,7 +383,7 @@ test.describe('GET /calendar/v1/days', () => {
               });
               expect(res).toBeOkResponse();
               expect(res).toMatchSchema(schema);
-              expect(res).toMatchCalendarDayDocumentInResponseList(day, calendarPersonalEntryDocument, calendarDayDocument);
+              expect(res).toContainMatchingCalendarDayDocument(day, calendarPersonalEntryDocument, calendarDayDocument);
             });
 
             test('with an issue entry', async ({ requestListCalendarDays }) => {
@@ -397,7 +397,7 @@ test.describe('GET /calendar/v1/days', () => {
               });
               expect(res).toBeOkResponse();
               expect(res).toMatchSchema(schema);
-              expect(res).toMatchCalendarDayDocumentInResponseList(day, calendarIssueEntryDocument, calendarDayDocument);
+              expect(res).toContainMatchingCalendarDayDocument(day, calendarIssueEntryDocument, calendarDayDocument);
             });
 
             test('with a work entry', async ({ requestListCalendarDays }) => {
@@ -413,7 +413,7 @@ test.describe('GET /calendar/v1/days', () => {
               });
               expect(res).toBeOkResponse();
               expect(res).toMatchSchema(schema);
-              expect(res).toMatchCalendarDayDocumentInResponseList(day, calendarWorkEntryDocument, calendarDayDocument);
+              expect(res).toContainMatchingCalendarDayDocument(day, calendarWorkEntryDocument, calendarDayDocument);
             });
           });
         });

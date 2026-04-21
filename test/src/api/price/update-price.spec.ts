@@ -50,7 +50,7 @@ test.describe('PUT /price/v1/prices/{priceId}', () => {
             expect(res).toBeCreatedResponse();
 
             const { priceId } = await res.json() as Price.PriceId;
-            expect(request).toBeStoredInDatabase(await priceService.findPriceById(priceId));
+            expect(request).toHaveBeenSavedAsPriceDocument(await priceService.findPriceById(priceId));
           });
         });
 

@@ -549,13 +549,25 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
             });
 
             test('transfer transaction', async ({ requestGetTransaction }) => {
+              const deferredTransactionDocument = deferredTransactionDataFactory.document({
+                account: transferAccountDocument,
+                loanAccount: loanAccountDocument,
+                category: regularCategoryDocument,
+                project: projectDocument,
+                recipient: recipientDocument,
+              });
+
               const document = transferTransactionDataFactory.document({
                 account: accountDocument,
                 transferAccount: transferAccountDocument,
+                transactions: [deferredTransactionDocument],
               });
 
-              await accountService.saveAccounts(accountDocument, transferAccountDocument);
-              await transactionService.saveTransaction(document);
+              await accountService.saveAccounts(accountDocument, transferAccountDocument, loanAccountDocument);
+              await projectService.saveProject(projectDocument);
+              await recipientService.saveRecipient(recipientDocument);
+              await categoryService.saveCategory(regularCategoryDocument);
+              await transactionService.saveTransactions(document, deferredTransactionDocument);
               const res = await requestGetTransaction(getAccountId(accountDocument), getTransactionId(document));
               expect(res).toBeOkResponse();
               expect(res).toMatchSchema(transferTransactionSchema);

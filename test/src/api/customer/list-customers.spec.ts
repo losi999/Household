@@ -83,8 +83,8 @@ test.describe('GET /customer/v1/customers', () => {
           const res = await requestListCustomers();
           expect(res).toBeOkResponse();
           expect(res).toMatchSchema(schema);
-          expect(res).toMatchCustomerDocumentInList(customerDocument1);
-          expect(res).toMatchCustomerDocumentInList(customerDocument2);
+          expect(res).toContainMatchingCustomerDocument(customerDocument1);
+          expect(res).toContainMatchingCustomerDocument(customerDocument2);
         });
       }
     });

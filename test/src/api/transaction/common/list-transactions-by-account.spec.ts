@@ -222,7 +222,28 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
             });
             expect(res).toBeOkResponse();
             expect(res).toMatchSchema(schema);
-            // TODO: validateTransactionListResponse([ paymentTransactionDocument, payingSplitTransactionDocument, owningSplitTransactionDocument, payingTransferTransactionDocument, receivingTransferTransactionDocument, loanTransferTransactionDocument, invertedLoanTransferTransactionDocument, payingNotRepaidDeferredTransactionDocument, payingRepaidDeferredTransactionDocument, payingSettledDeferredTransactionDocument, owningNotRepaidDeferredTransactionDocument, owningRepaidDeferredTransactionDocument, owningSettledDeferredTransactionDocument, owningReimbursementTransactionDocument, ], getAccountId(accountDocument), { [getTransactionId(owningRepaidDeferredTransactionDocument)]: payingTransferTransactionDocument.payments[0].amount, [getTransactionId(owningSplitTransactionDocument.deferredSplits[2])]: payingTransferTransactionDocument.payments[1].amount, [getTransactionId(payingRepaidDeferredTransactionDocument)]: receivingTransferTransactionDocument.payments[0].amount, [getTransactionId(payingSplitTransactionDocument.deferredSplits[2])]: receivingTransferTransactionDocument.payments[1].amount, })
+            expect(res).toContainMatchingPaymentTransactionDocument(paymentTransactionDocument);
+
+            expect(res).toContainMatchingSplitTransactionDocument(payingSplitTransactionDocument, {
+              [getTransactionId(payingSplitTransactionDocument.deferredSplits[2])]: receivingTransferTransactionDocument.payments[1].amount,
+            });
+            expect(res).toContainMatchingSplitTransactionDocument(owningSplitTransactionDocument, {
+              [getTransactionId(owningSplitTransactionDocument.deferredSplits[2])]: payingTransferTransactionDocument.payments[1].amount,
+            });
+
+            expect(res).toContainMatchingTransferTransactionDocument(payingTransferTransactionDocument, getAccountId(accountDocument));
+            expect(res).toContainMatchingTransferTransactionDocument(receivingTransferTransactionDocument, getAccountId(accountDocument));
+            expect(res).toContainMatchingTransferTransactionDocument(loanTransferTransactionDocument, getAccountId(accountDocument));
+            expect(res).toContainMatchingTransferTransactionDocument(invertedLoanTransferTransactionDocument, getAccountId(accountDocument));
+
+            expect(res).toContainMatchingDeferredTransactionDocument(payingNotRepaidDeferredTransactionDocument);
+            expect(res).toContainMatchingDeferredTransactionDocument(payingRepaidDeferredTransactionDocument, receivingTransferTransactionDocument.payments[0].amount);
+            expect(res).toContainMatchingDeferredTransactionDocument(payingSettledDeferredTransactionDocument);
+            expect(res).toContainMatchingDeferredTransactionDocument(owningNotRepaidDeferredTransactionDocument);
+            expect(res).toContainMatchingDeferredTransactionDocument(owningRepaidDeferredTransactionDocument, payingTransferTransactionDocument.payments[0].amount);
+            expect(res).toContainMatchingDeferredTransactionDocument(owningSettledDeferredTransactionDocument);
+            
+            expect(res).toContainMatchingReimbursementTransactionDocument(owningReimbursementTransactionDocument);
           });
 
           test('of a loan account', async ({ requestGetTransactionListByAccount }) => {
@@ -327,7 +348,20 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
             });
             expect(res).toBeOkResponse();
             expect(res).toMatchSchema(schema);
-            // TODO: validateTransactionListResponse([ owningSplitTransactionDocument, loanTransferTransactionDocument, invertedLoanTransferTransactionDocument, owningNotRepaidDeferredTransactionDocument, owningRepaidDeferredTransactionDocument, owningSettledDeferredTransactionDocument, payingReimbursementTransactionDocument, ], getAccountId(loanAccountDocument), { [getTransactionId(owningRepaidDeferredTransactionDocument)]: repayingTransferTransactionDocument.payments[0].amount, [getTransactionId(owningSplitTransactionDocument.deferredSplits[2])]: repayingTransferTransactionDocument.payments[1].amount, })
+
+            expect(res).toContainMatchingSplitTransactionDocument(owningSplitTransactionDocument, {
+              [getTransactionId(owningSplitTransactionDocument.deferredSplits[2])]: repayingTransferTransactionDocument.payments[1].amount,
+            });
+
+            expect(res).toContainMatchingTransferTransactionDocument(repayingTransferTransactionDocument, getAccountId(loanAccountDocument));
+            expect(res).toContainMatchingTransferTransactionDocument(loanTransferTransactionDocument, getAccountId(loanAccountDocument));
+            expect(res).toContainMatchingTransferTransactionDocument(invertedLoanTransferTransactionDocument, getAccountId(loanAccountDocument));
+
+            expect(res).toContainMatchingDeferredTransactionDocument(owningNotRepaidDeferredTransactionDocument);
+            expect(res).toContainMatchingDeferredTransactionDocument(owningRepaidDeferredTransactionDocument, repayingTransferTransactionDocument.payments[0].amount);
+            expect(res).toContainMatchingDeferredTransactionDocument(owningSettledDeferredTransactionDocument);
+
+            expect(res).toContainMatchingReimbursementTransactionDocument(payingReimbursementTransactionDocument);
           });
         });
 

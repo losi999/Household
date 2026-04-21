@@ -69,8 +69,8 @@ test.describe('GET /product/v1/products', () => {
           expect(res).toBeOkResponse();
           expect(res).toMatchSchema(schema);
 
-          expect(res).toMatchProductDocumentInList(productDocument1, getCategoryId(categoryDocument1));
-          expect(res).toMatchProductDocumentInList(productDocument2, getCategoryId(categoryDocument2));
+          expect(res).toContainMatchingProductDocument(productDocument1, getCategoryId(categoryDocument1));
+          expect(res).toContainMatchingProductDocument(productDocument2, getCategoryId(categoryDocument2));
         });
       }
     });
