@@ -1,4 +1,4 @@
-import { generateMongoId } from '@household/shared/common/utils';
+import { generateMongoId } from '@household/shared/common/mongoose-utils';
 import { addSeconds, getAccountId, getTransactionId } from '@household/shared/common/utils';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { IDeferredTransactionDocumentConverter } from '@household/shared/converters/deferred-transaction-document-converter';

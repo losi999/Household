@@ -1,4 +1,5 @@
-import { generateMongoId, getAccountId, getCategoryId } from '@household/shared/common/utils';
+import { generateMongoId } from '@household/shared/common/mongoose-utils';
+import { getAccountId, getCategoryId } from '@household/shared/common/utils';
 import { addSeconds, createDate, getTransactionId } from '@household/shared/common/utils';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';

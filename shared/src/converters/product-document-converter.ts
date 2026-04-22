@@ -1,4 +1,4 @@
-import { generateMongoId } from '@household/shared/common/utils';
+import { generateMongoId } from '@household/shared/common/mongoose-utils';
 import { addSeconds, getProductId } from '@household/shared/common/utils';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
 import { DocumentUpdate } from '@household/shared/types/common';

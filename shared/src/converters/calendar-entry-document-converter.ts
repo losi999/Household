@@ -1,4 +1,5 @@
-import { generateMongoId, getCalendarEntryId } from '@household/shared/common/utils';
+import { generateMongoId } from '@household/shared/common/mongoose-utils';
+import { getCalendarEntryId } from '@household/shared/common/utils';
 import { addSeconds } from '@household/shared/common/utils';
 import { ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
 import { CalendarEntryResolutionStatus, CalendarEntryType } from '@household/shared/enums';

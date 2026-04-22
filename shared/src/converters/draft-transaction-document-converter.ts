@@ -1,4 +1,5 @@
-import { generateMongoId, getTransactionId } from '@household/shared/common/utils';
+import { generateMongoId } from '@household/shared/common/mongoose-utils';
+import { getTransactionId } from '@household/shared/common/utils';
 import { addSeconds } from '@household/shared/common/utils';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { TransactionType } from '@household/shared/enums';

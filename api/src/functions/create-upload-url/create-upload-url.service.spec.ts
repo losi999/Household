@@ -1,7 +1,6 @@
 import { ICreateUploadUrlService, createUploadUrlServiceFactory } from '@household/api/functions/create-upload-url/create-upload-url.service';
 import { createFileDocument, createFileRequest } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
-import { generateMongoId } from '@household/shared/common/utils';
 import { IFileDocumentConverter } from '@household/shared/converters/file-document-converter';
 import { FileProcessingStatus } from '@household/shared/enums';
 import { IFileService } from '@household/shared/services/file-service';
@@ -29,7 +28,6 @@ describe('Create upload URL service', () => {
   });
   const savedFileDocument = createFileDocument({
     processingStatus: FileProcessingStatus.Pending,
-    _id: generateMongoId(),
   });
 
   const fileRequest = createFileRequest();

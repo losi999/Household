@@ -109,9 +109,9 @@ jobs:
           name: Build API
           command: yarn build:api
 
-      # - run:
-      #     name: Build Web
-      #     command: yarn build:web -c $ENV
+      - run:
+          name: Build Web
+          command: yarn build:web -c $ENV
 
       - persist_to_workspace:
           root: ~/
@@ -210,10 +210,10 @@ workflows:
           name: unit_test_api
           requires:
             - install
-      # - unit_test_web:
-      #     name: unit_test_web
-      #     requires:
-      #       - install
+      - unit_test_web:
+          name: unit_test_web
+          requires:
+            - install
       - lint:
           name: lint
           requires:
@@ -227,16 +227,15 @@ workflows:
           filters: pipeline.git.branch == "master" or pipeline.git.branch == "development" or pipeline.parameters.deploy
           requires:
             - unit_test_api
-            # - unit_test_web
+            - unit_test_web
             - lint
             - build
-      # - web_deploy:
-      #     name: web_deploy
-      #     requires:
-      #       - api_deploy
+      - web_deploy:
+          name: web_deploy
+          requires:
+            - api_deploy
       - api_test_setup:
           requires:
-            # - web_deploy
             - api_deploy
           filters: pipeline.git.branch != "master" and pipeline.parameters.skip_api_tests != true
       - test:

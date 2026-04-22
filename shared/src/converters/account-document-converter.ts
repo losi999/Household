@@ -1,4 +1,4 @@
-import { generateMongoId } from '@household/shared/common/utils';
+import { generateMongoId } from '@household/shared/common/mongoose-utils';
 import { addSeconds, getAccountId } from '@household/shared/common/utils';
 import { DocumentUpdate } from '@household/shared/types/common';
 import { Account } from '@household/shared/types/types';

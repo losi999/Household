@@ -1,5 +1,5 @@
 import { JSONSchema7 } from 'json-schema';
-import { QueryOptions, UpdateQuery } from 'mongoose';
+import type { QueryOptions, UpdateQuery } from 'mongoose';
 
 export type AnyValueObject<T> = Record<keyof T, any>;
 export type DataFactoryFunction<I, O = I> = (input?: Partial<I>) => O;

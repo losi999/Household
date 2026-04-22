@@ -1,4 +1,5 @@
-import { generateMongoId, getFileId } from '@household/shared/common/utils';
+import { generateMongoId } from '@household/shared/common/mongoose-utils';
+import { getFileId } from '@household/shared/common/utils';
 import { addSeconds } from '@household/shared/common/utils';
 import { DocumentUpdate } from '@household/shared/types/common';
 import { File } from '@household/shared/types/types';

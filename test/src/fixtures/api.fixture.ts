@@ -137,7 +137,7 @@ export const expect = baseExpect.extend({
     return matchRegexp(received, requestPart, regexp);
   },
   async toHaveDependentRequiredPropertyValidationError(received: APIResponse, requestPart: RequestPart, dependingPropertyName: string, ...dependentPropertyNames: string[]) {
-    const regexp = `must have property${dependentPropertyNames.length === 1 ? '' : 'ies'} ${dependentPropertyNames.join(', ')} when property ${dependingPropertyName} is present`;
+    const regexp = `must have propert${dependentPropertyNames.length === 1 ? 'y' : 'ies'} ${dependentPropertyNames.join(', ')} when property ${dependingPropertyName} is present`;
     return matchRegexp(received, requestPart, regexp);
   },
   async toHaveAdditionalPropertiesValidationError(received: APIResponse, requestPart: RequestPart, propertyName: string, additionalPropertyName: string) {
