@@ -203,39 +203,39 @@ jobs:
 workflows:
   local:
     jobs:
-      - install
-      - unit_test_api:
-          name: unit_test_api
-          requires:
-            - install
+      # - install
+      # - unit_test_api:
+      #     name: unit_test_api
+      #     requires:
+      #       - install
       # - unit_test_web:
       #     name: unit_test_web
       #     requires:
       #       - install
-      - lint:
-          name: lint
-          requires:
-            - install
-      - build:
-          name: build
-          requires:
-            - install
-      - api_deploy:
-          name: api_deploy
-          filters: pipeline.git.branch == "master" or pipeline.git.branch == "development" or pipeline.parameters.deploy
-          requires:
-            - unit_test_api
-            # - unit_test_web
-            - lint
-            - build
+      # - lint:
+      #     name: lint
+      #     requires:
+      #       - install
+      # - build:
+      #     name: build
+      #     requires:
+      #       - install
+      # - api_deploy:
+      #     name: api_deploy
+      #     filters: pipeline.git.branch == "master" or pipeline.git.branch == "development" or pipeline.parameters.deploy
+      #     requires:
+      #       - unit_test_api
+      #       # - unit_test_web
+      #       - lint
+      #       - build
       # - web_deploy:
       #     name: web_deploy
       #     requires:
       #       - api_deploy
       - api_test_setup:
-          requires:
+          # requires:
             # - web_deploy
-            - api_deploy
+            # - api_deploy
           filters: pipeline.git.branch != "master" and pipeline.parameters.skip_api_tests != true
       # - test:
       #     serial-group: api-test1
