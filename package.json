@@ -15,7 +15,7 @@
     "deploy:api:CI": "export ENV=CI && yarn samconfig && sam deploy -t cf.household.yaml && yarn postdeploy --profile ci",
     "postdeploy": "aws lambda invoke --function-name Household-${ENV}-PostDeploy /dev/null",
     "start:web:LOCAL": "cd web && yarn start -c LOCAL",
-    "build:api": "rimraf ./dist/api && tsc --noEmit && node build.cjs",
+    "build:api": "rimraf ./dist/api && tsc -p tsconfig.build.json --noEmit && node build.cjs",
     "build:api:watch": "export ENV=localhost && yarn build:api --watch",
     "build:web": "rimraf ./dist/web && cd web && yarn build",
     "build:web:LOCAL": "yarn build:web -c LOCAL",

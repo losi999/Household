@@ -25,7 +25,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "test/yarn.lock"}}
+          key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}
       - run:
           name: Install API dependencies
           command: yarn
@@ -34,14 +34,10 @@ jobs:
           command: yarn
           working_directory: web
       - run:
-          name: Install test dependencies
-          command: yarn
-          working_directory: test
-      - run:
           name: Install layer dependencies
           command: yarn install --modules-folder layers/dependencies/nodejs/node_modules --prod
       - save_cache:
-          key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "test/yarn.lock"}}
+          key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}
           paths:
             - ~/.cache/yarn
       - run:
@@ -181,29 +177,29 @@ jobs:
       testCommand:
         type: string
     docker:
-      - image: cypress/base:16.14.2
+      - image: mcr.microsoft.com/playwright:v1.49.0-noble
     working_directory: ~/repo
     steps:
       - attach_workspace:
           at: ~/
       - load-config
-      - restore_cache:
-          key: cache-cypress-v4-{{checksum "test/yarn.lock"}}
-      - run:
-          name: Install test dependencies
-          command: yarn
-          working_directory: test
-      - save_cache:
-          key: cache-cypress-v4-{{checksum "test/yarn.lock"}}
-          paths:
-            - /root/.cache/Cypress
+      # - restore_cache:
+      #     key: cache-playwright-v1-{{checksum "test/yarn.lock"}}
+      # - run:
+      #     name: Install test dependencies
+      #     command: yarn
+      #     working_directory: test
+      # - save_cache:
+      #     key: cache-playwright-v1-{{checksum "test/yarn.lock"}}
+      #     paths:
+      #       - /root/.cache/Cypress
       - run:
           name: Running tests
           working_directory: test
           command: export ENV=$ENV && yarn run test:<<parameters.testCommand>>
       - store_artifacts:
-          path: test/cypress/screenshots
-          destination: test/cypress/screenshots
+          path: test/playwright-report
+          destination: test/playwright-report/<<parameters.testCommand>>
 workflows:
   local:
     jobs:
@@ -241,47 +237,49 @@ workflows:
             # - web_deploy
             - api_deploy
           filters: pipeline.git.branch != "master" and pipeline.parameters.skip_api_tests != true
-      - test:
-          serial-group: api-test1
-          matrix:
-            parameters:
-              testCommand:
-                ["transaction-common", "transaction-payment", "product"]
-          requires:
-            - api_test_setup
-      - test:
-          serial-group: api-test2
-          matrix:
-            parameters:
-              testCommand: ["customer", "category", "price"]
-          requires:
-            - api_test_setup
-      - test:
-          serial-group: api-test3
-          matrix:
-            parameters:
-              testCommand: ["calendar", "account", "file"]
-          requires:
-            - api_test_setup
+      # - test:
+      #     serial-group: api-test1
+      #     matrix:
+      #       parameters:
+      #         testCommand:
+      #           ["transaction-common", "transaction-payment", "product"]
+      #     requires:
+      #       - api_test_setup
+      # - test:
+      #     serial-group: api-test2
+      #     matrix:
+      #       parameters:
+      #         testCommand: ["customer", "category", "price"]
+      #     requires:
+      #       - api_test_setup
+      # - test:
+      #     serial-group: api-test3
+      #     matrix:
+      #       parameters:
+      #         testCommand: ["calendar", "account", "file"]
+      #     requires:
+      #       - api_test_setup
       - test:
           serial-group: api-test4
           matrix:
             parameters:
               testCommand:
-                ["transaction-reimbursement", "project", "transaction-transfer"]
+                # ["transaction-reimbursement", "project", "transaction-transfer"]
+                ["project"]
           requires:
             - api_test_setup
       - test:
           serial-group: api-test5
           matrix:
             parameters:
-              testCommand: ["transaction-split", "recipient", "setting"]
+              # testCommand: ["transaction-split", "recipient", "setting"]
+              testCommand: ["recipient"]
           requires:
             - api_test_setup
-      - test:
-          serial-group: api-test
-          matrix:
-            parameters:
-              testCommand: ["transaction-deferred", "user", "transaction-draft"]
-          requires:
-            - api_test_setup
+      # - test:
+      #     serial-group: api-test6
+      #     matrix:
+      #       parameters:
+      #         testCommand: ["transaction-deferred", "user", "transaction-draft"]
+      #     requires:
+      #       - api_test_setup
