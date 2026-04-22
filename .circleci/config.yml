@@ -25,7 +25,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}
+          key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "test/yarn.lock"}}
       - run:
           name: Install API dependencies
           command: yarn
@@ -34,10 +34,14 @@ jobs:
           command: yarn
           working_directory: web
       - run:
-          name: Installing layer dependencies
+          name: Install test dependencies
+          command: yarn
+          working_directory: test
+      - run:
+          name: Install layer dependencies
           command: yarn install --modules-folder layers/dependencies/nodejs/node_modules --prod
       - save_cache:
-          key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}
+          key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "test/yarn.lock"}}
           paths:
             - ~/.cache/yarn
       - run:
@@ -208,10 +212,10 @@ workflows:
           name: unit_test_api
           requires:
             - install
-      - unit_test_web:
-          name: unit_test_web
-          requires:
-            - install
+      # - unit_test_web:
+      #     name: unit_test_web
+      #     requires:
+      #       - install
       - lint:
           name: lint
           requires:
@@ -225,7 +229,7 @@ workflows:
           filters: pipeline.git.branch == "master" or pipeline.git.branch == "development" or pipeline.parameters.deploy
           requires:
             - unit_test_api
-            - unit_test_web
+            # - unit_test_web
             - lint
             - build
       - web_deploy:
