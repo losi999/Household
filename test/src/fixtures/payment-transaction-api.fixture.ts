@@ -10,7 +10,7 @@ import { validateRecipientResponse } from '@household/test/fixtures/recipient-ap
 import { validateCategoryResponse } from '@household/test/fixtures/category-api.fixture';
 import { validateProductResponse } from '@household/test/fixtures/product-api.fixture';
 
-const validatePaymentTransactionResponse = (response: Transaction.PaymentResponse, document: Transaction.PaymentDocument) => {
+export const validatePaymentTransactionResponse = (response: Transaction.PaymentResponse, document: Transaction.PaymentDocument) => {
   return new Comparer(response, {
     transactionId: getTransactionId(document),
     amount: document.amount,

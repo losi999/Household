@@ -4,10 +4,10 @@ import { ISettingService } from '@household/shared/services/setting-service';
 import { test as baseTest } from '@household/test/fixtures/logging.fixture';
 
 export const test = baseTest.extend<Pick<ISettingService, 'updateSetting' | 'getSettingByKey'>>({
-  updateSetting: async ({ logDbCall }, use) => {
+  updateSetting: async ({ logServiceCall }, use) => {
     const updateSetting: ISettingService['updateSetting'] = async (key, updateQuery) => {
       const result = await settingService.updateSetting(key, updateQuery);
-      await logDbCall('updateSetting', {
+      await logServiceCall('updateSetting', {
         key,
         updateQuery,
       }, result);
@@ -16,10 +16,10 @@ export const test = baseTest.extend<Pick<ISettingService, 'updateSetting' | 'get
 
     await use(updateSetting);
   },
-  getSettingByKey: async ({ logDbCall }, use) => {
+  getSettingByKey: async ({ logServiceCall }, use) => {
     const getSettingByKey: ISettingService['getSettingByKey'] = async <V extends string | number | boolean>(settingKey: SettingKey) => {
       const result = await settingService.getSettingByKey<V>(settingKey);
-      await logDbCall('getSettingByKey', {
+      await logServiceCall('getSettingByKey', {
         settingKey,
       }, result);
       return result;

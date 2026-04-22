@@ -1,7 +1,6 @@
 import { createDate, getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { Reassignment } from '@household/test/types';
-import { test as baseTest } from '@household/test/fixtures/api.fixture';
 import { APIResponse, expect as baseExpect } from '@playwright/test';
 import { CategoryType, TransactionType } from '@household/shared/enums';
 import { validateProjectResponse } from '@household/test/fixtures/project-api.fixture';
@@ -10,10 +9,9 @@ import { validateAccountResponse } from '@household/test/fixtures/account-api.fi
 import { validateRecipientResponse } from '@household/test/fixtures/recipient-api.fixture';
 import { validateCategoryResponse } from '@household/test/fixtures/category-api.fixture';
 import { validateProductResponse } from '@household/test/fixtures/product-api.fixture';
+import { validateDeferredTransactionResponse } from '@household/test/fixtures/deferred-transaction-api.fixture';
 
-export const test = baseTest.extend({});
-
-const validateSplitTransactionResponse = (response: Transaction.SplitResponse, document: Transaction.SplitDocument, repayments?: Record<Transaction.Id, number>) => {
+export const validateSplitTransactionResponse = (response: Transaction.SplitResponse, document: Transaction.SplitDocument, repayments?: Record<Transaction.Id, number>) => {
   return new Comparer(response, {
     transactionId: getTransactionId(document),
     amount: document.amount,
@@ -40,23 +38,7 @@ const validateSplitTransactionResponse = (response: Transaction.SplitResponse, d
     deferredSplits: response.deferredSplits.map((deferredSplitResponseItem, index) => {
       const deferredSplitDocument = document.deferredSplits[index];
 
-      return new Comparer(deferredSplitResponseItem, {
-        amount: deferredSplitDocument.amount,
-        transactionType: deferredSplitDocument.transactionType,
-        transactionId: getTransactionId(deferredSplitDocument),
-        remainingAmount: deferredSplitDocument.isSettled ? undefined : (Math.abs(deferredSplitDocument.amount) - (repayments?.[getTransactionId(deferredSplitDocument)] ?? 0)),
-        description: deferredSplitDocument.description,
-        isSettled: deferredSplitDocument.isSettled,
-        payingAccount: validateAccountResponse(deferredSplitResponseItem.payingAccount, deferredSplitDocument.payingAccount),
-        ownerAccount: validateAccountResponse(deferredSplitResponseItem.ownerAccount, deferredSplitDocument.ownerAccount),
-        project: validateProjectResponse(deferredSplitResponseItem.project, deferredSplitDocument.project),
-        category: validateCategoryResponse(deferredSplitResponseItem.category, deferredSplitDocument.category),
-        product: validateProductResponse(deferredSplitResponseItem.product, deferredSplitDocument.product),
-        quantity: deferredSplitDocument.quantity,
-        billingStartDate: deferredSplitDocument.billingStartDate?.toISOString().split('T')[0],
-        billingEndDate: deferredSplitDocument.billingEndDate?.toISOString().split('T')[0],
-        invoiceNumber: deferredSplitDocument.invoiceNumber,
-      });
+      return validateDeferredTransactionResponse(deferredSplitResponseItem, deferredSplitDocument, repayments?.[getTransactionId(deferredSplitDocument)]);
     }),
   });
 };
@@ -186,6 +168,7 @@ export const expect = baseExpect.extend({
           expectedBillingEndDate = reassignments.category.from.categoryType === reassignments.category.to?.categoryType ? originalSplit.billingEndDate?.toISOString() : undefined;
           expectedQuantity = reassignments.category.from.categoryType === reassignments.category.to?.categoryType ? originalSplit.quantity : undefined;
           expectedProduct = reassignments.category.from.categoryType === reassignments.category.to?.categoryType ? getProductId(originalSplit.product) : undefined;
+          expectedCategory = getCategoryId(reassignments.category.to);
         } else {
           expectedInvoiceNumber = originalSplit.invoiceNumber;
           expectedBillingStartDate = originalSplit.billingStartDate?.toISOString();

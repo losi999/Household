@@ -138,7 +138,7 @@ test.describe('POST price/v1/prices', () => {
                 amount: 0, 
               }));
               expect(res).toBeBadRequestResponse();
-              // TODO: expectTooSmallNumberProperty('amount', 0, true, 'body')
+              expect(res).toHaveExclusiveTooSmallValidationError('body', 'amount', 0);
             });
           });
 

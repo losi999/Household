@@ -4,13 +4,13 @@ import { allowUsers } from '@household/test/utils';
 import { entries, getCustomerId } from '@household/shared/common/utils';
 import { priceDataFactory } from '@household/test/api/price/data-factory';
 
-import { test as customerApiTest, expect as domainExpect } from '@household/test/fixtures/customer-api.fixture';
+import { test as customerApiTest, expect as customerApiExpect } from '@household/test/fixtures/customer-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { mergeExpects, mergeTests } from '@playwright/test';
 import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
 import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
 
-const expect = mergeExpects(domainExpect, apiExpect);
+const expect = mergeExpects(customerApiExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser');
 
@@ -109,7 +109,7 @@ test.describe('DELETE customer/v1/customers/blacklist', () => {
             test('is has to few items', async ({ requestRemoveCustomerFromBlacklist }) => {
               const res = await requestRemoveCustomerFromBlacklist([customerDataFactory.id()]);
               expect(res).toBeBadRequestResponse();
-              // TODO: expectTooFewItemsProperty('data', 2, 'body')
+              expect(res).toHaveTooFewItemsValidationError('body', 'data', 2);
             });
 
             test('has too many items', async ({ requestRemoveCustomerFromBlacklist }) => {
@@ -119,7 +119,7 @@ test.describe('DELETE customer/v1/customers/blacklist', () => {
                 customerDataFactory.id(), 
               ]);
               expect(res).toBeBadRequestResponse();
-              // TODO: expectTooManyItemsProperty('data', 2, 'body')
+              expect(res).toHaveTooManyItemsValidationError('body', 'data', 2);
             });
 
             test('items are the same', async ({ requestRemoveCustomerFromBlacklist }) => {

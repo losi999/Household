@@ -13,7 +13,7 @@ type ApiCallLog = {
   } 
 };
 
-type DbCallLog = {
+type ServiceCallLog = {
   operationName: string;
   inputParameters: object;
   result: unknown;
@@ -21,10 +21,10 @@ type DbCallLog = {
 
 type LoggingFixture = {
   steps: {
-    [testId: string]: (ApiCallLog | DbCallLog)[];
+    [testId: string]: (ApiCallLog | ServiceCallLog)[];
   }
   logApiCall<M extends 'get' | 'post' | 'put' | 'patch' | 'delete'>(method: M, url: string, response: APIResponse, options: Parameters<APIRequestContext[M]>[1]): Promise<void>;
-  logDbCall(operationName: string, inputParameters: object, result: unknown): Promise<void>;
+  logServiceCall(operationName: string, inputParameters: object, result: unknown): Promise<void>;
   printSteps: void;
 };
 
@@ -51,8 +51,8 @@ export const test = baseTest.extend<LoggingFixture>({
 
     await use(logApiCall);
   },
-  logDbCall: async ({ steps, printSteps }, use, testInfo) => {
-    const logDbCall: LoggingFixture['logDbCall'] = async (operationName, inputParameters, result) => {
+  logServiceCall: async ({ steps, printSteps }, use, testInfo) => {
+    const logServiceCall: LoggingFixture['logServiceCall'] = async (operationName, inputParameters, result) => {
       if (!steps[testInfo.testId]) {  
         steps[testInfo.testId] = [];
       }
@@ -64,7 +64,7 @@ export const test = baseTest.extend<LoggingFixture>({
       });
     };
 
-    await use(logDbCall);
+    await use(logServiceCall);
   },
   printSteps: async ({ steps }, use, testInfo) => {
     await use();

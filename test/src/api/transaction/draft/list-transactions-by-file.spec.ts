@@ -14,13 +14,13 @@ import { transferTransactionDataFactory } from '@household/test/api/transaction/
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 
-import { test as transactionApiTest, expect as domainExpect } from '@household/test/fixtures/transaction-api.fixture';
+import { test as transactionApiTest, expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { mergeExpects, mergeTests } from '@playwright/test';
 import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
 import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
 
-const expect = mergeExpects(domainExpect, apiExpect);
+const expect = mergeExpects(transactionApiExpect, apiExpect);
 
 const permissionMap = allowUsers('editor') ;
 
@@ -136,7 +136,9 @@ test.describe('GET /transaction/v1/files/{fileId}/transactions', () => {
           const res = await requestGetTransactionListByFile(getFileId(fileDocument));
           expect(res).toBeOkResponse();
           expect(res).toMatchSchema(schema);
-          // TODO: validateTransactionDraftListResponse( { document: draftDocument, }, { document: duplicatedDraftDocument, duplicateTransactions: [ duplicatePaymentDocument, duplicateInvertedPaymentDocument, duplicateSplitDocument, duplicateTransferDocument, duplicateInvertedTransferDocument, duplicateDeferredDocument, duplicateReimbursementDocument, ], })
+
+          expect(res).toContainMatchingDraftTransactionDocument(draftDocument);
+          expect(res).toContainMatchingDraftTransactionDocument(duplicatedDraftDocument, duplicatePaymentDocument, duplicateInvertedPaymentDocument, duplicateSplitDocument, duplicateTransferDocument, duplicateInvertedTransferDocument, duplicateDeferredDocument, duplicateReimbursementDocument);
         });
 
         test.describe('should return error', () => {

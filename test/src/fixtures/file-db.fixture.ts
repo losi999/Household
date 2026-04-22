@@ -3,10 +3,10 @@ import { IFileService } from '@household/shared/services/file-service';
 import { test as baseTest } from '@household/test/fixtures/logging.fixture';
 
 export const test = baseTest.extend<Pick<IFileService, 'saveFile' | 'findFileById'>>({
-  saveFile: async ({ logDbCall }, use) => {
+  saveFile: async ({ logServiceCall }, use) => {
     const saveFile: IFileService['saveFile'] = async (file) => {
       const result = await fileService.saveFile(file);
-      await logDbCall('saveFile', {
+      await logServiceCall('saveFile', {
         file,
       }, result);
       return result;
@@ -14,10 +14,10 @@ export const test = baseTest.extend<Pick<IFileService, 'saveFile' | 'findFileByI
 
     await use(saveFile);
   },
-  findFileById: async ({ logDbCall }, use) => {
+  findFileById: async ({ logServiceCall }, use) => {
     const findFileById: IFileService['findFileById'] = async (fileId) => {
       const result = await fileService.findFileById(fileId);
-      await logDbCall('findFileById', {
+      await logServiceCall('findFileById', {
         fileId,
       }, result);
       return result;

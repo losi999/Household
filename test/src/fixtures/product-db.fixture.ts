@@ -3,10 +3,10 @@ import { IProductService } from '@household/shared/services/product-service';
 import { test as baseTest } from '@household/test/fixtures/logging.fixture';
 
 export const test = baseTest.extend<Pick<IProductService, 'saveProduct' | 'saveProducts' | 'findProductById'>>({
-  saveProduct: async ({ logDbCall }, use) => {
+  saveProduct: async ({ logServiceCall }, use) => {
     const saveProduct: IProductService['saveProduct'] = async (product) => {
       const result = await productService.saveProduct(product);
-      await logDbCall('saveProduct', {
+      await logServiceCall('saveProduct', {
         product,
       }, result);
       return result;
@@ -14,10 +14,10 @@ export const test = baseTest.extend<Pick<IProductService, 'saveProduct' | 'saveP
 
     await use(saveProduct);
   },
-  saveProducts: async ({ logDbCall }, use) => {
+  saveProducts: async ({ logServiceCall }, use) => {
     const saveProducts: IProductService['saveProducts'] = async (...products) => {
       const result = await productService.saveProducts(...products);
-      await logDbCall('saveProducts', {
+      await logServiceCall('saveProducts', {
         products,
       }, result);
       return result;
@@ -25,10 +25,10 @@ export const test = baseTest.extend<Pick<IProductService, 'saveProduct' | 'saveP
 
     await use(saveProducts);
   },
-  findProductById: async ({ logDbCall }, use) => {
+  findProductById: async ({ logServiceCall }, use) => {
     const findProductById: IProductService['findProductById'] = async (productId) => {
       const result = await productService.findProductById(productId);
-      await logDbCall('findProductById', {
+      await logServiceCall('findProductById', {
         productId,
       }, result);
       return result;

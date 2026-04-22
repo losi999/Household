@@ -3,10 +3,10 @@ import { ICustomerService } from '@household/shared/services/customer-service';
 import { test as baseTest } from '@household/test/fixtures/logging.fixture';
 
 export const test = baseTest.extend<Pick<ICustomerService, 'saveCustomer' | 'saveCustomers' | 'findCustomerById' | 'getCustomerById'>>({
-  saveCustomer: async ({ logDbCall }, use) => {
+  saveCustomer: async ({ logServiceCall }, use) => {
     const saveCustomer: ICustomerService['saveCustomer'] = async (customer) => {
       const result = await customerService.saveCustomer(customer);
-      await logDbCall('saveCustomer', {
+      await logServiceCall('saveCustomer', {
         customer,
       }, result);
       return result;
@@ -14,10 +14,10 @@ export const test = baseTest.extend<Pick<ICustomerService, 'saveCustomer' | 'sav
 
     await use(saveCustomer);
   },
-  saveCustomers: async ({ logDbCall }, use) => {
+  saveCustomers: async ({ logServiceCall }, use) => {
     const saveCustomers: ICustomerService['saveCustomers'] = async (...customers) => {
       const result = await customerService.saveCustomers(...customers);
-      await logDbCall('saveCustomers', {
+      await logServiceCall('saveCustomers', {
         customers,
       }, result);
       return result;
@@ -25,10 +25,10 @@ export const test = baseTest.extend<Pick<ICustomerService, 'saveCustomer' | 'sav
 
     await use(saveCustomers);
   },
-  findCustomerById: async ({ logDbCall }, use) => {
+  findCustomerById: async ({ logServiceCall }, use) => {
     const findCustomerById: ICustomerService['findCustomerById'] = async (customerId) => {
       const result = await customerService.findCustomerById(customerId);
-      await logDbCall('findCustomerById', {
+      await logServiceCall('findCustomerById', {
         customerId,
       }, result);
       return result;
@@ -36,10 +36,10 @@ export const test = baseTest.extend<Pick<ICustomerService, 'saveCustomer' | 'sav
 
     await use(findCustomerById);
   },
-  getCustomerById: async ({ logDbCall }, use) => {
+  getCustomerById: async ({ logServiceCall }, use) => {
     const getCustomerById: ICustomerService['getCustomerById'] = async (customerId) => {
       const result = await customerService.getCustomerById(customerId);
-      await logDbCall('getCustomerById', {
+      await logServiceCall('getCustomerById', {
         customerId,
       }, result);
       return result;

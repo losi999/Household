@@ -7,14 +7,14 @@ import { priceDataFactory } from '@household/test/api/price/data-factory';
 import { default as schema } from '@household/test/schemas/calendar-entry-response';
 import { CalendarEntryResolutionStatus } from '@household/shared/enums';
 
-import { test as calendarApiTest, expect as domainExpect } from '@household/test/fixtures/calendar-api.fixture';
+import { test as calendarApiTest, expect as calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { mergeExpects, mergeTests } from '@playwright/test';
 import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
 import { test as calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
 import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
 
-const expect = mergeExpects(domainExpect, apiExpect);
+const expect = mergeExpects(calendarApiExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser');
 

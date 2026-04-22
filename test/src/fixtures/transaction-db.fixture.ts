@@ -4,10 +4,10 @@ import { test as baseTest } from '@household/test/fixtures/logging.fixture';
 import { transactionService } from '@household/shared/dependencies/services/transaction-service';
 
 export const test = baseTest.extend<Pick<ITransactionService, 'saveTransaction' | 'saveTransactions' | 'findTransactionById' | 'getTransactionById' | 'listDraftTransactionsByFileId'>>({
-  saveTransaction: async ({ logDbCall }, use) => {
+  saveTransaction: async ({ logServiceCall }, use) => {
     const saveTransaction: ITransactionService['saveTransaction'] = async (transaction) => {
       const result = await transactionService.saveTransaction(transaction);
-      await logDbCall('saveTransaction', {
+      await logServiceCall('saveTransaction', {
         transaction,
       }, result);
       return result;
@@ -15,10 +15,10 @@ export const test = baseTest.extend<Pick<ITransactionService, 'saveTransaction' 
 
     await use(saveTransaction);
   },
-  saveTransactions: async ({ logDbCall }, use) => {
+  saveTransactions: async ({ logServiceCall }, use) => {
     const saveTransactions: ITransactionService['saveTransactions'] = async (...transactions) => {
       const result = await transactionService.saveTransactions(...transactions);
-      await logDbCall('saveTransactions', {
+      await logServiceCall('saveTransactions', {
         transactions,
       }, result);
       return result;
@@ -26,10 +26,10 @@ export const test = baseTest.extend<Pick<ITransactionService, 'saveTransaction' 
 
     await use(saveTransactions);
   },
-  findTransactionById: async ({ logDbCall }, use) => {
+  findTransactionById: async ({ logServiceCall }, use) => {
     const findTransactionById: ITransactionService['findTransactionById'] = async <T extends Transaction.Document = Transaction.Document>(transactionId: Parameters<ITransactionService['findTransactionById']>[0]) => {
       const result = await transactionService.findTransactionById<T>(transactionId);
-      await logDbCall('findTransactionById', {
+      await logServiceCall('findTransactionById', {
         transactionId,
       }, result);
       return result;
@@ -37,10 +37,10 @@ export const test = baseTest.extend<Pick<ITransactionService, 'saveTransaction' 
 
     await use(findTransactionById);
   },
-  getTransactionById: async ({ logDbCall }, use) => {
+  getTransactionById: async ({ logServiceCall }, use) => {
     const getTransactionById: ITransactionService['getTransactionById'] = async <T extends Transaction.Document = Transaction.Document>(transactionId: Transaction.Id) => {
       const result = await transactionService.getTransactionById<T>(transactionId);
-      await logDbCall('getTransactionById', {
+      await logServiceCall('getTransactionById', {
         transactionId,
       }, result);
       return result;
@@ -48,10 +48,10 @@ export const test = baseTest.extend<Pick<ITransactionService, 'saveTransaction' 
 
     await use(getTransactionById);
   },
-  listDraftTransactionsByFileId: async ({ logDbCall }, use) => {
+  listDraftTransactionsByFileId: async ({ logServiceCall }, use) => {
     const listDraftTransactionsByFileId: ITransactionService['listDraftTransactionsByFileId'] = async (fileId) => {
       const result = await transactionService.listDraftTransactionsByFileId(fileId);
-      await logDbCall('listDraftTransactionsByFileId', {
+      await logServiceCall('listDraftTransactionsByFileId', {
         fileId,
       }, result);
       return result;

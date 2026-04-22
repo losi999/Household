@@ -186,36 +186,39 @@ export const validateCustomerJobPriceResponse = (priceResponses: (Price.Response
   });
 };
 
-export const validateCustomerResponse = (response: Customer.Response, document: Customer.Document) => {
+const validateCustomerResponseBase = (response: Customer.ResponseBase, document: Customer.Document) => {
   return new Comparer(response, {
     customerId: getCustomerId(document),
     name: document.name,
     description: document.description,
     isGroup: document.isGroup,
     rating: document.rating,
-    blacklistedCustomers: response.blacklistedCustomers.map((blacklistedCustomer, index) => {
-      const doc = document.blacklistedCustomers[index];
-
-      return new Comparer(blacklistedCustomer, {
-        customerId: getCustomerId(doc),
-        name: doc.name,
-        description: doc.description,
-        isGroup: doc.isGroup,
-        rating: doc.rating,
-      });
-    }),
-    jobs: response.jobs.map((job, index) => {
-      const jobDocument = document.jobs[index];
-
-      return new Comparer(job, {
-        name: jobDocument.name,
-        description: jobDocument.description,
-        duration: jobDocument.duration,
-        prices: validateCustomerJobPriceResponse(job.prices, jobDocument.prices), 
-      });
-    }),
   });
 };
+
+export const validateCustomerResponse = (response: Customer.Response, document: Customer.Document) => {
+  return new Comparer(response, [
+    validateCustomerResponseBase(response, document),
+    {
+      blacklistedCustomers: response.blacklistedCustomers.map((blacklistedCustomer, index) => {
+        const doc = document.blacklistedCustomers[index];
+
+        return validateCustomerResponseBase(blacklistedCustomer, doc);
+      }),
+      jobs: response.jobs.map((job, index) => {
+        const jobDocument = document.jobs[index];
+
+        return new Comparer(job, {
+          name: jobDocument.name,
+          description: jobDocument.description,
+          duration: jobDocument.duration,
+          prices: validateCustomerJobPriceResponse(job.prices, jobDocument.prices), 
+        });
+      }),
+    },
+  ]);
+};
+
 const compareCustomerBaseProperties = (actual: Customer.Document, expected: Customer.Document | Customer.Request) => {
   return new Comparer(actual, {
     name: expected.name,

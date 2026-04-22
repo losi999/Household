@@ -10,7 +10,7 @@ import { paymentTransactionDataFactory } from '@household/test/api/transaction/p
 import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
 import { forbidUsers } from '@household/test/utils';
 
-import { test as transactionApiTest, expect as domainExpect } from '@household/test/fixtures/transaction-api.fixture';
+import { test as transactionApiTest, expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { mergeExpects, mergeTests } from '@playwright/test';
 import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
@@ -20,7 +20,7 @@ import { test as projectDbTest } from '@household/test/fixtures/project-db.fixtu
 import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
 import { test as productDbTest } from '@household/test/fixtures/product-db.fixture';
 
-const expect = mergeExpects(domainExpect, apiExpect);
+const expect = mergeExpects(transactionApiExpect, apiExpect);
 
 const permissionMap = forbidUsers('viewer') ;
 

@@ -1,5 +1,5 @@
 import { isPriceBase } from '@household/shared/common/type-guards';
-import { getCalendarEntryId, getCustomerId, getPriceId } from '@household/shared/common/utils';
+import { getCalendarEntryId, getCustomerId, getPriceId, getTransactionId } from '@household/shared/common/utils';
 import { headerExpiresIn, WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
 import { CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType } from '@household/shared/enums';
 import { Calendar, Transaction } from '@household/shared/types/types';
@@ -137,25 +137,7 @@ export const test = baseTest.extend<CalendarApiFixture>({
   },
 });
 
-const validateCalendarEntryResponse = (response: Calendar.Entry.Response, document: Calendar.Entry.Document) => {
-  if (response.entryType === CalendarEntryType.Work && document.entryType === CalendarEntryType.Work) { 
-    return new Comparer(response, {
-      calendarEntryId: getCalendarEntryId(document),
-      title: document.title,
-      description: document.description,
-      start: document.start,
-      end: document.end,
-      day: document.day,
-      entryType: document.entryType,
-      customer: validateCustomerResponse(response.customer, document.customer),
-      resolution: new Comparer(response.resolution, {
-        status: document.resolution.status,
-        delay: document.resolution.delay,
-      }),
-      prices: validateCustomerJobPriceResponse(response.prices, document.prices),
-    });
-  }
-
+const validateCalendarEntryResponseBase = (response: Calendar.Entry.ResponseBase, document: Calendar.Entry.Document) => {
   return new Comparer(response, {
     calendarEntryId: getCalendarEntryId(document),
     title: document.title,
@@ -163,8 +145,66 @@ const validateCalendarEntryResponse = (response: Calendar.Entry.Response, docume
     start: document.start,
     end: document.end,
     day: document.day,
-    entryType: document.entryType,
   });
+};
+
+const validateCalendarEntryResponse = (response: Calendar.Entry.Response, document: Calendar.Entry.Document) => {
+  const comparer = new Comparer(response, [
+    validateCalendarEntryResponseBase(response, document),
+    {
+      entryType: document.entryType,
+    },
+  ]);
+
+  if (response.entryType === CalendarEntryType.Work && document.entryType === CalendarEntryType.Work) { 
+    return new Comparer(response, [
+      comparer,
+      {
+        customer: validateCustomerResponse(response.customer, document.customer),
+        resolution: new Comparer(response.resolution, {
+          status: document.resolution.status,
+          delay: document.resolution.delay,
+        }),
+        prices: validateCustomerJobPriceResponse(response.prices, document.prices),
+      },
+    ]);
+  }
+
+  return comparer;
+};
+
+const validateCalendarEntryDocuments = (originalDocument: Calendar.Entry.Document, currentDocument: Calendar.Entry.Document) => {
+  return new Comparer(currentDocument, {
+    description: originalDocument.description,
+    start: originalDocument.start,
+    end: originalDocument.end,
+    day: originalDocument.day,
+    title: originalDocument.title,
+    entryType: originalDocument.entryType,  
+    customer: getCustomerId(originalDocument.customer),
+    prices: currentDocument.prices?.map((currentPrice, index) => {
+      const originalPrice = originalDocument.prices[index];
+
+      if (isPriceBase(currentPrice) && isPriceBase(originalPrice)) {
+        return new Comparer(currentPrice, {
+          name: originalPrice.name,
+          amount: originalPrice.amount,
+        });
+      }
+
+      if (!isPriceBase(currentPrice) && !isPriceBase(originalPrice)) {
+        return new Comparer(currentPrice, {
+          price: getPriceId(originalPrice.price),
+          quantity: originalPrice.quantity,
+        });
+      }
+    }),
+    resolution: new Comparer(currentDocument.resolution, {
+      delay: originalDocument.resolution?.delay,
+      status: originalDocument.resolution?.status,
+    }),
+    transaction: getTransactionId(originalDocument.transaction),
+  }, '_id', 'createdAt', 'updatedAt', 'expiresAt');
 };
 
 export const expect = baseExpect.extend({
@@ -237,14 +277,7 @@ export const expect = baseExpect.extend({
       };
     }
 
-    const comparer = new Comparer(matchingResponse, {
-      calendarEntryId: getCalendarEntryId(document),
-      title: document.title,
-      description: document.description,
-      start: document.start,
-      end: document.end,
-      day: document.day,
-    });
+    const comparer = validateCalendarEntryResponseBase(matchingResponse, document);
 
     const errors = comparer.validate();
 
@@ -264,43 +297,38 @@ export const expect = baseExpect.extend({
     };
   },
   toHaveBeenResolved(originalDocument: Calendar.Entry.Document, currentDocument: Calendar.Entry.Document, request: Calendar.Entry.ResolutionRequest, transactionId?: Transaction.Id) {
-    const comparer = new Comparer(currentDocument, {
-      description: originalDocument.description,
-      start: originalDocument.start,
-      end: originalDocument.end,
-      day: originalDocument.day,
-      title: originalDocument.title,
-      entryType: originalDocument.entryType,  
-      customer: getCustomerId(originalDocument.customer),
-      resolution: new Comparer(currentDocument.resolution, {
-        delay: request.status !== CalendarEntryResolutionStatus.NoShow ? request.delay : undefined,
-        status: request.status,
-      }),
-      prices: currentDocument.prices?.map((currentPrice, index) => {
-        const originalPrice = originalDocument.prices[index];
-
-        if (isPriceBase(currentPrice) && isPriceBase(originalPrice)) {
-          return new Comparer(currentPrice, {
-            name: originalPrice.name,
-            amount: originalPrice.amount,
-          });
-        }
-
-        if (!isPriceBase(currentPrice) && !isPriceBase(originalPrice)) {
-          return new Comparer(currentPrice, {
-            price: getPriceId(originalPrice.price),
-            quantity: originalPrice.quantity,
-          });
-        }
-      }),
-      transaction: currentDocument.resolution?.status === CalendarEntryResolutionStatus.Paid ? transactionId : undefined,
-    }, '_id', 'createdAt', 'updatedAt', 'expiresAt');
+    const comparer = new Comparer(currentDocument, [
+      validateCalendarEntryDocuments(originalDocument, currentDocument),
+      {
+        resolution: new Comparer(currentDocument.resolution, {
+          delay: request.status !== CalendarEntryResolutionStatus.NoShow ? request.delay : undefined,
+          status: request.status,
+        }),
+        transaction: currentDocument.resolution?.status === CalendarEntryResolutionStatus.Paid ? transactionId : undefined,
+      },
+    ], '_id', 'createdAt', 'updatedAt', 'expiresAt');
 
     const errors = comparer.validate();
 
     return {
       pass: errors.length === 0,
       message: () => `Expected document to be resolved correctly, but it was not:\n${errors.join('\n')}`,
+    };
+  },
+  toHaveBeenUnresolved(originalDocument: Calendar.Entry.Document, currentDocument: Calendar.Entry.Document) {
+    const comparer = new Comparer(currentDocument, [
+      validateCalendarEntryDocuments(originalDocument, currentDocument),
+      {
+        resolution: undefined,
+        transaction: undefined,
+      },
+    ], '_id', 'createdAt', 'updatedAt', 'expiresAt');
+
+    const errors = comparer.validate();
+
+    return {
+      pass: errors.length === 0,
+      message: () => `Expected document to be unresolved correctly, but it was not:\n${errors.join('\n')}`,
     };
   },
   async toContainMatchingCalendarDayDocument(received: APIResponse, dayInput: Calendar.DayProp['day'], calendarEntryDocument: Calendar.Entry.Document, calendarDayDocument?: Calendar.Day.Document) {
@@ -313,73 +341,19 @@ export const expect = baseExpect.extend({
         message: () => `expected response to contain a calendar day with day ${dayInput}, but it was not found`,
       };
     }
-
-    if (matchingResponse.dayType === CalendarDayType.Workday) {
-      const entryResponse = matchingResponse.entries?.find(e => e.calendarEntryId === getCalendarEntryId(calendarEntryDocument));
-
-      const comparer = new Comparer(matchingResponse, {
-        day: dayInput,
-        dayType: CalendarDayType.Workday,
-        start: calendarDayDocument?.start ?? WORKDAY_START,
-        end: calendarDayDocument?.end ?? WORKDAY_END,
-        entries: [entryResponse].map(entry => validateCalendarEntryResponse(entry, calendarEntryDocument)),
-      });
-
-      const errors = comparer.validate();  
-
-      return {
-        pass: errors.length === 0,
-        message: () => `Expected response to match calendar entry document, but it did not:\n${errors.join('\n')}`,
-      };
-    }
-
-    if (matchingResponse.dayType === CalendarDayType.Weekend) {
-      const entryResponse = matchingResponse.entries?.find(e => e.calendarEntryId === getCalendarEntryId(calendarEntryDocument));
-      const comparer = new Comparer(matchingResponse, {
-        day: dayInput,
-        dayType: CalendarDayType.Weekend,
-        start: calendarDayDocument?.start ?? undefined,
-        end: calendarDayDocument?.end ?? undefined,
-        entries: [entryResponse].map(entry => validateCalendarEntryResponse(entry, calendarEntryDocument)),
-      });
-
-      const errors = comparer.validate();  
-      
-      return {
-        pass: errors.length === 0,
-        message: () => `Expected response to match calendar entry document, but it did not:\n${errors.join('\n')}`,
-      };
-    }
-
-    if (matchingResponse.dayType === CalendarDayType.Vacation) {
-      const entryResponse = matchingResponse.entries?.find(e => e.calendarEntryId === getCalendarEntryId(calendarEntryDocument));
-      const comparer = new Comparer(matchingResponse, {
-        day: dayInput,
-        dayType: CalendarDayType.Vacation,
-        entries: [entryResponse].map(entry => validateCalendarEntryResponse(entry, calendarEntryDocument)),
-      });
-
-      const errors = comparer.validate();  
-      
-      return {
-        pass: errors.length === 0,
-        message: () => `Expected response to match calendar entry document, but it did not:\n${errors.join('\n')}`,
-      };
-    }
-
     const entryResponse = matchingResponse.entries?.find(e => e.calendarEntryId === getCalendarEntryId(calendarEntryDocument));
     const comparer = new Comparer(matchingResponse, {
       day: dayInput,
-      dayType: CalendarDayType.Holiday,
       entries: [entryResponse].map(entry => validateCalendarEntryResponse(entry, calendarEntryDocument)),
-    });
+      start: calendarDayDocument?.start ?? (matchingResponse.dayType === CalendarDayType.Workday ? WORKDAY_START : undefined),
+      end: calendarDayDocument?.end ?? (matchingResponse.dayType === CalendarDayType.Workday ? WORKDAY_END : undefined),
+    }, 'dayType');
 
     const errors = comparer.validate();  
-      
+
     return {
       pass: errors.length === 0,
       message: () => `Expected response to match calendar entry document, but it did not:\n${errors.join('\n')}`,
     };
-
   },
 });

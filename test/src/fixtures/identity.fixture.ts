@@ -3,19 +3,19 @@ import { test as baseTest } from '@household/test/fixtures/logging.fixture';
 import { identityService } from '@household/shared/dependencies/services/identity-service';
 
 export const test = baseTest.extend<Pick<IIdentityService, 'deleteUser' | 'createUser' | 'listGroupsByUser' | 'getUser'>>({
-  deleteUser: async ({ logDbCall }, use) => {
+  deleteUser: async ({ logServiceCall }, use) => {
     const deleteUser: IIdentityService['deleteUser'] = async (ctx) => {
       const result = await identityService.deleteUser(ctx);
-      await logDbCall('deleteUser', ctx, result);
+      await logServiceCall('deleteUser', ctx, result);
       return result;
     };
 
     await use(deleteUser);
   },
-  createUser: async ({ logDbCall }, use) => {
+  createUser: async ({ logServiceCall }, use) => {
     const createUser: IIdentityService['createUser'] = async (body, userType, supressEmail) => {
       const result = await identityService.createUser(body, userType, supressEmail);
-      await logDbCall('createUser', {
+      await logServiceCall('createUser', {
         body,
         userType,
         supressEmail, 
@@ -25,10 +25,10 @@ export const test = baseTest.extend<Pick<IIdentityService, 'deleteUser' | 'creat
 
     await use(createUser);
   },
-  listGroupsByUser: async ({ logDbCall }, use) => {
+  listGroupsByUser: async ({ logServiceCall }, use) => {
     const listGroupsByUser: IIdentityService['listGroupsByUser'] = async (email) => {
       const result = await identityService.listGroupsByUser(email);
-      await logDbCall('listGroupsByUser', {
+      await logServiceCall('listGroupsByUser', {
         email,
       }, result);
       return result;
@@ -36,10 +36,10 @@ export const test = baseTest.extend<Pick<IIdentityService, 'deleteUser' | 'creat
 
     await use(listGroupsByUser);  
   },
-  getUser: async ({ logDbCall }, use) => {
+  getUser: async ({ logServiceCall }, use) => {
     const getUser: IIdentityService['getUser'] = async (ctx) => {
       const result = await identityService.getUser(ctx);
-      await logDbCall('getUser', ctx, result);
+      await logServiceCall('getUser', ctx, result);
       return result;
     };
 

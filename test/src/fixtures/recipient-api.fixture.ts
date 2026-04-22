@@ -14,13 +14,6 @@ type RecipientApiFixture = {
   requestMergeRecipients(recipientId: Recipient.Id, sourceRecipientIds: Recipient.Id[]): Promise<APIResponse>;
 };
 
-export const validateRecipientResponse = (response: Recipient.Response, document: Recipient.Document) => {
-  return new Comparer(response, {
-    recipientId: getRecipientId(document),
-    name: document?.name,
-  });
-};
-
 export const test = baseTest.extend<RecipientApiFixture>({
   requestGetRecipient: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
@@ -106,6 +99,13 @@ export const test = baseTest.extend<RecipientApiFixture>({
     await use(requestMergeRecipients);
   },
 });
+
+export const validateRecipientResponse = (response: Recipient.Response, document: Recipient.Document) => {
+  return new Comparer(response, {
+    recipientId: getRecipientId(document),
+    name: document?.name,
+  });
+};
 
 export const expect = baseExpect.extend({
   async toHaveBeenSavedAsRecipientDocument(req: Recipient.Request, document: Recipient.Document) {

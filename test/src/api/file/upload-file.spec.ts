@@ -4,13 +4,13 @@ import { default as schema } from '@household/test/schemas/file-url-response';
 import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
 
-import { test as fileApiTest, expect as domainExpect } from '@household/test/fixtures/file-api.fixture';
+import { test as fileApiTest, expect as fileApiExpect } from '@household/test/fixtures/file-api.fixture';
 import { test as storageTest } from '@household/test/fixtures/storage.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { mergeExpects, mergeTests } from '@playwright/test';
 import { test as fileDbTest } from '@household/test/fixtures/file-db.fixture';
 
-const expect = mergeExpects(domainExpect, apiExpect);
+const expect = mergeExpects(fileApiExpect, apiExpect);
 
 const permissionMap = allowUsers('editor') ;
 

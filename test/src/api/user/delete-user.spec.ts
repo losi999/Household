@@ -5,11 +5,11 @@ import { entries } from '@household/shared/common/utils';
 import { UserType } from '@household/shared/enums';
 
 import { test as identityTest } from '@household/test/fixtures/identity.fixture';
-import { test as userApiTest, expect as domainExpect } from '@household/test/fixtures/user-api.fixture';
+import { test as userApiTest, expect as userApiExpect } from '@household/test/fixtures/user-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { mergeExpects, mergeTests } from '@playwright/test';
 
-const expect = mergeExpects(domainExpect, apiExpect);
+const expect = mergeExpects(userApiExpect, apiExpect);
 const test = mergeTests(identityTest, userApiTest);
 
 const permissionMap = allowUsers('editor') ;

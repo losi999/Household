@@ -1,4 +1,4 @@
-import { entries, getTransactionId } from '@household/shared/common/utils';
+import { entries, getCalendarEntryId, getTransactionId } from '@household/shared/common/utils';
 import { AccountType } from '@household/shared/enums';
 import { Account, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
@@ -13,13 +13,14 @@ import { forbidUsers } from '@household/test/utils';
 
 import { test as transactionApiTest, expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { expect as calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
 import { mergeExpects, mergeTests } from '@playwright/test';
 import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
 import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
 import { test as calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
 import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
 
-const expect = mergeExpects(transactionApiExpect, apiExpect);
+const expect = mergeExpects(transactionApiExpect, apiExpect, calendarApiExpect);
 
 const permissionMap = forbidUsers('viewer') ;
 
@@ -99,7 +100,7 @@ test.describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
         });
       } else {
         test.describe('should delete', () => {
-          test('payment transaction', async ({ requestDeleteTransaction, saveAccount, saveTransaction, findTransactionById, saveCalendarEntry, saveCustomer }) => {
+          test('payment transaction', async ({ requestDeleteTransaction, saveAccount, saveTransaction, findTransactionById, saveCalendarEntry, saveCustomer, getCalendarEntryById }) => {
             const customerDocument = customerDataFactory.document();
             const calendarWorkEntryDocument = calendarEntryDataFactory.document.work({
               customer: customerDocument,
@@ -116,7 +117,7 @@ test.describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
             expect(res).toBeNoContentResponse();
 
             expect(await findTransactionById(getTransactionId(paymentTransactionDocument))).toHaveBeenDeletedFromDatabase();
-            // TODO: validateRelatedCalendarWorkEntryUnresolved(calendarWorkEntryDocument)
+            expect(calendarWorkEntryDocument).toHaveBeenUnresolved(await getCalendarEntryById(getCalendarEntryId(calendarWorkEntryDocument)));
           });
 
           test('split transaction', async ({ requestDeleteTransaction, saveAccounts, saveTransactions, findTransactionById }) => {
@@ -132,7 +133,9 @@ test.describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
             expect(res).toBeNoContentResponse();
 
             expect(await findTransactionById(getTransactionId(splitTransactionDocument))).toHaveBeenDeletedFromDatabase();
-            // TODO: validateRelatedRepaymentDeleted(getTransactionId(splitTransactionDocument.deferredSplits[0]), getTransactionId(repayingTransferTransactionDocument))
+
+            expect(repayingTransferTransactionDocument).toHavePaymentRemoved(await findTransactionById(getTransactionId(repayingTransferTransactionDocument)), getTransactionId(splitTransactionDocument.deferredSplits[0]));
+            
           });
 
           test('transfer transaction', async ({ requestDeleteTransaction, saveAccounts, saveTransaction, findTransactionById }) => {
@@ -157,7 +160,8 @@ test.describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
             expect(res).toBeNoContentResponse();
             
             expect(await findTransactionById(getTransactionId(deferredTransactionDocument))).toHaveBeenDeletedFromDatabase();
-            // TODO: validateRelatedRepaymentDeleted(getTransactionId(deferredTransactionDocument), getTransactionId(repayingTransferTransactionDocument))
+
+            expect(repayingTransferTransactionDocument).toHavePaymentRemoved(await findTransactionById(getTransactionId(repayingTransferTransactionDocument)), getTransactionId(deferredTransactionDocument));
           });
 
           test('reimbursement transaction', async ({ requestDeleteTransaction, saveAccounts, saveTransaction, findTransactionById }) => {

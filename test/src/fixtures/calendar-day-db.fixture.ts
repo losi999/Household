@@ -3,10 +3,10 @@ import { ICalendarDayService } from '@household/shared/services/calendar-day-ser
 import { test as baseTest } from '@household/test/fixtures/logging.fixture';
 
 export const test = baseTest.extend<Pick<ICalendarDayService, 'saveCalendarDay' | 'findCalendarDayByDay' | 'clearCalendarDay'>>({
-  saveCalendarDay: async ({ logDbCall }, use) => {
+  saveCalendarDay: async ({ logServiceCall }, use) => {
     const saveCalendarDay: ICalendarDayService['saveCalendarDay'] = async (calendarDay) => {
       const result = await calendarDayService.saveCalendarDay(calendarDay);
-      await logDbCall('saveCalendarDay', {
+      await logServiceCall('saveCalendarDay', {
         calendarDay,
       }, result);
       return result;
@@ -14,10 +14,10 @@ export const test = baseTest.extend<Pick<ICalendarDayService, 'saveCalendarDay' 
 
     await use(saveCalendarDay);
   },
-  findCalendarDayByDay: async ({ logDbCall }, use) => {
+  findCalendarDayByDay: async ({ logServiceCall }, use) => {
     const findCalendarDayByDay: ICalendarDayService['findCalendarDayByDay'] = async (day) => {
       const result = await calendarDayService.findCalendarDayByDay(day);
-      await logDbCall('findCalendarDayByDay', {
+      await logServiceCall('findCalendarDayByDay', {
         day,
       }, result);
       return result;
@@ -25,10 +25,10 @@ export const test = baseTest.extend<Pick<ICalendarDayService, 'saveCalendarDay' 
 
     await use(findCalendarDayByDay);
   },
-  clearCalendarDay: async ({ logDbCall }, use) => {
+  clearCalendarDay: async ({ logServiceCall }, use) => {
     const clearCalendarDay: ICalendarDayService['clearCalendarDay'] = async (day) => {
       const result = await calendarDayService.clearCalendarDay(day);
-      await logDbCall('clearCalendarDay', {
+      await logServiceCall('clearCalendarDay', {
         day,
       }, result);
       return result;

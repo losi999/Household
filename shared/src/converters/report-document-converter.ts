@@ -1,6 +1,6 @@
 import { Report, Transaction } from '@household/shared/types/types';
 import { PipelineStage, Types } from 'mongoose';
-import { Filter, FilterOperations, FilterOperators } from 'mongodb';
+import { Filter, FilterOperators } from 'mongodb';
 
 export interface IReportDocumentConverter {
   createFilterQuery(body: Report.Request): PipelineStage.Match;

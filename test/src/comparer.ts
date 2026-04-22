@@ -23,7 +23,7 @@ export class Comparer<D extends object> implements IComparer {
   private expected: Expected<D>;
   private internalProperties: (keyof D)[];
 
-  constructor(actual: D, expected: Expected<D> | (Expected<D> | Comparer<D>)[], ...internalProperties: (keyof D)[]) {
+  constructor(actual: D, expected: Expected<D> | (Expected<D> | IComparer)[], ...internalProperties: (keyof D)[]) {
     this.actual = actual;
     this.internalProperties = internalProperties;
     

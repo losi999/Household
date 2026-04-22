@@ -3,10 +3,10 @@ import { IAccountService } from '@household/shared/services/account-service';
 import { test as baseTest } from '@household/test/fixtures/logging.fixture';
 
 export const test = baseTest.extend<Pick<IAccountService, 'saveAccount' | 'saveAccounts' | 'findAccountById'>>({
-  saveAccount: async ({ logDbCall }, use) => {
+  saveAccount: async ({ logServiceCall }, use) => {
     const saveAccount: IAccountService['saveAccount'] = async (account) => {
       const result = await accountService.saveAccount(account);
-      await logDbCall('saveAccount', {
+      await logServiceCall('saveAccount', {
         account,
       }, result);
       return result;
@@ -14,10 +14,10 @@ export const test = baseTest.extend<Pick<IAccountService, 'saveAccount' | 'saveA
     
     await use(saveAccount);
   },
-  saveAccounts: async ({ logDbCall }, use) => {
+  saveAccounts: async ({ logServiceCall }, use) => {
     const saveAccounts: IAccountService['saveAccounts'] = async (...accounts) => {
       const result = await accountService.saveAccounts(...accounts);
-      await logDbCall('saveAccounts', {
+      await logServiceCall('saveAccounts', {
         accounts,
       }, result);
       return result;
@@ -25,10 +25,10 @@ export const test = baseTest.extend<Pick<IAccountService, 'saveAccount' | 'saveA
     
     await use(saveAccounts);
   },
-  findAccountById: async ({ logDbCall }, use) => {
+  findAccountById: async ({ logServiceCall }, use) => {
     const findAccountById: IAccountService['findAccountById'] = async (accountId) => {
       const result = await accountService.findAccountById(accountId);
-      await logDbCall('findAccountById', {
+      await logServiceCall('findAccountById', {
         accountId,
       }, result);
       return result;

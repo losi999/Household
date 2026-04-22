@@ -6,7 +6,7 @@ import { createDate, getAccountId, getTransactionId } from '@household/shared/co
 import { validateAccountResponse } from '@household/test/fixtures/account-api.fixture';
 import { validateDeferredTransactionResponse } from '@household/test/fixtures/deferred-transaction-api.fixture';
 
-const validateTransferTransactionResponse = (response: Transaction.TransferResponse, document: Transaction.TransferDocument, viewingAccountId: Account.Id) => {
+export const validateTransferTransactionResponse = (response: Transaction.TransferResponse, document: Transaction.TransferDocument, viewingAccountId: Account.Id = getAccountId(document.account)) => {
   return new Comparer(response, {
     transactionId: getTransactionId(document),
     amount: getAccountId(document.account) === viewingAccountId ? document.amount : document.transferAmount,
@@ -25,6 +25,26 @@ const validateTransferTransactionResponse = (response: Transaction.TransferRespo
       });
     }),
   });
+};
+
+const validateTransferTransactionDocuments = (originalDocument: Transaction.TransferDocument, currentDocument: Transaction.TransferDocument) => {
+  return new Comparer(currentDocument, {
+    transactionType: originalDocument.transactionType,
+    description: originalDocument.description,
+    amount: originalDocument.amount,
+    transferAmount: originalDocument.transferAmount,
+    issuedAt: originalDocument.issuedAt.toISOString(),
+    account: getAccountId(originalDocument.account),
+    transferAccount: getAccountId(originalDocument.transferAccount),  
+    payments: currentDocument.payments.map((payment, index) => {
+      const originalPayment = originalDocument.payments[index];
+
+      return new Comparer(payment, {
+        amount: originalPayment.amount,
+        transaction: getTransactionId(originalPayment.transaction),
+      });
+    }),
+  }, '_id', 'createdAt', 'expiresAt', 'updatedAt');
 };
 
 export const expect = baseExpect.extend({
@@ -62,23 +82,7 @@ export const expect = baseExpect.extend({
     };
   },
   toBeTheSame(originalDocument: Transaction.TransferDocument, currentDocument: Transaction.TransferDocument) {
-    const comparer = new Comparer(currentDocument, {
-      transactionType: originalDocument.transactionType,
-      description: originalDocument.description,
-      amount: originalDocument.amount,
-      transferAmount: originalDocument.transferAmount,
-      issuedAt: originalDocument.issuedAt.toISOString(),
-      account: getAccountId(originalDocument.account),
-      transferAccount: getAccountId(originalDocument.transferAccount),  
-      payments: currentDocument.payments.map((payment, index) => {
-        const originalPayment = originalDocument.payments[index];
-
-        return new Comparer(payment, {
-          amount: originalPayment.amount,
-          transaction: getTransactionId(originalPayment.transaction),
-        });
-      }),
-    }, '_id', 'createdAt', 'expiresAt', 'updatedAt');
+    const comparer = validateTransferTransactionDocuments(originalDocument, currentDocument);
   
     const errors = comparer.validate();
   
@@ -91,23 +95,19 @@ export const expect = baseExpect.extend({
 
     const filteredPayments = originalDocument.payments.filter(payment => getTransactionId(payment.transaction) === deletedLoanTransactionId);
 
-    const comparer = new Comparer(currentDocument, {
-      transactionType: originalDocument.transactionType,
-      description: originalDocument.description,
-      amount: originalDocument.amount,
-      transferAmount: originalDocument.transferAmount,
-      issuedAt: originalDocument.issuedAt.toISOString(),
-      account: getAccountId(originalDocument.account),
-      transferAccount: getAccountId(originalDocument.transferAccount),  
-      payments: currentDocument.payments.map((payment, index) => {
-        const originalPayment = filteredPayments[index];
+    const comparer = new Comparer(currentDocument, [
+      validateTransferTransactionDocuments(originalDocument, currentDocument),
+      {
+        payments: currentDocument.payments.map((payment, index) => {
+          const originalPayment = filteredPayments[index];
 
-        return new Comparer(payment, {
-          amount: originalPayment.amount,
-          transaction: getTransactionId(originalPayment.transaction),
-        });
-      }),
-    }, '_id', 'createdAt', 'expiresAt', 'updatedAt');
+          return new Comparer(payment, {
+            amount: originalPayment.amount,
+            transaction: getTransactionId(originalPayment.transaction),
+          });
+        }),
+      },
+    ], '_id', 'createdAt', 'expiresAt', 'updatedAt');
   
     const errors = comparer.validate();
   

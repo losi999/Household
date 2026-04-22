@@ -208,7 +208,7 @@ export const expect = baseExpect.extend({
 
     return {
       pass: errors.length === 0,
-      message: () => errors.join('\n'),
+      message: () => `Expected category to have its parent reassigned, but it was not:\n${errors.join('\n')}`,
     };
   },
 });

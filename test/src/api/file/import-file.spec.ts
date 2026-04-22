@@ -2,7 +2,7 @@ import { File, Import } from '@household/shared/types/types';
 import { fileDataFactory } from '@household/test/api/file/data-factory';
 import { getFileId } from '@household/shared/common/utils';
 import { FileProcessingStatus, FileType } from '@household/shared/enums';
-import { test as fileApiTest, expect as domainExpect } from '@household/test/fixtures/file-api.fixture';
+import { test as fileApiTest, expect as fileApiExpect } from '@household/test/fixtures/file-api.fixture';
 import { expect as transactionExpect } from '@household/test/fixtures/transaction-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { test as storageTest } from '@household/test/fixtures/storage.fixture';
@@ -10,7 +10,7 @@ import { mergeExpects, mergeTests } from '@playwright/test';
 import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
 import { test as fileDbTest } from '@household/test/fixtures/file-db.fixture';
 
-const expect = mergeExpects(domainExpect, apiExpect, transactionExpect);
+const expect = mergeExpects(fileApiExpect, apiExpect, transactionExpect);
 
 const test = mergeTests(fileApiTest, transactionDbTest, fileDbTest, storageTest);
 

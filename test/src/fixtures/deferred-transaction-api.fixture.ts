@@ -2,7 +2,6 @@ import { createDate, getAccountId, getCategoryId, getProductId, getProjectId, ge
 import { Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { Reassignment } from '@household/test/types';
 import { Comparer } from '@household/test/comparer';
-import { test as baseTest } from '@household/test/fixtures/api.fixture';
 import { APIResponse, expect as baseExpect } from '@playwright/test';
 import { CategoryType, TransactionType } from '@household/shared/enums';
 import { validateAccountResponse } from '@household/test/fixtures/account-api.fixture';
@@ -11,9 +10,7 @@ import { validateProductResponse } from '@household/test/fixtures/product-api.fi
 import { validateProjectResponse } from '@household/test/fixtures/project-api.fixture';
 import { validateRecipientResponse } from '@household/test/fixtures/recipient-api.fixture';
 
-export const test = baseTest.extend({});
-
-export const validateDeferredTransactionResponse = (response: Transaction.DeferredResponse, document: Transaction.DeferredDocument, paymentAmount: number) => {
+export const validateDeferredTransactionResponse = (response: Transaction.DeferredResponse, document: Transaction.DeferredDocument, paymentAmount: number = 0) => {
   const expectedRemainingAmount = Math.abs(document.amount) - (paymentAmount ?? 0);
 
   return new Comparer(response, {

@@ -2,7 +2,6 @@ import { createDate, getAccountId, getCategoryId, getProductId, getProjectId, ge
 import { Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { Reassignment } from '@household/test/types';
 import { Comparer } from '@household/test/comparer';
-import { test as baseTest } from '@household/test/fixtures/api.fixture';
 import { APIResponse, expect as baseExpect } from '@playwright/test';
 import { CategoryType, TransactionType } from '@household/shared/enums';
 import { validateAccountResponse } from '@household/test/fixtures/account-api.fixture';
@@ -11,9 +10,7 @@ import { validateProductResponse } from '@household/test/fixtures/product-api.fi
 import { validateProjectResponse } from '@household/test/fixtures/project-api.fixture';
 import { validateRecipientResponse } from '@household/test/fixtures/recipient-api.fixture';
 
-export const test = baseTest.extend({});
-
-const validateReimbursementTransactionResponse = (response: Transaction.ReimbursementResponse, document: Transaction.ReimbursementDocument) => {
+export const validateReimbursementTransactionResponse = (response: Transaction.ReimbursementResponse, document: Transaction.ReimbursementDocument) => {
   return new Comparer(response, {
     transactionId: getTransactionId(document),
     amount: document.amount,

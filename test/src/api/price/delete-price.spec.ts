@@ -9,12 +9,14 @@ import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { mergeExpects, mergeTests } from '@playwright/test';
 import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
 import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
+import { calendarEntryDataFactory } from '@household/test/api/calendar/data-factory';
+import { test as calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
 
 const expect = mergeExpects(priceApiExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser') ;
 
-const test = mergeTests(priceApiTest, priceDbTest, customerDbTest);
+const test = mergeTests(priceApiTest, priceDbTest, customerDbTest, calendarEntryDbTest);
 
 test.describe('DELETE /price/v1/prices/{priceId}', () => {
   let priceDocument: Price.Document;
@@ -75,13 +77,29 @@ test.describe('DELETE /price/v1/prices/{priceId}', () => {
             expect(priceDocument).toHaveBeenArchivedInDatabase(await findPriceById(getPriceId(priceDocument)));
           });
 
-          // test('if there is a calendar entry', async ({ requestDeletePrice }) => {
-          // legacy-cypress.savePriceDocument(priceDocument)
-          //     .authenticate(userType)
-          //     .requestDeletePrice(getPriceId(priceDocument))
-          //     .expectNoContentResponse()
-          //     .validatePriceDeleted(getPriceId(priceDocument));
-          // });
+          test('if there is a calendar entry', async ({ requestDeletePrice, savePrice, findPriceById, saveCustomer, saveCalendarEntry }) => {
+            const customerDocument = customerDataFactory.document();
+            
+            const calendarEntryDocument = calendarEntryDataFactory.document.work({
+              customer: customerDocument,
+              prices: {
+                listed: [
+                  {
+                    price: priceDocument,
+                  },
+                ],
+              },
+            });
+            
+            await savePrice (priceDocument);
+            await saveCustomer(customerDocument);
+            await saveCalendarEntry(calendarEntryDocument);
+
+            const res = await requestDeletePrice(getPriceId(priceDocument));
+            expect(res).toBeNoContentResponse();
+
+            expect(priceDocument).toHaveBeenArchivedInDatabase(await findPriceById(getPriceId(priceDocument)));
+          });
         });
 
         test.describe('should return error', () => {

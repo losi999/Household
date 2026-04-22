@@ -3,10 +3,10 @@ import { ICalendarEntryService } from '@household/shared/services/calendar-entry
 import { test as baseTest } from '@household/test/fixtures/logging.fixture';
 
 export const test = baseTest.extend<Pick<ICalendarEntryService, 'saveCalendarEntry' | 'getCalendarEntryById'>>({
-  saveCalendarEntry: async ({ logDbCall }, use) => {
+  saveCalendarEntry: async ({ logServiceCall }, use) => {
     const saveCalendarEntry: ICalendarEntryService['saveCalendarEntry'] = async (calendarEntry) => {
       const result = await calendarEntryService.saveCalendarEntry(calendarEntry);
-      await logDbCall('saveCalendarEntry', {
+      await logServiceCall('saveCalendarEntry', {
         calendarEntry,
       }, result);
       return result;
@@ -14,10 +14,10 @@ export const test = baseTest.extend<Pick<ICalendarEntryService, 'saveCalendarEnt
 
     await use(saveCalendarEntry);
   },
-  getCalendarEntryById: async ({ logDbCall }, use) => {
+  getCalendarEntryById: async ({ logServiceCall }, use) => {
     const getCalendarEntryById: ICalendarEntryService['getCalendarEntryById'] = async (calendarEntryId) => {
       const result = await calendarEntryService.getCalendarEntryById(calendarEntryId);
-      await logDbCall('getCalendarEntryById', {
+      await logServiceCall('getCalendarEntryById', {
         calendarEntryId,
       }, result);
       return result;

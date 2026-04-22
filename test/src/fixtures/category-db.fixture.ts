@@ -3,10 +3,10 @@ import { ICategoryService } from '@household/shared/services/category-service';
 import { test as baseTest } from '@household/test/fixtures/logging.fixture';
 
 export const test = baseTest.extend<Pick<ICategoryService, 'saveCategory' | 'saveCategories' | 'findCategoryById'>>({
-  saveCategory: async ({ logDbCall }, use) => {
+  saveCategory: async ({ logServiceCall }, use) => {
     const saveCategory: ICategoryService['saveCategory'] = async (category) => {
       const result = await categoryService.saveCategory(category);
-      await logDbCall('saveCategory', {
+      await logServiceCall('saveCategory', {
         category,
       }, result);
       return result;
@@ -14,10 +14,10 @@ export const test = baseTest.extend<Pick<ICategoryService, 'saveCategory' | 'sav
 
     await use(saveCategory);
   },
-  saveCategories: async ({ logDbCall }, use) => {
+  saveCategories: async ({ logServiceCall }, use) => {
     const saveCategories: ICategoryService['saveCategories'] = async (...categories) => {
       const result = await categoryService.saveCategories(...categories);
-      await logDbCall('saveCategories', {
+      await logServiceCall('saveCategories', {
         categories,
       }, result);
       return result;
@@ -25,10 +25,10 @@ export const test = baseTest.extend<Pick<ICategoryService, 'saveCategory' | 'sav
 
     await use(saveCategories);
   },
-  findCategoryById: async ({ logDbCall }, use) => {
+  findCategoryById: async ({ logServiceCall }, use) => {
     const findCategoryById: ICategoryService['findCategoryById'] = async (categoryId) => {
       const result = await categoryService.findCategoryById(categoryId);
-      await logDbCall('findCategoryById', {
+      await logServiceCall('findCategoryById', {
         categoryId,
       }, result);
       return result;

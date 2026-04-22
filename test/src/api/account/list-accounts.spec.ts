@@ -10,13 +10,13 @@ import { AccountType } from '@household/shared/enums';
 import { forbidUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
 
-import { test as accountApiTest, expect as domainExpect } from '@household/test/fixtures/account-api.fixture';
+import { test as accountApiTest, expect as accountApiExpect } from '@household/test/fixtures/account-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { mergeExpects, mergeTests } from '@playwright/test';
 import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
 import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
 
-const expect = mergeExpects(domainExpect, apiExpect);
+const expect = mergeExpects(accountApiExpect, apiExpect);
 
 const permissionMap = forbidUsers();
 
