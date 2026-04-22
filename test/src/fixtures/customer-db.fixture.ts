@@ -1,9 +1,6 @@
+import { customerService } from '@household/shared/dependencies/services/customer-service';
 import { ICustomerService } from '@household/shared/services/customer-service';
-import { customerServiceFactory } from '@household/shared/services/customer-service';
-import { mongoDbService } from '@household/test/dependencies';
 import { test as baseTest } from '@household/test/fixtures/logging.fixture';
-
-const customerService = customerServiceFactory(mongoDbService);
 
 export const test = baseTest.extend<Pick<ICustomerService, 'saveCustomer' | 'saveCustomers' | 'findCustomerById' | 'getCustomerById'>>({
   saveCustomer: async ({ logDbCall }, use) => {

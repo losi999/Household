@@ -1,9 +1,6 @@
+import { accountService } from '@household/shared/dependencies/services/account-service';
 import { IAccountService } from '@household/shared/services/account-service';
-import { accountServiceFactory } from '@household/shared/services/account-service';
-import { mongoDbService } from '@household/test/dependencies';
 import { test as baseTest } from '@household/test/fixtures/logging.fixture';
-
-const accountService = accountServiceFactory(mongoDbService);
 
 export const test = baseTest.extend<Pick<IAccountService, 'saveAccount' | 'saveAccounts' | 'findAccountById'>>({
   saveAccount: async ({ logDbCall }, use) => {

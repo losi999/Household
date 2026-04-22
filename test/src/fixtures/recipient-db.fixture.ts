@@ -1,9 +1,6 @@
+import { recipientService } from '@household/shared/dependencies/services/recipient-service';
 import { IRecipientService } from '@household/shared/services/recipient-service';
-import { recipientServiceFactory } from '@household/shared/services/recipient-service';
-import { mongoDbService } from '@household/test/dependencies';
 import { test as baseTest } from '@household/test/fixtures/logging.fixture';
-
-const recipientService = recipientServiceFactory(mongoDbService);
 
 export const test = baseTest.extend<Pick<IRecipientService, 'saveRecipient' | 'saveRecipients' | 'findRecipientById'>>({
   saveRecipient: async ({ logDbCall }, use) => {

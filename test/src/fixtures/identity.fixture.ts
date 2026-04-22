@@ -1,8 +1,6 @@
-import { IIdentityService, identityServiceFactory } from '@household/shared/services/identity-service';
-import { cognito } from '@household/shared/dependencies/aws/cognito';
+import { IIdentityService } from '@household/shared/services/identity-service';
 import { test as baseTest } from '@household/test/fixtures/logging.fixture';
-
-const identityService = identityServiceFactory(process.env.USER_POOL_ID, '', cognito);
+import { identityService } from '@household/shared/dependencies/services/identity-service';
 
 export const test = baseTest.extend<Pick<IIdentityService, 'deleteUser' | 'createUser' | 'listGroupsByUser' | 'getUser'>>({
   deleteUser: async ({ logDbCall }, use) => {

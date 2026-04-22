@@ -1,9 +1,6 @@
+import { categoryService } from '@household/shared/dependencies/services/category-service';
 import { ICategoryService } from '@household/shared/services/category-service';
-import { categoryServiceFactory } from '@household/shared/services/category-service';
-import { mongoDbService } from '@household/test/dependencies';
 import { test as baseTest } from '@household/test/fixtures/logging.fixture';
-
-const categoryService = categoryServiceFactory(mongoDbService);
 
 export const test = baseTest.extend<Pick<ICategoryService, 'saveCategory' | 'saveCategories' | 'findCategoryById'>>({
   saveCategory: async ({ logDbCall }, use) => {

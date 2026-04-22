@@ -1,9 +1,6 @@
+import { productService } from '@household/shared/dependencies/services/product-service';
 import { IProductService } from '@household/shared/services/product-service';
-import { productServiceFactory } from '@household/shared/services/product-service';
-import { mongoDbService } from '@household/test/dependencies';
 import { test as baseTest } from '@household/test/fixtures/logging.fixture';
-
-const productService = productServiceFactory(mongoDbService);
 
 export const test = baseTest.extend<Pick<IProductService, 'saveProduct' | 'saveProducts' | 'findProductById'>>({
   saveProduct: async ({ logDbCall }, use) => {

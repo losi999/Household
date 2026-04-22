@@ -1,15 +1,11 @@
-import { IStorageService, storageServiceFactory } from '@household/shared/services/storage-service';
-import { s3, s3Client } from '@household/shared/dependencies/aws/s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { Upload } from '@aws-sdk/lib-storage';
+import { IStorageService } from '@household/shared/services/storage-service';
 import { test as baseTest } from '@household/test/fixtures/logging.fixture';
-
-const storageService = storageServiceFactory(s3, s3Client, getSignedUrl, Upload)(process.env.IMPORT_BUCKET);
+import { importStorageService } from '@household/shared/dependencies/services/storage-service';
 
 export const test = baseTest.extend<Pick<IStorageService, 'writeFile' | 'uploadFile' | 'checkFile'>>({
   writeFile: async ({ logDbCall }, use) => {
     const writeFile: IStorageService['writeFile'] = async (fileName, data, folder) => {
-      const result = await storageService.writeFile(fileName, data, folder);
+      const result = await importStorageService.writeFile(fileName, data, folder);
       await logDbCall('writeFile', {
         fileName,
         data,
@@ -22,7 +18,7 @@ export const test = baseTest.extend<Pick<IStorageService, 'writeFile' | 'uploadF
   },
   uploadFile: async ({ logDbCall }, use) => {
     const uploadFile: IStorageService['uploadFile'] = async (fileName, data) => {
-      const result = await storageService.uploadFile(fileName, data);
+      const result = await importStorageService.uploadFile(fileName, data);
       await logDbCall('uploadFile', {
         fileName,
         data,
@@ -34,7 +30,7 @@ export const test = baseTest.extend<Pick<IStorageService, 'writeFile' | 'uploadF
   },
   checkFile: async ({ logDbCall }, use) => {
     const checkFile: IStorageService['checkFile'] = async (fileName) => {
-      const result = await storageService.checkFile(fileName);
+      const result = await importStorageService.checkFile(fileName);
       await logDbCall('checkFile', {
         fileName,
       }, result);

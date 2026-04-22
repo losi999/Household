@@ -1,9 +1,6 @@
+import { calendarEntryService } from '@household/shared/dependencies/services/calendar-entry-service';
 import { ICalendarEntryService } from '@household/shared/services/calendar-entry-service';
-import { calendarEntryServiceFactory } from '@household/shared/services/calendar-entry-service';
-import { mongoDbService } from '@household/test/dependencies';
 import { test as baseTest } from '@household/test/fixtures/logging.fixture';
-
-const calendarEntryService = calendarEntryServiceFactory(mongoDbService);
 
 export const test = baseTest.extend<Pick<ICalendarEntryService, 'saveCalendarEntry' | 'getCalendarEntryById'>>({
   saveCalendarEntry: async ({ logDbCall }, use) => {

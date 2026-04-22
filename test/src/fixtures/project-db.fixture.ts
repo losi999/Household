@@ -1,9 +1,6 @@
+import { projectService } from '@household/shared/dependencies/services/project-service';
 import { IProjectService } from '@household/shared/services/project-service';
-import { projectServiceFactory } from '@household/shared/services/project-service';
-import { mongoDbService } from '@household/test/dependencies';
 import { test as baseTest } from '@household/test/fixtures/logging.fixture';
-
-const projectService = projectServiceFactory(mongoDbService);
 
 export const test = baseTest.extend<Pick<IProjectService, 'saveProject' | 'saveProjects' | 'findProjectById'>>({
   saveProject: async ({ logDbCall }, use) => {

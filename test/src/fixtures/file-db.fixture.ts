@@ -1,9 +1,6 @@
+import { fileService } from '@household/shared/dependencies/services/file-service';
 import { IFileService } from '@household/shared/services/file-service';
-import { fileServiceFactory } from '@household/shared/services/file-service';
-import { mongoDbService } from '@household/test/dependencies';
 import { test as baseTest } from '@household/test/fixtures/logging.fixture';
-
-const fileService = fileServiceFactory(mongoDbService);
 
 export const test = baseTest.extend<Pick<IFileService, 'saveFile' | 'findFileById'>>({
   saveFile: async ({ logDbCall }, use) => {

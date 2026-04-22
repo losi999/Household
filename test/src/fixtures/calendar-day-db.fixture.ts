@@ -1,9 +1,6 @@
+import { calendarDayService } from '@household/shared/dependencies/services/calendar-day-service';
 import { ICalendarDayService } from '@household/shared/services/calendar-day-service';
-import { calendarDayServiceFactory } from '@household/shared/services/calendar-day-service';
-import { mongoDbService } from '@household/test/dependencies';
 import { test as baseTest } from '@household/test/fixtures/logging.fixture';
-
-const calendarDayService = calendarDayServiceFactory(mongoDbService);
 
 export const test = baseTest.extend<Pick<ICalendarDayService, 'saveCalendarDay' | 'findCalendarDayByDay' | 'clearCalendarDay'>>({
   saveCalendarDay: async ({ logDbCall }, use) => {

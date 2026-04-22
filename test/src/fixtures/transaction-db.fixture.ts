@@ -1,10 +1,7 @@
 import { Transaction } from '@household/shared/types/types';
 import { ITransactionService } from '@household/shared/services/transaction-service';
-import { transactionServiceFactory } from '@household/shared/services/transaction-service';
-import { mongoDbService } from '@household/test/dependencies';
 import { test as baseTest } from '@household/test/fixtures/logging.fixture';
-
-const transactionService = transactionServiceFactory(mongoDbService);
+import { transactionService } from '@household/shared/dependencies/services/transaction-service';
 
 export const test = baseTest.extend<Pick<ITransactionService, 'saveTransaction' | 'saveTransactions' | 'findTransactionById' | 'getTransactionById' | 'listDraftTransactionsByFileId'>>({
   saveTransaction: async ({ logDbCall }, use) => {

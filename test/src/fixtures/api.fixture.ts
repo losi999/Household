@@ -52,7 +52,7 @@ export const test = baseTest.extend<ApiFixture>({
       const authRes = await request.post(`${process.env.BASE_URL}/user/v1/login`, {
         data: {
           email: `losonczil+${userType}@gmail.com`,
-          password: 'Password1!',
+          password: process.env.PASSWORD,
         },
       });
       return (await authRes.json()).idToken;

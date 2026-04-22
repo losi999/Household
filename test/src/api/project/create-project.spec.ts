@@ -39,7 +39,7 @@ test.describe('POST /project/v1/projects', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestCreateProject }) => {
           const res = await requestCreateProject(req);
-          expect(res).toBeUnauthorizedResponse();
+          expect(res).toBeForbiddenResponse();
         });
       } else {
         test.describe('should create project', () => {
