@@ -49,7 +49,6 @@ jobs:
               *) ENV="LOCAL" ;;
             esac
             echo "ENV=$ENV" >> .config
-            echo "CYPRESS_ENV=$ENV" >> .config
       - persist_to_workspace:
           root: ~/
           paths:
@@ -129,7 +128,7 @@ jobs:
       - sam/install
       - deploy:
           name: SAM Deploy
-          command: sam deploy --template-file cf.household.yaml --s3-bucket ${AWS_PACKAGES_S3} --stack-name Household-$ENV --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND CAPABILITY_NAMED_IAM --parameter-overrides Env=$ENV TestUserPassword=${CYPRESS_PASSWORD}
+          command: sam deploy --template-file cf.household.yaml --s3-bucket ${AWS_PACKAGES_S3} --stack-name Household-$ENV --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND CAPABILITY_NAMED_IAM --parameter-overrides Env=$ENV TestUserPassword=${PASSWORD}
       - run:
           name: Invoke Post deploy Lambda
           command: aws lambda invoke --function-name Household-$ENV-PostDeploy /dev/null
