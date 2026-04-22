@@ -183,16 +183,16 @@ jobs:
       - attach_workspace:
           at: ~/
       - load-config
-      # - restore_cache:
-      #     key: cache-playwright-v1-{{checksum "test/yarn.lock"}}
-      # - run:
-      #     name: Install test dependencies
-      #     command: yarn
-      #     working_directory: test
-      # - save_cache:
-      #     key: cache-playwright-v1-{{checksum "test/yarn.lock"}}
-      #     paths:
-      #       - /root/.cache/Cypress
+      - restore_cache:
+          key: cache-playwright-v1-{{checksum "test/yarn.lock"}}
+      - run:
+          name: Install test dependencies
+          command: yarn
+          working_directory: test
+      - save_cache:
+          key: cache-playwright-v1-{{checksum "test/yarn.lock"}}
+          paths:
+            - ~/.cache/yarn
       - run:
           name: Running tests
           working_directory: test
