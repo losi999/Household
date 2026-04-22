@@ -9,7 +9,14 @@ export default defineConfig({
   forbidOnly: false,
   retries: 0,
   workers: 1,
-  reporter: 'html',
+  reporter: [
+    [
+      'html',
+      {
+        open: 'never', 
+      },
+    ],
+  ],
   use: {
     trace: 'on-first-retry',
   },

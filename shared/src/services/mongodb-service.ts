@@ -58,47 +58,13 @@ set('debug', !process.env.ENV ? (collectionName, methodName, ...methodArgs) => {
 } : false);
 
 export const mongodbServiceFactory = async (mongodbConnectionString: string): Promise<IMongodbService> => {
-  console.log('factory', connection?.readyState);
   const connectDb = async () => {
-    console.log('check connection', connection?.readyState);
     if (!connection || connection.readyState === 0) {
-      console.log('pre create connnect');
       connection = createConnection(mongodbConnectionString, {
         autoIndex: false,
         connectTimeoutMS: 480000,
         serverSelectionTimeoutMS: 480000,
       });
-      connection.on('connecting', (args) => {
-        console.log('connecting', args);
-      });
-      connection.on('connected', (args) => {
-        console.log('connected', args);
-      });
-      connection.on('open', (args) => {
-        console.log('open', args);
-      });
-      connection.on('disconnecting', (args) => {
-        console.log('disconnecting', args);
-      });
-      connection.on('disconnected', (args) => {
-        console.log('disconnected', args);
-      });
-      connection.on('close', (args) => {
-        console.log('close', args);
-      });
-      connection.on('reconnected', (args) => {
-        console.log('reconnected', args);
-      });
-      connection.on('error', (args) => {
-        console.log('error', args);
-      });
-      connection.on('fullsetup', (args) => {
-        console.log('fullsetup', args);
-      });
-      connection.on('all', (args) => {
-        console.log('all', args);
-      });
-      console.log('post create connect', connection?.readyState);
     }
   };
 

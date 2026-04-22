@@ -11,6 +11,23 @@
   "scripts": {
     "start": "playwright test --ui",
     "test": "playwright test --help",
-    "test:account": "playwright test src/api/account"
+    "test:account": "playwright test src/api/account",
+    "test:category": "playwright test src/api/category",
+    "test:project": "playwright test src/api/project",
+    "test:product": "playwright test src/api/product",
+    "test:recipient": "playwright test src/api/recipient",
+    "test:setting": "playwright test src/api/setting",
+    "test:user": "playwright test src/api/user",
+    "test:file": "playwright test src/api/file",
+    "test:price": "playwright test src/api/price",
+    "test:customer": "playwright test src/api/customer",
+    "test:calendar": "playwright test src/api/calendar",
+    "test:transaction-common": "playwright test src/api/transaction/common",
+    "test:transaction-deferred": "playwright test src/api/transaction/deferred",
+    "test:transaction-payment": "playwright test src/api/transaction/payment",
+    "test:transaction-split": "playwright test src/api/transaction/split",
+    "test:transaction-reimbursement": "playwright test src/api/transaction/reimbursement",
+    "test:transaction-transfer": "playwright test src/api/transaction/transfer",
+    "test:transaction-draft": "playwright test src/api/transaction/draft"
   }
 }
